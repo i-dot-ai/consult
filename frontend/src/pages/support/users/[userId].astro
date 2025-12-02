@@ -14,66 +14,62 @@ if (!userId) {
   return Astro.redirect("/support/users");
 }
 
-
-
 // Fetch all consultations to filter by this user
-let consultationsData = await fetchBackendApi<{ results: ConsultationResponse[] }>(
-  Astro, 
-  "/api/consultations/"
-);
+let consultationsData = await fetchBackendApi<{
+  results: ConsultationResponse[];
+}>(Astro, "/api/consultations/");
 
 const consultations = consultationsData.results;
-
-
 ---
 
 <Layout>
   <Section>
-        
-
     <!-- User Permissions -->
-    <EditUser 
-      client:load
-      userId={userId}
-    />
+    <EditUser client:load userId={userId} />
 
     <!-- Consultations Section -->
     <div>
       <Title level={2} text="Consultations" />
-      
-      {consultations.length > 0 ? (
-        <div class="overflow-x-auto">
-          <table class="w-full text-left">
-            <thead class="font-bold border-b">
-              <tr>
-                <th class="py-3 pr-4">Consultation name</th>
-                <th class="py-3">Links</th>
-              </tr>
-            </thead>
-            <tbody>
-              {consultations.map((consultation) => (
-                <tr class="border-b hover:bg-gray-50">
-                  <td class="py-3 pr-4">{consultation.title}</td>
-                  <td class="py-3 space-y-1">
-                    <div>
-                      <Link href={`/support/consultations/${consultation.id}`}>
-                        View in support
-                      </Link>
-                    </div>
-                    <div>
-                      <Link href={`/consultations/${consultation.id}`}>
-                        View on frontend
-                      </Link>
-                    </div>
-                  </td>
+
+      {
+        consultations.length > 0 ? (
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead class="border-b font-bold">
+                <tr>
+                  <th class="py-3 pr-4">Consultation name</th>
+                  <th class="py-3">Links</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p class="text-gray-600">This user is not associated with any consultations</p>
-      )}
+              </thead>
+              <tbody>
+                {consultations.map((consultation) => (
+                  <tr class="border-b hover:bg-gray-50">
+                    <td class="py-3 pr-4">{consultation.title}</td>
+                    <td class="space-y-1 py-3">
+                      <div>
+                        <Link
+                          href={`/support/consultations/${consultation.id}`}
+                        >
+                          View in support
+                        </Link>
+                      </div>
+                      <div>
+                        <Link href={`/consultations/${consultation.id}`}>
+                          View on frontend
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p class="text-gray-600">
+            This user is not associated with any consultations
+          </p>
+        )
+      }
     </div>
   </Section>
 </Layout>

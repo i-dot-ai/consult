@@ -1,52 +1,38 @@
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 import { describe, it, expect } from "vitest";
+import { createRawSnippet } from "svelte";
+
 import Details from "./Details.svelte";
 
 describe("Details Component", () => {
-  it("renders with summary text", () => {
-    const { getByText } = render(Details, {
-      props: {
-        summaryText: "Test Summary",
-        children: () => "Test content"
-      }
-    });
+  const props = {
+    summaryText: "Test Summary",
+    children: createRawSnippet(() => ({
+      render: () => `<p>Test content</p>`,
+    })),
+  };
 
-    expect(getByText("Test Summary")).toBeInTheDocument();
+  it("renders with summary text", () => {
+    render(Details, props);
+
+    expect(screen.getByText("Test Summary")).toBeInTheDocument();
   });
 
   it("renders closed by default", () => {
-    const { container } = render(Details, {
-      props: {
-        summaryText: "Test Summary", 
-        children: () => "Test content"
-      }
-    });
+    render(Details, props);
 
-    const details = container.querySelector("details");
-    expect(details).not.toHaveAttribute("open");
+    expect(screen.getByRole("group")).not.toHaveAttribute("open");
   });
 
   it("renders open when open prop is true", () => {
-    const { container } = render(Details, {
-      props: {
-        summaryText: "Test Summary",
-        children: () => "Test content",
-        open: true
-      }
-    });
+    render(Details, { ...props, open: true });
 
-    const details = container.querySelector("details");
-    expect(details).toHaveAttribute("open");
+    expect(screen.getByRole("group")).toHaveAttribute("open");
   });
 
   it("renders content in details text area", () => {
-    const { getByText } = render(Details, {
-      props: {
-        summaryText: "Test Summary",
-        children: () => "Test content"
-      }
-    });
+    render(Details, props);
 
-    expect(getByText("Test content")).toBeInTheDocument();
+    expect(screen.getByText("Test content")).toBeInTheDocument();
   });
 });

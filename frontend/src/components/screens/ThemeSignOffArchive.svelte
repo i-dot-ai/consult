@@ -1,9 +1,8 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { onMount, type Component } from "svelte";
+  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
-  import type { Writable } from "svelte/store";
 
   import {
     getApiConsultationUrl,
@@ -18,17 +17,14 @@
   import Modal from "../Modal/Modal.svelte";
   import Alert from "../Alert.svelte";
   import OnboardingTour from "../OnboardingTour/OnboardingTour.svelte";
-  import Button from "../inputs/Button/Button.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import TitleRow from "../dashboard/TitleRow.svelte";
   import Panel from "../dashboard/Panel/Panel.svelte";
   import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
+  import ConsultationStagePanel from "../theme-sign-off/ConsultationStagePanel/ConsultationStagePanel.svelte";
 
   import MaterialIcon from "../MaterialIcon.svelte";
   import Checklist from "../svg/material/Checklist.svelte";
-  import CheckCircle from "../svg/material/CheckCircle.svelte";
-  import Finance from "../svg/material/Finance.svelte";
-  import WandStars from "../svg/material/WandStars.svelte";
   import Warning from "../svg/material/Warning.svelte";
   import Headphones from "../svg/material/Headphones.svelte";
   import Help from "../svg/material/Help.svelte";
@@ -50,36 +46,12 @@
     error: questionsError,
     load: loadQuestions,
     data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
   } = createFetchStore();
 
-  const {
-    loading: isConsultationLoading,
-    error: loadConsultationError,
-    load: loadConsultation,
-    data: consultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
+  const { load: loadConsultation, data: consultationData } = createFetchStore();
 
-  const {
-    loading: isConsultationUpdating,
-    error: updateConsultationError,
-    load: updateConsultation,
-    data: updateConsultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
+  const { error: updateConsultationError, load: updateConsultation } =
+    createFetchStore();
 
   onMount(async () => {
     loadConsultation(getApiConsultationUrl(consultationId));
@@ -118,112 +90,14 @@
 
 <hr class="my-6" />
 
-{#snippet themeStage(
-  text: string,
-  icon: Component,
-  status: "done" | "current" | "todo",
-)}
-  <div class="flex flex-col items-center min-w-16">
-    <div
-      class={clsx([
-        "my-2",
-        "p-2",
-        "rounded-full",
-        status === "done" && "bg-secondary",
-        status === "todo" && "bg-neutral-200",
-        status === "current" && "bg-secondary ring-4 ring-teal-100",
-      ])}
-    >
-      <MaterialIcon
-        color={status === "todo" ? "fill-neutral-500" : "fill-white"}
-        size="1.2rem"
-      >
-        {@render icon()}
-      </MaterialIcon>
-    </div>
-    <h3 class={clsx([status === "current" && "text-secondary"])}>
-      {text}
-    </h3>
-  </div>
-{/snippet}
-
 <svelte:boundary>
-  {#if isAllQuestionsSignedOff}
+  {#if isAllQuestionsSignedOff || $consultationData?.stage === "theme_mapping" || $consultationData?.stage === "analysis"}
     <section in:slide>
-      <Panel variant="approve-dark" bg={true}>
-        <div class="px-2 sm:px-8 md:px-16">
-          <ol
-            class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-full overflow-x-auto"
-          >
-            <li>
-              {@render themeStage("Consultation Overview", CheckCircle, "done")}
-            </li>
-            <li>
-              {@render themeStage(
-                "Theme Sign Off",
-                CheckCircle,
-                $consultationData?.stage === "theme_sign_off"
-                  ? "current"
-                  : "done",
-              )}
-            </li>
-            <li>
-              {@render themeStage(
-                "AI Theme Mapping",
-                WandStars,
-                $consultationData?.stage === "theme_mapping"
-                  ? "current"
-                  : $consultationData?.stage === "analysis"
-                    ? "done"
-                    : "todo",
-              )}
-            </li>
-            <li>
-              {@render themeStage(
-                "Analysis Dashboard",
-                Finance,
-                $consultationData?.stage === "analysis" ? "current" : "todo",
-              )}
-            </li>
-          </ol>
-
-          <div class="px-0 md:px-16">
-            <h2 class="text-secondary text-center">All Questions Signed Off</h2>
-
-            <p class="text-sm text-center text-neutral-500 my-4">
-              You have successfully reviewed and signed off themes for all {questionsForSignOff?.length ||
-                0} consultation questions.
-            </p>
-
-            <p class="text-sm text-center text-neutral-500 my-4">
-              <strong class="">Next:</strong> Confirm and proceed to the AI mapping
-              phase where responses will be mapped to your selected themes.
-            </p>
-
-            {#if $consultationData?.stage !== "theme_mapping" && $consultationData?.stage !== "analysis"}
-              <Button
-                variant="approve"
-                size="sm"
-                fullWidth={true}
-                handleClick={() => (isConfirmModalOpen = true)}
-              >
-                <div
-                  class="flex justify-center items-center gap-3 sm:gap-1 w-full"
-                >
-                  <div class="shrink-0">
-                    <MaterialIcon>
-                      <CheckCircle />
-                    </MaterialIcon>
-                  </div>
-                  <span class="text-left">
-                    Confirm and Proceed to Mapping
-                  </span>
-                </div>
-              </Button>
-            {/if}
-          </div>
-        </div>
-      </Panel>
+      <ConsultationStagePanel
+        consultation={$consultationData || {}}
+        questionsCount={questionsForSignOff?.length || 0}
+        onConfirmClick={() => (isConfirmModalOpen = true)}
+      />
 
       <Modal
         variant="secondary"
@@ -247,13 +121,13 @@
           }
         }}
       >
-        <p class="text-sm text-neutral-500 mb-4">
+        <p class="mb-4 text-sm text-neutral-500">
           You have successfully reviewed and signed off themes for all {questionsForSignOff?.length ||
             0} consultation questions. Are you ready to proceed with AI mapping?
         </p>
 
-        <p class="text-sm text-neutral-500 mb-2">This action will:</p>
-        <ol class="text-sm text-neutral-500 mb-2 list-disc pl-4">
+        <p class="mb-2 text-sm text-neutral-500">This action will:</p>
+        <ol class="mb-2 list-disc pl-4 text-sm text-neutral-500">
           <li class="mb-2">
             Process all consultation responses across {questionsForSignOff?.length ||
               0} questions
@@ -277,12 +151,12 @@
 
         <hr class="my-4" />
 
-        <p class="text-sm text-neutral-500 mb-2">
+        <p class="mb-2 text-sm text-neutral-500">
           If you have concerns or need assistance, please contact support:
         </p>
         <a
           href={`mailto:${Routes.SupportEmail}`}
-          class="support-link block mb-4 text-sm text-secondary hover:text-primary"
+          class="support-link mb-4 block text-sm text-secondary hover:text-primary"
         >
           <div class="flex items-center gap-1">
             <MaterialIcon color="fill-secondary">
@@ -293,7 +167,7 @@
         </a>
 
         {#if $updateConsultationError}
-          <div class="mt-2 mb-4">
+          <div class="mb-4 mt-2">
             <Alert>
               <span class="text-sm">{$updateConsultationError}</span>
             </Alert>
@@ -353,7 +227,7 @@
                 body="No questions found matching your search."
               />
             {:else}
-              {#each displayQuestions as question}
+              {#each displayQuestions as question (question.id)}
                 <QuestionCard
                   {consultationId}
                   {question}
@@ -430,7 +304,7 @@
   body: string,
   active: boolean,
 )}
-  <li class="flex items-start gap-2 mb-4">
+  <li class="mb-4 flex items-start gap-2">
     <div
       class={clsx([
         "flex",

@@ -33,7 +33,7 @@
       <Button
         size="xs"
         variant="ghost"
-        handleClick={onClickBack ? onClickBack : (e) => history.back()}
+        handleClick={onClickBack ? onClickBack : () => history.back()}
       >
         <div class="rotate-180">
           <MaterialIcon color="fill-neutral-700">
@@ -45,7 +45,7 @@
       </Button>
     </div>
 
-    <h1 class="font-bold text-lg text-center">{title}</h1>
+    <h1 class="text-center text-lg font-bold">{title}</h1>
   </div>
 
   <div class="flex items-center gap-4">

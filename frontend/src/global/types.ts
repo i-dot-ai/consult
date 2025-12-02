@@ -22,8 +22,9 @@ export interface Question {
 }
 
 export interface Consultation {
-  title: string;
   id: string;
+  title: string;
+  stage: "theme_sign_off" | "theme_mapping" | "analysis";
   created_at: string;
 }
 

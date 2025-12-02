@@ -36,7 +36,7 @@
 
   // Derive to avoid calculating on re-render
   let totalCounts: DemoTotalCounts = $derived.by(() => {
-    let counts: any = {};
+    let counts: Record<string, number> = {};
     for (const category of Object.keys(demoData)) {
       counts[category] = Object.values(demoData[category]).reduce(
         (a, b) => (a as number) + (b as number),
@@ -61,8 +61,8 @@
           value={evidenceRich}
           handleChange={(value: boolean) => setEvidenceRich(value)}
         >
-          <div slot="label" class="flex gap-1 items-center">
-            <div class="bg-yellow-100 rounded-2xl text-xs p-0.5">
+          <div slot="label" class="flex items-center gap-1">
+            <div class="rounded-2xl bg-yellow-100 p-0.5 text-xs">
               <MaterialIcon size="1rem" color="fill-yellow-700">
                 <Diamond />
               </MaterialIcon>
@@ -76,7 +76,7 @@
 
     {#if loading}
       <div in:fade>
-        {#each "_".repeat(3) as _}
+        {#each "_".repeat(3) as _, i (i)}
           <DemoFilter skeleton={true} />
         {/each}
       </div>

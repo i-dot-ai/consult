@@ -43,9 +43,9 @@
       transition:slide
       class={clsx(["flex", "items-center", "gap-2", "my-2", "justify-between"])}
     >
-      <p class="text-xs grow max-w-[60%]">{title}</p>
+      <p class="max-w-[60%] grow text-xs">{title}</p>
 
-      <div class="flex items-center gap-2 justify-end">
+      <div class="flex items-center justify-end gap-2">
         <span class="text-sm">{count.toLocaleString()}</span>
         <span class="text-xs text-primary">{percentage}%</span>
         <div class="w-[2rem]">
@@ -69,7 +69,7 @@
   <Panel bg={true} border={true}>
     <Title level={4} text={title} />
 
-    {#each items as item, index}
+    {#each items as item, index (item.title)}
       {@render cardItem(item, index)}
     {/each}
 
@@ -82,7 +82,7 @@
         handleClick={() =>
           (location.href = getConsultationAnalysisUrl(consultationId))}
       >
-        <div class="flex justify-center items-center gap-1">
+        <div class="flex items-center justify-center gap-1">
           <span>View All {items.length}</span>
 
           <MaterialIcon color="fill-neutral-500">

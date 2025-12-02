@@ -1,6 +1,6 @@
 import ThemeForm from "./ThemeForm.svelte";
 
-let variant = $state("add");
+const variant = $state("add");
 const handleConfirm = () => alert("Confirm event triggered");
 const handleCancel = () => alert("Cancel event triggered");
 

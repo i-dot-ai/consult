@@ -24,7 +24,7 @@
   handleClick={() => (expanded = !expanded)}
   fullWidth={true}
 >
-  <div class="flex justify-between items-center gap-2 w-full">
+  <div class="flex w-full items-center justify-between gap-2">
     {@render title()}
 
     <div class={clsx(["transition-transform", expanded && "rotate-90"])}>
@@ -41,7 +41,7 @@
     class={clsx([
       variant === "light" && "bg-white",
       variant === "gray" && "bg-neutral-100",
-      "p-4 border border-neutral-300 border-t-0 rounded-b-lg",
+      "rounded-b-lg border border-t-0 border-neutral-300 p-4",
     ])}
   >
     {@render content()}

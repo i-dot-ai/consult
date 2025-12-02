@@ -4,9 +4,12 @@
   import { fade, fly } from "svelte/transition";
 
   import type { SelectedTheme } from "../../../global/types";
-  import { createFetchStore } from "../../../global/stores";
+  import { createFetchStore, type MockFetch } from "../../../global/stores";
   import { getApiAnswersUrl } from "../../../global/routes";
-  import { formatTimeDeltaText, getTimeDeltaInMinutes } from "../../../global/utils";
+  import {
+    formatTimeDeltaText,
+    getTimeDeltaInMinutes,
+  } from "../../../global/utils";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
@@ -25,7 +28,7 @@
     removeTheme: (themeId: string) => void;
     updateTheme: (themeId: string, title: string, description: string) => void;
     maxAnswers?: number;
-    answersMock?: Function;
+    answersMock?: MockFetch;
   }
 
   let {
@@ -42,7 +45,6 @@
     load: loadAnswers,
     loading: isAnswersLoading,
     data: answersData,
-    error: answersError,
   } = createFetchStore(answersMock);
 
   let showAnswers = $state(false);
@@ -53,10 +55,10 @@
     $answersData = null;
     showAnswers = false;
     answersRequested = false;
-  }
+  };
 </script>
 
-<article class="bg-white rounded-lg" data-themeid={theme.id}>
+<article class="rounded-lg bg-white" data-themeid={theme.id}>
   {#if editing}
     <div in:fade>
       <ThemeForm
@@ -84,19 +86,20 @@
               {/if}
             </header>
 
-            <p class="text-sm text-neutral-700 my-4">
+            <p class="my-4 text-sm text-neutral-700">
               {theme.description}
             </p>
 
             <hr class="mb-4" />
 
-            <small class="block text-xs text-neutral-500 mb-4">
-              {theme.version > 1 ? "Edited" : "Added"} {formatTimeDeltaText(
-                getTimeDeltaInMinutes(new Date, new Date(theme.modified_at))
+            <small class="mb-4 block text-xs text-neutral-500">
+              {theme.version > 1 ? "Edited" : "Added"}
+              {formatTimeDeltaText(
+                getTimeDeltaInMinutes(new Date(), new Date(theme.modified_at)),
               )} ago by {theme.last_modified_by}
             </small>
 
-            <footer class="flex items-center flex-wrap gap-2">
+            <footer class="flex flex-wrap items-center gap-2">
               <Button size="sm" handleClick={() => (editing = !editing)}>
                 <MaterialIcon color="fill-neutral-500">
                   <EditSquare />
@@ -118,7 +121,7 @@
                     const queryString = new URLSearchParams({
                       searchMode: "representative",
                       searchValue: `${theme.name} ${theme.description}`,
-                      question_id: questionId
+                      question_id: questionId,
                     }).toString();
 
                     loadAnswers(
@@ -143,7 +146,7 @@
           {#if showAnswers}
             <aside
               transition:fly={{ x: 300 }}
-              class="grow sm:border-l sm:border-neutral-200 sm:ml-4 sm:pl-4 pt-4 sm:pt-0"
+              class="grow pt-4 sm:ml-4 sm:w-2/3 sm:border-l sm:border-neutral-200 sm:pl-4 sm:pt-0"
             >
               <AnswersList
                 title="Representative Responses"

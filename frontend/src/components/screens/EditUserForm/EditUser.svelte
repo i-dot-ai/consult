@@ -13,12 +13,10 @@
     load: loadUser,
     loading: isLoadingUser,
     data: userData,
-    error: userError,
   } = createFetchStore();
 
   const {
     load: updateUser,
-    loading: isUpdating,
     data: updateUserData,
     error: updateUserError,
   } = createFetchStore();
@@ -53,11 +51,11 @@
   {:else if $userData}
     <!-- User Details -->
     <div class="mb-8">
-      <h1 class="text-2xl font-bold mb-4">{$userData.email}</h1>
+      <h1 class="mb-4 text-2xl font-bold">{$userData.email}</h1>
       <table class="w-full border-collapse">
         <tbody>
           <tr class="border-b">
-            <th class="text-left py-3 pr-4 font-semibold">Created at</th>
+            <th class="py-3 pr-4 text-left font-semibold">Created at</th>
             <td class="py-3"
               >{new Date($userData.created_at).toLocaleDateString()}</td
             >
@@ -68,13 +66,13 @@
 
     {#if $updateUserError}
       <div
-        class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-6"
+        class="mb-6 rounded border border-red-200 bg-red-50 px-4 py-3 text-red-800"
       >
         {$updateUserData?.is_staff[0] || "failed to update user"}
       </div>
     {/if}
 
-    <div class="space-y-6 max-w-md">
+    <div class="max-w-md space-y-6">
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <label for="is_staff" class="text-sm font-medium">

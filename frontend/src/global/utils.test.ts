@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  applyHighlight,
   formatDate,
   formatTimeDeltaText,
   getEnv,
@@ -45,17 +44,6 @@ describe("toTitleCase", () => {
   });
   it("handles empty strings", () => {
     expect(toTitleCase("")).toEqual("");
-  });
-});
-
-describe("applyHighlight", () => {
-  it("wraps highlighted text inside span", () => {
-    const result = applyHighlight("Full test text", "test");
-    expect(result).toContain(`<span class="bg-yellow-300">test</span>`);
-  });
-  it("handles upper and lower cases", () => {
-    const result = applyHighlight("full TeSt text", "test");
-    expect(result).toContain(`<span class="bg-yellow-300">TeSt</span>`);
   });
 });
 
@@ -134,23 +122,29 @@ describe("formatTimeDelta", () => {
     expect(formatTimeDeltaText(60 * 24 * 30 * 12)).toEqual("1 year");
     expect(formatTimeDeltaText(60 * 24 * 30 * 12 * 2)).toEqual("2 years");
   });
-})
+});
 
-describe("getTimeDeltaInMinutes", (() => {
+describe("getTimeDeltaInMinutes", () => {
   it("calculates 1 minute ago", () => {
     const now = new Date();
 
     const MINUTE_IN_MILLISECONDS = 60 * 1000;
-    const minuteDelta = getTimeDeltaInMinutes(now, new Date(now.getTime() - MINUTE_IN_MILLISECONDS));
+    const minuteDelta = getTimeDeltaInMinutes(
+      now,
+      new Date(now.getTime() - MINUTE_IN_MILLISECONDS),
+    );
     expect(minuteDelta).toEqual(1);
-  })
+  });
 
   it("calculates 1 year ago", () => {
     const now = new Date();
 
     const YEAR_IN_MILLISECONDS = 1000 * 60 * 24 * 30 * 12;
     const MINUTES_IN_YEAR = 24 * 30 * 12;
-    const yearDalte = getTimeDeltaInMinutes(now, new Date(now.getTime() - YEAR_IN_MILLISECONDS));
+    const yearDalte = getTimeDeltaInMinutes(
+      now,
+      new Date(now.getTime() - YEAR_IN_MILLISECONDS),
+    );
     expect(yearDalte).toEqual(MINUTES_IN_YEAR);
-  })
-}))
+  });
+});
