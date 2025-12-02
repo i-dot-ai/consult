@@ -89,7 +89,7 @@
       label="Theme Title"
       placeholder="e.g., Data Privacy Concerns"
       value={title}
-      setValue={(newTitle) => (title = newTitle)}
+      setValue={(newTitle) => (title = newTitle.trim())}
     />
   </div>
 
@@ -100,7 +100,7 @@
       label="Theme Description"
       placeholder="Describe what responses should be categorised under this theme..."
       value={description}
-      setValue={(newVal) => (description = newVal)}
+      setValue={(newVal) => (description = newVal.trim())}
     />
   </div>
 
