@@ -1,42 +1,33 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, cleanup } from "@testing-library/svelte";
+import { describe, expect, it } from "vitest";
+import { render, screen } from "@testing-library/svelte";
 
-import GeneratedThemeCard, { type Props } from "./GeneratedThemeCard.svelte";
-
-let testData: Props;
+import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
 
 describe("GeneratedThemeCard", () => {
-  beforeEach(() => {
-    testData = {
-      selectedThemes: [],
-      theme: {
-        id: "test-theme",
-        name: "Test Theme",
-        description: "This is a test theme",
-      },
-      answers: ["Answer 1", "Answer 2"],
-      handleSelect: () => {},
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    consultationId: "test-consultation",
+    questionId: "test-question",
+    theme: {
+      id: "test-theme",
+      name: "Test Theme",
+      description: "This is a test theme",
+    },
+    expandedThemes: [],
+    setExpandedThemes: () => {},
+    handleSelect: () => {},
+    themesBeingSelected: [],
+  };
+  const answers = ["Answer 1", "Answer 2"];
 
   it("should render", async () => {
-    vi.mock("svelte/transition");
+    const { container } = render(GeneratedThemeCard, testData);
 
-    const { container, getByText, getAllByText, queryByText } = render(
-      GeneratedThemeCard,
-      {
-        ...testData,
-      },
-    );
-
-    expect(getByText(testData.theme.name));
-    expect(getByText(testData.theme.description));
+    expect(screen.getByText(testData.theme.name)).toBeInTheDocument();
+    expect(screen.getByText(testData.theme.description)).toBeInTheDocument();
 
     // Answers hidden initially
-    testData.answers?.forEach((answer) => {
-      expect(queryByText(answer)).toBeNull();
+    answers.forEach((answer) => {
+      expect(screen.queryByText(answer)).toBeNull();
     });
 
     expect(container).toMatchSnapshot();
@@ -48,20 +39,17 @@ describe("GeneratedThemeCard", () => {
       name: "Child Theme",
       description: "This is a child theme",
     };
-    const { container, getByText, getAllByText, queryByText } = render(
-      GeneratedThemeCard,
-      {
-        ...testData,
-        theme: {
-          ...testData.theme,
-          children: [CHILD_THEME],
-        },
-        expandedThemes: [testData.theme.id, CHILD_THEME.id],
+    render(GeneratedThemeCard, {
+      ...testData,
+      theme: {
+        ...testData.theme,
+        children: [CHILD_THEME],
       },
-    );
+      expandedThemes: [testData.theme.id, CHILD_THEME.id],
+    });
 
-    expect(getByText(CHILD_THEME.name));
-    expect(getByText(CHILD_THEME.description));
+    expect(screen.getByText(CHILD_THEME.name)).toBeInTheDocument();
+    expect(screen.getByText(CHILD_THEME.description)).toBeInTheDocument();
   });
 
   it("should not render child if theme is not expanded", async () => {
@@ -70,7 +58,7 @@ describe("GeneratedThemeCard", () => {
       name: "Child Theme",
       description: "This is a child theme",
     };
-    const { queryByText } = render(GeneratedThemeCard, {
+    render(GeneratedThemeCard, {
       ...testData,
       theme: {
         ...testData.theme,
@@ -79,7 +67,7 @@ describe("GeneratedThemeCard", () => {
       expandedThemes: [],
     });
 
-    expect(queryByText(CHILD_THEME.name)).toBeNull();
-    expect(queryByText(CHILD_THEME.description)).toBeNull();
+    expect(screen.queryByText(CHILD_THEME.name)).toBeNull();
+    expect(screen.queryByText(CHILD_THEME.description)).toBeNull();
   });
 });

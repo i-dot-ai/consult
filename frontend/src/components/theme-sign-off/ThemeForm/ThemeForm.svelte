@@ -53,7 +53,7 @@
   <div class="mt-4 text-sm">
     <Accordion variant="gray">
       {#snippet title()}
-        <div class="flex gap-2 items-center">
+        <div class="flex items-center gap-2">
           <MaterialIcon color="fill-neutral-500">
             <Tip />
           </MaterialIcon>
@@ -64,7 +64,7 @@
       {#snippet content()}
         <div class="text-xs">
           <h4>Good theme titles:</h4>
-          <ul class="list-disc ml-4">
+          <ul class="ml-4 list-disc">
             <li>
               Are specific and descriptive (e.g., "Data Privacy Concerns")
             </li>
@@ -73,7 +73,7 @@
           </ul>
 
           <h4 class="mt-2">Good theme descriptions:</h4>
-          <ul class="list-disc ml-4">
+          <ul class="ml-4 list-disc">
             <li>Explain what types of responses belong in this theme</li>
             <li>Include key concepts or phrases to look for</li>
             <li>Help categorise responses consistently</li>

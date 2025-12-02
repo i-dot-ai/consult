@@ -192,17 +192,17 @@
       <div class="col-span-full flex items-center justify-center py-12">
         <div class="text-center">
           <div
-            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"
+            class="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-b-2 border-primary"
           ></div>
           <p class="text-gray-600">Loading cross-cutting themes...</p>
         </div>
       </div>
     {:else if themes.length === 0}
       <div class="col-span-full">
-        <div class="text-center py-12">
-          <div class="text-gray-400 mb-2">
+        <div class="py-12 text-center">
+          <div class="mb-2 text-gray-400">
             <svg
-              class="w-12 h-12 mx-auto"
+              class="mx-auto h-12 w-12"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -215,15 +215,15 @@
               />
             </svg>
           </div>
-          <p class="text-gray-600 font-medium">No cross-cutting themes found</p>
-          <p class="text-gray-500 text-sm mt-1">
+          <p class="font-medium text-gray-600">No cross-cutting themes found</p>
+          <p class="mt-1 text-sm text-gray-500">
             Cross-cutting themes will appear here once they are created for this
             consultation.
           </p>
         </div>
       </div>
     {:else}
-      {#each themes as theme}
+      {#each themes as theme (theme.id)}
         <CrossCuttingThemeCard
           title={theme.name}
           mentions={theme.mentions}

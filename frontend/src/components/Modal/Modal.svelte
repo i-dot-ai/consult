@@ -3,7 +3,6 @@
 
   import type { Component, Snippet } from "svelte";
   import { fade, fly } from "svelte/transition";
-  import type { MouseEventHandler } from "svelte/elements";
 
   import { createDialog, melt } from "@melt-ui/svelte";
 
@@ -18,7 +17,7 @@
     canCancel?: boolean;
     icon?: Component;
     setOpen: (newValue: boolean) => void;
-    handleConfirm: MouseEventHandler<any>;
+    handleConfirm: () => void;
     children: Snippet;
   }
 
@@ -35,15 +34,7 @@
   }: Props = $props();
 
   const {
-    elements: {
-      trigger,
-      portalled,
-      overlay,
-      content,
-      title: titleMelt,
-      description,
-      close,
-    },
+    elements: { portalled, overlay, content, title: titleMelt, close },
     states: { open: meltOpen },
   } = createDialog({
     onOpenChange: (open) => setOpen(open.next),
@@ -96,7 +87,7 @@
         y: 8,
       }}
     >
-      <div class="flex items-center gap-2 mb-2">
+      <div class="mb-2 flex items-center gap-2">
         {#if icon}
           <MaterialIcon color={getIconColor()} size="1.3rem">
             <svelte:component this={icon} />

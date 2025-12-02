@@ -8,11 +8,11 @@ const TEST_DATA = {
   skeleton: false,
 };
 
-let category = $state(TEST_DATA.category);
-let demoOptions = $state(TEST_DATA.demoOptions);
-let demoData = $state(TEST_DATA.demoData);
-let totalCounts = $state(TEST_DATA.totalCounts);
-let skeleton = $state(TEST_DATA.skeleton);
+const category = $state(TEST_DATA.category);
+const demoOptions = $state(TEST_DATA.demoOptions);
+const demoData = $state(TEST_DATA.demoData);
+const totalCounts = $state(TEST_DATA.totalCounts);
+const skeleton = $state(TEST_DATA.skeleton);
 
 export default {
   name: "DemoFilter",

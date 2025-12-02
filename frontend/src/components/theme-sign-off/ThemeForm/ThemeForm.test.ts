@@ -1,37 +1,33 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { render, cleanup } from "@testing-library/svelte";
+import { describe, expect, it } from "vitest";
+import { render, screen } from "@testing-library/svelte";
 
-import ThemeForm, { type Props } from "./ThemeForm.svelte";
-
-let testData: Props;
+import ThemeForm from "./ThemeForm.svelte";
 
 describe("ThemeForm", () => {
-  beforeEach(() => {
-    testData = {
-      variant: "add",
-      handleConfirm: () => {},
-      handleCancel: () => {},
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    initialTitle: "Test Theme",
+    initialDescription: "This is a test theme.",
+    handleConfirm: () => {},
+    handleCancel: () => {},
+  };
 
   it("should render add variant", async () => {
-    const { container, getByText } = render(ThemeForm, {
+    const { container } = render(ThemeForm, {
       ...testData,
+      variant: "add",
     });
 
-    expect(getByText("Add Custom Theme"));
+    expect(screen.getByText("Add Custom Theme")).toBeInTheDocument();
 
     expect(container).toMatchSnapshot();
   });
 
-  it("should render add variant", async () => {
-    const { container, getByText } = render(ThemeForm, {
+  it("should render edit variant", async () => {
+    render(ThemeForm, {
       ...testData,
       variant: "edit",
     });
 
-    expect(getByText("Edit Theme"));
+    expect(screen.getByText("Edit Theme")).toBeInTheDocument();
   });
 });
