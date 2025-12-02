@@ -4,15 +4,15 @@ services:
   postgres:
     image: pgvector/pgvector:0.8.0-pg17-bookworm
     environment:
-      POSTGRES_DB: consultation_analyser
-      POSTGRES_USER: consultations_test
-      POSTGRES_PASSWORD: consultations_test  # pragma: allowlist secret
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres  # pragma: allowlist secret
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U consultations_test"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
