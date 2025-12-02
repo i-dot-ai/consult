@@ -66,7 +66,7 @@ export const createFetchStore = <T>(
   }> = writable({
     data: null,
     isLoading: false,
-    error: "",
+    error: null,
     status: 0,
     fetch: () => {},
   });
