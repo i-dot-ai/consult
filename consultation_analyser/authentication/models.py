@@ -60,8 +60,3 @@ class User(AbstractBaseUser, PermissionsMixin):
     def username(self):
         return self.email
 
-    def get_read_responses(self):
-        """Get all responses this user has read"""
-        from consultation_analyser.consultations.models import Response
-
-        return Response.objects.filter(read_records__user=self)
