@@ -1105,10 +1105,10 @@ class TestResponseViewSet:
         # Create test response
         respondent = RespondentFactory(consultation=free_text_question.consultation)
         response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
-        
+
         # Create annotation with themes
-        annotation = ResponseAnnotationFactoryNoThemes(response=response_obj)
-        
+        _ = ResponseAnnotationFactoryNoThemes(response=response_obj)
+
         url = reverse(
             "response-themes",
             kwargs={
@@ -1116,7 +1116,7 @@ class TestResponseViewSet:
                 "pk": response_obj.id,
             },
         )
-        
+
         response = client.get(
             url,
             headers={"Authorization": f"Bearer {consultation_user_token}"},
@@ -1124,7 +1124,7 @@ class TestResponseViewSet:
 
         assert response.status_code == 200
         data = response.json()
-        
+
         assert "selected_themes" in data
         assert "all_themes" in data
         assert isinstance(data["selected_themes"], list)
@@ -1137,11 +1137,11 @@ class TestResponseViewSet:
         # Create test response
         respondent = RespondentFactory(consultation=free_text_question.consultation)
         response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
-        
+
         # Create annotation with specific themes
         annotation = ResponseAnnotationFactoryNoThemes(response=response_obj)
         annotation.add_original_ai_themes([theme_a])
-        
+
         url = reverse(
             "response-themes",
             kwargs={
@@ -1149,7 +1149,7 @@ class TestResponseViewSet:
                 "pk": response_obj.id,
             },
         )
-        
+
         response = client.get(
             url,
             headers={"Authorization": f"Bearer {consultation_user_token}"},
@@ -1157,11 +1157,11 @@ class TestResponseViewSet:
 
         assert response.status_code == 200
         data = response.json()
-        
+
         # Should have theme_a in selected themes
         selected_theme_ids = [theme["id"] for theme in data["selected_themes"]]
         assert str(theme_a.id) in selected_theme_ids
-        
+
         # Should have both themes in all themes
         all_theme_ids = [theme["id"] for theme in data["all_themes"]]
         assert str(theme_a.id) in all_theme_ids
@@ -1172,7 +1172,7 @@ class TestResponseViewSet:
     ):
         """Test API endpoint returns 404 for nonexistent response"""
         fake_response_id = "00000000-0000-0000-0000-000000000000"
-        
+
         url = reverse(
             "response-themes",
             kwargs={
@@ -1180,7 +1180,7 @@ class TestResponseViewSet:
                 "pk": fake_response_id,
             },
         )
-        
+
         response = client.get(
             url,
             headers={"Authorization": f"Bearer {consultation_user_token}"},
@@ -1195,10 +1195,10 @@ class TestResponseViewSet:
         # Create test response without annotation
         respondent = RespondentFactory(consultation=free_text_question.consultation)
         response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
-        
+
         # Verify no annotation exists initially
         assert not ResponseAnnotation.objects.filter(response=response_obj).exists()
-        
+
         url = reverse(
             "response-themes",
             kwargs={
@@ -1206,13 +1206,13 @@ class TestResponseViewSet:
                 "pk": response_obj.id,
             },
         )
-        
+
         response = client.get(
             url,
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
         assert response.status_code == 200
-        
+
         # Verify annotation was created
         assert ResponseAnnotation.objects.filter(response=response_obj).exists()

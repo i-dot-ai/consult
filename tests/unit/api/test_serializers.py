@@ -339,7 +339,7 @@ class TestRespondentSerializer:
         """Test that read-only fields are ignored in validation"""
         data = {
             "id": uuid4(),  # read-only, should be ignored
-            "themefinder_id": 12345,  # read-only, should be ignored 
+            "themefinder_id": 12345,  # read-only, should be ignored
             "name": "John Doe",
             "demographics": [  # read-only, should be ignored
                 {"id": "age_group", "field_name": "age_group", "field_value": "25-34"},
