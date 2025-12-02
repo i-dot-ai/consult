@@ -203,7 +203,7 @@
     <hr class="my-4" />
 
     {#if $answerUpdateStore.error}
-      <small class="block my-2 text-red-500" transition:slide
+      <small class="my-2 block text-red-500" transition:slide
         >{$answerUpdateStore.error}</small
       >
     {/if}

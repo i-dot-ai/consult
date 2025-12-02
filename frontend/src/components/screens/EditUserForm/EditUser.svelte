@@ -31,7 +31,9 @@
   async function updateIsStaff(value: boolean) {
     if (value === $userStore.data?.is_staff) return; // Don't update if value hasn't changed
 
-    await $userUpdateStore.fetch(`/api/users/${userId}/`, "PATCH", { is_staff: value });
+    await $userUpdateStore.fetch(`/api/users/${userId}/`, "PATCH", {
+      is_staff: value,
+    });
 
     $userStore.fetch(`/api/users/${userId}/`);
   }
@@ -104,7 +106,7 @@
       </div>
 
       {#if $userUpdateStore.isLoading}
-        <div class="text-sm text-gray-600 flex items-center gap-2">
+        <div class="flex items-center gap-2 text-sm text-gray-600">
           <div class="grow-0">
             <LoadingIndicator size="1rem" />
           </div>

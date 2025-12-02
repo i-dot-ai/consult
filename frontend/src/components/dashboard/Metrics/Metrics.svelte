@@ -220,11 +220,9 @@
         </div>
       </TabView>
     </div>
+  {:else if demoOptionsLoading}
+    <LoadingMessage message="Loading Demographics..." />
   {:else}
-    {#if demoOptionsLoading}
-      <LoadingMessage message="Loading Demographics..." />
-    {:else}
-      <div class="my-4"></div>
-    {/if}
+    <div class="my-4"></div>
   {/if}
 </Panel>

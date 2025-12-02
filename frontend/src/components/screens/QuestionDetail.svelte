@@ -128,7 +128,9 @@
     }
 
     // Append next page of answers to existing answers
-    await $answersStore.fetch(`${getApiAnswersUrl(consultationId)}${queryString}`);
+    await $answersStore.fetch(
+      `${getApiAnswersUrl(consultationId)}${queryString}`,
+    );
 
     if ($answersStore.data?.all_respondents) {
       const newAnswers = $answersStore.data?.all_respondents;
@@ -219,7 +221,9 @@
   });
 
   let question = $derived(
-    $questionsStore.data?.results?.find((question) => question.id === questionId),
+    $questionsStore.data?.results?.find(
+      (question) => question.id === questionId,
+    ),
   );
 
   let formattedDemoOptions = $derived.by(() => {
@@ -228,12 +232,13 @@
     }
 
     const formattedData: DemoOption = {};
-    const categories = [...new Set($demoOptionsStore.data.map((data) => data.name))];
+    const categories = [
+      ...new Set($demoOptionsStore.data.map((data) => data.name)),
+    ];
 
     for (const category of categories) {
-      const categoryData: DemoOptionsResponseItem[] = $demoOptionsStore.data.filter(
-        (opt) => opt.name === category,
-      );
+      const categoryData: DemoOptionsResponseItem[] =
+        $demoOptionsStore.data.filter((opt) => opt.name === category);
 
       formattedData[category] = categoryData
         .map((opt) => opt.value)
@@ -282,13 +287,16 @@
       <div class="my-2">
         <Alert>
           <span class="text-sm">
-            Question Details Error: {$consultationStore.error || $questionsStore.error}
+            Question Details Error: {$consultationStore.error ||
+              $questionsStore.error}
           </span>
         </Alert>
       </div>
     {:else}
       <QuestionCard
-        skeleton={!dataRequested || $questionsStore.isLoading || $consultationStore.isLoading}
+        skeleton={!dataRequested ||
+          $questionsStore.isLoading ||
+          $consultationStore.isLoading}
         clickable={false}
         consultationId={$consultationStore.data?.id || ""}
         question={question || {}}
@@ -330,7 +338,11 @@
   >
     {#if activeTab === TabNames.QuestionSummary}
       <QuestionSummary
-        showThemes={Boolean(!dataRequested || $questionStore.isLoading || $questionStore.data?.has_free_text)}
+        showThemes={Boolean(
+          !dataRequested ||
+            $questionStore.isLoading ||
+            $questionStore.data?.has_free_text,
+        )}
         themes={Object.keys($themeAggrStore.data?.theme_aggregations || []).map(
           (themeId) => {
             return {
@@ -350,8 +362,8 @@
         demoData={$demoAggrStore.data?.demographic_aggregations || {}}
         demoOptions={formattedDemoOptions || {}}
         demoOptionsData={$demoOptionsStore.data || undefined}
-        multiChoice={$questionStore.data?.multiple_choice_answer?.filter((item) =>
-          Boolean(item.text),
+        multiChoice={$questionStore.data?.multiple_choice_answer?.filter(
+          (item) => Boolean(item.text),
         ) || []}
         consultationCode={$consultationStore.data?.code}
         {evidenceRich}

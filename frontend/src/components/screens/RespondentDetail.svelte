@@ -14,7 +14,12 @@
     getRespondentDetailUrl,
   } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
-  import type { AnswersResponse, QuestionsResponse, Respondent, RespondentsResponse } from "../../global/types.ts";
+  import type {
+    AnswersResponse,
+    QuestionsResponse,
+    Respondent,
+    RespondentsResponse,
+  } from "../../global/types.ts";
 
   import Alert from "../Alert.svelte";
   import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
@@ -53,7 +58,9 @@
   onMount(() => {
     $consultationQuestionsStore.fetch(getApiQuestionsUrl(consultationId));
     $respondentsStore.fetch(getLoadRespondentsUrl());
-    $questionsStore.fetch(getQuestionsByRespondentUrl(consultationId, respondentId));
+    $questionsStore.fetch(
+      getQuestionsByRespondentUrl(consultationId, respondentId),
+    );
     $answersStore.fetch(
       `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
     );
@@ -76,13 +83,15 @@
   let prevRespondent = $derived(
     $respondentsStore.data?.results?.find(
       (respondent: Respondent) =>
-        respondent?.themefinder_id === (currRespondent?.themefinder_id || 0) - 1,
+        respondent?.themefinder_id ===
+        (currRespondent?.themefinder_id || 0) - 1,
     ) ?? null,
   );
   let nextRespondent = $derived(
     $respondentsStore.data?.results?.find(
       (respondent: Respondent) =>
-        respondent?.themefinder_id === (currRespondent?.themefinder_id || 0) + 1,
+        respondent?.themefinder_id ===
+        (currRespondent?.themefinder_id || 0) + 1,
     ) ?? null,
   );
 </script>
@@ -134,7 +143,8 @@
           demoData={currRespondent?.demographics || []}
           stakeholderName={currRespondent?.name}
           questionsAnswered={$questionsStore.data?.results.length ?? 0}
-          totalQuestions={$consultationQuestionsStore.data?.results?.length ?? 0}
+          totalQuestions={$consultationQuestionsStore.data?.results?.length ??
+            0}
           updateStakeholderName={async (newStakeholderName) => {
             // update current respondent stakeholder name
             await $respondentStore.fetch(

@@ -52,7 +52,9 @@
   ]);
 
   let chartQuestions = $derived(
-    $questionsStore.data?.results?.filter((question) => question.has_multiple_choice),
+    $questionsStore.data?.results?.filter(
+      (question) => question.has_multiple_choice,
+    ),
   );
 
   onMount(() => {
@@ -83,7 +85,7 @@
     {#if !dataRequested || $demoOptionsStore.isLoading}
       <LoadingMessage message="Loading Demographics..." />
     {:else}
-      <div class="grid grid-cols-12 gap-4 mb-4">
+      <div class="mb-4 grid grid-cols-12 gap-4">
         {#each demoCategories as category (category)}
           <div class="col-span-12 md:col-span-4">
             <MetricsDemoCard

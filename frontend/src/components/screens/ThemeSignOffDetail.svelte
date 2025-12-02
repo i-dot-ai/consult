@@ -70,12 +70,23 @@
     selectGeneratedThemeMock,
   }: Props = $props();
 
-  const selectedThemesStore = createFetchStore<SelectedThemesResponse>({ mockFetch: selectedThemesMock });
-  const selectedThemesCreateStore = createFetchStore({ mockFetch: createThemeMock });
-  const selectedThemesDeleteStore = createFetchStore<SelectedThemesDeleteResponse>();
-  const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({ mockFetch: selectedThemesMock });
-  const generatedThemesSelectStore = createFetchStore({ mockFetch: selectGeneratedThemeMock });
-  const questionStore = createFetchStore<Question>({ mockFetch: questionDataMock });
+  const selectedThemesStore = createFetchStore<SelectedThemesResponse>({
+    mockFetch: selectedThemesMock,
+  });
+  const selectedThemesCreateStore = createFetchStore({
+    mockFetch: createThemeMock,
+  });
+  const selectedThemesDeleteStore =
+    createFetchStore<SelectedThemesDeleteResponse>();
+  const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
+    mockFetch: selectedThemesMock,
+  });
+  const generatedThemesSelectStore = createFetchStore({
+    mockFetch: selectGeneratedThemeMock,
+  });
+  const questionStore = createFetchStore<Question>({
+    mockFetch: questionDataMock,
+  });
   const confirmSignOffStore = createFetchStore();
 
   let isConfirmSignOffModalOpen: boolean = $state(false);
@@ -111,7 +122,9 @@
   let dataRequested: boolean = $state(false);
 
   const errorModalOnClose = () => {
-    $selectedThemesStore.fetch(getApiGetSelectedThemesUrl(consultationId, questionId));
+    $selectedThemesStore.fetch(
+      getApiGetSelectedThemesUrl(consultationId, questionId),
+    );
     $generatedThemesStore.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
@@ -119,7 +132,9 @@
   };
 
   onMount(() => {
-    $selectedThemesStore.fetch(getApiGetSelectedThemesUrl(consultationId, questionId));
+    $selectedThemesStore.fetch(
+      getApiGetSelectedThemesUrl(consultationId, questionId),
+    );
     $generatedThemesStore.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
@@ -137,7 +152,9 @@
       },
     );
 
-    $selectedThemesStore.fetch(getApiGetSelectedThemesUrl(consultationId, questionId));
+    $selectedThemesStore.fetch(
+      getApiGetSelectedThemesUrl(consultationId, questionId),
+    );
   };
 
   const removeTheme = async (themeId: string) => {
@@ -160,7 +177,10 @@
       },
     );
 
-    if (!$selectedThemesDeleteStore.error || $selectedThemesDeleteStore.status === 404) {
+    if (
+      !$selectedThemesDeleteStore.error ||
+      $selectedThemesDeleteStore.status === 404
+    ) {
       // No action or error needed if status 404 (theme already deselected)
 
       $selectedThemesStore.fetch(
@@ -260,7 +280,9 @@
 
     // scroll up to equivalent in selected themes list
     document
-      .querySelector(`article[data-themeid="${updatedTheme?.selectedtheme_id}"]`)
+      .querySelector(
+        `article[data-themeid="${updatedTheme?.selectedtheme_id}"]`,
+      )
       ?.scrollIntoView();
   };
 
@@ -379,9 +401,10 @@
         </div>
 
         <p class="text-sm text-neutral-500">
-          Manage your {numSelectedThemesText($selectedThemesStore.data?.results)} for the
-          AI in mapping responses. Edit titles and descriptions, or add new themes
-          as needed.
+          Manage your {numSelectedThemesText(
+            $selectedThemesStore.data?.results,
+          )} for the AI in mapping responses. Edit titles and descriptions, or add
+          new themes as needed.
         </p>
       </Panel>
     </div>
@@ -432,7 +455,8 @@
       <Button
         variant="primary"
         fullWidth={true}
-        disabled={!dataRequested || $selectedThemesStore.isLoading ||
+        disabled={!dataRequested ||
+          $selectedThemesStore.isLoading ||
           $selectedThemesStore.data?.results.length === 0}
         handleClick={() =>
           (isConfirmSignOffModalOpen = !isConfirmSignOffModalOpen)}
@@ -446,7 +470,8 @@
             {#if !dataRequested || $selectedThemesStore.isLoading}
               Loading Selected Themes
             {:else}
-              Sign Off Selected Themes ({$selectedThemesStore.data?.results.length})
+              Sign Off Selected Themes ({$selectedThemesStore.data?.results
+                .length})
             {/if}
           </span>
         </div>
@@ -534,8 +559,9 @@
               <h3>AI Generated Themes</h3>
 
               <Tag variant="success">
-                {flattenGeneratedThemes($generatedThemesStore.data?.results || [])
-                  .length} available
+                {flattenGeneratedThemes(
+                  $generatedThemesStore.data?.results || [],
+                ).length} available
               </Tag>
             </div>
 

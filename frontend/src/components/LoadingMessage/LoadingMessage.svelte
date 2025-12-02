@@ -7,9 +7,7 @@
     message?: string;
   }
 
-  let {
-    message = "",
-  }: Props = $props();
+  let { message = "" }: Props = $props();
 </script>
 
 <div transition:slide class="my-8">

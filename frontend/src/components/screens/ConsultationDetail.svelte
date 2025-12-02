@@ -26,9 +26,7 @@
     consultationId: string;
   }
 
-  let {
-    consultationId
-  }: Props = $props();
+  let { consultationId }: Props = $props();
 
   let searchValue: string = $state("");
   let dataRequested: boolean = $state(false);
@@ -38,21 +36,25 @@
 
   onMount(() => {
     $questionsStore.fetch(getApiQuestionsUrl(consultationId));
-    $demoOptionsStore.fetch(`/api/consultations/${consultationId}/demographic-options/`);
+    $demoOptionsStore.fetch(
+      `/api/consultations/${consultationId}/demographic-options/`,
+    );
     dataRequested = true;
-  })
+  });
 
   let favQuestions = $derived(
     $questionsStore.data?.results?.filter((question) =>
       $favStore.includes(question.id),
-    )
-  )
+    ),
+  );
 
-  let displayQuestions = $derived($questionsStore.data?.results?.filter((question) =>
-    `Q${question.number}: ${question.question_text}`
-      .toLocaleLowerCase()
-      .includes(searchValue.toLocaleLowerCase()),
-  ));
+  let displayQuestions = $derived(
+    $questionsStore.data?.results?.filter((question) =>
+      `Q${question.number}: ${question.question_text}`
+        .toLocaleLowerCase()
+        .includes(searchValue.toLocaleLowerCase()),
+    ),
+  );
 </script>
 
 <section class="my-8">
@@ -72,28 +74,26 @@
     </TitleRow>
   </div>
 
-  {#if dataRequested && (favQuestions?.length === 0 || $favStore.length === 0) }
+  {#if dataRequested && (favQuestions?.length === 0 || $favStore.length === 0)}
     <p transition:slide class="mb-12">You have not favourited any question.</p>
+  {:else if !dataRequested || $questionsStore.isLoading}
+    <LoadingMessage message="Loading Questions..." />
+  {:else if $questionsStore.error}
+    <p transition:slide>{$questionsStore.error}</p>
   {:else}
-    {#if !dataRequested || $questionsStore.isLoading}
-      <LoadingMessage message="Loading Questions..." />
-    {:else if $questionsStore.error}
-      <p transition:slide>{$questionsStore.error}</p>
-    {:else}
-      <div transition:slide>
-        <div class="mb-8">
-          {#each favQuestions as question (question.id)}
-            <QuestionCard
-              {consultationId}
-              {question}
-              highlightText={searchValue}
-              clickable={true}
-              url={getQuestionDetailUrl(consultationId, question.id || "")}
-            />
-          {/each}
-        </div>
+    <div transition:slide>
+      <div class="mb-8">
+        {#each favQuestions as question (question.id)}
+          <QuestionCard
+            {consultationId}
+            {question}
+            highlightText={searchValue}
+            clickable={true}
+            url={getQuestionDetailUrl(consultationId, question.id || "")}
+          />
+        {/each}
       </div>
-    {/if}
+    </div>
   {/if}
 </section>
 

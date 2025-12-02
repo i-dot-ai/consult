@@ -11,7 +11,11 @@
     Routes,
   } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
-  import { type ConsultationResponse, type Question, type QuestionsResponse } from "../../global/types.ts";
+  import {
+    type ConsultationResponse,
+    type Question,
+    type QuestionsResponse,
+  } from "../../global/types.ts";
 
   import Tag from "../Tag/Tag.svelte";
   import Modal from "../Modal/Modal.svelte";
@@ -68,9 +72,11 @@
   );
 
   let isAllQuestionsSignedOff: boolean = $derived(
-    Boolean(questionsForSignOff?.every(
-      (question: Question) => question.theme_status === "confirmed",
-    )),
+    Boolean(
+      questionsForSignOff?.every(
+        (question: Question) => question.theme_status === "confirmed",
+      ),
+    ),
   );
 </script>
 
@@ -89,7 +95,10 @@
   {#if isAllQuestionsSignedOff || $consultationStore.data?.stage === "theme_mapping" || $consultationStore.data?.stage === "analysis"}
     <section in:slide>
       <ConsultationStagePanel
-        consultation={$consultationStore.data || { id: "", stage: "theme_sign_off"}}
+        consultation={$consultationStore.data || {
+          id: "",
+          stage: "theme_sign_off",
+        }}
         questionsCount={questionsForSignOff?.length || 0}
         onConfirmClick={() => (isConfirmModalOpen = true)}
       />
@@ -162,7 +171,7 @@
         </a>
 
         {#if $consultationUpdateStore.error}
-          <div class="mt-2 mb-4">
+          <div class="mb-4 mt-2">
             <Alert>
               <span class="text-sm">{$consultationUpdateStore.error}</span>
             </Alert>
@@ -232,7 +241,10 @@
                   highlightText={searchValue}
                   clickable={question.has_free_text}
                   disabled={!question.has_free_text}
-                  url={getThemeSignOffDetailUrl(consultationId, question.id || "")}
+                  url={getThemeSignOffDetailUrl(
+                    consultationId,
+                    question.id || "",
+                  )}
                   subtext={!question.has_free_text
                     ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
                     : undefined}

@@ -49,7 +49,7 @@
   const resetAnswers = () => {
     $answersStore.data = null;
     showAnswers = false;
-  }
+  };
 </script>
 
 <article class="rounded-lg bg-white" data-themeid={theme.id}>

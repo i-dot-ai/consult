@@ -37,10 +37,12 @@
   let dataRequested: boolean = $state(false);
 
   onMount(() => {
-    $selectedThemesStore.fetch(getApiGetSelectedThemesUrl(consultationId, questionId));
+    $selectedThemesStore.fetch(
+      getApiGetSelectedThemesUrl(consultationId, questionId),
+    );
     $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
     dataRequested = true;
-  })
+  });
 </script>
 
 {#snippet selectedThemeCard(name: string, isSkeleton?: boolean)}
@@ -133,7 +135,7 @@
         <div>
           <h2 class="text-md">
             {#if !dataRequested || $questionStore.isLoading}
-              <div class="blink bg-neutral-100 text-neutral-100 select-none">
+              <div class="blink select-none bg-neutral-100 text-neutral-100">
                 SKELETON
               </div>
             {:else if $questionStore.error}

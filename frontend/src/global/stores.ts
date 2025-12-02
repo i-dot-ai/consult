@@ -54,15 +54,16 @@ export type MockFetch = (config: {
 }) => unknown;
 
 // Shared fetch logic
-export const createFetchStore = <T>(
-  { mockFetch, debounceDelay=500 }: { mockFetch?: MockFetch; debounceDelay?: number } | undefined = {}
-) => {
+export const createFetchStore = <T>({
+  mockFetch,
+  debounceDelay = 500,
+}: { mockFetch?: MockFetch; debounceDelay?: number } | undefined = {}) => {
   const store: Writable<{
-    data: T | null,
-    isLoading: boolean,
-    error: string,
-    status: number,
-    fetch: Function,
+    data: T | null;
+    isLoading: boolean;
+    error: string;
+    status: number;
+    fetch: Function;
   }> = writable({
     data: null,
     isLoading: false,
@@ -83,7 +84,7 @@ export const createFetchStore = <T>(
   ) => {
     // immediate feedback to the UI that fetching has started
     // even though it awaits debounce timeout
-    store.update(store => ({...store, isLoading: true, error: ""}));
+    store.update((store) => ({ ...store, isLoading: true, error: "" }));
 
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
@@ -106,7 +107,7 @@ export const createFetchStore = <T>(
               body: body ? JSON.stringify(body) : undefined,
             });
 
-            store.update(store => ({...store, data: mockData }));
+            store.update((store) => ({ ...store, data: mockData }));
             return;
           } else {
             const response = await fetch(url, {
@@ -123,9 +124,9 @@ export const createFetchStore = <T>(
             const textBody = await response.text();
             if (textBody) {
               const parsedData = JSON.parse(textBody);
-              store.update(store => ({...store, data: parsedData}));
+              store.update((store) => ({ ...store, data: parsedData }));
             }
-            store.update(store => ({...store, status: response.status}));
+            store.update((store) => ({ ...store, status: response.status }));
 
             if (!response.ok) {
               throw new Error(`Fetch Error: ${response.statusText}`);
@@ -133,9 +134,9 @@ export const createFetchStore = <T>(
           }
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "unknown";
-          store.update(store => ({...store, error: message}));
+          store.update((store) => ({ ...store, error: message }));
         } finally {
-          store.update(store => ({...store, isLoading: false}));
+          store.update((store) => ({ ...store, isLoading: false }));
           if (resolvePrev) {
             resolvePrev();
           }
@@ -146,6 +147,6 @@ export const createFetchStore = <T>(
     return prevPromise;
   };
 
-  store.update(store => ({ ...store, fetch: doFetch }))
+  store.update((store) => ({ ...store, fetch: doFetch }));
   return store;
 };
