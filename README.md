@@ -294,10 +294,7 @@ End-to-end tests are located in the `/e2e_tests` folder and use Playwright to te
 To run e2e tests:
 
 ```bash
-cd e2e_tests
-npm install
-npx playwright install --with-deps
-npm run e2e
+make test-end-to-end
 ```
 
 Or run with UI:

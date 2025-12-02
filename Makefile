@@ -46,6 +46,23 @@ test: ## Run the tests
 test-failed: ## Run all failed tests in the previous run
 	poetry run pytest --last-failed --random-order
 
+.PHONY: test-end-to-end
+test-end-to-end:
+		@echo "Creating test database..."
+		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;" || true
+		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "CREATE DATABASE consult_e2e_test;"
+		@echo "Backing up current DATABASE_URL..."
+		@cp .env .env.backup
+		@echo "Setting test DATABASE_URL..."
+		@sed -i.tmp 's|DATABASE_URL=.*|DATABASE_URL=psql://postgres:postgres@localhost:5432/consult_e2e_test|' .env && rm .env.tmp
+		@echo "Running end-to-end tests..."
+		cd e2e_tests && npm install
+		cd e2e_tests && npx playwright install --with-deps
+		cd e2e_tests && npm run e2e
+		@echo "Cleaning up test database..."
+		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;"
+		@echo "Restoring original .env..."
+		@mv .env.backup .env
 
 .PHONY: check-python-code
 check-python-code: ## Check Python code - linting and mypy

@@ -28,26 +28,13 @@ jobs:
           docker compose up -d frontend
           sleep 10
 
-      - name: Create admin user
-        run: |
-          docker compose run backend venv/bin/django-admin createadminusers
-
       - name: Set up Node.js (for Playwright only)
         uses: actions/setup-node@v6
         with:
           node-version: 24.8
 
-      - name: Install e2e test dependencies
-        run: npm install
-        working-directory: e2e_tests
-
-      - name: Install Playwright
-        run: npx playwright install --with-deps
-        working-directory: e2e_tests
-
-      - name: Run Playwright tests
-        run: npm run e2e
-        working-directory: e2e_tests
+      - name: run tests
+        run: make test-end-to-end
 
       - name: Stop docker-compose services
         run: docker compose down
