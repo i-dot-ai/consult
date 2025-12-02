@@ -294,6 +294,12 @@
   const collapseTheme = (themeId: string) => {
     expandedThemes = expandedThemes.filter((theme) => theme !== themeId);
   };
+
+  let hasNestedThemes = $derived(
+    $generatedThemesData?.results?.some((theme: GeneratedTheme) =>
+      Boolean(theme.children && theme.children.length > 0),
+    ),
+  );
 </script>
 
 <TitleRow
@@ -307,8 +313,9 @@
     <Button
       size="xs"
       handleClick={() => (location.href = getThemeSignOffUrl(consultationId))}
-      >Choose another question</Button
     >
+      <span class="p-1"> Choose another question </span>
+    </Button>
   </div>
 </TitleRow>
 
@@ -368,9 +375,14 @@
         </div>
 
         <p class="text-sm text-neutral-500">
-          Manage your {numSelectedThemesText($selectedThemesData?.results)} for the
-          AI in mapping responses. Edit titles and descriptions, or add new themes
-          as needed.
+          {#if $selectedThemesData?.results?.length > 0}
+            Manage your {numSelectedThemesText($selectedThemesData?.results)} for
+            the AI in mapping responses. Edit titles and descriptions, or add new
+            themes as needed.
+          {:else}
+            Finalise the themes for the AI to map responses to. Choose from the
+            AI generated themes or add new.
+          {/if}
         </p>
       </Panel>
     </div>
@@ -529,34 +541,38 @@
             </div>
 
             <div class="flex items-center gap-4">
-              <div class="flex items-center gap-1 text-xs text-neutral-500">
-                <MaterialIcon color="fill-neutral-500">
-                  <Stacks />
-                </MaterialIcon>
-                Multi-level themes
-              </div>
-              <Button
-                size="sm"
-                handleClick={() => {
-                  if (isAllThemesExpanded()) {
-                    collapseAllThemes();
-                  } else {
-                    expandAllThemes();
-                  }
-                }}
-              >
-                <span
-                  class={clsx([
-                    "flex items-center justify-between gap-1 text-secondary",
-                    addingCustomTheme && "text-white",
-                  ])}
-                >
-                  <MaterialIcon color="fill-secondary">
+              {#if hasNestedThemes}
+                <div class="flex items-center gap-1 text-xs text-neutral-500">
+                  <MaterialIcon color="fill-neutral-500">
                     <Stacks />
                   </MaterialIcon>
-                  {isAllThemesExpanded() ? "Collapse All" : "Expand All"}
-                </span>
-              </Button>
+                  Multi-level themes
+                </div>
+
+                <Button
+                  size="sm"
+                  disabled={!hasNestedThemes}
+                  handleClick={() => {
+                    if (isAllThemesExpanded()) {
+                      collapseAllThemes();
+                    } else {
+                      expandAllThemes();
+                    }
+                  }}
+                >
+                  <span
+                    class={clsx([
+                      "flex items-center justify-between gap-1 text-secondary",
+                      addingCustomTheme && "text-white",
+                    ])}
+                  >
+                    <MaterialIcon color="fill-secondary">
+                      <Stacks />
+                    </MaterialIcon>
+                    {isAllThemesExpanded() ? "Collapse All" : "Expand All"}
+                  </span>
+                </Button>
+              {/if}
             </div>
           </div>
 
