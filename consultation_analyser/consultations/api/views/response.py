@@ -153,8 +153,7 @@ class ResponseViewSet(ModelViewSet):
     @action(detail=True, methods=["get"], url_path="themes")
     def themes(self, request, consultation_pk=None, pk=None):
         """Get themes for given responses"""
-        consultation = get_object_or_404(models.Consultation, id=consultation_pk)
-        response = get_object_or_404(models.Response, id=pk, question__consultation=consultation)
+        response = get_object_or_404(models.Response, id=pk)
         question = response.question
         annotation, _ = models.ResponseAnnotation.objects.get_or_create(response=response)
 
