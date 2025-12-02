@@ -2,7 +2,6 @@
   import clsx from "clsx";
 
   import { onMount, untrack } from "svelte";
-  import type { Writable } from "svelte/store";
   import { SvelteURLSearchParams } from "svelte/reactivity";
 
   import MaterialIcon from "../MaterialIcon.svelte";

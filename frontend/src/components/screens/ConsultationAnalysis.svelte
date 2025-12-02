@@ -1,8 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import type { Writable } from "svelte/store";
-  import { slide } from "svelte/transition";
+  import { onMount } from "svelte";
 
   import {
     getApiConsultationUrl,

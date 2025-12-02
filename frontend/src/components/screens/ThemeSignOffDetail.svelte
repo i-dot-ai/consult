@@ -51,12 +51,12 @@
   interface Props {
     consultationId: string;
     questionId: string;
-    questionDataMock?: Function;
-    generatedThemesMock?: Function;
-    selectedThemesMock?: Function;
-    createThemeMock?: Function;
+    questionDataMock?: () => unknown;
+    generatedThemesMock?: () => unknown;
+    selectedThemesMock?: () => unknown;
+    createThemeMock?: () => unknown;
     answersMock?: MockFetch;
-    selectGeneratedThemeMock?: Function;
+    selectGeneratedThemeMock?: () => unknown;
   }
 
   let {
@@ -79,7 +79,7 @@
   const selectedThemesDeleteStore =
     createFetchStore<SelectedThemesDeleteResponse>();
   const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
-    mockFetch: selectedThemesMock,
+    mockFetch: generatedThemesMock,
   });
   const generatedThemesSelectStore = createFetchStore({
     mockFetch: selectGeneratedThemeMock,

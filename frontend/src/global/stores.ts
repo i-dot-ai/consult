@@ -61,9 +61,9 @@ export const createFetchStore = <T>({
   const store: Writable<{
     data: T | null;
     isLoading: boolean;
-    error: string;
+    error: string | null;
     status: number;
-    fetch: Function;
+    fetch: () => unknown;
   }> = writable({
     data: null,
     isLoading: false,
