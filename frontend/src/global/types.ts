@@ -28,6 +28,19 @@ export interface Consultation {
   created_at: string;
 }
 
+export interface Respondent {
+  id: string;
+  consultation: string;
+  themefinder_id: number;
+  demographics: RespondentDemoItem[];
+  name?: string;
+}
+
+export interface RespondentDemoItem {
+  name: string;
+  value: string;
+}
+
 export interface FormattedTheme {
   id: string;
   name: string;
@@ -126,13 +139,14 @@ export interface QuestionResponseResponse {
 export interface ResponseAnswer {
   id: string;
   identifier: number; // respondent themefinder id
+  question_id: string;
   respondent_id: string;
   free_text_answer_text: string;
   demographic_data: { [category: string]: string };
-  themes: ResponseTheme[];
+  themes: ResponseTheme[] | null;
   multiple_choice_answer: string[];
   evidenceRich: boolean;
-  sentiment: string;
+  sentiment: string | null;
   human_reviewed: boolean;
   is_flagged: boolean;
   is_edited?: boolean;
@@ -158,13 +172,41 @@ export interface ConsultationResponse {
   title: string;
   code: string;
   users: User[];
+  stage: "theme_sign_off" | "theme_mapping" | "analysis";
 }
-
+export interface QuestionsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Question[];
+}
+export interface SelectedThemesResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: SelectedTheme[];
+}
+export interface SelectedThemesDeleteResponse {
+  last_modified_by?: { email: string };
+  latest_version?: string;
+}
+export interface GeneratedThemesResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: GeneratedTheme[];
+}
 export interface AnswersResponse {
   respondents_total: number;
   filtered_total: number;
   has_more_pages: boolean;
   all_respondents: ResponseAnswer[];
+}
+export interface RespondentsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Respondent[];
 }
 
 export interface ThemeInfoResponse {

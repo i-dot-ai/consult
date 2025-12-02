@@ -6,9 +6,9 @@
   import Search from "../svg/material/Search.svelte";
 
   interface Props {
-    title?: string;
     body: string;
-    variant: "default" | "archive";
+    title?: string;
+    variant?: "default" | "archive";
   }
   let { title = "", body = "", variant = "default" }: Props = $props();
 </script>

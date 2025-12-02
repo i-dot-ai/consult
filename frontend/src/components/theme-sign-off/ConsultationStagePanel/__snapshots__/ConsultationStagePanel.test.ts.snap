@@ -11,7 +11,7 @@ exports[`ConsultationStagePanel > should render correctly for analysis stage 1`]
     >
       <ol
         aria-label="Consultation progress"
-        class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-full overflow-x-auto"
+        class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-3/4 mx-auto overflow-x-auto"
       >
         <li>
           <div
@@ -203,7 +203,7 @@ exports[`ConsultationStagePanel > should render correctly for theme_mapping stag
     >
       <ol
         aria-label="Consultation progress"
-        class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-full overflow-x-auto"
+        class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-3/4 mx-auto overflow-x-auto"
       >
         <li>
           <div
@@ -397,7 +397,7 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
     >
       <ol
         aria-label="Consultation progress"
-        class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-full overflow-x-auto"
+        class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-3/4 mx-auto overflow-x-auto"
       >
         <li>
           <div

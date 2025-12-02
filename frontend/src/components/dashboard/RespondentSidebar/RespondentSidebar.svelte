@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getPercentage } from "../../../global/utils";
+  import type { RespondentDemoItem } from "../../../global/types";
 
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Person from "../../svg/material/Person.svelte";
@@ -7,11 +8,6 @@
   import Calendar from "../../svg/material/Calendar.svelte";
 
   import RespondentSidebarItem from "../RespondentSidebarItem/RespondentSidebarItem.svelte";
-
-  export interface RespondentDemoItem {
-    name: string;
-    value: string;
-  }
 
   export interface Props {
     demoData: RespondentDemoItem[];
