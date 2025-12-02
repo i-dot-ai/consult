@@ -1099,3 +1099,120 @@ class TestResponseViewSet:
         assert response_texts == [
             "The local council should really be investing in public transport infrastructure to help reduce carbon emissions",
         ]
+
+    def test_get_themes_for_response(self, client, consultation_user_token, free_text_question):
+        """Test API endpoint returns themes for a specific response"""
+        # Create test response
+        respondent = RespondentFactory(consultation=free_text_question.consultation)
+        response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
+        
+        # Create annotation with themes
+        annotation = ResponseAnnotationFactoryNoThemes(response=response_obj)
+        
+        url = reverse(
+            "response-themes",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": response_obj.id,
+            },
+        )
+        
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        
+        assert "selected_themes" in data
+        assert "all_themes" in data
+        assert isinstance(data["selected_themes"], list)
+        assert isinstance(data["all_themes"], list)
+
+    def test_get_themes_for_response_with_selected_themes(
+        self, client, consultation_user_token, free_text_question, theme_a, theme_b
+    ):
+        """Test API endpoint returns correct selected and all themes"""
+        # Create test response
+        respondent = RespondentFactory(consultation=free_text_question.consultation)
+        response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
+        
+        # Create annotation with specific themes
+        annotation = ResponseAnnotationFactoryNoThemes(response=response_obj)
+        annotation.add_original_ai_themes([theme_a])
+        
+        url = reverse(
+            "response-themes",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": response_obj.id,
+            },
+        )
+        
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        
+        # Should have theme_a in selected themes
+        selected_theme_ids = [theme["id"] for theme in data["selected_themes"]]
+        assert str(theme_a.id) in selected_theme_ids
+        
+        # Should have both themes in all themes
+        all_theme_ids = [theme["id"] for theme in data["all_themes"]]
+        assert str(theme_a.id) in all_theme_ids
+        assert str(theme_b.id) in all_theme_ids
+
+    def test_get_themes_for_nonexistent_response(
+        self, client, consultation_user_token, free_text_question
+    ):
+        """Test API endpoint returns 404 for nonexistent response"""
+        fake_response_id = "00000000-0000-0000-0000-000000000000"
+        
+        url = reverse(
+            "response-themes",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": fake_response_id,
+            },
+        )
+        
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 404
+
+    def test_get_themes_creates_annotation_if_not_exists(
+        self, client, consultation_user_token, free_text_question
+    ):
+        """Test API endpoint creates annotation if it doesn't exist"""
+        # Create test response without annotation
+        respondent = RespondentFactory(consultation=free_text_question.consultation)
+        response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
+        
+        # Verify no annotation exists initially
+        assert not ResponseAnnotation.objects.filter(response=response_obj).exists()
+        
+        url = reverse(
+            "response-themes",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": response_obj.id,
+            },
+        )
+        
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
+        
+        # Verify annotation was created
+        assert ResponseAnnotation.objects.filter(response=response_obj).exists()
