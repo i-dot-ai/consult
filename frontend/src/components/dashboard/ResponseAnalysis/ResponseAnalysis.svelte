@@ -23,7 +23,6 @@
   import { themeFilters } from "../../../global/state.svelte";
   import { updateResponseReadStatus } from "../../../global/routes";
 
-
   import Title from "../../Title.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
   import Alert from "../../Alert.svelte";
@@ -62,7 +61,7 @@
   export let setEvidenceRich = () => {};
 
   export let unseenResponses: boolean = false;
-  export let setUnseenResponses = (value: boolean) => {};
+  export let setUnseenResponses = () => {};
 
   export let flaggedOnly: boolean = false;
   export let setFlaggedOnly = () => {};
@@ -87,10 +86,10 @@
 
     markAsReadTimer = setTimeout(async () => {
       if (answers.length > 0) {
-        const markPromises = answers.map(answer =>
+        const markPromises = answers.map((answer) =>
           fetch(updateResponseReadStatus(consultationId, answer.id), {
             method: "POST",
-          })
+          }),
         );
         await Promise.all(markPromises);
       }
@@ -108,7 +107,13 @@
     startMarkAsReadTimer();
   }
 
-  $: if (searchValue || anyFilterApplied || evidenceRich || unseenResponses || flaggedOnly || themeFilters.filters.length > 0) {
+  $: if (searchValue ||
+    anyFilterApplied ||
+    evidenceRich ||
+    unseenResponses ||
+    flaggedOnly ||
+    themeFilters.filters.length > 0
+  ) {
     resetMarkAsReadTimer();
   }
 </script>
