@@ -22,7 +22,7 @@ from consultation_analyser.consultations.api.serializers import (
 
 class BespokeResultsSetPagination(PageNumberPagination):
     # TODO: remove this, and adapt .js to match standard PageNumberPagination
-    page_size = 5
+    page_size = 100
     page_size_query_param = "page_size"
     max_page_size = 1000
 
@@ -90,9 +90,7 @@ class ResponseViewSet(ModelViewSet):
                 )
             ),
             is_read_by_user=Exists(
-                models.Response.objects.filter(
-                    read_by=self.request.user
-                )
+                models.Response.objects.filter(read_by=self.request.user, pk=OuterRef("pk"))
             ),
             annotation_is_edited=Exists(
                 models.ResponseAnnotation.history.filter(id=OuterRef("annotation__id")).values(
