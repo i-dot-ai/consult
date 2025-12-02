@@ -1,17 +1,23 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Section from '../components/Section/Section.svelte';
-import Title from '../components/Title.svelte';
-import { getClientId } from '../global/utils';
+import Layout from "../layouts/Layout.astro";
+import Section from "../components/Section/Section.svelte";
+import Title from "../components/Title.svelte";
+import { getClientId } from "../global/utils";
 
-const cookiesToDelete = ["access", "sessionId", "AWSALBAuthNonce", "__Secure-AuthSessionCookie-0", "__Secure-AuthSessionCookie-1"];
+const cookiesToDelete = [
+  "access",
+  "sessionId",
+  "AWSALBAuthNonce",
+  "__Secure-AuthSessionCookie-0",
+  "__Secure-AuthSessionCookie-1",
+];
 
 for (var cookie of cookiesToDelete) {
-    Astro.cookies.set(cookie, "", {
-        path: "/",
-        sameSite: "lax",
-        expires: new Date(0),
-    });
+  Astro.cookies.set(cookie, "", {
+    path: "/",
+    sameSite: "lax",
+    expires: new Date(0),
+  });
 }
 
 const clientId = getClientId();

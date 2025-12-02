@@ -5,13 +5,16 @@ import Footer from "../components/Footer/Footer.svelte";
 import { fetchBackendApi } from "../global/api";
 
 let isStaff: boolean = false;
-let isSignedIn: boolean = false;
+let email: string | null = null;
 
 try {
-	const data = await fetchBackendApi<{ is_staff: Boolean, email: String}>(Astro, "/api/user/");
-	isStaff = data.is_staff;
-	email = data.email;
-	console.log(`user ${email} signed in`)
+  const data = await fetchBackendApi<{ is_staff: boolean; email: string }>(
+    Astro,
+    "/api/user/",
+  );
+  isStaff = data.is_staff;
+  email = data.email;
+  console.log(`user ${email} signed in`);
 } catch {
   console.log("user not signed in");
 }
@@ -25,11 +28,11 @@ try {
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <title>Consult</title>
 
-		<script is:inline src="/lit/index.js"></script>
-	</head>
-	<body>
-		<div class="flex flex-col h-full max-w-screen-3xl mx-auto">
-			<Header client:load isStaff={isStaff} email={email}/>
+    <script is:inline src="/lit/index.js"></script>
+  </head>
+  <body>
+    <div class="mx-auto flex h-full max-w-screen-3xl flex-col">
+      <Header client:load isStaff={isStaff} email={email} />
 
       <main class="grow">
         <slot />

@@ -9,38 +9,49 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   let userIsStaff: boolean = false;
 
   const accessToken = context.cookies.get("access")?.value;
-  const internalAccessToken = context.request.headers.get('x-amzn-oidc-data') || process.env.TEST_INTERNAL_ACCESS_TOKEN;
+  const internalAccessToken =
+    context.request.headers.get("x-amzn-oidc-data") ||
+    process.env.TEST_INTERNAL_ACCESS_TOKEN;
   const url = context.url;
   const backendUrl = getBackendUrl();
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
-
   if (!context.cookies.get("access")?.value) {
     if (internalAccessToken) {
       try {
-        const body = JSON.stringify({internal_access_token: internalAccessToken});
-        const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
-          method: "POST",
-          body: body,
-          headers: {"Content-Type": "application/json"}
+        const body = JSON.stringify({
+          internal_access_token: internalAccessToken,
         });
+        const response = await fetch(
+          path.join(backendUrl, Routes.APIValidateToken),
+          {
+            method: "POST",
+            body: body,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
         const data = await response.json();
 
-        context.cookies.set("access", data.access, { path: "/", sameSite: "lax" });
-        context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
-        const resp = await fetchBackendApi<{ is_staff: Boolean }>(
+        context.cookies.set("access", data.access, {
+          path: "/",
+          sameSite: "lax",
+        });
+        context.cookies.set("sessionId", data.sessionId, {
+          path: "/",
+          sameSite: "lax",
+        });
+        const resp = await fetchBackendApi<{ is_staff: boolean }>(
           context,
           Routes.ApiUser,
         );
         userIsStaff = Boolean(resp.is_staff);
-
-      } catch (error: any) {
-        console.error("sign-in error", error.message);
+      } catch (error: unknown) {
+        console.error("sign-in error", error);
         context.redirect(Routes.SignInError);
       }
     } else {
-        console.error("internalAccessToken not set");
-        context.redirect(Routes.SignInError);
+      console.error("internalAccessToken not set");
+      context.redirect(Routes.SignInError);
     }
   }
   for (const protectedStaffRoute of protectedStaffRoutes) {

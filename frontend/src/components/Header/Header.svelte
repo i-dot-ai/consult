@@ -12,7 +12,7 @@
   export let email: string | null = null;
 
   function getNavItems(email: string | null, isStaff: boolean): NavItem[] {
-    if (!email ) {
+    if (!email) {
       return [
         { text: "How it works", url: Routes.HowItWorks },
         { text: "Data sharing", url: Routes.DataSharing },
@@ -66,7 +66,7 @@
           ])}
         >
           <a
-            href={!email ? Routes.Home: Routes.Consultations}
+            href={!email ? Routes.Home : Routes.Consultations}
             class={clsx([
               "flex",
               "justify-center",
@@ -106,7 +106,7 @@
 
       <nav class="hidden lg:block">
         <ul class="flex items-center gap-4">
-          {#each getNavItems(isSignedIn, isStaff) as navItem (navItem.text)}
+          {#each getNavItems(email, isStaff) as navItem (navItem.text)}
             <li>
               <a href={navItem.url} class="hover:underline">
                 {navItem.text}
