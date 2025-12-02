@@ -8,7 +8,6 @@
   import {
     getApiGetSelectedThemesUrl,
     getApiQuestionUrl,
-    getQuestionDetailUrl,
     getThemeSignOffUrl,
     Routes,
   } from "../../global/routes";
@@ -24,7 +23,6 @@
   import Headphones from "../svg/material/Headphones.svelte";
   import Help from "../svg/material/Help.svelte";
   import ArrowForward from "../svg/material/ArrowForward.svelte";
-  import Finance from "../svg/material/Finance.svelte";
   import Alert from "../Alert.svelte";
 
   interface Props {
@@ -71,7 +69,7 @@
     >
       {#if isSkeleton}
         <p
-          class="blink w-full text-xs bg-neutral-200 text-neutral-100 select-none"
+          class="blink w-full select-none bg-neutral-200 text-xs text-neutral-100"
         >
           {name}
         </p>
@@ -151,7 +149,7 @@
             {/if}
           </h2>
 
-          <div class="mt-2 mb-4">
+          <div class="mb-4 mt-2">
             <Tag variant="primary-light">
               <MaterialIcon color="fill-primary">
                 <CheckCircle />
@@ -159,7 +157,7 @@
               <span class="py-0.5"> Themes Signed Off </span>
             </Tag>
           </div>
-          <p class="text-neutral-500 text-sm">
+          <p class="text-sm text-neutral-500">
             This question has completed the theme sign-off process. The selected
             themes below have been approved for AI analysis and are ready to be
             used for mapping consultation responses.
@@ -207,7 +205,7 @@
 
       <ul>
         {#if !dataRequested || $selectedThemesStore.isLoading}
-          {#each "_".repeat(2) as _}
+          {#each "_".repeat(2) as _, i (i)}
             <li>
               {@render selectedThemeCard("SKELETON", true)}
             </li>
@@ -219,7 +217,7 @@
             </Alert>
           </div>
         {:else}
-          {#each $selectedThemesStore.data?.results as selectedTheme}
+          {#each $selectedThemesStore.data?.results as selectedTheme (selectedTheme.id)}
             <li>
               {@render selectedThemeCard(selectedTheme.name)}
             </li>
@@ -242,8 +240,8 @@
 
 <svelte:boundary>
   <section class="mt-8">
-    <div class="flex items-center justify-between gap-2 flex-wrap">
-      <div class="flex items-center gap-2 flex-wrap">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <!-- TODO: Button disabled -->
         <!-- <Button
           size="sm"

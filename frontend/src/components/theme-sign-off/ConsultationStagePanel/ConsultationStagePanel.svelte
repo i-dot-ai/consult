@@ -12,7 +12,7 @@
   import type { Consultation } from "../../../global/types";
 
   interface Props {
-    consultation: {id: Consultation["id"]; stage: Consultation["stage"]};
+    consultation: { id: Consultation["id"]; stage: Consultation["stage"] };
     questionsCount: number;
     onConfirmClick: () => void;
   }
@@ -23,7 +23,7 @@
     order: number;
     label: string;
     icon: Component;
-  }
+  };
 
   const STAGES = {
     consultation_overview: {
@@ -31,7 +31,7 @@
         order: 1,
         label: "Consultation Overview",
         icon: CheckCircle,
-      }
+      },
     },
     theme_sign_off: {
       step: {
@@ -66,12 +66,12 @@
 </script>
 
 {#snippet themeSignOffContent()}
-  <p class="text-sm text-center text-neutral-500 my-4">
+  <p class="my-4 text-center text-sm text-neutral-500">
     You have successfully reviewed and signed off themes for all {questionsCount}
     consultation questions.
   </p>
 
-  <p class="text-sm text-center text-neutral-500 my-4">
+  <p class="my-4 text-center text-sm text-neutral-500">
     <strong>Next:</strong> Confirm and proceed to the AI mapping phase where responses
     will be mapped to your selected themes.
   </p>
@@ -83,7 +83,7 @@
     fullWidth={true}
     handleClick={onConfirmClick}
   >
-    <span class="flex items-center gap-2 mx-auto">
+    <span class="mx-auto flex items-center gap-2">
       <MaterialIcon>
         <CheckCircle />
       </MaterialIcon>
@@ -93,32 +93,35 @@
 {/snippet}
 
 {#snippet themeMappingContent()}
-  <p class="text-sm text-center text-neutral-500 my-4">
+  <p class="my-4 text-center text-sm text-neutral-500">
     You have completed the theme sign-off phase for all {questionsCount} consultation
     questions.
   </p>
 
-  <p class="text-sm text-center text-neutral-500 my-4">
-    AI is currently mapping consultation responses to your signed-off themes. This
-    process analyses each response and assigns it to the most relevant themes you've
-    selected.
+  <p class="my-4 text-center text-sm text-neutral-500">
+    AI is currently mapping consultation responses to your signed-off themes.
+    This process analyses each response and assigns it to the most relevant
+    themes you've selected.
   </p>
 
-  <p class="text-sm text-center text-neutral-500 my-4">
-    <strong>Next:</strong> When mapping is complete, you'll be able to access the Analysis
-    Dashboard to view all mapped data for detailed insights and reporting.
+  <p class="my-4 text-center text-sm text-neutral-500">
+    <strong>Next:</strong> When mapping is complete, you'll be able to access the
+    Analysis Dashboard to view all mapped data for detailed insights and reporting.
   </p>
 {/snippet}
 
 {#snippet analysisContent()}
-  <p class="text-sm text-center text-neutral-500 my-4">
-    All consultation responses have been successfully mapped against your selected
-    themes.
+  <p class="my-4 text-center text-sm text-neutral-500">
+    All consultation responses have been successfully mapped against your
+    selected themes.
   </p>
 
-  <p class="text-sm text-center text-neutral-500 my-4">
+  <p class="my-4 text-center text-sm text-neutral-500">
     <strong>Next:</strong> View the mapped data in the
-    <a class="text-secondary hover:underline" href={getConsultationDetailUrl(consultation.id)}>
+    <a
+      class="text-secondary hover:underline"
+      href={getConsultationDetailUrl(consultation.id)}
+    >
       Analysis Dashboard
     </a>
     to explore detailed insights and generate reports.
@@ -128,16 +131,16 @@
 {#snippet ConsultationStep(step: Step, currentConsultationStep: Step)}
   {@const label = step.label}
   {@const status =
-      step.order < currentConsultationStep.order
-        ? "done"
-        : step.order === currentConsultationStep.order
-          ? "current"
-          : "todo"}
+    step.order < currentConsultationStep.order
+      ? "done"
+      : step.order === currentConsultationStep.order
+        ? "current"
+        : "todo"}
   {@const Icon = status === "done" ? CheckCircle : step.icon}
 
-  <div class="flex flex-col items-center min-w-16">
+  <div class="flex min-w-16 flex-col items-center">
     <div
-      class={clsx("my-2 p-2 rounded-full", {
+      class={clsx("my-2 rounded-full p-2", {
         "bg-secondary": status === "done",
         "bg-neutral-200": status === "todo",
         "bg-secondary ring-4 ring-teal-100": status === "current",
@@ -175,7 +178,7 @@
       ])}
       aria-label="Consultation progress"
     >
-      {#each Object.values(STAGES) as {step} (step.label)}
+      {#each Object.values(STAGES) as { step } (step.label)}
         <li>
           {@render ConsultationStep(step, currentConsultationStage.step)}
         </li>
@@ -183,7 +186,7 @@
     </ol>
 
     <div class="px-0 md:px-16">
-      <h2 class="text-secondary text-center">
+      <h2 class="text-center text-secondary">
         {currentConsultationStage.title}
       </h2>
       {@render currentConsultationStage.content()}

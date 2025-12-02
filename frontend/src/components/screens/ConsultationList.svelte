@@ -42,11 +42,11 @@
     </p>
   {:else}
     <ul>
-      {#each consultations as consultation}
+      {#each consultations as consultation (consultation.id)}
         <li>
           <Title level={2} text={consultation.title} />
 
-          <div class="flex gap-4 flex-wrap">
+          <div class="flex flex-wrap gap-4">
             <Link href={getConsultationEvalUrl(consultation.id)}>
               View Evaluation
             </Link>

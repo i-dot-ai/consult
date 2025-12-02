@@ -32,8 +32,13 @@ export interface Respondent {
   id: string;
   consultation: string;
   themefinder_id: number;
-  demographics: any[];
-  name?: any;
+  demographics: RespondentDemoItem[];
+  name?: string;
+}
+
+export interface RespondentDemoItem {
+  name: string;
+  value: string;
 }
 
 export interface FormattedTheme {

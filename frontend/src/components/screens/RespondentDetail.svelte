@@ -90,14 +90,14 @@
 <section>
   <RespondentTopbar
     title={`Respondent ${themefinderId || "not found"}`}
-    backText={"Back to Analysis"}
+    backText="Back to Analysis"
     onClickBack={() =>
       (location.href = getQuestionDetailUrl(consultationId, questionId))}
   >
     <Button
       size="xs"
-      disabled={!Boolean(prevRespondent)}
-      handleClick={(e) =>
+      disabled={!prevRespondent}
+      handleClick={() =>
         (location.href =
           getRespondentDetailUrl(consultationId, prevRespondent?.id || "") +
           `?themefinder_id=${themefinderId - 1}&question_id=${questionId}`)}
@@ -108,18 +108,18 @@
         </MaterialIcon>
       </div>
 
-      <span class="mr-2 my-[0.1rem]">Previous Respondent</span>
+      <span class="my-[0.1rem] mr-2">Previous Respondent</span>
     </Button>
 
     <Button
       size="xs"
-      disabled={!Boolean(nextRespondent)}
-      handleClick={(e) =>
+      disabled={!nextRespondent}
+      handleClick={() =>
         (location.href =
           getRespondentDetailUrl(consultationId, nextRespondent?.id || "") +
           `?themefinder_id=${themefinderId + 1}&question_id=${questionId}`)}
     >
-      <span class="ml-2 my-[0.1rem]">Next Respondent</span>
+      <span class="my-[0.1rem] ml-2">Next Respondent</span>
 
       <MaterialIcon color="fill-neutral-700">
         <ChevronRight />
@@ -128,7 +128,7 @@
   </RespondentTopbar>
 
   <div class={clsx(["grid", "grid-cols-12", "gap-4"])}>
-    <div class="col-span-12 md:col-span-3 h-max md:sticky md:top-4" in:slide>
+    <div class="col-span-12 h-max md:sticky md:top-4 md:col-span-3" in:slide>
       <svelte:boundary>
         <RespondentSidebar
           demoData={currRespondent?.demographics || []}
@@ -177,7 +177,7 @@
             {/if}
 
             <ul>
-              {#each $answersStore.data?.all_respondents ?? [] as answer, i}
+              {#each $answersStore.data?.all_respondents ?? [] as answer, i (answer.id)}
                 {@const answerQuestion = $questionsStore.data?.results?.find(
                   (question) => question.id === answer.question_id,
                 )}

@@ -1,38 +1,39 @@
-import { render, fireEvent } from "@testing-library/svelte";
+import { render, fireEvent, screen } from "@testing-library/svelte";
 import { describe, it, expect, vi } from "vitest";
-import '@testing-library/jest-dom/vitest';
 
 import Select from "./Select.svelte";
 
 const mockItems = [
   { value: "consultation1", label: "Consultation Folder 1" },
   { value: "consultation2", label: "Consultation Folder 2" },
-  { value: "consultation3", label: "Consultation Folder 3" }
+  { value: "consultation3", label: "Consultation Folder 3" },
 ];
 
 describe("Select Component", () => {
   it("renders with basic props", () => {
-    const { getByRole, getByLabelText } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         label: "Select consultation folder",
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
-    expect(getByLabelText("Select consultation folder")).toBeInTheDocument();
-    expect(getByRole("combobox")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Select consultation folder"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("combobox")).toBeInTheDocument();
   });
 
   it("renders all items", () => {
-    const { getAllByRole } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
-    const options = getAllByRole("option");
+    const options = screen.getAllByRole("option");
     expect(options).toHaveLength(3);
     expect(options[0]).toHaveTextContent("Consultation Folder 1");
     expect(options[1]).toHaveTextContent("Consultation Folder 2");
@@ -40,149 +41,146 @@ describe("Select Component", () => {
   });
 
   it("renders label with object configuration", () => {
-    const { getByLabelText, container } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         name: "consultation_code",
         label: {
           text: "Select consultation folder",
-          classes: "govuk-label--s"
+          classes: "govuk-label--s",
         },
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
-    const label = container.querySelector('.govuk-label');
-    expect(getByLabelText("Select consultation folder")).toBeInTheDocument();
+    const label = screen.getByText("Select consultation folder");
+    expect(label).toBeInTheDocument();
   });
 
   it("renders label with string configuration", () => {
-    const { getByLabelText } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         label: "Simple label text",
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
-    expect(getByLabelText("Simple label text")).toBeInTheDocument();
+    expect(screen.getByLabelText("Simple label text")).toBeInTheDocument();
   });
 
   it("sets correct selected value", () => {
-    const { getByRole } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         items: mockItems,
-        value: "consultation2"
-      }
+        value: "consultation2",
+      },
     });
 
-    const select = getByRole("combobox");
+    const select = screen.getByRole("combobox");
     expect(select).toHaveValue("consultation2");
   });
 
   it("calls onchange when value changes", async () => {
     const onchange = vi.fn();
-    const { getByRole } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         items: mockItems,
-        onchange
-      }
+        onchange,
+      },
     });
 
-    const select = getByRole("combobox");
+    const select = screen.getByRole("combobox");
     await fireEvent.change(select, { target: { value: "consultation3" } });
 
     expect(onchange).toHaveBeenCalledWith("consultation3");
   });
 
   it("renders hint text when provided", () => {
-    const { getByText } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         items: mockItems,
-        hint: "Choose the consultation folder to import"
-      }
+        hint: "Choose the consultation folder to import",
+      },
     });
 
-    expect(getByText("Choose the consultation folder to import")).toBeInTheDocument();
+    expect(
+      screen.getByText("Choose the consultation folder to import"),
+    ).toBeInTheDocument();
   });
 
-  it("renders error message when provided", () => {
-    const { getByText } = render(Select, {
+  it("shows error message and applies error styling", () => {
+    const errorMessage = "Please select a consultation folder";
+    render(Select, {
       props: {
         id: "consultation_code",
+        label: "Select option",
         items: mockItems,
-        errorMessage: "Please select a consultation folder"
-      }
+        hint: "Hint text",
+        errorMessage,
+      },
     });
 
-    expect(getByText("Please select a consultation folder")).toBeInTheDocument();
+    expect(screen.getByText(errorMessage)).toBeInTheDocument();
+
+    const select = screen.getByRole("combobox");
+    expect(select).toHaveAttribute(
+      "aria-describedby",
+      "consultation_code-hint consultation_code-error",
+    );
   });
 
   it("hides label when hideLabel is true", () => {
-    const { queryByText } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         label: "Hidden Label",
         hideLabel: true,
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
-    expect(queryByText("Hidden Label")).not.toBeInTheDocument();
+    expect(screen.queryByText("Hidden Label")).not.toBeInTheDocument();
   });
 
   it("disables select when disabled prop is true", () => {
-    const { getByRole } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         items: mockItems,
-        disabled: true
-      }
+        disabled: true,
+      },
     });
 
-    const select = getByRole("combobox");
+    const select = screen.getByRole("combobox");
     expect(select).toBeDisabled();
   });
 
-  it("sets correct aria-describedby attributes", () => {
-    const { getByRole } = render(Select, {
-      props: {
-        id: "consultation_code",
-        items: mockItems,
-        hint: "Hint text",
-        errorMessage: "Error text"
-      }
-    });
-
-    const select = getByRole("combobox");
-    expect(select).toHaveAttribute("aria-describedby", "consultation_code-hint consultation_code-error");
-  });
-
   it("uses name prop or defaults to id", () => {
-    const { getByRole } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
-        name: "custom-name", 
-        items: mockItems
-      }
+        name: "custom-name",
+        items: mockItems,
+      },
     });
 
-    const select = getByRole("combobox");
+    const select = screen.getByRole("combobox");
     expect(select).toHaveAttribute("name", "custom-name");
   });
 
   it("defaults name to id when name not provided", () => {
-    const { getByRole } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
-    const select = getByRole("combobox");
+    const select = screen.getByRole("combobox");
     expect(select).toHaveAttribute("name", "consultation_code");
   });
 });

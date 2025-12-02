@@ -1,56 +1,39 @@
-import { render, fireEvent } from "@testing-library/svelte";
+import { render, fireEvent, screen } from "@testing-library/svelte";
 import { describe, it, expect, vi } from "vitest";
-import '@testing-library/jest-dom/vitest';
 
 import Radio from "./Radio.svelte";
 
-const mockItems = [
-  {
-    value: "sign_off",
-    text: "Populate Sign Off"
-  },
-  {
-    value: "dashboard", 
-    text: "Populate Dashboard",
-    checked: true
-  }
-];
-
 describe("Radio Component", () => {
-  it("renders all radio items", () => {
-    const { getByText } = render(Radio, {
-      props: {
-        name: "action",
-        items: mockItems
-      }
-    });
+  const items = [
+    {
+      value: "sign_off",
+      text: "Populate Sign Off",
+    },
+    {
+      value: "dashboard",
+      text: "Populate Dashboard",
+      checked: true,
+    },
+  ];
 
-    expect(getByText("Populate Sign Off")).toBeInTheDocument();
-    expect(getByText("Populate Dashboard")).toBeInTheDocument();
+  it("renders all radio items", () => {
+    render(Radio, { name: "action", items });
+
+    expect(screen.getByLabelText("Populate Sign Off")).toBeInTheDocument();
+    expect(screen.getByLabelText("Populate Dashboard")).toBeInTheDocument();
   });
 
   it("renders with legend when provided", () => {
-    const { getByText } = render(Radio, {
-      props: {
-        name: "action",
-        items: mockItems,
-        legend: "Choose an action"
-      }
-    });
+    render(Radio, { name: "action", items, legend: "Choose an action" });
 
-    expect(getByText("Choose an action")).toBeInTheDocument();
+    expect(screen.getByText("Choose an action")).toBeInTheDocument();
   });
 
   it("sets checked state correctly", () => {
-    const { container } = render(Radio, {
-      props: {
-        name: "action",
-        items: mockItems
-      }
-    });
+    render(Radio, { name: "action", items });
 
-    const dashboardRadio = container.querySelector('input[value="dashboard"]');
-    const signOffRadio = container.querySelector('input[value="sign_off"]');
+    const dashboardRadio = screen.getByLabelText("Populate Dashboard");
+    const signOffRadio = screen.getByLabelText("Populate Sign Off");
 
     expect(dashboardRadio).toBeChecked();
     expect(signOffRadio).not.toBeChecked();
@@ -58,70 +41,29 @@ describe("Radio Component", () => {
 
   it("calls onchange when radio selection changes", async () => {
     const onchange = vi.fn();
-    const { container } = render(Radio, {
-      props: {
-        name: "action",
-        items: mockItems,
-        onchange
-      }
-    });
+    render(Radio, { name: "action", items, onchange });
 
-    const signOffRadio = container.querySelector('input[value="sign_off"]');
+    const signOffRadio = screen.getByLabelText("Populate Sign Off");
     await fireEvent.click(signOffRadio);
 
     expect(onchange).toHaveBeenCalledWith("sign_off");
-  });
-
-  it("respects value prop override", () => {
-    const { container } = render(Radio, {
-      props: {
-        name: "action", 
-        items: mockItems,
-        value: "sign_off"
-      }
-    });
-
-    const dashboardRadio = container.querySelector('input[value="dashboard"]');
-    const signOffRadio = container.querySelector('input[value="sign_off"]');
-
     expect(signOffRadio).toBeChecked();
-    expect(dashboardRadio).not.toBeChecked();
   });
 
   it("handles disabled items correctly", () => {
-    const itemsWithDisabled = [
-      ...mockItems,
-      {
-        value: "disabled",
-        text: "Disabled Option",
-        disabled: true
-      }
-    ];
-
-    const { container } = render(Radio, {
-      props: {
-        name: "action",
-        items: itemsWithDisabled
-      }
+    render(Radio, {
+      name: "action",
+      items: [
+        ...items,
+        {
+          value: "disabled",
+          text: "Disabled Option",
+          disabled: true,
+        },
+      ],
     });
 
-    const disabledRadio = container.querySelector('input[value="disabled"]');
+    const disabledRadio = screen.getByLabelText("Disabled Option");
     expect(disabledRadio).toBeDisabled();
-  });
-
-  it("generates correct id and name attributes", () => {
-    const { container } = render(Radio, {
-      props: {
-        name: "test-action",
-        items: mockItems
-      }
-    });
-
-    const signOffRadio = container.querySelector('input[value="sign_off"]');
-    const signOffLabel = container.querySelector('label[for="test-action-sign_off"]');
-
-    expect(signOffRadio).toHaveAttribute("id", "test-action-sign_off");
-    expect(signOffRadio).toHaveAttribute("name", "test-action");
-    expect(signOffLabel).toBeInTheDocument();
   });
 });

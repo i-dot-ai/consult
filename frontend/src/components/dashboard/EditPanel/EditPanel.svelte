@@ -6,7 +6,7 @@
     type ResponseTheme,
     type SearchableSelectOption,
   } from "../../../global/types";
-  import { createFetchStore } from "../../../global/stores";
+  import { createFetchStore, type MockFetch } from "../../../global/stores";
   import { getApiAnswerUrl } from "../../../global/routes";
 
   import Button from "../../inputs/Button/Button.svelte";
@@ -19,7 +19,6 @@
   import Tag from "../../Tag/Tag.svelte";
   import Title from "../../Title.svelte";
   import TitleRow from "../TitleRow.svelte";
-  import AutoRenew from "../../svg/material/AutoRenew.svelte";
 
   function removeTheme(id: string) {
     stagedThemes = stagedThemes.filter((theme) => theme.id !== id);
@@ -57,12 +56,12 @@
     }
 
     await actualUpdateAnswer(
-      getApiAnswerUrl(consultationId, questionId, answerId),
+      getApiAnswerUrl(consultationId, answerId),
       "PATCH",
       {
         themes: stagedThemes.map((theme) => ({ id: theme.id })),
         evidenceRich: stagedEvidenceRich,
-      } as unknown as BodyInit,
+      },
     );
 
     if (!$answerUpdateStore.error && !$answerUpdateStore.isLoading) {
@@ -77,18 +76,13 @@
     themes: ResponseTheme[];
     themeOptions: ResponseTheme[];
     evidenceRich: boolean;
-    resetData: Function;
-    setEditing: Function;
-    updateAnswerMock?: (
-      url: string,
-      method: string,
-      options: BodyInit,
-    ) => Promise<void>;
+    resetData: () => void;
+    setEditing: () => void;
+    updateAnswerMock?: MockFetch;
   }
 
   let {
     consultationId = "",
-    questionId = "",
     answerId = "",
     themes = [],
     themeOptions = [],
@@ -148,9 +142,9 @@
       <Title level={4} text="Themes" />
 
       <ul
-        class="flex flex-wrap gap-2 items-center justify-start my-1 sm:max-w-[30vw]"
+        class="my-1 flex flex-wrap items-center justify-start gap-2 sm:max-w-[30vw]"
       >
-        {#each stagedThemes as theme}
+        {#each stagedThemes as theme (theme.id)}
           <Tag>
             {theme.name}
 
@@ -185,7 +179,7 @@
     <div class="my-2">
       <Title level={4} text="Evidence-rich" />
 
-      <div class="flex items-center gap-2 my-1">
+      <div class="my-1 flex items-center gap-2">
         <Button
           size="xs"
           handleClick={() => (stagedEvidenceRich = true)}
@@ -214,15 +208,15 @@
       >
     {/if}
 
-    <div class="w-full flex justify-end">
-      <div class="w-1/2 ml-1">
+    <div class="flex w-full justify-end">
+      <div class="ml-1 w-1/2">
         <Button
           variant="approve"
           size="sm"
           handleClick={() => submit()}
           fullWidth={true}
         >
-          <div class="flex justify-center items-center gap-2 w-full py-0.5">
+          <div class="flex w-full items-center justify-center gap-2 py-0.5">
             <div class="shrink-0">
               <MaterialIcon>
                 <Check />

@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { fade, slide } from "svelte/transition";
 
-  import { createFetchStore } from "../../global/stores";
+  import { createFetchStore, type MockFetch } from "../../global/stores";
   import {
     getApiConfirmSignOffUrl,
     getApiCreateSelectedThemeUrl,
@@ -16,7 +16,6 @@
     getApiUpdateSelectedThemeUrl,
     getThemeSignOffUrl,
   } from "../../global/routes";
-  import { flattenArray } from "../../global/utils";
 
   import {
     type SelectedThemesDeleteResponse,
@@ -24,6 +23,7 @@
     type Question,
     type SelectedThemesResponse,
     type GeneratedTheme,
+    type SelectedTheme,
   } from "../../global/types";
 
   import Panel from "../dashboard/Panel/Panel.svelte";
@@ -55,7 +55,7 @@
     generatedThemesMock?: Function;
     selectedThemesMock?: Function;
     createThemeMock?: Function;
-    answersMock?: Function;
+    answersMock?: MockFetch;
     selectGeneratedThemeMock?: Function;
   }
 
@@ -80,14 +80,35 @@
 
   let isConfirmSignOffModalOpen: boolean = $state(false);
   let addingCustomTheme: boolean = $state(false);
-  let expandedThemes: string[] = $state([]);
+
+  const flattenGeneratedThemes = (
+    items?: GeneratedTheme[],
+  ): GeneratedTheme[] => {
+    if (!items) {
+      return [];
+    }
+    const result = [];
+    for (const item of items) {
+      const { children, ...attrs } = item;
+      result.push(attrs);
+      if (children?.length) {
+        result.push(...flattenGeneratedThemes(children));
+      }
+    }
+    return result;
+  };
+
+  let flatGeneratedThemes = $derived(
+    flattenGeneratedThemes($generatedThemesStore.data?.results),
+  );
+
+  let expandedThemes: string[] = $derived(
+    flatGeneratedThemes.map((theme) => theme.id),
+  );
+
   let errorData: ErrorType | null = $state(null);
   let themesBeingSelected: string[] = $state([]); // array of ids
   let dataRequested: boolean = $state(false);
-
-  let flatGeneratedThemes = $derived(
-    flattenArray($generatedThemesStore.data?.results || []),
-  );
 
   const errorModalOnClose = () => {
     $selectedThemesStore.fetch(getApiGetSelectedThemesUrl(consultationId, questionId));
@@ -96,10 +117,6 @@
     );
     errorData = null;
   };
-
-  $effect(() => {
-    expandedThemes = flatGeneratedThemes.map((theme) => theme.id);
-  });
 
   onMount(() => {
     $selectedThemesStore.fetch(getApiGetSelectedThemesUrl(consultationId, questionId));
@@ -212,7 +229,7 @@
       } else {
         throw new Error(`Edit theme failed: ${response.statusText}`);
       }
-    } catch (err: any) {
+    } catch {
       errorData = { type: "unexpected" };
     }
   };
@@ -232,16 +249,18 @@
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
 
-    themesBeingSelected = themesBeingSelected.filter(themeId => themeId !== newTheme.id);
+    themesBeingSelected = themesBeingSelected.filter(
+      (themeId) => themeId !== newTheme.id,
+    );
 
     // get selectedtheme_id created after back end select action is complete
-    const updatedTheme = flattenArray($generatedThemesStore.data?.results || []).find(
-      (generatedTheme) => generatedTheme.id === newTheme.id,
-    );
+    const updatedTheme = flattenGeneratedThemes(
+      $generatedThemesStore.data?.results || [],
+    ).find((generatedTheme) => generatedTheme.id === newTheme.id);
 
     // scroll up to equivalent in selected themes list
     document
-      .querySelector(`article[data-themeid="${updatedTheme.selectedtheme_id}"]`)
+      .querySelector(`article[data-themeid="${updatedTheme?.selectedtheme_id}"]`)
       ?.scrollIntoView();
   };
 
@@ -261,8 +280,8 @@
       location.replace(getThemeSignOffUrl(consultationId));
     }
   };
-  const numSelectedThemesText = (themes?: Array<any>): string => {
-    if (!themes) {
+  const numSelectedThemesText = (themes?: Array<SelectedTheme>): string => {
+    if (!themes?.length) {
       return "";
     }
     return `${themes.length} selected theme${themes.length > 1 ? "s" : ""}`;
@@ -327,9 +346,9 @@
   >
     <div id="onboarding-steps-2-and-3" class="mb-4">
       <Panel variant="primary" bg={true} border={true}>
-        <div class="flex items-center justify-between mb-2">
+        <div class="mb-2 flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <MaterialIcon color={"fill-primary"}>
+            <MaterialIcon color="fill-primary">
               <CheckCircle />
             </MaterialIcon>
 
@@ -359,7 +378,7 @@
           </Button>
         </div>
 
-        <p class="text-neutral-500 text-sm">
+        <p class="text-sm text-neutral-500">
           Manage your {numSelectedThemesText($selectedThemesStore.data?.results)} for the
           AI in mapping responses. Edit titles and descriptions, or add new themes
           as needed.
@@ -380,7 +399,7 @@
     {/if}
 
     {#if $selectedThemesStore.data?.results.length === 0}
-      <div in:fade class="flex items-center justify-center flex-col gap-2 my-8">
+      <div in:fade class="my-8 flex flex-col items-center justify-center gap-2">
         <div class="mb-2">
           <MaterialIcon size="2rem" color="fill-neutral-500">
             <Price />
@@ -388,13 +407,13 @@
         </div>
 
         <h3 class="text-md text-neutral-500">No themes selected yet</h3>
-        <p class="text-neutral-500 text-xs">
+        <p class="text-xs text-neutral-500">
           Select themes from the AI-generated suggestions below
         </p>
       </div>
     {:else}
       <div class="mt-4">
-        {#each $selectedThemesStore.data?.results as selectedTheme}
+        {#each $selectedThemesStore.data?.results as selectedTheme (selectedTheme.id)}
           <div transition:slide={{ duration: 150 }} class="mb-4 last:mb-0">
             <SelectedThemeCard
               {consultationId}
@@ -418,7 +437,7 @@
         handleClick={() =>
           (isConfirmSignOffModalOpen = !isConfirmSignOffModalOpen)}
       >
-        <div class="flex justify-center items-center gap-2 w-full">
+        <div class="flex w-full items-center justify-center gap-2">
           <MaterialIcon color="fill-white">
             <CheckCircle />
           </MaterialIcon>
@@ -440,7 +459,7 @@
       icon={CheckCircle}
       open={isConfirmSignOffModalOpen}
       setOpen={(newOpen: boolean) => (isConfirmSignOffModalOpen = newOpen)}
-      confirmText={"Confirm Sign Off"}
+      confirmText="Confirm Sign Off"
       handleConfirm={confirmSignOff}
     >
       <p class="text-sm text-neutral-500">
@@ -449,12 +468,12 @@
         )} for Question {$questionStore.data?.number}?
       </p>
 
-      <h4 class="text-xs font-bold my-4">Selected themes:</h4>
+      <h4 class="my-4 text-xs font-bold">Selected themes:</h4>
 
       <div class="max-h-64 overflow-y-auto">
-        {#each $selectedThemesStore.data?.results as selectedTheme}
+        {#each $selectedThemesStore.data?.results as selectedTheme (selectedTheme.id)}
           <Panel bg={true} border={false}>
-            <h5 class="text-xs font-bold mb-1">{selectedTheme.name}</h5>
+            <h5 class="mb-1 text-xs font-bold">{selectedTheme.name}</h5>
             <p class="text-xs text-neutral-500">{selectedTheme.description}</p>
           </Panel>
         {/each}
@@ -506,7 +525,7 @@
     <Panel>
       <div id="onboarding-step-1">
         <Panel variant="approve" bg={true} border={true}>
-          <div class="flex items-center justify-between mb-2">
+          <div class="mb-2 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <MaterialIcon color="fill-secondary">
                 <SmartToy />
@@ -515,7 +534,8 @@
               <h3>AI Generated Themes</h3>
 
               <Tag variant="success">
-                {flattenArray($generatedThemesStore.data?.results || []).length} available
+                {flattenGeneratedThemes($generatedThemesStore.data?.results || [])
+                  .length} available
               </Tag>
             </div>
 
@@ -551,14 +571,14 @@
             </div>
           </div>
 
-          <p class="text-neutral-500 text-sm">
+          <p class="text-sm text-neutral-500">
             Browse AI-generated themes organised by topic hierarchy. Click
             "Select Theme" to add themes to your selected list for analysis.
           </p>
         </Panel>
       </div>
 
-      {#each $generatedThemesStore.data?.results as theme}
+      {#each $generatedThemesStore.data?.results as theme (theme.id)}
         <GeneratedThemeCard
           {consultationId}
           {questionId}

@@ -13,7 +13,7 @@
 
 <div class="flex gap-4">
   {#if $$slots.icon}
-    <div class="flex justify-center items-center">
+    <div class="flex items-center justify-center">
       <div
         class={clsx(["bg-pink-50", "p-2", "rounded-md", !subtitle && "mt-1.5"])}
       >

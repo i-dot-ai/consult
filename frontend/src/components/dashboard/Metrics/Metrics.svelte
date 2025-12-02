@@ -92,7 +92,7 @@
             "flex-wrap",
             !loading &&
               !chartQuestions.length &&
-              "md:w-max md:gap-16 md:flex-nowrap",
+              "md:w-max md:flex-nowrap md:gap-16",
           ])}
         >
           <MetricsSummary
@@ -109,7 +109,7 @@
         <Panel bg={true} border={true}>
           {#if loading}
             <div class="mb-4">
-              <Title level={3} text={`Loading questions`} />
+              <Title level={3} text="Loading questions" />
             </div>
 
             <LoadingIndicator size="10rem" />
@@ -125,21 +125,16 @@
                 (currQuestion = parseInt(newTab.replace("tab-", "")))}
             >
               <div slot="title">
-                <Title
-                  level={3}
-                  text={`
-                    <span class="text-primary mr-1">
-                      Q${selectedChartQuestion?.number}
-                    </span>
-                    ${selectedChartQuestion?.question_text}
-                  `}
-                  maxChars={50}
-                />
+                <Title level={3} maxChars={50}>
+                  <span class="mr-1 text-primary">
+                    Q{selectedChartQuestion?.number}
+                  </span>{selectedChartQuestion?.question_text}
+                </Title>
               </div>
 
               <div class="overflow-x-auto">
                 <div
-                  class="flex flex-row-reverse justify-center gap-4 mt-4 flex-wrap"
+                  class="mt-4 flex flex-row-reverse flex-wrap justify-center gap-4"
                 >
                   <div id="legend-container"></div>
 
@@ -188,7 +183,7 @@
         </div>
 
         <div class="grid grid-cols-12 gap-4 pb-4">
-          {#each paginatedCategories[currPage] as category}
+          {#each paginatedCategories[currPage] as category (category)}
             {@const categoryOptions = demoOptions.filter(
               (opt: DemoOptionsResponseItem) => opt.name === category,
             )}

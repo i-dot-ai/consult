@@ -86,16 +86,11 @@ export const getApiQuestionUrl = (
 ) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "questions", questionId);
 };
-export const getApiAnswerUrl = (
-  consultationId: string,
-  questionId: string,
-  answerId: string,
-) => {
+export const getApiAnswerUrl = (consultationId: string, answerId: string) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "responses", answerId, "/");
-};
+}
 export const getApiAnswerFlagUrl = (
   consultationId: string,
-  questionId: string,
   answerId: string,
 ) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "responses", answerId, "toggle-flag", "/");

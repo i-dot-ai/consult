@@ -46,9 +46,16 @@ function createFavStore() {
 }
 export const favStore = createFavStore();
 
+export type MockFetch = (config: {
+  url: string;
+  headers?: HeadersInit;
+  method: string;
+  body?: string;
+}) => unknown;
+
 // Shared fetch logic
 export const createFetchStore = <T>(
-  { mockFetch, debounceDelay=500 }: { mockFetch?: Function; debounceDelay?: number } | undefined = {}
+  { mockFetch, debounceDelay=500 }: { mockFetch?: MockFetch; debounceDelay?: number } | undefined = {}
 ) => {
   const store: Writable<{
     data: T | null,

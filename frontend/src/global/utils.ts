@@ -25,20 +25,6 @@ export const getBackendUrl = (): string => {
   );
 };
 
-export const applyHighlight = (
-  fullText: string,
-  matchedText: string,
-): string => {
-  if (!matchedText) {
-    return fullText;
-  }
-  const regex = new RegExp(matchedText, "gi");
-  return fullText.replace(
-    regex,
-    (match) => `<span class="bg-yellow-300">${match}</span>`,
-  );
-};
-
 export const getPercentage = (
   partialValue: number,
   totalValue: number,
@@ -74,25 +60,6 @@ export function paginateArray(arr: unknown[] | undefined, size: number) {
   }, []);
 }
 
-export function flattenArray(items: any[]): any[] {
-  if (!items) {
-    return [];
-  }
-
-  const result = [];
-
-  for (const item of items) {
-    const { children, ...attrs } = item;
-    result.push(attrs);
-
-    if (children?.length > 0) {
-      result.push(...flattenArray(children));
-    }
-  }
-
-  return result;
-}
-
 export const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);
   return date.toLocaleString("en-GB", {
@@ -101,7 +68,10 @@ export const formatDate = (dateStr: string) => {
   });
 };
 
-export const handleEnterOrSpacePress = (event: KeyboardEvent, callback: Function) => {
+export const handleEnterOrSpacePress = (
+  event: KeyboardEvent,
+  callback: () => void,
+) => {
   const key = event.key || event.code || event.keyCode;
   const isEnter = ["Enter", "Return", 13].includes(key);
   const isSpace = [" ", "Spacebar", 32].includes(key);
@@ -111,12 +81,15 @@ export const handleEnterOrSpacePress = (event: KeyboardEvent, callback: Function
     event.preventDefault();
     callback();
   }
-}
-export const getTimeDeltaInMinutes = (laterDate: Date, earlierDate: Date): number => {
+};
+export const getTimeDeltaInMinutes = (
+  laterDate: Date,
+  earlierDate: Date,
+): number => {
   const MILLISECONDS_PER_MINUTE = 60000;
   const delta = laterDate.getTime() - earlierDate.getTime();
   return Math.floor(delta / MILLISECONDS_PER_MINUTE);
-}
+};
 
 export const formatTimeDeltaText = (minutes: number): string => {
   const MINUTES_IN_HALF_HOUR = 30;
@@ -153,4 +126,4 @@ export const formatTimeDeltaText = (minutes: number): string => {
     unit = "year";
   }
   return `${Math.floor(value)} ${unit}${value > 1 ? "s" : ""}`;
-}
+};

@@ -3,6 +3,7 @@
 
   import { onMount, untrack } from "svelte";
   import type { Writable } from "svelte/store";
+  import { SvelteURLSearchParams } from "svelte/reactivity";
 
   import MaterialIcon from "../MaterialIcon.svelte";
   import Button from "../inputs/Button/Button.svelte";
@@ -33,7 +34,6 @@
     type DemoOptionsResponse,
     type DemoOptionsResponseItem,
     type FormattedTheme,
-    type MultiChoiceResponse,
     type Question,
     type QuestionsResponse,
     type ResponseAnswer,
@@ -66,7 +66,6 @@
   let { consultationId = "", questionId = "" }: Props = $props();
 
   const PAGE_SIZE: number = 50;
-  const MAX_THEME_FILTERS: number = Infinity;
 
   let currPage: number = $state(1);
   let hasMorePages: boolean = $state(true);
@@ -129,21 +128,19 @@
     }
 
     // Append next page of answers to existing answers
-    try {
-      await $answersStore.fetch(`${getApiAnswersUrl(consultationId)}${queryString}`);
+    await $answersStore.fetch(`${getApiAnswersUrl(consultationId)}${queryString}`);
 
-      if ($answersStore.data?.all_respondents) {
-        const newAnswers = $answersStore.data?.all_respondents;
-        answers = [...answers, ...newAnswers];
-      }
-      hasMorePages = $answersStore.data?.has_more_pages || false;
-    } catch {}
+    if ($answersStore.data?.all_respondents) {
+      const newAnswers = $answersStore.data?.all_respondents;
+      answers = [...answers, ...newAnswers];
+    }
+    hasMorePages = $answersStore.data?.has_more_pages || false;
 
     currPage += 1;
   }
 
   function buildQuery(filters: QueryFilters) {
-    const params = new URLSearchParams({
+    const params = new SvelteURLSearchParams({
       ...(filters.questionId && {
         question_id: filters.questionId,
       }),
@@ -207,14 +204,13 @@
   const setEvidenceRich = (value: boolean) => (evidenceRich = value);
 
   $effect(() => {
-    // @ts-ignore: ignore dependencies
-    (searchValue,
-      searchMode,
-      themeFilters.filters,
-      evidenceRich,
-      demoFilters.filters,
-      multiAnswerFilters.filters,
-      flaggedOnly);
+    void searchValue;
+    void searchMode;
+    void themeFilters.filters;
+    void evidenceRich;
+    void demoFilters.filters;
+    void multiAnswerFilters.filters;
+    void flaggedOnly;
 
     resetAnswers();
 
@@ -261,7 +257,7 @@
       window.location.href = getConsultationDetailUrl(consultationId);
     }}
   >
-    <div class="flex items-center gap-2 justify-between">
+    <div class="flex items-center justify-between gap-2">
       <div class="rotate-90">
         <MaterialIcon color="fill-neutral-600">
           <KeyboardArrowDown />

@@ -1,15 +1,15 @@
 import SelectedThemeCard from "./SelectedThemeCard.svelte";
 
-let theme = $state({
+const theme = $state({
   id: "theme-id",
   name: "Theme Name",
   description: "Theme description",
 });
-let answers = $state(["Answer 1", "Answer 2"]);
-let removeTheme = $state((themeId) =>
+const answers = $state(["Answer 1", "Answer 2"]);
+const removeTheme = $state((themeId) =>
   alert(`Remove theme event triggered with: ${themeId}`),
 );
-let updateTheme = $state((...args) =>
+const updateTheme = $state((...args) =>
   alert(`Update theme event triggered with: ${args.join(", ")}`),
 );
 

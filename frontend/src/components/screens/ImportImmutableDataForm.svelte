@@ -10,7 +10,7 @@
   export let consultationFolders: SelectOption[] = [];
 
   let sending: boolean = false;
-  let errors: Record<string, string> = {}
+  let errors: Record<string, string> = {};
   let success: boolean = false;
 
   let consultationName: string = "";
@@ -18,12 +18,16 @@
 
   const setConsultationName = (newValue: string) => {
     consultationName = newValue;
-    errors["name"] = !consultationName ? "Please enter a consultation name" : "";
+    errors["name"] = !consultationName
+      ? "Please enter a consultation name"
+      : "";
   };
 
   const setConsultationFolderCode = (newValue: string) => {
     consultationFolderCode = newValue;
-    errors["code"] = !consultationFolderCode ? "Please select a consultation folder" : "";
+    errors["code"] = !consultationFolderCode
+      ? "Please select a consultation folder"
+      : "";
   };
 
   const handleSubmit = async () => {
@@ -60,13 +64,13 @@
         }
 
         success = true;
-        loading = false;
-        errors = {}
+        errors = {};
         consultationName = "";
         consultationFolderCode = "";
         window.location.href = "/support/consultations/";
-      } catch (err: any) {
-        errors["general"] = err.message;
+      } catch (err: unknown) {
+        errors["general"] =
+          err instanceof Error ? err.message : "An unknown error occurred";
       } finally {
         sending = false;
       }
@@ -74,12 +78,14 @@
   };
 </script>
 
-<form class={clsx(["flex", "flex-col", "gap-4"])}
-    on:submit|preventDefault={handleSubmit}>
+<form
+  class={clsx(["flex", "flex-col", "gap-4"])}
+  on:submit|preventDefault={handleSubmit}
+>
   {#if "general" in errors}
-  <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
-    {errors.general}
-  </small>
+    <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
+      {errors.general}
+    </small>
   {/if}
 
   {#if success}
@@ -88,17 +94,30 @@
     </small>
   {/if}
   {#if "name" in errors}
-  <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
-    {errors.name}
-  </small>
+    <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
+      {errors.name}
+    </small>
   {/if}
-  <TextInput id="consultation_name" name="consultation_name" label="Consultation title" autocomplete="false" value={consultationName} setValue={setConsultationName} />
+  <TextInput
+    id="consultation_name"
+    name="consultation_name"
+    label="Consultation title"
+    autocomplete="false"
+    value={consultationName}
+    setValue={setConsultationName}
+  />
   {#if "code" in errors}
-  <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
-    {errors.code}
-  </small>
+    <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
+      {errors.code}
+    </small>
   {/if}
-  <Select id="consultation_code" name="consultation_code" label="Select consultation folder" items={consultationFolders} onchange={setConsultationFolderCode} />
+  <Select
+    id="consultation_code"
+    name="consultation_code"
+    label="Select consultation folder"
+    items={consultationFolders}
+    onchange={setConsultationFolderCode}
+  />
   <Button
     type="submit"
     variant="primary"

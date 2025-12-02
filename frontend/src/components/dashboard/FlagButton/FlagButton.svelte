@@ -17,7 +17,6 @@
 
   let {
     consultationId,
-    questionId,
     answerId,
     isFlagged,
     resetData,
@@ -34,10 +33,7 @@
     variant="ghost"
     handleClick={async () => {
       let toggle = toggleFlagMock || $toggleFlagStore.fetch;
-      await toggle(
-        getApiAnswerFlagUrl(consultationId, questionId, answerId),
-        "PATCH",
-      );
+      await toggle(getApiAnswerFlagUrl(consultationId, answerId), "PATCH");
 
       resetData();
     }}

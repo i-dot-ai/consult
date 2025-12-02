@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
-  import type { Writable } from "svelte/store";
 
   import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
   import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
@@ -14,7 +13,6 @@
   import Metrics from "../dashboard/Metrics/Metrics.svelte";
 
   import type {
-    Consultation,
     DemoOptionsResponse,
     QuestionsResponse,
   } from "../../global/types.ts";
@@ -84,7 +82,7 @@
     {:else}
       <div transition:slide>
         <div class="mb-8">
-          {#each favQuestions as question}
+          {#each favQuestions as question (question.id)}
             <QuestionCard
               {consultationId}
               {question}
@@ -137,7 +135,7 @@
               body="No questions found matching your search."
             />
           {:else}
-            {#each displayQuestions as question}
+            {#each displayQuestions as question (question.id)}
               <QuestionCard
                 {consultationId}
                 {question}
