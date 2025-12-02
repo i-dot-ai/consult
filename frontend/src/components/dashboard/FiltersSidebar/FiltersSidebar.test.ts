@@ -10,7 +10,7 @@ describe("FiltersSidebar", () => {
     demoOptions: { country: ["england", "scotland"] },
     demoData: { country: { england: 10, scotland: 20 } },
     evidenceRich: false,
-    unseenResponses: false,
+    unseenResponsesOnly: false,
     loading: false,
   };
 
@@ -20,7 +20,7 @@ describe("FiltersSidebar", () => {
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
-      unseenResponses: testData.unseenResponses,
+      unseenResponsesOnly: testData.unseenResponsesOnly,
       loading: testData.loading,
     });
     Object.keys(testData.demoData).forEach((category) => {
@@ -41,7 +41,7 @@ describe("FiltersSidebar", () => {
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
-      unseenResponses: testData.unseenResponses,
+      unseenResponsesOnly: testData.unseenResponsesOnly,
       loading: true,
     });
     Object.keys(testData.demoData).forEach((category) => {
@@ -77,7 +77,7 @@ describe("FiltersSidebar", () => {
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
-      unseenResponses: testData.unseenResponses,
+      unseenResponsesOnly: testData.unseenResponsesOnly,
       setEvidenceRich: setEvidenceRichMock,
       setUnseenResponses: setUnseenResponsesMock,
     });
@@ -104,7 +104,7 @@ describe("FiltersSidebar", () => {
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
-      unseenResponses: testData.unseenResponses,
+      unseenResponsesOnly: testData.unseenResponsesOnly,
       setEvidenceRich: setEvidenceRichMock,
       setUnseenResponses: setUnseenResponsesMock,
     });
@@ -127,7 +127,7 @@ describe("FiltersSidebar", () => {
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
-      unseenResponses: testData.unseenResponses,
+      unseenResponsesOnly: testData.unseenResponsesOnly,
     });
 
     expect(screen.queryByText("Show unseen responses")).not.toBeInTheDocument();

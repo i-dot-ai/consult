@@ -270,6 +270,6 @@ export const updateResponseReadStatus = (
     consultationId,
     "responses",
     responseId,
-    "mark-read",
+    "mark-read/",
   );
 };

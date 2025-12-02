@@ -25,7 +25,7 @@
     showUnseenResponse?: boolean;
     evidenceRich?: boolean;
     setEvidenceRich?: (newVal: boolean) => void;
-    unseenResponses?: boolean;
+    unseenResponsesOnly?: boolean;
     setUnseenResponses?: (newVal: boolean) => void;
   }
   let {
@@ -37,7 +37,7 @@
     evidenceRich = false,
     setEvidenceRich = () => {},
     showUnseenResponse = true,
-    unseenResponses = false,
+    unseenResponsesOnly = false,
     setUnseenResponses = () => {},
   }: Props = $props();
 
@@ -85,7 +85,7 @@
         <Switch
           id="unseen-responses-toggle"
           label="Show unseen responses"
-          value={unseenResponses}
+          value={unseenResponsesOnly}
           handleChange={(value: boolean) => setUnseenResponses(value)}
         >
           <div slot="label" class="flex items-center gap-1">

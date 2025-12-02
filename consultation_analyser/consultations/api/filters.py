@@ -14,7 +14,7 @@ class ResponseFilter(FilterSet):
     # TODO: adjust the frontend to match sensible DRF defaults
     sentimentFilters = BaseInFilter(field_name="annotation__sentiment", lookup_expr="in")
     evidenceRich = BooleanFilter(field_name="annotation__evidence_rich")
-    unseenResponses = BaseInFilter(method="filter_seen", lookup_expr="in")
+    unseenResponsesOnly = BaseInFilter(method="filter_seen", lookup_expr="in")
     themeFilters = BaseInFilter(method="filter_themes", lookup_expr="in")
     demographics = BaseInFilter(field_name="respondent__demographics", lookup_expr="in")
     is_flagged = BooleanFilter()
