@@ -117,8 +117,8 @@ class ThemeInformationSerializer(serializers.Serializer):
 
 
 class ResponseThemeInformationSerializer(serializers.Serializer):
-    selected_themes = serializers.ListField(child=ThemeSerializer())
-    all_themes = serializers.ListField(child=ThemeSerializer())
+    selected_themes = ThemeSerializer(many=True)
+    all_themes = ThemeSerializer(many=True)
 
 
 class ThemeAggregationsSerializer(serializers.Serializer):
