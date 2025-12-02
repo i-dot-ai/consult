@@ -83,6 +83,7 @@
   });
   const generatedThemesSelectStore = createFetchStore({
     mockFetch: selectGeneratedThemeMock,
+    debounceDelay: 0,
   });
   const questionStore = createFetchStore<Question>({
     mockFetch: questionDataMock,
