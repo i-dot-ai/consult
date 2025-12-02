@@ -85,13 +85,13 @@ export const getApiQuestionUrl = (
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}`;
 };
 export const getApiAnswerUrl = (consultationId: string, answerId: string) => {
-  return `${Routes.ApiConsultations}${consultationId}/responses/${answerId}/`;
+  return `${Routes.ApiConsultations}/${consultationId}/responses/${answerId}/`;
 };
 export const getApiAnswerFlagUrl = (
   consultationId: string,
   answerId: string,
 ) => {
-  return `${Routes.ApiConsultations}${consultationId}/responses/${answerId}/toggle-flag/`;
+  return `${Routes.ApiConsultations}/${consultationId}/responses/${answerId}/toggle-flag/`;
 };
 export const getApiConsultationRespondentsUrl = (consultationId: string) => {
   return `${Routes.ApiConsultations}/${consultationId}/respondents/`;
