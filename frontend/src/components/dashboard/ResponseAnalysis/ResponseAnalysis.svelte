@@ -107,10 +107,7 @@
   }
 
   onDestroy(() => {
-    if (markAsReadTimer) {
-      clearTimeout(markAsReadTimer);
-      markAsReadTimer = null;
-    }
+    resetMarkAsReadTimer();
   });
 
   $: if (answers.length > 0 && !isAnswersLoading && !answersError) {
