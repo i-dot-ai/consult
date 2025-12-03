@@ -8,45 +8,58 @@ import { getBackendUrl } from "./global/utils";
 export const onRequest: MiddlewareHandler = async (context, next) => {
   let userIsStaff: boolean = false;
 
-  try {
-    const resp = await fetchBackendApi<{ is_staff: boolean }>(
-      context,
-      Routes.ApiUser,
-    );
-    userIsStaff = Boolean(resp.is_staff);
-  } catch {
-    console.log("user not signed in");
-  }
-
   const accessToken = context.cookies.get("access")?.value;
+  const internalAccessToken =
+    context.request.headers.get("x-amzn-oidc-data") ||
+    process.env.TEST_INTERNAL_ACCESS_TOKEN;
   const url = context.url;
-
-  // Redirect to sign-in if user not logged in or not staff
-  const protectedRoutes = [
-    // /^\/sign-out[\/]?$/,
-    /^\/consultations.*/,
-    /^\/design.*/,
-    /^\/stories.*/,
-    /^\/support.*/,
-  ];
+  const backendUrl = getBackendUrl();
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
-  for (const protectedRoute of protectedRoutes) {
-    if (
-      protectedRoute.test(url.pathname) &&
-      !context.cookies.get("access")?.value
-    ) {
-      return context.redirect(Routes.SignIn);
+  if (!context.cookies.get("access")?.value) {
+    if (internalAccessToken) {
+      try {
+        const body = JSON.stringify({
+          internal_access_token: internalAccessToken,
+        });
+        const response = await fetch(
+          path.join(backendUrl, Routes.APIValidateToken),
+          {
+            method: "POST",
+            body: body,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+        const data = await response.json();
+
+        context.cookies.set("access", data.access, {
+          path: "/",
+          sameSite: "lax",
+        });
+        context.cookies.set("sessionId", data.sessionId, {
+          path: "/",
+          sameSite: "lax",
+        });
+        const resp = await fetchBackendApi<{ is_staff: boolean }>(
+          context,
+          Routes.ApiUser,
+        );
+        userIsStaff = Boolean(resp.is_staff);
+      } catch (error: unknown) {
+        console.error("sign-in error", error);
+        context.redirect(Routes.SignInError);
+      }
+    } else {
+      console.error("internalAccessToken not set");
+      context.redirect(Routes.SignInError);
     }
   }
-
   for (const protectedStaffRoute of protectedStaffRoutes) {
     if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
       return context.redirect(Routes.Home);
     }
   }
 
-  const backendUrl = getBackendUrl(url.hostname);
   const fullBackendUrl = path.join(backendUrl, url.pathname) + url.search;
 
   // skip as new pages are moved to astro
@@ -56,9 +69,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/get-involved[/]?$/,
     /^\/how-it-works[/]?$/,
     /^\/privacy[/]?$/,
-    /^\/sign-in[/]?$/,
-    /^\/sign-out[/]?$/,
-    /^\/magic-link\/[A-Za-z0-9-]*[/]?$/,
+    /^\/sign-in-error[/]?$/,
     /^\/api\/astro\/.*/,
     /^\/api\/health[/]?$/,
     /^\/health[/]?$/,
@@ -77,6 +88,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/design.*/,
     /^\/stories.*/,
     /^\/_astro.*/,
+    /^\/api\/validate-token[/]?$/,
   ];
 
   for (const skipPattern of toSkip) {
@@ -142,7 +154,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     });
 
     if (response.status === 401) {
-      return context.redirect("/sign-out");
+      return context.redirect(Routes.SignInError);
     }
 
     if (response.status === 304) {

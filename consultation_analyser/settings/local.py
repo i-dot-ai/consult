@@ -11,5 +11,3 @@ STORAGES["default"] = {  # noqa
         "location": BASE_DIR / "tmp"  # noqa
     },
 }
-
-SIGNIN_URL = "http://" + DOMAIN_NAME + ":3000" + LOGIN_URL  # noqa: F405

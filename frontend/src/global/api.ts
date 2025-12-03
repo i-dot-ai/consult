@@ -10,7 +10,6 @@ export const fetchBackendApi = async <T>(
 ): Promise<T> => {
   const url = path.join(getBackendUrl(), endpoint);
   const accessToken = Astro.cookies.get("access")?.value;
-
   const response = await fetch(url, {
     ...options,
     headers: {
