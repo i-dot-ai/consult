@@ -4,12 +4,24 @@ from typing import Dict, List, Optional
 from django.conf import settings
 from django.db import transaction
 
-from consultation_analyser.consultations.models import (Consultation, Question, Response, ResponseAnnotation,
-                                                        SelectedTheme)
-from consultation_analyser.support_console.ingestion.pydantic_models import (AnnotationBatch, DetailDetectionInput,
-                                                                             SelectedThemeInput, SentimentInput,
-                                                                             ThemeMappingInput)
-from consultation_analyser.support_console.ingestion.s3_utils import read_json_from_s3, read_jsonl_from_s3
+from consultation_analyser.consultations.models import (
+    Consultation,
+    Question,
+    Response,
+    ResponseAnnotation,
+    SelectedTheme,
+)
+from consultation_analyser.support_console.ingestion.pydantic_models import (
+    AnnotationBatch,
+    DetailDetectionInput,
+    SelectedThemeInput,
+    SentimentInput,
+    ThemeMappingInput,
+)
+from consultation_analyser.support_console.ingestion.s3_utils import (
+    read_json_from_s3,
+    read_jsonl_from_s3,
+)
 
 logger = logging.getLogger(__name__)
 
