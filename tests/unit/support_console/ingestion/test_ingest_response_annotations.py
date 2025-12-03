@@ -332,12 +332,18 @@ class TestLoadAnnotationBatch:
         consultation,
         question_1,
         question_2,
+        response_1,  # Need responses for questions to be included
+        respondent_2,
         sample_themes_data,
         sample_sentiments_data,
         sample_details_data,
         sample_mappings_data,
     ):
         """Test loading annotations for multiple questions"""
+        # Create a response for question_2 so it's included
+        Response.objects.create(
+            question=question_2, respondent=respondent_2, free_text="Response for Q2"
+        )
 
         def mock_get_object(Bucket, Key):  # noqa: N803
             """Mock S3 get_object with different responses for different keys"""
@@ -448,6 +454,7 @@ class TestLoadAnnotationBatch:
         db,
         consultation,
         question_1,
+        response_1,  # Need response for question to be included
         sample_themes_data,
         sample_details_data,
         sample_mappings_data,
