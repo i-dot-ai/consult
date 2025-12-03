@@ -34,7 +34,7 @@
   import Popover from "../../inputs/Popover/Popover.svelte";
   import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
   import Flag2 from "../../svg/material/Flag2.svelte";
-    import { onDestroy } from "svelte";
+  import { onDestroy } from "svelte";
 
   export let consultationId: string = "";
   export let questionId: string = "";
@@ -85,7 +85,7 @@
       clearTimeout(markAsReadTimer);
     }
 
-    const READ_TIMEOUT = 10000;  // 10 seconds
+    const READ_TIMEOUT = 10000; // 10 seconds
 
     markAsReadTimer = setTimeout(async () => {
       if (answers.length > 0) {
