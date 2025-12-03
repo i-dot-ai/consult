@@ -26,13 +26,11 @@
           { text: "Import", url: Routes.SupportImport },
           { text: "Sign-off", url: Routes.SupportSignOff },
           { text: "Themefinder", url: Routes.SupportThemefinder },
-          { text: `Sign out ${email}`, url: Routes.SignOut },
         ];
       } else {
         return [
           { text: "Support", url: Routes.Support },
           { text: "Your consultations", url: Routes.Consultations },
-          { text: `Sign out ${email}`, url: Routes.SignOut },
         ];
       }
     }

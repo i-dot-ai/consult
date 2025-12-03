@@ -70,7 +70,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/how-it-works[/]?$/,
     /^\/privacy[/]?$/,
     /^\/sign-in-error[/]?$/,
-    /^\/sign-out[/]?$/,
     /^\/api\/astro\/.*/,
     /^\/api\/health[/]?$/,
     /^\/health[/]?$/,
