@@ -15,7 +15,7 @@
     DemoTotalCounts,
   } from "../../../global/types";
   import Visibility from "../../svg/material/Visibility.svelte";
-    import { boolean, string } from "astro:schema";
+  import type { Component } from "svelte";
 
   interface Props {
     demoOptions: DemoOption;
@@ -55,25 +55,34 @@
   });
 </script>
 
-{#snippet filter_switch(id: string, label: string, value: boolean, handle_change: Function, bgColour: string, iconColour: string, text: string)}
+{#snippet filter_switch(
+  id: string,
+  label: string,
+  value: boolean,
+  handle_change: (v: boolean) => void,
+  bgColour: string,
+  iconColour: string,
+  text: string,
+  ToggleIcon: Component,
+)}
   <Panel level={2} border={true} bg={true}>
-      <Switch
-        id={id}
-        label={label}
-        value={value}
-        handleChange={(value: boolean) => handle_change(value)}
-      >
-        <div slot="label" class="flex items-center gap-1">
-          <div class="rounded-2xl {bgColour} p-0.5 text-xs">
-            <MaterialIcon size="1rem" color={iconColour}>
-              <Visibility />
-            </MaterialIcon>
-          </div>
-
-          <span class="text-xs">{text}</span>
+    <Switch
+      {id}
+      {label}
+      {value}
+      handleChange={(value: boolean) => handle_change(value)}
+    >
+      <div slot="label" class="flex items-center gap-1">
+        <div class="rounded-2xl {bgColour} p-0.5 text-xs">
+          <MaterialIcon size="1rem" color={iconColour}>
+            <ToggleIcon></ToggleIcon>
+          </MaterialIcon>
         </div>
-      </Switch>
-    </Panel>
+
+        <span class="text-xs">{text}</span>
+      </div>
+    </Switch>
+  </Panel>
 {/snippet}
 
 <aside>
@@ -83,10 +92,28 @@
     </TitleRow>
 
     {#if showEvidenceRich}
-      {@render filter_switch("evidence-rich-toggle", "Evidence rich", evidenceRich, setEvidenceRich, "bg-yellow-100", "fill-yellow-700", "Show evidence rich")}
+      {@render filter_switch(
+        "evidence-rich-toggle",
+        "Evidence rich",
+        evidenceRich,
+        setEvidenceRich,
+        "bg-yellow-100",
+        "fill-yellow-700",
+        "Show evidence rich",
+        Diamond,
+      )}
     {/if}
     {#if showUnseenResponse}
-      {@render filter_switch("unseen-responses-toggle", "Show unseen responses", unseenResponsesOnly, setUnseenResponses, "bg-iaiteal-200", "fill-iaiteal-500", "Show unseen responses")}
+      {@render filter_switch(
+        "unseen-responses-toggle",
+        "Show unseen responses",
+        unseenResponsesOnly,
+        setUnseenResponses,
+        "bg-iaiteal-200",
+        "fill-iaiteal-500",
+        "Show unseen responses",
+        Visibility,
+      )}
     {/if}
     {#if loading}
       <div in:fade>
