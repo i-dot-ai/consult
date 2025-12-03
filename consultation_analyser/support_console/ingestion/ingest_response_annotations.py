@@ -4,24 +4,12 @@ from typing import Dict, List, Optional
 from django.conf import settings
 from django.db import transaction
 
-from consultation_analyser.consultations.models import (
-    Consultation,
-    Question,
-    Response,
-    ResponseAnnotation,
-    SelectedTheme,
-)
-from consultation_analyser.support_console.ingestion.pydantic_models import (
-    AnnotationBatch,
-    DetailDetectionInput,
-    SelectedThemeInput,
-    SentimentInput,
-    ThemeMappingInput,
-)
-from consultation_analyser.support_console.ingestion.s3_utils import (
-    read_json_from_s3,
-    read_jsonl_from_s3,
-)
+from consultation_analyser.consultations.models import (Consultation, Question, Response, ResponseAnnotation,
+                                                        SelectedTheme)
+from consultation_analyser.support_console.ingestion.pydantic_models import (AnnotationBatch, DetailDetectionInput,
+                                                                             SelectedThemeInput, SentimentInput,
+                                                                             ThemeMappingInput)
+from consultation_analyser.support_console.ingestion.s3_utils import read_json_from_s3, read_jsonl_from_s3
 
 logger = logging.getLogger(__name__)
 
@@ -239,12 +227,15 @@ def load_annotation_batch(
     """
     bucket_name_str = bucket_name if bucket_name is not None else settings.AWS_BUCKET_NAME
 
-    # If question_numbers not provided, get all questions from the consultation
+    # If question_numbers not provided, get questions that have responses
     if question_numbers is None:
         try:
             consultation = Consultation.objects.get(code=consultation_code)
             question_numbers = list(
-                Question.objects.filter(consultation=consultation).values_list("number", flat=True)
+                Question.objects.filter(
+                    consultation=consultation,
+                    response__isnull=False
+                ).distinct().values_list("number", flat=True)
             )
         except Consultation.DoesNotExist:
             raise ValueError(

@@ -25,6 +25,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.astro/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -171,8 +172,6 @@ frontend/django_extensions
 .env
 .DS_Store
 .vscode
-!.vscode/settings.json
-!.vscode/extensions.json
 
 # Local .terraform directories
 **/.terraform/*
@@ -186,6 +185,8 @@ tmp
 
 # Ignore notebooks for now
 *.ipynb
+semantic_search_eval/*
+defra_data/*
 
 # Docker cache
 .build-cache
