@@ -15,6 +15,7 @@
     DemoTotalCounts,
   } from "../../../global/types";
   import Visibility from "../../svg/material/Visibility.svelte";
+    import { boolean, string } from "astro:schema";
 
   interface Props {
     demoOptions: DemoOption;
@@ -54,6 +55,27 @@
   });
 </script>
 
+{#snippet filter_switch(id: string, label: string, value: boolean, handle_change: Function, bgColour: string, iconColour: string, text: string)}
+  <Panel level={2} border={true} bg={true}>
+      <Switch
+        id={id}
+        label={label}
+        value={value}
+        handleChange={(value: boolean) => handle_change(value)}
+      >
+        <div slot="label" class="flex items-center gap-1">
+          <div class="rounded-2xl {bgColour} p-0.5 text-xs">
+            <MaterialIcon size="1rem" color={iconColour}>
+              <Visibility />
+            </MaterialIcon>
+          </div>
+
+          <span class="text-xs">{text}</span>
+        </div>
+      </Switch>
+    </Panel>
+{/snippet}
+
 <aside>
   <Panel>
     <TitleRow level={2} title="Filters" subtitle="">
@@ -61,44 +83,10 @@
     </TitleRow>
 
     {#if showEvidenceRich}
-      <Panel level={2} border={true} bg={true}>
-        <Switch
-          id="evidence-rich-toggle"
-          label="Evidence Rich"
-          value={evidenceRich}
-          handleChange={(value: boolean) => setEvidenceRich(value)}
-        >
-          <div slot="label" class="flex items-center gap-1">
-            <div class="rounded-2xl bg-yellow-100 p-0.5 text-xs">
-              <MaterialIcon size="1rem" color="fill-yellow-700">
-                <Diamond />
-              </MaterialIcon>
-            </div>
-
-            <span class="text-xs">Show evidence rich</span>
-          </div>
-        </Switch>
-      </Panel>
+      {@render filter_switch("evidence-rich-toggle", "Evidence rich", evidenceRich, setEvidenceRich, "bg-yellow-100", "fill-yellow-700", "Show evidence rich")}
     {/if}
     {#if showUnseenResponse}
-      <Panel level={2} border={true} bg={true}>
-        <Switch
-          id="unseen-responses-toggle"
-          label="Show unseen responses"
-          value={unseenResponsesOnly}
-          handleChange={(value: boolean) => setUnseenResponses(value)}
-        >
-          <div slot="label" class="flex items-center gap-1">
-            <div class="rounded-2xl bg-iaiteal-200 p-0.5 text-xs">
-              <MaterialIcon size="1rem" color="fill-iaiteal-500">
-                <Visibility />
-              </MaterialIcon>
-            </div>
-
-            <span class="text-xs">Show unseen responses</span>
-          </div>
-        </Switch>
-      </Panel>
+      {@render filter_switch("unseen-responses-toggle", "Show unseen responses", unseenResponsesOnly, setUnseenResponses, "bg-iaiteal-200", "fill-iaiteal-500", "Show unseen responses")}
     {/if}
     {#if loading}
       <div in:fade>
