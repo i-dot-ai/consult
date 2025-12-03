@@ -239,12 +239,15 @@ def load_annotation_batch(
     """
     bucket_name_str = bucket_name if bucket_name is not None else settings.AWS_BUCKET_NAME
 
-    # If question_numbers not provided, get all questions from the consultation
+    # If question_numbers not provided, get questions that have responses
     if question_numbers is None:
         try:
             consultation = Consultation.objects.get(code=consultation_code)
             question_numbers = list(
-                Question.objects.filter(consultation=consultation).values_list("number", flat=True)
+                Question.objects.filter(
+                    consultation=consultation,
+                    response__isnull=False
+                ).distinct().values_list("number", flat=True)
             )
         except Consultation.DoesNotExist:
             raise ValueError(
