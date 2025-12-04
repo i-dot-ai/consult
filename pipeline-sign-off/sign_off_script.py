@@ -316,10 +316,6 @@ def agentic_theme_selection(
     selected_themes["topic"] = (
         selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
     )
-    selected_themes.rename(
-        columns={"topic_label": "Theme Name", "topic_description": "Theme Description"},
-        inplace=True,
-    )
 
     return selected_themes, all_themes_df
 
