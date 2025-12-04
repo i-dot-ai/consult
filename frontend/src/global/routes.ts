@@ -260,3 +260,16 @@ export const getApiShowNextResponse = (
     "show-next",
   );
 };
+
+export const updateResponseReadStatus = (
+  consultationId: string,
+  responseId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    "responses",
+    responseId,
+    "mark-read/",
+  );
+};
