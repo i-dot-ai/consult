@@ -117,7 +117,7 @@ class CandidateThemeInput(BaseModel):
     parent_id: str
     children: List[str] = Field(default_factory=list)
 
-    model_config = {"extra": "forbid"}
+    model_config = {"extra": "allow"}
 
 
 class CandidateThemeBatch(BaseModel):
