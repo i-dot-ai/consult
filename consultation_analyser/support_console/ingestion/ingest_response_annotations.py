@@ -246,7 +246,10 @@ def load_annotation_batch(
             question_numbers = list(
                 Question.objects.filter(
                     consultation=consultation,
-                    response__isnull=False
+                    has_free_text=True,
+                    response__free_text__isnull=False,
+                ).exclude(
+                    response__free_text=""
                 ).distinct().values_list("number", flat=True)
             )
         except Consultation.DoesNotExist:
