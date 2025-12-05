@@ -45,32 +45,34 @@ def question_2(db, consultation):
 @pytest.fixture
 def sample_themes_data():
     """Sample S3 theme data matching real format"""
-    return [
-        {
-            "topic_id": "1",
-            "topic_label": "Healthcare Access",
-            "topic_description": "Issues related to accessing healthcare services",
-            "source_topic_count": 45,
-            "parent_id": "0",
-            "children": ["2", "3"],
-        },
-        {
-            "topic_id": "2",
-            "topic_label": "Rural Healthcare",
-            "topic_description": "Healthcare access in rural areas",
-            "source_topic_count": 20,
-            "parent_id": "1",
-            "children": [],
-        },
-        {
-            "topic_id": "3",
-            "topic_label": "Urban Healthcare",
-            "topic_description": "Healthcare access in urban areas",
-            "source_topic_count": 25,
-            "parent_id": "1",
-            "children": [],
-        },
-    ]
+    return {
+        "theme_nodes": [
+            {
+                "topic_id": "1",
+                "topic_label": "Healthcare Access",
+                "topic_description": "Issues related to accessing healthcare services",
+                "source_topic_count": 45,
+                "parent_id": "0",
+                "children": ["2", "3"],
+            },
+            {
+                "topic_id": "2",
+                "topic_label": "Rural Healthcare",
+                "topic_description": "Healthcare access in rural areas",
+                "source_topic_count": 20,
+                "parent_id": "1",
+                "children": [],
+            },
+            {
+                "topic_id": "3",
+                "topic_label": "Urban Healthcare",
+                "topic_description": "Healthcare access in urban areas",
+                "source_topic_count": 25,
+                "parent_id": "1",
+                "children": [],
+            },
+        ]
+    }
 
 
 @pytest.fixture
@@ -258,7 +260,7 @@ class TestIngestCandidateThemesForQuestion:
                 topic_description="Main theme",
                 source_topic_count=45,
                 parent_id="0",
-                children=["2"],
+                children=["1", "2"],
             ),
             ThemeNode(
                 topic_id="2",
@@ -462,8 +464,8 @@ class TestImportCandidateThemesFromS3:
             consultation_code="TEST",
             timestamp="2024-01-15",
             themes_by_question={
-                1: [ThemeNode(**theme) for theme in sample_themes_data],
-                2: [ThemeNode(**theme) for theme in sample_themes_data],
+                1: [ThemeNode(**theme) for theme in sample_themes_data["theme_nodes"]],
+                2: [ThemeNode(**theme) for theme in sample_themes_data["theme_nodes"]],
             },
         )
 
@@ -494,7 +496,7 @@ class TestImportCandidateThemesFromS3:
             consultation_code="TEST",
             timestamp="2024-01-15",
             themes_by_question={
-                1: [ThemeNode(**theme) for theme in sample_themes_data],
+                1: [ThemeNode(**theme) for theme in sample_themes_data["theme_nodes"]],
             },
         )
 
