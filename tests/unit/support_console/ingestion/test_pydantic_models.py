@@ -1,10 +1,10 @@
 import pytest
 from pydantic import ValidationError
+from themefinder.models import ThemeNode
 
 from consultation_analyser.support_console.ingestion.pydantic_models import (
     AnnotationBatch,
     CandidateThemeBatch,
-    CandidateThemeInput,
     DetailDetectionInput,
     ImmutableDataBatch,
     MultiChoiceInput,
@@ -292,7 +292,7 @@ class TestCandidateThemeInput:
             "parent_id": "0",
             "children": ["124", "125"],
         }
-        theme = CandidateThemeInput(**data)
+        theme = ThemeNode(**data)
 
         assert theme.topic_id == "123"
         assert theme.topic_label == "Healthcare Access"
@@ -310,7 +310,7 @@ class TestCandidateThemeInput:
             "source_topic_count": 10,
             "parent_id": "0",
         }
-        theme = CandidateThemeInput(**data)
+        theme = ThemeNode(**data)
         assert theme.topic_label == "Test Theme"
         assert theme.topic_description == "Test Description"
 
@@ -323,14 +323,14 @@ class TestCandidateThemeInput:
             "source_topic_count": 10,
             "parent_id": "0",
         }
-        theme = CandidateThemeInput(**data)
+        theme = ThemeNode(**data)
         assert theme.children == []
 
     def test_candidate_theme_missing_required_fields(self):
         """Test that missing required fields raises ValidationError"""
         data = {"topic_id": "123"}
         with pytest.raises(Exception):  # Pydantic ValidationError
-            CandidateThemeInput(**data)
+            ThemeNode(**data)
 
     def test_candidate_theme_invalid_source_topic_count_type(self):
         """Test that invalid type for source_topic_count raises ValidationError"""
@@ -342,7 +342,7 @@ class TestCandidateThemeInput:
             "parent_id": "0",
         }
         with pytest.raises(Exception):  # Pydantic ValidationError
-            CandidateThemeInput(**data)
+            ThemeNode(**data)
 
 
 class TestCandidateThemeBatch:
