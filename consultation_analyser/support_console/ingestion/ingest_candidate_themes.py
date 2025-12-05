@@ -3,12 +3,11 @@ from typing import Dict, List, Optional
 
 from django.conf import settings
 from django.db import transaction
+from pydantic import BaseModel
+from themefinder.models import ThemeNode
 
 from consultation_analyser.consultations.models import CandidateTheme, Consultation, Question
-from consultation_analyser.support_console.ingestion.pydantic_models import (
-    CandidateThemeBatch,
-    CandidateThemeInput,
-)
+from consultation_analyser.support_console.ingestion.pydantic_models import CandidateThemeBatch
 from consultation_analyser.support_console.ingestion.s3_utils import read_json_from_s3
 
 logger = logging.getLogger(__name__)
@@ -25,7 +24,7 @@ def load_candidate_themes_from_s3(
     timestamp: str,
     bucket_name: Optional[str] = None,
     s3_client=None,
-) -> List[CandidateThemeInput]:
+) -> List[ThemeNode]:
     """
     Load and validate candidate themes for a single question from S3.
 
@@ -59,8 +58,11 @@ def load_candidate_themes_from_s3(
         logger.info(f"No candidate themes file found at {key}")
         return []
 
-    # Validate each theme using Pydantic
-    validated_themes = [CandidateThemeInput(**theme) for theme in theme_data]
+    # TODO: move this to themefinder
+    class ThemeNodeList(BaseModel):
+        theme_nodes: list[ThemeNode]
+
+    validated_themes = ThemeNodeList.model_validate(theme_data).theme_nodes
 
     logger.info(
         f"Loaded and validated {len(validated_themes)} candidate themes for question {question_number}"
@@ -114,7 +116,7 @@ def load_candidate_themes_batch(
     )
 
     # Load themes for each question
-    themes_by_question: Dict[int, List[CandidateThemeInput]] = {}
+    themes_by_question: Dict[int, List[ThemeNode]] = {}
 
     for question_number in question_numbers:
         themes = load_candidate_themes_from_s3(
@@ -147,9 +149,7 @@ def load_candidate_themes_batch(
 # ============================================================================
 
 
-def _ingest_candidate_themes_for_question(
-    question: Question, themes: List[CandidateThemeInput]
-) -> None:
+def _ingest_candidate_themes_for_question(question: Question, themes: List[ThemeNode]) -> None:
     """
     Ingest candidate themes for a single question.
 
@@ -161,7 +161,7 @@ def _ingest_candidate_themes_for_question(
 
     Args:
         question: The Question instance to attach themes to
-        themes: List of validated CandidateThemeInput objects
+        themes: List of validated ThemeNode objects
     """
     if not themes:
         logger.info(f"No candidate themes to ingest for question {question.number}")
