@@ -1,0 +1,79 @@
+---
+import Layout from "../../../../../../../layouts/Layout.astro";
+import Section from "../../../../../../../components/Section/Section.svelte";
+import Text from "../../../../../../../components/Text/Text.svelte";
+import Title from "../../../../../../../components/Title.svelte";
+import ThemeSelectionForm from "../../../../../../../components/screens/ThemeSelectionForm.svelte";
+import { fetchBackendApi } from "../../../../../../../global/api";
+import type {
+  Question,
+  QuestionResponseResponse,
+  ResponseThemeInformation,
+} from "../../../../../../../global/types";
+import {
+  getApiQuestionResponse,
+  getApiQuestionUrl,
+  getThemeInformationResponse,
+  Routes,
+} from "../../../../../../../global/routes";
+
+const { consultationId, questionId, responseId } = Astro.params;
+
+if (!responseId || !questionId || !consultationId) {
+  return Astro.redirect(Routes.SupportConsultations);
+}
+
+let question = await fetchBackendApi<Question>(
+  Astro,
+  getApiQuestionUrl(consultationId, questionId),
+);
+
+let response = await fetchBackendApi<QuestionResponseResponse>(
+  Astro,
+  getApiQuestionResponse(consultationId, questionId, responseId),
+);
+
+let themes = await fetchBackendApi<ResponseThemeInformation>(
+  Astro,
+  getThemeInformationResponse(consultationId, questionId, responseId),
+);
+---
+
+<Layout>
+  <Section>
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+      <div class="flex flex-col gap-4">
+        <div>
+          <Title level={1} text={`Question ${question.number}:`} />
+          <Title level={1} text={question.question_text} />
+        </div>
+
+        <div class="rounded-xl border border-gray-200 bg-gray-50 p-6">
+          <Text
+            >Response{
+              (response.respondent.themefinder_id ||
+                response.respondent.themefinder_id === 0) &&
+                ` ${response.respondent.themefinder_id}`
+            }:</Text
+          >
+          <div class="mt-3">
+            <Text>{response.free_text_answer_text}</Text>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div>
+          <Title level={2} text="Select Themes" />
+          <Text>Which themes apply to this response?</Text>
+        </div>
+        <ThemeSelectionForm
+          client:load
+          response={response}
+          themes={themes}
+          consultationId={consultationId}
+          questionId={questionId}
+        />
+      </div>
+    </div>
+  </Section>
+</Layout>
