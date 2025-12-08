@@ -10,6 +10,7 @@ export enum Routes {
   GetInvolved = "/get-involved",
   SignInError = "/sign-in-error",
   APIValidateToken = "/api/validate-token/",
+  ApiResponses = "/api/responses/",
   ApiConsultations = "/api/consultations/",
   ApiConsultationFolders = "/api/consultations/folders/",
   ApiConsultationImport = "/api/consultations/import/",
@@ -257,5 +258,32 @@ export const getApiShowNextResponse = (
     "questions",
     questionId,
     "show-next",
+  );
+};
+
+export const getApiQuestionResponse = (
+  consultationId: string,
+  questionId: string,
+  responseId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    "responses",
+    responseId,
+  );
+};
+
+export const getThemeInformationResponse = (
+  consultationId: string,
+  questionId: string,
+  responseId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    "responses",
+    responseId,
+    "themes",
   );
 };

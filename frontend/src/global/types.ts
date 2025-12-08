@@ -111,6 +111,31 @@ export interface ResponseTheme {
   key?: string;
 }
 
+export interface ResponseThemeInformation {
+  all_themes: ResponseTheme[];
+  selected_themes: ResponseTheme[];
+}
+
+export interface Respondent {
+  id: string;
+  themefinder_id: number | null;
+  name: string;
+  demographics: DemoOptionsResponseItem[];
+}
+
+export interface QuestionResponseResponse {
+  id: string;
+  respondent: Respondent;
+  question: Question;
+  free_text_answer_text: string;
+  chosen_options: MultiChoiceResponse;
+  created_at: string;
+  modified_at: string;
+  // Extra fields not mapped:
+  // embedding: string;
+  // searchVector: string;
+}
+
 export interface ResponseAnswer {
   id: string;
   identifier: number; // respondent themefinder id
