@@ -40,13 +40,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
           path: "/",
           sameSite: "lax",
         });
-        const resp = await fetchBackendApi<{ is_staff: boolean }>(
-          context,
-          Routes.ApiUser,
-        );
-        console.log(`user details resp=${JSON.stringify(resp)}`);
-        userIsStaff = Boolean(resp.is_staff);
-        console.log(`userIsStaff=${userIsStaff}`);
       } catch (error: unknown) {
         console.error("sign-in error", error);
         context.redirect(Routes.SignInError);
@@ -56,6 +49,15 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       context.redirect(Routes.SignInError);
     }
   }
+
+  const resp = await fetchBackendApi<{ is_staff: boolean }>(
+    context,
+    Routes.ApiUser,
+  );
+
+  userIsStaff = Boolean(resp.is_staff);
+  console.log(`userIsStaff=${userIsStaff}`);
+
   for (const protectedStaffRoute of protectedStaffRoutes) {
     if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
       console.error(`redirecting to home as userIsStaff=${userIsStaff}`);
