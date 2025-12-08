@@ -8,8 +8,8 @@ function getInitialFavs() {
     return [];
   }
 
-  const storedFavs = localStorage.getItem(FAVS_STORAGE_KEY);
   try {
+    const storedFavs = localStorage.getItem(FAVS_STORAGE_KEY);
     return storedFavs ? JSON.parse(storedFavs) : [];
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
