@@ -44,6 +44,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
           context,
           Routes.ApiUser,
         );
+        console.log(`user details resp=${resp}`);
         userIsStaff = Boolean(resp.is_staff);
       } catch (error: unknown) {
         console.error("sign-in error", error);
@@ -56,6 +57,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   }
   for (const protectedStaffRoute of protectedStaffRoutes) {
     if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
+      console.error(`redirecting to home as userIsStaff=${userIsStaff}`);
       return context.redirect(Routes.Home);
     }
   }
