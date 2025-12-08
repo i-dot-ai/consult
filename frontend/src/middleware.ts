@@ -6,7 +6,6 @@ import { fetchBackendApi } from "./global/api";
 import { getBackendUrl } from "./global/utils";
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
-  let userIsStaff: boolean = false;
 
   const accessToken = context.cookies.get("access")?.value;
   const internalAccessToken =
@@ -55,12 +54,12 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     Routes.ApiUser,
   );
 
-  userIsStaff = Boolean(resp.is_staff);
+  const userIsStaff = Boolean(resp.is_staff);
   console.log(`userIsStaff=${userIsStaff}`);
 
   for (const protectedStaffRoute of protectedStaffRoutes) {
     if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
-      console.error(`redirecting to home as userIsStaff=${userIsStaff}`);
+      console.error(`redirecting to home as and userIsStaff=${userIsStaff}`);
       return context.redirect(Routes.Home);
     }
   }
