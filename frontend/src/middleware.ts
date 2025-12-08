@@ -48,15 +48,18 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
   }
 
+
   let userIsStaff = false;
-  try {
-    const resp = await fetchBackendApi<{ is_staff: boolean }>(
-      context,
-      Routes.ApiUser,
-    );
-    userIsStaff = Boolean(resp.is_staff);
-  } catch {
-    console.error("error accessing user info");
+  if (context.cookies.get("access")?.value) {
+    try {
+      const resp = await fetchBackendApi<{ is_staff: boolean }>(
+        context,
+        Routes.ApiUser,
+      );
+      userIsStaff = Boolean(resp.is_staff);
+    } catch {
+      console.error("error accessing user info");
+    }
   }
 
   for (const protectedStaffRoute of protectedStaffRoutes) {
