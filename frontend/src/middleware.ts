@@ -55,8 +55,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       Routes.ApiUser,
     );
     userIsStaff = Boolean(resp.is_staff);
-  } catch (error: unknown) {
-    console.error(JSON.stringify(error));
+  } catch {
+    console.error("error accessing user info");
   }
 
   for (const protectedStaffRoute of protectedStaffRoutes) {
