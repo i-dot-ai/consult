@@ -43,7 +43,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         context.redirect(Routes.SignInError);
       }
     } else {
-      console.error("internalAccessToken not set");
+      console.error("internalAccessToken not set", backendUrl);
       context.redirect(Routes.SignInError);
     }
   }
