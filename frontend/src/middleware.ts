@@ -48,7 +48,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
   }
 
-
   let userIsStaff = false;
   if (context.cookies.get("access")?.value) {
     try {
