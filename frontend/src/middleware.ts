@@ -6,7 +6,6 @@ import { fetchBackendApi } from "./global/api";
 import { getBackendUrl } from "./global/utils";
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
-
   const accessToken = context.cookies.get("access")?.value;
   const internalAccessToken =
     context.request.headers.get("x-amzn-oidc-data") ||
