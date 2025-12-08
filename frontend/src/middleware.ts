@@ -44,8 +44,9 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
           context,
           Routes.ApiUser,
         );
-        console.log(`user details resp=${resp}`);
+        console.log(`user details resp=${JSON.stringify(resp)}`);
         userIsStaff = Boolean(resp.is_staff);
+        console.log(`userIsStaff=${userIsStaff}`);
       } catch (error: unknown) {
         console.error("sign-in error", error);
         context.redirect(Routes.SignInError);
@@ -165,6 +166,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     console.warn("http:" + JSON.stringify(req));
 
     if (response.status === 401) {
+      console.log("Error 400 redirecting to sign in");
       return context.redirect(Routes.SignInError);
     }
 
