@@ -39,7 +39,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
           sameSite: "lax",
         });
       } catch (error: unknown) {
-        console.error("sign-in error", error);
+        console.error("sign-in error", JSON.stringify(error));
         context.redirect(Routes.SignInError);
       }
     } else {
@@ -58,7 +58,9 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
   for (const protectedStaffRoute of protectedStaffRoutes) {
     if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
-      console.error(`redirecting to home as and userIsStaff=${userIsStaff}`);
+      console.error(
+        `redirecting to home as protectedStaffRoute=${protectedStaffRoute.test(url.pathname)} and userIsStaff=${userIsStaff}`,
+      );
       return context.redirect(Routes.Home);
     }
   }
