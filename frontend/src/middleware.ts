@@ -160,7 +160,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       headers: headersToSend,
     };
 
-    console.info("http:" + JSON.stringify(req));
+    console.warn("http:" + JSON.stringify(req));
 
     if (response.status === 401) {
       return context.redirect(Routes.SignInError);
