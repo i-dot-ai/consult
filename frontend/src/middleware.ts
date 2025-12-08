@@ -154,7 +154,13 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       redirect: "manual",
     });
 
-    console.info("http:" + JSON.stringify({url: fullBackendUrl, statusCode: response.status, headers: headersToSend}));
+    const req = {
+      url: fullBackendUrl,
+      statusCode: response.status,
+      headers: headersToSend,
+    };
+
+    console.info("http:" + JSON.stringify(req));
 
     if (response.status === 401) {
       return context.redirect(Routes.SignInError);
