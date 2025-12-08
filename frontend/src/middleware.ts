@@ -48,19 +48,20 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
   }
 
-  const resp = await fetchBackendApi<{ is_staff: boolean }>(
-    context,
-    Routes.ApiUser,
-  );
-
-  const userIsStaff = Boolean(resp.is_staff);
-  console.log(`userIsStaff=${userIsStaff}`);
+  let userIsStaff = false;
+  try {
+    const resp = await fetchBackendApi<{ is_staff: boolean }>(
+      context,
+      Routes.ApiUser,
+    );
+    userIsStaff = Boolean(resp.is_staff);
+  } catch (error: unknown) {
+    console.error(JSON.stringify(error));
+  }
 
   for (const protectedStaffRoute of protectedStaffRoutes) {
     if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
-      console.error(
-        `redirecting to home as protectedStaffRoute=${protectedStaffRoute.test(url.pathname)} and userIsStaff=${userIsStaff}`,
-      );
+      console.error("redirecting to home");
       return context.redirect(Routes.Home);
     }
   }
