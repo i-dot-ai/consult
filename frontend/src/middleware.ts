@@ -5,8 +5,10 @@ import { Routes } from "./global/routes";
 import { fetchBackendApi } from "./global/api";
 import { getBackendUrl } from "./global/utils";
 
+const internalAccessCookieName = "gds_internal_access";
+
 export const onRequest: MiddlewareHandler = async (context, next) => {
-  const accessToken = context.cookies.get("access")?.value;
+  const accessToken = context.cookies.get(internalAccessCookieName)?.value;
   const internalAccessToken =
     context.request.headers.get("x-amzn-oidc-data") ||
     process.env.TEST_INTERNAL_ACCESS_TOKEN;
@@ -14,7 +16,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const backendUrl = getBackendUrl();
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
-  if (!context.cookies.get("access")?.value) {
+  if (!context.cookies.get(internalAccessCookieName)?.value) {
     if (internalAccessToken) {
       try {
         const body = JSON.stringify({
@@ -30,7 +32,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         );
         const data = await response.json();
 
-        context.cookies.set("access", data.access, {
+        context.cookies.set(internalAccessCookieName, data.access, {
           path: "/",
           sameSite: "lax",
         });
@@ -49,7 +51,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   }
 
   let userIsStaff = false;
-  if (context.cookies.get("access")?.value) {
+  if (context.cookies.get(internalAccessCookieName)?.value) {
     try {
       const resp = await fetchBackendApi<{ is_staff: boolean }>(
         context,
