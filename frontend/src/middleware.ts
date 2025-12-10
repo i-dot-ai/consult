@@ -127,7 +127,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         }
       } catch (e) {
         console.error("Error reading request body:", e);
-        context.cookies.set(internalAccessCookieName, "", {
+        context.cookies.set(internalAccessCookieName, {}, {
           path: "/",
           sameSite: "lax",
           expires: new Date(0),
