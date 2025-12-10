@@ -13,7 +13,7 @@ from .api.views.response import ResponseViewSet
 from .api.views.selected_theme import SelectedThemeViewSet
 from .api.views.theme import ThemeViewSet
 from .api.views.user import UserViewSet, get_current_user
-from .views import answers, pages, questions, root, sessions
+from .views import answers, pages, questions, root
 
 router = routers.DefaultRouter()
 router.register("consultations", ConsultationViewSet, basename="consultations")
@@ -65,8 +65,6 @@ urlpatterns = [
         questions.index,
         name="review_free_text_questions",
     ),
-    # authentication
-    path("sign-out/", sessions.destroy, name="sign_out"),
     # JWT
     path("api/validate-token/", validate_token, name="validate-token"),
     path("git-sha/", get_git_sha, name="git-sha"),
