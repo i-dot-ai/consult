@@ -3,7 +3,7 @@ import path from "path";
 
 import { getBackendUrl } from "./utils";
 
-export const internalAccessCookieName = "gds_internal_access";
+export const internalAccessCookieName = "gdsInternalAccess";
 
 export const fetchBackendApi = async <T>(
   Astro: APIContext,
