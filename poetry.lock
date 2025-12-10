@@ -1300,6 +1300,7 @@ files = [
 [package.dependencies]
 pydantic = ">=2.11.9"
 pydantic-settings = ">=2.10.1"
+requests = {version = ">=2.32.3", optional = true, markers = "extra == \"auth\""}
 structlog = ">=25.4.0"
 typing-extensions = ">=4.0.0"
 
@@ -4853,4 +4854,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "63097c495333807040d020182a127afe3a8b53ca30960a8074216af8fb7006c1"
+content-hash = "a6e0728e6d7fe15577596f38bcb9b073d9529ebfc912bc2ad5280a42188b7741"
