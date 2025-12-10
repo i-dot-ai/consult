@@ -1,5 +1,4 @@
 from django.http import Http404
-from django.shortcuts import redirect
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
