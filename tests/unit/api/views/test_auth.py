@@ -26,7 +26,7 @@ def test_validate_token_pass(client, consultation_user):
         (
             {"internal_access_token": jwt.encode({"email": "some.one@example.com"}, "secret")},
             403,
-            {"detail": "authentication failed, user not registered"},
+            {"detail": "authentication failed"},
         ),
     ],
 )

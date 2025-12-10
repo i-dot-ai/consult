@@ -37,9 +37,7 @@ def validate_token(request):
 
         user = User.objects.get(email=email)
     except User.DoesNotExist:
-        return JsonResponse(
-            data={"detail": "authentication failed, user not registered"}, status=403
-        )
+        return JsonResponse(data={"detail": "authentication failed"}, status=403)
     except Exception as ex:
         logger.error("error authenticating request {error}", error=", ".join(map(str, ex.args)))
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
