@@ -11,6 +11,7 @@ export enum Routes {
   SignIn = "/sign-in",
   SignOut = "/sign-out",
   ApiMagicLink = "/api/magic-link/",
+  ApiResponses = "/api/responses/",
   ApiConsultations = "/api/consultations/",
   ApiConsultationFolders = "/api/consultations/folders/",
   ApiConsultationImport = "/api/consultations/import/",
@@ -271,5 +272,32 @@ export const updateResponseReadStatus = (
     "responses",
     responseId,
     "mark-read/",
+  );
+};
+
+export const getApiQuestionResponse = (
+  consultationId: string,
+  questionId: string,
+  responseId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    "responses",
+    responseId,
+  );
+};
+
+export const getThemeInformationResponse = (
+  consultationId: string,
+  questionId: string,
+  responseId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    "responses",
+    responseId,
+    "themes",
   );
 };
