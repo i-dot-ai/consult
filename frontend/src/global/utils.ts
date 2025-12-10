@@ -29,9 +29,9 @@ export const getClientId = (): string => {
   // Try runtime environment variable first (for server-side)
   if (
     typeof process !== "undefined" &&
-    process.env?.INTERNAL_ACCESS_CLIENT_ID
+    process.env?.PUBLIC_INTERNAL_ACCESS_CLIENT_ID
   ) {
-    return process.env.INTERNAL_ACCESS_CLIENT_ID;
+    return process.env.PUBLIC_INTERNAL_ACCESS_CLIENT_ID;
   }
 
   // Fall back to build-time public env var (for client-side)
