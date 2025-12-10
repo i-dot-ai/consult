@@ -37,12 +37,12 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
         context.cookies.set(internalAccessCookieName, data.access, {
           path: "/",
-          sameSite: "lax",
+          sameSite: "strict",
           expires: jwtExpiry,
         });
         context.cookies.set("sessionId", data.sessionId, {
           path: "/",
-          sameSite: "lax",
+          sameSite: "strict",
         });
       } catch {
         console.error("sign-in error");
@@ -137,7 +137,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
           {},
           {
             path: "/",
-            sameSite: "lax",
+            sameSite: "strict",
             expires: new Date(0),
           },
         );
