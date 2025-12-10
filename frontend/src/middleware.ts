@@ -31,9 +31,14 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         );
         const data = await response.json();
 
+        // Decode JWT to get expiration time
+        const jwtPayload = JSON.parse(atob(data.access.split(".")[1]));
+        const jwtExpiry = new Date(jwtPayload.exp * 1000); // Convert from Unix timestamp
+
         context.cookies.set(internalAccessCookieName, data.access, {
           path: "/",
           sameSite: "lax",
+          expires: jwtExpiry,
         });
         context.cookies.set("sessionId", data.sessionId, {
           path: "/",
@@ -127,11 +132,15 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         }
       } catch (e) {
         console.error("Error reading request body:", e);
-        context.cookies.set(internalAccessCookieName, {}, {
-          path: "/",
-          sameSite: "lax",
-          expires: new Date(0),
-        });
+        context.cookies.set(
+          internalAccessCookieName,
+          {},
+          {
+            path: "/",
+            sameSite: "lax",
+            expires: new Date(0),
+          },
+        );
         console.log("stale cokie removed, redirecting home");
 
         return context.redirect(Routes.Home);
