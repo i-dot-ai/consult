@@ -165,7 +165,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     });
 
     if (response.status === 401) {
-      console.log("Error 400 redirecting to sign in");
+      console.log("Error 401 redirecting to sign in");
       return context.redirect(Routes.SignInError);
     }
 
