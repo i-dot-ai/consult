@@ -57,8 +57,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         Routes.ApiUser,
       );
       userIsStaff = Boolean(resp.is_staff);
-    } catch {
-      console.error("error accessing user info");
+    } catch (e) {
+      console.error("error accessing user info", e);
     }
   }
 
