@@ -35,7 +35,7 @@
     "sass-embedded": "^1.93.1"
   },
   "devDependencies": {
-    "@types/chart.js": "^2.9.41",
+    "@types/chart.js": "^4.0.1",
     "jest": "^30.2.0",
     "rollup": "^4.42.0",
     "sass": "^1.89.1"
