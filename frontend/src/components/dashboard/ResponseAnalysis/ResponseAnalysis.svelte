@@ -131,7 +131,7 @@
     <svelte:boundary>
       <FiltersSidebar
         showEvidenceRich={true}
-        showUnseenResponse={true}
+        showUnseenResponse={false}
         {demoOptions}
         {demoData}
         {demoOptionsData}

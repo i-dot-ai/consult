@@ -37,7 +37,7 @@
     showEvidenceRich = true,
     evidenceRich = false,
     setEvidenceRich = () => {},
-    showUnseenResponse = true,
+    showUnseenResponse = false,
     unseenResponsesOnly = false,
     setUnseenResponses = () => {},
   }: Props = $props();
