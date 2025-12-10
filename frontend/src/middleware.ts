@@ -132,6 +132,9 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
           sameSite: "lax",
           expires: new Date(0),
         });
+        console.log("stale cokie removed, redirecting home");
+
+        return context.redirect(Routes.Home);
       }
     }
 
