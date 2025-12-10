@@ -5,7 +5,7 @@ import Footer from "../components/Footer/Footer.svelte";
 import { fetchBackendApi } from "../global/api";
 
 let isStaff: boolean = false;
-let email: string | null = null;
+let email: string | unknown = null;
 
 try {
   const data = await fetchBackendApi<{ is_staff: boolean; email: string }>(
