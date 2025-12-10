@@ -1,0 +1,45 @@
+---
+import { fetchBackendApi } from "../../../../../global/api";
+import type { ConsultationResponse, User } from "../../../../../global/types";
+
+import Layout from "../../../../../layouts/Layout.astro";
+import Section from "../../../../../components/Section/Section.svelte";
+import Title from "../../../../../components/Title.svelte";
+import Text from "../../../../../components/Text/Text.svelte";
+import { getApiConsultationUrl, Routes } from "../../../../../global/routes";
+
+const { consultationId } = Astro.params;
+
+if (!consultationId) {
+  return Astro.redirect(Routes.SupportConsultations);
+}
+
+// Fetch consultation data first (needed for both GET and POST to show the form)
+let consultation = await fetchBackendApi<ConsultationResponse>(
+  Astro,
+  getApiConsultationUrl(consultationId),
+);
+
+const data = await fetchBackendApi<{ results: User[] }>(
+  Astro,
+  `/api/users/?consultation_id=${consultationId}&is_in=false`,
+);
+const unaddedUsers = data.results;
+---
+
+<Layout>
+  <Section>
+    <Title level={1} text="Add users" />
+    <Text>Adding to {consultation.title}</Text>
+    {
+      unaddedUsers.map((user) => (
+        <tr class="border-t hover:bg-gray-50">
+          <td class="py-2 pr-2">{user.email}</td>
+          <td class="py-2 pr-2">user.email</td>
+          <td class="py-2 pr-2">{user.is_staff ? "Yes" : "No"}</td>
+          <td class="py-2">{user.has_dashboard_access ? "Yes" : "No"}</td>
+        </tr>
+      ))
+    }
+  </Section>
+</Layout>
