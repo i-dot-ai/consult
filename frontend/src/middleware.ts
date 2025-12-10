@@ -8,9 +8,16 @@ import { getBackendUrl } from "./global/utils";
 import { internalAccessCookieName } from "./global/api";
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
-  const internalAccessToken =
-    context.request.headers.get("x-amzn-oidc-data") ||
-    process.env.TEST_INTERNAL_ACCESS_TOKEN;
+  let internalAccessToken = null;
+
+  const env = process.env.ENVIRONMENT?.toLowerCase();
+
+  if (env === "local" || env === "test" || env == null) {
+    internalAccessToken = context.request.headers.get("x-amzn-oidc-data");
+  } else {
+    internalAccessToken = process.env.TEST_INTERNAL_ACCESS_TOKEN;
+  }
+
   const url = context.url;
   const backendUrl = getBackendUrl();
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
