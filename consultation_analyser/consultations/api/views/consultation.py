@@ -286,26 +286,6 @@ class ConsultationViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
-    # @action(
-    #     detail=True,
-    #     methods=["post"],
-    #     url_path="add-user",
-    #     permission_classes=[HasDashboardAccess],
-    # )
-    # def add_user(self, request, pk=None, user_pk=None) -> Response:
-    #     """
-    #     add a user to this consultation
-    #     """
-    #     try:
-    #         consultation = self.get_object()
-    #         user = User.objects.get(pk=user_pk)
-    #         consultation.users.add(user)
-    #         consultation.save()
-    #     except (User.DoesNotExist, Consultation.DoesNotExist):
-    #         return Response(status=status.HTTP_404_NOT_FOUND)
-    #     else:
-    #         return Response(status=status.HTTP_201_CREATED)
-
     @action(
         detail=True,
         methods=["post"],
@@ -317,7 +297,6 @@ class ConsultationViewSet(ModelViewSet):
         Add multiple users to this consultation
         Expected payload: {"user_ids": ["uuid1", "uuid2", ...]}
         """
-
         try:
             consultation = self.get_object()
         except Http404:
