@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from django.db.models import Count, Exists, OuterRef
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -16,7 +17,9 @@ from consultation_analyser.consultations.api.permissions import (
 from consultation_analyser.consultations.api.serializers import (
     DemographicAggregationsSerializer,
     ResponseSerializer,
+    ResponseThemeInformationSerializer,
     ThemeAggregationsSerializer,
+    ThemeSerializer,
 )
 
 
@@ -144,6 +147,27 @@ class ResponseViewSet(ModelViewSet):
 
         serializer = ThemeAggregationsSerializer(data={"theme_aggregations": theme_aggregations})
         serializer.is_valid()
+
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"], url_path="themes")
+    def themes(self, request, consultation_pk=None, pk=None):
+        """Get themes for given responses"""
+        response = get_object_or_404(models.Response, id=pk)
+        question = response.question
+        annotation, _ = models.ResponseAnnotation.objects.get_or_create(response=response)
+
+        all_themes = models.SelectedTheme.objects.filter(question=question)
+        selected_themes = annotation.themes.all()
+
+        # Serialize the themes properly using ThemeSerializer
+        all_themes_data = ThemeSerializer(all_themes, many=True).data
+        selected_themes_data = ThemeSerializer(selected_themes, many=True).data
+
+        serializer = ResponseThemeInformationSerializer(
+            data={"selected_themes": selected_themes_data, "all_themes": all_themes_data}
+        )
+        serializer.is_valid(raise_exception=True)
 
         return Response(serializer.data)
 

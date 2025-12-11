@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from botocore.exceptions import ClientError
+from themefinder.models import ThemeNode
 
 from consultation_analyser.consultations.models import CandidateTheme, Consultation, Question
 from consultation_analyser.support_console.ingestion.ingest_candidate_themes import (
@@ -16,10 +17,7 @@ from consultation_analyser.support_console.ingestion.ingest_candidate_themes imp
     load_candidate_themes_batch,
     load_candidate_themes_from_s3,
 )
-from consultation_analyser.support_console.ingestion.pydantic_models import (
-    CandidateThemeBatch,
-    CandidateThemeInput,
-)
+from consultation_analyser.support_console.ingestion.pydantic_models import CandidateThemeBatch
 
 
 @pytest.fixture
@@ -47,32 +45,34 @@ def question_2(db, consultation):
 @pytest.fixture
 def sample_themes_data():
     """Sample S3 theme data matching real format"""
-    return [
-        {
-            "topic_id": "1",
-            "topic_label": "Healthcare Access",
-            "topic_description": "Issues related to accessing healthcare services",
-            "source_topic_count": 45,
-            "parent_id": "0",
-            "children": ["2", "3"],
-        },
-        {
-            "topic_id": "2",
-            "topic_label": "Rural Healthcare",
-            "topic_description": "Healthcare access in rural areas",
-            "source_topic_count": 20,
-            "parent_id": "1",
-            "children": [],
-        },
-        {
-            "topic_id": "3",
-            "topic_label": "Urban Healthcare",
-            "topic_description": "Healthcare access in urban areas",
-            "source_topic_count": 25,
-            "parent_id": "1",
-            "children": [],
-        },
-    ]
+    return {
+        "theme_nodes": [
+            {
+                "topic_id": "1",
+                "topic_label": "Healthcare Access",
+                "topic_description": "Issues related to accessing healthcare services",
+                "source_topic_count": 45,
+                "parent_id": "0",
+                "children": ["2", "3"],
+            },
+            {
+                "topic_id": "2",
+                "topic_label": "Rural Healthcare",
+                "topic_description": "Healthcare access in rural areas",
+                "source_topic_count": 20,
+                "parent_id": "1",
+                "children": [],
+            },
+            {
+                "topic_id": "3",
+                "topic_label": "Urban Healthcare",
+                "topic_description": "Healthcare access in urban areas",
+                "source_topic_count": 25,
+                "parent_id": "1",
+                "children": [],
+            },
+        ]
+    }
 
 
 @pytest.fixture
@@ -104,7 +104,7 @@ class TestLoadCandidateThemesFromS3:
 
         # Verify themes loaded and validated
         assert len(themes) == 3
-        assert all(isinstance(theme, CandidateThemeInput) for theme in themes)
+        assert all(isinstance(theme, ThemeNode) for theme in themes)
 
         # Verify first theme
         assert themes[0].topic_id == "1"
@@ -219,7 +219,7 @@ class TestIngestCandidateThemesForQuestion:
     def test_ingest_themes_basic(self, db, question_1):
         """Test ingesting themes for a question"""
         themes = [
-            CandidateThemeInput(
+            ThemeNode(
                 topic_id="1",
                 topic_label="Healthcare Access",
                 topic_description="Issues related to accessing healthcare services",
@@ -227,7 +227,7 @@ class TestIngestCandidateThemesForQuestion:
                 parent_id="0",
                 children=[],
             ),
-            CandidateThemeInput(
+            ThemeNode(
                 topic_id="2",
                 topic_label="Rural Healthcare",
                 topic_description="Healthcare access in rural areas",
@@ -254,15 +254,15 @@ class TestIngestCandidateThemesForQuestion:
     def test_ingest_themes_with_parent_relationships(self, db, question_1):
         """Test ingesting themes with parent-child relationships"""
         themes = [
-            CandidateThemeInput(
+            ThemeNode(
                 topic_id="1",
                 topic_label="Healthcare Access",
                 topic_description="Main theme",
                 source_topic_count=45,
                 parent_id="0",
-                children=["2"],
+                children=["1", "2"],
             ),
-            CandidateThemeInput(
+            ThemeNode(
                 topic_id="2",
                 topic_label="Rural Healthcare",
                 topic_description="Sub theme",
@@ -285,7 +285,7 @@ class TestIngestCandidateThemesForQuestion:
         """Test that re-running ingestion deletes old themes"""
         # First ingestion
         themes_v1 = [
-            CandidateThemeInput(
+            ThemeNode(
                 topic_id="1",
                 topic_label="Old Theme",
                 topic_description="Old description",
@@ -299,7 +299,7 @@ class TestIngestCandidateThemesForQuestion:
 
         # Second ingestion with different themes
         themes_v2 = [
-            CandidateThemeInput(
+            ThemeNode(
                 topic_id="2",
                 topic_label="New Theme",
                 topic_description="New description",
@@ -307,7 +307,7 @@ class TestIngestCandidateThemesForQuestion:
                 parent_id="0",
                 children=[],
             ),
-            CandidateThemeInput(
+            ThemeNode(
                 topic_id="3",
                 topic_label="Another Theme",
                 topic_description="Another description",
@@ -333,7 +333,7 @@ class TestIngestCandidateThemesForQuestion:
     def test_ingest_themes_missing_parent_warning(self, db, question_1, caplog):
         """Test warning when parent_id references non-existent parent"""
         themes = [
-            CandidateThemeInput(
+            ThemeNode(
                 topic_id="2",
                 topic_label="Child Theme",
                 topic_description="Child with missing parent",
@@ -363,7 +363,7 @@ class TestIngestCandidateThemes:
             timestamp="2024-01-15",
             themes_by_question={
                 1: [
-                    CandidateThemeInput(
+                    ThemeNode(
                         topic_id="1",
                         topic_label="Theme Q1",
                         topic_description="Theme for question 1",
@@ -372,7 +372,7 @@ class TestIngestCandidateThemes:
                     )
                 ],
                 2: [
-                    CandidateThemeInput(
+                    ThemeNode(
                         topic_id="2",
                         topic_label="Theme Q2",
                         topic_description="Theme for question 2",
@@ -404,7 +404,7 @@ class TestIngestCandidateThemes:
             timestamp="2024-01-15",
             themes_by_question={
                 1: [
-                    CandidateThemeInput(
+                    ThemeNode(
                         topic_id="1",
                         topic_label="Theme",
                         topic_description="Description",
@@ -439,7 +439,7 @@ class TestIngestCandidateThemes:
             timestamp="2024-01-15",
             themes_by_question={
                 999: [  # Question doesn't exist
-                    CandidateThemeInput(
+                    ThemeNode(
                         topic_id="1",
                         topic_label="Theme",
                         topic_description="Description",
@@ -464,8 +464,8 @@ class TestImportCandidateThemesFromS3:
             consultation_code="TEST",
             timestamp="2024-01-15",
             themes_by_question={
-                1: [CandidateThemeInput(**theme) for theme in sample_themes_data],
-                2: [CandidateThemeInput(**theme) for theme in sample_themes_data],
+                1: [ThemeNode(**theme) for theme in sample_themes_data["theme_nodes"]],
+                2: [ThemeNode(**theme) for theme in sample_themes_data["theme_nodes"]],
             },
         )
 
@@ -496,7 +496,7 @@ class TestImportCandidateThemesFromS3:
             consultation_code="TEST",
             timestamp="2024-01-15",
             themes_by_question={
-                1: [CandidateThemeInput(**theme) for theme in sample_themes_data],
+                1: [ThemeNode(**theme) for theme in sample_themes_data["theme_nodes"]],
             },
         )
 
