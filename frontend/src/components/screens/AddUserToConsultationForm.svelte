@@ -3,7 +3,11 @@
 
   import { slide } from "svelte/transition";
 
-  import { getConsultationDetailUrl, Routes } from "../../global/routes";
+  import {
+    getApiAddUserToConsultation,
+    getConsultationDetailUrl,
+    Routes,
+  } from "../../global/routes";
 
   import type { User } from "../../global/types";
   import Button from "../inputs/Button/Button.svelte";
@@ -31,6 +35,7 @@
 
   const handleSubmit = async () => {
     errors = {};
+    console.log(selectedUsers);
 
     if (selectedUsers.length == 0) {
       errors["general"] = "Please select a user to add";
@@ -40,8 +45,7 @@
       sending = true;
       try {
         const response = await fetch(
-          `/api/consultations/${consultationId}/add-users/`,
-          //   getApiAddUserToConsultation(consultationId),
+          getApiAddUserToConsultation(consultationId),
           {
             method: "POST",
             headers: {
@@ -59,7 +63,7 @@
 
         errors = {};
         selectedUsers = [];
-        window.location.href = getConsultationDetailUrl(consultationId);
+        window.location.href = `${Routes.SupportConsultations}/${consultationId}`;
       } catch (err: unknown) {
         errors["general"] =
           err instanceof Error ? err.message : "An unknown error occurred";
