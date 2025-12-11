@@ -20,6 +20,7 @@ export enum Routes {
   ApiConsultationExport = "/api/consultations/export/",
   ApiConsultationQuestions = "/api/questions/",
   ApiUser = "/api/user/",
+  ApiUsers = "/api/users/",
   ApiAstroSignIn = "/api/astro/sign-in/",
   Design = "/design",
   SupportImport = "/support/consultations/import-summary",
@@ -259,4 +260,8 @@ export const getApiShowNextResponse = (
     questionId,
     "show-next",
   );
+};
+
+export const getApiAddUserToConsultation = (consultationId: string) => {
+  return urlJoin(Routes.ApiConsultations, consultationId, "add-users", "/");
 };
