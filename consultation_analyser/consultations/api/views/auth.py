@@ -20,6 +20,7 @@ client = AuthApiClient(
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def validate_token(request):
+    logger.refresh_context()
     serializer = TokenSerializer(data=request.data)
     if not serializer.is_valid():
         return JsonResponse(serializer.errors, status=400)
@@ -37,6 +38,7 @@ def validate_token(request):
 
         user = User.objects.get(email=email)
     except User.DoesNotExist:
+        logger.error("error authenticating request {error}", error="user does not exist")
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
     except Exception as ex:
         logger.error("error authenticating request {error}", error=", ".join(map(str, ex.args)))
@@ -48,6 +50,8 @@ def validate_token(request):
         request.session.save()
 
     access_token = AccessToken.for_user(user)
+
+    logger.info("user {email} authenticated", email=user.email)
 
     return JsonResponse(
         {
