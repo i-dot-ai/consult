@@ -13,9 +13,9 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const env = process.env.ENVIRONMENT?.toLowerCase();
 
   if (env === "local" || env === "test" || env == null) {
-    internalAccessToken = context.request.headers.get("x-amzn-oidc-data");
-  } else {
     internalAccessToken = process.env.TEST_INTERNAL_ACCESS_TOKEN;
+  } else {
+    internalAccessToken = context.request.headers.get("x-amzn-oidc-data");
   }
 
   const url = context.url;
