@@ -5,14 +5,16 @@ import Footer from "../components/Footer/Footer.svelte";
 import { fetchBackendApi } from "../global/api";
 
 let isStaff: boolean = false;
-let isSignedIn: boolean = false;
+let email: string | unknown = null;
 
 try {
-  const data = await fetchBackendApi<{ is_staff: boolean }>(
+  const data = await fetchBackendApi<{ is_staff: boolean; email: string }>(
     Astro,
     "/api/user/",
   );
   isStaff = data.is_staff;
+  email = data.email;
+  console.log(`user ${email} signed in`);
 } catch {
   console.log("user not signed in");
 }
@@ -30,7 +32,7 @@ try {
   </head>
   <body>
     <div class="mx-auto flex h-full max-w-screen-3xl flex-col">
-      <Header client:load isSignedIn={isSignedIn} isStaff={isStaff} />
+      <Header client:load isStaff={isStaff} email={email} />
 
       <main class="grow">
         <slot />

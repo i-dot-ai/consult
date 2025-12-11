@@ -76,16 +76,11 @@ def get_url_for_pattern(url_pattern, possible_args):
 
 # Get all URLs that haven't explicitly been excluded.
 # Exclude magic links in separate step as potentially more than one.
-url_patterns_excluding_magic_link = [
-    url_pattern
-    for url_pattern in urlpatterns
-    if not str(url_pattern.pattern).startswith("magic-link")
-    and not str(url_pattern.pattern).startswith("api")
+api_url_patterns = [
+    url_pattern for url_pattern in urlpatterns if not str(url_pattern.pattern).startswith("api")
 ]
 url_patterns_to_test = [
-    url_pattern
-    for url_pattern in url_patterns_excluding_magic_link
-    if url_pattern.name not in URL_NAMES_TO_EXCLUDE
+    url_pattern for url_pattern in api_url_patterns if url_pattern.name not in URL_NAMES_TO_EXCLUDE
 ]
 
 
@@ -168,9 +163,7 @@ def test_api_urls_permission_required(
 
 # Testing links that redirect
 url_patterns_to_test = [
-    url_pattern
-    for url_pattern in url_patterns_excluding_magic_link
-    if url_pattern.name in REDIRECTING_URL_NAMES
+    url_pattern for url_pattern in api_url_patterns if url_pattern.name in REDIRECTING_URL_NAMES
 ]
 
 
