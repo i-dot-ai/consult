@@ -1,0 +1,321 @@
+<script lang="ts">
+  import clsx from "clsx";
+
+  import { onDestroy, onMount } from "svelte";
+  import { slide } from "svelte/transition";
+
+  import IaiIcon from "../../svg/IaiIcon.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import ChevronRight from "../../svg/material/ChevronRight.svelte";
+  import Menu from "../../svg/material/Menu.svelte";
+
+  import type { Props } from "./types";
+
+  const {
+    title = "Incubator for AI",
+    subtitle = "",
+    pathParts = [],
+    icon = IaiIcon,
+    navItems = [{ label: "Home", url: "/" }],
+    endItems,
+  }: Props = $props();
+
+  let activeSubmenu = $state();
+  let mobileExpanded = $state(false);
+  let IconComponent = $derived(icon);
+
+  onMount(() => {
+    window.addEventListener("click", handleOutsideClick);
+  })
+
+  onDestroy(() => {
+    window.removeEventListener("click", handleOutsideClick);
+  })
+
+  function handleOutsideClick(e: MouseEvent) {
+    if (!(e.target as HTMLElement).closest(".nav-button")) {
+      activeSubmenu = null;
+    }
+  }
+</script>
+
+{#snippet navLabelParent(label: string)}
+  <span class={clsx([
+    "w-full",
+    "text-sm",
+    "text-neutral-800",
+    "hover:text-primary",
+    "transition-colors",
+    "whitespace-nowrap",
+  ])}>
+    {label}
+  </span>
+{/snippet}
+
+{#snippet navLabelChild(label: string)}
+  <div class="group p-1 w-full">
+    <span class={clsx([
+      "block",
+      "px-2",
+      "py-1",
+      "rounded",
+      "text-sm",
+      "text-neutral-800",
+      "whitespace-nowrap",
+      "group-hover:text-primary",
+      "group-hover:bg-neutral-100",
+    ])}>
+      {label}
+    </span>
+  </div>
+{/snippet}
+
+{#snippet navigation({ isMobile }: { isMobile: boolean })}
+  <nav
+    transition:slide
+    aria-label="App navigation"
+    class={isMobile ? "block md:hidden" : "hidden md:block"}
+    data-testid={isMobile ? "mobile-nav" : "desktop-nav"}
+  >
+    <ol class={clsx([!isMobile && "flex items-center gap-4"])}>
+      {#each navItems as navItem}
+        {@const id = "link-" + navItem.label.toLowerCase().replaceAll(" ", "-")}  
+        {@const expanded = activeSubmenu === id}
+
+        <li class={isMobile ? "w-full" : "relative"}>
+          {#if Array.isArray(navItem.children) && navItem.children.length > 0}
+            <button
+              class={clsx([
+                "nav-button",
+                "flex",
+                "items-center",
+                "justify-center",
+                "gap-0.5",
+                isMobile && clsx([
+                  "group",
+                  "w-full",
+                  "hover:bg-neutral-100",
+                  "hover:!text-primary",
+                ]),
+              ])}
+              aria-expanded={expanded ? "true" : "false"}
+              aria-controls={id}
+              onclick={(e) => {
+                if (activeSubmenu === id) {
+                  activeSubmenu = null;
+                } else {
+                  activeSubmenu = id;
+                }
+              }}
+            >
+              {#if isMobile}
+                <div class={clsx([
+                  "flex",
+                  "items-center",
+                  "justify-center",
+                  "gap-0.5",
+                  "w-full",
+                  "-mr-4",
+                  "p-2",
+                  "text-sm",
+                  "text-center",
+                  "text-neutral-800",
+                  "transition-colors",
+                  "whitespace-nowrap",
+                  "hover:text-primary",
+                ])}>
+                  {navItem.label}
+
+                  <div class={clsx([
+                    "transition-transform",
+                    expanded && "rotate-90",
+                  ])}>
+                    <MaterialIcon size="0.9rem" color="fill-neutral-500">
+                      <ChevronRight />
+                    </MaterialIcon>
+                  </div>
+                </div>
+              {:else}
+                <span class={clsx([
+                  "block",
+                  "text-sm",
+                  "text-neutral-800",
+                  "hover:text-primary",
+                  "transition-colors",
+                  "whitespace-nowrap",
+                ])}>
+                  {navItem.label}
+                </span>
+
+                <div class="rotate-90">
+                  <MaterialIcon size="0.9rem" color="fill-neutral-500">
+                    <ChevronRight />
+                  </MaterialIcon>
+                </div>
+              {/if}              
+            </button>
+
+            {#if activeSubmenu === id || !isMobile}
+              <ol
+                transition:slide={{ duration: isMobile ? 300 : 0 }}
+                id={id}
+                class={clsx([
+                  !isMobile && clsx([
+                    "absolute",
+                    "top-6",
+                    "right-0",
+                    "z-10",
+                    "border",
+                    "border-neutral-100",
+                    "rounded",
+                    "bg-white",
+                    "shadow-lg",
+                    "transition-opacity",
+                    !expanded && "pointer-events-none",
+                    expanded ? "opacity-1" : "opacity-0",
+                  ])
+                ])}
+              >
+                {#each navItem.children as subItem}
+                  <li>
+                    <a
+                      class={clsx([
+                        isMobile && "text-center block hover:bg-neutral-100 !text-neutral-300",
+                      ])}
+                      href={subItem.url}
+                      title={subItem.label}
+                      aria-label={`Link to ${subItem.label}`}
+                      tabindex={expanded ? 0 : -1 /* no keyboard navigation while not expanded */}
+                      onclick={(e) => e.stopPropagation()}
+                    >
+                      {@render navLabelChild(subItem.label)}
+                    </a>
+                  </li>
+                {/each}
+              </ol>
+            {/if}
+          {:else}
+            <a
+              class={clsx([
+                isMobile
+                  ? "text-center block hover:bg-neutral-100"
+                  : "mr-2",
+              ])}
+              href={navItem.url}
+              title={navItem.label}
+              aria-label={`Link to ${navItem.label}`}
+            >
+              {#if isMobile}
+                {@render navLabelChild(navItem.label)}
+              {:else}
+                {@render navLabelParent(navItem.label)}
+              {/if}
+            </a>
+          {/if}
+
+          {#if isMobile}
+            <hr />
+          {/if}
+        </li>
+      {/each}
+    </ol>
+  </nav>
+{/snippet}
+
+<header class="w-full">
+  <div class={clsx([
+    "flex",
+    "justify-between",
+    "border-b",
+    "border-primary",
+    "p-2"
+  ])}>
+    <div class={clsx([
+      "flex",
+      "items-center",
+      "gap-2",
+    ])}>
+      <div class={clsx([
+        "flex",
+        "justify-center",
+        "items-center",
+        "w-8",
+        "h-8",
+      ])}>
+        <IconComponent />
+      </div>
+
+      <h1 class="font-[500]">
+        {title}
+      </h1>
+
+      <!-- Divider only renders when there's text after -->
+      {#if subtitle || pathParts.length > 0}
+        <div
+          class={clsx([
+            "inline-block",
+            "min-h-4",
+            "mx-2",
+            "border-l",
+            "border-neutral-300",
+            "self-stretch",
+          ])}
+        ></div>
+      {/if}
+
+      <p>
+        <span class="text-sm text-neutral-800">
+          {subtitle}
+        </span>
+
+        <!-- Breadcrumb parts -->
+        {#each pathParts as pathPart}
+          <span class={clsx([
+            "mr-1",
+            "text-xs",
+            "text-neutral-500",
+            "whitespace-nowrap",
+          ])}>
+            / {pathPart}
+          </span>
+        {/each}
+      </p>
+    </div>
+
+    <div class="flex items-center ml-4">
+      <!-- Mobile menu button -->
+      <button class={clsx([
+        "block",
+        "md:hidden",
+        "p-1",
+        "rounded",
+        "border",
+        "border-neutral-200",
+        "transition-colors",
+        "hover:bg-neutral-100",
+      ])}
+        data-testid="mobile-menu-button"
+        onclick={() => mobileExpanded = !mobileExpanded}
+      >
+        <MaterialIcon size="1.5rem" color="fill-neutral-500">
+          <Menu />
+        </MaterialIcon>
+      </button>
+
+      <!-- Desktop nav links -->
+      {@render navigation({ isMobile: false })}
+
+      <!-- Extra items to render at the end -->
+      {#if endItems}
+        <div class="mx-1">
+          {@render endItems()}
+        </div>
+      {/if}
+    </div>
+  </div>
+
+  {#if mobileExpanded}
+    <!-- Mobile nav links -->
+    {@render navigation({ isMobile: true })}
+  {/if}
+</header>

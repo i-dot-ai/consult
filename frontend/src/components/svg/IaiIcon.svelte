@@ -1,6 +1,4 @@
 <svg
-  width="65"
-  height="40"
   aria-label="i.AI"
   focusable="false"
   viewBox="0 0 167 105"
