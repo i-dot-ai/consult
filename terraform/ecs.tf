@@ -26,6 +26,8 @@ locals {
     "PUBLIC_BACKEND_URL"               = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
     "LLM_GATEWAY_URL"                  = "https://llm-gateway.i.ai.gov.uk/",
     "PUBLIC_INTERNAL_ACCESS_CLIENT_ID" = aws_ssm_parameter.oidc_secrets["client_id"].value,
+    "APP_NAME"                         = "consult",
+    "REPO"                             = "consult",
   }
 
   batch_env_vars = merge(local.base_env_vars, {
