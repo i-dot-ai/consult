@@ -318,7 +318,7 @@ class ConsultationViewSet(ModelViewSet):
                     {"error": f"Only {found_user_count} of {len(user_ids)} users found"},
                     status=status.HTTP_404_NOT_FOUND,
                 )
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError):
             return Response(
                 {"error": "Invalid user IDs provided"}, status=status.HTTP_400_BAD_REQUEST
             )
