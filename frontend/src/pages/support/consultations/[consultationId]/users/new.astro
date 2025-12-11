@@ -15,7 +15,6 @@ if (!consultationId) {
   return Astro.redirect(Routes.SupportConsultations);
 }
 
-// Fetch consultation data first (needed for both GET and POST to show the form)
 let consultation = await fetchBackendApi<ConsultationResponse>(
   Astro,
   getApiConsultationUrl(consultationId),
@@ -35,6 +34,7 @@ const unaddedUsers = data.results || [];
     {
       unaddedUsers.length > 0 ? (
         <AddUserToConsultationForm
+          client:load
           users={unaddedUsers}
           consultationId={consultationId}
         />
