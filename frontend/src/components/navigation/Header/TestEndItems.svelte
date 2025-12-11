@@ -11,7 +11,7 @@
 
 <div class="relative">
   <button
-    onclick={() => expanded = !expanded}
+    onclick={() => (expanded = !expanded)}
     class={clsx([
       "flex",
       "justify-center",
@@ -36,16 +36,19 @@
   </button>
 
   {#if expanded}
-    <div transition:slide class={clsx([
-      "absolute",
-      "top-8",
-      "right-0",
-      "text-sm",
-      "bg-white",
-      "shadow-lg",
-      "whitespace-nowrap",
-      "p-2",
-    ])}>
+    <div
+      transition:slide
+      class={clsx([
+        "absolute",
+        "top-8",
+        "right-0",
+        "text-sm",
+        "bg-white",
+        "shadow-lg",
+        "whitespace-nowrap",
+        "p-2",
+      ])}
+    >
       Test Panel Content
     </div>
   {/if}

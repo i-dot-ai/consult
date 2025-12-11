@@ -9,15 +9,21 @@ export const testData: Props = {
   pathParts: ["Dashboard"],
   navItems: [
     { label: "Home", url: "/" },
-    { label: "Support", children: [
-      { label: "Walkthrough", url: "/walkthrough" },
-      { label: "Guidance", url: "/guidance" },
-      { label: "Feedback", url: "/feedback" },
-      { label: "Privacy notice", url: "/privacy" },
-    ]},
-    { label: "Manage", children: [
-      { label: "Consultations", url: "/consultations" },
-      { label: "Users", url: "/users" },
-    ]},
+    {
+      label: "Support",
+      children: [
+        { label: "Walkthrough", url: "/walkthrough" },
+        { label: "Guidance", url: "/guidance" },
+        { label: "Feedback", url: "/feedback" },
+        { label: "Privacy notice", url: "/privacy" },
+      ],
+    },
+    {
+      label: "Manage",
+      children: [
+        { label: "Consultations", url: "/consultations" },
+        { label: "Users", url: "/users" },
+      ],
+    },
   ],
-}
+};

@@ -1,8 +1,4 @@
-<svg
-  aria-label="i.AI"
-  focusable="false"
-  viewBox="0 0 167 105"
->
+<svg aria-label="i.AI" focusable="false" viewBox="0 0 167 105">
   <g id="Layer_2" data-name="Layer 2">
     <g id="Layer_1-2" data-name="Layer 1">
       <rect y="24.937px" width="22px" fill="#fff" height="80px" x="0px"></rect>

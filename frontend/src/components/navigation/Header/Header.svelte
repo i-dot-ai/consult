@@ -26,11 +26,11 @@
 
   onMount(() => {
     window.addEventListener("click", handleOutsideClick);
-  })
+  });
 
   onDestroy(() => {
     window.removeEventListener("click", handleOutsideClick);
-  })
+  });
 
   function handleOutsideClick(e: MouseEvent) {
     if (!(e.target as HTMLElement).closest(".nav-button")) {
@@ -40,31 +40,35 @@
 </script>
 
 {#snippet navLabelParent(label: string)}
-  <span class={clsx([
-    "w-full",
-    "text-sm",
-    "text-neutral-800",
-    "hover:text-primary",
-    "transition-colors",
-    "whitespace-nowrap",
-  ])}>
+  <span
+    class={clsx([
+      "w-full",
+      "text-sm",
+      "text-neutral-800",
+      "hover:text-primary",
+      "transition-colors",
+      "whitespace-nowrap",
+    ])}
+  >
     {label}
   </span>
 {/snippet}
 
 {#snippet navLabelChild(label: string)}
-  <div class="group p-1 w-full">
-    <span class={clsx([
-      "block",
-      "px-2",
-      "py-1",
-      "rounded",
-      "text-sm",
-      "text-neutral-800",
-      "whitespace-nowrap",
-      "group-hover:text-primary",
-      "group-hover:bg-neutral-100",
-    ])}>
+  <div class="group w-full p-1">
+    <span
+      class={clsx([
+        "block",
+        "px-2",
+        "py-1",
+        "rounded",
+        "text-sm",
+        "text-neutral-800",
+        "whitespace-nowrap",
+        "group-hover:text-primary",
+        "group-hover:bg-neutral-100",
+      ])}
+    >
       {label}
     </span>
   </div>
@@ -78,8 +82,8 @@
     data-testid={isMobile ? "mobile-nav" : "desktop-nav"}
   >
     <ol class={clsx([!isMobile && "flex items-center gap-4"])}>
-      {#each navItems as navItem}
-        {@const id = "link-" + navItem.label.toLowerCase().replaceAll(" ", "-")}  
+      {#each navItems as navItem, i (i)}
+        {@const id = "link-" + navItem.label.toLowerCase().replaceAll(" ", "-")}
         {@const expanded = activeSubmenu === id}
 
         <li class={isMobile ? "w-full" : "relative"}>
@@ -91,16 +95,17 @@
                 "items-center",
                 "justify-center",
                 "gap-0.5",
-                isMobile && clsx([
-                  "group",
-                  "w-full",
-                  "hover:bg-neutral-100",
-                  "hover:!text-primary",
-                ]),
+                isMobile &&
+                  clsx([
+                    "group",
+                    "w-full",
+                    "hover:bg-neutral-100",
+                    "hover:!text-primary",
+                  ]),
               ])}
               aria-expanded={expanded ? "true" : "false"}
               aria-controls={id}
-              onclick={(e) => {
+              onclick={() => {
                 if (activeSubmenu === id) {
                   activeSubmenu = null;
                 } else {
@@ -109,41 +114,47 @@
               }}
             >
               {#if isMobile}
-                <div class={clsx([
-                  "flex",
-                  "items-center",
-                  "justify-center",
-                  "gap-0.5",
-                  "w-full",
-                  "-mr-4",
-                  "p-2",
-                  "text-sm",
-                  "text-center",
-                  "text-neutral-800",
-                  "transition-colors",
-                  "whitespace-nowrap",
-                  "hover:text-primary",
-                ])}>
+                <div
+                  class={clsx([
+                    "flex",
+                    "items-center",
+                    "justify-center",
+                    "gap-0.5",
+                    "w-full",
+                    "-mr-4",
+                    "p-2",
+                    "text-sm",
+                    "text-center",
+                    "text-neutral-800",
+                    "transition-colors",
+                    "whitespace-nowrap",
+                    "hover:text-primary",
+                  ])}
+                >
                   {navItem.label}
 
-                  <div class={clsx([
-                    "transition-transform",
-                    expanded && "rotate-90",
-                  ])}>
+                  <div
+                    class={clsx([
+                      "transition-transform",
+                      expanded && "rotate-90",
+                    ])}
+                  >
                     <MaterialIcon size="0.9rem" color="fill-neutral-500">
                       <ChevronRight />
                     </MaterialIcon>
                   </div>
                 </div>
               {:else}
-                <span class={clsx([
-                  "block",
-                  "text-sm",
-                  "text-neutral-800",
-                  "hover:text-primary",
-                  "transition-colors",
-                  "whitespace-nowrap",
-                ])}>
+                <span
+                  class={clsx([
+                    "block",
+                    "text-sm",
+                    "text-neutral-800",
+                    "hover:text-primary",
+                    "transition-colors",
+                    "whitespace-nowrap",
+                  ])}
+                >
                   {navItem.label}
                 </span>
 
@@ -152,42 +163,45 @@
                     <ChevronRight />
                   </MaterialIcon>
                 </div>
-              {/if}              
+              {/if}
             </button>
 
             {#if activeSubmenu === id || !isMobile}
               <ol
                 transition:slide={{ duration: isMobile ? 300 : 0 }}
-                id={id}
+                {id}
                 class={clsx([
-                  !isMobile && clsx([
-                    "absolute",
-                    "top-6",
-                    "right-0",
-                    "z-10",
-                    "border",
-                    "border-neutral-100",
-                    "rounded",
-                    "bg-white",
-                    "shadow-lg",
-                    "transition-opacity",
-                    !expanded && "pointer-events-none",
-                    expanded ? "opacity-1" : "opacity-0",
-                  ])
+                  !isMobile &&
+                    clsx([
+                      "absolute",
+                      "top-6",
+                      "right-0",
+                      "z-10",
+                      "border",
+                      "border-neutral-100",
+                      "rounded",
+                      "bg-white",
+                      "shadow-lg",
+                      "transition-opacity",
+                      !expanded && "pointer-events-none",
+                      expanded ? "opacity-1" : "opacity-0",
+                    ]),
                 ])}
               >
-                {#each navItem.children as subItem}
+                {#each navItem.children as subItem, i (i)}
                   <li>
                     <a
                       class={clsx([
-                        isMobile && "text-center block hover:bg-neutral-100 !text-neutral-300",
+                        isMobile &&
+                          "block text-center !text-neutral-300 hover:bg-neutral-100",
                       ])}
                       href={subItem.url}
                       title={subItem.label}
                       aria-label={`Link to ${subItem.label}`}
-                      tabindex={expanded ? 0 : -1 /* no keyboard navigation while not expanded */}
+                      tabindex={expanded ? 0 : -1}
                       onclick={(e) => e.stopPropagation()}
                     >
+                      {@html `<!-- tabindex to avoid keyboard navigation while not expanded -->`}
                       {@render navLabelChild(subItem.label)}
                     </a>
                   </li>
@@ -197,9 +211,7 @@
           {:else}
             <a
               class={clsx([
-                isMobile
-                  ? "text-center block hover:bg-neutral-100"
-                  : "mr-2",
+                isMobile ? "block text-center hover:bg-neutral-100" : "mr-2",
               ])}
               href={navItem.url}
               title={navItem.label}
@@ -223,25 +235,19 @@
 {/snippet}
 
 <header class="w-full">
-  <div class={clsx([
-    "flex",
-    "justify-between",
-    "border-b",
-    "border-primary",
-    "p-2"
-  ])}>
-    <div class={clsx([
+  <div
+    class={clsx([
       "flex",
-      "items-center",
-      "gap-2",
-    ])}>
-      <div class={clsx([
-        "flex",
-        "justify-center",
-        "items-center",
-        "w-8",
-        "h-8",
-      ])}>
+      "justify-between",
+      "border-b",
+      "border-primary",
+      "p-2",
+    ])}
+  >
+    <div class={clsx(["flex", "items-center", "gap-2"])}>
+      <div
+        class={clsx(["flex", "justify-center", "items-center", "w-8", "h-8"])}
+      >
         <IconComponent />
       </div>
 
@@ -269,33 +275,36 @@
         </span>
 
         <!-- Breadcrumb parts -->
-        {#each pathParts as pathPart}
-          <span class={clsx([
-            "mr-1",
-            "text-xs",
-            "text-neutral-500",
-            "whitespace-nowrap",
-          ])}>
+        {#each pathParts as pathPart, i (i)}
+          <span
+            class={clsx([
+              "mr-1",
+              "text-xs",
+              "text-neutral-500",
+              "whitespace-nowrap",
+            ])}
+          >
             / {pathPart}
           </span>
         {/each}
       </p>
     </div>
 
-    <div class="flex items-center ml-4">
+    <div class="ml-4 flex items-center">
       <!-- Mobile menu button -->
-      <button class={clsx([
-        "block",
-        "md:hidden",
-        "p-1",
-        "rounded",
-        "border",
-        "border-neutral-200",
-        "transition-colors",
-        "hover:bg-neutral-100",
-      ])}
+      <button
+        class={clsx([
+          "block",
+          "md:hidden",
+          "p-1",
+          "rounded",
+          "border",
+          "border-neutral-200",
+          "transition-colors",
+          "hover:bg-neutral-100",
+        ])}
         data-testid="mobile-menu-button"
-        onclick={() => mobileExpanded = !mobileExpanded}
+        onclick={() => (mobileExpanded = !mobileExpanded)}
       >
         <MaterialIcon size="1.5rem" color="fill-neutral-500">
           <Menu />
