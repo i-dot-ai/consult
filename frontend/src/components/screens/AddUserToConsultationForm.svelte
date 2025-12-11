@@ -3,11 +3,7 @@
 
   import { slide } from "svelte/transition";
 
-  import {
-    getApiAddUserToConsultation,
-    getConsultationDetailUrl,
-    Routes,
-  } from "../../global/routes";
+  import { getApiAddUserToConsultation, Routes } from "../../global/routes";
 
   import type { User } from "../../global/types";
   import Button from "../inputs/Button/Button.svelte";
