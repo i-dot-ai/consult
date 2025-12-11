@@ -300,17 +300,13 @@ class ConsultationViewSet(ModelViewSet):
         try:
             consultation = self.get_object()
         except Http404:
-            return Response(
-                {"error": "Consultation not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"error": "Consultation not found"}, status=status.HTTP_404_NOT_FOUND)
 
         user_ids = request.data.get("user_ids", [])
 
         if not isinstance(user_ids, list) or not user_ids:
             return Response(
-                {"error": "user_ids must be a non-empty list"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "user_ids must be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -320,17 +316,16 @@ class ConsultationViewSet(ModelViewSet):
             if found_user_count != len(user_ids):
                 return Response(
                     {"error": f"Only {found_user_count} of {len(user_ids)} users found"},
-                    status=status.HTTP_404_NOT_FOUND
+                    status=status.HTTP_404_NOT_FOUND,
                 )
         except (ValueError, TypeError) as e:
             return Response(
-                {"error": "Invalid user IDs provided"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "Invalid user IDs provided"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         consultation.users.add(*users)
 
         return Response(
             {"message": f"Successfully added {found_user_count} users to consultation"},
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
