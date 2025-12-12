@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import login
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, JsonResponse
@@ -9,6 +10,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
 from consultation_analyser.consultations.views.sessions import send_magic_link_if_email_exists
+
+logger = settings.LOGGER
 
 
 @api_view(["POST"])
@@ -34,6 +37,7 @@ def verify_magic_link(request) -> HttpResponse:
     view will raise a PermissionDenied, which will render the 403 template.
 
     """
+    logger.refresh_context()
     token = request.data.get("token")
     if not token:
         return Response({"detail": "token required"}, status=400)
@@ -44,8 +48,10 @@ def verify_magic_link(request) -> HttpResponse:
         token = AccessToken.for_user(link.user)
     except (PermissionDenied, InvalidLink) as ex:
         link.audit(request, error=ex)
+        logger.info("user {email} denied access", email=link.user.email)
         return JsonResponse(data={"detail": str(ex.args[0])}, status=403)
     else:
+        logger.info("user {email} authenticated", email=link.user.email)
         link.audit(request)
         # Log the user into Django session
         login(request, link.user)

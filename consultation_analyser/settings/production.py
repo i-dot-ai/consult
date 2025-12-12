@@ -82,6 +82,7 @@ LOGGER = StructuredLogger(
     options={
         "execution_environment": ExecutionEnvironmentType.FARGATE,
         "log_format": LogOutputFormat.JSON,
+        "ship_logs": True,
     },
 )
 
