@@ -45,7 +45,7 @@ describe("DemoFilter", () => {
   });
 
   // TODO: Update below case
-  it.skip("should update filters state when clicked", async () => {
+  it.todo("should update filters state when clicked", async () => {
     const user = userEvent.setup();
     expect(demoFilters.filters).toEqual({});
 
