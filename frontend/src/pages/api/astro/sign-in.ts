@@ -15,7 +15,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const backendResponse = await fetch(
-      join(getBackendUrl(request.url), Routes.ApiMagicLink),
+      join(getBackendUrl(), Routes.ApiMagicLink),
       {
         method: "POST",
         body: JSON.stringify({
