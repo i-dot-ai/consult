@@ -129,6 +129,7 @@ class ConsultationAdmin(admin.ModelAdmin):
         reimport_demographics,
         create_small_dummy_consultation,
         create_large_dummy_consultation,
+        export_selected_themes_to_s3,
     ]
 
 
