@@ -108,7 +108,7 @@ def create_large_dummy_consultation(modeladmin, request, queryset):
     create_dummy_consultation(modeladmin, request, queryset, 10_000)
 
 
-@admin.action(description="create large dummy consultation")
+@admin.action(description="export selected themes")
 def export_selected_themes_to_s3(modeladmin, request, queryset):
     for consultation in queryset:
         for question in consultation.question_set.all():
