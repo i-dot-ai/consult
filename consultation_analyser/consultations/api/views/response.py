@@ -67,7 +67,7 @@ class ResponseViewSet(ModelViewSet):
     pagination_class = BespokeResultsSetPagination
     filter_backends = [ResponseSearchFilter, DjangoFilterBackend]
     filterset_class = ResponseFilter
-    http_method_names = ["get", "patch"]
+    http_method_names = ["get", "patch", "post"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
@@ -92,6 +92,9 @@ class ResponseViewSet(ModelViewSet):
                     response=OuterRef("pk"), flagged_by=self.request.user
                 )
             ),
+            is_read_by_user=Exists(
+                models.Response.objects.filter(read_by=self.request.user, pk=OuterRef("pk"))
+            ),
             annotation_is_edited=Exists(
                 models.ResponseAnnotation.history.filter(id=OuterRef("annotation__id")).values(
                     "id"
@@ -105,7 +108,7 @@ class ResponseViewSet(ModelViewSet):
             ),
         )
         # Apply additional FilterSet filtering (including themeFilters)
-        filterset = self.filterset_class(self.request.GET, queryset=queryset)
+        filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
         return filterset.qs.distinct()
 
     @action(detail=False, methods=["get"], url_path="demographic-aggregations")
@@ -181,3 +184,19 @@ class ResponseViewSet(ModelViewSet):
             response.annotation.flagged_by.add(request.user)
         response.annotation.save()
         return Response()
+
+    @action(detail=True, methods=["post"], url_path="mark-read")
+    def mark_read(self, request, consultation_pk=None, pk=None):
+        """Mark this response as read by the current user"""
+        response = self.get_object()
+
+        # Check if already read before marking
+        was_already_read = response.is_read_by(request.user)
+        response.mark_as_read_by(request.user)
+
+        return Response(
+            {
+                "message": "Response marked as read",
+                "was_already_read": was_already_read,
+            }
+        )

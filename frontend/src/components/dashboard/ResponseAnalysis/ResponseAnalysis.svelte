@@ -21,6 +21,7 @@
     type SearchableSelectOption,
   } from "../../../global/types";
   import { themeFilters } from "../../../global/state.svelte";
+  import { updateResponseReadStatus } from "../../../global/routes";
 
   import Title from "../../Title.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
@@ -33,10 +34,11 @@
   import Popover from "../../inputs/Popover/Popover.svelte";
   import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
   import Flag2 from "../../svg/material/Flag2.svelte";
+  import { onDestroy } from "svelte";
 
   export let consultationId: string = "";
   export let questionId: string = "";
-  export let pageSize: number = 50;
+  export let pageSize: number = 5;
   export let isAnswersLoading: boolean = true;
   export let isThemesLoading: boolean = true;
   export let answersError: string = "";
@@ -59,6 +61,9 @@
   export let evidenceRich: boolean = false;
   export let setEvidenceRich = () => {};
 
+  export let unseenResponses: boolean = false;
+  export let setUnseenResponses = () => {};
+
   export let flaggedOnly: boolean = false;
   export let setFlaggedOnly = () => {};
 
@@ -72,6 +77,53 @@
     // new answers without initial delay but still scattered
     return BASE_FLY_DELAY * (index % pageSize);
   }
+
+  let markAsReadTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function startMarkAsReadTimer() {
+    if (markAsReadTimer) {
+      clearTimeout(markAsReadTimer);
+    }
+
+    const READ_TIMEOUT = 10000; // 10 seconds
+
+    markAsReadTimer = setTimeout(async () => {
+      if (answers.length > 0) {
+        const markPromises = answers.map((answer) =>
+          fetch(updateResponseReadStatus(consultationId, answer.id), {
+            method: "POST",
+          }),
+        );
+        await Promise.all(markPromises);
+      }
+    }, READ_TIMEOUT);
+  }
+
+  function resetMarkAsReadTimer() {
+    if (markAsReadTimer) {
+      clearTimeout(markAsReadTimer);
+      markAsReadTimer = null;
+    }
+  }
+
+  onDestroy(() => {
+    resetMarkAsReadTimer();
+  });
+
+  $: if (answers.length > 0 && !isAnswersLoading && !answersError) {
+    startMarkAsReadTimer();
+  }
+
+  $: if (
+    searchValue ||
+    anyFilterApplied ||
+    evidenceRich ||
+    unseenResponses ||
+    flaggedOnly ||
+    themeFilters.filters.length > 0
+  ) {
+    resetMarkAsReadTimer();
+  }
 </script>
 
 <div class="grid grid-cols-4 gap-4">
@@ -79,11 +131,14 @@
     <svelte:boundary>
       <FiltersSidebar
         showEvidenceRich={true}
+        showUnseenResponse={false}
         {demoOptions}
         {demoData}
         {demoOptionsData}
         {evidenceRich}
         {setEvidenceRich}
+        {unseenResponses}
+        {setUnseenResponses}
         loading={isThemesLoading}
       />
 

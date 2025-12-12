@@ -10,6 +10,7 @@ describe("FiltersSidebar", () => {
     demoOptions: { country: ["england", "scotland"] },
     demoData: { country: { england: 10, scotland: 20 } },
     evidenceRich: false,
+    unseenResponsesOnly: false,
     loading: false,
   };
 
@@ -19,6 +20,7 @@ describe("FiltersSidebar", () => {
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
+      unseenResponsesOnly: testData.unseenResponsesOnly,
       loading: testData.loading,
     });
     Object.keys(testData.demoData).forEach((category) => {
@@ -39,6 +41,7 @@ describe("FiltersSidebar", () => {
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
+      unseenResponsesOnly: testData.unseenResponsesOnly,
       loading: true,
     });
     Object.keys(testData.demoData).forEach((category) => {
@@ -67,21 +70,66 @@ describe("FiltersSidebar", () => {
   it("should call set evidence rich func", async () => {
     const user = userEvent.setup();
     const setEvidenceRichMock = vi.fn();
+    const setUnseenResponsesMock = vi.fn();
 
     render(FiltersSidebar, {
       showEvidenceRich: testData.showEvidenceRich,
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
+      unseenResponsesOnly: testData.unseenResponsesOnly,
       setEvidenceRich: setEvidenceRichMock,
+      setUnseenResponses: setUnseenResponsesMock,
     });
     expect(setEvidenceRichMock).toHaveBeenCalledTimes(1);
     expect(setEvidenceRichMock).toHaveBeenCalledWith(false);
 
-    const evidenceRichButton = screen.getByRole("switch");
+    const evidenceRichButton = screen.getByRole("switch", {
+      name: /evidence rich/i,
+    });
     await user.click(evidenceRichButton);
 
     expect(setEvidenceRichMock).toHaveBeenCalledTimes(2);
     expect(setEvidenceRichMock).toHaveBeenCalledWith(true);
+  });
+
+  it("should call set unseen responses func", async () => {
+    const user = userEvent.setup();
+    const setEvidenceRichMock = vi.fn();
+    const setUnseenResponsesMock = vi.fn();
+
+    render(FiltersSidebar, {
+      showEvidenceRich: testData.showEvidenceRich,
+      showUnseenResponse: true,
+      demoOptions: testData.demoOptions,
+      demoData: testData.demoData,
+      evidenceRich: testData.evidenceRich,
+      unseenResponsesOnly: testData.unseenResponsesOnly,
+      setEvidenceRich: setEvidenceRichMock,
+      setUnseenResponses: setUnseenResponsesMock,
+    });
+    expect(setUnseenResponsesMock).toHaveBeenCalledTimes(1);
+    expect(setUnseenResponsesMock).toHaveBeenCalledWith(false);
+
+    const unseenResponsesButton = screen.getByRole("switch", {
+      name: /show unseen responses/i,
+    });
+    await user.click(unseenResponsesButton);
+
+    expect(setUnseenResponsesMock).toHaveBeenCalledTimes(2);
+    expect(setUnseenResponsesMock).toHaveBeenCalledWith(true);
+  });
+
+  it("should not render unseen responses switch if not show unseen response", () => {
+    render(FiltersSidebar, {
+      showEvidenceRich: testData.showEvidenceRich,
+      showUnseenResponse: false,
+      demoOptions: testData.demoOptions,
+      demoData: testData.demoData,
+      evidenceRich: testData.evidenceRich,
+      unseenResponsesOnly: testData.unseenResponsesOnly,
+    });
+
+    expect(screen.queryByText("Show unseen responses")).not.toBeInTheDocument();
   });
 });

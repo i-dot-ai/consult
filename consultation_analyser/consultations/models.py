@@ -193,6 +193,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     chosen_options = models.ManyToManyField("MultiChoiceAnswer", blank=True)
     embedding = VectorField(dimensions=settings.EMBEDDING_DIMENSION, null=True, blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
+    read_by = models.ManyToManyField(User, blank=True)
 
     class Meta:
         constraints = [
@@ -208,6 +209,18 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
         if self.free_text:
             return shorten(self.free_text, width=64, placeholder="...")
         return "multi-choice response"
+
+    def mark_as_read_by(self, user):
+        """Mark this response as read by the given user"""
+        self.read_by.add(user)
+
+    def is_read_by(self, user):
+        """Check if this response has been read by the given user"""
+        return self.read_by.filter(id=user.id).exists()
+
+    def get_readers(self):
+        """Get all users who have read this response"""
+        return self.read_by.all()
 
 
 @receiver(post_save, sender=Response)
