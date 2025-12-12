@@ -1,4 +1,6 @@
 <svg
+  title="consult-icon"
+  data-testid="consult-icon"
   class="block size-full"
   fill="none"
   preserveAspectRatio="xMidYMid meet"

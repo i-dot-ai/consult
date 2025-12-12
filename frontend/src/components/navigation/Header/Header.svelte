@@ -201,7 +201,7 @@
                       tabindex={expanded ? 0 : -1}
                       onclick={(e) => e.stopPropagation()}
                     >
-                      {@html `<!-- tabindex to avoid keyboard navigation while not expanded -->`}
+                      <!-- tabindex to avoid keyboard navigation while not expanded -->
                       {@render navLabelChild(subItem.label)}
                     </a>
                   </li>

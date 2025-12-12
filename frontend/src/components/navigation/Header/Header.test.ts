@@ -8,25 +8,25 @@ import { testData } from "./testData";
 
 describe("Header", () => {
   it("should render text and navItems", async () => {
-    const { container } = render(Header, {
+    render(Header, {
       ...testData,
     });
 
     expect(screen.getByText(testData.title)).toBeInTheDocument();
     expect(screen.getByText(testData.subtitle)).toBeInTheDocument();
 
-    expect(container.querySelector("svg")).toBeInTheDocument();
+    expect(screen.getByTestId("consult-icon")).toBeInTheDocument();
 
     testData.pathParts.forEach((pathPart) => {
       expect(screen.getByText(`/ ${pathPart}`)).toBeInTheDocument();
     });
 
     testData.navItems.forEach((navItem) => {
-      const anchorEl = screen.getByText(navItem.label);
-      expect(anchorEl).toBeInTheDocument();
+      const navEl = screen.getByText(navItem.label);
+      expect(navEl).toBeInTheDocument();
 
       if (navItem.url) {
-        expect(anchorEl.closest("a")!.href).toContain(navItem.url);
+        expect(navEl.closest("a")!.getAttribute("href")).toContain(navItem.url);
       }
 
       if (navItem.children) {
