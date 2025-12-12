@@ -6,9 +6,9 @@ echo "Running type check..."
 OUTPUT=$(npm run typecheck 2>&1 || true)
 echo "$OUTPUT"
 
-# Extract error and warning counts
-CURRENT_ERRORS=$(echo "$OUTPUT" | grep -oP 'found \K\d+(?= errors)' || echo "0")
-CURRENT_WARNINGS=$(echo "$OUTPUT" | grep -oP 'and \K\d+(?= warnings)' || echo "0")
+# Extract error and warning counts (macOS/BSD compatible)
+CURRENT_ERRORS=$(echo "$OUTPUT" | grep -o 'found [0-9]* error' | grep -o '[0-9]*' | head -1 || echo "0")
+CURRENT_WARNINGS=$(echo "$OUTPUT" | grep -o 'and [0-9]* warning' | grep -o '[0-9]*' | head -1 || echo "0")
 
 # Read baseline
 BASELINE_ERRORS=$(node -p "require('./.typecheck-baseline.json').errorCount")
