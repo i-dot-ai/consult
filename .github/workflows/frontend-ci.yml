@@ -61,3 +61,21 @@ jobs:
 
       - name: Check code quality and formatting with ESLint and Prettier
         run: npm run lint
+
+      - name: Check type errors against baseline
+        env:
+          IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
+        run: bash scripts/check-typecheck-baseline.sh
+
+      - name: Commit updated baseline (main branch only)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          if git diff --quiet .typecheck-baseline.json; then
+            echo "No baseline changes to commit"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .typecheck-baseline.json
+            git commit -m "chore: update typecheck baseline [skip ci]"
+            git push
+          fi

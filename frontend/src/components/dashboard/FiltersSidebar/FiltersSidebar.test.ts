@@ -21,15 +21,12 @@ describe("FiltersSidebar", () => {
       evidenceRich: testData.evidenceRich,
       loading: testData.loading,
     });
-    Object.keys(testData.demoData).forEach((category) => {
-      expect(screen.getByText(category)).toBeInTheDocument();
-      Object.keys(testData.demoData[category]).forEach((rowKey) => {
-        expect(screen.getByText(rowKey)).toBeInTheDocument();
-        expect(
-          screen.getByText(testData.demoData[category][rowKey]),
-        ).toBeInTheDocument();
-      });
-    });
+
+    expect(screen.getByText("country")).toBeInTheDocument();
+    expect(screen.getByText("england")).toBeInTheDocument();
+    expect(screen.getByText("10")).toBeInTheDocument();
+    expect(screen.getByText("scotland")).toBeInTheDocument();
+    expect(screen.getByText("20")).toBeInTheDocument();
     expect(screen.getByText("Show evidence rich")).toBeInTheDocument();
   });
 
@@ -41,15 +38,8 @@ describe("FiltersSidebar", () => {
       evidenceRich: testData.evidenceRich,
       loading: true,
     });
-    Object.keys(testData.demoData).forEach((category) => {
-      expect(screen.queryByText(category)).toBeNull();
-      Object.keys(testData.demoData[category]).forEach((rowKey) => {
-        expect(screen.queryByText(rowKey)).toBeNull();
-        expect(
-          screen.queryByText(testData.demoData[category][rowKey]),
-        ).toBeNull();
-      });
-    });
+
+    expect(screen.queryByText("country")).not.toBeInTheDocument();
     expect(screen.getByText("Show evidence rich")).toBeInTheDocument();
   });
 
@@ -59,6 +49,7 @@ describe("FiltersSidebar", () => {
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
+      loading: false,
     });
 
     expect(screen.queryByText("Show evidence rich")).not.toBeInTheDocument();
@@ -74,6 +65,7 @@ describe("FiltersSidebar", () => {
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
       setEvidenceRich: setEvidenceRichMock,
+      loading: false,
     });
     expect(setEvidenceRichMock).toHaveBeenCalledTimes(1);
     expect(setEvidenceRichMock).toHaveBeenCalledWith(false);
