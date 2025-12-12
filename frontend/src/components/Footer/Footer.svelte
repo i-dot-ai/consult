@@ -9,7 +9,7 @@
 <footer class={clsx(["py-6", "px-0", "bg-black", "text-white", "text-xs"])}>
   <div class="mx-6">
     <div>
-      <a class="flex items-center" href="https://ai.gov.uk">
+      <a class="flex h-16 w-16 items-center" href="https://ai.gov.uk">
         <IaiIcon />
       </a>
       <div>
