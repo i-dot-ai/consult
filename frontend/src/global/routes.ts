@@ -262,6 +262,19 @@ export const getApiShowNextResponse = (
   );
 };
 
+export const updateResponseReadStatus = (
+  consultationId: string,
+  responseId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    "responses",
+    responseId,
+    "mark-read/",
+  );
+};
+
 export const getApiQuestionResponse = (
   consultationId: string,
   questionId: string,
