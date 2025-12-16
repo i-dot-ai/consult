@@ -317,3 +317,7 @@ export const getApiRemoveUserFromConsultation = (
 export const getApiUserDetails = (userId: string) => {
   return urlJoin(Routes.ApiUsers, userId, "/");
 };
+
+export const getSupportConsultationDetails = (consultationId: string) => {
+  return urlJoin(Routes.SupportConsultations, consultationId, "/");
+};

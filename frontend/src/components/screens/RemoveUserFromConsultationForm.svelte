@@ -5,7 +5,7 @@
 
   import {
     getApiRemoveUserFromConsultation,
-    Routes,
+    getSupportConsultationDetails,
   } from "../../global/routes";
 
   import Button from "../inputs/Button/Button.svelte";
@@ -35,7 +35,7 @@
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
-      window.location.href = `${Routes.SupportConsultations}/${consultation.id}`;
+      window.location.href = getSupportConsultationDetails(consultation.id);
     } catch (err: unknown) {
       errors["general"] =
         err instanceof Error ? err.message : "An unknown error occurred";
