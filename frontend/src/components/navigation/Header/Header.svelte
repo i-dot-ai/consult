@@ -284,7 +284,11 @@
               "whitespace-nowrap",
             ])}
           >
-            / {pathPart}
+            <!--
+              Only add slash to first item if subtitle is passed to
+              avoid having the vertical divider and slash side by side
+            -->
+            {i === 0 && !subtitle ? "" : "/"} {pathPart}
           </span>
         {/each}
       </p>
