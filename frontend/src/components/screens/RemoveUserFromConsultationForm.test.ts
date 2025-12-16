@@ -13,6 +13,7 @@ describe("RemoveUserFromConsultationForm", () => {
     email: "user@example.com",
     is_staff: false,
     has_dashboard_access: false,
+    created_at: "2023-01-01T00:00:00Z",
   };
 
   const mockConsultation: ConsultationResponse = {
@@ -20,8 +21,7 @@ describe("RemoveUserFromConsultationForm", () => {
     title: "Test Consultation",
     code: "test-code",
     stage: "theme_sign_off",
-    created_at: "2023-01-01T00:00:00Z",
-    modified_at: "2023-01-01T00:00:00Z",
+    users: [],
   };
 
   beforeEach(() => {
@@ -29,11 +29,11 @@ describe("RemoveUserFromConsultationForm", () => {
   });
 
   it("should render with user and consultation details", () => {
-    render(RemoveUserFromConsultationForm, { 
-      user: mockUser, 
-      consultation: mockConsultation 
+    render(RemoveUserFromConsultationForm, {
+      user: mockUser,
+      consultation: mockConsultation,
     });
-    
+
     expect(screen.getByText(/Are you sure you want to remove/)).toBeTruthy();
     expect(screen.getByText("user@example.com")).toBeTruthy();
     expect(screen.getByText("Test Consultation")).toBeTruthy();
@@ -52,20 +52,20 @@ describe("RemoveUserFromConsultationForm", () => {
       writable: true,
     });
 
-    render(RemoveUserFromConsultationForm, { 
-      user: mockUser, 
-      consultation: mockConsultation 
+    render(RemoveUserFromConsultationForm, {
+      user: mockUser,
+      consultation: mockConsultation,
     });
-    
+
     const submitButton = screen.getByText("Yes, remove them");
     await fireEvent.click(submitButton);
-    
+
     expect(mockFetch).toHaveBeenCalledWith(
       `/api/consultations/${mockConsultation.id}/users/${mockUser.id}/`,
       expect.objectContaining({
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-      })
+      }),
     );
   });
 
@@ -75,37 +75,37 @@ describe("RemoveUserFromConsultationForm", () => {
       status: 404,
     });
 
-    render(RemoveUserFromConsultationForm, { 
-      user: mockUser, 
-      consultation: mockConsultation 
+    render(RemoveUserFromConsultationForm, {
+      user: mockUser,
+      consultation: mockConsultation,
     });
-    
+
     const submitButton = screen.getByText("Yes, remove them");
     await fireEvent.click(submitButton);
-    
+
     expect(screen.getByText("Error: 404")).toBeTruthy();
   });
 
   it("should show loading state during submission", async () => {
     // Create a promise that won't resolve immediately
-    let resolvePromise: (value: any) => void;
+    let resolvePromise: (value: unknown) => void;
     const pendingPromise = new Promise((resolve) => {
       resolvePromise = resolve;
     });
-    
+
     mockFetch.mockReturnValueOnce(pendingPromise);
 
-    render(RemoveUserFromConsultationForm, { 
-      user: mockUser, 
-      consultation: mockConsultation 
+    render(RemoveUserFromConsultationForm, {
+      user: mockUser,
+      consultation: mockConsultation,
     });
-    
+
     const submitButton = screen.getByText("Yes, remove them");
     await fireEvent.click(submitButton);
-    
+
     // Should show loading state
     expect(screen.getByText("Removing...")).toBeTruthy();
-    
+
     // Resolve the promise to clean up
     resolvePromise!({ ok: true });
   });
@@ -123,17 +123,19 @@ describe("RemoveUserFromConsultationForm", () => {
       writable: true,
     });
 
-    render(RemoveUserFromConsultationForm, { 
-      user: mockUser, 
-      consultation: mockConsultation 
+    render(RemoveUserFromConsultationForm, {
+      user: mockUser,
+      consultation: mockConsultation,
     });
-    
+
     const submitButton = screen.getByText("Yes, remove them");
     await fireEvent.click(submitButton);
 
     // Wait for the async operation to complete
-    await new Promise(resolve => setTimeout(resolve, 0));
-    
-    expect(mockLocation.href).toBe(`/support/consultations/${mockConsultation.id}`);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(mockLocation.href).toBe(
+      `/support/consultations/${mockConsultation.id}`,
+    );
   });
 });
