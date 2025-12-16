@@ -1,0 +1,46 @@
+---
+import { fetchBackendApi } from "../../../../../global/api";
+import type { ConsultationResponse, User } from "../../../../../global/types";
+
+import Layout from "../../../../../layouts/Layout.astro";
+import Section from "../../../../../components/Section/Section.svelte";
+import Title from "../../../../../components/Title.svelte";
+import Text from "../../../../../components/Text/Text.svelte";
+import { getApiConsultationUrl, Routes } from "../../../../../global/routes";
+import AddUserToConsultationForm from "../../../../../components/screens/AddUserToConsultationForm.svelte";
+
+const { consultationId } = Astro.params;
+
+if (!consultationId) {
+  return Astro.redirect(Routes.SupportConsultations);
+}
+
+let consultation = await fetchBackendApi<ConsultationResponse>(
+  Astro,
+  getApiConsultationUrl(consultationId),
+);
+
+const data = await fetchBackendApi<{ results: User[] }>(
+  Astro,
+  `${Routes.ApiUsers}?consultation_id=${consultationId}&is_in=false`,
+);
+const unaddedUsers = data.results || [];
+---
+
+<Layout>
+  <Section>
+    <Title level={1} text="Add users" />
+    <Text>Adding to {consultation.title}</Text>
+    {
+      Array.isArray(unaddedUsers) && unaddedUsers.length > 0 ? (
+        <AddUserToConsultationForm
+          client:load
+          users={unaddedUsers}
+          consultationId={consultationId}
+        />
+      ) : (
+        <Text>No users found to add.</Text>
+      )
+    }
+  </Section>
+</Layout>

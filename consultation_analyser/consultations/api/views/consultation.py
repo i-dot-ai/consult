@@ -3,12 +3,14 @@ from uuid import UUID
 
 import sentry_sdk
 from django.db.models import Count
+from django.http import Http404
 from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.api.permissions import (
     CanSeeConsultation,
     HasDashboardAccess,
@@ -283,3 +285,47 @@ class ConsultationViewSet(ModelViewSet):
         serializer = ConsultationFolderSerializer(consultation_folders, many=True)
 
         return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="add-users",
+        permission_classes=[HasDashboardAccess],
+    )
+    def add_users(self, request, pk=None) -> Response:
+        """
+        Add multiple users to this consultation
+        Expected payload: {"user_ids": ["uuid1", "uuid2", ...]}
+        """
+        try:
+            consultation = self.get_object()
+        except Http404:
+            return Response({"error": "Consultation not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        user_ids = request.data.get("user_ids", [])
+
+        if not isinstance(user_ids, list) or not user_ids:
+            return Response(
+                {"error": "user_ids must be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            users = User.objects.filter(id__in=user_ids)
+            found_user_count = users.count()
+
+            if found_user_count != len(user_ids):
+                return Response(
+                    {"error": f"Only {found_user_count} of {len(user_ids)} users found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except (ValueError, TypeError):
+            return Response(
+                {"error": "Invalid user IDs provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        consultation.users.add(*users)
+
+        return Response(
+            {"message": f"Successfully added {found_user_count} users to consultation"},
+            status=status.HTTP_201_CREATED,
+        )
