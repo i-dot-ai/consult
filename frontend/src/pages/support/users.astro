@@ -8,8 +8,9 @@ import Section from "../../components/Section/Section.svelte";
 import Title from "../../components/Title.svelte";
 import Button from "../../components/inputs/Button/Button.svelte";
 import Link from "../../components/Link.svelte";
+import { Routes } from "../../global/routes";
 
-const data = await fetchBackendApi<{ results: User[] }>(Astro, "/api/users/");
+const data = await fetchBackendApi<{ results: User[] }>(Astro, Routes.ApiUsers);
 const users = data.results;
 ---
 

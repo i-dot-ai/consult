@@ -6,6 +6,7 @@ from pgvector.django import CosineDistance
 from rest_framework import serializers
 from rest_framework.filters import SearchFilter
 
+from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import Response
 from consultation_analyser.embeddings import embed_text
 
@@ -59,6 +60,29 @@ class ResponseFilter(FilterSet):
     class Meta:
         model = Response
         fields = ["respondent_id", "chosen_options"]
+
+
+class UserFilter(FilterSet):
+    is_in = BooleanFilter(method="filter_by_consultation")
+    consultation_id = UUIDFilter(method="filter_by_consultation")
+
+    def filter_by_consultation(self, queryset, name, value):
+        consultation_id = self.request.GET.get("consultation_id")
+        is_in = self.request.GET.get("is_in")
+
+        if not consultation_id or is_in is None:
+            return queryset
+
+        is_in_bool = is_in.lower() == "true"
+
+        if is_in_bool:
+            return queryset.filter(consultation__id=consultation_id)
+        else:
+            return queryset.exclude(consultation__id=consultation_id)
+
+    class Meta:
+        model = User
+        fields = ["consultation_id"]
 
 
 class ResponseSearchSerializer(serializers.Serializer):
