@@ -333,7 +333,7 @@ class ConsultationViewSet(ModelViewSet):
     @action(
         detail=True,
         methods=["delete"],
-        url_path="users/(?P<user_id>[^/.]+)",
+        url_path="users/<int:user_id>",
         permission_classes=[HasDashboardAccess],
     )
     def remove_user(self, request, pk=None, user_id=None) -> Response:
