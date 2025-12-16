@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/svelte";
 import DemoFilter from "./DemoFilter.svelte";
 import { getPercentage } from "../../global/utils";
 import { demoFilters } from "../../global/state.svelte";
+import userEvent from "@testing-library/user-event";
 
 describe("DemoFilter", () => {
   const testData = {
@@ -45,7 +46,7 @@ describe("DemoFilter", () => {
   });
 
   // TODO: Update below case
-  it.skip("should update filters state when clicked", async () => {
+  it.todo("should update filters state when clicked", async () => {
     const user = userEvent.setup();
     expect(demoFilters.filters).toEqual({});
 
