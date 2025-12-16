@@ -4,6 +4,8 @@
   import { onDestroy, onMount } from "svelte";
   import { slide } from "svelte/transition";
 
+  import { handleEscKeyPress } from "../../../global/utils";
+
   import IaiIcon from "../../svg/IaiIcon.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import ChevronRight from "../../svg/material/ChevronRight.svelte";
@@ -27,11 +29,17 @@
 
   onMount(() => {
     window.addEventListener("click", handleOutsideClick);
+    window.addEventListener("keydown", handleEscPress);
   });
 
   onDestroy(() => {
     window.removeEventListener("click", handleOutsideClick);
+    window.removeEventListener("keydown", handleEscPress);
   });
+
+  function handleEscPress(e: KeyboardEvent) {
+    handleEscKeyPress(e, () => activeSubmenu = null);
+  }
 
   function handleOutsideClick(e: MouseEvent) {
     if (!(e.target as HTMLElement).closest(".nav-button")) {
