@@ -189,7 +189,6 @@ exports[`ConsultationStagePanel > should render correctly for analysis stage 1`]
     <!---->
   </div>
   
-  
 </div>
 `;
 
@@ -383,7 +382,6 @@ exports[`ConsultationStagePanel > should render correctly for theme_mapping stag
     </div>
     <!---->
   </div>
-  
   
 </div>
 `;
@@ -606,7 +604,6 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
     </div>
     <!---->
   </div>
-  
   
 </div>
 `;

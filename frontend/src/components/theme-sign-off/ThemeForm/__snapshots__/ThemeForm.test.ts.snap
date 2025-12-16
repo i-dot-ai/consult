@@ -185,6 +185,5 @@ exports[`ThemeForm > should render add variant 1`] = `
     <!---->
   </div>
   
-  
 </div>
 `;

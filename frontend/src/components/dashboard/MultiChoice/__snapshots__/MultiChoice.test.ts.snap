@@ -225,6 +225,5 @@ exports[`MultiChoice > should render data 1`] = `
     <!---->
   </section>
   
-  
 </div>
 `;

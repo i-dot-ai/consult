@@ -158,6 +158,5 @@ exports[`SelectedThemeCard > should render 1`] = `
     <!---->
   </article>
   
-  
 </div>
 `;
