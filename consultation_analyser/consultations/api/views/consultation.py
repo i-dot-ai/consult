@@ -335,6 +335,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=True,
         methods=["delete"],
         url_path="users/<int:user_id>",
+        url_name="remove-user",
         permission_classes=[HasDashboardAccess],
     )
     def remove_user(self, request, pk=None, user_id=None) -> Response:
