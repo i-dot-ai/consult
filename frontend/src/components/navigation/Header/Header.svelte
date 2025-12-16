@@ -43,14 +43,16 @@
 {#snippet navButton(label: string, url?: string)}
   <div class="hover:text-primary">
     <Button variant="ghost" fullWidth={true} size="sm" href={url}>
-      <span class={clsx([
-        "whitespace-nowrap",
-        "text-center",
-        "md:text-left",
-        "py-1",
-        "md:py-0",
-        "w-full",
-      ])}>
+      <span
+        class={clsx([
+          "whitespace-nowrap",
+          "text-center",
+          "md:text-left",
+          "py-1",
+          "md:py-0",
+          "w-full",
+        ])}
+      >
         {label}
       </span>
     </Button>
@@ -179,11 +181,7 @@
               </ol>
             {/if}
           {:else}
-            {#if isMobile}
-              {@render navButton(navItem.label, navItem.url)}
-            {:else}
-              {@render navButton(navItem.label, navItem.url)}
-            {/if}
+            {@render navButton(navItem.label, navItem.url)}
           {/if}
 
           {#if isMobile}

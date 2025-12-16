@@ -26,11 +26,13 @@ describe("Header", () => {
       expect(navEl).toBeInTheDocument();
 
       if (navItem.url) {
+        // eslint-disable-next-line vitest/no-conditional-expect
         expect(navEl.closest("a")!.getAttribute("href")).toContain(navItem.url);
       }
 
       if (navItem.children) {
         navItem.children.forEach((subItem) => {
+          // eslint-disable-next-line vitest/no-conditional-expect
           expect(screen.getByText(subItem.label)).toBeInTheDocument();
         });
       }
