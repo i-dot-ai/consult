@@ -319,5 +319,5 @@ export const getApiUserDetails = (userId: string) => {
 };
 
 export const getSupportConsultationDetails = (consultationId: string) => {
-  return urlJoin(Routes.SupportConsultations, consultationId, "/");
+  return urlJoin(Routes.SupportConsultations, consultationId);
 };
