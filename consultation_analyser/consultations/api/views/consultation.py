@@ -334,7 +334,7 @@ class ConsultationViewSet(ModelViewSet):
     @action(
         detail=True,
         methods=["delete"],
-        url_path="users/<int:user_id>",
+        url_path="users/(?P<user_id>[^/.]+)",
         url_name="remove-user",
         permission_classes=[HasDashboardAccess],
     )
