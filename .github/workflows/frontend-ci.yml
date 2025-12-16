@@ -61,3 +61,6 @@ jobs:
 
       - name: Check code quality and formatting with ESLint and Prettier
         run: npm run lint
+
+      - name: Check type errors against baseline
+        run: bash scripts/check-type-errors.sh

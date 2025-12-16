@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/svelte";
 import DemoFilter from "./DemoFilter.svelte";
 import { getPercentage } from "../../global/utils";
 import { demoFilters } from "../../global/state.svelte";
+import userEvent from "@testing-library/user-event";
 
 describe("DemoFilter", () => {
   const testData = {
