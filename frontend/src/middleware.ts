@@ -147,6 +147,10 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       return context.redirect("/sign-out");
     }
 
+    if (response.status === 403) {
+      console.log("403 detected", fullBackendUrl, response.body, accessToken);
+    }
+
     if (response.status === 304) {
       return response;
     }
