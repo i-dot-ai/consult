@@ -306,3 +306,14 @@ export const getThemeInformationResponse = (
 export const getApiAddUserToConsultation = (consultationId: string) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "add-users", "/");
 };
+
+export const getApiRemoveUserFromConsultation = (
+  consultationId: string,
+  userId: string,
+) => {
+  return urlJoin(Routes.ApiConsultations, consultationId, "users", userId, "/");
+};
+
+export const getApiUserDetails = (userId: string) => {
+  return urlJoin(Routes.ApiUsers, userId, "/");
+};

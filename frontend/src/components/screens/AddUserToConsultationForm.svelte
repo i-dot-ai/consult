@@ -29,7 +29,6 @@
 
   const handleSubmit = async () => {
     errors = {};
-    console.log(selectedUsers);
 
     if (selectedUsers.length == 0) {
       errors["general"] = "Please select a user to add";
