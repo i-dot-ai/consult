@@ -32,7 +32,7 @@ const unaddedUsers = data.results || [];
     <Title level={1} text="Add users" />
     <Text>Adding to {consultation.title}</Text>
     {
-      unaddedUsers.length > 0 ? (
+      Array.isArray(unaddedUsers) && unaddedUsers.length > 0 ? (
         <AddUserToConsultationForm
           client:load
           users={unaddedUsers}
