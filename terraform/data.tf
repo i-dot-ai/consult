@@ -160,3 +160,37 @@ data "aws_ssm_parameter" "slack_webhook_url" {
 data "aws_ssm_parameter" "litellm_api_key" {
   name = "/i-dot-ai-prod-core-llm-gateway/env_secrets/${var.project_name}-api-key"
 }
+
+resource "null_resource" "build_candidate_themes_lambda" {
+  triggers = {
+    requirements = filemd5("${path.root}/../lambda/candidate_themes_import/requirements.txt")
+    lambda_code  = filemd5("${path.root}/../lambda/candidate_themes_import/lambda_function.py")
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+      # Create temporary build directory
+      rm -rf ${path.root}/../lambda/candidate_themes_import/build
+      mkdir -p ${path.root}/../lambda/candidate_themes_import/build
+
+      # Copy source files to build directory
+      cp ${path.root}/../lambda/candidate_themes_import/*.py ${path.root}/../lambda/candidate_themes_import/build/
+      cp ${path.root}/../lambda/candidate_themes_import/requirements.txt ${path.root}/../lambda/candidate_themes_import/build/
+
+      # Install dependencies in build directory with specific options
+      cd ${path.root}/../lambda/candidate_themes_import/build
+      pip install -r requirements.txt -t . --no-cache-dir --platform linux_x86_64 --only-binary=:all:
+
+      # Verify packages were installed
+      echo "Installed packages:"
+      ls -la | grep -E "(redis|rq)"
+    EOF
+  }
+}
+
+data "archive_file" "candidate_themes_import_archive" {
+  depends_on  = [null_resource.build_candidate_themes_lambda]
+  type        = "zip"
+  source_dir  = "${path.root}/../lambda/candidate_themes_import/build"
+  output_path = "${path.root}/../lambda/candidate_themes_import.zip"
+}
