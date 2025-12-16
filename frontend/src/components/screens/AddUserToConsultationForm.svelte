@@ -20,10 +20,8 @@
   const setSelectedUsers = (checked: boolean, value?: string) => {
     if (!value) return;
 
-    if (checked) {
-      if (!selectedUsers.includes(value)) {
-        selectedUsers = [...selectedUsers, value];
-      }
+    if (checked && !selectedUsers.includes(value)) {
+      selectedUsers = [...selectedUsers, value];
     } else {
       selectedUsers = selectedUsers.filter((id) => id !== value);
     }
@@ -78,7 +76,7 @@
   {/if}
   {#each users as user (user.id)}
     {@const userIdString = user.id!.toString()}
-    
+
     <Checkbox
       id={userIdString}
       value={userIdString}
