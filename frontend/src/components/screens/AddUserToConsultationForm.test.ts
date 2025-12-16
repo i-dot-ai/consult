@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, vi } from "vitest";
+import { describe, expect, it, vi, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/svelte";
 import AddUserToConsultationForm from "./AddUserToConsultationForm.svelte";
 import type { User } from "../../global/types";
@@ -27,7 +27,7 @@ describe("AddUserToConsultationForm", () => {
 
   const consultationId = "test-consultation-123";
 
-  beforeEach(() => {
+  afterEach(() => {
     vi.clearAllMocks();
   });
 
