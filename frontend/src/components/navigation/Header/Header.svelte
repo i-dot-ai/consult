@@ -40,22 +40,7 @@
   }
 </script>
 
-{#snippet navLabelParent(label: string)}
-  <span
-    class={clsx([
-      "w-full",
-      "text-sm",
-      "text-neutral-800",
-      "hover:text-primary",
-      "transition-colors",
-      "whitespace-nowrap",
-    ])}
-  >
-    {label}
-  </span>
-{/snippet}
-
-{#snippet navLabelChild(label: string, url?: string)}
+{#snippet navButton(label: string, url?: string)}
   <div class="hover:text-primary">
     <Button variant="ghost" fullWidth={true} size="sm" href={url}>
       <span class={clsx([
@@ -188,16 +173,16 @@
               >
                 {#each navItem.children as subItem, i (i)}
                   <li>
-                    {@render navLabelChild(subItem.label, subItem.url)}
+                    {@render navButton(subItem.label, subItem.url)}
                   </li>
                 {/each}
               </ol>
             {/if}
           {:else}
             {#if isMobile}
-              {@render navLabelChild(navItem.label, navItem.url)}
+              {@render navButton(navItem.label, navItem.url)}
             {:else}
-              {@render navLabelParent(navItem.label)}
+              {@render navButton(navItem.label, navItem.url)}
             {/if}
           {/if}
 
