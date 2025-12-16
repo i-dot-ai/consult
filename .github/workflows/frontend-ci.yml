@@ -63,4 +63,4 @@ jobs:
         run: npm run lint
 
       - name: Check type errors against baseline
-        run: bash scripts/check-type-errors.sh
+        run: npm run typecheck:check-baseline

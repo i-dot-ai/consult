@@ -16,6 +16,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "svelte-check",
+    "typecheck:check-baseline": "bash scripts/check-type-errors.sh",
     "typecheck:update-baseline": "bash scripts/update-type-errors.sh"
   },
   "dependencies": {
