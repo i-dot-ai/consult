@@ -77,10 +77,12 @@
     </small>
   {/if}
   {#each users as user (user.id)}
+    {@const userIdString = user.id!.toString()}
+    
     <Checkbox
-      id={user.id!.toString()}
-      value={user.id!.toString()}
-      checked={selectedUsers.includes(user.id!.toString())}
+      id={userIdString}
+      value={userIdString}
+      checked={selectedUsers.includes(userIdString)}
       disabled={false}
       label={user.email}
       name="selected_users"
