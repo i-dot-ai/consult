@@ -6,6 +6,7 @@ from django.db.models import Count
 from django.http import Http404
 from rest_framework import serializers, status
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -350,17 +351,7 @@ class ConsultationViewSet(ModelViewSet):
             return Response(
                 {"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST
             )
-
-        try:
-            user = User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            return Response(
-                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-        except (ValueError, TypeError):
-            return Response(
-                {"error": "Invalid user ID provided"}, status=status.HTTP_400_BAD_REQUEST
-            )
+        user = get_object_or_404(User, pk=user_id)
 
         if not consultation.users.filter(id=user.id).exists():
             return Response(
