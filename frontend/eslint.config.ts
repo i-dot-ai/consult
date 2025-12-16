@@ -47,7 +47,6 @@ export default defineConfig([
     rules: {
       ...vitest.configs.recommended.rules,
       ...testingLibrary.configs["flat/svelte"].rules,
-      "testing-library/no-node-access": "off",
     },
   },
   {

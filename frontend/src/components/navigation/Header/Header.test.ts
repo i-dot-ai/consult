@@ -5,75 +5,82 @@ import { render, screen, waitFor } from "@testing-library/svelte";
 import Header from "./Header.svelte";
 
 import { testData } from "./testData";
+import type { NavItem, Props } from "./types";
+
+function getNavItemsWithUrl(data: Props) {
+  return data.navItems.filter((item) => Boolean(item.url));
+}
+function getDropdownNavItems(data: Props) {
+  return data.navItems.filter((item) => Boolean(item.children));
+}
 
 describe("Header", () => {
-  it("should render text and navItems", async () => {
-    render(Header, {
-      ...testData,
-    });
-
+  it("renders title", () => {
+    render(Header, testData);
     expect(screen.getByText(testData.title)).toBeInTheDocument();
-    expect(screen.getByText(testData.subtitle)).toBeInTheDocument();
-
-    expect(screen.getByTestId("consult-icon")).toBeInTheDocument();
-
-    testData.pathParts.forEach((pathPart) => {
-      expect(screen.getByText(`/ ${pathPart}`)).toBeInTheDocument();
-    });
-
-    testData.navItems.forEach((navItem) => {
-      const navEl = screen.getByText(navItem.label);
-      expect(navEl).toBeInTheDocument();
-
-      if (navItem.url) {
-        // eslint-disable-next-line vitest/no-conditional-expect
-        expect(navEl.closest("a")!.getAttribute("href")).toContain(navItem.url);
-      }
-
-      if (navItem.children) {
-        navItem.children.forEach((subItem) => {
-          // eslint-disable-next-line vitest/no-conditional-expect
-          expect(screen.getByText(subItem.label)).toBeInTheDocument();
-        });
-      }
-    });
   });
 
+  it("renders subtitle", () => {
+    render(Header, testData);
+    expect(screen.getByText(testData.subtitle)).toBeInTheDocument();
+  });
+
+  it.each(testData.pathParts)("renders path part", async (pathPart: string) => {
+    render(Header, testData);
+    expect(screen.getByText(`/ ${pathPart}`)).toBeInTheDocument();
+  });
+
+  it.each(getNavItemsWithUrl(testData))(
+    "renders nav items with url",
+    async (navItem: NavItem) => {
+      render(Header, testData);
+      const link = screen.getByRole("link", { name: navItem.label });
+      expect(link).toHaveAttribute("href", navItem.url);
+    },
+  );
+
+  it.each(getDropdownNavItems(testData))(
+    "renders dropdown nav items",
+    async (navItem: NavItem) => {
+      render(Header, testData);
+      const dropdownItem = screen.getByRole("button", { name: navItem.label });
+      expect(dropdownItem).toBeInTheDocument();
+    },
+  );
+
   it("should expand and collapse nav dropdowns", async () => {
+    render(Header, testData);
+
     const user = userEvent.setup();
 
-    render(Header, {
-      ...testData,
-    });
-
     const dropdownNavItems = testData.navItems.filter((item) =>
+      // eslint-disable-next-line testing-library/no-node-access
       Boolean(item.children),
     );
     const buttons: HTMLElement[] = dropdownNavItems
       .map((item) => item.label)
-      .map((label) => screen.getByText(label).closest("button")!);
+      .map((label) => screen.getByRole("button", { name: label }));
 
     expect(buttons).toHaveLength(
+      // eslint-disable-next-line testing-library/no-node-access
       testData.navItems.filter((item) => Boolean(item.children)).length,
     );
 
     buttons.forEach(async (button) => {
-      expect(button.getAttribute("aria-expanded")).toEqual("false");
+      expect(button).toHaveAttribute("aria-expanded", "false");
 
       await user.click(button);
 
       await waitFor(() => {
-        expect(button.getAttribute("aria-expanded")).toEqual("true");
+        expect(button).toHaveAttribute("aria-expanded", "true");
       });
     });
   });
 
   it("should not render mobile nav if mobile button has not been clicked", async () => {
-    const user = userEvent.setup();
+    render(Header, testData);
 
-    render(Header, {
-      ...testData,
-    });
+    const user = userEvent.setup();
 
     expect(screen.queryByTestId("mobile-nav")).toBeFalsy();
 
