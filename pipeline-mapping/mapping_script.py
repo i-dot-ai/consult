@@ -7,6 +7,8 @@ import os
 import subprocess
 from pathlib import Path
 
+from themefinder.models import ThemeGenerationResponses
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -93,9 +95,15 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
     responses = responses_df.rename(columns={"themefinder_id": "response_id", "text": "response"})
 
     with themes_path.open() as f:
-        themes = pd.read_csv(themes_path)
-    themes["topic_id"] = [chr(65 + i) for i in range(len(themes))]
-    themes["topic"] = themes["Theme Name"] + ": " + themes["Theme Description"]
+        themes = ThemeGenerationResponses.model_validate_json(f.read())
+
+    themes = pd.DataFrame(
+        [
+            {"topic": theme.topic_label + ": " + theme.topic_description, "topic_id": chr(65 + i)}
+            for i, theme in enumerate(themes.responses)
+        ]
+    )
+
     return question, responses, themes
 
 

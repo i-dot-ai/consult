@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django_rq import get_queue
 from simple_history.utils import bulk_create_with_history
+from themefinder import models
 
 from consultation_analyser.consultations.models import (
     CandidateTheme,
@@ -494,10 +495,11 @@ def export_selected_themes(question: Question):
     s3_client = boto3.client("s3")
 
     themes_to_save = [
-        {"theme_name": theme.name, "theme_description": theme.description, "theme_key": theme.key}
+        models.Theme(topic_label=theme.name, topic_description=theme.description)
         for theme in SelectedTheme.objects.filter(question=question)
     ]
-    content = json.dumps(themes_to_save)
+    themes = models.ThemeGenerationResponses(responses=themes_to_save)
+    content = json.dumps(themes.model_dump_json())
     s3_client.put_object(
         Bucket=settings.AWS_BUCKET_NAME, Key=question.selected_themes_file, Body=content
     )
