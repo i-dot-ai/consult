@@ -354,3 +354,84 @@ class TestConsultationViewSet:
         )
 
         assert response.status_code == 403
+
+    def test_remove_user_success(self, client, consultation, consultation_user_token):
+        """Test successfully removing a user from a consultation"""
+        user_to_remove = UserFactory()
+        consultation.users.add(user_to_remove)
+        
+        url = reverse("consultations-remove-user", kwargs={"pk": consultation.id, "user_id": user_to_remove.id})
+        response = client.delete(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        
+        assert response.status_code == 200
+        assert f"Successfully removed user {user_to_remove.email} from consultation" in response.json()["message"]
+        assert not consultation.users.filter(id=user_to_remove.id).exists()
+
+    def test_remove_user_not_in_consultation(self, client, consultation, consultation_user_token):
+        """Test removing a user who is not in the consultation fails"""
+        user_not_in_consultation = UserFactory()
+        
+        url = reverse("consultations-remove-user", kwargs={"pk": consultation.id, "user_id": user_not_in_consultation.id})
+        response = client.delete(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        
+        assert response.status_code == 404
+        assert "User is not assigned to this consultation" in response.json()["error"]
+
+    def test_remove_user_nonexistent_user(self, client, consultation, consultation_user_token):
+        """Test removing a non-existent user fails"""
+        fake_user_id = "99999"
+        
+        url = reverse("consultations-remove-user", kwargs={"pk": consultation.id, "user_id": fake_user_id})
+        response = client.delete(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        
+        assert response.status_code == 404
+        assert "User not found" in response.json()["error"]
+
+    def test_remove_user_nonexistent_consultation(self, client, consultation_user_token):
+        """Test removing user from non-existent consultation fails"""
+        user = UserFactory()
+        fake_consultation_id = str(uuid4())
+        
+        url = reverse("consultations-remove-user", kwargs={"pk": fake_consultation_id, "user_id": user.id})
+        response = client.delete(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        
+        assert response.status_code == 404
+        assert "Consultation not found" in response.json()["error"]
+
+    def test_remove_user_invalid_user_id(self, client, consultation, consultation_user_token):
+        """Test removing user with invalid user ID fails"""
+        invalid_user_id = "not-a-number"
+        
+        url = reverse("consultations-remove-user", kwargs={"pk": consultation.id, "user_id": invalid_user_id})
+        response = client.delete(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        
+        assert response.status_code == 400
+        assert "Invalid user ID provided" in response.json()["error"]
+
+    def test_remove_user_permission_required(self, client, consultation, non_consultation_user_token):
+        """Test removing user requires proper permissions"""
+        user = UserFactory()
+        consultation.users.add(user)
+        
+        url = reverse("consultations-remove-user", kwargs={"pk": consultation.id, "user_id": user.id})
+        response = client.delete(
+            url,
+            headers={"Authorization": f"Bearer {non_consultation_user_token}"},
+        )
+        
+        assert response.status_code == 403

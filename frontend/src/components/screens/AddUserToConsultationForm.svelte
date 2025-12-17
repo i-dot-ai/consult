@@ -3,7 +3,10 @@
 
   import { slide } from "svelte/transition";
 
-  import { getApiAddUserToConsultation, Routes } from "../../global/routes";
+  import {
+    getApiAddUserToConsultation,
+    getSupportConsultationDetails,
+  } from "../../global/routes";
 
   import type { User } from "../../global/types";
   import Button from "../inputs/Button/Button.svelte";
@@ -29,7 +32,6 @@
 
   const handleSubmit = async () => {
     errors = {};
-    console.log(selectedUsers);
 
     if (selectedUsers.length == 0) {
       errors["general"] = "Please select a user to add";
@@ -57,7 +59,7 @@
 
         errors = {};
         selectedUsers = [];
-        window.location.href = `${Routes.SupportConsultations}/${consultationId}`;
+        window.location.href = getSupportConsultationDetails(consultationId);
       } catch (err: unknown) {
         errors["general"] =
           err instanceof Error ? err.message : "An unknown error occurred";
