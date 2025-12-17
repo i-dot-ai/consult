@@ -39,7 +39,6 @@
 
   let dataRequested: boolean = $state(false);
 
-
   let demoCategories = $derived([
     ...new Set(($demoOptionsStore.data || []).map((opt) => opt.name)),
   ]);
@@ -84,7 +83,9 @@
             <MetricsDemoCard
               title={category}
               items={(() => {
-                const categoryOptions = [...($demoOptionsStore.data || [])].filter(
+                const categoryOptions = [
+                  ...($demoOptionsStore.data || []),
+                ].filter(
                   (opt: DemoOptionsResponseItem) => opt.name === category
                 );
                 const total = categoryOptions.reduce(
