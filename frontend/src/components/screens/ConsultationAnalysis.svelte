@@ -40,8 +40,8 @@
   let dataRequested: boolean = $state(false);
 
   let totalRespondents: number = $derived(
-    ($demoOptionsStore.data || [])
-      .reduce((acc, demoOption) => acc + demoOption.count, 
+    ($demoOptionsStore.data || []).reduce(
+      (acc, demoOption) => acc + demoOption.count, 
       0,
     ) || 0,
   );
