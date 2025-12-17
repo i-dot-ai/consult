@@ -41,7 +41,9 @@
 
   let totalRespondents: number = $derived(
     ($demoOptionsStore.data || [])
-      .reduce((acc, demoOption) => acc + demoOption.count, 0) || 0
+      .reduce((acc, demoOption) => acc + demoOption.count, 
+      0,
+    ) || 0,
   );
 
   let demoCategories = $derived([
