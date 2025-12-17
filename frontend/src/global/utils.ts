@@ -68,10 +68,13 @@ export const formatDate = (dateStr: string) => {
   });
 };
 
-export const isKeyPressed = (event: KeyboardEvent, possibleValues: (string | number)[]) => {
+export const isKeyPressed = (
+  event: KeyboardEvent,
+  possibleValues: (string | number)[],
+) => {
   const eventKey = event.key || event.code || event.keyCode;
   return possibleValues.includes(eventKey);
-}
+};
 
 export const handleEnterOrSpacePress = (
   event: KeyboardEvent,
@@ -95,7 +98,7 @@ export const handleEscKeyPress = (
     event.preventDefault();
     callback();
   }
-}
+};
 export const getTimeDeltaInMinutes = (
   laterDate: Date,
   earlierDate: Date,

@@ -38,7 +38,7 @@
   });
 
   function handleEscPress(e: KeyboardEvent) {
-    handleEscKeyPress(e, () => activeSubmenu = null);
+    handleEscKeyPress(e, () => (activeSubmenu = null));
   }
 
   function handleOutsideClick(e: MouseEvent) {
