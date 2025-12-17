@@ -81,7 +81,7 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
 
     question_path = Path(consultation_dir) / "inputs" / question_dir / "question.json"
     responses_path = Path(consultation_dir) / "inputs" / question_dir / "responses.jsonl"
-    themes_path = Path(consultation_dir) / "inputs" / question_dir / "themes.csv"
+    themes_path = Path(consultation_dir) / "inputs" / question_dir / "selected_themes.json"
 
     with question_path.open() as f:
         question = json.load(f)["question_text"]
