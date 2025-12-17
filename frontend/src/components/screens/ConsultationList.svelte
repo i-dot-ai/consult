@@ -28,7 +28,7 @@
 
   onMount(async () => {
     loading = true;
-    const response = await fetch(Routes.ApiUsers);
+    const response = await fetch(Routes.ApiUser);
     const userData = await response.json();
     dashboardPermitted = userData.has_dashboard_access;
     loading = false;
