@@ -86,7 +86,7 @@
                 const categoryOptions = [
                   ...($demoOptionsStore.data || []),
                 ].filter(
-                  (opt: DemoOptionsResponseItem) => opt.name === category
+                  (opt: DemoOptionsResponseItem) => opt.name === category,
                 );
                 const total = categoryOptions.reduce(
                   (acc: number, opt: DemoOptionsResponseItem) => {
@@ -96,7 +96,10 @@
                 );
                 return categoryOptions
                   .sort(
-                    (a: DemoOptionsResponseItem, b: DemoOptionsResponseItem) => {
+                    (
+                      a: DemoOptionsResponseItem,
+                      b: DemoOptionsResponseItem
+                    ) => {
                       if (a.count < b.count) {
                         return 1;
                       } else if (a.count > b.count) {
