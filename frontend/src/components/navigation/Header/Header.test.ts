@@ -53,18 +53,13 @@ describe("Header", () => {
 
     const user = userEvent.setup();
 
-    const dropdownNavItems = testData.navItems.filter((item) =>
-      // eslint-disable-next-line testing-library/no-node-access
-      Boolean(item.children),
-    );
+    const dropdownNavItems = getDropdownNavItems(testData);
+
     const buttons: HTMLElement[] = dropdownNavItems
       .map((item) => item.label)
       .map((label) => screen.getByRole("button", { name: label }));
 
-    expect(buttons).toHaveLength(
-      // eslint-disable-next-line testing-library/no-node-access
-      testData.navItems.filter((item) => Boolean(item.children)).length,
-    );
+    expect(buttons).toHaveLength(dropdownNavItems.length);
 
     buttons.forEach(async (button) => {
       expect(button).toHaveAttribute("aria-expanded", "false");
