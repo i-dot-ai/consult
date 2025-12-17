@@ -98,7 +98,7 @@
                   .sort(
                     (
                       a: DemoOptionsResponseItem,
-                      b: DemoOptionsResponseItem
+                      b: DemoOptionsResponseItem,
                     ) => {
                       if (a.count < b.count) {
                         return 1;
