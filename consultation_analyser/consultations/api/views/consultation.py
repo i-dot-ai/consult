@@ -290,7 +290,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=True,
         methods=["post"],
         url_path="add-users",
-        permission_classes=[HasDashboardAccess, IsAdminUser],
+        permission_classes=[IsAdminUser],
     )
     def add_users(self, request, pk=None) -> Response:
         """
@@ -335,7 +335,7 @@ class ConsultationViewSet(ModelViewSet):
         methods=["delete"],
         url_path="users/(?P<user_id>[^/.]+)",
         url_name="remove-user",
-        permission_classes=[HasDashboardAccess, IsAdminUser],
+        permission_classes=[IsAdminUser],
     )
     def remove_user(self, request, pk=None, user_id=None) -> Response:
         """
