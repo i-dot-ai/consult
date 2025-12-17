@@ -249,7 +249,7 @@ LOGGER = StructuredLogger(
     level="info",
     options={
         "execution_environment": ExecutionEnvironmentType.LOCAL,
-        "log_format": LogOutputFormat.TEXT,
+        "log_format": LogOutputFormat.JSON,
     },
 )
 

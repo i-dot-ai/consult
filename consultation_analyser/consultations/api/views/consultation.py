@@ -290,7 +290,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=True,
         methods=["post"],
         url_path="add-users",
-        permission_classes=[HasDashboardAccess],
+        permission_classes=[IsAdminUser],
     )
     def add_users(self, request, pk=None) -> Response:
         """
@@ -328,4 +328,54 @@ class ConsultationViewSet(ModelViewSet):
         return Response(
             {"message": f"Successfully added {found_user_count} users to consultation"},
             status=status.HTTP_201_CREATED,
+        )
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path="users/(?P<user_id>[^/.]+)",
+        url_name="remove-user",
+        permission_classes=[IsAdminUser],
+    )
+    def remove_user(self, request, pk=None, user_id=None) -> Response:
+        """
+        Remove a user from this consultation
+        URL: /api/consultations/{consultation_id}/users/{user_id}/
+        """
+        try:
+            consultation = self.get_object()
+        except Http404:
+            return Response({"error": "Consultation not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not user_id:
+            return Response(
+                {"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate user_id is numeric as we have to rely on regex checks
+        try:
+            user_id_int = int(user_id)
+        except (ValueError, TypeError):
+            return Response(
+                {"error": "Invalid user ID provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(pk=user_id_int)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if not consultation.users.filter(id=user.id).exists():
+            return Response(
+                {"error": "User is not assigned to this consultation"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        consultation.users.remove(user)
+
+        return Response(
+            {"message": f"Successfully removed user {user.email} from consultation"},
+            status=status.HTTP_200_OK,
         )
