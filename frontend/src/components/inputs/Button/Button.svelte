@@ -22,7 +22,7 @@
 
 <svelte:element
   this={href ? "a" : "button"}
-  role="button"
+  role={href ? "link" : "button"}
   {type}
   title={title || undefined}
   data-variant={variant}

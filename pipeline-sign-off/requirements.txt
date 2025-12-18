@@ -1,3 +1,6 @@
-themefinder
-xlsxwriter
-django
+# Pin themefinder to specific version for reproducibility
+# Update this version when you want to deploy themefinder changes
+themefinder==0.7.3
+
+# Excel output generation
+xlsxwriter>=3.0,<4.0
