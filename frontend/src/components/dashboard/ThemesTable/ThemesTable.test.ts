@@ -69,7 +69,9 @@ describe("ThemesTable", () => {
       skeleton: testData.skeleton,
     });
 
-    const firstClickableRow = screen.getAllByRole("button").at(0);
+    const firstClickableRow = screen
+      .getAllByRole("button")
+      .at(0) as HTMLButtonElement;
     await user.click(firstClickableRow);
 
     expect(handleClickMock).toHaveBeenCalledOnce();

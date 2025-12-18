@@ -5,7 +5,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 import svelte from "eslint-plugin-svelte";
 import astro from "eslint-plugin-astro";
-import vitest from "eslint-plugin-vitest";
+import vitest from "@vitest/eslint-plugin";
 import testingLibrary from "eslint-plugin-testing-library";
 
 export default defineConfig([
@@ -47,7 +47,6 @@ export default defineConfig([
     rules: {
       ...vitest.configs.recommended.rules,
       ...testingLibrary.configs["flat/svelte"].rules,
-      "testing-library/no-node-access": "off",
     },
   },
   {

@@ -18,9 +18,7 @@ describe("TextInput", () => {
     const input = screen.getByLabelText("Test Input");
 
     await fireEvent.input(input, { target: { value: "new value" } });
-
-    expect(handleInputMock).toHaveBeenCalledOnce();
-    expect(handleInputMock).toHaveBeenCalledWith("new value");
+    expect(handleInputMock).toHaveBeenCalledExactlyOnceWith("new value");
   });
 
   it("should render props", async () => {

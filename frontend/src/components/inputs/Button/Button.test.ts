@@ -46,7 +46,7 @@ describe("Button", () => {
   it("renders as an anchor element when href is provided", () => {
     render(Button, { href: "/test-link" });
 
-    const link = screen.getByRole("button");
+    const link = screen.getByRole("link");
     expect(link.tagName).toBe("A");
     expect(link.getAttribute("href")).toEqual("/test-link");
   });

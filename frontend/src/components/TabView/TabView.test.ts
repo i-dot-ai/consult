@@ -25,8 +25,8 @@ describe("TabView", () => {
     expect(screen.getAllByRole("img").length).toBe(2);
 
     const tabButtons = await screen.findAllByRole("tab");
-    const starTab = tabButtons.at(0);
-    const financeTab = tabButtons.at(1);
+    const starTab = tabButtons.at(0) as HTMLButtonElement;
+    const financeTab = tabButtons.at(1) as HTMLButtonElement;
     await user.click(financeTab);
 
     expect(handleChangeMock).toHaveBeenCalledTimes(2);

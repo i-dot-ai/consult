@@ -41,5 +41,6 @@ exports[`EditPanel > should match snapshot 1`] = `
    
   <!---->
   
+  
 </div>
 `;

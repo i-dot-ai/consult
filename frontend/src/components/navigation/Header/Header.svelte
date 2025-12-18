@@ -4,10 +4,13 @@
   import { onDestroy, onMount } from "svelte";
   import { slide } from "svelte/transition";
 
+  import { handleEscKeyPress } from "../../../global/utils";
+
   import IaiIcon from "../../svg/IaiIcon.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import ChevronRight from "../../svg/material/ChevronRight.svelte";
   import Menu from "../../svg/material/Menu.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
 
   import type { Props } from "./types";
 
@@ -26,11 +29,17 @@
 
   onMount(() => {
     window.addEventListener("click", handleOutsideClick);
+    window.addEventListener("keydown", handleEscPress);
   });
 
   onDestroy(() => {
     window.removeEventListener("click", handleOutsideClick);
+    window.removeEventListener("keydown", handleEscPress);
   });
+
+  function handleEscPress(e: KeyboardEvent) {
+    handleEscKeyPress(e, () => (activeSubmenu = null));
+  }
 
   function handleOutsideClick(e: MouseEvent) {
     if (!(e.target as HTMLElement).closest(".nav-button")) {
@@ -39,38 +48,22 @@
   }
 </script>
 
-{#snippet navLabelParent(label: string)}
-  <span
-    class={clsx([
-      "w-full",
-      "text-sm",
-      "text-neutral-800",
-      "hover:text-primary",
-      "transition-colors",
-      "whitespace-nowrap",
-    ])}
-  >
-    {label}
-  </span>
-{/snippet}
-
-{#snippet navLabelChild(label: string)}
-  <div class="group w-full p-1">
-    <span
-      class={clsx([
-        "block",
-        "px-2",
-        "py-1",
-        "rounded",
-        "text-sm",
-        "text-neutral-800",
-        "whitespace-nowrap",
-        "group-hover:text-primary",
-        "group-hover:bg-neutral-100",
-      ])}
-    >
-      {label}
-    </span>
+{#snippet navButton(label: string, url?: string)}
+  <div class="hover:text-primary">
+    <Button variant="ghost" fullWidth={true} size="sm" href={url}>
+      <span
+        class={clsx([
+          "whitespace-nowrap",
+          "text-center",
+          "md:text-left",
+          "py-1",
+          "md:py-0",
+          "w-full",
+        ])}
+      >
+        {label}
+      </span>
+    </Button>
   </div>
 {/snippet}
 
@@ -190,39 +183,13 @@
               >
                 {#each navItem.children as subItem, i (i)}
                   <li>
-                    <a
-                      class={clsx([
-                        isMobile &&
-                          "block text-center !text-neutral-300 hover:bg-neutral-100",
-                      ])}
-                      href={subItem.url}
-                      title={subItem.label}
-                      aria-label={`Link to ${subItem.label}`}
-                      tabindex={expanded ? 0 : -1}
-                      onclick={(e) => e.stopPropagation()}
-                    >
-                      <!-- tabindex to avoid keyboard navigation while not expanded -->
-                      {@render navLabelChild(subItem.label)}
-                    </a>
+                    {@render navButton(subItem.label, subItem.url)}
                   </li>
                 {/each}
               </ol>
             {/if}
           {:else}
-            <a
-              class={clsx([
-                isMobile ? "block text-center hover:bg-neutral-100" : "mr-2",
-              ])}
-              href={navItem.url}
-              title={navItem.label}
-              aria-label={`Link to ${navItem.label}`}
-            >
-              {#if isMobile}
-                {@render navLabelChild(navItem.label)}
-              {:else}
-                {@render navLabelParent(navItem.label)}
-              {/if}
-            </a>
+            {@render navButton(navItem.label, navItem.url)}
           {/if}
 
           {#if isMobile}

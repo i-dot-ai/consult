@@ -52,6 +52,7 @@
     themeFilters: string[];
     searchMode: SearchModeValues;
     evidenceRich: boolean;
+    unseenResponsesOnly: boolean;
     flaggedOnly: boolean;
     demoFilters: string[];
     multiAnswerFilters: string[];
@@ -64,7 +65,7 @@
 
   let { consultationId = "", questionId = "" }: Props = $props();
 
-  const PAGE_SIZE: number = 50;
+  const PAGE_SIZE: number = 5;
 
   let currPage: number = $state(1);
   let hasMorePages: boolean = $state(true);
@@ -75,6 +76,7 @@
   let searchValue: string = $state("");
   let searchMode: SearchModeValues = $state(SearchModeValues.KEYWORD);
   let evidenceRich: boolean = $state(false);
+  let unseenResponsesOnly: boolean = $state(false);
   let sortAscending: boolean = $state(false);
   let flaggedOnly: boolean = $state(false);
   let dataRequested: boolean = $state(false);
@@ -102,6 +104,7 @@
       searchMode: searchMode,
       themeFilters: themeFilters.filters,
       evidenceRich: evidenceRich,
+      unseenResponsesOnly: unseenResponsesOnly,
       demoFilters: demoFilters.filters,
       flaggedOnly: flaggedOnly,
       multiAnswerFilters: multiAnswerFilters.filters,
@@ -157,6 +160,9 @@
       ...(filters.evidenceRich && {
         evidenceRich: JSON.stringify(filters.evidenceRich),
       }),
+      ...(filters.unseenResponsesOnly && {
+        unseenResponsesOnly: JSON.stringify(filters.unseenResponsesOnly),
+      }),
       ...(filters.flaggedOnly && {
         is_flagged: JSON.stringify(filters.flaggedOnly),
       }),
@@ -187,6 +193,7 @@
     demoFilters.reset();
     multiAnswerFilters.reset();
     evidenceRich = false;
+    unseenResponsesOnly = false;
     searchValue = "";
     flaggedOnly = false;
   };
@@ -197,18 +204,21 @@
         demoFilters.applied() ||
         multiAnswerFilters.applied() ||
         evidenceRich ||
+        unseenResponsesOnly ||
         searchValue ||
         flaggedOnly,
     );
   };
 
   const setEvidenceRich = (value: boolean) => (evidenceRich = value);
+  const setUnseenResponses = (value: boolean) => (unseenResponsesOnly = value);
 
   $effect(() => {
     void searchValue;
     void searchMode;
     void themeFilters.filters;
     void evidenceRich;
+    void unseenResponsesOnly;
     void demoFilters.filters;
     void multiAnswerFilters.filters;
     void flaggedOnly;
@@ -397,6 +407,8 @@
         themes={$themeInfoStore.data?.themes}
         {evidenceRich}
         {setEvidenceRich}
+        {unseenResponsesOnly}
+        {setUnseenResponses}
         isThemesLoading={!dataRequested || $themeAggrStore.isLoading}
         {flaggedOnly}
         setFlaggedOnly={(newValue) => (flaggedOnly = newValue)}
