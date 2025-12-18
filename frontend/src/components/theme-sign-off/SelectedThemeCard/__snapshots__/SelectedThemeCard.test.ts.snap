@@ -50,7 +50,7 @@ exports[`SelectedThemeCard > should render 1`] = `
               <!---->
               <button
                 aria-pressed="false"
-                class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                 data-variant="default"
                 role="button"
                 tabindex="0"
@@ -81,7 +81,7 @@ exports[`SelectedThemeCard > should render 1`] = `
               <!---->
               <button
                 aria-pressed="false"
-                class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                 data-variant="default"
                 role="button"
                 tabindex="0"
@@ -113,7 +113,7 @@ exports[`SelectedThemeCard > should render 1`] = `
               <!---->
               <button
                 aria-pressed="false"
-                class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                 data-variant="default"
                 role="button"
                 tabindex="0"
