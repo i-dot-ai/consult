@@ -56,7 +56,7 @@
     <strong>{consultation.title}</strong>?</Text
   >
   <Button
-    type="submit"
+    type="button"
     variant="primary"
     handleClick={handleSubmit}
     disabled={sending}

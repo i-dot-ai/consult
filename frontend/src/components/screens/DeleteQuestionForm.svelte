@@ -66,12 +66,14 @@
   <Text>Are you sure you want to delete the following question?</Text>
 
   <InsetText>
-    <Text>{question.question_text}</Text>
+    {#snippet children()}
+      <Text>{question.question_text}</Text>
+    {/snippet}
   </InsetText>
 
   <div class="flex gap-4">
     <Button
-      type="submit"
+      type="button"
       variant="primary"
       handleClick={handleSubmit}
       disabled={sending}

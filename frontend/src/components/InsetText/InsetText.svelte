@@ -1,9 +1,15 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  export let variant: "default" | "info" | "warning" | "success" | "error" =
-    "default";
-  export let className: string = "";
+  let { 
+    variant = "default",
+    className = "",
+    children
+  } = $props<{
+    variant?: "default" | "info" | "warning" | "success" | "error";
+    className?: string;
+    children: any;
+  }>();
 
   const variantClasses = {
     default: "border-blue-500 bg-blue-50",
@@ -23,5 +29,5 @@
     className,
   ])}
 >
-  <slot />
+  {@render children()}
 </div>

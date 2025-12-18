@@ -8,7 +8,7 @@ describe("InsetText Component", () => {
   const props = {
     children: createRawSnippet(() => {
       return {
-        render: () => `<div>Test content</div>`,
+        render: () => "Test content",
       };
     }),
   };

@@ -90,7 +90,7 @@
     />
   {/each}
   <Button
-    type="submit"
+    type="button"
     variant="primary"
     handleClick={handleSubmit}
     disabled={sending}
