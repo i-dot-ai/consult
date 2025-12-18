@@ -6,6 +6,7 @@
 
   let toggleButtonLightActive: boolean = true;
   let toggleButtonDarkActive: boolean = true;
+  let toggleButtonLightOutlineActive: boolean = true;
   let toggleButtonPrimaryActive: boolean = true;
 </script>
 
@@ -17,6 +18,11 @@
 <div>
   <Title level={2} text="Primary" />
   <Button variant="primary">Click Here</Button>
+</div>
+
+<div>
+  <Title level={2} text="Outline" />
+  <Button variant="outline">Click Here</Button>
 </div>
 
 <div>
@@ -57,6 +63,18 @@
     highlighted={toggleButtonDarkActive}
     highlightVariant="dark"
     handleClick={() => (toggleButtonDarkActive = !toggleButtonDarkActive)}
+  >
+    Click Here
+  </Button>
+</div>
+
+<div>
+  <Title level={2} text="With Toggle - Light (Outline)" />
+  <Button
+    variant="outline"
+    highlighted={toggleButtonLightOutlineActive}
+    highlightVariant="light"
+    handleClick={() => (toggleButtonLightOutlineActive = !toggleButtonLightOutlineActive)}
   >
     Click Here
   </Button>
