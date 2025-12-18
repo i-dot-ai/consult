@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount, type Snippet } from "svelte";
+  import { type Snippet } from "svelte";
 
   interface Props {
     onExternalClick: () => void;
@@ -13,13 +13,17 @@
 
   let containerEl: HTMLElement | undefined = $state();
 
-  onMount(() => {
-    window.addEventListener("click", handleOutsideClick);
-  });
+  $effect(() => {
+    addListeners();
+    return () => removeListeners();
+  })
 
-  onDestroy(() => {
-    window.removeEventListener("click", handleOutsideClick);
-  });
+  function addListeners() {
+    window.addEventListener("click", handleOutsideClick);
+  }
+  function removeListeners() {
+    window.addEventListener("click", handleOutsideClick);
+  }
 
   function handleOutsideClick(e: MouseEvent) {
     if (containerEl && !containerEl.contains(e.target as HTMLElement)) {
