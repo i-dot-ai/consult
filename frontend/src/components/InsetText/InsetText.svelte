@@ -11,6 +11,9 @@
     children: unknown;
   }>();
 
+  // Ensure variant is a valid key for type safety
+  const validVariant = variant as keyof typeof variantClasses;
+
   const variantClasses = {
     default: "border-blue-500 bg-blue-50",
     info: "border-blue-500 bg-blue-50",
@@ -25,7 +28,7 @@
     "govuk-inset-text",
     "p-4",
     "border-l-4",
-    variantClasses[variant],
+    variantClasses[validVariant],
     className,
   ])}
 >

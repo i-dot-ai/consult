@@ -79,7 +79,12 @@
       {sending ? "Deleting..." : "Yes, delete it"}
     </Button>
 
-    <Button variant="outline" handleClick={handleCancel} disabled={sending}>
+    <Button
+      type="button"
+      variant="outline"
+      handleClick={handleCancel}
+      disabled={sending}
+    >
       No, go back
     </Button>
   </div>
