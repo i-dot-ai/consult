@@ -25,7 +25,9 @@ describe("DeleteConsultationForm", () => {
       consultation: mockConsultation,
     });
 
-    expect(screen.getByText(/Are you sure you want to delete this consultation:/)).toBeTruthy();
+    expect(
+      screen.getByText(/Are you sure you want to delete this consultation:/),
+    ).toBeTruthy();
     expect(screen.getByText("Test Consultation")).toBeTruthy();
     expect(screen.getByText("Yes, delete it")).toBeTruthy();
   });
@@ -33,7 +35,8 @@ describe("DeleteConsultationForm", () => {
   it("should submit deletion request successfully", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ message: "Successfully deleted consultation" }),
+      json: () =>
+        Promise.resolve({ message: "Successfully deleted consultation" }),
     });
 
     // Mock window.location.href
@@ -100,7 +103,8 @@ describe("DeleteConsultationForm", () => {
   it("should redirect after successful deletion", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ message: "Successfully deleted consultation" }),
+      json: () =>
+        Promise.resolve({ message: "Successfully deleted consultation" }),
     });
 
     // Mock window.location.href

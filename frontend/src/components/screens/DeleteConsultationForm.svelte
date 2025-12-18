@@ -3,10 +3,7 @@
 
   import { slide } from "svelte/transition";
 
-  import {
-    getApiConsultationUrl,
-    Routes,
-  } from "../../global/routes";
+  import { getApiConsultationUrl, Routes } from "../../global/routes";
 
   import Button from "../inputs/Button/Button.svelte";
   import Text from "../Text/Text.svelte";
@@ -21,15 +18,12 @@
     errors = {};
     sending = true;
     try {
-      const response = await fetch(
-        getApiConsultationUrl(consultation.id),
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
+      const response = await fetch(getApiConsultationUrl(consultation.id), {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+      });
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
