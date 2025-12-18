@@ -105,7 +105,7 @@ class ThemeSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField()
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
-    key = serializers.CharField(required=False)
+    key = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
         model = SelectedTheme
