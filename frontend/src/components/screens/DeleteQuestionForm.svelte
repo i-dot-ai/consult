@@ -83,7 +83,7 @@
 
     <Button
       type="button"
-      variant="default"
+      variant="outline"
       handleClick={handleCancel}
       disabled={sending}
     >
