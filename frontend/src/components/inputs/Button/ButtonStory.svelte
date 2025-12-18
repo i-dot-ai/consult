@@ -74,7 +74,8 @@
     variant="outline"
     highlighted={toggleButtonLightOutlineActive}
     highlightVariant="light"
-    handleClick={() => (toggleButtonLightOutlineActive = !toggleButtonLightOutlineActive)}
+    handleClick={() =>
+      (toggleButtonLightOutlineActive = !toggleButtonLightOutlineActive)}
   >
     Click Here
   </Button>
