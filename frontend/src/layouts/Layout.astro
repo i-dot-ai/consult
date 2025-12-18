@@ -1,18 +1,22 @@
 ---
 import "../styles/global.css";
+
 import Header from "../components/Header/Header.svelte";
 import Footer from "../components/Footer/Footer.svelte";
+
 import { fetchBackendApi } from "../global/api";
+import { Routes } from "../global/routes";
 
 let isStaff: boolean = false;
 let isSignedIn: boolean = false;
 
 try {
-  const data = await fetchBackendApi<{ is_staff: boolean }>(
+  const data = await fetchBackendApi<{ is_staff: boolean; email: string }>(
     Astro,
-    "/api/user/",
+    Routes.ApiUser,
   );
   isStaff = data.is_staff;
+  isSignedIn = Boolean(data.email);
 } catch {
   console.log("user not signed in");
 }
