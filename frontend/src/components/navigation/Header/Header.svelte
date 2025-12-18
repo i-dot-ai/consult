@@ -4,6 +4,7 @@
   import { onDestroy, onMount } from "svelte";
   import { slide } from "svelte/transition";
 
+  import { Routes } from "../../../global/routes";
   import { handleEscKeyPress } from "../../../global/utils";
 
   import IaiIcon from "../../svg/IaiIcon.svelte";
@@ -212,15 +213,17 @@
     ])}
   >
     <div class={clsx(["flex", "items-center", "gap-2"])}>
-      <div
-        class={clsx(["flex", "justify-center", "items-center", "w-8", "h-8"])}
-      >
-        <IconComponent />
-      </div>
+      <a href={Routes.Home} class="block flex gap-2 items-center">
+        <div
+          class={clsx(["flex", "justify-center", "items-center", "w-8", "h-8"])}
+        >
+          <IconComponent />
+        </div>
 
-      <h1 class="font-[500]">
-        {title}
-      </h1>
+        <h1 class="font-[500]">
+          {title}
+        </h1>
+      </a>
 
       <!-- Divider only renders when there's text after -->
       {#if subtitle || pathParts.length > 0}
