@@ -10,10 +10,18 @@
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Person from "../../svg/material/Person.svelte";
 
+  interface Props {
+    isSignedIn: boolean;
+  }
+
+  let {
+    isSignedIn = false,
+  }: Props = $props();
+
   let expanded = $state(false);
 </script>
 
-{#snippet link(text, url)}
+{#snippet linkElement(text: string, url: string)}
   <a href={url} class="block hover:text-primary">
     <Button variant="ghost" fullWidth={true}>
       <span class="w-full text-start ">
@@ -28,6 +36,8 @@
     <button
       title="Profile links"
       aria-label="View profile links"
+      aria-controls="profile-panel"
+      aria-expanded={expanded ? "true" : "false"}
       onclick={() => (expanded = !expanded)}
       class={clsx([
         "flex",
@@ -54,6 +64,7 @@
 
     {#if expanded}
       <div
+        id="profile-panel"
         transition:slide
         class={clsx([
           "absolute",
@@ -66,12 +77,16 @@
           "min-w-32",
         ])}
       >
-        {@render link("Profile", Routes.Profile)}
+        <!-- TODO: Enabled after profile page is implemented -->
+        <!-- {@render linkElement("Profile", Routes.Profile)}  -->
+        <!-- <hr /> -->
 
-        <hr />
-
-        {@render link("Sign Out", Routes.SignOut)}
-      </div>    
+        {#if isSignedIn}
+          {@render linkElement("Sign Out", Routes.SignOut)}
+        {:else}
+          {@render linkElement("Sign In", Routes.SignIn)}
+        {/if}
+      </div>
     {/if}
   </WithExternalClick>
 </div>
