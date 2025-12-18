@@ -1,0 +1,55 @@
+<svg
+  title="consult-icon"
+  data-testid="consult-icon"
+  class="block size-full"
+  fill="none"
+  preserveAspectRatio="xMidYMid meet"
+  viewBox="0 0 483 483"
+  ><g
+    ><path
+      clip-rule="evenodd"
+      d="M0 241.15C0 107.97 107.97 0 241.15 0C305.11 0 366.44 25.41 411.67 70.63C456.89 115.85 482.3 177.19 482.3 241.15C482.3 374.33 374.33 482.3 241.15 482.3C107.97 482.3 0 374.33 0 241.15Z"
+      fill="#C50B78"
+      fill-rule="evenodd"
+    ></path><g
+      ><path
+        clip-rule="evenodd"
+        d="M385.62 308.03C385.62 326.76 370.43 341.95 351.7 341.95H130.59C121.59 341.95 112.97 338.38 106.61 332.02C100.25 325.66 96.68 317.03 96.68 308.04V172.38C96.68 153.65 111.87 138.46 130.6 138.46H351.71C370.44 138.46 385.63 153.65 385.63 172.38V308.04L385.62 308.03Z"
+        fill="black"
+        fill-rule="evenodd"
+      ></path><path
+        clip-rule="evenodd"
+        d="M306.86 341.06V394.04L253.73 341.06H306.86Z"
+        fill="black"
+        fill-rule="evenodd"
+      ></path></g
+    ><g
+      ><path
+        clip-rule="evenodd"
+        d="M385.62 300.03C385.62 318.76 370.43 333.95 351.7 333.95H130.59C121.59 333.95 112.97 330.38 106.61 324.02C100.25 317.66 96.68 309.03 96.68 300.04V164.38C96.68 145.65 111.87 130.46 130.6 130.46H351.71C370.44 130.46 385.63 145.65 385.63 164.38V300.04L385.62 300.03Z"
+        fill="white"
+        fill-rule="evenodd"
+      ></path><path
+        clip-rule="evenodd"
+        d="M306.86 333.06V386.04L253.73 333.06H306.86Z"
+        fill="white"
+        fill-rule="evenodd"
+      ></path><path
+        clip-rule="evenodd"
+        d="M127.62 163.66H354.68V174.4H127.62V163.66Z"
+        fill="black"
+        fill-rule="evenodd"
+      ></path><path
+        clip-rule="evenodd"
+        d="M127.62 197.34H354.68V208.08H127.62V197.34Z"
+        fill="black"
+        fill-rule="evenodd"
+      ></path><path
+        clip-rule="evenodd"
+        d="M127.62 231.02H306.86V241.76H127.62V231.02Z"
+        fill="black"
+        fill-rule="evenodd"
+      ></path></g
+    ></g
+  ></svg
+>
