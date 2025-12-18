@@ -8,24 +8,24 @@ import { testData } from "./testData";
 import type { NavItem, Props } from "./types";
 
 function getNavItemsWithUrl(data: Props) {
-  return data.navItems.filter((item) => Boolean(item.url));
+  return data.navItems!.filter((item) => Boolean(item.url));
 }
 function getDropdownNavItems(data: Props) {
-  return data.navItems.filter((item) => Boolean(item.children));
+  return data.navItems!.filter((item) => Boolean(item.children));
 }
 
 describe("Header", () => {
   it("renders title", () => {
     render(Header, testData);
-    expect(screen.getByText(testData.title)).toBeInTheDocument();
+    expect(screen.getByText(testData.title!)).toBeInTheDocument();
   });
 
   it("renders subtitle", () => {
     render(Header, testData);
-    expect(screen.getByText(testData.subtitle)).toBeInTheDocument();
+    expect(screen.getByText(testData.subtitle!)).toBeInTheDocument();
   });
 
-  it.each(testData.pathParts)("renders path part", async (pathPart: string) => {
+  it.each(testData.pathParts!)("renders path part", async (pathPart: string) => {
     render(Header, testData);
     expect(screen.getByText(`/ ${pathPart}`)).toBeInTheDocument();
   });
