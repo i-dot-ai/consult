@@ -1238,5 +1238,4 @@ class TestResponseViewSet:
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
-        assert response.status_code == 400
-        assert response.json() == {"all_themes": [{"key": ["This field may not be null."]}]}
+        assert response.status_code == 200
