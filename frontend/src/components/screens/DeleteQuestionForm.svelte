@@ -66,9 +66,7 @@
   <Text>Are you sure you want to delete the following question?</Text>
 
   <InsetText>
-    {#snippet children()}
-      <Text>{question.question_text}</Text>
-    {/snippet}
+    <Text>{question.question_text}</Text>
   </InsetText>
 
   <div class="flex gap-4">
@@ -81,12 +79,7 @@
       {sending ? "Deleting..." : "Yes, delete it"}
     </Button>
 
-    <Button
-      type="button"
-      variant="outline"
-      handleClick={handleCancel}
-      disabled={sending}
-    >
+    <Button variant="outline" handleClick={handleCancel} disabled={sending}>
       No, go back
     </Button>
   </div>

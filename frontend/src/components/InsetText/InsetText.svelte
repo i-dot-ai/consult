@@ -1,14 +1,14 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  let { 
+  let {
     variant = "default",
     className = "",
-    children
+    children,
   } = $props<{
     variant?: "default" | "info" | "warning" | "success" | "error";
     className?: string;
-    children: any;
+    children: unknown;
   }>();
 
   const variantClasses = {
