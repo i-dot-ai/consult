@@ -1217,7 +1217,6 @@ class TestResponseViewSet:
         # Verify annotation was created
         assert ResponseAnnotation.objects.filter(response=response_obj).exists()
 
-
     def test_get_themes_works_with_null_keys(
         self, client, consultation_user_token, free_text_question, theme_c
     ):
@@ -1240,5 +1239,3 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200
-
-
