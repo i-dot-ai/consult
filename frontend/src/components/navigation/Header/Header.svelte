@@ -1,7 +1,6 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { onDestroy, onMount } from "svelte";
   import { slide } from "svelte/transition";
 
   import { Routes } from "../../../global/routes";
@@ -12,6 +11,7 @@
   import ChevronRight from "../../svg/material/ChevronRight.svelte";
   import Menu from "../../svg/material/Menu.svelte";
   import Button from "../../inputs/Button/Button.svelte";
+  import WithExternalClick from "../../WithExternalClick/WithExternalClick.svelte";
 
   import type { Props } from "./types";
 
@@ -28,15 +28,17 @@
   let mobileExpanded = $state(false);
   let IconComponent = $derived(icon);
 
-  onMount(() => {
-    window.addEventListener("click", handleOutsideClick);
-    window.addEventListener("keydown", handleEscPress);
-  });
+  $effect(() => {
+    addListeners();
+    return () => removeListeners();
+  })
 
-  onDestroy(() => {
-    window.removeEventListener("click", handleOutsideClick);
+  function addListeners() {
+    window.addEventListener("keydown", handleEscPress);
+  }
+  function removeListeners() {
     window.removeEventListener("keydown", handleEscPress);
-  });
+  }
 
   function handleEscPress(e: KeyboardEvent) {
     handleEscKeyPress(e, () => (activeSubmenu = null));
@@ -82,83 +84,85 @@
 
         <li class={isMobile ? "w-full" : "relative"}>
           {#if Array.isArray(navItem.children) && navItem.children.length > 0}
-            <button
-              class={clsx([
-                "nav-button",
-                "flex",
-                "items-center",
-                "justify-center",
-                "gap-0.5",
-                isMobile &&
-                  clsx([
-                    "group",
-                    "w-full",
-                    "hover:bg-neutral-100",
-                    "hover:!text-primary",
-                  ]),
-              ])}
-              aria-expanded={expanded ? "true" : "false"}
-              aria-controls={id}
-              onclick={() => {
-                if (activeSubmenu === id) {
-                  activeSubmenu = null;
-                } else {
-                  activeSubmenu = id;
-                }
-              }}
-            >
-              {#if isMobile}
-                <div
-                  class={clsx([
-                    "flex",
-                    "items-center",
-                    "justify-center",
-                    "gap-0.5",
-                    "w-full",
-                    "-mr-4",
-                    "p-2",
-                    "text-sm",
-                    "text-center",
-                    "text-neutral-800",
-                    "transition-colors",
-                    "whitespace-nowrap",
-                    "hover:text-primary",
-                  ])}
-                >
-                  {navItem.label}
-
+            <WithExternalClick onExternalClick={handleOutsideClick}>
+              <button
+                class={clsx([
+                  "nav-button",
+                  "flex",
+                  "items-center",
+                  "justify-center",
+                  "gap-0.5",
+                  isMobile &&
+                    clsx([
+                      "group",
+                      "w-full",
+                      "hover:bg-neutral-100",
+                      "hover:!text-primary",
+                    ]),
+                ])}
+                aria-expanded={expanded ? "true" : "false"}
+                aria-controls={id}
+                onclick={() => {
+                  if (activeSubmenu === id) {
+                    activeSubmenu = null;
+                  } else {
+                    activeSubmenu = id;
+                  }
+                }}
+              >
+                {#if isMobile}
                   <div
                     class={clsx([
-                      "transition-transform",
-                      expanded && "rotate-90",
+                      "flex",
+                      "items-center",
+                      "justify-center",
+                      "gap-0.5",
+                      "w-full",
+                      "-mr-4",
+                      "p-2",
+                      "text-sm",
+                      "text-center",
+                      "text-neutral-800",
+                      "transition-colors",
+                      "whitespace-nowrap",
+                      "hover:text-primary",
                     ])}
                   >
+                    {navItem.label}
+
+                    <div
+                      class={clsx([
+                        "transition-transform",
+                        expanded && "rotate-90",
+                      ])}
+                    >
+                      <MaterialIcon size="0.9rem" color="fill-neutral-500">
+                        <ChevronRight />
+                      </MaterialIcon>
+                    </div>
+                  </div>
+                {:else}
+                  <span
+                    class={clsx([
+                      "block",
+                      "text-sm",
+                      "text-neutral-800",
+                      "hover:text-primary",
+                      "transition-colors",
+                      "whitespace-nowrap",
+                    ])}
+                  >
+                    {navItem.label}
+                  </span>
+
+                  <div class="rotate-90">
                     <MaterialIcon size="0.9rem" color="fill-neutral-500">
                       <ChevronRight />
                     </MaterialIcon>
                   </div>
-                </div>
-              {:else}
-                <span
-                  class={clsx([
-                    "block",
-                    "text-sm",
-                    "text-neutral-800",
-                    "hover:text-primary",
-                    "transition-colors",
-                    "whitespace-nowrap",
-                  ])}
-                >
-                  {navItem.label}
-                </span>
-
-                <div class="rotate-90">
-                  <MaterialIcon size="0.9rem" color="fill-neutral-500">
-                    <ChevronRight />
-                  </MaterialIcon>
-                </div>
-              {/if}
-            </button>
+                {/if}
+              </button>
+            </WithExternalClick>
 
             {#if activeSubmenu === id || !isMobile}
               <ol

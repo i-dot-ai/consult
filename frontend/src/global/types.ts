@@ -21,10 +21,12 @@ export interface Question {
   theme_status?: string;
 }
 
+export type ConsultationStage = "theme_sign_off" | "theme_mapping" | "analysis"
+
 export interface Consultation {
   id: string;
   title: string;
-  stage: "theme_sign_off" | "theme_mapping" | "analysis";
+  stage: ConsultationStage;
   created_at: string;
 }
 

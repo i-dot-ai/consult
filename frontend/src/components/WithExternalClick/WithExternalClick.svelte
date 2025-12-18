@@ -2,7 +2,7 @@
   import { type Snippet } from "svelte";
 
   interface Props {
-    onExternalClick: () => void;
+    onExternalClick: (e: MouseEvent) => void;
     children: Snippet;
   }
 
@@ -27,7 +27,7 @@
 
   function handleOutsideClick(e: MouseEvent) {
     if (containerEl && !containerEl.contains(e.target as HTMLElement)) {
-      onExternalClick();
+      onExternalClick(e);
     }
   }
 </script>
