@@ -88,13 +88,13 @@
 </svelte:element>
 
 <style>
-  button[data-variant="approve"]:not(.disabled):hover :global(svg) {
+  *:is(button, a)[data-variant="approve"]:not(.disabled):hover :global(svg) {
     fill: var(--color-secondary);
   }
-  button[data-variant="primary"]:not(.disabled):hover :global(svg) {
+  *:is(button, a)[data-variant="primary"]:not(.disabled):hover :global(svg) {
     fill: var(--color-primary);
   }
-  button[data-variant="ghost"]:not(.disabled):hover :global(svg) {
+  *:is(button, a)[data-variant="ghost"]:not(.disabled):hover :global(svg) {
     fill: var(--color-primary);
   }
 </style>
