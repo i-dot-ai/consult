@@ -3,8 +3,13 @@
 
   export let type: string | undefined = undefined;
   export let title: string = "";
-  export let variant: "default" | "gray" | "primary" | "ghost" | "approve" =
-    "default";
+  export let variant:
+    | "default"
+    | "gray"
+    | "primary"
+    | "ghost"
+    | "approve"
+    | "outline" = "default";
   export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
   export let highlighted: boolean = false;
   export let highlightVariant:
@@ -36,11 +41,13 @@
     size === "xs" ? "py-0.5" : "py-1",
     size === "xs" ? "px-1" : "px-2",
     "border",
-    variant === "default" && "bg-white",
-    variant === "gray" && "bg-neutral-100",
-    variant === "primary" && "bg-primary text-white",
-    variant === "approve" && "bg-secondary text-white",
-    variant === "ghost" ? "border-transparent" : "border-gray-300",
+    variant === "default" && "border-gray-300 bg-white",
+    variant === "gray" && "border-gray-300 bg-neutral-100",
+    variant === "primary" && "border-gray-300 bg-primary text-white",
+    variant === "approve" && "border-gray-300 bg-secondary text-white",
+    variant === "ghost" && "border-transparent",
+    variant === "outline" &&
+      clsx(["bg-transparent", "border border-primary", "text-primary"]),
     "transition-colors",
     "duration-300",
     "self-start",
