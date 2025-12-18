@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.contrib import admin, messages
 from django_rq import get_queue
 from simple_history.admin import SimpleHistoryAdmin
@@ -23,6 +24,8 @@ from consultation_analyser.support_console.ingest import (
     create_embeddings_for_question,
     export_selected_themes,
 )
+
+logger = settings.LOGGER
 
 
 @admin.action(description="(Re)Embed selected Consultations")
@@ -113,6 +116,7 @@ def export_selected_themes_to_s3(modeladmin, request, queryset):
     for consultation in queryset:
         for question in consultation.question_set.all():
             try:
+                logger.info("exporting themes for question={number}", number=question.number)
                 export_selected_themes(question)
             except Exception:
                 modeladmin.message_user(

@@ -500,6 +500,12 @@ def export_selected_themes(question: Question):
     ]
     themes = models.ThemeGenerationResponses(responses=themes_to_save)
     content = json.dumps(themes.model_dump_json())
+    logger.info(
+        "writing selected themes for question={number} to {file}",
+        number=question.number,
+        file=question.selected_themes_file,
+    )
+
     s3_client.put_object(
         Bucket=settings.AWS_BUCKET_NAME, Key=question.selected_themes_file, Body=content
     )
