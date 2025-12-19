@@ -14,9 +14,7 @@
     isSignedIn: boolean;
   }
 
-  let {
-    isSignedIn = false,
-  }: Props = $props();
+  let { isSignedIn = false }: Props = $props();
 
   let expanded = $state(false);
 </script>
@@ -24,7 +22,7 @@
 {#snippet linkElement(text: string, url: string)}
   <a href={url} class="block hover:text-primary">
     <Button variant="ghost" fullWidth={true}>
-      <span class="w-full text-start ">
+      <span class="w-full text-start">
         {text}
       </span>
     </Button>
@@ -32,7 +30,7 @@
 {/snippet}
 
 <div class="relative">
-  <WithExternalClick onExternalClick={() => expanded = false}>
+  <WithExternalClick onExternalClick={() => (expanded = false)}>
     <button
       title="Profile links"
       aria-label="View profile links"

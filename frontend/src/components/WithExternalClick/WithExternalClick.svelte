@@ -6,17 +6,14 @@
     children: Snippet;
   }
 
-  let {
-    onExternalClick,
-    children,
-  }: Props = $props();
+  let { onExternalClick, children }: Props = $props();
 
   let containerEl: HTMLElement | undefined = $state();
 
   $effect(() => {
     addListeners();
     return () => removeListeners();
-  })
+  });
 
   function addListeners() {
     window.addEventListener("click", handleOutsideClick);

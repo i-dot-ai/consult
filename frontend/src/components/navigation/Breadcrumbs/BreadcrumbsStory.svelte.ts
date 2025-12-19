@@ -4,9 +4,7 @@ export default {
   name: "Breadcrumbs",
   component: Breadcrumbs,
   category: "Navigation",
-  props: [
-    { name: "consultationStage", value: "analysis", type: "text" }
-  ],
+  props: [{ name: "consultationStage", value: "analysis", type: "text" }],
   stories: [
     {
       name: "Stage Theme Sign Off",

@@ -25,10 +25,13 @@ describe("Header", () => {
     expect(screen.getByText(testData.subtitle!)).toBeInTheDocument();
   });
 
-  it.each(testData.pathParts!)("renders path part", async (pathPart: string) => {
-    render(Header, testData);
-    expect(screen.getByText(`/ ${pathPart}`)).toBeInTheDocument();
-  });
+  it.each(testData.pathParts!)(
+    "renders path part",
+    async (pathPart: string) => {
+      render(Header, testData);
+      expect(screen.getByText(`/ ${pathPart}`)).toBeInTheDocument();
+    },
+  );
 
   it.each(getNavItemsWithUrl(testData))(
     "renders nav items with url",

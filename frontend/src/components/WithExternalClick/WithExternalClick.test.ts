@@ -7,14 +7,14 @@ import { createRawSnippet } from "svelte";
 
 describe("WithExternalClick", () => {
   const testData = {
-    children: createRawSnippet(() => ({
+    content: createRawSnippet(() => ({
       render: () => `
         <p data-testid="child-el">
           child content
         </p>
       `,
-    }))
-  }
+    })),
+  };
 
   it("should call callback when an external element is clicked on", async () => {
     const onExternalClickMock = vi.fn();
@@ -22,17 +22,17 @@ describe("WithExternalClick", () => {
 
     render(WithExternalClick, {
       onExternalClick: onExternalClickMock,
-      children: testData.children,
+      children: testData.content,
     });
 
     // Create an external element in the DOM
     const externalEl = document.createElement("div");
     externalEl.innerText = "External El";
-    document.body.appendChild(document.createElement("div"));
+    document.body.appendChild(externalEl);
 
     // If clicked an external element, callback should get called
-    user.click(externalEl);
-    waitFor(() => expect(onExternalClickMock).toHaveBeenCalledOnce())
+    await user.click(externalEl);
+    await waitFor(() => expect(onExternalClickMock).toHaveBeenCalledOnce());
   });
 
   it("should not call callback when an internal element is clicked on", async () => {
@@ -41,12 +41,12 @@ describe("WithExternalClick", () => {
 
     render(WithExternalClick, {
       onExternalClick: onExternalClickMock,
-      children: testData.children,
+      children: testData.content,
     });
 
     // If clicked an inside element, callback shouldn't get called
     const childEl = screen.getByTestId("child-el");
-    user.click(childEl);
-    expect(onExternalClickMock).not.toHaveBeenCalled();
+    await user.click(childEl);
+    await waitFor(() => expect(onExternalClickMock).not.toHaveBeenCalledOnce());
   });
 });

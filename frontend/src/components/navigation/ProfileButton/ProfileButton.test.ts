@@ -5,23 +5,33 @@ import { render, screen, waitFor } from "@testing-library/svelte";
 import ProfileButton from "./ProfileButton.svelte";
 
 describe("Header", () => {
-  it("should render contents", async () => {
-    const user = userEvent.setup();
+  const AUTH_LINK_LABELS = [
+    { value: true, text: "Sign Out" },
+    { value: false, text: "Sign In" },
+  ];
 
-    render(ProfileButton);
+  it.each([true, false])(
+    "should render correct contents",
+    async (isSignedIn) => {
+      const user = userEvent.setup();
 
-    // Links initially hidden
-    expect(screen.queryByText("Profile")).toBeFalsy();
-    expect(screen.queryByText("Sign Out")).toBeFalsy();
+      const labelText = AUTH_LINK_LABELS.find(
+        (label) => label.value === isSignedIn,
+      )!.text;
 
-    // Click on button to expand links
-    const button = screen.getByRole("button");
-    user.click(button);
+      render(ProfileButton, { isSignedIn });
 
-    // Links should be revealed after the click
-    waitFor(() => {
-      expect(screen.getByText("Profile")).toBeInTheDocument();
-      expect(screen.getByText("Sign Out")).toBeInTheDocument();
-    })
-  });
+      // Links initially hidden
+      expect(screen.queryByText(labelText)).toBeFalsy();
+
+      // Click on button to expand links
+      const button = screen.getByRole("button");
+      await user.click(button);
+
+      // Links should be revealed after the click
+      await waitFor(() => {
+        expect(screen.getByText(labelText)).toBeInTheDocument();
+      });
+    },
+  );
 });

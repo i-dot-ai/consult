@@ -31,7 +31,7 @@
   $effect(() => {
     addListeners();
     return () => removeListeners();
-  })
+  });
 
   function addListeners() {
     window.addEventListener("keydown", handleEscPress);
@@ -48,6 +48,10 @@
     if (!(e.target as HTMLElement).closest(".nav-button")) {
       activeSubmenu = null;
     }
+  }
+
+  function getPathText(i: number, subtitle: string, pathPart: string) {
+    return `${i === 0 && !subtitle ? "" : "/"} ${pathPart}`;
   }
 </script>
 
@@ -217,7 +221,7 @@
     ])}
   >
     <div class={clsx(["flex", "items-center", "gap-2"])}>
-      <a href={Routes.Home} class="block flex gap-2 items-center">
+      <a href={Routes.Home} class="block flex items-center gap-2">
         <div
           class={clsx(["flex", "justify-center", "items-center", "w-8", "h-8"])}
         >
@@ -262,7 +266,7 @@
               Only add slash to first item if subtitle is passed to
               avoid having the vertical divider and slash side by side
             -->
-            {i === 0 && !subtitle ? "" : "/"} {pathPart}
+            {getPathText(i, subtitle, pathPart)}
           </span>
         {/each}
       </p>

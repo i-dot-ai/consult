@@ -1,7 +1,11 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { getConsultationDetailUrl, getThemeSignOffUrl, Routes } from "../../../global/routes";
+  import {
+    getConsultationDetailUrl,
+    getThemeSignOffUrl,
+    Routes,
+  } from "../../../global/routes";
   import type { ConsultationStage } from "../../../global/types";
 
   import MaterialIcon from "../../MaterialIcon.svelte";
@@ -31,7 +35,9 @@
 
   let { consultationId = "", consultationStage = "analysis" }: Props = $props();
 
-  let currStage: number = $derived(STAGES.findIndex((stage) => stage === consultationStage));
+  let currStage: number = $derived(
+    STAGES.findIndex((stage) => stage === consultationStage),
+  );
 
   const items: item[] = $derived([
     {
@@ -86,7 +92,7 @@
       "lg:w-auto",
     ])}
   >
-    {#each items as item, i}
+    {#each items as item, i (i)}
       <li class="" aria-current={i === currStage ? "page" : undefined}>
         <a href={item.url} class="block p-4 hover:bg-neutral-100">
           <div class="flex flex-col items-center justify-start gap-4">
@@ -98,7 +104,7 @@
                 // past stages
                 i < currStage && "bg-secondary ring-teal-100",
                 // current stage
-                i === currStage && "bg-pink-700 ring-pink-200 animate-pulse",
+                i === currStage && "animate-pulse bg-pink-700 ring-pink-200",
               ])}
             >
               {#if i < currStage}
@@ -109,27 +115,29 @@
                 <span class="text-white">AI</span>
               {/if}
             </div>
-            <span class={clsx([
-              "min-h-12",
-              "text-center",
-              "text-xs",
-              "lg:min-h-0",
-              i < currStage ? "text-secondary" : "text-neutral-500",
-            ])}
-              >{item.text}</span
+            <span
+              class={clsx([
+                "min-h-12",
+                "text-center",
+                "text-xs",
+                "lg:min-h-0",
+                i < currStage ? "text-secondary" : "text-neutral-500",
+              ])}>{item.text}</span
             >
           </div>
         </a>
       </li>
 
       {#if i < items.length - 1}
-        <hr class={clsx([
-          "grow",
-          "-mt-16",
-          "lg:-mt-8",
-          "min-w-8",
-          i < currStage ? "border-secondary" : "border-pink-300",
-        ])} />
+        <hr
+          class={clsx([
+            "grow",
+            "-mt-16",
+            "lg:-mt-8",
+            "min-w-8",
+            i < currStage ? "border-secondary" : "border-pink-300",
+          ])}
+        />
       {/if}
     {/each}
   </ol>
@@ -140,9 +148,7 @@
         <Help />
       </MaterialIcon>
 
-      <small class="group-hover:text-primary">
-        Explain the process
-      </small>
+      <small class="group-hover:text-primary"> Explain the process </small>
     </Button>
   </div>
 </nav>

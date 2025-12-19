@@ -27,7 +27,7 @@
     isStaff,
     showProcess,
     consultationId,
-    consultationStage
+    consultationStage,
   }: Props = $props();
 
   let showBreadcrumbs = $state(false);
@@ -44,15 +44,21 @@
       children: [{ label: "Privacy notice", url: Routes.Privacy }],
     },
 
-    // only show if user is staff 
-    ...isStaff ?
-    [{
-      label: "Manage",
-      children: [
-        { label: "Manage Consultations", url: Routes.SupportConsultations },
-        { label: "Manage Users", url: Routes.SupportUsers },
-      ],
-    }] : [],
+    // only show if user is staff
+    ...(isStaff
+      ? [
+          {
+            label: "Manage",
+            children: [
+              {
+                label: "Manage Consultations",
+                url: Routes.SupportConsultations,
+              },
+              { label: "Manage Users", url: Routes.SupportUsers },
+            ],
+          },
+        ]
+      : []),
   ]}
 >
   {#snippet endItems()}
