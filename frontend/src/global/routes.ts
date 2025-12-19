@@ -101,6 +101,7 @@ export const getApiQuestionUrl = (
     consultationId,
     "questions",
     questionId,
+    "/",
   );
 };
 export const getApiAnswerUrl = (consultationId: string, answerId: string) => {

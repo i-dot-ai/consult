@@ -4,7 +4,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultation_analyser.consultations import models
-from consultation_analyser.consultations.api.permissions import CanSeeConsultation
+from consultation_analyser.consultations.api.permissions import (
+    CanSeeConsultation,
+    HasDashboardAccess,
+)
 from consultation_analyser.consultations.api.serializers import (
     QuestionSerializer,
     ThemeInformationSerializer,
@@ -13,9 +16,9 @@ from consultation_analyser.consultations.api.serializers import (
 
 class QuestionViewSet(ModelViewSet):
     serializer_class = QuestionSerializer
-    permission_classes = [CanSeeConsultation]
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
     filterset_fields = ["has_free_text"]
-    http_method_names = ["get", "patch"]
+    http_method_names = ["get", "patch", "delete"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]

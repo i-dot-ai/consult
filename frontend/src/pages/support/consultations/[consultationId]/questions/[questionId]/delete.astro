@@ -1,0 +1,44 @@
+---
+import { fetchBackendApi } from "../../../../../../global/api";
+import type {
+  ConsultationResponse,
+  Question,
+} from "../../../../../../global/types";
+
+import Layout from "../../../../../../layouts/Layout.astro";
+import Section from "../../../../../../components/Section/Section.svelte";
+import Title from "../../../../../../components/Title.svelte";
+import {
+  getApiConsultationUrl,
+  getApiQuestionUrl,
+  Routes,
+} from "../../../../../../global/routes";
+import DeleteQuestionForm from "../../../../../../components/screens/DeleteQuestionForm.svelte";
+
+const { consultationId, questionId } = Astro.params;
+
+if (!consultationId || !questionId) {
+  return Astro.redirect(Routes.SupportConsultations);
+}
+
+let consultation = await fetchBackendApi<ConsultationResponse>(
+  Astro,
+  getApiConsultationUrl(consultationId),
+);
+
+let question = await fetchBackendApi<Question>(
+  Astro,
+  getApiQuestionUrl(consultationId, questionId),
+);
+---
+
+<Layout>
+  <Section>
+    <Title level={1} text="Delete question" />
+    <DeleteQuestionForm
+      client:load
+      consultation={consultation}
+      question={question}
+    />
+  </Section>
+</Layout>
