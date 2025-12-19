@@ -97,6 +97,13 @@
         <a href={item.url} class="block p-4 hover:bg-neutral-100">
           <div class="flex flex-col items-center justify-start gap-4">
             <div
+              data-testid={
+                i > currStage
+                  ? "future-stage"
+                  : i < currStage
+                    ? "past-stage"
+                    : "current-stage"
+                }
               class={clsx([
                 "flex h-8 w-8 items-center justify-center rounded-full ring",
                 // future stages
