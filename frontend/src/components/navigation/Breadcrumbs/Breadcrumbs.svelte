@@ -30,7 +30,7 @@
 
   interface Props {
     consultationId?: string;
-    consultationStage?: ConsultationStage;
+    consultationStage?: string;
   }
 
   let { consultationId = "", consultationStage = "analysis" }: Props = $props();
