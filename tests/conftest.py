@@ -340,6 +340,15 @@ def theme_b(free_text_question, consultation_user):
 
 
 @pytest.fixture()
+def theme_c(free_text_question, consultation_user):
+    theme = SelectedThemeFactory(
+        question=free_text_question, name="Theme C", key=None, last_modified_by=consultation_user
+    )
+    yield theme
+    theme.delete()
+
+
+@pytest.fixture()
 def candidate_theme(free_text_question):
     theme = CandidateThemeFactory(question=free_text_question)
     yield theme
