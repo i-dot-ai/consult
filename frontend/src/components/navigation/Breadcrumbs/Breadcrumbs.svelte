@@ -6,7 +6,6 @@
     getThemeSignOffUrl,
     Routes,
   } from "../../../global/routes";
-  import type { ConsultationStage } from "../../../global/types";
 
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Check from "../../svg/material/Check.svelte";
@@ -97,13 +96,11 @@
         <a href={item.url} class="block p-4 hover:bg-neutral-100">
           <div class="flex flex-col items-center justify-start gap-4">
             <div
-              data-testid={
-                i > currStage
-                  ? "future-stage"
-                  : i < currStage
-                    ? "past-stage"
-                    : "current-stage"
-                }
+              data-testid={i > currStage
+                ? "future-stage"
+                : i < currStage
+                  ? "past-stage"
+                  : "current-stage"}
               class={clsx([
                 "flex h-8 w-8 items-center justify-center rounded-full ring",
                 // future stages

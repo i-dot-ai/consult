@@ -23,7 +23,7 @@
   export let fullWidth: boolean = false;
   export let testId: string = "";
   export let href: string | undefined = undefined;
-  export let ariaControls: string;
+  export let ariaControls: string | undefined = undefined;
 </script>
 
 <svelte:element
