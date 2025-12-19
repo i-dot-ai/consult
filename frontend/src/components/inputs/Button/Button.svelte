@@ -23,6 +23,7 @@
   export let fullWidth: boolean = false;
   export let testId: string = "";
   export let href: string | undefined = undefined;
+  export let ariaControls: string = "";
 </script>
 
 <svelte:element
@@ -89,6 +90,7 @@
       ? "true"
       : "false"
     : undefined}
+  aria-controls={ariaControls}
   data-testid={testId ? testId : undefined}
 >
   <slot />

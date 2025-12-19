@@ -71,6 +71,7 @@
             highlighted={showBreadcrumbs}
             highlightVariant="primary"
             handleClick={() => (showBreadcrumbs = !showBreadcrumbs)}
+            ariaControls="breadcrumbs-panel"
           >
             Process
           </Button>
@@ -83,7 +84,7 @@
 </Header>
 
 <!-- wrapper required for transition -->
-<div>
+<div id="breadcrumbs-panel">
   {#if showProcess && showBreadcrumbs}
     <div transition:slide class="py-2 shadow-lg">
       <Breadcrumbs {consultationId} {consultationStage} />
