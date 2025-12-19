@@ -10,7 +10,7 @@
   import ConsultIcon from "../../svg/ConsultIcon.svelte";
   import ProfileButton from "../ProfileButton/ProfileButton.svelte";
 
-  interface Props {
+  export interface Props {
     subtitle?: string;
     path?: string;
     isSignedIn: boolean;
