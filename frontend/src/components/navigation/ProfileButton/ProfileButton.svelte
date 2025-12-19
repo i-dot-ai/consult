@@ -29,7 +29,7 @@
   </a>
 {/snippet}
 
-<div class="relative">
+<div class="relative m-auto w-max">
   <WithExternalClick onExternalClick={() => (expanded = false)}>
     <button
       title="Profile links"

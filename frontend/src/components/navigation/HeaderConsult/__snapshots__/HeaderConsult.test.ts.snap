@@ -361,7 +361,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
             <!---->
              
             <div
-              class="relative"
+              class="relative w-max m-auto"
             >
               <div>
                 <button

@@ -34,4 +34,9 @@ describe("Header", () => {
       });
     },
   );
+
+  it("matches snapshot", () => {
+    const { container } = render(ProfileButton);
+    expect(container).toMatchSnapshot();
+  });
 });

@@ -15,6 +15,7 @@ import ThemeSignoffDetailStory from "../screens/ThemeSignOffDetailStory.svelte";
 import NavigationHeaderStory from "../navigation/Header/HeaderStory.svelte";
 import HeaderConsultStory from "../navigation/HeaderConsult/HeaderConsultStory.svelte";
 import BreadcrumbsStory from "../navigation/Breadcrumbs/BreadcrumbsStory.svelte";
+import ProfileButtonStory from "../navigation/ProfileButton/ProfileButtonStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -50,4 +51,5 @@ export default [
   NavigationHeaderStory,
   HeaderConsultStory,
   BreadcrumbsStory,
+  ProfileButtonStory,
 ] as Story[];
