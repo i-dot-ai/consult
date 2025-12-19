@@ -1,20 +1,23 @@
 <script lang="ts">
   import type { Question, ShowNextResponseResult } from "../../global/types";
-  import { getApiShowNextResponse, getResponseDetailUrl } from "../../global/routes";
+  import {
+    getApiShowNextResponse,
+    getResponseDetailUrl,
+  } from "../../global/routes";
   import MaterialIcon from "../MaterialIcon.svelte";
   import Visibility from "../svg/material/Visibility.svelte";
   import Button from "../inputs/Button/Button.svelte";
-  
+
   export let consultationId: string;
   export let questions: Question[] = [];
-  
+
   let loadingStates: { [key: string]: boolean } = {};
   let errors: { [key: string]: string | null } = {};
 
   const handleShowNext = async (questionId: string) => {
     loadingStates[questionId] = true;
     errors[questionId] = null;
-    
+
     try {
       const response = await fetch(
         getApiShowNextResponse(consultationId, questionId),
@@ -36,7 +39,8 @@
       } else {
         // No more responses to review
         if (!result.has_free_text) {
-          errors[questionId] = "This question does not have free text responses.";
+          errors[questionId] =
+            "This question does not have free text responses.";
         } else {
           errors[questionId] = "No more responses to review.";
         }
@@ -53,7 +57,7 @@
 <form class="pt-4">
   {#each questions as question (question.id)}
     {#if errors[question.id!]}
-      <div class="pt-1 shrink grow text-sm text-red-600">
+      <div class="shrink grow pt-1 text-sm text-red-600">
         {errors[question.id!]}
       </div>
     {/if}

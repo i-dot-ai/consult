@@ -63,7 +63,8 @@
       } else {
         // No more responses to review - go back to questions list
         if (!result.has_free_text) {
-          errors["general"] = "This question does not have free text responses.";
+          errors["general"] =
+            "This question does not have free text responses.";
         } else {
           // Redirect back to the questions list
           window.location.href = `/evaluations/${consultationId}/questions/`;
@@ -99,7 +100,7 @@
       if (!updateResponse.ok) {
         throw new Error(`Error: ${updateResponse.status}`);
       }
-      
+
       // Use the new API approach to get the next response
       await handleShowNext();
     } catch (err: unknown) {
@@ -113,11 +114,11 @@
   const handleSkip = async () => {
     errors = {};
     sending = true;
-    
+
     try {
       await handleShowNext();
     } catch (err: unknown) {
-      errors["general"] = 
+      errors["general"] =
         err instanceof Error ? err.message : "An unknown error occurred";
     } finally {
       sending = false;
