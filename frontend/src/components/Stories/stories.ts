@@ -13,6 +13,8 @@ import AnswersListStory from "../theme-sign-off/AnswersList/AnswersListStory.sve
 import GeneratedThemeCardStory from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCardStory.svelte";
 import ThemeSignoffDetailStory from "../screens/ThemeSignOffDetailStory.svelte";
 import NavigationHeaderStory from "../navigation/Header/HeaderStory.svelte";
+import HeaderConsultStory from "../navigation/HeaderConsult/HeaderConsultStory.svelte";
+import BreadcrumbsStory from "../navigation/Breadcrumbs/BreadcrumbsStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -46,4 +48,6 @@ export default [
   GeneratedThemeCardStory,
   ThemeSignoffDetailStory,
   NavigationHeaderStory,
+  HeaderConsultStory,
+  BreadcrumbsStory,
 ] as Story[];
