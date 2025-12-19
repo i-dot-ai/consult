@@ -32,6 +32,9 @@ export enum Routes {
   SupportThemefinder = "/support/consultations/themefinder",
   SupportEmail = "consult@cabinetoffice.gov.uk",
   SupportQueue = "/support/django-rq",
+  Profile = "/profile",
+  Privacy = "/privacy",
+  Guidance = "/guidance",
 }
 export const getConsultationDetailUrl = (consultationId: string) => {
   return urlJoin(Routes.Consultations, consultationId);

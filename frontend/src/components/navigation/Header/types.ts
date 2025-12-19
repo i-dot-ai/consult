@@ -7,10 +7,10 @@ export interface NavItem {
 }
 
 export interface Props {
-  title: string;
-  subtitle: string;
-  pathParts: string[];
-  navItems: NavItem[];
-  icon: Component;
+  title?: string;
+  subtitle?: string;
+  pathParts?: string[];
+  navItems?: NavItem[];
+  icon?: Component;
   endItems?: Snippet;
 }
