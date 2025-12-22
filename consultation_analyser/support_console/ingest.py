@@ -253,9 +253,13 @@ def create_embeddings_for_question(question_id: UUID):
 def import_response_annotation_themes(question: Question):
     s3_client = boto3.client("s3")
 
-    mapping_response = s3_client.get_object(
-        Bucket=settings.AWS_BUCKET_NAME, Key=question.mapping_file
-    )
+    try:
+        mapping_response = s3_client.get_object(
+            Bucket=settings.AWS_BUCKET_NAME, Key=question.mapping_file
+        )
+    except Exception:
+        raise KeyError("could not find file =", question.mapping_file)
+
     mapping_dict = {}
     for line in mapping_response["Body"].iter_lines():
         mapping = json.loads(line.decode("utf-8"))
