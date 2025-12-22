@@ -118,7 +118,12 @@ def export_selected_themes_to_s3(modeladmin, request, queryset):
             try:
                 logger.info("exporting themes for question={number}", number=question.number)
                 export_selected_themes(question)
-            except Exception:
+            except Exception as exception:
+                logger.info(
+                    "failed to export themes for question={number}, exception={exception}",
+                    number=question.number,
+                    exception=exception,
+                )
                 modeladmin.message_user(
                     request,
                     f"error running export for question {question.number}",
