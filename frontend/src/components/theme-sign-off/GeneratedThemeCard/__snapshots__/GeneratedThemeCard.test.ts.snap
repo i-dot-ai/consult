@@ -58,7 +58,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-secondary text-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-secondary hover:text-secondary svelte-1d0mdzt"
+              class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-secondary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-secondary hover:text-secondary svelte-1d0mdzt"
               data-variant="approve"
               role="button"
               tabindex="0"
@@ -79,7 +79,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
               data-variant="default"
               role="button"
               tabindex="0"
