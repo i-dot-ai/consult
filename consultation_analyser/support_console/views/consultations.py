@@ -213,10 +213,12 @@ def delete_consultation_job(consultation: models.Consultation):
 
         delete_response_related_table("consultations_responseannotation", consultation_id)
         delete_response_related_table("consultations_response_chosen_options", consultation_id)
+        delete_response_related_table("consultations_response_read_by", consultation_id)
 
         logger.info("Deleting responses...")
         delete_responses_in_batches(consultation_id)
 
+        delete_question_related_table("consultations_candidatetheme", consultation_id)
         delete_question_related_table("consultations_selectedtheme", consultation_id)
         delete_question_related_table("consultations_multichoiceanswer", consultation_id)
 
