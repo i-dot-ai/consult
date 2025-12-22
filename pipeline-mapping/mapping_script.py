@@ -7,8 +7,6 @@ import os
 import subprocess
 from pathlib import Path
 
-from themefinder.models import ThemeGenerationResponses
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -188,6 +186,7 @@ if __name__ == "__main__":
     import pandas as pd
     from langchain_openai import ChatOpenAI
     from themefinder import detail_detection, theme_mapping
+    from themefinder.models import ThemeGenerationResponses
 
     llm = ChatOpenAI(
         model="gpt-4o",
