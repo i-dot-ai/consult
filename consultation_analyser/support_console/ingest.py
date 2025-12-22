@@ -502,7 +502,7 @@ def export_selected_themes(question: Question):
         for theme in SelectedTheme.objects.filter(question=question)
     ]
     themes = models.ThemeGenerationResponses(responses=themes_to_save)
-    content = json.dumps(themes.model_dump_json())
+    content = themes.model_dump_json()
     logger.info(
         "writing selected themes for question={number} to {file}",
         number=question.number,
