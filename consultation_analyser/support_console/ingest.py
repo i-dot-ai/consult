@@ -505,11 +505,11 @@ def export_selected_themes(question: Question):
 
     themes_to_save = [
         SelectedThemeInput(
-            theme_key=theme.key,
+            theme_key=theme.key or chr(65 + i),
             theme_name=theme.name,
             theme_description=theme.description,
         )
-        for theme in SelectedTheme.objects.filter(question=question)
+        for i, theme in enumerate(SelectedTheme.objects.filter(question=question))
     ]
 
     class SelectedThemeInputs(BaseModel):
