@@ -34,7 +34,6 @@ logger = logging.getLogger(__name__)
 def load_selected_themes_from_s3(
     consultation_code: str,
     question_number: int,
-    timestamp: str,
     bucket_name: Optional[str] = None,
     s3_client=None,
 ) -> List[SelectedThemeInput]:
@@ -44,7 +43,6 @@ def load_selected_themes_from_s3(
     Args:
         consultation_code: The consultation folder name in S3
         question_number: The question number (e.g., 1 for question_part_1)
-        timestamp: The timestamp folder identifying the mapping run
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
         s3_client: Optional boto3 S3 client (for testing)
 
@@ -57,7 +55,7 @@ def load_selected_themes_from_s3(
     bucket_name_str = bucket_name if bucket_name is not None else settings.AWS_BUCKET_NAME
 
     # Build S3 key for themes.json
-    key = f"app_data/consultations/{consultation_code}/outputs/mapping/{timestamp}/question_part_{question_number}/themes.json"
+    key = f"app_data/consultations/{consultation_code}/inputs/question_part_{question_number}/selected_themes.json.json"
 
     logger.info(f"Loading selected themes from {key}")
 
@@ -278,7 +276,7 @@ def load_annotation_batch(
     for question_number in question_numbers:
         # Load selected themes (required)
         themes = load_selected_themes_from_s3(
-            consultation_code, question_number, timestamp, bucket_name_str, s3_client
+            consultation_code, question_number, bucket_name_str, s3_client
         )
         selected_themes_by_question[question_number] = themes
 

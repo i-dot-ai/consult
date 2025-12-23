@@ -166,7 +166,6 @@ class TestLoadSelectedThemesFromS3:
         themes = load_selected_themes_from_s3(
             consultation_code="TEST",
             question_number=1,
-            timestamp="2024-01-15",
             bucket_name="test-bucket",
             s3_client=mock_s3_client_themes,
         )
@@ -200,7 +199,6 @@ class TestLoadSelectedThemesFromS3:
             load_selected_themes_from_s3(
                 consultation_code="TEST",
                 question_number=1,
-                timestamp="2024-01-15",
                 bucket_name="test-bucket",
                 s3_client=client,
             )
