@@ -7,7 +7,11 @@ import os
 import subprocess
 from pathlib import Path
 
+import boto3
+import pandas as pd
+from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
+from themefinder import detail_detection, theme_mapping
 
 # Configure logging
 logging.basicConfig(
@@ -198,12 +202,6 @@ if __name__ == "__main__":
     logger.info("Installing requirements from requirements.txt...")
     subprocess.run(["pip", "install", "--no-cache-dir", "-r", "requirements.txt"], check=True)
     logger.info("Requirements installation completed")
-
-    import boto3
-    import pandas as pd
-    from langchain_openai import ChatOpenAI
-    from pydantic import BaseModel
-    from themefinder import detail_detection, theme_mapping
 
     llm = ChatOpenAI(
         model="gpt-4o",
