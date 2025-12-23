@@ -172,7 +172,7 @@ class TestLoadSelectedThemesFromS3:
 
         # Verify correct S3 key was requested
         expected_key = (
-            "app_data/consultations/TEST/outputs/mapping/2024-01-15/question_part_1/themes.json"
+            "app_data/consultations/TEST/inputs/question_part_1/selected_themes.json.json"
         )
         mock_s3_client_themes.get_object.assert_called_once_with(
             Bucket="test-bucket", Key=expected_key
