@@ -55,7 +55,7 @@ def load_selected_themes_from_s3(
     bucket_name_str = bucket_name if bucket_name is not None else settings.AWS_BUCKET_NAME
 
     # Build S3 key for themes.json
-    key = f"app_data/consultations/{consultation_code}/inputs/question_part_{question_number}/selected_themes.json.json"
+    key = f"app_data/consultations/{consultation_code}/inputs/question_part_{question_number}/selected_themes.json"
 
     logger.info(f"Loading selected themes from {key}")
 
