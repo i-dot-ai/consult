@@ -7,6 +7,8 @@ import os
 import subprocess
 from pathlib import Path
 
+from pydantic import BaseModel
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -17,6 +19,18 @@ logger = logging.getLogger(__name__)
 
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 BASE_PREFIX = "app_data/consultations/"
+
+
+class SelectedThemeInput(BaseModel):
+    # this is copied from the main consult app
+    theme_key: str
+    theme_name: str
+    theme_description: str
+
+
+class SelectedThemeInputs(BaseModel):
+    # this is copied from the main consult app
+    themes: list[SelectedThemeInput]
 
 
 def download_s3_subdir(subdir: str) -> None:
@@ -93,12 +107,15 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
     responses = responses_df.rename(columns={"themefinder_id": "response_id", "text": "response"})
 
     with themes_path.open() as f:
-        themes = ThemeGenerationResponses.model_validate_json(f.read())
+        themes = SelectedThemeInputs.model_validate_json(f.read())
 
     themes = pd.DataFrame(
         [
-            {"topic": theme.topic_label + ": " + theme.topic_description, "topic_id": chr(65 + i)}
-            for i, theme in enumerate(themes.responses)
+            {
+                "topic": theme.theme_name + ": " + theme.theme_description,
+                "topic_id": theme.theme_key,
+            }
+            for theme in themes.responses
         ]
     )
 
@@ -186,7 +203,6 @@ if __name__ == "__main__":
     import pandas as pd
     from langchain_openai import ChatOpenAI
     from themefinder import detail_detection, theme_mapping
-    from themefinder.models import ThemeGenerationResponses
 
     llm = ChatOpenAI(
         model="gpt-4o",

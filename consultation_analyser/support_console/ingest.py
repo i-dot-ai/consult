@@ -8,9 +8,8 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django_rq import get_queue
+from pydantic import BaseModel
 from simple_history.utils import bulk_create_with_history
-from themefinder import models
-from themefinder.models import Position
 
 from consultation_analyser.consultations.models import (
     CandidateTheme,
@@ -31,6 +30,7 @@ from consultation_analyser.support_console.file_models import (
     SentimentRecord,
     read_from_s3,
 )
+from consultation_analyser.support_console.ingestion.pydantic_models import SelectedThemeInput
 
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
 
@@ -504,19 +504,18 @@ def export_selected_themes(question: Question):
     s3_client = boto3.client("s3")
 
     themes_to_save = [
-        models.Theme(
-            topic_label=theme.name, topic_description=theme.description, position=Position.UNCLEAR
+        SelectedThemeInput(
+            theme_key=theme.key,
+            theme_name=theme.name,
+            theme_description=theme.description,
         )
         for theme in SelectedTheme.objects.filter(question=question)
     ]
 
-    unique_topic_labels = {theme.topic_label for theme in themes_to_save}
-    themes_to_save = [
-        next(x for x in themes_to_save if x.topic_label == topic_label)
-        for topic_label in unique_topic_labels
-    ]
+    class SelectedThemeInputs(BaseModel):
+        themes: list[SelectedThemeInput]
 
-    themes = models.ThemeGenerationResponses(responses=themes_to_save)
+    themes = SelectedThemeInputs(themes=themes_to_save)
     content = themes.model_dump_json()
     logger.info(
         "writing selected themes for question={number} to {file}",
