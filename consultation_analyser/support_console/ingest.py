@@ -509,6 +509,13 @@ def export_selected_themes(question: Question):
         )
         for theme in SelectedTheme.objects.filter(question=question)
     ]
+
+    unique_topic_labels = {theme.topic_label for theme in themes_to_save}
+    themes_to_save = [
+        next(x for x in themes_to_save if x.topic_label == topic_label)
+        for topic_label in unique_topic_labels
+    ]
+
     themes = models.ThemeGenerationResponses(responses=themes_to_save)
     content = themes.model_dump_json()
     logger.info(
