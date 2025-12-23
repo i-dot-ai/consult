@@ -275,12 +275,16 @@ def import_response_annotation_themes(question: Question):
 
     for i, (response_annotation_id, themefinder_id) in enumerate(annotation_theme_mappings):
         for key in mapping_dict.get(themefinder_id, []):
-            objects_to_save.append(
-                ResponseAnnotationTheme(
-                    response_annotation_id=response_annotation_id,
-                    theme_id=theme_mappings[key],
+            if theme_id := theme_mappings.get(key):
+                objects_to_save.append(
+                    ResponseAnnotationTheme(
+                        response_annotation_id=response_annotation_id,
+                        theme_id=theme_id,
+                    )
                 )
-            )
+            else:
+                logger.warning("key {key} missing from mapping", key=key)
+
             if len(objects_to_save) >= DEFAULT_BATCH_SIZE:
                 bulk_create_with_history(
                     objects_to_save, ResponseAnnotationTheme, ignore_conflicts=True
