@@ -67,8 +67,8 @@ def load_selected_themes_from_s3(
             bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
         )
     except Exception:
-        logger.error("key {key} not found", key=key)
         msg = f"key {key} not found"
+        logger.error(msg)
         raise KeyError(msg)
 
     # Validate each theme using Pydantic
