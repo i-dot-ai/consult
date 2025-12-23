@@ -202,8 +202,8 @@ if __name__ == "__main__":
     import boto3
     import pandas as pd
     from langchain_openai import ChatOpenAI
-    from themefinder import detail_detection, theme_mapping
     from pydantic import BaseModel
+    from themefinder import detail_detection, theme_mapping
 
     llm = ChatOpenAI(
         model="gpt-4o",
