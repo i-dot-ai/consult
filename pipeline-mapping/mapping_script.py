@@ -4,7 +4,6 @@ import datetime
 import json
 import logging
 import os
-import subprocess
 from pathlib import Path
 
 import boto3
@@ -199,10 +198,6 @@ async def process_consultation(consultation_dir: str, llm) -> str:
 
 
 if __name__ == "__main__":
-    logger.info("Installing requirements from requirements.txt...")
-    subprocess.run(["pip", "install", "--no-cache-dir", "-r", "requirements.txt"], check=True)
-    logger.info("Requirements installation completed")
-
     llm = ChatOpenAI(
         model="gpt-4o",
         temperature=0,
