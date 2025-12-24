@@ -3,6 +3,7 @@ from typing import Dict, List, Optional
 
 from django.conf import settings
 from django.db import transaction
+from pydantic import BaseModel
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -29,6 +30,11 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 # S3 LOADERS - Load and validate data from S3
 # ============================================================================
+
+
+class SelectedThemeInputs(BaseModel):
+    # this is copied from the main consult app
+    themes: list[SelectedThemeInput]
 
 
 def load_selected_themes_from_s3(
@@ -69,10 +75,7 @@ def load_selected_themes_from_s3(
         logger.error(msg)
         raise KeyError(msg)
 
-    # Validate each theme using Pydantic
-    # Note: theme_data is guaranteed to be non-None because raise_if_missing=True
-    assert theme_data is not None  # type narrowing for mypy
-    validated_themes = [SelectedThemeInput(**theme) for theme in theme_data]
+    validated_themes = SelectedThemeInputs.model_validate(theme_data).themes
 
     logger.info(
         f"Loaded and validated {len(validated_themes)} selected themes for question {question_number}"
