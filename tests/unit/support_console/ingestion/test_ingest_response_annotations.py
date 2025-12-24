@@ -837,7 +837,7 @@ class TestImportResponseAnnotationsFromS3:
             consultation_code="TEST",
             timestamp="2024-01-15",
             selected_themes_by_question={
-                1: [SelectedThemeInput(**theme) for theme in sample_themes_data],
+                1: [SelectedThemeInput(**theme) for theme in sample_themes_data.get("themes")],
             },
             sentiments_by_question={
                 1: [
@@ -886,7 +886,7 @@ class TestImportResponseAnnotationsFromS3:
             consultation_code="TEST",
             timestamp="2024-01-15",
             selected_themes_by_question={
-                1: [SelectedThemeInput(**theme) for theme in sample_themes_data],
+                1: [SelectedThemeInput(**theme) for theme in sample_themes_data.get("themes")],
             },
             details_by_question={
                 1: [DetailDetectionInput(themefinder_id=1001, evidence_rich="YES")]
