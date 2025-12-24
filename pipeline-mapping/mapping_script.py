@@ -4,8 +4,13 @@ import datetime
 import json
 import logging
 import os
-import subprocess
 from pathlib import Path
+
+import boto3
+import pandas as pd
+from langchain_openai import ChatOpenAI
+from pydantic import BaseModel
+from themefinder import detail_detection, theme_mapping
 
 # Configure logging
 logging.basicConfig(
@@ -17,6 +22,18 @@ logger = logging.getLogger(__name__)
 
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 BASE_PREFIX = "app_data/consultations/"
+
+
+class SelectedThemeInput(BaseModel):
+    # this is copied from the main consult app
+    theme_key: str
+    theme_name: str
+    theme_description: str
+
+
+class SelectedThemeInputs(BaseModel):
+    # this is copied from the main consult app
+    themes: list[SelectedThemeInput]
 
 
 def download_s3_subdir(subdir: str) -> None:
@@ -79,7 +96,7 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
 
     question_path = Path(consultation_dir) / "inputs" / question_dir / "question.json"
     responses_path = Path(consultation_dir) / "inputs" / question_dir / "responses.jsonl"
-    themes_path = Path(consultation_dir) / "inputs" / question_dir / "themes.csv"
+    themes_path = Path(consultation_dir) / "inputs" / question_dir / "selected_themes.json"
 
     with question_path.open() as f:
         question = json.load(f)["question_text"]
@@ -93,9 +110,20 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
     responses = responses_df.rename(columns={"themefinder_id": "response_id", "text": "response"})
 
     with themes_path.open() as f:
-        themes = pd.read_csv(themes_path)
-    themes["topic_id"] = [chr(65 + i) for i in range(len(themes))]
-    themes["topic"] = themes["Theme Name"] + ": " + themes["Theme Description"]
+        themes = SelectedThemeInputs.model_validate_json(f.read())
+
+    themes = pd.DataFrame(
+        [
+            {
+                "topic": theme.theme_name + ": " + theme.theme_description,
+                "topic_id": theme.theme_key,
+                "theme_name": theme.theme_name,
+                "theme_description": theme.theme_description,
+            }
+            for theme in themes.themes
+        ]
+    )
+
     return question, responses, themes
 
 
@@ -156,8 +184,6 @@ async def process_consultation(consultation_dir: str, llm) -> str:
                     question_output_dir / "mapping.jsonl", orient="records", lines=True
                 )
 
-                themes_df = themes_df[["topic_id", "Theme Name", "Theme Description"]]
-                themes_df.columns = ["theme_key", "theme_name", "theme_description"]
                 themes_df.to_json(question_output_dir / "themes.json", orient="records")
 
                 logger.info(
@@ -172,15 +198,6 @@ async def process_consultation(consultation_dir: str, llm) -> str:
 
 
 if __name__ == "__main__":
-    logger.info("Installing requirements from requirements.txt...")
-    subprocess.run(["pip", "install", "--no-cache-dir", "-r", "requirements.txt"], check=True)
-    logger.info("Requirements installation completed")
-
-    import boto3
-    import pandas as pd
-    from langchain_openai import ChatOpenAI
-    from themefinder import detail_detection, theme_mapping
-
     llm = ChatOpenAI(
         model="gpt-4o",
         temperature=0,
