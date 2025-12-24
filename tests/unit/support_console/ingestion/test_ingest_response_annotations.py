@@ -91,18 +91,20 @@ def response_2(db, question_1, respondent_2):
 @pytest.fixture
 def sample_themes_data():
     """Sample S3 selected themes data"""
-    return [
-        {
-            "theme_key": "healthcare",
-            "theme_name": "Healthcare Access",
-            "theme_description": "Issues related to accessing healthcare services",
-        },
-        {
-            "theme_key": "education",
-            "theme_name": "Education Funding",
-            "theme_description": "Concerns about education funding levels",
-        },
-    ]
+    return {
+        "themes": [
+            {
+                "theme_key": "healthcare",
+                "theme_name": "Healthcare Access",
+                "theme_description": "Issues related to accessing healthcare services",
+            },
+            {
+                "theme_key": "education",
+                "theme_name": "Education Funding",
+                "theme_description": "Concerns about education funding levels",
+            },
+        ]
+    }
 
 
 @pytest.fixture
