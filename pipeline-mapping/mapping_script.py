@@ -118,6 +118,8 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
             {
                 "topic": theme.theme_name + ": " + theme.theme_description,
                 "topic_id": theme.theme_key,
+                "theme_name": theme.theme_name,
+                "theme_description": theme.theme_description,
             }
             for theme in themes.themes
         ]
@@ -183,8 +185,6 @@ async def process_consultation(consultation_dir: str, llm) -> str:
                     question_output_dir / "mapping.jsonl", orient="records", lines=True
                 )
 
-                themes_df = themes_df[["topic_id", "Theme Name", "Theme Description"]]
-                themes_df.columns = ["theme_key", "theme_name", "theme_description"]
                 themes_df.to_json(question_output_dir / "themes.json", orient="records")
 
                 logger.info(
