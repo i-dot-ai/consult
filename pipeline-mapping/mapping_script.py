@@ -107,7 +107,7 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
     responses = responses_df.rename(columns={"themefinder_id": "response_id", "text": "response"})
 
     with themes_path.open() as f:
-        themes = SelectedThemeInputs.model_validate_json(f.read())
+        selected_theme_inputs = SelectedThemeInputs.model_validate_json(f.read())
 
     themes = pd.DataFrame(
         [
@@ -115,7 +115,7 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
                 "topic": theme.theme_name + ": " + theme.theme_description,
                 "topic_id": theme.theme_key,
             }
-            for theme in themes.responses
+            for theme in selected_theme_inputs.themes
         ]
     )
 
