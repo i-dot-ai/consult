@@ -119,7 +119,7 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
                 "topic": theme.theme_name + ": " + theme.theme_description,
                 "topic_id": theme.theme_key,
             }
-            for theme in themes.responses
+            for theme in themes.themes
         ]
     )
 
