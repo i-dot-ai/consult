@@ -102,4 +102,10 @@ describe("Modal", () => {
     expect(setOpenMock).toHaveBeenCalledTimes(2);
     expect(handleConfirmMock).not.toHaveBeenCalled();
   });
+
+  it("matches snapshot", () => {
+    const { container } = render(Modal, testData);
+
+    expect(container).toMatchSnapshot();
+  })
 });
