@@ -3,6 +3,7 @@ import AnswersList from "./AnswersList.svelte";
 const variant = $state("selected");
 const title = $state("Test Title");
 const answers = $state(["Answer 1", "Answer 2", "Answer 3"]);
+const loading = $state(false);
 
 export default {
   name: "AnswersList",
@@ -27,6 +28,11 @@ export default {
       name: "answers",
       value: answers,
       type: "json",
+    },
+    {
+      name: "loading",
+      value: loading,
+      type: "bool",
     },
   ],
   stories: [

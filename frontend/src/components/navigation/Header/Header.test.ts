@@ -6,6 +6,7 @@ import Header from "./Header.svelte";
 
 import { testData } from "./testData";
 import type { NavItem, Props } from "./types";
+import HeaderStory from "./HeaderStory.svelte";
 
 function getNavItemsWithUrl(data: Props) {
   return data.navItems.filter((item) => Boolean(item.url));
@@ -84,4 +85,25 @@ describe("Header", () => {
 
     expect(await screen.findByTestId("mobile-nav")).toBeInTheDocument();
   });
+
+  it("matches snapshot", async () => {
+    const { container } = render(Header, testData);
+
+    expect(container).toMatchSnapshot();
+  });
+
+  it("should have a story configured correctly", () => {
+    expect(HeaderStory).toHaveProperty("name", "NavigationHeader");
+    expect(HeaderStory).toHaveProperty("component", Header);
+    expect(HeaderStory).toHaveProperty("props");
+
+    const propsDefined = HeaderStory.props.map(prop => prop.name);
+    expect(propsDefined).toEqual([
+      "title",
+      "subtitle",
+      "icon",
+      "pathParts",
+      "navItems",
+    ]);
+  })
 });

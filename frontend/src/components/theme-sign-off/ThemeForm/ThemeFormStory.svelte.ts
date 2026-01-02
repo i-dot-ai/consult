@@ -1,6 +1,8 @@
 import ThemeForm from "./ThemeForm.svelte";
 
 const variant = $state("add");
+const initialTitle = $state("Initial Title");
+const initialDescription = $state("Initial Description");
 const handleConfirm = () => alert("Confirm event triggered");
 const handleCancel = () => alert("Cancel event triggered");
 
@@ -17,6 +19,16 @@ export default {
         { value: "add", label: "Add" },
         { value: "edit", label: "Edit" },
       ],
+    },
+    {
+      name: "initialTitle",
+      value: initialTitle,
+      type: "text",
+    },
+    {
+      name: "initialDescription",
+      value: initialDescription,
+      type: "text",
     },
     {
       name: "handleConfirm",

@@ -8,7 +8,7 @@
   import MaterialIcon from "../MaterialIcon.svelte";
   import ChevronRight from "../svg/material/ChevronRight.svelte";
 
-  interface Props {
+  export interface Props {
     title: Snippet;
     content: Snippet;
     variant?: "light" | "gray";
