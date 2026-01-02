@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/svelte";
 import { createRawSnippet } from "svelte";
 
 import Panel from "./Panel.svelte";
+import PanelStory from "./PanelStory.svelte";
 
 describe("Panel", () => {
   const childComponent = createRawSnippet(() => {
@@ -29,4 +30,19 @@ describe("Panel", () => {
     expect(panel.getAttribute("class")).toContain("border");
     expect(panel.getAttribute("class")).toContain("bg-");
   });
+
+  it("should have a story configured correctly", () => {
+    expect(PanelStory).toHaveProperty("name", "Panel");
+    expect(PanelStory).toHaveProperty("component", Panel);
+    expect(PanelStory).toHaveProperty("props");
+
+    const propsDefined = PanelStory.props.map(prop => prop.name);
+    expect(propsDefined).toEqual([
+      "variant",
+      "border",
+      "bg",
+      "level",
+      "children",
+    ])
+  })
 });
