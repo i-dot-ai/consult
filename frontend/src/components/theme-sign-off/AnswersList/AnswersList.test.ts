@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
 import AnswersList from "./AnswersList.svelte";
+import AnswersListStory from "./AnswersListStory.svelte";
 
 describe("AnswersList", () => {
   const testData = {
@@ -39,4 +40,13 @@ describe("AnswersList", () => {
 
     expect(screen.getByText(NOT_FOUND_MESSAGE)).toBeInTheDocument();
   });
+
+  it("should have a story configured correctly", () => {
+    expect(AnswersListStory).toHaveProperty("name", "AnswersList");
+    expect(AnswersListStory).toHaveProperty("component", AnswersList);
+    expect(AnswersListStory).toHaveProperty("props");
+
+    const propsDefined = AnswersListStory.props.map(prop => prop.name);
+    expect(propsDefined).toEqual(["variant", "title", "answers", "loading"]);
+  })
 });

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
 import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
+import GeneratedThemeCardStory from "./GeneratedThemeCardStory.svelte";
 
 describe("GeneratedThemeCard", () => {
   const testData = {
@@ -70,4 +71,19 @@ describe("GeneratedThemeCard", () => {
     expect(screen.queryByText(CHILD_THEME.name)).toBeNull();
     expect(screen.queryByText(CHILD_THEME.description)).toBeNull();
   });
+
+  it("should have a story configured correctly", () => {
+    expect(GeneratedThemeCardStory).toHaveProperty("name", "GeneratedThemeCard");
+    expect(GeneratedThemeCardStory).toHaveProperty("component", GeneratedThemeCard);
+    expect(GeneratedThemeCardStory).toHaveProperty("props");
+
+    const propsDefined = GeneratedThemeCardStory.props.map(prop => prop.name);
+    expect(propsDefined).toEqual([
+      "theme",
+      "level",
+      "leftPadding",
+      "handleSelect",
+      "answersMock",
+    ]);
+  })
 });
