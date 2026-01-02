@@ -10,29 +10,15 @@ help:     ## Show this help.
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-30s\033[0m %s\n", $$1, $$2}'
 
 
-.PHONY: setup_dev_db
-setup_dev_db: ## Set up the development db on a local postgres
-	createdb consultations_dev
-	-createuser consultations_dev
-	-psql -d postgres -c 'GRANT ALL ON database consultations_dev TO consultations_dev;'
-	-psql -d postgres -c 'ALTER USER consultations_dev WITH SUPERUSER;'
+.PHONY: setup_db
+setup_db: ## Set up the development db on docker
+	docker compose up -d postgres
 
-.PHONY: reset_dev_db
-reset_dev_db: ## Reset the dev db
-	-dropdb consultations_dev
-	$(MAKE) setup_dev_db
-
-.PHONY: setup_test_db
-setup_test_db:  ## Set up the test db on a local postgres
-	createdb consultations_test
-	-createuser consultations_test
-	-psql -d postgres -c 'GRANT ALL ON database consultations_test TO consultations_test; ALTER USER consultations_test CREATEDB;'
-	-psql -d postgres -c 'ALTER USER consultations_test WITH SUPERUSER;'
-
-.PHONY: reset_test_db
-reset_test_db: ## Reset the test db
-	-psql -lqt | cut -d \| -f 1 | grep -qw consultations_test && dropdb consultations_test
-	$(MAKE) setup_test_db
+.PHONY: reset_db
+reset_db: ## Reset the dev db
+	docker compose down postgres
+	docker volume rm -f consult_postgres_data
+	$(MAKE) setup_db
 
 .PHONY: check_db
 check_db: ## Make sure the db is addressable
@@ -49,6 +35,7 @@ migrate: ## Apply migrations
 
 .PHONY: serve
 serve: ## Run the server and the worker
+	docker compose up -d postgres redis
 	poetry run honcho start
 
 .PHONY: test
@@ -59,9 +46,23 @@ test: ## Run the tests
 test-failed: ## Run all failed tests in the previous run
 	poetry run pytest --last-failed --random-order
 
-.PHONY: test-migrations
-test-migrations: ## Run the migration tests separately
-	poetry run pytest migration_tests/ --random-order
+.PHONY: test-end-to-end
+test-end-to-end:
+		@echo "Creating test database..."
+		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;" || true
+		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "CREATE DATABASE consult_e2e_test;"
+		@echo "Backing up current DATABASE_URL..."
+		@cp .env .env.backup
+		@echo "Setting test DATABASE_URL..."
+		@sed -i.tmp 's|DATABASE_URL=.*|DATABASE_URL=psql://postgres:postgres@localhost:5432/consult_e2e_test|' .env && rm .env.tmp  # pragma: allowlist secret
+		@echo "Running end-to-end tests..."
+		cd e2e_tests && npm install
+		cd e2e_tests && npx playwright install --with-deps
+		cd e2e_tests && npm run e2e
+		@echo "Cleaning up test database..."
+		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;"
+		@echo "Restoring original .env..."
+		@mv .env.backup .env
 
 .PHONY: check-python-code
 check-python-code: ## Check Python code - linting and mypy
@@ -94,7 +95,7 @@ dev_admin_user:
 	poetry run python manage.py shell -c "from consultation_analyser.authentication.models import User; User.objects.create_user(email='email@example.com', password='admin', is_staff=True)" # pragma: allowlist secret
 
 .PHONY: dev_environment
-dev_environment: reset_dev_db migrate dummy_data reset_test_db govuk_frontend dev_admin_user ## set up the database with dummy data and configure govuk_frontend
+dev_environment: reset_db migrate dummy_data govuk_frontend dev_admin_user ## set up the database with dummy data and configure govuk_frontend
 
 # Docker
 AWS_REGION=eu-west-2
@@ -154,17 +155,6 @@ endif
 docker_build_local: ## Build the docker container for the specified service locally
 	DOCKER_BUILDKIT=1 docker build --platform=linux/amd64 -t $(IMAGE) -f $(service)/Dockerfile .
 
-.PHONY: docker_run
-docker_run: ## Run the docker container
-	docker run -e DATABASE_URL=psql://consultations_dev:@host.docker.internal:5432/consultations_dev -p 8000:8000 $(IMAGE)
-
-.PHONY: docker_shell
-docker_shell: ## Run the docker container
-	docker run -e DATABASE_URL=psql://consultations_dev:@host.docker.internal:5432/consultations_dev -it $(IMAGE) /bin/bash
-
-.PHONY: docker_test
-docker_test: ## Run the tests in the docker container
-	docker run -e DATABASE_URL=psql://consultations_test:@host.docker.internal:5432/consultations_test $(IMAGE) ./venv/bin/pytest
 
 .PHONY: docker_login
 docker_login:
@@ -208,10 +198,10 @@ TF_BACKEND_CONFIG=$(CONFIG_DIR)/backend.hcl
 
 
 tf_new_workspace:
-	terraform -chdir=./infrastructure/$(instance)  workspace new $(env)
+	terraform -chdir=./terraform/$(instance)  workspace new $(env)
 
 tf_set_workspace:
-	terraform -chdir=./infrastructure/$(instance) workspace select $(env)
+	terraform -chdir=./terraform/$(instance) workspace select $(env)
 
 tf_set_or_create_workspace:
 	make tf_set_workspace || make tf_new_workspace
@@ -221,41 +211,41 @@ tf_init_and_set_workspace:
 
 .PHONY: tf_init
 tf_init: ## Initialise terraform
-	terraform -chdir=./infrastructure/$(instance) init -backend-config=$(TF_BACKEND_CONFIG) -reconfigure
+	terraform -chdir=./terraform/$(instance) init -backend-config=$(TF_BACKEND_CONFIG) -reconfigure
 
 .PHONY: tf_plan
 tf_plan: ## Plan terraform
 	make tf_init_and_set_workspace && \
-	terraform -chdir=./infrastructure/$(instance) plan -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+	terraform -chdir=./terraform/$(instance) plan -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
 .PHONY: tf_apply
 tf_apply: ## Apply terraform
 	make tf_init_and_set_workspace && \
-	terraform -chdir=./infrastructure/$(instance) apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} ${args}
+	terraform -chdir=./terraform/$(instance) apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} ${args}
 
 .PHONY: tf_init_universal
 tf_init_universal: ## Initialise terraform
-	terraform -chdir=./infrastructure/universal init -backend-config=../$(TF_BACKEND_CONFIG)
+	terraform -chdir=./terraform/universal init -backend-config=../$(TF_BACKEND_CONFIG)
 
 .PHONY: tf_apply_universal
 tf_apply_universal: ## Apply terraform
-	terraform -chdir=./infrastructure workspace select prod && \
-	terraform -chdir=./infrastructure/universal apply -var-file=../$(CONFIG_DIR)/prod-input-params.tfvars
+	terraform -chdir=./terraform workspace select prod && \
+	terraform -chdir=./terraform/universal apply -var-file=../$(CONFIG_DIR)/prod-input-params.tfvars
 
 .PHONY: tf_auto_apply
 tf_auto_apply: ## Auto apply terraform
 	make tf_init_and_set_workspace && \
-	terraform -chdir=./infrastructure apply -auto-approve -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} $(target_modules)
+	terraform -chdir=./terraform apply -auto-approve -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} $(target_modules)
 
 .PHONY: tf_destroy
 tf_destroy: ## Destroy terraform
 	make tf_init_and_set_workspace && \
-	terraform -chdir=./infrastructure destroy -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+	terraform -chdir=./terraform destroy -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
 .PHONY: tf_import
 tf_import:
 	make tf_init_and_set_workspace && \
-	terraform -chdir=./infrastructure/$(instance) import ${tf_build_args} -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${name} ${id}
+	terraform -chdir=./terraform/$(instance) import ${tf_build_args} -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${name} ${id}
 
 # Release commands to deploy your app to AWS
 .PHONY: release
@@ -266,4 +256,4 @@ release: ## Deploy app
 		exit 1; \
 	fi
 
-	chmod +x ./infrastructure/scripts/release.sh && ./infrastructure/scripts/release.sh $(env)
+	chmod +x ./terraform/scripts/release.sh && ./terraform/scripts/release.sh $(env)

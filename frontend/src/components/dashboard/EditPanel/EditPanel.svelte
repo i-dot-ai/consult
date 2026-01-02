@@ -6,7 +6,7 @@
     type ResponseTheme,
     type SearchableSelectOption,
   } from "../../../global/types";
-  import { createFetchStore } from "../../../global/stores";
+  import { createFetchStore, type MockFetch } from "../../../global/stores";
   import { getApiAnswerUrl } from "../../../global/routes";
 
   import Button from "../../inputs/Button/Button.svelte";
@@ -19,7 +19,6 @@
   import Tag from "../../Tag/Tag.svelte";
   import Title from "../../Title.svelte";
   import TitleRow from "../TitleRow.svelte";
-  import AutoRenew from "../../svg/material/AutoRenew.svelte";
 
   function removeTheme(id: string) {
     stagedThemes = stagedThemes.filter((theme) => theme.id !== id);
@@ -50,22 +49,22 @@
   }
 
   async function submit() {
-    let actualUpdateAnswer = updateAnswerMock || updateAnswer;
+    let actualUpdateAnswer = updateAnswerMock || $answerUpdateStore.fetch;
 
     if (noChangesStaged()) {
       return;
     }
 
     await actualUpdateAnswer(
-      getApiAnswerUrl(consultationId, questionId, answerId),
+      getApiAnswerUrl(consultationId, answerId),
       "PATCH",
       {
         themes: stagedThemes.map((theme) => ({ id: theme.id })),
         evidenceRich: stagedEvidenceRich,
-      } as unknown as BodyInit,
+      },
     );
 
-    if (!$submitError && !$isSubmitting) {
+    if (!$answerUpdateStore.error && !$answerUpdateStore.isLoading) {
       resetData();
     }
   }
@@ -77,18 +76,13 @@
     themes: ResponseTheme[];
     themeOptions: ResponseTheme[];
     evidenceRich: boolean;
-    resetData: Function;
-    setEditing: Function;
-    updateAnswerMock?: (
-      url: string,
-      method: string,
-      options: BodyInit,
-    ) => Promise<void>;
+    resetData: () => void;
+    setEditing: () => void;
+    updateAnswerMock?: MockFetch;
   }
 
   let {
     consultationId = "",
-    questionId = "",
     answerId = "",
     themes = [],
     themeOptions = [],
@@ -102,12 +96,7 @@
   let stagedEvidenceRich = $state(false);
   let panelOpen: boolean = $state(false);
 
-  const {
-    loading: isSubmitting,
-    error: submitError,
-    load: updateAnswer,
-    data: answerData,
-  } = createFetchStore();
+  const answerUpdateStore = createFetchStore();
 
   onMount(() => {
     resetStaged();
@@ -116,8 +105,8 @@
   function resetStaged() {
     stagedThemes = themes ? [...themes] : [];
     stagedEvidenceRich = evidenceRich;
-    isSubmitting.set(false);
-    submitError.set("");
+    $answerUpdateStore.isLoading = false;
+    $answerUpdateStore.error = null;
   }
 </script>
 
@@ -153,9 +142,9 @@
       <Title level={4} text="Themes" />
 
       <ul
-        class="flex flex-wrap gap-2 items-center justify-start my-1 sm:max-w-[30vw]"
+        class="my-1 flex flex-wrap items-center justify-start gap-2 sm:max-w-[30vw]"
       >
-        {#each stagedThemes as theme}
+        {#each stagedThemes as theme (theme.id)}
           <Tag>
             {theme.name}
 
@@ -190,7 +179,7 @@
     <div class="my-2">
       <Title level={4} text="Evidence-rich" />
 
-      <div class="flex items-center gap-2 my-1">
+      <div class="my-1 flex items-center gap-2">
         <Button
           size="xs"
           handleClick={() => (stagedEvidenceRich = true)}
@@ -213,21 +202,21 @@
 
     <hr class="my-4" />
 
-    {#if $submitError}
-      <small class="block my-2 text-red-500" transition:slide
-        >{$submitError}</small
+    {#if $answerUpdateStore.error}
+      <small class="my-2 block text-red-500" transition:slide
+        >{$answerUpdateStore.error}</small
       >
     {/if}
 
-    <div class="w-full flex justify-end">
-      <div class="w-1/2 ml-1">
+    <div class="flex w-full justify-end">
+      <div class="ml-1 w-1/2">
         <Button
           variant="approve"
           size="sm"
           handleClick={() => submit()}
           fullWidth={true}
         >
-          <div class="flex justify-center items-center gap-2 w-full py-0.5">
+          <div class="flex w-full items-center justify-center gap-2 py-0.5">
             <div class="shrink-0">
               <MaterialIcon>
                 <Check />
@@ -235,7 +224,7 @@
             </div>
 
             <span class="whitespace-nowrap">
-              {$isSubmitting ? "Saving..." : "Save Changes"}
+              {$answerUpdateStore.isLoading ? "Saving..." : "Save Changes"}
             </span>
           </div>
         </Button>

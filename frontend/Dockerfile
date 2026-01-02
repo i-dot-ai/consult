@@ -1,5 +1,5 @@
-# Use official Node.js runtime as base image
-FROM public.ecr.aws/docker/library/node:20-slim
+# Using Node 20.18.0 to match development environment (.nvmrc) and ci (.github/workflows/frontend-ci.yml)
+FROM public.ecr.aws/docker/library/node:20.18.0-slim
 
 # Set working directory in container
 WORKDIR /app

@@ -12,19 +12,24 @@ import SelectedThemeCardStory from "../theme-sign-off/SelectedThemeCard/Selected
 import AnswersListStory from "../theme-sign-off/AnswersList/AnswersListStory.svelte";
 import GeneratedThemeCardStory from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCardStory.svelte";
 import ThemeSignoffDetailStory from "../screens/ThemeSignOffDetailStory.svelte";
+import NavigationHeaderStory from "../navigation/Header/HeaderStory.svelte";
 
 interface StoryProp {
   name: string;
-  value: any;
+  value: unknown;
   type: "number" | "text" | "bool" | "select" | "json" | "html" | "func";
   schema?: string;
+}
+interface StoryConfig {
+  name: string;
+  props?: unknown;
 }
 interface Story {
   name: string;
   component: Component;
   category?: string;
   props: StoryProp[];
-  stories: any[];
+  stories: StoryConfig[];
 }
 
 export default [
@@ -40,4 +45,5 @@ export default [
   AnswersListStory,
   GeneratedThemeCardStory,
   ThemeSignoffDetailStory,
+  NavigationHeaderStory,
 ] as Story[];

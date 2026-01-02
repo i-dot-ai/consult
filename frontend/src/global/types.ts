@@ -22,9 +22,23 @@ export interface Question {
 }
 
 export interface Consultation {
-  title: string;
   id: string;
+  title: string;
+  stage: "theme_sign_off" | "theme_mapping" | "analysis";
   created_at: string;
+}
+
+export interface Respondent {
+  id: string;
+  consultation: string;
+  themefinder_id: number;
+  demographics: RespondentDemoItem[];
+  name?: string;
+}
+
+export interface RespondentDemoItem {
+  name: string;
+  value: string;
 }
 
 export interface FormattedTheme {
@@ -40,6 +54,20 @@ export interface FormattedTheme {
 export interface SelectOption {
   value: string;
   label: string;
+}
+
+export interface RadioItem {
+  value: string;
+  text: string;
+  checked?: boolean;
+  disabled?: boolean;
+}
+
+export interface CheckboxItem {
+  value: string;
+  text: string;
+  hint?: string;
+  disabled?: boolean;
 }
 
 export enum SearchModeValues {
@@ -83,19 +111,46 @@ export interface ResponseTheme {
   key?: string;
 }
 
+export interface ResponseThemeInformation {
+  all_themes: ResponseTheme[];
+  selected_themes: ResponseTheme[];
+}
+
+export interface Respondent {
+  id: string;
+  themefinder_id: number | null;
+  name: string;
+  demographics: DemoOptionsResponseItem[];
+}
+
+export interface QuestionResponseResponse {
+  id: string;
+  respondent: Respondent;
+  question: Question;
+  free_text_answer_text: string;
+  chosen_options: MultiChoiceResponse;
+  created_at: string;
+  modified_at: string;
+  // Extra fields not mapped:
+  // embedding: string;
+  // searchVector: string;
+}
+
 export interface ResponseAnswer {
   id: string;
   identifier: number; // respondent themefinder id
+  question_id: string;
   respondent_id: string;
   free_text_answer_text: string;
   demographic_data: { [category: string]: string };
-  themes: ResponseTheme[];
+  themes: ResponseTheme[] | null;
   multiple_choice_answer: string[];
   evidenceRich: boolean;
-  sentiment: string;
+  sentiment: string | null;
   human_reviewed: boolean;
   is_flagged: boolean;
   is_edited?: boolean;
+  is_read: boolean;
 }
 
 export interface DemoOption {
@@ -118,13 +173,41 @@ export interface ConsultationResponse {
   title: string;
   code: string;
   users: User[];
+  stage: "theme_sign_off" | "theme_mapping" | "analysis";
 }
-
+export interface QuestionsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Question[];
+}
+export interface SelectedThemesResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: SelectedTheme[];
+}
+export interface SelectedThemesDeleteResponse {
+  last_modified_by?: { email: string };
+  latest_version?: string;
+}
+export interface GeneratedThemesResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: GeneratedTheme[];
+}
 export interface AnswersResponse {
   respondents_total: number;
   filtered_total: number;
   has_more_pages: boolean;
   all_respondents: ResponseAnswer[];
+}
+export interface RespondentsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Respondent[];
 }
 
 export interface ThemeInfoResponse {

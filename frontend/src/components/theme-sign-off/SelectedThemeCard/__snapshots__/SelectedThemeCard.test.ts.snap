@@ -3,7 +3,7 @@
 exports[`SelectedThemeCard > should render 1`] = `
 <div>
   <article
-    class="bg-white rounded-lg"
+    class="rounded-lg bg-white"
     data-themeid="theme-id"
   >
     <div>
@@ -17,25 +17,40 @@ exports[`SelectedThemeCard > should render 1`] = `
           <div
             class="md:w-auto"
           >
-            <header>
+            <header
+              class="flex items-center gap-2"
+            >
               <h2>
                 Theme Name
               </h2>
+               
+              <!---->
             </header>
              
             <p
-              class="text-sm text-neutral-700 my-4"
+              class="my-4 text-sm text-neutral-700"
             >
               This is the theme description
             </p>
              
+            <hr
+              class="mb-4"
+            />
+             
+            <small
+              class="mb-4 block text-xs text-neutral-500"
+            >
+              Added
+              NaN minute ago by 
+            </small>
+             
             <footer
-              class="flex items-center flex-wrap gap-2"
+              class="flex flex-wrap items-center gap-2"
             >
               <!---->
               <button
                 aria-pressed="false"
-                class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                 data-variant="default"
                 role="button"
                 tabindex="0"
@@ -66,7 +81,7 @@ exports[`SelectedThemeCard > should render 1`] = `
               <!---->
               <button
                 aria-pressed="false"
-                class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                 data-variant="default"
                 role="button"
                 tabindex="0"
@@ -98,7 +113,7 @@ exports[`SelectedThemeCard > should render 1`] = `
               <!---->
               <button
                 aria-pressed="false"
-                class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                 data-variant="default"
                 role="button"
                 tabindex="0"
@@ -142,6 +157,7 @@ exports[`SelectedThemeCard > should render 1`] = `
     </div>
     <!---->
   </article>
+  
   
 </div>
 `;

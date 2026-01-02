@@ -6,8 +6,8 @@
 
   import type { Question } from "../../../global/types.ts";
   import { favStore } from "../../../global/stores.ts";
-  import { applyHighlight } from "../../../global/utils.ts";
 
+  import HighlightedText from "../HighlightedText/HighlightedText.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import ConditionalWrapper from "../../ConditionalWrapper/ConditionalWrapper.svelte";
   import Star from "../../svg/material/Star.svelte";
@@ -32,7 +32,6 @@
   }
 
   let {
-    consultationId = "",
     question = {},
     url = "",
     highlightText = "",
@@ -128,10 +127,10 @@
               in:fade
               class={clsx(["text-md", "leading-6", disabled && "opacity-50"])}
             >
-              {@html applyHighlight(
-                `Q${question.number}: ${question.question_text}`,
-                highlightText,
-              )}
+              <HighlightedText
+                text={`Q${question.number}: ${question.question_text}`}
+                highlight={highlightText}
+              />
             </p>
 
             <div
@@ -162,12 +161,12 @@
           class={clsx(["-ml-2", "sm:ml-0", horizontal ? "-mt-0.5" : "-mt-1"])}
         >
           {#if !skeleton}
-            <div class="flex gap-1 items-center">
+            <div class="flex items-center gap-1">
               {#if tag}
                 <div
                   class={clsx([
                     "ml-2 md:ml-0",
-                    disabled && "grayscale opacity-50",
+                    disabled && "opacity-50 grayscale",
                   ])}
                 >
                   {@render tag()}
@@ -178,21 +177,26 @@
                 data-testid="fav-button"
                 class={clsx([disabled && "grayscale"])}
               >
-                <Button
-                  variant="ghost"
-                  handleClick={(e: MouseEvent) => {
-                    e.stopPropagation();
-                    favStore.toggleFav(question.id || "");
-                  }}
+                <div
+                  onkeypress={(e) => e.stopPropagation()}
+                  onclick={(e) => e.stopPropagation()}
                 >
-                  {@const favourited = $favStore.includes(question.id)}
-                  <MaterialIcon
-                    size="1.3rem"
-                    color={favourited ? "fill-yellow-500" : "fill-gray-500"}
+                  <Button
+                    variant="ghost"
+                    handleClick={(e: MouseEvent) => {
+                      e.stopPropagation();
+                      favStore.toggleFav(question.id || "");
+                    }}
                   >
-                    <Star fill={favourited} />
-                  </MaterialIcon>
-                </Button>
+                    {@const favourited = $favStore.includes(question.id)}
+                    <MaterialIcon
+                      size="1.3rem"
+                      color={favourited ? "fill-yellow-500" : "fill-gray-500"}
+                    >
+                      <Star fill={favourited} />
+                    </MaterialIcon>
+                  </Button>
+                </div>
               </div>
             </div>
           {/if}

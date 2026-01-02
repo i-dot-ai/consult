@@ -51,9 +51,7 @@
   label="Themes"
   value={JSON.stringify(themes)}
   setValue={(newValue) => {
-    try {
-      themes = JSON.parse(newValue);
-    } catch {}
+    themes = JSON.parse(newValue);
   }}
 />
 

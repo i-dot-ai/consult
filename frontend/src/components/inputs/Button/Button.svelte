@@ -1,10 +1,15 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  export let type: string | undefined;
+  export let type: string | undefined = undefined;
   export let title: string = "";
-  export let variant: "default" | "gray" | "primary" | "ghost" | "approve" =
-    "default";
+  export let variant:
+    | "default"
+    | "gray"
+    | "primary"
+    | "ghost"
+    | "approve"
+    | "outline" = "default";
   export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
   export let highlighted: boolean = false;
   export let highlightVariant:
@@ -13,7 +18,7 @@
     | "primary"
     | "approve"
     | "none" = "dark";
-  export let handleClick = (e: MouseEvent) => {};
+  export let handleClick = () => {};
   export let disabled: boolean = false;
   export let fullWidth: boolean = false;
   export let testId: string = "";
@@ -22,7 +27,7 @@
 
 <svelte:element
   this={href ? "a" : "button"}
-  role="button"
+  role={href ? "link" : "button"}
   {type}
   title={title || undefined}
   data-variant={variant}
@@ -36,11 +41,13 @@
     size === "xs" ? "py-0.5" : "py-1",
     size === "xs" ? "px-1" : "px-2",
     "border",
-    variant === "default" && "bg-white",
-    variant === "gray" && "bg-neutral-100",
-    variant === "primary" && "bg-primary text-white",
-    variant === "approve" && "bg-secondary text-white",
-    variant === "ghost" ? "border-transparent" : "border-gray-300",
+    variant === "default" && "border-gray-300 bg-white",
+    variant === "gray" && "border-gray-300 bg-neutral-100",
+    variant === "primary" && "border-gray-300 bg-primary text-white",
+    variant === "approve" && "border-gray-300 bg-secondary text-white",
+    variant === "ghost" && "border-transparent",
+    variant === "outline" &&
+      clsx(["bg-transparent", "border border-primary", "text-primary"]),
     "transition-colors",
     "duration-300",
     "self-start",
@@ -48,8 +55,8 @@
     "gap-1",
     "items-center",
     "hover:bg-gray-100",
-    variant === "primary" && "hover:text-primary hover:border-primary",
-    variant === "approve" && "hover:text-secondary hover:border-secondary",
+    variant === "primary" && "hover:border-primary hover:text-primary",
+    variant === "approve" && "hover:border-secondary hover:text-secondary",
 
     disabled &&
       clsx([
@@ -68,7 +75,7 @@
         highlightVariant === "dark" &&
           "!bg-neutral-800 text-white hover:bg-neutral-700",
         highlightVariant === "light" &&
-          "!bg-pink-100 text-neutral-800 border border-pink-200 hover:bg-pink-200",
+          "border border-pink-200 !bg-pink-100 text-neutral-800 hover:bg-pink-200",
         highlightVariant === "primary" &&
           "!bg-primary text-white hover:bg-pink-500",
         highlightVariant === "approve" &&

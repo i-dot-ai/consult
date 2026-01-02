@@ -1,77 +1,62 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
-import RespondentSidebar, {
-  type RespondentDemoItem,
-  type Props,
-} from "./RespondentSidebar.svelte";
-import RespondentSidebarStory from "./RespondentSidebarStory.svelte";
+import RespondentSidebar from "./RespondentSidebar.svelte";
 import { getPercentage } from "../../../global/utils";
 
-let testData: Props;
-
 describe("RespondentSidebar", () => {
-  beforeEach(() => {
-    testData = {
-      demoData: [
-        { name: "country", value: "england" },
-        { name: "age", value: "25-35" },
-      ],
-      stakeholderName: "Test stakeholder",
-      questionsAnswered: 10,
-      totalQuestions: 20,
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    demoData: [
+      { name: "country", value: "england" },
+      { name: "age", value: "25-35" },
+    ],
+    stakeholderName: "Test stakeholder",
+    questionsAnswered: 10,
+    totalQuestions: 20,
+  };
 
   it("should render data", () => {
-    const { getByText } = render(RespondentSidebar, {
+    render(RespondentSidebar, {
       ...testData,
     });
 
     testData.demoData.forEach((dataItem) => {
-      expect(getByText(dataItem.name));
-      expect(getByText(dataItem.value));
+      expect(screen.getByText(dataItem.name)).toBeInTheDocument();
+      expect(screen.getByText(dataItem.value)).toBeInTheDocument();
     });
-    expect(getByText(testData.stakeholderName));
+    expect(screen.getByText(testData.stakeholderName)).toBeInTheDocument();
 
     const partialNum = testData.questionsAnswered;
     const totalNum = testData.totalQuestions;
     const percentage = getPercentage(partialNum, totalNum);
     const countsText = `${percentage}% (${partialNum}/${totalNum})`;
-    expect(getByText(countsText));
+    expect(screen.getByText(countsText)).toBeInTheDocument();
   });
 
   it("should render editable mode and call update callback", async () => {
-    vi.mock("svelte/transition");
     const user = userEvent.setup();
     const updateMock = vi.fn();
 
-    const { getByTestId, getByLabelText } = render(RespondentSidebar, {
+    render(RespondentSidebar, {
       ...testData,
       updateStakeholderName: updateMock,
     });
 
     // click to reveal buttons and text input
-    const editButton = getByTestId("edit-button");
+    const editButton = screen.getByTestId("edit-button");
     await user.click(editButton);
 
     // clear existing subtitle and type new one
-    const subtitleInput = getByLabelText("Edit Subtitle");
+    const subtitleInput = screen.getByLabelText("Edit Subtitle");
     await user.clear(subtitleInput);
     await user.type(subtitleInput, "New Stakeholder");
 
     // click to save subtitle
-    const saveButton = getByTestId("save-button");
+    const saveButton = screen.getByTestId("save-button");
     await user.click(saveButton);
 
     // check if subtitle is updated correctly
     expect(updateMock).toHaveBeenCalledWith("New Stakeholder");
-  });
-
-  it("should render story", () => {
-    render(RespondentSidebarStory);
   });
 });

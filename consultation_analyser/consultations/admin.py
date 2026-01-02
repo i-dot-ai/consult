@@ -21,6 +21,7 @@ from consultation_analyser.consultations.models import (
 from consultation_analyser.support_console.ingest import (
     DEFAULT_TIMEOUT_SECONDS,
     create_embeddings_for_question,
+    export_selected_themes,
 )
 
 
@@ -107,12 +108,28 @@ def create_large_dummy_consultation(modeladmin, request, queryset):
     create_dummy_consultation(modeladmin, request, queryset, 10_000)
 
 
+@admin.action(description="export selected themes")
+def export_selected_themes_to_s3(modeladmin, request, queryset):
+    for consultation in queryset:
+        for question in consultation.question_set.all():
+            try:
+                export_selected_themes(question)
+            except Exception:
+                modeladmin.message_user(
+                    request,
+                    f"error running export for question {question.number}",
+                    level=messages.ERROR,
+                )
+                return
+
+
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [
         update_embeddings_admin,
         reimport_demographics,
         create_small_dummy_consultation,
         create_large_dummy_consultation,
+        export_selected_themes_to_s3,
     ]
 
 

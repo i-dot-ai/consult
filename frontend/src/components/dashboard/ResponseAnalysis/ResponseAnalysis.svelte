@@ -8,7 +8,7 @@
   import AnswerCard from "../AnswerCard/AnswerCard.svelte";
   import Finance from "../../svg/material/Finance.svelte";
   import FiltersSidebar from "../FiltersSidebar/FiltersSidebar.svelte";
-  import Select from "../../inputs/Select.svelte";
+  import Select from "../../inputs/Select/Select.svelte";
 
   import {
     SearchModeLabels,
@@ -20,11 +20,8 @@
     type ResponseTheme,
     type SearchableSelectOption,
   } from "../../../global/types";
-  import {
-    themeFilters,
-    demoFilters,
-    multiAnswerFilters,
-  } from "../../../global/state.svelte";
+  import { themeFilters } from "../../../global/state.svelte";
+  import { updateResponseReadStatus } from "../../../global/routes";
 
   import Title from "../../Title.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
@@ -37,10 +34,11 @@
   import Popover from "../../inputs/Popover/Popover.svelte";
   import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
   import Flag2 from "../../svg/material/Flag2.svelte";
+  import { onDestroy } from "svelte";
 
   export let consultationId: string = "";
   export let questionId: string = "";
-  export let pageSize: number = 50;
+  export let pageSize: number = 5;
   export let isAnswersLoading: boolean = true;
   export let isThemesLoading: boolean = true;
   export let answersError: string = "";
@@ -51,9 +49,9 @@
   export let resetData = () => {};
 
   export let searchValue: string = "";
-  export let setSearchValue = (value: string) => {};
+  export let setSearchValue = () => {};
   export let searchMode: SearchModeValues = SearchModeValues.KEYWORD;
-  export let setSearchMode = (next: SearchModeValues) => {};
+  export let setSearchMode = () => {};
 
   export let demoOptions: DemoOption = {};
   export let demoData: DemoData = {};
@@ -61,10 +59,13 @@
   export let themes: ResponseTheme[] = [];
 
   export let evidenceRich: boolean = false;
-  export let setEvidenceRich = (value: boolean) => {};
+  export let setEvidenceRich = () => {};
+
+  export let unseenResponses: boolean = false;
+  export let setUnseenResponses = () => {};
 
   export let flaggedOnly: boolean = false;
-  export let setFlaggedOnly = (value: boolean) => {};
+  export let setFlaggedOnly = () => {};
 
   export let anyFilterApplied: boolean = false;
   export let resetFilters: () => void = () => {};
@@ -76,6 +77,53 @@
     // new answers without initial delay but still scattered
     return BASE_FLY_DELAY * (index % pageSize);
   }
+
+  let markAsReadTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function startMarkAsReadTimer() {
+    if (markAsReadTimer) {
+      clearTimeout(markAsReadTimer);
+    }
+
+    const READ_TIMEOUT = 10000; // 10 seconds
+
+    markAsReadTimer = setTimeout(async () => {
+      if (answers.length > 0) {
+        const markPromises = answers.map((answer) =>
+          fetch(updateResponseReadStatus(consultationId, answer.id), {
+            method: "POST",
+          }),
+        );
+        await Promise.all(markPromises);
+      }
+    }, READ_TIMEOUT);
+  }
+
+  function resetMarkAsReadTimer() {
+    if (markAsReadTimer) {
+      clearTimeout(markAsReadTimer);
+      markAsReadTimer = null;
+    }
+  }
+
+  onDestroy(() => {
+    resetMarkAsReadTimer();
+  });
+
+  $: if (answers.length > 0 && !isAnswersLoading && !answersError) {
+    startMarkAsReadTimer();
+  }
+
+  $: if (
+    searchValue ||
+    anyFilterApplied ||
+    evidenceRich ||
+    unseenResponses ||
+    flaggedOnly ||
+    themeFilters.filters.length > 0
+  ) {
+    resetMarkAsReadTimer();
+  }
 </script>
 
 <div class="grid grid-cols-4 gap-4">
@@ -83,11 +131,14 @@
     <svelte:boundary>
       <FiltersSidebar
         showEvidenceRich={true}
+        showUnseenResponse={false}
         {demoOptions}
         {demoData}
         {demoOptionsData}
         {evidenceRich}
         {setEvidenceRich}
+        {unseenResponses}
+        {setUnseenResponses}
         loading={isThemesLoading}
       />
 
@@ -131,9 +182,9 @@
             {/if}
 
             <div
-              class="flex justify-between items-center gap-4 flex-col-reverse sm:flex-row"
+              class="flex flex-col-reverse items-center justify-between gap-4 sm:flex-row"
             >
-              <div class="w-full sm:w-auto grow">
+              <div class="w-full grow sm:w-auto">
                 <TextInput
                   variant="search"
                   id="search-input"
@@ -147,10 +198,11 @@
 
               <div class="w-full sm:w-auto">
                 <Select
+                  id="search_mode"
                   label="Search Mode"
                   hideLabel={true}
                   value={searchMode}
-                  options={[
+                  items={[
                     {
                       value: SearchModeValues.KEYWORD,
                       label: SearchModeLabels.KEYWORD,
@@ -160,7 +212,7 @@
                       label: SearchModeLabels.SEMANTIC,
                     },
                   ]}
-                  handleChange={(nextValue: string) => {
+                  onchange={(nextValue: string) => {
                     setSearchMode(nextValue as SearchModeValues);
                   }}
                 />
@@ -188,9 +240,9 @@
                 {#if themeFilters.filters.length > 0}
                   <div
                     transition:slide
-                    class="flex gap-2 flex-wrap items-center my-2"
+                    class="my-2 flex flex-wrap items-center gap-2"
                   >
-                    {#each themeFilters.filters as themeFilter}
+                    {#each themeFilters.filters as themeFilter (themeFilter)}
                       <div transition:fly={{ x: 300 }}>
                         <Tag variant="primary">
                           <span>
@@ -216,7 +268,7 @@
                   </div>
                 {/if}
 
-                <div class="w-full md:w-1/2 mt-4">
+                <div class="mt-4 w-full md:w-1/2">
                   <Popover>
                     <span slot="trigger" class="block text-left">
                       Select Themes...
@@ -263,7 +315,7 @@
               title={`${filteredTotal} responses found`}
               subtitle="All responses to this question"
             >
-              <div slot="aside" class="flex gap-2 items-center flex-wrap">
+              <div slot="aside" class="flex flex-wrap items-center gap-2">
                 {#if anyFilterApplied}
                   <Button
                     size="sm"
@@ -294,7 +346,7 @@
 
             {#if isAnswersLoading && answers.length === 0}
               <div transition:fade>
-                {#each "_".repeat(5) as _}
+                {#each "_".repeat(5) as _, i (i)}
                   <AnswerCard skeleton={true} />
                 {/each}
               </div>
@@ -345,7 +397,7 @@
 
                 {#if isAnswersLoading}
                   <div transition:fade>
-                    {#each "_".repeat(5) as _}
+                    {#each "_".repeat(5) as _, i (i)}
                       <AnswerCard skeleton={true} />
                     {/each}
                   </div>
@@ -375,7 +427,7 @@
                 </div>
 
                 {#if answers}
-                  <p class="text-sm text-center mt-2">
+                  <p class="mt-2 text-center text-sm">
                     {`Showing first ${answers.length} of ${filteredTotal} responses. Use filters to narrow results.`}
                   </p>
                 {/if}

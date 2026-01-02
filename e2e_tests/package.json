@@ -1,0 +1,16 @@
+{
+  "name": "e2e-tests",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": "24.8"
+  },
+  "scripts": {
+    "e2e": "npx playwright test",
+    "e2e-ui": "npx playwright test --ui",
+    "e2e-chrome": "npx playwright test --project=chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

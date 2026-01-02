@@ -2,7 +2,6 @@
   import clsx from "clsx";
 
   import { onMount } from "svelte";
-  import type { Writable } from "svelte/store";
 
   import {
     getApiConsultationUrl,
@@ -14,10 +13,12 @@
     type DemoOptionsResponse,
     type DemoOptionsResponseItem,
     type QuestionMultiAnswer,
+    type QuestionsResponse,
   } from "../../global/types";
   import { getPercentage } from "../../global/utils";
   import { createFetchStore } from "../../global/stores";
 
+  import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
   import Chart from "../dashboard/Chart.svelte";
   import MetricsDemoCard from "../dashboard/MetricsDemoCard/MetricsDemoCard.svelte";
   import Panel from "../dashboard/Panel/Panel.svelte";
@@ -32,63 +33,36 @@
 
   let { consultationId = "" }: Props = $props();
 
-  const {
-    loading: isConsultationLoading,
-    error: consultationError,
-    load: loadConsultation,
-    data: consultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<ConsultationResponse>;
-  } = createFetchStore();
+  const consultationStore = createFetchStore<ConsultationResponse>();
+  const questionsStore = createFetchStore<QuestionsResponse>();
+  const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
 
-  const {
-    loading: isQuestionsLoading,
-    error: questionsError,
-    load: loadQuestions,
-    data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<ConsultationResponse>;
-  } = createFetchStore();
+  let dataRequested: boolean = $state(false);
 
-  const {
-    loading: isDemoOptionsLoading,
-    error: demoOptionsError,
-    load: loadDemoOptions,
-    data: demoOptionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<DemoOptionsResponse>;
-  } = createFetchStore();
-
-  let totalResponses = $derived(
-    $questionsData?.results?.reduce(
+  let totalResponses: number = $derived(
+    $questionsStore.data?.results?.reduce(
       (acc, question) => acc + (question?.total_responses || 0),
       0,
-    ),
+    ) || 0,
   );
 
   let demoCategories = $derived([
-    ...new Set(($demoOptionsData || []).map((opt) => opt.name)),
+    ...new Set(($demoOptionsStore.data || []).map((opt) => opt.name)),
   ]);
 
   let chartQuestions = $derived(
-    $questionsData?.results?.filter((question) => question.has_multiple_choice),
+    $questionsStore.data?.results?.filter(
+      (question) => question.has_multiple_choice,
+    ),
   );
 
-  $effect(() => {
-    loadConsultation(getApiConsultationUrl(consultationId));
-    loadQuestions(getApiQuestionsUrl(consultationId));
-    loadDemoOptions(
+  onMount(() => {
+    $consultationStore.fetch(getApiConsultationUrl(consultationId));
+    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
+    $demoOptionsStore.fetch(
       `/api/consultations/${consultationId}/demographic-options/`,
     );
+    dataRequested = true;
   });
 </script>
 
@@ -107,37 +81,43 @@
       <Finance slot="icon" />
     </TitleRow>
 
-    <div class="grid grid-cols-12 gap-4 mb-4">
-      {#each demoCategories as category}
-        <div class="col-span-12 md:col-span-4">
-          <MetricsDemoCard
-            title={category}
-            items={[...($demoOptionsData || [])]
-              .filter((opt: DemoOptionsResponseItem) => opt.name === category)
-              .sort(
-                (a: DemoOptionsResponseItem, b: DemoOptionsResponseItem) => {
-                  if (a.count < b.count) {
-                    return 1;
-                  } else if (a.count > b.count) {
-                    return -1;
-                  }
-                  return 0;
-                },
-              )
-              .map((demoOption: DemoOptionsResponseItem) => ({
-                title: demoOption.value.replaceAll("'", ""),
-                count: demoOption.count,
-                percentage: getPercentage(demoOption.count, totalResponses),
-              }))}
-            hideThreshold={Infinity}
-          />
-        </div>
-      {/each}
-    </div>
+    {#if !dataRequested || $demoOptionsStore.isLoading}
+      <LoadingMessage message="Loading Demographics..." />
+    {:else}
+      <div class="mb-4 grid grid-cols-12 gap-4">
+        {#each demoCategories as category (category)}
+          <div class="col-span-12 md:col-span-4">
+            <MetricsDemoCard
+              title={category}
+              items={[...($demoOptionsStore.data || [])]
+                .filter((opt: DemoOptionsResponseItem) => opt.name === category)
+                .sort(
+                  (a: DemoOptionsResponseItem, b: DemoOptionsResponseItem) => {
+                    if (a.count < b.count) {
+                      return 1;
+                    } else if (a.count > b.count) {
+                      return -1;
+                    }
+                    return 0;
+                  },
+                )
+                .map((demoOption: DemoOptionsResponseItem) => ({
+                  title: demoOption.value.replaceAll("'", ""),
+                  count: demoOption.count,
+                  percentage: getPercentage(demoOption.count, totalResponses),
+                }))}
+              hideThreshold={Infinity}
+            />
+          </div>
+        {/each}
+      </div>
+    {/if}
   </Panel>
 </section>
 
-{#if chartQuestions?.length > 0}
+{#if !dataRequested || $questionsStore.isLoading}
+  <LoadingMessage message="Loading Questions..." />
+{:else if chartQuestions && chartQuestions?.length > 0}
   <section>
     <Panel>
       <TitleRow
@@ -147,13 +127,13 @@
         <PieChart slot="icon" />
       </TitleRow>
 
-      <div class="grid grid-cols-12 gap-4 mb-4">
-        {#each chartQuestions as question}
-          <div class="col-span-12 sm:col-span-6 lg:col-span-4 mt-4">
-            <div class="w-full h-full">
+      <div class="mb-4 grid grid-cols-12 gap-4">
+        {#each chartQuestions as question (question.id)}
+          <div class="col-span-12 mt-4 sm:col-span-6 lg:col-span-4">
+            <div class="h-full w-full">
               <Panel border={true} bg={true}>
-                <div class="flex flex-col justify-start h-full">
-                  <div class="flex items-start gap-4 mb-4">
+                <div class="flex h-full flex-col justify-start">
+                  <div class="mb-4 flex items-start gap-4">
                     <span class="text-sm text-primary">
                       Q{question.number}
                     </span>

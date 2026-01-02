@@ -4,6 +4,7 @@
 
   import Title from "../Title.svelte";
   import Link from "../Link.svelte";
+  import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
 
   import type { Consultation } from "../../global/types.ts";
   import {
@@ -36,22 +37,22 @@
 
 <section class="mt-4">
   {#if loading}
-    <p transition:slide>Loading consultations...</p>
+    <p transition:slide>
+      <LoadingMessage message="Loading consultations..." />
+    </p>
   {:else}
     <ul>
-      {#each consultations as consultation}
+      {#each consultations as consultation (consultation.id)}
         <li>
           <Title level={2} text={consultation.title} />
 
-          <div class="flex gap-4 flex-wrap">
+          <div class="flex flex-wrap gap-4">
             <Link href={getConsultationEvalUrl(consultation.id)}>
               View Evaluation
             </Link>
-            <!-- TODO: Enable after theme sign off implementation
-              <Link href={getThemeSignOffUrl(consultation.id)}>
-                Theme Sign Off
-              </Link>
-            -->
+            <Link href={getThemeSignOffUrl(consultation.id)}>
+              Theme Sign Off
+            </Link>
             {#if dashboardPermitted}
               <Link href={getConsultationDetailUrl(consultation.id)}>
                 View Dashboard

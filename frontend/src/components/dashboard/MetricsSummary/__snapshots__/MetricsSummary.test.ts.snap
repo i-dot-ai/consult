@@ -4,7 +4,7 @@ exports[`MetricsSummary > should render data 1`] = `
 <div>
   <!---->
   <div
-    class="w-full flex items-center justify-between my-2 gap-4"
+    class="my-2 flex w-full items-center justify-between gap-4"
   >
     <div
       class="flex items-center"
@@ -42,7 +42,7 @@ exports[`MetricsSummary > should render data 1`] = `
   <!---->
    
   <div
-    class="w-full flex items-center justify-between my-2 gap-4"
+    class="my-2 flex w-full items-center justify-between gap-4"
   >
     <div
       class="flex items-center"
@@ -81,7 +81,7 @@ exports[`MetricsSummary > should render data 1`] = `
   <!---->
    
   <div
-    class="w-full flex items-center justify-between my-2 gap-4"
+    class="my-2 flex w-full items-center justify-between gap-4"
   >
     <div
       class="flex items-center"
@@ -118,6 +118,7 @@ exports[`MetricsSummary > should render data 1`] = `
     </span>
   </div>
   <!---->
+  
   
 </div>
 `;

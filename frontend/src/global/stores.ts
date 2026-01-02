@@ -8,8 +8,8 @@ function getInitialFavs() {
     return [];
   }
 
-  const storedFavs = localStorage.getItem(FAVS_STORAGE_KEY);
   try {
+    const storedFavs = localStorage.getItem(FAVS_STORAGE_KEY);
     return storedFavs ? JSON.parse(storedFavs) : [];
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
@@ -46,23 +46,51 @@ function createFavStore() {
 }
 export const favStore = createFavStore();
 
-// Shared fetch logic
-export const createFetchStore = (mockFetch?: Function) => {
-  const data: Writable<any> = writable(null);
-  const loading: Writable<boolean> = writable(true);
-  const error: Writable<string> = writable("");
+export type MockFetch<T> = (config: {
+  url: string;
+  headers?: HeadersInit;
+  method: string;
+  body?: string;
+}) => T;
 
-  const DEBOUNCE_DELAY = 500;
+// Shared fetch logic
+export const createFetchStore = <T>({
+  mockFetch,
+  debounceDelay = 500,
+}: { mockFetch?: MockFetch<T>; debounceDelay?: number } | undefined = {}) => {
+  const store: Writable<{
+    data: T | null;
+    isLoading: boolean;
+    error: string | null;
+    status: number;
+    fetch: (
+      url: string,
+      method?: string,
+      body?: BodyInit,
+      headers?: HeadersInit,
+    ) => Promise<void>;
+  }> = writable({
+    data: null,
+    isLoading: false,
+    error: null,
+    status: 0,
+    fetch: () => Promise.resolve(),
+  });
+
   let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
   let prevPromise: Promise<void> | null = null;
   let resolvePrev: (() => void) | null = null;
 
-  const load = async (
+  const doFetch = async (
     url: string,
     method: string = "GET",
     body?: BodyInit,
     headers?: HeadersInit,
   ) => {
+    // immediate feedback to the UI that fetching has started
+    // even though it awaits debounce timeout
+    store.update((store) => ({ ...store, isLoading: true, error: "" }));
+
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
       debounceTimeout = null;
@@ -72,21 +100,19 @@ export const createFetchStore = (mockFetch?: Function) => {
       resolvePrev = resolve;
 
       debounceTimeout = setTimeout(async () => {
-        loading.set(true);
-        error.set("");
         try {
           if (mockFetch) {
-            data.set(
-              mockFetch({
-                url: url,
-                headers: {
-                  "Content-Type": "application/json",
-                  ...headers,
-                },
-                method: method,
-                body: body ? JSON.stringify(body) : undefined,
-              }),
-            );
+            const mockData = mockFetch({
+              url: url,
+              headers: {
+                "Content-Type": "application/json",
+                ...headers,
+              },
+              method: method,
+              body: body ? JSON.stringify(body) : undefined,
+            });
+
+            store.update((store) => ({ ...store, data: mockData }));
             return;
           } else {
             const response = await fetch(url, {
@@ -97,26 +123,35 @@ export const createFetchStore = (mockFetch?: Function) => {
               method: method,
               body: body ? JSON.stringify(body) : undefined,
             });
-            const parsedData = await response.json();
-            data.set(parsedData);
+
+            // Avoid error if no body is returned
+            // equivalent to .json()
+            const textBody = await response.text();
+            if (textBody) {
+              const parsedData = JSON.parse(textBody);
+              store.update((store) => ({ ...store, data: parsedData }));
+            }
+            store.update((store) => ({ ...store, status: response.status }));
+
             if (!response.ok) {
               throw new Error(`Fetch Error: ${response.statusText}`);
             }
           }
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "unknown";
-          error.set(message);
+          store.update((store) => ({ ...store, error: message }));
         } finally {
-          loading.set(false);
+          store.update((store) => ({ ...store, isLoading: false }));
           if (resolvePrev) {
             resolvePrev();
           }
         }
-      }, DEBOUNCE_DELAY);
+      }, debounceDelay);
     });
 
     return prevPromise;
   };
 
-  return { data, loading, error, load };
+  store.update((store) => ({ ...store, fetch: doFetch }));
+  return store;
 };

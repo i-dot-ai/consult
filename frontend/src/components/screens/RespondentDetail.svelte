@@ -1,6 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
 
   import {
@@ -13,10 +14,17 @@
     getRespondentDetailUrl,
   } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
+  import type {
+    AnswersResponse,
+    QuestionsResponse,
+    Respondent,
+    RespondentsResponse,
+  } from "../../global/types.ts";
 
-  import Panel from "../dashboard/Panel/Panel.svelte";
   import Alert from "../Alert.svelte";
+  import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
+  import Panel from "../dashboard/Panel/Panel.svelte";
   import ChevronRight from "../svg/material/ChevronRight.svelte";
   import Button from "../inputs/Button/Button.svelte";
   import RespondentSidebar from "../dashboard/RespondentSidebar/RespondentSidebar.svelte";
@@ -24,14 +32,6 @@
   import RespondentAnswer from "../dashboard/RespondentAnswer/RespondentAnswer.svelte";
 
   const FLY_ANIMATION_DELAY = 100;
-
-  interface Respondent {
-    id: string;
-    consultation: string;
-    themefinder_id: number;
-    demographics: any[];
-    name?: any;
-  }
 
   interface Props {
     consultationId: string;
@@ -47,48 +47,24 @@
     themefinderId = 1,
   }: Props = $props();
 
-  const {
-    load: loadRespondents,
-    loading: isRepondentsLoading,
-    data: respondentsData,
-    error: respondentsError,
-  } = createFetchStore();
+  const respondentsStore = createFetchStore<RespondentsResponse>();
+  const respondentStore = createFetchStore<Respondent>();
+  const consultationQuestionsStore = createFetchStore<QuestionsResponse>();
+  const questionsStore = createFetchStore<QuestionsResponse>();
+  const answersStore = createFetchStore<AnswersResponse>();
 
-  const {
-    load: loadRespondent,
-    loading: isRepondentLoading,
-    data: respondentData,
-    error: respondentError,
-  } = createFetchStore();
+  let dataRequested: boolean = $state(false);
 
-  const {
-    load: loadConsultationQuestions,
-    loading: isConsultationQuestionsLoading,
-    data: consultationQuestionsData,
-    error: consultationQuestionsError,
-  } = createFetchStore();
-
-  const {
-    load: loadQuestions,
-    loading: isQuestionsLoading,
-    data: questionsData,
-    error: questionsError,
-  } = createFetchStore();
-
-  const {
-    load: loadAnswers,
-    loading: isAnswersLoading,
-    data: answersData,
-    error: answersError,
-  } = createFetchStore();
-
-  $effect(() => {
-    loadConsultationQuestions(getApiQuestionsUrl(consultationId));
-    loadRespondents(getLoadRespondentsUrl());
-    loadQuestions(getQuestionsByRespondentUrl(consultationId, respondentId));
-    loadAnswers(
+  onMount(() => {
+    $consultationQuestionsStore.fetch(getApiQuestionsUrl(consultationId));
+    $respondentsStore.fetch(getLoadRespondentsUrl());
+    $questionsStore.fetch(
+      getQuestionsByRespondentUrl(consultationId, respondentId),
+    );
+    $answersStore.fetch(
       `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
     );
+    dataRequested = true;
   });
 
   function getLoadRespondentsUrl() {
@@ -99,21 +75,23 @@
   }
 
   let currRespondent = $derived(
-    $respondentsData?.results?.find(
+    $respondentsStore.data?.results?.find(
       (respondent: Respondent) => respondent.id === respondentId,
     ),
   );
 
   let prevRespondent = $derived(
-    $respondentsData?.results?.find(
+    $respondentsStore.data?.results?.find(
       (respondent: Respondent) =>
-        respondent?.themefinder_id === currRespondent?.themefinder_id - 1,
+        respondent?.themefinder_id ===
+        (currRespondent?.themefinder_id || 0) - 1,
     ) ?? null,
   );
   let nextRespondent = $derived(
-    $respondentsData?.results?.find(
+    $respondentsStore.data?.results?.find(
       (respondent: Respondent) =>
-        respondent?.themefinder_id === currRespondent?.themefinder_id + 1,
+        respondent?.themefinder_id ===
+        (currRespondent?.themefinder_id || 0) + 1,
     ) ?? null,
   );
 </script>
@@ -121,16 +99,16 @@
 <section>
   <RespondentTopbar
     title={`Respondent ${themefinderId || "not found"}`}
-    backText={"Back to Analysis"}
+    backText="Back to Analysis"
     onClickBack={() =>
       (location.href = getQuestionDetailUrl(consultationId, questionId))}
   >
     <Button
       size="xs"
-      disabled={!Boolean(prevRespondent)}
-      handleClick={(e) =>
+      disabled={!prevRespondent}
+      handleClick={() =>
         (location.href =
-          getRespondentDetailUrl(consultationId, prevRespondent.id) +
+          getRespondentDetailUrl(consultationId, prevRespondent?.id || "") +
           `?themefinder_id=${themefinderId - 1}&question_id=${questionId}`)}
     >
       <div class="rotate-180">
@@ -139,18 +117,18 @@
         </MaterialIcon>
       </div>
 
-      <span class="mr-2 my-[0.1rem]">Previous Respondent</span>
+      <span class="my-[0.1rem] mr-2">Previous Respondent</span>
     </Button>
 
     <Button
       size="xs"
-      disabled={!Boolean(nextRespondent)}
-      handleClick={(e) =>
+      disabled={!nextRespondent}
+      handleClick={() =>
         (location.href =
-          getRespondentDetailUrl(consultationId, nextRespondent.id) +
+          getRespondentDetailUrl(consultationId, nextRespondent?.id || "") +
           `?themefinder_id=${themefinderId + 1}&question_id=${questionId}`)}
     >
-      <span class="ml-2 my-[0.1rem]">Next Respondent</span>
+      <span class="my-[0.1rem] ml-2">Next Respondent</span>
 
       <MaterialIcon color="fill-neutral-700">
         <ChevronRight />
@@ -159,16 +137,17 @@
   </RespondentTopbar>
 
   <div class={clsx(["grid", "grid-cols-12", "gap-4"])}>
-    <div class="col-span-12 md:col-span-3 h-max md:sticky md:top-4" in:slide>
+    <div class="col-span-12 h-max md:sticky md:top-4 md:col-span-3" in:slide>
       <svelte:boundary>
         <RespondentSidebar
-          demoData={currRespondent?.demographics}
+          demoData={currRespondent?.demographics || []}
           stakeholderName={currRespondent?.name}
-          questionsAnswered={$questionsData?.results.length ?? 0}
-          totalQuestions={$consultationQuestionsData?.results?.length ?? 0}
+          questionsAnswered={$questionsStore.data?.results.length ?? 0}
+          totalQuestions={$consultationQuestionsStore.data?.results?.length ??
+            0}
           updateStakeholderName={async (newStakeholderName) => {
             // update current respondent stakeholder name
-            await loadRespondent(
+            await $respondentStore.fetch(
               getApiConsultationRespondentUrl(consultationId, respondentId),
               "PATCH",
               {
@@ -177,7 +156,7 @@
             );
 
             // refresh respondents
-            loadRespondents(getLoadRespondentsUrl());
+            $respondentsStore.fetch(getLoadRespondentsUrl());
           }}
         />
 
@@ -203,20 +182,24 @@
               number
             </p>
 
+            {#if !dataRequested || $answersStore.isLoading}
+              <LoadingMessage message="Loading Answers..." />
+            {/if}
+
             <ul>
-              {#each $answersData?.all_respondents ?? [] as answer, i}
-                {@const answerQuestion = $questionsData?.results?.find(
+              {#each $answersStore.data?.all_respondents ?? [] as answer, i (answer.id)}
+                {@const answerQuestion = $questionsStore.data?.results?.find(
                   (question) => question.id === answer.question_id,
                 )}
 
                 <RespondentAnswer
                   {consultationId}
                   questionId={answer.question_id}
-                  questionTitle={answerQuestion?.question_text}
-                  questionNumber={answerQuestion?.number}
+                  questionTitle={answerQuestion?.question_text || ""}
+                  questionNumber={answerQuestion?.number || 0}
                   answerText={answer.free_text_answer_text}
                   multiChoice={answer.multiple_choice_answer}
-                  themes={answer.themes?.map((theme) => theme.name)}
+                  themes={answer.themes?.map((theme) => theme.name) || []}
                   evidenceRich={answer.evidenceRich}
                   delay={FLY_ANIMATION_DELAY * i}
                 />

@@ -4,8 +4,15 @@ import datetime
 import json
 import logging
 import os
-import subprocess
 from pathlib import Path
+
+import boto3
+import pandas as pd
+from langchain_openai import ChatOpenAI
+from pydantic import BaseModel
+from themefinder import theme_condensation, theme_generation, theme_mapping, theme_refinement
+from themefinder.models import HierarchicalClusteringResponse
+from themefinder.theme_clustering_agent import ThemeClusteringAgent, ThemeNode
 
 # Configure logging
 logging.basicConfig(
@@ -316,10 +323,6 @@ def agentic_theme_selection(
     selected_themes["topic"] = (
         selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
     )
-    selected_themes.rename(
-        columns={"topic_label": "Theme Name", "topic_description": "Theme Description"},
-        inplace=True,
-    )
 
     return selected_themes, all_themes_df
 
@@ -370,14 +373,37 @@ async def process_consultation(consultation_dir: str, llm) -> str:
 
                 # Select short list, using clustering if more than 20 themes
                 if len(refined_themes_df) > 20:
-                    selected_themes, all_themes_df = agentic_theme_selection(refined_themes_df, llm)
+                    selected_themes, _all_themes_df = agentic_theme_selection(
+                        refined_themes_df, llm
+                    )
+                    all_themes_list = [ThemeNode(**row) for _, row in _all_themes_df.iterrows()]
                 else:
                     logger.info("Fewer than 20 themes, clustering not required")
                     selected_themes = refined_themes_df.copy()
-                    all_themes_df = refined_themes_df.copy()
-                    all_themes_df["parent_id"] = "0"
 
-                all_themes_df.to_json(
+                    def refined_themes_to_theme_node(row: dict):
+                        topic_label, topic_description = row["topic"].split(":")
+                        return ThemeNode(
+                            topic_id=row["topic_id"],
+                            topic_label=topic_label,
+                            topic_description=topic_description,
+                            source_topic_count=row["source_topic_count"],
+                            parent_id="0",
+                            children=[],
+                        )
+
+                    all_themes_list = [
+                        refined_themes_to_theme_node(row) for _, row in refined_themes_df.iterrows()
+                    ]
+
+                # TODO: move this to themefinder
+                class ThemeNodeList(BaseModel):
+                    theme_nodes: list[ThemeNode]
+
+                with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
+                    f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
+
+                pd.DataFrame(all_themes_list).to_json(
                     os.path.join(question_output_dir, "clustered_themes.json"), orient="records"
                 )
 
@@ -428,17 +454,6 @@ async def process_consultation(consultation_dir: str, llm) -> str:
 
 
 if __name__ == "__main__":
-    logger.info("Installing requirements from requirements.txt...")
-    subprocess.run(["pip", "install", "--no-cache-dir", "-r", "requirements.txt"], check=True)
-    logger.info("Requirements installation completed")
-
-    import boto3
-    import pandas as pd
-    from langchain_openai import ChatOpenAI
-    from themefinder import theme_condensation, theme_generation, theme_mapping, theme_refinement
-    from themefinder.models import HierarchicalClusteringResponse
-    from themefinder.theme_clustering_agent import ThemeClusteringAgent, ThemeNode
-
     llm = ChatOpenAI(
         model="gpt-4o",
         temperature=0,

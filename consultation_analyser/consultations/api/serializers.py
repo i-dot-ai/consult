@@ -105,7 +105,7 @@ class ThemeSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField()
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
-    key = serializers.CharField(required=False)
+    key = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
         model = SelectedTheme
@@ -114,6 +114,11 @@ class ThemeSerializer(serializers.ModelSerializer):
 
 class ThemeInformationSerializer(serializers.Serializer):
     themes = serializers.ListField(child=ThemeSerializer())
+
+
+class ResponseThemeInformationSerializer(serializers.Serializer):
+    selected_themes = ThemeSerializer(many=True)
+    all_themes = ThemeSerializer(many=True)
 
 
 class ThemeAggregationsSerializer(serializers.Serializer):
@@ -200,9 +205,25 @@ class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
         fields = ["id", "assigned_by", "name", "description", "key"]
 
 
+class DemographicOptionSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField(source="field_name")
+    value = serializers.JSONField(source="field_value")
+    count = serializers.IntegerField(required=False)
+
+
+class RespondentSerializer(serializers.ModelSerializer):
+    demographics = DemographicOptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Respondent
+        fields = ["id", "themefinder_id", "demographics", "name"]
+
+
 class ResponseSerializer(serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
     respondent_id = serializers.UUIDField(source="respondent.id", read_only=True)
+    respondent = RespondentSerializer(read_only=True)
     free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
     demographic_data = serializers.SerializerMethodField(read_only=True)
     themes = ResponseAnnotationThemeSerializer(
@@ -216,6 +237,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
     is_flagged = serializers.BooleanField(read_only=True)
     is_edited = serializers.SerializerMethodField()
+    is_read = serializers.SerializerMethodField()
     question_id = serializers.UUIDField()
 
     def get_is_edited(self, obj):
@@ -224,6 +246,13 @@ class ResponseSerializer(serializers.ModelSerializer):
         This replicates annotation.is_edited property logic in a way that avoids N+1 queries.
         """
         return obj.annotation_is_edited or obj.annotation_has_human_assigned_themes
+
+    def get_is_read(self, obj):
+        """
+        Returns True if the current user has read this response.
+        Uses the annotated field is_read_by_user to avoid N+1 queries.
+        """
+        return getattr(obj, "is_read_by_user", False)
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
@@ -261,6 +290,7 @@ class ResponseSerializer(serializers.ModelSerializer):
             "id",
             "identifier",
             "respondent_id",
+            "respondent",
             "question_id",
             "free_text_answer_text",
             "demographic_data",
@@ -271,19 +301,40 @@ class ResponseSerializer(serializers.ModelSerializer):
             "human_reviewed",
             "is_flagged",
             "is_edited",
+            "is_read",
         ]
 
 
-class DemographicOptionSerializer(serializers.Serializer):
-    id = serializers.CharField()
-    name = serializers.CharField(source="field_name")
-    value = serializers.JSONField(source="field_value")
-    count = serializers.IntegerField(required=False)
+class ConsultationFolderSerializer(serializers.Serializer):
+    text = serializers.CharField()
+    value = serializers.CharField()
 
 
-class RespondentSerializer(serializers.ModelSerializer):
-    demographics = DemographicOptionSerializer(many=True, read_only=True)
+class ConsultationImportSerializer(serializers.Serializer):
+    consultation_name = serializers.CharField(max_length=255)
+    consultation_code = serializers.CharField(max_length=255)
+    timestamp = serializers.CharField(max_length=100)
+    action = serializers.CharField(max_length=50)
 
-    class Meta:
-        model = Respondent
-        fields = ["id", "themefinder_id", "demographics", "name"]
+    def get_sign_off(self):
+        return self.validated_data.get("action") == "sign_off"
+
+
+class ConsultationImportImmutableSerializer(serializers.Serializer):
+    consultation_name = serializers.CharField(required=True, max_length=255)
+    consultation_code = serializers.CharField(required=True, max_length=255)
+
+
+class ConsultationImportCandidateThemesSerializer(serializers.Serializer):
+    consultation_code = serializers.CharField(required=True, max_length=255)
+    timestamp = serializers.CharField(required=True, max_length=100)
+
+
+class ConsultationImportAnnotationsSerializer(serializers.Serializer):
+    consultation_code = serializers.CharField(required=True, max_length=255)
+    timestamp = serializers.CharField(required=True, max_length=100)
+
+
+class ConsultationExportSerializer(serializers.Serializer):
+    s3_key = serializers.CharField(max_length=255, default="", allow_null=True)
+    question_ids = serializers.ListSerializer(child=serializers.CharField())

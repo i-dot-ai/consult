@@ -93,7 +93,7 @@
                   <Progress value={percentage} />
                 </div>
 
-                <span class="hidden sm:block min-w-[4ch]">
+                <span class="hidden min-w-[4ch] sm:block">
                   {item.response_count}
                 </span>
               </div>

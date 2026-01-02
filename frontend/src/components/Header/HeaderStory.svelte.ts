@@ -1,6 +1,6 @@
 import Header from "./Header.svelte";
 
-let isSignedIn = $state(false);
+const isSignedIn = $state(false);
 
 export default {
   name: "Header",

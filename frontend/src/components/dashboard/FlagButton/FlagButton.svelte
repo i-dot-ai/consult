@@ -17,19 +17,13 @@
 
   let {
     consultationId,
-    questionId,
     answerId,
     isFlagged,
     resetData,
     toggleFlagMock,
   }: Props = $props();
 
-  const {
-    loading: isSubmitting,
-    error: submitError,
-    load: toggleFlag,
-    data: answerData,
-  } = createFetchStore();
+  const toggleFlagStore = createFetchStore();
 </script>
 
 <div class="py-2">
@@ -38,11 +32,8 @@
     size="xs"
     variant="ghost"
     handleClick={async () => {
-      let toggle = toggleFlagMock || toggleFlag;
-      await toggle(
-        getApiAnswerFlagUrl(consultationId, questionId, answerId),
-        "PATCH",
-      );
+      let toggle = toggleFlagMock || $toggleFlagStore.fetch;
+      await toggle(getApiAnswerFlagUrl(consultationId, answerId), "PATCH");
 
       resetData();
     }}

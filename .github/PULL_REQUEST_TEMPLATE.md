@@ -16,4 +16,4 @@
 
 ## Things to check
 
-- [ ] I have added any new ENV vars in all deployed environments and updated the `.env.example` and `.env.test` files in the repo
+- [ ] I have added any new ENV vars in all deployed environments and updated the `.env.test` files in the repo

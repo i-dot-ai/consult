@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createRawSnippet } from "svelte";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import UnorderedList from "./UnorderedList.svelte";
 
@@ -12,8 +12,8 @@ describe("UnorderedList", () => {
         render: () => listItem,
       };
     });
-    const { getByText } = render(UnorderedList, { children: childComponent });
+    render(UnorderedList, { children: childComponent });
 
-    expect(getByText("This is a list item")).toBeTruthy();
+    expect(screen.getByText("This is a list item")).toBeTruthy();
   });
 });

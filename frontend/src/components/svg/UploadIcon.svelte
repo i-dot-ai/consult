@@ -7,7 +7,7 @@
   viewBox="0 0 24 24"
   fill="none"
   stroke-width="1.5"
-  class="text-primary w-20 h-20"
+  class="h-20 w-20 text-primary"
 >
   <path
     d="M20 13V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V13"

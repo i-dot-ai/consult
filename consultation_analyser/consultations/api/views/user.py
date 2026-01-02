@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultation_analyser.consultations import models
+from consultation_analyser.consultations.api.filters import UserFilter
 from consultation_analyser.consultations.api.serializers import UserSerializer
 
 
@@ -35,10 +36,15 @@ class UserViewSet(ModelViewSet):
         # Otherwise, treat as single user creation using default DRF behavior
         return super().create(request, *args, **kwargs)
 
+    def get_queryset(self):
+        queryset = models.User.objects.all()
+        filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
+        return filterset.qs.distinct()
+
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
     pagination_class = PageNumberPagination
-    queryset = models.User.objects.all()
+    filterset_class = UserFilter
 
 
 @api_view(["GET"])

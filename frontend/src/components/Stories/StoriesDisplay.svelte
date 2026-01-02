@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { createRawSnippet, type Component } from "svelte";
+  import { createRawSnippet } from "svelte";
 
   import CodeMirror from "svelte-codemirror-editor";
   import { json } from "@codemirror/lang-json";
@@ -11,7 +11,7 @@
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import Switch from "../inputs/Switch/Switch.svelte";
   import Button from "../inputs/Button/Button.svelte";
-  import Select from "../inputs/Select.svelte";
+  import Select from "../inputs/Select/Select.svelte";
   import Tag from "../Tag/Tag.svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
   import Fullscreen from "../svg/material/Fullscreen.svelte";
@@ -19,10 +19,8 @@
   import stories from "./stories.ts";
 
   let { selected = "" } = $props();
-  let currStory: Story | undefined = $state(
-    stories.find((story) => story.name === selected),
-  );
-  let componentProps: Object = $derived.by(() => {
+  let currStory = $state(stories.find((story) => story.name === selected));
+  let componentProps: object = $derived.by(() => {
     let props = {};
     currStory?.props.forEach((prop) => {
       props[prop.name] = prop.value;
@@ -38,9 +36,9 @@
   <aside class="col-span-1">
     <Panel border={true} bg={false}>
       <ul class="flex flex-col gap-2">
-        {#each categories as category}
+        {#each categories as category (category)}
           <h2 class="font-[500]">{category || "General"}</h2>
-          {#each stories.filter((story) => story.category === category) as story}
+          {#each stories.filter((story) => story.category === category) as story (category + story.name)}
             <li>
               <a
                 href={`/stories?selected=${story.name}`}
@@ -74,13 +72,13 @@
         {@const StoryComponent = currStory.component}
 
         <div>
-          <div class="mb-4 flex justify-between items-center">
+          <div class="mb-4 flex items-center justify-between">
             <div class="font-[500]">
               <Title level={2} text={currStory.name} />
             </div>
 
             <Button size="xs" handleClick={() => panel?.requestFullscreen()}>
-              <span class="mr-1 ml-1">Fullscreen</span>
+              <span class="ml-1 mr-1">Fullscreen</span>
 
               <MaterialIcon color="fill-neutral-500">
                 <Fullscreen />
@@ -88,7 +86,7 @@
             </Button>
           </div>
 
-          {#each currStory.stories as story}
+          {#each currStory.stories as story (story.name)}
             <div class="mb-4 last:mb-0">
               <h3>{story.name}</h3>
               <StoryComponent {...story.props} />
@@ -103,10 +101,10 @@
 
           <StoryComponent {...componentProps} />
 
-          {#each currStory.props as prop}
+          {#each currStory.props as prop (prop.name)}
             {@const inputId = `input-${prop.name.toLowerCase().replaceAll(" ", "-")}`}
 
-            <div class="pl-4 mt-4">
+            <div class="mt-4 pl-4">
               {#if ["number", "text", "bool", "select", "json", "html", "func"].includes(prop.type)}
                 <div class="mb-1">
                   <Title level={4} text={prop.name} />
@@ -116,11 +114,11 @@
               {#if prop.type === "number"}
                 <input
                   id={inputId}
-                  class="border border-neutral-300 rounded-lg p-2"
+                  class="rounded-lg border border-neutral-300 p-2"
                   type="number"
                   value={prop.value.toString()}
-                  oninput={(e: any) => {
-                    prop.value = parseInt(e.target.value);
+                  oninput={(e) => {
+                    prop.value = parseInt(e?.target?.value);
                   }}
                 />
               {:else if prop.type === "text"}
@@ -141,18 +139,16 @@
                 />
               {:else if prop.type === "select"}
                 <Select
+                  id={inputId}
                   label={prop.name}
                   hideLabel={true}
                   value={prop.label}
-                  options={prop.options.map((opt: any) => ({
-                    value: opt.label,
-                    label: opt.label,
-                  }))}
-                  handleChange={(nextVal) => {
+                  items={prop.options}
+                  onchange={(nextVal) => {
                     if (!nextVal) {
                       return;
                     }
-                    prop.value = prop.options.find((opt: any) => {
+                    prop.value = prop.options.find((opt: { label: string }) => {
                       return opt.label === nextVal;
                     }).value;
                   }}
@@ -162,9 +158,7 @@
                   value={JSON.stringify(prop.value)}
                   lang={json()}
                   onchange={(newVal) => {
-                    try {
-                      prop.value = JSON.parse(newVal);
-                    } catch {}
+                    prop.value = JSON.parse(newVal);
                   }}
                 />
               {:else if prop.type === "html"}
@@ -179,12 +173,10 @@
                       return;
                     }
 
-                    try {
-                      prop.value = createRawSnippet(() => ({
-                        render: () => newVal,
-                      }));
-                      prop.rawHtml = newVal;
-                    } catch {}
+                    prop.value = createRawSnippet(() => ({
+                      render: () => newVal,
+                    }));
+                    prop.rawHtml = newVal;
                   }}
                 />
               {:else if prop.type === "func"}

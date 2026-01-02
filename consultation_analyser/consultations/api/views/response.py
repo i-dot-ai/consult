@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from django.db.models import Count, Exists, OuterRef
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -16,7 +17,9 @@ from consultation_analyser.consultations.api.permissions import (
 from consultation_analyser.consultations.api.serializers import (
     DemographicAggregationsSerializer,
     ResponseSerializer,
+    ResponseThemeInformationSerializer,
     ThemeAggregationsSerializer,
+    ThemeSerializer,
 )
 
 
@@ -64,7 +67,7 @@ class ResponseViewSet(ModelViewSet):
     pagination_class = BespokeResultsSetPagination
     filter_backends = [ResponseSearchFilter, DjangoFilterBackend]
     filterset_class = ResponseFilter
-    http_method_names = ["get", "patch"]
+    http_method_names = ["get", "patch", "post"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
@@ -89,6 +92,9 @@ class ResponseViewSet(ModelViewSet):
                     response=OuterRef("pk"), flagged_by=self.request.user
                 )
             ),
+            is_read_by_user=Exists(
+                models.Response.objects.filter(read_by=self.request.user, pk=OuterRef("pk"))
+            ),
             annotation_is_edited=Exists(
                 models.ResponseAnnotation.history.filter(id=OuterRef("annotation__id")).values(
                     "id"
@@ -102,7 +108,7 @@ class ResponseViewSet(ModelViewSet):
             ),
         )
         # Apply additional FilterSet filtering (including themeFilters)
-        filterset = self.filterset_class(self.request.GET, queryset=queryset)
+        filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
         return filterset.qs.distinct()
 
     @action(detail=False, methods=["get"], url_path="demographic-aggregations")
@@ -147,6 +153,27 @@ class ResponseViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
+    @action(detail=True, methods=["get"], url_path="themes")
+    def themes(self, request, consultation_pk=None, pk=None):
+        """Get themes for given responses"""
+        response = get_object_or_404(models.Response, id=pk)
+        question = response.question
+        annotation, _ = models.ResponseAnnotation.objects.get_or_create(response=response)
+
+        all_themes = models.SelectedTheme.objects.filter(question=question)
+        selected_themes = annotation.themes.all()
+
+        # Serialize the themes properly using ThemeSerializer
+        all_themes_data = ThemeSerializer(all_themes, many=True).data
+        selected_themes_data = ThemeSerializer(selected_themes, many=True).data
+
+        serializer = ResponseThemeInformationSerializer(
+            data={"selected_themes": selected_themes_data, "all_themes": all_themes_data}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.data)
+
     @action(detail=True, methods=["patch"], url_path="toggle-flag")
     def toggle_flag(self, request, consultation_pk=None, pk=None):
         """Toggle flag on/off for the user"""
@@ -157,3 +184,19 @@ class ResponseViewSet(ModelViewSet):
             response.annotation.flagged_by.add(request.user)
         response.annotation.save()
         return Response()
+
+    @action(detail=True, methods=["post"], url_path="mark-read")
+    def mark_read(self, request, consultation_pk=None, pk=None):
+        """Mark this response as read by the current user"""
+        response = self.get_object()
+
+        # Check if already read before marking
+        was_already_read = response.is_read_by(request.user)
+        response.mark_as_read_by(request.user)
+
+        return Response(
+            {
+                "message": "Response marked as read",
+                "was_already_read": was_already_read,
+            }
+        )

@@ -17,9 +17,9 @@
   import Panel from "../Panel/Panel.svelte";
   import TitleRow from "../TitleRow.svelte";
   import Title from "../../Title.svelte";
-  import MaterialIcon from "../../MaterialIcon.svelte";
-  import ProgressActivity from "../../svg/material/ProgressActivity.svelte";
   import Finance from "../../svg/material/Finance.svelte";
+  import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
+  import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
 
   interface Props {
     consultationId: string;
@@ -92,7 +92,7 @@
             "flex-wrap",
             !loading &&
               !chartQuestions.length &&
-              "md:w-max md:gap-16 md:flex-nowrap",
+              "md:w-max md:flex-nowrap md:gap-16",
           ])}
         >
           <MetricsSummary
@@ -109,17 +109,10 @@
         <Panel bg={true} border={true}>
           {#if loading}
             <div class="mb-4">
-              <Title level={3} text={`Loading questions`} />
+              <Title level={3} text="Loading questions" />
             </div>
 
-            <div
-              style="animation-timing-function: ease-in-out;"
-              class={clsx(["animate-spin", "ease-in-out", "w-max", "m-auto"])}
-            >
-              <MaterialIcon color="fill-neutral-300" size="10rem">
-                <ProgressActivity />
-              </MaterialIcon>
-            </div>
+            <LoadingIndicator size="10rem" />
           {:else}
             <TabView
               variant="dots"
@@ -132,21 +125,16 @@
                 (currQuestion = parseInt(newTab.replace("tab-", "")))}
             >
               <div slot="title">
-                <Title
-                  level={3}
-                  text={`
-                    <span class="text-primary mr-1">
-                      Q${selectedChartQuestion?.number}
-                    </span>
-                    ${selectedChartQuestion?.question_text}
-                  `}
-                  maxChars={50}
-                />
+                <Title level={3} maxChars={50}>
+                  <span class="mr-1 text-primary">
+                    Q{selectedChartQuestion?.number}
+                  </span>{selectedChartQuestion?.question_text}
+                </Title>
               </div>
 
               <div class="overflow-x-auto">
                 <div
-                  class="flex flex-row-reverse justify-center gap-4 mt-4 flex-wrap"
+                  class="mt-4 flex flex-row-reverse flex-wrap justify-center gap-4"
                 >
                   <div id="legend-container"></div>
 
@@ -176,7 +164,7 @@
     {/if}
   </div>
 
-  {#if paginatedCategories.length > 0 || demoOptionsLoading}
+  {#if paginatedCategories.length > 0 && !demoOptionsLoading}
     <div transition:slide class="mt-8">
       <TabView
         variant="dots"
@@ -195,7 +183,7 @@
         </div>
 
         <div class="grid grid-cols-12 gap-4 pb-4">
-          {#each paginatedCategories[currPage] as category}
+          {#each paginatedCategories[currPage] as category (category)}
             {@const categoryOptions = demoOptions.filter(
               (opt: DemoOptionsResponseItem) => opt.name === category,
             )}
@@ -232,5 +220,9 @@
         </div>
       </TabView>
     </div>
+  {:else if demoOptionsLoading}
+    <LoadingMessage message="Loading Demographics..." />
+  {:else}
+    <div class="my-4"></div>
   {/if}
 </Panel>

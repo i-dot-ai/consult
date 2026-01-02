@@ -10,7 +10,6 @@
     DoughnutController,
     Legend,
     Tooltip,
-    registerables,
     type ChartConfiguration,
     type ChartOptions,
     type LegendItem,
@@ -71,8 +70,8 @@
 
   const htmlLegendPlugin = {
     id: "htmlLegend",
-    afterUpdate(chart: Chart, args: any, options: ChartOptions) {
-      //@ts-ignore: containerID added by plugin
+    afterUpdate(chart: Chart, args: unknown, options: ChartOptions) {
+      //@ts-expect-error: containerID added by plugin
       const ul = getOrCreateLegendList(chart, options.containerID);
 
       // Clear legend
@@ -212,7 +211,7 @@
                 },
               },
             },
-            //@ts-ignore: custom plugin adds htmlLegend
+            //@ts-expect-error: custom plugin adds htmlLegend
             htmlLegend: {
               containerID: legendId,
             },
@@ -227,6 +226,6 @@
   });
 </script>
 
-<div class="w-full h-full">
+<div class="h-full w-full">
   <canvas class="h-full" bind:this={chartElement}></canvas>
 </div>

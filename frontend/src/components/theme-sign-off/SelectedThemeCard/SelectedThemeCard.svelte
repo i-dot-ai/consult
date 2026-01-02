@@ -3,9 +3,13 @@
 
   import { fade, fly } from "svelte/transition";
 
-  import type { GeneratedTheme } from "../../../global/types";
-  import { createFetchStore } from "../../../global/stores";
+  import type { SelectedTheme } from "../../../global/types";
+  import { createFetchStore, type MockFetch } from "../../../global/stores";
   import { getApiAnswersUrl } from "../../../global/routes";
+  import {
+    formatTimeDeltaText,
+    getTimeDeltaInMinutes,
+  } from "../../../global/utils";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
@@ -15,18 +19,21 @@
   import EditSquare from "../../svg/material/EditSquare.svelte";
   import ThemeForm from "../ThemeForm/ThemeForm.svelte";
   import AnswersList from "../AnswersList/AnswersList.svelte";
+  import Tag from "../../Tag/Tag.svelte";
 
   export interface Props {
     consultationId: string;
-    theme: GeneratedTheme;
+    questionId: string;
+    theme: SelectedTheme;
     removeTheme: (themeId: string) => void;
     updateTheme: (themeId: string, title: string, description: string) => void;
     maxAnswers?: number;
-    answersMock?: Function;
+    answersMock?: MockFetch;
   }
 
   let {
     consultationId,
+    questionId,
     theme,
     removeTheme = () => {},
     updateTheme = () => {},
@@ -34,19 +41,18 @@
     answersMock,
   }: Props = $props();
 
-  let {
-    load: loadAnswers,
-    loading: isAnswersLoading,
-    data: answersData,
-    error: answersError,
-  } = createFetchStore(answersMock);
+  const answersStore = createFetchStore({ mockFetch: answersMock });
 
   let showAnswers = $state(false);
   let editing = $state(false);
-  let answersRequested = $state(false);
+
+  const resetAnswers = () => {
+    $answersStore.data = null;
+    showAnswers = false;
+  };
 </script>
 
-<article class="bg-white rounded-lg" data-themeid={theme.id}>
+<article class="rounded-lg bg-white" data-themeid={theme.id}>
   {#if editing}
     <div in:fade>
       <ThemeForm
@@ -56,6 +62,7 @@
         handleCancel={() => (editing = false)}
         handleConfirm={(title, description) => {
           updateTheme(theme.id, title, description);
+          resetAnswers();
           editing = false;
         }}
       />
@@ -65,15 +72,28 @@
       <Panel>
         <div class="flex flex-wrap sm:flex-nowrap">
           <div class={clsx([showAnswers ? "md:w-1/3" : "md:w-auto"])}>
-            <header>
+            <header class="flex items-center gap-2">
               <h2>{theme.name}</h2>
+
+              {#if theme?.version > 1}
+                <Tag variant="primary-light">Edited</Tag>
+              {/if}
             </header>
 
-            <p class="text-sm text-neutral-700 my-4">
+            <p class="my-4 text-sm text-neutral-700">
               {theme.description}
             </p>
 
-            <footer class="flex items-center flex-wrap gap-2">
+            <hr class="mb-4" />
+
+            <small class="mb-4 block text-xs text-neutral-500">
+              {theme.version > 1 ? "Edited" : "Added"}
+              {formatTimeDeltaText(
+                getTimeDeltaInMinutes(new Date(), new Date(theme.modified_at)),
+              )} ago by {theme.last_modified_by}
+            </small>
+
+            <footer class="flex flex-wrap items-center gap-2">
               <Button size="sm" handleClick={() => (editing = !editing)}>
                 <MaterialIcon color="fill-neutral-500">
                   <EditSquare />
@@ -91,20 +111,20 @@
               <Button
                 size="sm"
                 handleClick={() => {
-                  if (!$answersData) {
+                  if (!$answersStore.data) {
                     const queryString = new URLSearchParams({
                       searchMode: "representative",
                       searchValue: `${theme.name} ${theme.description}`,
+                      question_id: questionId,
                     }).toString();
 
-                    loadAnswers(
+                    $answersStore.fetch(
                       `${getApiAnswersUrl(consultationId)}?${queryString}`,
                     );
                   }
                   showAnswers = !showAnswers;
-                  answersRequested = true;
                 }}
-                disabled={$isAnswersLoading && answersRequested}
+                disabled={$answersStore.isLoading}
               >
                 <MaterialIcon color="fill-neutral-500">
                   <Docs />
@@ -119,12 +139,12 @@
           {#if showAnswers}
             <aside
               transition:fly={{ x: 300 }}
-              class="grow sm:border-l sm:border-neutral-200 sm:ml-4 sm:pl-4 pt-4 sm:pt-0"
+              class="grow pt-4 sm:ml-4 sm:w-2/3 sm:border-l sm:border-neutral-200 sm:pl-4 sm:pt-0"
             >
               <AnswersList
                 title="Representative Responses"
-                loading={$isAnswersLoading}
-                answers={$answersData?.all_respondents
+                loading={$answersStore.isLoading}
+                answers={$answersStore.data?.all_respondents
                   .slice(0, maxAnswers)
                   .map((answer) => answer.free_text_answer_text) || []}
               />

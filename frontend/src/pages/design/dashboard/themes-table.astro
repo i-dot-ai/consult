@@ -1,14 +1,18 @@
 ---
-import Story from '../../../layouts/Story.astro';
+import Story from "../../../layouts/Story.astro";
 import ThemesTableStory from "../../../components/dashboard/ThemesTable/ThemesTableStory.svelte";
-import { Routes } from '../../../global/routes';
-
+import { Routes } from "../../../global/routes";
 
 const title = "dashboard - ThemesTable";
 const description = `
     Renders themes table.
 `;
 ---
-<Story title={title} description={description} backUrl={Routes.Design + "/dashboard"}>
-    <ThemesTableStory client:load />
+
+<Story
+  title={title}
+  description={description}
+  backUrl={Routes.Design + "/dashboard"}
+>
+  <ThemesTableStory client:load />
 </Story>

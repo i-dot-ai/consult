@@ -17,18 +17,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const requestBody = await request.json();
 
   try {
-    const backendResponse = await fetch(
-      `${getBackendUrl(request.url)}/api/token/`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          token: requestBody.token,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+    const backendResponse = await fetch(`${getBackendUrl()}/api/token/`, {
+      method: "POST",
+      body: JSON.stringify({
+        token: requestBody.token,
+      }),
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+    });
 
     const responseJson = await backendResponse.json();
     if (!backendResponse.ok) {

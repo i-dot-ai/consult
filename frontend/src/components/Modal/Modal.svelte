@@ -3,17 +3,19 @@
 
   import { type Component, type Snippet } from "svelte";
   import { fade, fly } from "svelte/transition";
-  import type { MouseEventHandler } from "svelte/elements";
 
   import { createDialog, melt } from "@melt-ui/svelte";
 
   import Button from "../inputs/Button/Button.svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
 
+  import type { MouseEventHandler } from "svelte/elements";
+
   export interface Props {
     variant?: "primary" | "secondary" | "warning";
     title: string;
     confirmText: string;
+    canCancel?: boolean;
     icon?: Component;
     open?: boolean;
     setOpen: (newValue: boolean) => void;
@@ -26,6 +28,7 @@
     title = "",
     open = false,
     confirmText = "Confirm",
+    canCancel = true,
     icon,
     setOpen = () => {},
     handleConfirm = () => {},
@@ -33,15 +36,7 @@
   }: Props = $props();
 
   const {
-    elements: {
-      trigger,
-      portalled,
-      overlay,
-      content,
-      title: titleMelt,
-      description,
-      close,
-    },
+    elements: { portalled, overlay, content, title: titleMelt, close },
     states: { open: meltOpen },
   } = createDialog({
     onOpenChange: (open) => setOpen(open.next),
@@ -61,14 +56,14 @@
     if (variant === "primary") {
       return "fill-primary";
     }
-    if (variant === "secondary")  {
+    if (variant === "secondary") {
       return "fill-secondary";
     }
     if (variant === "warning") {
       return "fill-orange-600";
     }
     return "fill-neutral-500";
-  }
+  };
 </script>
 
 {#if $meltOpen || (imperativeOpen !== undefined && imperativeOpen)}
@@ -100,12 +95,9 @@
         y: 8,
       }}
     >
-      <div class="flex items-center gap-2 mb-2">
+      <div class="mb-2 flex items-center gap-2">
         {#if icon}
-          <MaterialIcon
-            color={getIconColor()}
-            size="1.3rem"
-          >
+          <MaterialIcon color={getIconColor()} size="1.3rem">
             <svelte:component this={icon} />
           </MaterialIcon>
         {/if}
@@ -126,9 +118,11 @@
       {/if}
 
       <footer class="flex items-center justify-end gap-2">
-        <div use:melt={$close}>
-          <Button size="sm">Cancel</Button>
-        </div>
+        {#if canCancel}
+          <div use:melt={$close}>
+            <Button size="sm">Cancel</Button>
+          </div>
+        {/if}
 
         <Button
           size="sm"
