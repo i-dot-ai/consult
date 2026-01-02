@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
-import Accordion from "./Accordion.svelte";
+import Accordion, { type Props } from "./Accordion.svelte";
 import { createRawSnippet } from "svelte";
 import userEvent from "@testing-library/user-event";
 import AccordionStory from "./AccordionStory.svelte";
@@ -24,8 +24,11 @@ describe("Accordion", () => {
     render(Accordion, testData);
     expect(screen.queryByText("Test Contents")).not.toBeInTheDocument();
   });
-  it.each(["light", "gray"])("should render correctly", () => {
-    const { container } = render(Accordion, testData);
+  it.each(["light", "gray"])("should render correctly", (variant) => {
+    const { container } = render(Accordion, {
+      ...testData,
+      variant: variant as Props["variant"],
+    });
     expect(container).toMatchSnapshot();
   });
   it("should render contents when expanded", async () => {
