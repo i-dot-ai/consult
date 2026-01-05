@@ -21,12 +21,7 @@ describe("Modal", () => {
   });
 
   it("does not render contents if closed", async () => {
-    const { component } = render(Modal, {
-      ...testData,
-    });
-
-    // store does not update without this
-    await act(() => component.setImperativeOpen(false));
+    render(Modal, testData);
 
     expect(screen.queryByText("Ok")).toBeNull();
     expect(screen.queryByText("Child Element")).toBeNull();
@@ -37,35 +32,51 @@ describe("Modal", () => {
     const setOpenMock = vi.fn();
 
     expect(testData).toBeTruthy();
-    const { component } = render(Modal, {
+    render(Modal, {
       ...testData,
+      open: true,
       handleConfirm: handleConfirmMock,
       setOpen: setOpenMock,
     });
-
-    // store does not update without this
-    await act(() => component.setImperativeOpen(true));
 
     expect(screen.getByText("Child Element")).toBeInTheDocument();
     expect(screen.getByText(testData.title)).toBeInTheDocument();
     expect(screen.getByText(testData.confirmText)).toBeInTheDocument();
   });
 
-  it("should call confirm callback when clicked", async () => {
-    vi.mock("svelte/transition");
-
+  it("should close when close button is clicked", async () => {
     const handleConfirmMock = vi.fn();
     const setOpenMock = vi.fn();
 
     expect(testData).toBeTruthy();
-    const { component } = render(Modal, {
+    render(Modal, {
       ...testData,
+      open: true,
       handleConfirm: handleConfirmMock,
       setOpen: setOpenMock,
     });
 
-    // store does not update without this
-    await act(() => component.setImperativeOpen(true));
+    expect(screen.getByText("Child Element")).toBeInTheDocument();
+    expect(setOpenMock).toHaveBeenCalledTimes(1);
+    const cancelButton = screen.getByText("Cancel");
+
+    await fireEvent.click(cancelButton);
+
+    expect(screen.queryByText("Child Element")).not.toBeInTheDocument();
+    expect(setOpenMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("should call confirm callback when clicked", async () => {
+    const handleConfirmMock = vi.fn();
+    const setOpenMock = vi.fn();
+
+    expect(testData).toBeTruthy();
+    render(Modal, {
+      ...testData,
+      open: true,
+      handleConfirm: handleConfirmMock,
+      setOpen: setOpenMock,
+    });
 
     expect(screen.getByText("Ok")).toBeInTheDocument();
     const confirmButton = screen.getByText("Ok");
@@ -77,20 +88,17 @@ describe("Modal", () => {
   });
 
   it("should not call confirm callback when cancel is clicked", async () => {
-    vi.mock("svelte/transition");
 
     const handleConfirmMock = vi.fn();
     const setOpenMock = vi.fn();
 
     expect(testData).toBeTruthy();
-    const { component } = render(Modal, {
+    render(Modal, {
       ...testData,
       handleConfirm: handleConfirmMock,
+      open: true,
       setOpen: setOpenMock,
     });
-
-    // store does not update without this - TODO: Fix meltOpen update
-    await act(() => component.setImperativeOpen(true));
 
     expect(screen.getByText("Ok")).toBeInTheDocument();
     const cancelButton = screen.getByText("Cancel");

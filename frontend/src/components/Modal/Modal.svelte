@@ -49,12 +49,6 @@
     meltOpen.set(open);
   });
 
-  // For unit tests primarily
-  let imperativeOpen = $state();
-  export const setImperativeOpen = (newVal: boolean) => {
-    imperativeOpen = newVal;
-  };
-
   export const getIconColor = () => {
     if (variant === "primary") {
       return "fill-primary";
@@ -69,7 +63,7 @@
   };
 </script>
 
-{#if $meltOpen || (imperativeOpen !== undefined && imperativeOpen)}
+{#if $meltOpen}
   <div use:melt={$portalled}>
     <div
       use:melt={$overlay}
