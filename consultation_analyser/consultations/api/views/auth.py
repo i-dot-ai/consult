@@ -30,8 +30,13 @@ def validate_token(request):
         if HostingEnvironment.is_deployed():
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
-                logger.error("{email} is not authenticated", email=user_authorisation_info.email)
-                return JsonResponse(data={"detail": "authentication failed"}, status=403)
+                logger.error(
+                    "{email} is not authenticated because {auth_reason}",
+                    email=user_authorisation_info.email,
+                    auth_reason=user_authorisation_info.auth_reason,
+                )
+                # TODO: reinstate this once DSIT (and other departments have been added to the consult clients)
+                # return JsonResponse(data={"detail": "authentication failed"}, status=403)
             email = user_authorisation_info.email
         else:
             email = jwt.decode(internal_access_token, options={"verify_signature": False})["email"]
