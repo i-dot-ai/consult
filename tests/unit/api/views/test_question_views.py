@@ -221,6 +221,89 @@ class TestQuestionViewSet:
         data = response.json()
         assert [x["number"] for x in data["results"]] == [1, 2]
 
+    def test_show_next_response_happy_path(
+        self,
+        client,
+        consultation_user_token,
+        consultation,
+        free_text_question,
+        human_reviewed_annotation,
+    ):
+        """test show_next_response finds the next response that is free text but not already reviewed"""
+        url = reverse(
+            "question-show-next-response",
+            kwargs={
+                "consultation_pk": consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["next_response"]["id"] == str(human_reviewed_annotation.response.id)
+        assert data["has_free_text"] is True
+        assert data["message"] == "Next response found."
+
+    def test_show_next_response_no_responses_left_to_review(
+        self,
+        client,
+        consultation_user_token,
+        consultation,
+        free_text_question,
+        un_reviewed_annotation,
+    ):
+        """test show_next_response finds the next response that is free text but not already reviewed"""
+        url = reverse(
+            "question-show-next-response",
+            kwargs={
+                "consultation_pk": consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["next_response"] is None
+        assert data["has_free_text"] is True
+        assert data["message"] == "This question does not have free text responses"
+
+    def test_show_next_response_no_free_text(
+        self,
+        client,
+        consultation_user_token,
+        consultation,
+        multi_choice_question,
+    ):
+        """test show_next_response returns nothing if there are no free text questions"""
+        url = reverse(
+            "question-show-next-response",
+            kwargs={
+                "consultation_pk": consultation.id,
+                "pk": multi_choice_question.id,
+            },
+        )
+
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["next_response"] is None
+        assert data["has_free_text"] is False
+        assert data["message"] == "This question does not have free text responses."
+
     def test_permission_requires_dashboard_access(
         self, client, non_dashboard_user_token, free_text_question
     ):
@@ -243,10 +326,10 @@ class TestQuestionViewSet:
     ):
         """Test that QuestionViewSet requires consultation access"""
         from rest_framework_simplejwt.tokens import RefreshToken
-        
+
         refresh = RefreshToken.for_user(user_without_consultation_access)
         token = str(refresh.access_token)
-        
+
         url = reverse(
             "question-detail",
             kwargs={
@@ -277,7 +360,7 @@ class TestQuestionViewSet:
         )
         # Should return 204 for successful deletion, not 405 Method Not Allowed
         assert response.status_code == 204
-        
+
         # Verify question was actually deleted
         assert not Question.objects.filter(id=free_text_question.id).exists()
 
@@ -292,7 +375,7 @@ class TestQuestionViewSet:
                 "pk": free_text_question.id,
             },
         )
-        
+
         # POST should not be supported (only get, patch, delete)
         response = client.post(
             url,
@@ -301,7 +384,7 @@ class TestQuestionViewSet:
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
         assert response.status_code == 405
-        
+
         # PUT should not be supported (only get, patch, delete)
         response = client.put(
             url,

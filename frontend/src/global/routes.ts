@@ -256,11 +256,28 @@ export const getApiShowNextResponse = (
   questionId: string,
 ) => {
   return urlJoin(
-    Routes.Evaluations,
+    Routes.ApiConsultations,
     consultationId,
     "questions",
     questionId,
     "show-next",
+    "/",
+  );
+};
+
+export const getResponseDetailUrl = (
+  consultationId: string,
+  questionId: string,
+  responseId: string,
+) => {
+  return urlJoin(
+    Routes.Evaluations,
+    consultationId,
+    "questions",
+    questionId,
+    "responses",
+    responseId,
+    "/",
   );
 };
 
@@ -287,6 +304,7 @@ export const getApiQuestionResponse = (
     consultationId,
     "responses",
     responseId,
+    "/",
   );
 };
 
