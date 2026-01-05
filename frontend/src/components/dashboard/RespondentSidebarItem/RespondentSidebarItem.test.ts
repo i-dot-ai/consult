@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/svelte";
 
 import Star from "../../svg/material/Star.svelte";
 import RespondentSidebarItem from "./RespondentSidebarItem.svelte";
+import RespondentSidebarItemStory from "./RespondentSidebarItemStory.svelte";
 
 describe("RespondentSidebarItem", () => {
   const testData = {
@@ -89,5 +90,28 @@ describe("RespondentSidebarItem", () => {
     await user.click(editButton);
     subtitleInput = screen.getByLabelText("Edit Subtitle") as HTMLInputElement;
     expect(subtitleInput.value).toBe(testData.subtitle);
+  });
+
+  it("should have a story configured correctly", () => {
+    expect(RespondentSidebarItemStory).toHaveProperty(
+      "name",
+      "RespondentSidebarItem",
+    );
+    expect(RespondentSidebarItemStory).toHaveProperty(
+      "component",
+      RespondentSidebarItem,
+    );
+    expect(RespondentSidebarItemStory).toHaveProperty("props");
+
+    const propsDefined = RespondentSidebarItemStory.props.map(
+      (prop) => prop.name,
+    );
+    expect(propsDefined).toEqual([
+      "title",
+      "subtitle",
+      "icon",
+      "editable",
+      "updateSubtitle",
+    ]);
   });
 });

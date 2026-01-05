@@ -22,6 +22,17 @@ export interface Question {
 }
 
 export type ConsultationStage = "theme_sign_off" | "theme_mapping" | "analysis";
+export interface NextResponseInfo {
+  id: string;
+  consultation_id: string;
+  question_id: string;
+}
+
+export interface ShowNextResponseResult {
+  next_response: NextResponseInfo | null;
+  has_free_text: boolean;
+  message: string;
+}
 
 export interface Consultation {
   id: string;

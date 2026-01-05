@@ -6,12 +6,14 @@
   import {
     getApiQuestionResponse,
     getApiShowNextResponse,
+    getResponseDetailUrl,
   } from "../../global/routes";
 
   import type {
     QuestionResponseResponse,
     ResponseTheme,
     ResponseThemeInformation,
+    ShowNextResponseResult,
   } from "../../global/types";
   import Button from "../inputs/Button/Button.svelte";
   import Checkbox from "../inputs/Checkbox/Checkbox.svelte";
@@ -39,6 +41,41 @@
     }
   };
 
+  const handleShowNext = async () => {
+    try {
+      const response = await fetch(
+        getApiShowNextResponse(consultationId, questionId),
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: ShowNextResponseResult = await response.json();
+
+      if (result.next_response) {
+        // Redirect to the next response
+        window.location.href = getResponseDetailUrl(
+          result.next_response.consultation_id,
+          result.next_response.question_id,
+          result.next_response.id,
+        );
+      } else {
+        // No more responses to review - go back to questions list
+        if (!result.has_free_text) {
+          errors["general"] =
+            "This question does not have free text responses.";
+        } else {
+          // Redirect back to the questions list
+          window.location.href = `/evaluations/${consultationId}/questions/`;
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching next response:", err);
+      errors["general"] = "Failed to fetch next response. Please try again.";
+    }
+  };
+
   const handleSubmit = async () => {
     errors = {};
     sending = true;
@@ -63,7 +100,9 @@
       if (!updateResponse.ok) {
         throw new Error(`Error: ${updateResponse.status}`);
       }
-      window.location.href = getApiShowNextResponse(consultationId, questionId);
+
+      // Use the new API approach to get the next response
+      await handleShowNext();
     } catch (err: unknown) {
       errors["general"] =
         err instanceof Error ? err.message : "An unknown error occurred";
@@ -72,8 +111,18 @@
     }
   };
 
-  const handleSkip = () => {
-    window.location.href = getApiShowNextResponse(consultationId, questionId);
+  const handleSkip = async () => {
+    errors = {};
+    sending = true;
+
+    try {
+      await handleShowNext();
+    } catch (err: unknown) {
+      errors["general"] =
+        err instanceof Error ? err.message : "An unknown error occurred";
+    } finally {
+      sending = false;
+    }
   };
 </script>
 

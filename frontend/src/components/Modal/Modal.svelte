@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import type { Component, Snippet } from "svelte";
+  import { type Component, type Snippet } from "svelte";
   import { fade, fly } from "svelte/transition";
 
   import { createDialog, melt } from "@melt-ui/svelte";
@@ -9,16 +9,18 @@
   import Button from "../inputs/Button/Button.svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
 
-  interface Props {
+  import type { MouseEventHandler } from "svelte/elements";
+
+  export interface Props {
     variant?: "primary" | "secondary" | "warning";
     title: string;
-    open: boolean;
     confirmText: string;
     canCancel?: boolean;
     icon?: Component;
+    open?: boolean;
     setOpen: (newValue: boolean) => void;
-    handleConfirm: () => void;
-    children: Snippet;
+    handleConfirm: MouseEventHandler<HTMLElement>;
+    children?: Snippet;
   }
 
   let {
@@ -37,14 +39,17 @@
     elements: { portalled, overlay, content, title: titleMelt, close },
     states: { open: meltOpen },
   } = createDialog({
-    onOpenChange: (open) => setOpen(open.next),
+    onOpenChange: (open) => {
+      setOpen(open.next);
+      return open.next;
+    },
   });
 
   $effect(() => {
     meltOpen.set(open);
   });
 
-  const getIconColor = () => {
+  export const getIconColor = () => {
     if (variant === "primary") {
       return "fill-primary";
     }
@@ -105,7 +110,9 @@
         </h3>
       </div>
 
-      {@render children()}
+      {#if children}
+        {@render children()}
+      {/if}
 
       <footer class="flex items-center justify-end gap-2">
         {#if canCancel}
@@ -117,7 +124,7 @@
         <Button
           size="sm"
           variant={variant === "secondary" ? "approve" : "primary"}
-          handleClick={handleConfirm}
+          handleClick={handleConfirm as () => void}
         >
           {confirmText}
         </Button>
