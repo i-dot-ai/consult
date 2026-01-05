@@ -51,8 +51,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
           path: "/",
           sameSite: "strict",
         });
-      } catch {
-        console.error("sign-in error");
+      } catch (e: unknown) {
+        console.error("sign-in error", e);
         context.redirect(Routes.SignInError);
       }
     } else {

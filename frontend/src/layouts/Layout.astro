@@ -18,8 +18,8 @@ try {
   isStaff = data.is_staff;
   email = data.email;
   console.log(`user ${email} signed in`);
-} catch {
-  console.log("user not signed in");
+} catch (e) {
+  console.log("user not signed in", e);
 }
 ---
 
