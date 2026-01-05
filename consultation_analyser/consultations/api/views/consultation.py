@@ -348,9 +348,7 @@ class ConsultationViewSet(ModelViewSet):
             return Response({"error": "Consultation not found"}, status=status.HTTP_404_NOT_FOUND)
 
         if not user_id:
-            return Response(
-                {"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Validate user_id is numeric as we have to rely on regex checks
         try:
@@ -363,14 +361,12 @@ class ConsultationViewSet(ModelViewSet):
         try:
             user = User.objects.get(pk=user_id_int)
         except User.DoesNotExist:
-            return Response(
-                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
         if not consultation.users.filter(id=user.id).exists():
             return Response(
                 {"error": "User is not assigned to this consultation"},
-                status=status.HTTP_404_NOT_FOUND
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         consultation.users.remove(user)

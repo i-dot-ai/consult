@@ -1216,3 +1216,26 @@ class TestResponseViewSet:
 
         # Verify annotation was created
         assert ResponseAnnotation.objects.filter(response=response_obj).exists()
+
+    def test_get_themes_works_with_null_keys(
+        self, client, consultation_user_token, free_text_question, theme_c
+    ):
+        """Test API endpoint works if the underlying them has no key"""
+        # Create test response without annotation
+        respondent = RespondentFactory(consultation=free_text_question.consultation)
+        response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
+
+        url = reverse(
+            "response-themes",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": response_obj.id,
+            },
+        )
+
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
