@@ -18,11 +18,12 @@
     | "primary"
     | "approve"
     | "none" = "dark";
-  export let handleClick = () => {};
+  export let handleClick: (e: MouseEvent) => void = () => {};
   export let disabled: boolean = false;
   export let fullWidth: boolean = false;
   export let testId: string = "";
   export let href: string | undefined = undefined;
+  export let ariaControls: string | undefined = undefined;
 </script>
 
 <svelte:element
@@ -89,19 +90,20 @@
       ? "true"
       : "false"
     : undefined}
+  aria-controls={ariaControls}
   data-testid={testId ? testId : undefined}
 >
   <slot />
 </svelte:element>
 
 <style>
-  button[data-variant="approve"]:not(.disabled):hover :global(svg) {
+  *:is(button, a)[data-variant="approve"]:not(.disabled):hover :global(svg) {
     fill: var(--color-secondary);
   }
-  button[data-variant="primary"]:not(.disabled):hover :global(svg) {
+  *:is(button, a)[data-variant="primary"]:not(.disabled):hover :global(svg) {
     fill: var(--color-primary);
   }
-  button[data-variant="ghost"]:not(.disabled):hover :global(svg) {
+  *:is(button, a)[data-variant="ghost"]:not(.disabled):hover :global(svg) {
     fill: var(--color-primary);
   }
 </style>

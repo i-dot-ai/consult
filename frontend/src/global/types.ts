@@ -21,6 +21,7 @@ export interface Question {
   theme_status?: string;
 }
 
+export type ConsultationStage = "theme_sign_off" | "theme_mapping" | "analysis";
 export interface NextResponseInfo {
   id: string;
   consultation_id: string;
@@ -36,7 +37,7 @@ export interface ShowNextResponseResult {
 export interface Consultation {
   id: string;
   title: string;
-  stage: "theme_sign_off" | "theme_mapping" | "analysis";
+  stage: ConsultationStage;
   created_at: string;
 }
 

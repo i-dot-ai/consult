@@ -1,7 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Header > matches snapshot 1`] = `
+exports[`HeaderConsult > matches snapshot 1`] = `
 <div>
+  <!---->
   <header
     class="w-full"
   >
@@ -103,11 +104,6 @@ exports[`Header > matches snapshot 1`] = `
             AI safety and governance framework 2024
           </span>
            
-          <span
-            class="mr-1 text-xs text-neutral-500 whitespace-nowrap"
-          >
-            / Dashboard
-          </span>
           <!---->
         </p>
       </div>
@@ -143,38 +139,6 @@ exports[`Header > matches snapshot 1`] = `
           <ol
             class="flex items-center gap-4"
           >
-            <li
-              class="relative"
-            >
-              <div
-                class="hover:text-primary"
-              >
-                <!---->
-                <a
-                  aria-pressed="false"
-                  class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                  data-variant="ghost"
-                  disabled="false"
-                  href="/"
-                  role="link"
-                  tabindex="0"
-                >
-                  <!---->
-                  <span
-                    class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
-                  >
-                    Home
-                  </span>
-                  
-                  
-                </a>
-                
-                <!---->
-              </div>
-              <!---->
-               
-              <!---->
-            </li>
             <li
               class="relative"
             >
@@ -220,90 +184,6 @@ exports[`Header > matches snapshot 1`] = `
                 class="absolute top-6 right-0 z-10 border border-neutral-100 rounded bg-white shadow-lg transition-opacity pointer-events-none opacity-0"
                 id="link-support"
               >
-                <li>
-                  <div
-                    class="hover:text-primary"
-                  >
-                    <!---->
-                    <a
-                      aria-pressed="false"
-                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                      data-variant="ghost"
-                      disabled="false"
-                      href="/walkthrough"
-                      role="link"
-                      tabindex="0"
-                    >
-                      <!---->
-                      <span
-                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
-                      >
-                        Walkthrough
-                      </span>
-                      
-                      
-                    </a>
-                    
-                    <!---->
-                  </div>
-                  <!---->
-                </li>
-                <li>
-                  <div
-                    class="hover:text-primary"
-                  >
-                    <!---->
-                    <a
-                      aria-pressed="false"
-                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                      data-variant="ghost"
-                      disabled="false"
-                      href="/guidance"
-                      role="link"
-                      tabindex="0"
-                    >
-                      <!---->
-                      <span
-                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
-                      >
-                        Guidance
-                      </span>
-                      
-                      
-                    </a>
-                    
-                    <!---->
-                  </div>
-                  <!---->
-                </li>
-                <li>
-                  <div
-                    class="hover:text-primary"
-                  >
-                    <!---->
-                    <a
-                      aria-pressed="false"
-                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                      data-variant="ghost"
-                      disabled="false"
-                      href="/feedback"
-                      role="link"
-                      tabindex="0"
-                    >
-                      <!---->
-                      <span
-                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
-                      >
-                        Feedback
-                      </span>
-                      
-                      
-                    </a>
-                    
-                    <!---->
-                  </div>
-                  <!---->
-                </li>
                 <li>
                   <div
                     class="hover:text-primary"
@@ -394,7 +274,7 @@ exports[`Header > matches snapshot 1`] = `
                       class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                       data-variant="ghost"
                       disabled="false"
-                      href="/consultations"
+                      href="/support/consultations"
                       role="link"
                       tabindex="0"
                     >
@@ -402,7 +282,7 @@ exports[`Header > matches snapshot 1`] = `
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
                       >
-                        Consultations
+                        Manage Consultations
                       </span>
                       
                       
@@ -422,7 +302,7 @@ exports[`Header > matches snapshot 1`] = `
                       class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                       data-variant="ghost"
                       disabled="false"
-                      href="/users"
+                      href="/support/users"
                       role="link"
                       tabindex="0"
                     >
@@ -430,7 +310,7 @@ exports[`Header > matches snapshot 1`] = `
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
                       >
-                        Users
+                        Manage Users
                       </span>
                       
                       
@@ -452,12 +332,84 @@ exports[`Header > matches snapshot 1`] = `
         </nav>
         <!---->
          
+        <div
+          class="mx-1"
+        >
+          <div
+            class="flex items-end gap-1"
+          >
+            <div
+              class="my-auto ml-2 md:ml-0"
+            >
+              <!---->
+              <button
+                aria-controls="breadcrumbs-panel"
+                aria-pressed="false"
+                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                data-variant="ghost"
+                role="button"
+                tabindex="0"
+              >
+                <!---->
+                Process
+                
+                
+              </button>
+              
+              <!---->
+            </div>
+            <!---->
+             
+            <div
+              class="relative m-auto w-max"
+            >
+              <div>
+                <button
+                  aria-controls="profile-panel"
+                  aria-expanded="false"
+                  aria-label="View profile links"
+                  class="flex justify-center items-center w-8 h-8 ml-2 p-1 border-2 border-transparent rounded-full bg-neutral-700 text-xs transition-colors hover:border-primary hover:bg-neutral-600"
+                  title="Profile links"
+                >
+                  <svg
+                    class="fill-white"
+                    height="1.5rem"
+                    role="img"
+                    viewBox="0 -960 960 960"
+                    width="1.5rem"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z"
+                      xmlns="http://www.w3.org/2000/svg"
+                    />
+                    <!---->
+                  </svg>
+                  <!---->
+                </button>
+                 
+                <!---->
+                <!---->
+              </div>
+              <!---->
+            </div>
+            <!---->
+          </div>
+          <!---->
+        </div>
         <!---->
       </div>
     </div>
      
     <!---->
   </header>
+  <!---->
+   
+  <div
+    id="breadcrumbs-panel"
+  >
+    <!---->
+  </div>
   
   
 </div>
