@@ -9,6 +9,12 @@ export default defineConfig({
   output: "server",
   integrations: [svelte(), tailwind({ applyBaseStyles: false })],
 
+  image: {
+    service: {
+      entrypoint: "astro/assets/services/sharp",
+    },
+  },
+
   server: {
     host: "0.0.0.0",
     port: 3000,

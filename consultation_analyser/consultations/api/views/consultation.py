@@ -23,6 +23,7 @@ from consultation_analyser.consultations.api.serializers import (
     ConsultationImportImmutableSerializer,
     ConsultationImportSerializer,
     ConsultationSerializer,
+    ConsultationThemefinderSerializer,
     DemographicOptionSerializer,
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
@@ -227,6 +228,88 @@ class ConsultationViewSet(ModelViewSet):
             sentry_sdk.capture_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="find-themes",
+        permission_classes=[IsAdminUser],
+    )
+    def find_themes(self, request) -> Response:
+        """
+        Run themefinder to find themes across all free-text questions.
+        When this SQS job is complete, it will automatically trigger another job
+        to save these themes as candidate themes in the database.
+        """
+        try:
+            input_serializer = ConsultationThemefinderSerializer(data=request.data)
+            input_serializer.is_valid(raise_exception=True)
+
+            validated = input_serializer.validated_data
+
+            ingest.send_job_to_sqs(
+                consultation_code=validated["consultation_code"],
+                current_user_id=request.user.id,
+                job_type="FIND_THEMES",
+            )
+
+            return Response(
+                {"message": "Find Themes job started successfully"},
+                status=status.HTTP_202_ACCEPTED,
+            )
+        except serializers.ValidationError as e:
+            sentry_sdk.capture_exception(e)
+            return Response(
+                {"message": "An error occurred while starting the Find Themes job"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return Response(
+                {"message": "An error occurred while starting the Find Themes job"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="assign-themes",
+        permission_classes=[IsAdminUser],
+    )
+    def assign_themes(self, request) -> Response:
+        """
+        Run themefinder to assign selected themes to all responses.
+        When this SQS job is complete, it will automatically trigger another job
+        to import all the consultaiton data from S3 and save to the database.
+        """
+        try:
+            input_serializer = ConsultationThemefinderSerializer(data=request.data)
+            input_serializer.is_valid(raise_exception=True)
+
+            validated = input_serializer.validated_data
+
+            ingest.send_job_to_sqs(
+                consultation_code=validated["consultation_code"],
+                current_user_id=request.user.id,
+                job_type="ASSIGN_THEMES",
+            )
+
+            return Response(
+                {"message": "Assign Themes job started successfully"},
+                status=status.HTTP_202_ACCEPTED,
+            )
+        except serializers.ValidationError as e:
+            sentry_sdk.capture_exception(e)
+            return Response(
+                {"message": "An error occurred while starting the Assign Themes job"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return Response(
+                {"message": "An error occurred while starting the Find Themes job"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
