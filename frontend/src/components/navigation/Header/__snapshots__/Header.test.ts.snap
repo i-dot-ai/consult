@@ -11,80 +11,85 @@ exports[`Header > matches snapshot 1`] = `
       <div
         class="flex items-center gap-2"
       >
-        <div
-          class="flex justify-center items-center w-8 h-8"
+        <a
+          class="block flex items-center gap-2"
+          href="/"
         >
-          <svg
-            class="block size-full"
-            data-testid="consult-icon"
-            fill="none"
-            preserveAspectRatio="xMidYMid meet"
-            title="consult-icon"
-            viewBox="0 0 483 483"
+          <div
+            class="flex justify-center items-center w-8 h-8"
           >
-            <g>
-              <path
-                clip-rule="evenodd"
-                d="M0 241.15C0 107.97 107.97 0 241.15 0C305.11 0 366.44 25.41 411.67 70.63C456.89 115.85 482.3 177.19 482.3 241.15C482.3 374.33 374.33 482.3 241.15 482.3C107.97 482.3 0 374.33 0 241.15Z"
-                fill="#C50B78"
-                fill-rule="evenodd"
-              />
+            <svg
+              class="block size-full"
+              data-testid="consult-icon"
+              fill="none"
+              preserveAspectRatio="xMidYMid meet"
+              title="consult-icon"
+              viewBox="0 0 483 483"
+            >
               <g>
                 <path
                   clip-rule="evenodd"
-                  d="M385.62 308.03C385.62 326.76 370.43 341.95 351.7 341.95H130.59C121.59 341.95 112.97 338.38 106.61 332.02C100.25 325.66 96.68 317.03 96.68 308.04V172.38C96.68 153.65 111.87 138.46 130.6 138.46H351.71C370.44 138.46 385.63 153.65 385.63 172.38V308.04L385.62 308.03Z"
-                  fill="black"
+                  d="M0 241.15C0 107.97 107.97 0 241.15 0C305.11 0 366.44 25.41 411.67 70.63C456.89 115.85 482.3 177.19 482.3 241.15C482.3 374.33 374.33 482.3 241.15 482.3C107.97 482.3 0 374.33 0 241.15Z"
+                  fill="#C50B78"
                   fill-rule="evenodd"
                 />
-                <path
-                  clip-rule="evenodd"
-                  d="M306.86 341.06V394.04L253.73 341.06H306.86Z"
-                  fill="black"
-                  fill-rule="evenodd"
-                />
+                <g>
+                  <path
+                    clip-rule="evenodd"
+                    d="M385.62 308.03C385.62 326.76 370.43 341.95 351.7 341.95H130.59C121.59 341.95 112.97 338.38 106.61 332.02C100.25 325.66 96.68 317.03 96.68 308.04V172.38C96.68 153.65 111.87 138.46 130.6 138.46H351.71C370.44 138.46 385.63 153.65 385.63 172.38V308.04L385.62 308.03Z"
+                    fill="black"
+                    fill-rule="evenodd"
+                  />
+                  <path
+                    clip-rule="evenodd"
+                    d="M306.86 341.06V394.04L253.73 341.06H306.86Z"
+                    fill="black"
+                    fill-rule="evenodd"
+                  />
+                </g>
+                <g>
+                  <path
+                    clip-rule="evenodd"
+                    d="M385.62 300.03C385.62 318.76 370.43 333.95 351.7 333.95H130.59C121.59 333.95 112.97 330.38 106.61 324.02C100.25 317.66 96.68 309.03 96.68 300.04V164.38C96.68 145.65 111.87 130.46 130.6 130.46H351.71C370.44 130.46 385.63 145.65 385.63 164.38V300.04L385.62 300.03Z"
+                    fill="white"
+                    fill-rule="evenodd"
+                  />
+                  <path
+                    clip-rule="evenodd"
+                    d="M306.86 333.06V386.04L253.73 333.06H306.86Z"
+                    fill="white"
+                    fill-rule="evenodd"
+                  />
+                  <path
+                    clip-rule="evenodd"
+                    d="M127.62 163.66H354.68V174.4H127.62V163.66Z"
+                    fill="black"
+                    fill-rule="evenodd"
+                  />
+                  <path
+                    clip-rule="evenodd"
+                    d="M127.62 197.34H354.68V208.08H127.62V197.34Z"
+                    fill="black"
+                    fill-rule="evenodd"
+                  />
+                  <path
+                    clip-rule="evenodd"
+                    d="M127.62 231.02H306.86V241.76H127.62V231.02Z"
+                    fill="black"
+                    fill-rule="evenodd"
+                  />
+                </g>
               </g>
-              <g>
-                <path
-                  clip-rule="evenodd"
-                  d="M385.62 300.03C385.62 318.76 370.43 333.95 351.7 333.95H130.59C121.59 333.95 112.97 330.38 106.61 324.02C100.25 317.66 96.68 309.03 96.68 300.04V164.38C96.68 145.65 111.87 130.46 130.6 130.46H351.71C370.44 130.46 385.63 145.65 385.63 164.38V300.04L385.62 300.03Z"
-                  fill="white"
-                  fill-rule="evenodd"
-                />
-                <path
-                  clip-rule="evenodd"
-                  d="M306.86 333.06V386.04L253.73 333.06H306.86Z"
-                  fill="white"
-                  fill-rule="evenodd"
-                />
-                <path
-                  clip-rule="evenodd"
-                  d="M127.62 163.66H354.68V174.4H127.62V163.66Z"
-                  fill="black"
-                  fill-rule="evenodd"
-                />
-                <path
-                  clip-rule="evenodd"
-                  d="M127.62 197.34H354.68V208.08H127.62V197.34Z"
-                  fill="black"
-                  fill-rule="evenodd"
-                />
-                <path
-                  clip-rule="evenodd"
-                  d="M127.62 231.02H306.86V241.76H127.62V231.02Z"
-                  fill="black"
-                  fill-rule="evenodd"
-                />
-              </g>
-            </g>
-          </svg>
-          <!---->
-        </div>
-         
-        <h1
-          class="font-[500]"
-        >
-          Consult
-        </h1>
+            </svg>
+            <!---->
+          </div>
+           
+          <h1
+            class="font-[500]"
+          >
+            Consult
+          </h1>
+        </a>
          
         <div
           class="inline-block min-h-4 mx-2 border-l border-neutral-300 self-stretch"
@@ -173,38 +178,43 @@ exports[`Header > matches snapshot 1`] = `
             <li
               class="relative"
             >
-              <button
-                aria-controls="link-support"
-                aria-expanded="false"
-                class="nav-button flex items-center justify-center gap-0.5"
-              >
-                <span
-                  class="block text-sm text-neutral-800 hover:text-primary transition-colors whitespace-nowrap"
+              <!---->
+              <div>
+                <button
+                  aria-controls="link-support"
+                  aria-expanded="false"
+                  class="nav-button flex items-center justify-center gap-0.5"
                 >
-                  Support
-                </span>
-                 
-                <div
-                  class="rotate-90"
-                >
-                  <svg
-                    class="fill-neutral-500"
-                    height="0.9rem"
-                    role="img"
-                    viewBox="0 -960 960 960"
-                    width="0.9rem"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <span
+                    class="block text-sm text-neutral-800 hover:text-primary transition-colors whitespace-nowrap"
                   >
-                    <path
-                      d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                    Support
+                  </span>
+                   
+                  <div
+                    class="rotate-90"
+                  >
+                    <svg
+                      class="fill-neutral-500"
+                      height="0.9rem"
+                      role="img"
+                      viewBox="0 -960 960 960"
+                      width="0.9rem"
                       xmlns="http://www.w3.org/2000/svg"
-                    />
+                    >
+                      <path
+                        d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
                     <!---->
-                  </svg>
+                  </div>
                   <!---->
-                </div>
+                </button>
                 <!---->
-              </button>
+              </div>
+              <!---->
                
               <ol
                 class="absolute top-6 right-0 z-10 border border-neutral-100 rounded bg-white shadow-lg transition-opacity pointer-events-none opacity-0"
@@ -332,38 +342,43 @@ exports[`Header > matches snapshot 1`] = `
             <li
               class="relative"
             >
-              <button
-                aria-controls="link-manage"
-                aria-expanded="false"
-                class="nav-button flex items-center justify-center gap-0.5"
-              >
-                <span
-                  class="block text-sm text-neutral-800 hover:text-primary transition-colors whitespace-nowrap"
+              <!---->
+              <div>
+                <button
+                  aria-controls="link-manage"
+                  aria-expanded="false"
+                  class="nav-button flex items-center justify-center gap-0.5"
                 >
-                  Manage
-                </span>
-                 
-                <div
-                  class="rotate-90"
-                >
-                  <svg
-                    class="fill-neutral-500"
-                    height="0.9rem"
-                    role="img"
-                    viewBox="0 -960 960 960"
-                    width="0.9rem"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <span
+                    class="block text-sm text-neutral-800 hover:text-primary transition-colors whitespace-nowrap"
                   >
-                    <path
-                      d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                    Manage
+                  </span>
+                   
+                  <div
+                    class="rotate-90"
+                  >
+                    <svg
+                      class="fill-neutral-500"
+                      height="0.9rem"
+                      role="img"
+                      viewBox="0 -960 960 960"
+                      width="0.9rem"
                       xmlns="http://www.w3.org/2000/svg"
-                    />
+                    >
+                      <path
+                        d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
                     <!---->
-                  </svg>
+                  </div>
                   <!---->
-                </div>
+                </button>
                 <!---->
-              </button>
+              </div>
+              <!---->
                
               <ol
                 class="absolute top-6 right-0 z-10 border border-neutral-100 rounded bg-white shadow-lg transition-opacity pointer-events-none opacity-0"
