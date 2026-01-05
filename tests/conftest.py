@@ -507,7 +507,9 @@ def free_text_response(free_text_question, respondent_1):
 
 @pytest.fixture
 def another_response(free_text_question, respondent_2):
-    response = Response.objects.create(question=free_text_question, respondent=respondent_2)
+    response = Response.objects.create(
+        question=free_text_question, respondent=respondent_2, free_text="i agree"
+    )
     yield response
     response.delete()
 
@@ -539,8 +541,23 @@ def free_text_annotation(free_text_response, consultation_user, ai_assigned_them
 
 
 @pytest.fixture
-def another_annotation(another_response, theme_b):
-    annotation = ResponseAnnotation.objects.create(response=another_response, evidence_rich=True)
+def human_reviewed_annotation(another_response, theme_b):
+    annotation = ResponseAnnotation.objects.create(
+        response=another_response, evidence_rich=True, human_reviewed=False
+    )
+    annotation_a = ResponseAnnotationTheme.objects.create(
+        response_annotation=annotation, theme=theme_b
+    )
+    yield annotation
+    annotation_a.delete()
+    annotation.delete()
+
+
+@pytest.fixture
+def un_reviewed_annotation(another_response, theme_b):
+    annotation = ResponseAnnotation.objects.create(
+        response=another_response, evidence_rich=True, human_reviewed=True
+    )
     annotation_a = ResponseAnnotationTheme.objects.create(
         response_annotation=annotation, theme=theme_b
     )

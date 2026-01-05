@@ -43,11 +43,6 @@ class QuestionViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"], url_path="test-debug")
-    def test_debug(self, request, pk=None, consultation_pk=None):
-        """Debug endpoint to test if actions work"""
-        return Response({"status": "debug endpoint works"})
-
     @action(detail=True, methods=["get"], url_path="show-next")
     def show_next_response(self, request, pk=None, consultation_pk=None):
         """Get the next response that needs human review for this question"""
@@ -55,11 +50,13 @@ class QuestionViewSet(ModelViewSet):
 
         # Check if this question has free text (only free text questions have themes)
         if not question.has_free_text:
-            return Response({
-                "next_response": None,
-                "has_free_text": False,
-                "message": "This question does not have free text responses."
-            })
+            return Response(
+                {
+                    "next_response": None,
+                    "has_free_text": False,
+                    "message": "This question does not have free text responses.",
+                }
+            )
 
         # Get the next response that has not been human reviewed
         # Left join with annotation to find responses without annotations or not reviewed
@@ -77,18 +74,22 @@ class QuestionViewSet(ModelViewSet):
         )
 
         if next_response:
-            return Response({
-                "next_response": {
-                    "id": str(next_response.id),
-                    "consultation_id": str(question.consultation.id),
-                    "question_id": str(question.id),
-                },
-                "has_free_text": True,
-                "message": "Next response found."
-            })
+            return Response(
+                {
+                    "next_response": {
+                        "id": str(next_response.id),
+                        "consultation_id": str(question.consultation.id),
+                        "question_id": str(question.id),
+                    },
+                    "has_free_text": True,
+                    "message": "Next response found.",
+                }
+            )
 
-        return Response({
-            "next_response": None,
-            "has_free_text": True,
-            "message": "No more responses to review."
-        })
+        return Response(
+            {
+                "next_response": None,
+                "has_free_text": True,
+                "message": "This question does not have free text responses",
+            }
+        )
