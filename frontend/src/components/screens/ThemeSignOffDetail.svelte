@@ -46,7 +46,7 @@
   import EditSquare from "../svg/material/EditSquare.svelte";
   import ErrorModal, {
     type ErrorType,
-  } from "../theme-sign-off/ErrorModal.svelte";
+  } from "../theme-sign-off/ErrorModal/ErrorModal.svelte";
 
   interface Props {
     consultationId: string;

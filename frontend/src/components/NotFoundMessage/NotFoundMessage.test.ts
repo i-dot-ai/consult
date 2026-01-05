@@ -4,16 +4,26 @@ import { render, screen } from "@testing-library/svelte";
 import NotFoundMessage from "./NotFoundMessage.svelte";
 
 describe("Section", () => {
-  it("should render title and body", () => {
-    const TEST_TITLE = "Test title";
-    const TEST_BODY = "Test body";
+  const testData = {
+    title: "Test title",
+    body: "Test body",
+  };
 
-    render(NotFoundMessage, {
-      title: TEST_TITLE,
-      body: TEST_BODY,
-    });
+  it("should render title", () => {
+    render(NotFoundMessage, testData);
 
-    expect(screen.getByText(TEST_TITLE)).toBeInTheDocument();
-    expect(screen.getByText(TEST_BODY)).toBeInTheDocument();
+    expect(screen.getByText(testData.title)).toBeInTheDocument();
+  });
+
+  it("should render body", () => {
+    render(NotFoundMessage, testData);
+
+    expect(screen.getByText(testData.body)).toBeInTheDocument();
+  });
+
+  it("should match snapshot", () => {
+    const { container } = render(NotFoundMessage, testData);
+
+    expect(container).toMatchSnapshot();
   });
 });
