@@ -36,13 +36,13 @@ describe("Panel", () => {
     expect(PanelStory).toHaveProperty("component", Panel);
     expect(PanelStory).toHaveProperty("props");
 
-    const propsDefined = PanelStory.props.map(prop => prop.name);
+    const propsDefined = PanelStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual([
       "variant",
       "border",
       "bg",
       "level",
       "children",
-    ])
-  })
+    ]);
+  });
 });

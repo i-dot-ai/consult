@@ -97,7 +97,7 @@ describe("Header", () => {
     expect(HeaderStory).toHaveProperty("component", Header);
     expect(HeaderStory).toHaveProperty("props");
 
-    const propsDefined = HeaderStory.props.map(prop => prop.name);
+    const propsDefined = HeaderStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual([
       "title",
       "subtitle",
@@ -105,5 +105,5 @@ describe("Header", () => {
       "pathParts",
       "navItems",
     ]);
-  })
+  });
 });

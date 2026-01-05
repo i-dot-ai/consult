@@ -13,8 +13,8 @@ describe("Accordion", () => {
     })),
     title: createRawSnippet(() => ({
       render: () => "<h2>Test Title</h2>",
-    }))
-  }
+    })),
+  };
 
   it("should render title", () => {
     render(Accordion, testData);
@@ -38,7 +38,7 @@ describe("Accordion", () => {
     const button = screen.getByRole("button");
     await user.click(button);
 
-    expect(screen.queryByText("Test Contents")).toBeInTheDocument();
+    expect(screen.getByText("Test Contents")).toBeInTheDocument();
   });
 
   it("should have a story configured correctly", () => {
@@ -46,7 +46,7 @@ describe("Accordion", () => {
     expect(AccordionStory).toHaveProperty("component", Accordion);
     expect(AccordionStory).toHaveProperty("props");
 
-    const propsDefined = AccordionStory.props.map(prop => prop.name);
+    const propsDefined = AccordionStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual(["title", "content"]);
-  })
+  });
 });

@@ -19,7 +19,7 @@
     icon?: Component;
     open?: boolean;
     setOpen: (newValue: boolean) => void;
-    handleConfirm: MouseEventHandler<any>;
+    handleConfirm: MouseEventHandler<HTMLElement>;
     children?: Snippet;
   }
 
@@ -39,7 +39,10 @@
     elements: { portalled, overlay, content, title: titleMelt, close },
     states: { open: meltOpen },
   } = createDialog({
-    onOpenChange: (open) => setOpen(open.next),
+    onOpenChange: (open) => {
+      setOpen(open.next);
+      return open.next;
+    },
   });
 
   $effect(() => {
@@ -50,7 +53,7 @@
   let imperativeOpen = $state();
   export const setImperativeOpen = (newVal: boolean) => {
     imperativeOpen = newVal;
-  }
+  };
 
   export const getIconColor = () => {
     if (variant === "primary") {
@@ -127,7 +130,7 @@
         <Button
           size="sm"
           variant={variant === "secondary" ? "approve" : "primary"}
-          handleClick={handleConfirm}
+          handleClick={handleConfirm as () => void}
         >
           {confirmText}
         </Button>

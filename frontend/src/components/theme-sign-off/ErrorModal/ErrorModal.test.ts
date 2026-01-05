@@ -8,7 +8,7 @@ describe("ErrorModal", () => {
   const testData: ErrorModalProps = {
     type: "unexpected",
     onClose: vi.fn(),
-  }
+  };
 
   it("should render message initially", async () => {
     render(ErrorModal);
@@ -16,18 +16,21 @@ describe("ErrorModal", () => {
     expect(screen.getByTestId("content")).toBeInTheDocument();
   });
 
-  it.each(["edit-conflict", "remove-conflict"])("should render modified date and person", (type) => {
-    const LAST_MODIFIED_BY = "test-person";
-    const LATEST_VERSION = "12345";
-    render(ErrorModal, {
-      type: type as ErrorModalProps["type"],
-      lastModifiedBy: LAST_MODIFIED_BY,
-      latestVersion: LATEST_VERSION,
-      onClose: testData.onClose,
-    })
+  it.each(["edit-conflict", "remove-conflict"])(
+    "should render modified date and person",
+    (type) => {
+      const LAST_MODIFIED_BY = "test-person";
+      const LATEST_VERSION = "12345";
+      render(ErrorModal, {
+        type: type as ErrorModalProps["type"],
+        lastModifiedBy: LAST_MODIFIED_BY,
+        latestVersion: LATEST_VERSION,
+        onClose: testData.onClose,
+      });
 
-    expect(screen.getByTestId("content")).toHaveTextContent(LAST_MODIFIED_BY);
-  })
+      expect(screen.getByTestId("content")).toHaveTextContent(LAST_MODIFIED_BY);
+    },
+  );
 
   it("should close when close button is clicked", async () => {
     const user = userEvent.setup();

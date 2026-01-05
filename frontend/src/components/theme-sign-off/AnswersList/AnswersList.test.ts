@@ -46,7 +46,7 @@ describe("AnswersList", () => {
     expect(AnswersListStory).toHaveProperty("component", AnswersList);
     expect(AnswersListStory).toHaveProperty("props");
 
-    const propsDefined = AnswersListStory.props.map(prop => prop.name);
+    const propsDefined = AnswersListStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual(["variant", "title", "answers", "loading"]);
-  })
+  });
 });

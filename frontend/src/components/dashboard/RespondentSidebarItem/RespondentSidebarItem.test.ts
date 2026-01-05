@@ -93,11 +93,25 @@ describe("RespondentSidebarItem", () => {
   });
 
   it("should have a story configured correctly", () => {
-    expect(RespondentSidebarItemStory).toHaveProperty("name", "RespondentSidebarItem");
-    expect(RespondentSidebarItemStory).toHaveProperty("component", RespondentSidebarItem);
+    expect(RespondentSidebarItemStory).toHaveProperty(
+      "name",
+      "RespondentSidebarItem",
+    );
+    expect(RespondentSidebarItemStory).toHaveProperty(
+      "component",
+      RespondentSidebarItem,
+    );
     expect(RespondentSidebarItemStory).toHaveProperty("props");
 
-    const propsDefined = RespondentSidebarItemStory.props.map(prop => prop.name);
-    expect(propsDefined).toEqual(["title", "subtitle", "icon", "editable", "updateSubtitle"]);
-  })
+    const propsDefined = RespondentSidebarItemStory.props.map(
+      (prop) => prop.name,
+    );
+    expect(propsDefined).toEqual([
+      "title",
+      "subtitle",
+      "icon",
+      "editable",
+      "updateSubtitle",
+    ]);
+  });
 });

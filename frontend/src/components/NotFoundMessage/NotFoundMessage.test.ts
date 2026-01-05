@@ -7,7 +7,7 @@ describe("Section", () => {
   const testData = {
     title: "Test title",
     body: "Test body",
-  }
+  };
 
   it("should render title", () => {
     render(NotFoundMessage, testData);

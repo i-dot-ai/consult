@@ -1,6 +1,5 @@
-import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
-import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen, fireEvent, act } from "@testing-library/svelte";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen, fireEvent, act } from "@testing-library/svelte";
 
 import { createRawSnippet } from "svelte";
 
@@ -18,28 +17,27 @@ describe("Modal", () => {
       })),
       handleConfirm: () => {},
       setOpen: () => {},
-    }
-  })
-  afterEach(() => cleanup());
+    };
+  });
 
   it("does not render contents if closed", async () => {
-    const { component, queryByText } = render(Modal, {
+    const { component } = render(Modal, {
       ...testData,
     });
 
     // store does not update without this
     await act(() => component.setImperativeOpen(false));
 
-    expect(queryByText("Ok")).toBeNull();
-    expect(queryByText("Child Element")).toBeNull();
+    expect(screen.queryByText("Ok")).toBeNull();
+    expect(screen.queryByText("Child Element")).toBeNull();
   });
 
   it("should render contents if open", async () => {
     const handleConfirmMock = vi.fn();
     const setOpenMock = vi.fn();
 
-    expect(testData).toBeTruthy()
-    const { component, getByText } = render(Modal, {
+    expect(testData).toBeTruthy();
+    const { component } = render(Modal, {
       ...testData,
       handleConfirm: handleConfirmMock,
       setOpen: setOpenMock,
@@ -48,9 +46,9 @@ describe("Modal", () => {
     // store does not update without this
     await act(() => component.setImperativeOpen(true));
 
-    expect(getByText("Child Element"));
-    expect(getByText(testData.title));
-    expect(getByText(testData.confirmText));
+    expect(screen.getByText("Child Element")).toBeInTheDocument();
+    expect(screen.getByText(testData.title)).toBeInTheDocument();
+    expect(screen.getByText(testData.confirmText)).toBeInTheDocument();
   });
 
   it("should call confirm callback when clicked", async () => {
@@ -59,8 +57,8 @@ describe("Modal", () => {
     const handleConfirmMock = vi.fn();
     const setOpenMock = vi.fn();
 
-    expect(testData).toBeTruthy()
-    const { component, getByText } = render(Modal, {
+    expect(testData).toBeTruthy();
+    const { component } = render(Modal, {
       ...testData,
       handleConfirm: handleConfirmMock,
       setOpen: setOpenMock,
@@ -69,7 +67,7 @@ describe("Modal", () => {
     // store does not update without this
     await act(() => component.setImperativeOpen(true));
 
-    expect(getByText("Ok"));
+    expect(screen.getByText("Ok")).toBeInTheDocument();
     const confirmButton = screen.getByText("Ok");
 
     await fireEvent.click(confirmButton);
@@ -84,8 +82,8 @@ describe("Modal", () => {
     const handleConfirmMock = vi.fn();
     const setOpenMock = vi.fn();
 
-    expect(testData).toBeTruthy()
-    const { component, getByText } = render(Modal, {
+    expect(testData).toBeTruthy();
+    const { component } = render(Modal, {
       ...testData,
       handleConfirm: handleConfirmMock,
       setOpen: setOpenMock,
@@ -94,7 +92,7 @@ describe("Modal", () => {
     // store does not update without this - TODO: Fix meltOpen update
     await act(() => component.setImperativeOpen(true));
 
-    expect(getByText("Ok"));
+    expect(screen.getByText("Ok")).toBeInTheDocument();
     const cancelButton = screen.getByText("Cancel");
 
     await fireEvent.click(cancelButton);
@@ -107,5 +105,5 @@ describe("Modal", () => {
     const { container } = render(Modal, testData);
 
     expect(container).toMatchSnapshot();
-  })
+  });
 });

@@ -73,11 +73,17 @@ describe("GeneratedThemeCard", () => {
   });
 
   it("should have a story configured correctly", () => {
-    expect(GeneratedThemeCardStory).toHaveProperty("name", "GeneratedThemeCard");
-    expect(GeneratedThemeCardStory).toHaveProperty("component", GeneratedThemeCard);
+    expect(GeneratedThemeCardStory).toHaveProperty(
+      "name",
+      "GeneratedThemeCard",
+    );
+    expect(GeneratedThemeCardStory).toHaveProperty(
+      "component",
+      GeneratedThemeCard,
+    );
     expect(GeneratedThemeCardStory).toHaveProperty("props");
 
-    const propsDefined = GeneratedThemeCardStory.props.map(prop => prop.name);
+    const propsDefined = GeneratedThemeCardStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual([
       "theme",
       "level",
@@ -85,5 +91,5 @@ describe("GeneratedThemeCard", () => {
       "handleSelect",
       "answersMock",
     ]);
-  })
+  });
 });

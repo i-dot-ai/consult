@@ -37,7 +37,7 @@ describe("ThemeForm", () => {
     expect(ThemeFormStory).toHaveProperty("component", ThemeForm);
     expect(ThemeFormStory).toHaveProperty("props");
 
-    const propsDefined = ThemeFormStory.props.map(prop => prop.name);
+    const propsDefined = ThemeFormStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual([
       "variant",
       "initialTitle",
@@ -45,5 +45,5 @@ describe("ThemeForm", () => {
       "handleConfirm",
       "handleCancel",
     ]);
-  })
+  });
 });

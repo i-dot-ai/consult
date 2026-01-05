@@ -32,15 +32,18 @@ describe("SelectedThemeCard", () => {
 
   it("should have a story configured correctly", () => {
     expect(SelectedThemeCardStory).toHaveProperty("name", "SelectedThemeCard");
-    expect(SelectedThemeCardStory).toHaveProperty("component", SelectedThemeCard);
+    expect(SelectedThemeCardStory).toHaveProperty(
+      "component",
+      SelectedThemeCard,
+    );
     expect(SelectedThemeCardStory).toHaveProperty("props");
 
-    const propsDefined = SelectedThemeCardStory.props.map(prop => prop.name);
+    const propsDefined = SelectedThemeCardStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual([
       "theme",
       "answers",
       "removeTheme",
       "updateTheme",
     ]);
-  })
+  });
 });

@@ -40,16 +40,19 @@ describe("DemoFilter", () => {
     expect(screen.queryByText("country")).toBeNull();
   });
 
-  it.each(Object.values(testData.demoData.country))("should not render data content if skeleton", (value) => {
-    render(DemoFilter, {
-      ...testData,
-      skeleton: true,
-    });
+  it.each(Object.values(testData.demoData.country))(
+    "should not render data content if skeleton",
+    (value) => {
+      render(DemoFilter, {
+        ...testData,
+        skeleton: true,
+      });
 
-    expect(screen.queryByText(value)).not.toBeInTheDocument();
-    const percentage = getPercentage(value, testData.totalCounts.country);
-    expect(screen.queryByTitle(`${percentage}%`)).not.toBeInTheDocument();
-  });
+      expect(screen.queryByText(value)).not.toBeInTheDocument();
+      const percentage = getPercentage(value, testData.totalCounts.country);
+      expect(screen.queryByTitle(`${percentage}%`)).not.toBeInTheDocument();
+    },
+  );
 
   // TODO: Update below case
   it.todo("should update filters state when clicked", async () => {
@@ -77,7 +80,7 @@ describe("DemoFilter", () => {
     expect(DemoFilterStory).toHaveProperty("component", DemoFilter);
     expect(DemoFilterStory).toHaveProperty("props");
 
-    const propsDefined = DemoFilterStory.props.map(prop => prop.name);
+    const propsDefined = DemoFilterStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual([
       "category",
       "demoOptions",
@@ -85,5 +88,5 @@ describe("DemoFilter", () => {
       "totalCounts",
       "skeleton",
     ]);
-  })
+  });
 });
