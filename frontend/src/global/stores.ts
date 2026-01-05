@@ -8,8 +8,8 @@ function getInitialFavs() {
     return [];
   }
 
-  const storedFavs = localStorage.getItem(FAVS_STORAGE_KEY);
   try {
+    const storedFavs = localStorage.getItem(FAVS_STORAGE_KEY);
     return storedFavs ? JSON.parse(storedFavs) : [];
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
@@ -46,30 +46,35 @@ function createFavStore() {
 }
 export const favStore = createFavStore();
 
-export type MockFetch = (config: {
+export type MockFetch<T> = (config: {
   url: string;
   headers?: HeadersInit;
   method: string;
   body?: string;
-}) => unknown;
+}) => T;
 
 // Shared fetch logic
 export const createFetchStore = <T>({
   mockFetch,
   debounceDelay = 500,
-}: { mockFetch?: MockFetch; debounceDelay?: number } | undefined = {}) => {
+}: { mockFetch?: MockFetch<T>; debounceDelay?: number } | undefined = {}) => {
   const store: Writable<{
     data: T | null;
     isLoading: boolean;
     error: string | null;
     status: number;
-    fetch: () => unknown;
+    fetch: (
+      url: string,
+      method?: string,
+      body?: BodyInit,
+      headers?: HeadersInit,
+    ) => Promise<void>;
   }> = writable({
     data: null,
     isLoading: false,
     error: null,
     status: 0,
-    fetch: () => {},
+    fetch: () => Promise.resolve(),
   });
 
   let debounceTimeout: ReturnType<typeof setTimeout> | null = null;

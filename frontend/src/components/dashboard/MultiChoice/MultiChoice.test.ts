@@ -57,18 +57,18 @@ describe("MultiChoice", () => {
     const buttons = screen.getAllByRole("button");
 
     // First filter applied
-    await user.click(buttons.at(0));
+    await user.click(buttons.at(0) as HTMLButtonElement);
     expect(multiAnswerFilters.filters).toStrictEqual([testData.data[0].id]);
 
     // Second filter applied
-    await user.click(buttons.at(1));
+    await user.click(buttons.at(1) as HTMLButtonElement);
     expect(multiAnswerFilters.filters).toStrictEqual([
       testData.data[0].id,
       testData.data[1].id,
     ]);
 
     // First filter removed by clicking on it again
-    await user.click(buttons.at(0));
+    await user.click(buttons.at(0) as HTMLButtonElement);
     expect(multiAnswerFilters.filters).toStrictEqual([testData.data[1].id]);
   });
 });

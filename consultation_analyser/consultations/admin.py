@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.contrib import admin, messages
 from django_rq import get_queue
 from simple_history.admin import SimpleHistoryAdmin
@@ -21,7 +22,10 @@ from consultation_analyser.consultations.models import (
 from consultation_analyser.support_console.ingest import (
     DEFAULT_TIMEOUT_SECONDS,
     create_embeddings_for_question,
+    export_selected_themes,
 )
+
+logger = settings.LOGGER
 
 
 @admin.action(description="(Re)Embed selected Consultations")
@@ -107,17 +111,49 @@ def create_large_dummy_consultation(modeladmin, request, queryset):
     create_dummy_consultation(modeladmin, request, queryset, 10_000)
 
 
+@admin.action(description="export selected themes")
+def export_selected_themes_to_s3(modeladmin, request, queryset):
+    for consultation in queryset:
+        for question in consultation.question_set.all():
+            try:
+                logger.info("exporting themes for question={number}", number=question.number)
+                export_selected_themes(question)
+            except Exception as exception:
+                logger.info(
+                    "failed to export themes for question={number}, exception={exception}",
+                    number=question.number,
+                    exception=exception,
+                )
+                modeladmin.message_user(
+                    request,
+                    f"error running export for question {question.number}",
+                    level=messages.ERROR,
+                )
+                return
+
+
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [
         update_embeddings_admin,
         reimport_demographics,
         create_small_dummy_consultation,
         create_large_dummy_consultation,
+        export_selected_themes_to_s3,
     ]
 
 
 class MultiChoiceAnswerInline(admin.StackedInline):
     model = MultiChoiceAnswer
+    extra = 0
+
+
+class SelectedThemeInline(admin.StackedInline):
+    model = SelectedTheme
+    extra = 0
+
+
+class CandidateThemeInline(admin.StackedInline):
+    model = CandidateTheme
     extra = 0
 
 
@@ -132,7 +168,7 @@ class QuestionAdmin(admin.ModelAdmin):
         "has_free_text",
         "has_multiple_choice",
     ]
-    inlines = [MultiChoiceAnswerInline]
+    inlines = [SelectedThemeInline, CandidateThemeInline, MultiChoiceAnswerInline]
 
 
 class ResponseAnnotationAdmin(SimpleHistoryAdmin):
@@ -162,11 +198,6 @@ class RespondentAdmin(admin.ModelAdmin):
 class DemographicOptionAdmin(admin.ModelAdmin):
     list_filter = ["consultation"]
     readonly_fields = ["consultation", "field_name", "field_value"]
-
-
-class SelectedThemeInline(admin.StackedInline):
-    model = SelectedTheme
-    extra = 0
 
 
 class CrossCuttingThemeAdmin(admin.ModelAdmin):

@@ -269,7 +269,7 @@ class TestResponseViewSet:
         - 1 query to get authentication user for is_flagged annotation
         - 1 query to count respondents
         - 1 query to count filtered responses
-        - 1 query to get responses with related data
+        - 1 query to get responses with related data (includes is_read annotation)
         - 1 query to prefetch multiple choice answers
         - 1 query to prefetch demographic data
         """
@@ -1068,7 +1068,7 @@ class TestResponseViewSet:
             - 1 query to get authentication user for is_flagged annotation
             - 1 query to count respondents
             - 1 query to count filtered responses
-            - 1 query to get responses with related data
+            - 1 query to get responses with related data (includes is_read annotation)
             - 1 query to calculate average hybrid_score across responses
             - 1 query to calculate standard deviation of hybrid_score across responses
             - 1 query to prefetch multiple choice answers
@@ -1216,3 +1216,26 @@ class TestResponseViewSet:
 
         # Verify annotation was created
         assert ResponseAnnotation.objects.filter(response=response_obj).exists()
+
+    def test_get_themes_works_with_null_keys(
+        self, client, consultation_user_token, free_text_question, theme_c
+    ):
+        """Test API endpoint works if the underlying them has no key"""
+        # Create test response without annotation
+        respondent = RespondentFactory(consultation=free_text_question.consultation)
+        response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
+
+        url = reverse(
+            "response-themes",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": response_obj.id,
+            },
+        )
+
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200

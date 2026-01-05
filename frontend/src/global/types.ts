@@ -150,6 +150,7 @@ export interface ResponseAnswer {
   human_reviewed: boolean;
   is_flagged: boolean;
   is_edited?: boolean;
+  is_read: boolean;
 }
 
 export interface DemoOption {

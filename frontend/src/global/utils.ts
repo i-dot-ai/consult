@@ -102,16 +102,33 @@ export const formatDate = (dateStr: string) => {
   });
 };
 
+export const isKeyPressed = (
+  event: KeyboardEvent,
+  possibleValues: (string | number)[],
+) => {
+  const eventKey = event.key || event.code || event.keyCode;
+  return possibleValues.includes(eventKey);
+};
+
 export const handleEnterOrSpacePress = (
   event: KeyboardEvent,
   callback: () => void,
 ) => {
-  const key = event.key || event.code || event.keyCode;
-  const isEnter = ["Enter", "Return", 13].includes(key);
-  const isSpace = [" ", "Spacebar", 32].includes(key);
+  const isEnter = isKeyPressed(event, ["Enter", "Return", 13]);
+  const isSpace = isKeyPressed(event, [" ", "Spacebar", 32]);
 
   // Enter or Space pressed
   if (isEnter || isSpace) {
+    event.preventDefault();
+    callback();
+  }
+};
+export const handleEscKeyPress = (
+  event: KeyboardEvent,
+  callback: () => void,
+) => {
+  // Esc key pressed
+  if (isKeyPressed(event, ["Escape", "Esc", 27])) {
     event.preventDefault();
     callback();
   }

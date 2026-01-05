@@ -1,8 +1,11 @@
 ---
 import "../styles/global.css";
+
 import Header from "../components/Header/Header.svelte";
 import Footer from "../components/Footer/Footer.svelte";
+
 import { fetchBackendApi } from "../global/api";
+import { Routes } from "../global/routes";
 
 let isStaff: boolean = false;
 let email: string | unknown = null;
@@ -10,7 +13,7 @@ let email: string | unknown = null;
 try {
   const data = await fetchBackendApi<{ is_staff: boolean; email: string }>(
     Astro,
-    "/api/user/",
+    Routes.ApiUser,
   );
   isStaff = data.is_staff;
   email = data.email;

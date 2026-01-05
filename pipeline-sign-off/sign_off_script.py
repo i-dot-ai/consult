@@ -4,10 +4,15 @@ import datetime
 import json
 import logging
 import os
-import subprocess
 from pathlib import Path
 
+import boto3
+import pandas as pd
+from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
+from themefinder import theme_condensation, theme_generation, theme_mapping, theme_refinement
+from themefinder.models import HierarchicalClusteringResponse
+from themefinder.theme_clustering_agent import ThemeClusteringAgent, ThemeNode
 
 # Configure logging
 logging.basicConfig(
@@ -315,9 +320,13 @@ def agentic_theme_selection(
     ) and (significance_percentage < 20):
         selected_themes = agent.select_themes(significance_percentage)
         significance_percentage += 1
-    selected_themes["topic"] = (
-        selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
-    )
+
+    try:
+        selected_themes["topic"] = (
+            selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
+        )
+    except KeyError:
+        raise KeyError("couldnt extract keys from", selected_themes)
 
     return selected_themes, all_themes_df
 
@@ -398,10 +407,6 @@ async def process_consultation(consultation_dir: str, llm) -> str:
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
                     f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
 
-                pd.DataFrame(all_themes_list).to_json(
-                    os.path.join(question_output_dir, "clustered_themes.json"), orient="records"
-                )
-
                 # Map responses to themes, including "None of the above" option
                 mapping_themes = selected_themes[["topic_id", "topic"]].copy()
                 mapping_themes = pd.concat(
@@ -449,17 +454,6 @@ async def process_consultation(consultation_dir: str, llm) -> str:
 
 
 if __name__ == "__main__":
-    logger.info("Installing requirements from requirements.txt...")
-    subprocess.run(["pip", "install", "--no-cache-dir", "-r", "requirements.txt"], check=True)
-    logger.info("Requirements installation completed")
-
-    import boto3
-    import pandas as pd
-    from langchain_openai import ChatOpenAI
-    from themefinder import theme_condensation, theme_generation, theme_mapping, theme_refinement
-    from themefinder.models import HierarchicalClusteringResponse
-    from themefinder.theme_clustering_agent import ThemeClusteringAgent, ThemeNode
-
     llm = ChatOpenAI(
         model="gpt-4o",
         temperature=0,

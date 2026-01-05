@@ -7,6 +7,8 @@ import os
 import subprocess
 from pathlib import Path
 
+from pydantic import BaseModel
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -17,6 +19,18 @@ logger = logging.getLogger(__name__)
 
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 BASE_PREFIX = "app_data/consultations/"
+
+
+class SelectedThemeInput(BaseModel):
+    # this is copied from the main consult app
+    theme_key: str
+    theme_name: str
+    theme_description: str
+
+
+class SelectedThemeInputs(BaseModel):
+    # this is copied from the main consult app
+    themes: list[SelectedThemeInput]
 
 
 def download_s3_subdir(subdir: str) -> None:
@@ -79,7 +93,7 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
 
     question_path = Path(consultation_dir) / "inputs" / question_dir / "question.json"
     responses_path = Path(consultation_dir) / "inputs" / question_dir / "responses.jsonl"
-    themes_path = Path(consultation_dir) / "inputs" / question_dir / "themes.csv"
+    themes_path = Path(consultation_dir) / "inputs" / question_dir / "selected_themes.json"
 
     with question_path.open() as f:
         question = json.load(f)["question_text"]
@@ -93,9 +107,18 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
     responses = responses_df.rename(columns={"themefinder_id": "response_id", "text": "response"})
 
     with themes_path.open() as f:
-        themes = pd.read_csv(themes_path)
-    themes["topic_id"] = [chr(65 + i) for i in range(len(themes))]
-    themes["topic"] = themes["Theme Name"] + ": " + themes["Theme Description"]
+        selected_theme_inputs = SelectedThemeInputs.model_validate_json(f.read())
+
+    themes = pd.DataFrame(
+        [
+            {
+                "topic": theme.theme_name + ": " + theme.theme_description,
+                "topic_id": theme.theme_key,
+            }
+            for theme in selected_theme_inputs.themes
+        ]
+    )
+
     return question, responses, themes
 
 

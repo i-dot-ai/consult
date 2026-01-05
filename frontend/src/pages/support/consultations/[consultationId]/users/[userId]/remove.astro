@@ -1,0 +1,41 @@
+---
+import { fetchBackendApi } from "../../../../../../global/api";
+import type {
+  ConsultationResponse,
+  User,
+} from "../../../../../../global/types";
+
+import Layout from "../../../../../../layouts/Layout.astro";
+import Section from "../../../../../../components/Section/Section.svelte";
+import Title from "../../../../../../components/Title.svelte";
+import {
+  getApiConsultationUrl,
+  getApiUserDetails,
+  Routes,
+} from "../../../../../../global/routes";
+import RemoveUserFromConsultationForm from "../../../../../../components/screens/RemoveUserFromConsultationForm.svelte";
+
+const { consultationId, userId } = Astro.params;
+
+if (!consultationId || !userId) {
+  return Astro.redirect(Routes.SupportConsultations);
+}
+
+let consultation = await fetchBackendApi<ConsultationResponse>(
+  Astro,
+  getApiConsultationUrl(consultationId),
+);
+
+let user = await fetchBackendApi<User>(Astro, getApiUserDetails(userId));
+---
+
+<Layout>
+  <Section>
+    <Title level={1} text="Remove user from consultation" />
+    <RemoveUserFromConsultationForm
+      client:load
+      user={user}
+      consultation={consultation}
+    />
+  </Section>
+</Layout>

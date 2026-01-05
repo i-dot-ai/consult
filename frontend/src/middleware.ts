@@ -105,6 +105,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[/]?$/,
     /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/delete[/]?$/,
     /^\/support\/consultations\/import-summary[/]?$/,
+    /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/users\/new[/]?$/,
+    /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/users\/[A-Za-z0-9-]+\/remove[/]?$/,
     /^\/support\/consultations\/import-consultation[/]?$/,
     /^\/support\/consultations\/[A-Za-z0-9-]*\/export[/]?$/,
     /^\/design.*/,
@@ -191,6 +193,10 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     if (response.status === 401) {
       console.log("Error 401 redirecting to sign in");
       return context.redirect(Routes.SignInError);
+    }
+
+    if (response.status === 403) {
+      console.log("403 detected", fullBackendUrl, response.body, accessToken);
     }
 
     if (response.status === 304) {
