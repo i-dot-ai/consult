@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, fireEvent, act } from "@testing-library/svelte";
+import { render, screen, fireEvent } from "@testing-library/svelte";
 
 import { createRawSnippet } from "svelte";
 
@@ -88,7 +88,6 @@ describe("Modal", () => {
   });
 
   it("should not call confirm callback when cancel is clicked", async () => {
-
     const handleConfirmMock = vi.fn();
     const setOpenMock = vi.fn();
 
