@@ -335,6 +335,10 @@ class ConsultationImportAnnotationsSerializer(serializers.Serializer):
     timestamp = serializers.CharField(required=True, max_length=100)
 
 
+class ConsultationThemefinderSerializer(serializers.Serializer):
+    consultation_code = serializers.CharField(required=True, max_length=255)
+
+
 class ConsultationExportSerializer(serializers.Serializer):
     s3_key = serializers.CharField(max_length=255, default="", allow_null=True)
     question_ids = serializers.ListSerializer(child=serializers.CharField())

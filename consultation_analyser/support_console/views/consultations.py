@@ -425,87 +425,87 @@ def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UU
     return render(request, "support_console/question_parts/delete.html", context=context)
 
 
-def themefinder(request: HttpRequest) -> HttpResponse:
-    logger.refresh_context()
+# def themefinder(request: HttpRequest) -> HttpResponse:
+#     logger.refresh_context()
 
-    consultation_folders = ingest.get_folder_names_for_dropdown()
-    bucket_name = settings.AWS_BUCKET_NAME
-    current_user_id = request.user.id
+#     consultation_folders = ingest.get_folder_names_for_dropdown()
+#     bucket_name = settings.AWS_BUCKET_NAME
+#     current_user_id = request.user.id
 
-    consultation_code = None
-    consultation_name = None
-    if request.method == "POST":
-        consultation_code = request.POST.get("consultation_code")
-        consultation_name = request.POST.get("consultation_name")
+#     consultation_code = None
+#     consultation_name = None
+#     if request.method == "POST":
+#         consultation_code = request.POST.get("consultation_code")
+#         consultation_name = request.POST.get("consultation_name")
 
-        if consultation_code:
-            try:
-                # Send message to SQS
-                ingest.send_job_to_sqs(
-                    consultation_code, consultation_name, current_user_id, "THEMEFINDER"
-                )
-                messages.success(
-                    request,
-                    format_html(
-                        "Themefinder job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
-                        consultation_name,
-                        consultation_code,
-                    ),
-                )
+#         if consultation_code:
+#             try:
+#                 # Send message to SQS
+#                 ingest.send_job_to_sqs(
+#                     consultation_code, consultation_name, current_user_id, "THEMEFINDER"
+#                 )
+#                 messages.success(
+#                     request,
+#                     format_html(
+#                         "Themefinder job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
+#                         consultation_name,
+#                         consultation_code,
+#                     ),
+#                 )
 
-            except Exception as e:
-                messages.error(request, f"Error submitting job: {str(e)}")
-        else:
-            messages.error(request, "Please select a consultation folder.")
+#             except Exception as e:
+#                 messages.error(request, f"Error submitting job: {str(e)}")
+#         else:
+#             messages.error(request, "Please select a consultation folder.")
 
-    context = {
-        "bucket_name": bucket_name,
-        "consultation_folders": consultation_folders,
-        "consultation_code": consultation_code,
-        "consultation_name": consultation_name,
-    }
+#     context = {
+#         "bucket_name": bucket_name,
+#         "consultation_folders": consultation_folders,
+#         "consultation_code": consultation_code,
+#         "consultation_name": consultation_name,
+#     }
 
-    return render(request, "support_console/consultations/themefinder.html", context=context)
+#     return render(request, "support_console/consultations/themefinder.html", context=context)
 
 
-def sign_off(request: HttpRequest) -> HttpResponse:
-    logger.refresh_context()
+# def sign_off(request: HttpRequest) -> HttpResponse:
+#     logger.refresh_context()
 
-    consultation_folders = ingest.get_folder_names_for_dropdown()
-    bucket_name = settings.AWS_BUCKET_NAME
-    current_user_id = request.user.id
+#     consultation_folders = ingest.get_folder_names_for_dropdown()
+#     bucket_name = settings.AWS_BUCKET_NAME
+#     current_user_id = request.user.id
 
-    consultation_code = None
-    consultation_name = None
+#     consultation_code = None
+#     consultation_name = None
 
-    if request.method == "POST":
-        consultation_code = request.POST.get("consultation_code")
-        consultation_name = request.POST.get("consultation_name")
-        if consultation_code:
-            try:
-                # Send message to SQS
-                ingest.send_job_to_sqs(
-                    consultation_code, consultation_name, current_user_id, "SIGNOFF"
-                )
-                messages.success(
-                    request,
-                    format_html(
-                        "Sign-off job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
-                        consultation_name,
-                        consultation_code,
-                    ),
-                )
+#     if request.method == "POST":
+#         consultation_code = request.POST.get("consultation_code")
+#         consultation_name = request.POST.get("consultation_name")
+#         if consultation_code:
+#             try:
+#                 # Send message to SQS
+#                 ingest.send_job_to_sqs(
+#                     consultation_code, consultation_name, current_user_id, "SIGNOFF"
+#                 )
+#                 messages.success(
+#                     request,
+#                     format_html(
+#                         "Sign-off job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
+#                         consultation_name,
+#                         consultation_code,
+#                     ),
+#                 )
 
-            except Exception as e:
-                messages.error(request, f"Error submitting job: {str(e)}")
-        else:
-            messages.error(request, "Please select a consultation folder.")
+#             except Exception as e:
+#                 messages.error(request, f"Error submitting job: {str(e)}")
+#         else:
+#             messages.error(request, "Please select a consultation folder.")
 
-    context = {
-        "bucket_name": bucket_name,
-        "consultation_folders": consultation_folders,
-        "consultation_code": consultation_code,
-        "consultation_name": consultation_name,
-    }
+#     context = {
+#         "bucket_name": bucket_name,
+#         "consultation_folders": consultation_folders,
+#         "consultation_code": consultation_code,
+#         "consultation_name": consultation_name,
+#     }
 
-    return render(request, "support_console/consultations/sign_off.html", context=context)
+#     return render(request, "support_console/consultations/sign_off.html", context=context)

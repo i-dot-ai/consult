@@ -1,5 +1,6 @@
 import json
 import re
+from typing import Literal
 from uuid import UUID
 
 import boto3
@@ -825,13 +826,14 @@ def get_folder_names_for_dropdown() -> list[dict]:
 
 
 def send_job_to_sqs(
-    consultation_code: str, consultation_name: str, current_user_id: int, job_type: str
+    consultation_code: str,
+    current_user_id: int,
+    job_type: Literal["FIND_THEMES", "ASSIGN_THEMES"],
 ) -> dict:
     # SQS configuration - you should move these to settings.py
     QUEUE_URL = settings.SQS_QUEUE_URL
 
-    # Choose environment variables based on job_type
-    if job_type == "SIGNOFF":
+    if job_type == "FIND_THEMES":
         job_name = settings.SIGN_OFF_BATCH_JOB_NAME
         job_queue = settings.SIGN_OFF_BATCH_JOB_QUEUE
         job_definition = settings.SIGN_OFF_BATCH_JOB_DEFINITION
@@ -847,7 +849,6 @@ def send_job_to_sqs(
         "jobDefinition": job_definition,
         "userId": current_user_id,
         "consultationCode": consultation_code,
-        "consultationName": consultation_name,
         "containerOverrides": {"command": ["--subdir", consultation_code, "--job-type", job_type]},
     }
 
