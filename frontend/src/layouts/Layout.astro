@@ -5,7 +5,7 @@ import HeaderConsult from "../components/navigation/HeaderConsult/HeaderConsult.
 import Footer from "../components/Footer/Footer.svelte";
 
 import { fetchBackendApi } from "../global/api";
-import { getApiConsultationUrl, Routes } from "../global/routes";
+import { getApiConsultationUrl, Routes, Suffixes } from "../global/routes";
 import type { ConsultationStage } from "../global/types";
 
 function isConsultationSubUrl(url: string): boolean {
@@ -13,10 +13,12 @@ function isConsultationSubUrl(url: string): boolean {
   return consultationUrlRe.test(url);
 }
 function isThemeSignOffUrl(url: string): boolean {
-  return url.includes("theme-sign-off");
+  return url.includes(Suffixes.ThemeSignOff);
 }
 function isDashboardUrl(url: string): boolean {
-  return url.includes("consultations") && !url.includes("theme-sign-off");
+  return (
+    url.includes(Suffixes.Consultations) && !url.includes(Suffixes.ThemeSignOff)
+  );
 }
 function getPathText(url: string): string {
   if (isThemeSignOffUrl(url)) {
