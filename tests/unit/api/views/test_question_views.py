@@ -220,3 +220,93 @@ class TestQuestionViewSet:
 
         data = response.json()
         assert [x["number"] for x in data["results"]] == [1, 2]
+
+    def test_permission_requires_dashboard_access(
+        self, client, non_dashboard_user_token, free_text_question
+    ):
+        """Test that QuestionViewSet requires dashboard access"""
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {non_dashboard_user_token}"},
+        )
+        assert response.status_code == 403
+
+    def test_permission_requires_consultation_access(
+        self, client, user_without_consultation_access, free_text_question
+    ):
+        """Test that QuestionViewSet requires consultation access"""
+        from rest_framework_simplejwt.tokens import RefreshToken
+        
+        refresh = RefreshToken.for_user(user_without_consultation_access)
+        token = str(refresh.access_token)
+        
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert response.status_code == 403
+
+    def test_delete_method_supported(
+        self, client, consultation_user_token, free_text_question
+    ):
+        """Test that DELETE method is now supported"""
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        response = client.delete(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        # Should return 204 for successful deletion, not 405 Method Not Allowed
+        assert response.status_code == 204
+        
+        # Verify question was actually deleted
+        assert not Question.objects.filter(id=free_text_question.id).exists()
+
+    def test_unsupported_http_methods(
+        self, client, consultation_user_token, free_text_question
+    ):
+        """Test that unsupported HTTP methods return 405"""
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        
+        # POST should not be supported (only get, patch, delete)
+        response = client.post(
+            url,
+            data={"theme_status": "confirmed"},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        assert response.status_code == 405
+        
+        # PUT should not be supported (only get, patch, delete)
+        response = client.put(
+            url,
+            data={"theme_status": "confirmed"},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        assert response.status_code == 405
