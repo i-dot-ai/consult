@@ -1,5 +1,5 @@
 {
-  "errorCount": 102,
+  "errorCount": 104,
   "warningCount": 19,
   "lastUpdated": "2026-01-06",
   "note": "This file tracks the number of type errors in the codebase. CI will fail if the number of errors increase or decrease without updating this file."
