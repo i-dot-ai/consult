@@ -49,6 +49,34 @@
     ),
   );
 
+  function calculateCategoryItems(category: string, demoOptions: DemoOptionsResponseItem[]) {
+    const categoryOptions = [...demoOptions].filter(
+      (opt: DemoOptionsResponseItem) => opt.name === category,
+    );
+    
+    const total = categoryOptions.reduce(
+      (acc: number, opt: DemoOptionsResponseItem) => acc + opt.count,
+      0,
+    );
+
+    return categoryOptions
+      .sort((a: DemoOptionsResponseItem, b: DemoOptionsResponseItem) => {
+        return b.count - a.count; // Descending order by count
+      })
+      .map((demoOption: DemoOptionsResponseItem) => ({
+        title: demoOption.value.replaceAll("'", ""),
+        count: demoOption.count,
+        percentage: getPercentage(demoOption.count, total),
+      }));
+  }
+
+  let demographicsData = $derived(
+    demoCategories.reduce((acc, category) => {
+      acc[category] = calculateCategoryItems(category, $demoOptionsStore.data || []);
+      return acc;
+    }, {} as Record<string, Array<{ title: string; count: number; percentage: number }>>)
+  );
+
   onMount(() => {
     $consultationStore.fetch(getApiConsultationUrl(consultationId));
     $questionsStore.fetch(getApiQuestionsUrl(consultationId));
@@ -82,38 +110,7 @@
           <div class="col-span-12 md:col-span-4">
             <MetricsDemoCard
               title={category}
-              items={(() => {
-                const categoryOptions = [
-                  ...($demoOptionsStore.data || []),
-                ].filter(
-                  (opt: DemoOptionsResponseItem) => opt.name === category,
-                );
-                const total = categoryOptions.reduce(
-                  (acc: number, opt: DemoOptionsResponseItem) => {
-                    return acc + opt.count;
-                  },
-                  0,
-                );
-                return categoryOptions
-                  .sort(
-                    (
-                      a: DemoOptionsResponseItem,
-                      b: DemoOptionsResponseItem,
-                    ) => {
-                      if (a.count < b.count) {
-                        return 1;
-                      } else if (a.count > b.count) {
-                        return -1;
-                      }
-                      return 0;
-                    },
-                  )
-                  .map((demoOption: DemoOptionsResponseItem) => ({
-                    title: demoOption.value.replaceAll("'", ""),
-                    count: demoOption.count,
-                    percentage: getPercentage(demoOption.count, total),
-                  }));
-              })()}
+              items={demographicsData[category]}
               hideThreshold={Infinity}
             />
           </div>
