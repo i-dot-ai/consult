@@ -3,6 +3,7 @@ from typing import Dict, List, Optional
 
 from django.conf import settings
 from django.db import transaction
+from pydantic import BaseModel
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -31,10 +32,14 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 
+class SelectedThemeInputs(BaseModel):
+    # this is copied from the main consult app
+    themes: list[SelectedThemeInput]
+
+
 def load_selected_themes_from_s3(
     consultation_code: str,
     question_number: int,
-    timestamp: str,
     bucket_name: Optional[str] = None,
     s3_client=None,
 ) -> List[SelectedThemeInput]:
@@ -44,7 +49,6 @@ def load_selected_themes_from_s3(
     Args:
         consultation_code: The consultation folder name in S3
         question_number: The question number (e.g., 1 for question_part_1)
-        timestamp: The timestamp folder identifying the mapping run
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
         s3_client: Optional boto3 S3 client (for testing)
 
@@ -57,19 +61,21 @@ def load_selected_themes_from_s3(
     bucket_name_str = bucket_name if bucket_name is not None else settings.AWS_BUCKET_NAME
 
     # Build S3 key for themes.json
-    key = f"app_data/consultations/{consultation_code}/outputs/mapping/{timestamp}/question_part_{question_number}/themes.json"
+    key = f"app_data/consultations/{consultation_code}/inputs/question_part_{question_number}/selected_themes.json"
 
     logger.info(f"Loading selected themes from {key}")
 
     # Read and parse JSON file
-    theme_data = read_json_from_s3(
-        bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
-    )
+    try:
+        theme_data = read_json_from_s3(
+            bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
+        )
+    except Exception:
+        msg = f"key {key} not found"
+        logger.error(msg)
+        raise KeyError(msg)
 
-    # Validate each theme using Pydantic
-    # Note: theme_data is guaranteed to be non-None because raise_if_missing=True
-    assert theme_data is not None  # type narrowing for mypy
-    validated_themes = [SelectedThemeInput(**theme) for theme in theme_data]
+    validated_themes = SelectedThemeInputs.model_validate(theme_data).themes
 
     logger.info(
         f"Loaded and validated {len(validated_themes)} selected themes for question {question_number}"
@@ -273,7 +279,7 @@ def load_annotation_batch(
     for question_number in question_numbers:
         # Load selected themes (required)
         themes = load_selected_themes_from_s3(
-            consultation_code, question_number, timestamp, bucket_name_str, s3_client
+            consultation_code, question_number, bucket_name_str, s3_client
         )
         selected_themes_by_question[question_number] = themes
 

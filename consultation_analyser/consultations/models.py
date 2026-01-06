@@ -113,7 +113,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
     @property
     def selected_themes_file(self):
-        return self.get_folder("mapping", "themes.json")
+        return f"app_data/consultations/{self.consultation.code}/inputs/question_part_{self.number}/selected_themes.json"
 
     @property
     def multiple_choice_options(self) -> list:

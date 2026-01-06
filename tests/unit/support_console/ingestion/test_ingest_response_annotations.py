@@ -91,18 +91,20 @@ def response_2(db, question_1, respondent_2):
 @pytest.fixture
 def sample_themes_data():
     """Sample S3 selected themes data"""
-    return [
-        {
-            "theme_key": "healthcare",
-            "theme_name": "Healthcare Access",
-            "theme_description": "Issues related to accessing healthcare services",
-        },
-        {
-            "theme_key": "education",
-            "theme_name": "Education Funding",
-            "theme_description": "Concerns about education funding levels",
-        },
-    ]
+    return {
+        "themes": [
+            {
+                "theme_key": "healthcare",
+                "theme_name": "Healthcare Access",
+                "theme_description": "Issues related to accessing healthcare services",
+            },
+            {
+                "theme_key": "education",
+                "theme_name": "Education Funding",
+                "theme_description": "Concerns about education funding levels",
+            },
+        ]
+    }
 
 
 @pytest.fixture
@@ -166,15 +168,12 @@ class TestLoadSelectedThemesFromS3:
         themes = load_selected_themes_from_s3(
             consultation_code="TEST",
             question_number=1,
-            timestamp="2024-01-15",
             bucket_name="test-bucket",
             s3_client=mock_s3_client_themes,
         )
 
         # Verify correct S3 key was requested
-        expected_key = (
-            "app_data/consultations/TEST/outputs/mapping/2024-01-15/question_part_1/themes.json"
-        )
+        expected_key = "app_data/consultations/TEST/inputs/question_part_1/selected_themes.json"
         mock_s3_client_themes.get_object.assert_called_once_with(
             Bucket="test-bucket", Key=expected_key
         )
@@ -200,7 +199,6 @@ class TestLoadSelectedThemesFromS3:
             load_selected_themes_from_s3(
                 consultation_code="TEST",
                 question_number=1,
-                timestamp="2024-01-15",
                 bucket_name="test-bucket",
                 s3_client=client,
             )
@@ -839,7 +837,7 @@ class TestImportResponseAnnotationsFromS3:
             consultation_code="TEST",
             timestamp="2024-01-15",
             selected_themes_by_question={
-                1: [SelectedThemeInput(**theme) for theme in sample_themes_data],
+                1: [SelectedThemeInput(**theme) for theme in sample_themes_data.get("themes")],
             },
             sentiments_by_question={
                 1: [
@@ -888,7 +886,7 @@ class TestImportResponseAnnotationsFromS3:
             consultation_code="TEST",
             timestamp="2024-01-15",
             selected_themes_by_question={
-                1: [SelectedThemeInput(**theme) for theme in sample_themes_data],
+                1: [SelectedThemeInput(**theme) for theme in sample_themes_data.get("themes")],
             },
             details_by_question={
                 1: [DetailDetectionInput(themefinder_id=1001, evidence_rich="YES")]
