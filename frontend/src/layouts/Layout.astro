@@ -35,7 +35,8 @@ const { consultationId } = Astro.params;
 
 let isStaff: boolean = false;
 let email: string | unknown = null;
-
+let consultationStage;
+let showProcess: boolean = isConsultationSubUrl(pathname);
 try {
   const data = await fetchBackendApi<{ is_staff: boolean; email: string }>(
     Astro,
