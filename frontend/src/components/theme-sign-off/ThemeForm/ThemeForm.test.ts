@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
 import ThemeForm from "./ThemeForm.svelte";
+import ThemeFormStory from "./ThemeFormStory.svelte";
 
 describe("ThemeForm", () => {
   const testData = {
@@ -29,5 +30,20 @@ describe("ThemeForm", () => {
     });
 
     expect(screen.getByText("Edit Theme")).toBeInTheDocument();
+  });
+
+  it("should have a story configured correctly", () => {
+    expect(ThemeFormStory).toHaveProperty("name", "ThemeForm");
+    expect(ThemeFormStory).toHaveProperty("component", ThemeForm);
+    expect(ThemeFormStory).toHaveProperty("props");
+
+    const propsDefined = ThemeFormStory.props.map((prop) => prop.name);
+    expect(propsDefined).toEqual([
+      "variant",
+      "initialTitle",
+      "initialDescription",
+      "handleConfirm",
+      "handleCancel",
+    ]);
   });
 });

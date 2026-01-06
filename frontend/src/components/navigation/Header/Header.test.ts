@@ -6,29 +6,33 @@ import Header from "./Header.svelte";
 
 import { testData } from "./testData";
 import type { NavItem, Props } from "./types";
+import HeaderStory from "./HeaderStory.svelte";
 
 function getNavItemsWithUrl(data: Props) {
-  return data.navItems.filter((item) => Boolean(item.url));
+  return data.navItems!.filter((item) => Boolean(item.url));
 }
 function getDropdownNavItems(data: Props) {
-  return data.navItems.filter((item) => Boolean(item.children));
+  return data.navItems!.filter((item) => Boolean(item.children));
 }
 
 describe("Header", () => {
   it("renders title", () => {
     render(Header, testData);
-    expect(screen.getByText(testData.title)).toBeInTheDocument();
+    expect(screen.getByText(testData.title!)).toBeInTheDocument();
   });
 
   it("renders subtitle", () => {
     render(Header, testData);
-    expect(screen.getByText(testData.subtitle)).toBeInTheDocument();
+    expect(screen.getByText(testData.subtitle!)).toBeInTheDocument();
   });
 
-  it.each(testData.pathParts)("renders path part", async (pathPart: string) => {
-    render(Header, testData);
-    expect(screen.getByText(`/ ${pathPart}`)).toBeInTheDocument();
-  });
+  it.each(testData.pathParts!)(
+    "renders path part",
+    async (pathPart: string) => {
+      render(Header, testData);
+      expect(screen.getByText(`/ ${pathPart}`)).toBeInTheDocument();
+    },
+  );
 
   it.each(getNavItemsWithUrl(testData))(
     "renders nav items with url",
@@ -83,5 +87,26 @@ describe("Header", () => {
     await user.click(button);
 
     expect(await screen.findByTestId("mobile-nav")).toBeInTheDocument();
+  });
+
+  it("matches snapshot", async () => {
+    const { container } = render(Header, testData);
+
+    expect(container).toMatchSnapshot();
+  });
+
+  it("should have a story configured correctly", () => {
+    expect(HeaderStory).toHaveProperty("name", "NavigationHeader");
+    expect(HeaderStory).toHaveProperty("component", Header);
+    expect(HeaderStory).toHaveProperty("props");
+
+    const propsDefined = HeaderStory.props.map((prop) => prop.name);
+    expect(propsDefined).toEqual([
+      "title",
+      "subtitle",
+      "icon",
+      "pathParts",
+      "navItems",
+    ]);
   });
 });

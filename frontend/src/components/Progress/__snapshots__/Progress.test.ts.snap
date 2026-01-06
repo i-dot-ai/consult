@@ -1,0 +1,361 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Progress > should render correct thickness 1`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-1 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 0ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct thickness 2`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-1.5 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 0ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct thickness 3`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 0ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct transition delay 1`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 1ms; transition-duration: 0ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct transition delay 2`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 2ms; transition-duration: 0ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct transition delay 3`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 20ms; transition-duration: 0ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct transition delay 4`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 20.5ms; transition-duration: 0ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct transition delay 5`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: -10ms; transition-duration: 0ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct transition delay 6`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 0ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct transition duration 1`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 1ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct transition duration 2`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 2ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct transition duration 3`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 20ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct transition duration 4`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 20.5ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct transition duration 5`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: -10ms;"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`Progress > should render correct transition duration 6`] = `
+<div>
+  <div
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="50"
+    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+    data-max="100"
+    data-melt-progress=""
+    data-state="loading"
+    data-value="50"
+    max="100"
+    role="meter"
+  >
+    <div
+      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 0ms;"
+    />
+  </div>
+  
+  
+</div>
+`;

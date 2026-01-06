@@ -21,10 +21,23 @@ export interface Question {
   theme_status?: string;
 }
 
+export type ConsultationStage = "theme_sign_off" | "theme_mapping" | "analysis";
+export interface NextResponseInfo {
+  id: string;
+  consultation_id: string;
+  question_id: string;
+}
+
+export interface ShowNextResponseResult {
+  next_response: NextResponseInfo | null;
+  has_free_text: boolean;
+  message: string;
+}
+
 export interface Consultation {
   id: string;
   title: string;
-  stage: "theme_sign_off" | "theme_mapping" | "analysis";
+  stage: ConsultationStage;
   created_at: string;
 }
 

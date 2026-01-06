@@ -1,9 +1,9 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { onDestroy, onMount } from "svelte";
   import { slide } from "svelte/transition";
 
+  import { Routes } from "../../../global/routes";
   import { handleEscKeyPress } from "../../../global/utils";
 
   import IaiIcon from "../../svg/IaiIcon.svelte";
@@ -11,6 +11,7 @@
   import ChevronRight from "../../svg/material/ChevronRight.svelte";
   import Menu from "../../svg/material/Menu.svelte";
   import Button from "../../inputs/Button/Button.svelte";
+  import WithExternalClick from "../../WithExternalClick/WithExternalClick.svelte";
 
   import type { Props } from "./types";
 
@@ -27,15 +28,17 @@
   let mobileExpanded = $state(false);
   let IconComponent = $derived(icon);
 
-  onMount(() => {
-    window.addEventListener("click", handleOutsideClick);
-    window.addEventListener("keydown", handleEscPress);
+  $effect(() => {
+    addListeners();
+    return () => removeListeners();
   });
 
-  onDestroy(() => {
-    window.removeEventListener("click", handleOutsideClick);
+  function addListeners() {
+    window.addEventListener("keydown", handleEscPress);
+  }
+  function removeListeners() {
     window.removeEventListener("keydown", handleEscPress);
-  });
+  }
 
   function handleEscPress(e: KeyboardEvent) {
     handleEscKeyPress(e, () => (activeSubmenu = null));
@@ -45,6 +48,10 @@
     if (!(e.target as HTMLElement).closest(".nav-button")) {
       activeSubmenu = null;
     }
+  }
+
+  function getPathText(i: number, subtitle: string, pathPart: string) {
+    return `${i === 0 && !subtitle ? "" : "/"} ${pathPart}`;
   }
 </script>
 
@@ -81,83 +88,85 @@
 
         <li class={isMobile ? "w-full" : "relative"}>
           {#if Array.isArray(navItem.children) && navItem.children.length > 0}
-            <button
-              class={clsx([
-                "nav-button",
-                "flex",
-                "items-center",
-                "justify-center",
-                "gap-0.5",
-                isMobile &&
-                  clsx([
-                    "group",
-                    "w-full",
-                    "hover:bg-neutral-100",
-                    "hover:!text-primary",
-                  ]),
-              ])}
-              aria-expanded={expanded ? "true" : "false"}
-              aria-controls={id}
-              onclick={() => {
-                if (activeSubmenu === id) {
-                  activeSubmenu = null;
-                } else {
-                  activeSubmenu = id;
-                }
-              }}
-            >
-              {#if isMobile}
-                <div
-                  class={clsx([
-                    "flex",
-                    "items-center",
-                    "justify-center",
-                    "gap-0.5",
-                    "w-full",
-                    "-mr-4",
-                    "p-2",
-                    "text-sm",
-                    "text-center",
-                    "text-neutral-800",
-                    "transition-colors",
-                    "whitespace-nowrap",
-                    "hover:text-primary",
-                  ])}
-                >
-                  {navItem.label}
-
+            <WithExternalClick onExternalClick={handleOutsideClick}>
+              <button
+                class={clsx([
+                  "nav-button",
+                  "flex",
+                  "items-center",
+                  "justify-center",
+                  "gap-0.5",
+                  isMobile &&
+                    clsx([
+                      "group",
+                      "w-full",
+                      "hover:bg-neutral-100",
+                      "hover:!text-primary",
+                    ]),
+                ])}
+                aria-expanded={expanded ? "true" : "false"}
+                aria-controls={id}
+                onclick={() => {
+                  if (activeSubmenu === id) {
+                    activeSubmenu = null;
+                  } else {
+                    activeSubmenu = id;
+                  }
+                }}
+              >
+                {#if isMobile}
                   <div
                     class={clsx([
-                      "transition-transform",
-                      expanded && "rotate-90",
+                      "flex",
+                      "items-center",
+                      "justify-center",
+                      "gap-0.5",
+                      "w-full",
+                      "-mr-4",
+                      "p-2",
+                      "text-sm",
+                      "text-center",
+                      "text-neutral-800",
+                      "transition-colors",
+                      "whitespace-nowrap",
+                      "hover:text-primary",
                     ])}
                   >
+                    {navItem.label}
+
+                    <div
+                      class={clsx([
+                        "transition-transform",
+                        expanded && "rotate-90",
+                      ])}
+                    >
+                      <MaterialIcon size="0.9rem" color="fill-neutral-500">
+                        <ChevronRight />
+                      </MaterialIcon>
+                    </div>
+                  </div>
+                {:else}
+                  <span
+                    class={clsx([
+                      "block",
+                      "text-sm",
+                      "text-neutral-800",
+                      "hover:text-primary",
+                      "transition-colors",
+                      "whitespace-nowrap",
+                    ])}
+                  >
+                    {navItem.label}
+                  </span>
+
+                  <div class="rotate-90">
                     <MaterialIcon size="0.9rem" color="fill-neutral-500">
                       <ChevronRight />
                     </MaterialIcon>
                   </div>
-                </div>
-              {:else}
-                <span
-                  class={clsx([
-                    "block",
-                    "text-sm",
-                    "text-neutral-800",
-                    "hover:text-primary",
-                    "transition-colors",
-                    "whitespace-nowrap",
-                  ])}
-                >
-                  {navItem.label}
-                </span>
-
-                <div class="rotate-90">
-                  <MaterialIcon size="0.9rem" color="fill-neutral-500">
-                    <ChevronRight />
-                  </MaterialIcon>
-                </div>
-              {/if}
-            </button>
+                {/if}
+              </button>
+            </WithExternalClick>
 
             {#if activeSubmenu === id || !isMobile}
               <ol
@@ -212,15 +221,17 @@
     ])}
   >
     <div class={clsx(["flex", "items-center", "gap-2"])}>
-      <div
-        class={clsx(["flex", "justify-center", "items-center", "w-8", "h-8"])}
-      >
-        <IconComponent />
-      </div>
+      <a href={Routes.Home} class="block flex items-center gap-2">
+        <div
+          class={clsx(["flex", "justify-center", "items-center", "w-8", "h-8"])}
+        >
+          <IconComponent />
+        </div>
 
-      <h1 class="font-[500]">
-        {title}
-      </h1>
+        <h1 class="font-[500]">
+          {title}
+        </h1>
+      </a>
 
       <!-- Divider only renders when there's text after -->
       {#if subtitle || pathParts.length > 0}
@@ -251,7 +262,11 @@
               "whitespace-nowrap",
             ])}
           >
-            / {pathPart}
+            <!--
+              Only add slash to first item if subtitle is passed to
+              avoid having the vertical divider and slash side by side
+            -->
+            {getPathText(i, subtitle, pathPart)}
           </span>
         {/each}
       </p>
