@@ -1,11 +1,37 @@
 ---
 import "../styles/global.css";
 
-import Header from "../components/Header/Header.svelte";
+import HeaderConsult from "../components/navigation/HeaderConsult/HeaderConsult.svelte";
 import Footer from "../components/Footer/Footer.svelte";
 
 import { fetchBackendApi } from "../global/api";
-import { Routes } from "../global/routes";
+import { getApiConsultationUrl, Routes, Suffixes } from "../global/routes";
+import type { ConsultationStage } from "../global/types";
+
+function isConsultationSubUrl(url: string): boolean {
+  const consultationUrlRe = /\/consultations\/.*\S.*/;
+  return consultationUrlRe.test(url);
+}
+function isThemeSignOffUrl(url: string): boolean {
+  return url.includes(Suffixes.ThemeSignOff);
+}
+function isDashboardUrl(url: string): boolean {
+  return (
+    url.includes(Suffixes.Consultations) && !url.includes(Suffixes.ThemeSignOff)
+  );
+}
+function getPathText(url: string): string {
+  if (isThemeSignOffUrl(url)) {
+    return "Theme Sign Off";
+  }
+  if (isDashboardUrl(url)) {
+    return "Dashboard";
+  }
+  return "";
+}
+
+const pathname = Astro.url.pathname;
+const { consultationId } = Astro.params;
 
 let isStaff: boolean = false;
 let email: string | unknown = null;
@@ -21,6 +47,18 @@ try {
 } catch (e) {
   console.log("user not signed in", e);
 }
+
+if (consultationId) {
+  try {
+    const data = await fetchBackendApi<{ stage: ConsultationStage }>(
+      Astro,
+      getApiConsultationUrl(consultationId),
+    );
+    consultationStage = data.stage;
+  } catch {
+    console.log("failed to retrieve consultation data");
+  }
+}
 ---
 
 <!doctype html>
@@ -35,7 +73,15 @@ try {
   </head>
   <body>
     <div class="mx-auto flex h-full max-w-screen-3xl flex-col">
-      <Header client:load isStaff={isStaff} email={email} />
+      <HeaderConsult
+        client:load
+        isStaff={isStaff}
+        email={email}
+        path={getPathText(pathname)}
+        showProcess={showProcess}
+        consultationId={consultationId}
+        consultationStage={consultationStage}
+      />
 
       <main class="grow">
         <slot />

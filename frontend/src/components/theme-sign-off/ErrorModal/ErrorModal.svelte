@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Modal from "../Modal/Modal.svelte";
-  import Warning from "../svg/material/Warning.svelte";
+  import Modal from "../../Modal/Modal.svelte";
+  import Warning from "../../svg/material/Warning.svelte";
 
   export type ErrorType =
     | {
@@ -11,7 +11,7 @@
         lastModifiedBy: string;
         latestVersion: string;
       };
-  type ErrorModalProps = ErrorType & {
+  export type ErrorModalProps = ErrorType & {
     onClose: () => void;
   };
 
@@ -75,7 +75,7 @@
   confirmText={content.confirmText}
   {handleConfirm}
 >
-  <p class="mb-4 text-sm text-gray-600">
+  <p data-testid="content" class="mb-4 text-sm text-gray-600">
     {content.message}
   </p>
 </Modal>

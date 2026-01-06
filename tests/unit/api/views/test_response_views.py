@@ -592,7 +592,7 @@ class TestResponseViewSet:
         consultation_user_token,
         consultation_user,
         free_text_annotation,
-        another_annotation,
+        human_reviewed_annotation,
         is_flagged,
         expected_responses,
     ):
@@ -669,24 +669,24 @@ class TestResponseViewSet:
         client,
         consultation_user,
         consultation_user_token,
-        another_annotation,
+        human_reviewed_annotation,
         is_flagged,
         is_edited,
     ):
         if is_flagged:
-            another_annotation.flagged_by.add(consultation_user)
-            another_annotation.save()
+            human_reviewed_annotation.flagged_by.add(consultation_user)
+            human_reviewed_annotation.save()
 
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": another_annotation.response.question.consultation.id,
-                "pk": another_annotation.response.id,
+                "consultation_pk": human_reviewed_annotation.response.question.consultation.id,
+                "pk": human_reviewed_annotation.response.id,
             },
         )
         response = client.get(
             url,
-            query_params={"question_id": another_annotation.response.question.id},
+            query_params={"question_id": human_reviewed_annotation.response.question.id},
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
