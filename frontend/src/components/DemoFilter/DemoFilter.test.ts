@@ -5,6 +5,7 @@ import DemoFilter from "./DemoFilter.svelte";
 import { getPercentage } from "../../global/utils";
 import { demoFilters } from "../../global/state.svelte";
 import userEvent from "@testing-library/user-event";
+import DemoFilterStory from "./DemoFilterStory.svelte";
 
 describe("DemoFilter", () => {
   const testData = {
@@ -30,20 +31,28 @@ describe("DemoFilter", () => {
     });
   });
 
-  it("should not render data if skeleton", () => {
+  it("should not render data title if skeleton", () => {
     render(DemoFilter, {
       ...testData,
       skeleton: true,
     });
 
     expect(screen.queryByText("country")).toBeNull();
+  });
 
-    Object.values(testData.demoData.country).forEach((value) => {
+  it.each(Object.values(testData.demoData.country))(
+    "should not render data content if skeleton",
+    (value) => {
+      render(DemoFilter, {
+        ...testData,
+        skeleton: true,
+      });
+
       expect(screen.queryByText(value)).not.toBeInTheDocument();
       const percentage = getPercentage(value, testData.totalCounts.country);
       expect(screen.queryByTitle(`${percentage}%`)).not.toBeInTheDocument();
-    });
-  });
+    },
+  );
 
   // TODO: Update below case
   it.todo("should update filters state when clicked", async () => {
@@ -64,5 +73,20 @@ describe("DemoFilter", () => {
     }
 
     expect(demoFilters.filters).toEqual(testData.demoOptions);
+  });
+
+  it("should have a story configured correctly", () => {
+    expect(DemoFilterStory).toHaveProperty("name", "DemoFilter");
+    expect(DemoFilterStory).toHaveProperty("component", DemoFilter);
+    expect(DemoFilterStory).toHaveProperty("props");
+
+    const propsDefined = DemoFilterStory.props.map((prop) => prop.name);
+    expect(propsDefined).toEqual([
+      "category",
+      "demoOptions",
+      "demoData",
+      "totalCounts",
+      "skeleton",
+    ]);
   });
 });

@@ -15,7 +15,7 @@
   export let open: boolean = false;
   export let arrow: boolean = true;
   export let border: boolean = true;
-  export let handleOpenChange = () => {};
+  export let handleOpenChange: (next: boolean) => void = () => {};
 
   const {
     elements: { trigger, content },

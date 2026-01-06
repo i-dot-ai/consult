@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
 import SelectedThemeCard from "./SelectedThemeCard.svelte";
+import SelectedThemeCardStory from "./SelectedThemeCardStory.svelte";
 
 describe("SelectedThemeCard", () => {
   const testData = {
@@ -27,5 +28,22 @@ describe("SelectedThemeCard", () => {
     });
 
     expect(container).toMatchSnapshot();
+  });
+
+  it("should have a story configured correctly", () => {
+    expect(SelectedThemeCardStory).toHaveProperty("name", "SelectedThemeCard");
+    expect(SelectedThemeCardStory).toHaveProperty(
+      "component",
+      SelectedThemeCard,
+    );
+    expect(SelectedThemeCardStory).toHaveProperty("props");
+
+    const propsDefined = SelectedThemeCardStory.props.map((prop) => prop.name);
+    expect(propsDefined).toEqual([
+      "theme",
+      "answers",
+      "removeTheme",
+      "updateTheme",
+    ]);
   });
 });
