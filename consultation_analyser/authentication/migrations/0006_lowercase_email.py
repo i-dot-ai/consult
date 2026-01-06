@@ -3,21 +3,9 @@
 from django.db import migrations
 
 
-def lowercase_email(apps, schema_editor):
-    User = apps.get_model("authentication", "User")
-    for user in User.objects.all():
-        user.email = user.email.lower()
-        try:
-            user.save()
-        except Exception:
-            pass
-
-
 class Migration(migrations.Migration):
     dependencies = [
         ("authentication", "0005_user_has_dashboard_access"),
     ]
 
-    operations = [
-        migrations.RunPython(lowercase_email),
-    ]
+    operations = []
