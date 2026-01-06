@@ -343,7 +343,9 @@ class TestQuestionViewSet:
         )
         assert response.status_code == 403
 
-    def test_delete_method_supported(self, client, consultation_user_token, free_text_question):
+    def test_delete_method_supported(
+        self, client, consultation_user_token, free_text_question
+    ):
         """Test that DELETE method is now supported"""
         url = reverse(
             "question-detail",
@@ -362,7 +364,9 @@ class TestQuestionViewSet:
         # Verify question was actually deleted
         assert not Question.objects.filter(id=free_text_question.id).exists()
 
-    def test_unsupported_http_methods(self, client, consultation_user_token, free_text_question):
+    def test_unsupported_http_methods(
+        self, client, consultation_user_token, free_text_question
+    ):
         """Test that unsupported HTTP methods return 405"""
         url = reverse(
             "question-detail",

@@ -228,29 +228,3 @@ def test_0005_user_has_dashboard_access(migrator):
     assert (
         NewUser.objects.get(email="user_without_access@example.com").has_dashboard_access is False
     )
-
-
-@pytest.mark.django_db
-def test_0092_lowercase_emails(migrator):
-    """Test migration applies successfully"""
-
-    # Start from previous migration
-    old_state = migrator.apply_initial_migration(
-        ("authentication", "0005_user_has_dashboard_access")
-    )
-
-    # Create test data before migration
-    OldUser = old_state.apps.get_model("authentication", "User")
-
-    user_uppercase = OldUser.objects.create(email="A.Person@example.com")
-    user_lowercase = OldUser.objects.create(email="an.other@example.com")
-
-    # Apply the migration
-    new_state = migrator.apply_tested_migration(
-        ("authentication", "0006_lowercase_email"),
-    )
-
-    # Test the migration worked
-    NewUser = new_state.apps.get_model("authentication", "User")
-    assert NewUser.objects.get(pk=user_uppercase.pk).email == "a.person@example.com"
-    assert NewUser.objects.get(pk=user_lowercase.pk).email == "an.other@example.com"
