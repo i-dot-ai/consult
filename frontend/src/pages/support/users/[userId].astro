@@ -19,7 +19,9 @@ let consultationsData = await fetchBackendApi<{
   results: ConsultationResponse[];
 }>(Astro, "/api/consultations/");
 
-const consultations = consultationsData.results;
+const consultations = consultationsData.results.filter((consultation) =>
+  consultation.users.some((user) => user.id.toString() == userId),
+);
 ---
 
 <Layout>
