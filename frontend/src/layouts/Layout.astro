@@ -77,7 +77,7 @@ if (consultationId) {
       <HeaderConsult
         client:load
         isStaff={isStaff}
-        email={email}
+        isSignedIn={Boolean(email)}
         path={getPathText(pathname)}
         showProcess={showProcess}
         consultationId={consultationId}
