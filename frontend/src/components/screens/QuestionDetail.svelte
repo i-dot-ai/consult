@@ -397,7 +397,7 @@
           loadData();
         }}
         {searchValue}
-        setSearchValue={(value) => (searchValue = value)}
+        setSearchValue={(value: string) => (searchValue = value)}
         {searchMode}
         setSearchMode={(newSearchMode: SearchModeValues) =>
           (searchMode = newSearchMode)}
@@ -411,7 +411,7 @@
         {setUnseenResponses}
         isThemesLoading={!dataRequested || $themeAggrStore.isLoading}
         {flaggedOnly}
-        setFlaggedOnly={(newValue) => (flaggedOnly = newValue)}
+        setFlaggedOnly={(newValue: boolean) => (flaggedOnly = newValue)}
         anyFilterApplied={anyFilterApplied()}
         {resetFilters}
       />
