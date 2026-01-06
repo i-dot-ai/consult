@@ -7,7 +7,10 @@ def lowercase_email(apps, schema_editor):
     User = apps.get_model("authentication", "User")
     for user in User.objects.all():
         user.email = user.email.lower()
-        user.save()
+        try:
+            user.save()
+        except Exception:
+            pass
 
 
 class Migration(migrations.Migration):
