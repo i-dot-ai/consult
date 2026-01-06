@@ -49,11 +49,14 @@
     ),
   );
 
-  function calculateCategoryItems(category: string, demoOptions: DemoOptionsResponseItem[]) {
+  function calculateCategoryItems(
+    category: string,
+    demoOptions: DemoOptionsResponseItem[],
+  ) {
     const categoryOptions = [...demoOptions].filter(
       (opt: DemoOptionsResponseItem) => opt.name === category,
     );
-    
+
     const total = categoryOptions.reduce(
       (acc: number, opt: DemoOptionsResponseItem) => acc + opt.count,
       0,
@@ -71,10 +74,19 @@
   }
 
   let demographicsData = $derived(
-    demoCategories.reduce((acc, category) => {
-      acc[category] = calculateCategoryItems(category, $demoOptionsStore.data || []);
-      return acc;
-    }, {} as Record<string, Array<{ title: string; count: number; percentage: number }>>)
+    demoCategories.reduce(
+      (acc, category) => {
+        acc[category] = calculateCategoryItems(
+          category,
+          $demoOptionsStore.data || [],
+        );
+        return acc;
+      },
+      {} as Record<
+        string,
+        Array<{ title: string; count: number; percentage: number }>
+      >,
+    ),
   );
 
   onMount(() => {
