@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, screen, waitFor } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import FloatingPanel, { type Props } from "./FloatingPanel.svelte";
 import { createRawSnippet } from "svelte";

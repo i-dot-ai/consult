@@ -15,11 +15,11 @@
 
   // TODO: update urls
   interface Item {
-    icon: Component,
-    title: string,
-    subtitle: string,
-    url?: string,
-    handleClick?: (e: MouseEvent) => void,
+    icon: Component;
+    title: string;
+    subtitle: string;
+    url?: string;
+    handleClick?: (e: MouseEvent) => void;
   }
   const ITEMS: Item[] = [
     {
@@ -56,7 +56,13 @@
 
 {#snippet renderItem({ icon, title, subtitle, url, handleClick }: Item)}
   <li class="group">
-    <Button variant="ghost" href={url || "#"} handleClick={handleClick} fullWidth={true} fixedHoverColor={true}>
+    <Button
+      variant="ghost"
+      href={url || "#"}
+      {handleClick}
+      fullWidth={true}
+      fixedHoverColor={true}
+    >
       <div class="flex items-center gap-2">
         <div
           class={clsx([

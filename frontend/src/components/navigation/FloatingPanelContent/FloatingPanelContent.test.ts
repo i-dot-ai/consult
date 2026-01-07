@@ -6,11 +6,14 @@ import userEvent from "@testing-library/user-event";
 import { OnboardingKeys } from "../../../global/types";
 
 describe("FloatingPanelContent", () => {
-  it.each(["Walkthrough", "Guidance", "Privacy notice"])("renders titles", (itemText) => {
-    render(FloatingPanelContent);
+  it.each(["Walkthrough", "Guidance", "Privacy notice"])(
+    "renders titles",
+    (itemText) => {
+      render(FloatingPanelContent);
 
-    expect(screen.getByText(itemText)).toBeInTheDocument();
-  });
+      expect(screen.getByText(itemText)).toBeInTheDocument();
+    },
+  );
 
   it.each([
     "Interactive tutorial for Theme Sign Off",
@@ -27,7 +30,9 @@ describe("FloatingPanelContent", () => {
     localStorage.setItem(OnboardingKeys.themeSignoffArchive, "true");
 
     expect(localStorage.getItem(OnboardingKeys.themeSignoff)).toBeTruthy();
-    expect(localStorage.getItem(OnboardingKeys.themeSignoffArchive)).toBeTruthy();
+    expect(
+      localStorage.getItem(OnboardingKeys.themeSignoffArchive),
+    ).toBeTruthy();
 
     render(FloatingPanelContent);
 
@@ -38,7 +43,9 @@ describe("FloatingPanelContent", () => {
     await user.click(walkthroughButton!);
 
     expect(localStorage.getItem(OnboardingKeys.themeSignoff)).toBeFalsy();
-    expect(localStorage.getItem(OnboardingKeys.themeSignoffArchive)).toBeFalsy();
+    expect(
+      localStorage.getItem(OnboardingKeys.themeSignoffArchive),
+    ).toBeFalsy();
   });
 
   it("matches snapshot", () => {
