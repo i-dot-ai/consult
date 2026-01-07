@@ -15,7 +15,7 @@
     children: Snippet;
   }
 
-  let { direction = "right", children }: Props = $props();
+  let { direction = "left", children }: Props = $props();
   let isOpen = $state(false);
 
   const {
