@@ -66,6 +66,7 @@ services:
     ports:
       - "3000:3000"
     environment:
+      - ADMIN_USERS=email@example.com,dog@cat.com
       - NODE_ENV=development
       - PUBLIC_BACKEND_URL=http://backend:8000
       - TEST_INTERNAL_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIn0.k27nav4gbG-2lIArYInTqP1GUz2LRuzb3lWandMKRoY
