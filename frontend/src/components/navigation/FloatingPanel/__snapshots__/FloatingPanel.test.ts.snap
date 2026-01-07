@@ -1,0 +1,213 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`FloatingPanel > renders correct direction 1`] = `
+<div>
+  <div
+    class="relative m-auto max-w-[10rem]"
+  >
+    <div
+      aria-controls="123"
+      aria-expanded="false"
+      aria-haspopup="dialog"
+      class="floating-panel w-max overflow-hidden rounded-full transition-transform translate-x-0 has-[button[aria-pressed=true]]:-translate-x-[8rem]"
+      data-melt-popover-trigger=""
+      data-state="closed"
+      id="123"
+      role="button"
+    >
+      <!---->
+      <button
+        aria-pressed="false"
+        class="text-md cursor-pointer rounded-md border border-transparent transition-colors duration-300 self-start block gap-1 items-center hover:bg-gray-100 fixed-hover-color svelte-1d0mdzt"
+        data-variant="ghost"
+        role="button"
+        tabindex="0"
+      >
+        <!---->
+        <div
+          class="rounded-full bg-secondary p-2 transition-all hover:bg-teal-500 hover:p-2.5"
+        >
+          <svg
+            class="fill-white"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!---->
+            <path
+              d="M478-240q21 0 35.5-14.5T528-290q0-21-14.5-35.5T478-340q-21 0-35.5 14.5T428-290q0 21 14.5 35.5T478-240Zm-36-154h74q0-33 7.5-52t42.5-52q26-26 41-49.5t15-56.5q0-56-41-86t-97-30q-57 0-92.5 30T342-618l66 26q5-18 22.5-39t53.5-21q32 0 48 17.5t16 38.5q0 20-12 37.5T506-526q-44 39-54 59t-10 73Zm38 314q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+            />
+            
+            <!---->
+          </svg>
+          <!---->
+        </div>
+        
+        
+      </button>
+      
+      <!---->
+    </div>
+     
+    <div
+      class="relative mb-12 border bg-white p-2 transition-opacity shadow-lg rounded-lg pointer-events-none opacity-0"
+      data-melt-popover-content=""
+      data-portal=""
+      data-state="closed"
+      hidden=""
+      id="123"
+      style="display: none;"
+      tabindex="-1"
+    >
+      <!---->
+      <p>
+        Child Content
+      </p>
+      
+      <!---->
+       
+      <div
+        class="absolute top-0 right-0 m-4"
+      >
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          data-variant="ghost"
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <svg
+            class="fill-neutral-500"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
+            />
+            <!---->
+          </svg>
+          
+          
+        </button>
+        
+        <!---->
+      </div>
+    </div>
+  </div>
+  
+  
+</div>
+`;
+
+exports[`FloatingPanel > renders correct direction 2`] = `
+<div>
+  <div
+    class="relative m-auto max-w-[10rem]"
+  >
+    <div
+      aria-controls="123"
+      aria-expanded="false"
+      aria-haspopup="dialog"
+      class="floating-panel w-max overflow-hidden rounded-full transition-transform translate-x-0 has-[button[aria-pressed=true]]:translate-x-[8rem]"
+      data-melt-popover-trigger=""
+      data-state="closed"
+      id="123"
+      role="button"
+    >
+      <!---->
+      <button
+        aria-pressed="false"
+        class="text-md cursor-pointer rounded-md border border-transparent transition-colors duration-300 self-start block gap-1 items-center hover:bg-gray-100 fixed-hover-color svelte-1d0mdzt"
+        data-variant="ghost"
+        role="button"
+        tabindex="0"
+      >
+        <!---->
+        <div
+          class="rounded-full bg-secondary p-2 transition-all hover:bg-teal-500 hover:p-2.5"
+        >
+          <svg
+            class="fill-white"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!---->
+            <path
+              d="M478-240q21 0 35.5-14.5T528-290q0-21-14.5-35.5T478-340q-21 0-35.5 14.5T428-290q0 21 14.5 35.5T478-240Zm-36-154h74q0-33 7.5-52t42.5-52q26-26 41-49.5t15-56.5q0-56-41-86t-97-30q-57 0-92.5 30T342-618l66 26q5-18 22.5-39t53.5-21q32 0 48 17.5t16 38.5q0 20-12 37.5T506-526q-44 39-54 59t-10 73Zm38 314q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+            />
+            
+            <!---->
+          </svg>
+          <!---->
+        </div>
+        
+        
+      </button>
+      
+      <!---->
+    </div>
+     
+    <div
+      class="relative mb-12 border bg-white p-2 transition-opacity shadow-lg rounded-lg pointer-events-none opacity-0"
+      data-melt-popover-content=""
+      data-portal=""
+      data-state="closed"
+      hidden=""
+      id="123"
+      style="display: none;"
+      tabindex="-1"
+    >
+      <!---->
+      <p>
+        Child Content
+      </p>
+      
+      <!---->
+       
+      <div
+        class="absolute top-0 right-0 m-4"
+      >
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          data-variant="ghost"
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <svg
+            class="fill-neutral-500"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
+            />
+            <!---->
+          </svg>
+          
+          
+        </button>
+        
+        <!---->
+      </div>
+    </div>
+  </div>
+  
+  
+</div>
+`;
