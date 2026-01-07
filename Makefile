@@ -56,7 +56,7 @@ test-end-to-end:
 		@echo "Setting test DATABASE_URL..."
 		@sed -i.tmp 's|DATABASE_URL=.*|DATABASE_URL=psql://postgres:postgres@localhost:5432/consult_e2e_test|' .env && rm .env.tmp  # pragma: allowlist secret
 		@echo "create user"
-		docker compose run backend venv/bin/python manage.py shell -c "from consultation_analyser.authentication.models import User; User.objects.create_user(email='email@example.com', password='admin', is_staff=True)"  # pragma: allowlist secret
+		ADMIN_USERS=email@example.com docker compose run backend venv/bin/python manage.py createadminusers
 		@echo "Running end-to-end tests..."
 		cd e2e_tests && npm install
 		cd e2e_tests && npx playwright install --with-deps
