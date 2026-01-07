@@ -30,7 +30,7 @@
   tabindex="0"
   role="button"
   onclick={variant === "block" ? () => (window.location.href = href) : null}
-  onkeypress={(e) =>
+  onkeypress={(e: KeyboardEvent) =>
     handleEnterOrSpacePress(e, () => (window.location.href = href))}
 >
   <slot />

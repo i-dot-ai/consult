@@ -85,5 +85,3 @@ LOGGER = StructuredLogger(
         "ship_logs": True,
     },
 )
-
-SIGNIN_URL = "https://" + DOMAIN_NAME + LOGIN_URL  # noqa: F405

@@ -3,17 +3,17 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import routers
 from rest_framework_nested.routers import NestedDefaultRouter
 
+from .api.views.auth import validate_token
 from .api.views.candidate_theme import CandidateThemeViewSet
 from .api.views.consultation import ConsultationViewSet
 from .api.views.git_sha import get_git_sha
-from .api.views.magic_link import generate_magic_link, verify_magic_link
 from .api.views.question import QuestionViewSet
 from .api.views.respondent import RespondentViewSet
 from .api.views.response import ResponseViewSet
 from .api.views.selected_theme import SelectedThemeViewSet
 from .api.views.theme import ThemeViewSet
 from .api.views.user import UserViewSet, get_current_user
-from .views import answers, pages, questions, root, sessions
+from .views import answers, pages, questions, root
 
 router = routers.DefaultRouter()
 router.register("consultations", ConsultationViewSet, basename="consultations")
@@ -65,12 +65,7 @@ urlpatterns = [
         questions.index,
         name="review_free_text_questions",
     ),
-    # authentication
-    path("sign-in/", sessions.new, name="sign_in"),
-    path("sign-out/", sessions.destroy, name="sign_out"),
-    path("magic-link/<uuid:token>/", sessions.MagicLinkView.as_view(), name="magic_link"),
     # JWT
-    path("api/magic-link/", generate_magic_link, name="token-magic-link"),
-    path("api/token/", verify_magic_link, name="create-token"),
+    path("api/validate-token/", validate_token, name="validate-token"),
     path("git-sha/", get_git_sha, name="git-sha"),
 ]
