@@ -320,9 +320,13 @@ def agentic_theme_selection(
     ) and (significance_percentage < 20):
         selected_themes = agent.select_themes(significance_percentage)
         significance_percentage += 1
-    selected_themes["topic"] = (
-        selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
-    )
+
+    try:
+        selected_themes["topic"] = (
+            selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
+        )
+    except KeyError:
+        raise KeyError("couldnt extract keys from", selected_themes)
 
     return selected_themes, all_themes_df
 
@@ -402,10 +406,6 @@ async def process_consultation(consultation_dir: str, llm) -> str:
 
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
                     f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
-
-                pd.DataFrame(all_themes_list).to_json(
-                    os.path.join(question_output_dir, "clustered_themes.json"), orient="records"
-                )
 
                 # Map responses to themes, including "None of the above" option
                 mapping_themes = selected_themes[["topic_id", "topic"]].copy()

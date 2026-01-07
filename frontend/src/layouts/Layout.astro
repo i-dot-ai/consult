@@ -33,19 +33,19 @@ const pathname = Astro.url.pathname;
 const { consultationId } = Astro.params;
 
 let isStaff: boolean = false;
-let isSignedIn: boolean = false;
+let email: string | unknown = null;
 let consultationStage;
 let showProcess: boolean = isConsultationSubUrl(pathname);
-
 try {
   const data = await fetchBackendApi<{ is_staff: boolean; email: string }>(
     Astro,
     Routes.ApiUser,
   );
   isStaff = data.is_staff;
-  isSignedIn = Boolean(data.email);
-} catch {
-  console.log("user not signed in");
+  email = data.email;
+  console.log(`user ${email} signed in`);
+} catch (e) {
+  console.log("user not signed in", e);
 }
 
 if (consultationId) {
@@ -76,7 +76,7 @@ if (consultationId) {
       <HeaderConsult
         client:load
         isStaff={isStaff}
-        isSignedIn={isSignedIn}
+        isSignedIn={Boolean(email)}
         path={getPathText(pathname)}
         showProcess={showProcess}
         consultationId={consultationId}

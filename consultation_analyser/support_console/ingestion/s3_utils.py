@@ -71,8 +71,8 @@ def read_json_from_s3(
         data = json.loads(response["Body"].read())
         return data
     except ClientError as e:
+        logger.info(f"File not found (skipping): {key}")
         if not raise_if_missing and e.response["Error"]["Code"] == "NoSuchKey":
-            logger.info(f"File not found (skipping): {key}")
             return None
         raise
 

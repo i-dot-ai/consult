@@ -7,6 +7,8 @@ describe("Footer", () => {
   it("should render", () => {
     render(Footer);
     expect(screen.getByRole("contentinfo")).toBeInTheDocument();
-    expect(screen.getByTestId("privacy-link").href).toContain("/privacy/");
+    expect(
+      (screen.getByTestId("privacy-link") as HTMLAnchorElement).href,
+    ).toContain("/privacy/");
   });
 });
