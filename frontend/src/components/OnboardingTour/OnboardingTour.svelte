@@ -4,6 +4,8 @@
   import { onMount, onDestroy, type Component, type Snippet } from "svelte";
   import { fade } from "svelte/transition";
 
+  import { OnboardingKeys } from "../../global/types";
+
   import MaterialIcon from "../MaterialIcon.svelte";
   import Close from "../svg/material/Close.svelte";
   import ChevronRight from "../svg/material/ChevronRight.svelte";
@@ -103,7 +105,7 @@
   };
 
   const getStorageKey = () => {
-    return `onboardingComplete-${key}`;
+    return `${OnboardingKeys.prefix}-${key}`;
   };
 
   const isOnboardingComplete = () => {

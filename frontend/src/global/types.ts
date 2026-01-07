@@ -272,3 +272,9 @@ export interface SelectedTheme {
   modified_at: string; // timestamp
   last_modified_by: string; // user id
 }
+
+export enum OnboardingKeys {
+  prefix = "onboardingComplete",
+  themeSignoff = "onboardingComplete-theme-sign-off",
+  themeSignoffArchive = "onboardingComplete-theme-sign-off-archive",
+}

@@ -3,6 +3,8 @@
 
   import { type Component } from "svelte";
 
+  import { OnboardingKeys } from "../../../global/types";
+
   import Button from "../../inputs/Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Help from "../../svg/material/Help.svelte";
@@ -12,12 +14,23 @@
   import Replay from "../../svg/material/Replay.svelte";
 
   // TODO: update urls
-  const ITEMS = [
+  interface Item {
+    icon: Component,
+    title: string,
+    subtitle: string,
+    url?: string,
+    handleClick?: (e: MouseEvent) => void,
+  }
+  const ITEMS: Item[] = [
     {
       icon: Replay,
       title: "Walkthrough",
       subtitle: "Interactive tutorial for Theme Sign Off",
-      url: "#",
+      handleClick: () => {
+        localStorage.removeItem(OnboardingKeys.themeSignoff);
+        localStorage.removeItem(OnboardingKeys.themeSignoffArchive);
+        window.location.reload();
+      },
     },
     {
       icon: UnknownDocument,
@@ -40,14 +53,9 @@
   ];
 </script>
 
-{#snippet renderItem(
-  icon: Component,
-  title: string,
-  subtitle: string,
-  url: string,
-)}
+{#snippet renderItem({ icon, title, subtitle, url, handleClick }: Item)}
   <li class="group">
-    <Button variant="ghost" href={url} fullWidth={true} fixedHoverColor={true}>
+    <Button variant="ghost" href={url || "#"} handleClick={handleClick} fullWidth={true} fixedHoverColor={true}>
       <div class="flex items-center gap-2">
         <div
           class={clsx([
@@ -86,13 +94,13 @@
   </div>
 </div>
 
-<nav>
+<div>
   <ul class="px-4">
     {#each ITEMS as item, i (i)}
-      {@render renderItem(item.icon, item.title, item.subtitle, item.url)}
+      {@render renderItem(item)}
     {/each}
   </ul>
-</nav>
+</div>
 
 <style>
   .group:hover :global(svg) {
