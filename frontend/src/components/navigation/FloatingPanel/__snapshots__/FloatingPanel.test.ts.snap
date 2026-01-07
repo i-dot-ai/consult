@@ -6,13 +6,13 @@ exports[`FloatingPanel > renders correct direction 1`] = `
     class="relative m-auto max-w-[10rem]"
   >
     <div
-      aria-controls="123"
+      aria-controls="direction-test"
       aria-expanded="false"
       aria-haspopup="dialog"
       class="floating-panel w-max overflow-hidden rounded-full transition-transform translate-x-0 has-[button[aria-pressed=true]]:-translate-x-[8rem]"
       data-melt-popover-trigger=""
       data-state="closed"
-      id="123"
+      id="direction-test"
       role="button"
     >
       <!---->
@@ -57,7 +57,7 @@ exports[`FloatingPanel > renders correct direction 1`] = `
       data-portal=""
       data-state="closed"
       hidden=""
-      id="123"
+      id="direction-test"
       style="display: none;"
       tabindex="-1"
     >
@@ -112,13 +112,13 @@ exports[`FloatingPanel > renders correct direction 2`] = `
     class="relative m-auto max-w-[10rem]"
   >
     <div
-      aria-controls="123"
+      aria-controls="direction-test"
       aria-expanded="false"
       aria-haspopup="dialog"
       class="floating-panel w-max overflow-hidden rounded-full transition-transform translate-x-0 has-[button[aria-pressed=true]]:translate-x-[8rem]"
       data-melt-popover-trigger=""
       data-state="closed"
-      id="123"
+      id="direction-test"
       role="button"
     >
       <!---->
@@ -163,7 +163,7 @@ exports[`FloatingPanel > renders correct direction 2`] = `
       data-portal=""
       data-state="closed"
       hidden=""
-      id="123"
+      id="direction-test"
       style="display: none;"
       tabindex="-1"
     >

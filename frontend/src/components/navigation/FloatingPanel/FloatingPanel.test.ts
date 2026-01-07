@@ -20,7 +20,7 @@ describe("FloatingPanel", () => {
       children: testData.children,
     });
 
-    derandomize(container, ["id", "aria-controls"]);
+    derandomize(container, ["id", "aria-controls"], "direction-test");
 
     expect(container).toMatchSnapshot();
   });

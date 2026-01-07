@@ -182,7 +182,7 @@ export const formatTimeDeltaText = (minutes: number): string => {
 export const derandomize = (
   container: HTMLElement,
   attrs: string[],
-  newValue = "123",
+  newValue = "fixed-value",
 ) => {
   // Replaces randomly generated attribute values with fixed values
   // to allow consistent snapshot testing
