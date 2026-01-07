@@ -28,18 +28,17 @@ describe("FloatingPanel", () => {
   it("displays panel when button is clicked", async () => {
     render(FloatingPanel, testData);
 
-    // Takes a moment for melt-ui to initialize itself and remove
-    // child components from the screen, this is expected behavior
-    await waitFor(() =>
-      expect(screen.queryByText("Child Content")).not.toBeInTheDocument(),
-    );
-
     const user = userEvent.setup();
     const button = screen.getAllByRole("button").at(0);
     expect(button).toBeTruthy();
-    await user.click(button!);
 
+    // Click to reveal contents
+    await user.click(button!);
     expect(screen.getByText("Child Content")).toBeInTheDocument();
+
+    // Click to hide contents
+    await user.click(button!);
+    expect(screen.queryByText("Child Content")).not.toBeInTheDocument();
   });
 
   it("should have a story configured correctly", () => {

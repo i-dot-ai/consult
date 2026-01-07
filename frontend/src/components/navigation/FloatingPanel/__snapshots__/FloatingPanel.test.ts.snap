@@ -52,7 +52,7 @@ exports[`FloatingPanel > renders correct direction 1`] = `
     </div>
      
     <div
-      class="relative mb-12 border bg-white p-2 transition-opacity shadow-lg rounded-lg pointer-events-none opacity-0"
+      class="relative mb-12 border bg-white p-2 transition-opacity shadow-lg rounded-lg, pointer-events-none opacity-0"
       data-melt-popover-content=""
       data-portal=""
       data-state="closed"
@@ -69,7 +69,7 @@ exports[`FloatingPanel > renders correct direction 1`] = `
       <!---->
        
       <div
-        class="absolute top-0 right-0 m-4"
+        class="absolute right-0 top-0 m-4"
       >
         <!---->
         <button
@@ -158,7 +158,7 @@ exports[`FloatingPanel > renders correct direction 2`] = `
     </div>
      
     <div
-      class="relative mb-12 border bg-white p-2 transition-opacity shadow-lg rounded-lg pointer-events-none opacity-0"
+      class="relative mb-12 border bg-white p-2 transition-opacity shadow-lg rounded-lg, pointer-events-none opacity-0"
       data-melt-popover-content=""
       data-portal=""
       data-state="closed"
@@ -175,7 +175,7 @@ exports[`FloatingPanel > renders correct direction 2`] = `
       <!---->
        
       <div
-        class="absolute top-0 right-0 m-4"
+        class="absolute right-0 top-0 m-4"
       >
         <!---->
         <button
