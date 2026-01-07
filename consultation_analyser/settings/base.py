@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.auth",
     "django.contrib.admin",
-    "waffle",  # feature flags
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "consultation_analyser.support_console",
@@ -77,7 +76,6 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "waffle.middleware.WaffleMiddleware",
     "consultation_analyser.middleware.SupportAppStaffRequiredMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
 ]
@@ -258,11 +256,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Django URL format
 APPEND_SLASH = True
-
-# Feature flags
-WAFFLE_SWITCH_DEFAULT = False
-WAFFLE_CREATE_MISSING_SWITCHES = True
-WAFFLE_LOG_MISSING_SWITCHES = logging.INFO
 
 # Crispy forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "gds"

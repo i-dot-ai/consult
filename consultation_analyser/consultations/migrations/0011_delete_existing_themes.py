@@ -11,7 +11,7 @@ def delete_all_themes(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("consultations", "0010_delete_frontend_switch"),
+        ("consultations", "0009_merge_20240520_1515"),
     ]
 
     operations = [
