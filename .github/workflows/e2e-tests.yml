@@ -28,11 +28,6 @@ jobs:
           docker compose up -d frontend
           sleep 10
 
-      - name: check that services are up
-        run: |
-          docker ps
-          docker compose logs
-
       - name: Set up Node.js (for Playwright only)
         uses: actions/setup-node@v6
         with:
@@ -40,10 +35,6 @@ jobs:
 
       - name: run tests
         run: make test-end-to-end
-
-      - name: Dump docker logs on failure
-        if: failure()
-        uses: jwalton/gh-docker-logs@v2
 
       - name: Stop docker-compose services
         run: docker compose down

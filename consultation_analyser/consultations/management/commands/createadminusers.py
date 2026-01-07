@@ -12,7 +12,6 @@ class Command(BaseCommand):
     help = "creates initial admin users who can add others"
 
     def handle(self, *args, **options):
-        logger.info("emails are {emails}", emails=os.environ.get("ADMIN_USERS", ""))
         for email in os.environ.get("ADMIN_USERS", "").split(","):
             user, created = User.objects.update_or_create(
                 email=email.strip(), defaults={"is_staff": True}
