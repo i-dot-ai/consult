@@ -115,7 +115,7 @@ exports[`FloatingPanelContent > matches snapshot 1`] = `
           class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 fixed-hover-color svelte-1d0mdzt"
           data-variant="ghost"
           disabled="false"
-          href="#"
+          href="/how-it-works"
           role="link"
           tabindex="0"
         >
@@ -173,66 +173,7 @@ exports[`FloatingPanelContent > matches snapshot 1`] = `
           class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 fixed-hover-color svelte-1d0mdzt"
           data-variant="ghost"
           disabled="false"
-          href="#"
-          role="link"
-          tabindex="0"
-        >
-          <!---->
-          <div
-            class="flex items-center gap-2"
-          >
-            <div
-              class="rounded-full transition-colors bg-neutral-100 group-hover:bg-secondary p-2 my-2 svelte-dpd58m"
-            >
-              <svg
-                class="fill-neutral-500"
-                height="1rem"
-                role="img"
-                viewBox="0 -960 960 960"
-                width="1rem"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <!---->
-                <path
-                  d="M80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z"
-                  xmlns="http://www.w3.org/2000/svg"
-                />
-                
-                <!---->
-              </svg>
-              <!---->
-            </div>
-             
-            <div>
-              <h3
-                class="text-xs"
-              >
-                Feedback
-              </h3>
-               
-              <p
-                class="text-xs text-neutral-500"
-              >
-                Send us your feedback
-              </p>
-            </div>
-          </div>
-          
-          
-        </a>
-        
-        <!---->
-      </li>
-      <li
-        class="group svelte-dpd58m"
-      >
-        <!---->
-        <a
-          aria-pressed="false"
-          class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 fixed-hover-color svelte-1d0mdzt"
-          data-variant="ghost"
-          disabled="false"
-          href="#"
+          href="/privacy"
           role="link"
           tabindex="0"
         >
