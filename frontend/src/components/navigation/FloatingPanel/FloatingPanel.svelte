@@ -44,8 +44,10 @@
       "rounded-full",
       "transition-transform",
       "translate-x-0",
-      direction === "left" && "has-[button[aria-pressed=true]]:-translate-x-[8rem]",
-      direction === "right" && "has-[button[aria-pressed=true]]:translate-x-[8rem]",
+      direction === "left" &&
+        "has-[button[aria-pressed=true]]:-translate-x-[8rem]",
+      direction === "right" &&
+        "has-[button[aria-pressed=true]]:translate-x-[8rem]",
     ])}
   >
     <Button
@@ -90,18 +92,15 @@
       "transition-opacity",
       "shadow-lg",
       "rounded-lg,",
-      !isOpen && clsx([
-        "pointer-events-none",
-        "opacity-0",
-      ]),
+      !isOpen && clsx(["pointer-events-none", "opacity-0"]),
     ])}
   >
     {#if children}
       {@render children()}
     {/if}
-    
-    <div class="absolute top-0 right-0 m-4">
-      <Button variant="ghost" handleClick={() => isOpen = false}>
+
+    <div class="absolute right-0 top-0 m-4">
+      <Button variant="ghost" handleClick={() => (isOpen = false)}>
         <MaterialIcon color="fill-neutral-500">
           <Close />
         </MaterialIcon>

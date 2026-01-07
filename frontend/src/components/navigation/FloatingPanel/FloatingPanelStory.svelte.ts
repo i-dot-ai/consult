@@ -1,7 +1,7 @@
 import FloatingPanel from "./FloatingPanel.svelte";
 import FloatingPanelContent from "../FloatingPanelContent/FloatingPanelContent.svelte";
 
-let direction = $state("left");
+const direction = $state("left");
 
 export default {
   name: "FloatingPanel",
@@ -20,7 +20,7 @@ export default {
     {
       name: "children",
       value: FloatingPanelContent,
-    }
+    },
   ],
   stories: [
     {

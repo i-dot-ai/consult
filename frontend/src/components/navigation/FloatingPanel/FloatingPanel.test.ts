@@ -7,13 +7,12 @@ import { createRawSnippet } from "svelte";
 import { derandomize } from "../../../global/utils";
 import FloatingPanelStory from "./FloatingPanelStory.svelte";
 
-
 describe("FloatingPanel", () => {
   const testData: Props = {
     children: createRawSnippet(() => ({
       render: () => `<p>Child Content</p>`,
-    }))
-  }
+    })),
+  };
 
   it.each(["left", "right"])("renders correct direction", (direction) => {
     const { container } = render(FloatingPanel, {
@@ -22,7 +21,7 @@ describe("FloatingPanel", () => {
     });
 
     derandomize(container, ["id", "aria-controls"]);
-  
+
     expect(container).toMatchSnapshot();
   });
 
@@ -31,8 +30,10 @@ describe("FloatingPanel", () => {
 
     // Takes a moment for melt-ui to initialize itself and remove
     // child components from the screen, this is expected behavior
-    waitFor(() => expect(screen.queryByText("Child Content")).not.toBeInTheDocument());
-    
+    await waitFor(() =>
+      expect(screen.queryByText("Child Content")).not.toBeInTheDocument(),
+    );
+
     const user = userEvent.setup();
     const button = screen.getAllByRole("button").at(0);
     expect(button).toBeTruthy();
