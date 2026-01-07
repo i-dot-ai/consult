@@ -6,7 +6,7 @@ import userEvent from "@testing-library/user-event";
 import { OnboardingKeys } from "../../../global/types";
 
 describe("FloatingPanelContent", () => {
-  it.each(["Walkthrough", "Guidance", "Feedback", "Privacy notice"])("renders titles", (itemText) => {
+  it.each(["Walkthrough", "Guidance", "Privacy notice"])("renders titles", (itemText) => {
     render(FloatingPanelContent);
 
     expect(screen.getByText(itemText)).toBeInTheDocument();
@@ -15,7 +15,6 @@ describe("FloatingPanelContent", () => {
   it.each([
     "Interactive tutorial for Theme Sign Off",
     "View help documentation",
-    "Send us your feedback",
     "View our privacy policy",
   ])("renders subtitles", (itemText) => {
     render(FloatingPanelContent);

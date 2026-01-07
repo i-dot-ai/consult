@@ -4,12 +4,12 @@
   import { type Component } from "svelte";
 
   import { OnboardingKeys } from "../../../global/types";
+  import { Routes } from "../../../global/routes";
 
   import Button from "../../inputs/Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Help from "../../svg/material/Help.svelte";
   import UnknownDocument from "../../svg/material/UnknownDocument.svelte";
-  import ChatBubble from "../../svg/material/ChatBubble.svelte";
   import Shield from "../../svg/material/Shield.svelte";
   import Replay from "../../svg/material/Replay.svelte";
 
@@ -36,19 +36,20 @@
       icon: UnknownDocument,
       title: "Guidance",
       subtitle: "View help documentation",
-      url: "#",
+      url: Routes.HowItWorks,
     },
-    {
-      icon: ChatBubble,
-      title: "Feedback",
-      subtitle: "Send us your feedback",
-      url: "#",
-    },
+    // // TODO: Enable after implementation
+    // {
+    //   icon: ChatBubble,
+    //   title: "Feedback",
+    //   subtitle: "Send us your feedback",
+    //   url: "#",
+    // },
     {
       icon: Shield,
       title: "Privacy notice",
       subtitle: "View our privacy policy",
-      url: "#",
+      url: Routes.Privacy,
     },
   ];
 </script>
