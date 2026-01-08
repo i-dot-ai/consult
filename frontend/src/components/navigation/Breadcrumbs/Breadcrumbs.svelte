@@ -147,7 +147,7 @@
   </ol>
 
   <div class="group my-2">
-    <Button variant="ghost" href={Routes.Guidance} size="sm">
+    <Button variant="ghost" href={Routes.HowItWorks} size="sm">
       <MaterialIcon color="fill-neutral-500">
         <Help />
       </MaterialIcon>
