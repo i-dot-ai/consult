@@ -5,14 +5,12 @@ from consultation_analyser import factories
 from consultation_analyser.consultations.urls import urlpatterns
 from tests.utils import build_url
 
-PUBLIC_URL_NAMES = ["root", "how_it_works", "data_sharing", "get_involved", "privacy", "git-sha"]
+PUBLIC_URL_NAMES = ["git-sha"]
 AUTHENTICATION_URL_NAMES = [
     "sign_in",
     "sign_out",
     "magic_link",
 ]  # No tests - tested elsewhere, all public
-
-REDIRECTING_URL_NAMES = ["show_next_response"]
 
 JSON_SCHEMA_URL_NAMES = ["raw_schema"]
 
@@ -29,7 +27,6 @@ API_URL_NAMES = [
 URL_NAMES_TO_EXCLUDE = (
     PUBLIC_URL_NAMES
     + AUTHENTICATION_URL_NAMES
-    + REDIRECTING_URL_NAMES
     + JSON_SCHEMA_URL_NAMES
     + API_URL_NAMES
 )
@@ -159,12 +156,6 @@ def test_api_urls_permission_required(
     # client.force_login(user_no_dashboard)
     # check_expected_status_code(client, url, 403)
     # client.logout()
-
-
-# Testing links that redirect
-url_patterns_to_test = [
-    url_pattern for url_pattern in api_url_patterns if url_pattern.name in REDIRECTING_URL_NAMES
-]
 
 
 @pytest.mark.django_db
