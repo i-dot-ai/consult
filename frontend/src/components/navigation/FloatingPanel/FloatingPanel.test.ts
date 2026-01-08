@@ -17,7 +17,7 @@ describe("FloatingPanel", () => {
   it.each(["left", "right"])("renders correct direction", (direction) => {
     const { container } = render(FloatingPanel, {
       direction: direction as Props["direction"],
-      children: testData.children,
+      children: testData["children"],
     });
 
     derandomize(container, ["id", "aria-controls"], "direction-test");
