@@ -13,7 +13,6 @@ from .api.views.response import ResponseViewSet
 from .api.views.selected_theme import SelectedThemeViewSet
 from .api.views.theme import ThemeViewSet
 from .api.views.user import UserViewSet, get_current_user
-from .views import answers, pages, questions, root
 
 router = routers.DefaultRouter()
 router.register("consultations", ConsultationViewSet, basename="consultations")
@@ -43,7 +42,9 @@ urlpatterns = [
     path("api/user/", get_current_user, name="user"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-    path("git-sha/", get_git_sha, name="git-sha"),  # TODO: Remove this, frontend has access via vars
+    path(
+        "git-sha/", get_git_sha, name="git-sha"
+    ),  # TODO: Remove this, frontend has access via vars
     # JWT
     path("api/validate-token/", validate_token, name="validate-token"),
 ]

@@ -20,7 +20,6 @@ from django.urls import include, path
 
 from consultation_analyser.consultations import urls
 from consultation_analyser.error_pages import views as error_views
-from consultation_analyser.support_console import urls as support_console_urls
 
 handler404 = error_views.error_404
 handler500 = error_views.error_500
