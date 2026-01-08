@@ -88,7 +88,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/$/,
     /^\/data-sharing[/]?$/,
     /^\/get-involved[/]?$/,
-    /^\/how-it-works[/]?$/,
+    /^\/guidance[/]?$/,
     /^\/privacy[/]?$/,
     /^\/sign-in-error[/]?$/,
     /^\/api\/astro\/.*/,

@@ -24,7 +24,7 @@ export enum Routes {
   Evaluations = "/evaluations",
   Consultations = "/consultations",
   Support = "/support",
-  HowItWorks = "/how-it-works",
+  HowItWorks = "/guidance",
   DataSharing = "/data-sharing",
   GetInvolved = "/get-involved",
   SignInError = "/sign-in-error",

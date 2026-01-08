@@ -1,0 +1,231 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Section from "../components/Section/Section.svelte";
+import Title from "../components/Title.svelte";
+import Text from "../components/Text/Text.svelte";
+import UnorderedList from "../components/list/UnorderedList.svelte";
+import Link from "../components/Link.svelte";
+import OrderedList from "../components/list/OrderedList.svelte";
+---
+
+<Layout>
+  <Section narrow>
+    <Title level={1} context="public" text="Guidance" />
+
+    <Title level={2} context="public">
+      <span class="block text-primary text-xl mt-8 mb-2">
+        About Consult
+      </span>
+    </Title>
+
+    <Text>
+      Consult is an AI tool developed by i.AI that helps policy teams analyse
+      ‘open survey questions’ faster and more consistently.
+    </Text>
+    <Text>
+      The goal is for computers to do what they are best at: finding themes and
+      analysing large amounts of data. That means humans are free to do the work
+      of understanding those patterns.
+    </Text>
+    <Text>
+      To identify the patterns and analyse the data Consult follows the
+      following process.
+    </Text>
+
+    <Title level={2} context="public">
+      <span class="block text-primary text-xl mt-8 mb-2">
+        Set up data - Human step
+      </span>
+    </Title>
+    <Text>
+      <strong>Goal of Set up data:</strong> To share the responses and choose which questions to analyse using AI and how you want the questions to be displayed in the Consult dashboard for analysis.
+    </Text>
+    <Text>
+      This is currently done outside of the app - we’re working on building it into the app.
+    </Text>
+
+    <Title level={2} context="public">
+      <span id="find-themes" class="text-primary text-xl">
+        Find themes - AI process
+      </span>
+    </Title>
+    <Text>
+      <strong>Goal of Find themes:</strong> Use AI to generate the initial list of themes. These will be reviewed by the policy team in the next step.
+    </Text>
+    <Text>
+      All responses are sent to the AI to identify themes question by question. 
+    </Text>
+    <Text>
+      This step is made up of several stages:
+    </Text>
+    <OrderedList>
+      <li>
+        Pass all responses through the AI in batches to identify the preliminary themes - <Link openNewTab={true} href="https://github.com/i-dot-ai/themefinder/blob/main/src/themefinder/prompts/theme_generation.txt">identify themes prompt</Link>
+      </li>
+      <li>
+        These preliminary themes are passed through the AI again in batches to reduce the total number of themes to a more manageable number and eliminate very similar duplicate themes - <Link openNewTab={true} href="https://github.com/i-dot-ai/themefinder/blob/main/src/themefinder/prompts/theme_condensation.txt">condensation prompt</Link>
+      </li>
+      <li>
+        The processed themes are then passed through the AI to make the wording of the themes more understandable for users - <Link openNewTab={true} href="https://github.com/i-dot-ai/themefinder/blob/main/src/themefinder/prompts/theme_refinement.txt">refinement prompt</Link>
+      </li>
+      <li>
+        If there are more than 20, we can pass the themes to the AI in a process called theme clustering to create broader parent themes (level 2) with more specific child themes (level 1) - <Link openNewTab={true} href="https://github.com/i-dot-ai/themefinder/blob/main/src/themefinder/prompts/agentic_theme_clustering.txt">theme clustering prompt</Link>
+      </li>
+    </OrderedList>
+
+    <Title level={2} context="public">
+      <span class="block text-primary text-xl mt-8 mb-2">
+        Finalise themes - Human step
+      </span>
+    </Title>
+    <Text>
+      Goal of Finalise themes: The policy team will select which themes they want to use question by question.
+    </Text>
+    <Text>
+      The team can use an AI theme or they can edit an AI theme or create new themes.
+    </Text>
+    <Text>
+      Teams will be presented with the list of themes along with examples of responses that could get mapped to that theme.
+    </Text>
+    <Text>
+      You can edit, merge, add or remove themes – you're the expert on your policy area and know what themes you want to report on. You can't add themes after sign-off, but if new ones emerge, there is an AI search in the dashboard that helps you find relevant responses.
+    </Text>
+
+    <Title level={2} context="public">
+      <span id="assign-themes" class="block text-primary text-xl mt-8 mb-2">
+        Assign themes - AI process
+      </span>
+    </Title>
+    <Text>
+      <strong>Goal of Assign themes:</strong> Use AI to identify which theme is present in each response 
+    </Text>
+    <Text>
+      The AI reviews every response question by question to identify which theme(s) are in the response - <Link openNewTab={true} href="https://github.com/i-dot-ai/themefinder/blob/main/src/themefinder/prompts/theme_mapping.txt">assign themes prompt</Link>
+    </Text>
+    <Text>
+      At this point 2 additional themes are added:
+    </Text>
+    <UnorderedList>
+      <li>
+        Other: The response discusses an issue not covered by the listed themes
+      </li>
+      <li>
+        No Reason Given: The response does not provide a substantive answer to the question.
+      </li>
+    </UnorderedList>
+    <Text>
+      These themes are used as fallbacks for the AI to use on responses that don’t match a theme in the final list
+    </Text>
+
+    <Title level={2} context="public">
+      <span id="check-quality" class="block text-primary text-xl mt-8 mb-2">
+        Check quality - Human step
+      </span>
+    </Title>
+    <Text>
+      <strong>Goal of Check quality:</strong> To understand how well the AI has mapped the responses to the themes.
+    </Text>
+    <Text>
+      You will work with your central assurance team and the Consult team to agree which version of quality checking to do.
+    </Text>
+
+    <Title level={3} context="public">
+      <span class="text-primary font-bold">
+        Real-time mapping evaluation - done for all consultations
+      </span>
+    </Title>
+    <Text>
+      Tracking changes made to theme assignment by the policy team to check the quality of the mapping.
+    </Text>
+
+    <Title level={3} context="public">
+      <span class="text-primary font-bold">
+        Prospective mapping evaluation 
+      </span>
+    </Title>
+    <Text>
+      To learn the difference between how two people would do the mapping and compare Consult’s performance to that benchmark.
+    </Text>
+    <Text>
+      This was done in the first evaluations; the results of these evaluations can be seen on:
+    </Text>
+    <OrderedList>
+      <li>
+        <Link openNewTab={true} href="https://ai.gov.uk/evaluations/consult-evaluation-dwp-s-pathways-to-work-consultation/">DWP’s Pathways to Work consultation</Link> - August 2025
+      </li>
+      <li>
+        <Link openNewTab={true} href="https://ai.gov.uk/evaluations/consult-evaluation-independent-water-commission-call-for-evidence/">Independent Water Commission Call for Evidence</Link> - April 2025
+      </li>
+      <li>
+        <Link openNewTab={true} href="https://ai.gov.uk/docs/Scot_Gov_NSCP_Evaluation_Report.pdf">Scottish Government’s Non-surgical cosmetic procedures consultation</Link> - March 2025
+      </li>
+    </OrderedList>
+
+    <Title level={2} context="public">
+      <span class="block text-primary text-xl mt-8 mb-2">
+        Analyse - Human step
+      </span>
+    </Title>
+    <Text>
+      <strong>Goal of Analyse:</strong> To understand what respondents said and take consultation responses into account when taking policy forward.
+    </Text>
+    <Text>
+      You will get access to all of the open free text questions with responses mapped to themes and any closed questions and demographic questions you have included 
+    </Text>
+    <Text>
+      There is one final AI step that is run to identify Evidence Rich responses - <Link openNewTab={true} href="https://github.com/i-dot-ai/themefinder/blob/main/src/themefinder/prompts/detail_detection.txt">evidence rich response prompt</Link>
+    </Text>
+
+    <Title level={2} context="public">
+      <span class="block text-primary text-xl mt-8 mb-2">
+        Consult Does
+      </span>
+    </Title>
+    <UnorderedList>
+      <li>
+        Generate themes question by question to be signed off by the policy team (it doesn’t currently look between questions)
+      </li>
+      <li>
+        Provide a user friendly way to explore your data in a themed way
+      </li>
+      <li>
+        Show open and closed questions in the dashboard 
+      </li>
+      <li>
+        Only works on data in a spreadsheet
+      </li>
+      <li>
+        Provide confidence of the performance against a human benchmark
+      </li>
+      <li>
+        Monitors ongoing analysis of any disagreements with the AI’s mapping to ensure quality assurance throughout the process
+      </li>
+    </UnorderedList>
+
+    <Title level={2} context="public">
+      <span class="block text-primary text-xl mt-8 mb-2">
+        Consult Does Not
+      </span>
+    </Title>
+    <UnorderedList>
+      <li>
+        Write a summary of the consultation response
+      </li>
+      <li>
+        Analyse data outside of the spreadsheet (for example, emails, pdfs, images. It only analyses the spreadsheet of responses that you get from a survey tool)
+      </li>
+      <li>
+        Collect data, you’ll need to use a survey tool to collect the data
+      </li>
+      <li>
+        Give results until after the consultation has closed and themes have been signed off
+      </li>
+      <li>
+        The prompts that power Consult cannot be changed for an individual consultation if performance is not as expected.
+      </li>
+      <li>
+        Do sentiment analysis. So if you want to know if someone is supportive of an idea it must be asked explicitly in a closed question.
+      </li>
+    </UnorderedList>
+  </Section>
+</Layout>
