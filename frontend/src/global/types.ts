@@ -129,13 +129,6 @@ export interface ResponseThemeInformation {
   selected_themes: ResponseTheme[];
 }
 
-export interface Respondent {
-  id: string;
-  themefinder_id: number | null;
-  name: string;
-  demographics: DemoOptionsResponseItem[];
-}
-
 export interface QuestionResponseResponse {
   id: string;
   respondent: Respondent;
