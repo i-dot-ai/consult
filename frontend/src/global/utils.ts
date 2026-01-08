@@ -178,3 +178,18 @@ export const formatTimeDeltaText = (minutes: number): string => {
   }
   return `${Math.floor(value)} ${unit}${value > 1 ? "s" : ""}`;
 };
+
+export const derandomize = (
+  container: HTMLElement,
+  attrs: string[],
+  newValue = "fixed-value",
+) => {
+  // Replaces randomly generated attribute values with fixed values
+  // to allow consistent snapshot testing
+
+  attrs.forEach((attr) => {
+    container
+      .querySelectorAll(`*[${attr}]`)
+      .forEach((el) => el.setAttribute(attr, newValue));
+  });
+};

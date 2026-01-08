@@ -2,6 +2,8 @@
 import "../styles/global.css";
 
 import HeaderConsult from "../components/navigation/HeaderConsult/HeaderConsult.svelte";
+import FloatingPanel from "../components/navigation/FloatingPanel/FloatingPanel.svelte";
+import FloatingPanelContent from "../components/navigation/FloatingPanelContent/FloatingPanelContent.svelte";
 
 import { fetchBackendApi } from "../global/api";
 import { getApiConsultationUrl, Routes, Suffixes } from "../global/routes";
@@ -86,6 +88,12 @@ if (consultationId) {
       <main class="grow">
         <slot />
       </main>
+
+      <div class="fixed bottom-0 right-0 m-4">
+        <FloatingPanel client:load>
+          <FloatingPanelContent client:load />
+        </FloatingPanel>
+      </div>
     </div>
   </body>
 </html>
