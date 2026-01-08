@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.contrib import admin
 from django.urls import include, path
 
 from consultation_analyser.consultations import urls
@@ -26,5 +27,6 @@ handler500 = error_views.error_500
 
 urlpatterns = [
     path("", include(urls)),
-    path("support/", include(support_console_urls)),
+    path("admin/", admin.site.urls),
+    path("django-rq/", include("django_rq.urls")),
 ]
