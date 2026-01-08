@@ -45,7 +45,7 @@
     },
     {
       text: "Find themes",
-      url: getThemeSignOffUrl(consultationId),
+      url: `${Routes.HowItWorks}#find-themes`,
       isAi: true,
     },
     {
@@ -54,12 +54,12 @@
     },
     {
       text: "Assign themes",
-      url: getThemeSignOffUrl(consultationId),
+      url: `${Routes.HowItWorks}#assign-themes`,
       isAi: true,
     },
     {
       text: "Check quality",
-      url: getConsultationDetailUrl(consultationId),
+      url: `${Routes.HowItWorks}#check-quality`,
     },
     {
       text: "Analyse",
