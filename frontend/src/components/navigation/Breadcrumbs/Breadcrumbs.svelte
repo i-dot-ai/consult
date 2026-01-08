@@ -44,7 +44,7 @@
       url: Routes.Consultations,
     },
     {
-      text: "Find themes",
+      text: "Find themes (AI)",
       url: `${Routes.HowItWorks}#find-themes`,
       isAi: true,
     },
@@ -53,7 +53,7 @@
       url: getThemeSignOffUrl(consultationId),
     },
     {
-      text: "Assign themes",
+      text: "Assign themes (AI)",
       url: `${Routes.HowItWorks}#assign-themes`,
       isAi: true,
     },
