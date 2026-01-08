@@ -10,10 +10,10 @@ import { internalAccessCookieName } from "./global/api";
 export const onRequest: MiddlewareHandler = async (context, next) => {
   let internalAccessToken = null;
 
-  const env = process.env.ENVIRONMENT?.toLowerCase();
+  const env = import.meta.env.ENVIRONMENT?.toLowerCase();
 
   if (env === "local" || env === "test" || env == null) {
-    internalAccessToken = process.env.TEST_INTERNAL_ACCESS_TOKEN;
+    internalAccessToken = import.meta.env.TEST_INTERNAL_ACCESS_TOKEN;
   } else {
     internalAccessToken = context.request.headers.get("x-amzn-oidc-data");
   }
