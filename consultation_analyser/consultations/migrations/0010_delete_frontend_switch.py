@@ -15,7 +15,6 @@ def delete_switch(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         ("consultations", "0009_merge_20240520_1515"),
-        ("waffle", "0004_update_everyone_nullbooleanfield"),
     ]
 
-    operations = [migrations.RunPython(delete_switch)]
+    operations = []
