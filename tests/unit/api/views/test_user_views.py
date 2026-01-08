@@ -137,3 +137,75 @@ class TestUserViewSet:
         )
         assert response.status_code == 400
         assert "You cannot remove admin privileges from yourself" in response.json()["is_staff"]
+
+    def test_user_consultations_success(
+        self, client, consultation_user, consultation, consultation_user_token
+    ):
+        """Test that admin can access user's consultations"""
+        url = reverse(
+            "user-consultations",
+            kwargs={"pk": consultation_user.pk},
+        )
+        response = client.get(
+            url,
+            content_type="application/json",
+            headers={
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["id"] == str(consultation.id)
+        assert data[0]["title"] == consultation.title
+
+    def test_user_consultations_no_consultations(
+        self, client, non_consultation_user, consultation_user_token
+    ):
+        """Test that endpoint returns empty list for user with no consultations"""
+        url = reverse(
+            "user-consultations",
+            kwargs={"pk": non_consultation_user.pk},
+        )
+        response = client.get(
+            url,
+            content_type="application/json",
+            headers={
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 0
+
+    def test_user_consultations_requires_admin(
+        self, client, consultation_user, non_consultation_user_token
+    ):
+        """Test that non-admin users cannot access this endpoint"""
+        url = reverse(
+            "user-consultations",
+            kwargs={"pk": consultation_user.pk},
+        )
+        response = client.get(
+            url,
+            content_type="application/json",
+            headers={
+                "Authorization": f"Bearer {non_consultation_user_token}",
+            },
+        )
+        assert response.status_code == 403
+
+    def test_user_consultations_user_not_found(self, client, consultation_user_token):
+        """Test that endpoint returns 404 for non-existent user"""
+        url = reverse(
+            "user-consultations",
+            kwargs={"pk": 99999},
+        )
+        response = client.get(
+            url,
+            content_type="application/json",
+            headers={
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 404
