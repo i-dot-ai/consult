@@ -1,4 +1,4 @@
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -6,7 +6,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.api.filters import UserFilter
-from consultation_analyser.consultations.api.serializers import UserSerializer
+from consultation_analyser.consultations.api.serializers import UserSerializer, ConsultationSerializer
 
 
 class UserViewSet(ModelViewSet):
@@ -45,6 +45,16 @@ class UserViewSet(ModelViewSet):
     permission_classes = [IsAdminUser]
     pagination_class = PageNumberPagination
     filterset_class = UserFilter
+
+    @action(detail=True, methods=["get"], url_path="consultations")
+    def consultations(self, request, pk=None):
+        """
+        Get all consultations that a specific user belongs to.
+        """
+        user = self.get_object()
+        consultations = models.Consultation.objects.filter(users=user)
+        serializer = ConsultationSerializer(consultations, many=True, context={'request': request})
+        return Response(serializer.data)
 
 
 @api_view(["GET"])

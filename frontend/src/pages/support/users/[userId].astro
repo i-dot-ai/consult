@@ -7,6 +7,7 @@ import Section from "../../../components/Section/Section.svelte";
 import Link from "../../../components/Link.svelte";
 import Title from "../../../components/Title.svelte";
 import EditUser from "../../../components/screens/EditUserForm/EditUser.svelte";
+import { getApiUserConsultations } from "../../../global/routes";
 
 const { userId } = Astro.params;
 
@@ -15,12 +16,9 @@ if (!userId) {
 }
 
 // Fetch all consultations to filter by this user
-let consultationsData = await fetchBackendApi<{
-  results: ConsultationResponse[];
-}>(Astro, "/api/consultations/");
-
-const consultations = consultationsData.results.filter((consultation) =>
-  consultation.users.some((user) => user.id.toString() == userId),
+const consultationsData = await fetchBackendApi<ConsultationResponse[]>(
+  Astro,
+  getApiUserConsultations(userId),
 );
 ---
 
@@ -34,7 +32,7 @@ const consultations = consultationsData.results.filter((consultation) =>
       <Title level={2} text="Consultations" />
 
       {
-        consultations.length > 0 ? (
+        consultationsData.length > 0 ? (
           <div class="overflow-x-auto">
             <table class="w-full text-left">
               <thead class="border-b font-bold">
@@ -44,7 +42,7 @@ const consultations = consultationsData.results.filter((consultation) =>
                 </tr>
               </thead>
               <tbody>
-                {consultations.map((consultation) => (
+                {consultationsData.map((consultation) => (
                   <tr class="border-b hover:bg-gray-50">
                     <td class="py-3 pr-4">{consultation.title}</td>
                     <td class="space-y-1 py-3">
