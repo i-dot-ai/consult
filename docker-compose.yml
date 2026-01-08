@@ -44,7 +44,7 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgresql://consultations_test:consultations_test@postgres:5432/consultation_analyser
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
       - DJANGO_SETTINGS_MODULE=consultation_analyser.settings.local
       - DOMAIN_NAME=localhost:3000
     volumes:
@@ -68,6 +68,7 @@ services:
     environment:
       - NODE_ENV=development
       - PUBLIC_BACKEND_URL=http://backend:8000
+      - TEST_INTERNAL_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIn0.k27nav4gbG-2lIArYInTqP1GUz2LRuzb3lWandMKRoY
     volumes:
       - ./frontend:/app
     depends_on:

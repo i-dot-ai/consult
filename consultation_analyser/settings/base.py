@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-import logging
 import os
 import sys
 from datetime import timedelta
@@ -46,13 +45,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.auth",
     "django.contrib.admin",
-    "waffle",  # feature flags
-    "magic_link",
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "consultation_analyser.support_console",
     "consultation_analyser.error_pages",
-    "consultation_analyser.email",
     "compressor",
     "crispy_forms",
     "crispy_forms_gds",
@@ -79,7 +75,6 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "waffle.middleware.WaffleMiddleware",
     "consultation_analyser.middleware.SupportAppStaffRequiredMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
 ]
@@ -261,11 +256,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Django URL format
 APPEND_SLASH = True
 
-# Feature flags
-WAFFLE_SWITCH_DEFAULT = False
-WAFFLE_CREATE_MISSING_SWITCHES = True
-WAFFLE_LOG_MISSING_SWITCHES = logging.INFO
-
 # Crispy forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "gds"
 CRISPY_TEMPLATE_PACK = "gds"
@@ -289,9 +279,6 @@ SIGN_OFF_BATCH_JOB_NAME = env("SIGN_OFF_BATCH_JOB_NAME")
 SIGN_OFF_BATCH_JOB_QUEUE = env("SIGN_OFF_BATCH_JOB_QUEUE")
 SIGN_OFF_BATCH_JOB_DEFINITION = env("SIGN_OFF_BATCH_JOB_DEFINITION")
 
-
-# Authentication
-LOGIN_URL = "/sign-in/"
 
 # version info
 GIT_SHA = env("GIT_SHA", default=None)
@@ -357,3 +344,5 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
     "SCHEMA_PATH_PREFIX": "/api/",
 }
+
+AUTH_API_URL = env.str("AUTH_API_URL", None)

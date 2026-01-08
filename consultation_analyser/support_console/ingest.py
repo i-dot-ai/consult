@@ -8,6 +8,7 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django_rq import get_queue
+from pydantic import BaseModel
 from simple_history.utils import bulk_create_with_history
 
 from consultation_analyser.consultations.models import (
@@ -29,6 +30,7 @@ from consultation_analyser.support_console.file_models import (
     SentimentRecord,
     read_from_s3,
 )
+from consultation_analyser.support_console.ingestion.pydantic_models import SelectedThemeInput
 
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
 
@@ -251,9 +253,13 @@ def create_embeddings_for_question(question_id: UUID):
 def import_response_annotation_themes(question: Question):
     s3_client = boto3.client("s3")
 
-    mapping_response = s3_client.get_object(
-        Bucket=settings.AWS_BUCKET_NAME, Key=question.mapping_file
-    )
+    try:
+        mapping_response = s3_client.get_object(
+            Bucket=settings.AWS_BUCKET_NAME, Key=question.mapping_file
+        )
+    except Exception:
+        raise KeyError("could not find file =", question.mapping_file)
+
     mapping_dict = {}
     for line in mapping_response["Body"].iter_lines():
         mapping = json.loads(line.decode("utf-8"))
@@ -269,12 +275,16 @@ def import_response_annotation_themes(question: Question):
 
     for i, (response_annotation_id, themefinder_id) in enumerate(annotation_theme_mappings):
         for key in mapping_dict.get(themefinder_id, []):
-            objects_to_save.append(
-                ResponseAnnotationTheme(
-                    response_annotation_id=response_annotation_id,
-                    theme_id=theme_mappings[key],
+            if theme_id := theme_mappings.get(key):
+                objects_to_save.append(
+                    ResponseAnnotationTheme(
+                        response_annotation_id=response_annotation_id,
+                        theme_id=theme_id,
+                    )
                 )
-            )
+            else:
+                logger.warning("key {key} missing from mapping", key=key)
+
             if len(objects_to_save) >= DEFAULT_BATCH_SIZE:
                 bulk_create_with_history(
                     objects_to_save, ResponseAnnotationTheme, ignore_conflicts=True
@@ -494,10 +504,25 @@ def export_selected_themes(question: Question):
     s3_client = boto3.client("s3")
 
     themes_to_save = [
-        {"theme_name": theme.name, "theme_description": theme.description, "theme_key": theme.key}
+        SelectedThemeInput(
+            theme_key=theme.key,
+            theme_name=theme.name,
+            theme_description=theme.description,
+        )
         for theme in SelectedTheme.objects.filter(question=question)
     ]
-    content = json.dumps(themes_to_save)
+
+    class SelectedThemeInputs(BaseModel):
+        themes: list[SelectedThemeInput]
+
+    themes = SelectedThemeInputs(themes=themes_to_save)
+    content = themes.model_dump_json()
+    logger.info(
+        "writing selected themes for question={number} to {file}",
+        number=question.number,
+        file=question.selected_themes_file,
+    )
+
     s3_client.put_object(
         Bucket=settings.AWS_BUCKET_NAME, Key=question.selected_themes_file, Body=content
     )

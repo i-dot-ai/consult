@@ -166,15 +166,12 @@ class TestLoadSelectedThemesFromS3:
         themes = load_selected_themes_from_s3(
             consultation_code="TEST",
             question_number=1,
-            timestamp="2024-01-15",
             bucket_name="test-bucket",
             s3_client=mock_s3_client_themes,
         )
 
         # Verify correct S3 key was requested
-        expected_key = (
-            "app_data/consultations/TEST/outputs/mapping/2024-01-15/question_part_1/themes.json"
-        )
+        expected_key = "app_data/consultations/TEST/inputs/question_part_1/selected_themes.json"
         mock_s3_client_themes.get_object.assert_called_once_with(
             Bucket="test-bucket", Key=expected_key
         )
@@ -200,7 +197,6 @@ class TestLoadSelectedThemesFromS3:
             load_selected_themes_from_s3(
                 consultation_code="TEST",
                 question_number=1,
-                timestamp="2024-01-15",
                 bucket_name="test-bucket",
                 s3_client=client,
             )

@@ -2,7 +2,8 @@
 import "../styles/global.css";
 
 import HeaderConsult from "../components/navigation/HeaderConsult/HeaderConsult.svelte";
-import Footer from "../components/Footer/Footer.svelte";
+import FloatingPanel from "../components/navigation/FloatingPanel/FloatingPanel.svelte";
+import FloatingPanelContent from "../components/navigation/FloatingPanelContent/FloatingPanelContent.svelte";
 
 import { fetchBackendApi } from "../global/api";
 import { getApiConsultationUrl, Routes, Suffixes } from "../global/routes";
@@ -34,19 +35,19 @@ const pathname = Astro.url.pathname;
 const { consultationId } = Astro.params;
 
 let isStaff: boolean = false;
-let isSignedIn: boolean = false;
+let email: string | unknown = null;
 let consultationStage;
 let showProcess: boolean = isConsultationSubUrl(pathname);
-
 try {
   const data = await fetchBackendApi<{ is_staff: boolean; email: string }>(
     Astro,
     Routes.ApiUser,
   );
   isStaff = data.is_staff;
-  isSignedIn = Boolean(data.email);
-} catch {
-  console.log("user not signed in");
+  email = data.email;
+  console.log(`user ${email} signed in`);
+} catch (e) {
+  console.log("user not signed in", e);
 }
 
 if (consultationId) {
@@ -77,7 +78,7 @@ if (consultationId) {
       <HeaderConsult
         client:load
         isStaff={isStaff}
-        isSignedIn={isSignedIn}
+        isSignedIn={Boolean(email)}
         path={getPathText(pathname)}
         showProcess={showProcess}
         consultationId={consultationId}
@@ -88,7 +89,11 @@ if (consultationId) {
         <slot />
       </main>
 
-      <Footer />
+      <div class="fixed bottom-0 right-0 m-4">
+        <FloatingPanel client:load>
+          <FloatingPanelContent client:load />
+        </FloatingPanel>
+      </div>
     </div>
   </body>
 </html>

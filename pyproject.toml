@@ -32,8 +32,6 @@ boto3 = "^1.42.17"
 pydantic = "^2.12.5"
 datamodel-code-generator = "^0.50.0"
 django-types = "^0.22.0"
-django-waffle = "^5.0.0"
-django-magic-link = "^1.1.0"
 django-crispy-forms = "^2.3"
 crispy-forms-gds = "^2.0.1"
 django-gov-notify = { git = "https://github.com/i-dot-ai/django-gov-notify", branch = "support-python-3-12" }
@@ -64,7 +62,7 @@ django-filter = "^25.2"
 drf-nested-routers = "^0.95.0"
 drf-orjson-renderer = "^1.8.0"
 djangorestframework-simplejwt = {extras = ["crypto"], version = "^5.5.1"}
-i-dot-ai-utilities = "^0.4.4"
+i-dot-ai-utilities = {extras = ["auth"], version = "^0.4.4"}
 themefinder = "^0.7.3"
 
 [tool.poetry.group.development.dependencies]
@@ -77,6 +75,7 @@ mypy = "^1.19.1"
 [tool.mypy]
 files = '**/*.py'
 exclude = ['^consultation_analyser/consultations/migrations/']
+
 
 
 [tool.poetry.group.test.dependencies]

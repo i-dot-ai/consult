@@ -11,7 +11,7 @@
 
   export interface Props {
     demoData: RespondentDemoItem[];
-    stakeholderName: string;
+    stakeholderName?: string;
     questionsAnswered: number;
     totalQuestions: number;
     updateStakeholderName?: (newStakeholderName: string) => void;

@@ -129,13 +129,6 @@ export interface ResponseThemeInformation {
   selected_themes: ResponseTheme[];
 }
 
-export interface Respondent {
-  id: string;
-  themefinder_id: number | null;
-  name: string;
-  demographics: DemoOptionsResponseItem[];
-}
-
 export interface QuestionResponseResponse {
   id: string;
   respondent: Respondent;
@@ -271,4 +264,10 @@ export interface SelectedTheme {
   version: number;
   modified_at: string; // timestamp
   last_modified_by: string; // user id
+}
+
+export enum OnboardingKeys {
+  prefix = "onboardingComplete",
+  themeSignoff = "onboardingComplete-theme-sign-off",
+  themeSignoffArchive = "onboardingComplete-theme-sign-off-archive",
 }

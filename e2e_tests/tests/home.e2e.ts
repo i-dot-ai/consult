@@ -21,3 +21,12 @@ test("has title", async ({ page }) => {
   await expect(page).toHaveTitle(/Consult/);
 });
 
+test("access cookie is set when page loads", async ({ page }) => {
+  await page.goto("/");
+  
+  const cookies = await page.context().cookies();
+  const accessCookie = cookies.find(cookie => cookie.name === "gdsInternalAccess");
+  
+  expect(accessCookie).toBeDefined();
+});
+
