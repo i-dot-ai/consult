@@ -6,7 +6,10 @@ from rest_framework.viewsets import ModelViewSet
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.api.filters import UserFilter
-from consultation_analyser.consultations.api.serializers import UserSerializer, ConsultationSerializer
+from consultation_analyser.consultations.api.serializers import (
+    UserSerializer,
+    ConsultationSerializer,
+)
 
 
 class UserViewSet(ModelViewSet):
@@ -53,7 +56,7 @@ class UserViewSet(ModelViewSet):
         """
         user = self.get_object()
         consultations = models.Consultation.objects.filter(users=user)
-        serializer = ConsultationSerializer(consultations, many=True, context={'request': request})
+        serializer = ConsultationSerializer(consultations, many=True, context={"request": request})
         return Response(serializer.data)
 
 
