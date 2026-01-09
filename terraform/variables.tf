@@ -73,4 +73,5 @@ variable "scope" {
 variable "edge_networking_enabled" {
   type        = bool
   description = "Whether to enable edge networking configuration."
+  default     = true
 }
