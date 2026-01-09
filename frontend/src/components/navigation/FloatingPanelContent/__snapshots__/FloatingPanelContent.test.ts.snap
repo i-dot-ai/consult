@@ -115,7 +115,7 @@ exports[`FloatingPanelContent > matches snapshot 1`] = `
           class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 fixed-hover-color svelte-1d0mdzt"
           data-variant="ghost"
           disabled="false"
-          href="/how-it-works"
+          href="/guidance"
           role="link"
           tabindex="0"
         >
