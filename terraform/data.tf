@@ -60,7 +60,6 @@ locals {
 
   record_prefix = var.env == "prod" ? var.project_name : "${var.project_name}-${var.env}"
   host          = terraform.workspace == "prod" ? "${var.project_name}.ai.cabinetoffice.gov.uk" : "${var.project_name}-${terraform.workspace}.ai.cabinetoffice.gov.uk"
-  public_host   = terraform.workspace == "prod" ? "${var.project_name}.i.ai.gov.uk" : "${var.project_name}.${terraform.workspace}.i.ai.gov.uk"
   host_backend  = terraform.workspace == "prod" ? "${var.project_name}-backend-external.ai.cabinetoffice.gov.uk" : "${var.project_name}-backend-external-${terraform.workspace}.ai.cabinetoffice.gov.uk"
   name          = "${var.team_name}-${var.env}-${var.project_name}"
   batch_memory  = 8192
@@ -68,6 +67,8 @@ locals {
   ecs_memory    = var.env == "prod" ? 4096 : 4096
   ecs_cpus      = var.env == "prod" ? 2048 : 1024
 
+  public_host         = terraform.workspace == "prod" ? "${var.project_name}.i.ai.gov.uk" : "${var.project_name}.${terraform.workspace}.i.ai.gov.uk"
+  public_host_backend = terraform.workspace == "prod" ? "${var.project_name}-backend-external.i.ai.gov.uk" : "${var.project_name}-backend-external.${terraform.workspace}.i.ai.gov.uk"
 }
 
 data "aws_ssm_parameter" "auth_provider_public_key" {
