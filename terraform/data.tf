@@ -54,12 +54,13 @@ data "terraform_remote_state" "keycloak" {
 
 locals {
   # name              = "${var.team_name}-${var.env}-${var.project_name}"
-  hosted_zone_name  = terraform.workspace == "prod" ? var.domain_name : "${terraform.workspace}.${var.domain_name}"
+  hosted_zone_name = terraform.workspace == "prod" ? var.domain_name : "${terraform.workspace}.${var.domain_name}"
   # host              = terraform.workspace == "prod" ? "${var.project_name}.${var.domain_name}" : "${var.project_name}.${terraform.workspace}.${var.domain_name}"
   # host_backend      = terraform.workspace == "prod" ? "${var.project_name}-backend-external.${var.domain_name}" : "${var.project_name}-backend-external.${terraform.workspace}.${var.domain_name}" 
 
   record_prefix = var.env == "prod" ? var.project_name : "${var.project_name}-${var.env}"
   host          = terraform.workspace == "prod" ? "${var.project_name}.ai.cabinetoffice.gov.uk" : "${var.project_name}-${terraform.workspace}.ai.cabinetoffice.gov.uk"
+  public_host   = terraform.workspace == "prod" ? "${var.project_name}.i.ai.gov.uk" : "${var.project_name}.${terraform.workspace}.i.ai.gov.uk"
   host_backend  = terraform.workspace == "prod" ? "${var.project_name}-backend-external.ai.cabinetoffice.gov.uk" : "${var.project_name}-backend-external-${terraform.workspace}.ai.cabinetoffice.gov.uk"
   name          = "${var.team_name}-${var.env}-${var.project_name}"
   batch_memory  = 8192
@@ -153,10 +154,14 @@ data "archive_file" "consultation_import_archive" {
 data "aws_ssm_parameter" "slack_webhook_url" {
   name = "/i-dot-ai-${terraform.workspace}-consult/env_secrets/THEMEFINDER_SLACK_WEBHOOK_URL"
   depends_on = [
-    aws_ssm_parameter.env_secrets 
+    aws_ssm_parameter.env_secrets
   ]
 }
 
 data "aws_ssm_parameter" "litellm_api_key" {
   name = "/i-dot-ai-prod-core-llm-gateway/env_secrets/${var.project_name}-api-key"
+}
+
+data "aws_ssm_parameter" "edge_secret" {
+  name = "/i-dot-ai-${terraform.workspace}-core-edge-network/header-secret"
 }
