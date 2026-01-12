@@ -1,6 +1,6 @@
 locals {
-  batch_assign_themes_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult-pipeline-mapping:${var.image_tag}"
-  batch_find_themes_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult-pipeline-sign-off:${var.image_tag}"
+  batch_mapping_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult-pipeline-mapping:${var.image_tag}"
+  batch_sign_off_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult-pipeline-sign-off:${var.image_tag}"
 
   llm_gateway_url        = "https://llm-gateway.i.ai.gov.uk/"
 }
@@ -21,20 +21,20 @@ module "batch_compute" {
   max_vcpus               = 4
 }
 
-module "batch_job_assign_themes" {
+module "batch_job_mapping" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   # source                  = "../../i-ai-core-infrastructure/modules/batch/batch_job_definitons"
   source                   = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/batch-job-definitions?ref=v4.0.1-batch-job-definitions"
-  name                     = "${local.name}-assign-themes"
-  image                    = local.batch_assign_themes_image_url
+  name                     = "${local.name}-mapping"
+  image                    = local.batch_mapping_image_url
   compute_environment_arn  = [module.batch_compute.fargate_compute_environment_arn]
   use_fargate              = true
-  iam_role_name            = "${local.name}-assign-themes-role"
+  iam_role_name            = "${local.name}-mapping-role"
   platform_capabilities    = ["FARGATE"]
   task_memory_requirements = "2048"
   env_vars                 = {
     "ENVIRONMENT" : terraform.workspace,
-    "APP_NAME" : "${local.name}-assign-themes"
+    "APP_NAME" : "${local.name}-mapping"
     "REPO" : "consult",
     "AWS_ACCOUNT_ID": data.aws_caller_identity.current.id,
     "DOCKER_BUILDER_CONTAINER": "consult-mapping",
@@ -49,20 +49,20 @@ module "batch_job_assign_themes" {
   ]
 }
 
-module "batch_job_find_themes" {
+module "batch_job_sign_off" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   # source                  = "../../i-ai-core-infrastructure/modules/batch/batch_job_definitons"
   source                   = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/batch-job-definitions?ref=v4.0.1-batch-job-definitions"
-  name                     = "${local.name}-find-themes"
-  image                    = local.batch_find_themes_image_url
+  name                     = "${local.name}-sign-off"
+  image                    = local.batch_sign_off_image_url
   compute_environment_arn  = [module.batch_compute.fargate_compute_environment_arn]
   use_fargate              = true
-  iam_role_name            = "${local.name}-find-themes-role"
+  iam_role_name            = "${local.name}-sign-off-role"
   platform_capabilities    = ["FARGATE"]
   task_memory_requirements = "2048"
   env_vars                 = {
     "ENVIRONMENT" : terraform.workspace,
-    "APP_NAME" : "${local.name}-find-themes"
+    "APP_NAME" : "${local.name}-sign-off"
     "REPO" : "consult",
     "AWS_ACCOUNT_ID": data.aws_caller_identity.current.id,
     "DOCKER_BUILDER_CONTAINER": "consult-sign-off",
