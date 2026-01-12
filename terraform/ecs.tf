@@ -70,7 +70,7 @@ module "backend" {
   task_additional_iam_policies = local.additional_policy_arns
   certificate_arn              = module.acm_certificate.arn
   target_group_name_override   = "consult-backend-${var.env}-tg"
-  permissions_boundary_name    = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
+  # permissions_boundary_name    = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
   https_listener_arn            = module.frontend.https_listener_arn
   service_discovery_service_arn = aws_service_discovery_service.service_discovery_service.arn
   create_networking             = false

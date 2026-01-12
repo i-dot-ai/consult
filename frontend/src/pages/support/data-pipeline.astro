@@ -96,9 +96,13 @@ const assignThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
 
         <CreateConsultationForm client:load s3Folders={setupFolders} />
 
+        <div class="my-8"></div>
+
         <Text>
           Note: If an S3 folder doesn't appear in the list above, it has already
-          been set up as a consultation in the database.
+          been set up as a consultation in the database. If you want to use
+          existing S3 data to create a new consulation, first copy the contents
+          into a new S3 folder.
         </Text>
 
         <div class="my-8"></div>
