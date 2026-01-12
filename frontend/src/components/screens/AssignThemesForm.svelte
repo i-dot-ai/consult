@@ -8,19 +8,16 @@
   import type { ConsultationFolder } from "../../global/types";
 
   interface Props {
-    consultationFolders: ConsultationFolder[];
+    consultations: ConsultationFolder[];
   }
 
-  let { consultationFolders }: Props = $props();
+  let { consultations }: Props = $props();
 
-  // Only show folders that exist in the database (id exists)
   const selectItems = $derived(
-    consultationFolders
-      .filter(({ id }) => id)
-      .map(({ id, title, code }) => ({
-        value: id as string,
-        label: `${title} (${code})`,
-      })),
+    consultations.map(({ id, title, code }) => ({
+      value: id,
+      label: `${title} (${code})`,
+    })),
   );
 
   let consultationId = $state<string | undefined>(undefined);

@@ -6,18 +6,16 @@
   import Select from "../inputs/Select/Select.svelte";
   import Link from "../Link.svelte";
 
-  import type { ConsultationFolder } from "../../global/types";
-
   interface Props {
-    consultationFolders: ConsultationFolder[];
+    s3Folders: string[];
   }
 
-  let { consultationFolders }: Props = $props();
+  let { s3Folders }: Props = $props();
 
   const selectItems = $derived(
-    consultationFolders.map(({ code }) => ({
-      value: code,
-      label: code,
+    s3Folders.map((name) => ({
+      value: name,
+      label: name,
     })),
   );
 

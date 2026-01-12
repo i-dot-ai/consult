@@ -42,8 +42,8 @@ export interface Consultation {
 }
 
 export interface ConsultationFolder {
-  id: string | null;
-  title: string | null;
+  id: string;
+  title: string;
   code: string;
 }
 

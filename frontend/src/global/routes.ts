@@ -82,6 +82,12 @@ export const getRespondentDetailUrl = (
 export const getApiConsultationUrl = (consultationId: string) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "/");
 };
+export const getApiConsultationFoldersUrl = (
+  stage: "setup" | "find-themes" | "assign-themes",
+) => {
+  const params = new URLSearchParams({ stage });
+  return `${Routes.ApiConsultationFolders}?${params.toString()}`;
+};
 export const getApiFindThemesUrl = (consultationId: string) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "find-themes", "/");
 };

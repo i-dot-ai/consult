@@ -80,13 +80,14 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> list[str]:
     return question_folders
 
 
-def get_consultation_codes() -> list[dict]:
+def get_s3_folders() -> list[str]:
     """
-    Get all S3 consultation folders with consultation id and name if it exists
-    in the database.
+    Get all consultation folder codes from S3.
+
+    Returns:
+        List of folder codes (e.g., ['healthcare-consultation', 'transport-consultation'])
     """
     try:
-        # Get all consultations from S3
         s3 = boto3.resource("s3")
         objects = s3.Bucket(settings.AWS_BUCKET_NAME).objects.filter(
             Prefix="app_data/consultations/"
@@ -101,27 +102,9 @@ def get_consultation_codes() -> list[dict]:
             ):
                 s3_codes.add(match.groups()[0])
 
-        if not s3_codes:
-            return []
-
-        # Get consultations from database that match S3 codes
-        # Build a dict mapping code -> {id, title} for fast lookup
-        consultations_dict = {
-            c["code"]: {"id": str(c["id"]), "title": c["title"]}
-            for c in Consultation.objects.filter(code__in=s3_codes).values("id", "code", "title")
-        }
-
-        # Return all S3 codes with optional DB data
-        return [
-            {
-                "id": consultations_dict.get(code, {}).get("id"),
-                "code": code,
-                "title": consultations_dict.get(code, {}).get("title"),
-            }
-            for code in sorted(s3_codes)
-        ]
+        return list(s3_codes)
     except Exception:
-        logger.exception("Failed to get consultation codes")
+        logger.exception("Failed to get S3 folders")
         return []
 
 

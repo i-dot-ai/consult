@@ -7,16 +7,27 @@ import CreateConsultationForm from "../../components/screens/CreateConsultationF
 import FindThemesForm from "../../components/screens/FindThemesForm.svelte";
 import AssignThemesForm from "../../components/screens/AssignThemesForm.svelte";
 import Link from "../../components/Link.svelte";
-import { Routes } from "../../global/routes";
+import { getApiConsultationFoldersUrl, Routes } from "../../global/routes";
 import Details from "../../components/Details/Details.svelte";
 
 import type { ConsultationFolder } from "../../global/types";
 
 const bucketName = import.meta.env.AWS_BUCKET_NAME;
 
-const folders = await fetchBackendApi<ConsultationFolder[]>(
+// S3 folders without a matching consultation
+const setupFolders = await fetchBackendApi<string[]>(
   Astro,
-  Routes.ApiConsultationFolders,
+  getApiConsultationFoldersUrl("setup"),
+);
+
+// Consultations with matching S3 folders
+const findThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
+  Astro,
+  getApiConsultationFoldersUrl("find-themes"),
+);
+const assignThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
+  Astro,
+  getApiConsultationFoldersUrl("assign-themes"),
 );
 ---
 
@@ -78,10 +89,17 @@ const folders = await fetchBackendApi<ConsultationFolder[]>(
           b) Create consultation in Consult app
         </h3>
         <Text
-          >Once the consultation data has been uploaded to S3, complete the form
-          to create the consultation in the app.</Text
+          >Once the consultation data has been uploaded to S3, select the folder
+          and set the name of the consultation to create the consultation in the
+          app.</Text
         >
-        <CreateConsultationForm client:load consultationFolders={folders} />
+
+        <CreateConsultationForm client:load s3Folders={setupFolders} />
+
+        <Text>
+          Note: If an S3 folder doesn't appear in the list above, it has already
+          been set up as a consultation in the database.
+        </Text>
 
         <div class="my-8"></div>
 
@@ -109,7 +127,7 @@ const folders = await fetchBackendApi<ConsultationFolder[]>(
       process and can take up to a few hours depending on the size of the consultation.
     </Text>
 
-    <FindThemesForm client:load consultationFolders={folders} />
+    <FindThemesForm client:load consultations={findThemesFolders} />
 
     <div class="my-8"></div>
 
@@ -168,7 +186,7 @@ const folders = await fetchBackendApi<ConsultationFolder[]>(
       take up to a few hours depending on the size of the consultation.
     </Text>
 
-    <AssignThemesForm client:load consultationFolders={folders} />
+    <AssignThemesForm client:load consultations={assignThemesFolders} />
 
     <div class="my-8"></div>
 

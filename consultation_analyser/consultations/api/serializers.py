@@ -305,10 +305,13 @@ class ResponseSerializer(serializers.ModelSerializer):
         ]
 
 
-class ConsultationFolderSerializer(serializers.Serializer):
-    id = serializers.UUIDField(allow_null=True)
-    code = serializers.CharField()
-    title = serializers.CharField(allow_null=True)
+class ConsultationFolderQuerySerializer(serializers.Serializer):
+    """Validates query parameters for consultation folders endpoint."""
+
+    stage = serializers.ChoiceField(
+        choices=["setup", "find-themes", "assign-themes"],
+        required=True,
+    )
 
 
 class ConsultationCloneSerializer(serializers.Serializer):

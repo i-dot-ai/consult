@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 from uuid import UUID
 
 import sentry_sdk
@@ -19,7 +20,7 @@ from consultation_analyser.consultations.api.permissions import (
 from consultation_analyser.consultations.api.serializers import (
     ConsultationCloneSerializer,
     ConsultationExportSerializer,
-    ConsultationFolderSerializer,
+    ConsultationFolderQuerySerializer,
     ConsultationSerializer,
     ConsultationSetupSerializer,
     DemographicOptionSerializer,
@@ -361,13 +362,52 @@ class ConsultationViewSet(ModelViewSet):
     )
     def get_consultation_folders(self, request) -> Response:
         """
-        get consultation folders.
+        Get S3 folders and their matching consultations in the database.
+
+        Stage query param:
+        - 'setup': Return S3 folders without consultations (for creating new consultations)
+        - 'find-themes': Return consultations with S3 folders (for finding themes)
+        - 'assign-themes': Return consultations with S3 folders (for assigning themes)
+
+        URL: /api/consultations/folders?stage={STAGE}
         """
-        consultation_folders = ingest.get_consultation_codes()
+        # Validate query parameters
+        query_serializer = ConsultationFolderQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+        stage = query_serializer.validated_data.get("stage")
 
-        serializer = ConsultationFolderSerializer(consultation_folders, many=True)
+        # Get all S3 folder codes
+        s3_codes = ingest.get_s3_folders()
 
-        return Response(serializer.data)
+        if not s3_codes:
+            return Response([])
+
+        # Build a dict mapping code -> list of consultations (handles one-to-many relationship)
+        consultations_by_code: dict[str, list[dict[str, Any]]] = {}
+        for c in Consultation.objects.filter(code__in=s3_codes).values("id", "code", "title"):
+            code = c["code"]
+            if code not in consultations_by_code:
+                consultations_by_code[code] = []
+            consultations_by_code[code].append({"id": str(c["id"]), "title": c["title"]})
+
+        if stage == "setup":
+            # Return only S3 folder names without consultations, sorted by name
+            s3_folders = [code for code in s3_codes if code not in consultations_by_code]
+            return Response(sorted(s3_folders))
+        else:
+            # Return only consultations that have S3 folders, sorted by title then code
+            consultations = []
+            for code in consultations_by_code:
+                for consultation in consultations_by_code[code]:
+                    consultations.append(
+                        {
+                            "id": consultation["id"],
+                            "code": code,
+                            "title": consultation["title"],
+                        }
+                    )
+            consultations.sort(key=lambda x: (x["title"], x["code"]))
+            return Response(consultations)
 
     @action(
         detail=True,
