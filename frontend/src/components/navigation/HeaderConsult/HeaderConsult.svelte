@@ -51,10 +51,13 @@
             label: "Manage",
             children: [
               {
-                label: "Manage Consultations",
+                label: "Consultations",
                 url: Routes.SupportConsultations,
               },
-              { label: "Manage Users", url: Routes.SupportUsers },
+              { label: "Users", url: Routes.SupportUsers },
+              { label: "Imports", url: Routes.SupportImport },
+              { label: "Sign-off", url: Routes.SupportSignOff },
+              { label: "Themefinder", url: Routes.SupportThemefinder },
             ],
           },
         ]
