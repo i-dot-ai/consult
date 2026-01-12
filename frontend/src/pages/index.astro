@@ -1,6 +1,8 @@
 ---
 import { clsx } from "clsx";
 
+import { Routes } from "../global/routes.ts";
+
 import Layout from "../layouts/Layout.astro";
 import Section from "../components/Section/Section.svelte";
 import ShareIcon from "../components/svg/ShareIcon.svelte";
@@ -97,7 +99,7 @@ const h3Classes = clsx(["text-xl", "font-bold", "mb-1"]);
           <h3 class={h3Classes}>Themes are created</h3>
           <p class="text-lg">
             We run a process to create the themes. Find out <a
-              href="/how-it-works"
+              href={Routes.HowItWorks}
               class="hover:text-primary/80 text-primary underline"
               >how it works</a
             >.

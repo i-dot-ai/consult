@@ -44,8 +44,8 @@
       url: Routes.Consultations,
     },
     {
-      text: "Find themes",
-      url: getThemeSignOffUrl(consultationId),
+      text: "Find themes (AI)",
+      url: `${Routes.HowItWorks}#find-themes`,
       isAi: true,
     },
     {
@@ -53,13 +53,13 @@
       url: getThemeSignOffUrl(consultationId),
     },
     {
-      text: "Assign themes",
-      url: getThemeSignOffUrl(consultationId),
+      text: "Assign themes (AI)",
+      url: `${Routes.HowItWorks}#assign-themes`,
       isAi: true,
     },
     {
       text: "Check quality",
-      url: getConsultationDetailUrl(consultationId),
+      url: `${Routes.HowItWorks}#check-quality`,
     },
     {
       text: "Analyse",
@@ -147,7 +147,7 @@
   </ol>
 
   <div class="group my-2">
-    <Button variant="ghost" href={Routes.Guidance} size="sm">
+    <Button variant="ghost" href={Routes.HowItWorks} size="sm">
       <MaterialIcon color="fill-neutral-500">
         <Help />
       </MaterialIcon>
