@@ -282,7 +282,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
                       >
-                        Manage Consultations
+                        Consultations
                       </span>
                       
                       
@@ -310,7 +310,91 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
                       >
-                        Manage Users
+                        Users
+                      </span>
+                      
+                      
+                    </a>
+                    
+                    <!---->
+                  </div>
+                  <!---->
+                </li>
+                <li>
+                  <div
+                    class="hover:text-primary"
+                  >
+                    <!---->
+                    <a
+                      aria-pressed="false"
+                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      data-variant="ghost"
+                      disabled="false"
+                      href="/support/consultations/import-summary"
+                      role="link"
+                      tabindex="0"
+                    >
+                      <!---->
+                      <span
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                      >
+                        Imports
+                      </span>
+                      
+                      
+                    </a>
+                    
+                    <!---->
+                  </div>
+                  <!---->
+                </li>
+                <li>
+                  <div
+                    class="hover:text-primary"
+                  >
+                    <!---->
+                    <a
+                      aria-pressed="false"
+                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      data-variant="ghost"
+                      disabled="false"
+                      href="/support/consultations/sign-off"
+                      role="link"
+                      tabindex="0"
+                    >
+                      <!---->
+                      <span
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                      >
+                        Sign-off
+                      </span>
+                      
+                      
+                    </a>
+                    
+                    <!---->
+                  </div>
+                  <!---->
+                </li>
+                <li>
+                  <div
+                    class="hover:text-primary"
+                  >
+                    <!---->
+                    <a
+                      aria-pressed="false"
+                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      data-variant="ghost"
+                      disabled="false"
+                      href="/support/consultations/themefinder"
+                      role="link"
+                      tabindex="0"
+                    >
+                      <!---->
+                      <span
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                      >
+                        Themefinder
                       </span>
                       
                       
