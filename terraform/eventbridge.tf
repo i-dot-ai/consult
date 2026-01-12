@@ -66,12 +66,12 @@ resource "aws_iam_role_policy" "eventbridge_policy" {
 }
 
 
-resource "aws_cloudwatch_event_target" "slack_lambda_target" {
-  rule      = aws_cloudwatch_event_rule.batch_job_state_change.name
-  target_id = "SlackNotifierLambdaTarget"
-  arn       = module.slack_notifier_lambda.arn
-  role_arn  = aws_iam_role.eventbridge_invoke_role.arn
-}
+# resource "aws_cloudwatch_event_target" "slack_lambda_target" {
+#   rule      = aws_cloudwatch_event_rule.batch_job_state_change.name
+#   target_id = "SlackNotifierLambdaTarget"
+#   arn       = module.slack_notifier_lambda.arn
+#   role_arn  = aws_iam_role.eventbridge_invoke_role.arn
+# }
 
 resource "aws_cloudwatch_event_target" "import_response_annotations_target" {
   rule      = aws_cloudwatch_event_rule.batch_job_import_response_annotations.name

@@ -377,6 +377,9 @@ async def process_consultation(consultation_dir: str, llm) -> str:
                         refined_themes_df, llm
                     )
                     all_themes_list = [ThemeNode(**row) for _, row in _all_themes_df.iterrows()]
+
+                    selected_themes["Theme Name"] = selected_themes["topic_label"]
+                    selected_themes["Theme Description"] = selected_themes["topic_description"]
                 else:
                     logger.info("Fewer than 20 themes, clustering not required")
                     selected_themes = refined_themes_df.copy()
