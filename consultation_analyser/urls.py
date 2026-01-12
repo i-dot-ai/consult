@@ -19,11 +19,6 @@ from django.contrib import admin
 from django.urls import include, path
 
 from consultation_analyser.consultations import urls
-from consultation_analyser.error_pages import views as error_views
-
-handler404 = error_views.error_404
-handler500 = error_views.error_500
-
 urlpatterns = [
     path("", include(urls)),
     path("admin/", admin.site.urls),
