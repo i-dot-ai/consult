@@ -18,7 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "@codemirror/lang-html": "^6.4.11",
-    "@lit-labs/ssr": "^3.3.1",
+    "@lit-labs/ssr": "^4.0.0",
     "@lit-labs/virtualizer": "^2.1.0",
     "@open-wc/testing": "^4.0.0",
     "@rollup/plugin-commonjs": "^29.0.0",
