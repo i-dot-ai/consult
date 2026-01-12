@@ -28,16 +28,16 @@
     "@x-govuk/govuk-prototype-components": "^3.0.9",
     "dompurify": "^3.3.1",
     "govuk-frontend": "^5.13.0",
-    "i.ai-design-system": "^0.5.2",
+    "i.ai-design-system": "^0.7.7",
     "jsdom": "^27.4.0",
     "json-schema-faker-cli": "^5.0.6",
     "lit": "^3.3.2",
-    "sass-embedded": "^1.97.1"
+    "sass-embedded": "^1.97.2"
   },
   "devDependencies": {
     "@types/chart.js": "^4.0.1",
     "jest": "^30.2.0",
-    "rollup": "^4.54.0",
+    "rollup": "^4.55.1",
     "sass": "^1.89.1"
   }
 }
