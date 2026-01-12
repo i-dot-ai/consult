@@ -1,5 +1,9 @@
+import csv
+import datetime
+import io
 import json
 import re
+from typing import Literal
 from uuid import UUID
 
 import boto3
@@ -78,30 +82,46 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> list[str]:
 
 def get_consultation_codes() -> list[dict]:
     """
-    Get all available consultation codes from S3 for dropdown selection.
-
-    Returns:
-        List of dicts with 'text' and 'value' keys for form dropdown
+    Get all S3 consultation folders with consultation id and name if it exists
+    in the database.
     """
     try:
+        # Get all consultations from S3
         s3 = boto3.resource("s3")
         objects = s3.Bucket(settings.AWS_BUCKET_NAME).objects.filter(
             Prefix="app_data/consultations/"
         )
 
         # Get unique consultation folders
-        consultation_codes = set()
+        s3_codes = set()
         for obj in objects:
             if match := re.search(
                 r"^app_data\/consultations\/(\w+)",
                 str(obj.key),
             ):
-                consultation_codes.add(match.groups()[0])
+                s3_codes.add(match.groups()[0])
 
-        # Format for dropdown
-        return [{"text": code, "value": code} for code in sorted(consultation_codes)]
+        if not s3_codes:
+            return []
+
+        # Get consultations from database that match S3 codes
+        # Build a dict mapping code -> {id, title} for fast lookup
+        consultations_dict = {
+            c["code"]: {"id": str(c["id"]), "title": c["title"]}
+            for c in Consultation.objects.filter(code__in=s3_codes).values("id", "code", "title")
+        }
+
+        # Return all S3 codes with optional DB data
+        return [
+            {
+                "id": consultations_dict.get(code, {}).get("id"),
+                "code": code,
+                "title": consultations_dict.get(code, {}).get("title"),
+            }
+            for code in sorted(s3_codes)
+        ]
     except Exception:
-        logger.exception("Failed to get consultation codes from S3")
+        logger.exception("Failed to get consultation codes")
         return []
 
 
@@ -490,17 +510,57 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
         raise
 
 
-def export_selected_themes(question: Question):
-    s3_client = boto3.client("s3")
+def export_finalised_themes_to_s3(consultation: Consultation) -> int:
+    """
+    Export all finalised themes for a consultation to S3.
 
-    themes_to_save = [
-        {"theme_name": theme.name, "theme_description": theme.description, "theme_key": theme.key}
-        for theme in SelectedTheme.objects.filter(question=question)
-    ]
-    content = json.dumps(themes_to_save)
-    s3_client.put_object(
-        Bucket=settings.AWS_BUCKET_NAME, Key=question.selected_themes_file, Body=content
+    This is requirement for the 'Assign Themes' job whichs expects themes in
+    the format: app_data/consultations/{code}/inputs/question_part_{N}/themes.csv
+    """
+
+    s3_client = boto3.client("s3")
+    questions_exported = 0
+
+    questions = consultation.question_set.filter(has_free_text=True)
+
+    for question in questions:
+        themes = SelectedTheme.objects.filter(question=question)
+
+        if not themes.exists():
+            logger.warning(
+                f"No selected themes found for question {question.number} "
+                f"in consultation {consultation.title}"
+            )
+            continue
+
+        csv_buffer = io.StringIO()
+        writer = csv.writer(csv_buffer)
+        writer.writerow(["Theme Name", "Theme Description"])
+
+        for theme in themes:
+            writer.writerow([theme.name, theme.description])
+
+        s3_path = (
+            f"app_data/consultations/{consultation.code}/inputs/"
+            f"question_part_{question.number}/themes.csv"
+        )
+        s3_client.put_object(
+            Bucket=settings.AWS_BUCKET_NAME, Key=s3_path, Body=csv_buffer.getvalue()
+        )
+
+        logger.info(f"Exported {themes.count()} themes for question {question.number} to {s3_path}")
+        questions_exported += 1
+
+    if questions_exported == 0:
+        raise ValueError(
+            f"No questions with selected themes found for consultation '{consultation.title}'"
+        )
+
+    logger.info(
+        f"Exported themes for {questions_exported} questions in consultation '{consultation.title}'"
     )
+
+    return questions_exported
 
 
 def import_candidate_themes(question: Question):
@@ -824,44 +884,46 @@ def get_folder_names_for_dropdown() -> list[dict]:
     return consultation_folders_formatted
 
 
-def send_job_to_sqs(
-    consultation_code: str, consultation_name: str, current_user_id: int, job_type: str
+def submit_batch_job(
+    job_type: Literal["FIND_THEMES", "ASSIGN_THEMES"],
+    consultation_code: str,
+    consultation_name: str,
+    user_id: int,
 ) -> dict:
-    # SQS configuration - you should move these to settings.py
-    QUEUE_URL = settings.SQS_QUEUE_URL
-
-    # Choose environment variables based on job_type
-    if job_type == "SIGNOFF":
-        job_name = settings.SIGN_OFF_BATCH_JOB_NAME
-        job_queue = settings.SIGN_OFF_BATCH_JOB_QUEUE
-        job_definition = settings.SIGN_OFF_BATCH_JOB_DEFINITION
+    """
+    Submit a job to AWS Batch for ThemeFinder processing.
+    This will be either to find themes or assign themes.
+    """
+    if job_type == "FIND_THEMES":
+        job_name = settings.FIND_THEMES_BATCH_JOB_NAME
+        job_queue = settings.FIND_THEMES_BATCH_JOB_QUEUE
+        job_definition = settings.FIND_THEMES_BATCH_JOB_DEFINITION
     else:
-        job_name = settings.MAPPING_BATCH_JOB_NAME
-        job_queue = settings.MAPPING_BATCH_JOB_QUEUE
-        job_definition = settings.MAPPING_BATCH_JOB_DEFINITION
+        job_name = settings.ASSIGN_THEMES_BATCH_JOB_NAME
+        job_queue = settings.ASSIGN_THEMES_BATCH_JOB_QUEUE
+        job_definition = settings.ASSIGN_THEMES_BATCH_JOB_DEFINITION
 
-    # Message body with the consultation_code
-    message_body = {
-        "jobName": job_name,
-        "jobQueue": job_queue,
-        "jobDefinition": job_definition,
-        "userId": current_user_id,
-        "consultationCode": consultation_code,
-        "consultationName": consultation_name,
-        "containerOverrides": {"command": ["--subdir", consultation_code, "--job-type", job_type]},
+    parameters = {
+        "consultation_code": consultation_code,
+        "consultation_name": consultation_name,
+        "job_type": job_type,
+        "user_id": str(user_id),
+        "run_date": datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d"),
     }
 
-    # Create SQS client
-    sqs = boto3.client("sqs")
+    batch = boto3.client("batch")
 
-    try:
-        # Send message to SQS
-        logger.info("Sending message to SQS: {msg}", msg=json.dumps(message_body))
-        response = sqs.send_message(QueueUrl=QUEUE_URL, MessageBody=json.dumps(message_body))
+    logger.info(f"Submitting {job_type} job to AWS Batch for consultation: {consultation_name}")
 
-        logger.info("Message sent to SQS. MessageId: {msg}", msg=response["MessageId"])
-        return response
+    response = batch.submit_job(
+        jobName=job_name,
+        jobQueue=job_queue,
+        jobDefinition=job_definition,
+        containerOverrides={"command": ["--subdir", consultation_code, "--job-type", job_type]},
+        parameters=parameters,
+    )
 
-    except Exception as e:
-        logger.error("Error sending message to SQS: {error}", error=e)
-        raise e
+    job_id = response["jobId"]
+    logger.info(f"Batch job submitted: {job_id}")
+
+    return response

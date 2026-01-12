@@ -328,48 +328,58 @@ def _ingest_selected_themes(
     question: Question, themes: List[SelectedThemeInput]
 ) -> Dict[str, SelectedTheme]:
     """
-    Ingest selected themes for a single question.
-
-    This function is idempotent - deletes existing selected themes before creating new ones.
+    Build a lookup mapping theme_key to existing SelectedTheme records so we can link
+    ResponseAnnotations to the correct themes.
 
     Args:
-        question: The Question instance to attach themes to
-        themes: List of validated SelectedThemeInput objects
+        question: The Question instance
+        themes: List of validated SelectedThemeInput objects from batch job output
 
     Returns:
-        Dictionary mapping theme_key -> SelectedTheme instance (for linking annotations)
+        Dictionary mapping theme_key -> SelectedTheme
+
+    Raises:
+        ValueError: If themes from batch output don't match existing SelectedTheme records
     """
     if not themes:
-        logger.info(f"No selected themes to ingest for question {question.number}")
+        logger.info(f"No selected themes in batch output for question {question.number}")
         return {}
 
-    # Delete existing selected themes for this question (idempotent)
-    existing_count = SelectedTheme.objects.filter(question=question).count()
-    if existing_count > 0:
-        logger.info(
-            f"Deleting {existing_count} existing selected themes for question {question.number}"
+    # Get existing SelectedTheme records from database (source of truth)
+    existing_themes = SelectedTheme.objects.filter(question=question)
+    existing_count = existing_themes.count()
+
+    logger.info(
+        f"Building theme lookup for question {question.number}: "
+        f"{len(themes)} themes from batch output, {existing_count} themes in database"
+    )
+
+    # Build lookup by name (most stable identifier)
+    existing_by_name = {theme.name: theme for theme in existing_themes}
+
+    # Map theme_key from batch output to existing SelectedTheme
+    theme_lookup = {}
+    missing_themes = []
+
+    for theme_input in themes:
+        if theme_input.theme_name in existing_by_name:
+            theme_lookup[theme_input.theme_key] = existing_by_name[theme_input.theme_name]
+        else:
+            missing_themes.append(theme_input.theme_name)
+            logger.warning(
+                f"Theme '{theme_input.theme_name}' from batch output not found in database "
+                f"for question {question.number}"
+            )
+
+    if missing_themes:
+        raise ValueError(
+            f"Batch output contains themes not found in database for question {question.number}: "
+            f"{missing_themes}."
         )
-        SelectedTheme.objects.filter(question=question).delete()
 
-    logger.info(f"Ingesting {len(themes)} selected themes for question {question.number}")
-
-    # Create all themes
-    themes_to_create = [
-        SelectedTheme(
-            question=question,
-            key=theme.theme_key,
-            name=theme.theme_name,
-            description=theme.theme_description,
-        )
-        for theme in themes
-    ]
-
-    created_themes = SelectedTheme.objects.bulk_create(themes_to_create)
-
-    # Build mapping from theme_key to SelectedTheme for later use
-    theme_lookup = {theme.key: theme for theme in created_themes}
-
-    logger.info(f"Created {len(created_themes)} selected themes for question {question.number}")
+    logger.info(
+        f"Successfully built theme lookup with {len(theme_lookup)} themes for question {question.number}"
+    )
 
     return theme_lookup
 
@@ -541,6 +551,10 @@ def ingest_response_annotations(batch: AnnotationBatch) -> None:
         _ingest_response_annotations(question, sentiments, details, mappings, theme_lookup)
 
         questions_processed += 1
+
+    # Update consultation stage to ANALYSIS now that annotations are imported
+    consultation.stage = Consultation.Stage.ANALYSIS
+    consultation.save(update_fields=["stage"])
 
     logger.info(f"Annotation ingestion complete for {questions_processed} questions")
 

@@ -4,6 +4,6 @@ WORKDIR /app
 
 COPY pipeline-mapping/requirements.txt .
 
-COPY pipeline-mapping/mapping_script.py .
+COPY pipeline-mapping/assign_themes_script.py .
 
-ENTRYPOINT ["python", "mapping_script.py"]
+ENTRYPOINT ["python", "assign_themes_script.py"]

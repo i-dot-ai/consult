@@ -6,7 +6,6 @@ from django.contrib import messages
 from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.html import format_html
 from django_rq import job
 
 from consultation_analyser.consultations import models
@@ -65,7 +64,7 @@ def import_immutable_data_job(
 @job("default", timeout=3600)
 def import_candidate_themes_job(
     consultation_code: str,
-    timestamp: str,
+    run_date: str,
 ) -> None:
     """Import candidate themes from S3."""
     from consultation_analyser.support_console.ingestion.ingest_candidate_themes import (
@@ -76,14 +75,14 @@ def import_candidate_themes_job(
 
     import_candidate_themes_from_s3(
         consultation_code=consultation_code,
-        timestamp=timestamp,
+        timestamp=run_date,
     )
 
 
 @job("default", timeout=3600)
 def import_response_annotations_job(
     consultation_code: str,
-    timestamp: str,
+    run_date: str,
 ) -> None:
     """Import response annotations from S3."""
     from consultation_analyser.support_console.ingestion.ingest_response_annotations import (
@@ -94,7 +93,7 @@ def import_response_annotations_job(
 
     import_response_annotations_from_s3(
         consultation_code=consultation_code,
-        timestamp=timestamp,
+        timestamp=run_date,
     )
 
 
@@ -353,58 +352,6 @@ def import_summary(request: HttpRequest) -> HttpResponse:
     return render(request, "support_console/consultations/import_summary.html", context={})
 
 
-def import_consultation_view(request: HttpRequest) -> HttpResponse:
-    logger.refresh_context()
-
-    bucket_name = settings.AWS_BUCKET_NAME
-    consultation_folders = ingest.get_consultation_codes()
-
-    context = {
-        "bucket_name": bucket_name,
-        "consultation_folders": consultation_folders,
-    }
-
-    if request.POST:
-        consultation_name = request.POST.get("consultation_name")
-        consultation_code = request.POST.get("consultation_code")
-        timestamp = request.POST.get("timestamp")
-        action = request.POST.get("action")
-
-        # TODO: replace with new logic to support multi-choice answers
-        # # Validate structure
-        # is_valid, validation_errors = ingest.validate_consultation_structure(
-        #     bucket_name=bucket_name, consultation_code=consultation_code, timestamp=timestamp
-        # )
-        #
-        # if not is_valid:
-        #     formatted_errors = [format_validation_error(error) for error in validation_errors]
-        #     context["validation_errors"] = formatted_errors
-        #     return render(
-        #         request, "support_console/consultations/import_consultation.html", context=context
-        #     )
-
-        # If valid, queue the import job
-        try:
-            import_consultation_job.delay(
-                consultation_name=consultation_name,
-                consultation_code=consultation_code,
-                timestamp=timestamp,
-                current_user_id=request.user.id,
-                sign_off=action == "sign_off",
-            )
-            messages.success(request, f"Import started for consultation: {consultation_name}")
-            return redirect("support_consultations")  # Fixed URL name
-        except Exception as e:
-            messages.error(request, f"Failed to start import: {str(e)}")
-            return render(
-                request, "support_console/consultations/import_consultation.html", context=context
-            )
-
-    return render(
-        request, "support_console/consultations/import_consultation.html", context=context
-    )
-
-
 def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UUID) -> HttpResponse:
     """Delete a question from a consultation"""
     logger.refresh_context()
@@ -423,89 +370,3 @@ def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UU
         else:
             return redirect(f"/support/consultations/{consultation_id}/")
     return render(request, "support_console/question_parts/delete.html", context=context)
-
-
-def themefinder(request: HttpRequest) -> HttpResponse:
-    logger.refresh_context()
-
-    consultation_folders = ingest.get_folder_names_for_dropdown()
-    bucket_name = settings.AWS_BUCKET_NAME
-    current_user_id = request.user.id
-
-    consultation_code = None
-    consultation_name = None
-    if request.method == "POST":
-        consultation_code = request.POST.get("consultation_code")
-        consultation_name = request.POST.get("consultation_name")
-
-        if consultation_code:
-            try:
-                # Send message to SQS
-                ingest.send_job_to_sqs(
-                    consultation_code, consultation_name, current_user_id, "THEMEFINDER"
-                )
-                messages.success(
-                    request,
-                    format_html(
-                        "Themefinder job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
-                        consultation_name,
-                        consultation_code,
-                    ),
-                )
-
-            except Exception as e:
-                messages.error(request, f"Error submitting job: {str(e)}")
-        else:
-            messages.error(request, "Please select a consultation folder.")
-
-    context = {
-        "bucket_name": bucket_name,
-        "consultation_folders": consultation_folders,
-        "consultation_code": consultation_code,
-        "consultation_name": consultation_name,
-    }
-
-    return render(request, "support_console/consultations/themefinder.html", context=context)
-
-
-def sign_off(request: HttpRequest) -> HttpResponse:
-    logger.refresh_context()
-
-    consultation_folders = ingest.get_folder_names_for_dropdown()
-    bucket_name = settings.AWS_BUCKET_NAME
-    current_user_id = request.user.id
-
-    consultation_code = None
-    consultation_name = None
-
-    if request.method == "POST":
-        consultation_code = request.POST.get("consultation_code")
-        consultation_name = request.POST.get("consultation_name")
-        if consultation_code:
-            try:
-                # Send message to SQS
-                ingest.send_job_to_sqs(
-                    consultation_code, consultation_name, current_user_id, "SIGNOFF"
-                )
-                messages.success(
-                    request,
-                    format_html(
-                        "Sign-off job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
-                        consultation_name,
-                        consultation_code,
-                    ),
-                )
-
-            except Exception as e:
-                messages.error(request, f"Error submitting job: {str(e)}")
-        else:
-            messages.error(request, "Please select a consultation folder.")
-
-    context = {
-        "bucket_name": bucket_name,
-        "consultation_folders": consultation_folders,
-        "consultation_code": consultation_code,
-        "consultation_name": consultation_name,
-    }
-
-    return render(request, "support_console/consultations/sign_off.html", context=context)

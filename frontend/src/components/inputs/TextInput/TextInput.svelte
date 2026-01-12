@@ -2,7 +2,7 @@
   import clsx from "clsx";
 
   import { fade } from "svelte/transition";
-  import type { HTMLInputTypeAttribute } from "svelte/elements";
+  import type { FullAutoFill, HTMLInputTypeAttribute } from "svelte/elements";
 
   import Button from "../Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
@@ -15,9 +15,10 @@
   export let hideLabel: boolean = false;
   export let value: string = "";
   export let placeholder: string = "";
-  export let autocomplete: string;
+  export let autocomplete: FullAutoFill | undefined = undefined;
   export let name: string;
-  export let setValue = () => {};
+  export let setValue: (value: string) => void = () => {};
+  export let required: boolean = false;
 
   export let variant: "default" | "search" = "default";
 </script>
@@ -44,6 +45,7 @@
     {placeholder}
     {value}
     {autocomplete}
+    {required}
     on:input={(e) => setValue((e.target as HTMLInputElement).value)}
   />
 

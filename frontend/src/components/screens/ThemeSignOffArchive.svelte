@@ -5,6 +5,7 @@
   import { slide } from "svelte/transition";
 
   import {
+    getApiAssignThemesUrl,
     getApiConsultationUrl,
     getApiQuestionsUrl,
     getThemeSignOffDetailUrl,
@@ -49,7 +50,7 @@
 
   const questionsStore = createFetchStore<QuestionsResponse>();
   const consultationStore = createFetchStore<ConsultationResponse>();
-  const consultationUpdateStore = createFetchStore();
+  const assignThemesStore = createFetchStore();
 
   onMount(async () => {
     $consultationStore.fetch(getApiConsultationUrl(consultationId));
@@ -92,7 +93,7 @@
 <hr class="my-6" />
 
 <svelte:boundary>
-  {#if isAllQuestionsSignedOff || $consultationStore.data?.stage === "theme_mapping" || $consultationStore.data?.stage === "analysis"}
+  {#if $consultationStore.data?.stage === "theme_mapping" || $consultationStore.data?.stage === "analysis"}
     <section in:slide>
       <ConsultationStagePanel
         consultation={$consultationStore.data || {
@@ -100,84 +101,34 @@
           stage: "theme_sign_off",
         }}
         questionsCount={questionsForSignOff?.length || 0}
-        onConfirmClick={() => (isConfirmModalOpen = true)}
-      />
-
-      <Modal
-        variant="secondary"
-        title="Confirm AI Mapping"
-        confirmText="Yes, Start AI Mapping"
-        icon={Warning}
-        open={isConfirmModalOpen}
-        setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
-        handleConfirm={async () => {
-          await $consultationUpdateStore.fetch(
-            getApiConsultationUrl(consultationId),
-            "PATCH",
-            {
-              stage: "theme_mapping",
-            },
-          );
-
-          if (!$consultationUpdateStore.error) {
-            isConfirmModalOpen = false;
-            location.href = location.href;
-          }
+        onConfirmClick={() => {
+          /* Button removed - assign themes now triggered by admin only */
         }}
-      >
-        <p class="mb-4 text-sm text-neutral-500">
-          You have successfully reviewed and signed off themes for all {questionsForSignOff?.length ||
-            0} consultation questions. Are you ready to proceed with AI mapping?
-        </p>
+      />
+    </section>
+  {/if}
 
-        <p class="mb-2 text-sm text-neutral-500">This action will:</p>
-        <ol class="mb-2 list-disc pl-4 text-sm text-neutral-500">
-          <li class="mb-2">
-            Process all consultation responses across {questionsForSignOff?.length ||
-              0} questions
-          </li>
-          <li class="mb-2">
-            Map responses to your selected themes using AI analysis
-          </li>
-          <li class="mb-2">Incur computational costs for the AI processing</li>
-          <li class="mb-2">
-            Take several hours to complete. More responses = longer time to
-            process
-          </li>
-        </ol>
-
-        <Alert>
-          <span class="text-sm">
-            <strong>Warning:</strong> Once started, this process cannot be stopped
-            or easily reversed. Ensure all theme selections are final.
-          </span>
-        </Alert>
-
-        <hr class="my-4" />
-
-        <p class="mb-2 text-sm text-neutral-500">
-          If you have concerns or need assistance, please contact support:
-        </p>
-        <a
-          href={`mailto:${Routes.SupportEmail}`}
-          class="support-link mb-4 block text-sm text-secondary hover:text-primary"
-        >
-          <div class="flex items-center gap-1">
-            <MaterialIcon color="fill-secondary">
-              <Headphones />
-            </MaterialIcon>
-            {Routes.SupportEmail}
-          </div>
-        </a>
-
-        {#if $consultationUpdateStore.error}
-          <div class="mb-4 mt-2">
-            <Alert>
-              <span class="text-sm">{$consultationUpdateStore.error}</span>
-            </Alert>
-          </div>
-        {/if}
-      </Modal>
+  {#if isAllQuestionsSignedOff && $consultationStore.data?.stage === "theme_sign_off"}
+    <section in:slide>
+      <Panel variant="approve-dark" bg={true}>
+        <div class="px-2 py-4 text-center sm:px-8 md:px-16">
+          <h2 class="mb-4 text-secondary">All Questions Signed Off</h2>
+          <p class="mb-4 text-sm text-neutral-500">
+            You have successfully reviewed and signed off themes for all {questionsForSignOff?.length ||
+              0} consultation questions.
+          </p>
+          <p class="mb-2 text-sm text-neutral-500">
+            <strong>Next:</strong> An admin will trigger the AI mapping phase. You'll
+            be notified when mapping is complete and the Analysis Dashboard is ready.
+          </p>
+          <p class="mt-4 text-sm text-neutral-500">
+            Contact <a
+              href={`mailto:${Routes.SupportEmail}`}
+              class="text-secondary hover:underline">{Routes.SupportEmail}</a
+            > to proceed.
+          </p>
+        </div>
+      </Panel>
     </section>
   {/if}
 

@@ -306,11 +306,12 @@ class ResponseSerializer(serializers.ModelSerializer):
 
 
 class ConsultationFolderSerializer(serializers.Serializer):
-    text = serializers.CharField()
-    value = serializers.CharField()
+    id = serializers.UUIDField(allow_null=True)
+    code = serializers.CharField()
+    title = serializers.CharField(allow_null=True)
 
 
-class ConsultationImportSerializer(serializers.Serializer):
+class ConsultationCloneSerializer(serializers.Serializer):
     consultation_name = serializers.CharField(max_length=255)
     consultation_code = serializers.CharField(max_length=255)
     timestamp = serializers.CharField(max_length=100)
@@ -320,7 +321,7 @@ class ConsultationImportSerializer(serializers.Serializer):
         return self.validated_data.get("action") == "sign_off"
 
 
-class ConsultationImportImmutableSerializer(serializers.Serializer):
+class ConsultationSetupSerializer(serializers.Serializer):
     consultation_name = serializers.CharField(required=True, max_length=255)
     consultation_code = serializers.CharField(required=True, max_length=255)
 

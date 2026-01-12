@@ -48,15 +48,17 @@ data "aws_iam_policy_document" "ecs_exec_custom_policy" {
   }
 
   statement {
-      effect = "Allow"
-      actions = [
-          "sqs:ReceiveMessage",
-          "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes",
-          "sqs:SendMessage",
-      ]
-      resources = [module.batch_job_queue.sqs_queue_arn]
+    effect = "Allow"
+    actions = [
+      "batch:SubmitJob",
+      "batch:DescribeJobs",
+    ]
+    resources = [
+      "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-queue/${local.name}*",
+      "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/${local.name}*"
+    ]
   }
+
   statement {
     effect = "Allow"
     actions = [
@@ -82,27 +84,6 @@ data "aws_iam_policy_document" "lambda_exec_custom_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "batch:Submit*",
-      "batch:Describe*",
-    ]
-    resources = [
-          "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-queue/${local.name}*",
-          "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/${local.name}*"
-    ]
-  }
-  statement {
-    effect = "Allow"
-    actions = [
-        "sqs:ReceiveMessage",
-        "sqs:DeleteMessage",
-        "sqs:GetQueueAttributes",
-        "sqs:SendMessage",
-    ]
-    resources = [module.batch_job_queue.sqs_queue_arn]
-  }
-  statement {
-    effect = "Allow"
-    actions = [
       "kms:Decrypt",
       "kms:GenerateDataKey",
       "kms:DescribeKey"
@@ -111,7 +92,6 @@ data "aws_iam_policy_document" "lambda_exec_custom_policy" {
       data.terraform_remote_state.platform.outputs.kms_key_arn
     ]
   }
-
 }
 
 resource "aws_iam_policy" "lambda_exec_custom_policy" {
