@@ -113,6 +113,7 @@ resource "null_resource" "build_import_response_annotations_lambda" {
   triggers = {
     requirements = filemd5("${path.root}/../lambda/import_response_annotations/requirements.txt")
     lambda_code  = filemd5("${path.root}/../lambda/import_response_annotations/import_response_annotations_handler.py")
+    version      = "2"  # Bump to force rebuild
   }
 
   provisioner "local-exec" {
@@ -159,6 +160,7 @@ resource "null_resource" "build_import_candidate_themes_lambda" {
   triggers = {
     requirements = filemd5("${path.root}/../lambda/import_candidate_themes/requirements.txt")
     lambda_code  = filemd5("${path.root}/../lambda/import_candidate_themes/import_candidate_themes_handler.py")
+    version      = "2"  # Bump to force rebuild
   }
 
   provisioner "local-exec" {
