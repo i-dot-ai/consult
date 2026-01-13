@@ -409,10 +409,6 @@ async def process_consultation(consultation_dir: str, llm) -> str:
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
                     f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
 
-                pd.DataFrame(all_themes_list).to_json(
-                    os.path.join(question_output_dir, "clustered_themes.json"), orient="records"
-                )
-
                 # Map responses to themes, including "None of the above" option
                 mapping_themes = selected_themes[["topic_id", "topic"]].copy()
                 mapping_themes = pd.concat(
