@@ -17,17 +17,13 @@ from consultation_analyser.consultations.models import (
     Response,
 )
 from consultation_analyser.embeddings import embed_text
-from consultation_analyser.support_console.ingestion.pydantic_models import (
-    ImmutableDataBatch,
+import consultation_analyser.data_pipeline.s3 as s3
+from consultation_analyser.data_pipeline.models import (
+    ConsultationDataBatch,
     MultiChoiceInput,
     QuestionInput,
     RespondentInput,
     ResponseInput,
-)
-from consultation_analyser.support_console.ingestion.s3_utils import (
-    get_question_folders,
-    read_json_from_s3,
-    read_jsonl_from_s3,
 )
 
 logger = settings.LOGGER
@@ -58,7 +54,7 @@ def load_respondents_from_s3(
 
     logger.info(f"Loading respondents from {key}")
 
-    raw_data = read_jsonl_from_s3(bucket_name, key, s3_client)
+    raw_data = s3.read_jsonl(bucket_name, key, s3_client)
 
     respondents = [RespondentInput(**data) for data in raw_data]
 
@@ -85,7 +81,7 @@ def load_question_from_s3(
 
     logger.info(f"Loading question {question_number} from {key}")
 
-    data = read_json_from_s3(bucket_name, key, s3_client)
+    data = s3.read_json(bucket_name, key, s3_client)
 
     if data is None:
         raise ValueError(f"Question file not found or empty: {key}")
@@ -118,7 +114,7 @@ def load_responses_from_s3(
 
     logger.info(f"Loading responses for question {question_number} from {key}")
 
-    raw_data = read_jsonl_from_s3(bucket_name, key, s3_client, raise_if_missing=False)
+    raw_data = s3.read_jsonl(bucket_name, key, s3_client, raise_if_missing=False)
 
     responses = []
     for data in raw_data:
@@ -149,7 +145,7 @@ def load_multi_choice_from_s3(
 
     logger.info(f"Loading multi-choice data for question {question_number} from {key}")
 
-    raw_data = read_jsonl_from_s3(bucket_name, key, s3_client, raise_if_missing=False)
+    raw_data = s3.read_jsonl(bucket_name, key, s3_client, raise_if_missing=False)
 
     multi_choices = []
     for data in raw_data:
@@ -163,13 +159,13 @@ def load_multi_choice_from_s3(
     return multi_choices
 
 
-def load_immutable_data_batch(
+def load_consultation_data_batch(
     consultation_code: str,
     consultation_title: str,
     bucket_name: Optional[str] = None,
-) -> ImmutableDataBatch:
+) -> ConsultationDataBatch:
     """
-    Load and validate all immutable consultation data from S3.
+    Load and validate base consultation data from S3.
 
     This orchestrates loading:
     - Respondents
@@ -183,12 +179,12 @@ def load_immutable_data_batch(
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
 
     Returns:
-        Validated ImmutableDataBatch with all data
+        Validated ConsultationDataBatch with all data
     """
     if bucket_name is None:
         bucket_name = settings.AWS_BUCKET_NAME
 
-    logger.info(f"Loading immutable data batch for consultation {consultation_code}")
+    logger.info(f"Loading consultation data batch for {consultation_code}")
 
     s3_client = boto3.client("s3")
 
@@ -197,7 +193,7 @@ def load_immutable_data_batch(
 
     # Discover question folders
     inputs_path = f"app_data/consultations/{consultation_code}/inputs/"
-    question_folders = get_question_folders(inputs_path, bucket_name)
+    question_folders = s3.get_question_folders(inputs_path, bucket_name)
 
     if not question_folders:
         raise ValueError(f"No question folders found at {inputs_path}")
@@ -237,7 +233,7 @@ def load_immutable_data_batch(
             multi_choice_by_question[question_number] = multi_choices
 
     # Create and validate the batch
-    batch = ImmutableDataBatch(
+    batch = ConsultationDataBatch(
         consultation_code=consultation_code,
         consultation_title=consultation_title,
         respondents=respondents,
@@ -247,7 +243,7 @@ def load_immutable_data_batch(
     )
 
     logger.info(
-        f"Loaded immutable data batch: {len(respondents)} respondents, "
+        f"Loaded consultation data batch: {len(respondents)} respondents, "
         f"{len(questions)} questions, "
         f"{sum(len(r) for r in responses_by_question.values())} total responses"
     )
@@ -256,30 +252,30 @@ def load_immutable_data_batch(
 
 
 # =============================================================================
-# INGESTION LOGIC - Create Django models from validated data
+# IMPORT LOGIC - Create Django models from validated data
 # =============================================================================
 
 
 @transaction.atomic
-def ingest_immutable_data(batch: ImmutableDataBatch, user_id: UUID) -> UUID:
+def import_consultation_data(batch: ConsultationDataBatch, user_id: UUID) -> UUID:
     """
-    Ingest immutable consultation data (consultation, respondents, questions, responses).
+    Import base consultation data (consultation, respondents, questions, responses) into database.
 
     This function is idempotent and can be safely re-run. It will update existing
     consultations rather than creating duplicates.
 
-    Immutable data includes:
+    Base consultation data includes:
     - Consultation definition
     - Respondents and their demographics
     - Questions and their configuration
     - Response text (both free text and multiple choice)
 
     This does NOT include:
-    - Candidate themes (sign-off workflow)
-    - Response annotations (mapping workflow)
+    - Candidate themes (from find-themes job)
+    - Response annotations (from assign-themes job)
 
     Args:
-        batch: Validated immutable data batch from S3
+        batch: Validated consultation data batch from S3
         user_id: User ID to associate with consultation
 
     Returns:
@@ -288,7 +284,7 @@ def ingest_immutable_data(batch: ImmutableDataBatch, user_id: UUID) -> UUID:
     Raises:
         User.DoesNotExist: If user_id doesn't exist
     """
-    logger.info(f"Starting immutable data ingestion for {batch.consultation_code}")
+    logger.info(f"Starting consultation data ingestion for {batch.consultation_code}")
 
     # 1. Create or update consultation
     consultation, created = Consultation.objects.get_or_create(
@@ -316,7 +312,7 @@ def ingest_immutable_data(batch: ImmutableDataBatch, user_id: UUID) -> UUID:
     # 4. Create responses (free text and multi-choice)
     _ingest_responses(consultation, batch.responses_by_question, batch.multi_choice_by_question)
 
-    logger.info(f"Completed immutable data ingestion for {consultation.code}")
+    logger.info(f"Completed consultation data ingestion for {consultation.code}")
     return consultation.id
 
 
@@ -604,7 +600,7 @@ def import_consultation_from_s3(
     enqueue_embeddings: bool = True,
 ) -> UUID:
     """
-    Import consultation (immutable data only) from S3.
+    Import consultation base data from S3.
 
     This orchestrates:
     1. Loading data from S3
@@ -624,13 +620,13 @@ def import_consultation_from_s3(
     logger.info(f"Starting S3 import for {consultation_code}")
 
     # Load and validate data from S3
-    batch = load_immutable_data_batch(
+    batch = load_consultation_data_batch(
         consultation_code=consultation_code,
         consultation_title=consultation_title,
     )
 
-    # Ingest immutable data
-    consultation_id = ingest_immutable_data(batch, user_id)
+    # Import consultation data into database
+    consultation_id = import_consultation_data(batch, user_id)
 
     # Enqueue async jobs for embeddings
     if enqueue_embeddings:

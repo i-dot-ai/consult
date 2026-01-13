@@ -314,29 +314,9 @@ class ConsultationFolderQuerySerializer(serializers.Serializer):
     )
 
 
-class ConsultationCloneSerializer(serializers.Serializer):
-    consultation_name = serializers.CharField(max_length=255)
-    consultation_code = serializers.CharField(max_length=255)
-    timestamp = serializers.CharField(max_length=100)
-    action = serializers.CharField(max_length=50)
-
-    def get_sign_off(self):
-        return self.validated_data.get("action") == "sign_off"
-
-
 class ConsultationSetupSerializer(serializers.Serializer):
     consultation_name = serializers.CharField(required=True, max_length=255)
     consultation_code = serializers.CharField(required=True, max_length=255)
-
-
-class ConsultationImportCandidateThemesSerializer(serializers.Serializer):
-    consultation_code = serializers.CharField(required=True, max_length=255)
-    timestamp = serializers.CharField(required=True, max_length=100)
-
-
-class ConsultationImportAnnotationsSerializer(serializers.Serializer):
-    consultation_code = serializers.CharField(required=True, max_length=255)
-    timestamp = serializers.CharField(required=True, max_length=100)
 
 
 class ConsultationExportSerializer(serializers.Serializer):

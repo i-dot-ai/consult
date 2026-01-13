@@ -18,20 +18,9 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
-from consultation_analyser.support_console.ingest import (
+from consultation_analyser.data_pipeline.jobs import (
     DEFAULT_TIMEOUT_SECONDS,
-    create_embeddings_for_question,
 )
-
-
-@admin.action(description="(Re)Embed selected Consultations")
-def update_embeddings_admin(modeladmin, request, queryset):
-    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
-    for consultation in queryset:
-        for question in consultation.question_set.all():
-            queue.enqueue(create_embeddings_for_question, question.id)
-
-    modeladmin.message_user(request, f"Processing {queryset.count()} consultations")
 
 
 def _reimport_demographics(consultation_id):
@@ -109,7 +98,6 @@ def create_large_dummy_consultation(modeladmin, request, queryset):
 
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [
-        update_embeddings_admin,
         reimport_demographics,
         create_small_dummy_consultation,
         create_large_dummy_consultation,

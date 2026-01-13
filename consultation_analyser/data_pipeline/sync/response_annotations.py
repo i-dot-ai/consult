@@ -11,16 +11,13 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotation,
     SelectedTheme,
 )
-from consultation_analyser.support_console.ingestion.pydantic_models import (
+import consultation_analyser.data_pipeline.s3 as s3
+from consultation_analyser.data_pipeline.models import (
     AnnotationBatch,
     DetailDetectionInput,
     SelectedThemeInput,
     SentimentInput,
     ThemeMappingInput,
-)
-from consultation_analyser.support_console.ingestion.s3_utils import (
-    read_json_from_s3,
-    read_jsonl_from_s3,
 )
 
 logger = logging.getLogger(__name__)
@@ -62,7 +59,7 @@ def load_selected_themes_from_s3(
     logger.info(f"Loading selected themes from {key}")
 
     # Read and parse JSON file
-    theme_data = read_json_from_s3(
+    theme_data = s3.read_json(
         bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
     )
 
@@ -107,7 +104,7 @@ def load_sentiments_from_s3(
     logger.info(f"Loading sentiments from {key}")
 
     # Read JSONL file (raise_if_missing=False because sentiment is optional)
-    sentiment_data = read_jsonl_from_s3(
+    sentiment_data = s3.read_jsonl(
         bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=False
     )
 
@@ -155,7 +152,7 @@ def load_detail_detections_from_s3(
     logger.info(f"Loading detail detections from {key}")
 
     # Read JSONL file
-    detail_data = read_jsonl_from_s3(
+    detail_data = s3.read_jsonl(
         bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
     )
 
@@ -199,7 +196,7 @@ def load_theme_mappings_from_s3(
     logger.info(f"Loading theme mappings from {key}")
 
     # Read JSONL file
-    mapping_data = read_jsonl_from_s3(
+    mapping_data = s3.read_jsonl(
         bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
     )
 
@@ -256,7 +253,7 @@ def load_annotation_batch(
         except Consultation.DoesNotExist:
             raise ValueError(
                 f"Consultation with code '{consultation_code}' does not exist. "
-                "Immutable data must be imported before annotations."
+                "Base consultation data must be imported before annotations."
             )
 
     logger.info(
@@ -320,11 +317,11 @@ def load_annotation_batch(
 
 
 # ============================================================================
-# INGESTION LOGIC - Create Django models from validated data
+# IMPORT LOGIC - Create Django models from validated data
 # ============================================================================
 
 
-def _ingest_selected_themes(
+def _import_selected_themes(
     question: Question, themes: List[SelectedThemeInput]
 ) -> Dict[str, SelectedTheme]:
     """
@@ -384,7 +381,7 @@ def _ingest_selected_themes(
     return theme_lookup
 
 
-def _ingest_response_annotations(
+def _import_response_annotations(
     question: Question,
     sentiments: List[SentimentInput],
     details: List[DetailDetectionInput],
@@ -392,7 +389,7 @@ def _ingest_response_annotations(
     theme_lookup: Dict[str, SelectedTheme],
 ) -> None:
     """
-    Ingest response annotations for a single question.
+    Import response annotations for a single question into database.
 
     Creates ResponseAnnotation objects with sentiment and evidence_rich data,
     then links them to themes via ResponseAnnotationTheme.
@@ -414,7 +411,7 @@ def _ingest_response_annotations(
         )
         ResponseAnnotation.objects.filter(response__question=question).delete()
 
-    logger.info(f"Ingesting annotations for question {question.number}")
+    logger.info(f"Importing annotations for question {question.number}")
 
     # Build lookups for efficient matching
     sentiment_lookup = {s.themefinder_id: s.sentiment for s in sentiments}
@@ -488,21 +485,21 @@ def _ingest_response_annotations(
 
 
 @transaction.atomic
-def ingest_response_annotations(batch: AnnotationBatch) -> None:
+def import_response_annotations(batch: AnnotationBatch) -> None:
     """
-    Ingest all response annotations from a batch into the database.
+    Import all response annotations from a batch into the database.
 
-    This is the main ingestion function that:
+    This is the main import function that:
     1. Validates that the consultation exists
     2. Updates the consultation's timestamp
     3. For each question:
-       a. Ingests selected themes
-       b. Ingests response annotations (sentiment, evidence, theme mappings)
+       a. Imports selected themes
+       b. Imports response annotations (sentiment, evidence, theme mappings)
 
     This function is idempotent - can safely re-run to update annotations.
 
     Args:
-        batch: AnnotationBatch containing all annotations to ingest
+        batch: AnnotationBatch containing all annotations to import
 
     Raises:
         ValueError: If consultation doesn't exist or questions are missing
@@ -513,10 +510,10 @@ def ingest_response_annotations(batch: AnnotationBatch) -> None:
     except Consultation.DoesNotExist:
         raise ValueError(
             f"Consultation with code '{batch.consultation_code}' does not exist. "
-            "Immutable data must be imported before annotations."
+            "Base consultation data must be imported before annotations."
         )
 
-    logger.info(f"Starting annotation ingestion for consultation '{consultation.title}'")
+    logger.info(f"Starting annotation import for consultation '{consultation.title}'")
 
     # Update consultation timestamp
     if consultation.timestamp != batch.timestamp:
@@ -526,7 +523,7 @@ def ingest_response_annotations(batch: AnnotationBatch) -> None:
         consultation.timestamp = batch.timestamp
         consultation.save(update_fields=["timestamp"])
 
-    # Ingest data for each question
+    # Import data for each question
     questions_processed = 0
 
     for question_number in batch.selected_themes_by_question.keys():
@@ -536,19 +533,19 @@ def ingest_response_annotations(batch: AnnotationBatch) -> None:
         except Question.DoesNotExist:
             raise ValueError(
                 f"Question {question_number} does not exist for consultation '{batch.consultation_code}'. "
-                "Immutable data must be imported before annotations."
+                "Base consultation data must be imported before annotations."
             )
 
-        # Ingest selected themes first (needed for theme lookups)
+        # Import selected themes first (needed for theme lookups)
         themes_for_question = batch.selected_themes_by_question[question_number]
-        theme_lookup = _ingest_selected_themes(question, themes_for_question)
+        theme_lookup = _import_selected_themes(question, themes_for_question)
 
-        # Ingest response annotations
+        # Import response annotations
         sentiments = batch.sentiments_by_question.get(question_number, [])
         details = batch.details_by_question.get(question_number, [])
         mappings = batch.mappings_by_question.get(question_number, [])
 
-        _ingest_response_annotations(question, sentiments, details, mappings, theme_lookup)
+        _import_response_annotations(question, sentiments, details, mappings, theme_lookup)
 
         questions_processed += 1
 
@@ -556,7 +553,7 @@ def ingest_response_annotations(batch: AnnotationBatch) -> None:
     consultation.stage = Consultation.Stage.ANALYSIS
     consultation.save(update_fields=["stage"])
 
-    logger.info(f"Annotation ingestion complete for {questions_processed} questions")
+    logger.info(f"Annotation import complete for {questions_processed} questions")
 
 
 # ============================================================================
@@ -598,7 +595,7 @@ def import_response_annotations_from_s3(
         question_numbers=question_numbers,
     )
 
-    # Ingest into database
-    ingest_response_annotations(batch)
+    # Import into database
+    import_response_annotations(batch)
 
     logger.info(f"Response annotations import complete for consultation '{consultation_code}'")

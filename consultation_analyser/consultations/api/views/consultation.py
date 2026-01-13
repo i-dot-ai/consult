@@ -18,7 +18,6 @@ from consultation_analyser.consultations.api.permissions import (
     HasDashboardAccess,
 )
 from consultation_analyser.consultations.api.serializers import (
-    ConsultationCloneSerializer,
     ConsultationExportSerializer,
     ConsultationFolderQuerySerializer,
     ConsultationSerializer,
@@ -31,11 +30,12 @@ from consultation_analyser.consultations.models import (
     DemographicOption,
     SelectedTheme,
 )
-from consultation_analyser.support_console import ingest
+import consultation_analyser.data_pipeline.batch as batch
+import consultation_analyser.data_pipeline.s3 as s3
+from consultation_analyser.data_pipeline.jobs import import_consultation_job
+from consultation_analyser.data_pipeline.sync.selected_themes import export_selected_themes_to_s3
 from consultation_analyser.support_console.views.consultations import (
     delete_consultation_job,
-    import_consultation_job,
-    import_immutable_data_job,
 )
 
 logger = settings.LOGGER
@@ -85,6 +85,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=False,
         methods=["post"],
         url_path="setup",
+        url_name="setup",
         permission_classes=[IsAdminUser],
     )
     def setup_consultation(self, request) -> Response:
@@ -99,7 +100,7 @@ class ConsultationViewSet(ModelViewSet):
 
             validated = input_serializer.validated_data
 
-            import_immutable_data_job.delay(
+            import_consultation_job.delay(
                 consultation_name=validated["consultation_name"],
                 consultation_code=validated["consultation_code"],
                 user_id=request.user.id,
@@ -119,49 +120,6 @@ class ConsultationViewSet(ModelViewSet):
             sentry_sdk.capture_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-    # TODO: Create UI to hit this endpoint and enable cloning consultations
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="clone",
-        permission_classes=[IsAdminUser],
-    )
-    def clone_consultation(self, request) -> Response:
-        """
-        Clone a processed consultation from S3, including AI data.
-
-        Imports: base data + candidate themes + (optionally) response annotations
-        Use for: QA environments and demonstrations
-        """
-        try:
-            input_serializer = ConsultationCloneSerializer(data=request.data)
-            input_serializer.is_valid(raise_exception=True)
-
-            validated = input_serializer.validated_data
-
-            import_consultation_job.delay(
-                consultation_name=validated["consultation_name"],
-                consultation_code=validated["consultation_code"],
-                timestamp=validated["timestamp"],
-                current_user_id=request.user.id,
-                sign_off=input_serializer.get_sign_off(),
-            )
-
-            return Response(
-                {"message": "Consultation clone job started successfully"},
-                status=status.HTTP_202_ACCEPTED,
-            )
-        except serializers.ValidationError:
-            return Response(
-                {"message": "An error occurred while starting the clone"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        except Exception:
-            return Response(
-                {"message": "An error occurred while starting the clone"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -194,7 +152,7 @@ class ConsultationViewSet(ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            ingest.submit_batch_job(
+            batch.submit_job(
                 job_type="FIND_THEMES",
                 consultation_code=consultation.code,
                 consultation_name=consultation.title,
@@ -266,7 +224,7 @@ class ConsultationViewSet(ModelViewSet):
 
         # Export all themes to S3
         try:
-            ingest.export_finalised_themes_to_s3(consultation)
+            export_selected_themes_to_s3(consultation)
         except ValueError as e:
             return Response(
                 {
@@ -287,7 +245,7 @@ class ConsultationViewSet(ModelViewSet):
 
         # Submit AWS Batch job to assign themes
         try:
-            ingest.submit_batch_job(
+            batch.submit_job(
                 job_type="ASSIGN_THEMES",
                 consultation_code=consultation.code,
                 consultation_name=consultation.title,
@@ -309,7 +267,9 @@ class ConsultationViewSet(ModelViewSet):
 
         return Response(
             {
-                "message": f"Job to assign themes for consultation '{consultation.title}' has been successfully added to the queue.",
+                "message": f"Assign Themes job started for consultation '{consultation.title}'",
+                "consultation_id": str(consultation.id),
+                "consultation_code": consultation.code,
             },
             status=status.HTTP_202_ACCEPTED,
         )
@@ -358,7 +318,8 @@ class ConsultationViewSet(ModelViewSet):
         detail=False,
         methods=["get"],
         url_path="folders",
-        permission_classes=[HasDashboardAccess],
+        url_name="folders",
+        permission_classes=[IsAdminUser],
     )
     def get_consultation_folders(self, request) -> Response:
         """
@@ -377,7 +338,7 @@ class ConsultationViewSet(ModelViewSet):
         stage = query_serializer.validated_data.get("stage")
 
         # Get all S3 folder codes
-        s3_codes = ingest.get_s3_folders()
+        s3_codes = s3.get_consultation_folders()
 
         if not s3_codes:
             return Response([])

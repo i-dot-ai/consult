@@ -15,86 +15,8 @@ from consultation_analyser.consultations.dummy_data import (
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.support_console import ingest
 
 logger = settings.LOGGER
-
-
-@job("default", timeout=1800)
-def import_consultation_job(
-    consultation_name: str,
-    consultation_code: str,
-    current_user_id: UUID,
-    timestamp: str | None = None,
-    sign_off: bool = False,
-) -> None:
-    """Job wrapper for importing consultations."""
-    logger.refresh_context()
-
-    return ingest.create_consultation(
-        consultation_name=consultation_name,
-        consultation_code=consultation_code,
-        timestamp=timestamp,
-        current_user_id=current_user_id,
-        sign_off=sign_off,
-    )
-
-
-@job("default", timeout=3600)
-def import_immutable_data_job(
-    consultation_name: str,
-    consultation_code: str,
-    user_id: UUID,
-) -> UUID:
-    """Import consultation immutable data from S3."""
-    from consultation_analyser.support_console.ingestion.ingest_immutable import (
-        import_consultation_from_s3,
-    )
-
-    logger.refresh_context()
-
-    return import_consultation_from_s3(
-        consultation_code=consultation_code,
-        consultation_title=consultation_name,
-        user_id=user_id,
-        enqueue_embeddings=True,
-    )
-
-
-@job("default", timeout=3600)
-def import_candidate_themes_job(
-    consultation_code: str,
-    run_date: str,
-) -> None:
-    """Import candidate themes from S3."""
-    from consultation_analyser.support_console.ingestion.ingest_candidate_themes import (
-        import_candidate_themes_from_s3,
-    )
-
-    logger.refresh_context()
-
-    import_candidate_themes_from_s3(
-        consultation_code=consultation_code,
-        timestamp=run_date,
-    )
-
-
-@job("default", timeout=3600)
-def import_response_annotations_job(
-    consultation_code: str,
-    run_date: str,
-) -> None:
-    """Import response annotations from S3."""
-    from consultation_analyser.support_console.ingestion.ingest_response_annotations import (
-        import_response_annotations_from_s3,
-    )
-
-    logger.refresh_context()
-
-    import_response_annotations_from_s3(
-        consultation_code=consultation_code,
-        timestamp=run_date,
-    )
 
 
 def delete_question_related_table(table: str, consultation_id: UUID):
@@ -341,15 +263,6 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
         return redirect("/support/consultations/")
 
     return render(request, "support_console/consultations/export_audit.html", context)
-
-
-# Legacy import function removed - using new import_consultation function instead
-
-
-def import_summary(request: HttpRequest) -> HttpResponse:
-    logger.refresh_context()
-
-    return render(request, "support_console/consultations/import_summary.html", context={})
 
 
 def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UUID) -> HttpResponse:

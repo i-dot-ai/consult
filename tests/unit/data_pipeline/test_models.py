@@ -2,11 +2,11 @@ import pytest
 from pydantic import ValidationError
 from themefinder.models import ThemeNode
 
-from consultation_analyser.support_console.ingestion.pydantic_models import (
+from consultation_analyser.data_pipeline.models import (
     AnnotationBatch,
     CandidateThemeBatch,
     DetailDetectionInput,
-    ImmutableDataBatch,
+    ConsultationDataBatch,
     MultiChoiceInput,
     QuestionInput,
     RespondentInput,
@@ -180,11 +180,11 @@ class TestMultiChoiceInput:
         assert "options" in str(exc_info.value)
 
 
-class TestImmutableDataBatch:
-    """Tests for ImmutableDataBatch Pydantic model"""
+class TestConsultationDataBatch:
+    """Tests for ConsultationDataBatch Pydantic model"""
 
     def test_valid_complete_batch(self):
-        """Test complete immutable data batch"""
+        """Test complete consultation data batch"""
         data = {
             "consultation_code": "NHS_2024",
             "consultation_title": "NHS Consultation 2024",
@@ -216,7 +216,7 @@ class TestImmutableDataBatch:
                 2: [{"themefinder_id": 1, "options": ["Option A", "Option B"]}]
             },
         }
-        batch = ImmutableDataBatch(**data)
+        batch = ConsultationDataBatch(**data)
         assert batch.consultation_code == "NHS_2024"
         assert batch.consultation_title == "NHS Consultation 2024"
         assert batch.timestamp == "2024-01-15"
@@ -233,7 +233,7 @@ class TestImmutableDataBatch:
             "respondents": [{"themefinder_id": 1}],
             "questions": [{"question_text": "Test Q", "question_number": 1}],
         }
-        batch = ImmutableDataBatch(**data)
+        batch = ConsultationDataBatch(**data)
         assert batch.consultation_code == "TEST"
         assert batch.timestamp is None
         assert batch.responses_by_question == {}
@@ -248,7 +248,7 @@ class TestImmutableDataBatch:
             "questions": [],
         }
         with pytest.raises(ValidationError) as exc_info:
-            ImmutableDataBatch(**data)
+            ConsultationDataBatch(**data)
         assert "consultation_title" in str(exc_info.value)
 
     def test_invalid_nested_respondent(self):
@@ -260,7 +260,7 @@ class TestImmutableDataBatch:
             "questions": [],
         }
         with pytest.raises(ValidationError) as exc_info:
-            ImmutableDataBatch(**data)
+            ConsultationDataBatch(**data)
         assert "respondents" in str(exc_info.value)
 
     def test_invalid_question_number_key_in_responses(self):
@@ -273,7 +273,7 @@ class TestImmutableDataBatch:
             "responses_by_question": {"1": [{"themefinder_id": 1, "text": "Response"}]},
         }
         # Pydantic should coerce string keys to int
-        batch = ImmutableDataBatch(**data)
+        batch = ConsultationDataBatch(**data)
         # Note: Pydantic will actually keep dict keys as strings in JSON
         # but we can access them either way
         assert 1 in batch.responses_by_question or "1" in batch.responses_by_question

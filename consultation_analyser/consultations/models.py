@@ -54,13 +54,6 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     code = models.SlugField(max_length=256)
     timestamp = models.SlugField(max_length=256, null=True, blank=True)
 
-    def get_folder(self, kind: Literal["mapping", "sign_off"]):
-        if self.code is None:
-            raise ValueError("code must be defined")
-        if self.timestamp is None:
-            raise ValueError("timestamp must be defined")
-        return f"app_data/consultations/{self.code}/outputs/{kind}/{self.timestamp}"
-
     def __str__(self):
         return self.title
 
@@ -92,28 +85,6 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         blank=True,
     )
 
-    def get_folder(self, kind: Literal["mapping", "sign_off"], file_name: str) -> str:
-        return f"{self.consultation.get_folder(kind)}/question_part_{self.number}/{file_name}"
-
-    @property
-    def candidate_themes_file(self):
-        return self.get_folder("sign_off", "clustered_themes.json")
-
-    @property
-    def mapping_file(self):
-        return self.get_folder("mapping", "mapping.jsonl")
-
-    @property
-    def sentiment_file(self):
-        return self.get_folder("mapping", "sentiment.jsonl")
-
-    @property
-    def detail_detection_file(self):
-        return self.get_folder("mapping", "detail_detection.jsonl")
-
-    @property
-    def selected_themes_file(self):
-        return self.get_folder("mapping", "themes.json")
 
     @property
     def multiple_choice_options(self) -> list:

@@ -3,12 +3,11 @@ from typing import Dict, List, Optional
 
 from django.conf import settings
 from django.db import transaction
-from pydantic import BaseModel
 from themefinder.models import ThemeNode
 
+import consultation_analyser.data_pipeline.s3 as s3
 from consultation_analyser.consultations.models import CandidateTheme, Consultation, Question
-from consultation_analyser.support_console.ingestion.pydantic_models import CandidateThemeBatch
-from consultation_analyser.support_console.ingestion.s3_utils import read_json_from_s3
+from consultation_analyser.data_pipeline.models import CandidateThemeBatch, ThemeNodeList
 
 logger = logging.getLogger(__name__)
 
@@ -50,17 +49,13 @@ def load_candidate_themes_from_s3(
     logger.info(f"Loading candidate themes from {key}")
 
     # Read and parse JSON file
-    theme_data = read_json_from_s3(
+    theme_data = s3.read_json(
         bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=False
     )
 
     if theme_data is None:
         logger.info(f"No candidate themes file found at {key}")
         return []
-
-    # TODO: move this to themefinder
-    class ThemeNodeList(BaseModel):
-        theme_nodes: list[ThemeNode]
 
     validated_themes = ThemeNodeList.model_validate(theme_data).theme_nodes
 
@@ -107,7 +102,7 @@ def load_candidate_themes_batch(
         except Consultation.DoesNotExist:
             raise ValueError(
                 f"Consultation with code '{consultation_code}' does not exist. "
-                "Immutable data must be imported before candidate themes."
+                "Base consultation data must be imported before candidate themes."
             )
 
     logger.info(
@@ -145,13 +140,13 @@ def load_candidate_themes_batch(
 
 
 # ============================================================================
-# INGESTION LOGIC - Create Django models from validated data
+# IMPORT LOGIC - Create Django models from validated data
 # ============================================================================
 
 
-def _ingest_candidate_themes_for_question(question: Question, themes: List[ThemeNode]) -> None:
+def _import_candidate_themes_for_question(question: Question, themes: List[ThemeNode]) -> None:
     """
-    Ingest candidate themes for a single question.
+    Import candidate themes for a single question into database.
 
     Uses a two-pass approach to handle parent-child relationships:
     1. Create all themes without parent links
@@ -164,7 +159,7 @@ def _ingest_candidate_themes_for_question(question: Question, themes: List[Theme
         themes: List of validated ThemeNode objects
     """
     if not themes:
-        logger.info(f"No candidate themes to ingest for question {question.number}")
+        logger.info(f"No candidate themes to import for question {question.number}")
         return
 
     # Delete existing candidate themes for this question (idempotent)
@@ -175,7 +170,7 @@ def _ingest_candidate_themes_for_question(question: Question, themes: List[Theme
         )
         CandidateTheme.objects.filter(question=question).delete()
 
-    logger.info(f"Ingesting {len(themes)} candidate themes for question {question.number}")
+    logger.info(f"Importing {len(themes)} candidate themes for question {question.number}")
 
     # First pass: create all themes without parent relationships
     themes_to_create = [
@@ -226,19 +221,19 @@ def _ingest_candidate_themes_for_question(question: Question, themes: List[Theme
 
 
 @transaction.atomic
-def ingest_candidate_themes(batch: CandidateThemeBatch) -> None:
+def import_candidate_themes(batch: CandidateThemeBatch) -> None:
     """
-    Ingest all candidate themes from a batch into the database.
+    Import all candidate themes from a batch into the database.
 
-    This is the main ingestion function that:
+    This is the main import function that:
     1. Validates that the consultation exists
     2. Updates the consultation's timestamp
-    3. Ingests candidate themes for each question
+    3. Imports candidate themes for each question
 
     This function is idempotent - can safely re-run to update themes.
 
     Args:
-        batch: CandidateThemeBatch containing all themes to ingest
+        batch: CandidateThemeBatch containing all themes to import
 
     Raises:
         ValueError: If consultation doesn't exist or questions are missing
@@ -249,10 +244,10 @@ def ingest_candidate_themes(batch: CandidateThemeBatch) -> None:
     except Consultation.DoesNotExist:
         raise ValueError(
             f"Consultation with code '{batch.consultation_code}' does not exist. "
-            "Immutable data must be imported before candidate themes."
+            "Base consultation data must be imported before candidate themes."
         )
 
-    logger.info(f"Starting candidate themes ingestion for consultation '{consultation.title}'")
+    logger.info(f"Starting candidate themes import for consultation '{consultation.title}'")
 
     # Update consultation timestamp
     if consultation.timestamp != batch.timestamp:
@@ -262,8 +257,8 @@ def ingest_candidate_themes(batch: CandidateThemeBatch) -> None:
         consultation.timestamp = batch.timestamp
         consultation.save(update_fields=["timestamp"])
 
-    # Ingest themes for each question
-    questions_ingested = 0
+    # Import themes for each question
+    questions_imported = 0
     total_themes_created = 0
 
     for question_number, themes in batch.themes_by_question.items():
@@ -273,18 +268,18 @@ def ingest_candidate_themes(batch: CandidateThemeBatch) -> None:
         except Question.DoesNotExist:
             raise ValueError(
                 f"Question {question_number} does not exist for consultation '{batch.consultation_code}'. "
-                "Immutable data must be imported before candidate themes."
+                "Base consultation data must be imported before candidate themes."
             )
 
-        # Ingest themes for this question
-        _ingest_candidate_themes_for_question(question, themes)
+        # Import themes for this question
+        _import_candidate_themes_for_question(question, themes)
 
-        questions_ingested += 1
+        questions_imported += 1
         total_themes_created += len(themes)
 
     logger.info(
-        f"Candidate themes ingestion complete: "
-        f"{total_themes_created} themes across {questions_ingested} questions"
+        f"Candidate themes import complete: "
+        f"{total_themes_created} themes across {questions_imported} questions"
     )
 
 
@@ -327,7 +322,7 @@ def import_candidate_themes_from_s3(
         question_numbers=question_numbers,
     )
 
-    # Ingest into database
-    ingest_candidate_themes(batch)
+    # Import into database
+    import_candidate_themes(batch)
 
     logger.info(f"Candidate themes import complete for consultation '{consultation_code}'")

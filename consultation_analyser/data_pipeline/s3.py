@@ -1,4 +1,5 @@
 import json
+import re
 from typing import Dict, List, Optional
 
 import boto3
@@ -8,7 +9,7 @@ from django.conf import settings
 logger = settings.LOGGER
 
 
-def read_jsonl_from_s3(
+def read_jsonl(
     bucket_name: str, key: str, s3_client=None, raise_if_missing: bool = True
 ) -> List[Dict]:
     """
@@ -45,7 +46,7 @@ def read_jsonl_from_s3(
     return objects
 
 
-def read_json_from_s3(
+def read_json(
     bucket_name: str, key: str, s3_client=None, raise_if_missing: bool = True
 ) -> Optional[Dict]:
     """
@@ -106,3 +107,31 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
     ]
     question_folders.sort()
     return question_folders
+
+
+def get_consultation_folders() -> list[str]:
+    """
+    Get all consultation folder codes from S3.
+
+    Returns:
+        List of folder codes (e.g., ['healthcare-consultation', 'transport-consultation'])
+    """
+    try:
+        s3 = boto3.resource("s3")
+        objects = s3.Bucket(settings.AWS_BUCKET_NAME).objects.filter(
+            Prefix="app_data/consultations/"
+        )
+
+        # Get unique consultation folders
+        s3_codes = set()
+        for obj in objects:
+            if match := re.search(
+                r"^app_data\/consultations\/([\w-]+)",
+                str(obj.key),
+            ):
+                s3_codes.add(match.groups()[0])
+
+        return list(s3_codes)
+    except Exception:
+        logger.exception("Failed to get S3 folders")
+        return []

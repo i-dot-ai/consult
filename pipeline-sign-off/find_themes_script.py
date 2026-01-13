@@ -9,10 +9,11 @@ from pathlib import Path
 import boto3
 import pandas as pd
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel
 from themefinder import theme_condensation, theme_generation, theme_mapping, theme_refinement
 from themefinder.models import HierarchicalClusteringResponse
 from themefinder.theme_clustering_agent import ThemeClusteringAgent, ThemeNode
+
+from consultation_analyser.data_pipeline.models import ThemeNodeList
 
 # Configure logging
 logging.basicConfig(
@@ -398,10 +399,6 @@ async def process_consultation(consultation_dir: str, llm) -> str:
                     all_themes_list = [
                         refined_themes_to_theme_node(row) for _, row in refined_themes_df.iterrows()
                     ]
-
-                # TODO: move this to themefinder
-                class ThemeNodeList(BaseModel):
-                    theme_nodes: list[ThemeNode]
 
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
                     f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
