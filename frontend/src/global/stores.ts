@@ -81,7 +81,7 @@ export const createFetchStore = <T>({
 
   let prevPromise: Promise<void> | null = null;
   let resolvePrev: (() => void) | null = null;
-  let debouncedFetch: Function | null = null;
+  let debouncedFetch: ReturnType<typeof debounce> | null = null;
 
   const doFetch = async (
     url: string,
@@ -141,7 +141,7 @@ export const createFetchStore = <T>({
             resolvePrev();
           }
         }
-      }, debounceDelay)
+      }, debounceDelay);
     }
 
     prevPromise = new Promise<void>((resolve) => {

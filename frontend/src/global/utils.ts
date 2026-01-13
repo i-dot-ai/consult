@@ -194,7 +194,10 @@ export const derandomize = (
   });
 };
 
-export function debounce<T extends (...args: unknown[]) => void>(callback: T, delay: number) {
+export function debounce<T extends (...args: unknown[]) => void>(
+  callback: T,
+  delay: number,
+) {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   return (...args: Parameters<T>) => {
@@ -206,5 +209,5 @@ export function debounce<T extends (...args: unknown[]) => void>(callback: T, de
       timeoutId = null;
       callback(...args);
     }, delay);
-  }
+  };
 }
