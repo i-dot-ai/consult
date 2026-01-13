@@ -119,9 +119,11 @@ IMAGE_TAG=$$(git rev-parse HEAD)
 AUTO_APPLY_RESOURCES = module.backend.aws_ecs_task_definition.aws-ecs-task \
                        module.backend.aws_ecs_service.aws-ecs-service \
                        module.backend.data.aws_ecs_task_definition.main \
+                       module.backend.aws_lb_listener_rule \
                        module.frontend.aws_ecs_task_definition.aws-ecs-task \
                        module.frontend.aws_ecs_service.aws-ecs-service \
                        module.frontend.data.aws_ecs_task_definition.main \
+                       module.frontend.aws_lb_listener_rule \
                        module.worker.aws_ecs_task_definition.aws-ecs-task \
                        module.worker.aws_ecs_service.aws-ecs-service \
                        module.worker.data.aws_ecs_task_definition.main \
@@ -129,6 +131,7 @@ AUTO_APPLY_RESOURCES = module.backend.aws_ecs_task_definition.aws-ecs-task \
                        module.waf.aws_wafv2_ip_set.host_ip_whitelist \
                        module.waf.aws_wafv2_ip_set.header_secured_host_ip_whitelist \
                        module.waf.aws_wafv2_ip_set.uri_path_ip_configuration \
+                       module.waf.aws_wafv2_web_acl \
                        aws_secretsmanager_secret.django_secret \
                        aws_secretsmanager_secret.debug \
 											 module.load_balancer.aws_security_group_rule.load_balancer_http_whitelist \
