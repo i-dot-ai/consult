@@ -66,7 +66,8 @@ module "batch_job_sign_off" {
     "REPO" : "consult",
     "AWS_ACCOUNT_ID": data.aws_caller_identity.current.id,
     "DOCKER_BUILDER_CONTAINER": "consult-sign-off",
-    "LLM_GATEWAY_URL": local.llm_gateway_url
+    "LLM_GATEWAY_URL": local.llm_gateway_url,
+    "JOB_DEFINITION_VERSION": "2"
   }
   additional_iam_policies  = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
   secrets = [
