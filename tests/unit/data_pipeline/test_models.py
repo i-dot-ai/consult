@@ -5,8 +5,8 @@ from themefinder.models import ThemeNode
 from consultation_analyser.data_pipeline.models import (
     AnnotationBatch,
     CandidateThemeBatch,
-    DetailDetectionInput,
     ConsultationDataBatch,
+    DetailDetectionInput,
     MultiChoiceInput,
     QuestionInput,
     RespondentInput,

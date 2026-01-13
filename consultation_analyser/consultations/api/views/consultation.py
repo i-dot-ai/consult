@@ -12,6 +12,8 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+import consultation_analyser.data_pipeline.batch as batch
+import consultation_analyser.data_pipeline.s3 as s3
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.api.permissions import (
     CanSeeConsultation,
@@ -30,8 +32,6 @@ from consultation_analyser.consultations.models import (
     DemographicOption,
     SelectedTheme,
 )
-import consultation_analyser.data_pipeline.batch as batch
-import consultation_analyser.data_pipeline.s3 as s3
 from consultation_analyser.data_pipeline.jobs import import_consultation_job
 from consultation_analyser.data_pipeline.sync.selected_themes import export_selected_themes_to_s3
 from consultation_analyser.support_console.views.consultations import (

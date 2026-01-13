@@ -9,11 +9,17 @@ from pathlib import Path
 import boto3
 import pandas as pd
 from langchain_openai import ChatOpenAI
+from pydantic import BaseModel
 from themefinder import theme_condensation, theme_generation, theme_mapping, theme_refinement
 from themefinder.models import HierarchicalClusteringResponse
 from themefinder.theme_clustering_agent import ThemeClusteringAgent, ThemeNode
 
-from consultation_analyser.data_pipeline.models import ThemeNodeList
+
+class ThemeNodeList(BaseModel):
+    """List of theme nodes for serialization to JSON."""
+
+    theme_nodes: list[ThemeNode]
+
 
 # Configure logging
 logging.basicConfig(

@@ -1,6 +1,5 @@
 import uuid
 from textwrap import shorten
-from typing import Literal
 
 from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
@@ -84,7 +83,6 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         null=True,
         blank=True,
     )
-
 
     @property
     def multiple_choice_options(self) -> list:

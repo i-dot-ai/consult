@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 from django.conf import settings
 from django.db import transaction
 
+import consultation_analyser.data_pipeline.s3 as s3
 from consultation_analyser.consultations.models import (
     Consultation,
     Question,
@@ -11,7 +12,6 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotation,
     SelectedTheme,
 )
-import consultation_analyser.data_pipeline.s3 as s3
 from consultation_analyser.data_pipeline.models import (
     AnnotationBatch,
     DetailDetectionInput,

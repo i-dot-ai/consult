@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import transaction
 from django_rq import get_queue
 
+import consultation_analyser.data_pipeline.s3 as s3
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -16,8 +17,6 @@ from consultation_analyser.consultations.models import (
     Respondent,
     Response,
 )
-from consultation_analyser.embeddings import embed_text
-import consultation_analyser.data_pipeline.s3 as s3
 from consultation_analyser.data_pipeline.models import (
     ConsultationDataBatch,
     MultiChoiceInput,
@@ -25,6 +24,7 @@ from consultation_analyser.data_pipeline.models import (
     RespondentInput,
     ResponseInput,
 )
+from consultation_analyser.embeddings import embed_text
 
 logger = settings.LOGGER
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
