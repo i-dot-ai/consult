@@ -15,7 +15,7 @@ DEFAULT_TIMEOUT_SECONDS = 3_600
 
 
 @job("default", timeout=3600)
-def import_consultation_job(
+def import_consultation(
     consultation_name: str,
     consultation_code: str,
     user_id: UUID,
@@ -36,7 +36,7 @@ def import_consultation_job(
 
 
 @job("default", timeout=3600)
-def import_candidate_themes_job(
+def import_candidate_themes(
     consultation_code: str,
     run_date: str,
 ) -> None:
@@ -54,7 +54,7 @@ def import_candidate_themes_job(
 
 
 @job("default", timeout=3600)
-def import_response_annotations_job(
+def import_response_annotations(
     consultation_code: str,
     run_date: str,
 ) -> None:

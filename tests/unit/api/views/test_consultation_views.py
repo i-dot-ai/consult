@@ -468,9 +468,9 @@ class TestSetupConsultationEndpoint:
         }
 
         with patch(
-            "consultation_analyser.consultations.api.views.consultation.import_consultation_job"
-        ) as mock_job:
-            mock_job.delay.return_value = None
+            "consultation_analyser.consultations.api.views.consultation.jobs"
+        ) as mock_jobs:
+            mock_jobs.import_consultation.delay.return_value = None
 
             response = client.post(
                 url,
@@ -483,8 +483,8 @@ class TestSetupConsultationEndpoint:
             assert "setup job started successfully" in response.json()["message"].lower()
 
             # Verify job was enqueued with correct parameters
-            mock_job.delay.assert_called_once()
-            call_args = mock_job.delay.call_args
+            mock_jobs.import_consultation.delay.assert_called_once()
+            call_args = mock_jobs.import_consultation.delay.call_args
             assert call_args.kwargs["consultation_code"] == "test-code"
             assert call_args.kwargs["consultation_name"] == "Test Consultation"
 

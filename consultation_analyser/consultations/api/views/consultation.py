@@ -32,7 +32,7 @@ from consultation_analyser.consultations.models import (
     DemographicOption,
     SelectedTheme,
 )
-from consultation_analyser.data_pipeline.jobs import import_consultation_job
+from consultation_analyser.data_pipeline import jobs
 from consultation_analyser.data_pipeline.sync.selected_themes import export_selected_themes_to_s3
 from consultation_analyser.support_console.views.consultations import (
     delete_consultation_job,
@@ -100,7 +100,7 @@ class ConsultationViewSet(ModelViewSet):
 
             validated = input_serializer.validated_data
 
-            import_consultation_job.delay(
+            jobs.import_consultation.delay(
                 consultation_name=validated["consultation_name"],
                 consultation_code=validated["consultation_code"],
                 user_id=request.user.id,
