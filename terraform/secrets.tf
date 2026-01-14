@@ -47,6 +47,42 @@ locals {
     {
       name  = "LITELLM_CONSULT_OPENAI_API_KEY"
       value = data.aws_ssm_parameter.litellm_api_key.value
+    },
+    {
+      name  = "DJANGO_SECRET_KEY"
+      value = random_password.django_pass.result
+    },
+    {
+      name  = "AUTH_API_URL"
+      value = data.aws_ssm_parameter.auth_api_invoke_url.value
+    },
+    {
+      name  = "AWS_BUCKET_NAME"
+      value = "${var.team_name}-${var.env}-${var.project_name}-data"
+    },
+    {
+      name  = "DATABASE_URL"
+      value = "postgres://${module.rds.rds_instance_username}:${module.rds.rds_instance_db_password}@${module.rds.db_instance_address}/${module.rds.db_instance_name}"
+    },
+    {
+      name  = "GUNICORN_WORKERS"
+      value = "placeholder"
+    },
+    {
+      name  = "GUNICORN_TIMEOUT"
+      value = "placeholder"
+    },
+    {
+      name  = "ADMIN_USERS"
+      value = "placeholder"
+    },
+    {
+      name  = "ADMIN_USERS"
+      value = "placeholder"
+    },
+    {
+      name  = "PUBLIC_INTERNAL_ACCESS_CLIENT_ID"
+      value = aws_ssm_parameter.oidc_secrets["client_id"].value,
     }
   ]
 

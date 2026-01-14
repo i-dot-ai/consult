@@ -32,14 +32,11 @@ module "batch_job_mapping" {
   iam_role_name            = "${local.name}-mapping-role"
   platform_capabilities    = ["FARGATE"]
   task_memory_requirements = "2048"
-  env_vars                 = {
-    "ENVIRONMENT" : terraform.workspace,
-    "APP_NAME" : "${local.name}-mapping"
-    "REPO" : "consult",
-    "AWS_ACCOUNT_ID": data.aws_caller_identity.current.id,
-    "DOCKER_BUILDER_CONTAINER": "consult-mapping",
-    "LLM_GATEWAY_URL": local.llm_gateway_url
-  }
+  env_vars                 = merge(local.base_env_vars, {
+    "EXECUTION_CONTEXT"        = "batch"
+    "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-mapping"
+    "APP_NAME"                 = "${var.project_name}-mapping"
+  })
   additional_iam_policies  = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
   secrets = [
     for k, v in aws_ssm_parameter.env_secrets : {
@@ -60,14 +57,11 @@ module "batch_job_sign_off" {
   iam_role_name            = "${local.name}-sign-off-role"
   platform_capabilities    = ["FARGATE"]
   task_memory_requirements = "2048"
-  env_vars                 = {
-    "ENVIRONMENT" : terraform.workspace,
-    "APP_NAME" : "${local.name}-sign-off"
-    "REPO" : "consult",
-    "AWS_ACCOUNT_ID": data.aws_caller_identity.current.id,
-    "DOCKER_BUILDER_CONTAINER": "consult-sign-off",
-    "LLM_GATEWAY_URL": local.llm_gateway_url
-  }
+  env_vars                 = merge(local.base_env_vars, {
+    "EXECUTION_CONTEXT"        = "batch"
+    "APP_NAME"                 = "${var.project_name}-sign-off"
+    "DOCKER_BUILDER_CONTAINER" = "consult-sign-off",
+  })
   additional_iam_policies  = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
   secrets = [
     for k, v in aws_ssm_parameter.env_secrets : {
