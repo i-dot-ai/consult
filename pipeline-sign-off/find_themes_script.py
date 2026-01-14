@@ -133,17 +133,14 @@ async def generate_themes(question: str, responses_df):
     return refined_themes_df
 
 
-def agentic_theme_selection(
+def agentic_theme_clustering(
     refined_themes_df,
     llm,
-    min_selected_themes=10,
-    max_selected_themes=20,
     max_cluster_iterations=0,
     n_target_themes=10,
 ):
     """
-    Iteratively select themes using clustering with adaptive significance threshold.
-    Will retry a fixed number of times before defaulting to top 20 themes.
+    Cluster themes using hierarchical clustering.
 
     Parameters:
     -----------
@@ -151,10 +148,6 @@ def agentic_theme_selection(
         DataFrame containing themes with 'topic' column
     llm : object
         Language model object for theme clustering
-    min_selected_themes : int, default=10
-        Minimum number of themes to select
-    max_selected_themes : int, default=20
-        Maximum number of themes to select
     max_cluster_iterations : int, default=0
         Maximum number of clustering iterations to attempt
     n_target_themes : int, default=10
@@ -163,12 +156,11 @@ def agentic_theme_selection(
     Returns:
     --------
     pd.DataFrame
-        Selected themes with 'Theme Name', 'Theme Description', and 'topic' columns
+        All themes from clustering
     """
     refined_themes_df[["topic_label", "topic_description"]] = refined_themes_df["topic"].str.split(
         ":", n=1, expand=True
     )
-    selected_themes = pd.DataFrame()
 
     initial_themes = [
         ThemeNode(
@@ -186,6 +178,7 @@ def agentic_theme_selection(
     logger.info(
         f"Clustering themes with max_iterations={max_cluster_iterations}, target_themes={n_target_themes}"
     )
+    all_themes_df = None
     for i in range(3):
         try:
             all_themes_df = agent.cluster_themes(
@@ -196,18 +189,11 @@ def agentic_theme_selection(
         except:  # noqa: E722
             logger.info(f"Error when clustering, attempt {i}, retrying")
 
-    selected_themes = pd.DataFrame()
-    significance_percentage = 1
-    while (
-        len(selected_themes) < min_selected_themes or len(selected_themes) > max_selected_themes
-    ) and (significance_percentage < 20):
-        selected_themes = agent.select_themes(significance_percentage)
-        significance_percentage += 1
-    selected_themes["topic"] = (
-        selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
-    )
+    if all_themes_df is None or len(all_themes_df) == 0:
+        logger.warning("Theme clustering failed after 3 attempts")
+        return None
 
-    return selected_themes, all_themes_df
+    return all_themes_df
 
 
 async def process_consultation(consultation_dir: str, llm) -> str:
@@ -245,26 +231,30 @@ async def process_consultation(consultation_dir: str, llm) -> str:
                 # Generate themes
                 refined_themes_df = await generate_themes(question, responses_df)
 
-                # Select themes, using clustering if more than 20 themes
-                if len(refined_themes_df) > 20:
-                    _selected_themes, _all_themes_df = agentic_theme_selection(
-                        refined_themes_df, llm
+                def refined_themes_to_theme_node(row: dict):
+                    topic_label, topic_description = row["topic"].split(":")
+                    return ThemeNode(
+                        topic_id=row["topic_id"],
+                        topic_label=topic_label,
+                        topic_description=topic_description,
+                        source_topic_count=row["source_topic_count"],
+                        parent_id="0",
+                        children=[],
                     )
-                    all_themes_list = [ThemeNode(**row) for _, row in _all_themes_df.iterrows()]
+
+                # Cluster themes if more than 20
+                if len(refined_themes_df) > 20:
+                    all_themes_df = agentic_theme_clustering(refined_themes_df, llm)
+                    if all_themes_df is not None:
+                        all_themes_list = [ThemeNode(**row) for _, row in all_themes_df.iterrows()]
+                    else:
+                        logger.info("Clustering failed, using unclustered themes")
+                        all_themes_list = [
+                            refined_themes_to_theme_node(row)
+                            for _, row in refined_themes_df.iterrows()
+                        ]
                 else:
                     logger.info("Fewer than 20 themes, clustering not required")
-
-                    def refined_themes_to_theme_node(row: dict):
-                        topic_label, topic_description = row["topic"].split(":")
-                        return ThemeNode(
-                            topic_id=row["topic_id"],
-                            topic_label=topic_label,
-                            topic_description=topic_description,
-                            source_topic_count=row["source_topic_count"],
-                            parent_id="0",
-                            children=[],
-                        )
-
                     all_themes_list = [
                         refined_themes_to_theme_node(row) for _, row in refined_themes_df.iterrows()
                     ]
