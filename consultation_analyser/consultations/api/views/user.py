@@ -50,7 +50,12 @@ class UserViewSet(ModelViewSet):
     pagination_class = PageNumberPagination
     filterset_class = UserFilter
 
-    @action(detail=True, methods=["get"], url_path="consultations", permission_classes=[IsAuthenticated, CanSeeConsultation])
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="consultations",
+        permission_classes=[IsAuthenticated, CanSeeConsultation],
+    )
     def consultations(self, request, pk=None):
         """
         Get all consultations that a specific user belongs to.

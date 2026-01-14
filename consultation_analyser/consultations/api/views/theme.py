@@ -4,7 +4,6 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.api.permissions import (
     CanSeeConsultation,
-    HasDashboardAccess,
 )
 from consultation_analyser.consultations.api.serializers import CrossCuttingThemeSerializer
 

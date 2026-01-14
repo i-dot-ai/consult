@@ -13,7 +13,6 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.api.filters import ResponseFilter, ResponseSearchFilter
 from consultation_analyser.consultations.api.permissions import (
     CanSeeConsultation,
-    HasDashboardAccess,
 )
 from consultation_analyser.consultations.api.serializers import (
     DemographicAggregationsSerializer,
@@ -112,7 +111,12 @@ class ResponseViewSet(ModelViewSet):
         filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
         return filterset.qs.distinct()
 
-    @action(detail=False, methods=["get"], url_path="demographic-aggregations",  permission_classes=[IsAuthenticated, CanSeeConsultation])
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="demographic-aggregations",
+        permission_classes=[IsAuthenticated, CanSeeConsultation],
+    )
     def demographic_aggregations(self, request, consultation_pk=None):
         """Get demographic aggregations for filtered responses"""
 
@@ -133,7 +137,12 @@ class ResponseViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=False, methods=["get"], url_path="theme-aggregations",  permission_classes=[IsAuthenticated, CanSeeConsultation])
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="theme-aggregations",
+        permission_classes=[IsAuthenticated, CanSeeConsultation],
+    )
     def theme_aggregations(self, request, consultation_pk=None):
         """Get theme aggregations for filtered responses"""
 
@@ -175,7 +184,12 @@ class ResponseViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["patch"], url_path="toggle-flag", permission_classes=[IsAuthenticated, CanSeeConsultation])
+    @action(
+        detail=True,
+        methods=["patch"],
+        url_path="toggle-flag",
+        permission_classes=[IsAuthenticated, CanSeeConsultation],
+    )
     def toggle_flag(self, request, consultation_pk=None, pk=None):
         """Toggle flag on/off for the user"""
         response = self.get_object()
@@ -186,7 +200,12 @@ class ResponseViewSet(ModelViewSet):
         response.annotation.save()
         return Response()
 
-    @action(detail=True, methods=["post"], url_path="mark-read",  permission_classes=[IsAuthenticated, CanSeeConsultation])
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="mark-read",
+        permission_classes=[IsAuthenticated, CanSeeConsultation],
+    )
     def mark_read(self, request, consultation_pk=None, pk=None):
         """Mark this response as read by the current user"""
         response = self.get_object()

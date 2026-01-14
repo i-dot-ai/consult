@@ -28,7 +28,12 @@ class QuestionViewSet(ModelViewSet):
             .order_by("number")
         )
 
-    @action(detail=True, methods=["get"], url_path="theme-information", permission_classes=[IsAuthenticated, CanSeeConsultation])
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="theme-information",
+        permission_classes=[IsAuthenticated, CanSeeConsultation],
+    )
     def theme_information(self, request, pk=None, consultation_pk=None):
         """Get all theme information for a question"""
         # Get the question object with consultation in one query
@@ -44,7 +49,12 @@ class QuestionViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"], url_path="show-next", permission_classes=[IsAuthenticated, CanSeeConsultation])
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="show-next",
+        permission_classes=[IsAuthenticated, CanSeeConsultation],
+    )
     def show_next_response(self, request, pk=None, consultation_pk=None):
         """Get the next response that needs human review for this question"""
         question = self.get_object()
