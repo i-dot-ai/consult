@@ -6,6 +6,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.api.filters import UserFilter
+from consultation_analyser.consultations.api.permissions import CanSeeConsultation
 from consultation_analyser.consultations.api.serializers import (
     ConsultationSerializer,
     UserSerializer,
@@ -45,11 +46,11 @@ class UserViewSet(ModelViewSet):
         return filterset.qs.distinct()
 
     serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     pagination_class = PageNumberPagination
     filterset_class = UserFilter
 
-    @action(detail=True, methods=["get"], url_path="consultations")
+    @action(detail=True, methods=["get"], url_path="consultations", permission_classes=[IsAuthenticated, CanSeeConsultation])
     def consultations(self, request, pk=None):
         """
         Get all consultations that a specific user belongs to.

@@ -1,3 +1,4 @@
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from consultation_analyser.consultations import models
@@ -10,7 +11,7 @@ from consultation_analyser.consultations.api.serializers import RespondentSerial
 
 class RespondentViewSet(ModelViewSet):
     serializer_class = RespondentSerializer
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    permission_classes = [IsAuthenticated, CanSeeConsultation]
     filterset_fields = {"themefinder_id": ["exact", "gte", "lte"]}
     http_method_names = ["get", "patch"]
 

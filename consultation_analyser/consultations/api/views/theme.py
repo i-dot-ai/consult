@@ -1,3 +1,4 @@
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from consultation_analyser.consultations import models
@@ -10,7 +11,7 @@ from consultation_analyser.consultations.api.serializers import CrossCuttingThem
 
 class ThemeViewSet(ReadOnlyModelViewSet):
     serializer_class = CrossCuttingThemeSerializer
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    permission_classes = [IsAuthenticated, CanSeeConsultation]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]

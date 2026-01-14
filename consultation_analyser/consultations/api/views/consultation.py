@@ -58,7 +58,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=True,
         methods=["get"],
         url_path="demographic-options",
-        permission_classes=[HasDashboardAccess],
+        permission_classes=[IsAuthenticated, CanSeeConsultation | IsAdminUser],
     )
     def demographic_options(self, request, pk=None):
         self.get_object()
@@ -81,7 +81,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=False,
         methods=["post"],
         url_path="import",
-        permission_classes=[HasDashboardAccess],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def submit_consultation_import(self, request) -> Response:
         """
@@ -119,7 +119,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=False,
         methods=["post"],
         url_path="import-immutable",
-        permission_classes=[IsAdminUser],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def import_immutable_data(self, request) -> Response:
         """
@@ -158,7 +158,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=False,
         methods=["post"],
         url_path="import-candidate-themes",
-        permission_classes=[IsAdminUser],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def import_candidate_themes(self, request) -> Response:
         """
@@ -196,7 +196,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=False,
         methods=["post"],
         url_path="import-annotations",
-        permission_classes=[IsAdminUser],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def import_annotations(self, request) -> Response:
         """
@@ -274,7 +274,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=False,
         methods=["get"],
         url_path="folders",
-        permission_classes=[HasDashboardAccess],
+        permission_classes=[IsAuthenticated, IsAdminUser | HasDashboardAccess],
     )
     def get_consultation_folders(self, request) -> Response:
         """
@@ -290,7 +290,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=True,
         methods=["post"],
         url_path="add-users",
-        permission_classes=[IsAdminUser],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def add_users(self, request, pk=None) -> Response:
         """
@@ -335,7 +335,7 @@ class ConsultationViewSet(ModelViewSet):
         methods=["delete"],
         url_path="users/(?P<user_id>[^/.]+)",
         url_name="remove-user",
-        permission_classes=[IsAdminUser],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def remove_user(self, request, pk=None, user_id=None) -> Response:
         """

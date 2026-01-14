@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -13,7 +14,7 @@ from consultation_analyser.consultations.api.serializers import (
 
 class CandidateThemeViewSet(ModelViewSet):
     serializer_class = CandidateThemeSerializer
-    permission_classes = [CanSeeConsultation]
+    permission_classes = [IsAuthenticated, CanSeeConsultation]
     http_method_names = ["get", "post"]
 
     def get_queryset(self):
@@ -32,7 +33,7 @@ class CandidateThemeViewSet(ModelViewSet):
         serializer = CandidateThemeSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
-    @action(detail=True, methods=["post"], url_path="select")
+    @action(detail=True, methods=["post"], url_path="select", permission_classes=[IsAuthenticated, CanSeeConsultation])
     def select(self, request, consultation_pk=None, question_pk=None, pk=None):
         """Select a candidate theme to add as a selected theme"""
         candidate_theme = get_object_or_404(self.get_queryset(), pk=pk)
