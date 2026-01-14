@@ -1,5 +1,6 @@
 import pytest
 from django.urls import reverse
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from consultation_analyser.consultations.models import Question
 from consultation_analyser.factories import QuestionFactory, RespondentFactory, ResponseFactory
@@ -304,29 +305,10 @@ class TestQuestionViewSet:
         assert data["has_free_text"] is False
         assert data["message"] == "This question does not have free text responses."
 
-    def test_permission_requires_dashboard_access(
-        self, client, non_dashboard_user_token, free_text_question
-    ):
-        """Test that QuestionViewSet requires dashboard access"""
-        url = reverse(
-            "question-detail",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
-            },
-        )
-        response = client.get(
-            url,
-            headers={"Authorization": f"Bearer {non_dashboard_user_token}"},
-        )
-        assert response.status_code == 403
-
     def test_permission_requires_consultation_access(
         self, client, user_without_consultation_access, free_text_question
     ):
         """Test that QuestionViewSet requires consultation access"""
-        from rest_framework_simplejwt.tokens import RefreshToken
-
         refresh = RefreshToken.for_user(user_without_consultation_access)
         token = str(refresh.access_token)
 

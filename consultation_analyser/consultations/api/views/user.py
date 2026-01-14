@@ -6,7 +6,6 @@ from rest_framework.viewsets import ModelViewSet
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.api.filters import UserFilter
-from consultation_analyser.consultations.api.permissions import CanSeeConsultation
 from consultation_analyser.consultations.api.serializers import (
     ConsultationSerializer,
     UserSerializer,
@@ -54,7 +53,7 @@ class UserViewSet(ModelViewSet):
         detail=True,
         methods=["get"],
         url_path="consultations",
-        permission_classes=[IsAuthenticated, CanSeeConsultation],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def consultations(self, request, pk=None):
         """
