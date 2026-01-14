@@ -783,26 +783,6 @@ Django = ">=5.2"
 drf = ["djangorestframework"]
 
 [[package]]
-name = "django-gov-notify"
-version = "0.4.0"
-description = "A GOV.UK Notify flavoured Django email backend"
-optional = false
-python-versions = ">=3.8,<3.13"
-groups = ["main"]
-files = []
-develop = false
-
-[package.dependencies]
-django = {version = ">=5.0", markers = "python_version >= \"3.10\" and python_version < \"3.13\""}
-notifications-python-client = "^8.1.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/i-dot-ai/django-gov-notify"
-reference = "support-python-3-12"
-resolved_reference = "f9b623241ac25dd6dc540550b3adaae697c835bf"
-
-[[package]]
 name = "django-libsass"
 version = "0.9"
 description = "A django-compressor filter to compile SASS files using libsass"
@@ -983,17 +963,6 @@ doc = ["Sphinx", "sphinx_rtd_theme (>=0.1.9)"]
 lint = ["pre-commit", "pyupgrade", "ruff", "yesqa"]
 python-jose = ["python-jose (==3.3.0)"]
 test = ["cryptography", "freezegun", "pytest", "pytest-cov", "pytest-django", "pytest-xdist", "tox"]
-
-[[package]]
-name = "docopt"
-version = "0.6.2"
-description = "Pythonic argument parser, that will make you smile"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "docopt-0.6.2.tar.gz", hash = "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491"},
-]
 
 [[package]]
 name = "drf-nested-routers"
@@ -2197,22 +2166,6 @@ files = [
     {file = "nodeenv-1.10.0-py2.py3-none-any.whl", hash = "sha256:5bb13e3eed2923615535339b3c620e76779af4cb4c6a90deccc9e36b274d3827"},
     {file = "nodeenv-1.10.0.tar.gz", hash = "sha256:996c191ad80897d076bdfba80a41994c2b47c68e224c542b48feba42ba00f8bb"},
 ]
-
-[[package]]
-name = "notifications-python-client"
-version = "8.2.0"
-description = "Python API client for GOV.UK Notify."
-optional = false
-python-versions = ">=3.7"
-groups = ["main"]
-files = [
-    {file = "notifications_python_client-8.2.0-py3-none-any.whl", hash = "sha256:8cd8bd01ae603a972a5413c430ca42b16f6481f37d98406c3e9b68c1c192f59e"},
-]
-
-[package.dependencies]
-docopt = ">=0.3.0"
-PyJWT = ">=1.5.1"
-requests = ">=2.0.0"
 
 [[package]]
 name = "numpy"

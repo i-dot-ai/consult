@@ -114,12 +114,17 @@ WSGI_APPLICATION = "consultation_analyser.wsgi.application"
 
 AUTH_USER_MODEL = "authentication.User"
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "https://consult.ai.cabinetoffice.gov.uk",
-    "https://consult-preprod.ai.cabinetoffice.gov.uk",
-    "https://consult-dev.ai.cabinetoffice.gov.uk",
-]
+# Local and testing origin
+TRUSTED_ORIGIN = "http://localhost:3000"
+
+if ENVIRONMENT.lower() == "prod":
+    TRUSTED_ORIGIN = "https://consult.ai.cabinetoffice.gov.uk"
+if ENVIRONMENT.lower() == "dev":
+    TRUSTED_ORIGIN = "https://consult-dev.ai.cabinetoffice.gov.uk"
+if ENVIRONMENT.lower() == "preprod":
+    TRUSTED_ORIGIN = "https://consult-preprod.ai.cabinetoffice.gov.uk"
+
+CSRF_TRUSTED_ORIGINS = [TRUSTED_ORIGIN]
 
 # Database with Connection Pooling
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -260,11 +265,6 @@ APPEND_SLASH = True
 # Crispy forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "gds"
 CRISPY_TEMPLATE_PACK = "gds"
-
-# Email
-EMAIL_BACKEND = "django_gov_notify.backends.NotifyEmailBackend"
-GOVUK_NOTIFY_API_KEY = env("GOVUK_NOTIFY_API_KEY")
-GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID = env("GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID")
 
 # AWS variables
 BATCH_JOB_QUEUE = env("BATCH_JOB_QUEUE", default=None)
