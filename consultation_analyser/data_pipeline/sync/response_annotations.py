@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 from django.conf import settings
 from django.db import transaction
 
+import consultation_analyser.data_pipeline.s3 as s3
 from consultation_analyser.consultations.models import (
     Consultation,
     Question,
@@ -11,16 +12,12 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotation,
     SelectedTheme,
 )
-from consultation_analyser.support_console.ingestion.pydantic_models import (
+from consultation_analyser.data_pipeline.models import (
     AnnotationBatch,
     DetailDetectionInput,
     SelectedThemeInput,
     SentimentInput,
     ThemeMappingInput,
-)
-from consultation_analyser.support_console.ingestion.s3_utils import (
-    read_json_from_s3,
-    read_jsonl_from_s3,
 )
 
 logger = logging.getLogger(__name__)
@@ -34,6 +31,7 @@ logger = logging.getLogger(__name__)
 def load_selected_themes_from_s3(
     consultation_code: str,
     question_number: int,
+    timestamp: str,
     bucket_name: Optional[str] = None,
     s3_client=None,
 ) -> List[SelectedThemeInput]:
@@ -43,6 +41,7 @@ def load_selected_themes_from_s3(
     Args:
         consultation_code: The consultation folder name in S3
         question_number: The question number (e.g., 1 for question_part_1)
+        timestamp: The timestamp folder identifying the mapping run
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
         s3_client: Optional boto3 S3 client (for testing)
 
@@ -55,19 +54,14 @@ def load_selected_themes_from_s3(
     bucket_name_str = bucket_name if bucket_name is not None else settings.AWS_BUCKET_NAME
 
     # Build S3 key for themes.json
-    key = f"app_data/consultations/{consultation_code}/inputs/question_part_{question_number}/selected_themes.json"
+    key = f"app_data/consultations/{consultation_code}/outputs/mapping/{timestamp}/question_part_{question_number}/themes.json"
 
     logger.info(f"Loading selected themes from {key}")
 
     # Read and parse JSON file
-    try:
-        theme_data = read_json_from_s3(
-            bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
-        )
-    except Exception:
-        msg = f"key {key} not found"
-        logger.error(msg)
-        raise KeyError(msg)
+    theme_data = s3.read_json(
+        bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
+    )
 
     # Validate each theme using Pydantic
     # Note: theme_data is guaranteed to be non-None because raise_if_missing=True
@@ -110,7 +104,7 @@ def load_sentiments_from_s3(
     logger.info(f"Loading sentiments from {key}")
 
     # Read JSONL file (raise_if_missing=False because sentiment is optional)
-    sentiment_data = read_jsonl_from_s3(
+    sentiment_data = s3.read_jsonl(
         bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=False
     )
 
@@ -158,7 +152,7 @@ def load_detail_detections_from_s3(
     logger.info(f"Loading detail detections from {key}")
 
     # Read JSONL file
-    detail_data = read_jsonl_from_s3(
+    detail_data = s3.read_jsonl(
         bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
     )
 
@@ -202,7 +196,7 @@ def load_theme_mappings_from_s3(
     logger.info(f"Loading theme mappings from {key}")
 
     # Read JSONL file
-    mapping_data = read_jsonl_from_s3(
+    mapping_data = s3.read_jsonl(
         bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
     )
 
@@ -259,7 +253,7 @@ def load_annotation_batch(
         except Consultation.DoesNotExist:
             raise ValueError(
                 f"Consultation with code '{consultation_code}' does not exist. "
-                "Immutable data must be imported before annotations."
+                "Base consultation data must be imported before annotations."
             )
 
     logger.info(
@@ -276,7 +270,7 @@ def load_annotation_batch(
     for question_number in question_numbers:
         # Load selected themes (required)
         themes = load_selected_themes_from_s3(
-            consultation_code, question_number, bucket_name_str, s3_client
+            consultation_code, question_number, timestamp, bucket_name_str, s3_client
         )
         selected_themes_by_question[question_number] = themes
 
@@ -323,61 +317,74 @@ def load_annotation_batch(
 
 
 # ============================================================================
-# INGESTION LOGIC - Create Django models from validated data
+# IMPORT LOGIC - Create Django models from validated data
 # ============================================================================
 
 
-def _ingest_selected_themes(
-    question: Question, themes: List[SelectedThemeInput]
+def _build_batch_key_to_db_theme_lookup(
+    question: Question, batch_themes: List[SelectedThemeInput]
 ) -> Dict[str, SelectedTheme]:
     """
-    Ingest selected themes for a single question.
+    Build a lookup from batch job theme_keys to database SelectedTheme records.
 
-    This function is idempotent - deletes existing selected themes before creating new ones.
+    The batch job generates its own theme_key identifiers which are simple keys
+    such as "A" or "B" that are easier for the LLM to reason about than UUIDs.
+    This function maps between them by matching on theme NAME (the stable
+    identifier across both systems).
 
     Args:
-        question: The Question instance to attach themes to
-        themes: List of validated SelectedThemeInput objects
+        question: The Question instance
+        batch_themes: Themes from batch job output (themes.json)
 
     Returns:
-        Dictionary mapping theme_key -> SelectedTheme instance (for linking annotations)
+        Dictionary mapping batch_theme_key -> SelectedTheme (from database)
+
+    Raises:
+        ValueError: If batch output contains themes not found in database
     """
-    if not themes:
-        logger.info(f"No selected themes to ingest for question {question.number}")
+    if not batch_themes:
+        logger.info(f"No themes in batch output for question {question.number}")
         return {}
 
-    # Delete existing selected themes for this question (idempotent)
-    existing_count = SelectedTheme.objects.filter(question=question).count()
-    if existing_count > 0:
-        logger.info(
-            f"Deleting {existing_count} existing selected themes for question {question.number}"
+    # Get existing SelectedTheme records from database (source of truth)
+    db_themes = SelectedTheme.objects.filter(question=question)
+
+    logger.info(
+        f"Building theme lookup for question {question.number}: "
+        f"{len(batch_themes)} in batch output, {db_themes.count()} in database"
+    )
+
+    # Build lookup by name (the stable identifier across batch output and database)
+    db_themes_by_name = {theme.name: theme for theme in db_themes}
+
+    # Map batch theme_key -> database SelectedTheme (joined on name)
+    batch_key_to_db_theme = {}
+    missing_themes = []
+
+    for batch_theme in batch_themes:
+        if batch_theme.theme_name in db_themes_by_name:
+            batch_key_to_db_theme[batch_theme.theme_key] = db_themes_by_name[batch_theme.theme_name]
+        else:
+            missing_themes.append(batch_theme.theme_name)
+            logger.warning(
+                f"Theme '{batch_theme.theme_name}' from batch output not found in database "
+                f"for question {question.number}"
+            )
+
+    if missing_themes:
+        raise ValueError(
+            f"Batch output contains themes not found in database for question {question.number}: "
+            f"{missing_themes}."
         )
-        SelectedTheme.objects.filter(question=question).delete()
 
-    logger.info(f"Ingesting {len(themes)} selected themes for question {question.number}")
+    logger.info(
+        f"Built theme lookup with {len(batch_key_to_db_theme)} themes for question {question.number}"
+    )
 
-    # Create all themes
-    themes_to_create = [
-        SelectedTheme(
-            question=question,
-            key=theme.theme_key,
-            name=theme.theme_name,
-            description=theme.theme_description,
-        )
-        for theme in themes
-    ]
-
-    created_themes = SelectedTheme.objects.bulk_create(themes_to_create)
-
-    # Build mapping from theme_key to SelectedTheme for later use
-    theme_lookup = {theme.key: theme for theme in created_themes}
-
-    logger.info(f"Created {len(created_themes)} selected themes for question {question.number}")
-
-    return theme_lookup
+    return batch_key_to_db_theme
 
 
-def _ingest_response_annotations(
+def _import_response_annotations(
     question: Question,
     sentiments: List[SentimentInput],
     details: List[DetailDetectionInput],
@@ -385,7 +392,7 @@ def _ingest_response_annotations(
     theme_lookup: Dict[str, SelectedTheme],
 ) -> None:
     """
-    Ingest response annotations for a single question.
+    Import response annotations for a single question into database.
 
     Creates ResponseAnnotation objects with sentiment and evidence_rich data,
     then links them to themes via ResponseAnnotationTheme.
@@ -407,7 +414,7 @@ def _ingest_response_annotations(
         )
         ResponseAnnotation.objects.filter(response__question=question).delete()
 
-    logger.info(f"Ingesting annotations for question {question.number}")
+    logger.info(f"Importing annotations for question {question.number}")
 
     # Build lookups for efficient matching
     sentiment_lookup = {s.themefinder_id: s.sentiment for s in sentiments}
@@ -434,7 +441,7 @@ def _ingest_response_annotations(
             response=response,
             sentiment=sentiment,
             evidence_rich=evidence_rich,
-            human_reviewed=False,  # AI-generated, not human-reviewed
+            human_reviewed=False,
         )
         annotations_to_create.append(annotation)
 
@@ -457,7 +464,7 @@ def _ingest_response_annotations(
         tf_id = annotation.response.respondent.themefinder_id
         annotation_by_tf_id[tf_id] = annotation
 
-    # Create ResponseAnnotationTheme links using add_original_ai_themes
+    # Create ResponseAnnotationThemes
     themes_linked = 0
     for themefinder_id, theme_keys in annotation_theme_data:
         annotation = annotation_by_tf_id[themefinder_id]
@@ -481,21 +488,21 @@ def _ingest_response_annotations(
 
 
 @transaction.atomic
-def ingest_response_annotations(batch: AnnotationBatch) -> None:
+def import_response_annotations(batch: AnnotationBatch) -> None:
     """
-    Ingest all response annotations from a batch into the database.
+    Import all response annotations from a batch into the database.
 
-    This is the main ingestion function that:
+    This is the main import function that:
     1. Validates that the consultation exists
     2. Updates the consultation's timestamp
     3. For each question:
-       a. Ingests selected themes
-       b. Ingests response annotations (sentiment, evidence, theme mappings)
+       a. Imports selected themes
+       b. Imports response annotations (sentiment, evidence, theme mappings)
 
     This function is idempotent - can safely re-run to update annotations.
 
     Args:
-        batch: AnnotationBatch containing all annotations to ingest
+        batch: AnnotationBatch containing all annotations to import
 
     Raises:
         ValueError: If consultation doesn't exist or questions are missing
@@ -506,10 +513,10 @@ def ingest_response_annotations(batch: AnnotationBatch) -> None:
     except Consultation.DoesNotExist:
         raise ValueError(
             f"Consultation with code '{batch.consultation_code}' does not exist. "
-            "Immutable data must be imported before annotations."
+            "Base consultation data must be imported before annotations."
         )
 
-    logger.info(f"Starting annotation ingestion for consultation '{consultation.title}'")
+    logger.info(f"Starting annotation import for consultation '{consultation.title}'")
 
     # Update consultation timestamp
     if consultation.timestamp != batch.timestamp:
@@ -519,7 +526,7 @@ def ingest_response_annotations(batch: AnnotationBatch) -> None:
         consultation.timestamp = batch.timestamp
         consultation.save(update_fields=["timestamp"])
 
-    # Ingest data for each question
+    # Import data for each question
     questions_processed = 0
 
     for question_number in batch.selected_themes_by_question.keys():
@@ -529,23 +536,27 @@ def ingest_response_annotations(batch: AnnotationBatch) -> None:
         except Question.DoesNotExist:
             raise ValueError(
                 f"Question {question_number} does not exist for consultation '{batch.consultation_code}'. "
-                "Immutable data must be imported before annotations."
+                "Base consultation data must be imported before annotations."
             )
 
-        # Ingest selected themes first (needed for theme lookups)
+        # Build lookup from batch theme_keys to database SelectedTheme records
         themes_for_question = batch.selected_themes_by_question[question_number]
-        theme_lookup = _ingest_selected_themes(question, themes_for_question)
+        theme_lookup = _build_batch_key_to_db_theme_lookup(question, themes_for_question)
 
-        # Ingest response annotations
+        # Import response annotations
         sentiments = batch.sentiments_by_question.get(question_number, [])
         details = batch.details_by_question.get(question_number, [])
         mappings = batch.mappings_by_question.get(question_number, [])
 
-        _ingest_response_annotations(question, sentiments, details, mappings, theme_lookup)
+        _import_response_annotations(question, sentiments, details, mappings, theme_lookup)
 
         questions_processed += 1
 
-    logger.info(f"Annotation ingestion complete for {questions_processed} questions")
+    logger.info(f"Response annotations import complete for {questions_processed} questions")
+
+    # Update consultation stage to ANALYSIS now that annotations are imported
+    consultation.stage = Consultation.Stage.ANALYSIS
+    consultation.save(update_fields=["stage"])
 
 
 # ============================================================================
@@ -587,7 +598,7 @@ def import_response_annotations_from_s3(
         question_numbers=question_numbers,
     )
 
-    # Ingest into database
-    ingest_response_annotations(batch)
+    # Import into database
+    import_response_annotations(batch)
 
     logger.info(f"Response annotations import complete for consultation '{consultation_code}'")

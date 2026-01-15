@@ -1,4 +1,5 @@
 import json
+import re
 from typing import Dict, List, Optional
 
 import boto3
@@ -8,7 +9,7 @@ from django.conf import settings
 logger = settings.LOGGER
 
 
-def read_jsonl_from_s3(
+def read_jsonl(
     bucket_name: str, key: str, s3_client=None, raise_if_missing: bool = True
 ) -> List[Dict]:
     """
@@ -45,7 +46,7 @@ def read_jsonl_from_s3(
     return objects
 
 
-def read_json_from_s3(
+def read_json(
     bucket_name: str, key: str, s3_client=None, raise_if_missing: bool = True
 ) -> Optional[Dict]:
     """
@@ -71,8 +72,8 @@ def read_json_from_s3(
         data = json.loads(response["Body"].read())
         return data
     except ClientError as e:
-        logger.info(f"File not found (skipping): {key}")
         if not raise_if_missing and e.response["Error"]["Code"] == "NoSuchKey":
+            logger.info(f"File not found (skipping): {key}")
             return None
         raise
 
