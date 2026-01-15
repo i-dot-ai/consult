@@ -19,7 +19,7 @@ filterwarnings = [
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
-django = "^6.0"
+django = "^5.2"
 django-environ = "^0.12.0"
 psycopg = "^3.3.2"
 django-compressor = "^4.6"

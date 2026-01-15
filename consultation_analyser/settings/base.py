@@ -39,7 +39,6 @@ ALLOWED_HOSTS: list[str] = [DOMAIN_NAME, "*"]  # nosec
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.postgres",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
