@@ -32,26 +32,22 @@ export enum Routes {
   ApiResponses = "/api/responses/",
   ApiConsultations = "/api/consultations/",
   ApiConsultationFolders = "/api/consultations/folders/",
-  ApiConsultationImport = "/api/consultations/import/",
-  ApiConsultationImportImmutable = "/api/consultations/import-immutable/",
-  ApiConsultationImportCandidateThemes = "/api/consultations/import-candidate-themes/",
-  ApiConsultationImportAnnotations = "/api/consultations/import-annotations/",
+  ApiConsultationSetup = "/api/consultations/setup/",
   ApiConsultationExport = "/api/consultations/export/",
   ApiConsultationQuestions = "/api/questions/",
   ApiUser = "/api/user/",
   ApiUsers = "/api/users/",
   ApiAstroSignIn = "/api/astro/sign-in/",
   Design = "/design",
-  SupportImport = "/support/consultations/import-summary",
-  ImportConsultations = "/support/consultations/import-consultation",
+  SupportDataPipeline = "/support/data-pipeline",
   SupportUsers = "/support/users",
   SupportConsultations = "/support/consultations",
-  SupportSignOff = "/support/consultations/sign-off",
-  SupportThemefinder = "/support/consultations/themefinder",
   SupportEmail = "consult@cabinetoffice.gov.uk",
   SupportQueue = "/support/django-rq",
   Profile = "/profile",
   Privacy = "/privacy",
+  ConsultAlertsSlackChannel = "https://i-dot-ai.slack.com/archives/C0930D3DSKW",
+  ThemeFinderRepository = "https://github.com/i-dot-ai/themefinder",
 }
 
 export const getConsultationDetailUrl = (consultationId: string) => {
@@ -111,6 +107,18 @@ export const getRespondentDetailUrl = (
 };
 export const getApiConsultationUrl = (consultationId: string) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "/");
+};
+export const getApiConsultationFoldersUrl = (
+  stage: "setup" | "find-themes" | "assign-themes",
+) => {
+  const params = new URLSearchParams({ stage });
+  return `${Routes.ApiConsultationFolders}?${params.toString()}`;
+};
+export const getApiFindThemesUrl = (consultationId: string) => {
+  return urlJoin(Routes.ApiConsultations, consultationId, "find-themes", "/");
+};
+export const getApiAssignThemesUrl = (consultationId: string) => {
+  return urlJoin(Routes.ApiConsultations, consultationId, "assign-themes", "/");
 };
 export const getApiAnswersUrl = (consultationId: string) => {
   return urlJoin(

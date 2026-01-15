@@ -15,9 +15,10 @@
   export let hideLabel: boolean = false;
   export let value: string = "";
   export let placeholder: string = "";
-  export let autocomplete: string | undefined = undefined;
+  export let autocomplete: FullAutoFill | undefined = undefined;
   export let name: string | undefined = undefined;
   export let setValue: (newValue: string) => void = () => {};
+  export let required: boolean = false;
 
   export let variant: "default" | "search" = "default";
 </script>
@@ -43,7 +44,8 @@
     {name}
     {placeholder}
     {value}
-    autocomplete={autocomplete as FullAutoFill}
+    {autocomplete}
+    {required}
     on:input={(e) => setValue((e.target as HTMLInputElement).value)}
   />
 

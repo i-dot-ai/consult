@@ -320,6 +320,34 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                   </div>
                   <!---->
                 </li>
+                <li>
+                  <div
+                    class="hover:text-primary"
+                  >
+                    <!---->
+                    <a
+                      aria-pressed="false"
+                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      data-variant="ghost"
+                      disabled="false"
+                      href="/support/data-pipeline"
+                      role="link"
+                      tabindex="0"
+                    >
+                      <!---->
+                      <span
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                      >
+                        Data Pipeline
+                      </span>
+                      
+                      
+                    </a>
+                    
+                    <!---->
+                  </div>
+                  <!---->
+                </li>
                 
               </ol>
               <!---->
