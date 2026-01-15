@@ -13,10 +13,11 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const EXTRA_HEADERS = {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+    "Permissions-Policy":
+      "camera=(), microphone=(), geolocation=(), payment=()",
     "X-Frame-Options": "DENY",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-  }
+  };
 
   for (const [key, value] of Object.entries(EXTRA_HEADERS)) {
     nextResponse.headers.set(key, value);
