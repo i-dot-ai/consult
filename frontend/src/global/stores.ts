@@ -2,7 +2,7 @@ import { writable } from "svelte/store";
 import type { Writable } from "svelte/store";
 
 import { debounce, dotEnv } from "./utils";
-import { Client, type HttpMethodsType } from "@hyper-fetch/core";
+import { Client, type HttpMethodsType, type PayloadType } from "@hyper-fetch/core";
 
 // Favourite questions logic
 const FAVS_STORAGE_KEY = "favouritedQuestions";
@@ -183,30 +183,44 @@ export const createQueryStore = <T>({
     error: unknown | null,
     status: number | null,
     fetch: () => Promise<void>,
+    reset: () => void,
   }> = writable({
     data: undefined,
     isLoading: false,
     error: null,
     status: null,
     fetch: async () => {},
+    reset: () => {}
   });
 
-  const doFetch = async () => {
+  const doFetch = async (body?: unknown) => {
     // set loading to true
     store.update(store => ({...store, isLoading: true}));
 
-    // send query
-    const { data: _data, error: _error, status: _status } = await query.send();
+    const { data: _data, error: _error, status: _status } = await query.setPayload(body).send();
 
     // update store
-    store.update(store => ({...store, data: _data as T}));
-    store.update(store => ({...store, error: _error}));
-    store.update(store => ({...store, status: _status}));
+    store.update(store => ({
+      ...store,
+      data: _data as T,
+      error: _error,
+      status: _status,
+    }));
 
     // set loading to false
     store.update(store => ({...store, isLoading: false}));
   }
-  store.update((store) => ({ ...store, fetch: doFetch }));
+
+  const reset = () => {
+    store.update(store => ({
+      ...store,
+      data: undefined,
+      isLoading: false,
+      error: null,
+      status: null,
+    }))
+  }
+  store.update((store) => ({ ...store, fetch: doFetch, reset: reset }));
 
   return store;
 }
