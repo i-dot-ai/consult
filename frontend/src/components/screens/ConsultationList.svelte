@@ -6,7 +6,7 @@
   import Link from "../Link.svelte";
   import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
 
-  import type { ConsultationsResponse, UserResponse } from "../../global/types.ts";
+  import type { ApiError, ConsultationsResponse, UserResponse } from "../../global/types.ts";
   import {
     Routes,
     getConsultationDetailUrl,
@@ -16,12 +16,10 @@
   import { createQueryStore } from "../../global/stores.ts";
 
   let consultationsStore = createQueryStore<ConsultationsResponse>({
-    url: `${Routes.ApiConsultations}?scope=assigned`,
-    deduplicate: true
+    url: `${Routes.ApiConsultations}?scope=assigned`
   });
   let userStore = createQueryStore<UserResponse>({
-    url: Routes.ApiUser,
-    deduplicate: true
+    url: Routes.ApiUser
   });
 
   onMount(async () => {
@@ -39,7 +37,7 @@
     </p>
   {:else if $consultationsStore.error || $userStore.error }
     <Alert>
-      {$consultationsStore.error.detail || $userStore.error.detail}
+      {($consultationsStore.error as ApiError).detail || ($userStore.error as ApiError).detail}
     </Alert>
   {:else}
     <ul>

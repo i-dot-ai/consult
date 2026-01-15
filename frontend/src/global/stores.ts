@@ -161,7 +161,7 @@ export const createFetchStore = <T>({
 export const createQueryStore = <T>({
   url,
   method = "GET",
-  deduplicate = false,
+  deduplicate = true,
 }: {
   url: string,
   method?: HttpMethodsType | undefined,
