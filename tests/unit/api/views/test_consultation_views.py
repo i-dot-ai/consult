@@ -454,3 +454,104 @@ class TestConsultationViewSet:
         )
 
         assert response.status_code == 403
+
+
+@pytest.mark.django_db
+class TestFindThemesEndpoint:
+    def test_find_themes_success(self, client, admin_user_token, free_text_question):
+        """Test successful find themes job submission"""
+        consultation = free_text_question.consultation
+
+        url = reverse("consultations-find-themes", kwargs={"pk": consultation.id})
+
+        with patch("consultation_analyser.data_pipeline.batch.submit_job") as mock_submit:
+            mock_submit.return_value = {"jobId": "test-job-123"}
+
+            response = client.post(
+                url,
+                headers={"Authorization": f"Bearer {admin_user_token}"},
+            )
+
+            assert response.status_code == 202
+            assert response.json()["consultation_id"] == str(consultation.id)
+
+            # Verify batch job was submitted
+            mock_submit.assert_called_once_with(
+                job_type="FIND_THEMES",
+                consultation_code=consultation.code,
+                consultation_name=consultation.title,
+                user_id=mock_submit.call_args.kwargs["user_id"],
+            )
+
+    def test_find_themes_no_free_text_questions(self, client, admin_user_token, consultation):
+        """Test find themes endpoint requires free text questions"""
+        Question.objects.create(
+            consultation=consultation, number=1, has_free_text=False, text="Test?"
+        )
+
+        url = reverse("consultations-find-themes", kwargs={"pk": consultation.id})
+
+        response = client.post(
+            url,
+            headers={"Authorization": f"Bearer {admin_user_token}"},
+        )
+
+        assert response.status_code == 400
+
+
+@pytest.mark.django_db
+class TestAssignThemesEndpoint:
+    def test_assign_themes_success(self, client, admin_user_token, free_text_question):
+        """Test successful assign themes job submission"""
+        consultation = free_text_question.consultation
+
+        SelectedTheme.objects.create(
+            question=free_text_question, name="Theme Name", description="Theme Description"
+        )
+
+        url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
+
+        with (
+            patch(
+                "consultation_analyser.consultations.api.views.consultation.export_selected_themes_to_s3"
+            ) as mock_export,
+            patch("consultation_analyser.consultations.api.views.consultation.batch") as mock_batch,
+        ):
+            mock_export.return_value = 1
+            mock_batch.submit_job.return_value = {"jobId": "test-job-456"}
+
+            response = client.post(
+                url,
+                headers={"Authorization": f"Bearer {admin_user_token}"},
+            )
+
+            assert response.status_code == 202
+
+            # Verify seletected themes were exported to S3
+            mock_export.assert_called_once_with(consultation)
+
+            # Verify batch job was submitted
+            mock_batch.submit_job.assert_called_once_with(
+                job_type="ASSIGN_THEMES",
+                consultation_code=consultation.code,
+                consultation_name=consultation.title,
+                user_id=mock_batch.submit_job.call_args.kwargs["user_id"],
+            )
+
+    def test_assign_themes_no_selected_themes(self, client, admin_user_token, free_text_question):
+        """Test assign themes fails when no themes are selected"""
+        consultation = free_text_question.consultation
+
+        url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
+
+        with patch(
+            "consultation_analyser.consultations.api.views.consultation.export_selected_themes_to_s3"
+        ) as mock_export:
+            mock_export.side_effect = ValueError("No questions with selected themes found")
+
+            response = client.post(
+                url,
+                headers={"Authorization": f"Bearer {admin_user_token}"},
+            )
+
+            assert response.status_code == 400

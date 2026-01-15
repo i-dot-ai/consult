@@ -2,6 +2,7 @@ import logging
 from uuid import UUID
 
 import sentry_sdk
+from django.conf import settings
 from django.db.models import Count
 from django.http import Http404
 from rest_framework import serializers, status
@@ -10,6 +11,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+import consultation_analyser.data_pipeline.batch as batch
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.api.permissions import (
     CanSeeConsultation,
@@ -26,8 +28,13 @@ from consultation_analyser.consultations.api.serializers import (
     DemographicOptionSerializer,
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
-from consultation_analyser.consultations.models import Consultation, DemographicOption
+from consultation_analyser.consultations.models import (
+    Consultation,
+    DemographicOption,
+    SelectedTheme,
+)
 from consultation_analyser.support_console import ingest
+from consultation_analyser.data_pipeline.sync.selected_themes import export_selected_themes_to_s3
 from consultation_analyser.support_console.views.consultations import (
     delete_consultation_job,
     import_candidate_themes_job,
@@ -35,6 +42,8 @@ from consultation_analyser.support_console.views.consultations import (
     import_immutable_data_job,
     import_response_annotations_job,
 )
+
+logger = settings.LOGGER
 
 
 class ConsultationViewSet(ModelViewSet):
@@ -155,80 +164,155 @@ class ConsultationViewSet(ModelViewSet):
             )
 
     @action(
-        detail=False,
+        detail=True,
         methods=["post"],
-        url_path="import-candidate-themes",
+        url_path="find-themes",
         permission_classes=[IsAdminUser],
     )
-    def import_candidate_themes(self, request) -> Response:
+    def find_themes(self, request, pk=None) -> Response:
         """
-        Import candidate themes from S3.
+        Submit AWS batch job to find themes for each free-text question.
+
+        The found themes are automatically saved to the database as candidate
+        themes when the job completes.
+        (See: lambda/import_candidate_themes/import_candidate_themes_handler.py)
+
+        URL: /api/consultations/{consultation_id}/find-themes/
         """
         try:
-            input_serializer = ConsultationImportCandidateThemesSerializer(data=request.data)
-            input_serializer.is_valid(raise_exception=True)
+            consultation = self.get_object()
 
-            validated = input_serializer.validated_data
+            free_text_questions = consultation.question_set.filter(has_free_text=True)
+            if not free_text_questions.exists():
+                return Response(
+                    {
+                        "error": f"Consultation '{consultation.code}' has no free-text questions",
+                        "detail": "ThemeFinder can only process consultations with free-text responses",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-            import_candidate_themes_job.delay(
-                consultation_code=validated["consultation_code"],
-                timestamp=validated["timestamp"],
+            batch.submit_job(
+                job_type="FIND_THEMES",
+                consultation_code=consultation.code,
+                consultation_name=consultation.title,
+                user_id=request.user.id,
+            )
+
+            logger.info(
+                f"Find Themes job submitted for consultation {consultation.title} by user {request.user.id}"
             )
 
             return Response(
-                {"message": "Candidate themes import job started successfully"},
+                {
+                    "message": f"Find Themes job started for consultation '{consultation.title}'",
+                    "consultation_id": consultation.id,
+                    "consultation_code": consultation.code,
+                },
                 status=status.HTTP_202_ACCEPTED,
             )
-        except serializers.ValidationError as e:
-            sentry_sdk.capture_exception(e)
-            return Response(
-                {"message": "An error occurred while starting the import"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+
         except Exception as e:
+            logger.exception(
+                f"Error starting Find Themes job for consultation {consultation.title}: {e}"
+            )
             sentry_sdk.capture_exception(e)
             return Response(
-                {"message": "An error occurred while starting the import"},
+                {
+                    "error": "Failed to start Find Themes job",
+                    "detail": str(e) if settings.DEBUG else "An unexpected error occurred",
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
     @action(
-        detail=False,
+        detail=True,
         methods=["post"],
-        url_path="import-annotations",
+        url_path="assign-themes",
         permission_classes=[IsAdminUser],
     )
-    def import_annotations(self, request) -> Response:
+    def assign_themes(self, request, pk=None) -> Response:
         """
-        Import response annotations from S3.
+        Export finalised themes to S3 and submit AWS batch job to assign themes
+        to responses.
+
+        The response annotationes are automatically saved to the database when
+        the job completes.
+        (See: lambda/import_response_annotations/import_response_annotations_handler.py)
+
+        URL: /api/consultations/{consultation_id}/assign-themes/
         """
+
+        consultation = self.get_object()
+
+        # For each question, ensure generic themes exist
+        for question in consultation.question_set.filter(has_free_text=True):
+            SelectedTheme.objects.get_or_create(
+                question=question,
+                name="Other",
+                defaults={
+                    "description": "The response discusses an issue not covered by the listed themes"
+                },
+            )
+            SelectedTheme.objects.get_or_create(
+                question=question,
+                name="No Reason Given",
+                defaults={
+                    "description": "The response does not provide a substantive answer to the question"
+                },
+            )
+
+        # Export all themes to S3
         try:
-            input_serializer = ConsultationImportAnnotationsSerializer(data=request.data)
-            input_serializer.is_valid(raise_exception=True)
-
-            validated = input_serializer.validated_data
-
-            import_response_annotations_job.delay(
-                consultation_code=validated["consultation_code"],
-                timestamp=validated["timestamp"],
-            )
-
+            export_selected_themes_to_s3(consultation)
+        except ValueError as e:
             return Response(
-                {"message": "Response annotations import job started successfully"},
-                status=status.HTTP_202_ACCEPTED,
-            )
-        except serializers.ValidationError as e:
-            sentry_sdk.capture_exception(e)
-            return Response(
-                {"message": "An error occurred while starting the import"},
+                {
+                    "error": "No selected themes found",
+                    "detail": str(e),
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
             sentry_sdk.capture_exception(e)
             return Response(
-                {"message": "An error occurred while starting the import"},
+                {
+                    "error": "Failed to export themes to S3",
+                    "detail": str(e) if settings.DEBUG else "Export failed",
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+        # Submit AWS Batch job to assign themes
+        try:
+            batch.submit_job(
+                job_type="ASSIGN_THEMES",
+                consultation_code=consultation.code,
+                consultation_name=consultation.title,
+                user_id=request.user.id,
+            )
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return Response(
+                {
+                    "error": "Failed to submit job to assign themes",
+                    "detail": str(e) if settings.DEBUG else "Job submission failed",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        # Update consultation stage
+        consultation.stage = Consultation.Stage.THEME_MAPPING
+        consultation.save(update_fields=["stage"])
+
+        return Response(
+            {
+                "message": f"Assign Themes job started for consultation '{consultation.title}'",
+                "consultation_id": str(consultation.id),
+                "consultation_code": consultation.code,
+            },
+            status=status.HTTP_202_ACCEPTED,
+        )
 
     @action(
         detail=False,
