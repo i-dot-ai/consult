@@ -181,11 +181,13 @@ export const createQueryStore = <T>({
     data: T | undefined,
     isLoading: boolean,
     error: unknown | null,
+    status: number | null,
     fetch: () => Promise<void>,
   }> = writable({
     data: undefined,
     isLoading: false,
     error: null,
+    status: null,
     fetch: async () => {},
   });
 
@@ -194,11 +196,12 @@ export const createQueryStore = <T>({
     store.update(store => ({...store, isLoading: true}));
 
     // send query
-    const { data: _data, error: _error } = await query.send();
+    const { data: _data, error: _error, status: _status } = await query.send();
 
     // update store
     store.update(store => ({...store, data: _data as T}));
     store.update(store => ({...store, error: _error}));
+    store.update(store => ({...store, status: _status}));
 
     // set loading to false
     store.update(store => ({...store, isLoading: false}));
