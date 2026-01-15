@@ -284,3 +284,7 @@ export enum OnboardingKeys {
   themeSignoff = "onboardingComplete-theme-sign-off",
   themeSignoffArchive = "onboardingComplete-theme-sign-off-archive",
 }
+
+export interface ApiError {
+  detail: string,
+}

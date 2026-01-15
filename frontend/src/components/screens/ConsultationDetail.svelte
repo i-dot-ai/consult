@@ -11,16 +11,20 @@
   import Panel from "../dashboard/Panel/Panel.svelte";
   import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
   import Metrics from "../dashboard/Metrics/Metrics.svelte";
+  import Alert from "../Alert.svelte";
 
   import type {
+    ApiError,
     DemoOptionsResponse,
     QuestionsResponse,
   } from "../../global/types.ts";
   import {
+    getApiDemoOptionsUrl,
     getApiQuestionsUrl,
     getQuestionDetailUrl,
+    Routes,
   } from "../../global/routes.ts";
-  import { createFetchStore, favStore } from "../../global/stores.ts";
+  import { createQueryStore, favStore } from "../../global/stores.ts";
 
   interface Props {
     consultationId: string;
@@ -31,25 +35,29 @@
   let searchValue: string = $state("");
   let dataRequested: boolean = $state(false);
 
-  const questionsStore = createFetchStore<QuestionsResponse>();
-  const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
+  const questionsQuery = $derived(createQueryStore<QuestionsResponse>({
+    url: getApiQuestionsUrl(consultationId),
+    deduplicate: true,
+  }));
+  const demoOptionsQuery = $derived(createQueryStore<DemoOptionsResponse>({
+    url: getApiDemoOptionsUrl(consultationId),
+    deduplicate: true,
+  }));
 
   onMount(() => {
-    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
-    $demoOptionsStore.fetch(
-      `/api/consultations/${consultationId}/demographic-options/`,
-    );
+    $questionsQuery.fetch();
+    $demoOptionsQuery.fetch();
     dataRequested = true;
   });
 
   let favQuestions = $derived(
-    $questionsStore.data?.results?.filter((question) =>
+    $questionsQuery.data?.results?.filter((question) =>
       $favStore.includes(question.id),
     ),
   );
 
   let displayQuestions = $derived(
-    $questionsStore.data?.results?.filter((question) =>
+    $questionsQuery.data?.results?.filter((question) =>
       `Q${question.number}: ${question.question_text}`
         .toLocaleLowerCase()
         .includes(searchValue.toLocaleLowerCase()),
@@ -60,10 +68,10 @@
 <section class="my-8">
   <Metrics
     {consultationId}
-    questions={$questionsStore.data?.results || []}
-    loading={!dataRequested || $questionsStore.isLoading}
-    demoOptionsLoading={!dataRequested || $demoOptionsStore.isLoading}
-    demoOptions={$demoOptionsStore.data || []}
+    questions={$questionsQuery.data?.results || []}
+    loading={!dataRequested || $questionsQuery.isLoading}
+    demoOptionsLoading={!dataRequested || $demoOptionsQuery.isLoading}
+    demoOptions={$demoOptionsQuery.data || []}
   />
 </section>
 
@@ -76,10 +84,10 @@
 
   {#if dataRequested && (favQuestions?.length === 0 || $favStore.length === 0)}
     <p transition:slide class="mb-12">You have not favourited any question.</p>
-  {:else if !dataRequested || $questionsStore.isLoading}
+  {:else if !dataRequested || $questionsQuery.isLoading}
     <LoadingMessage message="Loading Questions..." />
-  {:else if $questionsStore.error}
-    <p transition:slide>{$questionsStore.error}</p>
+  {:else if $questionsQuery.error}
+    <p transition:slide>{$questionsQuery.error}</p>
   {:else}
     <div transition:slide>
       <div class="mb-8">
@@ -106,16 +114,20 @@
       <Help slot="icon" />
 
       <p slot="aside">
-        {$questionsStore.data?.results?.length || 0} questions
+        {$questionsQuery.data?.results?.length || 0} questions
       </p>
     </TitleRow>
   </div>
 
   <Panel bg={true} border={true}>
-    {#if !dataRequested || $questionsStore.isLoading}
+    {#if !dataRequested || $questionsQuery.isLoading}
       <LoadingMessage message="Loading Questions..." />
-    {:else if $questionsStore.error}
-      <p transition:slide>{$questionsStore.error}</p>
+    {:else if $questionsQuery.error}
+      <Alert>
+        <p transition:slide>
+          {($questionsQuery.error as ApiError).detail}
+        </p>
+      </Alert>
     {:else}
       <div transition:slide>
         <TextInput
@@ -129,7 +141,7 @@
         />
 
         <div class="mb-4">
-          {#if !displayQuestions?.length && !$questionsStore.isLoading}
+          {#if !displayQuestions?.length && !$questionsQuery.isLoading}
             <NotFoundMessage
               variant="archive"
               body="No questions found matching your search."
