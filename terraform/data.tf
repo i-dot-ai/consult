@@ -104,12 +104,6 @@ data "aws_secretsmanager_secret" "env_vars" {
   name = "${local.name}-environment-variables"
 }
 
-data "archive_file" "submit_batch_job_archive" {
-  type        = "zip"
-  source_file = "${path.root}/../lambda/submit_batch_job.py"
-  output_path = "${path.root}/../lambda/submit_batch_job.zip"
-}
-
 data "archive_file" "slack_notifier_archive" {
   type        = "zip"
   source_file = "${path.root}/../lambda/slack_notifier.py"
