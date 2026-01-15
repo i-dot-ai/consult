@@ -33,7 +33,6 @@ from consultation_analyser.consultations.models import (
     SelectedTheme,
 )
 from consultation_analyser.data_pipeline import jobs
-from consultation_analyser.support_console import ingest
 from consultation_analyser.data_pipeline.sync.selected_themes import export_selected_themes_to_s3
 from consultation_analyser.support_console.views.consultations import (
     delete_consultation_job,

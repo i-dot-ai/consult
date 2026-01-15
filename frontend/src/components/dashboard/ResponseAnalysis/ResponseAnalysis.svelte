@@ -41,7 +41,7 @@
   export let pageSize: number = 5;
   export let isAnswersLoading: boolean = true;
   export let isThemesLoading: boolean = true;
-  export let answersError: string = "";
+  export let answersError: string | null = "";
   export let answers: ResponseAnswer[] = [];
   export let hasMorePages: boolean = true;
   export let filteredTotal: number = 0;
@@ -49,9 +49,9 @@
   export let resetData = () => {};
 
   export let searchValue: string = "";
-  export let setSearchValue = () => {};
+  export let setSearchValue = (_value: string) => {};
   export let searchMode: SearchModeValues = SearchModeValues.KEYWORD;
-  export let setSearchMode = () => {};
+  export let setSearchMode = (_searchMode: SearchModeValues) => {};
 
   export let demoOptions: DemoOption = {};
   export let demoData: DemoData = {};
