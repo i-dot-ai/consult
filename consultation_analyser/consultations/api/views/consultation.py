@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 from uuid import UUID
 
 import sentry_sdk
@@ -12,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 import consultation_analyser.data_pipeline.batch as batch
+import consultation_analyser.data_pipeline.s3 as s3
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.api.permissions import (
     CanSeeConsultation,
@@ -19,12 +21,9 @@ from consultation_analyser.consultations.api.permissions import (
 )
 from consultation_analyser.consultations.api.serializers import (
     ConsultationExportSerializer,
-    ConsultationFolderSerializer,
-    ConsultationImportAnnotationsSerializer,
-    ConsultationImportCandidateThemesSerializer,
-    ConsultationImportImmutableSerializer,
-    ConsultationImportSerializer,
+    ConsultationFolderQuerySerializer,
     ConsultationSerializer,
+    ConsultationSetupSerializer,
     DemographicOptionSerializer,
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
@@ -33,14 +32,11 @@ from consultation_analyser.consultations.models import (
     DemographicOption,
     SelectedTheme,
 )
+from consultation_analyser.data_pipeline import jobs
 from consultation_analyser.support_console import ingest
 from consultation_analyser.data_pipeline.sync.selected_themes import export_selected_themes_to_s3
 from consultation_analyser.support_console.views.consultations import (
     delete_consultation_job,
-    import_candidate_themes_job,
-    import_consultation_job,
-    import_immutable_data_job,
-    import_response_annotations_job,
 )
 
 logger = settings.LOGGER
@@ -89,65 +85,30 @@ class ConsultationViewSet(ModelViewSet):
     @action(
         detail=False,
         methods=["post"],
-        url_path="import",
-        permission_classes=[HasDashboardAccess],
-    )
-    def submit_consultation_import(self, request) -> Response:
-        """
-        Submit consultation import.
-        """
-        try:
-            input_serializer = ConsultationImportSerializer(data=request.data)
-            input_serializer.is_valid(raise_exception=True)
-
-            validated = input_serializer.validated_data
-
-            import_consultation_job.delay(
-                consultation_name=validated["consultation_name"],
-                consultation_code=validated["consultation_code"],
-                timestamp=validated["timestamp"],
-                current_user_id=request.user.id,
-                sign_off=input_serializer.get_sign_off(),
-            )
-
-            return Response(
-                {"message": "Import job started successfully"}, status=status.HTTP_202_ACCEPTED
-            )
-        except serializers.ValidationError:
-            return Response(
-                {"message": "An error occurred while starting the import"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        except Exception:
-            return Response(
-                {"message": "An error occurred while starting the import"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="import-immutable",
+        url_path="setup",
+        url_name="setup",
         permission_classes=[IsAdminUser],
     )
-    def import_immutable_data(self, request) -> Response:
+    def setup_consultation(self, request) -> Response:
         """
-        Import immutable consultation data from S3.
+        Set up a new consultation by importing base data from S3.
+
+        Imports: respondents, questions, responses
         """
         try:
-            input_serializer = ConsultationImportImmutableSerializer(data=request.data)
+            input_serializer = ConsultationSetupSerializer(data=request.data)
             input_serializer.is_valid(raise_exception=True)
 
             validated = input_serializer.validated_data
 
-            import_immutable_data_job.delay(
+            jobs.import_consultation.delay(
                 consultation_name=validated["consultation_name"],
                 consultation_code=validated["consultation_code"],
                 user_id=request.user.id,
             )
 
             return Response(
-                {"message": "Immutable data import job started successfully"},
+                {"message": "Consultation setup job started successfully"},
                 status=status.HTTP_202_ACCEPTED,
             )
         except serializers.ValidationError as e:
@@ -358,17 +319,57 @@ class ConsultationViewSet(ModelViewSet):
         detail=False,
         methods=["get"],
         url_path="folders",
-        permission_classes=[HasDashboardAccess],
+        url_name="folders",
+        permission_classes=[IsAdminUser],
     )
     def get_consultation_folders(self, request) -> Response:
         """
-        get consultation folders.
+        Get S3 folders and their matching consultations in the database.
+
+        Stage query param:
+        - 'setup': Return S3 folders without consultations (for creating new consultations)
+        - 'find-themes': Return consultations with S3 folders (for finding themes)
+        - 'assign-themes': Return consultations with S3 folders (for assigning themes)
+
+        URL: /api/consultations/folders?stage={STAGE}
         """
-        consultation_folders = ingest.get_consultation_codes()
+        # Validate query parameters
+        query_serializer = ConsultationFolderQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+        stage = query_serializer.validated_data.get("stage")
 
-        serializer = ConsultationFolderSerializer(consultation_folders, many=True)
+        # Get all S3 folder codes
+        s3_codes = s3.get_consultation_folders()
 
-        return Response(serializer.data)
+        if not s3_codes:
+            return Response([])
+
+        # Build a dict mapping code -> list of consultations (handles one-to-many relationship)
+        consultations_by_code: dict[str, list[dict[str, Any]]] = {}
+        for c in Consultation.objects.filter(code__in=s3_codes).values("id", "code", "title"):
+            code = c["code"]
+            if code not in consultations_by_code:
+                consultations_by_code[code] = []
+            consultations_by_code[code].append({"id": str(c["id"]), "title": c["title"]})
+
+        if stage == "setup":
+            # Return only S3 folder names without consultations, sorted by name
+            s3_folders = [code for code in s3_codes if code not in consultations_by_code]
+            return Response(sorted(s3_folders))
+        else:
+            # Return only consultations that have S3 folders, sorted by title then code
+            consultations = []
+            for code in consultations_by_code:
+                for consultation in consultations_by_code[code]:
+                    consultations.append(
+                        {
+                            "id": consultation["id"],
+                            "code": code,
+                            "title": consultation["title"],
+                        }
+                    )
+            consultations.sort(key=lambda x: (x["title"], x["code"]))
+            return Response(consultations)
 
     @action(
         detail=True,
