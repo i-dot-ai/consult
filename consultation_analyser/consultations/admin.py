@@ -157,9 +157,19 @@ class CandidateThemeInline(admin.StackedInline):
     extra = 0
 
 
+@admin.action(description="set has_free_text to false")
+def set_has_free_text_false(modeladmin, request, queryset):
+    queryset.update(has_free_text=False)
+
+
+@admin.action(description="reset sign_off")
+def reset_sign_off(modeladmin, request, queryset):
+    queryset.update(theme_status=Question.ThemeStatus.DRAFT)
+
+
 class QuestionAdmin(admin.ModelAdmin):
     list_filter = ["consultation"]
-    list_display = ["consultation"]
+    list_display = ["text", "number", "consultation"]
     list_select_related = True
     readonly_fields = [
         "consultation",
@@ -169,6 +179,7 @@ class QuestionAdmin(admin.ModelAdmin):
         "has_multiple_choice",
     ]
     inlines = [SelectedThemeInline, CandidateThemeInline, MultiChoiceAnswerInline]
+    actions = [set_has_free_text_false, reset_sign_off]
 
 
 class ResponseAnnotationAdmin(SimpleHistoryAdmin):
@@ -217,3 +228,4 @@ admin.site.register(ResponseAnnotation, ResponseAnnotationAdmin)
 admin.site.register(ResponseAnnotationTheme, ResponseAnnotationThemeAdmin)
 admin.site.register(Respondent, RespondentAdmin)
 admin.site.register(DemographicOption, DemographicOptionAdmin)
+
