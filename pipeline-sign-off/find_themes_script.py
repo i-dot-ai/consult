@@ -10,9 +10,16 @@ import boto3
 import pandas as pd
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
-from themefinder import theme_condensation, theme_generation, theme_mapping, theme_refinement
+from themefinder import theme_condensation, theme_generation, theme_refinement
 from themefinder.models import HierarchicalClusteringResponse
 from themefinder.theme_clustering_agent import ThemeClusteringAgent, ThemeNode
+
+
+class ThemeNodeList(BaseModel):
+    """List of theme nodes for serialization to JSON."""
+
+    theme_nodes: list[ThemeNode]
+
 
 # Configure logging
 logging.basicConfig(
@@ -126,141 +133,14 @@ async def generate_themes(question: str, responses_df):
     return refined_themes_df
 
 
-def prepare_long_list(refined_themes_df):
-    """
-    Prepare a sorted long list of themes with names, descriptions, and frequencies.
-
-    Args:
-        refined_themes_df: DataFrame containing refined themes
-
-    Returns:
-        pd.DataFrame: Formatted long list of themes sorted by frequency
-    """
-    refined_themes_df["Theme Name"] = refined_themes_df["topic"].str.split(":").str[0]
-    refined_themes_df["Theme Description"] = refined_themes_df["topic"].str.split(":").str[1]
-
-    long_list = refined_themes_df[["Theme Name", "Theme Description", "source_topic_count"]]
-    long_list.columns = ["Theme Name", "Theme Description", "Approximate Frequency"]
-
-    return long_list.sort_values(by="Approximate Frequency", ascending=False)
-
-
-def save_to_excel(
-    df, save_path: str, question: str, n_responses: int, short_list: bool = False
-) -> None:
-    """
-    Save theme list (long or short) to Excel with formatted columns and cells.
-
-    Args:
-        df: DataFrame containing theme analysis results
-        save_path: Path where Excel file should be saved
-        question: The survey question to display as title
-        n_responses: Total number of responses for this question
-        short_list: If True, highlights first 3 columns differently
-    """
-    with pd.ExcelWriter(save_path, engine="xlsxwriter") as writer:
-        # Write DataFrame starting from row 2 to leave space for title
-        df.to_excel(writer, index=False, startrow=2)
-
-        # Get workbook and worksheet objects
-        workbook = writer.book
-        worksheet = writer.sheets["Sheet1"]
-
-        # Define formats
-        title_format = workbook.add_format(
-            {"bold": True, "font_size": 14, "text_wrap": True, "align": "left", "valign": "vcenter"}
-        )
-
-        header_format = workbook.add_format({"bold": True, "bg_color": "#D9D9D9", "border": 1})
-
-        wrap_format = workbook.add_format({"text_wrap": True, "border": 1})
-
-        highlight_format = workbook.add_format(
-            {
-                "text_wrap": True,
-                "border": 1,
-                "bg_color": "#E6F3FF",  # Light blue background
-            }
-        )
-
-        # Write title in first row and merge cells
-        worksheet.merge_range(
-            0,
-            0,
-            1,
-            len(df.columns) - 1,
-            question + "  " + f" Number Responses: {n_responses}",
-            title_format,
-        )
-        worksheet.set_row(0, 40)  # Set height of title row
-
-        # Apply formats and adjust column widths
-        for col_num, col in enumerate(df.columns):
-            # Write header (now in row 2 due to title)
-            worksheet.write(2, col_num, col, header_format)
-
-            # Write data cells with appropriate format
-            format_to_use = highlight_format if short_list and col_num < 4 else wrap_format
-            for row_num in range(len(df)):
-                worksheet.write(row_num + 3, col_num, df.iloc[row_num, col_num], format_to_use)
-
-            # Set column width based on content
-            max_length = max(df[col].astype(str).apply(len).max(), len(str(col)))
-            worksheet.set_column(col_num, col_num, min(max_length + 2, 50))
-
-
-def produce_short_list_df(themes_df, mapped_df):
-    """
-    Produce a detailed short list of themes with examples from responses.
-
-    Args:
-        themes_df: DataFrame containing theme information
-        mapped_df: DataFrame with responses mapped to themes
-
-    Returns:
-        pd.DataFrame: Short list of themes with examples, sorted by count
-    """
-    # Create a copy of the themes DataFrame with topic_id as index
-    short_list = themes_df.copy()
-    short_list.set_index("topic_id", inplace=True)
-    short_list = short_list[["Theme Name", "Theme Description"]]
-
-    # Count occurrences of each topic in the mapped responses
-    topic_counts: dict[str, int] = {}
-    for labels in mapped_df["labels"]:
-        for topic_id in labels:
-            topic_counts[topic_id] = topic_counts.get(topic_id, 0) + 1
-
-    # Add count column to the short list
-    short_list["Count"] = short_list.index.map(lambda x: topic_counts.get(x, 0))
-
-    # Add example responses for each theme (up to 10)
-    for topic_id in short_list.index:
-        matching_rows = mapped_df[mapped_df["labels"].apply(lambda x: topic_id in x)]
-        examples = matching_rows["response"].head(10).tolist()
-        examples.extend(
-            [""] * (10 - len(examples))
-        )  # Pad with empty strings if fewer than 10 examples
-
-        for i, example in enumerate(examples, 1):
-            short_list.loc[topic_id, f"Example {i}"] = example
-
-    # Sort by count in descending order
-    short_list.reset_index(inplace=True)
-    return short_list.sort_values(by="Count", ascending=False)
-
-
-def agentic_theme_selection(
+def agentic_theme_clustering(
     refined_themes_df,
     llm,
-    min_selected_themes=10,
-    max_selected_themes=20,
     max_cluster_iterations=0,
     n_target_themes=10,
 ):
     """
-    Iteratively select themes using clustering with adaptive significance threshold.
-    Will retry a fixed number of times before defaulting to top 20 themes.
+    Cluster themes using hierarchical clustering.
 
     Parameters:
     -----------
@@ -268,10 +148,6 @@ def agentic_theme_selection(
         DataFrame containing themes with 'topic' column
     llm : object
         Language model object for theme clustering
-    min_selected_themes : int, default=10
-        Minimum number of themes to select
-    max_selected_themes : int, default=20
-        Maximum number of themes to select
     max_cluster_iterations : int, default=0
         Maximum number of clustering iterations to attempt
     n_target_themes : int, default=10
@@ -280,12 +156,11 @@ def agentic_theme_selection(
     Returns:
     --------
     pd.DataFrame
-        Selected themes with 'Theme Name', 'Theme Description', and 'topic' columns
+        All themes from clustering
     """
     refined_themes_df[["topic_label", "topic_description"]] = refined_themes_df["topic"].str.split(
         ":", n=1, expand=True
     )
-    selected_themes = pd.DataFrame()
 
     initial_themes = [
         ThemeNode(
@@ -303,6 +178,7 @@ def agentic_theme_selection(
     logger.info(
         f"Clustering themes with max_iterations={max_cluster_iterations}, target_themes={n_target_themes}"
     )
+    all_themes_df = None
     for i in range(3):
         try:
             all_themes_df = agent.cluster_themes(
@@ -313,22 +189,11 @@ def agentic_theme_selection(
         except:  # noqa: E722
             logger.info(f"Error when clustering, attempt {i}, retrying")
 
-    selected_themes = pd.DataFrame()
-    significance_percentage = 1
-    while (
-        len(selected_themes) < min_selected_themes or len(selected_themes) > max_selected_themes
-    ) and (significance_percentage < 20):
-        selected_themes = agent.select_themes(significance_percentage)
-        significance_percentage += 1
+    if all_themes_df is None or len(all_themes_df) == 0:
+        logger.warning("Theme clustering failed after 3 attempts")
+        return None
 
-    try:
-        selected_themes["topic"] = (
-            selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
-        )
-    except KeyError:
-        raise KeyError("couldnt extract keys from", selected_themes)
-
-    return selected_themes, all_themes_df
+    return all_themes_df
 
 
 async def process_consultation(consultation_dir: str, llm) -> str:
@@ -366,81 +231,36 @@ async def process_consultation(consultation_dir: str, llm) -> str:
                 # Generate themes
                 refined_themes_df = await generate_themes(question, responses_df)
 
-                # Save long list of themes
-                long_list_path = question_output_dir / "theme_long_list.xlsx"
-                save_to_excel(
-                    prepare_long_list(refined_themes_df),
-                    str(long_list_path),
-                    question=question,
-                    n_responses=len(responses_df),
-                )
-
-                # Select short list, using clustering if more than 20 themes
-                if len(refined_themes_df) > 20:
-                    selected_themes, _all_themes_df = agentic_theme_selection(
-                        refined_themes_df, llm
+                def refined_themes_to_theme_node(row: dict):
+                    topic_label, topic_description = row["topic"].split(":")
+                    return ThemeNode(
+                        topic_id=row["topic_id"],
+                        topic_label=topic_label,
+                        topic_description=topic_description,
+                        source_topic_count=row["source_topic_count"],
+                        parent_id="0",
+                        children=[],
                     )
-                    all_themes_list = [ThemeNode(**row) for _, row in _all_themes_df.iterrows()]
+
+                # Cluster themes if more than 20
+                if len(refined_themes_df) > 20:
+                    all_themes_df = agentic_theme_clustering(refined_themes_df, llm)
+                    if all_themes_df is not None:
+                        all_themes_list = [ThemeNode(**row) for _, row in all_themes_df.iterrows()]
+                    else:
+                        logger.info("Clustering failed, using unclustered themes")
+                        all_themes_list = [
+                            refined_themes_to_theme_node(row)
+                            for _, row in refined_themes_df.iterrows()
+                        ]
                 else:
                     logger.info("Fewer than 20 themes, clustering not required")
-                    selected_themes = refined_themes_df.copy()
-
-                    def refined_themes_to_theme_node(row: dict):
-                        topic_label, topic_description = row["topic"].split(":")
-                        return ThemeNode(
-                            topic_id=row["topic_id"],
-                            topic_label=topic_label,
-                            topic_description=topic_description,
-                            source_topic_count=row["source_topic_count"],
-                            parent_id="0",
-                            children=[],
-                        )
-
                     all_themes_list = [
                         refined_themes_to_theme_node(row) for _, row in refined_themes_df.iterrows()
                     ]
 
-                # TODO: move this to themefinder
-                class ThemeNodeList(BaseModel):
-                    theme_nodes: list[ThemeNode]
-
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
                     f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
-
-                # Map responses to themes, including "None of the above" option
-                mapping_themes = selected_themes[["topic_id", "topic"]].copy()
-                mapping_themes = pd.concat(
-                    [
-                        mapping_themes,
-                        pd.DataFrame(
-                            [
-                                {
-                                    "topic_id": "XYZ",
-                                    "topic": "None of the above: the response doesn't match any of the provided topics.",
-                                }
-                            ]
-                        ),
-                    ],
-                    ignore_index=True,
-                )
-
-                mapped_df, _ = await theme_mapping(
-                    responses_df,
-                    llm,
-                    refined_themes_df=mapping_themes[["topic_id", "topic"]],
-                    question=question,
-                )
-                logger.info("N unprocessables: %d", len(_))
-
-                # Save detailed short list
-                short_list_path = question_output_dir / "detailed_short_list.xlsx"
-                save_to_excel(
-                    produce_short_list_df(selected_themes, mapped_df),
-                    str(short_list_path),
-                    question=question,
-                    short_list=True,
-                    n_responses=len(responses_df),
-                )
 
                 logger.info(
                     "Completed processing %s, saved to %s", question_dir, question_output_dir
