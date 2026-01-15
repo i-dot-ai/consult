@@ -19,23 +19,11 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
-from consultation_analyser.support_console.ingest import (
+from consultation_analyser.data_pipeline.jobs import (
     DEFAULT_TIMEOUT_SECONDS,
-    create_embeddings_for_question,
-    export_selected_themes,
 )
 
 logger = settings.LOGGER
-
-
-@admin.action(description="(Re)Embed selected Consultations")
-def update_embeddings_admin(modeladmin, request, queryset):
-    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
-    for consultation in queryset:
-        for question in consultation.question_set.all():
-            queue.enqueue(create_embeddings_for_question, question.id)
-
-    modeladmin.message_user(request, f"Processing {queryset.count()} consultations")
 
 
 def _reimport_demographics(consultation_id):
@@ -111,34 +99,11 @@ def create_large_dummy_consultation(modeladmin, request, queryset):
     create_dummy_consultation(modeladmin, request, queryset, 10_000)
 
 
-@admin.action(description="export selected themes")
-def export_selected_themes_to_s3(modeladmin, request, queryset):
-    for consultation in queryset:
-        for question in consultation.question_set.all():
-            try:
-                logger.info("exporting themes for question={number}", number=question.number)
-                export_selected_themes(question)
-            except Exception as exception:
-                logger.info(
-                    "failed to export themes for question={number}, exception={exception}",
-                    number=question.number,
-                    exception=exception,
-                )
-                modeladmin.message_user(
-                    request,
-                    f"error running export for question {question.number}",
-                    level=messages.ERROR,
-                )
-                return
-
-
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [
-        update_embeddings_admin,
         reimport_demographics,
         create_small_dummy_consultation,
         create_large_dummy_consultation,
-        export_selected_themes_to_s3,
     ]
 
 

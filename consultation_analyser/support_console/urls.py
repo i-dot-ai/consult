@@ -39,26 +39,6 @@ urlpatterns = [
         consultations.delete_question,
         name="delete_question",
     ),
-    path(
-        "consultations/sign-off/",
-        consultations.sign_off,
-        name="sign_off",
-    ),
-    path(
-        "consultations/themefinder/",
-        consultations.themefinder,
-        name="themefinder",
-    ),
-    path(
-        "consultations/import-summary/",
-        consultations.import_summary,
-        name="import_summary",
-    ),
-    path(
-        "consultations/import-consultation/",
-        consultations.import_consultation_view,
-        name="import_consultation",
-    ),
     path("admin/", admin.site.urls),
     path("django-rq/", include("django_rq.urls")),
 ]
