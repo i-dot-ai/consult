@@ -7,7 +7,7 @@ resource "aws_cloudwatch_event_rule" "batch_job_consultation_import" {
     detail-type = ["Batch Job State Change"],
     detail = {
       status  = ["SUCCEEDED"],
-      jobName   = ["${local.name}-mapping-job"]
+      jobName   = ["${local.name}-find-themes-job"]
     }
   })
   tags = var.universal_tags
@@ -22,7 +22,7 @@ resource "aws_cloudwatch_event_rule" "batch_job_state_change" {
     detail-type = ["Batch Job State Change"],
     detail = {
       status  = ["SUCCEEDED", "FAILED", "RUNNING"],
-      jobName   = ["${local.name}-mapping-job", "${local.name}-sign-off-job"]
+      jobName   = ["${local.name}-assign-themes-job", "${local.name}-find-themes-job"]
     }
   })
   tags = var.universal_tags
