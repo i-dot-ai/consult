@@ -21,7 +21,7 @@ export interface Question {
   theme_status?: string;
 }
 
-export type ConsultationStage = "theme_sign_off" | "theme_mapping" | "analysis";
+export type ConsultationStage = ConsultationStageNames.THEME_SIGN_OFF | ConsultationStageNames.THEME_MAPPING | ConsultationStageNames.ANALYSIS;
 export interface NextResponseInfo {
   id: string;
   consultation_id: string;
@@ -179,7 +179,7 @@ export interface ConsultationResponse {
   title: string;
   code: string;
   users: User[];
-  stage: "theme_sign_off" | "theme_mapping" | "analysis";
+  stage: ConsultationStageNames.THEME_SIGN_OFF | ConsultationStageNames.THEME_MAPPING | ConsultationStageNames.ANALYSIS;
 }
 export interface ConsultationsResponse {
   count: number;
@@ -287,4 +287,10 @@ export enum OnboardingKeys {
 
 export interface ApiError {
   detail: string,
+}
+
+export enum ConsultationStageNames {
+  THEME_SIGN_OFF = "theme_sign_off",
+  THEME_MAPPING = "theme_mapping",
+  ANALYSIS = "analysis",
 }

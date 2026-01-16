@@ -12,6 +12,7 @@
   } from "../../global/routes.ts";
   import { createQueryStore } from "../../global/stores.ts";
   import {
+    ConsultationStageNames,
     type ApiError,
     type ConsultationResponse,
     type Question,
@@ -100,12 +101,12 @@
 <hr class="my-6" />
 
 <svelte:boundary>
-  {#if isAllQuestionsSignedOff || $consultationQuery.data?.stage === "theme_mapping" || $consultationQuery.data?.stage === "analysis"}
+  {#if isAllQuestionsSignedOff || $consultationQuery.data?.stage === ConsultationStageNames.THEME_MAPPING || $consultationQuery.data?.stage === ConsultationStageNames.ANALYSIS}
     <section in:slide>
       <ConsultationStagePanel
         consultation={$consultationQuery.data || {
           id: "",
-          stage: "theme_sign_off",
+          stage: ConsultationStageNames.THEME_SIGN_OFF,
         }}
         questionsCount={questionsForSignOff?.length || 0}
         onConfirmClick={() => (isConfirmModalOpen = true)}
@@ -120,7 +121,7 @@
         setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
         handleConfirm={async () => {
           await $consultationUpdateQuery.fetch({
-            stage: "theme_mapping",
+            stage: ConsultationStageNames.THEME_MAPPING,
           });
 
           if (!$consultationUpdateQuery.error) {
