@@ -37,11 +37,9 @@
 
   const questionsQuery = $derived(createQueryStore<QuestionsResponse>({
     url: getApiQuestionsUrl(consultationId),
-    deduplicate: true,
   }));
   const demoOptionsQuery = $derived(createQueryStore<DemoOptionsResponse>({
     url: getApiDemoOptionsUrl(consultationId),
-    deduplicate: true,
   }));
 
   onMount(() => {

@@ -145,8 +145,10 @@
 
   const createTheme = async (title: string, description: string) => {
     await $selectedThemesCreateQuery.fetch({
-      name: title,
-      description: description,
+      body: {
+        name: title,
+        description: description
+      },
     });
 
     $selectedThemesQuery.fetch();
@@ -162,14 +164,13 @@
       return;
     }
 
-    await $selectedThemesDeleteQuery.fetch(
-      undefined,
-      {
+    await $selectedThemesDeleteQuery.fetch({
+      headers: {
         "Content-Type": "application/json",
         "If-Match": selectedTheme.version,
       },
-      { themeId: themeId },
-    );
+      params: { themeId: themeId },
+    });
 
     if (
       !$selectedThemesDeleteQuery.error ||

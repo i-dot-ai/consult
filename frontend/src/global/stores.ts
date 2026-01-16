@@ -2,7 +2,7 @@ import { writable } from "svelte/store";
 import type { Writable } from "svelte/store";
 
 import { debounce, dotEnv } from "./utils";
-import { Client, type HttpMethodsType, type PayloadType } from "@hyper-fetch/core";
+import { Client, type EmptyTypes, type HttpMethodsType, type PayloadType } from "@hyper-fetch/core";
 
 // Favourite questions logic
 const FAVS_STORAGE_KEY = "favouritedQuestions";
@@ -158,6 +158,11 @@ export const createFetchStore = <T>({
   return store;
 };
 
+interface createQueryStoreFetchOptions {
+  body?: unknown,
+  headers?: unknown,
+  params?: unknown
+}
 export const createQueryStore = <T>({
   url,
   method = "GET",
@@ -182,7 +187,7 @@ export const createQueryStore = <T>({
     isLoading: boolean,
     error: unknown | null,
     status: number | null,
-    fetch: (body?: unknown, headers?: unknown, params?: unknown) => Promise<void>,
+    fetch: (options?: createQueryStoreFetchOptions) => Promise<void>,
     reset: () => void,
   }> = writable({
     data: undefined,
@@ -193,14 +198,14 @@ export const createQueryStore = <T>({
     reset: () => {}
   });
 
-  const doFetch = async (body?: unknown, headers?: unknown, params?: unknown) => {
+  const doFetch = async (options: createQueryStoreFetchOptions | undefined = {}) => {
     // set loading to true
     store.update(store => ({...store, isLoading: true}));
 
     const { data: _data, error: _error, status: _status } = await query
-      .setParams(params)
-      .setHeaders(headers as HeadersInit)
-      .setPayload(body)
+      .setParams(options.params as EmptyTypes)
+      .setHeaders(options.headers as HeadersInit)
+      .setPayload(options.body)
       .send();
 
     // update store

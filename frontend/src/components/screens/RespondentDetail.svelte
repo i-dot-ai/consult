@@ -155,7 +155,7 @@
           updateStakeholderName={async (newStakeholderName) => {
             // update current respondent stakeholder name
             await $respondentUpdateQuery.fetch({
-              name: newStakeholderName,
+              body: { name: newStakeholderName },
             });
 
             // refresh respondents

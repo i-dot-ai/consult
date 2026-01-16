@@ -57,8 +57,10 @@
     }
 
     await actualUpdateAnswerFetch({
-      themes: stagedThemes.map((theme) => ({ id: theme.id })),
-      evidenceRich: stagedEvidenceRich,
+      body: {
+        themes: stagedThemes.map((theme) => ({ id: theme.id })),
+        evidenceRich: stagedEvidenceRich,
+      }
     });
 
     if (!$answerUpdateQuery.error && !$answerUpdateQuery.isLoading) {
