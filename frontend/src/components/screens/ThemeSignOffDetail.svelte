@@ -67,7 +67,6 @@
     consultationId = "",
     questionId = "",
     questionDataMock,
-    generatedThemesMock,
     answersMock,
     selectGeneratedThemeMock,
   }: Props = $props();
@@ -88,16 +87,16 @@
       { method: "DELETE" },
     ),
   );
-  const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
-    mockFetch: generatedThemesMock,
-  });
-  const generatedThemesSelectStore = createFetchStore({
-    mockFetch: selectGeneratedThemeMock,
-    debounceDelay: 0,
-  });
-  const questionStore = createFetchStore<Question>({
-    mockFetch: questionDataMock,
-  });
+  const generatedThemesQuery = $derived(createQueryStore<GeneratedThemesResponse>(
+    getApiGetGeneratedThemesUrl(consultationId, questionId),
+  ));
+  const generatedThemesSelectQuery = $derived(createQueryStore(
+    getApiSelectGeneratedThemeUrl(consultationId, questionId, ":newThemeId"),
+    { method: "POST" },
+  ));
+  const questionQuery = $derived(createQueryStore<Question>(
+    getApiQuestionUrl(consultationId, questionId),
+  ));
   const confirmSignOffQuery = $derived(
     createQueryStore(getApiConfirmSignOffUrl(consultationId, questionId), {
       method: "PATCH",
@@ -125,7 +124,7 @@
   };
 
   let flatGeneratedThemes = $derived(
-    flattenGeneratedThemes($generatedThemesStore.data?.results),
+    flattenGeneratedThemes($generatedThemesQuery.data?.results),
   );
 
   let expandedThemes: string[] = $derived(
@@ -138,18 +137,14 @@
 
   const errorModalOnClose = () => {
     $selectedThemesQuery.fetch();
-    $generatedThemesStore.fetch(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
+    $generatedThemesQuery.fetch();
     errorData = null;
   };
 
   onMount(() => {
     $selectedThemesQuery.fetch();
-    $generatedThemesStore.fetch(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
-    $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
+    $generatedThemesQuery.fetch();
+    $questionQuery.fetch();
     dataRequested = true;
   });
 
@@ -189,9 +184,7 @@
       // No action or error needed if status 404 (theme already deselected)
 
       $selectedThemesQuery.fetch();
-      $generatedThemesStore.fetch(
-        getApiGetGeneratedThemesUrl(consultationId, questionId),
-      );
+      $generatedThemesQuery.fetch();
     } else if ($selectedThemesDeleteQuery.status === 412) {
       const respData = $selectedThemesDeleteQuery.data;
 
@@ -258,15 +251,12 @@
   const handleSelectGeneratedTheme = async (newTheme: GeneratedTheme) => {
     themesBeingSelected = [...themesBeingSelected, newTheme.id];
 
-    await $generatedThemesSelectStore.fetch(
-      getApiSelectGeneratedThemeUrl(consultationId, questionId, newTheme.id),
-      "POST",
-    );
+    await $generatedThemesSelectQuery.fetch({
+      params: { newThemeId: newTheme.id },
+    });
 
     await $selectedThemesQuery.fetch();
-    await $generatedThemesStore.fetch(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
+    await $generatedThemesQuery.fetch();
 
     themesBeingSelected = themesBeingSelected.filter(
       (themeId) => themeId !== newTheme.id,
@@ -274,7 +264,7 @@
 
     // get selectedtheme_id created after back end select action is complete
     const updatedTheme = flattenGeneratedThemes(
-      $generatedThemesStore.data?.results || [],
+      $generatedThemesQuery.data?.results || [],
     ).find((generatedTheme) => generatedTheme.id === newTheme.id);
 
     // scroll up to equivalent in selected themes list
@@ -326,7 +316,7 @@
   };
 
   let hasNestedThemes = $derived(
-    $generatedThemesStore.data?.results?.some((theme: GeneratedTheme) =>
+    $generatedThemesQuery.data?.results?.some((theme: GeneratedTheme) =>
       Boolean(theme.children && theme.children.length > 0),
     ),
   );
@@ -351,9 +341,9 @@
 
 <section class="my-8">
   <QuestionCard
-    skeleton={$questionStore.isLoading}
+    skeleton={$questionQuery.isLoading}
     {consultationId}
-    question={$questionStore.data || {}}
+    question={$questionQuery.data || {}}
     clickable={false}
   />
 </section>
@@ -499,7 +489,7 @@
       <p class="text-sm text-neutral-500">
         Are you sure you want to sign off on these {numSelectedThemesText(
           $selectedThemesQuery.data?.results,
-        )} for Question {$questionStore.data?.number}?
+        )} for Question {$questionQuery.data?.number}?
       </p>
 
       <h4 class="my-4 text-xs font-bold">Selected themes:</h4>
@@ -569,7 +559,7 @@
 
               <Tag variant="success">
                 {flattenGeneratedThemes(
-                  $generatedThemesStore.data?.results || [],
+                  $generatedThemesQuery.data?.results || [],
                 ).length} available
               </Tag>
             </div>
@@ -617,7 +607,7 @@
         </Panel>
       </div>
 
-      {#each $generatedThemesStore.data?.results as theme (theme.id)}
+      {#each $generatedThemesQuery.data?.results as theme (theme.id)}
         <GeneratedThemeCard
           {consultationId}
           {questionId}
