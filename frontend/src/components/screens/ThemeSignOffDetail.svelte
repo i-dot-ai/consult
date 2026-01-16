@@ -75,8 +75,10 @@
     url: getApiCreateSelectedThemeUrl(consultationId, questionId),
     method: "POST",
   }));
-  const selectedThemesDeleteStore =
-    createFetchStore<SelectedThemesDeleteResponse>();
+  const selectedThemesDeleteQuery = $derived(createQueryStore<SelectedThemesDeleteResponse>({
+    url: getApiDeleteSelectedThemeUrl(consultationId, questionId, ":themeId"),
+    method: "DELETE",
+  }));
   const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
     mockFetch: generatedThemesMock,
   });
@@ -160,19 +162,18 @@
       return;
     }
 
-    await $selectedThemesDeleteStore.fetch(
-      getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
-      "DELETE",
+    await $selectedThemesDeleteQuery.fetch(
       undefined,
       {
         "Content-Type": "application/json",
         "If-Match": selectedTheme.version,
       },
+      { themeId: themeId },
     );
 
     if (
-      !$selectedThemesDeleteStore.error ||
-      $selectedThemesDeleteStore.status === 404
+      !$selectedThemesDeleteQuery.error ||
+      $selectedThemesDeleteQuery.status === 404
     ) {
       // No action or error needed if status 404 (theme already deselected)
 
@@ -180,8 +181,8 @@
       $generatedThemesStore.fetch(
         getApiGetGeneratedThemesUrl(consultationId, questionId),
       );
-    } else if ($selectedThemesDeleteStore.status === 412) {
-      const respData = $selectedThemesDeleteStore.data;
+    } else if ($selectedThemesDeleteQuery.status === 412) {
+      const respData = $selectedThemesDeleteQuery.data;
 
       errorData = {
         type: "remove-conflict",
@@ -190,7 +191,7 @@
       };
     } else {
       errorData = { type: "unexpected" };
-      console.error($selectedThemesDeleteStore.error);
+      console.error($selectedThemesDeleteQuery.error);
     }
   };
 
