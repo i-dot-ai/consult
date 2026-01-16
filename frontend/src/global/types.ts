@@ -37,8 +37,15 @@ export interface ShowNextResponseResult {
 export interface Consultation {
   id: string;
   title: string;
-  stage: ConsultationStage;
+  code: string;
+  stage: "theme_sign_off" | "theme_mapping" | "analysis";
   created_at: string;
+}
+
+export interface ConsultationFolder {
+  id: string;
+  title: string;
+  code: string;
 }
 
 export interface Respondent {

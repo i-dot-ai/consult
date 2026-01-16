@@ -15,6 +15,7 @@
     items: SelectOption[];
     value?: string;
     disabled?: boolean;
+    required?: boolean;
     errorMessage?: string;
     hint?: string;
     onchange?: (value: string) => void;
@@ -28,6 +29,7 @@
     items,
     value = "",
     disabled = false,
+    required = false,
     errorMessage,
     hint,
     onchange,
@@ -98,6 +100,7 @@
     {name}
     {value}
     {disabled}
+    {required}
     aria-describedby={[hint && `${id}-hint`, errorMessage && `${id}-error`]
       .filter(Boolean)
       .join(" ") || undefined}
