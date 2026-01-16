@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { fade, slide } from "svelte/transition";
 
-  import { createFetchStore, type MockFetch } from "../../global/stores";
+  import { createFetchStore, createQueryStore, type MockFetch } from "../../global/stores";
   import {
     getApiConfirmSignOffUrl,
     getApiCreateSelectedThemeUrl,
@@ -64,18 +64,17 @@
     questionId = "",
     questionDataMock,
     generatedThemesMock,
-    selectedThemesMock,
-    createThemeMock,
     answersMock,
     selectGeneratedThemeMock,
   }: Props = $props();
 
-  const selectedThemesStore = createFetchStore<SelectedThemesResponse>({
-    mockFetch: selectedThemesMock,
-  });
-  const selectedThemesCreateStore = createFetchStore({
-    mockFetch: createThemeMock,
-  });
+  const selectedThemesQuery = $derived(createQueryStore<SelectedThemesResponse>({
+    url: getApiGetSelectedThemesUrl(consultationId, questionId),
+  }));
+  const selectedThemesCreateQuery = $derived(createQueryStore({
+    url: getApiCreateSelectedThemeUrl(consultationId, questionId),
+    method: "POST",
+  }));
   const selectedThemesDeleteStore =
     createFetchStore<SelectedThemesDeleteResponse>();
   const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
@@ -88,7 +87,10 @@
   const questionStore = createFetchStore<Question>({
     mockFetch: questionDataMock,
   });
-  const confirmSignOffStore = createFetchStore();
+  const confirmSignOffQuery = $derived(createQueryStore({
+    url: getApiConfirmSignOffUrl(consultationId, questionId),
+    method: "PATCH",
+  }));
 
   let isConfirmSignOffModalOpen: boolean = $state(false);
   let addingCustomTheme: boolean = $state(false);
@@ -123,9 +125,7 @@
   let dataRequested: boolean = $state(false);
 
   const errorModalOnClose = () => {
-    $selectedThemesStore.fetch(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
+    $selectedThemesQuery.fetch();
     $generatedThemesStore.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
@@ -133,9 +133,7 @@
   };
 
   onMount(() => {
-    $selectedThemesStore.fetch(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
+    $selectedThemesQuery.fetch();
     $generatedThemesStore.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
@@ -144,22 +142,16 @@
   });
 
   const createTheme = async (title: string, description: string) => {
-    await $selectedThemesCreateStore.fetch(
-      getApiCreateSelectedThemeUrl(consultationId, questionId),
-      "POST",
-      {
-        name: title,
-        description: description,
-      },
-    );
+    await $selectedThemesCreateQuery.fetch({
+      name: title,
+      description: description,
+    });
 
-    $selectedThemesStore.fetch(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
+    $selectedThemesQuery.fetch();
   };
 
   const removeTheme = async (themeId: string) => {
-    const selectedTheme = $selectedThemesStore.data?.results.find(
+    const selectedTheme = $selectedThemesQuery.data?.results.find(
       (theme) => theme.id === themeId,
     );
 
@@ -184,9 +176,7 @@
     ) {
       // No action or error needed if status 404 (theme already deselected)
 
-      $selectedThemesStore.fetch(
-        getApiGetSelectedThemesUrl(consultationId, questionId),
-      );
+      $selectedThemesQuery.fetch();
       $generatedThemesStore.fetch(
         getApiGetGeneratedThemesUrl(consultationId, questionId),
       );
@@ -209,7 +199,7 @@
     title: string,
     description: string,
   ) => {
-    const selectedTheme = $selectedThemesStore.data?.results.find(
+    const selectedTheme = $selectedThemesQuery.data?.results.find(
       (theme) => theme.id === themeId,
     );
 
@@ -235,9 +225,7 @@
       );
 
       if (response.ok) {
-        $selectedThemesStore.fetch(
-          getApiGetSelectedThemesUrl(consultationId, questionId),
-        );
+        $selectedThemesQuery.fetch();
       } else if (response.status === 404) {
         errorData = { type: "theme-does-not-exist" };
       } else if (response.status === 412) {
@@ -263,9 +251,7 @@
       "POST",
     );
 
-    await $selectedThemesStore.fetch(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
+    await $selectedThemesQuery.fetch();
     await $generatedThemesStore.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
@@ -288,15 +274,11 @@
   };
 
   const confirmSignOff = async () => {
-    await $confirmSignOffStore.fetch(
-      getApiConfirmSignOffUrl(consultationId, questionId),
-      "PATCH",
-      {
-        theme_status: "confirmed",
-      },
-    );
+    await $confirmSignOffQuery.fetch({
+      theme_status: "confirmed",
+    });
 
-    if ($confirmSignOffStore.error) {
+    if ($confirmSignOffQuery.error) {
       isConfirmSignOffModalOpen = false;
       errorData = { type: "unexpected" };
     } else {
@@ -385,7 +367,7 @@
             <h3>Selected Themes</h3>
 
             <Tag variant="primary-light">
-              {$selectedThemesStore.data?.results.length} selected
+              {$selectedThemesQuery.data?.results.length} selected
             </Tag>
           </div>
 
@@ -409,9 +391,9 @@
         </div>
 
         <p class="text-sm text-neutral-500">
-          {#if $selectedThemesStore.data?.results?.length > 0}
+          {#if ($selectedThemesQuery.data?.results.length ?? 0) > 0}
             Manage your {numSelectedThemesText(
-              $selectedThemesStore.data?.results,
+              $selectedThemesQuery.data?.results,
             )} for the AI in mapping responses. Edit titles and descriptions, or
             add new themes as needed.
           {:else}
@@ -434,7 +416,7 @@
       </div>
     {/if}
 
-    {#if $selectedThemesStore.data?.results.length === 0}
+    {#if $selectedThemesQuery.data?.results.length === 0}
       <div in:fade class="my-8 flex flex-col items-center justify-center gap-2">
         <div class="mb-2">
           <MaterialIcon size="2rem" color="fill-neutral-500">
@@ -449,7 +431,7 @@
       </div>
     {:else}
       <div class="mt-4">
-        {#each $selectedThemesStore.data?.results as selectedTheme (selectedTheme.id)}
+        {#each $selectedThemesQuery.data?.results as selectedTheme (selectedTheme.id)}
           <div transition:slide={{ duration: 150 }} class="mb-4 last:mb-0">
             <SelectedThemeCard
               {consultationId}
@@ -469,8 +451,8 @@
         variant="primary"
         fullWidth={true}
         disabled={!dataRequested ||
-          $selectedThemesStore.isLoading ||
-          $selectedThemesStore.data?.results.length === 0}
+          $selectedThemesQuery.isLoading ||
+          $selectedThemesQuery.data?.results.length === 0}
         handleClick={() =>
           (isConfirmSignOffModalOpen = !isConfirmSignOffModalOpen)}
       >
@@ -480,10 +462,10 @@
           </MaterialIcon>
 
           <span>
-            {#if !dataRequested || $selectedThemesStore.isLoading}
+            {#if !dataRequested || $selectedThemesQuery.isLoading}
               Loading Selected Themes
             {:else}
-              Sign Off Selected Themes ({$selectedThemesStore.data?.results
+              Sign Off Selected Themes ({$selectedThemesQuery.data?.results
                 .length})
             {/if}
           </span>
@@ -502,14 +484,14 @@
     >
       <p class="text-sm text-neutral-500">
         Are you sure you want to sign off on these {numSelectedThemesText(
-          $selectedThemesStore.data?.results,
+          $selectedThemesQuery.data?.results,
         )} for Question {$questionStore.data?.number}?
       </p>
 
       <h4 class="my-4 text-xs font-bold">Selected themes:</h4>
 
       <div class="max-h-64 overflow-y-auto">
-        {#each $selectedThemesStore.data?.results as selectedTheme (selectedTheme.id)}
+        {#each $selectedThemesQuery.data?.results as selectedTheme (selectedTheme.id)}
           <Panel bg={true} border={false}>
             <h5 class="mb-1 text-xs font-bold">{selectedTheme.name}</h5>
             <p class="text-xs text-neutral-500">{selectedTheme.description}</p>
