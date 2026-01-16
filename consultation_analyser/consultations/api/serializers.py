@@ -305,34 +305,18 @@ class ResponseSerializer(serializers.ModelSerializer):
         ]
 
 
-class ConsultationFolderSerializer(serializers.Serializer):
-    text = serializers.CharField()
-    value = serializers.CharField()
+class ConsultationFolderQuerySerializer(serializers.Serializer):
+    """Validates query parameters for consultation folders endpoint."""
+
+    stage = serializers.ChoiceField(
+        choices=["setup", "find-themes", "assign-themes"],
+        required=True,
+    )
 
 
-class ConsultationImportSerializer(serializers.Serializer):
-    consultation_name = serializers.CharField(max_length=255)
-    consultation_code = serializers.CharField(max_length=255)
-    timestamp = serializers.CharField(max_length=100)
-    action = serializers.CharField(max_length=50)
-
-    def get_sign_off(self):
-        return self.validated_data.get("action") == "sign_off"
-
-
-class ConsultationImportImmutableSerializer(serializers.Serializer):
+class ConsultationSetupSerializer(serializers.Serializer):
     consultation_name = serializers.CharField(required=True, max_length=255)
     consultation_code = serializers.CharField(required=True, max_length=255)
-
-
-class ConsultationImportCandidateThemesSerializer(serializers.Serializer):
-    consultation_code = serializers.CharField(required=True, max_length=255)
-    timestamp = serializers.CharField(required=True, max_length=100)
-
-
-class ConsultationImportAnnotationsSerializer(serializers.Serializer):
-    consultation_code = serializers.CharField(required=True, max_length=255)
-    timestamp = serializers.CharField(required=True, max_length=100)
 
 
 class ConsultationExportSerializer(serializers.Serializer):

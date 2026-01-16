@@ -104,51 +104,78 @@ data "aws_route53_zone" "zone" {
 #   name = "${local.name}-environment-variables"
 # }
 
-data "archive_file" "submit_batch_job_archive" {
-  type        = "zip"
-  source_file = "${path.root}/../lambda/submit_batch_job.py"
-  output_path = "${path.root}/../lambda/submit_batch_job.zip"
-}
-
 data "archive_file" "slack_notifier_archive" {
   type        = "zip"
   source_file = "${path.root}/../lambda/slack_notifier.py"
   output_path = "${path.root}/../lambda/slack_notifier.zip"
 }
 
-
-resource "null_resource" "build_consultation_lambda" {
+resource "null_resource" "build_import_candidate_themes_lambda" {
   triggers = {
-    requirements = filemd5("${path.root}/../lambda/consultation_import/requirements.txt")
-    lambda_code  = filemd5("${path.root}/../lambda/consultation_import/lambda_function.py")
+    requirements = filemd5("${path.root}/../lambda/import_candidate_themes/requirements.txt")
+    lambda_code  = filemd5("${path.root}/../lambda/import_candidate_themes/import_candidate_themes_handler.py")
   }
 
   provisioner "local-exec" {
     command = <<EOF
       # Create temporary build directory
-      rm -rf ${path.root}/../lambda/consultation_import/build
-      mkdir -p ${path.root}/../lambda/consultation_import/build
-      
+      rm -rf ${path.root}/../lambda/import_candidate_themes/build
+      mkdir -p ${path.root}/../lambda/import_candidate_themes/build
+
       # Copy source files to build directory
-      cp ${path.root}/../lambda/consultation_import/*.py ${path.root}/../lambda/consultation_import/build/
-      cp ${path.root}/../lambda/consultation_import/requirements.txt ${path.root}/../lambda/consultation_import/build/
+      cp ${path.root}/../lambda/import_candidate_themes/*.py ${path.root}/../lambda/import_candidate_themes/build/
+      cp ${path.root}/../lambda/import_candidate_themes/requirements.txt ${path.root}/../lambda/import_candidate_themes/build/
 
       # Install dependencies in build directory with specific options
-      cd ${path.root}/../lambda/consultation_import/build
+      cd ${path.root}/../lambda/import_candidate_themes/build
       pip install -r requirements.txt -t . --no-cache-dir --platform linux_x86_64 --only-binary=:all:
-      
+
       # Verify packages were installed
       echo "Installed packages:"
-      ls -la | grep -E "(celery|redis)"
+      ls -la | grep -E "(redis|rq)"
     EOF
   }
 }
 
-data "archive_file" "consultation_import_archive" {
-  depends_on  = [null_resource.build_consultation_lambda]
+data "archive_file" "import_candidate_themes_archive" {
+  depends_on  = [null_resource.build_import_candidate_themes_lambda]
   type        = "zip"
-  source_dir  = "${path.root}/../lambda/consultation_import/build"
-  output_path = "${path.root}/../lambda/consultation_import.zip"
+  source_dir  = "${path.root}/../lambda/import_candidate_themes/build"
+  output_path = "${path.root}/../lambda/import_candidate_themes.zip"
+}
+
+resource "null_resource" "build_import_response_annotations_lambda" {
+  triggers = {
+    requirements = filemd5("${path.root}/../lambda/import_response_annotations/requirements.txt")
+    lambda_code  = filemd5("${path.root}/../lambda/import_response_annotations/import_response_annotations_handler.py")
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+      # Create temporary build directory
+      rm -rf ${path.root}/../lambda/import_response_annotations/build
+      mkdir -p ${path.root}/../lambda/import_response_annotations/build
+
+      # Copy source files to build directory
+      cp ${path.root}/../lambda/import_response_annotations/*.py ${path.root}/../lambda/import_response_annotations/build/
+      cp ${path.root}/../lambda/import_response_annotations/requirements.txt ${path.root}/../lambda/import_response_annotations/build/
+
+      # Install dependencies in build directory with specific options
+      cd ${path.root}/../lambda/import_response_annotations/build
+      pip install -r requirements.txt -t . --no-cache-dir --platform linux_x86_64 --only-binary=:all:
+
+      # Verify packages were installed
+      echo "Installed packages:"
+      ls -la | grep -E "(redis|rq)"
+    EOF
+  }
+}
+
+data "archive_file" "import_response_annotations_archive" {
+  depends_on  = [null_resource.build_import_response_annotations_lambda]
+  type        = "zip"
+  source_dir  = "${path.root}/../lambda/import_response_annotations/build"
+  output_path = "${path.root}/../lambda/import_response_annotations.zip"
 }
 
 

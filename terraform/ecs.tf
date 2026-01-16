@@ -16,13 +16,13 @@ locals {
 
     "REDIS_HOST"                    = module.elasticache.redis_address
     "REDIS_PORT"                    = module.elasticache.redis_port
-    "SQS_QUEUE_URL"                 = module.batch_job_queue.sqs_queue_url
-    "MAPPING_BATCH_JOB_NAME"        = "${local.name}-mapping-job"
-    "MAPPING_BATCH_JOB_QUEUE"       = module.batch_job_mapping.job_queue_name
-    "MAPPING_BATCH_JOB_DEFINITION"  = module.batch_job_mapping.job_definition_name
-    "SIGN_OFF_BATCH_JOB_NAME"       = "${local.name}-sign-off-job"
-    "SIGN_OFF_BATCH_JOB_QUEUE"      = module.batch_job_sign_off.job_queue_name
-    "SIGN_OFF_BATCH_JOB_DEFINITION" = module.batch_job_sign_off.job_definition_name
+    "ASSIGN_THEMES_BATCH_JOB_NAME"        = "${local.name}-assign-themes-job"
+    "ASSIGN_THEMES_BATCH_JOB_QUEUE"       = module.batch_job_mapping.job_queue_name
+    "ASSIGN_THEMES_BATCH_JOB_DEFINITION"  = module.batch_job_mapping.job_definition_name
+    "FIND_THEMES_BATCH_JOB_NAME"          = "${local.name}-find-themes-job"
+    "FIND_THEMES_BATCH_JOB_QUEUE"         = module.batch_job_sign_off.job_queue_name
+    "FIND_THEMES_BATCH_JOB_DEFINITION"    = module.batch_job_sign_off.job_definition_name
+    "AUTH_API_URL"                        = data.aws_ssm_parameter.auth_api_invoke_url.value
   }
 
   additional_policy_arns = { for idx, arn in [aws_iam_policy.ecs_exec_custom_policy.arn] : idx => arn }

@@ -1,0 +1,297 @@
+---
+import { fetchBackendApi } from "../../global/api";
+import Layout from "../../layouts/Layout.astro";
+import Section from "../../components/Section/Section.svelte";
+import Text from "../../components/Text/Text.svelte";
+import CreateConsultationForm from "../../components/screens/CreateConsultationForm.svelte";
+import FindThemesForm from "../../components/screens/FindThemesForm.svelte";
+import AssignThemesForm from "../../components/screens/AssignThemesForm.svelte";
+import Link from "../../components/Link.svelte";
+import { getApiConsultationFoldersUrl, Routes } from "../../global/routes";
+import Details from "../../components/Details/Details.svelte";
+
+import type { ConsultationFolder } from "../../global/types";
+
+const bucketName = import.meta.env.AWS_BUCKET_NAME;
+
+// S3 folders without a matching consultation
+const setupFolders = await fetchBackendApi<string[]>(
+  Astro,
+  getApiConsultationFoldersUrl("setup"),
+);
+
+// Consultations with matching S3 folders
+const findThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
+  Astro,
+  getApiConsultationFoldersUrl("find-themes"),
+);
+const assignThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
+  Astro,
+  getApiConsultationFoldersUrl("assign-themes"),
+);
+---
+
+<Layout>
+  <Section>
+    <h1 class="mb-4 text-3xl">Consult Data Pipeline</h1>
+    <Text
+      >Processing consultation data happens across multiple stages. In this
+      page, each stage is explained and any processes that require manual
+      triggering, such as setting up the consultation and finding themes, can be
+      kicked off from here.</Text
+    >
+
+    <Text>
+      You can monitor the progress of data processing tasks in the <Link
+        href={Routes.SupportQueue}>Django RQ dashboard</Link
+      > and in the <Link href={Routes.ConsultAlertsSlackChannel}
+        >#consult-alerts</Link
+      > Slack channel.</Text
+    >
+  </Section>
+
+  <hr />
+
+  <Section>
+    <h2 class="mb-4 text-2xl">1. Set up Consultation</h2>
+
+    <ol>
+      <li>
+        <h3 class="mb-4 text-lg font-bold">
+          a) Upload consultation data to S3
+        </h3>
+
+        <Text
+          >The first step in setting up a consultation is to get the data in the
+          right format for S3. Data must be uploaded to <code
+            >{bucketName}/app_data/consultations/[CODE]/inputs</code
+          > with the structure:</Text
+        >
+        <pre><code>inputs/
+  ├── respondents.jsonl
+  ├── question_part_1/
+  │   ├── question.json
+  │   ├── responses.jsonl
+  │   └── multi_choice.jsonl
+  ├── question_part_2/
+  │   ├── question.json
+  │   ├── responses.jsonl
+        </code></pre>
+        <Text
+          >As part of this, you will need to define the consultation <code
+            >CODE</code
+          >, which is the unique identifier we will use for the consultation in
+          S3.</Text
+        >
+      </li>
+      <li>
+        <h3 class="mb-4 text-lg font-bold">
+          b) Create consultation in Consult app
+        </h3>
+        <Text
+          >Once the consultation data has been uploaded to S3, select the folder
+          and set the name of the consultation to create the consultation in the
+          app.</Text
+        >
+
+        <CreateConsultationForm client:load s3Folders={setupFolders} />
+
+        <div class="my-8"></div>
+
+        <Text>
+          Note: If an S3 folder doesn't appear in the list above, it has already
+          been set up as a consultation in the database. If you want to use
+          existing S3 data to create a new consulation, first copy the contents
+          into a new S3 folder.
+        </Text>
+
+        <div class="my-8"></div>
+
+        <Details summaryText="What's happening in the background?">
+          <Text
+            >The consultation is created with the given name and all the data in <code
+              >{bucketName}/app_data/consultations/[CODE]/inputs</code
+            > is read and saved to the database.</Text
+          >
+        </Details>
+      </li>
+    </ol>
+  </Section>
+
+  <hr />
+
+  <Section>
+    <h2 class="mb-4 text-2xl">2. Find Themes</h2>
+
+    <Text>
+      Once the consultation is set up, and you have reviewed the data and are
+      happy with it, we can run <Link href={Routes.ThemeFinderRepository}
+        >ThemeFinder</Link
+      > to find themes for each free text question. This is a long-running batch
+      process and can take up to a few hours depending on the size of the consultation.
+    </Text>
+
+    <FindThemesForm client:load consultations={findThemesFolders} />
+
+    <div class="my-8"></div>
+
+    <Details summaryText="What's happening in the background?">
+      <Text
+        >All the data in <code
+          >{bucketName}/app_data/consultations/[CODE]/inputs</code
+        > is read and used to find themes. These are saved in S3 with the structure:
+        <pre><code>outputs/
+  ├── sign_off/
+  │   └── &lt;timestamp&gt;/
+  │       ├── question_part_1/
+  │       │   └── clustered_themes.json
+  │       └── question_part_2/
+  │           └── clustered_themes.json
+
+</code></pre>
+        Then, everything which was just saved to S3 is read from S3 and saved to
+        the database as candidate themes.</Text
+      >
+    </Details>
+  </Section>
+
+  <hr />
+
+  <Section>
+    <h2 class="mb-4 text-2xl">3. Finalise Themes</h2>
+
+    <Text>
+      This stage is completed by users. Users are able to select from a list of
+      candidate themes, found by ThemeFinder in the previous stage. They can
+      also add custom themes and edit the title and description of selected
+      themes.</Text
+    >
+
+    <img
+      src="/images/finalise-themes-screenshot.png"
+      alt="Screenshot of finalising themes in the Consult app"
+      class="my-8 rounded-md border border-gray-300 shadow-sm"
+    />
+
+    <Details summaryText="What's happening in the background?">
+      <Text>All changes are saved in the database as selected themes.</Text>
+    </Details>
+  </Section>
+
+  <hr />
+
+  <Section>
+    <h2 class="mb-4 text-2xl">4. Assign Themes</h2>
+
+    <Text>
+      Once users have finalised their themes, we can run <Link
+        href={Routes.ThemeFinderRepository}>ThemeFinder</Link
+      > to assign themes to responses. This is a long-running batch process and can
+      take up to a few hours depending on the size of the consultation.
+    </Text>
+
+    <AssignThemesForm client:load consultations={assignThemesFolders} />
+
+    <div class="my-8"></div>
+
+    <Details summaryText="What's happening in the background?">
+      <ol>
+        <li>
+          <h4 class="mb-4 text-lg font-medium">
+            a) Generic themes are saved to the database
+          </h4>
+          <Text
+            >Generic themes including 'Other' and 'No Reason Given' are saved to
+            the database for each free text question.</Text
+          >
+          <h4 class="mb-4 text-lg font-medium">
+            b) Finalised themes are saved to S3
+          </h4>
+          <Text
+            >The finalised themes (including generic themes) for each free text
+            question are saved in S3 with the structure:
+            <pre><code>outputs/
+  ├── sign_off/
+  │   └── &lt;timestamp&gt;/
+  │       ├── question_part_1/
+  │       │   └── themes.csv
+  │       └── question_part_2/
+  │           └── themes.csv
+        </code></pre>
+          </Text>
+        </li>
+        <li>
+          <h4 class="mb-4 text-lg font-medium">
+            c) ThemeFinder assigns themes to responses
+          </h4>
+          <Text>
+            In a long-running batch job, themes and responses are read from S3
+            and used to assign themes to responses by ThemeFinder. This can take
+            up to a few hours depending on the size of the consultation. The
+            data is saved to S3 with the structure:
+            <pre><code>outputs/
+  ├── mapping/
+  │   └── &lt;timestamp&gt;/
+  │       ├── question_part_1/
+  │       │   ├── themes.json
+  │       │   ├── mapping.jsonl
+  │       │   ├── sentiment.jsonl (optional)
+  │       │   └── detail_detection.jsonl
+  │       └── question_part_2/
+  │           ├── themes.json
+  │           ├── mapping.jsonl
+  │           ├── sentiment.jsonl (optional)
+  │           └── detail_detection.jsonl
+        </code></pre>
+          </Text>
+        </li>
+        <li>
+          <h4 class="mb-4 text-lg font-medium">d) Saved to the database</h4>
+          <Text
+            >Once the batch job successfully completes, the data is saved in the
+            database and the analysis dashboard is ready to review.</Text
+          >
+        </li>
+      </ol>
+    </Details>
+
+    <div
+      class="my-8 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6"
+    >
+      <div class="mb-4 flex items-center gap-2">
+        <span
+          class="rounded-full bg-teal-100 px-3 py-1 text-sm font-semibold text-teal-800"
+        >
+          Coming Soon
+        </span>
+      </div>
+      <Text>
+        Users will be able to trigger assigning themes directly from the app
+        after finalising themes by clicking the 'Confirm and Proceed to Mapping'
+        button:
+      </Text>
+      <img
+        src="/images/assign-themes-screenshot.png"
+        alt="Screenshot of assigning themes in the Consult app (coming soon)"
+        class="my-4 rounded-md border border-gray-300 shadow-sm"
+      />
+    </div>
+  </Section>
+
+  <hr />
+
+  <Section>
+    <h2 class="mb-4 text-2xl">5. Analyse</h2>
+
+    <Text>
+      This stage is completed by users. Users get access to a dashboard where
+      they can review each question, theme frequency, responses and do a
+      deep-dive into particular respondents or filtering by demographics.</Text
+    >
+    <img
+      src="/images/analysis-dashboard-screenshot.png"
+      alt="Screenshot of the Analysis Dashboard in the Consult app"
+      class="my-8 rounded-md border border-gray-300 shadow-sm"
+    />
+  </Section>
+</Layout>

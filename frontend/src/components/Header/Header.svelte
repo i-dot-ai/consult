@@ -23,9 +23,6 @@
         return [
           { text: "Consultations", url: Routes.SupportConsultations },
           { text: "Users", url: Routes.SupportUsers },
-          { text: "Import", url: Routes.SupportImport },
-          { text: "Sign-off", url: Routes.SupportSignOff },
-          { text: "Themefinder", url: Routes.SupportThemefinder },
         ];
       } else {
         return [
