@@ -10,19 +10,17 @@ locals {
   }
 
   django_env_vars = {
-    "LLM_GATEWAY_URL": local.llm_gateway_url
-
-    "DOMAIN_NAME"                   = local.host,
-
-    "REDIS_HOST"                    = module.elasticache.redis_address
-    "REDIS_PORT"                    = module.elasticache.redis_port
-    "ASSIGN_THEMES_BATCH_JOB_NAME"        = "${local.name}-assign-themes-job"
-    "ASSIGN_THEMES_BATCH_JOB_QUEUE"       = module.batch_job_mapping.job_queue_name
-    "ASSIGN_THEMES_BATCH_JOB_DEFINITION"  = module.batch_job_mapping.job_definition_name
-    "FIND_THEMES_BATCH_JOB_NAME"          = "${local.name}-find-themes-job"
-    "FIND_THEMES_BATCH_JOB_QUEUE"         = module.batch_job_sign_off.job_queue_name
-    "FIND_THEMES_BATCH_JOB_DEFINITION"    = module.batch_job_sign_off.job_definition_name
-    "AUTH_API_URL"                        = data.aws_ssm_parameter.auth_api_invoke_url.value
+    "LLM_GATEWAY_URL"                    = local.llm_gateway_url
+    "DOMAIN_NAME"                        = local.host,
+    "REDIS_HOST"                         = module.elasticache.redis_address
+    "REDIS_PORT"                         = module.elasticache.redis_port
+    "ASSIGN_THEMES_BATCH_JOB_NAME"       = "${local.name}-assign-themes-job"
+    "ASSIGN_THEMES_BATCH_JOB_QUEUE"      = module.batch_job_mapping.job_queue_name
+    "ASSIGN_THEMES_BATCH_JOB_DEFINITION" = module.batch_job_mapping.job_definition_name
+    "FIND_THEMES_BATCH_JOB_NAME"         = "${local.name}-find-themes-job"
+    "FIND_THEMES_BATCH_JOB_QUEUE"        = module.batch_job_sign_off.job_queue_name
+    "FIND_THEMES_BATCH_JOB_DEFINITION"   = module.batch_job_sign_off.job_definition_name
+    "AUTH_API_URL"                       = data.aws_ssm_parameter.auth_api_invoke_url.value
   }
 
   additional_policy_arns = { for idx, arn in [aws_iam_policy.ecs_exec_custom_policy.arn] : idx => arn }
