@@ -13,7 +13,7 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotation,
     SelectedTheme,
 )
-from consultation_analyser.ingest.jobs.consultations import delete_consultation_job
+from consultation_analyser.ingest.jobs import delete_consultation_job
 
 
 @pytest.mark.django_db
@@ -196,7 +196,7 @@ def test_delete_consultation_job_handles_database_connection(mock_connection):
 
 @pytest.mark.django_db
 @patch("django.db.connection")
-@patch("consultation_analyser.ingest.jobs.consultations.logger")
+@patch("consultation_analyser.ingest.jobs.logger")
 def test_delete_consultation_job_handles_exceptions(mock_logger, mock_connection):
     """Test that the delete job properly handles and logs exceptions."""
     # Mock connection.close() to prevent test database connection issues

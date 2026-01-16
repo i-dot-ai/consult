@@ -193,4 +193,3 @@ admin.site.register(ResponseAnnotation, ResponseAnnotationAdmin)
 admin.site.register(ResponseAnnotationTheme, ResponseAnnotationThemeAdmin)
 admin.site.register(Respondent, RespondentAdmin)
 admin.site.register(DemographicOption, DemographicOptionAdmin)
-
