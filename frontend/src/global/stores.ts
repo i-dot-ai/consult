@@ -2,7 +2,11 @@ import { writable } from "svelte/store";
 import type { Writable } from "svelte/store";
 
 import { debounce, dotEnv } from "./utils";
-import { Client, type EmptyTypes, type HttpMethodsType, type PayloadType } from "@hyper-fetch/core";
+import {
+  Client,
+  type EmptyTypes,
+  type HttpMethodsType,
+} from "@hyper-fetch/core";
 
 // Favourite questions logic
 const FAVS_STORAGE_KEY = "favouritedQuestions";
@@ -159,13 +163,13 @@ export const createFetchStore = <T>({
 };
 
 interface createQueryStoreOptions {
-  method?: HttpMethodsType,
-  deduplicate?: boolean,
+  method?: HttpMethodsType;
+  deduplicate?: boolean;
 }
 interface createQueryStoreFetchOptions {
-  body?: unknown,
-  headers?: unknown,
-  params?: unknown
+  body?: unknown;
+  headers?: unknown;
+  params?: unknown;
 }
 export const createQueryStore = <T>(
   url: string,
@@ -182,33 +186,39 @@ export const createQueryStore = <T>(
   });
 
   const store: Writable<{
-    data: T | undefined,
-    isLoading: boolean,
-    error: unknown | null,
-    status: number | null,
-    fetch: (options?: createQueryStoreFetchOptions) => Promise<void>,
-    reset: () => void,
+    data: T | undefined;
+    isLoading: boolean;
+    error: unknown | null;
+    status: number | null;
+    fetch: (options?: createQueryStoreFetchOptions) => Promise<void>;
+    reset: () => void;
   }> = writable({
     data: undefined,
     isLoading: false,
     error: null,
     status: null,
     fetch: async () => {},
-    reset: () => {}
+    reset: () => {},
   });
 
-  const doFetch = async (options: createQueryStoreFetchOptions | undefined = {}) => {
+  const doFetch = async (
+    options: createQueryStoreFetchOptions | undefined = {},
+  ) => {
     // set loading to true
-    store.update(store => ({...store, isLoading: true}));
+    store.update((store) => ({ ...store, isLoading: true }));
 
-    const { data: _data, error: _error, status: _status } = await query
+    const {
+      data: _data,
+      error: _error,
+      status: _status,
+    } = await query
       .setParams(options.params as EmptyTypes)
       .setHeaders(options.headers as HeadersInit)
       .setPayload(options.body as undefined)
       .send();
 
     // update store
-    store.update(store => ({
+    store.update((store) => ({
       ...store,
       data: _data as T,
       error: _error,
@@ -216,19 +226,19 @@ export const createQueryStore = <T>(
     }));
 
     // set loading to false
-    store.update(store => ({...store, isLoading: false}));
-  }
+    store.update((store) => ({ ...store, isLoading: false }));
+  };
 
   const reset = () => {
-    store.update(store => ({
+    store.update((store) => ({
       ...store,
       data: undefined,
       isLoading: false,
       error: null,
       status: null,
-    }))
-  }
+    }));
+  };
   store.update((store) => ({ ...store, fetch: doFetch, reset: reset }));
 
   return store;
-}
+};

@@ -4,7 +4,11 @@
   import { onMount } from "svelte";
   import { fade, slide } from "svelte/transition";
 
-  import { createFetchStore, createQueryStore, type MockFetch } from "../../global/stores";
+  import {
+    createFetchStore,
+    createQueryStore,
+    type MockFetch,
+  } from "../../global/stores";
   import {
     getApiConfirmSignOffUrl,
     getApiCreateSelectedThemeUrl,
@@ -68,17 +72,22 @@
     selectGeneratedThemeMock,
   }: Props = $props();
 
-  const selectedThemesQuery = $derived(createQueryStore<SelectedThemesResponse>(
-    getApiGetSelectedThemesUrl(consultationId, questionId),
-  ));
-  const selectedThemesCreateQuery = $derived(createQueryStore(
-    getApiCreateSelectedThemeUrl(consultationId, questionId),
-    { method: "POST" },
-  ));
-  const selectedThemesDeleteQuery = $derived(createQueryStore<SelectedThemesDeleteResponse>(
-    getApiDeleteSelectedThemeUrl(consultationId, questionId, ":themeId"),
-    { method: "DELETE" },
-  ));
+  const selectedThemesQuery = $derived(
+    createQueryStore<SelectedThemesResponse>(
+      getApiGetSelectedThemesUrl(consultationId, questionId),
+    ),
+  );
+  const selectedThemesCreateQuery = $derived(
+    createQueryStore(getApiCreateSelectedThemeUrl(consultationId, questionId), {
+      method: "POST",
+    }),
+  );
+  const selectedThemesDeleteQuery = $derived(
+    createQueryStore<SelectedThemesDeleteResponse>(
+      getApiDeleteSelectedThemeUrl(consultationId, questionId, ":themeId"),
+      { method: "DELETE" },
+    ),
+  );
   const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
     mockFetch: generatedThemesMock,
   });
@@ -89,10 +98,11 @@
   const questionStore = createFetchStore<Question>({
     mockFetch: questionDataMock,
   });
-  const confirmSignOffQuery = $derived(createQueryStore(
-    getApiConfirmSignOffUrl(consultationId, questionId),
-    { method: "PATCH" },
-  ));
+  const confirmSignOffQuery = $derived(
+    createQueryStore(getApiConfirmSignOffUrl(consultationId, questionId), {
+      method: "PATCH",
+    }),
+  );
 
   let isConfirmSignOffModalOpen: boolean = $state(false);
   let addingCustomTheme: boolean = $state(false);
@@ -147,7 +157,7 @@
     await $selectedThemesCreateQuery.fetch({
       body: {
         name: title,
-        description: description
+        description: description,
       },
     });
 
@@ -279,7 +289,7 @@
     await $confirmSignOffQuery.fetch({
       body: {
         theme_status: "confirmed",
-      }
+      },
     });
 
     if ($confirmSignOffQuery.error) {

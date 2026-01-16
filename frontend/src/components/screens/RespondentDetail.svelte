@@ -50,19 +50,25 @@
   const respondentsQuery = createQueryStore<RespondentsResponse>(
     getLoadRespondentsUrl(),
   );
-  const consultationQuestionsQuery = $derived(createQueryStore<QuestionsResponse>(
-    getApiQuestionsUrl(consultationId),
-  ));
-  const questionsQuery = $derived(createQueryStore<QuestionsResponse>(
-    getQuestionsByRespondentUrl(consultationId, respondentId),
-  ));
-  const answersQuery = $derived(createQueryStore<AnswersResponse>(
-    `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
-  ));
-  const respondentUpdateQuery = $derived(createQueryStore<Respondent>(
-    getApiConsultationRespondentUrl(consultationId, respondentId),
-    { method: "PATCH" },
-  ));
+  const consultationQuestionsQuery = $derived(
+    createQueryStore<QuestionsResponse>(getApiQuestionsUrl(consultationId)),
+  );
+  const questionsQuery = $derived(
+    createQueryStore<QuestionsResponse>(
+      getQuestionsByRespondentUrl(consultationId, respondentId),
+    ),
+  );
+  const answersQuery = $derived(
+    createQueryStore<AnswersResponse>(
+      `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
+    ),
+  );
+  const respondentUpdateQuery = $derived(
+    createQueryStore<Respondent>(
+      getApiConsultationRespondentUrl(consultationId, respondentId),
+      { method: "PATCH" },
+    ),
+  );
 
   let dataRequested: boolean = $state(false);
 

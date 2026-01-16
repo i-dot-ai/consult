@@ -49,16 +49,19 @@
   let isConfirmModalOpen: boolean = $state(false);
   let dataRequested: boolean = $state(false);
 
-  const questionsQuery = $derived(createQueryStore<QuestionsResponse>(
-    getApiQuestionsUrl(consultationId),
-  ));
-  const consultationQuery = $derived(createQueryStore<ConsultationResponse>(
-    getApiConsultationUrl(consultationId),
-  ));
-  const consultationUpdateQuery = $derived(createQueryStore(
-    getApiConsultationUrl(consultationId),
-    { method: "PATCH" },
-  ));
+  const questionsQuery = $derived(
+    createQueryStore<QuestionsResponse>(getApiQuestionsUrl(consultationId)),
+  );
+  const consultationQuery = $derived(
+    createQueryStore<ConsultationResponse>(
+      getApiConsultationUrl(consultationId),
+    ),
+  );
+  const consultationUpdateQuery = $derived(
+    createQueryStore(getApiConsultationUrl(consultationId), {
+      method: "PATCH",
+    }),
+  );
 
   onMount(async () => {
     $consultationQuery.fetch();
@@ -123,7 +126,7 @@
           await $consultationUpdateQuery.fetch({
             body: {
               stage: ConsultationStageNames.THEME_MAPPING,
-            }
+            },
           });
 
           if (!$consultationUpdateQuery.error) {

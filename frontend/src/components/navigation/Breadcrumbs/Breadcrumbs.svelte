@@ -33,7 +33,10 @@
     consultationStage?: string;
   }
 
-  let { consultationId = "", consultationStage = ConsultationStageNames.ANALYSIS }: Props = $props();
+  let {
+    consultationId = "",
+    consultationStage = ConsultationStageNames.ANALYSIS,
+  }: Props = $props();
 
   let currStage: number = $derived(
     STAGES.findIndex((stage) => stage === consultationStage),

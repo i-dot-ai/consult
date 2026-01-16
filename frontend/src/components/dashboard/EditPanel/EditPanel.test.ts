@@ -93,7 +93,7 @@ describe("EditPanel", () => {
         themes: testData.themes.map((theme) => ({
           id: theme.id,
         })),
-      }
+      },
     });
     expect(resetDataMock).toHaveBeenCalledOnce();
   });

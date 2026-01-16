@@ -406,5 +406,10 @@ export const getApiUserConsultations = (userId: string) => {
   return urlJoin(Routes.ApiUsers, userId, "consultations/");
 };
 export const getApiDemoOptionsUrl = (consultationId: string) => {
-  return urlJoin(Routes.ApiConsultations, consultationId, "demographic-options", "/");
-}
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    "demographic-options",
+    "/",
+  );
+};

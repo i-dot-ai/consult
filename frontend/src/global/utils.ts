@@ -12,7 +12,11 @@ export const dotEnv = (key: string): string => {
   const processKey = key.replace("PUBLIC_", "");
 
   // Try runtime environment variable first (for server-side)
-  if (typeof process !== "undefined" && process.env && process.env[processKey]) {
+  if (
+    typeof process !== "undefined" &&
+    process.env &&
+    process.env[processKey]
+  ) {
     return process.env[processKey];
   }
 
@@ -25,7 +29,7 @@ export const dotEnv = (key: string): string => {
   throw new Error(
     `${key} is not set. This is required for the application to function.`,
   );
-}
+};
 
 export const getClientId = (): string => {
   // Try runtime environment variable first (for server-side)

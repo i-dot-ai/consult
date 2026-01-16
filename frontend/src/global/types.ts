@@ -21,7 +21,10 @@ export interface Question {
   theme_status?: string;
 }
 
-export type ConsultationStage = ConsultationStageNames.THEME_SIGN_OFF | ConsultationStageNames.THEME_MAPPING | ConsultationStageNames.ANALYSIS;
+export type ConsultationStage =
+  | ConsultationStageNames.THEME_SIGN_OFF
+  | ConsultationStageNames.THEME_MAPPING
+  | ConsultationStageNames.ANALYSIS;
 export interface NextResponseInfo {
   id: string;
   consultation_id: string;
@@ -186,7 +189,10 @@ export interface ConsultationResponse {
   title: string;
   code: string;
   users: User[];
-  stage: ConsultationStageNames.THEME_SIGN_OFF | ConsultationStageNames.THEME_MAPPING | ConsultationStageNames.ANALYSIS;
+  stage:
+    | ConsultationStageNames.THEME_SIGN_OFF
+    | ConsultationStageNames.THEME_MAPPING
+    | ConsultationStageNames.ANALYSIS;
 }
 export interface ConsultationsResponse {
   count: number;
@@ -195,11 +201,11 @@ export interface ConsultationsResponse {
   results: Consultation[];
 }
 export interface UserResponse {
-  id: number,
-  email: string,
-  has_dashboard_access: boolean,
-  is_staff: boolean,
-  created_at: string,
+  id: number;
+  email: string;
+  has_dashboard_access: boolean;
+  is_staff: boolean;
+  created_at: string;
 }
 export interface QuestionsResponse {
   count: number;
@@ -293,7 +299,7 @@ export enum OnboardingKeys {
 }
 
 export interface ApiError {
-  detail: string,
+  detail: string;
 }
 
 export enum ConsultationStageNames {

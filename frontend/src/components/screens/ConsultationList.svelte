@@ -6,7 +6,11 @@
   import Link from "../Link.svelte";
   import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
 
-  import type { ApiError, ConsultationsResponse, UserResponse } from "../../global/types.ts";
+  import type {
+    ApiError,
+    ConsultationsResponse,
+    UserResponse,
+  } from "../../global/types.ts";
   import {
     Routes,
     getConsultationDetailUrl,
@@ -16,7 +20,7 @@
   import { createQueryStore } from "../../global/stores.ts";
 
   let consultationsStore = createQueryStore<ConsultationsResponse>(
-    `${Routes.ApiConsultations}?scope=assigned`
+    `${Routes.ApiConsultations}?scope=assigned`,
   );
   let userStore = createQueryStore<UserResponse>(Routes.ApiUser);
 
@@ -29,13 +33,14 @@
 </script>
 
 <section class="mt-4">
-  {#if $consultationsStore.isLoading || $userStore.isLoading }
+  {#if $consultationsStore.isLoading || $userStore.isLoading}
     <p>
       <LoadingMessage message="Loading consultations..." />
     </p>
-  {:else if $consultationsStore.error || $userStore.error }
+  {:else if $consultationsStore.error || $userStore.error}
     <Alert>
-      {($consultationsStore.error as ApiError).detail || ($userStore.error as ApiError).detail}
+      {($consultationsStore.error as ApiError).detail ||
+        ($userStore.error as ApiError).detail}
     </Alert>
   {:else}
     <ul>

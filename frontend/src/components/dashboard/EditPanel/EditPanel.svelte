@@ -60,7 +60,7 @@
       body: {
         themes: stagedThemes.map((theme) => ({ id: theme.id })),
         evidenceRich: stagedEvidenceRich,
-      }
+      },
     });
 
     if (!$answerUpdateQuery.error && !$answerUpdateQuery.isLoading) {
@@ -95,10 +95,11 @@
   let stagedEvidenceRich = $state(false);
   let panelOpen: boolean = $state(false);
 
-  const answerUpdateQuery = $derived(createQueryStore(
-    getApiAnswerUrl(consultationId, answerId),
-    { method: "PATCH" },
-  ));
+  const answerUpdateQuery = $derived(
+    createQueryStore(getApiAnswerUrl(consultationId, answerId), {
+      method: "PATCH",
+    }),
+  );
 
   onMount(() => {
     resetStaged();
