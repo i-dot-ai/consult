@@ -37,10 +37,6 @@ locals {
       value = module.rds.db_instance_address
     },
     {
-      name  = "AWS_REGION"
-      value = var.region
-    },
-    {
       name  = "THEMEFINDER_SLACK_WEBHOOK_URL"
       value = "placeholder" # Update value in SSM - Do not hardcode
     },

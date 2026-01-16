@@ -1,6 +1,6 @@
 locals {
-  batch_mapping_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult-pipeline-mapping:${var.image_tag}"
-  batch_sign_off_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult-pipeline-sign-off:${var.image_tag}"
+  batch_mapping_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-pipeline-mapping:${var.image_tag}"
+  batch_sign_off_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-pipeline-sign-off:${var.image_tag}"
   
   llm_gateway_url        = "https://llm-gateway.i.ai.gov.uk/"
 }

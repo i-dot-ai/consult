@@ -8,7 +8,7 @@ data "terraform_remote_state" "vpc" {
   config = {
     bucket = var.state_bucket
     key    = "vpc/terraform.tfstate"
-    region = var.region
+    region = data.aws_region.current.id
   }
 }
 
@@ -19,7 +19,7 @@ data "terraform_remote_state" "platform" {
   config = {
     bucket = var.state_bucket
     key    = "platform/terraform.tfstate"
-    region = var.region
+    region = data.aws_region.current.id
   }
 }
 
@@ -29,7 +29,7 @@ data "terraform_remote_state" "universal" {
   config = {
     bucket = var.state_bucket
     key    = "universal/terraform.tfstate"
-    region = var.region
+    region = data.aws_region.current.id
   }
 }
 
@@ -38,7 +38,7 @@ data "terraform_remote_state" "account" {
   config = {
     bucket = var.state_bucket
     key    = "account/terraform.tfstate"
-    region = var.region
+    region = data.aws_region.current.id
   }
 }
 
@@ -48,7 +48,7 @@ data "terraform_remote_state" "keycloak" {
   config = {
     bucket = var.state_bucket
     key    = "core/keycloak/keycloak/terraform.tfstate"
-    region = var.region
+    region = data.aws_region.current.id
   }
 }
 
