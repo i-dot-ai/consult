@@ -4,11 +4,7 @@
   import { onMount } from "svelte";
   import { fade, slide } from "svelte/transition";
 
-  import {
-    createFetchStore,
-    createQueryStore,
-    type MockFetch,
-  } from "../../global/stores";
+  import { createQueryStore, type MockFetch } from "../../global/stores";
   import {
     getApiConfirmSignOffUrl,
     getApiCreateSelectedThemeUrl,
@@ -63,13 +59,7 @@
     selectGeneratedThemeMock?: () => unknown;
   }
 
-  let {
-    consultationId = "",
-    questionId = "",
-    questionDataMock,
-    answersMock,
-    selectGeneratedThemeMock,
-  }: Props = $props();
+  let { consultationId = "", questionId = "", answersMock }: Props = $props();
 
   const selectedThemesQuery = $derived(
     createQueryStore<SelectedThemesResponse>(
@@ -87,16 +77,20 @@
       { method: "DELETE" },
     ),
   );
-  const generatedThemesQuery = $derived(createQueryStore<GeneratedThemesResponse>(
-    getApiGetGeneratedThemesUrl(consultationId, questionId),
-  ));
-  const generatedThemesSelectQuery = $derived(createQueryStore(
-    getApiSelectGeneratedThemeUrl(consultationId, questionId, ":newThemeId"),
-    { method: "POST" },
-  ));
-  const questionQuery = $derived(createQueryStore<Question>(
-    getApiQuestionUrl(consultationId, questionId),
-  ));
+  const generatedThemesQuery = $derived(
+    createQueryStore<GeneratedThemesResponse>(
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
+    ),
+  );
+  const generatedThemesSelectQuery = $derived(
+    createQueryStore(
+      getApiSelectGeneratedThemeUrl(consultationId, questionId, ":newThemeId"),
+      { method: "POST" },
+    ),
+  );
+  const questionQuery = $derived(
+    createQueryStore<Question>(getApiQuestionUrl(consultationId, questionId)),
+  );
   const confirmSignOffQuery = $derived(
     createQueryStore(getApiConfirmSignOffUrl(consultationId, questionId), {
       method: "PATCH",
