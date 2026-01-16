@@ -95,10 +95,10 @@
   let stagedEvidenceRich = $state(false);
   let panelOpen: boolean = $state(false);
 
-  const answerUpdateQuery = $derived(createQueryStore({
-    url: getApiAnswerUrl(consultationId, answerId),
-    method: "PATCH",
-  }));
+  const answerUpdateQuery = $derived(createQueryStore(
+    getApiAnswerUrl(consultationId, answerId),
+    { method: "PATCH" },
+  ));
 
   onMount(() => {
     resetStaged();

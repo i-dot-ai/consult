@@ -35,12 +35,12 @@
   let searchValue: string = $state("");
   let dataRequested: boolean = $state(false);
 
-  const questionsQuery = $derived(createQueryStore<QuestionsResponse>({
-    url: getApiQuestionsUrl(consultationId),
-  }));
-  const demoOptionsQuery = $derived(createQueryStore<DemoOptionsResponse>({
-    url: getApiDemoOptionsUrl(consultationId),
-  }));
+  const questionsQuery = $derived(createQueryStore<QuestionsResponse>(
+    getApiQuestionsUrl(consultationId),
+  ));
+  const demoOptionsQuery = $derived(createQueryStore<DemoOptionsResponse>(
+    getApiDemoOptionsUrl(consultationId),
+  ));
 
   onMount(() => {
     $questionsQuery.fetch();

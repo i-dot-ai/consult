@@ -15,12 +15,10 @@
   } from "../../global/routes.ts";
   import { createQueryStore } from "../../global/stores.ts";
 
-  let consultationsStore = createQueryStore<ConsultationsResponse>({
-    url: `${Routes.ApiConsultations}?scope=assigned`
-  });
-  let userStore = createQueryStore<UserResponse>({
-    url: Routes.ApiUser
-  });
+  let consultationsStore = createQueryStore<ConsultationsResponse>(
+    `${Routes.ApiConsultations}?scope=assigned`
+  );
+  let userStore = createQueryStore<UserResponse>(Routes.ApiUser);
 
   onMount(async () => {
     await $consultationsStore.fetch();

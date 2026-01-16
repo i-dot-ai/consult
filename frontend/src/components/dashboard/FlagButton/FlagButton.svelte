@@ -23,10 +23,10 @@
     toggleFlagMock,
   }: Props = $props();
 
-  const toggleFlagQuery = $derived(createQueryStore({
-    url: getApiAnswerFlagUrl(consultationId, answerId),
-    method: "PATCH",
-  }));
+  const toggleFlagQuery = $derived(createQueryStore(
+    getApiAnswerFlagUrl(consultationId, answerId),
+    { method: "PATCH" },
+  ));
 </script>
 
 <div class="py-2">

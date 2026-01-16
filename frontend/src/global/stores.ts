@@ -158,28 +158,27 @@ export const createFetchStore = <T>({
   return store;
 };
 
+interface createQueryStoreOptions {
+  method?: HttpMethodsType,
+  deduplicate?: boolean,
+}
 interface createQueryStoreFetchOptions {
   body?: unknown,
   headers?: unknown,
   params?: unknown
 }
-export const createQueryStore = <T>({
-  url,
-  method = "GET",
-  deduplicate = true,
-}: {
+export const createQueryStore = <T>(
   url: string,
-  method?: HttpMethodsType | undefined,
-  deduplicate?: boolean
-}) => {
+  options?: createQueryStoreOptions,
+) => {
   const client = new Client({
     url: dotEnv("PUBLIC_FRONTEND_URL"),
   });
 
   const query = client.createRequest()({
-    method: method,
+    method: options?.method,
     endpoint: url,
-    deduplicate: deduplicate,
+    deduplicate: options?.deduplicate,
   });
 
   const store: Writable<{
@@ -205,7 +204,7 @@ export const createQueryStore = <T>({
     const { data: _data, error: _error, status: _status } = await query
       .setParams(options.params as EmptyTypes)
       .setHeaders(options.headers as HeadersInit)
-      .setPayload(options.body)
+      .setPayload(options.body as undefined)
       .send();
 
     // update store

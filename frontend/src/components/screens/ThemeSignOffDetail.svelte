@@ -68,17 +68,17 @@
     selectGeneratedThemeMock,
   }: Props = $props();
 
-  const selectedThemesQuery = $derived(createQueryStore<SelectedThemesResponse>({
-    url: getApiGetSelectedThemesUrl(consultationId, questionId),
-  }));
-  const selectedThemesCreateQuery = $derived(createQueryStore({
-    url: getApiCreateSelectedThemeUrl(consultationId, questionId),
-    method: "POST",
-  }));
-  const selectedThemesDeleteQuery = $derived(createQueryStore<SelectedThemesDeleteResponse>({
-    url: getApiDeleteSelectedThemeUrl(consultationId, questionId, ":themeId"),
-    method: "DELETE",
-  }));
+  const selectedThemesQuery = $derived(createQueryStore<SelectedThemesResponse>(
+    getApiGetSelectedThemesUrl(consultationId, questionId),
+  ));
+  const selectedThemesCreateQuery = $derived(createQueryStore(
+    getApiCreateSelectedThemeUrl(consultationId, questionId),
+    { method: "POST" },
+  ));
+  const selectedThemesDeleteQuery = $derived(createQueryStore<SelectedThemesDeleteResponse>(
+    getApiDeleteSelectedThemeUrl(consultationId, questionId, ":themeId"),
+    { method: "DELETE" },
+  ));
   const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
     mockFetch: generatedThemesMock,
   });
@@ -89,10 +89,10 @@
   const questionStore = createFetchStore<Question>({
     mockFetch: questionDataMock,
   });
-  const confirmSignOffQuery = $derived(createQueryStore({
-    url: getApiConfirmSignOffUrl(consultationId, questionId),
-    method: "PATCH",
-  }));
+  const confirmSignOffQuery = $derived(createQueryStore(
+    getApiConfirmSignOffUrl(consultationId, questionId),
+    { method: "PATCH" },
+  ));
 
   let isConfirmSignOffModalOpen: boolean = $state(false);
   let addingCustomTheme: boolean = $state(false);
@@ -277,7 +277,9 @@
 
   const confirmSignOff = async () => {
     await $confirmSignOffQuery.fetch({
-      theme_status: "confirmed",
+      body: {
+        theme_status: "confirmed",
+      }
     });
 
     if ($confirmSignOffQuery.error) {

@@ -49,16 +49,16 @@
   let isConfirmModalOpen: boolean = $state(false);
   let dataRequested: boolean = $state(false);
 
-  const questionsQuery = $derived(createQueryStore<QuestionsResponse>({
-    url: getApiQuestionsUrl(consultationId),
-  }));
-  const consultationQuery = $derived(createQueryStore<ConsultationResponse>({
-    url: getApiConsultationUrl(consultationId),
-  }));
-  const consultationUpdateQuery = $derived(createQueryStore({
-    url: getApiConsultationUrl(consultationId),
-    method: "PATCH",
-  }));
+  const questionsQuery = $derived(createQueryStore<QuestionsResponse>(
+    getApiQuestionsUrl(consultationId),
+  ));
+  const consultationQuery = $derived(createQueryStore<ConsultationResponse>(
+    getApiConsultationUrl(consultationId),
+  ));
+  const consultationUpdateQuery = $derived(createQueryStore(
+    getApiConsultationUrl(consultationId),
+    { method: "PATCH" },
+  ));
 
   onMount(async () => {
     $consultationQuery.fetch();
@@ -121,7 +121,9 @@
         setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
         handleConfirm={async () => {
           await $consultationUpdateQuery.fetch({
-            stage: ConsultationStageNames.THEME_MAPPING,
+            body: {
+              stage: ConsultationStageNames.THEME_MAPPING,
+            }
           });
 
           if (!$consultationUpdateQuery.error) {
