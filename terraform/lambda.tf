@@ -1,26 +1,3 @@
-module "submit_batch_job_lambda" {
-  #source         = "../../i-dot-ai-core-terraform-modules//modules/lambda" # For testing local changes
-  source = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/lambda?ref=v2.0.1-lambda"
-
-  file_path                      = "${path.root}/../lambda/submit_batch_job.zip"
-  handler                        = "submit_batch_job.lambda_handler"  
-  runtime                        = "python3.12"
-  function_name                  = "${local.name}-submit-batch-job-lambda"
-  package_type                   = "Zip"
-  memory_size                    = 1024
-  source_code_hash               = data.archive_file.submit_batch_job_archive.output_base64sha256
-  account_id                     = data.aws_caller_identity.current.account_id
-  lambda_additional_policy_arns  = {for idx, arn in [aws_iam_policy.lambda_exec_custom_policy.arn] : idx => arn}
-}
-
-resource "aws_lambda_event_source_mapping" "sqs_trigger" {
-  event_source_arn = module.batch_job_queue.sqs_queue_arn
-  function_name    = module.submit_batch_job_lambda.arn
-  batch_size       = 1  
-  enabled          = true
-}
-
-
 module "slack_notifier_lambda" {
   #source         = "../../i-dot-ai-core-terraform-modules//modules/lambda" # For testing local changes
   source = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/lambda?ref=v2.0.1-lambda"
@@ -37,28 +14,51 @@ module "slack_notifier_lambda" {
   environment_variables = {
     "SLACK_WEBHOOK_URL" = data.aws_ssm_parameter.slack_webhook_url.value,
     "LAMBDA_AWS_REGION" = local.secret_env_vars.AWS_REGION,
+    "ENVIRONMENT"       = terraform.workspace,
+    "AWS_BUCKET_NAME"   = module.app_bucket.id,
   }
 }
 
-module "consultation_import_lambda" {
+module "import_response_annotations_lambda" {
   source = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/lambda?ref=v2.0.1-lambda"
 
-  file_path                     = "${path.root}/../lambda/consultation_import.zip"
-  handler                      = "lambda_function.lambda_handler"  
+  file_path                     = "${path.root}/../lambda/import_response_annotations.zip"
+  handler                      = "import_response_annotations_handler.lambda_handler"
   runtime                      = "python3.12"
-  function_name                = "${local.name}-import-lambda"
+  function_name                = "${local.name}-import-response-annotations-lambda"
   package_type                 = "Zip"
   memory_size                  = 1024
-  source_code_hash             = data.archive_file.consultation_import_archive.output_base64sha256
+  source_code_hash             = data.archive_file.import_response_annotations_archive.output_base64sha256
   account_id                   = data.aws_caller_identity.current.account_id
   lambda_additional_policy_arns = {for idx, arn in [aws_iam_policy.lambda_exec_custom_policy.arn] : idx => arn}
   aws_security_group_ids = [aws_security_group.lambda_sg.id]
   subnet_ids              = data.terraform_remote_state.vpc.outputs.private_subnets
   environment_variables = {
-    REDIS_HOST = module.elasticache.redis_address  
-    REDIS_PORT = module.elasticache.redis_port 
-    AWS_BUCKET_NAME = module.app_bucket.id 
-    SLACK_WEBHOOK_URL = data.aws_ssm_parameter.slack_webhook_url.value
+    REDIS_HOST = module.elasticache.redis_address
+    REDIS_PORT = module.elasticache.redis_port
+    AWS_BUCKET_NAME = module.app_bucket.id
+    LAMBDA_AWS_REGION = local.secret_env_vars.AWS_REGION
+  }
+}
+
+module "import_candidate_themes_lambda" {
+  source = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/lambda?ref=v2.0.1-lambda"
+
+  file_path                     = "${path.root}/../lambda/import_candidate_themes.zip"
+  handler                      = "import_candidate_themes_handler.lambda_handler"
+  runtime                      = "python3.12"
+  function_name                = "${local.name}-import-candidate-themes-lambda"
+  package_type                 = "Zip"
+  memory_size                  = 1024
+  source_code_hash             = data.archive_file.import_candidate_themes_archive.output_base64sha256
+  account_id                   = data.aws_caller_identity.current.account_id
+  lambda_additional_policy_arns = {for idx, arn in [aws_iam_policy.lambda_exec_custom_policy.arn] : idx => arn}
+  aws_security_group_ids = [aws_security_group.lambda_sg.id]
+  subnet_ids              = data.terraform_remote_state.vpc.outputs.private_subnets
+  environment_variables = {
+    REDIS_HOST = module.elasticache.redis_address
+    REDIS_PORT = module.elasticache.redis_port
+    AWS_BUCKET_NAME = module.app_bucket.id
     LAMBDA_AWS_REGION = local.secret_env_vars.AWS_REGION
   }
 }

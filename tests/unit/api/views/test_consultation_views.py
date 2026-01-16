@@ -1,9 +1,10 @@
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
 from django.urls import reverse
 
-from consultation_analyser.consultations.models import Consultation
+from consultation_analyser.consultations.models import Consultation, Question, SelectedTheme
 from consultation_analyser.factories import ConsultationFactory, RespondentFactory, UserFactory
 
 
@@ -454,3 +455,297 @@ class TestConsultationViewSet:
         )
 
         assert response.status_code == 403
+
+
+@pytest.mark.django_db
+class TestSetupConsultationEndpoint:
+    def test_setup_consultation_success(self, client, admin_user_token):
+        """Test successful consultation setup"""
+        url = reverse("consultations-setup")
+        data = {
+            "consultation_name": "Test Consultation",
+            "consultation_code": "test-code",
+        }
+
+        with patch("consultation_analyser.consultations.api.views.consultation.jobs") as mock_jobs:
+            mock_jobs.import_consultation.delay.return_value = None
+
+            response = client.post(
+                url,
+                data,
+                content_type="application/json",
+                headers={"Authorization": f"Bearer {admin_user_token}"},
+            )
+
+            assert response.status_code == 202
+            assert "setup job started successfully" in response.json()["message"].lower()
+
+            # Verify job was enqueued with correct parameters
+            mock_jobs.import_consultation.delay.assert_called_once()
+            call_args = mock_jobs.import_consultation.delay.call_args
+            assert call_args.kwargs["consultation_code"] == "test-code"
+            assert call_args.kwargs["consultation_name"] == "Test Consultation"
+
+    def test_setup_consultation_missing_parameters(self, client, admin_user_token):
+        """Test setup endpoint validates required parameters"""
+        url = reverse("consultations-setup")
+        data = {"consultation_name": "Test Consultation"}  # Missing consultation_code
+
+        response = client.post(
+            url,
+            data,
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {admin_user_token}"},
+        )
+
+        assert response.status_code == 400
+
+
+@pytest.mark.django_db
+class TestGetConsultationFoldersEndpoint:
+    def test_get_folders_setup_stage_with_no_consultations(self, client, admin_user_token):
+        """Test setup stage returns all S3 folders when no consultations exist"""
+        url = reverse("consultations-folders")
+
+        with patch(
+            "consultation_analyser.data_pipeline.s3.get_consultation_folders"
+        ) as mock_get_folders:
+            mock_get_folders.return_value = ["healthcare-2026", "transport-2026", "education-2026"]
+
+            response = client.get(
+                url,
+                {"stage": "setup"},
+                headers={"Authorization": f"Bearer {admin_user_token}"},
+            )
+
+            assert response.status_code == 200
+            assert response.json() == ["education-2026", "healthcare-2026", "transport-2026"]
+
+    def test_get_folders_setup_stage_excludes_existing_consultations(
+        self, client, admin_user_token
+    ):
+        """Test setup stage excludes S3 folders that have matching consultations"""
+        ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation")
+
+        url = reverse("consultations-folders")
+
+        with patch(
+            "consultation_analyser.data_pipeline.s3.get_consultation_folders"
+        ) as mock_get_folders:
+            mock_get_folders.return_value = ["healthcare-2026", "transport-2026", "education-2026"]
+
+            response = client.get(
+                url,
+                {"stage": "setup"},
+                headers={"Authorization": f"Bearer {admin_user_token}"},
+            )
+
+            assert response.status_code == 200
+            assert response.json() == ["education-2026", "transport-2026"]
+
+    def test_get_folders_find_themes_stage_returns_consultations(self, client, admin_user_token):
+        """Test find-themes stage returns consultations with matching S3 folders"""
+        # Create consultations with codes matching S3 folders
+        c1 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation")
+        c2 = ConsultationFactory(code="transport-2026", title="Transport Consultation")
+        # Create consultation without matching S3 folder
+        ConsultationFactory(code="other-consultation", title="Other")
+
+        url = reverse("consultations-folders")
+
+        with patch(
+            "consultation_analyser.data_pipeline.s3.get_consultation_folders"
+        ) as mock_get_folders:
+            mock_get_folders.return_value = ["healthcare-2026", "transport-2026", "education-2026"]
+
+            response = client.get(
+                url,
+                {"stage": "find-themes"},
+                headers={"Authorization": f"Bearer {admin_user_token}"},
+            )
+
+            assert response.status_code == 200
+            result = response.json()
+
+            assert result[0]["code"] == "healthcare-2026"
+            assert result[0]["title"] == "Healthcare Consultation"
+            assert result[0]["id"] == str(c1.id)
+
+            assert result[1]["code"] == "transport-2026"
+            assert result[1]["title"] == "Transport Consultation"
+            assert result[1]["id"] == str(c2.id)
+
+    def test_get_folders_assign_themes_stage_returns_consultations(self, client, admin_user_token):
+        """Test assign-themes stage returns consultations with matching S3 folders"""
+        c1 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation")
+
+        url = reverse("consultations-folders")
+
+        with patch(
+            "consultation_analyser.data_pipeline.s3.get_consultation_folders"
+        ) as mock_get_folders:
+            mock_get_folders.return_value = ["healthcare-2026", "education-2026"]
+
+            response = client.get(
+                url,
+                {"stage": "assign-themes"},
+                headers={"Authorization": f"Bearer {admin_user_token}"},
+            )
+
+            assert response.status_code == 200
+            result = response.json()
+            assert result[0]["code"] == "healthcare-2026"
+            assert result[0]["id"] == str(c1.id)
+
+    def test_get_folders_handles_one_to_many_relationship(self, client, admin_user_token):
+        """Test endpoint handles multiple consultations with same code"""
+        c1 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation V1")
+        c2 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation V2")
+
+        url = reverse("consultations-folders")
+
+        with patch(
+            "consultation_analyser.data_pipeline.s3.get_consultation_folders"
+        ) as mock_get_folders:
+            mock_get_folders.return_value = ["healthcare-2026"]
+
+            response = client.get(
+                url,
+                {"stage": "find-themes"},
+                headers={"Authorization": f"Bearer {admin_user_token}"},
+            )
+
+            assert response.status_code == 200
+            result = response.json()
+
+            assert result[0]["code"] == "healthcare-2026"
+            assert result[0]["title"] == "Healthcare Consultation V1"
+            assert result[0]["id"] == str(c1.id)
+
+            assert result[1]["code"] == "healthcare-2026"
+            assert result[1]["title"] == "Healthcare Consultation V2"
+            assert result[1]["id"] == str(c2.id)
+
+    def test_get_folders_requires_stage_parameter(self, client, admin_user_token):
+        """Test endpoint validates required stage parameter"""
+        url = reverse("consultations-folders")
+
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {admin_user_token}"},
+        )
+
+        assert response.status_code == 400
+
+    def test_get_folders_validates_stage_choices(self, client, admin_user_token):
+        """Test endpoint validates stage parameter choices"""
+        url = reverse("consultations-folders")
+
+        response = client.get(
+            url,
+            {"stage": "invalid-stage"},
+            headers={"Authorization": f"Bearer {admin_user_token}"},
+        )
+
+        assert response.status_code == 400
+
+
+@pytest.mark.django_db
+class TestFindThemesEndpoint:
+    def test_find_themes_success(self, client, admin_user_token, free_text_question):
+        """Test successful find themes job submission"""
+        consultation = free_text_question.consultation
+
+        url = reverse("consultations-find-themes", kwargs={"pk": consultation.id})
+
+        with patch("consultation_analyser.data_pipeline.batch.submit_job") as mock_submit:
+            mock_submit.return_value = {"jobId": "test-job-123"}
+
+            response = client.post(
+                url,
+                headers={"Authorization": f"Bearer {admin_user_token}"},
+            )
+
+            assert response.status_code == 202
+            assert response.json()["consultation_id"] == str(consultation.id)
+
+            # Verify batch job was submitted
+            mock_submit.assert_called_once_with(
+                job_type="FIND_THEMES",
+                consultation_code=consultation.code,
+                consultation_name=consultation.title,
+                user_id=mock_submit.call_args.kwargs["user_id"],
+            )
+
+    def test_find_themes_no_free_text_questions(self, client, admin_user_token, consultation):
+        """Test find themes endpoint requires free text questions"""
+        Question.objects.create(
+            consultation=consultation, number=1, has_free_text=False, text="Test?"
+        )
+
+        url = reverse("consultations-find-themes", kwargs={"pk": consultation.id})
+
+        response = client.post(
+            url,
+            headers={"Authorization": f"Bearer {admin_user_token}"},
+        )
+
+        assert response.status_code == 400
+
+
+@pytest.mark.django_db
+class TestAssignThemesEndpoint:
+    def test_assign_themes_success(self, client, admin_user_token, free_text_question):
+        """Test successful assign themes job submission"""
+        consultation = free_text_question.consultation
+
+        SelectedTheme.objects.create(
+            question=free_text_question, name="Theme Name", description="Theme Description"
+        )
+
+        url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
+
+        with (
+            patch(
+                "consultation_analyser.consultations.api.views.consultation.export_selected_themes_to_s3"
+            ) as mock_export,
+            patch("consultation_analyser.consultations.api.views.consultation.batch") as mock_batch,
+        ):
+            mock_export.return_value = 1
+            mock_batch.submit_job.return_value = {"jobId": "test-job-456"}
+
+            response = client.post(
+                url,
+                headers={"Authorization": f"Bearer {admin_user_token}"},
+            )
+
+            assert response.status_code == 202
+
+            # Verify seletected themes were exported to S3
+            mock_export.assert_called_once_with(consultation)
+
+            # Verify batch job was submitted
+            mock_batch.submit_job.assert_called_once_with(
+                job_type="ASSIGN_THEMES",
+                consultation_code=consultation.code,
+                consultation_name=consultation.title,
+                user_id=mock_batch.submit_job.call_args.kwargs["user_id"],
+            )
+
+    def test_assign_themes_no_selected_themes(self, client, admin_user_token, free_text_question):
+        """Test assign themes fails when no themes are selected"""
+        consultation = free_text_question.consultation
+
+        url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
+
+        with patch(
+            "consultation_analyser.consultations.api.views.consultation.export_selected_themes_to_s3"
+        ) as mock_export:
+            mock_export.side_effect = ValueError("No questions with selected themes found")
+
+            response = client.post(
+                url,
+                headers={"Authorization": f"Bearer {admin_user_token}"},
+            )
+
+            assert response.status_code == 400

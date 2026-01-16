@@ -55,6 +55,7 @@
                 url: Routes.SupportConsultations,
               },
               { label: "Manage Users", url: Routes.SupportUsers },
+              { label: "Data Pipeline", url: Routes.SupportDataPipeline },
             ],
           },
         ]

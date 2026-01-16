@@ -1,1 +1,3 @@
-themefinder
+# Pin themefinder to specific version for reproducibility
+# Update this version when you want to deploy themefinder changes
+themefinder==0.7.3
