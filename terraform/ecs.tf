@@ -117,6 +117,9 @@ module "frontend" {
 
   environment_variables = merge(local.base_env_vars, {
     "PUBLIC_BACKEND_URL" = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
+    "APP_NAME"                 = var.project_name
+    "EXECUTION_CONTEXT"        = "ecs"
+    "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
   })
   container_port = local.frontend_port
 
@@ -168,7 +171,11 @@ module "worker" {
 
 
 
-  environment_variables = merge(local.base_env_vars, local.django_env_vars)
+  environment_variables = merge(local.base_env_vars, local.django_env_vars, {
+    "APP_NAME"                 = var.project_name
+    "EXECUTION_CONTEXT"        = "ecs"
+    "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-worker",
+  })
   secrets = [
     for k, v in aws_ssm_parameter.env_secrets : {
       name      = regex("([^/]+$)", v.arn)[0], # Extract right-most string (param name) after the final slash
