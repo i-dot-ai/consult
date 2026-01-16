@@ -182,7 +182,7 @@ export const createQueryStore = <T>({
     isLoading: boolean,
     error: unknown | null,
     status: number | null,
-    fetch: () => Promise<void>,
+    fetch: (body?: unknown) => Promise<void>,
     reset: () => void,
   }> = writable({
     data: undefined,
@@ -193,7 +193,7 @@ export const createQueryStore = <T>({
     reset: () => {}
   });
 
-  const doFetch = async (body?: unknown) => {
+  const doFetch = async (body?: unknown): Promise<void> => {
     // set loading to true
     store.update(store => ({...store, isLoading: true}));
 

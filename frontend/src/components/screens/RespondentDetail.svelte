@@ -13,7 +13,7 @@
     getQuestionsByRespondentUrl,
     getRespondentDetailUrl,
   } from "../../global/routes.ts";
-  import { createFetchStore } from "../../global/stores.ts";
+  import { createQueryStore } from "../../global/stores.ts";
   import type {
     AnswersResponse,
     QuestionsResponse,
@@ -47,23 +47,30 @@
     themefinderId = 1,
   }: Props = $props();
 
-  const respondentsStore = createFetchStore<RespondentsResponse>();
-  const respondentStore = createFetchStore<Respondent>();
-  const consultationQuestionsStore = createFetchStore<QuestionsResponse>();
-  const questionsStore = createFetchStore<QuestionsResponse>();
-  const answersStore = createFetchStore<AnswersResponse>();
+  const respondentsQuery = createQueryStore<RespondentsResponse>({
+    url: getLoadRespondentsUrl(),
+  });
+  const consultationQuestionsQuery = $derived(createQueryStore<QuestionsResponse>({
+    url: getApiQuestionsUrl(consultationId),
+  }));
+  const questionsQuery = $derived(createQueryStore<QuestionsResponse>({
+    url: getQuestionsByRespondentUrl(consultationId, respondentId),
+  }));
+  const answersQuery = $derived(createQueryStore<AnswersResponse>({
+    url: `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
+  }));
+  const respondentUpdateQuery = $derived(createQueryStore<Respondent>({
+    url: getApiConsultationRespondentUrl(consultationId, respondentId),
+    method: "PATCH",
+  }));
 
   let dataRequested: boolean = $state(false);
 
   onMount(() => {
-    $consultationQuestionsStore.fetch(getApiQuestionsUrl(consultationId));
-    $respondentsStore.fetch(getLoadRespondentsUrl());
-    $questionsStore.fetch(
-      getQuestionsByRespondentUrl(consultationId, respondentId),
-    );
-    $answersStore.fetch(
-      `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
-    );
+    $consultationQuestionsQuery.fetch();
+    $respondentsQuery.fetch();
+    $questionsQuery.fetch();
+    $answersQuery.fetch();
     dataRequested = true;
   });
 
@@ -75,20 +82,20 @@
   }
 
   let currRespondent = $derived(
-    $respondentsStore.data?.results?.find(
+    $respondentsQuery.data?.results?.find(
       (respondent: Respondent) => respondent.id === respondentId,
     ),
   );
 
   let prevRespondent = $derived(
-    $respondentsStore.data?.results?.find(
+    $respondentsQuery.data?.results?.find(
       (respondent: Respondent) =>
         respondent?.themefinder_id ===
         (currRespondent?.themefinder_id || 0) - 1,
     ) ?? null,
   );
   let nextRespondent = $derived(
-    $respondentsStore.data?.results?.find(
+    $respondentsQuery.data?.results?.find(
       (respondent: Respondent) =>
         respondent?.themefinder_id ===
         (currRespondent?.themefinder_id || 0) + 1,
@@ -142,21 +149,17 @@
         <RespondentSidebar
           demoData={currRespondent?.demographics || []}
           stakeholderName={currRespondent?.name}
-          questionsAnswered={$questionsStore.data?.results.length ?? 0}
-          totalQuestions={$consultationQuestionsStore.data?.results?.length ??
+          questionsAnswered={$questionsQuery.data?.results.length ?? 0}
+          totalQuestions={$consultationQuestionsQuery.data?.results?.length ??
             0}
           updateStakeholderName={async (newStakeholderName) => {
             // update current respondent stakeholder name
-            await $respondentStore.fetch(
-              getApiConsultationRespondentUrl(consultationId, respondentId),
-              "PATCH",
-              {
-                name: newStakeholderName,
-              },
-            );
+            await $respondentUpdateQuery.fetch({
+              name: newStakeholderName,
+            });
 
             // refresh respondents
-            $respondentsStore.fetch(getLoadRespondentsUrl());
+            $respondentsQuery.fetch();
           }}
         />
 
@@ -182,13 +185,13 @@
               number
             </p>
 
-            {#if !dataRequested || $answersStore.isLoading}
+            {#if !dataRequested || $answersQuery.isLoading}
               <LoadingMessage message="Loading Answers..." />
             {/if}
 
             <ul>
-              {#each $answersStore.data?.all_respondents ?? [] as answer, i (answer.id)}
-                {@const answerQuestion = $questionsStore.data?.results?.find(
+              {#each $answersQuery.data?.all_respondents ?? [] as answer, i (answer.id)}
+                {@const answerQuestion = $questionsQuery.data?.results?.find(
                   (question) => question.id === answer.question_id,
                 )}
 
