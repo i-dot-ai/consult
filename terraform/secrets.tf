@@ -77,10 +77,6 @@ locals {
       value = "placeholder"
     },
     {
-      name  = "ADMIN_USERS"
-      value = "placeholder"
-    },
-    {
       name  = "PUBLIC_INTERNAL_ACCESS_CLIENT_ID"
       value = aws_ssm_parameter.oidc_secrets["client_id"].value,
     }
