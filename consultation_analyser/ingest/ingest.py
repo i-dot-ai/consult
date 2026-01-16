@@ -25,12 +25,12 @@ from consultation_analyser.consultations.models import (
     SelectedTheme,
 )
 from consultation_analyser.embeddings import embed_text
-from consultation_analyser.support_console.file_models import (
+from consultation_analyser.ingest.file_models import (
     DetailDetection,
     SentimentRecord,
     read_from_s3,
 )
-from consultation_analyser.support_console.ingestion.pydantic_models import SelectedThemeInput
+from consultation_analyser.ingest.ingestion.pydantic_models import SelectedThemeInput
 
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
 

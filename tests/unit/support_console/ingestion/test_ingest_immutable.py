@@ -13,13 +13,13 @@ from consultation_analyser.consultations.models import (
     Respondent,
     Response,
 )
-from consultation_analyser.support_console.ingestion.ingest_immutable import (
+from consultation_analyser.ingest.ingestion.ingest_immutable import (
     _ingest_questions,
     _ingest_respondents,
     _ingest_responses,
     ingest_immutable_data,
 )
-from consultation_analyser.support_console.ingestion.pydantic_models import (
+from consultation_analyser.ingest.ingestion.pydantic_models import (
     ImmutableDataBatch,
     MultiChoiceInput,
     QuestionInput,

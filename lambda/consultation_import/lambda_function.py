@@ -77,7 +77,7 @@ def lambda_handler(event, context):
         # Enqueue the RQ job with all parameters
         logger.info("Enqueueing RQ job...")
         job = queue.enqueue(
-            "consultation_analyser.support_console.views.consultations.import_consultation_job",
+            "consultation_analyser.ingest.jobs.consultations.import_consultation_job",
             consultation_name,
             consultation_code,
             user_id,

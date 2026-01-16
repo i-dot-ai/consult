@@ -16,7 +16,7 @@ from consultation_analyser.consultations.dummy_data import (
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.support_console import ingest
+from consultation_analyser.ingest import ingest
 
 logger = settings.LOGGER
 
@@ -48,7 +48,7 @@ def import_immutable_data_job(
     user_id: UUID,
 ) -> UUID:
     """Import consultation immutable data from S3."""
-    from consultation_analyser.support_console.ingestion.ingest_immutable import (
+    from consultation_analyser.ingest.ingestion.ingest_immutable import (
         import_consultation_from_s3,
     )
 
@@ -68,7 +68,7 @@ def import_candidate_themes_job(
     timestamp: str,
 ) -> None:
     """Import candidate themes from S3."""
-    from consultation_analyser.support_console.ingestion.ingest_candidate_themes import (
+    from consultation_analyser.ingest.ingestion.ingest_candidate_themes import (
         import_candidate_themes_from_s3,
     )
 
@@ -86,7 +86,7 @@ def import_response_annotations_job(
     timestamp: str,
 ) -> None:
     """Import response annotations from S3."""
-    from consultation_analyser.support_console.ingestion.ingest_response_annotations import (
+    from consultation_analyser.ingest.ingestion.ingest_response_annotations import (
         import_response_annotations_from_s3,
     )
 

@@ -11,14 +11,14 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotation,
     SelectedTheme,
 )
-from consultation_analyser.support_console.ingestion.pydantic_models import (
+from consultation_analyser.ingest.ingestion.pydantic_models import (
     AnnotationBatch,
     DetailDetectionInput,
     SelectedThemeInput,
     SentimentInput,
     ThemeMappingInput,
 )
-from consultation_analyser.support_console.ingestion.s3_utils import (
+from consultation_analyser.ingest.ingestion.s3_utils import (
     read_json_from_s3,
     read_jsonl_from_s3,
 )

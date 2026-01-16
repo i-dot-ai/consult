@@ -27,8 +27,8 @@ from consultation_analyser.consultations.api.serializers import (
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.consultations.models import Consultation, DemographicOption
-from consultation_analyser.support_console import ingest
-from consultation_analyser.support_console.views.consultations import (
+from consultation_analyser.ingest import ingest
+from consultation_analyser.ingest.jobs.consultations import (
     delete_consultation_job,
     import_candidate_themes_job,
     import_consultation_job,

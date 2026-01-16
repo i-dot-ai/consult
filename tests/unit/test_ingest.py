@@ -13,8 +13,8 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotation,
     SelectedTheme,
 )
-from consultation_analyser.support_console.file_models import SentimentRecord, read_from_s3
-from consultation_analyser.support_console.ingest import (
+from consultation_analyser.ingest.file_models import SentimentRecord, read_from_s3
+from consultation_analyser.ingest.ingest import (
     create_consultation,
     get_consultation_codes,
     get_question_folders,
@@ -105,7 +105,7 @@ def test_read_from_s3_file_missing_returns_empty():
 
 
 class TestGetQuestionFolders:
-    @patch("consultation_analyser.support_console.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.boto3")
     def test_get_question_folders(self, mock_boto3):
         # Mock S3 objects
         mock_objects = [
@@ -128,7 +128,7 @@ class TestGetQuestionFolders:
         ]
         assert sorted(result) == sorted(expected)
 
-    @patch("consultation_analyser.support_console.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.boto3")
     def test_get_question_folders_empty(self, mock_boto3):
         mock_bucket = Mock()
         mock_bucket.objects.filter.return_value = []
@@ -139,8 +139,8 @@ class TestGetQuestionFolders:
 
 
 class TestGetConsultationCodes:
-    @patch("consultation_analyser.support_console.ingest.boto3")
-    @patch("consultation_analyser.support_console.ingest.settings")
+    @patch("consultation_analyser.ingest.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.settings")
     def test_get_consultation_codes(self, mock_settings, mock_boto3):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 
@@ -167,8 +167,8 @@ class TestGetConsultationCodes:
         ]
         assert sorted(result, key=lambda x: x["text"]) == sorted(expected, key=lambda x: x["text"])
 
-    @patch("consultation_analyser.support_console.ingest.boto3")
-    @patch("consultation_analyser.support_console.ingest.settings")
+    @patch("consultation_analyser.ingest.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.settings")
     def test_get_consultation_codes_exception(self, mock_settings, mock_boto3):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
         mock_boto3.resource.side_effect = Exception("S3 error")
@@ -178,8 +178,8 @@ class TestGetConsultationCodes:
 
 
 class TestValidateConsultationStructure:
-    @patch("consultation_analyser.support_console.ingest.boto3")
-    @patch("consultation_analyser.support_console.ingest.get_question_folders")
+    @patch("consultation_analyser.ingest.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.get_question_folders")
     def test_validate_consultation_structure_valid(self, mock_get_folders, mock_boto3):
         mock_get_folders.return_value = ["app_data/consultations/test/inputs/question_part_1/"]
 
@@ -208,8 +208,8 @@ class TestValidateConsultationStructure:
         assert is_valid is True
         assert errors == []
 
-    @patch("consultation_analyser.support_console.ingest.boto3")
-    @patch("consultation_analyser.support_console.ingest.get_question_folders")
+    @patch("consultation_analyser.ingest.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.get_question_folders")
     def test_validate_consultation_structure_missing_respondents(
         self, mock_get_folders, mock_boto3
     ):
@@ -233,8 +233,8 @@ class TestValidateConsultationStructure:
         assert "Missing required file" in errors[0]
         assert "respondents.jsonl" in errors[0]
 
-    @patch("consultation_analyser.support_console.ingest.boto3")
-    @patch("consultation_analyser.support_console.ingest.get_question_folders")
+    @patch("consultation_analyser.ingest.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.get_question_folders")
     def test_validate_consultation_structure_no_questions(self, mock_get_folders, mock_boto3):
         mock_get_folders.return_value = []
 
@@ -250,9 +250,9 @@ class TestValidateConsultationStructure:
 
 @pytest.mark.django_db
 class TestImportConsultationFullFlow:
-    @patch("consultation_analyser.support_console.ingest.boto3")
-    @patch("consultation_analyser.support_console.ingest.get_question_folders")
-    @patch("consultation_analyser.support_console.ingest.settings")
+    @patch("consultation_analyser.ingest.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.get_question_folders")
+    @patch("consultation_analyser.ingest.ingest.settings")
     def test_import_consultation_success(self, mock_settings, mock_get_folders, mock_boto3):
         from consultation_analyser.authentication.models import User
 
@@ -300,8 +300,8 @@ class TestImportConsultationFullFlow:
 
 @pytest.mark.django_db
 class TestRespondentsImport:
-    @patch("consultation_analyser.support_console.ingest.boto3")
-    @patch("consultation_analyser.support_console.ingest.settings")
+    @patch("consultation_analyser.ingest.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.settings")
     def test_import_respondents(self, mock_settings, mock_boto3):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 
@@ -328,8 +328,8 @@ class TestRespondentsImport:
             == "Scotland"
         )
 
-    @patch("consultation_analyser.support_console.ingest.boto3")
-    @patch("consultation_analyser.support_console.ingest.settings")
+    @patch("consultation_analyser.ingest.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.settings")
     def test_import_respondents_s3_error(self, mock_settings, mock_boto3):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 
@@ -347,9 +347,9 @@ class TestRespondentsImport:
 
 @pytest.mark.django_db
 class TestQuestionsImport:
-    @patch("consultation_analyser.support_console.ingest.boto3")
-    @patch("consultation_analyser.support_console.ingest.get_question_folders")
-    @patch("consultation_analyser.support_console.ingest.settings")
+    @patch("consultation_analyser.ingest.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.get_question_folders")
+    @patch("consultation_analyser.ingest.ingest.settings")
     def test_import_question(self, mock_settings, mock_get_folders, mock_boto3):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 
@@ -381,9 +381,9 @@ class TestQuestionsImport:
         assert themes.count() == 1
         assert themes.first().name == "Theme A"
 
-    @patch("consultation_analyser.support_console.ingest.boto3")
-    @patch("consultation_analyser.support_console.ingest.get_question_folders")
-    @patch("consultation_analyser.support_console.ingest.settings")
+    @patch("consultation_analyser.ingest.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.get_question_folders")
+    @patch("consultation_analyser.ingest.ingest.settings")
     def test_import_questions_missing_question_text(
         self, mock_settings, mock_get_folders, mock_boto3
     ):
@@ -422,8 +422,8 @@ class TestQuestionsImport:
 
 @pytest.mark.django_db
 class TestResponsesImport:
-    @patch("consultation_analyser.support_console.ingest.boto3")
-    @patch("consultation_analyser.support_console.ingest.settings")
+    @patch("consultation_analyser.ingest.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.settings")
     def test_import_responses(self, mock_settings, mock_boto3):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 
@@ -465,8 +465,8 @@ class TestResponsesImport:
 
 @pytest.mark.django_db
 class TestMappingImport:
-    @patch("consultation_analyser.support_console.ingest.boto3")
-    @patch("consultation_analyser.support_console.ingest.settings")
+    @patch("consultation_analyser.ingest.ingest.boto3")
+    @patch("consultation_analyser.ingest.ingest.settings")
     def test_import_mapping(self, mock_settings, mock_boto3):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 

@@ -1,4 +1,4 @@
-from consultation_analyser.support_console.validation_utils import (
+from consultation_analyser.ingest.validation_utils import (
     format_validation_error,
 )
 

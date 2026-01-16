@@ -1,7 +1,7 @@
 import pytest
 
 from consultation_analyser.consultations.models import ResponseAnnotation
-from consultation_analyser.support_console.file_models import DetailDetection, SentimentRecord
+from consultation_analyser.ingest.file_models import DetailDetection, SentimentRecord
 
 
 @pytest.mark.parametrize(

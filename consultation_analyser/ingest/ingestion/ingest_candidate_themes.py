@@ -7,8 +7,8 @@ from pydantic import BaseModel
 from themefinder.models import ThemeNode
 
 from consultation_analyser.consultations.models import CandidateTheme, Consultation, Question
-from consultation_analyser.support_console.ingestion.pydantic_models import CandidateThemeBatch
-from consultation_analyser.support_console.ingestion.s3_utils import read_json_from_s3
+from consultation_analyser.ingest.ingestion.pydantic_models import CandidateThemeBatch
+from consultation_analyser.ingest.ingestion.s3_utils import read_json_from_s3
 
 logger = logging.getLogger(__name__)
 

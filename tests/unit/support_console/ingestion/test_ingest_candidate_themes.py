@@ -10,14 +10,14 @@ from botocore.exceptions import ClientError
 from themefinder.models import ThemeNode
 
 from consultation_analyser.consultations.models import CandidateTheme, Consultation, Question
-from consultation_analyser.support_console.ingestion.ingest_candidate_themes import (
+from consultation_analyser.ingest.ingestion.ingest_candidate_themes import (
     _ingest_candidate_themes_for_question,
     import_candidate_themes_from_s3,
     ingest_candidate_themes,
     load_candidate_themes_batch,
     load_candidate_themes_from_s3,
 )
-from consultation_analyser.support_console.ingestion.pydantic_models import CandidateThemeBatch
+from consultation_analyser.ingest.ingestion.pydantic_models import CandidateThemeBatch
 
 
 @pytest.fixture
@@ -470,7 +470,7 @@ class TestImportCandidateThemesFromS3:
         )
 
         with patch(
-            "consultation_analyser.support_console.ingestion.ingest_candidate_themes.load_candidate_themes_batch"
+            "consultation_analyser.ingest.ingestion.ingest_candidate_themes.load_candidate_themes_batch"
         ) as mock_load:
             mock_load.return_value = mock_batch
 
@@ -501,7 +501,7 @@ class TestImportCandidateThemesFromS3:
         )
 
         with patch(
-            "consultation_analyser.support_console.ingestion.ingest_candidate_themes.load_candidate_themes_batch"
+            "consultation_analyser.ingest.ingestion.ingest_candidate_themes.load_candidate_themes_batch"
         ) as mock_load:
             mock_load.return_value = mock_batch
 

@@ -17,14 +17,14 @@ from consultation_analyser.consultations.models import (
     Response,
 )
 from consultation_analyser.embeddings import embed_text
-from consultation_analyser.support_console.ingestion.pydantic_models import (
+from consultation_analyser.ingest.ingestion.pydantic_models import (
     ImmutableDataBatch,
     MultiChoiceInput,
     QuestionInput,
     RespondentInput,
     ResponseInput,
 )
-from consultation_analyser.support_console.ingestion.s3_utils import (
+from consultation_analyser.ingest.ingestion.s3_utils import (
     get_question_folders,
     read_json_from_s3,
     read_jsonl_from_s3,

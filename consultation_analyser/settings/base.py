@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.admin",
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
-    "consultation_analyser.support_console",
+    "consultation_analyser.ingest",
     "consultation_analyser.error_pages",
     "compressor",
     "crispy_forms",

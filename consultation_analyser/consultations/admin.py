@@ -19,7 +19,7 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
-from consultation_analyser.support_console.ingest import (
+from consultation_analyser.ingest.ingest import (
     DEFAULT_TIMEOUT_SECONDS,
     create_embeddings_for_question,
     export_selected_themes,
