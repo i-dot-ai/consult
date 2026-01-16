@@ -88,10 +88,12 @@ describe("EditPanel", () => {
 
     // Correct endpoint is called with correct body
     expect(updateAnswerMock).toHaveBeenCalledWith({
-      evidenceRich: false,
-      themes: testData.themes.map((theme) => ({
-        id: theme.id,
-      })),
+      body: {
+        evidenceRich: false,
+        themes: testData.themes.map((theme) => ({
+          id: theme.id,
+        })),
+      }
     });
     expect(resetDataMock).toHaveBeenCalledOnce();
   });
