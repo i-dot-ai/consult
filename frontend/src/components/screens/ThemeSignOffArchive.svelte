@@ -10,8 +10,9 @@
     getThemeSignOffDetailUrl,
     Routes,
   } from "../../global/routes.ts";
-  import { createFetchStore } from "../../global/stores.ts";
+  import { createQueryStore } from "../../global/stores.ts";
   import {
+    type ApiError,
     type ConsultationResponse,
     type Question,
     type QuestionsResponse,
@@ -47,18 +48,25 @@
   let isConfirmModalOpen: boolean = $state(false);
   let dataRequested: boolean = $state(false);
 
-  const questionsStore = createFetchStore<QuestionsResponse>();
-  const consultationStore = createFetchStore<ConsultationResponse>();
-  const consultationUpdateStore = createFetchStore();
+  const questionsQuery = $derived(createQueryStore<QuestionsResponse>({
+    url: getApiQuestionsUrl(consultationId),
+  }));
+  const consultationQuery = $derived(createQueryStore<ConsultationResponse>({
+    url: getApiConsultationUrl(consultationId),
+  }));
+  const consultationUpdateQuery = $derived(createQueryStore({
+    url: getApiConsultationUrl(consultationId),
+    method: "PATCH",
+  }));
 
   onMount(async () => {
-    $consultationStore.fetch(getApiConsultationUrl(consultationId));
-    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
+    $consultationQuery.fetch();
+    $questionsQuery.fetch();
     dataRequested = true;
   });
 
   let displayQuestions = $derived(
-    $questionsStore.data?.results?.filter((question) =>
+    $questionsQuery.data?.results?.filter((question) =>
       `Q${question.number}: ${question.question_text}`
         .toLocaleLowerCase()
         .includes(searchValue.toLocaleLowerCase()),
@@ -66,7 +74,7 @@
   );
 
   let questionsForSignOff = $derived(
-    $questionsStore.data?.results?.filter(
+    $questionsQuery.data?.results?.filter(
       (question: Question) => question.has_free_text,
     ),
   );
@@ -92,10 +100,10 @@
 <hr class="my-6" />
 
 <svelte:boundary>
-  {#if isAllQuestionsSignedOff || $consultationStore.data?.stage === "theme_mapping" || $consultationStore.data?.stage === "analysis"}
+  {#if isAllQuestionsSignedOff || $consultationQuery.data?.stage === "theme_mapping" || $consultationQuery.data?.stage === "analysis"}
     <section in:slide>
       <ConsultationStagePanel
-        consultation={$consultationStore.data || {
+        consultation={$consultationQuery.data || {
           id: "",
           stage: "theme_sign_off",
         }}
@@ -111,15 +119,11 @@
         open={isConfirmModalOpen}
         setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
         handleConfirm={async () => {
-          await $consultationUpdateStore.fetch(
-            getApiConsultationUrl(consultationId),
-            "PATCH",
-            {
-              stage: "theme_mapping",
-            },
-          );
+          await $consultationUpdateQuery.fetch({
+            stage: "theme_mapping",
+          });
 
-          if (!$consultationUpdateStore.error) {
+          if (!$consultationUpdateQuery.error) {
             isConfirmModalOpen = false;
             location.href = location.href;
           }
@@ -170,10 +174,12 @@
           </div>
         </a>
 
-        {#if $consultationUpdateStore.error}
+        {#if $consultationUpdateQuery.error}
           <div class="mb-4 mt-2">
             <Alert>
-              <span class="text-sm">{$consultationUpdateStore.error}</span>
+              <span class="text-sm">
+                {($consultationUpdateQuery.error as ApiError).detail}
+              </span>
             </Alert>
           </div>
         {/if}
@@ -202,19 +208,19 @@
         <Help slot="icon" />
 
         <p slot="aside">
-          {$questionsStore.data?.results?.length || 0} questions
+          {$questionsQuery.data?.results?.length || 0} questions
         </p>
       </TitleRow>
     </div>
 
     <Panel bg={true} border={true}>
-      {#if !dataRequested || $questionsStore.isLoading}
+      {#if !dataRequested || $questionsQuery.isLoading}
         <div transition:slide class="my-8">
           <LoadingIndicator size="5rem" />
           <p class="text-center text-neutral-500">Loading questions...</p>
         </div>
-      {:else if $questionsStore.error}
-        <p transition:slide>{$questionsStore.error}</p>
+      {:else if $questionsQuery.error}
+        <p transition:slide>{($questionsQuery.error as ApiError).detail}</p>
       {:else}
         <div transition:slide>
           <TextInput
@@ -228,7 +234,7 @@
           />
 
           <div class="mb-4">
-            {#if !displayQuestions?.length && !$questionsStore.isLoading}
+            {#if !displayQuestions?.length && !$questionsQuery.isLoading}
               <NotFoundMessage
                 variant="archive"
                 body="No questions found matching your search."
