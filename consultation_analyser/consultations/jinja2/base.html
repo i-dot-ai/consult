@@ -18,7 +18,7 @@
 
   <meta name="robots" content="noindex, nofollow">
   {% compress css %}
-  <link rel="stylesheet" type="text/x-scss" href="{{ static("style.scss") }}" />
+    <link rel="stylesheet" type="text/x-scss" href="{{ static("style.scss") }}" />
   {% endcompress %}
 
 </head>
@@ -29,10 +29,10 @@
   <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 
   {{iaiTopNav(
-  product_name = app_config.name,
-  home_path = app_config.path,
-  menu_items = app_config.menu_items,
-  phase = "Alpha"
+    product_name = app_config.name,
+    home_path = app_config.path,
+    menu_items = app_config.menu_items,
+    phase = "Alpha"
   ) }}
 
   {% block pre_content %}
@@ -47,21 +47,26 @@
   </main>
 
   {{ iaiFooter(
-  links = [
-  {
-  "href": "/privacy/",
-  "text": "Privacy notice"
-  },
-  {
-  "href": version.url(),
-  "text": version.version_string()
-  }
-  ],
-  feedback_link = "https://www.smartsurvey.co.uk/s/GESFSF/"
+    links = [
+      {
+        "href": "/privacy/",
+        "text": "Privacy notice"
+      },
+      {
+        "href": version.url(),
+        "text": version.version_string()
+      }
+    ],
+    feedback_link = "https://www.smartsurvey.co.uk/s/GESFSF/"
   ) }}
 
   <!-- Import Client-Side Lit Components -->
-  <script src="{{ static(" lit/index.js") }}"></script>
+  <script src="{{ static("lit/index.js") }}"></script>
+
+  {% compress js %}
+    <script src="{{ static("iai-assets/iai-design-system.js") }}"></script>
+  {% endcompress %}
+
 </body>
 
 </html>
