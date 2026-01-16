@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "consultation_analyser.ingest",
-    "consultation_analyser.error_pages",
     "compressor",
     "crispy_forms",
     "crispy_forms_gds",
@@ -80,34 +79,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "consultation_analyser.urls"
-
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.jinja2.Jinja2",
-        "APP_DIRS": True,
-        "DIRS": [BASE_DIR / "consultation_analyser/lit"],
-        "OPTIONS": {
-            "environment": "consultation_analyser.jinja2.environment",
-            "context_processors": [
-                "consultation_analyser.context_processors.app_config",
-                "consultation_analyser.context_processors.version",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "APP_DIRS": True,
-        "DIRS": [BASE_DIR / "consultation_analyser/templates"],
-        "OPTIONS": {
-            "context_processors": [
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.request",
-            ]
-        },
-    },
-]
 
 WSGI_APPLICATION = "consultation_analyser.wsgi.application"
 
