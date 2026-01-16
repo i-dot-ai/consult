@@ -1,0 +1,43 @@
+{
+  "name": "consult",
+  "version": "1.0.0",
+  "description": "Frontend dependencies for i.AI Consult",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "npm run test-csr && npm run test-ssr",
+    "test-csr": "web-test-runner",
+    "test-ssr": "npx jest",
+    "build-lit-ssr": "node build-lit.mjs",
+    "build-lit-csr": "npx rollup -c",
+    "build-lit": "npm run build-lit-ssr && npm run build-lit-csr"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@codemirror/lang-html": "^6.4.11",
+    "@lit-labs/ssr": "^4.0.0",
+    "@lit-labs/virtualizer": "^2.1.0",
+    "@open-wc/testing": "^4.0.0",
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@web/test-runner": "^0.20.2",
+    "@web/test-runner-mocha": "^0.9.0",
+    "@x-govuk/govuk-prototype-components": "^3.0.9",
+    "dompurify": "^3.3.1",
+    "govuk-frontend": "^5.13.0",
+    "i.ai-design-system": "^0.5.2",
+    "jsdom": "^27.4.0",
+    "json-schema-faker-cli": "^5.0.6",
+    "lit": "^3.3.2",
+    "sass-embedded": "^1.97.2"
+  },
+  "devDependencies": {
+    "@types/chart.js": "^4.0.1",
+    "jest": "^30.2.0",
+    "rollup": "^4.55.1",
+    "sass": "^1.89.1"
+  }
+}

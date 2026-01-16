@@ -84,12 +84,17 @@ WSGI_APPLICATION = "consultation_analyser.wsgi.application"
 
 AUTH_USER_MODEL = "authentication.User"
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "https://consult.ai.cabinetoffice.gov.uk",
-    "https://consult-preprod.ai.cabinetoffice.gov.uk",
-    "https://consult-dev.ai.cabinetoffice.gov.uk",
-]
+# Local and testing origin
+TRUSTED_ORIGIN = "http://localhost:3000"
+
+if ENVIRONMENT.lower() == "prod":
+    TRUSTED_ORIGIN = "https://consult.ai.cabinetoffice.gov.uk"
+if ENVIRONMENT.lower() == "dev":
+    TRUSTED_ORIGIN = "https://consult-dev.ai.cabinetoffice.gov.uk"
+if ENVIRONMENT.lower() == "preprod":
+    TRUSTED_ORIGIN = "https://consult-preprod.ai.cabinetoffice.gov.uk"
+
+CSRF_TRUSTED_ORIGINS = [TRUSTED_ORIGIN]
 
 # Database with Connection Pooling
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -231,24 +236,18 @@ APPEND_SLASH = True
 CRISPY_ALLOWED_TEMPLATE_PACKS = "gds"
 CRISPY_TEMPLATE_PACK = "gds"
 
-# Email
-EMAIL_BACKEND = "django_gov_notify.backends.NotifyEmailBackend"
-GOVUK_NOTIFY_API_KEY = env("GOVUK_NOTIFY_API_KEY")
-GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID = env("GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID")
-
 # AWS variables
 BATCH_JOB_QUEUE = env("BATCH_JOB_QUEUE", default=None)
 BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION", default=None)
 AWS_REGION = env("AWS_REGION")
 AWS_BUCKET_NAME = env("AWS_BUCKET_NAME")
 
-SQS_QUEUE_URL = env("SQS_QUEUE_URL")
-MAPPING_BATCH_JOB_NAME = env("MAPPING_BATCH_JOB_NAME")
-MAPPING_BATCH_JOB_QUEUE = env("MAPPING_BATCH_JOB_QUEUE")
-MAPPING_BATCH_JOB_DEFINITION = env("MAPPING_BATCH_JOB_DEFINITION")
-SIGN_OFF_BATCH_JOB_NAME = env("SIGN_OFF_BATCH_JOB_NAME")
-SIGN_OFF_BATCH_JOB_QUEUE = env("SIGN_OFF_BATCH_JOB_QUEUE")
-SIGN_OFF_BATCH_JOB_DEFINITION = env("SIGN_OFF_BATCH_JOB_DEFINITION")
+ASSIGN_THEMES_BATCH_JOB_NAME = env("ASSIGN_THEMES_BATCH_JOB_NAME")
+ASSIGN_THEMES_BATCH_JOB_QUEUE = env("ASSIGN_THEMES_BATCH_JOB_QUEUE")
+ASSIGN_THEMES_BATCH_JOB_DEFINITION = env("ASSIGN_THEMES_BATCH_JOB_DEFINITION")
+FIND_THEMES_BATCH_JOB_NAME = env("FIND_THEMES_BATCH_JOB_NAME")
+FIND_THEMES_BATCH_JOB_QUEUE = env("FIND_THEMES_BATCH_JOB_QUEUE")
+FIND_THEMES_BATCH_JOB_DEFINITION = env("FIND_THEMES_BATCH_JOB_DEFINITION")
 
 
 # version info

@@ -367,7 +367,6 @@
         ) as FormattedTheme[]}
         themesLoading={!dataRequested || $themeAggrStore.isLoading}
         totalAnswers={question?.total_responses || 0}
-        filteredTotal={$answersStore.data?.filtered_total || 0}
         demoData={$demoAggrStore.data?.demographic_aggregations || {}}
         demoOptions={formattedDemoOptions || {}}
         demoOptionsData={$demoOptionsStore.data || undefined}
@@ -375,8 +374,6 @@
           (item) => Boolean(item.text),
         ) || []}
         consultationCode={$consultationStore.data?.code}
-        {evidenceRich}
-        {searchValue}
         {sortAscending}
         setActiveTab={(newTab) => (activeTab = newTab)}
         anyFilterApplied={anyFilterApplied()}
