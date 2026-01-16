@@ -12,24 +12,13 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotation,
     SelectedTheme,
 )
-<<<<<<<< HEAD:consultation_analyser/ingest/ingestion/ingest_response_annotations.py
-from consultation_analyser.ingest.ingestion.pydantic_models import (
-========
 from consultation_analyser.data_pipeline.models import (
->>>>>>>> main:consultation_analyser/data_pipeline/sync/response_annotations.py
     AnnotationBatch,
     DetailDetectionInput,
     SelectedThemeInput,
     SentimentInput,
     ThemeMappingInput,
 )
-<<<<<<<< HEAD:consultation_analyser/ingest/ingestion/ingest_response_annotations.py
-from consultation_analyser.ingest.ingestion.s3_utils import (
-    read_json_from_s3,
-    read_jsonl_from_s3,
-)
-========
->>>>>>>> main:consultation_analyser/data_pipeline/sync/response_annotations.py
 
 logger = logging.getLogger(__name__)
 

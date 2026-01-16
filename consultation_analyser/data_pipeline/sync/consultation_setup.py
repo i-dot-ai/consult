@@ -17,28 +17,14 @@ from consultation_analyser.consultations.models import (
     Respondent,
     Response,
 )
-<<<<<<<< HEAD:consultation_analyser/ingest/ingestion/ingest_immutable.py
 from consultation_analyser.embeddings import embed_text
-from consultation_analyser.ingest.ingestion.pydantic_models import (
-    ImmutableDataBatch,
-========
 from consultation_analyser.data_pipeline.models import (
     ConsultationDataBatch,
->>>>>>>> main:consultation_analyser/data_pipeline/sync/consultation_setup.py
     MultiChoiceInput,
     QuestionInput,
     RespondentInput,
     ResponseInput,
 )
-<<<<<<<< HEAD:consultation_analyser/ingest/ingestion/ingest_immutable.py
-from consultation_analyser.ingest.ingestion.s3_utils import (
-    get_question_folders,
-    read_json_from_s3,
-    read_jsonl_from_s3,
-)
-========
-from consultation_analyser.embeddings import embed_text
->>>>>>>> main:consultation_analyser/data_pipeline/sync/consultation_setup.py
 
 logger = settings.LOGGER
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
