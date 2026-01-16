@@ -17,7 +17,6 @@ from consultation_analyser.consultations.models import (
     Respondent,
     Response,
 )
-from consultation_analyser.embeddings import embed_text
 from consultation_analyser.data_pipeline.models import (
     ConsultationDataBatch,
     MultiChoiceInput,
@@ -25,6 +24,7 @@ from consultation_analyser.data_pipeline.models import (
     RespondentInput,
     ResponseInput,
 )
+from consultation_analyser.embeddings import embed_text
 
 logger = settings.LOGGER
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
