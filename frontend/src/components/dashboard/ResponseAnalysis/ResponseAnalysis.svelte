@@ -62,10 +62,10 @@
   export let setEvidenceRich = () => {};
 
   export let unseenResponses: boolean = false;
-  export let setUnseenResponses = () => {};
+  export let setUnseenResponses = (newVal: boolean) => {};
 
   export let flaggedOnly: boolean = false;
-  export let setFlaggedOnly = () => {};
+  export let setFlaggedOnly = (newVal: boolean) => {};
 
   export let anyFilterApplied: boolean = false;
   export let resetFilters: () => void = () => {};

@@ -87,16 +87,12 @@ describe("EditPanel", () => {
     await user.click(saveButton);
 
     // Correct endpoint is called with correct body
-    expect(updateAnswerMock).toHaveBeenCalledWith(
-      `/api/consultations/${testData.consultationId}/responses/${testData.answerId}/`,
-      "PATCH",
-      {
-        evidenceRich: false,
-        themes: testData.themes.map((theme) => ({
-          id: theme.id,
-        })),
-      },
-    );
+    expect(updateAnswerMock).toHaveBeenCalledWith({
+      evidenceRich: false,
+      themes: testData.themes.map((theme) => ({
+        id: theme.id,
+      })),
+    });
     expect(resetDataMock).toHaveBeenCalledOnce();
   });
 });
