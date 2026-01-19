@@ -38,7 +38,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: consultation_analyser/Dockerfile
     ports:
       - "8000:8000"
     env_file:
