@@ -48,8 +48,6 @@ INSTALLED_APPS = [
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "consultation_analyser.ingest",
-    "crispy_forms",
-    "crispy_forms_gds",
     "django.contrib.humanize",
     "django_rq",
     "simple_history",

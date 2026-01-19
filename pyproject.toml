@@ -24,7 +24,7 @@ filterwarnings = [
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
 boto3 = "^1.42.17"
-django = "^5.2"
+django = "^6.0.1"
 django-environ = "^0.12.0"
 django-filter = "^25.2"
 django-redis = "^6.0.0"
