@@ -82,6 +82,17 @@ ROOT_URLCONF = "consultation_analyser.urls"
 
 TEMPLATES = [
     {
+        "BACKEND": "django.template.backends.jinja2.Jinja2",
+        "NAME": "jinja2",
+        "APP_DIRS": True,
+        "DIRS": [],
+        "OPTIONS": {
+            "context_processors": [
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    },
+    {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "APP_DIRS": True,
         "DIRS": [],
