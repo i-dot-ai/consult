@@ -57,3 +57,28 @@ test(`searching questions updates question list`, async ({ page }) => {
 
   expect(page.getByText("No questions found matching your search")).toBeVisible();
 })
+
+test(`favourites and unfavourites a question if button is clicked`, async ({ page }) => {
+  await page.waitForLoadState('networkidle');
+
+  // localStorage value starts as null
+  await page.waitForFunction(() => {
+    return localStorage.getItem("favouritedQuestions") === null;
+  })
+
+  const favButtons = await page.getByTestId("fav-button").all();
+  const firstFavButton = favButtons.at(0);
+
+  // button is clicked, localStorage value has the question ID in an array
+  const expectedValue = `["${exampleConsultationQuestions.at(0).id}"]`;
+  await firstFavButton!.click();
+  await page.waitForFunction((expectedValue) => {
+    return localStorage.getItem("favouritedQuestions") === expectedValue;
+  }, expectedValue)
+
+  // button is clicked again, localStorage value is now empty array
+  await firstFavButton!.click();
+  await page.waitForFunction(() => {
+    return localStorage.getItem("favouritedQuestions") === "[]";
+  })
+})
