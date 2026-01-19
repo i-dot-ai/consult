@@ -1,6 +1,6 @@
 [project]
 name = "consultation-analyser"
-license = "GPL-3.0-or-later"
+license = "MIT"
 
 [tool.ruff]
 line-length = 100
