@@ -46,7 +46,7 @@ test(`displays questions`, async ({ page }) => {
 
   exampleConsultationQuestions.forEach(question => {
     const questionText = `Q${question.number}: ${question.question_text}`;
-    expect(page.getByText(questionText)).toBeVisible();
+    expect(page.getByText(questionText, { exact: true })).toBeVisible();
   })
 })
 
