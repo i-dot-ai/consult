@@ -82,17 +82,6 @@ ROOT_URLCONF = "consultation_analyser.urls"
 
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.jinja2.Jinja2",
-        "NAME": "jinja2",
-        "APP_DIRS": True,
-        "DIRS": [],
-        "OPTIONS": {
-            "context_processors": [
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
-    {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "APP_DIRS": True,
         "DIRS": [],
@@ -183,6 +172,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 COMPRESS_PRECOMPILERS = (("text/x-scss", "django_libsass.SassCompiler"),)
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE = True
+# Only use Django templates, not Jinja2
+COMPRESS_JINJA2_GET_ENVIRONMENT = lambda: None
 
 STATIC_URL = "static/"
 STATIC_ROOT = "legacy-frontend/"
