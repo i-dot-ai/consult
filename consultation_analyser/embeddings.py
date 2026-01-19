@@ -20,6 +20,7 @@ def embed_text(text: str | list[str]) -> list[float] | list[list[float]]:
         client = AzureOpenAI(
             azure_endpoint=os.environ["LLM_GATEWAY_URL"],
             api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+            api_version=os.environ.get("OPENAI_API_VERSION", "2024-12-01-preview")
         )
         response = client.embeddings.create(
             input=text, model="text-embedding-3-large", dimensions=settings.EMBEDDING_DIMENSION
