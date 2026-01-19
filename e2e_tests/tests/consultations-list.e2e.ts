@@ -20,13 +20,13 @@ test(`displays links for each consultation`, async ({ page }) => {
   await page.waitForLoadState('networkidle');
 
   testConsultations.forEach(async consultation => {
-    const evaluationLink = await page.locator(`a[href="/evaluations/${consultation.id}/questions/"]`);
+    const evaluationLink = page.locator(`a[href="/evaluations/${consultation.id}/questions/"]`);
     expect(evaluationLink).toBeVisible();
 
-    const dashboardLink = await page.locator(`a[href="/consultations/${consultation.id}"]`);
+    const dashboardLink = page.locator(`a[href="/consultations/${consultation.id}"]`);
     expect(dashboardLink).toBeVisible();
 
-    const themeSignOffLink = await page.locator(`a[href="/consultations/${consultation.id}/theme-sign-off"]`);
+    const themeSignOffLink = page.locator(`a[href="/consultations/${consultation.id}/theme-sign-off"]`);
     expect(themeSignOffLink).toBeVisible();
   })
 })
