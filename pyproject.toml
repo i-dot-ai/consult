@@ -28,7 +28,7 @@ govuk-frontend-jinja = "^3.9.0"
 pydot = "^4.0.1"
 gunicorn = "^23.0.0"
 whitenoise = "^6.11.0"
-boto3 = "^1.42.17"
+boto3 = "^1.42.29"
 pydantic = "^2.12.5"
 datamodel-code-generator = "^0.53.0"
 django-types = "^0.22.0"
@@ -65,7 +65,7 @@ i-dot-ai-utilities = {extras = ["auth"], version = "^0.4.4"}
 themefinder = "^0.7.3"
 
 [tool.poetry.group.development.dependencies]
-ruff = "^0.14.10"
+ruff = "^0.14.13"
 pre-commit = "^4.5.1"
 factory_boy = "^3.3.1"
 django-extensions = "^4.1"
