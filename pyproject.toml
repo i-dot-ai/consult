@@ -1,3 +1,6 @@
+[project]
+license = "GPL-3.0-or-later"
+
 [tool.ruff]
 line-length = 100
 target-version = 'py312'
@@ -43,17 +46,17 @@ sentry-sdk = {version = ">=2.24.1", extras = ["django", "redis", "rq"]}
 themefinder = "^0.7.3"
 
 [tool.poetry.group.development.dependencies]
-ruff = "^0.14.13"
-pre-commit = "^4.5.1"
-factory_boy = "^3.3.1"
 django-extensions = "^4.1"
-mypy = "^1.19.1"
-django-types = "^0.22.0"
-moto = "^5.1.19"
-freezegun = "^1.5.5"
 django-test-migrations = "^1.5.0"
-pytest-lazy-fixtures = "^1.4.0"
+django-types = "^0.22.0"
+factory_boy = "^3.3.1"
+freezegun = "^1.5.5"
 honcho = "^2.0.0"
+moto = "^5.1.19"
+mypy = "^1.19.1"
+pre-commit = "^4.5.1"
+pytest-lazy-fixtures = "^1.4.0"
+ruff = "^0.14.13"
 
 [tool.mypy]
 files = '**/*.py'
