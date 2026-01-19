@@ -6,7 +6,7 @@ import sys
 
 import environ
 
-environ.Env.read_env(".env", overwrite=False)
+environ.Env.read_env("../.env", overwrite=False)
 env = environ.Env()
 
 
