@@ -13,7 +13,7 @@ module "slack_notifier_lambda" {
   lambda_additional_policy_arns  = {for idx, arn in [aws_iam_policy.lambda_exec_custom_policy.arn] : idx => arn}
   environment_variables = {
     "SLACK_WEBHOOK_URL" = data.aws_ssm_parameter.slack_webhook_url.value,
-    "LAMBDA_AWS_REGION" = local.secret_env_vars.AWS_REGION,
+    "LAMBDA_AWS_REGION" = data.aws_region.current.id,
     "ENVIRONMENT"       = terraform.workspace,
     "AWS_BUCKET_NAME"   = module.app_bucket.id,
   }
@@ -37,7 +37,7 @@ module "import_response_annotations_lambda" {
     REDIS_HOST = module.elasticache.redis_address
     REDIS_PORT = module.elasticache.redis_port
     AWS_BUCKET_NAME = module.app_bucket.id
-    LAMBDA_AWS_REGION = local.secret_env_vars.AWS_REGION
+    LAMBDA_AWS_REGION = data.aws_region.current.id
   }
 }
 
@@ -59,6 +59,6 @@ module "import_candidate_themes_lambda" {
     REDIS_HOST = module.elasticache.redis_address
     REDIS_PORT = module.elasticache.redis_port
     AWS_BUCKET_NAME = module.app_bucket.id
-    LAMBDA_AWS_REGION = local.secret_env_vars.AWS_REGION
+    LAMBDA_AWS_REGION = data.aws_region.current.id
   }
 }

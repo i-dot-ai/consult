@@ -2,51 +2,25 @@ locals {
   backend_port  = 8000
   frontend_port = 3000
 
-  rds_fqdn        = "postgres://${module.rds.rds_instance_username}:${module.rds.rds_instance_db_password}@${module.rds.db_instance_address}/${module.rds.db_instance_name}"
-  secret_env_vars = jsondecode(data.aws_secretsmanager_secret_version.env_vars.secret_string)
   base_env_vars = {
-    "ENVIRONMENT"                          = terraform.workspace,
-    "DJANGO_SECRET_KEY"                    = random_password.django_pass.result,
-    "DEBUG"                                = local.secret_env_vars.DEBUG,
-    "AWS_BUCKET_NAME"                      = local.secret_env_vars.AWS_BUCKET_NAME,
-    "DATABASE_URL"                         = local.rds_fqdn,
-    "DOMAIN_NAME"                          = "${local.host}",
-    "GIT_SHA"                              = var.image_tag,
-    "APP_BUCKET"                           = local.secret_env_vars.APP_BUCKET,
-    "GUNICORN_WORKERS"                     = local.secret_env_vars.GUNICORN_WORKERS,
-    "GUNICORN_TIMEOUT"                     = local.secret_env_vars.GUNICORN_TIMEOUT,
-    "ADMIN_USERS"                          = local.secret_env_vars.ADMIN_USERS,
-    "AZURE_OPENAI_API_KEY"                 = local.secret_env_vars.AZURE_OPENAI_API_KEY,
-    "OPENAI_API_VERSION"                   = local.secret_env_vars.OPENAI_API_VERSION,
-    "AZURE_OPENAI_ENDPOINT"                = local.secret_env_vars.AZURE_OPENAI_ENDPOINT,
-    "BACKEND_URL"                          = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
-    # need to duplicate this because Astro's import.meta.env only exposes environment variables that start with PUBLIC_.
-    "PUBLIC_BACKEND_URL"               = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
-    "LLM_GATEWAY_URL"                  = "https://llm-gateway.i.ai.gov.uk/",
-    "PUBLIC_INTERNAL_ACCESS_CLIENT_ID" = aws_ssm_parameter.oidc_secrets["client_id"].value,
-    "APP_NAME"                         = "consult",
-    "REPO"                             = "consult",
+    "ENVIRONMENT" = terraform.workspace
+    "DEBUG"       = var.env == "prod" ? false : true
+    "GIT_SHA"     = var.image_tag
+    "REPO"        = var.project_name
   }
 
-  batch_env_vars = merge(local.base_env_vars, {
-    "EXECUTION_CONTEXT" = "batch"
-  })
-
-
-  ecs_env_vars_raw = merge(local.base_env_vars, {
-    "EXECUTION_CONTEXT"                   = "ecs"
-    "REDIS_HOST"                          = module.elasticache.redis_address
-    "REDIS_PORT"                          = module.elasticache.redis_port
-    "ASSIGN_THEMES_BATCH_JOB_NAME"        = "${local.name}-assign-themes-job"
-    "ASSIGN_THEMES_BATCH_JOB_QUEUE"       = module.batch_job_mapping.job_queue_name
-    "ASSIGN_THEMES_BATCH_JOB_DEFINITION"  = module.batch_job_mapping.job_definition_name
-    "FIND_THEMES_BATCH_JOB_NAME"          = "${local.name}-find-themes-job"
-    "FIND_THEMES_BATCH_JOB_QUEUE"         = module.batch_job_sign_off.job_queue_name
-    "FIND_THEMES_BATCH_JOB_DEFINITION"    = module.batch_job_sign_off.job_definition_name
-    "AUTH_API_URL"                        = data.aws_ssm_parameter.auth_api_invoke_url.value
-  })
-
-  ecs_env_vars = { for k, v in local.ecs_env_vars_raw : k => tostring(v) }
+  django_env_vars = {
+    "LLM_GATEWAY_URL"                    = local.llm_gateway_url
+    "DOMAIN_NAME"                        = local.host,
+    "REDIS_HOST"                         = module.elasticache.redis_address
+    "REDIS_PORT"                         = module.elasticache.redis_port
+    "ASSIGN_THEMES_BATCH_JOB_NAME"       = "${local.name}-assign-themes-job"
+    "ASSIGN_THEMES_BATCH_JOB_QUEUE"      = module.batch_job_mapping.job_queue_name
+    "ASSIGN_THEMES_BATCH_JOB_DEFINITION" = module.batch_job_mapping.job_definition_name
+    "FIND_THEMES_BATCH_JOB_NAME"         = "${local.name}-find-themes-job"
+    "FIND_THEMES_BATCH_JOB_QUEUE"        = module.batch_job_sign_off.job_queue_name
+    "FIND_THEMES_BATCH_JOB_DEFINITION"   = module.batch_job_sign_off.job_definition_name
+  }
 
   additional_policy_arns = { for idx, arn in [aws_iam_policy.ecs_exec_custom_policy.arn] : idx => arn }
 
@@ -59,7 +33,7 @@ module "backend" {
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
   source                        = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.8.0-ecs"
   image_tag                     = var.image_tag
-  ecr_repository_uri            = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult"
+  ecr_repository_uri            = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult"
   vpc_id                        = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets               = data.terraform_remote_state.vpc.outputs.private_subnets
   host                          = local.host_backend
@@ -85,7 +59,11 @@ module "backend" {
     }
   ]
 
-  environment_variables = local.ecs_env_vars
+  environment_variables = merge(local.base_env_vars, local.django_env_vars, {
+    "APP_NAME"                 = var.project_name
+    "EXECUTION_CONTEXT"        = "ecs"
+    "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-backend",
+  })
   secrets = [
     for k, v in aws_ssm_parameter.env_secrets : {
       name      = regex("([^/]+$)", v.arn)[0], # Extract right-most string (param name) after the final slash
@@ -123,7 +101,7 @@ module "frontend" {
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
   source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.8.0-ecs"
   image_tag                    = var.image_tag
-  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult-frontend"
+  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-frontend"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   host                         = local.host
@@ -137,8 +115,12 @@ module "frontend" {
   target_group_name_override   = "consult-frontend-${var.env}-tg"
   permissions_boundary_name    = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
 
-  environment_variables = local.ecs_env_vars
-
+  environment_variables = merge(local.base_env_vars, {
+    "PUBLIC_BACKEND_URL" = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
+    "APP_NAME"                 = var.project_name
+    "EXECUTION_CONTEXT"        = "ecs"
+    "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
+  })
   container_port = local.frontend_port
 
   health_check = {
@@ -169,7 +151,7 @@ module "worker" {
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
   source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.8.0-ecs"
   image_tag                    = var.image_tag
-  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult"
+  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   host                         = local.host_backend
@@ -189,7 +171,11 @@ module "worker" {
 
 
 
-  environment_variables = local.ecs_env_vars
+  environment_variables = merge(local.base_env_vars, local.django_env_vars, {
+    "APP_NAME"                 = var.project_name
+    "EXECUTION_CONTEXT"        = "ecs"
+    "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-worker",
+  })
   secrets = [
     for k, v in aws_ssm_parameter.env_secrets : {
       name      = regex("([^/]+$)", v.arn)[0], # Extract right-most string (param name) after the final slash

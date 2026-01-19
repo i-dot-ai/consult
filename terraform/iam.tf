@@ -54,8 +54,8 @@ data "aws_iam_policy_document" "ecs_exec_custom_policy" {
       "batch:DescribeJobs",
     ]
     resources = [
-      "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-queue/${local.name}*",
-      "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/${local.name}*"
+      "arn:aws:batch:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:job-queue/${local.name}*",
+      "arn:aws:batch:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:job-definition/${local.name}*"
     ]
   }
 
