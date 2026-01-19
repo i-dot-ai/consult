@@ -84,12 +84,9 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.jinja2.Jinja2",
         "APP_DIRS": True,
-        "DIRS": [BASE_DIR / "consultation_analyser/lit"],
+        "DIRS": [BASE_DIR / "consultation_analyser/"],
         "OPTIONS": {
-            "environment": "consultation_analyser.jinja2.environment",
             "context_processors": [
-                "consultation_analyser.context_processors.app_config",
-                "consultation_analyser.context_processors.version",
                 "django.contrib.messages.context_processors.messages",
             ],
         },
@@ -97,7 +94,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "APP_DIRS": True,
-        "DIRS": [BASE_DIR / "consultation_analyser/templates"],
+        "DIRS": [BASE_DIR / "consultation_analyser/"],
         "OPTIONS": {
             "context_processors": [
                 "django.contrib.auth.context_processors.auth",
