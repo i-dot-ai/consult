@@ -8,7 +8,7 @@ data "terraform_remote_state" "vpc" {
   config = {
     bucket = var.state_bucket
     key    = "vpc/terraform.tfstate"
-    region = var.region
+    region = data.aws_region.current.id
   }
 }
 
@@ -19,7 +19,7 @@ data "terraform_remote_state" "platform" {
   config = {
     bucket = var.state_bucket
     key    = "platform/terraform.tfstate"
-    region = var.region
+    region = data.aws_region.current.id
   }
 }
 
@@ -29,7 +29,7 @@ data "terraform_remote_state" "universal" {
   config = {
     bucket = var.state_bucket
     key    = "universal/terraform.tfstate"
-    region = var.region
+    region = data.aws_region.current.id
   }
 }
 
@@ -38,7 +38,7 @@ data "terraform_remote_state" "account" {
   config = {
     bucket = var.state_bucket
     key    = "account/terraform.tfstate"
-    region = var.region
+    region = data.aws_region.current.id
   }
 }
 
@@ -48,7 +48,7 @@ data "terraform_remote_state" "keycloak" {
   config = {
     bucket = var.state_bucket
     key    = "core/keycloak/keycloak/terraform.tfstate"
-    region = var.region
+    region = data.aws_region.current.id
   }
 }
 
@@ -71,9 +71,9 @@ locals {
   public_host_backend = terraform.workspace == "prod" ? "${var.project_name}-backend-external.i.ai.gov.uk" : "${var.project_name}-backend-external.${terraform.workspace}.i.ai.gov.uk"
 }
 
-data "aws_ssm_parameter" "auth_provider_public_key" {
-  name = "/i-dot-ai-${terraform.workspace}-core-keycloak/realm_public_key"
-}
+# data "aws_ssm_parameter" "auth_provider_public_key" {
+#   name = "/i-dot-ai-${terraform.workspace}-core-keycloak/realm_public_key"
+# }
 
 data "aws_ssm_parameter" "auth_api_invoke_url" {
   name = "/i-dot-ai-${terraform.workspace}-core-auth-api/auth/INVOKE_URL"
@@ -96,13 +96,13 @@ data "aws_route53_zone" "zone" {
   name = "ai.cabinetoffice.gov.uk"
 }
 
-data "aws_secretsmanager_secret_version" "env_vars" {
-  secret_id = data.aws_secretsmanager_secret.env_vars.id
-}
-
-data "aws_secretsmanager_secret" "env_vars" {
-  name = "${local.name}-environment-variables"
-}
+# data "aws_secretsmanager_secret_version" "env_vars" {
+#   secret_id = data.aws_secretsmanager_secret.env_vars.id
+# }
+#
+# data "aws_secretsmanager_secret" "env_vars" {
+#   name = "${local.name}-environment-variables"
+# }
 
 data "archive_file" "slack_notifier_archive" {
   type        = "zip"

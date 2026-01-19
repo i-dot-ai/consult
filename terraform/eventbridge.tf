@@ -56,9 +56,9 @@ resource "aws_iam_role_policy" "eventbridge_policy" {
         ],
         Effect = "Allow",
         Resource = [
-          "arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:${local.name}-slack-notifier-lambda",
-          "arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:${local.name}-import-response-annotations-lambda",
-          "arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:${local.name}-import-candidate-themes-lambda"
+          "arn:aws:lambda:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:function:${local.name}-slack-notifier-lambda",
+          "arn:aws:lambda:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:function:${local.name}-import-response-annotations-lambda",
+          "arn:aws:lambda:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:function:${local.name}-import-candidate-themes-lambda"
         ]
       }
     ]
