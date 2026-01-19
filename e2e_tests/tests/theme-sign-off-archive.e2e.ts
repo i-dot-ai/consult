@@ -56,9 +56,17 @@ test(`searching questions updates question list`, async ({ page }) => {
   expect(page.getByText("No questions found matching your search")).toBeVisible();
 })
 
+test(`renders onboarding modal initially`, async ({ page }) => {
+  await page.waitForLoadState('networkidle');
+
+  expect(page.getByRole("heading", { name: "Welcome to Theme Sign Off" })).toBeVisible();
+  expect(page.getByRole("button", { name: "Get Started" })).toBeVisible();
+})
+
 test(`favourites and unfavourites a question if button is clicked`, async ({ page }) => {
   await page.waitForSelector(`[data-testid="fav-button"]`);
 
+  // Close onboarding modal
   const modalCloseButton = page.getByText("Get Started");
   await modalCloseButton.click();
 
