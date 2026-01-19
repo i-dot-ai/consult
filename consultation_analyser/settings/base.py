@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "consultation_analyser.ingest",
-    "compressor",
     "crispy_forms",
     "crispy_forms_gds",
     "django.contrib.humanize",
@@ -171,11 +170,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-COMPRESS_PRECOMPILERS = (("text/x-scss", "django_libsass.SassCompiler"),)
-COMPRESS_ENABLED = True
-COMPRESS_OFFLINE = True
-# Only use Django templates, not Jinja2
-COMPRESS_JINJA2_GET_ENVIRONMENT = lambda: None
 
 STATIC_URL = "static/"
 STATIC_ROOT = "legacy-frontend/"
@@ -184,7 +178,6 @@ STATICFILES_DIRS = [
     ("iai-assets", BASE_DIR / "node_modules/i.ai-design-system/dist/"),
 ]
 STATICFILES_FINDERS = [
-    "compressor.finders.CompressorFinder",
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
