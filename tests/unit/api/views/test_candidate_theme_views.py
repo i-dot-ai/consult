@@ -1,8 +1,8 @@
 import pytest
 from django.urls import reverse
 
-from consultation_analyser.consultations.models import SelectedTheme
-from consultation_analyser.factories import CandidateThemeFactory
+from backend.consultations.models import SelectedTheme
+from backend.factories import CandidateThemeFactory
 from tests.utils import isoformat
 
 

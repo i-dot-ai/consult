@@ -2,8 +2,8 @@ import pytest
 from django.utils import timezone
 from freezegun import freeze_time
 
-from consultation_analyser.consultations.models import ResponseAnnotation
-from consultation_analyser.factories import (
+from backend.consultations.models import ResponseAnnotation
+from backend.factories import (
     ResponseAnnotationFactory,
     ResponseFactory,
     ReviewedResponseAnnotationFactory,

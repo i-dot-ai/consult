@@ -2,14 +2,14 @@ from unittest.mock import patch
 
 import pytest
 
-from consultation_analyser.consultations.models import (
+from backend.consultations.models import (
     ResponseAnnotation,
     SelectedTheme,
 )
-from consultation_analyser.data_pipeline.sync.response_annotations import (
+from backend.data_pipeline.sync.response_annotations import (
     import_response_annotations_from_s3,
 )
-from consultation_analyser.factories import (
+from backend.factories import (
     ConsultationFactory,
     QuestionFactory,
     RespondentFactory,
@@ -19,8 +19,8 @@ from consultation_analyser.factories import (
 
 @pytest.mark.django_db
 class TestImportResponseAnnotationsFromS3:
-    @patch("consultation_analyser.data_pipeline.sync.response_annotations.s3")
-    @patch("consultation_analyser.data_pipeline.sync.response_annotations.settings")
+    @patch("backend.data_pipeline.sync.response_annotations.s3")
+    @patch("backend.data_pipeline.sync.response_annotations.settings")
     def test_import_response_annotations_from_s3(self, mock_settings, mock_s3):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 

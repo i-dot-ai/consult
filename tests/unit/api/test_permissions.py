@@ -3,11 +3,11 @@ from uuid import uuid4
 
 import pytest
 
-from consultation_analyser.consultations.api.permissions import (
+from backend.consultations.api.permissions import (
     CanSeeConsultation,
     HasDashboardAccess,
 )
-from consultation_analyser.factories import UserFactory
+from backend.factories import UserFactory
 from tests.utils import build_url
 
 

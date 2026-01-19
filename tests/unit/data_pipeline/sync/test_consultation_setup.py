@@ -2,24 +2,24 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from consultation_analyser.consultations.models import (
+from backend.consultations.models import (
     Consultation,
     Question,
     Respondent,
     Response,
 )
-from consultation_analyser.data_pipeline.sync.consultation_setup import (
+from backend.data_pipeline.sync.consultation_setup import (
     import_consultation_from_s3,
 )
-from consultation_analyser.factories import UserFactory
+from backend.factories import UserFactory
 
 
 @pytest.mark.django_db
 class TestImportConsultationFromS3:
-    @patch("consultation_analyser.data_pipeline.sync.consultation_setup.get_queue")
-    @patch("consultation_analyser.data_pipeline.sync.consultation_setup.boto3")
-    @patch("consultation_analyser.data_pipeline.sync.consultation_setup.s3")
-    @patch("consultation_analyser.data_pipeline.sync.consultation_setup.settings")
+    @patch("backend.data_pipeline.sync.consultation_setup.get_queue")
+    @patch("backend.data_pipeline.sync.consultation_setup.boto3")
+    @patch("backend.data_pipeline.sync.consultation_setup.s3")
+    @patch("backend.data_pipeline.sync.consultation_setup.settings")
     def test_import_consultation_from_s3(self, mock_settings, mock_s3, mock_boto3, mock_get_queue):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
         mock_boto3.client.return_value = Mock()

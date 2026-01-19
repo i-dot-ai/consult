@@ -14,7 +14,7 @@ repos:
     -   id: bandit
         args: [ "-c", "pyproject.toml", "-ll" ]
         additional_dependencies: [ "bandit[toml]" ]
-        files: '^consultation_analyser/.*\.py$'
+        files: '^backend/.*\.py$'
 
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.4.0

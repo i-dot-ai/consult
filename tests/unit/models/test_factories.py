@@ -4,10 +4,10 @@ Test factories for the new consultation models.
 
 import pytest
 
-from consultation_analyser import factories
-from consultation_analyser.authentication.models import User
-from consultation_analyser.consultations import models
-from consultation_analyser.consultations.models import MultiChoiceAnswer
+from backend import factories
+from backend.authentication.models import User
+from backend.consultations import models
+from backend.consultations.models import MultiChoiceAnswer
 
 
 @pytest.mark.django_db

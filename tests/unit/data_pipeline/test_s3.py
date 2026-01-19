@@ -1,10 +1,10 @@
 from unittest.mock import Mock, patch
 
-from consultation_analyser.data_pipeline.s3 import get_consultation_folders, get_question_folders
+from backend.data_pipeline.s3 import get_consultation_folders, get_question_folders
 
 
 class TestGetQuestionFolders:
-    @patch("consultation_analyser.data_pipeline.s3.boto3")
+    @patch("backend.data_pipeline.s3.boto3")
     def test_get_question_folders(self, mock_boto3):
         # Mock S3 objects
         mock_objects = [
@@ -29,8 +29,8 @@ class TestGetQuestionFolders:
 
 
 class TestGetConsultationFolders:
-    @patch("consultation_analyser.data_pipeline.s3.boto3")
-    @patch("consultation_analyser.data_pipeline.s3.settings")
+    @patch("backend.data_pipeline.s3.boto3")
+    @patch("backend.data_pipeline.s3.settings")
     def test_get_consultation_folders(self, mock_settings, mock_boto3):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 

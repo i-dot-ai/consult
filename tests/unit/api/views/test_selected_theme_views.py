@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 from django.urls import reverse
 
-from consultation_analyser.consultations.models import SelectedTheme
+from backend.consultations.models import SelectedTheme
 from tests.utils import isoformat
 
 

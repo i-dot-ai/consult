@@ -1,8 +1,8 @@
 import pytest
 from django.urls import reverse
 
-from consultation_analyser.consultations.models import Question
-from consultation_analyser.factories import QuestionFactory, RespondentFactory, ResponseFactory
+from backend.consultations.models import Question
+from backend.factories import QuestionFactory, RespondentFactory, ResponseFactory
 
 
 @pytest.mark.django_db

@@ -2,7 +2,7 @@ import pytest
 from pydantic import ValidationError
 from themefinder.models import ThemeNode
 
-from consultation_analyser.data_pipeline.models import (
+from backend.data_pipeline.models import (
     AnnotationBatch,
     CandidateThemeBatch,
     ConsultationDataBatch,

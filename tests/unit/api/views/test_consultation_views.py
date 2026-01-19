@@ -4,8 +4,8 @@ from uuid import uuid4
 import pytest
 from django.urls import reverse
 
-from consultation_analyser.consultations.models import Consultation, Question, SelectedTheme
-from consultation_analyser.factories import ConsultationFactory, RespondentFactory, UserFactory
+from backend.consultations.models import Consultation, Question, SelectedTheme
+from backend.factories import ConsultationFactory, RespondentFactory, UserFactory
 
 
 @pytest.mark.django_db
@@ -467,7 +467,7 @@ class TestSetupConsultationEndpoint:
             "consultation_code": "test-code",
         }
 
-        with patch("consultation_analyser.consultations.api.views.consultation.jobs") as mock_jobs:
+        with patch("backend.consultations.api.views.consultation.jobs") as mock_jobs:
             mock_jobs.import_consultation.delay.return_value = None
 
             response = client.post(
@@ -508,7 +508,7 @@ class TestGetConsultationFoldersEndpoint:
         url = reverse("consultations-folders")
 
         with patch(
-            "consultation_analyser.data_pipeline.s3.get_consultation_folders"
+            "backend.data_pipeline.s3.get_consultation_folders"
         ) as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026", "transport-2026", "education-2026"]
 
@@ -530,7 +530,7 @@ class TestGetConsultationFoldersEndpoint:
         url = reverse("consultations-folders")
 
         with patch(
-            "consultation_analyser.data_pipeline.s3.get_consultation_folders"
+            "backend.data_pipeline.s3.get_consultation_folders"
         ) as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026", "transport-2026", "education-2026"]
 
@@ -554,7 +554,7 @@ class TestGetConsultationFoldersEndpoint:
         url = reverse("consultations-folders")
 
         with patch(
-            "consultation_analyser.data_pipeline.s3.get_consultation_folders"
+            "backend.data_pipeline.s3.get_consultation_folders"
         ) as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026", "transport-2026", "education-2026"]
 
@@ -582,7 +582,7 @@ class TestGetConsultationFoldersEndpoint:
         url = reverse("consultations-folders")
 
         with patch(
-            "consultation_analyser.data_pipeline.s3.get_consultation_folders"
+            "backend.data_pipeline.s3.get_consultation_folders"
         ) as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026", "education-2026"]
 
@@ -605,7 +605,7 @@ class TestGetConsultationFoldersEndpoint:
         url = reverse("consultations-folders")
 
         with patch(
-            "consultation_analyser.data_pipeline.s3.get_consultation_folders"
+            "backend.data_pipeline.s3.get_consultation_folders"
         ) as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026"]
 
@@ -658,7 +658,7 @@ class TestFindThemesEndpoint:
 
         url = reverse("consultations-find-themes", kwargs={"pk": consultation.id})
 
-        with patch("consultation_analyser.data_pipeline.batch.submit_job") as mock_submit:
+        with patch("backend.data_pipeline.batch.submit_job") as mock_submit:
             mock_submit.return_value = {"jobId": "test-job-123"}
 
             response = client.post(
@@ -707,9 +707,9 @@ class TestAssignThemesEndpoint:
 
         with (
             patch(
-                "consultation_analyser.consultations.api.views.consultation.export_selected_themes_to_s3"
+                "backend.consultations.api.views.consultation.export_selected_themes_to_s3"
             ) as mock_export,
-            patch("consultation_analyser.consultations.api.views.consultation.batch") as mock_batch,
+            patch("backend.consultations.api.views.consultation.batch") as mock_batch,
         ):
             mock_export.return_value = 1
             mock_batch.submit_job.return_value = {"jobId": "test-job-456"}
@@ -739,7 +739,7 @@ class TestAssignThemesEndpoint:
         url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
 
         with patch(
-            "consultation_analyser.consultations.api.views.consultation.export_selected_themes_to_s3"
+            "backend.consultations.api.views.consultation.export_selected_themes_to_s3"
         ) as mock_export:
             mock_export.side_effect = ValueError("No questions with selected themes found")
 

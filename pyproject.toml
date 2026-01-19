@@ -10,7 +10,7 @@ authors = ["i.AI <i-dot-ai-enquiries@cabinetoffice.gov.uk>"]
 readme = "README.md"
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "consultation_analyser.settings.test"
+DJANGO_SETTINGS_MODULE = "backend.settings.test"
 filterwarnings = [
   "ignore::pydantic.warnings.PydanticDeprecatedSince20",
   "ignore::FutureWarning:.*huggingface_hub.*",
@@ -73,7 +73,7 @@ mypy = "^1.19.1"
 
 [tool.mypy]
 files = '**/*.py'
-exclude = ['^consultation_analyser/consultations/migrations/']
+exclude = ['^backend/consultations/migrations/']
 
 
 

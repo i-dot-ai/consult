@@ -1,8 +1,8 @@
 import pytest
 from django.db.utils import IntegrityError
 
-from consultation_analyser.consultations.models import SelectedTheme
-from consultation_analyser.factories import (
+from backend.consultations.models import SelectedTheme
+from backend.factories import (
     QuestionFactory,
     SelectedThemeFactory,
 )

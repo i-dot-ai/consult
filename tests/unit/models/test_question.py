@@ -1,8 +1,8 @@
 import django
 import pytest
 
-from consultation_analyser.consultations.models import Question
-from consultation_analyser.factories import (
+from backend.consultations.models import Question
+from backend.factories import (
     QuestionFactory,
     QuestionWithBothFactory,
     QuestionWithMultipleChoiceFactory,

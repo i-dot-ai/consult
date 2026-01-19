@@ -4,8 +4,8 @@ from zoneinfo import ZoneInfo
 from django.conf import settings
 from django.urls import reverse
 
-from consultation_analyser.consultations import models
-from consultation_analyser.consultations.models import Question
+from backend.consultations import models
+from backend.consultations.models import Question
 
 
 def get_sorted_theme_string(themes: list[models.SelectedTheme]) -> str:

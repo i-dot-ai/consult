@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ValidationError
 
-from consultation_analyser.authentication.models import User
+from backend.authentication.models import User
 
 
 @pytest.mark.django_db

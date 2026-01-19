@@ -1,9 +1,9 @@
 import pytest
 from django.contrib.postgres.search import SearchQuery
 
-from consultation_analyser import factories
-from consultation_analyser.consultations import models
-from consultation_analyser.consultations.models import Response
+from backend import factories
+from backend.consultations import models
+from backend.consultations.models import Response
 
 
 @pytest.mark.django_db

@@ -1,7 +1,7 @@
 import pytest
 
-from consultation_analyser import factories
-from consultation_analyser.consultations import models
+from backend import factories
+from backend.consultations import models
 
 
 @pytest.mark.django_db

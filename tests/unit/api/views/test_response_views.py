@@ -6,8 +6,8 @@ import orjson
 import pytest
 from django.urls import reverse
 
-from consultation_analyser.consultations.models import ResponseAnnotation, ResponseAnnotationTheme
-from consultation_analyser.factories import (
+from backend.consultations.models import ResponseAnnotation, ResponseAnnotationTheme
+from backend.factories import (
     RespondentFactory,
     ResponseAnnotationFactory,
     ResponseAnnotationFactoryNoThemes,
@@ -1015,7 +1015,7 @@ class TestResponseViewSet:
         )
 
         with patch(
-            "consultation_analyser.consultations.api.filters.embed_text",
+            "backend.consultations.api.filters.embed_text",
             return_value=embedded_responses["search_mode"]["semantic"]["embedding"],
         ):
             response = client.get(
@@ -1059,7 +1059,7 @@ class TestResponseViewSet:
         theme_description = "Local councils should invest in public transport infrastructure"
 
         with patch(
-            "consultation_analyser.consultations.api.filters.embed_text",
+            "backend.consultations.api.filters.embed_text",
             return_value=embedded_responses["search_mode"]["representative"]["embedding"],
         ):
             """

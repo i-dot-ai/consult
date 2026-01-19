@@ -38,14 +38,14 @@ services:
   backend:
     build:
       context: .
-      dockerfile: consultation_analyser/Dockerfile
+      dockerfile: backend/Dockerfile
     ports:
       - "8000:8000"
     env_file:
       - .env
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
-      - DJANGO_SETTINGS_MODULE=consultation_analyser.settings.local
+      - DJANGO_SETTINGS_MODULE=backend.settings.local
       - DOMAIN_NAME=localhost:3000
     volumes:
       - .:/app

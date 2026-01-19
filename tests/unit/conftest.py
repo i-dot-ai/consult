@@ -1,6 +1,6 @@
 import pytest
 
-from consultation_analyser import factories
+from backend import factories
 
 
 @pytest.fixture
