@@ -173,7 +173,10 @@ interface createQueryStoreFetchOptions {
 }
 export const createQueryStore = <T>(
   url: string,
-  options: createQueryStoreOptions | undefined = { method: "GET", deduplicate: true },
+  options: createQueryStoreOptions | undefined = {
+    method: "GET",
+    deduplicate: true,
+  },
 ) => {
   const client = new Client({
     url: dotEnv("PUBLIC_FRONTEND_URL"),
