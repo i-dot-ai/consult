@@ -19,28 +19,27 @@ filterwarnings = [
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
+boto3 = "^1.42.17"
 django = "^5.2"
 django-environ = "^0.12.0"
-psycopg = "^3.3.2"
-gunicorn = "^23.0.0"
-boto3 = "^1.42.17"
-pydantic = "^2.12.5"
-sentry-sdk = {version = ">=2.24.1", extras = ["django", "redis", "rq"]}
-pytest-random-order = "^1.2.0"
-django-rq = "^3.2"
-django-redis = "^6.0.0"
-django-storages = "^1.14.6"
-django-simple-history = "^3.11.0"
-drf-spectacular = "0.29.0"
-pgvector = "^0.4.2"
-openai = "^2.14.0"
-djangorestframework = "^3.16.1"
-orjson = "^3.11.5"
 django-filter = "^25.2"
+django-redis = "^6.0.0"
+django-rq = "^3.2"
+django-simple-history = "^3.11.0"
+django-storages = "^1.14.6"
+djangorestframework = "^3.16.1"
+djangorestframework-simplejwt = {extras = ["crypto"], version = "^5.5.1"}
 drf-nested-routers = "^0.95.0"
 drf-orjson-renderer = "^1.8.0"
-djangorestframework-simplejwt = {extras = ["crypto"], version = "^5.5.1"}
+drf-spectacular = "0.29.0"
+gunicorn = "^23.0.0"
 i-dot-ai-utilities = {extras = ["auth"], version = "^0.4.4"}
+openai = "^2.14.0"
+pgvector = "^0.4.2"
+psycopg = "^3.3.2"
+pydantic = "^2.12.5"
+pytest-random-order = "^1.2.0"
+sentry-sdk = {version = ">=2.24.1", extras = ["django", "redis", "rq"]}
 themefinder = "^0.7.3"
 
 [tool.poetry.group.development.dependencies]
