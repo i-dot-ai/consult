@@ -8,11 +8,16 @@ const SECTION_TITLES = [
 ]
 
 let exampleConsultation;
+let exampleConsultationQuestions;
 
 test.beforeAll(async ({ request }) => {
-  const response = await request.get(`/api/consultations/?scope=assigned`);
-  const body = await response.json();
-  exampleConsultation = body.results[0];
+  const consultationsResponse = await request.get(`/api/consultations/?scope=assigned`);
+  const consultationsResponseBody = await consultationsResponse.json();
+  exampleConsultation = consultationsResponseBody.results[0];
+
+  const questionsResponse = await request.get(`/api/consultations/${exampleConsultation.id}/questions/`);
+  const questionsResponseBody = await questionsResponse.json();
+  exampleConsultationQuestions = questionsResponseBody.results;
 });
 
 test.beforeEach(async ({ page }) => {
@@ -34,4 +39,21 @@ SECTION_TITLES.forEach(title => {
 
 test(`displays header sub path text`, async ({ page }) => {
   expect(page.getByText("Dashboard")).toBeVisible();
+})
+
+test(`displays questions`, async ({ page }) => {
+  await page.waitForLoadState('networkidle');
+
+  exampleConsultationQuestions.forEach(question => {
+    const questionText = `Q${question.number}: ${question.question_text}`;
+    expect(page.getByText(questionText)).toBeVisible();
+  })
+})
+
+test(`searching questions updates question list`, async ({ page }) => {
+  await page.waitForLoadState('networkidle');
+
+  page.getByRole('textbox').fill(`Text that won't match anything`);
+
+  expect(page.getByText("No questions found matching your search")).toBeVisible();
 })
