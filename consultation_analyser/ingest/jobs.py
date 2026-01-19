@@ -1,20 +1,10 @@
-import logging
 from uuid import UUID
 
 from django.conf import settings
-from django.contrib import messages
 from django.db import connection
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
 from django_rq import job
 
 from consultation_analyser.consultations import models
-from consultation_analyser.consultations.dummy_data import (
-    create_dummy_consultation_from_yaml,
-    create_dummy_consultation_from_yaml_job,
-)
-from consultation_analyser.consultations.export_user_theme import export_user_theme_job
-from consultation_analyser.hosting_environment import HostingEnvironment
 
 logger = settings.LOGGER
 
@@ -163,125 +153,3 @@ def delete_consultation_job(consultation: models.Consultation):
             error=e,
         )
         raise
-
-
-def index(request: HttpRequest) -> HttpResponse:
-    logger.refresh_context()
-
-    if request.POST:
-        try:
-            if request.POST.get("generate_dummy_consultation") is not None:
-                consultation = create_dummy_consultation_from_yaml()
-                user = request.user
-                consultation.users.add(user)
-                messages.success(request, "A dummy consultation has been generated")
-            elif request.POST.get("generate_giant_dummy_consultation") is not None:
-                n = 100000
-                consultation = models.Consultation.objects.create(
-                    title=f"Giant dummy consultation - {n} respondents"
-                )
-                user = request.user
-                consultation.users.add(user)
-                create_dummy_consultation_from_yaml_job.delay(
-                    number_respondents=n, consultation=consultation
-                )
-                messages.success(
-                    request,
-                    "A giant dummy consultation is being created - see progress in the Django RQ dashboard",
-                )
-        except RuntimeError as error:
-            messages.error(request, error.args[0])
-    consultations = models.Consultation.objects.all()
-    context = {"consultations": consultations, "production_env": HostingEnvironment.is_production()}
-    return render(request, "support_console/consultations/index.html", context=context)
-
-
-def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    logger.refresh_context()
-
-    consultation = models.Consultation.objects.get(id=consultation_id)
-    context = {
-        "consultation": consultation,
-    }
-
-    if request.POST:
-        if "confirm_deletion" in request.POST:
-            delete_consultation_job.delay(consultation=consultation)
-            messages.success(
-                request,
-                "The consultation has been sent for deletion - check queue dashboard for progress",
-            )
-            return redirect("/support/consultations/")
-
-    return render(request, "support_console/consultations/delete.html", context=context)
-
-
-def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    logger.refresh_context()
-
-    consultation = models.Consultation.objects.get(id=consultation_id)
-    questions = models.Question.objects.filter(consultation=consultation).order_by("number")
-
-    context = {
-        "consultation": consultation,
-        "users": consultation.users.all(),
-        "questions": questions,
-    }
-    return render(request, "support_console/consultations/show.html", context=context)
-
-
-def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    logger.refresh_context()
-
-    consultation = get_object_or_404(models.Consultation, id=consultation_id)
-    questions = models.Question.objects.filter(
-        consultation=consultation, has_free_text=True
-    ).order_by("number")
-
-    question_items = [{"value": q.id, "text": f"Question {q.number} - {q.text}"} for q in questions]
-
-    context = {
-        "consultation": consultation,
-        "question_parts_items": question_items,  # Keep the same template variable name
-        "bucket_name": settings.AWS_BUCKET_NAME,
-        "environment": settings.ENVIRONMENT,
-    }
-
-    if request.method == "POST":
-        s3_key = request.POST.get("s3_key", "")
-        question_ids = request.POST.getlist("question_parts")  # Keep the same form field name
-        for id in question_ids:
-            try:
-                logging.info("Exporting theme audit data - sending to queue")
-                export_user_theme_job.delay(question_id=UUID(id), s3_key=s3_key)
-            except Exception as e:
-                messages.error(request, e)
-                return render(request, "support_console/consultations/export_audit.html", context)
-
-        messages.success(
-            request,
-            "Consultation theme audit export started for question - see Django RQ dashboard for progress",
-        )
-        return redirect("/support/consultations/")
-
-    return render(request, "support_console/consultations/export_audit.html", context)
-
-
-def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UUID) -> HttpResponse:
-    """Delete a question from a consultation"""
-    logger.refresh_context()
-
-    question = models.Question.objects.get(consultation__id=consultation_id, id=question_id)
-    context = {
-        "question": question,
-        "consultation": question.consultation,
-    }
-
-    if request.POST:
-        if "confirm_deletion" in request.POST:
-            question.delete()
-            messages.success(request, "The question has been deleted")
-            return redirect(f"/support/consultations/{consultation_id}/")
-        else:
-            return redirect(f"/support/consultations/{consultation_id}/")
-    return render(request, "support_console/question_parts/delete.html", context=context)
