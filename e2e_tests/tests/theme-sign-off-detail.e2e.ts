@@ -162,4 +162,14 @@ test.describe("draft question", () => {
       expect(allOccurences.length).toBeGreaterThanOrEqual(1);
     })
   })
+
+  test(`clicking "Add Custom Theme" button reveals add theme panel`, async ({ page }) => {
+    await page.waitForLoadState("networkidle");
+
+    expect(page.getByRole("heading", { name: "Add Custom Theme" })).not.toBeVisible();
+
+    await page.getByRole("button", { name: "Add Custom Theme" }).click();
+
+    expect(page.getByRole("heading", { name: "Add Custom Theme" })).toBeVisible();
+  })
 })
