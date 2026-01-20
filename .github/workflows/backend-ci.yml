@@ -54,8 +54,8 @@ jobs:
 
       - name: Setup app
         run: |
-          poetry run python manage.py migrate
-          poetry run python manage.py makemigrations --check
+          poetry run python backend/manage.py migrate
+          poetry run python backend/manage.py makemigrations --check
 
       - name: Run app tests
         run: poetry run pytest
