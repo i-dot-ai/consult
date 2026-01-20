@@ -172,4 +172,21 @@ test.describe("draft question", () => {
 
     expect(page.getByRole("heading", { name: "Add Custom Theme" })).toBeVisible();
   })
+
+  test(`clicking "Creating Effective Themes" button reveals instructions`, async ({ page }) => {
+    await page.waitForLoadState("networkidle");
+
+    await page.getByRole("button", { name: "Add Custom Theme" }).click();
+
+    const instructionsButton = await page.getByRole("button", { name: "Creating Effective Themes" });
+    await expect(instructionsButton).toBeVisible();
+
+    expect(page.getByRole("heading", { name: "Good theme titles:" })).not.toBeVisible();
+    expect(page.getByRole("heading", { name: "Good theme descriptions:" })).not.toBeVisible();
+
+    await instructionsButton.click();
+
+    await expect(page.getByRole("heading", { name: "Good theme titles:" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Good theme descriptions:" })).toBeVisible();
+  })
 })
