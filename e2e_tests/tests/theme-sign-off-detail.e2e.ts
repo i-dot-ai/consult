@@ -73,6 +73,14 @@ test.describe("signed off question", () => {
     await expect(page).toHaveURL(`/consultations/${consultation.id}/theme-sign-off`);
   })
 
+  test(`clicking Back to Questions button navigates away`, async ({ page }) => {
+    const supportButton = page.getByRole("button", { name: "Back to Questions" });
+
+    await supportButton.click();
+
+    await expect(page).toHaveURL(`/consultations/${consultation.id}/theme-sign-off`);
+  })
+
   test(`displays question title`, async ({ page }) => {
     await page.waitForLoadState('networkidle');
 
