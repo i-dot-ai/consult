@@ -1,5 +1,5 @@
 # poetry
-FROM public.ecr.aws/docker/library/python:3.12.3-slim AS poetry-packages
+FROM python:3.12.3-slim AS poetry-packages
 
 RUN apt-get update && apt-get install --yes build-essential > /dev/null
 
@@ -17,7 +17,7 @@ RUN poetry bundle venv ./venv
 
 
 # app
-FROM public.ecr.aws/docker/library/python:3.12.3-slim
+FROM python:3.12.3-slim
 
 RUN apt-get update && apt-get install --yes libpq-dev > /dev/null
 
