@@ -6,7 +6,7 @@ let consultationQuestions;
 
 let signedOffQuestion;
 let signedOffQuestionThemes;
-let inProgressQuestion;
+let draftQuestion;
 
 test.beforeAll(async ({ request }) => {
   const consultationsResponse = await request.get(`/api/consultations/?scope=assigned`);
@@ -18,7 +18,7 @@ test.beforeAll(async ({ request }) => {
   consultationQuestions = questionsResponseBody.results;
 
   signedOffQuestion = consultationQuestions.find(question => question.theme_status === "confirmed");
-  inProgressQuestion = consultationQuestions.find(question => question.theme_status === "draft");
+  draftQuestion = consultationQuestions.find(question => question.theme_status === "draft");
 });
 
 test.describe("signed off question", () => {
@@ -92,10 +92,22 @@ test.describe("signed off question", () => {
 
 test.describe("draft question", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(`/consultations/${consultation.id}/theme-sign-off/${inProgressQuestion.id}`);
+    await page.goto(`/consultations/${consultation.id}/theme-sign-off/${draftQuestion.id}`);
   })
 
   test(`does not display signed off message`, async ({ page }) => {
     expect(page.getByText("Themes Signed Off")).not.toBeVisible();
+  })
+
+  test(`displays total response count`, async ({ page }) => {
+    await page.waitForLoadState("networkidle");
+
+    expect(page.getByText(`${draftQuestion.total_responses} responses`)).toBeVisible();
+  })
+
+  test(`displays question title`, async ({ page }) => {
+    await page.waitForLoadState("networkidle");
+
+    expect(page.getByText(`Q${draftQuestion.number}: ${draftQuestion.question_text}`)).toBeVisible();
   })
 })
