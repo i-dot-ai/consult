@@ -4,7 +4,17 @@ import { test, expect } from '@playwright/test';
 const SECTION_TITLES = [
   "Theme Sign Off",
   "All consultation questions",
-]
+];
+
+const CONSULTATION_STAGES = [
+  "Set up data",
+  "Find themes (AI)",
+  "Finalise themes",
+  "AI",
+  "Assign themes (AI)",
+  "Check quality",
+  "Analyse",
+];
 
 let testConsultation;
 let testConsultationQuestions;
@@ -71,6 +81,35 @@ test(`closes onboarding modal if close button is clicked`, async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: "Welcome to Theme Sign Off" })).not.toBeVisible();
   await expect(page.getByRole("button", { name: "Get Started" })).not.toBeVisible();
+})
+
+test(`renders process button`, async ({ page }) => {
+  const processButton = page.getByRole("button", { name: "Process" });
+  expect(processButton).toBeVisible();
+  expect(processButton).toHaveAttribute("aria-pressed", "false");
+})
+
+test(`renders breadcrumbs when process button is clicked`, async ({ page }) => {
+  const processButton = page.getByRole("button", { name: "Process" });
+
+  processButton.click();
+
+  await expect(processButton).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(`[aria-label="breadcrumbs"]`)).toBeVisible();
+
+  CONSULTATION_STAGES.forEach(stage => {
+    expect(page.getByText(stage, { exact: true })).toBeVisible();
+  });
+})
+
+test(`renders guidance link when process button is clicked`, async ({ page }) => {
+  const processButton = page.getByRole("button", { name: "Process" });
+
+  processButton.click();
+
+  const guidanceLink = page.getByRole("link", { name: "Explain the process" });
+  await expect(guidanceLink).toBeVisible();
+  await expect(guidanceLink).toHaveAttribute("href", "/guidance");
 })
 
 test(`favourites and unfavourites a question if button is clicked`, async ({ page }) => {
