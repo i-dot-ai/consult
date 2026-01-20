@@ -1,8 +1,8 @@
 #!/bin/sh
 
-venv/bin/python manage.py migrate
-venv/bin/python manage.py createadminusers
-venv/bin/python manage.py populate_history --auto --batchsize 1000
+venv/bin/django-admin migrate
+venv/bin/django-admin createadminusers
+venv/bin/django-admin populate_history --auto --batchsize 1000
 
 echo "Starting gunicorn..."
 echo "Python path: $PYTHONPATH"
@@ -11,4 +11,4 @@ echo "Testing WSGI import..."
 venv/bin/python -c "import backend.wsgi; print('WSGI import successful')"
 
 echo "Starting gunicorn with verbose logging..."
-exec venv/bin/python -m gunicorn -c ./gunicorn.py backend.wsgi --log-level debug
+exec venv/bin/gunicorn -c ./gunicorn_config.py backend.wsgi --log-level debug
