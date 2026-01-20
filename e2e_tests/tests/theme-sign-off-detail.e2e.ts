@@ -5,6 +5,7 @@ let consultation;
 let consultationQuestions;
 
 let signedOffQuestion;
+let signedOffQuestionThemes;
 let inProgressQuestion;
 
 test.beforeAll(async ({ request }) => {
@@ -21,12 +22,32 @@ test.beforeAll(async ({ request }) => {
 });
 
 test.describe("signed off question", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
+
+    const themesResponse = await request.get(`/api/consultations/${consultation.id}/questions/${signedOffQuestion.id}/selected-themes/`);
+    const themes = await themesResponse.json();
+    signedOffQuestionThemes = themes.results;
+
     await page.goto(`/consultations/${consultation.id}/theme-sign-off/${signedOffQuestion.id}`);
   })
 
   test(`displays signed off message`, async ({ page }) => {
     expect(page.getByText("Themes Signed Off")).toBeVisible();
+  })
+
+  test(`displays themes`, async ({ page }) => {
+    await page.waitForLoadState('networkidle');
+
+    signedOffQuestionThemes.forEach(theme => {
+      expect(page.getByText(theme.name)).toBeVisible();
+    })
+  })
+
+  test(`displays signed off tags for all themes`, async ({ page }) => {
+    await page.waitForLoadState('networkidle');
+
+    const signedOffLabels = await page.getByText("Signed Off", { exact: true }).all();
+    expect(signedOffLabels).toHaveLength(signedOffQuestionThemes.length);
   })
 })
 
