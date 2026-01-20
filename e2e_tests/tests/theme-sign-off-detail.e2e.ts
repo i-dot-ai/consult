@@ -189,4 +189,33 @@ test.describe("draft question", () => {
     await expect(page.getByRole("heading", { name: "Good theme titles:" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Good theme descriptions:" })).toBeVisible();
   })
+
+  test(`adding new theme form adds new theme`, async ({ page }) => {
+    await page.waitForLoadState("networkidle");
+
+    // Reveal add theme panel
+    await page.getByRole("button", { name: "Add Custom Theme" }).click();
+
+    const titleInput = page.getByLabel("Theme Title");
+    const descriptionInput = page.getByLabel("Theme Description");
+    const addThemeButton = page.getByRole("button", { name: "Add Theme" });
+    expect(titleInput).toBeVisible();
+    expect(descriptionInput).toBeVisible();
+    expect(addThemeButton).toBeVisible();
+    expect(addThemeButton).toBeDisabled();
+
+    // Create new theme
+    await titleInput.fill("New theme test title");
+    await descriptionInput.fill("New theme test description");
+    await addThemeButton.click();
+
+    // Confirm new theme is listed among selected themes
+    await expect(page.getByRole("heading", { name: "New theme test title" })).toBeVisible();
+
+    // Remove the new theme
+    const removeButtons = await page.getByRole("button", { name: "Remove" }).all();
+    const newThemeRemoveButton = removeButtons.at(-1);
+    await newThemeRemoveButton?.click();
+    await expect(page.getByRole("heading", { name: "New theme test title" })).not.toBeVisible();
+  })
 })
