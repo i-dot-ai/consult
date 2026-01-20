@@ -1,5 +1,5 @@
 # poetry
-FROM public.ecr.aws/docker/library/python:3.12.3-slim AS poetry-packages
+FROM python:3.12.3-slim AS poetry-packages
 
 RUN apt-get update && apt-get install --yes build-essential > /dev/null
 
@@ -17,18 +17,19 @@ RUN poetry bundle venv ./venv
 
 
 # app
-FROM public.ecr.aws/docker/library/python:3.12.3-slim
+FROM python:3.12.3-slim
 
 RUN apt-get update && apt-get install --yes libpq-dev > /dev/null
 
-WORKDIR /usr/src/app
+WORKDIR /src
 
 COPY --from=poetry-packages /src/venv ./venv
+COPY ./backend ./backend
 
-COPY .. .
+WORKDIR /src/backend
 
 ENV DJANGO_SETTINGS_MODULE='backend.settings.production'
-ENV PYTHONPATH "${PYTHONPATH}:/."
+ENV PYTHONPATH "${PYTHONPATH}:/src"
 
 EXPOSE 8000
 
