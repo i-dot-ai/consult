@@ -72,6 +72,14 @@ test.describe("signed off question", () => {
 
     await expect(page).toHaveURL(`/consultations/${consultation.id}/theme-sign-off`);
   })
+
+  test(`displays question title`, async ({ page }) => {
+    await page.waitForLoadState('networkidle');
+
+    const expectedTitle = `Q${signedOffQuestion.number}: ${signedOffQuestion.question_text}`;
+
+    await expect(page.getByText(expectedTitle, { exact: true })).toBeVisible();
+  })
 })
 
 test.describe("draft question", () => {
