@@ -20,3 +20,9 @@ frontend/CACHE
 frontend/govuk-assets
 frontend/admin
 frontend/django_extensions
+
+# Python virtual environments
+venv/
+.venv/
+env/
+__pycache__/

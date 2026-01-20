@@ -1,8 +1,8 @@
 #!/bin/sh
 
-venv/bin/django-admin migrate
-venv/bin/django-admin collectstatic --noinput
-venv/bin/django-admin createadminusers
-venv/bin/django-admin populate_history --auto --batchsize 1000
+/usr/local/venv/bin/django-admin migrate
+/usr/local/venv/bin/django-admin collectstatic --noinput
+/usr/local/venv/bin/django-admin createadminusers
+/usr/local/venv/bin/django-admin populate_history --auto --batchsize 1000
 
-exec venv/bin/gunicorn -c ./backend/gunicorn.py backend.wsgi
+exec /usr/local/venv/bin/gunicorn -c ./gunicorn.py backend.wsgi
