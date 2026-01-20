@@ -190,6 +190,20 @@ test.describe("draft question", () => {
     await expect(page.getByRole("heading", { name: "Good theme descriptions:" })).toBeVisible();
   })
 
+  test(`clicking "Cancel" button hides add theme panel`, async ({ page }) => {
+    await page.waitForLoadState("networkidle");
+
+    await page.getByRole("button", { name: "Add Custom Theme" }).click();
+
+    // Panel is revealed
+    await expect(page.getByRole("heading", { name: "Add Custom Theme" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Cancel" }).click();
+
+    // Panel is hidden
+    await expect(page.getByRole("heading", { name: "Add Custom Theme" })).not.toBeVisible();
+  })
+
   test(`adding new theme form adds new theme`, async ({ page }) => {
     await page.waitForLoadState("networkidle");
 
