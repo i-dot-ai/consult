@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "consultation_analyser.ingest",
+    "crispy_forms",
+    "crispy_forms_gds",
     "django.contrib.humanize",
     "django_rq",
     "simple_history",
@@ -116,17 +118,8 @@ DATABASES = {
     "default": {
         **_db_config,
         # Use django-db-connection-pool backend for PostgreSQL
-        "ENGINE": "dj_db_conn_pool.backends.postgresql",
+        "ENGINE": "django.db.backends.postgresql",
         # Connection pooling settings
-        "POOL_OPTIONS": {
-            "INITIAL_CONNS": env.int("DB_POOL_INITIAL_CONNS", default=5),
-            "MAX_CONNS": env.int("DB_POOL_MAX_CONNS", default=20),
-            "MIN_CONNS": env.int("DB_POOL_MIN_CONNS", default=5),
-            "MAX_SHARED_CONNS": env.int("DB_POOL_MAX_SHARED_CONNS", default=10),
-            "MAX_OVERFLOW": env.int("DB_POOL_MAX_OVERFLOW", default=10),
-            "RECYCLE": env.int("DB_POOL_RECYCLE", default=3600),  # 1 hour
-            "PRE_PING": env.bool("DB_POOL_PRE_PING", default=True),
-        },
         # Keep existing options
         "OPTIONS": {
             **_db_config.get("OPTIONS", {}),
