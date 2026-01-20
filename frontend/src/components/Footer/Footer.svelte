@@ -18,9 +18,7 @@
             <a data-testid="privacy-link" href="/privacy/">Privacy notice</a>
           </li>
           <li>
-            <a href="https://github.com/i-dot-ai/consult"
-              >Version:</a
-            >
+            <a href="https://github.com/i-dot-ai/consult">Version:</a>
           </li>
         </ul>
         <div class={clsx(["flex", "items-center", "gap-2", "mt-4", "text-sm"])}>
