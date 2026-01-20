@@ -1,15 +1,3 @@
-# npm
-# use the same base image as the others for efficiency
-FROM public.ecr.aws/docker/library/python:3.12.3-slim AS npm-packages
-
-RUN apt-get update && apt-get install --yes nodejs npm > /dev/null
-
-WORKDIR /src
-
-COPY package.json .
-RUN npm install --omit=optional
-
-
 # poetry
 FROM public.ecr.aws/docker/library/python:3.12.3-slim AS poetry-packages
 
@@ -35,7 +23,6 @@ RUN apt-get update && apt-get install --yes libpq-dev > /dev/null
 
 WORKDIR /usr/src/app
 
-COPY --from=npm-packages /src/node_modules ./node_modules
 COPY --from=poetry-packages /src/venv ./venv
 
 COPY .. .
