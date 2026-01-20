@@ -63,6 +63,16 @@ test(`renders onboarding modal initially`, async ({ page }) => {
   expect(page.getByRole("button", { name: "Get Started" })).toBeVisible();
 })
 
+test(`closes onboarding modal if close button is clicked`, async ({ page }) => {
+  await page.waitForLoadState('networkidle');
+
+  const modalCloseButton = page.getByText("Get Started");
+  await modalCloseButton.click();
+
+  await expect(page.getByRole("heading", { name: "Welcome to Theme Sign Off" })).not.toBeVisible();
+  await expect(page.getByRole("button", { name: "Get Started" })).not.toBeVisible();
+})
+
 test(`favourites and unfavourites a question if button is clicked`, async ({ page }) => {
   await page.waitForSelector(`[data-testid="fav-button"]`);
 
