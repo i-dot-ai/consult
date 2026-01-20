@@ -11,8 +11,8 @@ import pandas as pd
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 from themefinder import theme_condensation, theme_generation, theme_refinement
-from themefinder.models import HierarchicalClusteringResponse
-from themefinder.theme_clustering_agent import ThemeClusteringAgent, ThemeNode
+from themefinder.models import HierarchicalClusteringResponse, ThemeNode
+from themefinder.advanced_tasks.theme_clustering_agent import ThemeClusteringAgent
 
 
 class ThemeNodeList(BaseModel):
