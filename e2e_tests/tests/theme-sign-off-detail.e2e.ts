@@ -7,6 +7,8 @@ let consultationQuestions;
 let signedOffQuestion;
 let signedOffQuestionThemes;
 let draftQuestion;
+let draftQuestionSelectedThemes;
+let draftQuestionGeneratedThemes;
 
 test.beforeAll(async ({ request }) => {
   const consultationsResponse = await request.get(`/api/consultations/?scope=assigned`);
@@ -91,7 +93,15 @@ test.describe("signed off question", () => {
 })
 
 test.describe("draft question", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
+    const selectedThemesResponse = await request.get(`/api/consultations/${consultation.id}/questions/${draftQuestion.id}/selected-themes/`);
+    const selectedThemes = await selectedThemesResponse.json();
+    draftQuestionSelectedThemes = selectedThemes.results;
+
+    const generatedThemesResponse = await request.get(`/api/consultations/${consultation.id}/questions/${draftQuestion.id}/candidate-themes/`);
+    const generatedThemes = await generatedThemesResponse.json();
+    draftQuestionGeneratedThemes = generatedThemes.results;
+
     await page.goto(`/consultations/${consultation.id}/theme-sign-off/${draftQuestion.id}`);
   })
 
@@ -109,5 +119,47 @@ test.describe("draft question", () => {
     await page.waitForLoadState("networkidle");
 
     expect(page.getByText(`Q${draftQuestion.number}: ${draftQuestion.question_text}`)).toBeVisible();
+  })
+
+  test(`clicking "Choose another question" button navigates away`, async ({ page }) => {
+    const supportButton = page.getByRole("button", { name: "Choose another question" });
+
+    await supportButton.click();
+
+    await expect(page).toHaveURL(`/consultations/${consultation.id}/theme-sign-off`);
+  })
+
+  test(`selected themes count is displayed`, async ({ page }) => {
+    await page.waitForLoadState("networkidle");
+
+    await expect(page.getByText(`${draftQuestionSelectedThemes.length} selected`, { exact: true })).toBeVisible();
+  })
+
+  test(`selected theme names are displayed`, async ({ page }) => {
+    await page.waitForLoadState("networkidle");
+
+    draftQuestionSelectedThemes.forEach(theme => {
+      expect(page.getByRole("heading", { name: theme.name })).toBeVisible();
+    })
+  })
+
+  test(`selected theme descriptions are displayed`, async ({ page }) => {
+    await page.waitForLoadState("networkidle");
+
+    draftQuestionSelectedThemes.forEach(theme => {
+      expect(page.getByText(theme.description, { exact: true })).toBeVisible();
+    })
+  })
+
+  test(`selected theme users are displayed`, async ({ page }) => {
+    await page.waitForLoadState("networkidle");
+
+    const userEmails = [...new Set(draftQuestionSelectedThemes.map(theme => theme.last_modified_by))];
+
+    userEmails.forEach(async userEmail => {
+      const allOccurences = await page.getByText(userEmail as string).all();
+      // might appear more than once
+      expect(allOccurences.length).toBeGreaterThanOrEqual(1);
+    })
   })
 })
