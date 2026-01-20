@@ -164,7 +164,7 @@ class TestImportConsultationFromS3:
         assert [opt.text for opt in q2_response_1.chosen_options.all()] == ["Option A"]
 
         q2_response_2 = Response.objects.get(question=question_2, respondent=respondent_2)
-        assert [opt.text for opt in q2_response_2.chosen_options.all()] == ["Option B", "Option C"]
+        assert {opt.text for opt in q2_response_2.chosen_options.all()} == {"Option B", "Option C"}
 
         # Verify responses for hybrid question
         q3_response_1 = Response.objects.get(question=question_3, respondent=respondent_1)

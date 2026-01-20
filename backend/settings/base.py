@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     "backend.authentication",
     "backend.consultations",
     "backend.ingest",
-    "compressor",
     "crispy_forms",
     "crispy_forms_gds",
     "django.contrib.humanize",
@@ -83,15 +82,14 @@ ROOT_URLCONF = "backend.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
         "APP_DIRS": True,
+        "DIRS": [],
         "OPTIONS": {
             "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-            ],
+                "django.template.context_processors.request",
+            ]
         },
     },
 ]
@@ -172,7 +170,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-COMPRESS_PRECOMPILERS = (("text/x-scss", "django_libsass.SassCompiler"),)
 
 STATIC_URL = "static/"
 STATIC_ROOT = "legacy-frontend/"
@@ -181,7 +178,6 @@ STATICFILES_DIRS = [
     ("iai-assets", BASE_DIR / "node_modules/i.ai-design-system/dist/"),
 ]
 STATICFILES_FINDERS = [
-    "compressor.finders.CompressorFinder",
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
