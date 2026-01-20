@@ -2,7 +2,9 @@
 
 ../venv/bin/python manage.py migrate
 ../venv/bin/python manage.py collectstatic --noinput
-../venv/bin/python manage.py createadminusers
-../venv/bin/python manage.py populate_history --auto --batchsize 1000
 
-exec ../venv/bin/gunicorn -c ./gunicorn.py backend.wsgi
+# Skip createadminusers and populate_history in production if they fail
+../venv/bin/python manage.py createadminusers || true
+../venv/bin/python manage.py populate_history --auto --batchsize 1000 || true
+
+exec ../venv/bin/python -m gunicorn -c ./gunicorn.py backend.wsgi
