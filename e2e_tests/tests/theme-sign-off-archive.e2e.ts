@@ -92,7 +92,8 @@ test(`renders process button`, async ({ page }) => {
 test(`renders breadcrumbs when process button is clicked`, async ({ page }) => {
   const processButton = page.getByRole("button", { name: "Process" });
 
-  processButton.click();
+  await expect(processButton).toBeVisible();
+  await processButton.click();
 
   await expect(processButton).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(`[aria-label="breadcrumbs"]`)).toBeVisible();
@@ -102,9 +103,25 @@ test(`renders breadcrumbs when process button is clicked`, async ({ page }) => {
   });
 })
 
+test(`closes breadcrumbs if process button is clicked while breadcrumbs is visible`, async ({ page }) => {
+  const processButton = page.getByRole("button", { name: "Process" });
+
+  await expect(page.locator(`[aria-label="breadcrumbs"]`)).not.toBeVisible();
+
+  await processButton.click();
+
+  await expect(page.locator(`[aria-label="breadcrumbs"]`)).toBeVisible();
+
+  await processButton.click();
+
+  await expect(page.locator(`[aria-label="breadcrumbs"]`)).not.toBeVisible();
+  await expect(processButton).toHaveAttribute("aria-pressed", "false");
+})
+
 test(`renders guidance link when process button is clicked`, async ({ page }) => {
   const processButton = page.getByRole("button", { name: "Process" });
 
+  await expect(processButton).toBeVisible();
   processButton.click();
 
   const guidanceLink = page.getByRole("link", { name: "Explain the process" });
