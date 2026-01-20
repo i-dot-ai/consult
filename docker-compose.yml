@@ -48,8 +48,8 @@ services:
       - DJANGO_SETTINGS_MODULE=backend.settings.local
       - DOMAIN_NAME=localhost:3000
     volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
+      - .:/app
+      - /app/node_modules
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,7 +57,7 @@ services:
         condition: service_healthy
     networks:
       - consult
-    command: sh -c "/usr/local/venv/bin/python ./manage.py migrate && /usr/local/venv/bin/python ./manage.py runserver 0.0.0.0:8000"
+    command: sh -c "venv/bin/python manage.py migrate && venv/bin/python manage.py runserver 0.0.0.0:8000"
 
   # Frontend
   frontend:

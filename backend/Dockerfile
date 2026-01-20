@@ -7,8 +7,8 @@ RUN pip install poetry poetry-plugin-bundle
 
 WORKDIR /src
 
-COPY ./pyproject.toml .
-COPY ./poetry.lock .
+COPY ../pyproject.toml .
+COPY ../poetry.lock .
 
 # do this so that poetry bundle can run without the project - can't pass --no-root to bundle
 RUN touch README.md
@@ -23,13 +23,12 @@ RUN apt-get update && apt-get install --yes libpq-dev > /dev/null
 
 WORKDIR /usr/src/app
 
-COPY --from=poetry-packages /src/venv /usr/local/venv
-COPY . .
+COPY --from=poetry-packages /src/venv ./venv
 
-WORKDIR /usr/src/app/backend
+COPY .. .
 
 ENV DJANGO_SETTINGS_MODULE='backend.settings.production'
-ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app"
+ENV PYTHONPATH "${PYTHONPATH}:/."
 
 EXPOSE 8000
 
