@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.auth",
     "django.contrib.admin",
+    "django.contrib.postgres",
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "consultation_analyser.ingest",
