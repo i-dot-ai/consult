@@ -64,6 +64,14 @@ test.describe("signed off question", () => {
 
     expect(request.url()).toBe("mailto:consult@cabinetoffice.gov.uk");
   })
+
+  test(`clicking Select Another Question button navigates away`, async ({ page }) => {
+    const supportButton = page.getByRole("button", { name: "Select Another Question" });
+
+    await supportButton.click();
+
+    await expect(page).toHaveURL(`/consultations/${consultation.id}/theme-sign-off`);
+  })
 })
 
 test.describe("draft question", () => {
