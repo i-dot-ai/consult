@@ -507,9 +507,7 @@ class TestGetConsultationFoldersEndpoint:
         """Test setup stage returns all S3 folders when no consultations exist"""
         url = reverse("consultations-folders")
 
-        with patch(
-            "backend.data_pipeline.s3.get_consultation_folders"
-        ) as mock_get_folders:
+        with patch("backend.data_pipeline.s3.get_consultation_folders") as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026", "transport-2026", "education-2026"]
 
             response = client.get(
@@ -529,9 +527,7 @@ class TestGetConsultationFoldersEndpoint:
 
         url = reverse("consultations-folders")
 
-        with patch(
-            "backend.data_pipeline.s3.get_consultation_folders"
-        ) as mock_get_folders:
+        with patch("backend.data_pipeline.s3.get_consultation_folders") as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026", "transport-2026", "education-2026"]
 
             response = client.get(
@@ -553,9 +549,7 @@ class TestGetConsultationFoldersEndpoint:
 
         url = reverse("consultations-folders")
 
-        with patch(
-            "backend.data_pipeline.s3.get_consultation_folders"
-        ) as mock_get_folders:
+        with patch("backend.data_pipeline.s3.get_consultation_folders") as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026", "transport-2026", "education-2026"]
 
             response = client.get(
@@ -581,9 +575,7 @@ class TestGetConsultationFoldersEndpoint:
 
         url = reverse("consultations-folders")
 
-        with patch(
-            "backend.data_pipeline.s3.get_consultation_folders"
-        ) as mock_get_folders:
+        with patch("backend.data_pipeline.s3.get_consultation_folders") as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026", "education-2026"]
 
             response = client.get(
@@ -604,9 +596,7 @@ class TestGetConsultationFoldersEndpoint:
 
         url = reverse("consultations-folders")
 
-        with patch(
-            "backend.data_pipeline.s3.get_consultation_folders"
-        ) as mock_get_folders:
+        with patch("backend.data_pipeline.s3.get_consultation_folders") as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026"]
 
             response = client.get(

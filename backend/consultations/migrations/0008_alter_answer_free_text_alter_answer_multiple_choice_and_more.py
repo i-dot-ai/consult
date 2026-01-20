@@ -24,9 +24,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 null=True,
                 validators=[
-                    backend.consultations.models.MultipleChoiceSchemaValidator(
-                        limit_value=None
-                    )
+                    backend.consultations.models.MultipleChoiceSchemaValidator(limit_value=None)
                 ],
             ),
         ),
@@ -47,9 +45,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 null=True,
                 validators=[
-                    backend.consultations.models.MultipleChoiceSchemaValidator(
-                        limit_value=None
-                    )
+                    backend.consultations.models.MultipleChoiceSchemaValidator(limit_value=None)
                 ],
             ),
         ),

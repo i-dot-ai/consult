@@ -18,7 +18,7 @@
             <a data-testid="privacy-link" href="/privacy/">Privacy notice</a>
           </li>
           <li>
-            <a href="https://github.com/i-dot-ai/consultation-analyser"
+            <a href="https://github.com/i-dot-ai/consult"
               >Version:</a
             >
           </li>
