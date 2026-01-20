@@ -49,6 +49,21 @@ test.describe("signed off question", () => {
     const signedOffLabels = await page.getByText("Signed Off", { exact: true }).all();
     expect(signedOffLabels).toHaveLength(signedOffQuestionThemes.length);
   })
+
+  test(`displays support button`, async ({ page }) => {
+    expect(page.getByRole("button", { name: "consult@cabinetoffice.gov.uk" })).toBeVisible();
+  })
+
+  test(`clicking support button triggers email client`, async ({ page }) => {
+    const supportButton = page.getByRole("button", { name: "consult@cabinetoffice.gov.uk" });
+
+    const [ request ] = await Promise.all([
+      page.waitForEvent("request", request => request.url().startsWith("mailto:")),
+      supportButton.click(),
+    ])
+
+    expect(request.url()).toBe("mailto:consult@cabinetoffice.gov.uk");
+  })
 })
 
 test.describe("draft question", () => {
