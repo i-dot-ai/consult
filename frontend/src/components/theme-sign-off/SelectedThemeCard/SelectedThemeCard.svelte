@@ -101,7 +101,7 @@
                 Edit
               </Button>
 
-              <Button size="sm" handleClick={() => removeTheme(theme.id)}>
+              <Button size="sm" handleClick={() => removeTheme(theme.id)} ariaLabel={`Remove Theme ${theme.name}`}>
                 <MaterialIcon color="fill-neutral-500">
                   <Delete />
                 </MaterialIcon>

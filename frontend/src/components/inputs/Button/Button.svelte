@@ -24,6 +24,7 @@
   export let testId: string = "";
   export let href: string | undefined = undefined;
   export let ariaControls: string | undefined = undefined;
+  export let ariaLabel: string | undefined = undefined;
   export let noPadding: boolean = false;
   export let fixedHoverColor: boolean = false;
 </script>
@@ -94,6 +95,7 @@
       : "false"
     : undefined}
   aria-controls={ariaControls}
+  aria-label={ariaLabel}
   data-testid={testId ? testId : undefined}
 >
   <slot />

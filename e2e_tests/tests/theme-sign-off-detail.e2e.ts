@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 
 let consultation;
@@ -138,9 +138,15 @@ test.describe("draft question", () => {
   test(`selected theme names are displayed`, async ({ page }) => {
     await page.waitForLoadState("networkidle");
 
-    draftQuestionSelectedThemes.forEach(theme => {
+    const NEW_THEME_NAME = "selected-theme-names-test";
+
+    await createSelectedTheme(page, NEW_THEME_NAME);
+
+    [...draftQuestionSelectedThemes, { name: NEW_THEME_NAME }].forEach(theme => {
       expect(page.getByRole("heading", { name: theme.name })).toBeVisible();
     })
+
+    await deleteSelectedTheme(page, NEW_THEME_NAME);
   })
 
   test(`selected theme descriptions are displayed`, async ({ page }) => {
@@ -206,30 +212,56 @@ test.describe("draft question", () => {
 
   test(`adding new theme form adds new theme`, async ({ page }) => {
     await page.waitForLoadState("networkidle");
+    const NEW_THEME_NAME = "theme-create-form-test";
 
-    // Reveal add theme panel
-    await page.getByRole("button", { name: "Add Custom Theme" }).click();
+    await createSelectedTheme(page, NEW_THEME_NAME);
 
-    const titleInput = page.getByLabel("Theme Title");
-    const descriptionInput = page.getByLabel("Theme Description");
-    const addThemeButton = page.getByRole("button", { name: "Add Theme" });
-    expect(titleInput).toBeVisible();
-    expect(descriptionInput).toBeVisible();
-    expect(addThemeButton).toBeVisible();
-    expect(addThemeButton).toBeDisabled();
+    await deleteSelectedTheme(page, NEW_THEME_NAME);
+  })
 
-    // Create new theme
-    await titleInput.fill("New theme test title");
-    await descriptionInput.fill("New theme test description");
-    await addThemeButton.click();
+  test(`clicking "Representative Responses" button reveals responses panel`, async ({ page }) => {
+    await page.waitForLoadState("networkidle");
 
-    // Confirm new theme is listed among selected themes
-    await expect(page.getByRole("heading", { name: "New theme test title" })).toBeVisible();
+    const NEW_THEME_NAME = "representative-responses-test";
+    await createSelectedTheme(page, NEW_THEME_NAME);
 
-    // Remove the new theme
-    const removeButtons = await page.getByRole("button", { name: "Remove" }).all();
-    const newThemeRemoveButton = removeButtons.at(-1);
-    await newThemeRemoveButton?.click();
-    await expect(page.getByRole("heading", { name: "New theme test title" })).not.toBeVisible();
+    const responsesButtons = await page.getByRole("button", { name: "Representative Responses" }).all();
+
+    expect(responsesButtons.length).toBeGreaterThanOrEqual(1);
+    await responsesButtons.at(0)!.click();
+
+    await expect(page.getByRole("heading", { name: "Representative Responses" })).toBeVisible();
+
+    await expect(page.locator(".theme-sign-off__answers-list li").or(page.getByText("There are no answers"))).toBeVisible();
+
+    await deleteSelectedTheme(page, NEW_THEME_NAME);
   })
 })
+
+const createSelectedTheme = async (page: Page, name?: string, description?: string) => {
+  // Reveal add theme panel
+  await page.getByRole("button", { name: "Add Custom Theme" }).click();
+
+  const titleInput = page.getByLabel("Theme Title");
+  const descriptionInput = page.getByLabel("Theme Description");
+  const addThemeButton = page.getByRole("button", { name: "Add Theme" });
+  expect(titleInput).toBeVisible();
+  expect(descriptionInput).toBeVisible();
+  expect(addThemeButton).toBeVisible();
+  expect(addThemeButton).toBeDisabled();
+
+  // Create new theme
+  await titleInput.fill(name);
+  await descriptionInput.fill(description || "New test theme description");
+  await addThemeButton.click();
+
+  // Confirm new theme is listed among selected themes
+  await expect(page.getByRole("heading", { name: name })).toBeVisible();
+}
+
+const deleteSelectedTheme = async (page: Page, name: string) => {
+  // Remove the new theme
+  const removeButton = await page.getByLabel(`Remove Theme ${name}`);
+  await removeButton.click();
+  await expect(page.getByRole("heading", { name: name })).not.toBeVisible();
+}
