@@ -274,6 +274,14 @@ test.describe("draft question", () => {
 
     await expect(page.getByRole("heading", { name: "Confirm Theme Sign Off"})).toBeVisible();
 
+    [...draftQuestionSelectedThemes, { name: NEW_THEME_NAME}].forEach(async theme => {
+      // appears twice, one in regular list, one in confirm modal
+      const headings = await page.getByRole("heading", { name: theme.name }).all();
+      await expect(headings).toHaveLength(2);
+    })
+
+    await expect(page.getByRole("button", { name: "Confirm Sign Off" })).toBeVisible();
+
     await page.getByRole("button", { name: "Cancel"}).click();
 
     await expect(page.getByRole("heading", { name: "Confirm Theme Sign Off"})).not.toBeVisible();
