@@ -1,9 +1,6 @@
-import json
-
 import boto3
 from django.conf import settings
 from django.contrib import admin, messages
-from django_rq import get_queue
 from simple_history.admin import SimpleHistoryAdmin
 
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml_job
@@ -21,41 +18,10 @@ from consultation_analyser.consultations.models import (
     SelectedTheme,
 )
 from consultation_analyser.data_pipeline.jobs import (
-    DEFAULT_TIMEOUT_SECONDS,
     import_candidate_themes,
 )
 
 logger = settings.LOGGER
-
-
-def _reimport_demographics(consultation_id):
-    respondents = Respondent.objects.filter(consultation_id=consultation_id).extra(
-        select={"old_demographics": "old_demographics"}
-    )
-
-    for respondent in respondents:
-        demographics = []
-        if hasattr(respondent, "old_demographics") and respondent.old_demographics:
-            old_demographics = json.loads(respondent.old_demographics)
-            if not isinstance(old_demographics, dict):
-                raise ValueError(f"expected dict but got {type(old_demographics)}")
-
-            for name, value in old_demographics.items():
-                if name and value:
-                    do, _ = DemographicOption.objects.get_or_create(
-                        consultation=respondent.consultation,
-                        field_name=name,
-                        field_value=value,
-                    )
-                    demographics.append(do)
-            respondent.demographics.set(demographics)
-
-
-@admin.action(description="re import demographic options")
-def reimport_demographics(modeladmin, request, queryset):
-    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
-    for consultation in queryset:
-        queue.enqueue(_reimport_demographics, consultation.id)
 
 
 class ResponseAdmin(admin.ModelAdmin):
@@ -117,9 +83,9 @@ def import_candidate_themes_from_s3_job(modeladmin, request, queryset):
 
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [
-        reimport_demographics,
         create_small_dummy_consultation,
         create_large_dummy_consultation,
+        import_candidate_themes_from_s3_job,
     ]
 
 
