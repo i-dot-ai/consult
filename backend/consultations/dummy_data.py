@@ -140,7 +140,7 @@ def create_response_chosen_options(response, multiple_choice_options):
 
 
 def create_dummy_consultation_from_yaml(
-    file_path: str = "./backend/tests/examples/sample_questions.yml",
+    file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
     consultation: Optional[Consultation] = None,
     consultation_stage: Optional[Literal["theme_sign_off", "analysis"]] = None,
@@ -206,7 +206,7 @@ def create_dummy_consultation_from_yaml(
 # Will only be run occasionally to create dummy data - not in prod
 @job("default", timeout=2400)
 def create_dummy_consultation_from_yaml_job(
-    file_path: str = "./backend/tests/examples/sample_questions.yml",
+    file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
     consultation: Optional[Consultation] = None,
 ):

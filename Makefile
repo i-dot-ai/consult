@@ -22,16 +22,16 @@ reset_db: ## Reset the dev db
 
 .PHONY: check_db
 check_db: ## Make sure the db is addressable
-	cd backend && poetry run python manage.py check --database default
+	cd backend && PYTHONPATH=.. poetry run python manage.py check --database default
 
 .PHONY: migrations
 migrations: ## Generate migrations
-	cd backend && poetry run python manage.py makemigrations
+	cd backend && PYTHONPATH=.. poetry run python manage.py makemigrations
 
 .PHONY: migrate
 migrate: ## Apply migrations
-	cd backend && poetry run python manage.py migrate
-	cd backend && poetry run python manage.py generate_erd
+	cd backend && PYTHONPATH=.. poetry run python manage.py migrate
+	cd backend && PYTHONPATH=.. poetry run python manage.py generate_erd
 
 .PHONY: serve
 serve: ## Run the server and the worker
@@ -40,11 +40,7 @@ serve: ## Run the server and the worker
 
 .PHONY: test
 test: ## Run the tests
-	cd backend && poetry run pytest tests/ --random-order
-
-.PHONY: test
-test-failed: ## Run all failed tests in the previous run
-	cd backend && poetry run pytest --last-failed --random-order
+	cd backend && PYTHONPATH=.. poetry run pytest tests/ --random-order
 
 .PHONY: test-end-to-end
 test-end-to-end:
@@ -81,11 +77,11 @@ format-python-code: ## Format Python code including sorting imports
 
 .PHONY: dummy_data
 dummy_data: ## Generate dummy consultations. Only works in dev
-	cd backend && poetry run python manage.py generate_dummy_data
+	cd backend && PYTHONPATH=.. poetry run python manage.py generate_dummy_data
 
 .PHONY: dev_admin_user
 dev_admin_user:
-	cd backend && poetry run python manage.py shell -c "from backend.authentication.models import User; User.objects.create_user(email='email@example.com', password='admin', is_staff=True)" # pragma: allowlist secret
+	cd backend && PYTHONPATH=.. poetry run python manage.py shell -c "from backend.authentication.models import User; User.objects.create_user(email='email@example.com', password='admin', is_staff=True)" # pragma: allowlist secret
 
 .PHONY: dev_environment
 dev_environment: reset_db migrate dummy_data govuk_frontend dev_admin_user ## set up the database with dummy data and configure govuk_frontend
