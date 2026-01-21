@@ -50,12 +50,17 @@ jobs:
       - name: install poetry & deps
         run: |
           python -m pip install --upgrade poetry
-          cd backend && poetry install --with development
+        working-directory: .
+      
+      - name: install dependencies
+        run: poetry install --with development
+        working-directory: ./backend
 
       - name: Setup app
         run: |
-          cd backend && PYTHONPATH=/home/runner/work/consult/consult poetry run python manage.py migrate
-          cd backend && PYTHONPATH=/home/runner/work/consult/consult poetry run python manage.py makemigrations --check
+          PYTHONPATH=/home/runner/work/consult/consult poetry run python manage.py migrate
+          PYTHONPATH=/home/runner/work/consult/consult poetry run python manage.py makemigrations --check
+        working-directory: ./backend
 
       - name: Run app tests
         run: make test
@@ -68,9 +73,11 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Install Poetry
-        run: |
-          python -m pip install --upgrade poetry
-          cd backend && poetry install --with development
+        run: python -m pip install --upgrade poetry
+      
+      - name: Install dependencies
+        run: poetry install --with development
+        working-directory: ./backend
 
       - name: Check code formatting
         run: |
