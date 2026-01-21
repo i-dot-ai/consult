@@ -94,7 +94,7 @@
             </small>
 
             <footer class="flex flex-wrap items-center gap-2">
-              <Button size="sm" handleClick={() => (editing = !editing)}>
+              <Button size="sm" handleClick={() => (editing = !editing)} ariaLabel={`Edit Theme ${theme.name}`}>
                 <MaterialIcon color="fill-neutral-500">
                   <EditSquare />
                 </MaterialIcon>

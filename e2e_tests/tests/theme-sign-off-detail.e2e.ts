@@ -24,6 +24,9 @@ test.beforeAll(async ({ request }) => {
 });
 
 test.describe("signed off question", () => {
+  // // Uncomment to run tests serially
+  // test.describe.configure({ mode: "serial" });
+
   test.beforeEach(async ({ page, request }) => {
 
     const themesResponse = await request.get(`/api/consultations/${consultation.id}/questions/${signedOffQuestion.id}/selected-themes/`);
@@ -93,6 +96,9 @@ test.describe("signed off question", () => {
 })
 
 test.describe("draft question", () => {
+  // Uncomment to run tests serially
+  test.describe.configure({ mode: "serial" });
+
   test.beforeEach(async ({ page, request }) => {
     const selectedThemesResponse = await request.get(`/api/consultations/${consultation.id}/questions/${draftQuestion.id}/selected-themes/`);
     const selectedThemes = await selectedThemesResponse.json();
@@ -233,6 +239,24 @@ test.describe("draft question", () => {
     await expect(page.getByRole("heading", { name: "Representative Responses" })).toBeVisible();
 
     await expect(page.locator(".theme-sign-off__answers-list li").or(page.getByText("There are no answers"))).toBeVisible();
+
+    await deleteSelectedTheme(page, NEW_THEME_NAME);
+  })
+
+  test(`clicking "Edit" button reveals and "Cancel" hides edit panel`, async ({ page }) => {
+    await page.waitForLoadState("networkidle");
+
+    const NEW_THEME_NAME = "edit-button-reveal-panel-test";
+    await createSelectedTheme(page, NEW_THEME_NAME);
+
+    const editButton = page.getByLabel(`Edit Theme ${NEW_THEME_NAME}`);
+    expect(editButton).toBeVisible();
+
+    await editButton.click();
+
+    await expect(page.getByRole("heading", { name: "Edit Theme" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Cancel" }).click();
 
     await deleteSelectedTheme(page, NEW_THEME_NAME);
   })
