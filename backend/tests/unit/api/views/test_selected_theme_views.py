@@ -2,10 +2,10 @@ import json
 from uuid import uuid4
 
 import pytest
-from django.urls import reverse
-from tests.utils import isoformat
-
 from backend.consultations.models import SelectedTheme
+from django.urls import reverse
+
+from tests.utils import isoformat
 
 
 @pytest.mark.django_db

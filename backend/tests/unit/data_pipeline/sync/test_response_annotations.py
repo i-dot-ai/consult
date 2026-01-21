@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 import pytest
-
 from backend.consultations.models import (
     ResponseAnnotation,
     SelectedTheme,

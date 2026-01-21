@@ -1,10 +1,9 @@
 from uuid import UUID
 
+from backend.consultations import models
 from django.conf import settings
 from django.db import connection
 from django_rq import job
-
-from backend.consultations import models
 
 logger = settings.LOGGER
 

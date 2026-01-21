@@ -3,7 +3,6 @@ Test factories for the new consultation models.
 """
 
 import pytest
-
 from backend import factories
 from backend.authentication.models import User
 from backend.consultations import models

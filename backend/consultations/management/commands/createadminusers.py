@@ -1,9 +1,8 @@
 import os
 
+from backend.authentication.models import User
 from django.conf import settings
 from django.core.management import BaseCommand
-
-from backend.authentication.models import User
 
 logger = settings.LOGGER
 

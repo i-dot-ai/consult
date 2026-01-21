@@ -1,5 +1,4 @@
 import pytest
-
 from backend import factories
 from backend.consultations import models
 from backend.factories import QuestionFactory

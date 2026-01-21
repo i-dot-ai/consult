@@ -2,18 +2,9 @@ import logging
 from typing import Any
 from uuid import UUID
 
-import sentry_sdk
-from django.conf import settings
-from django.db.models import Count
-from django.http import Http404
-from rest_framework import serializers, status
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-
 import backend.data_pipeline.batch as batch
 import backend.data_pipeline.s3 as s3
+import sentry_sdk
 from backend.authentication.models import User
 from backend.consultations.api.permissions import (
     CanSeeConsultation,
@@ -37,6 +28,14 @@ from backend.data_pipeline.sync.selected_themes import export_selected_themes_to
 from backend.ingest.jobs import (
     delete_consultation_job,
 )
+from django.conf import settings
+from django.db.models import Count
+from django.http import Http404
+from rest_framework import serializers, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
 logger = settings.LOGGER
 

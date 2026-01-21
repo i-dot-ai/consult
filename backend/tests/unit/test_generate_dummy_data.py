@@ -2,7 +2,6 @@ import os
 from unittest.mock import patch
 
 import pytest
-
 from backend.consultations import models
 from backend.consultations.dummy_data import create_dummy_consultation_from_yaml
 

@@ -1,8 +1,3 @@
-from django.db.models import Count
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-
 from backend.consultations import models
 from backend.consultations.api.permissions import (
     CanSeeConsultation,
@@ -12,6 +7,10 @@ from backend.consultations.api.serializers import (
     QuestionSerializer,
     ThemeInformationSerializer,
 )
+from django.db.models import Count
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
 
 class QuestionViewSet(ModelViewSet):

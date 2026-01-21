@@ -4,8 +4,6 @@ from uuid import uuid4
 
 import orjson
 import pytest
-from django.urls import reverse
-
 from backend.consultations.models import ResponseAnnotation, ResponseAnnotationTheme
 from backend.factories import (
     RespondentFactory,
@@ -13,6 +11,7 @@ from backend.factories import (
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
 )
+from django.urls import reverse
 
 
 @pytest.mark.django_db

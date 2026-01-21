@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 import pytest
-
 from backend.consultations.models import CandidateTheme
 from backend.data_pipeline.sync.candidate_themes import (
     import_candidate_themes_from_s3,

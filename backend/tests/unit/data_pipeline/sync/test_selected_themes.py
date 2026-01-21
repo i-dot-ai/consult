@@ -1,7 +1,6 @@
 from unittest.mock import Mock, patch
 
 import pytest
-
 from backend.consultations.models import SelectedTheme
 from backend.data_pipeline.sync.selected_themes import export_selected_themes_to_s3
 from backend.factories import ConsultationFactory, QuestionFactory

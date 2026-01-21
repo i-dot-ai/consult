@@ -1,8 +1,3 @@
-from django.db import transaction
-from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import ParseError
-from rest_framework.viewsets import ModelViewSet
-
 from backend.consultations import models
 from backend.consultations.api.exceptions import (
     PreconditionFailed,
@@ -10,6 +5,10 @@ from backend.consultations.api.exceptions import (
 )
 from backend.consultations.api.permissions import CanSeeConsultation
 from backend.consultations.api.serializers import SelectedThemeSerializer
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ParseError
+from rest_framework.viewsets import ModelViewSet
 
 
 class SelectedThemeViewSet(ModelViewSet):

@@ -1,6 +1,5 @@
 import django
 import pytest
-
 from backend.consultations.models import Question
 from backend.factories import (
     QuestionFactory,

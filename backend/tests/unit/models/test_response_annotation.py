@@ -1,7 +1,4 @@
 import pytest
-from django.utils import timezone
-from freezegun import freeze_time
-
 from backend.consultations.models import ResponseAnnotation
 from backend.factories import (
     ResponseAnnotationFactory,
@@ -10,6 +7,8 @@ from backend.factories import (
     SelectedThemeFactory,
     UserFactory,
 )
+from django.utils import timezone
+from freezegun import freeze_time
 
 
 @pytest.mark.django_db

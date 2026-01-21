@@ -1,9 +1,8 @@
 import json
 
 import pytest
-from django.urls import reverse
-
 from backend.consultations.models import User
+from django.urls import reverse
 
 
 @pytest.mark.django_db

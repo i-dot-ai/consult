@@ -1,6 +1,5 @@
-from django.core.management import BaseCommand, call_command
-
 from backend.hosting_environment import HostingEnvironment
+from django.core.management import BaseCommand, call_command
 
 
 class Command(BaseCommand):

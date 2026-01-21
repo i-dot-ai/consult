@@ -1,7 +1,6 @@
 import pytest
-from django.core.exceptions import ValidationError
-
 from backend.authentication.models import User
+from django.core.exceptions import ValidationError
 
 
 @pytest.mark.django_db

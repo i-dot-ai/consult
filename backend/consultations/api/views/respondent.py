@@ -1,11 +1,10 @@
-from rest_framework.viewsets import ModelViewSet
-
 from backend.consultations import models
 from backend.consultations.api.permissions import (
     CanSeeConsultation,
     HasDashboardAccess,
 )
 from backend.consultations.api.serializers import RespondentSerializer
+from rest_framework.viewsets import ModelViewSet
 
 
 class RespondentViewSet(ModelViewSet):

@@ -3,9 +3,8 @@ from io import StringIO
 from unittest.mock import patch
 
 import pytest
-from django.core.management import call_command
-
 from backend.consultations import models
+from django.core.management import call_command
 
 
 @pytest.mark.django_db

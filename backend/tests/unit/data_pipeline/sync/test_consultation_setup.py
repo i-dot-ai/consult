@@ -1,7 +1,6 @@
 from unittest.mock import Mock, patch
 
 import pytest
-
 from backend.consultations.models import (
     Consultation,
     Question,

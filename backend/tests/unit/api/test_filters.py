@@ -2,10 +2,9 @@ import math
 from unittest.mock import patch
 
 import pytest
-from django.conf import settings
-
 from backend.consultations.api.filters import ResponseSearchFilter
 from backend.consultations.models import Response
+from django.conf import settings
 
 
 def pad_vector(vector):

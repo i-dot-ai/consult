@@ -2,10 +2,9 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
-from django.urls import reverse
-
 from backend.consultations.models import Consultation, Question, SelectedTheme
 from backend.factories import ConsultationFactory, RespondentFactory, UserFactory
+from django.urls import reverse
 
 
 @pytest.mark.django_db

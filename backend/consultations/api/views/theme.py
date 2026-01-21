@@ -1,11 +1,10 @@
-from rest_framework.viewsets import ReadOnlyModelViewSet
-
 from backend.consultations import models
 from backend.consultations.api.permissions import (
     CanSeeConsultation,
     HasDashboardAccess,
 )
 from backend.consultations.api.serializers import CrossCuttingThemeSerializer
+from rest_framework.viewsets import ReadOnlyModelViewSet
 
 
 class ThemeViewSet(ReadOnlyModelViewSet):

@@ -1,15 +1,14 @@
-from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-
 from backend.consultations import models
 from backend.consultations.api.filters import UserFilter
 from backend.consultations.api.serializers import (
     ConsultationSerializer,
     UserSerializer,
 )
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
 
 class UserViewSet(ModelViewSet):
