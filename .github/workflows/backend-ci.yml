@@ -58,7 +58,7 @@ jobs:
           poetry run python backend/manage.py makemigrations --check
 
       - name: Run app tests
-        run: poetry run pytest
+        run: make test
 
   lint:
     runs-on: ubuntu-latest

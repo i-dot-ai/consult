@@ -40,7 +40,7 @@ serve: ## Run the server and the worker
 
 .PHONY: test
 test: ## Run the tests
-	poetry run pytest tests/ --random-order
+	poetry run pytest backend/tests/ --random-order
 
 .PHONY: test
 test-failed: ## Run all failed tests in the previous run

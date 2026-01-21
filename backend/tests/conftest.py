@@ -577,7 +577,7 @@ def alternative_theme(free_text_response):
 
 @pytest.fixture
 def embedded_responses():
-    with open("./tests/examples/response_search_embeddings.yml", "r") as file:
+    with open("./backend/tests/examples/response_search_embeddings.yml", "r") as file:
         data = yaml.safe_load(file)
 
     question = QuestionFactory(text=data["question"], has_free_text=True)
