@@ -54,8 +54,8 @@ jobs:
 
       - name: Setup app
         run: |
-          cd backend && poetry run python manage.py migrate
-          cd backend && poetry run python manage.py makemigrations --check
+          cd backend && PYTHONPATH=/home/runner/work/consult/consult poetry run python manage.py migrate
+          cd backend && PYTHONPATH=/home/runner/work/consult/consult poetry run python manage.py makemigrations --check
 
       - name: Run app tests
         run: make test
