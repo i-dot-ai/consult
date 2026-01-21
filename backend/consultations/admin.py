@@ -1,5 +1,6 @@
 import json
 
+import boto3
 from django.conf import settings
 from django.contrib import admin, messages
 from django_rq import get_queue
@@ -21,6 +22,9 @@ from backend.consultations.models import (
 )
 from backend.data_pipeline.jobs import (
     DEFAULT_TIMEOUT_SECONDS,
+)
+from consultation_analyser.data_pipeline.sync.candidate_themes import (
+    import_candidate_themes_from_s3,
 )
 
 logger = settings.LOGGER
@@ -97,6 +101,20 @@ def create_small_dummy_consultation(modeladmin, request, queryset):
 @admin.action(description="create large dummy consultation")
 def create_large_dummy_consultation(modeladmin, request, queryset):
     create_dummy_consultation(modeladmin, request, queryset, 10_000)
+
+
+@admin.action(description="import candidate themes from s3")
+def import_candidate_themes_from_s3_job(modeladmin, request, queryset):
+    for consultation in queryset:
+        s3 = boto3.resource("s3")
+        objects = s3.Bucket(settings.AWS_BUCKET_NAME).objects.filter(
+            Prefix="app_data/consultations/{consultation.code}/outputs/sign_off"
+        )
+        run_date = sorted([obj.key for obj in objects])[-1]
+        logger.info(
+            "strating import job with {run_date}  {code}", run_date=run_date, code=consultation.code
+        )
+        import_candidate_themes_from_s3(consultation.code, run_date)
 
 
 class ConsultationAdmin(admin.ModelAdmin):
