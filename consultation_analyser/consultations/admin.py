@@ -76,9 +76,9 @@ def import_candidate_themes_from_s3_job(modeladmin, request, queryset):
         )
         run_date = sorted([obj.key for obj in objects])[-1]
         logger.info(
-            "strating import job with {run_date}  {code}", run_date=run_date, code=consultation.code
+            "starting import job with {run_date}  {code}", run_date=run_date, code=consultation.code
         )
-        import_candidate_themes(consultation.code, run_date)
+        import_candidate_themes.enqueue(consultation.code, run_date)
 
 
 class ConsultationAdmin(admin.ModelAdmin):
