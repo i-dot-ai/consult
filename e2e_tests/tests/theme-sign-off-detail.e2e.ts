@@ -288,6 +288,25 @@ test.describe("draft question", () => {
 
     await deleteSelectedTheme(page, NEW_THEME_NAME);
   })
+
+  test("displays browse text", async ({ page }) => {
+    await expect(page.getByText("Browse AI Generated Themes")).toBeVisible();
+  })
+
+  test("displays all generated themes", async ({ page }) => {
+    await page.waitForLoadState("networkidle");
+    draftQuestionGeneratedThemes.forEach(async theme => {
+      await expect(page.getByRole("heading", { name: theme.name })).toBeVisible();
+    })
+  })
+
+  test("displays level 1 tags for all parent themes", async ({ page, request }) => {
+    await page.waitForLoadState("networkidle");
+
+    const levelOneTags = await page.getByText("Level 1").all();
+
+    expect(levelOneTags).toHaveLength(draftQuestionGeneratedThemes.length);
+  })
 })
 
 const createSelectedTheme = async (page: Page, name: string, description?: string) => {
