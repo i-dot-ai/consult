@@ -260,6 +260,26 @@ test.describe("draft question", () => {
 
     await deleteSelectedTheme(page, NEW_THEME_NAME);
   })
+
+  test(`clicking sign off button reveals sign off confirmation modal`, async ({ page }) => {
+    await page.waitForLoadState("networkidle");
+
+    const NEW_THEME_NAME = "edit-button-reveal-panel-test";
+    await createSelectedTheme(page, NEW_THEME_NAME);
+
+    const signOffButton = page.getByRole("button", { name: `Sign Off Selected Themes (${draftQuestionSelectedThemes.length + 1 })` });
+    expect(signOffButton).toBeVisible();
+
+    await signOffButton.click();
+
+    await expect(page.getByRole("heading", { name: "Confirm Theme Sign Off"})).toBeVisible();
+
+    await page.getByRole("button", { name: "Cancel"}).click();
+
+    await expect(page.getByRole("heading", { name: "Confirm Theme Sign Off"})).not.toBeVisible();
+
+    await deleteSelectedTheme(page, NEW_THEME_NAME);
+  })
 })
 
 const createSelectedTheme = async (page: Page, name: string, description?: string) => {
