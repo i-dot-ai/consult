@@ -3,14 +3,10 @@ line-length = 100
 target-version = 'py312'
 
 [tool.poetry]
-name = "backend"
-version = "0.1.0"
-description = ""
-authors = ["i.AI <i-dot-ai-enquiries@cabinetoffice.gov.uk>"]
-readme = "README.md"
+package-mode=false
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "backend.settings.test"
+DJANGO_SETTINGS_MODULE = "settings.test"
 filterwarnings = [
   "ignore::pydantic.warnings.PydanticDeprecatedSince20",
   "ignore::FutureWarning:.*huggingface_hub.*",
@@ -73,7 +69,7 @@ mypy = "^1.19.1"
 
 [tool.mypy]
 files = '**/*.py'
-exclude = ['^backend/consultations/migrations/']
+exclude = ['^consultations/migrations/']
 
 
 
