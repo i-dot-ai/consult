@@ -11,8 +11,8 @@ import pandas as pd
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 from themefinder import theme_condensation, theme_generation, theme_refinement
-from themefinder.models import HierarchicalClusteringResponse
-from themefinder.theme_clustering_agent import ThemeClusteringAgent, ThemeNode
+from themefinder.advanced_tasks.theme_clustering_agent import ThemeClusteringAgent
+from themefinder.models import HierarchicalClusteringResponse, ThemeNode
 
 
 class ThemeNodeList(BaseModel):
@@ -275,7 +275,7 @@ async def process_consultation(consultation_dir: str, llm) -> str:
 
 if __name__ == "__main__":
     llm = ChatOpenAI(
-        model="gpt-4o",
+        model="gpt-4o-sweden",
         temperature=0,
         openai_api_base=os.environ["LLM_GATEWAY_URL"],
         openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
