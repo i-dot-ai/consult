@@ -23,7 +23,7 @@ from backend.consultations.models import (
 from backend.data_pipeline.jobs import (
     DEFAULT_TIMEOUT_SECONDS,
 )
-from consultation_analyser.data_pipeline.sync.candidate_themes import (
+from backend.data_pipeline.sync.candidate_themes import (
     import_candidate_themes_from_s3,
 )
 
