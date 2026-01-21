@@ -24,9 +24,6 @@ from backend.data_pipeline.jobs import (
     DEFAULT_TIMEOUT_SECONDS,
     import_candidate_themes,
 )
-from backend.data_pipeline.sync.candidate_themes import (
-    import_candidate_themes_from_s3,
-)
 
 logger = settings.LOGGER
 
