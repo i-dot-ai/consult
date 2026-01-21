@@ -3,11 +3,11 @@ from unittest.mock import patch
 
 import pytest
 from freezegun import freeze_time
+from tests.utils import get_sorted_theme_string
 
 from backend import factories
 from backend.consultations import models
 from backend.consultations.export_user_theme import export_user_theme
-from tests.utils import get_sorted_theme_string
 
 
 @pytest.mark.django_db

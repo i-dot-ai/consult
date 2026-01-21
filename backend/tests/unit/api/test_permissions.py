@@ -2,13 +2,13 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
+from tests.utils import build_url
 
 from backend.consultations.api.permissions import (
     CanSeeConsultation,
     HasDashboardAccess,
 )
 from backend.factories import UserFactory
-from tests.utils import build_url
 
 
 @pytest.mark.django_db

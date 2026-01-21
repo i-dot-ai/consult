@@ -1,9 +1,9 @@
 import pytest
 from django.urls import reverse
+from tests.utils import build_url
 
 from backend import factories
 from backend.consultations.urls import urlpatterns
-from tests.utils import build_url
 
 PUBLIC_URL_NAMES = ["git-sha"]
 AUTHENTICATION_URL_NAMES = [

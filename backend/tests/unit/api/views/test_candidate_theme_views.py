@@ -1,9 +1,9 @@
 import pytest
 from django.urls import reverse
+from tests.utils import isoformat
 
 from backend.consultations.models import SelectedTheme
 from backend.factories import CandidateThemeFactory
-from tests.utils import isoformat
 
 
 @pytest.mark.django_db
