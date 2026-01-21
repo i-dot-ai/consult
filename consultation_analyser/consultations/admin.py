@@ -1,4 +1,3 @@
-import boto3
 from django.conf import settings
 from django.contrib import admin, messages
 from simple_history.admin import SimpleHistoryAdmin
@@ -70,15 +69,15 @@ def create_large_dummy_consultation(modeladmin, request, queryset):
 @admin.action(description="import candidate themes from s3")
 def import_candidate_themes_from_s3_job(modeladmin, request, queryset):
     for consultation in queryset:
-        s3 = boto3.resource("s3")
-        objects = s3.Bucket(settings.AWS_BUCKET_NAME).objects.filter(
-            Prefix="app_data/consultations/{consultation.code}/outputs/sign_off"
-        )
-        run_date = sorted([obj.key for obj in objects])[-1]
         logger.info(
-            "starting import job with {run_date}  {code}", run_date=run_date, code=consultation.code
+            "starting import job with {run_date} {code}",
+            run_date=consultation.timestamp,
+            code=consultation.code,
         )
-        import_candidate_themes.enqueue(consultation.code, run_date)
+        try:
+            import_candidate_themes.enqueue(consultation.code, consultation.timestamp)
+        except Exception as e:
+            logger.error("failed to start import_candidate_themes: {error}", error=e)
 
 
 class ConsultationAdmin(admin.ModelAdmin):
