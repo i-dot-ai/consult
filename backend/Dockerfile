@@ -7,8 +7,8 @@ RUN pip install poetry poetry-plugin-bundle
 
 WORKDIR /src
 
-COPY ../pyproject.toml .
-COPY ../poetry.lock .
+COPY ./backend/pyproject.toml .
+COPY ./backend/poetry.lock .
 
 # do this so that poetry bundle can run without the project - can't pass --no-root to bundle
 RUN touch README.md

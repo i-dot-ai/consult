@@ -36,15 +36,15 @@ migrate: ## Apply migrations
 .PHONY: serve
 serve: ## Run the server and the worker
 	docker compose up -d postgres redis
-	poetry run honcho start
+	cd backend && poetry run honcho start
 
 .PHONY: test
 test: ## Run the tests
-	poetry run pytest backend/tests/ --random-order
+	cd backend && poetry run pytest tests/ --random-order
 
 .PHONY: test
 test-failed: ## Run all failed tests in the previous run
-	poetry run pytest --last-failed --random-order
+	cd backend && poetry run pytest --last-failed --random-order
 
 .PHONY: test-end-to-end
 test-end-to-end:
@@ -68,16 +68,16 @@ test-end-to-end:
 
 .PHONY: check-python-code
 check-python-code: ## Check Python code - linting and mypy
-	poetry run ruff check --select I .
-	poetry run ruff check .
+	cd backend && poetry run ruff check --select I .
+	cd backend && poetry run ruff check .
 	# Re-add mypy here and remove from pre-commit once errors fixed
-	# poetry run mypy . --ignore-missing-imports
+	# cd backend && poetry run mypy . --ignore-missing-imports
 
 .PHONY: format-python-code
 format-python-code: ## Format Python code including sorting imports
-	poetry run ruff check --select I . --fix
-	poetry run ruff check . --fix
-	poetry run ruff format .
+	cd backend && poetry run ruff check --select I . --fix
+	cd backend && poetry run ruff check . --fix
+	cd backend && poetry run ruff format .
 
 .PHONY: dummy_data
 dummy_data: ## Generate dummy consultations. Only works in dev
