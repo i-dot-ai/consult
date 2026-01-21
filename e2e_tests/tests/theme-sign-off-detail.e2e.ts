@@ -238,7 +238,7 @@ test.describe("draft question", () => {
   })
 })
 
-const createSelectedTheme = async (page: Page, name?: string, description?: string) => {
+const createSelectedTheme = async (page: Page, name: string, description?: string) => {
   // Reveal add theme panel
   await page.getByRole("button", { name: "Add Custom Theme" }).click();
 
