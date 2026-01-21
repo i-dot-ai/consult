@@ -122,6 +122,12 @@ module "frontend" {
     "EXECUTION_CONTEXT"        = "ecs"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
   })
+  secrets = [
+    for k, v in aws_ssm_parameter.env_secrets : {
+      name      = regex("([^/]+$)", v.arn)[0], # Extract right-most string (param name) after the final slash
+      valueFrom = v.arn
+    }
+  ]
   container_port = local.frontend_port
 
   health_check = {
