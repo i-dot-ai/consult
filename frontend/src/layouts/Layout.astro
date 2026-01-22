@@ -46,11 +46,11 @@ function getPathText(url: string, consultation?: Consultation): string[] {
 
 type AstroGlobalRuntime = {
   url: {
-    pathname: string
-  },
+    pathname: string;
+  };
   params: {
     consultationId?: string;
-  }
+  };
 };
 
 const { pathname } = (Astro as unknown as AstroGlobalRuntime).url;

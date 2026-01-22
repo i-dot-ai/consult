@@ -22,7 +22,7 @@
 
   let {
     subtitle,
-    path=[],
+    path = [],
     isSignedIn,
     isStaff,
     showProcess,
