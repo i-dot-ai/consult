@@ -7,6 +7,7 @@ import Layout from "../../../layouts/Layout.astro";
 import Section from "../../../components/Section/Section.svelte";
 import Title from "../../../components/Title.svelte";
 import Link from "../../../components/Link.svelte";
+import { getThemeSignOffUrl } from "../../../global/routes";
 
 const data = await fetchBackendApi<{ results: Consultation[] }>(
   Astro,
@@ -24,6 +25,7 @@ const consultations = data.results;
           <tr>
             <th class="py-2 pr-2">name</th>
             <th class="py-2 pr-2">created at</th>
+            <th class="py-2 pr-2">actions</th>
           </tr>
         </thead>
         <tbody>
@@ -36,6 +38,13 @@ const consultations = data.results;
                   </Link>
                 </td>
                 <td class="py-2 pr-2">{formatDate(consultation.created_at)}</td>
+                <td class="py-2 pr-2">
+                  <div class="flex flex-col gap-1">
+                    <Link href={getThemeSignOffUrl(consultation.id)}>
+                      View Finalise Themes
+                    </Link>
+                  </div>
+                </td>
               </tr>
             ))
           }
