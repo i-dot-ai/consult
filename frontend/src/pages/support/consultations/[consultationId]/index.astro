@@ -8,7 +8,7 @@ import Section from "../../../../components/Section/Section.svelte";
 import Link from "../../../../components/Link.svelte";
 import Title from "../../../../components/Title.svelte";
 import Button from "../../../../components/inputs/Button/Button.svelte";
-import { getThemeSignOffUrl } from "../../../../global/routes";
+import { getConsultationDetailUrl, getConsultationEvalUrl, getThemeSignOffUrl, getSupportConsultationExportUrl, getSupportConsultationDeleteUrl } from "../../../../global/routes";
 
 const { consultationId } = Astro.params;
 
@@ -32,7 +32,7 @@ let questions = await fetchBackendApi<{ results: Question[] }>(
     <Title level={1} text={consultation.title} />
     <ul class="m-0 list-none space-y-2 p-0">
       <li>
-        <Link href={`/evaluations/${consultationId}/questions`}
+        <Link href={getConsultationEvalUrl(consultationId)}
           >View on frontend (question review)</Link
         >
       </li>
@@ -42,17 +42,17 @@ let questions = await fetchBackendApi<{ results: Question[] }>(
         >
       </li>
       <li>
-        <Link href={`/consultations/${consultationId}`}
+        <Link href={getConsultationDetailUrl(consultationId)}
           >View on frontend (dashboard)</Link
         >
       </li>
       <li>
-        <Link href={`/support/consultations/${consultationId}/export`}
+        <Link href={getSupportConsultationExportUrl(consultationId)}
           >Export theme mapping audit data for this consultation</Link
         >
       </li>
       <li>
-        <Link href={`/support/consultations/${consultationId}/delete`}
+        <Link href={getSupportConsultationDeleteUrl(consultationId)}
           >Delete this consultation</Link
         >
       </li>

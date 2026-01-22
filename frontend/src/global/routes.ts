@@ -17,6 +17,8 @@ export enum Suffixes {
   CandidateThemes = "candidate-themes",
   Select = "select",
   ShowNext = "show-next",
+  Delete = "delete",
+  Export = "export",
 }
 
 export enum Routes {
@@ -56,7 +58,12 @@ export const getConsultationDetailUrl = (consultationId: string) => {
 export const getConsultationAnalysisUrl = (consultationId: string) => {
   return urlJoin(Routes.Consultations, consultationId, Suffixes.Analysis, "/");
 };
-
+export const getSupportConsultationDeleteUrl = (consultationId: string) => {
+  return urlJoin(Routes.SupportConsultations, consultationId, Suffixes.Delete);
+};
+export const getSupportConsultationExportUrl = (consultationId: string) => {
+  return urlJoin(Routes.SupportConsultations, consultationId, Suffixes.Export);
+};
 export const getThemeSignOffUrl = (consultationId: string) => {
   return urlJoin(Routes.Consultations, consultationId, Suffixes.ThemeSignOff);
 };
