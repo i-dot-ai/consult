@@ -37,13 +37,13 @@ let questions = await fetchBackendApi<{ results: Question[] }>(
         >
       </li>
       <li>
-        <Link href={`/consultations/${consultationId}`}
-          >View on frontend (dashboard)</Link
+        <Link href={getThemeSignOffUrl(consultationId)}
+          >View finalise themes</Link
         >
       </li>
       <li>
-        <Link href={getThemeSignOffUrl(consultationId)}
-          >View finalise themes</Link
+        <Link href={`/consultations/${consultationId}`}
+          >View on frontend (dashboard)</Link
         >
       </li>
       <li>
