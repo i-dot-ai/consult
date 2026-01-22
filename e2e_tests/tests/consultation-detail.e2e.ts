@@ -7,21 +7,21 @@ const SECTION_TITLES = [
   "All consultation questions",
 ]
 
-let exampleConsultation;
-let exampleConsultationQuestions;
+let consultation;
+let consultationQuestions;
 
 test.beforeAll(async ({ request }) => {
   const consultationsResponse = await request.get(`/api/consultations/?scope=assigned`);
   const consultationsResponseBody = await consultationsResponse.json();
-  exampleConsultation = consultationsResponseBody.results[0];
+  consultation = consultationsResponseBody.results[0];
 
-  const questionsResponse = await request.get(`/api/consultations/${exampleConsultation.id}/questions/`);
+  const questionsResponse = await request.get(`/api/consultations/${consultation.id}/questions/`);
   const questionsResponseBody = await questionsResponse.json();
-  exampleConsultationQuestions = questionsResponseBody.results;
+  consultationQuestions = questionsResponseBody.results;
 });
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(`/consultations/${exampleConsultation.id}`);
+  await page.goto(`/consultations/${consultation.id}`);
 })
 
 test(`initially displays loading messages`, async ({ page }) => {
@@ -44,7 +44,7 @@ test(`displays header sub path text`, async ({ page }) => {
 test(`displays questions`, async ({ page }) => {
   await page.waitForLoadState('networkidle');
 
-  exampleConsultationQuestions.forEach(question => {
+  consultationQuestions.forEach(question => {
     const questionText = `Q${question.number}: ${question.question_text}`;
     expect(page.getByText(questionText, { exact: true })).toBeVisible();
   })
@@ -70,7 +70,7 @@ test(`favourites and unfavourites a question if button is clicked`, async ({ pag
   const firstFavButton = favButtons.at(0);
 
   // button is clicked, localStorage value has the question ID in an array
-  const expectedValue = `["${exampleConsultationQuestions.at(0).id}"]`;
+  const expectedValue = `["${consultationQuestions.at(0).id}"]`;
   await firstFavButton!.click();
   await page.waitForFunction((expectedValue) => {
     return localStorage.getItem("favouritedQuestions") === expectedValue;
