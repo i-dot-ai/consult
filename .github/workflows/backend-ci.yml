@@ -49,9 +49,11 @@ jobs:
         working-directory: ./backend
 
       - name: Setup app
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: |
-          PYTHONPATH=/home/runner/work/consult/consult poetry run python manage.py migrate
-          PYTHONPATH=/home/runner/work/consult/consult poetry run python manage.py makemigrations --check
+          poetry run python manage.py migrate
+          poetry run python manage.py makemigrations --check
         working-directory: ./backend
 
       - name: Run app tests
