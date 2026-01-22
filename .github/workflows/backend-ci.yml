@@ -4,25 +4,17 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - ".github/**"
-      - ".vscode/**"
-      - "docs/**"
-      - "e2e_tests/**"
-      - "frontend/**"
-      - "terraform/**"
-      - "*.md"
+    paths:
+      - "backend/**"
+      - "Makefile"
+      - ".github/workflows/backend-ci.yml"
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - ".github/**"
-      - ".vscode/**"
-      - "docs/**"
-      - "e2e_tests/**"
-      - "frontend/**"
-      - "terraform/**"
-      - "*.md"
+    paths:
+      - "backend/**"
+      - "Makefile"
+      - ".github/workflows/backend-ci.yml"
   workflow_dispatch:
 
 
@@ -51,7 +43,7 @@ jobs:
         run: |
           python -m pip install --upgrade poetry
         working-directory: .
-      
+
       - name: install dependencies
         run: poetry install --with development
         working-directory: ./backend
@@ -74,7 +66,7 @@ jobs:
 
       - name: Install Poetry
         run: python -m pip install --upgrade poetry
-      
+
       - name: Install dependencies
         run: poetry install --with development
         working-directory: ./backend
