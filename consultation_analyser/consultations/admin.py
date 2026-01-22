@@ -16,6 +16,7 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
+from consultation_analyser.consultations.services.clone import clone_consultation
 from consultation_analyser.data_pipeline.jobs import (
     import_candidate_themes,
 )
@@ -80,11 +81,30 @@ def import_candidate_themes_from_s3_job(modeladmin, request, queryset):
             logger.error("failed to start import_candidate_themes: {error}", error=e)
 
 
+@admin.action(description="Clone consultation")
+def create_cloned_consultation(modeladmin, request, queryset):
+    if queryset.count() != 1:
+        messages.error(request, "Please select exactly one consultation to clone")
+        return
+
+    consultation = queryset.first()
+    try:
+        cloned = clone_consultation(consultation)
+        messages.success(
+            request,
+            f"Successfully cloned '{consultation.title}' as '{cloned.title}'",
+        )
+    except Exception as e:
+        logger.exception(f"Error cloning consultation {consultation.id}: {e}")
+        messages.error(request, f"Failed to clone consultation: {e}")
+
+
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [
         create_small_dummy_consultation,
         create_large_dummy_consultation,
         import_candidate_themes_from_s3_job,
+        create_cloned_consultation,
     ]
 
 
