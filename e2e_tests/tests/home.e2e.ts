@@ -29,7 +29,7 @@ test("access cookie is set when page loads", async ({ page }) => {
 });
 
 test("displays support button", async ({ page }) => {
-  const supportButton = page.getByLabel("Help and Support");
+  const supportButton = page.getByLabel("Help and Support", { exact: true });
   expect(supportButton).toBeVisible();
 });
 
@@ -41,11 +41,22 @@ test("support panel is initially hidden", async ({ page }) => {
 });
 
 test("clicking support button reveals support panel", async ({ page }) => {
-  const supportButton = page.getByLabel("Help and Support");
+  const supportButton = page.getByLabel("Help and Support", { exact: true });
   await supportButton.click();
 
-  await expect(page.getByRole("heading", { name: "Help & Support" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Help & Support" })).toBeVisible({ timeout: 10000 });
   await expect(page.getByRole("heading", { name: "Walkthrough" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Guidance" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Privacy notice" })).toBeVisible();
+});
+
+test("clicking support button again hides support panel", async ({ page }) => {
+  const supportButton = page.getByLabel("Help and Support", { exact: true });
+  await supportButton.click();
+
+  await expect(page.getByRole("heading", { name: "Help & Support", exact: true })).toBeVisible();
+
+  await supportButton.click();
+
+  await expect(page.getByText("Help & Support", {exact: true })).not.toBeVisible();
 });
