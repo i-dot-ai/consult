@@ -51,6 +51,7 @@
     ])}
   >
     <Button
+      ariaLabel="Help and Support"
       variant="ghost"
       highlighted={isOpen}
       handleClick={() => {
