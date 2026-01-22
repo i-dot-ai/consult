@@ -24,9 +24,6 @@ test.beforeAll(async ({ request }) => {
 });
 
 test.describe("signed off question", () => {
-  // // Uncomment to run tests serially
-  // test.describe.configure({ mode: "serial" });
-
   test.beforeEach(async ({ page, request }) => {
 
     const themesResponse = await request.get(`/api/consultations/${consultation.id}/questions/${signedOffQuestion.id}/selected-themes/`);
