@@ -96,20 +96,20 @@
   );
 
   let answersToDisplay = $derived(
-    ($answersStore.data?.all_respondents || []).map(answer => {
+    ($answersStore.data?.all_respondents || []).map((answer) => {
       const question = $questionsStore.data?.results?.find(
         (question) => question.id === answer.question_id,
       );
 
-      return ({
+      return {
         ...answer,
         question: {
           title: question?.question_text || "",
           number: question?.number || 0,
-        }
-      });
-    })
-  )
+        },
+      };
+    }),
+  );
 </script>
 
 <section>
