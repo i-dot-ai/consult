@@ -8,6 +8,7 @@ import Section from "../../../../components/Section/Section.svelte";
 import Link from "../../../../components/Link.svelte";
 import Title from "../../../../components/Title.svelte";
 import Button from "../../../../components/inputs/Button/Button.svelte";
+import { getThemeSignOffUrl } from "../../../../global/routes";
 
 const { consultationId } = Astro.params;
 
@@ -38,6 +39,11 @@ let questions = await fetchBackendApi<{ results: Question[] }>(
       <li>
         <Link href={`/consultations/${consultationId}`}
           >View on frontend (dashboard)</Link
+        >
+      </li>
+      <li>
+        <Link href={getThemeSignOffUrl(consultationId)}
+          >View finalise themes</Link
         >
       </li>
       <li>
