@@ -5,9 +5,15 @@ import RespondentDetail from "../../../../components/screens/RespondentDetail.sv
 import Section from "../../../../components/Section/Section.svelte";
 import type { AstroGlobalRuntime } from "../../../../global/types";
 
-const { consultationId, respondentId } = (Astro as unknown as AstroGlobalRuntime).params;
-const themefinderId = (Astro as unknown as AstroGlobalRuntime).url.searchParams.get("themefinder_id");
-const questionId = (Astro as unknown as AstroGlobalRuntime).url.searchParams.get("question_id");
+const { consultationId, respondentId } = (
+  Astro as unknown as AstroGlobalRuntime
+).params;
+const themefinderId = (
+  Astro as unknown as AstroGlobalRuntime
+).url.searchParams.get("themefinder_id");
+const questionId = (
+  Astro as unknown as AstroGlobalRuntime
+).url.searchParams.get("question_id");
 
 function parseThemefinderId(themefinderId: string | null): number {
   const parsedId = parseInt(themefinderId || "");

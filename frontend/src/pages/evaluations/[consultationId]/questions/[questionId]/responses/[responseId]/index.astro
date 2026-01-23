@@ -18,10 +18,14 @@ import {
   Routes,
 } from "../../../../../../../global/routes";
 
-const { consultationId, questionId, responseId } = (Astro as unknown as AstroGlobalRuntime).params;
+const { consultationId, questionId, responseId } = (
+  Astro as unknown as AstroGlobalRuntime
+).params;
 
 if (!responseId || !questionId || !consultationId) {
-  return (Astro as unknown as AstroGlobalRuntime).redirect(Routes.SupportConsultations);
+  return (Astro as unknown as AstroGlobalRuntime).redirect(
+    Routes.SupportConsultations,
+  );
 }
 
 let question = await fetchBackendApi<Question>(

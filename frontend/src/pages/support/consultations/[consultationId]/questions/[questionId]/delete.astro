@@ -16,10 +16,13 @@ import {
 } from "../../../../../../global/routes";
 import DeleteQuestionForm from "../../../../../../components/screens/DeleteQuestionForm.svelte";
 
-const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime).params;
+const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
+  .params;
 
 if (!consultationId || !questionId) {
-  return (Astro as unknown as AstroGlobalRuntime).redirect(Routes.SupportConsultations);
+  return (Astro as unknown as AstroGlobalRuntime).redirect(
+    Routes.SupportConsultations,
+  );
 }
 
 let consultation = await fetchBackendApi<ConsultationResponse>(

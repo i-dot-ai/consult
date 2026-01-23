@@ -5,7 +5,11 @@ import Text from "../../../../components/Text/Text.svelte";
 import Title from "../../../../components/Title.svelte";
 import ExportConsultationForm from "../../../../components/screens/ExportConsultationForm.svelte";
 import { fetchBackendApi } from "../../../../global/api";
-import type { AstroGlobalRuntime, ConsultationResponse, Question } from "../../../../global/types";
+import type {
+  AstroGlobalRuntime,
+  ConsultationResponse,
+  Question,
+} from "../../../../global/types";
 import {
   getApiConsultationUrl,
   getApiQuestionsUrl,
@@ -15,7 +19,9 @@ import {
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
 if (!consultationId) {
-  return (Astro as unknown as AstroGlobalRuntime).redirect(Routes.SupportConsultations);
+  return (Astro as unknown as AstroGlobalRuntime).redirect(
+    Routes.SupportConsultations,
+  );
 }
 
 let consultation = await fetchBackendApi<ConsultationResponse>(

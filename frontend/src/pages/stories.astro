@@ -5,7 +5,9 @@ import Title from "../components/Title.svelte";
 import StoriesDisplay from "../components/Stories/StoriesDisplay.svelte";
 import type { AstroGlobalRuntime } from "../global/types";
 
-const selected = (Astro as unknown as AstroGlobalRuntime).url.searchParams.get("selected") || "";
+const selected =
+  (Astro as unknown as AstroGlobalRuntime).url.searchParams.get("selected") ||
+  "";
 ---
 
 <Layout>

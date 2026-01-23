@@ -9,7 +9,8 @@ import Section from "../../../../components/Section/Section.svelte";
 import ThemeSignOffDetail from "../../../../components/screens/ThemeSignOffDetail.svelte";
 import ThemeSignOffDetailCompleted from "../../../../components/screens/ThemeSignOffDetailCompleted.svelte";
 
-const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime).params;
+const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
+  .params;
 const question: Question = await fetchBackendApi(
   Astro,
   `/api/consultations/${consultationId}/questions/${questionId}`,

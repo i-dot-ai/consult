@@ -10,6 +10,9 @@ const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
 <Layout>
   <Section>
-    <ThemeSignOffArchive client:only="svelte" consultationId={consultationId || ""} />
+    <ThemeSignOffArchive
+      client:only="svelte"
+      consultationId={consultationId || ""}
+    />
   </Section>
 </Layout>
