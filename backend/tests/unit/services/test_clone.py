@@ -1,6 +1,6 @@
 import pytest
 
-from consultation_analyser.consultations.models import (
+from backend.consultations.models import (
     CandidateTheme,
     CrossCuttingTheme,
     DemographicOption,
@@ -12,8 +12,8 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
-from consultations.services import clone_consultation
-from consultation_analyser.factories import (
+from backend.consultations.services.clone import clone_consultation
+from backend.factories import (
     CandidateThemeFactory,
     ConsultationFactory,
     MultiChoiceAnswerFactory,
