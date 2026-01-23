@@ -132,7 +132,9 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         """
         Get queryset of non-empty responses for this question.
         """
-        return self.response_set.filter(free_text__isnull=False).exclude(free_text="")
+        return self.response_set.filter(free_text__isnull=False).exclude(
+            free_text__in=["", "Not Provided"]
+        )
 
     def sample_responses(self, num_to_keep: int) -> SampleResult:
         """

@@ -53,17 +53,17 @@ def test_question_configuration(free_text_question):
 
 
 @pytest.mark.django_db
-def test_get_non_empty_responses():
-    consultation = ConsultationFactory()
-    question = QuestionFactory(consultation=consultation)
+def test_get_non_empty_responses(consultation, free_text_question):
     respondent1 = RespondentFactory(consultation=consultation)
     respondent2 = RespondentFactory(consultation=consultation)
     respondent3 = RespondentFactory(consultation=consultation)
-    ResponseFactory(question=question, respondent=respondent1, free_text="Has text")
-    ResponseFactory(question=question, respondent=respondent2, free_text="")
-    ResponseFactory(question=question, respondent=respondent3, free_text=None)
+    respondent4 = RespondentFactory(consultation=consultation)
+    ResponseFactory(question=free_text_question, respondent=respondent1, free_text="Has text")
+    ResponseFactory(question=free_text_question, respondent=respondent2, free_text="Not Provided")
+    ResponseFactory(question=free_text_question, respondent=respondent3, free_text="")
+    ResponseFactory(question=free_text_question, respondent=respondent4, free_text=None)
 
-    result = question.get_non_empty_responses()
+    result = free_text_question.get_non_empty_responses()
 
     assert result.count() == 1
 
