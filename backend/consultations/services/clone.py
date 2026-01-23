@@ -1,6 +1,10 @@
 from uuid import UUID
 
-from consultation_analyser.consultations.models import (
+from django.conf import settings
+from django.db import transaction
+from django.db.models import QuerySet
+
+from backend.consultations.models import (
     CandidateTheme,
     Consultation,
     CrossCuttingTheme,
@@ -13,9 +17,6 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
-from django.conf import settings
-from django.db import transaction
-from django.db.models import QuerySet
 
 logger = settings.LOGGER
 
