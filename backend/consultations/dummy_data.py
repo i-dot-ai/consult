@@ -135,7 +135,7 @@ def create_response_chosen_options(response, multiple_choice_options):
         multiple_choice_options,
         k=random.randint(1, len(multiple_choice_options)),
     )
-    answers = MultiChoiceAnswer.objects.filter(text__in=chosen_options)
+    answers = MultiChoiceAnswer.objects.filter(question=response.question, text__in=chosen_options)
     response.chosen_options.add(*answers)
 
 

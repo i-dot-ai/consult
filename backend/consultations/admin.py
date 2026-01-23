@@ -1,9 +1,5 @@
-import json
-
-import boto3
 from django.conf import settings
 from django.contrib import admin, messages
-from django_rq import get_queue
 from simple_history.admin import SimpleHistoryAdmin
 
 from backend.consultations.dummy_data import create_dummy_consultation_from_yaml_job
@@ -20,42 +16,13 @@ from backend.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
+from backend.consultations.services.clone import clone_consultation
 from backend.data_pipeline.jobs import (
     DEFAULT_TIMEOUT_SECONDS,
     import_candidate_themes,
 )
 
 logger = settings.LOGGER
-
-
-def _reimport_demographics(consultation_id):
-    respondents = Respondent.objects.filter(consultation_id=consultation_id).extra(
-        select={"old_demographics": "old_demographics"}
-    )
-
-    for respondent in respondents:
-        demographics = []
-        if hasattr(respondent, "old_demographics") and respondent.old_demographics:
-            old_demographics = json.loads(respondent.old_demographics)
-            if not isinstance(old_demographics, dict):
-                raise ValueError(f"expected dict but got {type(old_demographics)}")
-
-            for name, value in old_demographics.items():
-                if name and value:
-                    do, _ = DemographicOption.objects.get_or_create(
-                        consultation=respondent.consultation,
-                        field_name=name,
-                        field_value=value,
-                    )
-                    demographics.append(do)
-            respondent.demographics.set(demographics)
-
-
-@admin.action(description="re import demographic options")
-def reimport_demographics(modeladmin, request, queryset):
-    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
-    for consultation in queryset:
-        queue.enqueue(_reimport_demographics, consultation.id)
 
 
 class ResponseAdmin(admin.ModelAdmin):
@@ -104,22 +71,41 @@ def create_large_dummy_consultation(modeladmin, request, queryset):
 @admin.action(description="import candidate themes from s3")
 def import_candidate_themes_from_s3_job(modeladmin, request, queryset):
     for consultation in queryset:
-        s3 = boto3.resource("s3")
-        objects = s3.Bucket(settings.AWS_BUCKET_NAME).objects.filter(
-            Prefix="app_data/consultations/{consultation.code}/outputs/sign_off"
-        )
-        run_date = sorted([obj.key for obj in objects])[-1]
         logger.info(
-            "strating import job with {run_date}  {code}", run_date=run_date, code=consultation.code
+            "starting import job with {run_date} {code}",
+            run_date=consultation.timestamp,
+            code=consultation.code,
         )
-        import_candidate_themes(consultation.code, run_date)
+        try:
+            import_candidate_themes.enqueue(consultation.code, consultation.timestamp)
+        except Exception as e:
+            logger.error("failed to start import_candidate_themes: {error}", error=e)
+
+
+@admin.action(description="Clone consultation")
+def create_cloned_consultation(modeladmin, request, queryset):
+    if queryset.count() != 1:
+        messages.error(request, "Please select exactly one consultation to clone")
+        return
+
+    consultation = queryset.first()
+    try:
+        cloned = clone_consultation(consultation)
+        messages.success(
+            request,
+            f"Successfully cloned '{consultation.title}' as '{cloned.title}'",
+        )
+    except Exception as e:
+        logger.exception(f"Error cloning consultation {consultation.id}: {e}")
+        messages.error(request, f"Failed to clone consultation: {e}")
 
 
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [
-        reimport_demographics,
         create_small_dummy_consultation,
         create_large_dummy_consultation,
+        import_candidate_themes_from_s3_job,
+        create_cloned_consultation,
     ]
 
 
