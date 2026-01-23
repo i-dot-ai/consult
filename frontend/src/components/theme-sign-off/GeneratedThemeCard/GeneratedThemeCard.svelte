@@ -3,7 +3,7 @@
 
   import { slide, fly } from "svelte/transition";
 
-  import type { GeneratedTheme } from "../../../global/types";
+  import type { AnswersResponse, GeneratedTheme } from "../../../global/types";
   import { createFetchStore, type MockFetch } from "../../../global/stores";
   import { getApiAnswersUrl } from "../../../global/routes";
 
@@ -44,7 +44,7 @@
     answersMock,
   }: Props = $props();
 
-  const answersStore = createFetchStore({ mockFetch: answersMock });
+  const answersStore = createFetchStore<AnswersResponse>({ mockFetch: answersMock });
 
   let expanded = $derived(expandedThemes.includes(theme.id));
   let showAnswers = $state(false);
