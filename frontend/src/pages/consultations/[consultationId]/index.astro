@@ -3,12 +3,13 @@ import Layout from "../../../layouts/Layout.astro";
 
 import ConsultationDetail from "../../../components/screens/ConsultationDetail.svelte";
 import Section from "../../../components/Section/Section.svelte";
+import type { AstroGlobalRuntime } from "../../../global/types";
 
-const { consultationId } = Astro.params;
+const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 ---
 
 <Layout>
   <Section>
-    <ConsultationDetail client:load consultationId={consultationId} />
+    <ConsultationDetail client:load consultationId={consultationId || ""} />
   </Section>
 </Layout>

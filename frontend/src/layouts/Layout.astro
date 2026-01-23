@@ -7,7 +7,7 @@ import FloatingPanelContent from "../components/navigation/FloatingPanelContent/
 
 import { fetchBackendApi } from "../global/api";
 import { getApiConsultationUrl, Routes, Suffixes } from "../global/routes";
-import type { ConsultationStage } from "../global/types";
+import type { AstroGlobalRuntime, Consultation } from "../global/types";
 
 function isConsultationSubUrl(url: string): boolean {
   const consultationUrlRe = /\/consultations\/.*\S.*/;
@@ -16,27 +16,40 @@ function isConsultationSubUrl(url: string): boolean {
 function isThemeSignOffUrl(url: string): boolean {
   return url.includes(Suffixes.ThemeSignOff);
 }
+function isEvaluationsUrl(url: string): boolean {
+  return url.startsWith(Routes.Evaluations);
+}
 function isDashboardUrl(url: string): boolean {
+  if (url === Routes.Consultations) {
+    return false;
+  }
   return (
     url.includes(Suffixes.Consultations) && !url.includes(Suffixes.ThemeSignOff)
   );
 }
-function getPathText(url: string): string {
+function getPathText(url: string, consultation?: Consultation): string[] {
+  const parts = [];
+
+  if (consultation) {
+    parts.push(consultation.title);
+  }
+
   if (isThemeSignOffUrl(url)) {
-    return "Theme Sign Off";
+    parts.push("Theme Sign Off");
+  } else if (isDashboardUrl(url)) {
+    parts.push("Dashboard");
+  } else if (isEvaluationsUrl(url)) {
+    parts.push("Evaluations");
   }
-  if (isDashboardUrl(url)) {
-    return "Dashboard";
-  }
-  return "";
+  return parts;
 }
 
-const pathname = Astro.url.pathname;
-const { consultationId } = Astro.params;
+const { pathname } = (Astro as unknown as AstroGlobalRuntime).url;
+const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
 let isStaff: boolean = false;
 let email: string | unknown = null;
-let consultationStage;
+let consultation: Consultation | undefined;
 let showProcess: boolean = isConsultationSubUrl(pathname);
 try {
   const data = await fetchBackendApi<{ is_staff: boolean; email: string }>(
@@ -52,11 +65,10 @@ try {
 
 if (consultationId) {
   try {
-    const data = await fetchBackendApi<{ stage: ConsultationStage }>(
+    consultation = await fetchBackendApi<Consultation>(
       Astro,
       getApiConsultationUrl(consultationId),
     );
-    consultationStage = data.stage;
   } catch {
     console.log("failed to retrieve consultation data");
   }
@@ -89,10 +101,10 @@ const CSP_RULES = [
         client:load
         isStaff={isStaff}
         isSignedIn={Boolean(email)}
-        path={getPathText(pathname)}
+        path={getPathText(pathname, consultation)}
         showProcess={showProcess}
         consultationId={consultationId}
-        consultationStage={consultationStage}
+        consultationStage={consultation?.stage}
       />
 
       <main class="grow">
