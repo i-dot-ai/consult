@@ -18,7 +18,6 @@ from backend.consultations.models import (
 )
 from backend.consultations.services.clone import clone_consultation
 from backend.data_pipeline.jobs import (
-    DEFAULT_TIMEOUT_SECONDS,
     import_candidate_themes,
 )
 

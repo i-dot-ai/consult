@@ -12,7 +12,7 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
-from consultation_analyser.consultations.services.clone import clone_consultation
+from consultations.services import clone_consultation
 from consultation_analyser.factories import (
     CandidateThemeFactory,
     ConsultationFactory,
