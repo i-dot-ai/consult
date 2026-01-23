@@ -15,7 +15,7 @@
 
   export let tabs: Tab[] = [];
   export let value: string = "";
-  export let handleChange = () => {};
+  export let handleChange: (newValue: string) => void = () => {};
   export let title: string = "";
   export let variant: "default" | "dots" = "default";
 

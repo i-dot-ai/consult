@@ -65,7 +65,7 @@
   export let setUnseenResponses = () => {};
 
   export let flaggedOnly: boolean = false;
-  export let setFlaggedOnly = () => {};
+  export let setFlaggedOnly: (newVal: boolean) => void = () => {};
 
   export let anyFilterApplied: boolean = false;
   export let resetFilters: () => void = () => {};
@@ -277,8 +277,9 @@
                     <div slot="panel" class="w-full bg-white p-4 shadow-lg">
                       <SearchableSelect
                         handleChange={(option: SearchableSelectOption) => {
-                          if (option.value?.value) {
-                            themeFilters.update(option.value.value);
+                          const newValue = (option.value as { value: string })?.value;
+                          if (newValue) {
+                            themeFilters.update(newValue);
                           }
                         }}
                         options={themes.map((theme) => ({
@@ -374,7 +375,7 @@
                           multiAnswers={answer.multiple_choice_answer}
                           evidenceRich={answer.evidenceRich}
                           text={answer.free_text_answer_text}
-                          themes={answer.themes}
+                          themes={answer.themes || []}
                           themeOptions={themes}
                           highlightText={searchValue}
                           isFlagged={answer.is_flagged}
