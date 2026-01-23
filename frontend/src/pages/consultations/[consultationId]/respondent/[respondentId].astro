@@ -3,10 +3,11 @@ import Layout from "../../../../layouts/Layout.astro";
 
 import RespondentDetail from "../../../../components/screens/RespondentDetail.svelte";
 import Section from "../../../../components/Section/Section.svelte";
+import type { AstroGlobalRuntime } from "../../../../global/types";
 
-const { consultationId, respondentId } = Astro.params;
-const themefinderId = Astro.url.searchParams.get("themefinder_id");
-const questionId = Astro.url.searchParams.get("question_id");
+const { consultationId, respondentId } = (Astro as unknown as AstroGlobalRuntime).params;
+const themefinderId = (Astro as unknown as AstroGlobalRuntime).url.searchParams.get("themefinder_id");
+const questionId = (Astro as unknown as AstroGlobalRuntime).url.searchParams.get("question_id");
 
 function parseThemefinderId(themefinderId: string | null): number {
   const parsedId = parseInt(themefinderId || "");
@@ -18,9 +19,9 @@ function parseThemefinderId(themefinderId: string | null): number {
   <Section>
     <RespondentDetail
       client:load
-      consultationId={consultationId}
-      questionId={questionId}
-      respondentId={respondentId}
+      consultationId={consultationId || ""}
+      questionId={questionId || ""}
+      respondentId={respondentId || ""}
       themefinderId={parseThemefinderId(themefinderId)}
     />
   </Section>

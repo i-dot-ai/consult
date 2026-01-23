@@ -7,7 +7,7 @@ import FloatingPanelContent from "../components/navigation/FloatingPanelContent/
 
 import { fetchBackendApi } from "../global/api";
 import { getApiConsultationUrl, Routes, Suffixes } from "../global/routes";
-import type { Consultation } from "../global/types";
+import type { AstroGlobalRuntime, Consultation } from "../global/types";
 
 function isConsultationSubUrl(url: string): boolean {
   const consultationUrlRe = /\/consultations\/.*\S.*/;
@@ -44,14 +44,6 @@ function getPathText(url: string, consultation?: Consultation): string[] {
   return parts;
 }
 
-type AstroGlobalRuntime = {
-  url: {
-    pathname: string;
-  };
-  params: {
-    consultationId?: string;
-  };
-};
 
 const { pathname } = (Astro as unknown as AstroGlobalRuntime).url;
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;

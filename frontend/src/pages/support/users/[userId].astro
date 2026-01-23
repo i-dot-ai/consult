@@ -1,6 +1,6 @@
 ---
 import { fetchBackendApi } from "../../../global/api";
-import type { ConsultationResponse } from "../../../global/types";
+import type { AstroGlobalRuntime, ConsultationResponse } from "../../../global/types";
 
 import Layout from "../../../layouts/Layout.astro";
 import Section from "../../../components/Section/Section.svelte";
@@ -8,11 +8,12 @@ import Link from "../../../components/Link.svelte";
 import Title from "../../../components/Title.svelte";
 import EditUser from "../../../components/screens/EditUserForm/EditUser.svelte";
 import { getApiUserConsultations } from "../../../global/routes";
+import { Routes } from "../../../global/routes";
 
-const { userId } = Astro.params;
+const { userId } = (Astro as unknown as AstroGlobalRuntime).params;
 
 if (!userId) {
-  return Astro.redirect("/support/users");
+  return (Astro as unknown as AstroGlobalRuntime).redirect(Routes.SupportUsers);
 }
 
 // Fetch all consultations to filter by this user

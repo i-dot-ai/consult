@@ -1,6 +1,7 @@
 ---
 import { fetchBackendApi } from "../../../../../../global/api";
 import type {
+  AstroGlobalRuntime,
   ConsultationResponse,
   User,
 } from "../../../../../../global/types";
@@ -15,10 +16,10 @@ import {
 } from "../../../../../../global/routes";
 import RemoveUserFromConsultationForm from "../../../../../../components/screens/RemoveUserFromConsultationForm.svelte";
 
-const { consultationId, userId } = Astro.params;
+const { consultationId, userId } = (Astro as unknown as AstroGlobalRuntime).params;
 
 if (!consultationId || !userId) {
-  return Astro.redirect(Routes.SupportConsultations);
+  return (Astro as unknown as AstroGlobalRuntime).redirect(Routes.SupportConsultations);
 }
 
 let consultation = await fetchBackendApi<ConsultationResponse>(

@@ -3,8 +3,9 @@ import Layout from "../layouts/Layout.astro";
 import Section from "../components/Section/Section.svelte";
 import Title from "../components/Title.svelte";
 import StoriesDisplay from "../components/Stories/StoriesDisplay.svelte";
+import type { AstroGlobalRuntime } from "../global/types";
 
-const selected = Astro.url.searchParams.get("selected") || "";
+const selected = (Astro as unknown as AstroGlobalRuntime).url.searchParams.get("selected") || "";
 ---
 
 <Layout>
