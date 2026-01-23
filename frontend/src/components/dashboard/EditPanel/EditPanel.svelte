@@ -23,7 +23,8 @@
   function removeTheme(id: string) {
     stagedThemes = stagedThemes.filter((theme) => theme.id !== id);
   }
-  function addTheme(option: SearchableSelectOption) {
+  function addTheme(option: SearchableSelectOption<string>) {
+    console.log(option)
     if (stagedThemes.find((theme) => theme.id === option.value)) {
       return;
     }
@@ -31,7 +32,7 @@
     stagedThemes = [
       ...stagedThemes,
       {
-        id: option.value,
+        id: option.value as string,
         name: option.label,
         description: option.description || "",
       },
@@ -77,7 +78,7 @@
     themeOptions: ResponseTheme[];
     evidenceRich: boolean;
     resetData: () => void;
-    setEditing: () => void;
+    setEditing: (newValue: boolean) => void;
     updateAnswerMock?: MockFetch;
   }
 
@@ -167,9 +168,12 @@
             disabled: false,
           }))}
           selectedValues={stagedThemes.map((theme) => theme.id)}
-          handleChange={(option: SearchableSelectOption) => {
-            if (option.value) {
-              addTheme(option.value);
+          handleChange={(option: SearchableSelectOption<
+            SearchableSelectOption<string>
+          >) => {
+            const newTheme = option.value;
+            if (newTheme) {
+              addTheme(newTheme);
             }
           }}
         />
