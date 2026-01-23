@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.contrib import admin, messages
+from django.http import HttpResponseRedirect
+from django.urls import path, reverse
 from simple_history.admin import SimpleHistoryAdmin
 
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml_job
@@ -146,6 +148,51 @@ class QuestionAdmin(admin.ModelAdmin):
     ]
     inlines = [SelectedThemeInline, CandidateThemeInline, MultiChoiceAnswerInline]
     actions = [set_has_free_text_false, reset_sign_off]
+    change_form_template = "admin/consultations/question/change_form.html"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "<uuid:question_id>/sample-responses/",
+                self.admin_site.admin_view(self.sample_responses_view),
+                name="consultations_question_sample_responses",
+            ),
+        ]
+        return custom_urls + urls
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        extra_context = extra_context or {}
+        question = self.get_object(request, object_id)
+        if question:
+            extra_context["non_empty_response_count"] = question.get_non_empty_responses().count()
+        return super().change_view(request, object_id, form_url, extra_context)
+
+    def sample_responses_view(self, request, question_id):
+        question = Question.objects.get(pk=question_id)
+
+        if request.method == "POST":
+            try:
+                num_to_keep = int(request.POST.get("num_responses", 0))
+            except ValueError:
+                messages.error(request, "Invalid number of responses")
+                return HttpResponseRedirect(
+                    reverse("admin:consultations_question_change", args=[question_id])
+                )
+
+            try:
+                result = question.sample_responses(num_to_keep)
+                messages.success(
+                    request,
+                    f"Sampled responses for question {question.number}. "
+                    f"Kept {result.kept}, deleted {result.deleted} responses.",
+                )
+            except ValueError as e:
+                messages.error(request, str(e))
+
+        return HttpResponseRedirect(
+            reverse("admin:consultations_question_change", args=[question_id])
+        )
 
 
 class ResponseAnnotationAdmin(SimpleHistoryAdmin):
