@@ -139,6 +139,9 @@ export const getTimeDeltaInMinutes = (
 ): number => {
   const MILLISECONDS_PER_MINUTE = 60000;
   const delta = laterDate.getTime() - earlierDate.getTime();
+  if (delta === 0) {
+    return 0;
+  }
   return Math.floor(delta / MILLISECONDS_PER_MINUTE);
 };
 
