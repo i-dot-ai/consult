@@ -59,10 +59,10 @@
   export let themes: ResponseTheme[] = [];
 
   export let evidenceRich: boolean = false;
-  export let setEvidenceRich = () => {};
+  export let setEvidenceRich = (newValue: boolean) => {};
 
   export let unseenResponses: boolean = false;
-  export let setUnseenResponses = () => {};
+  export let setUnseenResponses = (newValue: boolean) => {};
 
   export let flaggedOnly: boolean = false;
   export let setFlaggedOnly: (newVal: boolean) => void = () => {};
