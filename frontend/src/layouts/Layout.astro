@@ -17,7 +17,7 @@ function isThemeSignOffUrl(url: string): boolean {
   return url.includes(Suffixes.ThemeSignOff);
 }
 function isEvaluationsUrl(url: string): boolean {
-  return url.includes(Routes.Evaluations);
+  return url.startsWith(Routes.Evaluations);
 }
 function isDashboardUrl(url: string): boolean {
   if (url === Routes.Consultations) {
