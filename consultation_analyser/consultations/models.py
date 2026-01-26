@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import dataclass
 from textwrap import shorten
 
 from django.conf import settings
@@ -55,6 +56,12 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
 
     def __str__(self):
         return self.title
+
+
+@dataclass
+class SampleResult:
+    kept: int
+    deleted: int
 
 
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -119,6 +126,39 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         else:
             self.total_responses = 0
             self.save(update_fields=["total_responses"])
+
+    def get_non_empty_responses(self):
+        """
+        Get queryset of non-empty responses for this question.
+        """
+        return self.response_set.filter(free_text__isnull=False).exclude(
+            free_text__in=["", "Not Provided"]
+        )
+
+    def sample_responses(self, keep_count: int) -> SampleResult:
+        """
+        Randomly sample responses, keeping only the specified number.
+
+        Deletes all non-empty responses except for a random sample of keep_count.
+        """
+        non_empty = self.get_non_empty_responses()
+        current_count = non_empty.count()
+
+        if keep_count < 1:
+            raise ValueError("Number of responses to keep must be at least 1")
+
+        if keep_count > current_count:
+            raise ValueError(
+                f"Number of responses to keep ({keep_count}) cannot exceed current number of responses ({current_count})"
+            )
+
+        delete_count = current_count - keep_count
+        ids_to_delete = non_empty.order_by("?").values_list("id", flat=True)[:delete_count]
+        Response.objects.filter(id__in=list(ids_to_delete)).delete()
+
+        self.update_total_responses()
+
+        return SampleResult(kept=keep_count, deleted=delete_count)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
