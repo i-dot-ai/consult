@@ -1,7 +1,7 @@
 ---
 import { fetchBackendApi } from "../../../../global/api";
 
-import type { Question } from "../../../../global/types";
+import type { AstroGlobalRuntime, Question } from "../../../../global/types";
 
 import Layout from "../../../../layouts/Layout.astro";
 import Section from "../../../../components/Section/Section.svelte";
@@ -9,7 +9,8 @@ import Section from "../../../../components/Section/Section.svelte";
 import ThemeSignOffDetail from "../../../../components/screens/ThemeSignOffDetail.svelte";
 import ThemeSignOffDetailCompleted from "../../../../components/screens/ThemeSignOffDetailCompleted.svelte";
 
-const { consultationId, questionId } = Astro.params;
+const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
+  .params;
 const question: Question = await fetchBackendApi(
   Astro,
   `/api/consultations/${consultationId}/questions/${questionId}`,
@@ -22,14 +23,14 @@ const question: Question = await fetchBackendApi(
       question?.theme_status === "confirmed" ? (
         <ThemeSignOffDetailCompleted
           client:only="svelte"
-          consultationId={consultationId}
-          questionId={questionId}
+          consultationId={consultationId || ""}
+          questionId={questionId || ""}
         />
       ) : (
         <ThemeSignOffDetail
           client:only="svelte"
-          consultationId={consultationId}
-          questionId={questionId}
+          consultationId={consultationId || ""}
+          questionId={questionId || ""}
         />
       )
     }

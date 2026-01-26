@@ -22,29 +22,25 @@ reset_db: ## Reset the dev db
 
 .PHONY: check_db
 check_db: ## Make sure the db is addressable
-	poetry run python manage.py check --database default
+	cd backend && PYTHONPATH=.. poetry run python manage.py check --database default
 
 .PHONY: migrations
 migrations: ## Generate migrations
-	poetry run python manage.py makemigrations
+	cd backend && PYTHONPATH=.. poetry run python manage.py makemigrations
 
 .PHONY: migrate
 migrate: ## Apply migrations
-	poetry run python manage.py migrate
-	poetry run python manage.py generate_erd
+	cd backend && PYTHONPATH=.. poetry run python manage.py migrate
+	cd backend && PYTHONPATH=.. poetry run python manage.py generate_erd
 
 .PHONY: serve
 serve: ## Run the server and the worker
 	docker compose up -d postgres redis
-	poetry run honcho start
+	cd backend && poetry run honcho start
 
 .PHONY: test
 test: ## Run the tests
-	poetry run pytest tests/ --random-order
-
-.PHONY: test
-test-failed: ## Run all failed tests in the previous run
-	poetry run pytest --last-failed --random-order
+	cd backend && PYTHONPATH=.. poetry run pytest tests/ --random-order
 
 .PHONY: test-end-to-end
 test-end-to-end:
@@ -56,7 +52,7 @@ test-end-to-end:
 		@echo "Setting test DATABASE_URL..."
 		@sed -i.tmp 's|DATABASE_URL=.*|DATABASE_URL=psql://postgres:postgres@localhost:5432/consult_e2e_test|' .env && rm .env.tmp  # pragma: allowlist secret
 		@echo "create user"
-		docker compose run backend venv/bin/python manage.py createadminusers
+		docker compose run backend venv/bin/python backend/manage.py createadminusers
 		@echo "Running end-to-end tests..."
 		cd e2e_tests && npm install
 		cd e2e_tests && npx playwright install --with-deps
@@ -68,33 +64,24 @@ test-end-to-end:
 
 .PHONY: check-python-code
 check-python-code: ## Check Python code - linting and mypy
-	poetry run ruff check --select I .
-	poetry run ruff check .
+	cd backend && poetry run ruff check --select I .
+	cd backend && poetry run ruff check .
 	# Re-add mypy here and remove from pre-commit once errors fixed
-	# poetry run mypy . --ignore-missing-imports
+	# cd backend && poetry run mypy . --ignore-missing-imports
 
 .PHONY: format-python-code
 format-python-code: ## Format Python code including sorting imports
-	poetry run ruff check --select I . --fix
-	poetry run ruff check . --fix
-	poetry run ruff format .
-
-.PHONY: govuk_frontend
-govuk_frontend: ## Pull govuk-frontend
-	npm install
-	poetry run python manage.py collectstatic --noinput
-
-.PHONY: build-frontend
-build-frontend: ## Build CSR and SSR Lit components
-	npm run build-lit
+	cd backend && poetry run ruff check --select I . --fix
+	cd backend && poetry run ruff check . --fix
+	cd backend && poetry run ruff format .
 
 .PHONY: dummy_data
 dummy_data: ## Generate dummy consultations. Only works in dev
-	poetry run python manage.py generate_dummy_data
+	cd backend && PYTHONPATH=.. poetry run python manage.py generate_dummy_data
 
 .PHONY: dev_admin_user
 dev_admin_user:
-	poetry run python manage.py shell -c "from consultation_analyser.authentication.models import User; User.objects.create_user(email='email@example.com', password='admin', is_staff=True)" # pragma: allowlist secret
+	cd backend && PYTHONPATH=.. poetry run python manage.py shell -c "from backend.authentication.models import User; User.objects.create_user(email='email@example.com', password='admin', is_staff=True)" # pragma: allowlist secret
 
 .PHONY: dev_environment
 dev_environment: reset_db migrate dummy_data govuk_frontend dev_admin_user ## set up the database with dummy data and configure govuk_frontend
