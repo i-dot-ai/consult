@@ -33,7 +33,7 @@ module "backend" {
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
   source                        = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.8.0-ecs"
   image_tag                     = var.image_tag
-  ecr_repository_uri            = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult"
+  ecr_repository_uri            = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-backend"
   vpc_id                        = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets               = data.terraform_remote_state.vpc.outputs.private_subnets
   host                          = local.host_backend
@@ -64,6 +64,7 @@ module "backend" {
     "EXECUTION_CONTEXT"        = "ecs"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-backend",
   })
+
   secrets = [
     for k, v in aws_ssm_parameter.env_secrets : {
       name      = regex("([^/]+$)", v.arn)[0], # Extract right-most string (param name) after the final slash
@@ -122,6 +123,13 @@ module "frontend" {
     "EXECUTION_CONTEXT"        = "ecs"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
   })
+
+  secrets = [
+    for k, v in aws_ssm_parameter.env_secrets : {
+      name      = regex("([^/]+$)", v.arn)[0], # Extract right-most string (param name) after the final slash
+      valueFrom = v.arn
+    }
+  ]
   container_port = local.frontend_port
 
   health_check = {
@@ -146,13 +154,13 @@ module "frontend" {
 }
 
 module "worker" {
-  name = "${local.name}-worker"
+  name                         = "${local.name}-worker"
   # checkov:skip=CKV_SECRET_4:Skip secret check as these have to be used within the Github Action
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
   source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.8.0-ecs"
   image_tag                    = var.image_tag
-  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult"
+  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-backend"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   host                         = local.host_backend
@@ -163,12 +171,8 @@ module "worker" {
   ecs_cluster_name             = data.terraform_remote_state.platform.outputs.ecs_cluster_name
   task_additional_iam_policies = local.additional_policy_arns
   certificate_arn              = module.acm_certificate.arn
-  # target_group_name_override   = "consult-worker-${var.env}-tg"
-  # permissions_boundary_name    = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
-  # https_listener_arn            = module.frontend.https_listener_arn
-  # service_discovery_service_arn = aws_service_discovery_service.service_discovery_service.arn
-  create_networking = false
-  create_listener   = false
+  create_networking            = false
+  create_listener              = false
 
 
 
@@ -177,6 +181,7 @@ module "worker" {
     "EXECUTION_CONTEXT"        = "ecs"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-worker",
   })
+
   secrets = [
     for k, v in aws_ssm_parameter.env_secrets : {
       name      = regex("([^/]+$)", v.arn)[0], # Extract right-most string (param name) after the final slash

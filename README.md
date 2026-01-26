@@ -253,7 +253,7 @@ It should be stored in the following structure for a given consultation:
 
 Note that we have the notion of "question part" reflects historic notation, this represents one question.
 
-The format for each of these files is in `consultation_analyser/consultations/import_schema`. Some of the files are JSONL files - [JSONLines](https://jsonlines.org/). The schema are given in [JSON Schema format](https://json-schema.org/). In Python you can use the `jsonschema` library to validate a JSON instance.
+The format for each of these files is in `backend/consultations/import_schema`. Some of the files are JSONL files - [JSONLines](https://jsonlines.org/). The schema are given in [JSON Schema format](https://json-schema.org/). In Python you can use the `jsonschema` library to validate a JSON instance.
 
 Format of each of the files:
 

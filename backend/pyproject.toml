@@ -1,0 +1,86 @@
+[tool.ruff]
+line-length = 100
+target-version = 'py312'
+
+[tool.poetry]
+package-mode=false
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "settings.test"
+filterwarnings = [
+  "ignore::pydantic.warnings.PydanticDeprecatedSince20",
+  "ignore::FutureWarning:.*huggingface_hub.*",
+  "ignore::SyntaxWarning:.*sentence_transformers.*",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+django = "^5.2"
+django-environ = "^0.12.0"
+psycopg = "^3.3.2"
+django-compressor = "^4.6"
+django-libsass = "^0.9"
+govuk-frontend-jinja = "^3.9.0"
+pydot = "^4.0.1"
+gunicorn = "^23.0.0"
+whitenoise = "^6.11.0"
+boto3 = "^1.42.30"
+pydantic = "^2.12.5"
+datamodel-code-generator = "^0.53.0"
+django-types = "^0.22.0"
+django-crispy-forms = "^2.3"
+crispy-forms-gds = "^2.0.1"
+sentry-sdk = {version = ">=2.24.1", extras = ["django", "redis", "rq"]}
+psutil = "^7.2.0"
+pytest-random-order = "^1.2.0"
+django-rq = "^3.2"
+django-redis = "^6.0.0"
+honcho = "^2.0.0"
+django-storages = "^1.14.6"
+setuptools = "^80.9.0"
+django-simple-history = "^3.11.0"
+openpyxl = "^3.1.5"
+pandas = "^2.3.3"
+drf-spectacular = "0.29.0"
+moto = "^5.1.20"
+pyflame = "^0.3.2"
+freezegun = "^1.5.5"
+django-test-migrations = "^1.5.0"
+pytest-lazy-fixtures = "^1.4.0"
+pgvector = "^0.4.2"
+openai = "^2.14.0"
+tiktoken = "^0.12.0"
+djangorestframework = "^3.16.1"
+orjson = "^3.11.5"
+django-db-connection-pool = "^1.2.6"
+django-filter = "^25.2"
+drf-nested-routers = "^0.95.0"
+drf-orjson-renderer = "^1.8.0"
+djangorestframework-simplejwt = {extras = ["crypto"], version = "^5.5.1"}
+i-dot-ai-utilities = {extras = ["auth"], version = "^0.4.4"}
+themefinder = "^0.7.3"
+
+[tool.poetry.group.development.dependencies]
+ruff = "^0.14.13"
+pre-commit = "^4.5.1"
+factory_boy = "^3.3.1"
+django-extensions = "^4.1"
+mypy = "^1.19.1"
+
+[tool.mypy]
+files = '**/*.py'
+exclude = ['^consultations/migrations/']
+
+
+
+[tool.poetry.group.test.dependencies]
+pytest-django = "^4.11.1"
+django-webtest = "^1.9.14"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.bandit]
+exclude = "*/.cruft.json"
+
