@@ -43,7 +43,7 @@
     ...new Set(demoOptions?.map((opt) => opt.name)),
   ]);
   const paginatedCategories = $derived(
-    paginateArray(demoOptionCategories, itemsPerTab) as string[][],
+    paginateArray<string>(demoOptionCategories, itemsPerTab),
   );
 
   let chartQuestions: Question[] = $derived(

@@ -31,7 +31,7 @@
     stagedThemes = [
       ...stagedThemes,
       {
-        id: option.value as string,
+        id: option.value,
         name: option.label,
         description: option.description || "",
       },

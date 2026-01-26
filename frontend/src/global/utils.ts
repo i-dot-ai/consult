@@ -81,11 +81,11 @@ export const toTitleCase = (text: string): string => {
     );
 };
 
-export function paginateArray(arr: unknown[] | undefined, size: number) {
+export function paginateArray<T>(arr: T[] | undefined, size: number): T[][] {
   if (!arr || arr.length === 0) {
     return [];
   }
-  return arr.reduce((acc: unknown[][], curr, i) => {
+  return arr.reduce((acc: T[][], curr, i) => {
     const index = Math.floor(i / size);
     const page = acc[index] || (acc[index] = []);
     page.push(curr);
