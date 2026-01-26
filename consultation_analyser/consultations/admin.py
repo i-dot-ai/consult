@@ -224,7 +224,8 @@ class CrossCuttingThemeAdmin(admin.ModelAdmin):
 
 
 class CandidateThemeAdmin(admin.ModelAdmin):
-    pass
+    list_filter = ["question__consultation", "question"]
+    list_display = ["name", "question", "approximate_frequency"]
 
 
 admin.site.register(CandidateTheme, CandidateThemeAdmin)
