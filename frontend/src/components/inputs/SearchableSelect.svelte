@@ -18,8 +18,8 @@
   import type { SearchableSelectOption } from "../../global/types";
 
   export let label: string = "";
-  export let handleChange: <T>(
-    _next: SearchableSelectOption<T>,
+  export let handleChange: (
+    option: SearchableSelectOption<unknown>,
   ) => void = () => {};
   export let options: SearchableSelectOption<unknown>[] = [];
   export let selectedValues: unknown[] = [];
@@ -40,7 +40,7 @@
   } = createCombobox<SearchableSelectOption<unknown>>({
     onSelectedChange: ({ next }) => {
       if (next) {
-        handleChange({ ...next, label: next.label || "" });
+        handleChange(next.value);
       }
       return next;
     },
