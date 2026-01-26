@@ -168,12 +168,10 @@
             disabled: false,
           }))}
           selectedValues={stagedThemes.map((theme) => theme.id)}
-          handleChange={(option: SearchableSelectOption<
-            SearchableSelectOption<string>
-          >) => {
+          handleChange={(option) => {
             const newTheme = option.value;
             if (newTheme) {
-              addTheme(newTheme);
+              addTheme(newTheme as unknown as SearchableSelectOption<string>);
             }
           }}
         />

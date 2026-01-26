@@ -18,7 +18,7 @@
   import type { SearchableSelectOption } from "../../global/types";
 
   export let label: string = "";
-  export let handleChange = (_next: SearchableSelectOption<unknown>) => {};
+  export let handleChange: <T>(_next: SearchableSelectOption<T>) => void = () => {};
   export let options: SearchableSelectOption<unknown>[] = [];
   export let selectedValues: unknown[] = [];
   export let hideArrow: boolean = false;
