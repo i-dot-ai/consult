@@ -11,7 +11,7 @@
     context?: "dashboard" | "public" | "theme-sign-off";
   } & (
     | { text: string; children?: never }
-    | { text?: never; children: Snippet }
+    | { text?: never; children?: Snippet }
   );
 
   let {
