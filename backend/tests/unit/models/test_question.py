@@ -1,10 +1,17 @@
 import django
 import pytest
-from backend.consultations.models import Question
+
+from backend.consultations.models import (
+    Question,
+    Response,
+)
 from backend.factories import (
+    ConsultationFactory,
     QuestionFactory,
     QuestionWithBothFactory,
     QuestionWithMultipleChoiceFactory,
+    RespondentFactory,
+    ResponseFactory,
 )
 
 
@@ -43,3 +50,64 @@ def test_question_configuration(free_text_question):
     assert both_question.has_free_text
     assert both_question.has_multiple_choice
     assert isinstance(both_question.multiple_choice_options, list)
+
+
+@pytest.mark.django_db
+def test_get_non_empty_responses(consultation, free_text_question):
+    respondent1 = RespondentFactory(consultation=consultation)
+    respondent2 = RespondentFactory(consultation=consultation)
+    respondent3 = RespondentFactory(consultation=consultation)
+    respondent4 = RespondentFactory(consultation=consultation)
+    ResponseFactory(question=free_text_question, respondent=respondent1, free_text="Has text")
+    ResponseFactory(question=free_text_question, respondent=respondent2, free_text="Not Provided")
+    ResponseFactory(question=free_text_question, respondent=respondent3, free_text="")
+    ResponseFactory(question=free_text_question, respondent=respondent4, free_text=None)
+
+    result = free_text_question.get_non_empty_responses()
+
+    assert result.count() == 1
+
+
+@pytest.mark.django_db
+class TestSampleResponses:
+    def test_keeps_specified_number_of_responses(self):
+        consultation = ConsultationFactory()
+        question = QuestionFactory(consultation=consultation)
+        for i in range(10):
+            respondent = RespondentFactory(consultation=consultation)
+            ResponseFactory(question=question, respondent=respondent, free_text=f"Response {i}")
+
+        result = question.sample_responses(keep_count=3)
+
+        assert result.kept == 3
+        assert result.deleted == 7
+        assert Response.objects.filter(question=question).count() == 3
+
+        question.refresh_from_db()
+
+        assert question.total_responses == 3
+
+    def test_raises_error_if_keep_count_less_than_one(self):
+        consultation = ConsultationFactory()
+        question = QuestionFactory(consultation=consultation)
+        respondent = RespondentFactory(consultation=consultation)
+        ResponseFactory(question=question, respondent=respondent, free_text="Response")
+
+        with pytest.raises(ValueError) as exc_info:
+            question.sample_responses(keep_count=0)
+
+        assert str(exc_info.value) == "Number of responses to keep must be at least 1"
+
+    def test_raises_error_if_keep_count_exceeds_count(self):
+        consultation = ConsultationFactory()
+        question = QuestionFactory(consultation=consultation)
+        respondent = RespondentFactory(consultation=consultation)
+        ResponseFactory(question=question, respondent=respondent, free_text="Response")
+
+        with pytest.raises(ValueError) as exc_info:
+            question.sample_responses(keep_count=5)
+
+        assert (
+            str(exc_info.value)
+            == "Number of responses to keep (5) cannot exceed current number of responses (1)"
+        )

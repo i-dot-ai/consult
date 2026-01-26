@@ -89,10 +89,8 @@
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            annotation: {
-              responseannotationtheme_set: selectedThemes,
-              human_reviewed: true,
-            },
+            themes: selectedThemes,
+            human_reviewed: true,
           }),
         },
       );

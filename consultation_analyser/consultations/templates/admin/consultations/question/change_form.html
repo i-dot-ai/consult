@@ -1,0 +1,23 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block object-tools %}
+{{ block.super }}
+
+{% if original.has_free_text %}
+<div id="sample-responses-section" style="clear: both; margin: 20px 0; padding: 15px; background: #f8f8f8; border: 1px solid #ccc; border-radius: 4px;">
+    <h2 style="margin-top: 0;">Sample Responses</h3>
+    <p>Current non-empty free text responses: <strong>{{ non_empty_response_count }}</strong></p>
+    <form id="sample-responses-form" method="post" action="/admin/consultations/question/{{ original.pk }}/sample-responses/">
+        {% csrf_token %}
+        <label for="num_responses">Keep this many responses:</label>
+        <input type="number" name="num_responses" id="num_responses" min="1" max="{{ non_empty_response_count }}" placeholder="Enter number" required style="width: 120px; margin: 0 10px;">
+        <input type="submit" value="Sample Responses" onclick="return confirm('This will randomly keep the specified number of non-empty responses and delete the rest. This cannot be undone. Continue?');">
+    </form>
+    <p style="font-size: 11px; color: #666; margin-top: 10px; margin-bottom: 0;">
+        Randomly keeps the specified number of non-empty free text responses, deleting the rest.
+    </p>
+</div>
+{% endif %}
+
+{% endblock %}
