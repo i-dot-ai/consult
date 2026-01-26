@@ -120,11 +120,6 @@ class SelectedThemeInline(admin.StackedInline):
     extra = 0
 
 
-class CandidateThemeInline(admin.StackedInline):
-    model = CandidateTheme
-    extra = 0
-
-
 @admin.action(description="set has_free_text to false")
 def set_has_free_text_false(modeladmin, request, queryset):
     queryset.update(has_free_text=False)
@@ -146,7 +141,7 @@ class QuestionAdmin(admin.ModelAdmin):
         "has_free_text",
         "has_multiple_choice",
     ]
-    inlines = [SelectedThemeInline, CandidateThemeInline, MultiChoiceAnswerInline]
+    inlines = [MultiChoiceAnswerInline]
     actions = [set_has_free_text_false, reset_sign_off]
     change_form_template = "admin/consultations/question/change_form.html"
 
