@@ -228,7 +228,13 @@ class CandidateThemeAdmin(admin.ModelAdmin):
     list_display = ["name", "question", "approximate_frequency"]
 
 
+class SelectedThemeAdmin(admin.ModelAdmin):
+    list_filter = ["question__consultation", "question"]
+    list_display = ["name", "question", "key"]
+
+
 admin.site.register(CandidateTheme, CandidateThemeAdmin)
+admin.site.register(SelectedTheme, SelectedThemeAdmin)
 admin.site.register(CrossCuttingTheme, CrossCuttingThemeAdmin)
 admin.site.register(Response, ResponseAdmin)
 admin.site.register(Consultation, ConsultationAdmin)
