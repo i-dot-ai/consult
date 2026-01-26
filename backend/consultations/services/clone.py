@@ -3,6 +3,7 @@ from uuid import UUID
 from django.conf import settings
 from django.db import transaction
 from django.db.models import QuerySet
+from django_rq import job
 
 from backend.consultations.models import (
     CandidateTheme,
@@ -162,3 +163,14 @@ def clone_consultation(original: Consultation) -> Consultation:
     )
 
     return cloned
+
+
+@job("default", timeout=3600)
+def clone_consultation_job(consultation_id: UUID) -> UUID:
+    """
+    RQ job wrapper for clone_consultation.
+    """
+    original = Consultation.objects.get(id=consultation_id)
+    cloned = clone_consultation(original)
+    logger.info(f"Successfully cloned consultation {original.id} to {cloned.id}")
+    return cloned.id
