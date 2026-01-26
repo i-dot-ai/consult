@@ -1,6 +1,10 @@
 ---
 import { fetchBackendApi } from "../../../global/api";
-import type { ConsultationResponse, Question } from "../../../global/types";
+import type {
+  AstroGlobalRuntime,
+  ConsultationResponse,
+  Question,
+} from "../../../global/types";
 
 import Layout from "../../../layouts/Layout.astro";
 import Section from "../../../components/Section/Section.svelte";
@@ -13,7 +17,7 @@ import {
 import { Routes } from "../../../global/routes";
 import QuestionsReviewList from "../../../components/screens/QuestionsReviewList.svelte";
 
-const { consultationId } = Astro.params;
+const { consultationId = "" } = (Astro as unknown as AstroGlobalRuntime).params;
 
 const consultation = await fetchBackendApi<ConsultationResponse>(
   Astro,

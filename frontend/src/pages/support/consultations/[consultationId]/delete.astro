@@ -1,6 +1,9 @@
 ---
 import { fetchBackendApi } from "../../../../global/api";
-import type { ConsultationResponse } from "../../../../global/types";
+import type {
+  AstroGlobalRuntime,
+  ConsultationResponse,
+} from "../../../../global/types";
 
 import Layout from "../../../../layouts/Layout.astro";
 import Section from "../../../../components/Section/Section.svelte";
@@ -8,10 +11,12 @@ import Title from "../../../../components/Title.svelte";
 import DeleteConsultationForm from "../../../../components/screens/DeleteConsultationForm.svelte";
 import { getApiConsultationUrl, Routes } from "../../../../global/routes";
 
-const { consultationId } = Astro.params;
+const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
 if (!consultationId) {
-  return Astro.redirect(Routes.SupportConsultations);
+  return (Astro as unknown as AstroGlobalRuntime).redirect(
+    Routes.SupportConsultations,
+  );
 }
 
 // Fetch consultation data
