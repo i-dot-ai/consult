@@ -168,7 +168,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
         if request.method == "POST":
             try:
-                num_to_keep = int(request.POST.get("num_responses", 0))
+                keep_count = int(request.POST.get("num_responses", 0))
             except ValueError:
                 messages.error(request, "Invalid number of responses")
                 return HttpResponseRedirect(
@@ -176,7 +176,7 @@ class QuestionAdmin(admin.ModelAdmin):
                 )
 
             try:
-                result = question.sample_responses(num_to_keep)
+                result = question.sample_responses(keep_count)
                 messages.success(
                     request,
                     f"Sampled responses for question {question.number}. "

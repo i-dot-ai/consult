@@ -77,7 +77,7 @@ class TestSampleResponses:
             respondent = RespondentFactory(consultation=consultation)
             ResponseFactory(question=question, respondent=respondent, free_text=f"Response {i}")
 
-        result = question.sample_responses(num_to_keep=3)
+        result = question.sample_responses(keep_count=3)
 
         assert result.kept == 3
         assert result.deleted == 7
@@ -87,20 +87,27 @@ class TestSampleResponses:
 
         assert question.total_responses == 3
 
-    def test_raises_error_if_num_to_keep_less_than_one(self):
+    def test_raises_error_if_keep_count_less_than_one(self):
         consultation = ConsultationFactory()
         question = QuestionFactory(consultation=consultation)
         respondent = RespondentFactory(consultation=consultation)
         ResponseFactory(question=question, respondent=respondent, free_text="Response")
 
-        with pytest.raises(ValueError, match="num_to_keep must be at least 1"):
-            question.sample_responses(num_to_keep=0)
+        with pytest.raises(ValueError) as exc_info:
+            question.sample_responses(keep_count=0)
 
-    def test_raises_error_if_num_to_keep_exceeds_count(self):
+        assert str(exc_info.value) == "Number of responses to keep must be at least 1"
+
+    def test_raises_error_if_keep_count_exceeds_count(self):
         consultation = ConsultationFactory()
         question = QuestionFactory(consultation=consultation)
         respondent = RespondentFactory(consultation=consultation)
         ResponseFactory(question=question, respondent=respondent, free_text="Response")
 
-        with pytest.raises(ValueError, match="num_to_keep.*cannot exceed current count"):
-            question.sample_responses(num_to_keep=5)
+        with pytest.raises(ValueError) as exc_info:
+            question.sample_responses(keep_count=5)
+
+        assert (
+            str(exc_info.value)
+            == "Number of responses to keep (5) cannot exceed current number of responses (1)"
+        )

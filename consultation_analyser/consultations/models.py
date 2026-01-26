@@ -1,4 +1,3 @@
-import random
 import uuid
 from dataclasses import dataclass
 from textwrap import shorten
@@ -136,32 +135,30 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
             free_text__in=["", "Not Provided"]
         )
 
-    def sample_responses(self, num_to_keep: int) -> SampleResult:
+    def sample_responses(self, keep_count: int) -> SampleResult:
         """
         Randomly sample responses, keeping only the specified number.
 
-        Deletes all non-empty responses except for a random sample of num_to_keep.
+        Deletes all non-empty responses except for a random sample of keep_count.
         """
-        non_empty_responses = self.get_non_empty_responses()
-        current_count = non_empty_responses.count()
+        non_empty = self.get_non_empty_responses()
+        current_count = non_empty.count()
 
-        if num_to_keep < 1:
-            raise ValueError("num_to_keep must be at least 1")
+        if keep_count < 1:
+            raise ValueError("Number of responses to keep must be at least 1")
 
-        if num_to_keep > current_count:
+        if keep_count > current_count:
             raise ValueError(
-                f"num_to_keep ({num_to_keep}) cannot exceed current count ({current_count})"
+                f"Number of responses to keep ({keep_count}) cannot exceed current number of responses ({current_count})"
             )
 
-        all_response_ids = list(non_empty_responses.values_list("id", flat=True))
-        ids_to_keep = set(random.sample(all_response_ids, num_to_keep))
-        ids_to_delete = [rid for rid in all_response_ids if rid not in ids_to_keep]
-
-        Response.objects.filter(id__in=ids_to_delete).delete()
+        delete_count = current_count - keep_count
+        ids_to_delete = non_empty.order_by("?").values_list("id", flat=True)[:delete_count]
+        Response.objects.filter(id__in=list(ids_to_delete)).delete()
 
         self.update_total_responses()
 
-        return SampleResult(kept=num_to_keep, deleted=len(ids_to_delete))
+        return SampleResult(kept=keep_count, deleted=delete_count)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
