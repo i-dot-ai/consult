@@ -6,10 +6,10 @@ const theme = $state({
   description: "Theme description",
 });
 const answers = $state(["Answer 1", "Answer 2"]);
-const removeTheme = $state((themeId) =>
+const removeTheme = $state((themeId: string) =>
   alert(`Remove theme event triggered with: ${themeId}`),
 );
-const updateTheme = $state((...args) =>
+const updateTheme = $state((...args: unknown[]) =>
   alert(`Update theme event triggered with: ${args.join(", ")}`),
 );
 
