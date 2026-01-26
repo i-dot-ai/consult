@@ -44,7 +44,9 @@
     answersMock,
   }: Props = $props();
 
-  const answersStore = createFetchStore<AnswersResponse>({ mockFetch: answersMock });
+  const answersStore = createFetchStore<AnswersResponse>({
+    mockFetch: answersMock,
+  });
 
   let expanded = $derived(expandedThemes.includes(theme.id));
   let showAnswers = $state(false);

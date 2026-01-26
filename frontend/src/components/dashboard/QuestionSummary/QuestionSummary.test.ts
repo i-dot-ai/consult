@@ -8,10 +8,10 @@ describe("QuestionSummary", () => {
   const testData = {
     themesLoading: false,
     showThemes: false,
-    demoData: { "testCategory": { "foo": 1 } },
+    demoData: { testCategory: { foo: 1 } },
     totalAnswers: 100,
     themes: [],
-    demoOptions: { "testCategory": [ "foo" ] },
+    demoOptions: { testCategory: ["foo"] },
     anyFilterApplied: false,
     setActiveTab: () => {},
   };

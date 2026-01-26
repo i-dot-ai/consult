@@ -118,7 +118,9 @@
                   type="number"
                   value={(prop.value as string).toString()}
                   oninput={(e) => {
-                    prop.value = parseInt((e?.target as unknown as { value: string })?.value);
+                    prop.value = parseInt(
+                      (e?.target as unknown as { value: string })?.value,
+                    );
                   }}
                 />
               {:else if prop.type === "text"}
@@ -143,14 +145,16 @@
                   label={prop.name}
                   hideLabel={true}
                   value={prop.label}
-                  items={prop.options! as { value: string, label: string }[]}
+                  items={prop.options! as { value: string; label: string }[]}
                   onchange={(nextVal) => {
                     if (!nextVal) {
                       return;
                     }
-                    prop.value = prop.options?.find((opt: { label: string }) => {
-                      return opt.label === nextVal;
-                    })?.value;
+                    prop.value = prop.options?.find(
+                      (opt: { label: string }) => {
+                        return opt.label === nextVal;
+                      },
+                    )?.value;
                   }}
                 />
               {:else if prop.type === "json"}

@@ -24,7 +24,6 @@
     stagedThemes = stagedThemes.filter((theme) => theme.id !== id);
   }
   function addTheme(option: SearchableSelectOption<string>) {
-    console.log(option)
     if (stagedThemes.find((theme) => theme.id === option.value)) {
       return;
     }
