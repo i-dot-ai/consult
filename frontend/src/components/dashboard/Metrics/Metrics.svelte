@@ -170,7 +170,7 @@
         variant="dots"
         title="Demographics Breakdown"
         tabs={paginatedCategories.map((_: string[], index: number) => ({
-          title: `demo-option-category-page-${index}`,
+          title: `Demo option category page ${index + 1}`,
           id: `tab-${index}`,
         }))}
         value={`tab-${currPage}`}

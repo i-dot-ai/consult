@@ -47,14 +47,20 @@ describe("Metrics", () => {
       {
         id: "3",
         name: "Demo Option Category 2",
-        value: "Category 2 Demo Option 1",
+        value: "Category 2 Demo Option 3",
         count: 300,
       },
       {
         id: "4",
         name: "Demo Option Category 2",
-        value: "Category 2 Demo Option 2",
+        value: "Category 2 Demo Option 4",
         count: 400,
+      },
+      {
+        id: "5",
+        name: "Demo Option Category 3",
+        value: "Category 2 Demo Option 5",
+        count: 500,
       },
     ],
     demoOptionsLoading: false,
@@ -87,6 +93,33 @@ describe("Metrics", () => {
       expect(screen.getByText(opt.value)).toBeInTheDocument();
       expect(screen.getByText(opt.count)).toBeInTheDocument();
     });
+  });
+
+  it("should only render options for the current page", () => {
+    const NEXT_PAGE_DEMO_OPTIONS = [
+      {
+        id: "6",
+        name: "Demo Option Category 4",
+        value: "Category 2 Demo Option 6",
+        count: 600,
+      },
+    ];
+
+    render(Metrics, {
+      ...testData,
+      demoOptions: [
+        ...testData.demoOptions,
+        ...NEXT_PAGE_DEMO_OPTIONS,
+      ],
+    });
+
+    testData.demoOptions.forEach((opt) => {
+      expect(screen.getByText(opt.value)).toBeInTheDocument();
+    });
+
+    NEXT_PAGE_DEMO_OPTIONS.forEach((opt) => {
+      expect(screen.queryByText(opt.value)).not.toBeInTheDocument();
+    })
   });
 
   it("should not render demo options section if no data", () => {

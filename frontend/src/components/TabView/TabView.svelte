@@ -159,6 +159,8 @@
                 $writableValue === tab.id && "bg-primary",
                 "hover:bg-pink-200",
               ])}
+              aria-label={tab.title}
+              title={tab.title}
             ></button>
           {/if}
         {/each}
