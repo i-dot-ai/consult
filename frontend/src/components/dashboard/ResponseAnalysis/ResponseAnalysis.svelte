@@ -276,7 +276,9 @@
 
                     <div slot="panel" class="w-full bg-white p-4 shadow-lg">
                       <SearchableSelect
-                        handleChange={(newTheme: SearchableSelectOption<string>) => {
+                        handleChange={(
+                          newTheme: SearchableSelectOption<string>,
+                        ) => {
                           if (newTheme.value) {
                             themeFilters.update(newTheme.value);
                           }
