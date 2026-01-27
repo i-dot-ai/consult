@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" generics="T">
   // Using melt-ui combobox
   // Docs: https://www.melt-ui.com/docs/builders/combobox
 
@@ -19,7 +19,7 @@
 
   export let label: string = "";
   export let handleChange: (
-    option: SearchableSelectOption<unknown>,
+    option: SearchableSelectOption<T>,
   ) => void = () => {};
   export let options: SearchableSelectOption<unknown>[] = [];
   export let selectedValues: unknown[] = [];
@@ -37,7 +37,7 @@
   const {
     elements: { menu, input, option: meltOption, label: meltLabel },
     states: { open, inputValue, touchedInput },
-  } = createCombobox<SearchableSelectOption<unknown>>({
+  } = createCombobox<SearchableSelectOption<T>>({
     onSelectedChange: ({ next }) => {
       if (next) {
         handleChange(next.value);
