@@ -95,18 +95,18 @@ lxml = ["lxml"]
 
 [[package]]
 name = "boto3"
-version = "1.42.34"
+version = "1.42.35"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "development"]
 files = [
-    {file = "boto3-1.42.34-py3-none-any.whl", hash = "sha256:db3fb539e3f806b911ec4ca991f2f8bff333c5f0b87132a82e28b521fc5ec164"},
-    {file = "boto3-1.42.34.tar.gz", hash = "sha256:75d7443c81a029283442fad138629be1eefaa3e6d430c28118a0f4cdbd57855d"},
+    {file = "boto3-1.42.35-py3-none-any.whl", hash = "sha256:4251bbac90e4a190680439973d9e9ed851e50292c10cd063c8bf0c365410ffe1"},
+    {file = "boto3-1.42.35.tar.gz", hash = "sha256:edbfbfbadd419e65888166dd044786d4b731cf60abeb2301b73e775e154d7c5e"},
 ]
 
 [package.dependencies]
-botocore = ">=1.42.34,<1.43.0"
+botocore = ">=1.42.35,<1.43.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.16.0,<0.17.0"
 
@@ -115,14 +115,14 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.42.34"
+version = "1.42.35"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "development"]
 files = [
-    {file = "botocore-1.42.34-py3-none-any.whl", hash = "sha256:94099b5d09d0c4bfa6414fb3cffd54275ce6e51d7ba016f17a0e79f9274f68f7"},
-    {file = "botocore-1.42.34.tar.gz", hash = "sha256:92e44747da7890270d8dcc494ecc61fc315438440c55e00dc37a57d402b1bb66"},
+    {file = "botocore-1.42.35-py3-none-any.whl", hash = "sha256:b89f527987691abbd1374c4116cc2711471ce48e6da502db17e92b17b2af8d47"},
+    {file = "botocore-1.42.35.tar.gz", hash = "sha256:40a6e0f16afe9e5d42e956f0b6d909869793fadb21780e409063601fc3d094b8"},
 ]
 
 [package.dependencies]
@@ -525,24 +525,24 @@ files = [
 
 [[package]]
 name = "django"
-version = "6.0.1"
+version = "5.2.10"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 optional = false
-python-versions = ">=3.12"
+python-versions = ">=3.10"
 groups = ["main", "development"]
 files = [
-    {file = "django-6.0.1-py3-none-any.whl", hash = "sha256:a92a4ff14f664a896f9849009cb8afaca7abe0d6fc53325f3d1895a15253433d"},
-    {file = "django-6.0.1.tar.gz", hash = "sha256:ed76a7af4da21551573b3d9dfc1f53e20dd2e6c7d70a3adc93eedb6338130a5f"},
+    {file = "django-5.2.10-py3-none-any.whl", hash = "sha256:cf85067a64250c95d5f9067b056c5eaa80591929f7e16fbcd997746e40d6c45c"},
+    {file = "django-5.2.10.tar.gz", hash = "sha256:74df100784c288c50a2b5cad59631d71214f40f72051d5af3fdf220c20bdbbbe"},
 ]
 
 [package.dependencies]
-asgiref = ">=3.9.1"
-sqlparse = ">=0.5.0"
+asgiref = ">=3.8.1"
+sqlparse = ">=0.3.1"
 tzdata = {version = "*", markers = "sys_platform == \"win32\""}
 
 [package.extras]
-argon2 = ["argon2-cffi (>=23.1.0)"]
-bcrypt = ["bcrypt (>=4.1.1)"]
+argon2 = ["argon2-cffi (>=19.1.0)"]
+bcrypt = ["bcrypt"]
 
 [[package]]
 name = "django-environ"
@@ -1463,14 +1463,14 @@ orjson = ">=3.10.1"
 
 [[package]]
 name = "langsmith"
-version = "0.6.4"
+version = "0.6.5"
 description = "Client library to connect to the LangSmith Observability and Evaluation Platform."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "langsmith-0.6.4-py3-none-any.whl", hash = "sha256:ac4835860160be371042c7adbba3cb267bcf8d96a5ea976c33a8a4acad6c5486"},
-    {file = "langsmith-0.6.4.tar.gz", hash = "sha256:36f7223a01c218079fbb17da5e536ebbaf5c1468c028abe070aa3ae59bc99ec8"},
+    {file = "langsmith-0.6.5-py3-none-any.whl", hash = "sha256:926609cb434c020f8e86b9083a0bd36325cb4ab0bf2ca47321f654d6c893a99a"},
+    {file = "langsmith-0.6.5.tar.gz", hash = "sha256:4225e523a28cbd5a80e9aed70064ea06d68dafcb12db8cdf4bc60b83a9b0fe69"},
 ]
 
 [package.dependencies]
@@ -2163,14 +2163,14 @@ xml = ["lxml (>=4.9.2)"]
 
 [[package]]
 name = "pathspec"
-version = "1.0.3"
+version = "1.0.4"
 description = "Utility library for gitignore style pattern matching of file paths."
 optional = false
 python-versions = ">=3.9"
 groups = ["development"]
 files = [
-    {file = "pathspec-1.0.3-py3-none-any.whl", hash = "sha256:e80767021c1cc524aa3fb14bedda9c34406591343cc42797b386ce7b9354fb6c"},
-    {file = "pathspec-1.0.3.tar.gz", hash = "sha256:bac5cf97ae2c2876e2d25ebb15078eb04d76e4b98921ee31c6f85ade8b59444d"},
+    {file = "pathspec-1.0.4-py3-none-any.whl", hash = "sha256:fb6ae2fd4e7c921a165808a552060e722767cfa526f99ca5156ed2ce45a5c723"},
+    {file = "pathspec-1.0.4.tar.gz", hash = "sha256:0210e2ae8a21a9137c0d470578cb0e595af87edaa6ebf12ff176f14a02e0e645"},
 ]
 
 [package.extras]
@@ -4170,4 +4170,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "be7ec112302ea9d5171d13020800b3d3dc904586d9c77ebfe0b1bd927e63994d"
+content-hash = "cf750c879c521db56187d60ff090fd2d693758e63afa741a3e77bc608806d9ff"
