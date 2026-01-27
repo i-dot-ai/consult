@@ -4,25 +4,17 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - ".github/**"
-      - ".vscode/**"
-      - "docs/**"
-      - "e2e_tests/**"
-      - "frontend/**"
-      - "terraform/**"
-      - "*.md"
+    paths:
+      - "backend/**"
+      - "Makefile"
+      - ".github/workflows/backend-ci.yml"
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - ".github/**"
-      - ".vscode/**"
-      - "docs/**"
-      - "e2e_tests/**"
-      - "frontend/**"
-      - "terraform/**"
-      - "*.md"
+    paths:
+      - "backend/**"
+      - "Makefile"
+      - ".github/workflows/backend-ci.yml"
   workflow_dispatch:
 
 
@@ -50,24 +42,22 @@ jobs:
       - name: install poetry & deps
         run: |
           python -m pip install --upgrade poetry
-          poetry install --with development
+        working-directory: ./backend
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 18
-
-      - name: Install npm dependencies
-        run: npm install
+      - name: install dependencies
+        run: poetry install --with development
+        working-directory: ./backend
 
       - name: Setup app
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           poetry run python manage.py migrate
           poetry run python manage.py makemigrations --check
-          make govuk_frontend
+        working-directory: ./backend
 
       - name: Run app tests
-        run: poetry run pytest
+        run: make test
 
   lint:
     runs-on: ubuntu-latest
@@ -77,9 +67,11 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Install Poetry
-        run: |
-          python -m pip install --upgrade poetry
-          poetry install --with development
+        run: python -m pip install --upgrade poetry
+
+      - name: Install dependencies
+        run: poetry install --with development
+        working-directory: ./backend
 
       - name: Check code formatting
         run: |

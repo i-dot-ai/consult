@@ -20,14 +20,14 @@
 
   let { selected = "" } = $props();
   let currStory = $state(stories.find((story) => story.name === selected));
-  let componentProps: object = $derived.by(() => {
-    let props = {};
+  let componentProps: unknown = $derived.by(() => {
+    let props: unknown = {};
     currStory?.props.forEach((prop) => {
       props[prop.name] = prop.value;
     });
     return props;
   });
-  let panel;
+  let panel: HTMLElement;
 
   const categories = [...new Set(stories.map((story) => story.category))];
 </script>
@@ -116,9 +116,11 @@
                   id={inputId}
                   class="rounded-lg border border-neutral-300 p-2"
                   type="number"
-                  value={prop.value.toString()}
+                  value={(prop.value as string).toString()}
                   oninput={(e) => {
-                    prop.value = parseInt(e?.target?.value);
+                    prop.value = parseInt(
+                      (e?.target as unknown as { value: string })?.value,
+                    );
                   }}
                 />
               {:else if prop.type === "text"}
@@ -126,7 +128,7 @@
                   id={inputId}
                   label={prop.name}
                   hideLabel={true}
-                  value={prop.value}
+                  value={prop.value! as string}
                   setValue={(newVal) => (prop.value = newVal)}
                 />
               {:else if prop.type === "bool"}
@@ -134,7 +136,7 @@
                   id={inputId}
                   label={prop.name}
                   hideLabel={true}
-                  value={prop.value}
+                  value={prop.value as boolean}
                   handleChange={(newVal) => (prop.value = newVal)}
                 />
               {:else if prop.type === "select"}
@@ -143,14 +145,16 @@
                   label={prop.name}
                   hideLabel={true}
                   value={prop.label}
-                  items={prop.options}
+                  items={prop.options! as { value: string; label: string }[]}
                   onchange={(nextVal) => {
                     if (!nextVal) {
                       return;
                     }
-                    prop.value = prop.options.find((opt: { label: string }) => {
-                      return opt.label === nextVal;
-                    }).value;
+                    prop.value = prop.options?.find(
+                      (opt: { label: string }) => {
+                        return opt.label === nextVal;
+                      },
+                    )?.value;
                   }}
                 />
               {:else if prop.type === "json"}

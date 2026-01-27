@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" generics="T">
   // Using melt-ui combobox
   // Docs: https://www.melt-ui.com/docs/builders/combobox
 
@@ -18,20 +18,17 @@
   import type { SearchableSelectOption } from "../../global/types";
 
   export let label: string = "";
-  export let handleChange = (_next: SearchableSelectOption) => {};
-  export let options: SearchableSelectOption[] = [];
+  export let handleChange: (
+    option: SearchableSelectOption<T>,
+  ) => void = () => {};
+  export let options: SearchableSelectOption<unknown>[] = [];
   export let selectedValues: unknown[] = [];
   export let hideArrow: boolean = false;
   export let notFoundMessage: string = "No results found";
 
-  const handleSelectedChange = ({ next }: { next: SearchableSelectOption }) => {
-    handleChange(next);
-    return next;
-  };
-
   const toOption = (
-    option: SearchableSelectOption,
-  ): ComboboxOptionProps<SearchableSelectOption> => ({
+    option: SearchableSelectOption<unknown>,
+  ): ComboboxOptionProps<SearchableSelectOption<unknown>> => ({
     value: option,
     label: option.label,
     disabled: option.disabled,
@@ -40,8 +37,13 @@
   const {
     elements: { menu, input, option: meltOption, label: meltLabel },
     states: { open, inputValue, touchedInput },
-  } = createCombobox<SearchableSelectOption>({
-    onSelectedChange: handleSelectedChange,
+  } = createCombobox<SearchableSelectOption<T>>({
+    onSelectedChange: ({ next }) => {
+      if (next) {
+        handleChange(next.value);
+      }
+      return next;
+    },
     forceVisible: true,
   });
 

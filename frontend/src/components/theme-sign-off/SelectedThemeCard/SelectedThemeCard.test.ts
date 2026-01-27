@@ -6,10 +6,15 @@ import SelectedThemeCardStory from "./SelectedThemeCardStory.svelte";
 
 describe("SelectedThemeCard", () => {
   const testData = {
+    consultationId: "test-consultation",
+    questionId: "test-question",
     theme: {
       id: "theme-id",
       name: "Theme Name",
       description: "This is the theme description",
+      version: 1,
+      modified_at: new Date().toISOString(),
+      last_modified_by: "testuser",
     },
     answers: ["Answer 1", "Answer 2"],
     removeTheme: () => {},

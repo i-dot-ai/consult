@@ -404,7 +404,7 @@
         themes={$themeInfoStore.data?.themes}
         {evidenceRich}
         {setEvidenceRich}
-        {unseenResponsesOnly}
+        unseenResponses={unseenResponsesOnly}
         {setUnseenResponses}
         isThemesLoading={!dataRequested || $themeAggrStore.isLoading}
         {flaggedOnly}

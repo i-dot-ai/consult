@@ -15,7 +15,7 @@
 
   export let tabs: Tab[] = [];
   export let value: string = "";
-  export let handleChange = () => {};
+  export let handleChange: (newValue: string) => void = () => {};
   export let title: string = "";
   export let variant: "default" | "dots" = "default";
 
@@ -159,6 +159,8 @@
                 $writableValue === tab.id && "bg-primary",
                 "hover:bg-pink-200",
               ])}
+              aria-label={tab.title}
+              title={tab.title}
             ></button>
           {/if}
         {/each}

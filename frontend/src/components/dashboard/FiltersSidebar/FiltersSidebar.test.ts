@@ -10,7 +10,7 @@ describe("FiltersSidebar", () => {
     demoOptions: { country: ["england", "scotland"] },
     demoData: { country: { england: 10, scotland: 20 } },
     evidenceRich: false,
-    unseenResponsesOnly: false,
+    unseenResponses: false,
     loading: false,
   };
 
@@ -20,7 +20,7 @@ describe("FiltersSidebar", () => {
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
-      unseenResponsesOnly: testData.unseenResponsesOnly,
+      unseenResponses: testData.unseenResponses,
       loading: testData.loading,
     });
 
@@ -38,7 +38,7 @@ describe("FiltersSidebar", () => {
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
-      unseenResponsesOnly: testData.unseenResponsesOnly,
+      unseenResponses: testData.unseenResponses,
       loading: true,
     });
 
@@ -68,7 +68,7 @@ describe("FiltersSidebar", () => {
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
-      unseenResponsesOnly: testData.unseenResponsesOnly,
+      unseenResponses: testData.unseenResponses,
       setEvidenceRich: setEvidenceRichMock,
       setUnseenResponses: setUnseenResponsesMock,
       loading: false,
@@ -96,7 +96,7 @@ describe("FiltersSidebar", () => {
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
-      unseenResponsesOnly: testData.unseenResponsesOnly,
+      unseenResponses: testData.unseenResponses,
       setEvidenceRich: setEvidenceRichMock,
       setUnseenResponses: setUnseenResponsesMock,
       loading: false,
@@ -120,7 +120,7 @@ describe("FiltersSidebar", () => {
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
-      unseenResponsesOnly: testData.unseenResponsesOnly,
+      unseenResponses: testData.unseenResponses,
       loading: false,
     });
 

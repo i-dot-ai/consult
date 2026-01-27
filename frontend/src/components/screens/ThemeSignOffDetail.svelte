@@ -409,7 +409,7 @@
         </div>
 
         <p class="text-sm text-neutral-500">
-          {#if $selectedThemesStore.data?.results?.length > 0}
+          {#if ($selectedThemesStore.data?.results?.length ?? 0) > 0}
             Manage your {numSelectedThemesText(
               $selectedThemesStore.data?.results,
             )} for the AI in mapping responses. Edit titles and descriptions, or
@@ -430,6 +430,8 @@
             addingCustomTheme = false;
           }}
           handleCancel={() => (addingCustomTheme = false)}
+          initialTitle=""
+          initialDescription=""
         />
       </div>
     {/if}

@@ -3,7 +3,7 @@
 
   import { fade, fly } from "svelte/transition";
 
-  import type { SelectedTheme } from "../../../global/types";
+  import type { AnswersResponse, SelectedTheme } from "../../../global/types";
   import { createFetchStore, type MockFetch } from "../../../global/stores";
   import { getApiAnswersUrl } from "../../../global/routes";
   import {
@@ -41,7 +41,9 @@
     answersMock,
   }: Props = $props();
 
-  const answersStore = createFetchStore({ mockFetch: answersMock });
+  const answersStore = createFetchStore<AnswersResponse>({
+    mockFetch: answersMock,
+  });
 
   let showAnswers = $state(false);
   let editing = $state(false);
