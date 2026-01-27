@@ -3,6 +3,7 @@ from uuid import UUID
 from django.conf import settings
 from django.db import transaction
 from django.db.models import QuerySet
+from django_rq import job
 
 from backend.consultations.models import (
     CandidateTheme,
@@ -20,13 +21,17 @@ from backend.consultations.models import (
 
 logger = settings.LOGGER
 
-# Fields that should always be excluded when cloning
+# Fields to exclude when cloning most records
 _EXCLUDED_FIELDS = ["id", "created_at", "modified_at"]
+
+# Fields to exclude when cloning history records
+_HISTORY_EXCLUDED_FIELDS = ["history_id"]
 
 
 def _clone(
     queryset: QuerySet,
     fk_mappings: list[tuple[str, dict[UUID, UUID]]],
+    excluded_fields: list[str] = _EXCLUDED_FIELDS,
 ) -> dict[UUID, UUID]:
     """
     Clone all objects from queryset with updated foreign keys.
@@ -34,9 +39,10 @@ def _clone(
     Args:
         queryset: QuerySet of objects to clone
         fk_mappings: List of [ field_name, {old_id: new_id} ] for remapping foreign keys
+        excluded_fields: Fields to exclude from cloning (defaults to _EXCLUDED_FIELDS)
 
     Returns:
-        Dict mapping original IDs to cloned Ids
+        Dict mapping original IDs to cloned IDs
     """
     model = queryset.model
     originals = list(queryset.values())
@@ -45,7 +51,7 @@ def _clone(
     logger.info(f"_clone: cloning {len(originals)} {model.__name__} objects")
 
     for original in originals:
-        clone = {k: v for k, v in original.items() if k not in _EXCLUDED_FIELDS}
+        clone = {k: v for k, v in original.items() if k not in excluded_fields}
 
         for field_name, mapping in fk_mappings:
             old_value = original[field_name]
@@ -154,11 +160,38 @@ def clone_consultation(original: Consultation) -> Consultation:
         ResponseAnnotation.objects.filter(response__question__consultation=original),
         [("response_id", response_map)],
     )
-    _clone(
+    annotation_theme_map = _clone(
         ResponseAnnotationTheme.objects.filter(
             response_annotation__response__question__consultation=original
         ),
         [("response_annotation_id", annotation_map), ("theme_id", selected_theme_map)],
     )
 
+    # Clone historical records for ResponseAnnotation and ResponseAnnotationTheme
+    _clone(
+        ResponseAnnotation.history.model.objects.filter(id__in=annotation_map.keys()),
+        [("id", annotation_map), ("response_id", response_map)],
+        excluded_fields=_HISTORY_EXCLUDED_FIELDS,
+    )
+    _clone(
+        ResponseAnnotationTheme.history.model.objects.filter(id__in=annotation_theme_map.keys()),
+        [
+            ("id", annotation_theme_map),
+            ("response_annotation_id", annotation_map),
+            ("theme_id", selected_theme_map),
+        ],
+        excluded_fields=_HISTORY_EXCLUDED_FIELDS,
+    )
+
     return cloned
+
+
+@job("default", timeout=3600)
+def clone_consultation_job(consultation_id: UUID) -> UUID:
+    """
+    RQ job wrapper for clone_consultation.
+    """
+    original = Consultation.objects.get(id=consultation_id)
+    cloned = clone_consultation(original)
+    logger.info(f"Successfully cloned consultation {original.id} to {cloned.id}")
+    return cloned.id

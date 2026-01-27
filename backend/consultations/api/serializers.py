@@ -184,7 +184,7 @@ class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="theme.id")
     name = serializers.CharField(required=False, source="theme.name")
     description = serializers.CharField(required=False, source="theme.description")
-    key = serializers.CharField(required=False, source="theme.key")
+    key = serializers.CharField(required=False, allow_null=True, source="theme.key")
     assigned_by = serializers.SerializerMethodField()
 
     def to_internal_value(self, data):

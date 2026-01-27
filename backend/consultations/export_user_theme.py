@@ -51,16 +51,9 @@ def get_theme_mapping_output_row(
     except ResponseAnnotation.DoesNotExist:
         pass
 
-    # Build theme identifiers
-    original_theme_identifiers = []
-    for theme in original_themes:
-        identifier = theme.key if theme.key else theme.name
-        original_theme_identifiers.append(identifier)
-
-    current_theme_identifiers = []
-    for theme in current_themes:
-        identifier = theme.key if theme.key else theme.name
-        current_theme_identifiers.append(identifier)
+    # Build theme identifiers using SelectedTheme.id
+    original_theme_identifiers = [str(theme.id) for theme in original_themes]
+    current_theme_identifiers = [str(theme.id) for theme in current_themes]
 
     row_data = {
         "Response ID": response.respondent.themefinder_id,
