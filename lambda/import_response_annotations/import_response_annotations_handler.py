@@ -53,6 +53,7 @@ def lambda_handler(event, _context):
             "backend.data_pipeline.jobs.import_response_annotations",
             consultation_code,
             run_date,
+            timeout=3_600
         )
 
         logger.info("✅ RQ job enqueued successfully!")
