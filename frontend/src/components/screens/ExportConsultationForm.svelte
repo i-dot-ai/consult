@@ -10,6 +10,7 @@
   import Button from "../inputs/Button/Button.svelte";
   import Checkbox from "../inputs/Checkbox/Checkbox.svelte";
   import Text from "../Text/Text.svelte";
+  import { type FullAutoFill } from "svelte/elements";
 
   let sending: boolean = false;
   let errors: Record<string, string> = {};
@@ -120,7 +121,7 @@
       id="s3_key"
       name="s3_key"
       label="Where should the file be saved?"
-      autocomplete="false"
+      autocomplete={"false" as FullAutoFill}
       value={s3Key}
       setValue={setS3Key}
     ></TextInput>

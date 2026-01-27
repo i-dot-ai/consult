@@ -33,7 +33,7 @@ describe("Button", () => {
     render(Button, { highlighted: true });
 
     const button = screen.getByRole("button");
-    expect(button.getAttribute("aria-pressed")).toBeTruthy("true");
+    expect(button.getAttribute("aria-pressed")).toEqual("true");
   });
 
   it("should aria pressed if highlighted is passed but false", async () => {
