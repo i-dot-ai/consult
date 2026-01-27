@@ -1,13 +1,13 @@
 import { SvelteDate } from "svelte/reactivity";
 
-import ThemeSignOffDetail from "./ThemeSignOffDetail.svelte";
+import SignOffEditor from "./SignOffEditor.svelte";
 
 const consultationId = $state("");
 const questionId = $state("");
 
 let selectedThemes = $state([]);
 
-const generatedThemes = $state([
+const candidateThemes = $state([
   {
     id: "b1a2c3d4-e5f6-7890-abcd-1234567890ab",
     name: "Ethical AI Development",
@@ -47,8 +47,8 @@ const generatedThemes = $state([
 ]);
 
 export default {
-  name: "ThemeSignOffDetail",
-  component: ThemeSignOffDetail,
+  name: "SignOffEditor",
+  component: SignOffEditor,
   category: "Theme Sign Off",
   props: [
     { name: "consultationId", value: consultationId, type: "text" },
@@ -56,8 +56,8 @@ export default {
     { name: "questionDataMock", value: () => ({ number: 1 }) },
 
     {
-      name: "generatedThemesMock",
-      value: () => ({ results: generatedThemes }),
+      name: "candidateThemesMock",
+      value: () => ({ results: candidateThemes }),
     },
 
     { name: "selectedThemesMock", value: () => ({ results: selectedThemes }) },
@@ -72,11 +72,11 @@ export default {
           (theme) => theme.id !== themeId,
         );
 
-        const generatedTheme = findNestedTheme(
-          generatedThemes,
+        const candidateTheme = findNestedTheme(
+          candidateThemes,
           (theme) => theme.selectedtheme_id === themeId,
         );
-        generatedTheme.selectedtheme_id = null;
+        candidateTheme.selectedtheme_id = null;
       },
     },
 
@@ -131,15 +131,15 @@ export default {
     },
 
     {
-      name: "selectGeneratedThemeMock",
+      name: "selectCandidateThemeMock",
       value: (req) => {
         const themeId = req.url
           .split("/candidate-themes/")[1]
           .split("/select/")[0];
 
         // Recursively search child themes
-        const selectedGeneratedTheme = findNestedTheme(
-          generatedThemes,
+        const selectedCandidateTheme = findNestedTheme(
+          candidateThemes,
           (theme) => theme.id === themeId,
         );
 
@@ -147,16 +147,16 @@ export default {
 
         const newSelectedTheme = {
           id: newSelectedThemeId,
-          name: selectedGeneratedTheme?.name,
-          description: selectedGeneratedTheme?.description,
+          name: selectedCandidateTheme?.name,
+          description: selectedCandidateTheme?.description,
           version: 1,
-          candidatetheme_id: selectedGeneratedTheme?.id,
+          candidatetheme_id: selectedCandidateTheme?.id,
           last_modified_by: "email@example.com",
           modified_at: new SvelteDate().toISOString(),
         };
 
         selectedThemes = [...selectedThemes, newSelectedTheme];
-        selectedGeneratedTheme.selectedtheme_id = newSelectedThemeId;
+        selectedCandidateTheme.selectedtheme_id = newSelectedThemeId;
       },
     },
   ],

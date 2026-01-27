@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Modal from "../../Modal/Modal.svelte";
-  import Warning from "../../svg/material/Warning.svelte";
+  import Modal from "../../../Modal/Modal.svelte";
+  import Warning from "../../../svg/material/Warning.svelte";
 
   export type ErrorType =
     | {

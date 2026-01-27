@@ -1,13 +1,13 @@
-import AnswersList from "./AnswersList.svelte";
+import RepresentativeResponses from "./RepresentativeResponses.svelte";
 
 const variant = $state("selected");
 const title = $state("Test Title");
-const answers = $state(["Answer 1", "Answer 2", "Answer 3"]);
+const responses = $state(["Answer 1", "Answer 2", "Answer 3"]);
 const loading = $state(false);
 
 export default {
-  name: "AnswersList",
-  component: AnswersList,
+  name: "RepresentativeResponses",
+  component: RepresentativeResponses,
   category: "Theme Sign Off",
   props: [
     {
@@ -16,7 +16,7 @@ export default {
       type: "select",
       options: [
         { value: "selected", label: "Selected" },
-        { value: "generated", label: "Generated" },
+        { value: "candidate", label: "Candidate" },
       ],
     },
     {
@@ -25,8 +25,8 @@ export default {
       type: "text",
     },
     {
-      name: "answers",
-      value: answers,
+      name: "responses",
+      value: responses,
       type: "json",
     },
     {
@@ -40,7 +40,7 @@ export default {
       name: "No Answers",
       props: {
         variant: "selected",
-        answers: [],
+        responses: [],
         title: "No Answers Story",
       },
     },

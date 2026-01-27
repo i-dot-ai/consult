@@ -1,5 +1,5 @@
-import type { GeneratedTheme } from "../../../global/types";
-import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
+import type { GeneratedTheme } from "../../../../../global/types";
+import CandidateThemeCard from "./CandidateThemeCard.svelte";
 
 const theme = $state({
   id: "theme-id",
@@ -21,8 +21,8 @@ const answersMock = () => ({
 });
 
 export default {
-  name: "GeneratedThemeCard",
-  component: GeneratedThemeCard,
+  name: "CandidateThemeCard",
+  component: CandidateThemeCard,
   category: "Theme Sign Off",
   props: [
     {

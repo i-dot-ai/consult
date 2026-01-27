@@ -1,7 +1,7 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
 
-import ThemeSignOffArchive from "../../../../components/screens/ThemeSignOffArchive.svelte";
+import ThemeSignOffOverview from "../../../../components/theme-sign-off/overview/OverviewScreen.svelte";
 import Section from "../../../../components/Section/Section.svelte";
 import type { AstroGlobalRuntime } from "../../../../global/types";
 
@@ -10,7 +10,7 @@ const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
 <Layout>
   <Section>
-    <ThemeSignOffArchive
+    <ThemeSignOffOverview
       client:only="svelte"
       consultationId={consultationId || ""}
     />

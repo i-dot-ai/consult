@@ -3,23 +3,29 @@
 
   import { fade, fly } from "svelte/transition";
 
-  import type { AnswersResponse, SelectedTheme } from "../../../global/types";
-  import { createFetchStore, type MockFetch } from "../../../global/stores";
-  import { getApiAnswersUrl } from "../../../global/routes";
+  import type {
+    AnswersResponse,
+    SelectedTheme,
+  } from "../../../../../global/types";
+  import {
+    createFetchStore,
+    type MockFetch,
+  } from "../../../../../global/stores";
+  import { getApiAnswersUrl } from "../../../../../global/routes";
   import {
     formatTimeDeltaText,
     getTimeDeltaInMinutes,
-  } from "../../../global/utils";
+  } from "../../../../../global/utils";
 
-  import Panel from "../../dashboard/Panel/Panel.svelte";
-  import Button from "../../inputs/Button/Button.svelte";
-  import MaterialIcon from "../../MaterialIcon.svelte";
-  import Delete from "../../svg/material/Delete.svelte";
-  import Docs from "../../svg/material/Docs.svelte";
-  import EditSquare from "../../svg/material/EditSquare.svelte";
+  import Panel from "../../../../dashboard/Panel/Panel.svelte";
+  import Button from "../../../../inputs/Button/Button.svelte";
+  import MaterialIcon from "../../../../MaterialIcon.svelte";
+  import Delete from "../../../../svg/material/Delete.svelte";
+  import Docs from "../../../../svg/material/Docs.svelte";
+  import EditSquare from "../../../../svg/material/EditSquare.svelte";
   import ThemeForm from "../ThemeForm/ThemeForm.svelte";
-  import AnswersList from "../AnswersList/AnswersList.svelte";
-  import Tag from "../../Tag/Tag.svelte";
+  import RepresentativeResponses from "../../RepresentativeResponses/RepresentativeResponses.svelte";
+  import Tag from "../../../../Tag/Tag.svelte";
 
   export interface Props {
     consultationId: string;
@@ -143,10 +149,10 @@
               transition:fly={{ x: 300 }}
               class="grow pt-4 sm:ml-4 sm:w-2/3 sm:border-l sm:border-neutral-200 sm:pl-4 sm:pt-0"
             >
-              <AnswersList
+              <RepresentativeResponses
                 title="Representative Responses"
                 loading={$answersStore.isLoading}
-                answers={$answersStore.data?.all_respondents
+                responses={$answersStore.data?.all_respondents
                   .slice(0, maxAnswers)
                   .map((answer) => answer.free_text_answer_text) || []}
               />

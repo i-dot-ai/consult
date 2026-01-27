@@ -1,9 +1,9 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`GeneratedThemeCard > should render 1`] = `
+exports[`CandidateThemeCard > should render 1`] = `
 <div>
   <div
-    class="generated-theme-card svelte-2iwj05"
+    class="generated-theme-card svelte-1htyce9"
     style="margin-left: 0rem;"
   >
     <div
@@ -14,7 +14,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
         class="flex flex-wrap sm:flex-nowrap"
       >
         <div
-          class="transition-all duration-300 w-auto md:w-auto svelte-2iwj05"
+          class="transition-all duration-300 w-auto md:w-auto svelte-1htyce9"
         >
           <div
             class="mb-2 flex items-center justify-between"
@@ -32,7 +32,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
                 </h3>
                  
                 <div
-                  class="svelte-2iwj05"
+                  class="svelte-1htyce9"
                 >
                   <div
                     class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-secondary bg-teal-50 border border-teal-400"

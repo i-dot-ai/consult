@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
-import AnswersList from "./AnswersList.svelte";
-import AnswersListStory from "./AnswersListStory.svelte";
+import RepresentativeResponses from "./RepresentativeResponses.svelte";
+import RepresentativeResponsesStory from "./RepresentativeResponses.story.svelte";
 
-describe("AnswersList", () => {
+describe("RepresentativeResponses", () => {
   const testData = {
     title: "Test Title",
-    answers: ["Answer 1", "Answer 2"],
+    responses: ["Answer 1", "Answer 2"],
   };
 
   it("should render", async () => {
-    const { container } = render(AnswersList, {
+    const { container } = render(RepresentativeResponses, {
       ...testData,
     });
 
@@ -33,20 +33,28 @@ describe("AnswersList", () => {
   it("should render not found message if no answers", async () => {
     const NOT_FOUND_MESSAGE = "There are no answers";
 
-    render(AnswersList, {
+    render(RepresentativeResponses, {
       ...testData,
-      answers: undefined,
+      responses: undefined,
     });
 
     expect(screen.getByText(NOT_FOUND_MESSAGE)).toBeInTheDocument();
   });
 
   it("should have a story configured correctly", () => {
-    expect(AnswersListStory).toHaveProperty("name", "AnswersList");
-    expect(AnswersListStory).toHaveProperty("component", AnswersList);
-    expect(AnswersListStory).toHaveProperty("props");
+    expect(RepresentativeResponsesStory).toHaveProperty(
+      "name",
+      "RepresentativeResponses",
+    );
+    expect(RepresentativeResponsesStory).toHaveProperty(
+      "component",
+      RepresentativeResponses,
+    );
+    expect(RepresentativeResponsesStory).toHaveProperty("props");
 
-    const propsDefined = AnswersListStory.props.map((prop) => prop.name);
-    expect(propsDefined).toEqual(["variant", "title", "answers", "loading"]);
+    const propsDefined = RepresentativeResponsesStory.props.map(
+      (prop) => prop.name,
+    );
+    expect(propsDefined).toEqual(["variant", "title", "responses", "loading"]);
   });
 });

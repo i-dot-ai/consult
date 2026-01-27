@@ -3,19 +3,25 @@
 
   import { slide, fly } from "svelte/transition";
 
-  import type { AnswersResponse, GeneratedTheme } from "../../../global/types";
-  import { createFetchStore, type MockFetch } from "../../../global/stores";
-  import { getApiAnswersUrl } from "../../../global/routes";
+  import type {
+    AnswersResponse,
+    GeneratedTheme,
+  } from "../../../../../global/types";
+  import {
+    createFetchStore,
+    type MockFetch,
+  } from "../../../../../global/stores";
+  import { getApiAnswersUrl } from "../../../../../global/routes";
 
-  import Panel from "../../dashboard/Panel/Panel.svelte";
-  import Button from "../../inputs/Button/Button.svelte";
-  import MaterialIcon from "../../MaterialIcon.svelte";
-  import ChevronRight from "../../svg/material/ChevronRight.svelte";
-  import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
-  import Tag from "../../Tag/Tag.svelte";
-  import AnswersList from "../AnswersList/AnswersList.svelte";
-  import Visibility from "../../svg/material/Visibility.svelte";
-  import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
+  import Panel from "../../../../dashboard/Panel/Panel.svelte";
+  import Button from "../../../../inputs/Button/Button.svelte";
+  import MaterialIcon from "../../../../MaterialIcon.svelte";
+  import ChevronRight from "../../../../svg/material/ChevronRight.svelte";
+  import CandidateThemeCard from "./CandidateThemeCard.svelte";
+  import Tag from "../../../../Tag/Tag.svelte";
+  import RepresentativeResponses from "../../RepresentativeResponses/RepresentativeResponses.svelte";
+  import Visibility from "../../../../svg/material/Visibility.svelte";
+  import LoadingIndicator from "../../../../LoadingIndicator/LoadingIndicator.svelte";
 
   export interface Props {
     consultationId: string;
@@ -158,11 +164,11 @@
           transition:fly={{ x: 300 }}
           class="grow pt-4 sm:ml-4 sm:w-2/3 sm:border-l sm:border-neutral-200 sm:pl-4 sm:pt-0"
         >
-          <AnswersList
-            variant="generated"
+          <RepresentativeResponses
+            variant="candidate"
             title="Representative Responses"
             loading={$answersStore.isLoading}
-            answers={$answersStore.data?.all_respondents
+            responses={$answersStore.data?.all_respondents
               .slice(0, maxAnswers)
               .map((answer) => answer.free_text_answer_text) || []}
           />
@@ -176,7 +182,7 @@
   {#if expanded}
     <div transition:slide class="pt-4">
       {#each theme.children as childTheme (childTheme.id)}
-        <GeneratedThemeCard
+        <CandidateThemeCard
           {consultationId}
           {questionId}
           theme={childTheme}

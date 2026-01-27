@@ -7,11 +7,11 @@ import AccordionStory from "../Accordion/AccordionStory.svelte";
 import PanelStory from "../dashboard/Panel/PanelStory.svelte";
 import DemoFilterStory from "../DemoFilter/DemoFilterStory.svelte";
 import RespondentSidebarItemStory from "../dashboard/RespondentSidebarItem/RespondentSidebarItemStory.svelte";
-import ThemeFormStory from "../theme-sign-off/ThemeForm/ThemeFormStory.svelte";
-import SelectedThemeCardStory from "../theme-sign-off/SelectedThemeCard/SelectedThemeCardStory.svelte";
-import AnswersListStory from "../theme-sign-off/AnswersList/AnswersListStory.svelte";
-import GeneratedThemeCardStory from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCardStory.svelte";
-import ThemeSignoffDetailStory from "../screens/ThemeSignOffDetailStory.svelte";
+import ThemeFormStory from "../theme-sign-off/question/selected-themes/ThemeForm/ThemeFormStory.svelte";
+import SelectedThemeCardStory from "../theme-sign-off/question/selected-themes/SelectedThemeCard/SelectedThemeCardStory.svelte";
+import RepresentativeResponsesStory from "../theme-sign-off/question/RepresentativeResponses/RepresentativeResponses.story.svelte";
+import CandidateThemeCardStory from "../theme-sign-off/question/candidate-themes/CandidateThemeCard/CandidateThemeCard.story.svelte";
+import SignOffEditorStory from "../theme-sign-off/question/SignOffEditor.story.svelte";
 import NavigationHeaderStory from "../navigation/Header/HeaderStory.svelte";
 import HeaderConsultStory from "../navigation/HeaderConsult/HeaderConsultStory.svelte";
 import BreadcrumbsStory from "../navigation/Breadcrumbs/BreadcrumbsStory.svelte";
@@ -52,9 +52,9 @@ export default [
   RespondentSidebarItemStory,
   ThemeFormStory,
   SelectedThemeCardStory,
-  AnswersListStory,
-  GeneratedThemeCardStory,
-  ThemeSignoffDetailStory,
+  RepresentativeResponsesStory,
+  CandidateThemeCardStory,
+  SignOffEditorStory,
   NavigationHeaderStory,
   HeaderConsultStory,
   BreadcrumbsStory,

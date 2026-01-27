@@ -2,14 +2,14 @@
   import clsx from "clsx";
   import type { Component } from "svelte";
 
-  import Button from "../../inputs/Button/Button.svelte";
-  import Panel from "../../dashboard/Panel/Panel.svelte";
-  import MaterialIcon from "../../MaterialIcon.svelte";
-  import CheckCircle from "../../svg/material/CheckCircle.svelte";
-  import Finance from "../../svg/material/Finance.svelte";
-  import WandStars from "../../svg/material/WandStars.svelte";
-  import { getConsultationDetailUrl } from "../../../global/routes";
-  import type { Consultation } from "../../../global/types";
+  import Button from "../../../inputs/Button/Button.svelte";
+  import Panel from "../../../dashboard/Panel/Panel.svelte";
+  import MaterialIcon from "../../../MaterialIcon.svelte";
+  import CheckCircle from "../../../svg/material/CheckCircle.svelte";
+  import Finance from "../../../svg/material/Finance.svelte";
+  import WandStars from "../../../svg/material/WandStars.svelte";
+  import { getConsultationDetailUrl } from "../../../../global/routes";
+  import type { Consultation } from "../../../../global/types";
 
   interface Props {
     consultation: { id: Consultation["id"]; stage: Consultation["stage"] };

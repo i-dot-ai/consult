@@ -1,13 +1,13 @@
 <script lang="ts">
-  import Accordion from "../../Accordion/Accordion.svelte";
-  import Panel from "../../dashboard/Panel/Panel.svelte";
-  import Button from "../../inputs/Button/Button.svelte";
-  import Textarea from "../../inputs/Textarea/Textarea.svelte";
-  import TextInput from "../../inputs/TextInput/TextInput.svelte";
-  import MaterialIcon from "../../MaterialIcon.svelte";
-  import EditSquare from "../../svg/material/EditSquare.svelte";
-  import Plus from "../../svg/material/Plus.svelte";
-  import Tip from "../../svg/material/Tip.svelte";
+  import Accordion from "../../../../Accordion/Accordion.svelte";
+  import Panel from "../../../../dashboard/Panel/Panel.svelte";
+  import Button from "../../../../inputs/Button/Button.svelte";
+  import Textarea from "../../../../inputs/Textarea/Textarea.svelte";
+  import TextInput from "../../../../inputs/TextInput/TextInput.svelte";
+  import MaterialIcon from "../../../../MaterialIcon.svelte";
+  import EditSquare from "../../../../svg/material/EditSquare.svelte";
+  import Plus from "../../../../svg/material/Plus.svelte";
+  import Tip from "../../../../svg/material/Tip.svelte";
 
   export interface Props {
     initialTitle: string;

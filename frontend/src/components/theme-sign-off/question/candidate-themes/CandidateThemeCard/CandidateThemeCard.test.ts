@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
-import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
-import GeneratedThemeCardStory from "./GeneratedThemeCardStory.svelte";
+import CandidateThemeCard from "./CandidateThemeCard.svelte";
+import CandidateThemeCardStory from "./CandidateThemeCard.story.svelte";
 
-describe("GeneratedThemeCard", () => {
+describe("CandidateThemeCard", () => {
   const testData = {
     consultationId: "test-consultation",
     questionId: "test-question",
@@ -21,7 +21,7 @@ describe("GeneratedThemeCard", () => {
   const answers = ["Answer 1", "Answer 2"];
 
   it("should render", async () => {
-    const { container } = render(GeneratedThemeCard, testData);
+    const { container } = render(CandidateThemeCard, testData);
 
     expect(screen.getByText(testData.theme.name)).toBeInTheDocument();
     expect(screen.getByText(testData.theme.description)).toBeInTheDocument();
@@ -40,7 +40,7 @@ describe("GeneratedThemeCard", () => {
       name: "Child Theme",
       description: "This is a child theme",
     };
-    render(GeneratedThemeCard, {
+    render(CandidateThemeCard, {
       ...testData,
       theme: {
         ...testData.theme,
@@ -59,7 +59,7 @@ describe("GeneratedThemeCard", () => {
       name: "Child Theme",
       description: "This is a child theme",
     };
-    render(GeneratedThemeCard, {
+    render(CandidateThemeCard, {
       ...testData,
       theme: {
         ...testData.theme,
@@ -73,17 +73,17 @@ describe("GeneratedThemeCard", () => {
   });
 
   it("should have a story configured correctly", () => {
-    expect(GeneratedThemeCardStory).toHaveProperty(
+    expect(CandidateThemeCardStory).toHaveProperty(
       "name",
-      "GeneratedThemeCard",
+      "CandidateThemeCard",
     );
-    expect(GeneratedThemeCardStory).toHaveProperty(
+    expect(CandidateThemeCardStory).toHaveProperty(
       "component",
-      GeneratedThemeCard,
+      CandidateThemeCard,
     );
-    expect(GeneratedThemeCardStory).toHaveProperty("props");
+    expect(CandidateThemeCardStory).toHaveProperty("props");
 
-    const propsDefined = GeneratedThemeCardStory.props.map((prop) => prop.name);
+    const propsDefined = CandidateThemeCardStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual([
       "theme",
       "level",

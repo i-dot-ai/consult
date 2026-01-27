@@ -5,7 +5,7 @@
   import { fade, slide } from "svelte/transition";
 
   import { createQuery, createMutation } from "@tanstack/svelte-query";
-  import { queryClient } from "../../global/queryClient";
+  import { queryClient } from "../../../global/queryClient";
 
   import {
     getApiConfirmSignOffUrl,
@@ -16,7 +16,7 @@
     getApiSelectGeneratedThemeUrl,
     getApiUpdateSelectedThemeUrl,
     getThemeSignOffUrl,
-  } from "../../global/routes";
+  } from "../../../global/routes";
 
   import {
     type GeneratedThemesResponse,
@@ -24,29 +24,27 @@
     type SelectedThemesResponse,
     type GeneratedTheme,
     type SelectedTheme,
-  } from "../../global/types";
+  } from "../../../global/types";
 
-  import Panel from "../dashboard/Panel/Panel.svelte";
-  import TitleRow from "../dashboard/TitleRow.svelte";
-  import Button from "../inputs/Button/Button.svelte";
-  import MaterialIcon from "../MaterialIcon.svelte";
-  import Price from "../svg/material/Price.svelte";
-  import ThemeForm from "../theme-sign-off/ThemeForm/ThemeForm.svelte";
-  import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
-  import SelectedThemeCard from "../theme-sign-off/SelectedThemeCard/SelectedThemeCard.svelte";
-  import GeneratedThemeCard from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCard.svelte";
-  import CheckCircle from "../svg/material/CheckCircle.svelte";
-  import OnboardingTour from "../OnboardingTour/OnboardingTour.svelte";
-  import SmartToy from "../svg/material/SmartToy.svelte";
-  import Stacks from "../svg/material/Stacks.svelte";
-  import Tag from "../Tag/Tag.svelte";
-  import Modal from "../Modal/Modal.svelte";
-  import Alert from "../Alert.svelte";
-  import Target from "../svg/material/Target.svelte";
-  import EditSquare from "../svg/material/EditSquare.svelte";
-  import ErrorModal, {
-    type ErrorType,
-  } from "../theme-sign-off/ErrorModal/ErrorModal.svelte";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import TitleRow from "../../dashboard/TitleRow.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import Price from "../../svg/material/Price.svelte";
+  import ThemeForm from "./selected-themes/ThemeForm/ThemeForm.svelte";
+  import QuestionCard from "../../dashboard/QuestionCard/QuestionCard.svelte";
+  import SelectedThemeCard from "./selected-themes/SelectedThemeCard/SelectedThemeCard.svelte";
+  import CandidateThemeCard from "./candidate-themes/CandidateThemeCard/CandidateThemeCard.svelte";
+  import CheckCircle from "../../svg/material/CheckCircle.svelte";
+  import OnboardingTour from "../../OnboardingTour/OnboardingTour.svelte";
+  import SmartToy from "../../svg/material/SmartToy.svelte";
+  import Stacks from "../../svg/material/Stacks.svelte";
+  import Tag from "../../Tag/Tag.svelte";
+  import Modal from "../../Modal/Modal.svelte";
+  import Alert from "../../Alert.svelte";
+  import Target from "../../svg/material/Target.svelte";
+  import EditSquare from "../../svg/material/EditSquare.svelte";
+  import ErrorModal, { type ErrorType } from "./ErrorModal/ErrorModal.svelte";
 
   interface Props {
     consultationId: string;
@@ -70,9 +68,9 @@
     () => queryClient,
   );
 
-  const generatedThemesQuery = createQuery<GeneratedThemesResponse>(
+  const candidateThemesQuery = createQuery<GeneratedThemesResponse>(
     () => ({
-      queryKey: ["generatedThemes", consultationId, questionId],
+      queryKey: ["candidateThemes", consultationId, questionId],
       queryFn: async () => {
         const response = await fetch(
           getApiGetGeneratedThemesUrl(consultationId, questionId),
@@ -134,21 +132,23 @@
         }
       },
       onSuccess: () => {
+        themeBeingDeleted = null;
         queryClient.invalidateQueries({
           queryKey: ["selectedThemes", consultationId, questionId],
         });
         queryClient.invalidateQueries({
-          queryKey: ["generatedThemes", consultationId, questionId],
+          queryKey: ["candidateThemes", consultationId, questionId],
         });
       },
       onError: (error) => {
+        themeBeingDeleted = null;
         if (error.status === 404) {
           // Theme already deleted, just refetch
           queryClient.invalidateQueries({
             queryKey: ["selectedThemes", consultationId, questionId],
           });
           queryClient.invalidateQueries({
-            queryKey: ["generatedThemes", consultationId, questionId],
+            queryKey: ["candidateThemes", consultationId, questionId],
           });
         } else if (error.status === 412) {
           errorData = {
@@ -194,11 +194,13 @@
         return response.json();
       },
       onSuccess: () => {
+        themeBeingUpdated = null;
         queryClient.invalidateQueries({
           queryKey: ["selectedThemes", consultationId, questionId],
         });
       },
       onError: (error) => {
+        themeBeingUpdated = null;
         if (error.status === 404) {
           errorData = { type: "theme-does-not-exist" };
         } else if (error.status === 412) {
@@ -215,7 +217,7 @@
     () => queryClient,
   );
 
-  const selectGeneratedThemeMutation = createMutation(
+  const selectCandidateThemeMutation = createMutation(
     () => ({
       mutationFn: async (themeId: string) => {
         const response = await fetch(
@@ -230,7 +232,7 @@
           queryKey: ["selectedThemes", consultationId, questionId],
         });
         queryClient.invalidateQueries({
-          queryKey: ["generatedThemes", consultationId, questionId],
+          queryKey: ["candidateThemes", consultationId, questionId],
         });
       },
     }),
@@ -266,8 +268,10 @@
   let addingCustomTheme: boolean = $state(false);
   let errorData: ErrorType | null = $state(null);
   let themesBeingSelected: string[] = $state([]);
+  let themeBeingDeleted: string | null = $state(null);
+  let themeBeingUpdated: string | null = $state(null);
 
-  const flattenGeneratedThemes = (
+  const flattenCandidateThemes = (
     items?: GeneratedTheme[],
   ): GeneratedTheme[] => {
     if (!items) {
@@ -278,22 +282,22 @@
       const { children, ...attrs } = item;
       result.push(attrs);
       if (children?.length) {
-        result.push(...flattenGeneratedThemes(children));
+        result.push(...flattenCandidateThemes(children));
       }
     }
     return result;
   };
 
-  let flatGeneratedThemes = $derived(
-    flattenGeneratedThemes(generatedThemesQuery.data?.results),
+  let flatCandidateThemes = $derived(
+    flattenCandidateThemes(candidateThemesQuery.data?.results),
   );
 
   let expandedThemes: string[] = $derived(
-    flatGeneratedThemes.map((theme) => theme.id),
+    flatCandidateThemes.map((theme) => theme.id),
   );
 
   let hasNestedThemes = $derived(
-    generatedThemesQuery.data?.results?.some((theme: GeneratedTheme) =>
+    candidateThemesQuery.data?.results?.some((theme: GeneratedTheme) =>
       Boolean(theme.children && theme.children.length > 0),
     ),
   );
@@ -303,7 +307,7 @@
       queryKey: ["selectedThemes", consultationId, questionId],
     });
     queryClient.invalidateQueries({
-      queryKey: ["generatedThemes", consultationId, questionId],
+      queryKey: ["candidateThemes", consultationId, questionId],
     });
     errorData = null;
   };
@@ -325,6 +329,7 @@
       return;
     }
 
+    themeBeingDeleted = themeId;
     deleteThemeMutation.mutate({
       themeId,
       version: selectedTheme.version,
@@ -341,6 +346,7 @@
       return;
     }
 
+    themeBeingUpdated = themeId;
     updateThemeMutation.mutate({
       themeId,
       version: selectedTheme.version,
@@ -349,11 +355,11 @@
     });
   };
 
-  const handleSelectGeneratedTheme = async (newTheme: GeneratedTheme) => {
+  const handleSelectCandidateTheme = async (newTheme: GeneratedTheme) => {
     themesBeingSelected = [...themesBeingSelected, newTheme.id];
 
     try {
-      const createdTheme = await selectGeneratedThemeMutation.mutateAsync(
+      const createdTheme = await selectCandidateThemeMutation.mutateAsync(
         newTheme.id,
       );
       await queryClient.refetchQueries({
@@ -386,11 +392,11 @@
   };
 
   const isAllThemesExpanded = (): boolean => {
-    return expandedThemes.length === flatGeneratedThemes.length;
+    return expandedThemes.length === flatCandidateThemes.length;
   };
 
   const expandAllThemes = () => {
-    expandedThemes = flatGeneratedThemes.map((theme) => theme.id);
+    expandedThemes = flatCandidateThemes.map((theme) => theme.id);
   };
 
   const collapseAllThemes = () => {
@@ -502,6 +508,7 @@
           handleCancel={() => (addingCustomTheme = false)}
           initialTitle=""
           initialDescription=""
+          loading={createThemeMutation.isPending}
         />
       </div>
     {/if}
@@ -529,6 +536,8 @@
               theme={selectedTheme}
               {removeTheme}
               {updateTheme}
+              isDeleting={themeBeingDeleted === selectedTheme.id}
+              isUpdating={themeBeingUpdated === selectedTheme.id}
             />
           </div>
         {/each}
@@ -568,6 +577,7 @@
       open={isConfirmSignOffModalOpen}
       setOpen={(newOpen: boolean) => (isConfirmSignOffModalOpen = newOpen)}
       confirmText="Confirm Sign Off"
+      confirmDisabled={confirmSignOffMutation.isPending}
       handleConfirm={confirmSignOff}
     >
       <p class="text-sm text-neutral-500">
@@ -644,8 +654,8 @@
               <h3>AI Generated Themes</h3>
 
               <Tag variant="success">
-                {flattenGeneratedThemes(
-                  generatedThemesQuery.data?.results || [],
+                {flattenCandidateThemes(
+                  candidateThemesQuery.data?.results || [],
                 ).length} available
               </Tag>
             </div>
@@ -693,8 +703,8 @@
         </Panel>
       </div>
 
-      {#each generatedThemesQuery.data?.results ?? [] as theme (theme.id)}
-        <GeneratedThemeCard
+      {#each candidateThemesQuery.data?.results ?? [] as theme (theme.id)}
+        <CandidateThemeCard
           {consultationId}
           {questionId}
           {theme}
@@ -706,7 +716,7 @@
               expandTheme(id);
             }
           }}
-          handleSelect={handleSelectGeneratedTheme}
+          handleSelect={handleSelectCandidateTheme}
           {themesBeingSelected}
         />
       {/each}

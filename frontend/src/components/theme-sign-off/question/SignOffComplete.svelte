@@ -4,26 +4,26 @@
   import { onMount } from "svelte";
   import { fade, slide } from "svelte/transition";
 
-  import { createFetchStore } from "../../global/stores";
+  import { createFetchStore } from "../../../global/stores";
   import {
     getApiGetSelectedThemesUrl,
     getApiQuestionUrl,
     getThemeSignOffUrl,
     Routes,
-  } from "../../global/routes";
-  import type { Question, SelectedThemesResponse } from "../../global/types";
+  } from "../../../global/routes";
+  import type { Question, SelectedThemesResponse } from "../../../global/types";
 
-  import Panel from "../dashboard/Panel/Panel.svelte";
-  import TitleRow from "../dashboard/TitleRow.svelte";
-  import Tag from "../Tag/Tag.svelte";
-  import Button from "../inputs/Button/Button.svelte";
-  import MaterialIcon from "../MaterialIcon.svelte";
-  import Price from "../svg/material/Price.svelte";
-  import CheckCircle from "../svg/material/CheckCircle.svelte";
-  import Headphones from "../svg/material/Headphones.svelte";
-  import Help from "../svg/material/Help.svelte";
-  import ArrowForward from "../svg/material/ArrowForward.svelte";
-  import Alert from "../Alert.svelte";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import TitleRow from "../../dashboard/TitleRow.svelte";
+  import Tag from "../../Tag/Tag.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import Price from "../../svg/material/Price.svelte";
+  import CheckCircle from "../../svg/material/CheckCircle.svelte";
+  import Headphones from "../../svg/material/Headphones.svelte";
+  import Help from "../../svg/material/Help.svelte";
+  import ArrowForward from "../../svg/material/ArrowForward.svelte";
+  import Alert from "../../Alert.svelte";
 
   interface Props {
     questionId: string;
