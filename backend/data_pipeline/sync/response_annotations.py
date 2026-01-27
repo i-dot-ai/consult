@@ -386,7 +386,9 @@ def _build_batch_key_to_db_theme_lookup(
     # Bulk update theme keys
     if themes_to_update:
         SelectedTheme.objects.bulk_update(themes_to_update, ["key"])
-        logger.info(f"Updated keys for {len(themes_to_update)} themes for question {question.number}")
+        logger.info(
+            f"Updated keys for {len(themes_to_update)} themes for question {question.number}"
+        )
 
     logger.info(
         f"Built theme lookup with {len(batch_key_to_db_theme)} themes for question {question.number}"
