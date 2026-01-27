@@ -9,6 +9,13 @@ export default defineConfig({
   output: "server",
   integrations: [svelte(), tailwind({ applyBaseStyles: false })],
 
+  vite: {
+    optimizeDeps: {
+      // svelte/elements is a types-only export, exclude from dependency scanning
+      exclude: ["svelte/elements"],
+    },
+  },
+
   image: {
     service: {
       entrypoint: "astro/assets/services/sharp",
