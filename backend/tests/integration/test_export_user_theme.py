@@ -7,7 +7,9 @@ from backend.consultations import models
 from backend.consultations.export_user_theme import export_user_theme
 from freezegun import freeze_time
 
-from tests.utils import get_sorted_theme_string
+
+def format_theme_string(themes: list[models.SelectedTheme]) -> str:
+    return ", ".join(sorted([str(theme.id) for theme in themes]))
 
 
 @pytest.mark.django_db
@@ -64,8 +66,8 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
         "Question text": free_text_question.text,
         "Response text": response.free_text,
         "Response has been audited": str(True),
-        "Original themes": get_sorted_theme_string([theme1, theme2]),
-        "Current themes": get_sorted_theme_string([theme2, theme3]),
+        "Original themes": format_theme_string([theme1, theme2]),
+        "Current themes": format_theme_string([theme2, theme3]),
         "Position": "AGREEMENT",
         "Auditors": user.email,
         "First audited at": "2023-01-01 12:00:00+00:00",
@@ -79,8 +81,8 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
         "Question text": free_text_question.text,
         "Response text": response2.free_text,
         "Response has been audited": str(False),
-        "Original themes": f"{theme3.key}",
-        "Current themes": f"{theme3.key}",  # When not audited, current = original
+        "Original themes": str(theme3.id),
+        "Current themes": str(theme3.id),  # When not audited, current = original
         "Position": "UNCLEAR",
         "Auditors": "",
         "First audited at": "",
