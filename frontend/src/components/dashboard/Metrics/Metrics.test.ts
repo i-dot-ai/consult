@@ -107,10 +107,7 @@ describe("Metrics", () => {
 
     render(Metrics, {
       ...testData,
-      demoOptions: [
-        ...testData.demoOptions,
-        ...NEXT_PAGE_DEMO_OPTIONS,
-      ],
+      demoOptions: [...testData.demoOptions, ...NEXT_PAGE_DEMO_OPTIONS],
     });
 
     testData.demoOptions.forEach((opt) => {
@@ -119,7 +116,7 @@ describe("Metrics", () => {
 
     NEXT_PAGE_DEMO_OPTIONS.forEach((opt) => {
       expect(screen.queryByText(opt.value)).not.toBeInTheDocument();
-    })
+    });
   });
 
   it("should not render demo options section if no data", () => {
