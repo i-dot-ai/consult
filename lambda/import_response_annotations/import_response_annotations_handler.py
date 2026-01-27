@@ -50,9 +50,10 @@ def lambda_handler(event, _context):
         queue = Queue(queue_name, connection=redis_conn)
         logger.info("Enqueueing RQ job to import response annotations...")
         job = queue.enqueue(
-            "consultation_analyser.data_pipeline.jobs.import_response_annotations",
+            "backend.data_pipeline.jobs.import_response_annotations",
             consultation_code,
             run_date,
+            timeout=3_600
         )
 
         logger.info("✅ RQ job enqueued successfully!")

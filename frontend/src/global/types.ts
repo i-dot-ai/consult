@@ -1,3 +1,5 @@
+import type { SvelteURLSearchParams } from "svelte/reactivity";
+
 export interface NavItem {
   text: string;
   url: string;
@@ -120,8 +122,8 @@ export enum TabDirections {
   Backward = "backward",
 }
 
-export interface SearchableSelectOption {
-  value: unknown;
+export interface SearchableSelectOption<T> {
+  value: T;
   label: string;
   description?: string;
   disabled?: boolean;
@@ -307,3 +309,17 @@ export enum ConsultationStageNames {
   THEME_MAPPING = "theme_mapping",
   ANALYSIS = "analysis",
 }
+export type AstroGlobalRuntime = {
+  url: {
+    pathname: string;
+    searchParams: SvelteURLSearchParams;
+  };
+  params: {
+    consultationId?: string;
+    questionId?: string;
+    userId?: string;
+    responseId?: string;
+    respondentId?: string;
+  };
+  redirect: (url: string) => void;
+};

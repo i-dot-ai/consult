@@ -410,6 +410,8 @@
             addingCustomTheme = false;
           }}
           handleCancel={() => (addingCustomTheme = false)}
+          initialTitle=""
+          initialDescription=""
         />
       </div>
     {/if}

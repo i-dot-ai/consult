@@ -24,7 +24,7 @@
   function removeTheme(id: string) {
     stagedThemes = stagedThemes.filter((theme) => theme.id !== id);
   }
-  function addTheme(option: SearchableSelectOption) {
+  function addTheme(option: SearchableSelectOption<string>) {
     if (stagedThemes.find((theme) => theme.id === option.value)) {
       return;
     }
@@ -76,7 +76,7 @@
     themeOptions: ResponseTheme[];
     evidenceRich: boolean;
     resetData: () => void;
-    setEditing: (newVal: boolean) => void;
+    setEditing: (newValue: boolean) => void;
     updateAnswerMock?: MockFetch;
   }
 
@@ -169,9 +169,9 @@
             disabled: false,
           }))}
           selectedValues={stagedThemes.map((theme) => theme.id)}
-          handleChange={(option: SearchableSelectOption) => {
-            if (option.value) {
-              addTheme(option.value);
+          handleChange={(newTheme: SearchableSelectOption<string>) => {
+            if (newTheme) {
+              addTheme(newTheme);
             }
           }}
         />

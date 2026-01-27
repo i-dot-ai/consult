@@ -41,7 +41,7 @@ exports[`SelectedThemeCard > should render 1`] = `
               class="mb-4 block text-xs text-neutral-500"
             >
               Added
-              NaN minute ago by 
+              a moment ago by testuser
             </small>
              
             <footer

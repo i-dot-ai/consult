@@ -5,17 +5,23 @@ import Text from "../../../../components/Text/Text.svelte";
 import Title from "../../../../components/Title.svelte";
 import ExportConsultationForm from "../../../../components/screens/ExportConsultationForm.svelte";
 import { fetchBackendApi } from "../../../../global/api";
-import type { ConsultationResponse, Question } from "../../../../global/types";
+import type {
+  AstroGlobalRuntime,
+  ConsultationResponse,
+  Question,
+} from "../../../../global/types";
 import {
   getApiConsultationUrl,
   getApiQuestionsUrl,
   Routes,
 } from "../../../../global/routes";
 
-const { consultationId } = Astro.params;
+const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
 if (!consultationId) {
-  return Astro.redirect(Routes.SupportConsultations);
+  return (Astro as unknown as AstroGlobalRuntime).redirect(
+    Routes.SupportConsultations,
+  );
 }
 
 let consultation = await fetchBackendApi<ConsultationResponse>(
@@ -41,7 +47,6 @@ const bucketName = process.env?.AWS_BUCKET_NAME;
     <ExportConsultationForm
       client:load
       questions={questions}
-      consultationId={consultationId}
       env={env}
       bucketName={bucketName}
     />

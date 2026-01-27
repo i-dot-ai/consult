@@ -59,10 +59,10 @@
   export let themes: ResponseTheme[] = [];
 
   export let evidenceRich: boolean = false;
-  export let setEvidenceRich = () => {};
+  export let setEvidenceRich: (newValue: boolean) => void = () => {};
 
   export let unseenResponses: boolean = false;
-  export let setUnseenResponses: (newVal: boolean) => void = () => {};
+  export let setUnseenResponses: (newValue: boolean) => void = () => {};
 
   export let flaggedOnly: boolean = false;
   export let setFlaggedOnly: (newVal: boolean) => void = () => {};
@@ -276,9 +276,11 @@
 
                     <div slot="panel" class="w-full bg-white p-4 shadow-lg">
                       <SearchableSelect
-                        handleChange={(option: SearchableSelectOption) => {
-                          if (option.value?.value) {
-                            themeFilters.update(option.value.value);
+                        handleChange={(
+                          newTheme: SearchableSelectOption<string>,
+                        ) => {
+                          if (newTheme.value) {
+                            themeFilters.update(newTheme.value);
                           }
                         }}
                         options={themes.map((theme) => ({
@@ -374,7 +376,7 @@
                           multiAnswers={answer.multiple_choice_answer}
                           evidenceRich={answer.evidenceRich}
                           text={answer.free_text_answer_text}
-                          themes={answer.themes}
+                          themes={answer.themes || []}
                           themeOptions={themes}
                           highlightText={searchValue}
                           isFlagged={answer.is_flagged}

@@ -7,10 +7,11 @@ import Layout from "../../../layouts/Layout.astro";
 import Section from "../../../components/Section/Section.svelte";
 import Title from "../../../components/Title.svelte";
 import Link from "../../../components/Link.svelte";
+import { Routes } from "../../../global/routes";
 
 const data = await fetchBackendApi<{ results: Consultation[] }>(
   Astro,
-  "/api/consultations/",
+  Routes.ApiConsultations,
 );
 const consultations = data.results;
 ---

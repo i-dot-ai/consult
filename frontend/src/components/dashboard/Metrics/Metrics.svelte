@@ -43,7 +43,7 @@
     ...new Set(demoOptions?.map((opt) => opt.name)),
   ]);
   const paginatedCategories = $derived(
-    paginateArray(demoOptionCategories, itemsPerTab),
+    paginateArray<string>(demoOptionCategories, itemsPerTab),
   );
 
   let chartQuestions: Question[] = $derived(
@@ -169,8 +169,8 @@
       <TabView
         variant="dots"
         title="Demographics Breakdown"
-        tabs={paginatedCategories.map((category: string, index: number) => ({
-          title: category,
+        tabs={paginatedCategories.map((_: string[], index: number) => ({
+          title: `Demo option category page ${index + 1}`,
           id: `tab-${index}`,
         }))}
         value={`tab-${currPage}`}

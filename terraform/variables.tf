@@ -4,12 +4,6 @@ variable "image_tag" {
   default     = "latest"
 }
 
-variable "region" {
-  type        = string
-  description = "AWS region for infrastructure to be deployed to"
-  default     = "eu-west-2"
-}
-
 variable "state_bucket" {
   type        = string
   description = "Name of the S3 bucket to use a terraform state"

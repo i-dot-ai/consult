@@ -107,6 +107,22 @@
         (currRespondent?.themefinder_id || 0) + 1,
     ) ?? null,
   );
+
+  let answersToDisplay = $derived(
+    ($answersQuery.data?.all_respondents || []).map((answer) => {
+      const question = $questionsQuery.data?.results?.find(
+        (question) => question.id === answer.question_id,
+      );
+
+      return {
+        ...answer,
+        question: {
+          title: question?.question_text || "",
+          number: question?.number || 0,
+        },
+      };
+    }),
+  );
 </script>
 
 <section>
@@ -196,16 +212,19 @@
             {/if}
 
             <ul>
-              {#each $answersQuery.data?.all_respondents ?? [] as answer, i (answer.id)}
-                {@const answerQuestion = $questionsQuery.data?.results?.find(
-                  (question) => question.id === answer.question_id,
-                )}
-
+              {#each answersToDisplay.sort((a, b) => {
+                if (a.question.number < b.question.number) {
+                  return -1;
+                } else if (a.question.number > b.question.number) {
+                  return 1;
+                }
+                return 0;
+              }) as answer, i (answer.id)}
                 <RespondentAnswer
                   {consultationId}
                   questionId={answer.question_id}
-                  questionTitle={answerQuestion?.question_text || ""}
-                  questionNumber={answerQuestion?.number || 0}
+                  questionTitle={answer.question.title}
+                  questionNumber={answer.question.number}
                   answerText={answer.free_text_answer_text}
                   multiChoice={answer.multiple_choice_answer}
                   themes={answer.themes?.map((theme) => theme.name) || []}

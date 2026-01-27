@@ -5,6 +5,7 @@ import Metrics from "./Metrics.svelte";
 
 describe("Metrics", () => {
   const testData = {
+    consultationId: "test-consultation",
     loading: false,
     questions: [
       {
@@ -32,24 +33,34 @@ describe("Metrics", () => {
     ],
     demoOptions: [
       {
+        id: "1",
         name: "Demo Option Category 1",
         value: "Category 1 Demo Option 1",
         count: 100,
       },
       {
+        id: "2",
         name: "Demo Option Category 1",
         value: "Category 1 Demo Option 2",
         count: 200,
       },
       {
+        id: "3",
         name: "Demo Option Category 2",
-        value: "Category 2 Demo Option 1",
+        value: "Category 2 Demo Option 3",
         count: 300,
       },
       {
+        id: "4",
         name: "Demo Option Category 2",
-        value: "Category 2 Demo Option 2",
+        value: "Category 2 Demo Option 4",
         count: 400,
+      },
+      {
+        id: "5",
+        name: "Demo Option Category 3",
+        value: "Category 2 Demo Option 5",
+        count: 500,
       },
     ],
     demoOptionsLoading: false,
@@ -57,35 +68,23 @@ describe("Metrics", () => {
 
   it("should not render chart if no question has multi answers", () => {
     render(Metrics, {
-      loading: false,
+      ...testData,
       questions: testData.questions.map((question) => ({
         ...question,
         has_multiple_choice: false,
         multiple_choice_answer: [],
       })),
-      demoOptions: testData.demoOptions,
-      demoOptionsLoading: false,
     });
     expect(screen.queryByTestId("metrics-chart")).toBeNull();
   });
 
   it("should render chart if some questions have multi answers", () => {
-    render(Metrics, {
-      loading: false,
-      questions: testData.questions,
-      demoOptions: testData.demoOptions,
-      demoOptionsLoading: false,
-    });
+    render(Metrics, testData);
     expect(screen.getByTestId("metrics-chart")).toBeInTheDocument();
   });
 
   it("should render demo options data", () => {
-    render(Metrics, {
-      loading: false,
-      questions: testData.questions,
-      demoOptions: testData.demoOptions,
-      demoOptionsLoading: false,
-    });
+    render(Metrics, testData);
 
     expect(screen.getByText("Demographics Breakdown")).toBeInTheDocument();
 
@@ -96,12 +95,34 @@ describe("Metrics", () => {
     });
   });
 
+  it("should only render options for the current page", () => {
+    const NEXT_PAGE_DEMO_OPTIONS = [
+      {
+        id: "6",
+        name: "Demo Option Category 4",
+        value: "Category 2 Demo Option 6",
+        count: 600,
+      },
+    ];
+
+    render(Metrics, {
+      ...testData,
+      demoOptions: [...testData.demoOptions, ...NEXT_PAGE_DEMO_OPTIONS],
+    });
+
+    testData.demoOptions.forEach((opt) => {
+      expect(screen.getByText(opt.value)).toBeInTheDocument();
+    });
+
+    NEXT_PAGE_DEMO_OPTIONS.forEach((opt) => {
+      expect(screen.queryByText(opt.value)).not.toBeInTheDocument();
+    });
+  });
+
   it("should not render demo options section if no data", () => {
     render(Metrics, {
-      loading: false,
-      questions: testData.questions,
+      ...testData,
       demoOptions: [],
-      demoOptionsLoading: false,
     });
     expect(screen.queryByText("Demographics Breakdown")).toBeNull();
   });

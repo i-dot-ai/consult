@@ -6,6 +6,7 @@ import Title from "../../../../../../../components/Title.svelte";
 import ThemeSelectionForm from "../../../../../../../components/screens/ThemeSelectionForm.svelte";
 import { fetchBackendApi } from "../../../../../../../global/api";
 import type {
+  AstroGlobalRuntime,
   Question,
   QuestionResponseResponse,
   ResponseThemeInformation,
@@ -17,10 +18,14 @@ import {
   Routes,
 } from "../../../../../../../global/routes";
 
-const { consultationId, questionId, responseId } = Astro.params;
+const { consultationId, questionId, responseId } = (
+  Astro as unknown as AstroGlobalRuntime
+).params;
 
 if (!responseId || !questionId || !consultationId) {
-  return Astro.redirect(Routes.SupportConsultations);
+  return (Astro as unknown as AstroGlobalRuntime).redirect(
+    Routes.SupportConsultations,
+  );
 }
 
 let question = await fetchBackendApi<Question>(

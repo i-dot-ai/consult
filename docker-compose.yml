@@ -38,14 +38,14 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: backend/Dockerfile
     ports:
       - "8000:8000"
     env_file:
       - .env
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
-      - DJANGO_SETTINGS_MODULE=consultation_analyser.settings.local
+      - DJANGO_SETTINGS_MODULE=backend.settings.local
       - DOMAIN_NAME=localhost:3000
     volumes:
       - .:/app
@@ -57,7 +57,7 @@ services:
         condition: service_healthy
     networks:
       - consult
-    command: sh -c "venv/bin/python manage.py migrate && venv/bin/python manage.py runserver 0.0.0.0:8000"
+    # command: sh -c "venv/bin/python manage.py migrate && venv/bin/python manage.py runserver 0.0.0.0:8000"
 
   # Frontend
   frontend:

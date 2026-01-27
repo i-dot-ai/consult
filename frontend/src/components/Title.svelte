@@ -11,7 +11,7 @@
     context?: "dashboard" | "public" | "theme-sign-off";
   } & (
     | { text: string; children?: never }
-    | { text?: never; children: Snippet }
+    | { text?: never; children?: Snippet }
   );
 
   let {
@@ -32,7 +32,7 @@
     6: "h6",
   } as const;
 
-  const tag = tagMap[level];
+  const tag = $derived(tagMap[level]);
 </script>
 
 <svelte:element
