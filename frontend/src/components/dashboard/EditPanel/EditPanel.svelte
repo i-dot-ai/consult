@@ -169,7 +169,7 @@
           selectedValues={stagedThemes.map((theme) => theme.id)}
           handleChange={(newTheme: SearchableSelectOption<string>) => {
             if (newTheme) {
-              addTheme(newTheme as SearchableSelectOption<string>);
+              addTheme(newTheme);
             }
           }}
         />

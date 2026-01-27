@@ -18,6 +18,7 @@
     type DemoOptionsResponse,
     type ResponseAnswer,
     type ResponseTheme,
+    type SearchableSelectOption,
   } from "../../../global/types";
   import { themeFilters } from "../../../global/state.svelte";
   import { updateResponseReadStatus } from "../../../global/routes";
@@ -275,9 +276,9 @@
 
                     <div slot="panel" class="w-full bg-white p-4 shadow-lg">
                       <SearchableSelect
-                        handleChange={(newTheme) => {
+                        handleChange={(newTheme: SearchableSelectOption<string>) => {
                           if (newTheme.value) {
-                            themeFilters.update(newTheme.value as string);
+                            themeFilters.update(newTheme.value);
                           }
                         }}
                         options={themes.map((theme) => ({
