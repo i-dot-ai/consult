@@ -193,6 +193,7 @@ export const createQueryStore = <T>(
     isLoading: boolean;
     error: unknown | null;
     status: number | null;
+    ok: boolean;
     fetch: (options?: createQueryStoreFetchOptions) => Promise<void>;
     reset: () => void;
   }> = writable({
@@ -200,6 +201,7 @@ export const createQueryStore = <T>(
     isLoading: false,
     error: null,
     status: null,
+    ok: false,
     fetch: async () => {},
     reset: () => {},
   });
@@ -226,6 +228,7 @@ export const createQueryStore = <T>(
       data: _data as T,
       error: _error,
       status: _status,
+      ok: _status?.toString().charAt(0) === "2"
     }));
 
     // set loading to false

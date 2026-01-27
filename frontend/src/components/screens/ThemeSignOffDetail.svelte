@@ -24,6 +24,7 @@
     type SelectedThemesResponse,
     type GeneratedTheme,
     type SelectedTheme,
+    type SelectedThemesUpdateResponse,
   } from "../../global/types";
 
   import Panel from "../dashboard/Panel/Panel.svelte";
@@ -70,6 +71,12 @@
     createQueryStore(getApiCreateSelectedThemeUrl(consultationId, questionId), {
       method: "POST",
     }),
+  );
+  const selectedThemesUpdateQuery = $derived(
+      createQueryStore<SelectedThemesUpdateResponse>(
+        getApiUpdateSelectedThemeUrl(consultationId, questionId, ":themeId"),
+        { method: "PATCH" },
+    ),
   );
   const selectedThemesDeleteQuery = $derived(
     createQueryStore<SelectedThemesDeleteResponse>(
@@ -208,34 +215,33 @@
     }
 
     try {
-      const response = await fetch(
-        getApiUpdateSelectedThemeUrl(consultationId, questionId, themeId),
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            "If-Match": selectedTheme.version,
-          },
-          body: JSON.stringify({
-            name: title,
-            description: description,
-          }),
+      await $selectedThemesUpdateQuery.fetch({
+        params: {
+          themeId: themeId,
         },
-      );
+        headers: {
+          "Content-Type": "application/json",
+          "If-Match": selectedTheme.version,
+        },
+        body: JSON.stringify({
+          name: title,
+          description: description,
+        }),
+      });
 
-      if (response.ok) {
+      if ($selectedThemesUpdateQuery.ok) {
         $selectedThemesQuery.fetch();
-      } else if (response.status === 404) {
+      } else if ($selectedThemesUpdateQuery.status === 404) {
         errorData = { type: "theme-does-not-exist" };
-      } else if (response.status === 412) {
-        const { last_modified_by, latest_version } = await response.json();
+      } else if ($selectedThemesUpdateQuery.status === 412) {
+        const { last_modified_by, latest_version } = $selectedThemesUpdateQuery.data!;
         errorData = {
           type: "edit-conflict",
           lastModifiedBy: last_modified_by.email,
           latestVersion: latest_version,
         };
       } else {
-        throw new Error(`Edit theme failed: ${response.statusText}`);
+        throw new Error(`Edit theme failed: ${$selectedThemesUpdateQuery.data?.statusText}`);
       }
     } catch {
       errorData = { type: "unexpected" };

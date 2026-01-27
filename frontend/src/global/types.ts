@@ -221,6 +221,11 @@ export interface SelectedThemesResponse {
   previous: string | null;
   results: SelectedTheme[];
 }
+export interface SelectedThemesUpdateResponse {
+  last_modified_by: { email: string };
+  latest_version: string;
+  statusText?: string;
+}
 export interface SelectedThemesDeleteResponse {
   last_modified_by?: { email: string };
   latest_version?: string;
