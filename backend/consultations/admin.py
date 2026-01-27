@@ -18,7 +18,7 @@ from backend.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
-from backend.consultations.services.clone import clone_consultation
+from backend.consultations.services.clone import clone_consultation_job
 from backend.data_pipeline.jobs import (
     import_candidate_themes,
 )
@@ -91,14 +91,14 @@ def create_cloned_consultation(modeladmin, request, queryset):
 
     consultation = queryset.first()
     try:
-        cloned = clone_consultation(consultation)
+        clone_consultation_job.delay(consultation.id)
         messages.success(
             request,
-            f"Successfully cloned '{consultation.title}' as '{cloned.title}'",
+            f"Cloning '{consultation.title}' in the background. Monitor progress in /django-rq.",
         )
     except Exception as e:
-        logger.exception(f"Error cloning consultation {consultation.id}: {e}")
-        messages.error(request, f"Failed to clone consultation: {e}")
+        logger.exception(f"Error starting clone job for consultation {consultation.id}: {e}")
+        messages.error(request, f"Failed to start clone job: {e}")
 
 
 class ConsultationAdmin(admin.ModelAdmin):

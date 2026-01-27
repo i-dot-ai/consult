@@ -4,12 +4,7 @@ from zoneinfo import ZoneInfo
 from django.conf import settings
 from django.urls import reverse
 
-from backend.consultations import models
 from backend.consultations.models import Question
-
-
-def get_sorted_theme_string(themes: list[models.SelectedTheme]) -> str:
-    return ", ".join(sorted([theme.key if theme.key else theme.name for theme in themes]))
 
 
 def build_url(url_pattern: str, question: Question) -> str:

@@ -137,9 +137,8 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def sample_responses(self, keep_count: int) -> SampleResult:
         """
-        Randomly sample responses, keeping only the specified number.
-
-        Deletes all non-empty responses except for a random sample of keep_count.
+        Keep a specified number of randomly sampled non-empty responses.
+        Delete all other responses including empty responses.
         """
         non_empty = self.get_non_empty_responses()
         current_count = non_empty.count()
@@ -152,9 +151,10 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
                 f"Number of responses to keep ({keep_count}) cannot exceed current number of responses ({current_count})"
             )
 
-        delete_count = current_count - keep_count
-        ids_to_delete = non_empty.order_by("?").values_list("id", flat=True)[:delete_count]
-        Response.objects.filter(id__in=list(ids_to_delete)).delete()
+        ids_to_keep = non_empty.order_by("?").values_list("id", flat=True)[:keep_count]
+        delete_count, _ = (
+            Response.objects.filter(question=self).exclude(id__in=list(ids_to_keep)).delete()
+        )
 
         self.update_total_responses()
 

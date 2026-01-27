@@ -166,6 +166,75 @@ class TestCloneConsultation:
         assert cloned_rat.assigned_by == user
         assert cloned_rat.id != rat.id
 
+    def test_history_records_are_cloned(self):
+        original = ConsultationFactory()
+        question = QuestionFactory(consultation=original)
+        respondent = RespondentFactory(consultation=original)
+        user = UserFactory()
+        theme1 = SelectedTheme.objects.create(
+            question=question, name="Theme 1", description="Description 1"
+        )
+        theme2 = SelectedTheme.objects.create(
+            question=question, name="Theme 2", description="Description 2"
+        )
+        response = ResponseFactory(question=question, respondent=respondent)
+
+        # Create annotation - this creates a history record
+        annotation = ResponseAnnotation.objects.create(response=response)
+
+        # Add AI themes - creates history records
+        rat1 = ResponseAnnotationTheme.objects.create(
+            response_annotation=annotation, theme=theme1, assigned_by=None
+        )
+
+        # Modify annotation to create more history
+        annotation.sentiment = ResponseAnnotation.Sentiment.AGREEMENT
+        annotation.save()
+
+        # Add human-assigned theme - creates another history record
+        rat2 = ResponseAnnotationTheme.objects.create(
+            response_annotation=annotation, theme=theme2, assigned_by=user
+        )
+
+        # Check original history counts before cloning
+        original_annotation_history_count = annotation.history.count()
+        original_rat1_history_count = rat1.history.count()
+        original_rat2_history_count = rat2.history.count()
+
+        assert original_annotation_history_count == 2  # create + update
+        assert original_rat1_history_count == 1  # create
+        assert original_rat2_history_count == 1  # create
+
+        cloned = clone_consultation(original)
+
+        cloned_question = Question.objects.get(consultation=cloned)
+        cloned_response = Response.objects.get(question=cloned_question)
+        cloned_annotation = ResponseAnnotation.objects.get(response=cloned_response)
+        cloned_themes = SelectedTheme.objects.filter(question=cloned_question)
+        cloned_rats = ResponseAnnotationTheme.objects.filter(response_annotation=cloned_annotation)
+
+        # Verify history records are cloned for annotation
+        assert cloned_annotation.history.count() == original_annotation_history_count
+
+        # Verify history records are cloned for ResponseAnnotationThemes
+        for cloned_rat in cloned_rats:
+            original_theme_name = cloned_rat.theme.name
+            if original_theme_name == "Theme 1":
+                assert cloned_rat.history.count() == original_rat1_history_count
+            else:
+                assert cloned_rat.history.count() == original_rat2_history_count
+
+        # Verify history records reference the cloned objects, not originals
+        for history_record in cloned_annotation.history.all():
+            assert history_record.id == cloned_annotation.id
+            assert history_record.response_id == cloned_response.id
+
+        for cloned_rat in cloned_rats:
+            for history_record in cloned_rat.history.all():
+                assert history_record.id == cloned_rat.id
+                assert history_record.response_annotation_id == cloned_annotation.id
+                assert history_record.theme_id in [t.id for t in cloned_themes]
+
     def test_response_read_by_is_not_cloned(self):
         original = ConsultationFactory()
         question = QuestionFactory(consultation=original)
