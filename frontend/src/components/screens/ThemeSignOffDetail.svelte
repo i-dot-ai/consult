@@ -13,7 +13,6 @@
     getApiDeleteSelectedThemeUrl,
     getApiGetGeneratedThemesUrl,
     getApiGetSelectedThemesUrl,
-    getApiQuestionUrl,
     getApiSelectGeneratedThemeUrl,
     getApiUpdateSelectedThemeUrl,
     getThemeSignOffUrl,
@@ -52,9 +51,10 @@
   interface Props {
     consultationId: string;
     questionId: string;
+    question: Question;
   }
 
-  let { consultationId, questionId }: Props = $props();
+  let { consultationId, questionId, question }: Props = $props();
 
   const selectedThemesQuery = createQuery<SelectedThemesResponse>(
     () => ({
@@ -78,20 +78,6 @@
           getApiGetGeneratedThemesUrl(consultationId, questionId),
         );
         if (!response.ok) throw new Error("Failed to fetch generated themes");
-        return response.json();
-      },
-    }),
-    () => queryClient,
-  );
-
-  const questionQuery = createQuery<Question>(
-    () => ({
-      queryKey: ["question", consultationId, questionId],
-      queryFn: async () => {
-        const response = await fetch(
-          getApiQuestionUrl(consultationId, questionId),
-        );
-        if (!response.ok) throw new Error("Failed to fetch question");
         return response.json();
       },
     }),
@@ -439,9 +425,9 @@
 
 <section class="my-8">
   <QuestionCard
-    skeleton={questionQuery.isLoading}
+    skeleton={false}
     {consultationId}
-    question={questionQuery.data || {}}
+    {question}
     clickable={false}
   />
 </section>
@@ -587,7 +573,7 @@
       <p class="text-sm text-neutral-500">
         Are you sure you want to sign off on these {numSelectedThemesText(
           selectedThemesQuery.data?.results,
-        )} for Question {questionQuery.data?.number}?
+        )} for Question {question.number}?
       </p>
 
       <h4 class="my-4 text-xs font-bold">Selected themes:</h4>

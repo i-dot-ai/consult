@@ -31,6 +31,7 @@ const question: Question = await fetchBackendApi(
           client:only="svelte"
           consultationId={consultationId || ""}
           questionId={questionId || ""}
+          {question}
         />
       )
     }
