@@ -128,3 +128,9 @@ class TestImportResponseAnnotationsFromS3:
 
         # Verify consultation timestamp was updated
         assert consultation.timestamp == "2024-01-20"
+
+        # Verify theme keys were persisted from batch output
+        theme_a.refresh_from_db()
+        theme_b.refresh_from_db()
+        assert theme_a.key == "A"
+        assert theme_b.key == "B"
