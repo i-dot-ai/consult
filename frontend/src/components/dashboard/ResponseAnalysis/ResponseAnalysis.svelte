@@ -365,7 +365,7 @@
                 <ul>
                   {#each answers as answer, i (answer.id)}
                     <li>
-                      <div transition:fly={{ x: 300, delay: getDelay(i) }}>
+                      <div in:fly={{ x: 300, delay: getDelay(i) }}>
                         <AnswerCard
                           {consultationId}
                           {questionId}
