@@ -1,6 +1,8 @@
 import { writable } from "svelte/store";
 import type { Writable } from "svelte/store";
 
+import { debounce } from "./utils";
+
 // Favourite questions logic
 const FAVS_STORAGE_KEY = "favouritedQuestions";
 function getInitialFavs() {
@@ -77,9 +79,9 @@ export const createFetchStore = <T>({
     fetch: () => Promise.resolve(),
   });
 
-  let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
   let prevPromise: Promise<void> | null = null;
   let resolvePrev: (() => void) | null = null;
+  let debouncedFetch: ReturnType<typeof debounce> | null = null;
 
   const doFetch = async (
     url: string,
@@ -91,15 +93,8 @@ export const createFetchStore = <T>({
     // even though it awaits debounce timeout
     store.update((store) => ({ ...store, isLoading: true, error: "" }));
 
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
-      debounceTimeout = null;
-    }
-
-    prevPromise = new Promise<void>((resolve) => {
-      resolvePrev = resolve;
-
-      debounceTimeout = setTimeout(async () => {
+    if (!debouncedFetch) {
+      debouncedFetch = debounce(async () => {
         try {
           if (mockFetch) {
             const mockData = mockFetch({
@@ -147,6 +142,12 @@ export const createFetchStore = <T>({
           }
         }
       }, debounceDelay);
+    }
+
+    prevPromise = new Promise<void>((resolve) => {
+      resolvePrev = resolve;
+
+      debouncedFetch!();
     });
 
     return prevPromise;
