@@ -6,7 +6,7 @@
     "node": "24.8"
   },
   "scripts": {
-    "e2e": "npx playwright test --trace on",
+    "e2e": "npx playwright test",
     "e2e-ui": "npx playwright test --ui",
     "e2e-chrome": "npx playwright test --project=chromium"
   },

@@ -30,12 +30,15 @@ export default defineConfig({
     baseURL: "http://localhost:3000",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "on-first-retry",
+    trace: "on",
 
     /* Global headers for auth-at-the-edge */
     extraHTTPHeaders: {
       "x-amzn-oidc-data": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIn0.k27nav4gbG-2lIArYInTqP1GUz2LRuzb3lWandMKRoY" // pragma: allowlist secret
     },
+    screenshot: "only-on-failure",
+    video: "on-first-retry",
+    viewport: { width: 1920, height: 1080 },
   },
 
   /* Configure projects for major browsers */
