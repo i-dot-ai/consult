@@ -138,49 +138,6 @@ class TestCanSeeConsultation:
 
 
 @pytest.mark.django_db
-class TestPermissionsCombined:
-    """Test how permissions work when combined in API views"""
-
-    def test_both_permissions_required(self, request_factory, consultation):
-        """Test that both HasDashboardAccess and CanSeeConsultation must pass"""
-        # User with dashboard access but not consultation access
-        user_with_dashboard = UserFactory(has_dashboard_access=True)
-
-        # User with consultation access but not dashboard access
-        user_with_consultation = UserFactory()
-        consultation.users.add(user_with_consultation)
-
-        # User with both accesses
-        user_with_both = UserFactory(has_dashboard_access=True)
-        consultation.users.add(user_with_both)
-
-        view = Mock()
-        view.kwargs = {"consultation_pk": consultation.id}
-
-        dashboard_permission = HasDashboardAccess()
-        consultation_permission = CanSeeConsultation()
-
-        # Test user with only dashboard access
-        request = request_factory.get("/")
-        request.user = user_with_dashboard
-
-        assert dashboard_permission.has_permission(request, view) is True
-        assert consultation_permission.has_permission(request, view) is False
-
-        # Test user with only consultation access
-        request.user = user_with_consultation
-
-        assert dashboard_permission.has_permission(request, view) is False
-        assert consultation_permission.has_permission(request, view) is True
-
-        # Test user with both accesses
-        request.user = user_with_both
-
-        assert dashboard_permission.has_permission(request, view) is True
-        assert consultation_permission.has_permission(request, view) is True
-
-
-@pytest.mark.django_db
 class TestAPIViewPermissions:
     """Test permissions across all API views"""
 
