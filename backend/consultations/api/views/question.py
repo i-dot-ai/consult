@@ -33,7 +33,7 @@ class QuestionViewSet(ModelViewSet):
         detail=True,
         methods=["get"],
         url_path="theme-information",
-        permissions=[IsAuthenticated, CanSeeConsultation],
+        permission_classes=[IsAuthenticated, CanSeeConsultation],
     )
     def theme_information(self, request, pk=None, consultation_pk=None):
         """Get all theme information for a question"""
