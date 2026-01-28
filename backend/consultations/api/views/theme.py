@@ -1,10 +1,9 @@
-from rest_framework.permissions import IsAuthenticated
-
 from backend.consultations import models
 from backend.consultations.api.permissions import (
     CanSeeConsultation,
 )
 from backend.consultations.api.serializers import CrossCuttingThemeSerializer
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 
