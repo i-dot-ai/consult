@@ -3,8 +3,10 @@
 
   import { createQuery } from "@tanstack/svelte-query";
   import { queryClient } from "../../../../global/queryClient";
-  import type { AnswersResponse } from "../../../../global/types";
-  import { getApiAnswersUrl } from "../../../../global/routes";
+  import {
+    representativeResponsesQueryOptions,
+    type AnswersResponse,
+  } from "../../../../global/queries/responses";
 
   import MaterialIcon from "../../../MaterialIcon.svelte";
   import Docs from "../../../svg/material/Docs.svelte";
@@ -29,30 +31,15 @@
   }: Props = $props();
 
   const representativeResponsesQuery = createQuery<AnswersResponse>(
-    () => ({
-      queryKey: [
-        "representativeResponses",
+    () =>
+      representativeResponsesQueryOptions({
         consultationId,
         questionId,
-        variant,
+        themeName,
+        themeDescription,
         themeId,
-      ],
-      queryFn: async () => {
-        const queryString = new URLSearchParams({
-          searchMode: "representative",
-          searchValue: `${themeName} ${themeDescription}`,
-          question_id: questionId,
-        }).toString();
-
-        const response = await fetch(
-          `${getApiAnswersUrl(consultationId)}?${queryString}`,
-        );
-        if (!response.ok)
-          throw new Error("Failed to fetch representative responses");
-        return response.json();
-      },
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    }),
+        variant,
+      }),
     () => queryClient,
   );
 

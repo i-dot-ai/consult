@@ -5,8 +5,13 @@
 
   import { createMutation } from "@tanstack/svelte-query";
   import { queryClient } from "../../../../../global/queryClient";
-  import type { SelectedTheme } from "../../../../../global/types";
-  import { getApiDeleteSelectedThemeUrl } from "../../../../../global/routes";
+  import {
+    selectedThemes,
+    deleteSelectedTheme,
+    type SelectedTheme,
+    type SelectedThemeMutationError,
+  } from "../../../../../global/queries/selectedThemes";
+  import { candidateThemes } from "../../../../../global/queries/candidateThemes";
   import {
     formatTimeDeltaText,
     getTimeDeltaInMinutes,
@@ -37,46 +42,33 @@
 
   const deleteThemeMutation = createMutation<
     void,
-    {
-      status: number;
-      last_modified_by?: { email: string };
-      latest_version?: string;
-    },
+    SelectedThemeMutationError,
     void
   >(
     () => ({
-      mutationFn: async () => {
-        const response = await fetch(
-          getApiDeleteSelectedThemeUrl(consultationId, questionId, theme.id),
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              "If-Match": String(theme.version),
-            },
-          },
-        );
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw { status: response.status, ...errData };
-        }
-      },
+      mutationFn: () =>
+        deleteSelectedTheme(
+          consultationId,
+          questionId,
+          theme.id,
+          theme.version,
+        ),
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: ["selectedThemes", consultationId, questionId],
+          queryKey: selectedThemes.list.key(consultationId, questionId),
         });
         queryClient.invalidateQueries({
-          queryKey: ["candidateThemes", consultationId, questionId],
+          queryKey: candidateThemes.list.key(consultationId, questionId),
         });
       },
       onError: (error) => {
         if (error.status === 404) {
           // SelectedTheme has already been deleted, just refetch
           queryClient.invalidateQueries({
-            queryKey: ["selectedThemes", consultationId, questionId],
+            queryKey: selectedThemes.list.key(consultationId, questionId),
           });
           queryClient.invalidateQueries({
-            queryKey: ["candidateThemes", consultationId, questionId],
+            queryKey: candidateThemes.list.key(consultationId, questionId),
           });
         } else if (error.status === 412) {
           showError({
@@ -92,10 +84,6 @@
     }),
     () => queryClient,
   );
-
-  const handleRemove = () => {
-    deleteThemeMutation.mutate();
-  };
 
   const handleEditSuccess = () => {
     // Invalidate representative responses cache when theme is edited since search terms changed
@@ -167,7 +155,7 @@
 
               <Button
                 size="sm"
-                handleClick={handleRemove}
+                handleClick={() => deleteThemeMutation.mutate()}
                 disabled={deleteThemeMutation.isPending}
               >
                 <MaterialIcon color="fill-neutral-500">

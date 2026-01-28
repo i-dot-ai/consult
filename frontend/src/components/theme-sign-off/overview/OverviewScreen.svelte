@@ -5,15 +5,12 @@
 
   import { createMutation } from "@tanstack/svelte-query";
   import { queryClient } from "../../../global/queryClient";
-  import {
-    getApiConsultationUrl,
-    getThemeSignOffDetailUrl,
-    Routes,
-  } from "../../../global/routes.ts";
-  import {
-    type ConsultationResponse,
-    type Question,
+  import { getThemeSignOffDetailUrl, Routes } from "../../../global/routes.ts";
+  import type {
+    ConsultationResponse,
+    Question,
   } from "../../../global/types.ts";
+  import { updateConsultation } from "../../../global/queries/consultations";
 
   import Tag from "../../Tag/Tag.svelte";
   import Modal from "../../Modal/Modal.svelte";
@@ -47,16 +44,8 @@
 
   const updateConsultationMutation = createMutation<void, Error, void>(
     () => ({
-      mutationFn: async () => {
-        const response = await fetch(getApiConsultationUrl(consultationId), {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ stage: "theme_mapping" }),
-        });
-        if (!response.ok) throw new Error("Failed to update consultation");
-      },
+      mutationFn: () =>
+        updateConsultation(consultationId, { stage: "theme_mapping" }),
       onSuccess: () => {
         isConfirmModalOpen = false;
         location.href = location.href;

@@ -3,7 +3,11 @@
 
   import { createMutation } from "@tanstack/svelte-query";
   import { queryClient } from "../../../../../global/queryClient";
-  import { getApiCreateSelectedThemeUrl } from "../../../../../global/routes";
+  import {
+    selectedThemes,
+    createSelectedTheme,
+    type CreateSelectedThemeBody,
+  } from "../../../../../global/queries/selectedThemes";
 
   import ThemeForm from "../ThemeForm/ThemeForm.svelte";
   import type { SaveThemeError } from "../ErrorSavingTheme/ErrorSavingTheme.svelte";
@@ -21,21 +25,11 @@
 
   const createThemeMutation = createMutation(
     () => ({
-      mutationFn: async (newTheme: { name: string; description: string }) => {
-        const response = await fetch(
-          getApiCreateSelectedThemeUrl(consultationId, questionId),
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newTheme),
-          },
-        );
-        if (!response.ok) throw new Error("Failed to create theme");
-        return response.json();
-      },
+      mutationFn: (body: CreateSelectedThemeBody) =>
+        createSelectedTheme(consultationId, questionId, body),
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: ["selectedThemes", consultationId, questionId],
+          queryKey: selectedThemes.list.key(consultationId, questionId),
         });
         onSuccess?.();
       },

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SelectedTheme } from "../../../../../global/types";
+  import type { SelectedTheme } from "../../../../../global/queries/selectedThemes";
 
   import Accordion from "../../../../Accordion/Accordion.svelte";
   import Panel from "../../../../dashboard/Panel/Panel.svelte";

@@ -3,8 +3,13 @@
 
   import { createMutation } from "@tanstack/svelte-query";
   import { queryClient } from "../../../../../global/queryClient";
-  import { getApiUpdateSelectedThemeUrl } from "../../../../../global/routes";
-  import type { SelectedTheme } from "../../../../../global/types";
+  import {
+    selectedThemes,
+    updateSelectedTheme,
+    type SelectedTheme,
+    type UpdateSelectedThemeBody,
+    type SelectedThemeMutationError,
+  } from "../../../../../global/queries/selectedThemes";
 
   import ThemeForm from "../ThemeForm/ThemeForm.svelte";
   import type { SaveThemeError } from "../ErrorSavingTheme/ErrorSavingTheme.svelte";
@@ -28,36 +33,22 @@
   }: Props = $props();
 
   const updateThemeMutation = createMutation<
-    unknown,
-    {
-      status: number;
-      last_modified_by?: { email: string };
-      latest_version?: string;
-    },
-    { name: string; description: string }
+    SelectedTheme,
+    SelectedThemeMutationError,
+    UpdateSelectedThemeBody
   >(
     () => ({
-      mutationFn: async ({ name, description }) => {
-        const response = await fetch(
-          getApiUpdateSelectedThemeUrl(consultationId, questionId, theme.id),
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              "If-Match": String(theme.version),
-            },
-            body: JSON.stringify({ name, description }),
-          },
-        );
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw { status: response.status, ...errData };
-        }
-        return response.json();
-      },
+      mutationFn: (body: UpdateSelectedThemeBody) =>
+        updateSelectedTheme(
+          consultationId,
+          questionId,
+          theme.id,
+          theme.version,
+          body,
+        ),
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: ["selectedThemes", consultationId, questionId],
+          queryKey: selectedThemes.list.key(consultationId, questionId),
         });
         onSuccess?.();
       },

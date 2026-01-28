@@ -5,14 +5,14 @@
 
   import { createQuery, createMutation } from "@tanstack/svelte-query";
   import { queryClient } from "../../../../global/queryClient";
+  import { selectedThemes } from "../../../../global/queries/selectedThemes";
   import {
-    getApiGetGeneratedThemesUrl,
-    getApiSelectGeneratedThemeUrl,
-  } from "../../../../global/routes";
-  import type {
-    GeneratedTheme,
-    GeneratedThemesResponse,
-  } from "../../../../global/types";
+    candidateThemes,
+    listCandidateThemesQueryOptions,
+    selectCandidateTheme,
+    type CandidateTheme,
+    type ListCandidateThemesResponse,
+  } from "../../../../global/queries/candidateThemes";
 
   import Panel from "../../../dashboard/Panel/Panel.svelte";
   import Button from "../../../inputs/Button/Button.svelte";
@@ -31,36 +31,21 @@
 
   let { consultationId, questionId }: Props = $props();
 
-  const candidateThemesQuery = createQuery<GeneratedThemesResponse>(
-    () => ({
-      queryKey: ["candidateThemes", consultationId, questionId],
-      queryFn: async () => {
-        const response = await fetch(
-          getApiGetGeneratedThemesUrl(consultationId, questionId),
-        );
-        if (!response.ok) throw new Error("Failed to fetch generated themes");
-        return response.json();
-      },
-    }),
+  const candidateThemesQuery = createQuery<ListCandidateThemesResponse>(
+    () => listCandidateThemesQueryOptions(consultationId, questionId),
     () => queryClient,
   );
 
   const selectCandidateThemeMutation = createMutation(
     () => ({
-      mutationFn: async (themeId: string) => {
-        const response = await fetch(
-          getApiSelectGeneratedThemeUrl(consultationId, questionId, themeId),
-          { method: "POST" },
-        );
-        if (!response.ok) throw new Error("Failed to select theme");
-        return response.json();
-      },
+      mutationFn: (candidateThemeId: string) =>
+        selectCandidateTheme(consultationId, questionId, candidateThemeId),
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: ["selectedThemes", consultationId, questionId],
+          queryKey: selectedThemes.list.key(consultationId, questionId),
         });
         queryClient.invalidateQueries({
-          queryKey: ["candidateThemes", consultationId, questionId],
+          queryKey: candidateThemes.list.key(consultationId, questionId),
         });
       },
     }),
@@ -89,7 +74,7 @@
     if (isAllExpanded) {
       // Collapse all - collect IDs of themes with children
       const ids: string[] = [];
-      const collectIds = (items: GeneratedTheme[]) => {
+      const collectIds = (items: CandidateTheme[]) => {
         for (const t of items) {
           if (t.children?.length) {
             ids.push(t.id);
@@ -104,7 +89,7 @@
     }
   };
 
-  const handleSelectCandidateTheme = async (newTheme: GeneratedTheme) => {
+  const handleSelectCandidateTheme = async (newTheme: CandidateTheme) => {
     themesBeingSelected = [...themesBeingSelected, newTheme.id];
 
     try {
@@ -112,7 +97,7 @@
         newTheme.id,
       );
       await queryClient.refetchQueries({
-        queryKey: ["selectedThemes", consultationId, questionId],
+        queryKey: selectedThemes.list.key(consultationId, questionId),
       });
 
       await tick(); // Wait for the DOM to update before scrolling

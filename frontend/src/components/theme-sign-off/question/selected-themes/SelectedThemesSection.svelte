@@ -5,16 +5,13 @@
 
   import { createQuery, createMutation } from "@tanstack/svelte-query";
   import { queryClient } from "../../../../global/queryClient";
+  import { getThemeSignOffUrl } from "../../../../global/routes";
+  import type { Question } from "../../../../global/types";
   import {
-    getApiConfirmSignOffUrl,
-    getApiGetSelectedThemesUrl,
-    getThemeSignOffUrl,
-  } from "../../../../global/routes";
-  import type {
-    Question,
-    SelectedTheme,
-    SelectedThemesResponse,
-  } from "../../../../global/types";
+    listSelectedThemesQueryOptions,
+    type SelectedTheme,
+  } from "../../../../global/queries/selectedThemes";
+  import { updateQuestion } from "../../../../global/queries/questions";
 
   import Panel from "../../../dashboard/Panel/Panel.svelte";
   import Button from "../../../inputs/Button/Button.svelte";
@@ -45,34 +42,17 @@
     errorData = error;
   };
 
-  const selectedThemesQuery = createQuery<SelectedThemesResponse>(
-    () => ({
-      queryKey: ["selectedThemes", consultationId, questionId],
-      queryFn: async () => {
-        const response = await fetch(
-          getApiGetSelectedThemesUrl(consultationId, questionId),
-        );
-        if (!response.ok) throw new Error("Failed to fetch selected themes");
-        return response.json();
-      },
-    }),
+  const selectedThemesQuery = createQuery(
+    () => listSelectedThemesQueryOptions(consultationId, questionId),
     () => queryClient,
   );
 
   const confirmSignOffMutation = createMutation(
     () => ({
-      mutationFn: async () => {
-        const response = await fetch(
-          getApiConfirmSignOffUrl(consultationId, questionId),
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ theme_status: "confirmed" }),
-          },
-        );
-        if (!response.ok) throw new Error("Failed to confirm sign-off");
-        return response.json();
-      },
+      mutationFn: () =>
+        updateQuestion(consultationId, questionId, {
+          theme_status: "confirmed",
+        }),
       onSuccess: () => {
         location.replace(getThemeSignOffUrl(consultationId));
       },
