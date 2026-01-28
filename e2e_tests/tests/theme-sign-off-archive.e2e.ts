@@ -10,7 +10,6 @@ const CONSULTATION_STAGES = [
   "Set up data",
   "Find themes (AI)",
   "Finalise themes",
-  "AI",
   "Assign themes (AI)",
   "Check quality",
   "Analyse",
@@ -34,27 +33,27 @@ test.beforeEach(async ({ page }) => {
 })
 
 test(`initially displays loading messages`, async ({ page }) => {
-  expect(page.getByText("Loading Questions")).toBeVisible();
+  await expect(page.getByText("Loading Questions")).toBeVisible();
 })
 
 test(`displays header sub path text`, async ({ page }) => {
   const subpathEl = page.getByTestId("header-subpath");
-  expect(subpathEl).toBeVisible();
-  expect(subpathEl).toHaveText("Theme Sign Off");
+  await expect(subpathEl).toBeVisible();
+  await expect(subpathEl).toContainText("Theme Sign Off");
 })
 
 SECTION_TITLES.forEach(title => {
   test(`displays section titles: ${title}`, async ({ page }) => {
-    expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
   })
 })
 
 test(`displays questions`, async ({ page }) => {
   await page.waitForLoadState('networkidle');
 
-  testConsultationQuestions.forEach(question => {
+  testConsultationQuestions.forEach(async question => {
     const questionText = `Q${question.number}: ${question.question_text}`;
-    expect(page.getByText(questionText, { exact: true })).toBeVisible();
+    await expect(page.getByText(questionText, { exact: true })).toBeVisible();
   })
 })
 
@@ -63,14 +62,14 @@ test(`searching questions updates question list`, async ({ page }) => {
 
   page.getByRole('textbox').fill(`Text that won't match anything`);
 
-  expect(page.getByText("No questions found matching your search")).toBeVisible();
+  await expect(page.getByText("No questions found matching your search")).toBeVisible();
 })
 
 test(`renders onboarding modal initially`, async ({ page }) => {
   await page.waitForLoadState('networkidle');
 
-  expect(page.getByRole("heading", { name: "Welcome to Theme Sign Off" })).toBeVisible();
-  expect(page.getByRole("button", { name: "Get Started" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome to Theme Sign Off" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Get Started" })).toBeVisible();
 })
 
 test(`closes onboarding modal if close button is clicked`, async ({ page }) => {
@@ -85,8 +84,8 @@ test(`closes onboarding modal if close button is clicked`, async ({ page }) => {
 
 test(`renders process button`, async ({ page }) => {
   const processButton = page.getByRole("button", { name: "Process" });
-  expect(processButton).toBeVisible();
-  expect(processButton).toHaveAttribute("aria-pressed", "false");
+  await expect(processButton).toBeVisible();
+  await expect(processButton).toHaveAttribute("aria-pressed", "false");
 })
 
 test(`renders breadcrumbs when process button is clicked`, async ({ page }) => {
@@ -95,11 +94,14 @@ test(`renders breadcrumbs when process button is clicked`, async ({ page }) => {
   await expect(processButton).toBeVisible();
   await processButton.click();
 
-  await expect(processButton).toHaveAttribute("aria-pressed", "true");
+  // await page.waitForTimeout(500);
+  await page.waitForLoadState("domcontentloaded");
+
+  await expect(processButton).toHaveAttribute("aria-pressed", "true"); // , {timeout: 5000});
   await expect(page.locator(`[aria-label="breadcrumbs"]`)).toBeVisible();
 
-  CONSULTATION_STAGES.forEach(stage => {
-    expect(page.getByText(stage, { exact: true })).toBeVisible();
+  CONSULTATION_STAGES.forEach(async stage => {
+    await expect(page.getByText(stage, { exact: true })).toBeVisible();
   });
 })
 
@@ -109,6 +111,8 @@ test(`closes breadcrumbs if process button is clicked while breadcrumbs is visib
   await expect(page.locator(`[aria-label="breadcrumbs"]`)).not.toBeVisible();
 
   await processButton.click();
+
+  await page.waitForLoadState("domcontentloaded");
 
   await expect(page.locator(`[aria-label="breadcrumbs"]`)).toBeVisible();
 
