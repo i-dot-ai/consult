@@ -19,6 +19,11 @@ STORAGES["default"] = {  # noqa: F405
     "OPTIONS": {"bucket_name": env("AWS_BUCKET_NAME"), "location": "app_data/"},  # noqa: F405
 }
 
+STORAGES["staticfiles"] = {  # noqa: F405
+    "BACKEND": "storages.backends.s3.S3Storage",
+    "OPTIONS": {"bucket_name": env("AWS_BUCKET_NAME"), "location": "app_data/static/"},  # noqa: F405
+}
+
 
 def sentry_before_send(event, hint):
     """Filters Sentry events before sending.
