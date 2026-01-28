@@ -53,7 +53,7 @@ test(`displays questions`, async ({ page }) => {
 
   testConsultationQuestions.forEach(async question => {
     const questionText = `Q${question.number}: ${question.question_text}`;
-    await expect(page.getByText(questionText, { exact: true })).toBeVisible();
+    await expect(page.getByText(questionText, { exact: true })).toBeVisible({ timeout: 5000 });
   })
 })
 
