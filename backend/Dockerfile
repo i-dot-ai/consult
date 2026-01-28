@@ -34,7 +34,4 @@ EXPOSE 8000
 
 WORKDIR /src/backend
 
-# Collect static files for production
-RUN venv/bin/django-admin collectstatic --noinput
-
 CMD ["./start.sh"]
