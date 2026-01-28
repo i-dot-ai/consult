@@ -1,8 +1,14 @@
 import ThemeForm from "./ThemeForm.svelte";
 
 const variant = $state("add");
-const initialTitle = $state("Initial Title");
-const initialDescription = $state("Initial Description");
+const theme = $state({
+  id: "test-id",
+  name: "Initial Title",
+  description: "Initial Description",
+  version: 1,
+  last_modified_by: "test@example.com",
+  modified_at: new Date().toISOString(),
+});
 const handleConfirm = () => alert("Confirm event triggered");
 const handleCancel = () => alert("Cancel event triggered");
 
@@ -21,14 +27,9 @@ export default {
       ],
     },
     {
-      name: "initialTitle",
-      value: initialTitle,
-      type: "text",
-    },
-    {
-      name: "initialDescription",
-      value: initialDescription,
-      type: "text",
+      name: "theme",
+      value: theme,
+      type: "json",
     },
     {
       name: "handleConfirm",
@@ -56,6 +57,7 @@ export default {
       name: "Edit Variant",
       props: {
         variant: "edit",
+        theme: theme,
         handleConfirm: handleConfirm,
         handleCancel: handleCancel,
       },

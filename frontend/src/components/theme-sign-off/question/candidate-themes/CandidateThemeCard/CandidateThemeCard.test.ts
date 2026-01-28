@@ -13,23 +13,19 @@ describe("CandidateThemeCard", () => {
       name: "Test Theme",
       description: "This is a test theme",
     },
-    expandedThemes: [],
-    setExpandedThemes: () => {},
+    collapsedThemes: [] as string[], // Empty = all expanded
+    toggleTheme: () => {},
     handleSelect: () => {},
-    themesBeingSelected: [],
+    themesBeingSelected: [] as string[],
   };
-  const answers = ["Answer 1", "Answer 2"];
 
   it("should render", async () => {
-    const { container } = render(CandidateThemeCard, testData);
+    const { container } = render(CandidateThemeCard, {
+      props: testData,
+    });
 
     expect(screen.getByText(testData.theme.name)).toBeInTheDocument();
     expect(screen.getByText(testData.theme.description)).toBeInTheDocument();
-
-    // Answers hidden initially
-    answers.forEach((answer) => {
-      expect(screen.queryByText(answer)).toBeNull();
-    });
 
     expect(container).toMatchSnapshot();
   });
@@ -41,31 +37,35 @@ describe("CandidateThemeCard", () => {
       description: "This is a child theme",
     };
     render(CandidateThemeCard, {
-      ...testData,
-      theme: {
-        ...testData.theme,
-        children: [CHILD_THEME],
+      props: {
+        ...testData,
+        collapsedThemes: [], // Empty = all expanded
+        theme: {
+          ...testData.theme,
+          children: [CHILD_THEME],
+        },
       },
-      expandedThemes: [testData.theme.id, CHILD_THEME.id],
     });
 
     expect(screen.getByText(CHILD_THEME.name)).toBeInTheDocument();
     expect(screen.getByText(CHILD_THEME.description)).toBeInTheDocument();
   });
 
-  it("should not render child if theme is not expanded", async () => {
+  it("should not render child if theme is collapsed", async () => {
     const CHILD_THEME = {
       id: "child-theme",
       name: "Child Theme",
       description: "This is a child theme",
     };
     render(CandidateThemeCard, {
-      ...testData,
-      theme: {
-        ...testData.theme,
-        children: [CHILD_THEME],
+      props: {
+        ...testData,
+        collapsedThemes: ["test-theme"], // Parent theme is collapsed
+        theme: {
+          ...testData.theme,
+          children: [CHILD_THEME],
+        },
       },
-      expandedThemes: [],
     });
 
     expect(screen.queryByText(CHILD_THEME.name)).toBeNull();
@@ -85,11 +85,13 @@ describe("CandidateThemeCard", () => {
 
     const propsDefined = CandidateThemeCardStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual([
+      "consultationId",
+      "questionId",
       "theme",
+      "collapsedThemes",
       "level",
       "leftPadding",
       "handleSelect",
-      "answersMock",
     ]);
   });
 });

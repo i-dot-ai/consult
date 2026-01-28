@@ -3,15 +3,7 @@
 
   import { slide, fly } from "svelte/transition";
 
-  import type {
-    AnswersResponse,
-    GeneratedTheme,
-  } from "../../../../../global/types";
-  import {
-    createFetchStore,
-    type MockFetch,
-  } from "../../../../../global/stores";
-  import { getApiAnswersUrl } from "../../../../../global/routes";
+  import type { GeneratedTheme } from "../../../../../global/types";
 
   import Panel from "../../../../dashboard/Panel/Panel.svelte";
   import Button from "../../../../inputs/Button/Button.svelte";
@@ -27,35 +19,29 @@
     consultationId: string;
     questionId: string;
     theme: GeneratedTheme;
+    collapsedThemes: string[];
     level?: number;
     leftPadding?: number;
-    expandedThemes: string[];
-    setExpandedThemes: (themeId: string) => void;
+    toggleTheme: (themeId: string) => void;
     handleSelect: (theme: GeneratedTheme) => void;
     themesBeingSelected: string[];
-    maxAnswers?: number;
-    answersMock?: MockFetch;
   }
+
   let {
     consultationId,
     questionId,
     theme,
+    collapsedThemes,
     level = 0,
     leftPadding = 2,
-    expandedThemes = [],
-    setExpandedThemes = () => {},
+    toggleTheme,
     handleSelect = () => {},
     themesBeingSelected = [],
-    maxAnswers = 10,
-    answersMock,
   }: Props = $props();
 
-  const answersStore = createFetchStore<AnswersResponse>({
-    mockFetch: answersMock,
-  });
+  let isExpanded = $derived(!collapsedThemes.includes(theme.id));
 
-  let expanded = $derived(expandedThemes.includes(theme.id));
-  let showAnswers = $state(false);
+  let showRepresentativeResponses = $state(false);
 
   let disabled = $derived(Boolean(theme.selectedtheme_id));
   let isBeingSelected = $derived(themesBeingSelected.includes(theme.id));
@@ -73,20 +59,17 @@
           "transition-all",
           "duration-300",
           "w-auto",
-          showAnswers && !disabled ? "md:w-1/3" : "md:w-auto",
+          showRepresentativeResponses && !disabled ? "md:w-1/3" : "md:w-auto",
         ])}
       >
         <div class="mb-2 flex items-center justify-between">
           <div class="flex flex-wrap items-center gap-2">
             {#if theme.children?.length}
-              <Button
-                variant="ghost"
-                handleClick={() => setExpandedThemes(theme.id)}
-              >
+              <Button variant="ghost" handleClick={() => toggleTheme(theme.id)}>
                 <div
                   class={clsx([
                     "transition-transform",
-                    expanded && "rotate-90",
+                    isExpanded && "rotate-90",
                   ])}
                 >
                   <MaterialIcon size="1.2rem" color="fill-secondary">
@@ -130,28 +113,15 @@
 
             <Button
               size="sm"
-              handleClick={() => {
-                if (!$answersStore.data) {
-                  const queryString = new URLSearchParams({
-                    searchMode: "representative",
-                    searchValue: `${theme.name} ${theme.description}`,
-                    question_id: questionId,
-                  }).toString();
-
-                  $answersStore.fetch(
-                    `${getApiAnswersUrl(consultationId)}?${queryString}`,
-                  );
-                }
-                showAnswers = !showAnswers;
-              }}
-              disabled={$answersStore.isLoading}
+              handleClick={() =>
+                (showRepresentativeResponses = !showRepresentativeResponses)}
             >
               <div class="flex items-center gap-1 text-secondary">
                 <MaterialIcon color="fill-secondary">
                   <Visibility />
                 </MaterialIcon>
                 <span class="whitespace-nowrap">
-                  {showAnswers ? "Hide" : "Representative"} Responses
+                  {showRepresentativeResponses ? "Hide" : "Representative"} Responses
                 </span>
               </div>
             </Button>
@@ -159,18 +129,18 @@
         {/if}
       </div>
 
-      {#if showAnswers && !disabled}
+      {#if showRepresentativeResponses && !disabled}
         <aside
           transition:fly={{ x: 300 }}
           class="grow pt-4 sm:ml-4 sm:w-2/3 sm:border-l sm:border-neutral-200 sm:pl-4 sm:pt-0"
         >
           <RepresentativeResponses
+            {consultationId}
+            {questionId}
+            themeName={theme.name}
+            themeDescription={theme.description}
+            themeId={theme.id}
             variant="candidate"
-            title="Representative Responses"
-            loading={$answersStore.isLoading}
-            responses={$answersStore.data?.all_respondents
-              .slice(0, maxAnswers)
-              .map((answer) => answer.free_text_answer_text) || []}
           />
         </aside>
       {:else}
@@ -179,19 +149,18 @@
     </article>
   </Panel>
 
-  {#if expanded}
+  {#if isExpanded && theme.children?.length}
     <div transition:slide class="pt-4">
       {#each theme.children as childTheme (childTheme.id)}
         <CandidateThemeCard
           {consultationId}
           {questionId}
           theme={childTheme}
+          {collapsedThemes}
           level={level + 1}
           {handleSelect}
           {themesBeingSelected}
-          {answersMock}
-          {expandedThemes}
-          {setExpandedThemes}
+          {toggleTheme}
         />
       {/each}
     </div>

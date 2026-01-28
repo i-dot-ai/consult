@@ -1,15 +1,42 @@
 import RepresentativeResponses from "./RepresentativeResponses.svelte";
 
+const consultationId = $state("consultation-id");
+const questionId = $state("question-id");
+const themeName = $state("Test Theme");
+const themeDescription = $state("Test theme description");
+const themeId = $state("theme-id");
 const variant = $state("selected");
-const title = $state("Test Title");
-const responses = $state(["Answer 1", "Answer 2", "Answer 3"]);
-const loading = $state(false);
 
 export default {
   name: "RepresentativeResponses",
   component: RepresentativeResponses,
   category: "Theme Sign Off",
   props: [
+    {
+      name: "consultationId",
+      value: consultationId,
+      type: "string",
+    },
+    {
+      name: "questionId",
+      value: questionId,
+      type: "string",
+    },
+    {
+      name: "themeName",
+      value: themeName,
+      type: "string",
+    },
+    {
+      name: "themeDescription",
+      value: themeDescription,
+      type: "string",
+    },
+    {
+      name: "themeId",
+      value: themeId,
+      type: "string",
+    },
     {
       name: "variant",
       value: variant,
@@ -19,30 +46,6 @@ export default {
         { value: "candidate", label: "Candidate" },
       ],
     },
-    {
-      name: "title",
-      value: title,
-      type: "text",
-    },
-    {
-      name: "responses",
-      value: responses,
-      type: "json",
-    },
-    {
-      name: "loading",
-      value: loading,
-      type: "bool",
-    },
   ],
-  stories: [
-    {
-      name: "No Answers",
-      props: {
-        variant: "selected",
-        responses: [],
-        title: "No Answers Story",
-      },
-    },
-  ],
+  stories: [],
 };

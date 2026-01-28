@@ -1,11 +1,27 @@
 ---
+import { fetchBackendApi } from "../../../../global/api";
+
 import Layout from "../../../../layouts/Layout.astro";
 
 import ThemeSignOffOverview from "../../../../components/theme-sign-off/overview/OverviewScreen.svelte";
 import Section from "../../../../components/Section/Section.svelte";
-import type { AstroGlobalRuntime } from "../../../../global/types";
+import type {
+  AstroGlobalRuntime,
+  ConsultationResponse,
+  QuestionsResponse,
+} from "../../../../global/types";
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
+
+const consultation: ConsultationResponse = await fetchBackendApi(
+  Astro,
+  `/api/consultations/${consultationId}/`,
+);
+
+const questionsResponse: QuestionsResponse = await fetchBackendApi(
+  Astro,
+  `/api/consultations/${consultationId}/questions/`,
+);
 ---
 
 <Layout>
@@ -13,6 +29,8 @@ const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
     <ThemeSignOffOverview
       client:only="svelte"
       consultationId={consultationId || ""}
+      {consultation}
+      questions={questionsResponse.results}
     />
   </Section>
 </Layout>

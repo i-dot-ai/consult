@@ -5,16 +5,23 @@ import ThemeForm from "./ThemeForm.svelte";
 import ThemeFormStory from "./ThemeFormStory.svelte";
 
 describe("ThemeForm", () => {
-  const testData = {
-    initialTitle: "Test Theme",
-    initialDescription: "This is a test theme.",
+  const baseProps = {
     handleConfirm: () => {},
     handleCancel: () => {},
   };
 
+  const mockTheme = {
+    id: "test-id",
+    name: "Test Theme",
+    description: "This is a test theme.",
+    version: 1,
+    last_modified_by: "test@example.com",
+    modified_at: new Date().toISOString(),
+  };
+
   it("should render add variant", async () => {
     const { container } = render(ThemeForm, {
-      ...testData,
+      ...baseProps,
       variant: "add",
     });
 
@@ -25,8 +32,9 @@ describe("ThemeForm", () => {
 
   it("should render edit variant", async () => {
     render(ThemeForm, {
-      ...testData,
+      ...baseProps,
       variant: "edit",
+      theme: mockTheme,
     });
 
     expect(screen.getByText("Edit Theme")).toBeInTheDocument();
@@ -40,8 +48,7 @@ describe("ThemeForm", () => {
     const propsDefined = ThemeFormStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual([
       "variant",
-      "initialTitle",
-      "initialDescription",
+      "theme",
       "handleConfirm",
       "handleCancel",
     ]);

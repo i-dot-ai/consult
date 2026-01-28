@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { SelectedTheme } from "../../../../../global/types";
+
   import Accordion from "../../../../Accordion/Accordion.svelte";
   import Panel from "../../../../dashboard/Panel/Panel.svelte";
   import Button from "../../../../inputs/Button/Button.svelte";
@@ -9,33 +11,38 @@
   import Plus from "../../../../svg/material/Plus.svelte";
   import Tip from "../../../../svg/material/Tip.svelte";
 
-  export interface Props {
-    initialTitle: string;
-    initialDescription: string;
+  type BaseProps = {
     handleConfirm: (title: string, description: string) => void;
     handleCancel: () => void;
-    variant?: "add" | "edit";
-  }
+    loading?: boolean;
+  };
 
-  let {
-    initialTitle = "",
-    initialDescription = "",
-    handleConfirm = () => {},
-    handleCancel = () => {},
-    variant = "add",
-  }: Props = $props();
+  type AddProps = BaseProps & {
+    variant: "add";
+  };
 
-  let title = $state(initialTitle);
-  let description = $state(initialDescription);
+  type EditProps = BaseProps & {
+    variant: "edit";
+    theme: SelectedTheme;
+  };
 
-  const isThemeValid = () => {
-    return Boolean(title && description);
+  export type Props = AddProps | EditProps;
+
+  let props: Props = $props();
+
+  let title = $state(props.variant === "edit" ? props.theme.name : "");
+  let description = $state(
+    props.variant === "edit" ? props.theme.description : "",
+  );
+
+  const isThemeValid = (): boolean => {
+    return Boolean(title.trim() && description.trim());
   };
 </script>
 
 <Panel variant="primary" bg={true} border={true}>
   <div class="flex items-center gap-2">
-    {#if variant === "add"}
+    {#if props.variant === "add"}
       <MaterialIcon color="fill-primary">
         <Plus />
       </MaterialIcon>
@@ -46,7 +53,7 @@
     {/if}
 
     <h2 class="text-primary">
-      {variant === "add" ? "Add Custom Theme" : "Edit Theme"}
+      {props.variant === "add" ? "Add Custom Theme" : "Edit Theme"}
     </h2>
   </div>
 
@@ -108,14 +115,20 @@
     <Button
       variant="primary"
       size="sm"
-      disabled={!isThemeValid()}
+      disabled={!isThemeValid() || props.loading}
       handleClick={() => {
-        handleConfirm(title, description);
+        props.handleConfirm(title, description);
       }}
     >
-      {variant === "add" ? "Add Theme" : "Save Changes"}
+      {props.variant === "add" ? "Add Theme" : "Save Changes"}
     </Button>
 
-    <Button size="sm" handleClick={() => handleCancel()}>Cancel</Button>
+    <Button
+      size="sm"
+      disabled={props.loading}
+      handleClick={() => props.handleCancel()}
+    >
+      Cancel
+    </Button>
   </div>
 </Panel>

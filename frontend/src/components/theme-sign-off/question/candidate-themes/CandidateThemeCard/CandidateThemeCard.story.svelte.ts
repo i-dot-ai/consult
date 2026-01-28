@@ -1,24 +1,21 @@
 import type { GeneratedTheme } from "../../../../../global/types";
 import CandidateThemeCard from "./CandidateThemeCard.svelte";
 
+const consultationId = $state("consultation-id");
+const questionId = $state("question-id");
+
 const theme = $state({
   id: "theme-id",
   name: "Theme Name",
   description: "Theme description",
   selectedtheme_id: null,
 });
+const collapsedThemes = $state([] as string[]);
 const level = $state(0);
 const leftPadding = $state(1);
 
 const handleSelect = (theme: GeneratedTheme) =>
   alert(`Select theme event triggered with: ${theme.name}`);
-
-const answersMock = () => ({
-  all_respondents: [
-    { free_text_answer_text: "Answer 1" },
-    { free_text_answer_text: "Answer 2" },
-  ],
-});
 
 export default {
   name: "CandidateThemeCard",
@@ -26,8 +23,23 @@ export default {
   category: "Theme Sign Off",
   props: [
     {
+      name: "consultationId",
+      value: consultationId,
+      type: "string",
+    },
+    {
+      name: "questionId",
+      value: questionId,
+      type: "string",
+    },
+    {
       name: "theme",
       value: theme,
+      type: "json",
+    },
+    {
+      name: "collapsedThemes",
+      value: collapsedThemes,
       type: "json",
     },
     {
@@ -46,28 +58,23 @@ export default {
       type: "func",
       schema: `(theme: GeneratedTheme) => void`,
     },
-    {
-      name: "answersMock",
-      value: answersMock,
-    },
   ],
   stories: [
     {
       name: "Nested Levels",
       props: {
-        selectedThemes: [],
         theme: {
           id: "theme-id",
           name: "Top Level Theme",
           description: "Theme level 1",
           children: [
             {
-              id: "theme-id",
+              id: "mid-theme-id",
               name: "Mid Level Theme",
               description: "Theme level 2",
               children: [
                 {
-                  id: "theme-id",
+                  id: "child-theme-id",
                   name: "Child Theme",
                   description: "Theme level 3",
                 },
@@ -75,27 +82,25 @@ export default {
             },
           ],
         },
+        collapsedThemes: [],
         handleSelect: handleSelect,
-        answersMock: answersMock,
       },
     },
     {
       name: "No Answers",
       props: {
-        selectedThemes: [],
         theme: {
           id: "theme-id",
           name: "Top Level Theme",
           description: "Theme level 1",
         },
+        collapsedThemes: [],
         handleSelect: handleSelect,
-        answersMock: () => {},
       },
     },
     {
       name: "Disabled",
       props: {
-        selectedThemes: [],
         theme: {
           id: "theme-id",
           name: "Disabled Theme",
@@ -103,8 +108,8 @@ export default {
             "This theme is disabled because it is already added as selected theme.",
           selectedtheme_id: "test-theme-id",
         },
+        collapsedThemes: [],
         handleSelect: handleSelect,
-        answersMock: () => {},
       },
     },
   ],

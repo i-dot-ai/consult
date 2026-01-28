@@ -1,23 +1,67 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { createQuery } from "@tanstack/svelte-query";
+  import { queryClient } from "../../../../global/queryClient";
+  import type { AnswersResponse } from "../../../../global/types";
+  import { getApiAnswersUrl } from "../../../../global/routes";
+
   import MaterialIcon from "../../../MaterialIcon.svelte";
   import Docs from "../../../svg/material/Docs.svelte";
   import LoadingIndicator from "../../../LoadingIndicator/LoadingIndicator.svelte";
 
   export interface Props {
-    title: string;
-    responses?: string[];
-    loading?: boolean;
+    consultationId: string;
+    questionId: string;
+    themeName: string;
+    themeDescription: string;
+    themeId: string;
     variant?: "selected" | "candidate";
   }
 
   let {
-    title = "",
-    responses = [],
-    loading = false,
+    consultationId,
+    questionId,
+    themeName,
+    themeDescription,
+    themeId,
     variant = "selected",
   }: Props = $props();
+
+  const representativeResponsesQuery = createQuery<AnswersResponse>(
+    () => ({
+      queryKey: [
+        "representativeResponses",
+        consultationId,
+        questionId,
+        variant,
+        themeId,
+      ],
+      queryFn: async () => {
+        const queryString = new URLSearchParams({
+          searchMode: "representative",
+          searchValue: `${themeName} ${themeDescription}`,
+          question_id: questionId,
+        }).toString();
+
+        const response = await fetch(
+          `${getApiAnswersUrl(consultationId)}?${queryString}`,
+        );
+        if (!response.ok)
+          throw new Error("Failed to fetch representative responses");
+        return response.json();
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    }),
+    () => queryClient,
+  );
+
+  let loading = $derived(representativeResponsesQuery.isLoading);
+  let responses = $derived(
+    representativeResponsesQuery.data?.all_respondents.map(
+      (answer) => answer.free_text_answer_text,
+    ) || [],
+  );
 </script>
 
 <div class="flex items-center gap-1">
@@ -30,7 +74,7 @@
     </MaterialIcon>
   </div>
 
-  <h2>{title}</h2>
+  <h2>Representative Responses</h2>
 
   <div
     class={clsx([

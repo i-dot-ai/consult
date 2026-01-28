@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`RepresentativeResponses > should render 1`] = `
+exports[`RepresentativeResponses > should render with loading state 1`] = `
 <div>
   <div
     class="flex items-center gap-1"
@@ -26,54 +26,64 @@ exports[`RepresentativeResponses > should render 1`] = `
     </div>
      
     <h2>
-      Test Title
+      Representative Responses
     </h2>
      
     <div
       class="ml-1 px-1.5 py-0.5 rounded-lg text-xs bg-pink-100 text-primary"
     >
-      2
+      <div
+        class="animate-spin ease-in-out w-max m-auto"
+        style="animation-timing-function: ease-in-out;"
+      >
+        <svg
+          class="fill-neutral-300"
+          height="1rem"
+          role="img"
+          viewBox="0 -960 960 960"
+          width="1rem"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M480-80q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-83 31.5-155.5t86-127Q252-817 325-848.5T480-880q17 0 28.5 11.5T520-840q0 17-11.5 28.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-17 11.5-28.5T840-520q17 0 28.5 11.5T880-480q0 82-31.5 155t-86 127.5q-54.5 54.5-127 86T480-80Z"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+          <!---->
+        </svg>
+        <!---->
+      </div>
       <!---->
     </div>
   </div>
    
-  <!---->
-  <ol
-    class="mt-2 max-h-[20rem] overflow-y-auto"
-  >
+  <ol>
     <li
-      class="flex items-start gap-2 mb-2 last:mb-0 p-2 rounded-lg text-neutral-600 bg-neutral-50"
+      class="blink overflow-hidden gap-2 first:mt-4 mb-4 last:mb-0 p-2 rounded-lg text-neutral-100 bg-neutral-100 select-none"
     >
-      <div
-        class="shrink-0 flex justify-center items-center w-[3ch] h-[3ch] rounded-full text-xs bg-pink-200 text-primary"
-      >
-        1
-      </div>
-       
-      <p
-        class="text-sm"
-      >
-        Answer 1
-      </p>
+      SKELETON SKELETON SKELETON SKELETON SKELETON 
     </li>
     <li
-      class="flex items-start gap-2 mb-2 last:mb-0 p-2 rounded-lg text-neutral-600 bg-neutral-50"
+      class="blink overflow-hidden gap-2 first:mt-4 mb-4 last:mb-0 p-2 rounded-lg text-neutral-100 bg-neutral-100 select-none"
     >
-      <div
-        class="shrink-0 flex justify-center items-center w-[3ch] h-[3ch] rounded-full text-xs bg-pink-200 text-primary"
-      >
-        2
-      </div>
-       
-      <p
-        class="text-sm"
-      >
-        Answer 2
-      </p>
+      SKELETON SKELETON SKELETON SKELETON SKELETON 
+    </li>
+    <li
+      class="blink overflow-hidden gap-2 first:mt-4 mb-4 last:mb-0 p-2 rounded-lg text-neutral-100 bg-neutral-100 select-none"
+    >
+      SKELETON SKELETON SKELETON SKELETON SKELETON 
+    </li>
+    <li
+      class="blink overflow-hidden gap-2 first:mt-4 mb-4 last:mb-0 p-2 rounded-lg text-neutral-100 bg-neutral-100 select-none"
+    >
+      SKELETON SKELETON SKELETON SKELETON SKELETON 
+    </li>
+    <li
+      class="blink overflow-hidden gap-2 first:mt-4 mb-4 last:mb-0 p-2 rounded-lg text-neutral-100 bg-neutral-100 select-none"
+    >
+      SKELETON SKELETON SKELETON SKELETON SKELETON 
     </li>
     
   </ol>
-  
   <!---->
   
   

@@ -3,15 +3,10 @@
 
   import { fade, fly } from "svelte/transition";
 
-  import type {
-    AnswersResponse,
-    SelectedTheme,
-  } from "../../../../../global/types";
-  import {
-    createFetchStore,
-    type MockFetch,
-  } from "../../../../../global/stores";
-  import { getApiAnswersUrl } from "../../../../../global/routes";
+  import { createMutation } from "@tanstack/svelte-query";
+  import { queryClient } from "../../../../../global/queryClient";
+  import type { SelectedTheme } from "../../../../../global/types";
+  import { getApiDeleteSelectedThemeUrl } from "../../../../../global/routes";
   import {
     formatTimeDeltaText,
     getTimeDeltaInMinutes,
@@ -23,63 +18,120 @@
   import Delete from "../../../../svg/material/Delete.svelte";
   import Docs from "../../../../svg/material/Docs.svelte";
   import EditSquare from "../../../../svg/material/EditSquare.svelte";
-  import ThemeForm from "../ThemeForm/ThemeForm.svelte";
+  import EditTheme from "../EditTheme/EditTheme.svelte";
   import RepresentativeResponses from "../../RepresentativeResponses/RepresentativeResponses.svelte";
   import Tag from "../../../../Tag/Tag.svelte";
+  import type { SaveThemeError } from "../ErrorSavingTheme/ErrorSavingTheme.svelte";
 
-  export interface Props {
+  interface Props {
     consultationId: string;
     questionId: string;
+    showError: (error: SaveThemeError) => void;
     theme: SelectedTheme;
-    removeTheme: (themeId: string) => void;
-    updateTheme: (themeId: string, title: string, description: string) => void;
-    maxAnswers?: number;
-    answersMock?: MockFetch;
   }
 
-  let {
-    consultationId,
-    questionId,
-    theme,
-    removeTheme = () => {},
-    updateTheme = () => {},
-    maxAnswers = 10,
-    answersMock,
-  }: Props = $props();
+  let { consultationId, questionId, showError, theme }: Props = $props();
 
-  const answersStore = createFetchStore<AnswersResponse>({
-    mockFetch: answersMock,
-  });
-
-  let showAnswers = $state(false);
+  let showRepresentativeResponses = $state(false);
   let editing = $state(false);
 
-  const resetAnswers = () => {
-    $answersStore.data = null;
-    showAnswers = false;
+  const deleteThemeMutation = createMutation<
+    void,
+    {
+      status: number;
+      last_modified_by?: { email: string };
+      latest_version?: string;
+    },
+    void
+  >(
+    () => ({
+      mutationFn: async () => {
+        const response = await fetch(
+          getApiDeleteSelectedThemeUrl(consultationId, questionId, theme.id),
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              "If-Match": String(theme.version),
+            },
+          },
+        );
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw { status: response.status, ...errData };
+        }
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["selectedThemes", consultationId, questionId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["candidateThemes", consultationId, questionId],
+        });
+      },
+      onError: (error) => {
+        if (error.status === 404) {
+          // SelectedTheme has already been deleted, just refetch
+          queryClient.invalidateQueries({
+            queryKey: ["selectedThemes", consultationId, questionId],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["candidateThemes", consultationId, questionId],
+          });
+        } else if (error.status === 412) {
+          showError({
+            type: "remove-conflict",
+            lastModifiedBy: error.last_modified_by?.email || "",
+            latestVersion: error.latest_version || "",
+          });
+        } else {
+          showError({ type: "unexpected" });
+          console.error(error);
+        }
+      },
+    }),
+    () => queryClient,
+  );
+
+  const handleRemove = () => {
+    deleteThemeMutation.mutate();
+  };
+
+  const handleEditSuccess = () => {
+    // Invalidate representative responses cache when theme is edited since search terms changed
+    queryClient.invalidateQueries({
+      queryKey: [
+        "representativeResponses",
+        consultationId,
+        questionId,
+        "selected",
+        theme.id,
+      ],
+    });
+    showRepresentativeResponses = false;
+    editing = false;
   };
 </script>
 
 <article class="rounded-lg bg-white" data-themeid={theme.id}>
   {#if editing}
-    <div in:fade>
-      <ThemeForm
-        variant="edit"
-        initialTitle={theme.name}
-        initialDescription={theme.description}
-        handleCancel={() => (editing = false)}
-        handleConfirm={(title, description) => {
-          updateTheme(theme.id, title, description);
-          resetAnswers();
-          editing = false;
-        }}
-      />
-    </div>
+    <EditTheme
+      {consultationId}
+      {questionId}
+      {showError}
+      {theme}
+      onSuccess={handleEditSuccess}
+      onCancel={() => (editing = false)}
+    />
   {:else}
     <div in:fade>
       <Panel>
         <div class="flex flex-wrap sm:flex-nowrap">
-          <div class={clsx([showAnswers ? "md:w-1/3" : "md:w-auto"])}>
+          <div
+            class={clsx([
+              showRepresentativeResponses ? "md:w-1/3" : "md:w-auto",
+            ])}
+          >
             <header class="flex items-center gap-2">
               <h2>{theme.name}</h2>
 
@@ -102,14 +154,22 @@
             </small>
 
             <footer class="flex flex-wrap items-center gap-2">
-              <Button size="sm" handleClick={() => (editing = !editing)}>
+              <Button
+                size="sm"
+                disabled={deleteThemeMutation.isPending}
+                handleClick={() => (editing = !editing)}
+              >
                 <MaterialIcon color="fill-neutral-500">
                   <EditSquare />
                 </MaterialIcon>
                 Edit
               </Button>
 
-              <Button size="sm" handleClick={() => removeTheme(theme.id)}>
+              <Button
+                size="sm"
+                handleClick={handleRemove}
+                disabled={deleteThemeMutation.isPending}
+              >
                 <MaterialIcon color="fill-neutral-500">
                   <Delete />
                 </MaterialIcon>
@@ -118,21 +178,9 @@
 
               <Button
                 size="sm"
-                handleClick={() => {
-                  if (!$answersStore.data) {
-                    const queryString = new URLSearchParams({
-                      searchMode: "representative",
-                      searchValue: `${theme.name} ${theme.description}`,
-                      question_id: questionId,
-                    }).toString();
-
-                    $answersStore.fetch(
-                      `${getApiAnswersUrl(consultationId)}?${queryString}`,
-                    );
-                  }
-                  showAnswers = !showAnswers;
-                }}
-                disabled={$answersStore.isLoading}
+                handleClick={() =>
+                  (showRepresentativeResponses = !showRepresentativeResponses)}
+                disabled={deleteThemeMutation.isPending}
               >
                 <MaterialIcon color="fill-neutral-500">
                   <Docs />
@@ -144,17 +192,18 @@
             </footer>
           </div>
 
-          {#if showAnswers}
+          {#if showRepresentativeResponses}
             <aside
               transition:fly={{ x: 300 }}
               class="grow pt-4 sm:ml-4 sm:w-2/3 sm:border-l sm:border-neutral-200 sm:pl-4 sm:pt-0"
             >
               <RepresentativeResponses
-                title="Representative Responses"
-                loading={$answersStore.isLoading}
-                responses={$answersStore.data?.all_respondents
-                  .slice(0, maxAnswers)
-                  .map((answer) => answer.free_text_answer_text) || []}
+                {consultationId}
+                {questionId}
+                themeName={theme.name}
+                themeDescription={theme.description}
+                themeId={theme.id}
+                variant="selected"
               />
             </aside>
           {/if}

@@ -1,26 +1,23 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
 
+  import { createMutation } from "@tanstack/svelte-query";
+  import { queryClient } from "../../../global/queryClient";
   import {
     getApiConsultationUrl,
-    getApiQuestionsUrl,
     getThemeSignOffDetailUrl,
     Routes,
   } from "../../../global/routes.ts";
-  import { createFetchStore } from "../../../global/stores.ts";
   import {
     type ConsultationResponse,
     type Question,
-    type QuestionsResponse,
   } from "../../../global/types.ts";
 
   import Tag from "../../Tag/Tag.svelte";
   import Modal from "../../Modal/Modal.svelte";
   import Alert from "../../Alert.svelte";
-  import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
   import OnboardingTour from "../../OnboardingTour/OnboardingTour.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
   import TitleRow from "../../dashboard/TitleRow.svelte";
@@ -39,26 +36,37 @@
 
   interface Props {
     consultationId: string;
+    consultation: ConsultationResponse;
+    questions: Question[];
   }
 
-  let { consultationId = "" }: Props = $props();
+  let { consultationId, consultation, questions }: Props = $props();
 
   let searchValue: string = $state("");
   let isConfirmModalOpen: boolean = $state(false);
-  let dataRequested: boolean = $state(false);
 
-  const questionsStore = createFetchStore<QuestionsResponse>();
-  const consultationStore = createFetchStore<ConsultationResponse>();
-  const consultationUpdateStore = createFetchStore();
-
-  onMount(async () => {
-    $consultationStore.fetch(getApiConsultationUrl(consultationId));
-    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
-    dataRequested = true;
-  });
+  const updateConsultationMutation = createMutation<void, Error, void>(
+    () => ({
+      mutationFn: async () => {
+        const response = await fetch(getApiConsultationUrl(consultationId), {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ stage: "theme_mapping" }),
+        });
+        if (!response.ok) throw new Error("Failed to update consultation");
+      },
+      onSuccess: () => {
+        isConfirmModalOpen = false;
+        location.href = location.href;
+      },
+    }),
+    () => queryClient,
+  );
 
   let displayQuestions = $derived(
-    $questionsStore.data?.results?.filter((question) =>
+    questions.filter((question) =>
       `Q${question.number}: ${question.question_text}`
         .toLocaleLowerCase()
         .includes(searchValue.toLocaleLowerCase()),
@@ -66,14 +74,12 @@
   );
 
   let questionsForSignOff = $derived(
-    $questionsStore.data?.results?.filter(
-      (question: Question) => question.has_free_text,
-    ),
+    questions.filter((question: Question) => question.has_free_text),
   );
 
   let isAllQuestionsSignedOff: boolean = $derived(
     Boolean(
-      questionsForSignOff?.every(
+      questionsForSignOff.every(
         (question: Question) => question.theme_status === "confirmed",
       ),
     ),
@@ -92,13 +98,10 @@
 <hr class="my-6" />
 
 <svelte:boundary>
-  {#if isAllQuestionsSignedOff || $consultationStore.data?.stage === "theme_mapping" || $consultationStore.data?.stage === "analysis"}
+  {#if isAllQuestionsSignedOff || consultation.stage === "theme_mapping" || consultation.stage === "analysis"}
     <section in:slide>
       <ConsultationStagePanel
-        consultation={$consultationStore.data || {
-          id: "",
-          stage: "theme_sign_off",
-        }}
+        {consultation}
         questionsCount={questionsForSignOff?.length || 0}
         onConfirmClick={() => (isConfirmModalOpen = true)}
       />
@@ -110,19 +113,8 @@
         icon={Warning}
         open={isConfirmModalOpen}
         setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
-        handleConfirm={async () => {
-          await $consultationUpdateStore.fetch(
-            getApiConsultationUrl(consultationId),
-            "PATCH",
-            {
-              stage: "theme_mapping",
-            },
-          );
-
-          if (!$consultationUpdateStore.error) {
-            isConfirmModalOpen = false;
-            location.href = location.href;
-          }
+        handleConfirm={() => {
+          updateConsultationMutation.mutate();
         }}
       >
         <p class="mb-4 text-sm text-neutral-500">
@@ -170,10 +162,12 @@
           </div>
         </a>
 
-        {#if $consultationUpdateStore.error}
+        {#if updateConsultationMutation.error}
           <div class="mb-4 mt-2">
             <Alert>
-              <span class="text-sm">{$consultationUpdateStore.error}</span>
+              <span class="text-sm"
+                >{updateConsultationMutation.error.message}</span
+              >
             </Alert>
           </div>
         {/if}
@@ -202,74 +196,60 @@
         <Help slot="icon" />
 
         <p slot="aside">
-          {$questionsStore.data?.results?.length || 0} questions
+          {questions.length} questions
         </p>
       </TitleRow>
     </div>
 
     <Panel bg={true} border={true}>
-      {#if !dataRequested || $questionsStore.isLoading}
-        <div transition:slide class="my-8">
-          <LoadingIndicator size="5rem" />
-          <p class="text-center text-neutral-500">Loading questions...</p>
-        </div>
-      {:else if $questionsStore.error}
-        <p transition:slide>{$questionsStore.error}</p>
-      {:else}
-        <div transition:slide>
-          <TextInput
-            variant="search"
-            id="search-input"
-            label="Search"
-            placeholder="Search..."
-            hideLabel={true}
-            value={searchValue}
-            setValue={(value) => (searchValue = value.trim())}
+      <TextInput
+        variant="search"
+        id="search-input"
+        label="Search"
+        placeholder="Search..."
+        hideLabel={true}
+        value={searchValue}
+        setValue={(value) => (searchValue = value.trim())}
+      />
+
+      <div class="mb-4">
+        {#if !displayQuestions.length}
+          <NotFoundMessage
+            variant="archive"
+            body="No questions found matching your search."
           />
+        {:else}
+          {#each displayQuestions as question (question.id)}
+            <QuestionCard
+              {consultationId}
+              {question}
+              highlightText={searchValue}
+              clickable={question.has_free_text}
+              disabled={!question.has_free_text}
+              url={getThemeSignOffDetailUrl(consultationId, question.id || "")}
+              subtext={!question.has_free_text
+                ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
+                : undefined}
+            >
+              {#snippet tag()}
+                {#if !question.has_free_text}
+                  <Tag variant="primary-light">
+                    <MaterialIcon color="fill-primary">
+                      <Checklist />
+                    </MaterialIcon>
 
-          <div class="mb-4">
-            {#if !displayQuestions?.length && !$questionsStore.isLoading}
-              <NotFoundMessage
-                variant="archive"
-                body="No questions found matching your search."
-              />
-            {:else}
-              {#each displayQuestions as question (question.id)}
-                <QuestionCard
-                  {consultationId}
-                  {question}
-                  highlightText={searchValue}
-                  clickable={question.has_free_text}
-                  disabled={!question.has_free_text}
-                  url={getThemeSignOffDetailUrl(
-                    consultationId,
-                    question.id || "",
-                  )}
-                  subtext={!question.has_free_text
-                    ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
-                    : undefined}
-                >
-                  {#snippet tag()}
-                    {#if !question.has_free_text}
-                      <Tag variant="primary-light">
-                        <MaterialIcon color="fill-primary">
-                          <Checklist />
-                        </MaterialIcon>
-
-                        Multiple choice
-                      </Tag>
-                    {:else if question.theme_status === "confirmed"}
-                      <Tag variant="primary-light">Signed off</Tag>
-                    {:else}
-                      <div></div>
-                    {/if}
-                  {/snippet}
-                </QuestionCard>
-              {/each}
-            {/if}
-          </div>
-        </div>
-      {/if}
+                    Multiple choice
+                  </Tag>
+                {:else if question.theme_status === "confirmed"}
+                  <Tag variant="primary-light">Signed off</Tag>
+                {:else}
+                  <div></div>
+                {/if}
+              {/snippet}
+            </QuestionCard>
+          {/each}
+        {/if}
+      </div>
     </Panel>
   </section>
 

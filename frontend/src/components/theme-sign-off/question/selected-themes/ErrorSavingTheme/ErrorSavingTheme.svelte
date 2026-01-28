@@ -1,21 +1,20 @@
 <script lang="ts">
-  import Modal from "../../../Modal/Modal.svelte";
-  import Warning from "../../../svg/material/Warning.svelte";
+  import Modal from "../../../../Modal/Modal.svelte";
+  import Warning from "../../../../svg/material/Warning.svelte";
 
-  export type ErrorType =
-    | {
-        type: "unexpected" | "theme-does-not-exist";
-      }
+  export type SaveThemeError =
+    | { type: "unexpected" | "theme-does-not-exist" }
     | {
         type: "edit-conflict" | "remove-conflict";
         lastModifiedBy: string;
         latestVersion: string;
       };
-  export type ErrorModalProps = ErrorType & {
+
+  type Props = SaveThemeError & {
     onClose: () => void;
   };
 
-  let props: ErrorModalProps = $props();
+  let props: Props = $props();
 
   let isOpen = $state(true);
 
@@ -24,7 +23,7 @@
     props.onClose();
   };
 
-  const getModalContent = (props: ErrorModalProps) => {
+  const getModalContent = (props: Props) => {
     switch (props.type) {
       case "theme-does-not-exist":
         return {

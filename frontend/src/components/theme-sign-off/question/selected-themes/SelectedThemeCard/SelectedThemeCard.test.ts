@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
 import SelectedThemeCard from "./SelectedThemeCard.svelte";
@@ -8,6 +8,7 @@ describe("SelectedThemeCard", () => {
   const testData = {
     consultationId: "test-consultation",
     questionId: "test-question",
+    showError: vi.fn(),
     theme: {
       id: "theme-id",
       name: "Theme Name",
@@ -16,21 +17,15 @@ describe("SelectedThemeCard", () => {
       modified_at: new Date().toISOString(),
       last_modified_by: "testuser",
     },
-    answers: ["Answer 1", "Answer 2"],
-    removeTheme: () => {},
-    updateTheme: () => {},
   };
 
   it("should render", async () => {
-    const { container } = render(SelectedThemeCard, testData);
+    const { container } = render(SelectedThemeCard, {
+      props: testData,
+    });
 
     expect(screen.getByText(testData.theme.name)).toBeInTheDocument();
     expect(screen.getByText(testData.theme.description)).toBeInTheDocument();
-
-    // Answers hidden initially
-    testData.answers?.forEach((answer) => {
-      expect(screen.queryByText(answer)).toBeNull();
-    });
 
     expect(container).toMatchSnapshot();
   });
@@ -45,10 +40,10 @@ describe("SelectedThemeCard", () => {
 
     const propsDefined = SelectedThemeCardStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual([
+      "consultationId",
+      "questionId",
+      "showError",
       "theme",
-      "answers",
-      "removeTheme",
-      "updateTheme",
     ]);
   });
 });
