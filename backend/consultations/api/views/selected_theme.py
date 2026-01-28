@@ -1,3 +1,5 @@
+from rest_framework.permissions import IsAuthenticated
+
 from backend.consultations import models
 from backend.consultations.api.exceptions import (
     PreconditionFailed,
@@ -13,7 +15,7 @@ from rest_framework.viewsets import ModelViewSet
 
 class SelectedThemeViewSet(ModelViewSet):
     serializer_class = SelectedThemeSerializer
-    permission_classes = [CanSeeConsultation]
+    permission_classes = [IsAuthenticated, CanSeeConsultation]
     http_method_names = ["get", "post", "patch", "delete"]
 
     def get_queryset(self):

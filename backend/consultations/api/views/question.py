@@ -1,7 +1,8 @@
+from rest_framework.permissions import IsAuthenticated
+
 from backend.consultations import models
 from backend.consultations.api.permissions import (
     CanSeeConsultation,
-    HasDashboardAccess,
 )
 from backend.consultations.api.serializers import (
     QuestionSerializer,
@@ -15,7 +16,7 @@ from rest_framework.viewsets import ModelViewSet
 
 class QuestionViewSet(ModelViewSet):
     serializer_class = QuestionSerializer
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    permission_classes = [IsAuthenticated, CanSeeConsultation]
     filterset_fields = ["has_free_text"]
     http_method_names = ["get", "patch", "delete"]
 
@@ -29,7 +30,12 @@ class QuestionViewSet(ModelViewSet):
             .order_by("number")
         )
 
-    @action(detail=True, methods=["get"], url_path="theme-information")
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="theme-information",
+        permissions=[IsAuthenticated, CanSeeConsultation],
+    )
     def theme_information(self, request, pk=None, consultation_pk=None):
         """Get all theme information for a question"""
         # Get the question object with consultation in one query
@@ -45,7 +51,12 @@ class QuestionViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"], url_path="show-next")
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="show-next",
+        permission_classes=[IsAuthenticated, CanSeeConsultation],
+    )
     def show_next_response(self, request, pk=None, consultation_pk=None):
         """Get the next response that needs human review for this question"""
         question = self.get_object()
