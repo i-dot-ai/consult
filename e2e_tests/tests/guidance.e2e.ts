@@ -30,14 +30,14 @@ const URLS = [
 test("displays guidance heading", async ({ page }) => {
   await page.goto("/guidance");
 
-  HEADINGS.forEach(heading => {
-    expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
+  HEADINGS.forEach(async heading => {  
+    await expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
   })
 });
 
 test("displays links with correct urls", async ({ page }) => {
   await page.goto("/guidance");
-  URLS.forEach(url => {
-    expect(page.locator(`a[href="${url}"]`)).toBeVisible();
+  URLS.forEach(async url => {
+    await expect(page.locator(`a[href="${url}"]`)).toBeVisible();
   })
 });
