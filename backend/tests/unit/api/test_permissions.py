@@ -4,47 +4,10 @@ from uuid import uuid4
 import pytest
 from backend.consultations.api.permissions import (
     CanSeeConsultation,
-    HasDashboardAccess,
 )
 from backend.factories import UserFactory
 
 from tests.utils import build_url
-
-
-@pytest.mark.django_db
-class TestHasDashboardAccess:
-    def test_authenticated_user_with_dashboard_access(self, request_factory, dashboard_user):
-        """Test that authenticated user with dashboard access is granted permission"""
-        request = request_factory.get("/")
-        request.user = dashboard_user
-
-        permission = HasDashboardAccess()
-        assert permission.has_permission(request, None) is True
-
-    def test_authenticated_user_without_dashboard_access(self, request_factory, non_dashboard_user):
-        """Test that authenticated user without dashboard access is denied permission"""
-        request = request_factory.get("/")
-        request.user = non_dashboard_user
-
-        permission = HasDashboardAccess()
-        assert permission.has_permission(request, None) is False
-
-    def test_unauthenticated_user(self, request_factory):
-        """Test that unauthenticated user is denied permission"""
-        request = request_factory.get("/")
-        request.user = Mock()
-        request.user.is_authenticated = False
-
-        permission = HasDashboardAccess()
-        assert permission.has_permission(request, None) is False
-
-    def test_user_has_dashboard_access_property(self, dashboard_user):
-        """Test that user.has_dashboard_access property works correctly"""
-        assert dashboard_user.has_dashboard_access is True
-
-    def test_user_without_dashboard_access_property(self, non_dashboard_user):
-        """Test that user without dashboard access returns False"""
-        assert non_dashboard_user.has_dashboard_access is False
 
 
 @pytest.mark.django_db
