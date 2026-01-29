@@ -1,3 +1,4 @@
+import type { GeneratedTheme } from "../../../global/types";
 import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
 
 const theme = $state({
@@ -9,7 +10,7 @@ const theme = $state({
 const level = $state(0);
 const leftPadding = $state(1);
 
-const handleSelect = (theme) =>
+const handleSelect = (theme: GeneratedTheme) =>
   alert(`Select theme event triggered with: ${theme.name}`);
 
 const answersMock = () => ({

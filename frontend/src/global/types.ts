@@ -119,8 +119,8 @@ export enum TabDirections {
   Backward = "backward",
 }
 
-export interface SearchableSelectOption {
-  value: unknown;
+export interface SearchableSelectOption<T> {
+  value: T;
   label: string;
   description?: string;
   disabled?: boolean;

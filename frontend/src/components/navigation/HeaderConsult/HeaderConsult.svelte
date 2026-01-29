@@ -59,7 +59,12 @@
             ],
           },
         ]
-      : []),
+      : [
+          {
+            label: "My Consultations",
+            url: Routes.Consultations,
+          },
+        ]),
   ]}
 >
   {#snippet endItems()}

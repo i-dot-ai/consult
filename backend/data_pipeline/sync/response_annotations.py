@@ -360,10 +360,16 @@ def _build_batch_key_to_db_theme_lookup(
     # Map batch theme_key -> database SelectedTheme (joined on name)
     batch_key_to_db_theme = {}
     missing_themes = []
+    themes_to_update = []
 
     for batch_theme in batch_themes:
         if batch_theme.theme_name in db_themes_by_name:
-            batch_key_to_db_theme[batch_theme.theme_key] = db_themes_by_name[batch_theme.theme_name]
+            db_theme = db_themes_by_name[batch_theme.theme_name]
+            # Persist the batch job's theme key to the database
+            if db_theme.key != batch_theme.theme_key:
+                db_theme.key = batch_theme.theme_key
+                themes_to_update.append(db_theme)
+            batch_key_to_db_theme[batch_theme.theme_key] = db_theme
         else:
             missing_themes.append(batch_theme.theme_name)
             logger.warning(
@@ -375,6 +381,13 @@ def _build_batch_key_to_db_theme_lookup(
         raise ValueError(
             f"Batch output contains themes not found in database for question {question.number}: "
             f"{missing_themes}."
+        )
+
+    # Bulk update theme keys
+    if themes_to_update:
+        SelectedTheme.objects.bulk_update(themes_to_update, ["key"])
+        logger.info(
+            f"Updated keys for {len(themes_to_update)} themes for question {question.number}"
         )
 
     logger.info(

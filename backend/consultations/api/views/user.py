@@ -44,11 +44,16 @@ class UserViewSet(ModelViewSet):
         return filterset.qs.distinct()
 
     serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     pagination_class = PageNumberPagination
     filterset_class = UserFilter
 
-    @action(detail=True, methods=["get"], url_path="consultations")
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="consultations",
+        permission_classes=[IsAuthenticated, IsAdminUser],
+    )
     def consultations(self, request, pk=None):
         """
         Get all consultations that a specific user belongs to.

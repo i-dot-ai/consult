@@ -32,7 +32,7 @@
     6: "h6",
   } as const;
 
-  const tag = tagMap[level];
+  const tag = $derived(tagMap[level]);
 </script>
 
 <svelte:element

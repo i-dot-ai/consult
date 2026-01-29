@@ -72,14 +72,23 @@ class TestSampleResponses:
     def test_keeps_specified_number_of_responses(self):
         consultation = ConsultationFactory()
         question = QuestionFactory(consultation=consultation)
-        for i in range(10):
+        for i in range(5):
             respondent = RespondentFactory(consultation=consultation)
             ResponseFactory(question=question, respondent=respondent, free_text=f"Response {i}")
+        for i in range(5):
+            respondent = RespondentFactory(consultation=consultation)
+            ResponseFactory(question=question, respondent=respondent, free_text="Not Provided")
+        for i in range(5):
+            respondent = RespondentFactory(consultation=consultation)
+            ResponseFactory(question=question, respondent=respondent, free_text="")
+        for i in range(5):
+            respondent = RespondentFactory(consultation=consultation)
+            ResponseFactory(question=question, respondent=respondent, free_text=None)
 
         result = question.sample_responses(keep_count=3)
 
         assert result.kept == 3
-        assert result.deleted == 7
+        assert result.deleted == 17
         assert Response.objects.filter(question=question).count() == 3
 
         question.refresh_from_db()

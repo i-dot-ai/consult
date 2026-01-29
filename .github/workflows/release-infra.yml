@@ -4,12 +4,12 @@ on:
   push:
     tags:
       - release-dev-**
-#      - release-preprod-**
+      - release-preprod-**
 
-#  workflow_run:
-#    workflows: [build]
-#    types: [completed]
-#    branches: [main]
+  workflow_run:
+    workflows: [build]
+    types: [completed]
+    branches: [main]
 
 jobs:
   set-vars:
