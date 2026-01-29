@@ -202,7 +202,7 @@ def non_dashboard_user():
 
 @pytest.fixture
 def dashboard_user():
-    user = UserFactory(has_dashboard_access=True)
+    user = UserFactory()
     user.save()
     yield user
     user.delete()
@@ -210,8 +210,8 @@ def dashboard_user():
 
 @pytest.fixture()
 def user_without_consultation_access():
-    """User with dashboard access but not consultation access"""
-    user = UserFactory(has_dashboard_access=True)
+    """User without consultation access"""
+    user = UserFactory()
     user.save()
     yield user
     user.delete()
@@ -364,7 +364,7 @@ def selected_candidate_theme(free_text_question, theme_a):
 
 @pytest.fixture()
 def consultation_user(consultation):
-    user = UserFactory(has_dashboard_access=True, is_staff=True)
+    user = UserFactory(is_staff=True)
     consultation.users.add(user)
     yield user
     user.delete()

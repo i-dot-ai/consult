@@ -213,8 +213,6 @@ def test_0005_user_has_dashboard_access(migrator):
     user_with_access = OldUser.objects.create(email="user_with_access@example.com")
     user_with_access.groups.add(dashboard_access_group)
 
-    assert not hasattr(user_with_access, "has_dashboard_access")
-
     OldUser.objects.create(email="user_without_access@example.com")
 
     # Apply the migration
