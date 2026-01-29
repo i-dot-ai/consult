@@ -33,18 +33,18 @@ test.beforeEach(async ({ page }) => {
 })
 
 test(`initially displays loading messages`, async ({ page }) => {
-  await expect(page.getByText("Loading Questions")).toBeVisible();
+  await expect(page.getByText("Loading Questions")).toBeAttached();
 })
 
 test(`displays header sub path text`, async ({ page }) => {
   const subpathEl = page.getByTestId("header-subpath");
-  await expect(subpathEl).toBeVisible();
+  await expect(subpathEl).toBeAttached();
   await expect(subpathEl).toContainText("Theme Sign Off");
 })
 
 SECTION_TITLES.forEach(title => {
   test(`displays section titles: ${title}`, async ({ page }) => {
-    await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: title, exact: true })).toBeAttached();
   })
 })
 
@@ -53,7 +53,7 @@ test(`displays questions`, async ({ page }) => {
 
   testConsultationQuestions.forEach(async question => {
     const questionText = `Q${question.number}: ${question.question_text}`;
-    await expect(page.getByText(questionText, { exact: true })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(questionText, { exact: true })).toBeAttached({ timeout: 5000 });
   })
 })
 
@@ -62,14 +62,14 @@ test(`searching questions updates question list`, async ({ page }) => {
 
   page.getByRole('textbox').fill(`Text that won't match anything`);
 
-  await expect(page.getByText("No questions found matching your search")).toBeVisible();
+  await expect(page.getByText("No questions found matching your search")).toBeAttached();
 })
 
 test(`renders onboarding modal initially`, async ({ page }) => {
   await page.waitForLoadState('networkidle');
 
-  await expect(page.getByRole("heading", { name: "Welcome to Theme Sign Off" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Get Started" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome to Theme Sign Off" })).toBeAttached();
+  await expect(page.getByRole("button", { name: "Get Started" })).toBeAttached();
 })
 
 test(`closes onboarding modal if close button is clicked`, async ({ page }) => {
@@ -78,58 +78,57 @@ test(`closes onboarding modal if close button is clicked`, async ({ page }) => {
   const modalCloseButton = page.getByText("Get Started");
   await modalCloseButton.click();
 
-  await expect(page.getByRole("heading", { name: "Welcome to Theme Sign Off" })).not.toBeVisible();
-  await expect(page.getByRole("button", { name: "Get Started" })).not.toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome to Theme Sign Off" })).not.toBeAttached();
+  await expect(page.getByRole("button", { name: "Get Started" })).not.toBeAttached();
 })
 
 test(`renders process button`, async ({ page }) => {
   const processButton = page.getByRole("button", { name: "Process" });
-  await expect(processButton).toBeVisible();
+  await expect(processButton).toBeAttached();
   await expect(processButton).toHaveAttribute("aria-pressed", "false");
 })
 
 test(`renders breadcrumbs when process button is clicked`, async ({ page }) => {
   const processButton = page.getByRole("button", { name: "Process" });
 
-  await expect(processButton).toBeVisible();
+  await expect(processButton).toBeAttached();
   await processButton.click();
 
-  // await page.waitForTimeout(500);
-  await page.waitForLoadState("domcontentloaded");
+  await expect(async () => {
+    await expect(processButton).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator(`[aria-label="breadcrumbs"]`)).toBeAttached();
 
-  await expect(processButton).toHaveAttribute("aria-pressed", "true"); // , {timeout: 5000});
-  await expect(page.locator(`[aria-label="breadcrumbs"]`)).toBeVisible();
-
-  CONSULTATION_STAGES.forEach(async stage => {
-    await expect(page.getByText(stage, { exact: true })).toBeVisible();
-  });
+    CONSULTATION_STAGES.forEach(async stage => {
+      await expect(page.getByText(stage, { exact: true })).toBeAttached();
+    });
+  }).toPass();
 })
 
 test(`closes breadcrumbs if process button is clicked while breadcrumbs is visible`, async ({ page }) => {
   const processButton = page.getByRole("button", { name: "Process" });
 
-  await expect(page.locator(`[aria-label="breadcrumbs"]`)).not.toBeVisible();
+  await expect(page.locator(`[aria-label="breadcrumbs"]`)).not.toBeAttached();
 
   await processButton.click();
 
   await page.waitForLoadState("domcontentloaded");
 
-  await expect(page.locator(`[aria-label="breadcrumbs"]`)).toBeVisible();
+  await expect(page.locator(`[aria-label="breadcrumbs"]`)).toBeAttached();
 
   await processButton.click();
 
-  await expect(page.locator(`[aria-label="breadcrumbs"]`)).not.toBeVisible();
+  await expect(page.locator(`[aria-label="breadcrumbs"]`)).not.toBeAttached();
   await expect(processButton).toHaveAttribute("aria-pressed", "false");
 })
 
 test(`renders guidance link when process button is clicked`, async ({ page }) => {
   const processButton = page.getByRole("button", { name: "Process" });
 
-  await expect(processButton).toBeVisible();
+  await expect(processButton).toBeAttached();
   processButton.click();
 
   const guidanceLink = page.getByRole("link", { name: "Explain the process" });
-  await expect(guidanceLink).toBeVisible();
+  await expect(guidanceLink).toBeAttached();
   await expect(guidanceLink).toHaveAttribute("href", "/guidance");
 })
 

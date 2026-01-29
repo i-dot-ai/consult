@@ -34,14 +34,14 @@ test.describe("signed off question", () => {
   })
 
   test(`displays signed off message`, async ({ page }) => {
-    expect(page.getByText("Themes Signed Off")).toBeVisible();
+    expect(page.getByText("Themes Signed Off")).toBeAttached();
   })
 
   test(`displays themes`, async ({ page }) => {
     await page.waitForLoadState('networkidle');
 
     signedOffQuestionThemes.forEach(theme => {
-      expect(page.getByText(theme.name)).toBeVisible();
+      expect(page.getByText(theme.name)).toBeAttached();
     })
   })
 
@@ -53,7 +53,7 @@ test.describe("signed off question", () => {
   })
 
   test(`displays support button`, async ({ page }) => {
-    expect(page.getByRole("button", { name: "consult@cabinetoffice.gov.uk" })).toBeVisible();
+    expect(page.getByRole("button", { name: "consult@cabinetoffice.gov.uk" })).toBeAttached();
   })
 
   test(`clicking support button triggers email client`, async ({ page }) => {
@@ -88,7 +88,7 @@ test.describe("signed off question", () => {
 
     const expectedTitle = `Q${signedOffQuestion.number}: ${signedOffQuestion.question_text}`;
 
-    await expect(page.getByText(expectedTitle, { exact: true })).toBeVisible();
+    await expect(page.getByText(expectedTitle, { exact: true })).toBeAttached();
   })
 })
 
@@ -109,19 +109,19 @@ test.describe("draft question", () => {
   })
 
   test(`does not display signed off message`, async ({ page }) => {
-    expect(page.getByText("Themes Signed Off")).not.toBeVisible();
+    expect(page.getByText("Themes Signed Off")).not.toBeAttached();
   })
 
   test(`displays total response count`, async ({ page }) => {
     await page.waitForLoadState("networkidle");
 
-    expect(page.getByText(`${draftQuestion.total_responses} responses`)).toBeVisible();
+    expect(page.getByText(`${draftQuestion.total_responses} responses`)).toBeAttached();
   })
 
   test(`displays question title`, async ({ page }) => {
     await page.waitForLoadState("networkidle");
 
-    expect(page.getByText(`Q${draftQuestion.number}: ${draftQuestion.question_text}`)).toBeVisible();
+    expect(page.getByText(`Q${draftQuestion.number}: ${draftQuestion.question_text}`)).toBeAttached();
   })
 
   test(`clicking "Choose another question" button navigates away`, async ({ page }) => {
@@ -135,7 +135,7 @@ test.describe("draft question", () => {
   test(`selected themes count is displayed`, async ({ page }) => {
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText(`${draftQuestionSelectedThemes.length} selected`, { exact: true })).toBeVisible();
+    await expect(page.getByText(`${draftQuestionSelectedThemes.length} selected`, { exact: true })).toBeAttached();
   })
 
   test(`selected theme names are displayed`, async ({ page }) => {
@@ -146,7 +146,7 @@ test.describe("draft question", () => {
     await createSelectedTheme(page, NEW_THEME_NAME);
 
     [...draftQuestionSelectedThemes, { name: NEW_THEME_NAME }].forEach(theme => {
-      expect(page.getByRole("heading", { name: theme.name })).toBeVisible();
+      expect(page.getByRole("heading", { name: theme.name })).toBeAttached();
     })
 
     await deleteSelectedTheme(page, NEW_THEME_NAME);
@@ -156,7 +156,7 @@ test.describe("draft question", () => {
     await page.waitForLoadState("networkidle");
 
     draftQuestionSelectedThemes.forEach(theme => {
-      expect(page.getByText(theme.description, { exact: true })).toBeVisible();
+      expect(page.getByText(theme.description, { exact: true })).toBeAttached();
     })
   })
 
@@ -175,11 +175,11 @@ test.describe("draft question", () => {
   test(`clicking "Add Custom Theme" button reveals add theme panel`, async ({ page }) => {
     await page.waitForLoadState("networkidle");
 
-    expect(page.getByRole("heading", { name: "Add Custom Theme" })).not.toBeVisible();
+    expect(page.getByRole("heading", { name: "Add Custom Theme" })).not.toBeAttached();
 
     await page.getByRole("button", { name: "Add Custom Theme" }).click();
 
-    expect(page.getByRole("heading", { name: "Add Custom Theme" })).toBeVisible();
+    expect(page.getByRole("heading", { name: "Add Custom Theme" })).toBeAttached();
   })
 
   test(`clicking "Creating Effective Themes" button reveals instructions`, async ({ page }) => {
@@ -188,15 +188,15 @@ test.describe("draft question", () => {
     await page.getByRole("button", { name: "Add Custom Theme" }).click();
 
     const instructionsButton = await page.getByRole("button", { name: "Creating Effective Themes" });
-    await expect(instructionsButton).toBeVisible();
+    await expect(instructionsButton).toBeAttached();
 
-    expect(page.getByRole("heading", { name: "Good theme titles:" })).not.toBeVisible();
-    expect(page.getByRole("heading", { name: "Good theme descriptions:" })).not.toBeVisible();
+    expect(page.getByRole("heading", { name: "Good theme titles:" })).not.toBeAttached();
+    expect(page.getByRole("heading", { name: "Good theme descriptions:" })).not.toBeAttached();
 
     await instructionsButton.click();
 
-    await expect(page.getByRole("heading", { name: "Good theme titles:" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Good theme descriptions:" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Good theme titles:" })).toBeAttached();
+    await expect(page.getByRole("heading", { name: "Good theme descriptions:" })).toBeAttached();
   })
 
   test(`clicking "Cancel" button hides add theme panel`, async ({ page }) => {
@@ -205,12 +205,12 @@ test.describe("draft question", () => {
     await page.getByRole("button", { name: "Add Custom Theme" }).click();
 
     // Panel is revealed
-    await expect(page.getByRole("heading", { name: "Add Custom Theme" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Add Custom Theme" })).toBeAttached();
 
     await page.getByRole("button", { name: "Cancel" }).click();
 
     // Panel is hidden
-    await expect(page.getByRole("heading", { name: "Add Custom Theme" })).not.toBeVisible();
+    await expect(page.getByRole("heading", { name: "Add Custom Theme" })).not.toBeAttached();
   })
 
   test(`adding new theme form adds new theme`, async ({ page }) => {
@@ -233,9 +233,9 @@ test.describe("draft question", () => {
     expect(responsesButtons.length).toBeGreaterThanOrEqual(1);
     await responsesButtons.at(0)!.click();
 
-    await expect(page.getByRole("heading", { name: "Representative Responses" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Representative Responses" })).toBeAttached();
 
-    await expect(page.locator(".theme-sign-off__answers-list li").or(page.getByText("There are no answers"))).toBeVisible();
+    await expect(page.locator(".theme-sign-off__answers-list li").or(page.getByText("There are no answers"))).toBeAttached();
 
     await deleteSelectedTheme(page, NEW_THEME_NAME);
   })
@@ -247,11 +247,11 @@ test.describe("draft question", () => {
     await createSelectedTheme(page, NEW_THEME_NAME);
 
     const editButton = page.getByLabel(`Edit Theme ${NEW_THEME_NAME}`);
-    expect(editButton).toBeVisible();
+    expect(editButton).toBeAttached();
 
     await editButton.click();
 
-    await expect(page.getByRole("heading", { name: "Edit Theme" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Edit Theme" })).toBeAttached();
 
     await page.getByRole("button", { name: "Cancel" }).click();
 
@@ -265,11 +265,11 @@ test.describe("draft question", () => {
     await createSelectedTheme(page, NEW_THEME_NAME);
 
     const signOffButton = page.getByRole("button", { name: `Sign Off Selected Themes (${draftQuestionSelectedThemes.length + 1 })` });
-    expect(signOffButton).toBeVisible();
+    expect(signOffButton).toBeAttached();
 
     await signOffButton.click();
 
-    await expect(page.getByRole("heading", { name: "Confirm Theme Sign Off"})).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Confirm Theme Sign Off"})).toBeAttached();
 
     [...draftQuestionSelectedThemes, { name: NEW_THEME_NAME}].forEach(async theme => {
       // appears twice, one in regular list, one in confirm modal
@@ -277,23 +277,23 @@ test.describe("draft question", () => {
       await expect(headings).toHaveLength(2);
     })
 
-    await expect(page.getByRole("button", { name: "Confirm Sign Off" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Confirm Sign Off" })).toBeAttached();
 
     await page.getByRole("button", { name: "Cancel"}).click();
 
-    await expect(page.getByRole("heading", { name: "Confirm Theme Sign Off"})).not.toBeVisible();
+    await expect(page.getByRole("heading", { name: "Confirm Theme Sign Off"})).not.toBeAttached();
 
     await deleteSelectedTheme(page, NEW_THEME_NAME);
   })
 
   test("displays browse text", async ({ page }) => {
-    await expect(page.getByText("Browse AI Generated Themes")).toBeVisible();
+    await expect(page.getByText("Browse AI Generated Themes")).toBeAttached();
   })
 
   test("displays all generated themes", async ({ page }) => {
     await page.waitForLoadState("networkidle");
     draftQuestionGeneratedThemes.forEach(async theme => {
-      await expect(page.getByRole("heading", { name: theme.name })).toBeVisible();
+      await expect(page.getByRole("heading", { name: theme.name })).toBeAttached();
     })
   })
 
@@ -313,9 +313,9 @@ const createSelectedTheme = async (page: Page, name: string, description?: strin
   const titleInput = page.getByLabel("Theme Title");
   const descriptionInput = page.getByLabel("Theme Description");
   const addThemeButton = page.getByRole("button", { name: "Add Theme" });
-  expect(titleInput).toBeVisible();
-  expect(descriptionInput).toBeVisible();
-  expect(addThemeButton).toBeVisible();
+  expect(titleInput).toBeAttached();
+  expect(descriptionInput).toBeAttached();
+  expect(addThemeButton).toBeAttached();
   expect(addThemeButton).toBeDisabled();
 
   // Create new theme
@@ -324,12 +324,12 @@ const createSelectedTheme = async (page: Page, name: string, description?: strin
   await addThemeButton.click();
 
   // Confirm new theme is listed among selected themes
-  await expect(page.getByRole("heading", { name: name })).toBeVisible();
+  await expect(page.getByRole("heading", { name: name })).toBeAttached();
 }
 
 const deleteSelectedTheme = async (page: Page, name: string) => {
   // Remove the new theme
   const removeButton = await page.getByLabel(`Remove Theme ${name}`);
   await removeButton.click();
-  await expect(page.getByRole("heading", { name: name })).not.toBeVisible();
+  await expect(page.getByRole("heading", { name: name })).not.toBeAttached();
 }

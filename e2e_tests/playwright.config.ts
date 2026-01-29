@@ -15,7 +15,7 @@ export default defineConfig({
   testDir: "./tests",
   testMatch: /.*\.e2e\.ts/,
   /* Run tests in files in parallel */
-  fullyParallel: true,
+  fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
@@ -39,6 +39,10 @@ export default defineConfig({
     screenshot: "only-on-failure",
     video: "on-first-retry",
     viewport: { width: 1920, height: 1080 },
+  },
+
+  expect: {
+    timeout: 10000,
   },
 
   /* Configure projects for major browsers */

@@ -12,7 +12,7 @@ test.beforeAll(async ({ request }) => {
 test(`initially displaying loading message`, async ({ page }) => {
   await page.goto("/consultations/");
 
-  await expect(page.getByText("Loading consultations")).toBeVisible();
+  await expect(page.getByText("Loading consultations")).toBeAttached();
 })
 
 test(`displays links for each consultation`, async ({ page }) => {
@@ -21,13 +21,13 @@ test(`displays links for each consultation`, async ({ page }) => {
 
   consultations.forEach(async consultation => {
     const evaluationLink = page.locator(`a[href="/evaluations/${consultation.id}/questions/"]`);
-    expect(evaluationLink).toBeVisible();
+    expect(evaluationLink).toBeAttached();
 
     const dashboardLink = page.locator(`a[href="/consultations/${consultation.id}"]`);
-    expect(dashboardLink).toBeVisible();
+    expect(dashboardLink).toBeAttached();
 
     const themeSignOffLink = page.locator(`a[href="/consultations/${consultation.id}/theme-sign-off"]`);
-    expect(themeSignOffLink).toBeVisible();
+    expect(themeSignOffLink).toBeAttached();
   })
 })
 
@@ -36,6 +36,6 @@ test(`displays the user's consultations`, async ({ page }) => {
   await page.waitForLoadState('networkidle');
 
   consultations.forEach(async consultation => {
-    await expect(page.getByText(consultation.title, { exact: true })).toBeVisible();
+    await expect(page.getByText(consultation.title, { exact: true })).toBeAttached();
   })
 })

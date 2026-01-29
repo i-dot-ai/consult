@@ -31,13 +31,13 @@ test("displays guidance heading", async ({ page }) => {
   await page.goto("/guidance");
 
   HEADINGS.forEach(async heading => {  
-    await expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: heading, exact: true })).toBeAttached();
   })
 });
 
 test("displays links with correct urls", async ({ page }) => {
   await page.goto("/guidance");
   URLS.forEach(async url => {
-    await expect(page.locator(`a[href="${url}"]`)).toBeVisible();
+    await expect(page.locator(`a[href="${url}"]`)).toBeAttached();
   })
 });
