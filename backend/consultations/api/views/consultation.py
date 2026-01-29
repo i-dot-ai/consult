@@ -8,7 +8,6 @@ import sentry_sdk
 from backend.authentication.models import User
 from backend.consultations.api.permissions import (
     CanSeeConsultation,
-    HasDashboardAccess,
 )
 from backend.consultations.api.serializers import (
     ConsultationExportSerializer,
@@ -61,7 +60,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=True,
         methods=["get"],
         url_path="demographic-options",
-        permission_classes=[HasDashboardAccess],
+        permission_classes=[IsAuthenticated, CanSeeConsultation | IsAdminUser],
     )
     def demographic_options(self, request, pk=None):
         self.get_object()
@@ -85,7 +84,7 @@ class ConsultationViewSet(ModelViewSet):
         methods=["post"],
         url_path="setup",
         url_name="setup",
-        permission_classes=[IsAdminUser],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def setup_consultation(self, request) -> Response:
         """
@@ -126,7 +125,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=True,
         methods=["post"],
         url_path="find-themes",
-        permission_classes=[IsAdminUser],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def find_themes(self, request, pk=None) -> Response:
         """
@@ -188,7 +187,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=True,
         methods=["post"],
         url_path="assign-themes",
-        permission_classes=[IsAdminUser],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def assign_themes(self, request, pk=None) -> Response:
         """
@@ -277,7 +276,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=False,
         methods=["post"],
         url_path="export",
-        permission_classes=[HasDashboardAccess],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def submit_consultation_export(self, request) -> Response:
         """
@@ -318,7 +317,7 @@ class ConsultationViewSet(ModelViewSet):
         methods=["get"],
         url_path="folders",
         url_name="folders",
-        permission_classes=[IsAdminUser],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def get_consultation_folders(self, request) -> Response:
         """
@@ -373,7 +372,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=True,
         methods=["post"],
         url_path="add-users",
-        permission_classes=[IsAdminUser],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def add_users(self, request, pk=None) -> Response:
         """
@@ -418,7 +417,7 @@ class ConsultationViewSet(ModelViewSet):
         methods=["delete"],
         url_path="users/(?P<user_id>[^/.]+)",
         url_name="remove-user",
-        permission_classes=[IsAdminUser],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def remove_user(self, request, pk=None, user_id=None) -> Response:
         """
