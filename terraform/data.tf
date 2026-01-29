@@ -67,8 +67,7 @@ locals {
   ecs_memory    = var.env == "prod" ? 4096 : 4096
   ecs_cpus      = var.env == "prod" ? 2048 : 1024
 
-  public_host         = terraform.workspace == "prod" ? "${var.project_name}.i.ai.gov.uk" : "${var.project_name}.${terraform.workspace}.i.ai.gov.uk"
-  public_host_backend = terraform.workspace == "prod" ? "${var.project_name}-backend-external.i.ai.gov.uk" : "${var.project_name}-backend-external.${terraform.workspace}.i.ai.gov.uk"
+  public_host = terraform.workspace == "prod" ? "${var.project_name}.i.ai.gov.uk" : "${var.project_name}.${terraform.workspace}.i.ai.gov.uk"
 }
 
 # data "aws_ssm_parameter" "auth_provider_public_key" {

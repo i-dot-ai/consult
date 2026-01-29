@@ -37,7 +37,6 @@ module "backend" {
   vpc_id                        = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets               = data.terraform_remote_state.vpc.outputs.private_subnets
   host                          = local.host_backend
-  public_host                   = var.edge_networking_enabled ? local.public_host_backend : null
   load_balancer_security_group  = module.load_balancer.load_balancer_security_group_id
   aws_lb_arn                    = module.load_balancer.alb_arn
   ecs_cluster_id                = data.terraform_remote_state.platform.outputs.ecs_cluster_id
@@ -164,7 +163,6 @@ module "worker" {
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   host                         = local.host_backend
-  public_host                  = var.edge_networking_enabled ? local.public_host_backend : null
   load_balancer_security_group = module.load_balancer.load_balancer_security_group_id
   aws_lb_arn                   = module.load_balancer.alb_arn
   ecs_cluster_id               = data.terraform_remote_state.platform.outputs.ecs_cluster_id
