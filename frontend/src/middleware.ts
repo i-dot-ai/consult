@@ -3,7 +3,7 @@ import path from "path";
 import type { MiddlewareHandler } from "astro";
 import { Routes } from "./global/routes";
 import { fetchBackendApi } from "./global/api";
-import { getBackendUrl } from "./global/utils";
+import { dotEnv } from "./global/utils";
 
 import { internalAccessCookieName } from "./global/api";
 
@@ -37,7 +37,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   }
 
   const url = context.url;
-  const backendUrl = getBackendUrl();
+  const backendUrl = dotEnv("PUBLIC_BACKEND_URL");
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
   if (!context.cookies.get(internalAccessCookieName)?.value) {

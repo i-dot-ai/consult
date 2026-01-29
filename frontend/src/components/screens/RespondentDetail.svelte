@@ -13,7 +13,7 @@
     getQuestionsByRespondentUrl,
     getRespondentDetailUrl,
   } from "../../global/routes.ts";
-  import { createFetchStore } from "../../global/stores.ts";
+  import { createQueryStore } from "../../global/stores.ts";
   import type {
     AnswersResponse,
     QuestionsResponse,
@@ -47,23 +47,36 @@
     themefinderId = 1,
   }: Props = $props();
 
-  const respondentsStore = createFetchStore<RespondentsResponse>();
-  const respondentStore = createFetchStore<Respondent>();
-  const consultationQuestionsStore = createFetchStore<QuestionsResponse>();
-  const questionsStore = createFetchStore<QuestionsResponse>();
-  const answersStore = createFetchStore<AnswersResponse>();
+  const respondentsQuery = createQueryStore<RespondentsResponse>(
+    getLoadRespondentsUrl(),
+  );
+  const consultationQuestionsQuery = $derived(
+    createQueryStore<QuestionsResponse>(getApiQuestionsUrl(consultationId)),
+  );
+  const questionsQuery = $derived(
+    createQueryStore<QuestionsResponse>(
+      getQuestionsByRespondentUrl(consultationId, respondentId),
+    ),
+  );
+  const answersQuery = $derived(
+    createQueryStore<AnswersResponse>(
+      `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
+    ),
+  );
+  const respondentUpdateQuery = $derived(
+    createQueryStore<Respondent>(
+      getApiConsultationRespondentUrl(consultationId, respondentId),
+      { method: "PATCH" },
+    ),
+  );
 
   let dataRequested: boolean = $state(false);
 
   onMount(() => {
-    $consultationQuestionsStore.fetch(getApiQuestionsUrl(consultationId));
-    $respondentsStore.fetch(getLoadRespondentsUrl());
-    $questionsStore.fetch(
-      getQuestionsByRespondentUrl(consultationId, respondentId),
-    );
-    $answersStore.fetch(
-      `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
-    );
+    $consultationQuestionsQuery.fetch();
+    $respondentsQuery.fetch();
+    $questionsQuery.fetch();
+    $answersQuery.fetch();
     dataRequested = true;
   });
 
@@ -75,20 +88,20 @@
   }
 
   let currRespondent = $derived(
-    $respondentsStore.data?.results?.find(
+    $respondentsQuery.data?.results?.find(
       (respondent: Respondent) => respondent.id === respondentId,
     ),
   );
 
   let prevRespondent = $derived(
-    $respondentsStore.data?.results?.find(
+    $respondentsQuery.data?.results?.find(
       (respondent: Respondent) =>
         respondent?.themefinder_id ===
         (currRespondent?.themefinder_id || 0) - 1,
     ) ?? null,
   );
   let nextRespondent = $derived(
-    $respondentsStore.data?.results?.find(
+    $respondentsQuery.data?.results?.find(
       (respondent: Respondent) =>
         respondent?.themefinder_id ===
         (currRespondent?.themefinder_id || 0) + 1,
@@ -96,8 +109,8 @@
   );
 
   let answersToDisplay = $derived(
-    ($answersStore.data?.all_respondents || []).map((answer) => {
-      const question = $questionsStore.data?.results?.find(
+    ($answersQuery.data?.all_respondents || []).map((answer) => {
+      const question = $questionsQuery.data?.results?.find(
         (question) => question.id === answer.question_id,
       );
 
@@ -158,21 +171,17 @@
         <RespondentSidebar
           demoData={currRespondent?.demographics || []}
           stakeholderName={currRespondent?.name}
-          questionsAnswered={$questionsStore.data?.results.length ?? 0}
-          totalQuestions={$consultationQuestionsStore.data?.results?.length ??
+          questionsAnswered={$questionsQuery.data?.results.length ?? 0}
+          totalQuestions={$consultationQuestionsQuery.data?.results?.length ??
             0}
           updateStakeholderName={async (newStakeholderName) => {
             // update current respondent stakeholder name
-            await $respondentStore.fetch(
-              getApiConsultationRespondentUrl(consultationId, respondentId),
-              "PATCH",
-              {
-                name: newStakeholderName,
-              },
-            );
+            await $respondentUpdateQuery.fetch({
+              body: { name: newStakeholderName },
+            });
 
             // refresh respondents
-            $respondentsStore.fetch(getLoadRespondentsUrl());
+            $respondentsQuery.fetch();
           }}
         />
 
@@ -198,7 +207,7 @@
               number
             </p>
 
-            {#if !dataRequested || $answersStore.isLoading}
+            {#if !dataRequested || $answersQuery.isLoading}
               <LoadingMessage message="Loading Answers..." />
             {/if}
 

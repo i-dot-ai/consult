@@ -1,3 +1,4 @@
+import { ConsultationStageNames } from "../../../global/types";
 import Breadcrumbs from "./Breadcrumbs.svelte";
 
 export default {
@@ -8,15 +9,15 @@ export default {
   stories: [
     {
       name: "Stage Theme Sign Off",
-      props: { consultationStage: "theme_sign_off" },
+      props: { consultationStage: ConsultationStageNames.THEME_SIGN_OFF },
     },
     {
       name: "Stage Theme Mapping",
-      props: { consultationStage: "theme_mapping" },
+      props: { consultationStage: ConsultationStageNames.THEME_MAPPING },
     },
     {
       name: "Stage Analysis",
-      props: { consultationStage: "analysis" },
+      props: { consultationStage: ConsultationStageNames.ANALYSIS },
     },
   ],
 };

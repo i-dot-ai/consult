@@ -1,48 +1,50 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { slide } from "svelte/transition";
 
+  import Alert from "../Alert.svelte";
   import Title from "../Title.svelte";
   import Link from "../Link.svelte";
   import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
 
-  import type { Consultation } from "../../global/types.ts";
+  import type {
+    ApiError,
+    ConsultationsResponse,
+    UserResponse,
+  } from "../../global/types.ts";
   import {
     Routes,
     getConsultationDetailUrl,
     getConsultationEvalUrl,
     getThemeSignOffUrl,
   } from "../../global/routes.ts";
+  import { createQueryStore } from "../../global/stores.ts";
 
-  let consultations: Consultation[] = [];
-  let loading: boolean = true;
-  let dashboardPermitted: boolean = false;
-
-  onMount(async () => {
-    loading = true;
-    const response = await fetch(`${Routes.ApiConsultations}?scope=assigned`);
-    const consultationData = await response.json();
-    consultations = consultationData.results;
-    loading = false;
-  });
+  let consultationsStore = createQueryStore<ConsultationsResponse>(
+    `${Routes.ApiConsultations}?scope=assigned`,
+  );
+  let userStore = createQueryStore<UserResponse>(Routes.ApiUser);
 
   onMount(async () => {
-    loading = true;
-    const response = await fetch(Routes.ApiUser);
-    const userData = await response.json();
-    dashboardPermitted = userData.has_dashboard_access;
-    loading = false;
+    await $consultationsStore.fetch();
+    await $userStore.fetch();
   });
+
+  let dashboardPermitted = $derived($userStore?.data?.has_dashboard_access);
 </script>
 
 <section class="mt-4">
-  {#if loading}
-    <p transition:slide>
+  {#if $consultationsStore.isLoading || $userStore.isLoading}
+    <p>
       <LoadingMessage message="Loading consultations..." />
     </p>
+  {:else if $consultationsStore.error || $userStore.error}
+    <Alert>
+      {($consultationsStore.error as ApiError).detail ||
+        ($userStore.error as ApiError).detail}
+    </Alert>
   {:else}
     <ul>
-      {#each consultations as consultation (consultation.id)}
+      {#each $consultationsStore.data?.results as consultation (consultation.id)}
         <li>
           <Title level={2} text={consultation.title} />
 

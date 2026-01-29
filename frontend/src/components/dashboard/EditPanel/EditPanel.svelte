@@ -3,10 +3,11 @@
   import { slide } from "svelte/transition";
 
   import {
+    type ApiError,
     type ResponseTheme,
     type SearchableSelectOption,
   } from "../../../global/types";
-  import { createFetchStore, type MockFetch } from "../../../global/stores";
+  import { createQueryStore, type MockFetch } from "../../../global/stores";
   import { getApiAnswerUrl } from "../../../global/routes";
 
   import Button from "../../inputs/Button/Button.svelte";
@@ -49,22 +50,20 @@
   }
 
   async function submit() {
-    let actualUpdateAnswer = updateAnswerMock || $answerUpdateStore.fetch;
+    let actualUpdateAnswerFetch = updateAnswerMock || $answerUpdateQuery.fetch;
 
     if (noChangesStaged()) {
       return;
     }
 
-    await actualUpdateAnswer(
-      getApiAnswerUrl(consultationId, answerId),
-      "PATCH",
-      {
+    await actualUpdateAnswerFetch({
+      body: {
         themes: stagedThemes.map((theme) => ({ id: theme.id })),
         evidenceRich: stagedEvidenceRich,
       },
-    );
+    });
 
-    if (!$answerUpdateStore.error && !$answerUpdateStore.isLoading) {
+    if (!$answerUpdateQuery.error && !$answerUpdateQuery.isLoading) {
       resetData();
     }
   }
@@ -96,7 +95,11 @@
   let stagedEvidenceRich = $state(false);
   let panelOpen: boolean = $state(false);
 
-  const answerUpdateStore = createFetchStore();
+  const answerUpdateQuery = $derived(
+    createQueryStore(getApiAnswerUrl(consultationId, answerId), {
+      method: "PATCH",
+    }),
+  );
 
   onMount(() => {
     resetStaged();
@@ -105,8 +108,7 @@
   function resetStaged() {
     stagedThemes = themes ? [...themes] : [];
     stagedEvidenceRich = evidenceRich;
-    $answerUpdateStore.isLoading = false;
-    $answerUpdateStore.error = null;
+    $answerUpdateQuery.reset();
   }
 </script>
 
@@ -202,9 +204,9 @@
 
     <hr class="my-4" />
 
-    {#if $answerUpdateStore.error}
+    {#if $answerUpdateQuery.error}
       <small class="my-2 block text-red-500" transition:slide
-        >{$answerUpdateStore.error}</small
+        >{($answerUpdateQuery.error as ApiError).detail}</small
       >
     {/if}
 
@@ -224,7 +226,7 @@
             </div>
 
             <span class="whitespace-nowrap">
-              {$answerUpdateStore.isLoading ? "Saving..." : "Save Changes"}
+              {$answerUpdateQuery.isLoading ? "Saving..." : "Save Changes"}
             </span>
           </div>
         </Button>

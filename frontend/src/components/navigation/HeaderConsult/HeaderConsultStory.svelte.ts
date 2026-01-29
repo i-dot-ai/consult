@@ -1,3 +1,4 @@
+import { ConsultationStageNames } from "../../../global/types";
 import HeaderConsult from "./HeaderConsult.svelte";
 
 const TITLE = "Consult";
@@ -13,7 +14,11 @@ export default {
     { name: "isSignedIn", value: true, type: "bool" },
     { name: "isStaff", value: true, type: "bool" },
     { name: "showProcess", value: true, type: "bool" },
-    { name: "consultationStage", value: "theme_mapping", type: "text" },
+    {
+      name: "consultationStage",
+      value: ConsultationStageNames.THEME_MAPPING,
+      type: "text",
+    },
   ],
   stories: [
     {

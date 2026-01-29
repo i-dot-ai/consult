@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { fade, slide } from "svelte/transition";
 
-  import { createFetchStore, type MockFetch } from "../../global/stores";
+  import { createQueryStore, type MockFetch } from "../../global/stores";
   import {
     getApiConfirmSignOffUrl,
     getApiCreateSelectedThemeUrl,
@@ -59,36 +59,43 @@
     selectGeneratedThemeMock?: () => unknown;
   }
 
-  let {
-    consultationId = "",
-    questionId = "",
-    questionDataMock,
-    generatedThemesMock,
-    selectedThemesMock,
-    createThemeMock,
-    answersMock,
-    selectGeneratedThemeMock,
-  }: Props = $props();
+  let { consultationId = "", questionId = "", answersMock }: Props = $props();
 
-  const selectedThemesStore = createFetchStore<SelectedThemesResponse>({
-    mockFetch: selectedThemesMock,
-  });
-  const selectedThemesCreateStore = createFetchStore({
-    mockFetch: createThemeMock,
-  });
-  const selectedThemesDeleteStore =
-    createFetchStore<SelectedThemesDeleteResponse>();
-  const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
-    mockFetch: generatedThemesMock,
-  });
-  const generatedThemesSelectStore = createFetchStore({
-    mockFetch: selectGeneratedThemeMock,
-    debounceDelay: 0,
-  });
-  const questionStore = createFetchStore<Question>({
-    mockFetch: questionDataMock,
-  });
-  const confirmSignOffStore = createFetchStore();
+  const selectedThemesQuery = $derived(
+    createQueryStore<SelectedThemesResponse>(
+      getApiGetSelectedThemesUrl(consultationId, questionId),
+    ),
+  );
+  const selectedThemesCreateQuery = $derived(
+    createQueryStore(getApiCreateSelectedThemeUrl(consultationId, questionId), {
+      method: "POST",
+    }),
+  );
+  const selectedThemesDeleteQuery = $derived(
+    createQueryStore<SelectedThemesDeleteResponse>(
+      getApiDeleteSelectedThemeUrl(consultationId, questionId, ":themeId"),
+      { method: "DELETE" },
+    ),
+  );
+  const generatedThemesQuery = $derived(
+    createQueryStore<GeneratedThemesResponse>(
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
+    ),
+  );
+  const generatedThemesSelectQuery = $derived(
+    createQueryStore(
+      getApiSelectGeneratedThemeUrl(consultationId, questionId, ":newThemeId"),
+      { method: "POST" },
+    ),
+  );
+  const questionQuery = $derived(
+    createQueryStore<Question>(getApiQuestionUrl(consultationId, questionId)),
+  );
+  const confirmSignOffQuery = $derived(
+    createQueryStore(getApiConfirmSignOffUrl(consultationId, questionId), {
+      method: "PATCH",
+    }),
+  );
 
   let isConfirmSignOffModalOpen: boolean = $state(false);
   let addingCustomTheme: boolean = $state(false);
@@ -111,7 +118,7 @@
   };
 
   let flatGeneratedThemes = $derived(
-    flattenGeneratedThemes($generatedThemesStore.data?.results),
+    flattenGeneratedThemes($generatedThemesQuery.data?.results),
   );
 
   let expandedThemes: string[] = $derived(
@@ -123,43 +130,31 @@
   let dataRequested: boolean = $state(false);
 
   const errorModalOnClose = () => {
-    $selectedThemesStore.fetch(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
-    $generatedThemesStore.fetch(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
+    $selectedThemesQuery.fetch();
+    $generatedThemesQuery.fetch();
     errorData = null;
   };
 
   onMount(() => {
-    $selectedThemesStore.fetch(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
-    $generatedThemesStore.fetch(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
-    $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
+    $selectedThemesQuery.fetch();
+    $generatedThemesQuery.fetch();
+    $questionQuery.fetch();
     dataRequested = true;
   });
 
   const createTheme = async (title: string, description: string) => {
-    await $selectedThemesCreateStore.fetch(
-      getApiCreateSelectedThemeUrl(consultationId, questionId),
-      "POST",
-      {
+    await $selectedThemesCreateQuery.fetch({
+      body: {
         name: title,
         description: description,
       },
-    );
+    });
 
-    $selectedThemesStore.fetch(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
+    $selectedThemesQuery.fetch();
   };
 
   const removeTheme = async (themeId: string) => {
-    const selectedTheme = $selectedThemesStore.data?.results.find(
+    const selectedTheme = $selectedThemesQuery.data?.results.find(
       (theme) => theme.id === themeId,
     );
 
@@ -168,30 +163,24 @@
       return;
     }
 
-    await $selectedThemesDeleteStore.fetch(
-      getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
-      "DELETE",
-      undefined,
-      {
+    await $selectedThemesDeleteQuery.fetch({
+      headers: {
         "Content-Type": "application/json",
         "If-Match": selectedTheme.version,
       },
-    );
+      params: { themeId: themeId },
+    });
 
     if (
-      !$selectedThemesDeleteStore.error ||
-      $selectedThemesDeleteStore.status === 404
+      !$selectedThemesDeleteQuery.error ||
+      $selectedThemesDeleteQuery.status === 404
     ) {
       // No action or error needed if status 404 (theme already deselected)
 
-      $selectedThemesStore.fetch(
-        getApiGetSelectedThemesUrl(consultationId, questionId),
-      );
-      $generatedThemesStore.fetch(
-        getApiGetGeneratedThemesUrl(consultationId, questionId),
-      );
-    } else if ($selectedThemesDeleteStore.status === 412) {
-      const respData = $selectedThemesDeleteStore.data;
+      $selectedThemesQuery.fetch();
+      $generatedThemesQuery.fetch();
+    } else if ($selectedThemesDeleteQuery.status === 412) {
+      const respData = $selectedThemesDeleteQuery.data;
 
       errorData = {
         type: "remove-conflict",
@@ -200,7 +189,7 @@
       };
     } else {
       errorData = { type: "unexpected" };
-      console.error($selectedThemesDeleteStore.error);
+      console.error($selectedThemesDeleteQuery.error);
     }
   };
 
@@ -209,7 +198,7 @@
     title: string,
     description: string,
   ) => {
-    const selectedTheme = $selectedThemesStore.data?.results.find(
+    const selectedTheme = $selectedThemesQuery.data?.results.find(
       (theme) => theme.id === themeId,
     );
 
@@ -235,9 +224,7 @@
       );
 
       if (response.ok) {
-        $selectedThemesStore.fetch(
-          getApiGetSelectedThemesUrl(consultationId, questionId),
-        );
+        $selectedThemesQuery.fetch();
       } else if (response.status === 404) {
         errorData = { type: "theme-does-not-exist" };
       } else if (response.status === 412) {
@@ -258,17 +245,12 @@
   const handleSelectGeneratedTheme = async (newTheme: GeneratedTheme) => {
     themesBeingSelected = [...themesBeingSelected, newTheme.id];
 
-    await $generatedThemesSelectStore.fetch(
-      getApiSelectGeneratedThemeUrl(consultationId, questionId, newTheme.id),
-      "POST",
-    );
+    await $generatedThemesSelectQuery.fetch({
+      params: { newThemeId: newTheme.id },
+    });
 
-    await $selectedThemesStore.fetch(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
-    await $generatedThemesStore.fetch(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
+    await $selectedThemesQuery.fetch();
+    await $generatedThemesQuery.fetch();
 
     themesBeingSelected = themesBeingSelected.filter(
       (themeId) => themeId !== newTheme.id,
@@ -276,7 +258,7 @@
 
     // get selectedtheme_id created after back end select action is complete
     const updatedTheme = flattenGeneratedThemes(
-      $generatedThemesStore.data?.results || [],
+      $generatedThemesQuery.data?.results || [],
     ).find((generatedTheme) => generatedTheme.id === newTheme.id);
 
     // scroll up to equivalent in selected themes list
@@ -288,15 +270,13 @@
   };
 
   const confirmSignOff = async () => {
-    await $confirmSignOffStore.fetch(
-      getApiConfirmSignOffUrl(consultationId, questionId),
-      "PATCH",
-      {
+    await $confirmSignOffQuery.fetch({
+      body: {
         theme_status: "confirmed",
       },
-    );
+    });
 
-    if ($confirmSignOffStore.error) {
+    if ($confirmSignOffQuery.error) {
       isConfirmSignOffModalOpen = false;
       errorData = { type: "unexpected" };
     } else {
@@ -330,7 +310,7 @@
   };
 
   let hasNestedThemes = $derived(
-    $generatedThemesStore.data?.results?.some((theme: GeneratedTheme) =>
+    $generatedThemesQuery.data?.results?.some((theme: GeneratedTheme) =>
       Boolean(theme.children && theme.children.length > 0),
     ),
   );
@@ -355,9 +335,9 @@
 
 <section class="my-8">
   <QuestionCard
-    skeleton={$questionStore.isLoading}
+    skeleton={$questionQuery.isLoading}
     {consultationId}
-    question={$questionStore.data || {}}
+    question={$questionQuery.data || {}}
     clickable={false}
   />
 </section>
@@ -385,7 +365,7 @@
             <h3>Selected Themes</h3>
 
             <Tag variant="primary-light">
-              {$selectedThemesStore.data?.results.length} selected
+              {$selectedThemesQuery.data?.results.length} selected
             </Tag>
           </div>
 
@@ -409,9 +389,9 @@
         </div>
 
         <p class="text-sm text-neutral-500">
-          {#if ($selectedThemesStore.data?.results?.length ?? 0) > 0}
+          {#if ($selectedThemesQuery.data?.results.length ?? 0) > 0}
             Manage your {numSelectedThemesText(
-              $selectedThemesStore.data?.results,
+              $selectedThemesQuery.data?.results,
             )} for the AI in mapping responses. Edit titles and descriptions, or
             add new themes as needed.
           {:else}
@@ -436,7 +416,7 @@
       </div>
     {/if}
 
-    {#if $selectedThemesStore.data?.results.length === 0}
+    {#if $selectedThemesQuery.data?.results.length === 0}
       <div in:fade class="my-8 flex flex-col items-center justify-center gap-2">
         <div class="mb-2">
           <MaterialIcon size="2rem" color="fill-neutral-500">
@@ -451,7 +431,7 @@
       </div>
     {:else}
       <div class="mt-4">
-        {#each $selectedThemesStore.data?.results as selectedTheme (selectedTheme.id)}
+        {#each $selectedThemesQuery.data?.results as selectedTheme (selectedTheme.id)}
           <div transition:slide={{ duration: 150 }} class="mb-4 last:mb-0">
             <SelectedThemeCard
               {consultationId}
@@ -471,8 +451,8 @@
         variant="primary"
         fullWidth={true}
         disabled={!dataRequested ||
-          $selectedThemesStore.isLoading ||
-          $selectedThemesStore.data?.results.length === 0}
+          $selectedThemesQuery.isLoading ||
+          $selectedThemesQuery.data?.results.length === 0}
         handleClick={() =>
           (isConfirmSignOffModalOpen = !isConfirmSignOffModalOpen)}
       >
@@ -482,10 +462,10 @@
           </MaterialIcon>
 
           <span>
-            {#if !dataRequested || $selectedThemesStore.isLoading}
+            {#if !dataRequested || $selectedThemesQuery.isLoading}
               Loading Selected Themes
             {:else}
-              Sign Off Selected Themes ({$selectedThemesStore.data?.results
+              Sign Off Selected Themes ({$selectedThemesQuery.data?.results
                 .length})
             {/if}
           </span>
@@ -504,14 +484,14 @@
     >
       <p class="text-sm text-neutral-500">
         Are you sure you want to sign off on these {numSelectedThemesText(
-          $selectedThemesStore.data?.results,
-        )} for Question {$questionStore.data?.number}?
+          $selectedThemesQuery.data?.results,
+        )} for Question {$questionQuery.data?.number}?
       </p>
 
       <h4 class="my-4 text-xs font-bold">Selected themes:</h4>
 
       <div class="max-h-64 overflow-y-auto">
-        {#each $selectedThemesStore.data?.results as selectedTheme (selectedTheme.id)}
+        {#each $selectedThemesQuery.data?.results as selectedTheme (selectedTheme.id)}
           <Panel bg={true} border={false}>
             <h5 class="mb-1 text-xs font-bold">{selectedTheme.name}</h5>
             <p class="text-xs text-neutral-500">{selectedTheme.description}</p>
@@ -575,7 +555,7 @@
 
               <Tag variant="success">
                 {flattenGeneratedThemes(
-                  $generatedThemesStore.data?.results || [],
+                  $generatedThemesQuery.data?.results || [],
                 ).length} available
               </Tag>
             </div>
@@ -623,7 +603,7 @@
         </Panel>
       </div>
 
-      {#each $generatedThemesStore.data?.results as theme (theme.id)}
+      {#each $generatedThemesQuery.data?.results as theme (theme.id)}
         <GeneratedThemeCard
           {consultationId}
           {questionId}
