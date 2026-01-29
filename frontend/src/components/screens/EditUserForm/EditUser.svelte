@@ -37,16 +37,6 @@
 
     $userStore.fetch(`/api/users/${userId}/`);
   }
-
-  async function updateIsStaff(value: boolean) {
-    if (value === $userStore.data?.is_staff) return; // Don't update if value hasn't changed
-
-    await $userUpdateStore.fetch(`/api/users/${userId}/`, "PATCH", {
-      is_staff: value,
-    });
-
-    $userStore.fetch(`/api/users/${userId}/`);
-  }
 </script>
 
 <div class="mb-8">

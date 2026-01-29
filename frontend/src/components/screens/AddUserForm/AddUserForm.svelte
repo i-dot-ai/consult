@@ -85,8 +85,7 @@
       id="isStaff"
       type="checkbox"
       checked={isStaff}
-      on:change={(e) =>
-        (isStaff = (e.target as HTMLInputElement).checked)}
+      on:change={(e) => (isStaff = (e.target as HTMLInputElement).checked)}
       disabled={loading}
       class="h-6 w-6 focus:ring-2 focus:ring-yellow-300"
     />
