@@ -72,11 +72,40 @@
     selectGeneratedThemeMock,
   }: Props = $props();
 
+  const selectedThemesQuery = $derived(buildQuery<SelectedThemesResponse>(
+    getApiGetSelectedThemesUrl(consultationId, questionId),
+    {
+      key: ["theme-sign-off-detail", "selectedThemes", consultationId, questionId],
+    }
+  ));
+
+  const selectedThemesAddQuery = $derived(buildQuery(
+    getApiCreateSelectedThemeUrl(consultationId, questionId),
+    {
+      method: "POST",
+      onSuccess: async () => {
+        selectedThemesQuery.refetch();
+      }
+    }
+  ));
+
+  const generatedThemesQuery = $derived(buildQuery<GeneratedThemesResponse>(
+    getApiGetGeneratedThemesUrl(consultationId, questionId),
+    {
+      key: ["theme-sign-off-detail", "generatedThemes", consultationId, questionId],
+    }
+  ));
+
+  const questionQuery = $derived(buildQuery<Question>(
+    getApiQuestionUrl(consultationId, questionId),
+    {
+      key: ["theme-sign-off-detail", "question", consultationId, questionId],
+    },
+  ));
+
+
   const selectedThemesDeleteStore =
     createFetchStore<SelectedThemesDeleteResponse>();
-  const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
-    mockFetch: generatedThemesMock,
-  });
   const generatedThemesSelectStore = createFetchStore({
     mockFetch: selectGeneratedThemeMock,
     debounceDelay: 0,
@@ -104,7 +133,7 @@
   };
 
   let flatGeneratedThemes = $derived(
-    flattenGeneratedThemes($generatedThemesStore.data?.results),
+    flattenGeneratedThemes(generatedThemesQuery.data?.results),
   );
 
   let expandedThemes: string[] = $derived(
@@ -117,16 +146,11 @@
 
   const errorModalOnClose = () => {
     selectedThemesQuery.refetch();
-    $generatedThemesStore.fetch(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
+    generatedThemesQuery.refetch();
     errorData = null;
   };
 
   onMount(() => {
-    $generatedThemesStore.fetch(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
     dataRequested = true;
   });
 
@@ -156,9 +180,7 @@
     ) {
       // No action or error needed if status 404 (theme already deselected)
       selectedThemesQuery.refetch();
-      $generatedThemesStore.fetch(
-        getApiGetGeneratedThemesUrl(consultationId, questionId),
-      );
+      generatedThemesQuery.refetch();
     } else if ($selectedThemesDeleteStore.status === 412) {
       const respData = $selectedThemesDeleteStore.data;
 
@@ -231,9 +253,7 @@
     );
 
     await selectedThemesQuery.refetch();
-    await $generatedThemesStore.fetch(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
+    await generatedThemesQuery.refetch();
 
     themesBeingSelected = themesBeingSelected.filter(
       (themeId) => themeId !== newTheme.id,
@@ -241,7 +261,7 @@
 
     // get selectedtheme_id created after back end select action is complete
     const updatedTheme = flattenGeneratedThemes(
-      $generatedThemesStore.data?.results || [],
+      generatedThemesQuery.data?.results || [],
     ).find((generatedTheme) => generatedTheme.id === newTheme.id);
 
     // scroll up to equivalent in selected themes list
@@ -295,33 +315,10 @@
   };
 
   let hasNestedThemes = $derived(
-    $generatedThemesStore.data?.results?.some((theme: GeneratedTheme) =>
+    generatedThemesQuery.data?.results?.some((theme: GeneratedTheme) =>
       Boolean(theme.children && theme.children.length > 0),
     ),
   );
-
-
-  const selectedThemesQuery = $derived(buildQuery<SelectedThemesResponse>(
-    getApiGetSelectedThemesUrl(consultationId, questionId),
-    {
-      key: ["theme-sign-off-detail", "selectedThemes", consultationId, questionId],
-    }
-  ));
-  const selectedThemesAddQuery = $derived(buildQuery(
-    getApiCreateSelectedThemeUrl(consultationId, questionId),
-    {
-      method: "POST",
-      onSuccess: async () => {
-        selectedThemesQuery.refetch();
-      }
-    }
-  ));
-  const questionQuery = $derived(buildQuery<Question>(
-    getApiQuestionUrl(consultationId, questionId),
-    {
-      key: ["theme-sign-off-detail", "question", consultationId, questionId],
-    },
-  ));
 </script>
 
 <TitleRow
@@ -414,7 +411,7 @@
       <div transition:slide>
         <ThemeForm
           handleConfirm={async (title: string, description: string) => {
-            selectedThemesAddQuery.mutate({
+            await selectedThemesAddQuery.mutate({
               body: {
                 name: title,
                 description: description,
@@ -568,7 +565,7 @@
 
               <Tag variant="success">
                 {flattenGeneratedThemes(
-                  $generatedThemesStore.data?.results || [],
+                  generatedThemesQuery.data?.results || [],
                 ).length} available
               </Tag>
             </div>
@@ -616,7 +613,7 @@
         </Panel>
       </div>
 
-      {#each $generatedThemesStore.data?.results as theme (theme.id)}
+      {#each generatedThemesQuery.data?.results as theme (theme.id)}
         <GeneratedThemeCard
           {consultationId}
           {questionId}
