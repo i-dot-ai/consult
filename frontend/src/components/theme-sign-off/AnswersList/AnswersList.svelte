@@ -20,7 +20,7 @@
   }: Props = $props();
 </script>
 
-<div class="flex items-center gap-1">
+<div class="theme-sign-off__answers-list flex items-center gap-1">
   <div class="shrink-0">
     <MaterialIcon
       color={variant === "selected" ? "fill-primary" : "fill-secondary"}

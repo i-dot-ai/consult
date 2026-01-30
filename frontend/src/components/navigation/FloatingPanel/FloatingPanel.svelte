@@ -51,6 +51,7 @@
     ])}
   >
     <Button
+      ariaLabel="Help and Support"
       variant="ghost"
       highlighted={isOpen}
       handleClick={() => {
@@ -100,7 +101,11 @@
     {/if}
 
     <div class="absolute right-0 top-0 m-4">
-      <Button variant="ghost" handleClick={() => (isOpen = false)}>
+      <Button
+        variant="ghost"
+        handleClick={() => (isOpen = false)}
+        ariaLabel="Close Help and Support Panel"
+      >
         <MaterialIcon color="fill-neutral-500">
           <Close />
         </MaterialIcon>
