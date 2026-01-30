@@ -1,48 +1,39 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
 
   import Title from "../Title.svelte";
   import Link from "../Link.svelte";
   import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
 
-  import type { Consultation } from "../../global/types.ts";
+  import type { ConsultationsResponse, UserResponse } from "../../global/types.ts";
   import {
     Routes,
     getConsultationDetailUrl,
     getConsultationEvalUrl,
     getThemeSignOffUrl,
   } from "../../global/routes.ts";
+  import { buildQuery } from "../../global/queries.ts";
 
-  let consultations: Consultation[] = [];
-  let loading: boolean = true;
-  let dashboardPermitted: boolean = false;
-
-  onMount(async () => {
-    loading = true;
-    const response = await fetch(`${Routes.ApiConsultations}?scope=assigned`);
-    const consultationData = await response.json();
-    consultations = consultationData.results;
-    loading = false;
-  });
-
-  onMount(async () => {
-    loading = true;
-    const response = await fetch(Routes.ApiUser);
-    const userData = await response.json();
-    dashboardPermitted = userData.has_dashboard_access;
-    loading = false;
-  });
+  const consultationsQuery = buildQuery<ConsultationsResponse>(
+    `${Routes.ApiConsultations}?scope=assigned`,
+    { key: ["consultations"] },
+  );
+  const userQuery = buildQuery<UserResponse>(
+    Routes.ApiUser,
+    { key: ["user"] },
+  );
 </script>
 
 <section class="mt-4">
-  {#if loading}
+  {#if consultationsQuery.isPending || userQuery.isPending}
     <p transition:slide>
       <LoadingMessage message="Loading consultations..." />
     </p>
+  {:else if consultationsQuery.isError}
+    <p>{consultationsQuery.error}</p>
   {:else}
     <ul>
-      {#each consultations as consultation (consultation.id)}
+      {#each consultationsQuery.data?.results as consultation (consultation.id)}
         <li>
           <Title level={2} text={consultation.title} />
 
@@ -53,7 +44,7 @@
             <Link href={getThemeSignOffUrl(consultation.id)}>
               Theme Sign Off
             </Link>
-            {#if dashboardPermitted}
+            {#if userQuery.data?.has_dashboard_access}
               <Link href={getConsultationDetailUrl(consultation.id)}>
                 View Dashboard
               </Link>
