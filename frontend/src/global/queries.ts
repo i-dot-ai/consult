@@ -1,7 +1,18 @@
 import { QueryClient, createMutation, createQuery } from "@tanstack/svelte-query";
 import { type HttpMethod } from "../global/types";
 
-export const queryClient = new QueryClient();
+import { persistQueryClient } from '@tanstack/svelte-query-persist-client'
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 1,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+    }
+  }
+});
 
 interface BuildQueryOptions {
   key?: string[],
@@ -75,3 +86,10 @@ export const buildQuery = <T>(url: string, {
     () => queryClient,
   );
 }
+
+persistQueryClient({
+  queryClient,
+  persister: createSyncStoragePersister({
+    storage: window.localStorage,
+  })
+})
