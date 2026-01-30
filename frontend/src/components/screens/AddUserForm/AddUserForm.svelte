@@ -6,7 +6,7 @@
   import { parseEmails } from "./parseEmails";
 
   let emailsInput: string = "";
-  let hasDashboardAccess: boolean = true;
+  let isStaff: boolean = true;
   let loading: boolean = false;
 
   type MultipleUserError = { email: string; error: string }[];
@@ -29,7 +29,7 @@
         method: "POST",
         body: JSON.stringify({
           ...reqBody,
-          has_dashboard_access: hasDashboardAccess,
+          is_staff: isStaff,
         }),
         headers: { "Content-Type": "application/json" },
       });
@@ -82,15 +82,14 @@
       revisit this later if needed.
      -->
     <input
-      id="canAccessDashboards"
+      id="isStaff"
       type="checkbox"
-      checked={hasDashboardAccess}
-      on:change={(e) =>
-        (hasDashboardAccess = (e.target as HTMLInputElement).checked)}
+      checked={isStaff}
+      on:change={(e) => (isStaff = (e.target as HTMLInputElement).checked)}
       disabled={loading}
       class="h-6 w-6 focus:ring-2 focus:ring-yellow-300"
     />
-    Can access dashboards
+    Admin access (support console & dashboards)
   </label>
 
   {#if error}

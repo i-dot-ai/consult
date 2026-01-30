@@ -13,14 +13,12 @@ describe("AddUserToConsultationForm", () => {
       id: 1,
       email: "user1@example.com",
       is_staff: false,
-      has_dashboard_access: false,
       created_at: "2023-01-01T00:00:00Z",
     },
     {
       id: 2,
       email: "user2@example.com",
       is_staff: true,
-      has_dashboard_access: true,
       created_at: "2023-01-01T00:00:00Z",
     },
   ];

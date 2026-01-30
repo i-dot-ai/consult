@@ -30,7 +30,7 @@
     loading = true;
     const response = await fetch(Routes.ApiUser);
     const userData = await response.json();
-    dashboardPermitted = userData.has_dashboard_access;
+    dashboardPermitted = userData.is_staff;
     loading = false;
   });
 </script>

@@ -84,7 +84,7 @@ class TestUserViewSet:
         url = reverse("user-list")
         response = client.post(
             url,
-            data=json.dumps({"emails": emails, "has_dashboard_access": True}),
+            data=json.dumps({"emails": emails}),
             content_type="application/json",
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
@@ -100,25 +100,6 @@ class TestUserViewSet:
                 {"email": "invalid-email", "errors": {"email": ["Enter a valid email address."]}},
             ],
         }
-
-    def test_users_patch(self, client, consultation_user, consultation_user_token):
-        assert consultation_user.has_dashboard_access is True
-        url = reverse(
-            "user-detail",
-            kwargs={"pk": consultation_user.pk},
-        )
-        response = client.patch(
-            url,
-            data=json.dumps({"has_dashboard_access": False}),
-            content_type="application/json",
-            headers={
-                "Authorization": f"Bearer {consultation_user_token}",
-            },
-        )
-        assert response.status_code == 200
-        assert response.json()["has_dashboard_access"] is False
-        consultation_user.refresh_from_db()
-        assert consultation_user.has_dashboard_access is False
 
     def test_users_patch_fail(self, client, consultation_user, consultation_user_token):
         assert consultation_user.is_staff is True

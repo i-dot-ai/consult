@@ -19,12 +19,11 @@ from backend.consultations.models import (
 
 
 class UserSerializer(serializers.ModelSerializer):
-    has_dashboard_access = serializers.BooleanField(required=False)
     emails = serializers.ListSerializer(child=serializers.EmailField(), required=False)
 
     class Meta:
         model = User
-        fields = ["id", "email", "has_dashboard_access", "is_staff", "created_at", "emails"]
+        fields = ["id", "email", "is_staff", "created_at", "emails"]
 
     def to_internal_value(self, data):
         if email := data.get("email"):

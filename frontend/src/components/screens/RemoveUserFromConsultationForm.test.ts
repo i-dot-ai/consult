@@ -12,7 +12,6 @@ describe("RemoveUserFromConsultationForm", () => {
     id: 1,
     email: "user@example.com",
     is_staff: false,
-    has_dashboard_access: false,
     created_at: "2023-01-01T00:00:00Z",
   };
 
