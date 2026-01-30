@@ -72,12 +72,6 @@
     selectGeneratedThemeMock,
   }: Props = $props();
 
-  const selectedThemesStore = createFetchStore<SelectedThemesResponse>({
-    mockFetch: selectedThemesMock,
-  });
-  const selectedThemesCreateStore = createFetchStore({
-    mockFetch: createThemeMock,
-  });
   const selectedThemesDeleteStore =
     createFetchStore<SelectedThemesDeleteResponse>();
   const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
@@ -86,9 +80,6 @@
   const generatedThemesSelectStore = createFetchStore({
     mockFetch: selectGeneratedThemeMock,
     debounceDelay: 0,
-  });
-  const questionStore = createFetchStore<Question>({
-    mockFetch: questionDataMock,
   });
   const confirmSignOffStore = createFetchStore();
 
@@ -136,18 +127,8 @@
     $generatedThemesStore.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
-    $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
     dataRequested = true;
   });
-
-  const createTheme = async (title: string, description: string) => {
-    selectedThemesAddQuery.mutate({
-      body: {
-        name: title,
-        description: description,
-      },
-    })
-  };
 
   const removeTheme = async (themeId: string) => {
     const selectedTheme = selectedThemesQuery.data?.results.find(
@@ -249,7 +230,7 @@
       "POST",
     );
 
-    await selectedThemesStore.refetch();
+    await selectedThemesQuery.refetch();
     await $generatedThemesStore.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
@@ -323,9 +304,9 @@
   const selectedThemesQuery = $derived(buildQuery<SelectedThemesResponse>(
     getApiGetSelectedThemesUrl(consultationId, questionId),
     {
-      key: ["selectedThemes", consultationId, questionId],
+      key: ["theme-sign-off-detail", "selectedThemes", consultationId, questionId],
     }
-  ))
+  ));
   const selectedThemesAddQuery = $derived(buildQuery(
     getApiCreateSelectedThemeUrl(consultationId, questionId),
     {
@@ -334,6 +315,12 @@
         selectedThemesQuery.refetch();
       }
     }
+  ));
+  const questionQuery = $derived(buildQuery<Question>(
+    getApiQuestionUrl(consultationId, questionId),
+    {
+      key: ["theme-sign-off-detail", "question", consultationId, questionId],
+    },
   ));
 </script>
 
@@ -356,9 +343,9 @@
 
 <section class="my-8">
   <QuestionCard
-    skeleton={$questionStore.isLoading}
+    skeleton={questionQuery.isLoading}
     {consultationId}
-    question={$questionStore.data || {}}
+    question={questionQuery.data || {}}
     clickable={false}
   />
 </section>
@@ -511,7 +498,7 @@
       <p class="text-sm text-neutral-500">
         Are you sure you want to sign off on these {numSelectedThemesText(
           selectedThemesQuery.data?.results,
-        )} for Question {$questionStore.data?.number}?
+        )} for Question {questionQuery.data?.number}?
       </p>
 
       <h4 class="my-4 text-xs font-bold">Selected themes:</h4>
