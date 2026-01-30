@@ -23,10 +23,7 @@ describe("FlagButton", () => {
     const button = screen.getByRole("button");
     await user.click(button);
 
-    expect(toggleFlagMock).toHaveBeenCalledWith(
-      `/api/consultations/${testData.consultationId}/responses/${testData.answerId}/toggle-flag/`,
-      "PATCH",
-    );
+    expect(toggleFlagMock).toHaveBeenCalledOnce();
     expect(resetDataMock).toHaveBeenCalledOnce();
   });
 

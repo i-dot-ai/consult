@@ -11,6 +11,7 @@
   import Check from "../../svg/material/Check.svelte";
   import Help from "../../svg/material/Help.svelte";
   import Button from "../../inputs/Button/Button.svelte";
+  import { ConsultationStageNames } from "../../../global/types";
 
   interface item {
     text: string;
@@ -21,10 +22,10 @@
   const STAGES = [
     "data_setup",
     "theme_find",
-    "theme_sign_off",
-    "theme_mapping",
+    ConsultationStageNames.THEME_SIGN_OFF,
+    ConsultationStageNames.THEME_MAPPING,
     "quality_check",
-    "analysis",
+    ConsultationStageNames.ANALYSIS,
   ];
 
   interface Props {
@@ -32,7 +33,10 @@
     consultationStage?: string;
   }
 
-  let { consultationId = "", consultationStage = "analysis" }: Props = $props();
+  let {
+    consultationId = "",
+    consultationStage = ConsultationStageNames.ANALYSIS,
+  }: Props = $props();
 
   let currStage: number = $derived(
     STAGES.findIndex((stage) => stage === consultationStage),

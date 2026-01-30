@@ -23,7 +23,10 @@ export interface Question {
   theme_status?: string;
 }
 
-export type ConsultationStage = "theme_sign_off" | "theme_mapping" | "analysis";
+export type ConsultationStage =
+  | ConsultationStageNames.THEME_SIGN_OFF
+  | ConsultationStageNames.THEME_MAPPING
+  | ConsultationStageNames.ANALYSIS;
 export interface NextResponseInfo {
   id: string;
   consultation_id: string;
@@ -188,7 +191,23 @@ export interface ConsultationResponse {
   title: string;
   code: string;
   users: User[];
-  stage: "theme_sign_off" | "theme_mapping" | "analysis";
+  stage:
+    | ConsultationStageNames.THEME_SIGN_OFF
+    | ConsultationStageNames.THEME_MAPPING
+    | ConsultationStageNames.ANALYSIS;
+}
+export interface ConsultationsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Consultation[];
+}
+export interface UserResponse {
+  id: number;
+  email: string;
+  has_dashboard_access: boolean;
+  is_staff: boolean;
+  created_at: string;
 }
 export interface QuestionsResponse {
   count: number;
@@ -281,6 +300,15 @@ export enum OnboardingKeys {
   themeSignoffArchive = "onboardingComplete-theme-sign-off-archive",
 }
 
+export interface ApiError {
+  detail: string;
+}
+
+export enum ConsultationStageNames {
+  THEME_SIGN_OFF = "theme_sign_off",
+  THEME_MAPPING = "theme_mapping",
+  ANALYSIS = "analysis",
+}
 export type AstroGlobalRuntime = {
   url: {
     pathname: string;

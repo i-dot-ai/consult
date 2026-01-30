@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
 import ConsultationStagePanel from "./ConsultationStagePanel.svelte";
+import { ConsultationStageNames } from "../../../global/types";
 
 describe("ConsultationStagePanel", () => {
   const id = "test-consultation-id";
@@ -9,7 +10,7 @@ describe("ConsultationStagePanel", () => {
 
   it("should render correctly for theme_sign_off stage", () => {
     const { container } = render(ConsultationStagePanel, {
-      consultation: { id, stage: "theme_sign_off" },
+      consultation: { id, stage: ConsultationStageNames.THEME_SIGN_OFF },
       questionsCount: 10,
       onConfirmClick: onConfirmClickMock,
     });
@@ -28,7 +29,7 @@ describe("ConsultationStagePanel", () => {
 
   it("should render correctly for theme_mapping stage", () => {
     const { container } = render(ConsultationStagePanel, {
-      consultation: { id, stage: "theme_mapping" },
+      consultation: { id, stage: ConsultationStageNames.THEME_MAPPING },
       questionsCount: 10,
       onConfirmClick: onConfirmClickMock,
     });
@@ -44,7 +45,7 @@ describe("ConsultationStagePanel", () => {
 
   it("should render correctly for analysis stage", () => {
     const { container } = render(ConsultationStagePanel, {
-      consultation: { id, stage: "analysis" },
+      consultation: { id, stage: ConsultationStageNames.ANALYSIS },
       questionsCount: 10,
       onConfirmClick: onConfirmClickMock,
     });
