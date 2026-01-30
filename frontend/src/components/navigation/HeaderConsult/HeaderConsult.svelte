@@ -12,7 +12,7 @@
 
   export interface Props {
     subtitle?: string;
-    path?: string;
+    path?: string[];
     isSignedIn: boolean;
     isStaff?: boolean;
     showProcess?: boolean;
@@ -22,7 +22,7 @@
 
   let {
     subtitle,
-    path,
+    path = [],
     isSignedIn,
     isStaff,
     showProcess,
@@ -37,7 +37,7 @@
   title="Consult"
   {subtitle}
   icon={ConsultIcon}
-  pathParts={path ? [path] : []}
+  pathParts={path}
   navItems={[
     {
       label: "Support",
@@ -55,10 +55,16 @@
                 url: Routes.SupportConsultations,
               },
               { label: "Manage Users", url: Routes.SupportUsers },
+              { label: "Data Pipeline", url: Routes.SupportDataPipeline },
             ],
           },
         ]
-      : []),
+      : [
+          {
+            label: "My Consultations",
+            url: Routes.Consultations,
+          },
+        ]),
   ]}
 >
   {#snippet endItems()}

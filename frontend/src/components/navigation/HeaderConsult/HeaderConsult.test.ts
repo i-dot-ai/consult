@@ -25,7 +25,7 @@ describe("HeaderConsult", () => {
   });
 
   it("renders path", () => {
-    render(HeaderConsult, { ...testData, path: "Dashboard" });
+    render(HeaderConsult, { ...testData, path: ["Dashboard"] });
     expect(screen.getByText(`/ Dashboard`)).toBeInTheDocument();
   });
 

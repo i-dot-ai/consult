@@ -26,7 +26,7 @@
     showUnseenResponse?: boolean;
     evidenceRich?: boolean;
     setEvidenceRich?: (newVal: boolean) => void;
-    unseenResponsesOnly?: boolean;
+    unseenResponses?: boolean;
     setUnseenResponses?: (newVal: boolean) => void;
   }
   let {
@@ -38,7 +38,7 @@
     evidenceRich = false,
     setEvidenceRich = () => {},
     showUnseenResponse = false,
-    unseenResponsesOnly = false,
+    unseenResponses = false,
     setUnseenResponses = () => {},
   }: Props = $props();
 
@@ -107,7 +107,7 @@
       {@render filter_switch(
         "unseen-responses-toggle",
         "Show unseen responses",
-        unseenResponsesOnly,
+        unseenResponses,
         setUnseenResponses,
         "bg-iaiteal-200",
         "fill-iaiteal-500",

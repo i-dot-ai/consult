@@ -1,3 +1,5 @@
+import type { SvelteURLSearchParams } from "svelte/reactivity";
+
 export interface NavItem {
   text: string;
   url: string;
@@ -37,8 +39,15 @@ export interface ShowNextResponseResult {
 export interface Consultation {
   id: string;
   title: string;
-  stage: ConsultationStage;
+  code: string;
+  stage: "theme_sign_off" | "theme_mapping" | "analysis";
   created_at: string;
+}
+
+export interface ConsultationFolder {
+  id: string;
+  title: string;
+  code: string;
 }
 
 export interface Respondent {
@@ -110,8 +119,8 @@ export enum TabDirections {
   Backward = "backward",
 }
 
-export interface SearchableSelectOption {
-  value: unknown;
+export interface SearchableSelectOption<T> {
+  value: T;
   label: string;
   description?: string;
   disabled?: boolean;
@@ -271,3 +280,18 @@ export enum OnboardingKeys {
   themeSignoff = "onboardingComplete-theme-sign-off",
   themeSignoffArchive = "onboardingComplete-theme-sign-off-archive",
 }
+
+export type AstroGlobalRuntime = {
+  url: {
+    pathname: string;
+    searchParams: SvelteURLSearchParams;
+  };
+  params: {
+    consultationId?: string;
+    questionId?: string;
+    userId?: string;
+    responseId?: string;
+    respondentId?: string;
+  };
+  redirect: (url: string) => void;
+};

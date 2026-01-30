@@ -23,6 +23,12 @@ interface StoryProp {
   value: unknown;
   type: "number" | "text" | "bool" | "select" | "json" | "html" | "func";
   schema?: string;
+  rawHtml?: string;
+  label?: string;
+  options?: {
+    label: string;
+    value: unknown;
+  }[];
 }
 interface StoryConfig {
   name: string;

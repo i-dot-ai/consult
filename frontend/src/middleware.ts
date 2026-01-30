@@ -8,6 +8,21 @@ import { getBackendUrl } from "./global/utils";
 import { internalAccessCookieName } from "./global/api";
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
+  const nextResponse = await next();
+
+  const EXTRA_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy":
+      "camera=(), microphone=(), geolocation=(), payment=()",
+    "X-Frame-Options": "DENY",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  };
+
+  for (const [key, value] of Object.entries(EXTRA_HEADERS)) {
+    nextResponse.headers.set(key, value);
+  }
+
   let internalAccessToken = null;
 
   const env =
@@ -104,14 +119,13 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/support\/users[/]?$/,
     /^\/support\/users\/[A-Za-z0-9]*[/]?$/,
     /^\/support\/users\/new[/]?$/,
+    /^\/support\/data-pipeline[/]?$/,
     /^\/support\/consultations[/]?$/,
     /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[/]?$/,
     /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/delete[/]?$/,
     /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/questions\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/delete[/]?$/,
-    /^\/support\/consultations\/import-summary[/]?$/,
     /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/users\/new[/]?$/,
     /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/users\/[A-Za-z0-9-]+\/remove[/]?$/,
-    /^\/support\/consultations\/import-consultation[/]?$/,
     /^\/support\/consultations\/[A-Za-z0-9-]*\/export[/]?$/,
     /^\/design.*/,
     /^\/stories.*/,
@@ -121,7 +135,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
   for (const skipPattern of toSkip) {
     if (skipPattern.test(context.url.pathname)) {
-      return next();
+      return nextResponse;
     }
   }
 

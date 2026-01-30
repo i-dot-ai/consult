@@ -4,12 +4,6 @@ variable "image_tag" {
   default     = "latest"
 }
 
-variable "region" {
-  type        = string
-  description = "AWS region for infrastructure to be deployed to"
-  default = "eu-west-2"
-}
-
 variable "state_bucket" {
   type        = string
   description = "Name of the S3 bucket to use a terraform state"
@@ -68,4 +62,9 @@ variable "scope" {
   description = "Scope of the WAF, either 'CLOUDFRONT' or 'REGIONAL'"
   type        = string
   default     = "REGIONAL"
+}
+
+variable "edge_networking_enabled" {
+  type        = bool
+  description = "Whether to enable edge networking configuration."
 }

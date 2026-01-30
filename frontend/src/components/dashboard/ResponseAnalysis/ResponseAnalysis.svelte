@@ -41,7 +41,7 @@
   export let pageSize: number = 5;
   export let isAnswersLoading: boolean = true;
   export let isThemesLoading: boolean = true;
-  export let answersError: string = "";
+  export let answersError: string | null = "";
   export let answers: ResponseAnswer[] = [];
   export let hasMorePages: boolean = true;
   export let filteredTotal: number = 0;
@@ -49,9 +49,9 @@
   export let resetData = () => {};
 
   export let searchValue: string = "";
-  export let setSearchValue = () => {};
+  export let setSearchValue = (_value: string) => {};
   export let searchMode: SearchModeValues = SearchModeValues.KEYWORD;
-  export let setSearchMode = () => {};
+  export let setSearchMode = (_searchMode: SearchModeValues) => {};
 
   export let demoOptions: DemoOption = {};
   export let demoData: DemoData = {};
@@ -59,13 +59,13 @@
   export let themes: ResponseTheme[] = [];
 
   export let evidenceRich: boolean = false;
-  export let setEvidenceRich = () => {};
+  export let setEvidenceRich: (newValue: boolean) => void = () => {};
 
   export let unseenResponses: boolean = false;
-  export let setUnseenResponses = () => {};
+  export let setUnseenResponses: (newValue: boolean) => void = () => {};
 
   export let flaggedOnly: boolean = false;
-  export let setFlaggedOnly = () => {};
+  export let setFlaggedOnly: (newVal: boolean) => void = () => {};
 
   export let anyFilterApplied: boolean = false;
   export let resetFilters: () => void = () => {};
@@ -276,9 +276,11 @@
 
                     <div slot="panel" class="w-full bg-white p-4 shadow-lg">
                       <SearchableSelect
-                        handleChange={(option: SearchableSelectOption) => {
-                          if (option.value?.value) {
-                            themeFilters.update(option.value.value);
+                        handleChange={(
+                          newTheme: SearchableSelectOption<string>,
+                        ) => {
+                          if (newTheme.value) {
+                            themeFilters.update(newTheme.value);
                           }
                         }}
                         options={themes.map((theme) => ({
@@ -374,7 +376,7 @@
                           multiAnswers={answer.multiple_choice_answer}
                           evidenceRich={answer.evidenceRich}
                           text={answer.free_text_answer_text}
-                          themes={answer.themes}
+                          themes={answer.themes || []}
                           themeOptions={themes}
                           highlightText={searchValue}
                           isFlagged={answer.is_flagged}

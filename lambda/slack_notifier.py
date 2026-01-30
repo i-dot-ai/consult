@@ -4,52 +4,64 @@ import os
 
 import urllib3
 
+http = urllib3.PoolManager()
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
 
-http = urllib3.PoolManager()
+MESSAGE_TITLE = {
+    "FIND_THEMES": {
+        "RUNNING": "🚀 Finding themes for",
+        "SUCCEEDED": "✅ Found themes for",
+        "FAILED": "❌ Failed to find themes for",
+    },
+    "ASSIGN_THEMES": {
+        "RUNNING": "🚀 Assigning themes for",
+        "SUCCEEDED": "✅ Assigned themes for",
+        "FAILED": "❌ Failed to assign themes for",
+    },
+}
 
 
-def create_slack_message(job_name, status, job_id, job_type, subdir):
-    region = os.environ.get("LAMBDA_AWS_REGION")
+def send_slack_message(job: dict, consultation: dict, environment: str, user_id: str):
+    message_title = f"{MESSAGE_TITLE[job['type']][job['status']]} {consultation['name']}"
 
-    if job_type == "THEMEFINDER":
-        job_type_name = "Themefinder"
-    elif job_type == "SIGNOFF":
-        job_type_name = "Sign-off"
-    elif not job_type or job_type.strip() == "":
-        logger.error(f"Job type is blank or null for job_id: {job_id}")
-        raise ValueError("Job type cannot be blank or null")
+    region = os.environ.get("LAMBDA_AWS_REGION", "eu-west-2")
+    bucket = os.environ.get("AWS_BUCKET_NAME", "consult-data")
+
+    job_url = f"https://console.aws.amazon.com/batch/home?region={region}#jobs/detail/{job['id']}"
+
+    if job["type"] == "FIND_THEMES":
+        s3_path = f"app_data/consultations/{consultation['code']}/outputs/sign_off/"
     else:
-        logger.error(f"Unknown job type: {job_type} for job_id: {job_id}")
-        raise ValueError(f"Unknown job type: {job_type}")
+        s3_path = f"app_data/consultations/{consultation['code']}/outputs/mapping/"
 
-    status_title_map = {
-        "SUCCEEDED": f"✅ {job_type_name} Job Completed",
-        "RUNNING": f"🚀 {job_type_name} Job Started",
-        "FAILED": f"❌ {job_type_name} Job Failed",
-    }
-    status_emoji_map = {"SUCCEEDED": "✅", "RUNNING": "🟢", "FAILED": "❌"}
-    title = status_title_map.get(status, f"ℹ️ {job_type_name} Job {status}")
-    emoji = status_emoji_map.get(status, "ℹ️")
-
-    # AWS console URLs
-    job_console_url = (
-        f"https://console.aws.amazon.com/batch/home?region={region}#jobs/detail/{job_id}"
+    s3_url = (
+        f"https://s3.console.aws.amazon.com/s3/buckets/{bucket}?prefix={s3_path}&region={region}"
     )
 
     message = {
+        "text": message_title,
         "blocks": [
-            {"type": "header", "text": {"type": "plain_text", "text": title, "emoji": True}},
+            {"type": "header", "text": {"type": "plain_text", "text": message_title}},
             {
                 "type": "section",
                 "fields": [
-                    {"type": "mrkdwn", "text": f"*Consultation:*\n{subdir or 'N/A'}"},
-                    {"type": "mrkdwn", "text": f"*Status:*\n{emoji} *{status.title()}*"},
-                    {"type": "mrkdwn", "text": f"*Job Name:*\n{job_name}"},
-                    {"type": "mrkdwn", "text": f"*Job ID:*\n`{job_id}`"},
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*Environment:*\n{environment}",
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*Consultation:*\n{consultation['code']}",
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*User ID:*\n{user_id}",
+                    },
+                    {"type": "mrkdwn", "text": f"*Job ID:*\n`{job['id']}`"},
                 ],
             },
             {
@@ -59,109 +71,67 @@ def create_slack_message(job_name, status, job_id, job_type, subdir):
                         "type": "button",
                         "text": {
                             "type": "plain_text",
-                            "text": "🖥️ View Job in Console",
-                            "emoji": True,
+                            "text": "View job in AWS",
                         },
-                        "url": job_console_url,
+                        "url": job_url,
                     }
                 ],
             },
-        ]
+        ],
     }
 
-    return message
-
-
-def send_to_slack(message):
-    if not SLACK_WEBHOOK_URL:
-        raise ValueError("SLACK_WEBHOOK_URL is not set")
+    if job["status"] == "SUCCEEDED":
+        # Add S3 button to the actions block
+        blocks = message["blocks"]
+        assert isinstance(blocks, list)
+        actions_block = blocks[2]
+        assert isinstance(actions_block, dict)
+        elements = actions_block["elements"]
+        assert isinstance(elements, list)
+        elements.append(
+            {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "View data in S3",
+                },
+                "url": s3_url,
+            }
+        )
 
     encoded_msg = json.dumps(message).encode("utf-8")
     response = http.request(
-        "POST", SLACK_WEBHOOK_URL, body=encoded_msg, headers={"Content-Type": "application/json"}
+        "POST",
+        SLACK_WEBHOOK_URL,
+        body=encoded_msg,
+        headers={"Content-Type": "application/json"},
     )
 
     if response.status != 200:
-        raise Exception(
-            f"Request to Slack returned error {response.status}, the response is:\n{response.data}"
-        )
+        response_data = response.data.decode("utf-8") if response.data else "No response data"
+        error_message = f"Slack webhook failed with status {response.status}: {response_data}"
+        logger.error(error_message)
+        raise Exception(error_message)
 
 
-def lambda_handler(event, context):
+def lambda_handler(event, _context):
+    """
+    Lambda handler for sending Slack notifications, triggered by EventBridge,
+    when AWS Batch job changes state.
+    """
     logger.info(f"Received event: {json.dumps(event)}")
 
-    try:
-        detail = event.get("detail", {})
-        job_status = detail.get("status", "Unknown Status")
+    detail = event["detail"]
+    parameters = detail["parameters"]
 
-        # Only proceed for SUCCEEDED or RUNNING
-        if job_status not in ["SUCCEEDED", "RUNNING", "FAILED"]:
-            logger.info(f"Ignoring job with status {job_status}")
-            return {"statusCode": 200, "body": json.dumps(f"Ignored job with status {job_status}")}
+    job = {"id": detail["jobId"], "status": detail["status"], "type": parameters["job_type"]}
+    consultation = {
+        "name": parameters["consultation_name"],
+        "code": parameters["consultation_code"],
+    }
+    environment = os.environ.get("ENVIRONMENT", "unknown")
+    user_id = parameters["user_id"]
 
-        job_name = detail.get("jobName", "Unknown Job")
-        job_id = detail.get("jobId", "Unknown ID")
+    send_slack_message(job, consultation, environment, user_id)
 
-        subdir, job_type = extract_job_details(detail, job_id)
-
-        slack_message = create_slack_message(job_name, job_status, job_id, job_type, subdir)
-
-        send_to_slack(slack_message)
-
-    except Exception as e:
-        logger.error(f"Error processing event: {e}")
-
-
-def extract_job_details(detail, job_id):
-    """
-    Extract subdir and job_type from the Batch job details
-    """
-    subdir = "unknown"
-    job_type = "unknown"
-
-    try:
-        # Try to get from the event detail (if available)
-        container = detail.get("container", {})
-        command = container.get("command", [])
-
-        if command:  # Check if command exists and is not empty
-            subdir, job_type = parse_command_args(command)
-            logger.info(f"Extracted job details: subdir={subdir}, job_type={job_type}")
-        else:
-            logger.warning(f"No command found in container details for job {job_id}")
-
-    except Exception as e:
-        logger.warning(f"Could not extract job details: {e}")
-
-    return subdir, job_type
-
-
-def parse_command_args(command):
-    """
-    Parse command array to extract subdir and job_type
-    Example: ["--subdir", "dwp", "--job-type", "THEMEFINDER"]
-    """
-    subdir = "unknown"
-    job_type = "unknown"
-
-    try:
-        logger.debug(f"Parsing command: {command}")
-
-        # Find --subdir value
-        if "--subdir" in command:
-            idx = command.index("--subdir")
-            if idx + 1 < len(command):
-                subdir = command[idx + 1]
-
-        # Find --job-type value
-        if "--job-type" in command:
-            idx = command.index("--job-type")
-            if idx + 1 < len(command):
-                job_type = command[idx + 1]
-
-        logger.info(f"Parsed from command: subdir={subdir}, job_type={job_type}")
-
-    except Exception as e:
-        logger.warning(f"Error parsing command args: {e}")
-
-    return subdir, job_type
+    logger.info("✅ Slack message sent")

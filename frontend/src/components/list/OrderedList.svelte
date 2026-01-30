@@ -1,7 +1,11 @@
 <script lang="ts">
   import clsx from "clsx";
+  import type { Snippet } from "svelte";
 
-  let { children } = $props();
+  interface Props {
+    children: Snippet;
+  }
+  let { children }: Props = $props();
 </script>
 
 <ol

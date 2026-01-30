@@ -1,0 +1,3 @@
+web: PYTHONPATH=.. poetry run gunicorn --reload --workers=1 -c gunicorn_config.py backend.wsgi
+worker: PYTHONPATH=.. OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES poetry run python manage.py rqworker default --worker-class 'rq.worker.SimpleWorker' # ENV var permits multithreading on MacOS
+worker2: PYTHONPATH=.. OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES poetry run python manage.py rqworker default --worker-class 'rq.worker.SimpleWorker' # ENV var permits multithreading on MacOS
