@@ -10,6 +10,7 @@
   import MaterialIcon from "../../MaterialIcon.svelte";
   import ChevronRight from "../../svg/material/ChevronRight.svelte";
   import Menu from "../../svg/material/Menu.svelte";
+  import OpenInNew from "../../svg/material/OpenInNew.svelte";
   import Button from "../../inputs/Button/Button.svelte";
   import WithExternalClick from "../../WithExternalClick/WithExternalClick.svelte";
 
@@ -20,7 +21,7 @@
     subtitle = "",
     pathParts = [],
     icon = IaiIcon,
-    navItems = [{ label: "Home", url: "/" }],
+    navItems = [{ label: "Home", url: "/", external: false }],
     endItems,
   }: Props = $props();
 
@@ -55,9 +56,16 @@
   }
 </script>
 
-{#snippet navButton(label: string, url?: string)}
+{#snippet navButton(label: string, url?: string, external?: boolean)}
   <div class="hover:text-primary">
-    <Button variant="ghost" fullWidth={true} size="sm" href={url}>
+    <Button 
+      variant="ghost" 
+      fullWidth={true} 
+      size="sm" 
+      href={url}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noopener noreferrer" : undefined}
+    >
       <span
         class={clsx([
           "whitespace-nowrap",
@@ -66,9 +74,17 @@
           "py-1",
           "md:py-0",
           "w-full",
+          "flex",
+          "items-center",
+          "gap-1",
         ])}
       >
         {label}
+        {#if external}
+          <MaterialIcon size="0.8rem" color="fill-current">
+            <OpenInNew />
+          </MaterialIcon>
+        {/if}
       </span>
     </Button>
   </div>
@@ -192,13 +208,13 @@
               >
                 {#each navItem.children as subItem, i (i)}
                   <li>
-                    {@render navButton(subItem.label, subItem.url)}
+                    {@render navButton(subItem.label, subItem.url, subItem.external)}
                   </li>
                 {/each}
               </ol>
             {/if}
           {:else}
-            {@render navButton(navItem.label, navItem.url)}
+            {@render navButton(navItem.label, navItem.url, navItem.external)}
           {/if}
 
           {#if isMobile}

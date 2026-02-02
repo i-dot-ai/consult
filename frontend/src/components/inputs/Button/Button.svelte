@@ -23,6 +23,8 @@
   export let fullWidth: boolean = false;
   export let testId: string = "";
   export let href: string | undefined = undefined;
+  export let target: string | undefined = undefined;
+  export let rel: string | undefined = undefined;
   export let ariaControls: string | undefined = undefined;
   export let noPadding: boolean = false;
   export let fixedHoverColor: boolean = false;
@@ -36,6 +38,8 @@
   data-variant={variant}
   tabindex="0"
   {href}
+  {target}
+  {rel}
   class={clsx([
     fullWidth && "w-full",
     `text-${size}`,
