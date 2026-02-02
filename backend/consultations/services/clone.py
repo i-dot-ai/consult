@@ -2,7 +2,7 @@ from uuid import UUID
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import Model, QuerySet
 from django_rq import job
 
 from backend.consultations.models import (
@@ -31,6 +31,32 @@ _HISTORY_EXCLUDED_FIELDS = ["history_id"]
 _BATCH_SIZE = 1000
 
 
+def _create_clone(
+    original: dict,
+    model: type,
+    fk_mappings: list[tuple[str, dict[UUID, UUID]]],
+    excluded_fields: list[str],
+) -> object:
+    """
+    Create a clone of a single object with remapped foreign keys.
+    """
+    clone = {k: v for k, v in original.items() if k not in excluded_fields}
+
+    for field_name, mapping in fk_mappings:
+        old_value = original[field_name]
+        new_value = mapping.get(old_value)
+        if old_value is not None and new_value is None:
+            logger.warning(
+                "_clone: %(model_name)s.%(field_name)s = %(old_value)s not found in mapping",
+                model_name=model.__name__,
+                field_name=field_name,
+                old_value=old_value,
+            )
+        clone[field_name] = new_value
+
+    return model(**clone)
+
+
 def _clone(
     queryset: QuerySet,
     fk_mappings: list[tuple[str, dict[UUID, UUID]]],
@@ -49,37 +75,36 @@ def _clone(
     """
     model = queryset.model
     id_map = {}
-    total = queryset.count()
-    offset = 0
+    batch_ids: list[UUID] = []
+    batch_clones: list[Model] = []
 
-    while offset < total:
-        batch = queryset.order_by("pk").values()[offset : offset + _BATCH_SIZE]
-        batch_ids = []
-        batch_clones = []
-
-        for original in batch:
-            clone = {k: v for k, v in original.items() if k not in excluded_fields}
-
-            for field_name, mapping in fk_mappings:
-                old_value = original[field_name]
-                new_value = mapping.get(old_value)
-                if old_value is not None and new_value is None:
-                    logger.warning(
-                        f"_clone: {model.__name__}.{field_name} = {old_value} not found in mapping"
-                    )
-                clone[field_name] = new_value
-
-            batch_ids.append(original["id"])
-            batch_clones.append(model(**clone))
-
+    def flush_batch():
         created = model.objects.bulk_create(batch_clones)
         for i, orig_id in enumerate(batch_ids):
             id_map[orig_id] = created[i].id
+        batch_ids.clear()
+        batch_clones.clear()
 
-        offset += _BATCH_SIZE
-        logger.info(f"_clone: {model.__name__} batch complete, {len(id_map)}/{total} cloned")
+    for original in queryset.order_by("pk").values().iterator(chunk_size=_BATCH_SIZE):
+        batch_ids.append(original["id"])
+        batch_clones.append(_create_clone(original, model, fk_mappings, excluded_fields))
 
-    logger.info(f"_clone: cloned {len(id_map)} {model.__name__} objects total")
+        if len(batch_clones) >= _BATCH_SIZE:
+            flush_batch()
+            logger.info(
+                "_clone: %(model_name)s batch complete, %(cloned)d cloned so far",
+                model_name=model.__name__,
+                cloned=len(id_map),
+            )
+
+    if batch_clones:
+        flush_batch()
+
+    logger.info(
+        "_clone: cloned %(count)d %(model_name)s objects total",
+        count=len(id_map),
+        model_name=model.__name__,
+    )
     return id_map
 
 
@@ -207,5 +232,9 @@ def clone_consultation_job(consultation_id: UUID) -> UUID:
     """
     original = Consultation.objects.get(id=consultation_id)
     cloned = clone_consultation(original)
-    logger.info(f"Successfully cloned consultation {original.id} to {cloned.id}")
+    logger.info(
+        "Successfully cloned consultation %(original_id)s to %(cloned_id)s",
+        original_id=original.id,
+        cloned_id=cloned.id,
+    )
     return cloned.id
