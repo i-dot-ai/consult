@@ -58,10 +58,10 @@
 
 {#snippet navButton(label: string, url?: string, external?: boolean)}
   <div class="hover:text-primary">
-    <Button 
-      variant="ghost" 
-      fullWidth={true} 
-      size="sm" 
+    <Button
+      variant="ghost"
+      fullWidth={true}
+      size="sm"
       href={url}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
@@ -208,7 +208,11 @@
               >
                 {#each navItem.children as subItem, i (i)}
                   <li>
-                    {@render navButton(subItem.label, subItem.url, subItem.external)}
+                    {@render navButton(
+                      subItem.label,
+                      subItem.url,
+                      subItem.external,
+                    )}
                   </li>
                 {/each}
               </ol>
