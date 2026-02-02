@@ -190,6 +190,19 @@ export interface ConsultationResponse {
   users: User[];
   stage: "theme_sign_off" | "theme_mapping" | "analysis";
 }
+export interface ConsultationsResponse {
+  count: number;
+  next?: string;
+  previous?: string;
+  results: Consultation[];
+}
+export interface UserResponse {
+  id: number,
+  email: string,
+  has_dashboard_access: boolean,
+  is_staff: boolean,
+  created_at: string,
+}
 export interface QuestionsResponse {
   count: number;
   next: string | null;
@@ -295,3 +308,12 @@ export type AstroGlobalRuntime = {
   };
   redirect: (url: string) => void;
 };
+
+export type HttpMethod =
+  | "GET"
+  | "POST"
+  | "PUT"
+  | "PATCH"
+  | "DELETE"
+  | "HEAD"
+  | "OPTIONS"
