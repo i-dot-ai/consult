@@ -27,11 +27,14 @@ class TestCanSeeConsultation:
         assert permission.has_permission(request, view) is True
 
     def test_user_without_consultation_access(
-        self, request_factory, user_without_consultation_access, consultation
+        self, request_factory, non_staff_user, consultation
     ):
         """Test that user without access to consultation is denied permission"""
+        # Remove the user from consultation to test denial
+        consultation.users.remove(non_staff_user)
+        
         request = request_factory.get("/")
-        request.user = user_without_consultation_access
+        request.user = non_staff_user
 
         view = Mock()
         view.kwargs = {"consultation_pk": consultation.id}
@@ -201,14 +204,16 @@ class TestAPIViewPermissions:
         ],
     )
     def test_user_without_consultation_access_denied(
-        self, client, free_text_question, user_without_consultation_access, endpoint_name
+        self, client, free_text_question, endpoint_name
     ):
         """Test that users without consultation access cannot access any API endpoint"""
         from rest_framework_simplejwt.tokens import RefreshToken
-        
-        # Create token for user who is not assigned to consultation
-        token = str(RefreshToken.for_user(user_without_consultation_access).access_token)
-        
+        from backend.factories import UserFactory
+
+        # Create a user who is NOT assigned to any consultation
+        isolated_user = UserFactory(is_staff=False)
+        token = str(RefreshToken.for_user(isolated_user).access_token)
+
         url = build_url(endpoint_name, free_text_question)
         response = client.get(
             url,
@@ -216,4 +221,5 @@ class TestAPIViewPermissions:
                 "Authorization": f"Bearer {token}",
             },
         )
+        isolated_user.delete()
         assert response.status_code == 403

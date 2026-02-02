@@ -7,7 +7,11 @@ from django.urls import reverse
 
 @pytest.mark.django_db
 class TestUserViewSet:
-    def test_users_list(self, client, staff_user_token, non_staff_user, user_without_consultation_access):
+    def test_users_list(self, client, staff_user_token, non_staff_user):
+        # Create a second non-staff user to get total of 3 users
+        from backend.factories import UserFactory
+        additional_user = UserFactory(is_staff=False)
+        
         url = reverse("user-list")
         response = client.get(
             url,
@@ -16,6 +20,7 @@ class TestUserViewSet:
                 "Authorization": f"Bearer {staff_user_token}",
             },
         )
+        additional_user.delete()
         assert response.status_code == 200
         assert response.json()["count"] == 3
 
@@ -124,7 +129,7 @@ class TestUserViewSet:
         """Test that admin can access user's consultations"""
         # Add staff_user to the consultation so they have consultations to return
         consultation.users.add(staff_user)
-        
+
         url = reverse(
             "user-consultations",
             kwargs={"pk": staff_user.pk},

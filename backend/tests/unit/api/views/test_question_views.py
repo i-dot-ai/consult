@@ -305,10 +305,14 @@ class TestQuestionViewSet:
         assert data["message"] == "This question does not have free text responses."
 
     def test_permission_requires_consultation_access(
-        self, client, user_without_consultation_access, free_text_question
+        self, client, free_text_question
     ):
         """Test that QuestionViewSet requires consultation access"""
-        refresh = RefreshToken.for_user(user_without_consultation_access)
+        from backend.factories import UserFactory
+        
+        # Create a user who is NOT assigned to any consultation
+        isolated_user = UserFactory(is_staff=False)
+        refresh = RefreshToken.for_user(isolated_user)
         token = str(refresh.access_token)
 
         url = reverse(
@@ -322,6 +326,7 @@ class TestQuestionViewSet:
             url,
             headers={"Authorization": f"Bearer {token}"},
         )
+        isolated_user.delete()
         assert response.status_code == 403
 
     def test_delete_method_supported(self, client, staff_user_token, free_text_question):

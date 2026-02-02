@@ -178,14 +178,16 @@ class TestConsultationViewSet:
         assert response.status_code == 200
 
     def test_cannot_get_consultation_detail_for_unauthorized_users(
-        self, client, consultation, user_without_consultation_access
+        self, client, consultation
     ):
         """Test API endpoint denies access to unauthorized users"""
         from rest_framework_simplejwt.tokens import RefreshToken
-        
-        # Create token for user who is not assigned to consultation
-        token = str(RefreshToken.for_user(user_without_consultation_access).access_token)
-        
+        from backend.factories import UserFactory
+
+        # Create a user who is NOT assigned to any consultation
+        isolated_user = UserFactory(is_staff=False)
+        token = str(RefreshToken.for_user(isolated_user).access_token)
+
         url = reverse(
             "consultations-detail",
             kwargs={"pk": consultation.id},
@@ -194,6 +196,7 @@ class TestConsultationViewSet:
             url,
             headers={"Authorization": f"Bearer {token}"},
         )
+        isolated_user.delete()
         assert response.status_code == 403  # FORBIDDEN
 
     def test_list_all_consultations_for_admin_users(self, client, staff_user_token):

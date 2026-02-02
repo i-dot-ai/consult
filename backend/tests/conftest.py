@@ -223,14 +223,6 @@ def staff_user_token(staff_user):
 
 
 @pytest.fixture
-def user_without_consultation_access():
-    """Creates a non-staff user who is NOT assigned to any consultation"""
-    user = UserFactory(is_staff=False)
-    yield user
-    user.delete()
-
-
-@pytest.fixture
 def consultation(non_staff_user):
     _consultation = ConsultationFactory(title="My First Consultation", code="my-first-consultation")
     _consultation.users.add(non_staff_user)
