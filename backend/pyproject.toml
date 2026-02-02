@@ -40,7 +40,7 @@ psycopg = "^3.3.2"
 pydantic = "^2.12.5"
 pytest-random-order = "^1.2.0"
 sentry-sdk = {version = ">=2.24.1", extras = ["django", "redis", "rq"]}
-themefinder = "^0.7.3"
+themefinder = "^0.7.7"
 
 [tool.poetry.group.development.dependencies]
 django-extensions = "^4.1"
