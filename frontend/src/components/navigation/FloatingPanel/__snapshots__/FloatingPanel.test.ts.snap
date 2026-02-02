@@ -17,6 +17,7 @@ exports[`FloatingPanel > renders correct direction 1`] = `
     >
       <!---->
       <button
+        aria-label="Help and Support"
         aria-pressed="false"
         class="text-md cursor-pointer rounded-md border border-transparent transition-colors duration-300 self-start block gap-1 items-center hover:bg-gray-100 fixed-hover-color svelte-1d0mdzt"
         data-variant="ghost"
@@ -73,6 +74,7 @@ exports[`FloatingPanel > renders correct direction 1`] = `
       >
         <!---->
         <button
+          aria-label="Close Help and Support Panel"
           aria-pressed="false"
           class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
           data-variant="ghost"
@@ -123,6 +125,7 @@ exports[`FloatingPanel > renders correct direction 2`] = `
     >
       <!---->
       <button
+        aria-label="Help and Support"
         aria-pressed="false"
         class="text-md cursor-pointer rounded-md border border-transparent transition-colors duration-300 self-start block gap-1 items-center hover:bg-gray-100 fixed-hover-color svelte-1d0mdzt"
         data-variant="ghost"
@@ -179,6 +182,7 @@ exports[`FloatingPanel > renders correct direction 2`] = `
       >
         <!---->
         <button
+          aria-label="Close Help and Support Panel"
           aria-pressed="false"
           class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
           data-variant="ghost"
