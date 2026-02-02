@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { fade, slide } from "svelte/transition";
 
-  import { createFetchStore, type MockFetch } from "../../global/stores";
+  import { type MockFetch } from "../../global/stores";
   import {
     getApiConfirmSignOffUrl,
     getApiCreateSelectedThemeUrl,
@@ -14,6 +14,7 @@
     getApiQuestionUrl,
     getApiSelectGeneratedThemeUrl,
     getApiUpdateSelectedThemeUrl,
+    getThemeSignOffDetailUrl,
     getThemeSignOffUrl,
   } from "../../global/routes";
 
@@ -64,18 +65,13 @@
   let {
     consultationId = "",
     questionId = "",
-    questionDataMock,
-    generatedThemesMock,
-    selectedThemesMock,
-    createThemeMock,
     answersMock,
-    selectGeneratedThemeMock,
   }: Props = $props();
 
   const selectedThemesQuery = $derived(buildQuery<SelectedThemesResponse>(
     getApiGetSelectedThemesUrl(consultationId, questionId),
     {
-      key: ["theme-sign-off-detail", "selectedThemes", consultationId, questionId],
+      key: [getThemeSignOffDetailUrl(consultationId, questionId), "selectedThemes"],
     }
   ));
 
@@ -92,25 +88,91 @@
   const generatedThemesQuery = $derived(buildQuery<GeneratedThemesResponse>(
     getApiGetGeneratedThemesUrl(consultationId, questionId),
     {
-      key: ["theme-sign-off-detail", "generatedThemes", consultationId, questionId],
+      key: [getThemeSignOffDetailUrl(consultationId, questionId), "generatedThemes"],
     }
   ));
 
   const questionQuery = $derived(buildQuery<Question>(
     getApiQuestionUrl(consultationId, questionId),
     {
-      key: ["theme-sign-off-detail", "question", consultationId, questionId],
+      key: [getThemeSignOffDetailUrl(consultationId, questionId), "question"],
     },
   ));
 
+  const generatedThemesSelectQuery = $derived(buildQuery<Question>(
+    getApiSelectGeneratedThemeUrl(consultationId, questionId, ":newThemeId"),
+    {
+      method: "POST",
+      key: [getThemeSignOffDetailUrl(consultationId, questionId), "generatedThemesSelect"],
+      onSuccess: async (data, variables) => {
+        await selectedThemesQuery.refetch();
+        await generatedThemesQuery.refetch();
 
-  const selectedThemesDeleteStore =
-    createFetchStore<SelectedThemesDeleteResponse>();
-  const generatedThemesSelectStore = createFetchStore({
-    mockFetch: selectGeneratedThemeMock,
-    debounceDelay: 0,
-  });
-  const confirmSignOffStore = createFetchStore();
+        const newThemeId = variables!.params!.newThemeId;
+
+        themesBeingSelected = themesBeingSelected.filter(
+          (themeId) => themeId !== newThemeId,
+        );
+
+        // get selectedtheme_id created after back end select action is complete
+        const updatedTheme = flattenGeneratedThemes(
+          generatedThemesQuery.data?.results || [],
+        ).find((generatedTheme) => generatedTheme.id === newThemeId);
+
+        // scroll up to equivalent in selected themes list
+        document
+          .querySelector(
+            `article[data-themeid="${updatedTheme?.selectedtheme_id}"]`,
+          )
+          ?.scrollIntoView();
+      }
+    },
+  ));
+
+  const selectedThemesDeleteQuery = $derived(buildQuery<SelectedThemesDeleteResponse>(
+      getApiDeleteSelectedThemeUrl(consultationId, questionId, ":themeId"),
+    {
+      method: "DELETE",
+      key: [getThemeSignOffDetailUrl(consultationId, questionId), "selectedThemesDelete"],
+      onError: async (error) => {
+        if (error.response?.status !== 404) {
+          if (error.response?.status === 412) {
+            const respData = selectedThemesDeleteQuery.data;
+
+            errorData = {
+              type: "remove-conflict",
+              lastModifiedBy: respData?.last_modified_by?.email || "",
+              latestVersion: respData?.latest_version || "",
+            };
+          } else {
+            errorData = { type: "unexpected" };
+            console.error(selectedThemesDeleteQuery.error);
+          }
+        }
+
+        selectedThemesQuery.refetch();
+        generatedThemesQuery.refetch();
+      },
+      onSuccess: async () => {
+        selectedThemesQuery.refetch();
+        generatedThemesQuery.refetch();
+      }
+    },
+  ));
+
+  const confirmSignOffQuery = $derived(buildQuery(
+    getApiConfirmSignOffUrl(consultationId, questionId),
+    {
+      method: "PATCH",
+      onError: async () => {
+        isConfirmSignOffModalOpen = false;
+        errorData = { type: "unexpected" };
+      },
+      onSuccess: async () => {
+        location.replace(getThemeSignOffUrl(consultationId));
+      }
+    },
+  ));
 
   let isConfirmSignOffModalOpen: boolean = $state(false);
   let addingCustomTheme: boolean = $state(false);
@@ -164,35 +226,14 @@
       return;
     }
 
-    await $selectedThemesDeleteStore.fetch(
-      getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
-      "DELETE",
-      undefined,
-      {
-        "Content-Type": "application/json",
+    await selectedThemesDeleteQuery.mutate({
+      headers: {
         "If-Match": selectedTheme.version,
       },
-    );
-
-    if (
-      !$selectedThemesDeleteStore.error ||
-      $selectedThemesDeleteStore.status === 404
-    ) {
-      // No action or error needed if status 404 (theme already deselected)
-      selectedThemesQuery.refetch();
-      generatedThemesQuery.refetch();
-    } else if ($selectedThemesDeleteStore.status === 412) {
-      const respData = $selectedThemesDeleteStore.data;
-
-      errorData = {
-        type: "remove-conflict",
-        lastModifiedBy: respData?.last_modified_by?.email || "",
-        latestVersion: respData?.latest_version || "",
-      };
-    } else {
-      errorData = { type: "unexpected" };
-      console.error($selectedThemesDeleteStore.error);
-    }
+      params: {
+        "themeId": themeId,
+      }
+    })
   };
 
   const updateTheme = async (
@@ -247,46 +288,19 @@
   const handleSelectGeneratedTheme = async (newTheme: GeneratedTheme) => {
     themesBeingSelected = [...themesBeingSelected, newTheme.id];
 
-    await $generatedThemesSelectStore.fetch(
-      getApiSelectGeneratedThemeUrl(consultationId, questionId, newTheme.id),
-      "POST",
-    );
-
-    await selectedThemesQuery.refetch();
-    await generatedThemesQuery.refetch();
-
-    themesBeingSelected = themesBeingSelected.filter(
-      (themeId) => themeId !== newTheme.id,
-    );
-
-    // get selectedtheme_id created after back end select action is complete
-    const updatedTheme = flattenGeneratedThemes(
-      generatedThemesQuery.data?.results || [],
-    ).find((generatedTheme) => generatedTheme.id === newTheme.id);
-
-    // scroll up to equivalent in selected themes list
-    document
-      .querySelector(
-        `article[data-themeid="${updatedTheme?.selectedtheme_id}"]`,
-      )
-      ?.scrollIntoView();
+    await generatedThemesSelectQuery.mutate({
+      params: {
+        "newThemeId": newTheme.id,
+      },
+    });
   };
 
   const confirmSignOff = async () => {
-    await $confirmSignOffStore.fetch(
-      getApiConfirmSignOffUrl(consultationId, questionId),
-      "PATCH",
-      {
+    confirmSignOffQuery.mutate({
+      body: {
         theme_status: "confirmed",
-      },
-    );
-
-    if ($confirmSignOffStore.error) {
-      isConfirmSignOffModalOpen = false;
-      errorData = { type: "unexpected" };
-    } else {
-      location.replace(getThemeSignOffUrl(consultationId));
-    }
+      }
+    })
   };
   const numSelectedThemesText = (themes?: Array<SelectedTheme>): string => {
     if (!themes?.length) {
