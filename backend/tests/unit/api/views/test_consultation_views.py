@@ -10,7 +10,7 @@ from django.urls import reverse
 @pytest.mark.django_db
 class TestConsultationViewSet:
     def test_get_demographic_options_empty(
-        self, client, consultation_user_token, free_text_question
+        self, client, staff_user_token, free_text_question
     ):
         """Test API endpoint returns empty options when no demographic data exists"""
         url = reverse(
@@ -19,14 +19,14 @@ class TestConsultationViewSet:
         )
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
         assert response.json() == []
 
     def test_get_demographic_options_with_data(
-        self, client, consultation_user_token, free_text_question
+        self, client, staff_user_token, free_text_question
     ):
         """Test API endpoint returns demographic options correctly"""
         # Create respondents with different demographic data
@@ -49,7 +49,7 @@ class TestConsultationViewSet:
         )
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -82,25 +82,25 @@ class TestConsultationViewSet:
         response = client.get(url)
         assert response.status_code == 401
 
-    def test_invalid_consultation_slug(self, client, consultation_user_token):
+    def test_invalid_consultation_slug(self, client, staff_user_token):
         """Test API endpoint with invalid consultation slug"""
         url = reverse("consultations-demographic-options", kwargs={"pk": uuid4()})
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 404  # NOT FOUND
 
-    def test_consultations_list(self, client, consultation_user_token, multi_choice_question):
+    def test_consultations_list(self, client, staff_user_token, multi_choice_question):
         url = reverse("consultations-list")
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
 
     def test_consultations_list_filter_by_slug(
-        self, client, consultation_user_token, multi_choice_question
+        self, client, staff_user_token, multi_choice_question
     ):
         """Test that consultations can be filtered by slug"""
         consultation = multi_choice_question.consultation
@@ -110,7 +110,7 @@ class TestConsultationViewSet:
         response = client.get(
             url,
             {"code": consultation.code},
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
 
@@ -123,14 +123,14 @@ class TestConsultationViewSet:
         assert results[0]["title"] == consultation.title
         assert results[0]["stage"] == consultation.stage
 
-    def test_consultations_list_filter_by_nonexistent_slug(self, client, consultation_user_token):
+    def test_consultations_list_filter_by_nonexistent_slug(self, client, staff_user_token):
         """Test that filtering by non-existent slug returns empty results"""
 
         url = reverse("consultations-list")
         response = client.get(
             url,
             {"code": "nonexistent-code"},
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
 
@@ -140,17 +140,17 @@ class TestConsultationViewSet:
         # Should return empty list
         assert len(results) == 0
 
-    def test_nonexistent_consultation(self, client, consultation_user_token):
+    def test_nonexistent_consultation(self, client, staff_user_token):
         """Test API endpoints with non-existent consultation"""
         url = reverse("consultations-demographic-options", kwargs={"pk": uuid4()})
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 404  # NOT FOUND
 
     def test_can_get_consultation_detail_for_consultation_users(
-        self, client, consultation, consultation_user_token
+        self, client, consultation, staff_user_token
     ):
         """Test API endpoint grants access to users of the consultation"""
         url = reverse(
@@ -159,12 +159,12 @@ class TestConsultationViewSet:
         )
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
 
     def test_can_get_consultation_detail_for_admin_users(
-        self, client, consultation, admin_user_token
+        self, client, consultation, staff_user_token
     ):
         """Test API endpoint grants access to admin users"""
         url = reverse(
@@ -173,111 +173,116 @@ class TestConsultationViewSet:
         )
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {admin_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
 
     def test_cannot_get_consultation_detail_for_unauthorized_users(
-        self, client, consultation, non_consultation_user_token
+        self, client, consultation, user_without_consultation_access
     ):
         """Test API endpoint denies access to unauthorized users"""
+        from rest_framework_simplejwt.tokens import RefreshToken
+        
+        # Create token for user who is not assigned to consultation
+        token = str(RefreshToken.for_user(user_without_consultation_access).access_token)
+        
         url = reverse(
             "consultations-detail",
             kwargs={"pk": consultation.id},
         )
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {non_consultation_user_token}"},
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 403  # FORBIDDEN
 
-    def test_list_all_consultations_for_admin_users(self, client, admin_user_token):
+    def test_list_all_consultations_for_admin_users(self, client, staff_user_token):
         """Test API endpoint lists all consultations for admin users"""
         ConsultationFactory.create_batch(3)
 
         url = reverse("consultations-list")
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {admin_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
         assert response.json()["count"] == 3
 
     def test_list_all_consultations_for_non_admin_users(
-        self, client, dashboard_user, dashboard_user_token
+        self, client, non_staff_user, non_staff_user_token
     ):
         """Test API endpoint lists only assigned consultations for
         non-admin users even when scope=assigned is not specified"""
         ConsultationFactory.create_batch(3)
         assigned_consultation = ConsultationFactory.create()
-        assigned_consultation.users.add(dashboard_user)
+        assigned_consultation.users.add(non_staff_user)
 
         url = reverse("consultations-list")
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {dashboard_user_token}"},
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
         )
         assert response.status_code == 200
         assert response.json()["count"] == 1
 
     def test_list_assigned_consultations_for_admin_users(
-        self, client, admin_user, admin_user_token
+        self, client, staff_user, staff_user_token
     ):
         """Test API endpoint lists assigned consultations for admin users"""
         ConsultationFactory.create_batch(3)
         assigned_consultation = ConsultationFactory.create()
-        assigned_consultation.users.add(admin_user)
+        assigned_consultation.users.add(staff_user)
 
         url = reverse("consultations-list", query={"scope": "assigned"})
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {admin_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
         assert response.json()["count"] == 1
 
     def test_list_assigned_consultations_for_non_admin_users(
-        self, client, dashboard_user, dashboard_user_token
+        self, client, non_staff_user, non_staff_user_token
     ):
         """Test API endpoint lists assigned consultations for non-admin users"""
         ConsultationFactory.create_batch(3)
         assigned_consultation1 = ConsultationFactory.create()
-        assigned_consultation1.users.add(dashboard_user)
+        assigned_consultation1.users.add(non_staff_user)
         assigned_consultation2 = ConsultationFactory.create()
-        assigned_consultation2.users.add(dashboard_user)
+        assigned_consultation2.users.add(non_staff_user)
 
         url = reverse("consultations-list", query={"scope": "assigned"})
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {dashboard_user_token}"},
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
         )
         assert response.status_code == 200
         assert response.json()["count"] == 2
 
-    def test_delete_consultation(self, client, consultation, consultation_user_token):
+    def test_delete_consultation(self, client, consultation, staff_user_token):
         """test that a user can delete their own consultation"""
         url = reverse("consultations-detail", kwargs={"pk": consultation.id})
         response = client.delete(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 204
         assert not response.content
         assert not Consultation.objects.filter(pk=consultation.pk).exists()
 
-    def test_delete_consultation_fail(self, client, consultation, non_consultation_user_token):
+    def test_delete_consultation_fail(self, client, consultation, non_staff_user_token):
         """test that a user cannot delete a consultation they do not own"""
         url = reverse("consultations-detail", kwargs={"pk": consultation.id})
         response = client.delete(
             url,
-            headers={"Authorization": f"Bearer {non_consultation_user_token}"},
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
         )
         assert response.status_code == 403
         assert response.json()["detail"] == "You do not have permission to perform this action."
         assert Consultation.objects.filter(pk=consultation.pk).exists()
 
-    def test_add_users_success(self, client, consultation, consultation_user_token):
+    def test_add_users_success(self, client, consultation, staff_user_token):
         """Test successfully adding multiple users to a consultation"""
         # Create test users
         user1 = UserFactory()
@@ -289,27 +294,27 @@ class TestConsultationViewSet:
             url,
             {"user_ids": user_ids},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 201
         assert response.json()["message"] == "Successfully added 2 users to consultation"
         assert consultation.users.filter(id__in=[user1.id, user2.id]).count() == 2
 
-    def test_add_users_empty_list(self, client, consultation, consultation_user_token):
+    def test_add_users_empty_list(self, client, consultation, staff_user_token):
         """Test adding users with empty list fails"""
         url = reverse("consultations-add-users", kwargs={"pk": consultation.id})
         response = client.post(
             url,
             {"user_ids": []},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 400
         assert "user_ids must be a non-empty list" in response.json()["error"]
 
-    def test_add_users_nonexistent_user(self, client, consultation, consultation_user_token):
+    def test_add_users_nonexistent_user(self, client, consultation, staff_user_token):
         """Test adding users with non-existent user ID fails"""
         user1 = UserFactory()
         fake_id = "99999"  # Non-existent integer ID
@@ -320,13 +325,13 @@ class TestConsultationViewSet:
             url,
             {"user_ids": user_ids},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 404
         assert "Only 1 of 2 users found" in response.json()["error"]
 
-    def test_add_users_nonexistent_consultation(self, client, consultation_user_token):
+    def test_add_users_nonexistent_consultation(self, client, staff_user_token):
         """Test adding users to non-existent consultation fails"""
         user1 = UserFactory()
         fake_consultation_id = str(uuid4())
@@ -336,12 +341,12 @@ class TestConsultationViewSet:
             url,
             {"user_ids": [str(user1.id)]},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 404
 
-    def test_add_users_permission_required(self, client, consultation, non_consultation_user_token):
+    def test_add_users_permission_required(self, client, consultation, non_staff_user_token):
         """Test adding users requires proper permissions"""
         user1 = UserFactory()
 
@@ -350,12 +355,12 @@ class TestConsultationViewSet:
             url,
             {"user_ids": [str(user1.id)]},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {non_consultation_user_token}"},
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
         )
 
         assert response.status_code == 403
 
-    def test_remove_user_success(self, client, consultation, consultation_user_token):
+    def test_remove_user_success(self, client, consultation, staff_user_token):
         """Test successfully removing a user from a consultation"""
         user_to_remove = UserFactory()
         consultation.users.add(user_to_remove)
@@ -366,7 +371,7 @@ class TestConsultationViewSet:
         )
         response = client.delete(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -376,7 +381,7 @@ class TestConsultationViewSet:
         )
         assert not consultation.users.filter(id=user_to_remove.id).exists()
 
-    def test_remove_user_not_in_consultation(self, client, consultation, consultation_user_token):
+    def test_remove_user_not_in_consultation(self, client, consultation, staff_user_token):
         """Test removing a user who is not in the consultation fails"""
         user_not_in_consultation = UserFactory()
 
@@ -386,13 +391,13 @@ class TestConsultationViewSet:
         )
         response = client.delete(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 404
         assert "User is not assigned to this consultation" in response.json()["error"]
 
-    def test_remove_user_nonexistent_user(self, client, consultation, consultation_user_token):
+    def test_remove_user_nonexistent_user(self, client, consultation, staff_user_token):
         """Test removing a non-existent user fails"""
         fake_user_id = "99999"
 
@@ -401,13 +406,13 @@ class TestConsultationViewSet:
         )
         response = client.delete(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 404
         assert "User not found" in response.json()["error"]
 
-    def test_remove_user_nonexistent_consultation(self, client, consultation_user_token):
+    def test_remove_user_nonexistent_consultation(self, client, staff_user_token):
         """Test removing user from non-existent consultation fails"""
         user = UserFactory()
         fake_consultation_id = str(uuid4())
@@ -417,13 +422,13 @@ class TestConsultationViewSet:
         )
         response = client.delete(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 404
         assert "Consultation not found" in response.json()["error"]
 
-    def test_remove_user_invalid_user_id(self, client, consultation, consultation_user_token):
+    def test_remove_user_invalid_user_id(self, client, consultation, staff_user_token):
         """Test removing user with invalid user ID fails"""
         invalid_user_id = "not-a-number"
 
@@ -432,14 +437,14 @@ class TestConsultationViewSet:
         )
         response = client.delete(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 400
         assert "Invalid user ID provided" in response.json()["error"]
 
     def test_remove_user_permission_required(
-        self, client, consultation, non_consultation_user_token
+        self, client, consultation, non_staff_user_token
     ):
         """Test removing user requires proper permissions"""
         user = UserFactory()
@@ -450,7 +455,7 @@ class TestConsultationViewSet:
         )
         response = client.delete(
             url,
-            headers={"Authorization": f"Bearer {non_consultation_user_token}"},
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
         )
 
         assert response.status_code == 403
@@ -458,7 +463,7 @@ class TestConsultationViewSet:
 
 @pytest.mark.django_db
 class TestSetupConsultationEndpoint:
-    def test_setup_consultation_success(self, client, admin_user_token):
+    def test_setup_consultation_success(self, client, staff_user_token):
         """Test successful consultation setup"""
         url = reverse("consultations-setup")
         data = {
@@ -473,7 +478,7 @@ class TestSetupConsultationEndpoint:
                 url,
                 data,
                 content_type="application/json",
-                headers={"Authorization": f"Bearer {admin_user_token}"},
+                headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
             assert response.status_code == 202
@@ -485,7 +490,7 @@ class TestSetupConsultationEndpoint:
             assert call_args.kwargs["consultation_code"] == "test-code"
             assert call_args.kwargs["consultation_name"] == "Test Consultation"
 
-    def test_setup_consultation_missing_parameters(self, client, admin_user_token):
+    def test_setup_consultation_missing_parameters(self, client, staff_user_token):
         """Test setup endpoint validates required parameters"""
         url = reverse("consultations-setup")
         data = {"consultation_name": "Test Consultation"}  # Missing consultation_code
@@ -494,7 +499,7 @@ class TestSetupConsultationEndpoint:
             url,
             data,
             content_type="application/json",
-            headers={"Authorization": f"Bearer {admin_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 400
@@ -502,7 +507,7 @@ class TestSetupConsultationEndpoint:
 
 @pytest.mark.django_db
 class TestGetConsultationFoldersEndpoint:
-    def test_get_folders_setup_stage_with_no_consultations(self, client, admin_user_token):
+    def test_get_folders_setup_stage_with_no_consultations(self, client, staff_user_token):
         """Test setup stage returns all S3 folders when no consultations exist"""
         url = reverse("consultations-folders")
 
@@ -512,14 +517,14 @@ class TestGetConsultationFoldersEndpoint:
             response = client.get(
                 url,
                 {"stage": "setup"},
-                headers={"Authorization": f"Bearer {admin_user_token}"},
+                headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
             assert response.status_code == 200
             assert response.json() == ["education-2026", "healthcare-2026", "transport-2026"]
 
     def test_get_folders_setup_stage_excludes_existing_consultations(
-        self, client, admin_user_token
+        self, client, staff_user_token
     ):
         """Test setup stage excludes S3 folders that have matching consultations"""
         ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation")
@@ -532,13 +537,13 @@ class TestGetConsultationFoldersEndpoint:
             response = client.get(
                 url,
                 {"stage": "setup"},
-                headers={"Authorization": f"Bearer {admin_user_token}"},
+                headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
             assert response.status_code == 200
             assert response.json() == ["education-2026", "transport-2026"]
 
-    def test_get_folders_find_themes_stage_returns_consultations(self, client, admin_user_token):
+    def test_get_folders_find_themes_stage_returns_consultations(self, client, staff_user_token):
         """Test find-themes stage returns consultations with matching S3 folders"""
         # Create consultations with codes matching S3 folders
         c1 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation")
@@ -554,7 +559,7 @@ class TestGetConsultationFoldersEndpoint:
             response = client.get(
                 url,
                 {"stage": "find-themes"},
-                headers={"Authorization": f"Bearer {admin_user_token}"},
+                headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
             assert response.status_code == 200
@@ -568,7 +573,7 @@ class TestGetConsultationFoldersEndpoint:
             assert result[1]["title"] == "Transport Consultation"
             assert result[1]["id"] == str(c2.id)
 
-    def test_get_folders_assign_themes_stage_returns_consultations(self, client, admin_user_token):
+    def test_get_folders_assign_themes_stage_returns_consultations(self, client, staff_user_token):
         """Test assign-themes stage returns consultations with matching S3 folders"""
         c1 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation")
 
@@ -580,7 +585,7 @@ class TestGetConsultationFoldersEndpoint:
             response = client.get(
                 url,
                 {"stage": "assign-themes"},
-                headers={"Authorization": f"Bearer {admin_user_token}"},
+                headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
             assert response.status_code == 200
@@ -588,7 +593,7 @@ class TestGetConsultationFoldersEndpoint:
             assert result[0]["code"] == "healthcare-2026"
             assert result[0]["id"] == str(c1.id)
 
-    def test_get_folders_handles_one_to_many_relationship(self, client, admin_user_token):
+    def test_get_folders_handles_one_to_many_relationship(self, client, staff_user_token):
         """Test endpoint handles multiple consultations with same code"""
         c1 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation V1")
         c2 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation V2")
@@ -601,7 +606,7 @@ class TestGetConsultationFoldersEndpoint:
             response = client.get(
                 url,
                 {"stage": "find-themes"},
-                headers={"Authorization": f"Bearer {admin_user_token}"},
+                headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
             assert response.status_code == 200
@@ -615,25 +620,25 @@ class TestGetConsultationFoldersEndpoint:
             assert result[1]["title"] == "Healthcare Consultation V2"
             assert result[1]["id"] == str(c2.id)
 
-    def test_get_folders_requires_stage_parameter(self, client, admin_user_token):
+    def test_get_folders_requires_stage_parameter(self, client, staff_user_token):
         """Test endpoint validates required stage parameter"""
         url = reverse("consultations-folders")
 
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {admin_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 400
 
-    def test_get_folders_validates_stage_choices(self, client, admin_user_token):
+    def test_get_folders_validates_stage_choices(self, client, staff_user_token):
         """Test endpoint validates stage parameter choices"""
         url = reverse("consultations-folders")
 
         response = client.get(
             url,
             {"stage": "invalid-stage"},
-            headers={"Authorization": f"Bearer {admin_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 400
@@ -641,7 +646,7 @@ class TestGetConsultationFoldersEndpoint:
 
 @pytest.mark.django_db
 class TestFindThemesEndpoint:
-    def test_find_themes_success(self, client, admin_user_token, free_text_question):
+    def test_find_themes_success(self, client, staff_user_token, free_text_question):
         """Test successful find themes job submission"""
         consultation = free_text_question.consultation
 
@@ -652,7 +657,7 @@ class TestFindThemesEndpoint:
 
             response = client.post(
                 url,
-                headers={"Authorization": f"Bearer {admin_user_token}"},
+                headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
             assert response.status_code == 202
@@ -666,7 +671,7 @@ class TestFindThemesEndpoint:
                 user_id=mock_submit.call_args.kwargs["user_id"],
             )
 
-    def test_find_themes_no_free_text_questions(self, client, admin_user_token, consultation):
+    def test_find_themes_no_free_text_questions(self, client, staff_user_token, consultation):
         """Test find themes endpoint requires free text questions"""
         Question.objects.create(
             consultation=consultation, number=1, has_free_text=False, text="Test?"
@@ -676,7 +681,7 @@ class TestFindThemesEndpoint:
 
         response = client.post(
             url,
-            headers={"Authorization": f"Bearer {admin_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 400
@@ -684,7 +689,7 @@ class TestFindThemesEndpoint:
 
 @pytest.mark.django_db
 class TestAssignThemesEndpoint:
-    def test_assign_themes_success(self, client, admin_user_token, free_text_question):
+    def test_assign_themes_success(self, client, staff_user_token, free_text_question):
         """Test successful assign themes job submission"""
         consultation = free_text_question.consultation
 
@@ -705,7 +710,7 @@ class TestAssignThemesEndpoint:
 
             response = client.post(
                 url,
-                headers={"Authorization": f"Bearer {admin_user_token}"},
+                headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
             assert response.status_code == 202
@@ -721,7 +726,7 @@ class TestAssignThemesEndpoint:
                 user_id=mock_batch.submit_job.call_args.kwargs["user_id"],
             )
 
-    def test_assign_themes_no_selected_themes(self, client, admin_user_token, free_text_question):
+    def test_assign_themes_no_selected_themes(self, client, staff_user_token, free_text_question):
         """Test assign themes fails when no themes are selected"""
         consultation = free_text_question.consultation
 
@@ -734,7 +739,7 @@ class TestAssignThemesEndpoint:
 
             response = client.post(
                 url,
-                headers={"Authorization": f"Bearer {admin_user_token}"},
+                headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
             assert response.status_code == 400

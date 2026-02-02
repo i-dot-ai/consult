@@ -53,6 +53,18 @@ class ConsultationViewSet(ModelViewSet):
             return Consultation.objects.all().order_by("-created_at")
         return Consultation.objects.filter(users=self.request.user).order_by("-created_at")
 
+    def get_permissions(self):
+        """
+        Override permissions for specific actions
+        """
+        permission_classes = self.permission_classes
+        
+        if self.action == 'destroy':
+            # Only admin users can delete consultations
+            permission_classes = [IsAuthenticated, IsAdminUser]
+            
+        return [permission() for permission in permission_classes]
+
     def perform_destroy(self, instance):
         delete_consultation_job(instance)
 

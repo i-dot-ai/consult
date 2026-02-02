@@ -17,7 +17,7 @@ from django.urls import reverse
 @pytest.mark.django_db
 class TestResponseViewSet:
     def test_get_demographic_aggregations_empty(
-        self, client, consultation_user_token, free_text_question
+        self, client, staff_user_token, free_text_question
     ):
         """Test API endpoint returns empty aggregations when no data exists"""
         url = reverse(
@@ -27,7 +27,7 @@ class TestResponseViewSet:
         response = client.get(
             url,
             query_params={"question_id": free_text_question.id},
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -36,7 +36,7 @@ class TestResponseViewSet:
         assert data["demographic_aggregations"] == {}
 
     def test_get_demographic_aggregations_with_data(
-        self, client, consultation_user_token, free_text_question
+        self, client, staff_user_token, free_text_question
     ):
         """Test API endpoint returns demographic aggregations correctly"""
         # Create respondents with different demographic data
@@ -65,7 +65,7 @@ class TestResponseViewSet:
         response = client.get(
             url,
             query_params={"question_id": free_text_question.id},
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -83,7 +83,7 @@ class TestResponseViewSet:
     def test_get_demographic_aggregations_with_filters(
         self,
         client,
-        consultation_user_token,
+        staff_user_token,
         free_text_question,
         individual_demographic,
         northern_demographic,
@@ -118,7 +118,7 @@ class TestResponseViewSet:
                 "demographics": individual_demographic.pk,
                 "question_id": free_text_question.id,
             },
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -134,7 +134,7 @@ class TestResponseViewSet:
 
         response = client.get(
             url + "?demoFilters=individual:true&demoFilters=individual:false",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -143,7 +143,7 @@ class TestResponseViewSet:
         assert data["demographic_aggregations"]["region"] == {"north": 1, "south": 1}
 
     def test_get_theme_aggregations_no_responses(
-        self, client, consultation_user_token, free_text_question
+        self, client, staff_user_token, free_text_question
     ):
         """Test API endpoint returns empty aggregations when no responses exist"""
         url = reverse(
@@ -153,7 +153,7 @@ class TestResponseViewSet:
         response = client.get(
             url,
             query_params={"question_id": free_text_question.id},
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -162,7 +162,7 @@ class TestResponseViewSet:
         assert data["theme_aggregations"] == {}
 
     def test_get_theme_aggregations_with_responses(
-        self, client, consultation_user_token, free_text_question, theme_a, theme_b
+        self, client, staff_user_token, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint returns theme aggregations correctly"""
         # Create respondents and responses
@@ -186,7 +186,7 @@ class TestResponseViewSet:
         response = client.get(
             url,
             query_params={"question_id": free_text_question.id},
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -198,7 +198,7 @@ class TestResponseViewSet:
         assert aggregations[str(theme_b.id)] == 1  # Theme B appears in 1 response
 
     def test_get_theme_aggregations_with_filters(
-        self, client, consultation_user_token, free_text_question, theme_a, theme_b
+        self, client, staff_user_token, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint applies theme filtering correctly"""
         # Create responses with different theme combinations
@@ -228,7 +228,7 @@ class TestResponseViewSet:
                 "themeFilters": f"{theme_a.id},{theme_b.id}",
                 "question_id": free_text_question.id,
             },
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -240,7 +240,7 @@ class TestResponseViewSet:
         assert aggregations[str(theme_b.id)] == 1  # Only response1 has both themes
 
     def test_get_filtered_responses_basic(
-        self, client, consultation_user_token, free_text_question, django_assert_num_queries
+        self, client, staff_user_token, free_text_question, django_assert_num_queries
     ):
         """Test API endpoint returns filtered responses correctly"""
         # Create test data
@@ -276,7 +276,7 @@ class TestResponseViewSet:
             response = client.get(
                 url,
                 query_params={"question_id": free_text_question.id},
-                headers={"Authorization": f"Bearer {consultation_user_token}"},
+                headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
         assert response.status_code == 200
@@ -298,7 +298,7 @@ class TestResponseViewSet:
         assert respondents[1]["demographic_data"] == {"individual": False}
 
     def test_get_filtered_responses_with_pagination(
-        self, client, consultation_user_token, free_text_question
+        self, client, staff_user_token, free_text_question
     ):
         """Test API endpoint pagination"""
         # Create multiple respondents
@@ -317,7 +317,7 @@ class TestResponseViewSet:
                 "page": 1,
                 "question_id": free_text_question.id,
             },
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -331,7 +331,7 @@ class TestResponseViewSet:
     def test_get_filtered_responses_with_demographic_filters(
         self,
         client,
-        consultation_user_token,
+        staff_user_token,
         free_text_question,
         individual_demographic,
         northern_demographic,
@@ -364,7 +364,7 @@ class TestResponseViewSet:
                 "demographics": individual_demographic.pk,
                 "question_id": free_text_question.id,
             },
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -377,7 +377,7 @@ class TestResponseViewSet:
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
     def test_get_filtered_responses_with_theme_filters(
-        self, client, consultation_user_token, free_text_question, theme_a, theme_b
+        self, client, staff_user_token, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint with theme filtering using AND logic"""
         # Create responses with different theme combinations
@@ -419,7 +419,7 @@ class TestResponseViewSet:
                 "themeFilters": f"{theme_a.id},{theme_b.id}",
                 "question_id": free_text_question.id,
             },
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -434,9 +434,9 @@ class TestResponseViewSet:
     def test_get_filtered_responses_with_respondent_filters(
         self,
         client,
-        consultation_user,
+        staff_user,
         free_text_question,
-        consultation_user_token,
+        staff_user_token,
         respondent_1,
         respondent_2,
     ):
@@ -462,7 +462,7 @@ class TestResponseViewSet:
                 "respondent_id": respondent_1.id,
                 "question_id": free_text_question.id,
             },
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -478,9 +478,9 @@ class TestResponseViewSet:
     def test_get_filtered_responses_with_evidence_rich_filters(
         self,
         client,
-        consultation_user,
+        staff_user,
         free_text_question,
-        consultation_user_token,
+        staff_user_token,
         respondent_1,
         respondent_2,
         evidence_rich,
@@ -510,7 +510,7 @@ class TestResponseViewSet:
                 "evidenceRich": evidence_rich,
                 "question_id": free_text_question.id,
             },
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -534,9 +534,9 @@ class TestResponseViewSet:
     def test_get_filtered_responses_with_sentiment_filters(
         self,
         client,
-        consultation_user,
+        staff_user,
         free_text_question,
-        consultation_user_token,
+        staff_user_token,
         respondent_1,
         respondent_2,
         sentiments,
@@ -571,7 +571,7 @@ class TestResponseViewSet:
                 "sentimentFilters": sentiments,
                 "question_id": free_text_question.id,
             },
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -588,14 +588,14 @@ class TestResponseViewSet:
     def test_get_filtered_response_is_flagged(
         self,
         client,
-        consultation_user_token,
-        consultation_user,
+        staff_user_token,
+        staff_user,
         free_text_annotation,
         human_reviewed_annotation,
         is_flagged,
         expected_responses,
     ):
-        free_text_annotation.flagged_by.add(consultation_user)
+        free_text_annotation.flagged_by.add(staff_user)
         free_text_annotation.save()
 
         url = reverse(
@@ -609,7 +609,7 @@ class TestResponseViewSet:
                 "is_flagged": is_flagged,
                 "question_id": free_text_annotation.response.question.id,
             },
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -631,8 +631,8 @@ class TestResponseViewSet:
     def test_get_filtered_response_chosen_options(
         self,
         client,
-        consultation_user_token,
-        consultation_user,
+        staff_user_token,
+        staff_user,
         multi_choice_responses,
         multi_choice_question,
         chosen_options,
@@ -655,7 +655,7 @@ class TestResponseViewSet:
                 "multiple_choice_answer": chosen_options_query,
                 "question_id": multi_choice_question.id,
             },
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -666,14 +666,14 @@ class TestResponseViewSet:
     def test_get_responses_with_is_flagged(
         self,
         client,
-        consultation_user,
-        consultation_user_token,
+        staff_user,
+        staff_user_token,
         human_reviewed_annotation,
         is_flagged,
         is_edited,
     ):
         if is_flagged:
-            human_reviewed_annotation.flagged_by.add(consultation_user)
+            human_reviewed_annotation.flagged_by.add(staff_user)
             human_reviewed_annotation.save()
 
         url = reverse(
@@ -686,7 +686,7 @@ class TestResponseViewSet:
         response = client.get(
             url,
             query_params={"question_id": human_reviewed_annotation.response.question.id},
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -701,7 +701,7 @@ class TestResponseViewSet:
         free_text_question,
         respondent_1,
         respondent_2,
-        consultation_user_token,
+        staff_user_token,
     ):
         """
         Given two responses by two different respondents
@@ -722,7 +722,7 @@ class TestResponseViewSet:
                 "respondent_id": respondent_1.id,
                 "question_id": free_text_question.id,
             },
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200, response.json()
@@ -732,7 +732,7 @@ class TestResponseViewSet:
         assert response.json()["all_respondents"][0]["respondent_id"] == str(respondent_1.id)
 
     def test_patch_response_human_reviewed(
-        self, client, consultation_user, consultation_user_token, free_text_annotation
+        self, client, staff_user, staff_user_token, free_text_annotation
     ):
         url = reverse(
             "response-detail",
@@ -750,7 +750,7 @@ class TestResponseViewSet:
             url,
             data={"human_reviewed": True},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
         assert response.json()["human_reviewed"] is True
@@ -768,10 +768,10 @@ class TestResponseViewSet:
 
         # latest should have human_reviewed=True
         assert history.last().human_reviewed is True
-        assert history.last().reviewed_by == consultation_user
+        assert history.last().reviewed_by == staff_user
         assert isinstance(history.last().reviewed_at, datetime)
 
-    def test_patch_response_sentiment(self, client, consultation_user_token, free_text_annotation):
+    def test_patch_response_sentiment(self, client, staff_user_token, free_text_annotation):
         url = reverse(
             "response-detail",
             kwargs={
@@ -786,7 +786,7 @@ class TestResponseViewSet:
             url,
             data={"sentiment": "AGREEMENT"},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200, response.json()
         assert response.json()["sentiment"] == "AGREEMENT"
@@ -803,7 +803,7 @@ class TestResponseViewSet:
         assert history.last().sentiment == "AGREEMENT"  # Final state after PATCH
 
     def test_patch_response_evidence_rich(
-        self, client, consultation_user_token, free_text_annotation
+        self, client, staff_user_token, free_text_annotation
     ):
         url = reverse(
             "response-detail",
@@ -819,7 +819,7 @@ class TestResponseViewSet:
             url,
             data={"evidenceRich": False},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
         assert response.json()["evidenceRich"] is False
@@ -838,8 +838,8 @@ class TestResponseViewSet:
     def test_patch_response_themes(
         self,
         client,
-        consultation_user,
-        consultation_user_token,
+        staff_user,
+        staff_user_token,
         free_text_annotation,
         alternative_theme,
         ai_assigned_theme,
@@ -861,12 +861,12 @@ class TestResponseViewSet:
             url,
             data={"themes": [{"id": str(ai_assigned_theme.id)}, {"id": str(alternative_theme.id)}]},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200, response.json()
         assert [(x["assigned_by"], x["key"]) for x in response.json()["themes"]] == [
             ("AI", "AI assigned theme A"),
-            (consultation_user.email, "Human assigned theme C"),
+            (staff_user.email, "Human assigned theme C"),
         ]
 
         assert response.json()["is_edited"] is True
@@ -889,22 +889,22 @@ class TestResponseViewSet:
         # 1. ...Human assigned theme B
         assert history[1].history_type == "+"
         assert history[1].theme.key == "Human assigned theme B"
-        assert history[1].assigned_by.email == consultation_user.email
+        assert history[1].assigned_by.email == staff_user.email
 
         # 2. remove initial Human assigned theme B
         assert history[2].history_type == "-"
         assert history[2].theme.key == "Human assigned theme B"
-        assert history[2].assigned_by.email == consultation_user.email
+        assert history[2].assigned_by.email == staff_user.email
 
         # 3. add new Human assigned theme C
         assert history[3].history_type == "+"
         assert history[3].theme.key == "Human assigned theme C"
-        assert history[3].assigned_by == consultation_user
+        assert history[3].assigned_by == staff_user
 
         assert list(free_text_annotation.get_original_ai_themes()) == [ai_assigned_theme]
 
     def test_patch_response_themes_invalid(
-        self, client, consultation_user_token, free_text_annotation
+        self, client, staff_user_token, free_text_annotation
     ):
         url = reverse(
             "response-detail",
@@ -920,7 +920,7 @@ class TestResponseViewSet:
             url,
             data={"themes": [{"id": fake_uuid}]},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 400
         assert response.json() == {
@@ -931,8 +931,8 @@ class TestResponseViewSet:
     def test_patch_response_flags(
         self,
         client,
-        consultation_user_token,
-        consultation_user,
+        staff_user_token,
+        staff_user,
         free_text_annotation,
         is_flagged,
     ):
@@ -945,23 +945,23 @@ class TestResponseViewSet:
         )
 
         if is_flagged:
-            free_text_annotation.flagged_by.add(consultation_user)
+            free_text_annotation.flagged_by.add(staff_user)
 
-        assert free_text_annotation.flagged_by.contains(consultation_user) == is_flagged
+        assert free_text_annotation.flagged_by.contains(staff_user) == is_flagged
 
         response = client.patch(
             url,
             data="",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
 
         free_text_annotation.refresh_from_db()
         # check that the state has changed
-        assert free_text_annotation.flagged_by.contains(consultation_user) != is_flagged
+        assert free_text_annotation.flagged_by.contains(staff_user) != is_flagged
         assert free_text_annotation.is_edited is True
 
-    def test_keyword_search(self, client, consultation_user_token, free_text_question):
+    def test_keyword_search(self, client, staff_user_token, free_text_question):
         """Test API endpoint only returns responses matching keyword search"""
         # Create test data
         respondent1 = RespondentFactory(consultation=free_text_question.consultation)
@@ -984,7 +984,7 @@ class TestResponseViewSet:
                 "searchMode": "keyword",
                 "searchValue": "apples",
             },
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -1004,7 +1004,7 @@ class TestResponseViewSet:
     def test_semantic_search(
         self,
         client,
-        consultation_user_token,
+        staff_user_token,
         embedded_responses,
     ):
         """Test API endpoint returns responses in order of semantic similarity"""
@@ -1024,7 +1024,7 @@ class TestResponseViewSet:
                     "searchMode": "semantic",
                     "searchValue": "public transport",
                 },
-                headers={"Authorization": f"Bearer {consultation_user_token}"},
+                headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
         assert response.status_code == 200
@@ -1047,7 +1047,7 @@ class TestResponseViewSet:
         ]
 
     def test_representative_response_search(
-        self, client, consultation_user_token, embedded_responses, django_assert_num_queries
+        self, client, staff_user_token, embedded_responses, django_assert_num_queries
     ):
         """Test API endpoint returns representative responses for a theme"""
         url = reverse(
@@ -1081,7 +1081,7 @@ class TestResponseViewSet:
                         "searchMode": "representative",
                         "searchValue": f"{theme_name} {theme_description}",
                     },
-                    headers={"Authorization": f"Bearer {consultation_user_token}"},
+                    headers={"Authorization": f"Bearer {staff_user_token}"},
                 )
 
         assert response.status_code == 200
@@ -1099,7 +1099,7 @@ class TestResponseViewSet:
             "The local council should really be investing in public transport infrastructure to help reduce carbon emissions",
         ]
 
-    def test_get_themes_for_response(self, client, consultation_user_token, free_text_question):
+    def test_get_themes_for_response(self, client, staff_user_token, free_text_question):
         """Test API endpoint returns themes for a specific response"""
         # Create test response
         respondent = RespondentFactory(consultation=free_text_question.consultation)
@@ -1118,7 +1118,7 @@ class TestResponseViewSet:
 
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -1130,7 +1130,7 @@ class TestResponseViewSet:
         assert isinstance(data["all_themes"], list)
 
     def test_get_themes_for_response_with_selected_themes(
-        self, client, consultation_user_token, free_text_question, theme_a, theme_b
+        self, client, staff_user_token, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint returns correct selected and all themes"""
         # Create test response
@@ -1151,7 +1151,7 @@ class TestResponseViewSet:
 
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -1167,7 +1167,7 @@ class TestResponseViewSet:
         assert str(theme_b.id) in all_theme_ids
 
     def test_get_themes_for_nonexistent_response(
-        self, client, consultation_user_token, free_text_question
+        self, client, staff_user_token, free_text_question
     ):
         """Test API endpoint returns 404 for nonexistent response"""
         fake_response_id = "00000000-0000-0000-0000-000000000000"
@@ -1182,13 +1182,13 @@ class TestResponseViewSet:
 
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 404
 
     def test_get_themes_creates_annotation_if_not_exists(
-        self, client, consultation_user_token, free_text_question
+        self, client, staff_user_token, free_text_question
     ):
         """Test API endpoint creates annotation if it doesn't exist"""
         # Create test response without annotation
@@ -1208,7 +1208,7 @@ class TestResponseViewSet:
 
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -1217,7 +1217,7 @@ class TestResponseViewSet:
         assert ResponseAnnotation.objects.filter(response=response_obj).exists()
 
     def test_get_themes_works_with_null_keys(
-        self, client, consultation_user_token, free_text_question, theme_c
+        self, client, staff_user_token, free_text_question, theme_c
     ):
         """Test API endpoint works if the underlying them has no key"""
         # Create test response without annotation
@@ -1234,7 +1234,7 @@ class TestResponseViewSet:
 
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
