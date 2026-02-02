@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from backend.consultations.models import (
     CandidateTheme,
@@ -26,6 +28,10 @@ from backend.factories import (
 
 @pytest.mark.django_db
 class TestCloneConsultation:
+    @pytest.fixture(autouse=True)
+    def _small_batch_size(self):
+        with patch("backend.consultations.services.clone._BATCH_SIZE", 1):
+            yield
     def test_consultation(self):
         user1 = UserFactory()
         user2 = UserFactory()

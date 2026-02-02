@@ -27,6 +27,9 @@ _EXCLUDED_FIELDS = ["id", "created_at", "modified_at"]
 # Fields to exclude when cloning history records
 _HISTORY_EXCLUDED_FIELDS = ["history_id"]
 
+# Clone database objects in batches to avoid memory limit
+_BATCH_SIZE = 5000
+
 
 def _clone(
     queryset: QuerySet,
@@ -45,12 +48,11 @@ def _clone(
         Dict mapping original IDs to cloned IDs
     """
     model = queryset.model
-    originals = list(queryset.values())
-    clones = []
+    id_map = {}
+    batch_ids = []
+    batch_clones = []
 
-    logger.info(f"_clone: cloning {len(originals)} {model.__name__} objects")
-
-    for original in originals:
+    for original in queryset.values().iterator():
         clone = {k: v for k, v in original.items() if k not in excluded_fields}
 
         for field_name, mapping in fk_mappings:
@@ -62,11 +64,23 @@ def _clone(
                 )
             clone[field_name] = new_value
 
-        clones.append(model(**clone))
+        batch_ids.append(original["id"])
+        batch_clones.append(model(**clone))
 
-    created = model.objects.bulk_create(clones)
+        if len(batch_clones) >= _BATCH_SIZE:
+            created = model.objects.bulk_create(batch_clones)
+            for i, orig_id in enumerate(batch_ids):
+                id_map[orig_id] = created[i].id
+            batch_ids = []
+            batch_clones = []
 
-    return {original["id"]: created[i].id for i, original in enumerate(originals)}
+    if batch_clones:
+        created = model.objects.bulk_create(batch_clones)
+        for i, orig_id in enumerate(batch_ids):
+            id_map[orig_id] = created[i].id
+
+    logger.info(f"_clone: cloned {len(id_map)} {model.__name__} objects")
+    return id_map
 
 
 def _clone_candidate_themes(
