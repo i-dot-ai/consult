@@ -50,7 +50,7 @@ export const getLangfuseUrl = (): string => {
     return process.env.PUBLIC_LANGFUSE_URL;
   }
 
-  const langfuseUrl = (import.meta as any).env?.PUBLIC_LANGFUSE_URL;
+  const langfuseUrl = import.meta.env.PUBLIC_LANGFUSE_URL;
   if (langfuseUrl) {
     return langfuseUrl;
   }
