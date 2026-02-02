@@ -181,8 +181,8 @@ class TestConsultationViewSet:
         self, client, consultation
     ):
         """Test API endpoint denies access to unauthorized users"""
-        from rest_framework_simplejwt.tokens import RefreshToken
         from backend.factories import UserFactory
+        from rest_framework_simplejwt.tokens import RefreshToken
 
         # Create a user who is NOT assigned to any consultation
         isolated_user = UserFactory(is_staff=False)
