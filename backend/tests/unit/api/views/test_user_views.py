@@ -7,7 +7,7 @@ from django.urls import reverse
 
 @pytest.mark.django_db
 class TestUserViewSet:
-    def test_users_list(self, client, staff_user_token):
+    def test_users_list(self, client, staff_user_token, non_staff_user, user_without_consultation_access):
         url = reverse("user-list")
         response = client.get(
             url,
