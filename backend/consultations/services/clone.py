@@ -1,3 +1,4 @@
+import resource
 from uuid import UUID
 
 from django.conf import settings
@@ -27,6 +28,9 @@ _EXCLUDED_FIELDS = ["id", "created_at", "modified_at"]
 # Fields to exclude when cloning history records
 _HISTORY_EXCLUDED_FIELDS = ["history_id"]
 
+# Clone database objects in batches to avoid memory limit
+_BATCH_SIZE = 1000
+
 
 def _clone(
     queryset: QuerySet,
@@ -45,28 +49,43 @@ def _clone(
         Dict mapping original IDs to cloned IDs
     """
     model = queryset.model
-    originals = list(queryset.values())
-    clones = []
+    id_map = {}
+    total = queryset.count()
+    offset = 0
 
-    logger.info(f"_clone: cloning {len(originals)} {model.__name__} objects")
+    while offset < total:
+        batch = queryset.order_by("pk").values()[offset : offset + _BATCH_SIZE]
+        batch_ids = []
+        batch_clones = []
 
-    for original in originals:
-        clone = {k: v for k, v in original.items() if k not in excluded_fields}
+        for original in batch:
+            clone = {k: v for k, v in original.items() if k not in excluded_fields}
 
-        for field_name, mapping in fk_mappings:
-            old_value = original[field_name]
-            new_value = mapping.get(old_value)
-            if old_value is not None and new_value is None:
-                logger.warning(
-                    f"_clone: {model.__name__}.{field_name} = {old_value} not found in mapping"
-                )
-            clone[field_name] = new_value
+            for field_name, mapping in fk_mappings:
+                old_value = original[field_name]
+                new_value = mapping.get(old_value)
+                if old_value is not None and new_value is None:
+                    logger.warning(
+                        f"_clone: {model.__name__}.{field_name} = {old_value} not found in mapping"
+                    )
+                clone[field_name] = new_value
 
-        clones.append(model(**clone))
+            batch_ids.append(original["id"])
+            batch_clones.append(model(**clone))
 
-    created = model.objects.bulk_create(clones)
+        created = model.objects.bulk_create(batch_clones)
+        for i, orig_id in enumerate(batch_ids):
+            id_map[orig_id] = created[i].id
 
-    return {original["id"]: created[i].id for i, original in enumerate(originals)}
+        offset += _BATCH_SIZE
+        rss_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024 * 1024)
+        logger.info(
+            f"_clone: {model.__name__} batch complete, {len(id_map)}/{total} cloned so far, "
+            f"peak RSS: {rss_mb:.0f} MB"
+        )
+
+    logger.info(f"_clone: cloned {len(id_map)} {model.__name__} objects total")
+    return id_map
 
 
 def _clone_candidate_themes(
@@ -98,6 +117,9 @@ def clone_consultation(original: Consultation) -> Consultation:
     Clone a consultation including all related objects (with the
     exception of users).
     """
+    rss_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024 * 1024)
+    logger.info(f"clone_consultation: starting, peak RSS: {rss_mb:.0f} MB")
+
     # Clone consultation and give the same users access
     cloned = Consultation.objects.create(
         title=f"{original.title} (Clone)",
