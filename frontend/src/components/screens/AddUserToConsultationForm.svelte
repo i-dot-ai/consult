@@ -123,7 +123,7 @@
           <p class="text-sm text-green-600">Emails copied to clipboard</p>
         {/if}
         <a href="/support/users/new" class="text-gray-700 underline">
-          Invite these users →
+          Add these users →
         </a>
       </div>
     </div>
