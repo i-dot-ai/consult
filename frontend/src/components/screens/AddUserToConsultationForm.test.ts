@@ -98,8 +98,8 @@ describe("AddUserToConsultationForm", () => {
     ).toBeTruthy();
     expect(screen.getByText("Users not found")).toBeTruthy();
     expect(screen.getByText("• nonexistent@test.com")).toBeTruthy();
-    expect(screen.getByText("Copy emails as CSV")).toBeTruthy();
-    expect(screen.getByText("Create these users")).toBeTruthy();
+    expect(screen.getByText("Copy emails")).toBeTruthy();
+    expect(screen.getByText("Invite these users →")).toBeTruthy();
   });
 
   it("should handle API errors", async () => {
