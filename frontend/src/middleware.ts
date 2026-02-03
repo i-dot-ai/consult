@@ -8,7 +8,6 @@ import { getBackendUrl } from "./global/utils";
 import { internalAccessCookieName } from "./global/api";
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
-
   // ===== AUTHENTICATION MUST HAPPEN BEFORE RENDERING =====
   let internalAccessToken = null;
 
