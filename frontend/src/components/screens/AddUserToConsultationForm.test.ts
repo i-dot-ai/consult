@@ -97,7 +97,7 @@ describe("AddUserToConsultationForm", () => {
       screen.getByText("Successfully added 1 users to consultation."),
     ).toBeTruthy();
     expect(screen.getByText("Users not found")).toBeTruthy();
-    expect(screen.getByText("• nonexistent@test.com")).toBeTruthy();
+    expect(screen.getByText("nonexistent@test.com")).toBeTruthy();
     expect(screen.getByText("Copy emails")).toBeTruthy();
     expect(screen.getByText("Invite these users →")).toBeTruthy();
   });
