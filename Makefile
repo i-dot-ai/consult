@@ -63,7 +63,7 @@ test-end-to-end:
 		@mv .env.backup .env
 
 serve-frontend:
-	cd frontend && BACKEND_URL=http://localhost:8000 TEST_INTERNAL_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIn0.k27nav4gbG-2lIArYInTqP1GUz2LRuzb3lWandMKRoY npm run dev
+	cd frontend && BACKEND_URL=http://localhost:8000 TEST_INTERNAL_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIn0.k27nav4gbG-2lIArYInTqP1GUz2LRuzb3lWandMKRoY npm run dev  # pragma: allowlist secret
 
 
 .PHONY: check-python-code
