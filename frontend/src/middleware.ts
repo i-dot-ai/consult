@@ -1,9 +1,9 @@
 import path from "path";
 
-import type { MiddlewareHandler } from "astro";
+import type { APIContext, MiddlewareHandler } from "astro";
 import { Routes } from "./global/routes";
 import { fetchBackendApi } from "./global/api";
-import { getBackendUrl } from "./global/utils";
+import { getBackendUrl, getEnv } from "./global/utils";
 
 import { internalAccessCookieName } from "./global/api";
 
@@ -25,8 +25,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
   let internalAccessToken = null;
 
-  const env =
-    process.env.ENVIRONMENT || import.meta.env?.ENVIRONMENT?.toLowerCase();
+  const env = getEnv().toLowerCase()
 
   if (env === "local" || env === "test" || env == null) {
     internalAccessToken =
@@ -40,43 +39,17 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const backendUrl = getBackendUrl();
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
-  if (!context.cookies.get(internalAccessCookieName)?.value) {
-    if (internalAccessToken) {
-      try {
-        const body = JSON.stringify({
-          internal_access_token: internalAccessToken,
-        });
-        const response = await fetch(
-          path.join(backendUrl, Routes.APIValidateToken),
-          {
-            method: "POST",
-            body: body,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
-        const data = await response.json();
-
-        // Decode JWT to get expiration time
-        const jwtPayload = JSON.parse(atob(data.access.split(".")[1]));
-        const jwtExpiry = new Date(jwtPayload.exp * 1000); // Convert from Unix timestamp
-
-        context.cookies.set(internalAccessCookieName, data.access, {
-          path: "/",
-          sameSite: "strict",
-          expires: jwtExpiry,
-        });
-        context.cookies.set("sessionId", data.sessionId, {
-          path: "/",
-          sameSite: "strict",
-        });
-      } catch (e: unknown) {
-        console.error("sign-in error", e);
-        context.redirect(Routes.SignInError);
-      }
-    } else {
-      console.error("internalAccessToken not set", backendUrl);
+ 
+  if (internalAccessToken) {
+    try {
+      await validateUserToken(backendUrl, internalAccessToken, context);
+    } catch (e: unknown) {
+      console.error("sign-in error", e);
       context.redirect(Routes.SignInError);
     }
+  } else {
+    console.error("x-amzn-oidc-data not found");
+    context.redirect(Routes.SignInError);
   }
 
   let userIsStaff = false;
@@ -100,44 +73,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   }
 
   const fullBackendUrl = path.join(backendUrl, url.pathname) + url.search;
-
-  // skip as new pages are moved to astro
-  const toSkip = [
-    /^\/$/,
-    /^\/data-sharing[/]?$/,
-    /^\/get-involved[/]?$/,
-    /^\/guidance[/]?$/,
-    /^\/privacy[/]?$/,
-    /^\/sign-in-error[/]?$/,
-    /^\/api\/astro\/.*/,
-    /^\/api\/health[/]?$/,
-    /^\/health[/]?$/,
-    /^\/.well-known\/.*/,
-    /^\/consultations.*/,
-    /^\/evaluations\/[A-Za-z0-9-]*\/questions[/]?$/,
-    /^\/evaluations\/[A-Za-z0-9-]+\/questions\/[A-Za-z0-9-]+\/responses\/[A-Za-z0-9-]+\/?$/,
-    /^\/support\/users[/]?$/,
-    /^\/support\/users\/[A-Za-z0-9]*[/]?$/,
-    /^\/support\/users\/new[/]?$/,
-    /^\/support\/data-pipeline[/]?$/,
-    /^\/support\/consultations[/]?$/,
-    /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[/]?$/,
-    /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/delete[/]?$/,
-    /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/questions\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/delete[/]?$/,
-    /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/users\/new[/]?$/,
-    /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/users\/[A-Za-z0-9-]+\/remove[/]?$/,
-    /^\/support\/consultations\/[A-Za-z0-9-]*\/export[/]?$/,
-    /^\/design.*/,
-    /^\/stories.*/,
-    /^\/_astro.*/,
-    /^\/api\/validate-token[/]?$/,
-  ];
-
-  for (const skipPattern of toSkip) {
-    if (skipPattern.test(context.url.pathname)) {
-      return nextResponse;
-    }
-  }
 
   const hasBody = !["GET", "HEAD", "DELETE"].includes(context.request.method);
   const csrfCookie = context.cookies.get("csrftoken");
@@ -251,3 +186,27 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     });
   }
 };
+
+
+
+
+
+async function validateUserToken(backendUrl: string, internalAccessToken: string, context: APIContext) {
+  const response = await fetch(
+    path.join(backendUrl, Routes.APIValidateToken),
+    {
+      method: "POST",
+      body: JSON.stringify({
+        internal_access_token: internalAccessToken,
+      }),
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+  const data = await response.json();
+
+  context.cookies.set("sessionId", data.sessionId, {
+    path: "/",
+    sameSite: "strict",
+  });
+}
+
