@@ -1129,10 +1129,21 @@ class TestResponseViewSet:
         assert isinstance(data["selected_themes"], list)
         assert isinstance(data["all_themes"], list)
 
+    @pytest.mark.parametrize("display_ai_selected_themes", [True, False])
     def test_get_themes_for_response_with_selected_themes(
-        self, client, consultation_user_token, free_text_question, theme_a, theme_b
+        self,
+        client,
+        consultation_user_token,
+        consultation,
+        free_text_question,
+        theme_a,
+        theme_b,
+        display_ai_selected_themes,
     ):
         """Test API endpoint returns correct selected and all themes"""
+        consultation.display_ai_selected_themes = display_ai_selected_themes
+        consultation.save()
+
         # Create test response
         respondent = RespondentFactory(consultation=free_text_question.consultation)
         response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
@@ -1157,9 +1168,12 @@ class TestResponseViewSet:
         assert response.status_code == 200
         data = response.json()
 
-        # Should have theme_a in selected themes
+        # If display_ai_selected_themes should have theme_a in selected themes
         selected_theme_ids = [theme["id"] for theme in data["selected_themes"]]
-        assert str(theme_a.id) in selected_theme_ids
+        if display_ai_selected_themes:
+            assert str(theme_a.id) in selected_theme_ids
+        else:
+            assert str(theme_a.id) not in selected_theme_ids
 
         # Should have both themes in all themes
         all_theme_ids = [theme["id"] for theme in data["all_themes"]]
