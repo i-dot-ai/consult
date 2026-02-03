@@ -280,20 +280,24 @@ class TestConsultationViewSet:
     def test_add_users_success(self, client, consultation, consultation_user_token):
         """Test successfully adding multiple users to a consultation"""
         # Create test users
-        user1 = UserFactory()
-        user2 = UserFactory()
-        user_ids = [str(user1.id), str(user2.id)]
+        user1 = UserFactory(email="user1@test.com")
+        user2 = UserFactory(email="user2@test.com")
+        emails = [user1.email, user2.email]
 
         url = reverse("consultations-add-users", kwargs={"pk": consultation.id})
         response = client.post(
             url,
-            {"user_ids": user_ids},
+            {"emails": emails},
             content_type="application/json",
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
         assert response.status_code == 201
-        assert response.json()["message"] == "Successfully added 2 users to consultation"
+        response_data = response.json()
+        assert response_data["message"] == "Added 2 users to consultation"
+        assert response_data["added_count"] == 2
+        assert response_data["non_existent_emails"] == []
+        assert response_data["total_requested"] == 2
         assert consultation.users.filter(id__in=[user1.id, user2.id]).count() == 2
 
     def test_add_users_empty_list(self, client, consultation, consultation_user_token):
@@ -301,40 +305,45 @@ class TestConsultationViewSet:
         url = reverse("consultations-add-users", kwargs={"pk": consultation.id})
         response = client.post(
             url,
-            {"user_ids": []},
+            {"emails": []},
             content_type="application/json",
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
         assert response.status_code == 400
-        assert "user_ids must be a non-empty list" in response.json()["error"]
+        assert "emails must be a non-empty list" in response.json()["error"]
 
     def test_add_users_nonexistent_user(self, client, consultation, consultation_user_token):
-        """Test adding users with non-existent user ID fails"""
-        user1 = UserFactory()
-        fake_id = "99999"  # Non-existent integer ID
-        user_ids = [str(user1.id), fake_id]
+        """Test adding users with non-existent email addresses"""
+        user1 = UserFactory(email="existing@test.com")
+        fake_email = "nonexistent@test.com"
+        emails = [user1.email, fake_email]
 
         url = reverse("consultations-add-users", kwargs={"pk": consultation.id})
         response = client.post(
             url,
-            {"user_ids": user_ids},
+            {"emails": emails},
             content_type="application/json",
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
-        assert response.status_code == 404
-        assert "Only 1 of 2 users found" in response.json()["error"]
+        assert response.status_code == 201
+        response_data = response.json()
+        assert response_data["message"] == "Added 1 users to consultation"
+        assert response_data["added_count"] == 1
+        assert response_data["non_existent_emails"] == [fake_email]
+        assert response_data["total_requested"] == 2
+        assert consultation.users.filter(id=user1.id).exists()
 
     def test_add_users_nonexistent_consultation(self, client, consultation_user_token):
         """Test adding users to non-existent consultation fails"""
-        user1 = UserFactory()
+        user1 = UserFactory(email="test@example.com")
         fake_consultation_id = str(uuid4())
 
         url = reverse("consultations-add-users", kwargs={"pk": fake_consultation_id})
         response = client.post(
             url,
-            {"user_ids": [str(user1.id)]},
+            {"emails": [user1.email]},
             content_type="application/json",
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
@@ -343,12 +352,12 @@ class TestConsultationViewSet:
 
     def test_add_users_permission_required(self, client, consultation, non_consultation_user_token):
         """Test adding users requires proper permissions"""
-        user1 = UserFactory()
+        user1 = UserFactory(email="test@example.com")
 
         url = reverse("consultations-add-users", kwargs={"pk": consultation.id})
         response = client.post(
             url,
-            {"user_ids": [str(user1.id)]},
+            {"emails": [user1.email]},
             content_type="application/json",
             headers={"Authorization": f"Bearer {non_consultation_user_token}"},
         )
