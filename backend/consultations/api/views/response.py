@@ -13,7 +13,6 @@ from backend.consultations.api.serializers import (
     ThemeSerializer,
 )
 from django.db.models import Count, Exists, OuterRef
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -170,12 +169,14 @@ class ResponseViewSet(ModelViewSet):
     )
     def themes(self, request, consultation_pk=None, pk=None):
         """Get themes for given responses"""
-        response = get_object_or_404(models.Response, id=pk)
-        question = response.question
-        annotation, _ = models.ResponseAnnotation.objects.get_or_create(response=response)
+        response = self.get_object()
 
-        all_themes = models.SelectedTheme.objects.filter(question=question)
-        selected_themes = annotation.themes.all()
+        all_themes = models.SelectedTheme.objects.filter(question=response.question)
+        if response.question.consultation.display_ai_selected_themes:
+            annotation, _ = models.ResponseAnnotation.objects.get_or_create(response=response)
+            selected_themes = annotation.themes.all()
+        else:
+            selected_themes = []
 
         # Serialize the themes properly using ThemeSerializer
         all_themes_data = ThemeSerializer(all_themes, many=True).data

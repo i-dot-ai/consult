@@ -62,6 +62,10 @@ test-end-to-end:
 		@echo "Restoring original .env..."
 		@mv .env.backup .env
 
+serve-frontend:
+	cd frontend && BACKEND_URL=http://localhost:8000 TEST_INTERNAL_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIn0.k27nav4gbG-2lIArYInTqP1GUz2LRuzb3lWandMKRoY npm run dev  # pragma: allowlist secret
+
+
 .PHONY: check-python-code
 check-python-code: ## Check Python code - linting and mypy
 	cd backend && poetry run ruff check --select I .
@@ -84,7 +88,7 @@ dev_admin_user:
 	cd backend && PYTHONPATH=.. poetry run python manage.py shell -c "from backend.authentication.models import User; User.objects.create_user(email='email@example.com', password='admin', is_staff=True)" # pragma: allowlist secret
 
 .PHONY: dev_environment
-dev_environment: reset_db migrate dummy_data govuk_frontend dev_admin_user ## set up the database with dummy data and configure govuk_frontend
+dev_environment: reset_db migrate dummy_data dev_admin_user ## set up the database with dummy data
 
 # Docker
 AWS_REGION=eu-west-2
