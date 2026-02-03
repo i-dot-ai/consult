@@ -140,6 +140,7 @@ export const createFetchStore = <T>({
           if (resolvePrev) {
             resolvePrev();
           }
+          debouncedFetch = null;
         }
       }, debounceDelay);
     }
