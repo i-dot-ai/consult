@@ -106,7 +106,7 @@
       <p class="mb-3 text-sm text-yellow-700">
         The following email addresses do not exist in the system:
       </p>
-      <ul class="mb-3 text-sm text-yellow-700 list-disc list-inside">
+      <ul class="mb-3 list-inside list-disc text-sm text-yellow-700">
         {#each nonExistentEmails as email (email)}
           <li>{email}</li>
         {/each}
