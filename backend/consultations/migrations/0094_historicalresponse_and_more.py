@@ -10,7 +10,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("consultations", "0093_historicalresponseannotationtheme_response_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -29,9 +28,7 @@ class Migration(migrations.Migration):
                 ("free_text", models.TextField(blank=True, null=True)),
                 (
                     "embedding",
-                    pgvector.django.vector.VectorField(
-                        blank=True, dimensions=3072, null=True
-                    ),
+                    pgvector.django.vector.VectorField(blank=True, dimensions=3072, null=True),
                 ),
                 ("history_id", models.AutoField(primary_key=True, serialize=False)),
                 ("history_date", models.DateTimeField(db_index=True)),
