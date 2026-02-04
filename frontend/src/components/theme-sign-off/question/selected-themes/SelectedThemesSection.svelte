@@ -3,12 +3,12 @@
 
   import { fade, slide } from "svelte/transition";
 
-  import { createQuery, createMutation } from "@tanstack/svelte-query";
+  import { createMutation } from "@tanstack/svelte-query";
   import { queryClient } from "../../../../global/queryClient";
   import { getThemeSignOffUrl } from "../../../../global/routes";
   import type { Question } from "../../../../global/types";
   import {
-    listSelectedThemesQueryOptions,
+    getSelectedThemesListQuery,
     type SelectedTheme,
   } from "../../../../global/queries/selectedThemes";
   import { updateQuestion } from "../../../../global/queries/questions";
@@ -42,10 +42,7 @@
     errorData = error;
   };
 
-  const selectedThemesQuery = createQuery(
-    () => listSelectedThemesQueryOptions(consultationId, questionId),
-    () => queryClient,
-  );
+  const selectedThemesQuery = $derived(getSelectedThemesListQuery(consultationId, questionId));
 
   const confirmSignOffMutation = createMutation(
     () => ({
