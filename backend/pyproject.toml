@@ -54,10 +54,12 @@ mypy = "^1.19.1"
 pre-commit = "^4.5.1"
 pytest-lazy-fixtures = "^1.4.0"
 ruff = "^0.14.13"
+pydot = "^4.0.1"
 
 [tool.mypy]
 files = '**/*.py'
 exclude = ['^consultations/migrations/']
+
 
 
 
