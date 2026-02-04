@@ -3,13 +3,11 @@
 
   import { fade, fly } from "svelte/transition";
 
-  import { createMutation } from "@tanstack/svelte-query";
   import { queryClient } from "../../../../../global/queryClient";
   import {
     selectedThemes,
-    deleteSelectedTheme,
     type SelectedTheme,
-    type SelectedThemeMutationError,
+    getSelectedThemesDeleteQuery,
   } from "../../../../../global/queries/selectedThemes";
   import { candidateThemes } from "../../../../../global/queries/candidateThemes";
   import {
@@ -40,50 +38,23 @@
   let showRepresentativeResponses = $state(false);
   let editing = $state(false);
 
-  const deleteThemeMutation = createMutation<
-    void,
-    SelectedThemeMutationError,
-    void
-  >(
-    () => ({
-      mutationFn: () =>
-        deleteSelectedTheme(
-          consultationId,
-          questionId,
-          theme.id,
-          theme.version,
-        ),
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: selectedThemes.list.key(consultationId, questionId),
-        });
-        queryClient.invalidateQueries({
-          queryKey: candidateThemes.list.key(consultationId, questionId),
-        });
-      },
-      onError: (error) => {
-        if (error.status === 404) {
-          // SelectedTheme has already been deleted, just refetch
-          queryClient.invalidateQueries({
-            queryKey: selectedThemes.list.key(consultationId, questionId),
-          });
-          queryClient.invalidateQueries({
-            queryKey: candidateThemes.list.key(consultationId, questionId),
-          });
-        } else if (error.status === 412) {
-          showError({
-            type: "remove-conflict",
-            lastModifiedBy: error.last_modified_by?.email || "",
-            latestVersion: error.latest_version || "",
-          });
-        } else {
-          showError({ type: "unexpected" });
-          console.error(error);
-        }
-      },
-    }),
-    () => queryClient,
-  );
+  const resetQueries = () => {
+    // TODO: Replace with refetch calls after selectedThemes and candidateThemes
+    // are converted to buildQuery
+    queryClient.invalidateQueries({
+      queryKey: selectedThemes.list.key(consultationId, questionId),
+    });
+    queryClient.invalidateQueries({
+      queryKey: candidateThemes.list.key(consultationId, questionId),
+    });
+  }
+
+  const selectedThemeDeleteQuery = $derived(getSelectedThemesDeleteQuery(
+    consultationId,
+    questionId,
+    resetQueries,
+    showError,
+  ));
 
   const handleEditSuccess = () => {
     // Invalidate representative responses cache when theme is edited since search terms changed
@@ -144,7 +115,7 @@
             <footer class="flex flex-wrap items-center gap-2">
               <Button
                 size="sm"
-                disabled={deleteThemeMutation.isPending}
+                disabled={selectedThemeDeleteQuery.isPending}
                 handleClick={() => (editing = !editing)}
               >
                 <MaterialIcon color="fill-neutral-500">
@@ -155,8 +126,11 @@
 
               <Button
                 size="sm"
-                handleClick={() => deleteThemeMutation.mutate()}
-                disabled={deleteThemeMutation.isPending}
+                handleClick={() => selectedThemeDeleteQuery.fetch(
+                  theme.id,
+                  String(theme.version),
+                )}
+                disabled={selectedThemeDeleteQuery.isPending}
               >
                 <MaterialIcon color="fill-neutral-500">
                   <Delete />
@@ -168,7 +142,7 @@
                 size="sm"
                 handleClick={() =>
                   (showRepresentativeResponses = !showRepresentativeResponses)}
-                disabled={deleteThemeMutation.isPending}
+                disabled={selectedThemeDeleteQuery.isPending}
               >
                 <MaterialIcon color="fill-neutral-500">
                   <Docs />
