@@ -3,13 +3,10 @@
 
   import { fade, fly } from "svelte/transition";
 
-  import { createMutation } from "@tanstack/svelte-query";
   import { queryClient } from "../../../../../global/queryClient";
   import {
     selectedThemes,
-    deleteSelectedTheme,
     type SelectedTheme,
-    type SelectedThemeMutationError,
     getSelectedThemesDeleteQuery,
   } from "../../../../../global/queries/selectedThemes";
   import { candidateThemes } from "../../../../../global/queries/candidateThemes";
@@ -41,19 +38,21 @@
   let showRepresentativeResponses = $state(false);
   let editing = $state(false);
 
+  const resetQueries = () => {
+    // TODO: Replace with refetch calls after selectedThemes and candidateThemes
+    // are converted to buildQuery
+    queryClient.invalidateQueries({
+      queryKey: selectedThemes.list.key(consultationId, questionId),
+    });
+    queryClient.invalidateQueries({
+      queryKey: candidateThemes.list.key(consultationId, questionId),
+    });
+  }
+
   const selectedThemeDeleteQuery = $derived(getSelectedThemesDeleteQuery(
     consultationId,
     questionId,
-    () => {
-      // TODO: Replace with refetch calls after selectedThemes and candidateThemes
-      // are converted to buildQuery
-      queryClient.invalidateQueries({
-        queryKey: selectedThemes.list.key(consultationId, questionId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: candidateThemes.list.key(consultationId, questionId),
-      });
-    },
+    resetQueries,
     showError,
   ));
 
@@ -127,7 +126,7 @@
 
               <Button
                 size="sm"
-                handleClick={() => selectedThemeDeleteQuery.mutate({
+                handleClick={() => selectedThemeDeleteQuery.fetch({
                   headers: selectedThemeDeleteQuery.getHeaders(String(theme.version)),
                   params: { "themeId": theme.id }
                 })}

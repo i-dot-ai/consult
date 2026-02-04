@@ -93,9 +93,12 @@ export const buildQuery = <T>(url: string, {
   onSuccess,
   onError,
 }: BuildQueryOptions) => {
+  let result;
+  const isMutation = (["POST", "PUT", "PATCH", "DELETE"] as HttpMethod[]).includes(method);
+
   // Create mutation for mutating methods
-  if ((["POST", "PUT", "PATCH", "DELETE"] as HttpMethod[]).includes(method)) {
-    return createMutation(() => ({
+  if (isMutation) {
+    result = createMutation(() => ({
       queryKey: key,
       mutationFn: async ({ body, params, headers }: MutationArgs) => {
         const finalUrl = params ? applyParams(url, params) : url;
@@ -121,18 +124,23 @@ export const buildQuery = <T>(url: string, {
     () => queryClient
   )} else {
     // Create query for non-mutating methods
-    return createQuery<T>(() => ({
-        queryKey: key!,
-        queryFn: () => doFetch({
-          url,
-          method,
-          errorMessage,
-          headers,
-        }),
-        onSuccess: onSuccess,
-        onError: onError,
+    result = createQuery<T>(() => ({
+      queryKey: key!,
+      queryFn: () => doFetch({
+        url,
+        method,
+        errorMessage,
+        headers,
       }),
-      () => queryClient,
-    );
-  }
+      onSuccess: onSuccess,
+      onError: onError,
+    }),
+    () => queryClient,
+  )};
+
+  return Object.assign(result, {
+    fetch: isMutation
+      ? result.mutate
+      : result.refetch
+  })
 }
