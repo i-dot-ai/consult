@@ -121,7 +121,7 @@ def create_response_annotation(response, question):
     )
     random_sentiment = random.choice([s[0] for s in ResponseAnnotation.Sentiment.choices])
     random_evidence_rich = random.choice([True, False])
-    response_annotation = ResponseAnnotationFactoryNoThemes(
+    ResponseAnnotationFactoryNoThemes(
         response=response,
         sentiment=random_sentiment,
         evidence_rich=random_evidence_rich,

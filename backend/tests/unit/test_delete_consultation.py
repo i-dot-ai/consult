@@ -71,8 +71,21 @@ def test_delete_consultation_cascading():
         key="negative",
     )
 
-    # Add themes
+    # Create response annotations
+    ResponseAnnotation.objects.create(
+        response=response1,
+        sentiment=ResponseAnnotation.Sentiment.AGREEMENT,
+        evidence_rich=True,
+        human_reviewed=False,
+    )
     response1.themes.add(theme1)
+
+    ResponseAnnotation.objects.create(
+        response=response2,
+        sentiment=ResponseAnnotation.Sentiment.DISAGREEMENT,
+        evidence_rich=False,
+        human_reviewed=False,
+    )
     response2.themes.add(theme2)
 
     # Create multiple choice question
@@ -137,7 +150,7 @@ def test_delete_consultation_job_success(mock_connection):
         question=question, name="Test theme", description="Test description", key="test"
     )
 
-    annotation = ResponseAnnotation.objects.create(
+    ResponseAnnotation.objects.create(
         response=response,
         sentiment=ResponseAnnotation.Sentiment.UNCLEAR,
         evidence_rich=False,
@@ -261,10 +274,10 @@ def test_delete_consultation_with_multiple_questions():
     )
 
     # Create annotations
-    annotation1 = ResponseAnnotation.objects.create(
+    ResponseAnnotation.objects.create(
         response=response1, sentiment=ResponseAnnotation.Sentiment.AGREEMENT
     )
-    annotation2 = ResponseAnnotation.objects.create(
+    ResponseAnnotation.objects.create(
         response=response2, sentiment=ResponseAnnotation.Sentiment.DISAGREEMENT
     )
 

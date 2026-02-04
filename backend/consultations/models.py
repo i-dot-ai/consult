@@ -242,8 +242,6 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
                 assigned_by=user,
             )
 
-
-
     def get_original_ai_themes(self):
         """Get themes assigned by AI
         Note that this implementation makes an implicit assumption that the AI only assigns the themes once
@@ -258,8 +256,6 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     def get_current_themes(self):
         """Get latest themes assigned by any human or AI"""
         return self.themes.distinct()
-
-
 
     class Meta:
         constraints = [
@@ -397,7 +393,10 @@ class CrossCuttingTheme(UUIDPrimaryKeyModel, TimeStampedModel):
 class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     """Through model to track original AI vs human-reviewed theme assignments"""
 
-    response_annotation = models.ForeignKey("ResponseAnnotation", on_delete=models.CASCADE, null=True, blank=True)
+    # TODO: delete old_response_annotation
+    old_response_annotation = models.ForeignKey(
+        "ResponseAnnotation", on_delete=models.CASCADE, null=True, blank=True
+    )
     response = models.ForeignKey("Response", on_delete=models.CASCADE)
     theme = models.ForeignKey(SelectedTheme, on_delete=models.CASCADE)
     assigned_by = models.ForeignKey(
@@ -432,6 +431,7 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
     response = models.OneToOneField(Response, on_delete=models.CASCADE, related_name="annotation")
 
     # AI-generated outputs (only for free text responses)
+    # TODO: delete old_themes
     old_themes = models.ManyToManyField(SelectedTheme, through=ResponseAnnotationTheme, blank=True)
     sentiment = models.CharField(max_length=12, choices=Sentiment.choices, null=True, blank=True)
     evidence_rich = models.BooleanField(default=False, null=True, blank=True)
@@ -470,10 +470,6 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
         self.reviewed_by = user
         self.reviewed_at = timezone.now()
         self.save()
-
-
-
-
 
     def save(self, *args, **kwargs) -> None:
         """

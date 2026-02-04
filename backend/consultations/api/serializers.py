@@ -226,9 +226,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     respondent = RespondentSerializer(read_only=True)
     free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
     demographic_data = serializers.SerializerMethodField(read_only=True)
-    themes = ResponseAnnotationThemeSerializer(
-        source="responseannotationtheme_set", many=True
-    )
+    themes = ResponseAnnotationThemeSerializer(source="responseannotationtheme_set", many=True)
     multiple_choice_answer = serializers.SlugRelatedField(
         source="chosen_options", slug_field="text", many=True, read_only=True
     )
@@ -270,16 +268,18 @@ class ResponseSerializer(serializers.ModelSerializer):
             if "evidence_rich" in annotation:
                 instance.annotation.evidence_rich = annotation["evidence_rich"]
 
-            if "responseannotationtheme_set" in annotation:
-                instance.set_human_reviewed_themes(
-                    themes=annotation["responseannotationtheme_set"],
-                    user=self.context["request"].user,
-                )
-
             if "sentiment" in annotation:
                 instance.annotation.sentiment = annotation["sentiment"]
 
             instance.annotation.save()
+
+        if "responseannotationtheme_set" in validated_data:
+            instance.set_human_reviewed_themes(
+                themes=validated_data["responseannotationtheme_set"],
+                user=self.context["request"].user,
+            )
+            # Save instance to trigger history record for Response when themes change
+            instance.save()
 
         instance.refresh_from_db()
         return instance

@@ -203,7 +203,7 @@ class ResponseAnnotationAdmin(SimpleHistoryAdmin):
 
 class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
     readonly_fields = [
-        "response_annotation",
+        "response",
         "theme",
         "assigned_by",
     ]

@@ -5,7 +5,9 @@ from django.db import migrations, models
 
 
 def back_populate_responses(apps, schema_editor):
-    HistoricalResponseAnnotationTheme = apps.get_model("consultations", "HistoricalResponseAnnotationTheme")
+    HistoricalResponseAnnotationTheme = apps.get_model(
+        "consultations", "HistoricalResponseAnnotationTheme"
+    )
     ResponseAnnotationTheme = apps.get_model("consultations", "ResponseAnnotationTheme")
 
     for item in HistoricalResponseAnnotationTheme.objects.all():
@@ -18,7 +20,6 @@ def back_populate_responses(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("consultations", "0092_consultation_display_ai_selected_themes"),
     ]

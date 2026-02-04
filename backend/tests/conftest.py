@@ -545,9 +545,7 @@ def human_reviewed_annotation(another_response, theme_b):
     annotation = ResponseAnnotation.objects.create(
         response=another_response, evidence_rich=True, human_reviewed=False
     )
-    annotation_a = ResponseAnnotationTheme.objects.create(
-        response=another_response, theme=theme_b
-    )
+    annotation_a = ResponseAnnotationTheme.objects.create(response=another_response, theme=theme_b)
     yield annotation
     annotation_a.delete()
     annotation.delete()
@@ -558,9 +556,7 @@ def un_reviewed_annotation(another_response, theme_b):
     annotation = ResponseAnnotation.objects.create(
         response=another_response, evidence_rich=True, human_reviewed=True
     )
-    annotation_a = ResponseAnnotationTheme.objects.create(
-        response=another_response, theme=theme_b
-    )
+    annotation_a = ResponseAnnotationTheme.objects.create(response=another_response, theme=theme_b)
     yield annotation
     annotation_a.delete()
     annotation.delete()

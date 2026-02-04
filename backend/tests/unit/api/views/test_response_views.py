@@ -173,10 +173,8 @@ class TestResponseViewSet:
         response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
 
         # Create annotations with themes
-        annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
         response1.add_original_ai_themes([theme_a])
 
-        annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
         response2.add_original_ai_themes([theme_a, theme_b])
 
         url = reverse(
@@ -209,11 +207,9 @@ class TestResponseViewSet:
         response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
 
         # Response 1: has theme1 and theme2
-        annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
         response1.add_original_ai_themes([theme_a, theme_b])
 
         # Response 2: has only theme1
-        annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
         response2.add_original_ai_themes([theme_a])
 
         url = reverse(
@@ -397,15 +393,12 @@ class TestResponseViewSet:
         )
 
         # Response 1: has theme and theme2
-        annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
         response1.add_original_ai_themes([theme_a, theme_b])
 
         # Response 2: has only theme
-        annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
         response2.add_original_ai_themes([theme_a])
 
         # Response 3: has only theme2
-        annotation3 = ResponseAnnotationFactoryNoThemes(response=response3)
         response3.add_original_ai_themes([theme_b])
 
         url = reverse(
@@ -873,13 +866,13 @@ class TestResponseViewSet:
 
         assert response.json()["is_edited"] is True
 
-        # check that there are two versions of the ResponseAnnotation
-        assert free_text_annotation.history.count() == 2
+        # check that there are two versions of the Response (initial + after theme update)
+        assert free_text_response.history.count() == 2
 
-        # get history of the ResponseAnnotation
-        history = ResponseAnnotationTheme.history.filter(
-            response=free_text_response
-        ).order_by("history_date")
+        # get history of the ResponseAnnotationTheme
+        history = ResponseAnnotationTheme.history.filter(response=free_text_response).order_by(
+            "history_date"
+        )
         assert history.count() == 4
 
         # check all stages of history
@@ -903,7 +896,7 @@ class TestResponseViewSet:
         assert history[3].theme.key == "Human assigned theme C"
         assert history[3].assigned_by == consultation_user
 
-        assert list(free_text_annotation.get_original_ai_themes()) == [ai_assigned_theme]
+        assert list(free_text_response.get_original_ai_themes()) == [ai_assigned_theme]
 
     def test_patch_response_themes_invalid(
         self, client, consultation_user_token, free_text_annotation
@@ -1074,8 +1067,9 @@ class TestResponseViewSet:
             - 1 query to calculate standard deviation of hybrid_score across responses
             - 1 query to prefetch multiple choice answers
             - 1 query to prefetch demographic data
+            - 1 query to prefetch theme data
             """
-            with django_assert_num_queries(9):
+            with django_assert_num_queries(10):
                 response = client.get(
                     url,
                     query_params={
@@ -1151,7 +1145,6 @@ class TestResponseViewSet:
         response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
 
         # Create annotation with specific themes
-        annotation = ResponseAnnotationFactoryNoThemes(response=response_obj)
         response_obj.add_original_ai_themes([theme_a])
 
         url = reverse(

@@ -156,7 +156,7 @@ class TestCloneConsultation:
             question=question, name="Theme 1", description="Description"
         )
         response = ResponseFactory(question=question, respondent=respondent)
-        annotation = ResponseAnnotation.objects.create(response=response)
+        ResponseAnnotation.objects.create(response=response)
         rat = ResponseAnnotationTheme.objects.create(
             response=response, theme=theme, assigned_by=user
         )
@@ -166,7 +166,6 @@ class TestCloneConsultation:
         cloned_question = Question.objects.get(consultation=cloned)
         cloned_theme = SelectedTheme.objects.get(question=cloned_question)
         cloned_response = Response.objects.get(question=cloned_question)
-        cloned_annotation = ResponseAnnotation.objects.get(response=cloned_response)
         cloned_rat = ResponseAnnotationTheme.objects.get(response=cloned_response)
 
         assert cloned_rat.theme == cloned_theme
@@ -239,7 +238,7 @@ class TestCloneConsultation:
         for cloned_rat in cloned_rats:
             for history_record in cloned_rat.history.all():
                 assert history_record.id == cloned_rat.id
-                assert history_record.response_annotation_id == cloned_annotation.id
+                assert history_record.response_id == cloned_response.id
                 assert history_record.theme_id in [t.id for t in cloned_themes]
 
     def test_response_read_by_is_not_cloned(self):

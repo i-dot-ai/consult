@@ -37,7 +37,7 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
     )
     response.add_original_ai_themes([theme1, theme2])
 
-    annotation2 = factories.ResponseAnnotationFactoryNoThemes(
+    factories.ResponseAnnotationFactoryNoThemes(
         response=response2,
         sentiment=models.ResponseAnnotation.Sentiment.UNCLEAR,
         human_reviewed=False,
@@ -105,7 +105,7 @@ def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_tex
     response = factories.ResponseFactory(question=free_text_question, respondent=respondent)
 
     # Create annotation so there's something to export
-    annotation = factories.ResponseAnnotationFactoryNoThemes(
+    factories.ResponseAnnotationFactoryNoThemes(
         response=response, sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT
     )
     theme = factories.SelectedThemeFactory(question=free_text_question)
