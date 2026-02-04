@@ -92,6 +92,7 @@ export const buildQuery = <T>(url: string, {
   headers,
   onSuccess,
   onError,
+  getVariables,
 }: BuildQueryOptions) => {
   let result;
   const isMutation = (["POST", "PUT", "PATCH", "DELETE"] as HttpMethod[]).includes(method);
@@ -139,8 +140,18 @@ export const buildQuery = <T>(url: string, {
   )};
 
   return Object.assign(result, {
-    fetch: isMutation
-      ? result.mutate
-      : result.refetch
+    fetch: (...args) => {
+      let variables;
+
+      if (getVariables){
+        variables = getVariables(...args);
+      };
+
+      if (isMutation) {
+        result.mutate(variables);
+      } else {
+        result.refetch(variables);
+      }
+    }
   })
 }

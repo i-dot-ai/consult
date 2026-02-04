@@ -180,34 +180,41 @@ export const getSelectedThemesDeleteQuery = (
   resetQueries: () => void,
   showError: (args: SaveThemeError) => void,
 ) => {
-  return {
-    ...buildQuery<SelectedThemesDeleteResponse>(
-      selectedThemes.detail.url(consultationId, questionId, ":themeId"),
-      {
-        method: "DELETE",
-        onSuccess: async () => {
+  const query = buildQuery<SelectedThemesDeleteResponse>(
+    selectedThemes.detail.url(consultationId, questionId, ":themeId"),
+    {
+      method: "DELETE",
+      onSuccess: async () => {
+        resetQueries();
+      },
+      onError: async (error: FetchError) => {
+        if (error.status === 404) {
+          // SelectedTheme has already been deleted, just refetch
           resetQueries();
-        },
-        onError: async (error: FetchError) => {
-          if (error.status === 404) {
-            // SelectedTheme has already been deleted, just refetch
-            resetQueries();
-          } else if (error.status === 412) {
-            showError({
-              type: "remove-conflict",
-              lastModifiedBy:  error.data?.last_modified_by?.email || "",
-              latestVersion: error.data?.latest_version || "",
-            });
-          } else {
-            showError({ type: "unexpected" });
-            console.error(error);
-          }
-        },
+        } else if (error.status === 412) {
+          showError({
+            type: "remove-conflict",
+            lastModifiedBy:  error.data?.last_modified_by?.email || "",
+            latestVersion: error.data?.latest_version || "",
+          });
+        } else {
+          showError({ type: "unexpected" });
+          console.error(error);
+        }
+      },
+      getVariables: (themeId: string, version: string) => {
+        return ({
+          headers: {
+            "Content-Type": "application/json",
+            "If-Match": version,
+          },
+          params: {
+            "themeId": themeId,
+          },
+        });
       }
-    ),
-    getHeaders: (version: string) => ({
-      "Content-Type": "application/json",
-      "If-Match": version,
-    }),
-  }
+    }
+  );
+
+  return query;
 }

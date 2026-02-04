@@ -126,10 +126,10 @@
 
               <Button
                 size="sm"
-                handleClick={() => selectedThemeDeleteQuery.fetch({
-                  headers: selectedThemeDeleteQuery.getHeaders(String(theme.version)),
-                  params: { "themeId": theme.id }
-                })}
+                handleClick={() => selectedThemeDeleteQuery.fetch(
+                  theme.id,
+                  String(theme.version),
+                )}
                 disabled={selectedThemeDeleteQuery.isPending}
               >
                 <MaterialIcon color="fill-neutral-500">
