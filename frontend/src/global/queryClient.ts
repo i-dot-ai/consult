@@ -147,10 +147,19 @@ export const buildQuery = <T>(url: string, {
         variables = getVariables(...args);
       };
 
+      // TODO: Refactor to simplify
       if (isMutation) {
-        result.mutate(variables);
+        if (variables) {
+          result.mutate(variables);
+        } else {
+          result.mutate.apply(this, args);
+        }
       } else {
-        result.refetch(variables);
+        if (variables) {
+          result.refetch(variables);
+        } else {
+          result.refetch.apply(this, args);
+        }
       }
     }
   })
