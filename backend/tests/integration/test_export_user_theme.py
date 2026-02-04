@@ -35,18 +35,18 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
         sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT,
         human_reviewed=False,
     )
-    annotation1.add_original_ai_themes([theme1, theme2])
+    response.add_original_ai_themes([theme1, theme2])
 
     annotation2 = factories.ResponseAnnotationFactoryNoThemes(
         response=response2,
         sentiment=models.ResponseAnnotation.Sentiment.UNCLEAR,
         human_reviewed=False,
     )
-    annotation2.add_original_ai_themes([theme3])
+    response2.add_original_ai_themes([theme3])
 
     with freeze_time("2023-01-01 12:00:00"):
         # Simulate user review - changing themes for response1
-        annotation1.set_human_reviewed_themes([theme2, theme3], user)
+        response.set_human_reviewed_themes([theme2, theme3], user)
         annotation1.mark_human_reviewed(user)
 
     # Call the method
@@ -109,7 +109,7 @@ def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_tex
         response=response, sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT
     )
     theme = factories.SelectedThemeFactory(question=free_text_question)
-    annotation.add_original_ai_themes([theme])
+    response.add_original_ai_themes([theme])
 
     # Mock the enqueue to capture the call
     mock_enqueue.return_value = None

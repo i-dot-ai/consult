@@ -227,7 +227,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
     demographic_data = serializers.SerializerMethodField(read_only=True)
     themes = ResponseAnnotationThemeSerializer(
-        source="annotation.responseannotationtheme_set", many=True
+        source="responseannotationtheme_set", many=True
     )
     multiple_choice_answer = serializers.SlugRelatedField(
         source="chosen_options", slug_field="text", many=True, read_only=True
@@ -271,7 +271,7 @@ class ResponseSerializer(serializers.ModelSerializer):
                 instance.annotation.evidence_rich = annotation["evidence_rich"]
 
             if "responseannotationtheme_set" in annotation:
-                instance.annotation.set_human_reviewed_themes(
+                instance.set_human_reviewed_themes(
                     themes=annotation["responseannotationtheme_set"],
                     user=self.context["request"].user,
                 )

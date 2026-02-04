@@ -79,9 +79,9 @@ class ResponseViewSet(ModelViewSet):
         ).prefetch_related(
             "chosen_options",
             "respondent__demographics",
-            "annotation__responseannotationtheme_set__assigned_by",
-            "annotation__responseannotationtheme_set",
-            "annotation__responseannotationtheme_set__theme",
+            "responseannotationtheme_set__assigned_by",
+            "responseannotationtheme_set",
+            "responseannotationtheme_set__theme",
         )
 
         queryset = queryset.annotate(
@@ -100,7 +100,7 @@ class ResponseViewSet(ModelViewSet):
             ),
             annotation_has_human_assigned_themes=Exists(
                 models.ResponseAnnotationTheme.history.filter(
-                    response_annotation_id=OuterRef("annotation__id"),
+                    response_id=OuterRef("id"),
                     assigned_by__isnull=False,
                 )
             ),
@@ -147,11 +147,11 @@ class ResponseViewSet(ModelViewSet):
         # Get theme counts from the filtered responses
         theme_counts = (
             models.SelectedTheme.objects.filter(
-                responseannotation__response__in=self.get_queryset(),
-                responseannotation__response__question__has_free_text__isnull=False,
+                response__in=self.get_queryset(),
+                response__question__has_free_text__isnull=False,
             )
             .values("id")
-            .annotate(count=Count("responseannotation", distinct=True))
+            .annotate(count=Count("response", distinct=True))
         )
 
         theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
@@ -173,8 +173,7 @@ class ResponseViewSet(ModelViewSet):
 
         all_themes = models.SelectedTheme.objects.filter(question=response.question)
         if response.question.consultation.display_ai_selected_themes:
-            annotation, _ = models.ResponseAnnotation.objects.get_or_create(response=response)
-            selected_themes = annotation.themes.all()
+            selected_themes = response.themes.all()
         else:
             selected_themes = []
 

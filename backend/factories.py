@@ -188,7 +188,7 @@ class ResponseAnnotationFactory(DjangoModelFactory):
 
         if extracted:
             # If themes were passed in, use the proper helper method
-            self.add_original_ai_themes(extracted)
+            self.response.add_original_ai_themes(extracted)
         else:
             # Create some themes for the same question
             num_themes = random.randint(1, 3)
@@ -196,7 +196,7 @@ class ResponseAnnotationFactory(DjangoModelFactory):
             for _ in range(num_themes):
                 theme = SelectedThemeFactory(question=self.response.question)
                 themes_to_add.append(theme)
-            self.add_original_ai_themes(themes_to_add)
+            self.response.add_original_ai_themes(themes_to_add)
 
     @factory.post_generation
     def flagged_by(self, create, extracted, **kwargs):

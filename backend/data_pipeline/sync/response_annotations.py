@@ -494,7 +494,7 @@ def _import_response_annotations(
 
         # Link themes to annotation (as AI-assigned themes)
         if themes_to_link:
-            annotation.add_original_ai_themes(themes_to_link)
+            annotation.response.add_original_ai_themes(themes_to_link)
             themes_linked += len(themes_to_link)
 
     logger.info(f"Linked {themes_linked} theme assignments for question {question.number}")

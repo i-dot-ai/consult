@@ -203,7 +203,7 @@ def clone_consultation(original: Consultation) -> Consultation:
         ResponseAnnotationTheme.objects.filter(
             response_annotation__response__question__consultation=original
         ),
-        [("response_annotation_id", annotation_map), ("theme_id", selected_theme_map)],
+        [("response_id", annotation_map), ("theme_id", selected_theme_map)],
     )
 
     # Clone historical records for ResponseAnnotation and ResponseAnnotationTheme
@@ -217,6 +217,7 @@ def clone_consultation(original: Consultation) -> Consultation:
         [
             ("id", annotation_theme_map),
             ("response_annotation_id", annotation_map),
+            ("response_id", annotation_map),
             ("theme_id", selected_theme_map),
         ],
         excluded_fields=_HISTORY_EXCLUDED_FIELDS,

@@ -126,7 +126,7 @@ def create_response_annotation(response, question):
         sentiment=random_sentiment,
         evidence_rich=random_evidence_rich,
     )
-    response_annotation.add_original_ai_themes(themes_for_response)
+    response.add_original_ai_themes(themes_for_response)
 
 
 def create_response_chosen_options(response, multiple_choice_options):

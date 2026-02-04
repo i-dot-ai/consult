@@ -210,6 +210,57 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     search_vector = SearchVectorField(null=True, blank=True)
     read_by = models.ManyToManyField(User, blank=True)
 
+    themes = models.ManyToManyField("SelectedTheme", through="ResponseAnnotationTheme", blank=True)
+
+    # History tracking
+    history = HistoricalRecords(excluded_fields=["search_vector"])
+
+    def add_original_ai_themes(self, themes):
+        """Add themes as original AI assignments"""
+        for theme in themes:
+            ResponseAnnotationTheme.objects.get_or_create(
+                response=self,
+                theme=theme,
+                defaults={"assigned_by": None},
+            )
+
+    def set_human_reviewed_themes(self, themes, user):
+        """Set themes as human-reviewed, will override original AI assignments"""
+        # Remove existing user-assigned theme assignments
+
+        current_theme_ids = {x.theme_id for x in self.responseannotationtheme_set.all()}
+        proposed_theme_ids = {x.id for x in themes}
+
+        self.responseannotationtheme_set.filter(
+            theme_id__in=current_theme_ids - proposed_theme_ids
+        ).delete()
+
+        for theme_id in proposed_theme_ids - current_theme_ids:
+            ResponseAnnotationTheme.objects.create(
+                response=self,
+                theme_id=theme_id,
+                assigned_by=user,
+            )
+
+
+
+    def get_original_ai_themes(self):
+        """Get themes assigned by AI
+        Note that this implementation makes an implicit assumption that the AI only assigns the themes once
+        """
+        theme_ids = ResponseAnnotationTheme.history.filter(
+            response=self,
+            history_type="+",
+            assigned_by__isnull=True,
+        ).values_list("theme_id", flat=True)
+        return SelectedTheme.objects.filter(id__in=theme_ids)
+
+    def get_current_themes(self):
+        """Get latest themes assigned by any human or AI"""
+        return self.themes.distinct()
+
+
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -346,7 +397,8 @@ class CrossCuttingTheme(UUIDPrimaryKeyModel, TimeStampedModel):
 class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     """Through model to track original AI vs human-reviewed theme assignments"""
 
-    response_annotation = models.ForeignKey("ResponseAnnotation", on_delete=models.CASCADE)
+    response_annotation = models.ForeignKey("ResponseAnnotation", on_delete=models.CASCADE, null=True, blank=True)
+    response = models.ForeignKey("Response", on_delete=models.CASCADE)
     theme = models.ForeignKey(SelectedTheme, on_delete=models.CASCADE)
     assigned_by = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, blank=True
@@ -361,7 +413,7 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=[
-                    "response_annotation",
+                    "response",
                     "theme",
                 ],
                 name="unique_theme_assignment",
@@ -380,7 +432,7 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
     response = models.OneToOneField(Response, on_delete=models.CASCADE, related_name="annotation")
 
     # AI-generated outputs (only for free text responses)
-    themes = models.ManyToManyField(SelectedTheme, through=ResponseAnnotationTheme, blank=True)
+    old_themes = models.ManyToManyField(SelectedTheme, through=ResponseAnnotationTheme, blank=True)
     sentiment = models.CharField(max_length=12, choices=Sentiment.choices, null=True, blank=True)
     evidence_rich = models.BooleanField(default=False, null=True, blank=True)
 
@@ -401,7 +453,7 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
 
         # have associated themes ever been changed by a human?
         return ResponseAnnotationTheme.history.filter(
-            response_annotation=self,
+            response=self.response,
             assigned_by__isnull=False,
         ).exists()
 
@@ -419,47 +471,9 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
         self.reviewed_at = timezone.now()
         self.save()
 
-    def add_original_ai_themes(self, themes):
-        """Add themes as original AI assignments"""
-        for theme in themes:
-            ResponseAnnotationTheme.objects.get_or_create(
-                response_annotation=self,
-                theme=theme,
-                defaults={"assigned_by": None},
-            )
 
-    def set_human_reviewed_themes(self, themes, user):
-        """Set themes as human-reviewed, will override original AI assignments"""
-        # Remove existing user-assigned theme assignments
 
-        current_theme_ids = {x.theme_id for x in self.responseannotationtheme_set.all()}
-        proposed_theme_ids = {x.id for x in themes}
 
-        self.responseannotationtheme_set.filter(
-            theme_id__in=current_theme_ids - proposed_theme_ids
-        ).delete()
-
-        for theme_id in proposed_theme_ids - current_theme_ids:
-            ResponseAnnotationTheme.objects.create(
-                response_annotation=self,
-                theme_id=theme_id,
-                assigned_by=user,
-            )
-
-    def get_original_ai_themes(self):
-        """Get themes assigned by AI
-        Note that this implementation makes an implicit assumption that the AI only assigns the themes once
-        """
-        theme_ids = ResponseAnnotationTheme.history.filter(
-            response_annotation=self,
-            history_type="+",
-            assigned_by__isnull=True,
-        ).values_list("theme_id", flat=True)
-        return SelectedTheme.objects.filter(id__in=theme_ids)
-
-    def get_current_themes(self):
-        """Get latest themes assigned by any human or AI"""
-        return self.themes.distinct()
 
     def save(self, *args, **kwargs) -> None:
         """

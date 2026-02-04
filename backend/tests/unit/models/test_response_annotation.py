@@ -41,10 +41,10 @@ class TestResponseAnnotation:
         annotation = ResponseAnnotationFactory()
 
         # Should have auto-created themes
-        assert annotation.themes.count() >= 1
+        assert annotation.response.themes.count() >= 1
 
         # All themes should be for the same question as the response
-        for theme in annotation.themes.all():
+        for theme in annotation.response.themes.all():
             assert theme.question == annotation.response.question
 
     def test_custom_themes(self):
@@ -55,9 +55,9 @@ class TestResponseAnnotation:
 
         annotation = ResponseAnnotationFactory(response=response, themes=[theme1, theme2])
 
-        assert annotation.themes.count() == 2
-        assert theme1 in annotation.themes.all()
-        assert theme2 in annotation.themes.all()
+        assert annotation.response.themes.count() == 2
+        assert theme1 in annotation.response.themes.all()
+        assert theme2 in annotation.response.themes.all()
 
     def test_sentiment_choices(self):
         """Test sentiment field choices"""
@@ -112,4 +112,4 @@ class TestResponseAnnotation:
 
         assert annotation.sentiment is None
         assert annotation.evidence_rich is None
-        assert annotation.themes.count() == 0
+        assert annotation.response.themes.count() == 0

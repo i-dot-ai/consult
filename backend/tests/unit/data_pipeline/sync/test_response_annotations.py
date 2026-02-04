@@ -114,13 +114,13 @@ class TestImportResponseAnnotationsFromS3:
         annotation1 = ResponseAnnotation.objects.get(response__respondent=respondent1)
         assert annotation1.sentiment == "AGREEMENT"
         assert annotation1.evidence_rich is True
-        assert theme_a in annotation1.themes.all()
+        assert theme_a in annotation1.response.themes.all()
 
         # Verify annotation data for respondent 2
         annotation2 = ResponseAnnotation.objects.get(response__respondent=respondent2)
         assert annotation2.sentiment == "DISAGREEMENT"
         assert annotation2.evidence_rich is False
-        assert theme_b in annotation2.themes.all()
+        assert theme_b in annotation2.response.themes.all()
 
         # Verify consultation stage was updated
         consultation.refresh_from_db()

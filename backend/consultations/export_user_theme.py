@@ -41,8 +41,8 @@ def get_theme_mapping_output_row(
 
     try:
         annotation = response.annotation
-        original_themes = annotation.get_original_ai_themes()
-        current_themes = annotation.get_current_themes()
+        original_themes = response.get_original_ai_themes()
+        current_themes = response.get_current_themes()
         audited = annotation.human_reviewed
         position = annotation.sentiment
         if annotation.reviewed_by:
@@ -79,7 +79,7 @@ def get_theme_mapping_rows(question: Question) -> list[dict]:
     response_qs = (
         Response.objects.filter(question=question, free_text__isnull=False, free_text__gt="")
         .select_related("respondent", "annotation", "annotation__reviewed_by")
-        .prefetch_related("annotation__themes", "annotation__responseannotationtheme_set__theme")
+        .prefetch_related("themes", "responseannotationtheme_set__theme")
         .order_by("respondent__themefinder_id")
     )
 
