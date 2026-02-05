@@ -52,6 +52,19 @@ export const getClientId = (): string => {
   );
 };
 
+export const getLangfuseUrl = (): string => {
+  if (typeof process !== "undefined" && process.env?.PUBLIC_LANGFUSE_URL) {
+    return process.env.PUBLIC_LANGFUSE_URL;
+  }
+
+  const langfuseUrl = import.meta.env.PUBLIC_LANGFUSE_URL;
+  if (langfuseUrl) {
+    return langfuseUrl;
+  }
+
+  return "/";
+};
+
 export const applyHighlight = (
   fullText: string,
   matchedText: string,

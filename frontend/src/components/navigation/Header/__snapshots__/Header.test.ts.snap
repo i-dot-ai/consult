@@ -161,9 +161,10 @@ exports[`Header > matches snapshot 1`] = `
                 >
                   <!---->
                   <span
-                    class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                    class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                   >
-                    Home
+                    Home 
+                    <!---->
                   </span>
                   
                   
@@ -236,9 +237,10 @@ exports[`Header > matches snapshot 1`] = `
                     >
                       <!---->
                       <span
-                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
-                        Walkthrough
+                        Walkthrough 
+                        <!---->
                       </span>
                       
                       
@@ -264,9 +266,10 @@ exports[`Header > matches snapshot 1`] = `
                     >
                       <!---->
                       <span
-                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
-                        Guidance
+                        Guidance 
+                        <!---->
                       </span>
                       
                       
@@ -292,9 +295,10 @@ exports[`Header > matches snapshot 1`] = `
                     >
                       <!---->
                       <span
-                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
-                        Feedback
+                        Feedback 
+                        <!---->
                       </span>
                       
                       
@@ -320,9 +324,10 @@ exports[`Header > matches snapshot 1`] = `
                     >
                       <!---->
                       <span
-                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
-                        Privacy notice
+                        Privacy notice 
+                        <!---->
                       </span>
                       
                       
@@ -400,9 +405,10 @@ exports[`Header > matches snapshot 1`] = `
                     >
                       <!---->
                       <span
-                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
-                        Consultations
+                        Consultations 
+                        <!---->
                       </span>
                       
                       
@@ -428,9 +434,10 @@ exports[`Header > matches snapshot 1`] = `
                     >
                       <!---->
                       <span
-                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
-                        Users
+                        Users 
+                        <!---->
                       </span>
                       
                       

@@ -2,6 +2,7 @@
   import { slide } from "svelte/transition";
 
   import { Routes } from "../../../global/routes";
+  import { getLangfuseUrl } from "../../../global/utils";
   import type { ConsultationStage } from "../../../global/types";
 
   import Button from "../../inputs/Button/Button.svelte";
@@ -56,6 +57,7 @@
               },
               { label: "Manage Users", url: Routes.SupportUsers },
               { label: "Data Pipeline", url: Routes.SupportDataPipeline },
+              { label: "Langfuse", url: getLangfuseUrl(), external: true },
             ],
           },
         ]

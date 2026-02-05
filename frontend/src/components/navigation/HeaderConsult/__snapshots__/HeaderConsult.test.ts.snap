@@ -200,9 +200,10 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                     >
                       <!---->
                       <span
-                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
-                        Privacy notice
+                        Privacy notice 
+                        <!---->
                       </span>
                       
                       
@@ -280,9 +281,10 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                     >
                       <!---->
                       <span
-                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
-                        Manage Consultations
+                        Manage Consultations 
+                        <!---->
                       </span>
                       
                       
@@ -308,9 +310,10 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                     >
                       <!---->
                       <span
-                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
-                        Manage Users
+                        Manage Users 
+                        <!---->
                       </span>
                       
                       
@@ -336,9 +339,55 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                     >
                       <!---->
                       <span
-                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full"
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
-                        Data Pipeline
+                        Data Pipeline 
+                        <!---->
+                      </span>
+                      
+                      
+                    </a>
+                    
+                    <!---->
+                  </div>
+                  <!---->
+                </li>
+                <li>
+                  <div
+                    class="hover:text-primary"
+                  >
+                    <!---->
+                    <a
+                      aria-pressed="false"
+                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      data-variant="ghost"
+                      disabled="false"
+                      href="/"
+                      rel="noopener noreferrer"
+                      role="link"
+                      tabindex="0"
+                      target="_blank"
+                    >
+                      <!---->
+                      <span
+                        class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
+                      >
+                        Langfuse 
+                        <svg
+                          class="fill-current"
+                          height="0.8rem"
+                          role="img"
+                          viewBox="0 -960 960 960"
+                          width="0.8rem"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"
+                            xmlns="http://www.w3.org/2000/svg"
+                          />
+                          <!---->
+                        </svg>
+                        <!---->
                       </span>
                       
                       

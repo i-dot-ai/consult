@@ -53,6 +53,12 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     )
     code = models.SlugField(max_length=256)
     timestamp = models.SlugField(max_length=256, null=True, blank=True)
+    display_ai_selected_themes = models.BooleanField(
+        null=True,
+        blank=True,
+        default=True,
+        help_text="does a user see the AI selected themes in the evaluations page?",
+    )
 
     def __str__(self):
         return self.title
