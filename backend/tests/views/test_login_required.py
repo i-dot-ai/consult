@@ -159,7 +159,6 @@ def test_api_urls_permission_required(
     client.logout()
 
 
-
 @pytest.mark.django_db
 @pytest.mark.parametrize("url_pattern", url_patterns_to_test)
 def test_urls_permission_required(

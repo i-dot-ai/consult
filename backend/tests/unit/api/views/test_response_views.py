@@ -16,9 +16,7 @@ from django.urls import reverse
 
 @pytest.mark.django_db
 class TestResponseViewSet:
-    def test_get_demographic_aggregations_empty(
-        self, client, staff_user_token, free_text_question
-    ):
+    def test_get_demographic_aggregations_empty(self, client, staff_user_token, free_text_question):
         """Test API endpoint returns empty aggregations when no data exists"""
         url = reverse(
             "response-demographic-aggregations",
@@ -173,11 +171,9 @@ class TestResponseViewSet:
         response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
 
         # Create annotations with themes
-        annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
-        annotation1.add_original_ai_themes([theme_a])
+        response1.add_original_ai_themes([theme_a])
 
-        annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
-        annotation2.add_original_ai_themes([theme_a, theme_b])
+        response2.add_original_ai_themes([theme_a, theme_b])
 
         url = reverse(
             "response-theme-aggregations",
@@ -209,12 +205,10 @@ class TestResponseViewSet:
         response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
 
         # Response 1: has theme1 and theme2
-        annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
-        annotation1.add_original_ai_themes([theme_a, theme_b])
+        response1.add_original_ai_themes([theme_a, theme_b])
 
         # Response 2: has only theme1
-        annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
-        annotation2.add_original_ai_themes([theme_a])
+        response2.add_original_ai_themes([theme_a])
 
         url = reverse(
             "response-theme-aggregations",
@@ -271,8 +265,9 @@ class TestResponseViewSet:
         - 1 query to get responses with related data (includes is_read annotation)
         - 1 query to prefetch multiple choice answers
         - 1 query to prefetch demographic data
+        - 1 query to prefetch theme data
         """
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(8):
             response = client.get(
                 url,
                 query_params={"question_id": free_text_question.id},
@@ -396,16 +391,13 @@ class TestResponseViewSet:
         )
 
         # Response 1: has theme and theme2
-        annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
-        annotation1.add_original_ai_themes([theme_a, theme_b])
+        response1.add_original_ai_themes([theme_a, theme_b])
 
         # Response 2: has only theme
-        annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
-        annotation2.add_original_ai_themes([theme_a])
+        response2.add_original_ai_themes([theme_a])
 
         # Response 3: has only theme2
-        annotation3 = ResponseAnnotationFactoryNoThemes(response=response3)
-        annotation3.add_original_ai_themes([theme_b])
+        response3.add_original_ai_themes([theme_b])
 
         url = reverse(
             "response-list",
@@ -802,9 +794,7 @@ class TestResponseViewSet:
         assert history.first().sentiment is None  # Initial state
         assert history.last().sentiment == "AGREEMENT"  # Final state after PATCH
 
-    def test_patch_response_evidence_rich(
-        self, client, staff_user_token, free_text_annotation
-    ):
+    def test_patch_response_evidence_rich(self, client, staff_user_token, free_text_annotation):
         url = reverse(
             "response-detail",
             kwargs={
@@ -840,6 +830,7 @@ class TestResponseViewSet:
         client,
         staff_user,
         staff_user_token,
+        free_text_response,
         free_text_annotation,
         alternative_theme,
         ai_assigned_theme,
@@ -852,7 +843,7 @@ class TestResponseViewSet:
             },
         )
 
-        assert list(free_text_annotation.themes.values_list("key", flat=True)) == [
+        assert list(free_text_response.themes.values_list("key", flat=True)) == [
             "AI assigned theme A",
             "Human assigned theme B",
         ]
@@ -871,13 +862,13 @@ class TestResponseViewSet:
 
         assert response.json()["is_edited"] is True
 
-        # check that there are two versions of the ResponseAnnotation
-        assert free_text_annotation.history.count() == 2
+        # check that there are two versions of the Response (initial + after theme update)
+        assert free_text_response.history.count() == 2
 
-        # get history of the ResponseAnnotation
-        history = ResponseAnnotationTheme.history.filter(
-            response_annotation=free_text_annotation
-        ).order_by("history_date")
+        # get history of the ResponseAnnotationTheme
+        history = ResponseAnnotationTheme.history.filter(response=free_text_response).order_by(
+            "history_date"
+        )
         assert history.count() == 4
 
         # check all stages of history
@@ -901,11 +892,9 @@ class TestResponseViewSet:
         assert history[3].theme.key == "Human assigned theme C"
         assert history[3].assigned_by == staff_user
 
-        assert list(free_text_annotation.get_original_ai_themes()) == [ai_assigned_theme]
+        assert list(free_text_response.get_original_ai_themes()) == [ai_assigned_theme]
 
-    def test_patch_response_themes_invalid(
-        self, client, staff_user_token, free_text_annotation
-    ):
+    def test_patch_response_themes_invalid(self, client, staff_user_token, free_text_annotation):
         url = reverse(
             "response-detail",
             kwargs={
@@ -1072,8 +1061,9 @@ class TestResponseViewSet:
             - 1 query to calculate standard deviation of hybrid_score across responses
             - 1 query to prefetch multiple choice answers
             - 1 query to prefetch demographic data
+            - 1 query to prefetch theme data
             """
-            with django_assert_num_queries(9):
+            with django_assert_num_queries(10):
                 response = client.get(
                     url,
                     query_params={
@@ -1149,8 +1139,7 @@ class TestResponseViewSet:
         response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
 
         # Create annotation with specific themes
-        annotation = ResponseAnnotationFactoryNoThemes(response=response_obj)
-        annotation.add_original_ai_themes([theme_a])
+        response_obj.add_original_ai_themes([theme_a])
 
         url = reverse(
             "response-themes",
@@ -1200,35 +1189,6 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 404
-
-    def test_get_themes_creates_annotation_if_not_exists(
-        self, client, staff_user_token, free_text_question
-    ):
-        """Test API endpoint creates annotation if it doesn't exist"""
-        # Create test response without annotation
-        respondent = RespondentFactory(consultation=free_text_question.consultation)
-        response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
-
-        # Verify no annotation exists initially
-        assert not ResponseAnnotation.objects.filter(response=response_obj).exists()
-
-        url = reverse(
-            "response-themes",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "pk": response_obj.id,
-            },
-        )
-
-        response = client.get(
-            url,
-            headers={"Authorization": f"Bearer {staff_user_token}"},
-        )
-
-        assert response.status_code == 200
-
-        # Verify annotation was created
-        assert ResponseAnnotation.objects.filter(response=response_obj).exists()
 
     def test_get_themes_works_with_null_keys(
         self, client, staff_user_token, free_text_question, theme_c

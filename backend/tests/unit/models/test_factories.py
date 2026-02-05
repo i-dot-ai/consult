@@ -91,10 +91,10 @@ def test_response_annotation_factory():
     assert annotation.sentiment in [choice.value for choice in models.ResponseAnnotation.Sentiment]
     assert isinstance(annotation.evidence_rich, bool)
     assert not annotation.human_reviewed
-    assert annotation.themes.count() >= 1
+    assert annotation.response.themes.count() >= 1
 
     # Test themes are for the same question
-    for theme in annotation.themes.all():
+    for theme in annotation.response.themes.all():
         assert theme.question == annotation.response.question
 
 

@@ -480,10 +480,10 @@ def free_text_annotation(free_text_response, staff_user, ai_assigned_theme):
         question=free_text_response.question, key="Human assigned theme B"
     )
     annotation_a = ResponseAnnotationTheme.objects.create(
-        response_annotation=annotation, theme=ai_assigned_theme, assigned_by=None
+        response=free_text_response, theme=ai_assigned_theme, assigned_by=None
     )
     annotation_b = ResponseAnnotationTheme.objects.create(
-        response_annotation=annotation, theme=theme_b, assigned_by=staff_user
+        response=free_text_response, theme=theme_b, assigned_by=staff_user
     )
     yield annotation
     annotation_a.delete()
@@ -497,9 +497,7 @@ def human_reviewed_annotation(another_response, theme_b):
     annotation = ResponseAnnotation.objects.create(
         response=another_response, evidence_rich=True, human_reviewed=False
     )
-    annotation_a = ResponseAnnotationTheme.objects.create(
-        response_annotation=annotation, theme=theme_b
-    )
+    annotation_a = ResponseAnnotationTheme.objects.create(response=another_response, theme=theme_b)
     yield annotation
     annotation_a.delete()
     annotation.delete()
@@ -510,9 +508,7 @@ def un_reviewed_annotation(another_response, theme_b):
     annotation = ResponseAnnotation.objects.create(
         response=another_response, evidence_rich=True, human_reviewed=True
     )
-    annotation_a = ResponseAnnotationTheme.objects.create(
-        response_annotation=annotation, theme=theme_b
-    )
+    annotation_a = ResponseAnnotationTheme.objects.create(response=another_response, theme=theme_b)
     yield annotation
     annotation_a.delete()
     annotation.delete()

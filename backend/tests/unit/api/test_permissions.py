@@ -26,13 +26,11 @@ class TestCanSeeConsultation:
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is True
 
-    def test_user_without_consultation_access(
-        self, request_factory, non_staff_user, consultation
-    ):
+    def test_user_without_consultation_access(self, request_factory, non_staff_user, consultation):
         """Test that user without access to consultation is denied permission"""
         # Remove the user from consultation to test denial
         consultation.users.remove(non_staff_user)
-        
+
         request = request_factory.get("/")
         request.user = non_staff_user
 

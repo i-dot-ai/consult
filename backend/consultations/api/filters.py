@@ -51,8 +51,8 @@ class ResponseFilter(FilterSet):
             return queryset
         # Use single JOIN with HAVING clause for AND logic
         qs = (
-            queryset.filter(annotation__themes__id__in=value)
-            .annotate(matched_theme_count=Count("annotation__themes", distinct=True))
+            queryset.filter(themes__id__in=value)
+            .annotate(matched_theme_count=Count("themes", distinct=True))
             .filter(matched_theme_count=len(value))
         )
         return qs

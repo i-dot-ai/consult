@@ -9,9 +9,7 @@ from django.urls import reverse
 
 @pytest.mark.django_db
 class TestConsultationViewSet:
-    def test_get_demographic_options_empty(
-        self, client, staff_user_token, free_text_question
-    ):
+    def test_get_demographic_options_empty(self, client, staff_user_token, free_text_question):
         """Test API endpoint returns empty options when no demographic data exists"""
         url = reverse(
             "consultations-demographic-options",
@@ -25,9 +23,7 @@ class TestConsultationViewSet:
         assert response.status_code == 200
         assert response.json() == []
 
-    def test_get_demographic_options_with_data(
-        self, client, staff_user_token, free_text_question
-    ):
+    def test_get_demographic_options_with_data(self, client, staff_user_token, free_text_question):
         """Test API endpoint returns demographic options correctly"""
         # Create respondents with different demographic data
         RespondentFactory(
@@ -177,9 +173,7 @@ class TestConsultationViewSet:
         )
         assert response.status_code == 200
 
-    def test_cannot_get_consultation_detail_for_unauthorized_users(
-        self, client, consultation
-    ):
+    def test_cannot_get_consultation_detail_for_unauthorized_users(self, client, consultation):
         """Test API endpoint denies access to unauthorized users"""
         from backend.factories import UserFactory
         from rest_framework_simplejwt.tokens import RefreshToken
@@ -455,9 +449,7 @@ class TestConsultationViewSet:
         assert response.status_code == 400
         assert "Invalid user ID provided" in response.json()["error"]
 
-    def test_remove_user_permission_required(
-        self, client, consultation, non_staff_user_token
-    ):
+    def test_remove_user_permission_required(self, client, consultation, non_staff_user_token):
         """Test removing user requires proper permissions"""
         user = UserFactory()
         consultation.users.add(user)

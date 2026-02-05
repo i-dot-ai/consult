@@ -10,8 +10,7 @@ def test_delete_question(consultation):
     respondent = factories.RespondentFactory(consultation=consultation)
     response = factories.ResponseFactory(question=question, respondent=respondent)
     theme = factories.SelectedThemeFactory(question=question)
-    annotation = factories.ResponseAnnotationFactoryNoThemes(response=response)
-    annotation.add_original_ai_themes([theme])
+    response.add_original_ai_themes([theme])
 
     num_respondents = models.Respondent.objects.count()
 

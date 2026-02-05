@@ -53,9 +53,7 @@ class TestSelectedThemeViewSet:
             ],
         }
 
-    def test_create_selected_theme(
-        self, client, staff_user, staff_user_token, free_text_question
-    ):
+    def test_create_selected_theme(self, client, staff_user, staff_user_token, free_text_question):
         url = reverse(
             "selected-theme-list",
             kwargs={

@@ -66,9 +66,8 @@ def delete_response_annotation_themes(consultation_id: UUID):
         cursor.execute(  # nosec B608
             """
         DELETE FROM consultations_responseannotationtheme
-        WHERE response_annotation_id IN (
-            SELECT a.id from consultations_responseannotation a
-            JOIN consultations_response r ON a.response_id = r.id
+        WHERE response_id IN (
+            SELECT r.id from consultations_response r
             JOIN consultations_question q ON r.question_id = q.id
             WHERE q.consultation_id = %s
         )""",

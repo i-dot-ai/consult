@@ -193,7 +193,6 @@ class QuestionAdmin(admin.ModelAdmin):
 class ResponseAnnotationAdmin(SimpleHistoryAdmin):
     readonly_fields = [
         "response",
-        "themes",
         "sentiment",
         "evidence_rich",
         "human_reviewed",
@@ -204,7 +203,7 @@ class ResponseAnnotationAdmin(SimpleHistoryAdmin):
 
 class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
     readonly_fields = [
-        "response_annotation",
+        "response",
         "theme",
         "assigned_by",
     ]

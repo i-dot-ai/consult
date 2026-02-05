@@ -72,21 +72,21 @@ def test_delete_consultation_cascading():
     )
 
     # Create response annotations
-    annotation1 = ResponseAnnotation.objects.create(
+    ResponseAnnotation.objects.create(
         response=response1,
         sentiment=ResponseAnnotation.Sentiment.AGREEMENT,
         evidence_rich=True,
         human_reviewed=False,
     )
-    annotation1.themes.add(theme1)
+    response1.themes.add(theme1)
 
-    annotation2 = ResponseAnnotation.objects.create(
+    ResponseAnnotation.objects.create(
         response=response2,
         sentiment=ResponseAnnotation.Sentiment.DISAGREEMENT,
         evidence_rich=False,
         human_reviewed=False,
     )
-    annotation2.themes.add(theme2)
+    response2.themes.add(theme2)
 
     # Create multiple choice question
     multiple_choice_question = Question.objects.create(
@@ -150,12 +150,12 @@ def test_delete_consultation_job_success(mock_connection):
         question=question, name="Test theme", description="Test description", key="test"
     )
 
-    annotation = ResponseAnnotation.objects.create(
+    ResponseAnnotation.objects.create(
         response=response,
         sentiment=ResponseAnnotation.Sentiment.UNCLEAR,
         evidence_rich=False,
     )
-    annotation.themes.add(theme)
+    response.themes.add(theme)
 
     consultation_id = consultation.id
 
@@ -274,15 +274,15 @@ def test_delete_consultation_with_multiple_questions():
     )
 
     # Create annotations
-    annotation1 = ResponseAnnotation.objects.create(
+    ResponseAnnotation.objects.create(
         response=response1, sentiment=ResponseAnnotation.Sentiment.AGREEMENT
     )
-    annotation2 = ResponseAnnotation.objects.create(
+    ResponseAnnotation.objects.create(
         response=response2, sentiment=ResponseAnnotation.Sentiment.DISAGREEMENT
     )
 
-    annotation1.themes.add(theme1)
-    annotation2.themes.add(theme2)
+    response1.themes.add(theme1)
+    response2.themes.add(theme2)
 
     # Verify all data exists
     assert Question.objects.filter(consultation=consultation).count() == 2
