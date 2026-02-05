@@ -1,5 +1,4 @@
 import type { APIContext, AstroGlobal } from "astro";
-import path from "path";
 
 import { getBackendUrl } from "./utils";
 
@@ -8,7 +7,7 @@ export const fetchBackendApi = async <T>(
   endpoint: string,
   options: RequestInit | undefined = {},
 ): Promise<T> => {
-  const url = path.join(getBackendUrl(), endpoint);
+  const url = new URL(endpoint, getBackendUrl()).toString();
   const accessToken = astro.cookies.get("accessToken")?.value;
 
   const response = await fetch(url, {

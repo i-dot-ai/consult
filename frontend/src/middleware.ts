@@ -1,5 +1,3 @@
-import path from "path";
-
 import type { APIContext, MiddlewareHandler, MiddlewareNext } from "astro";
 import { Routes } from "./global/routes";
 import { fetchBackendApi } from "./global/api";
@@ -12,9 +10,17 @@ export const onRequest: MiddlewareHandler = async (
   const url = context.url;
   const backendUrl = getBackendUrl();
 
+  // Skip authentication for /api/* routes - handled by the API proxy
+  if (/^\/api\//.test(url.pathname)) {
+    return next();
+  }
+
   // /health/ should proxy directly to the backend
   if (/^\/health[/]?$/.test(url.pathname)) {
-    const fullBackendUrl = path.join(backendUrl, url.pathname) + url.search;
+    const fullBackendUrl = new URL(
+      url.pathname + url.search,
+      backendUrl,
+    ).toString();
     const response = await fetch(fullBackendUrl);
     return new Response(await response.arrayBuffer(), {
       status: response.status,
@@ -93,7 +99,8 @@ async function validateUserToken(
   internalAccessToken: string,
   context: APIContext,
 ) {
-  const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
+  const validateUrl = new URL(Routes.APIValidateToken, backendUrl).toString();
+  const response = await fetch(validateUrl, {
     method: "POST",
     body: JSON.stringify({
       internal_access_token: internalAccessToken,
