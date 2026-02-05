@@ -193,79 +193,39 @@ def mock_consultation_input_objects(mock_s3_bucket):
     ).put(Body=evidence_rich_mappings_2_jsonl)
 
 
-@pytest.fixture
-def non_dashboard_user():
-    user = UserFactory()
-    yield user
-    user.delete()
-
-
-@pytest.fixture
-def dashboard_user():
-    user = UserFactory(has_dashboard_access=True)
-    user.save()
-    yield user
-    user.delete()
-
-
 @pytest.fixture()
-def user_without_consultation_access():
-    """User with dashboard access but not consultation access"""
-    user = UserFactory(has_dashboard_access=True)
+def non_staff_user():
+    """User with access to only their consultations"""
+    user = UserFactory()
     user.save()
     yield user
     user.delete()
 
 
 @pytest.fixture
-def non_consultation_user():
-    user = UserFactory()
-    yield user
-    user.delete()
-
-
-@pytest.fixture
-def admin_user():
+def staff_user():
+    """User with access to all consultations"""
     user = UserFactory(is_staff=True)
     yield user
     user.delete()
 
 
 @pytest.fixture
-def consultation_user_token(consultation_user):
-    refresh = RefreshToken.for_user(consultation_user)
+def non_staff_user_token(non_staff_user):
+    refresh = RefreshToken.for_user(non_staff_user)
     yield str(refresh.access_token)
 
 
 @pytest.fixture
-def dashboard_user_token(dashboard_user):
-    refresh = RefreshToken.for_user(dashboard_user)
+def staff_user_token(staff_user):
+    refresh = RefreshToken.for_user(staff_user)
     yield str(refresh.access_token)
 
 
 @pytest.fixture
-def non_consultation_user_token(non_consultation_user):
-    refresh = RefreshToken.for_user(non_consultation_user)
-    yield str(refresh.access_token)
-
-
-@pytest.fixture
-def non_dashboard_user_token(non_dashboard_user):
-    refresh = RefreshToken.for_user(non_dashboard_user)
-    yield str(refresh.access_token)
-
-
-@pytest.fixture
-def admin_user_token(admin_user):
-    refresh = RefreshToken.for_user(admin_user)
-    yield str(refresh.access_token)
-
-
-@pytest.fixture
-def consultation(dashboard_user, non_dashboard_user):
+def consultation(non_staff_user):
     _consultation = ConsultationFactory(title="My First Consultation", code="my-first-consultation")
-    _consultation.users.add(dashboard_user)
-    _consultation.users.add(non_dashboard_user)
+    _consultation.users.add(non_staff_user)
     _consultation.save()
     yield _consultation
     _consultation.delete()
@@ -318,12 +278,12 @@ def multi_choice_responses(multi_choice_question):
 
 
 @pytest.fixture()
-def theme_a(free_text_question, consultation_user):
+def theme_a(free_text_question, staff_user):
     theme = SelectedThemeFactory(
         question=free_text_question,
         name="Theme A",
         key="A",
-        last_modified_by=consultation_user,
+        last_modified_by=staff_user,
         version=2,
     )
     yield theme
@@ -331,18 +291,18 @@ def theme_a(free_text_question, consultation_user):
 
 
 @pytest.fixture()
-def theme_b(free_text_question, consultation_user):
+def theme_b(free_text_question, staff_user):
     theme = SelectedThemeFactory(
-        question=free_text_question, name="Theme B", key="B", last_modified_by=consultation_user
+        question=free_text_question, name="Theme B", key="B", last_modified_by=staff_user
     )
     yield theme
     theme.delete()
 
 
 @pytest.fixture()
-def theme_c(free_text_question, consultation_user):
+def theme_c(free_text_question, staff_user):
     theme = SelectedThemeFactory(
-        question=free_text_question, name="Theme C", key=None, last_modified_by=consultation_user
+        question=free_text_question, name="Theme C", key=None, last_modified_by=staff_user
     )
     yield theme
     theme.delete()
@@ -360,14 +320,6 @@ def selected_candidate_theme(free_text_question, theme_a):
     theme = CandidateThemeFactory(question=free_text_question, selectedtheme=theme_a)
     yield theme
     theme.delete()
-
-
-@pytest.fixture()
-def consultation_user(consultation):
-    user = UserFactory(has_dashboard_access=True, is_staff=True)
-    consultation.users.add(user)
-    yield user
-    user.delete()
 
 
 @pytest.fixture()
@@ -522,7 +474,7 @@ def ai_assigned_theme(free_text_question):
 
 
 @pytest.fixture
-def free_text_annotation(free_text_response, consultation_user, ai_assigned_theme):
+def free_text_annotation(free_text_response, staff_user, ai_assigned_theme):
     annotation = ResponseAnnotation.objects.create(response=free_text_response, evidence_rich=True)
     theme_b = SelectedTheme.objects.create(
         question=free_text_response.question, key="Human assigned theme B"
@@ -531,7 +483,7 @@ def free_text_annotation(free_text_response, consultation_user, ai_assigned_them
         response=free_text_response, theme=ai_assigned_theme, assigned_by=None
     )
     annotation_b = ResponseAnnotationTheme.objects.create(
-        response=free_text_response, theme=theme_b, assigned_by=consultation_user
+        response=free_text_response, theme=theme_b, assigned_by=staff_user
     )
     yield annotation
     annotation_a.delete()

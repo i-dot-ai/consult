@@ -5,7 +5,7 @@ from django.urls import reverse
 @pytest.mark.django_db
 class TestRespondentViewSet:
     def test_get_respondent_list(
-        self, client, consultation, respondent_1, respondent_2, consultation_user_token
+        self, client, consultation, respondent_1, respondent_2, staff_user_token
     ):
         url = reverse(
             "respondent-list",
@@ -14,7 +14,7 @@ class TestRespondentViewSet:
 
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
         assert response.json()["count"] == 2
@@ -22,7 +22,7 @@ class TestRespondentViewSet:
         assert response.json()["results"][1]["demographics"]
 
     def test_get_respondent_query_themefinder_id(
-        self, client, consultation, respondent_1, respondent_2, consultation_user_token
+        self, client, consultation, respondent_1, respondent_2, staff_user_token
     ):
         url = reverse(
             "respondent-list",
@@ -32,7 +32,7 @@ class TestRespondentViewSet:
         response = client.get(
             url,
             query_params={"themefinder_id": respondent_1.themefinder_id},
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
         assert response.json()["count"] == 1
@@ -46,7 +46,7 @@ class TestRespondentViewSet:
         respondent_2,
         respondent_3,
         respondent_4,
-        consultation_user_token,
+        staff_user_token,
     ):
         url = reverse(
             "respondent-list",
@@ -56,7 +56,7 @@ class TestRespondentViewSet:
         response = client.get(
             url,
             query_params={"themefinder_id__gte": 2, "themefinder_id__lte": 4},
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
         assert response.json()["count"] == 3
@@ -65,7 +65,7 @@ class TestRespondentViewSet:
         assert actual_respondents == expected_respondents
 
     def test_get_respondent_detail(
-        self, client, consultation, respondent_1, respondent_2, consultation_user_token
+        self, client, consultation, respondent_1, respondent_2, staff_user_token
     ):
         url = reverse(
             "respondent-detail",
@@ -77,12 +77,12 @@ class TestRespondentViewSet:
 
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
         assert response.json()["id"] == str(respondent_1.id)
 
-    def test_patch_respondent_detail(self, client, consultation_user_token, respondent_1):
+    def test_patch_respondent_detail(self, client, staff_user_token, respondent_1):
         """we can update a respondents name"""
         url = reverse(
             "respondent-detail",
@@ -97,7 +97,7 @@ class TestRespondentViewSet:
             url,
             content_type="application/json",
             data={"name": "mr lebowski"},
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
         assert response.json()["name"] == "mr lebowski"
@@ -105,7 +105,7 @@ class TestRespondentViewSet:
         assert respondent_1.name == "mr lebowski"
 
     def test_patch_respondent_detail_read_only_field_ignored(
-        self, client, consultation_user_token, respondent_1
+        self, client, staff_user_token, respondent_1
     ):
         """we cannot update a respondents themefinder_id"""
 
@@ -122,7 +122,7 @@ class TestRespondentViewSet:
             url,
             content_type="application/json",
             data={"themefinder_id": 100},
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         # note: DRF just ignores attempts to update read-only (editable=False) fields
         # we can change this behaviour but given that our frontend is the only consumer of this

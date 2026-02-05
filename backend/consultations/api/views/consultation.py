@@ -53,6 +53,18 @@ class ConsultationViewSet(ModelViewSet):
             return Consultation.objects.all().order_by("-created_at")
         return Consultation.objects.filter(users=self.request.user).order_by("-created_at")
 
+    def get_permissions(self):
+        """
+        Override permissions for specific actions
+        """
+        permission_classes = self.permission_classes
+
+        if self.action == "destroy":
+            # Only admin users can delete consultations
+            permission_classes = [IsAuthenticated, IsAdminUser]
+
+        return [permission() for permission in permission_classes]
+
     def perform_destroy(self, instance):
         delete_consultation_job(instance)
 
@@ -377,40 +389,42 @@ class ConsultationViewSet(ModelViewSet):
     def add_users(self, request, pk=None) -> Response:
         """
         Add multiple users to this consultation
-        Expected payload: {"user_ids": ["uuid1", "uuid2", ...]}
+        Expected payload: {"emails": ["email1", "email2", ...]}
         """
         try:
             consultation = self.get_object()
         except Http404:
             return Response({"error": "Consultation not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        user_ids = request.data.get("user_ids", [])
+        emails = request.data.get("emails", [])
 
-        if not isinstance(user_ids, list) or not user_ids:
+        if not isinstance(emails, list) or not emails:
             return Response(
-                {"error": "user_ids must be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "emails must be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
-            users = User.objects.filter(id__in=user_ids)
-            found_user_count = users.count()
+            users = User.objects.filter(email__in=emails)
+            found_emails = set(user.email for user in users)
+            non_existent_emails = [email for email in emails if email not in found_emails]
 
-            if found_user_count != len(user_ids):
-                return Response(
-                    {"error": f"Only {found_user_count} of {len(user_ids)} users found"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-        except (ValueError, TypeError):
+            if users.exists():
+                consultation.users.add(*users)
+
             return Response(
-                {"error": "Invalid user IDs provided"}, status=status.HTTP_400_BAD_REQUEST
+                {
+                    "message": f"Added {users.count()} users to consultation",
+                    "added_count": users.count(),
+                    "non_existent_emails": non_existent_emails,
+                    "total_requested": len(emails),
+                },
+                status=status.HTTP_201_CREATED,
             )
-
-        consultation.users.add(*users)
-
-        return Response(
-            {"message": f"Successfully added {found_user_count} users to consultation"},
-            status=status.HTTP_201_CREATED,
-        )
+        except Exception as e:
+            return Response(
+                {"error": f"An error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     @action(
         detail=True,

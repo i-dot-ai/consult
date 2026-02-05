@@ -13,6 +13,11 @@ class ThemeViewSet(ReadOnlyModelViewSet):
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
-        return models.CrossCuttingTheme.objects.filter(
-            consultation_id=consultation_uuid, consultation__users=self.request.user
-        ).order_by("-created_at")
+
+        queryset = models.CrossCuttingTheme.objects.filter(consultation_id=consultation_uuid)
+
+        # Staff users can see all themes, non-staff users only see themes for assigned consultations
+        if not self.request.user.is_staff:
+            queryset = queryset.filter(consultation__users=self.request.user)
+
+        return queryset.order_by("-created_at")

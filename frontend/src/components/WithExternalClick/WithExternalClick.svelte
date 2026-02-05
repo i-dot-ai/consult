@@ -19,7 +19,7 @@
     window.addEventListener("click", handleOutsideClick);
   }
   function removeListeners() {
-    window.addEventListener("click", handleOutsideClick);
+    window.removeEventListener("click", handleOutsideClick);
   }
 
   function handleOutsideClick(e: MouseEvent) {

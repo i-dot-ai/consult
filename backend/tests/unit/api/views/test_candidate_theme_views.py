@@ -9,7 +9,7 @@ from tests.utils import isoformat
 @pytest.mark.django_db
 class TestCandidateThemeViewSet:
     def test_get_candidate_themes(
-        self, client, consultation_user_token, free_text_question, theme_a, theme_b
+        self, client, staff_user_token, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint returns candidate themes for a question with nested children"""
         # Build a candidate theme tree:
@@ -43,7 +43,7 @@ class TestCandidateThemeViewSet:
         )
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -98,8 +98,8 @@ class TestCandidateThemeViewSet:
     def test_select_candidate_theme(
         self,
         client,
-        consultation_user,
-        consultation_user_token,
+        staff_user,
+        staff_user_token,
         free_text_question,
         candidate_theme,
     ):
@@ -118,7 +118,7 @@ class TestCandidateThemeViewSet:
             # same theme, on the first pass we expect 201 = created, and 200 thereafter
             response = client.post(
                 url,
-                headers={"Authorization": f"Bearer {consultation_user_token}"},
+                headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
             candidate_theme.refresh_from_db()
@@ -129,7 +129,7 @@ class TestCandidateThemeViewSet:
             assert selected_theme.description == candidate_theme.description
             assert selected_theme.question == free_text_question
             assert selected_theme.version == 1
-            assert selected_theme.last_modified_by == consultation_user
+            assert selected_theme.last_modified_by == staff_user
 
             assert response.status_code == status_code
             assert response.json() == {
@@ -138,5 +138,5 @@ class TestCandidateThemeViewSet:
                 "description": selected_theme.description,
                 "version": selected_theme.version,
                 "modified_at": isoformat(selected_theme.modified_at),
-                "last_modified_by": consultation_user.email,
+                "last_modified_by": staff_user.email,
             }

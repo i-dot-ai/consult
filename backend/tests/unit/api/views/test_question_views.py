@@ -7,9 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 @pytest.mark.django_db
 class TestQuestionViewSet:
-    def test_get_theme_information_no_themes(
-        self, client, consultation_user_token, free_text_question
-    ):
+    def test_get_theme_information_no_themes(self, client, staff_user_token, free_text_question):
         """Test API endpoint returns empty themes list when no themes exist"""
         url = reverse(
             "question-theme-information",
@@ -20,7 +18,7 @@ class TestQuestionViewSet:
         )
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -29,7 +27,7 @@ class TestQuestionViewSet:
         assert data["themes"] == []
 
     def test_get_theme_information_with_themes(
-        self, client, consultation_user_token, free_text_question, theme_a, theme_b
+        self, client, staff_user_token, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint returns theme information correctly"""
         url = reverse(
@@ -41,7 +39,7 @@ class TestQuestionViewSet:
         )
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -59,9 +57,7 @@ class TestQuestionViewSet:
             assert "name" in theme_data
             assert "description" in theme_data
 
-    def test_get_free_text_question(
-        self, client, consultation_user, free_text_question, consultation_user_token
-    ):
+    def test_get_free_text_question(self, client, staff_user, free_text_question, staff_user_token):
         """Test API endpoint returns question information correctly"""
         # Add a known response count with free text
         for i in range(3):
@@ -82,7 +78,7 @@ class TestQuestionViewSet:
         )
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -95,10 +91,10 @@ class TestQuestionViewSet:
     def test_get_multiple_choice_question(
         self,
         client,
-        consultation_user,
+        staff_user,
         multi_choice_responses,
         multi_choice_question,
-        consultation_user_token,
+        staff_user_token,
     ):
         """Test API endpoint returns question information correctly"""
 
@@ -111,7 +107,7 @@ class TestQuestionViewSet:
         )
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
         assert response.status_code == 200
@@ -123,7 +119,7 @@ class TestQuestionViewSet:
         assert answer_counts == {"blue": 1, "green": 0, "red": 2}
 
     def test_patch_question_theme_status(
-        self, client, consultation_user, free_text_question, consultation_user_token
+        self, client, staff_user, free_text_question, staff_user_token
     ):
         """Test API endpoint for patching a question's theme status"""
         url = reverse(
@@ -138,14 +134,14 @@ class TestQuestionViewSet:
             url,
             data={"theme_status": Question.ThemeStatus.CONFIRMED},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
         free_text_question.refresh_from_db()
         assert free_text_question.theme_status == Question.ThemeStatus.CONFIRMED
 
     def test_patch_question_invalid_theme_status(
-        self, client, consultation_user, free_text_question, consultation_user_token
+        self, client, staff_user, free_text_question, staff_user_token
     ):
         """Test API endpoint for patching a question's theme status with invalid value"""
         url = reverse(
@@ -160,14 +156,14 @@ class TestQuestionViewSet:
             url,
             data={"theme_status": "INVALID"},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 400
         free_text_question.refresh_from_db()
         assert free_text_question.theme_status == Question.ThemeStatus.DRAFT
 
     @pytest.mark.parametrize("has_free_text", [True, False, ""])
-    def test_filter(self, client, consultation_user_token, consultation, has_free_text):
+    def test_filter(self, client, staff_user_token, consultation, has_free_text):
         """Test filtering questions by has_free_text"""
 
         # Create questions with different free text settings
@@ -184,7 +180,7 @@ class TestQuestionViewSet:
         response = client.get(
             url,
             {"has_free_text": has_free_text},
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
 
@@ -202,7 +198,7 @@ class TestQuestionViewSet:
     def test_question_list(
         self,
         client,
-        consultation_user_token,
+        staff_user_token,
         consultation,
         free_text_question,
         multi_choice_question,
@@ -214,7 +210,7 @@ class TestQuestionViewSet:
         # Filter by has_free_text=True
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
 
@@ -224,7 +220,7 @@ class TestQuestionViewSet:
     def test_show_next_response_happy_path(
         self,
         client,
-        consultation_user_token,
+        staff_user_token,
         consultation,
         free_text_question,
         human_reviewed_annotation,
@@ -240,7 +236,7 @@ class TestQuestionViewSet:
 
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
 
@@ -252,7 +248,7 @@ class TestQuestionViewSet:
     def test_show_next_response_no_responses_left_to_review(
         self,
         client,
-        consultation_user_token,
+        staff_user_token,
         consultation,
         free_text_question,
         un_reviewed_annotation,
@@ -268,7 +264,7 @@ class TestQuestionViewSet:
 
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
 
@@ -280,7 +276,7 @@ class TestQuestionViewSet:
     def test_show_next_response_no_free_text(
         self,
         client,
-        consultation_user_token,
+        staff_user_token,
         consultation,
         multi_choice_question,
     ):
@@ -295,7 +291,7 @@ class TestQuestionViewSet:
 
         response = client.get(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 200
 
@@ -304,11 +300,13 @@ class TestQuestionViewSet:
         assert data["has_free_text"] is False
         assert data["message"] == "This question does not have free text responses."
 
-    def test_permission_requires_consultation_access(
-        self, client, user_without_consultation_access, free_text_question
-    ):
+    def test_permission_requires_consultation_access(self, client, free_text_question):
         """Test that QuestionViewSet requires consultation access"""
-        refresh = RefreshToken.for_user(user_without_consultation_access)
+        from backend.factories import UserFactory
+
+        # Create a user who is NOT assigned to any consultation
+        isolated_user = UserFactory(is_staff=False)
+        refresh = RefreshToken.for_user(isolated_user)
         token = str(refresh.access_token)
 
         url = reverse(
@@ -322,9 +320,10 @@ class TestQuestionViewSet:
             url,
             headers={"Authorization": f"Bearer {token}"},
         )
+        isolated_user.delete()
         assert response.status_code == 403
 
-    def test_delete_method_supported(self, client, consultation_user_token, free_text_question):
+    def test_delete_method_supported(self, client, staff_user_token, free_text_question):
         """Test that DELETE method is now supported"""
         url = reverse(
             "question-detail",
@@ -335,7 +334,7 @@ class TestQuestionViewSet:
         )
         response = client.delete(
             url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         # Should return 204 for successful deletion, not 405 Method Not Allowed
         assert response.status_code == 204
@@ -343,7 +342,7 @@ class TestQuestionViewSet:
         # Verify question was actually deleted
         assert not Question.objects.filter(id=free_text_question.id).exists()
 
-    def test_unsupported_http_methods(self, client, consultation_user_token, free_text_question):
+    def test_unsupported_http_methods(self, client, staff_user_token, free_text_question):
         """Test that unsupported HTTP methods return 405"""
         url = reverse(
             "question-detail",
@@ -358,7 +357,7 @@ class TestQuestionViewSet:
             url,
             data={"theme_status": "confirmed"},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 405
 
@@ -367,6 +366,6 @@ class TestQuestionViewSet:
             url,
             data={"theme_status": "confirmed"},
             content_type="application/json",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 405

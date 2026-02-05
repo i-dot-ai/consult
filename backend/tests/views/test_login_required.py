@@ -83,8 +83,8 @@ url_patterns_to_test = [
 def test_consultations_urls_login_required(
     client,
     free_text_question,
-    non_consultation_user,
-    dashboard_user,
+    non_staff_user,
+    staff_user,
     url_pattern,
 ):
     """
@@ -98,7 +98,7 @@ def test_consultations_urls_login_required(
         (2) add it as a special case to be excluded and write a separate test.
     """
 
-    possible_args = set_up_consultation(dashboard_user, free_text_question)
+    possible_args = set_up_consultation(non_staff_user, free_text_question)
 
     url = get_url_for_pattern(url_pattern, possible_args)
 
@@ -106,12 +106,18 @@ def test_consultations_urls_login_required(
     check_expected_status_code(client, url, expected_status_code=404)
 
     # Logged in with a user for this consultation - 200
-    client.force_login(dashboard_user)
+    client.force_login(non_staff_user)
     check_expected_status_code(client, url, 200)
     client.logout()
 
-    # Logged in with a different user - 404
-    client.force_login(non_consultation_user)
+    # Logged in with staff user (has access to all consultations) - 200
+    client.force_login(staff_user)
+    check_expected_status_code(client, url, 200)
+    client.logout()
+
+    # Logged in with different user (not assigned to consultation, not staff) - 404
+    user_no_access = factories.UserFactory(is_staff=False)
+    client.force_login(user_no_access)
     check_expected_status_code(client, url, 404)
     client.logout()
 
@@ -119,7 +125,7 @@ def test_consultations_urls_login_required(
 @pytest.mark.django_db
 @pytest.mark.parametrize("url_pattern", API_URL_NAMES)
 def test_api_urls_permission_required(
-    client, free_text_question, dashboard_user, non_consultation_user, url_pattern
+    client, free_text_question, non_staff_user, staff_user, url_pattern
 ):
     """
     Test API endpoints return 403 for authentication/permission failures.
@@ -137,33 +143,31 @@ def test_api_urls_permission_required(
     check_expected_status_code(client, url, expected_status_code=401)
 
     # Logged in with a user for this consultation - 200
-    client.force_login(dashboard_user)
+    client.force_login(non_staff_user)
     check_expected_status_code(client, url, 200)
     client.logout()
 
-    # Logged in with a different user (no consultation access) - 403
-    client.force_login(non_consultation_user)
-    check_expected_status_code(client, url, 403)
+    # Logged in with staff user (has access to all consultations) - 200
+    client.force_login(staff_user)
+    check_expected_status_code(client, url, 200)
     client.logout()
 
-    # Logged in with user without dashboard access - 403
-    # user_no_dashboard = factories.UserFactory()
-    # Need to get the consultation from the database to add the user
-    # free_text_question.consultation.users.add(user_no_dashboard)
-    # client.force_login(user_no_dashboard)
-    # check_expected_status_code(client, url, 403)
-    # client.logout()
+    # Logged in with different user (not assigned to consultation, not staff) - 403
+    user_no_access = factories.UserFactory(is_staff=False)
+    client.force_login(user_no_access)
+    check_expected_status_code(client, url, 403)
+    client.logout()
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("url_pattern", url_patterns_to_test)
 def test_urls_permission_required(
-    client, free_text_question, non_consultation_user, dashboard_user, url_pattern
+    client, free_text_question, non_staff_user, staff_user, url_pattern
 ):
     """
     Test API endpoints return 403 for authentication/permission failures.
     """
-    possible_args = set_up_consultation(dashboard_user, free_text_question)
+    possible_args = set_up_consultation(non_staff_user, free_text_question)
 
     url = get_url_for_pattern(url_pattern, possible_args)
 
@@ -171,11 +175,11 @@ def test_urls_permission_required(
     check_expected_status_code(client, url, expected_status_code=404)
 
     # Logged in with a user for this consultation - 302
-    client.force_login(dashboard_user)
+    client.force_login(non_staff_user)
     check_expected_status_code(client, url, 302)
     client.logout()
 
     # Logged in with a different user - 404
-    client.force_login(non_consultation_user)
+    client.force_login(staff_user)
     check_expected_status_code(client, url, 404)
     client.logout()

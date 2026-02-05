@@ -198,38 +198,6 @@ def test_0069_alter_demographicoption_field_value(migrator):
         assert NewDemographicOption.objects.get(field_name=name).field_value == new_value
 
 
-@pytest.mark.django_db
-def test_0005_user_has_dashboard_access(migrator):
-    """Test migration applies successfully"""
-
-    # Start from previous migration
-    old_state = migrator.apply_initial_migration(("authentication", "0004_dashboard_permission"))
-
-    # Create test data before migration
-    OldUser = old_state.apps.get_model("authentication", "User")
-    Group = old_state.apps.get_model("auth", "Group")
-    dashboard_access_group, _ = Group.objects.get_or_create(name="Dashboard access")
-
-    user_with_access = OldUser.objects.create(email="user_with_access@example.com")
-    user_with_access.groups.add(dashboard_access_group)
-
-    assert not hasattr(user_with_access, "has_dashboard_access")
-
-    OldUser.objects.create(email="user_without_access@example.com")
-
-    # Apply the migration
-    new_state = migrator.apply_tested_migration(
-        ("authentication", "0005_user_has_dashboard_access"),
-    )
-
-    # Test the migration worked
-    NewUser = new_state.apps.get_model("authentication", "User")
-    assert NewUser.objects.get(email="user_with_access@example.com").has_dashboard_access is True
-    assert (
-        NewUser.objects.get(email="user_without_access@example.com").has_dashboard_access is False
-    )
-
-
 @pytest.mark.django_db()
 def test_0093_historicalresponseannotationtheme_response_and_more(migrator):
     # Check group doesn't exist before migration
