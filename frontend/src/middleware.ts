@@ -106,4 +106,8 @@ async function validateUserToken(
     path: "/",
     sameSite: "strict",
   });
+  context.cookies.set("accessToken", data.access, {
+    path: "/",
+    sameSite: "strict",
+  });
 }
