@@ -18,6 +18,6 @@ class Command(BaseCommand):
                 "-X",
                 "UUIDPrimaryKeyModel,TimeStampedModel",
                 "-o",
-                "docs/erd.png",
+                "../docs/erd.png",
             ],
         )
