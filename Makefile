@@ -33,14 +33,22 @@ migrate: ## Apply migrations
 	cd backend && PYTHONPATH=.. poetry run python manage.py migrate
 	cd backend && PYTHONPATH=.. poetry run python manage.py generate_erd
 
-.PHONY: serve
-serve: ## Run the server and the worker
+.PHONY: backend
+backend: ## Run the backend and the worker
 	docker compose up -d postgres redis
 	cd backend && poetry run honcho start
 
-.PHONY: test
-test: ## Run the tests
+.PHONY: frontend
+frontend: ## Run the frontend
+	cd frontend && npm run dev
+
+.PHONY: test-backend
+test-backend: ## Run the backend tests
 	cd backend && PYTHONPATH=.. poetry run pytest tests/ --random-order
+
+.PHONY: test-frontend
+test-frontend: ## Run the frontend tests
+	cd frontend && npm run test
 
 .PHONY: test-end-to-end
 test-end-to-end:
@@ -62,9 +70,6 @@ test-end-to-end:
 		@echo "Restoring original .env..."
 		@mv .env.backup .env
 
-serve-frontend:
-	cd frontend && BACKEND_URL=http://localhost:8000 TEST_INTERNAL_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIn0.k27nav4gbG-2lIArYInTqP1GUz2LRuzb3lWandMKRoY npm run dev  # pragma: allowlist secret
-
 
 .PHONY: check-python-code
 check-python-code: ## Check Python code - linting and mypy
@@ -85,7 +90,7 @@ dummy_data: ## Generate dummy consultations. Only works in dev
 
 .PHONY: dev_admin_user
 dev_admin_user:
-	cd backend && PYTHONPATH=.. poetry run python manage.py shell -c "from backend.authentication.models import User; User.objects.create_user(email='email@example.com', password='admin', is_staff=True)" # pragma: allowlist secret
+	cd backend && PYTHONPATH=.. poetry run python manage.py shell -c "from backend.authentication.models import User; from backend.consultations.models import Consultation; user = User.objects.create_user(email='email@example.com', password='admin', is_staff=True); user.has_dashboard_access = True; user.save(); [c.users.add(user) for c in Consultation.objects.all()]" # pragma: allowlist secret
 
 .PHONY: dev_environment
 dev_environment: reset_db migrate dummy_data dev_admin_user ## set up the database with dummy data
