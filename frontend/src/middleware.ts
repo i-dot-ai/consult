@@ -8,6 +8,13 @@ import { getBackendUrl } from "./global/utils";
 import { internalAccessCookieName } from "./global/api";
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
+  const url = context.url;
+
+  // Check if this path should skip authentication
+  if (/^\/health[/]?$/.test(url.pathname)) {
+    return next();
+  }
+
   // ===== AUTHENTICATION MUST HAPPEN BEFORE RENDERING =====
   let internalAccessToken = null;
 
@@ -22,7 +29,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     internalAccessToken = context.request.headers.get("x-amzn-oidc-data");
   }
 
-  const url = context.url;
   const backendUrl = getBackendUrl();
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
