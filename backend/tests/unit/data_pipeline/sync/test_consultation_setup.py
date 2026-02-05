@@ -33,6 +33,13 @@ class TestImportConsultationFromS3:
             {"themefinder_id": 1, "demographic_data": {"age": ["25-34"]}},
             {"themefinder_id": 2, "demographic_data": {"region": ["North"]}},
             {"themefinder_id": 3, "demographic_data": {}},
+            {"themefinder_id": 4, "demographic_data": {}},
+            {"themefinder_id": 5, "demographic_data": {}},
+            {"themefinder_id": 6, "demographic_data": {}},
+            {"themefinder_id": 7, "demographic_data": {}},
+            {"themefinder_id": 8, "demographic_data": {}},
+            {"themefinder_id": 9, "demographic_data": {}},
+            {"themefinder_id": 10, "demographic_data": {}},
         ]
 
         # Mock question folders
@@ -67,6 +74,14 @@ class TestImportConsultationFromS3:
         mock_responses_q1 = [
             {"themefinder_id": 1, "text": "I strongly support this proposal"},
             {"themefinder_id": 2, "text": "I have some concerns about implementation"},
+            {"themefinder_id": 3, "text": "this is response 3"},
+            {"themefinder_id": 4, "text": "this is response 4"},
+            {"themefinder_id": 5, "text": "this is response 5"},
+            {"themefinder_id": 6, "text": "this is response 6"},
+            {"themefinder_id": 7, "text": "this is response 7"},
+            {"themefinder_id": 8, "text": "this is response 8"},
+            {"themefinder_id": 9, "text": "this is response 9"},
+            {"themefinder_id": 10, "text": "this is response 10"},
         ]
 
         mock_responses_q3 = [
@@ -121,7 +136,7 @@ class TestImportConsultationFromS3:
             consultation_title="Test Consultation",
             user_id=user.id,
             enqueue_embeddings=True,
-            batch_size=1,
+            batch_size=2,
         )
 
         # Verify consultation was created
@@ -130,8 +145,10 @@ class TestImportConsultationFromS3:
         assert consultation.title == "Test Consultation"
         assert user in consultation.users.all()
 
+        # verify that the number of responses is much larger than the batch size=2
+        assert Respondent.objects.filter(consultation=consultation).count() == 10
+
         # Verify respondents were created with correct themefinder_ids
-        assert Respondent.objects.filter(consultation=consultation).count() == 3
         respondent_1 = Respondent.objects.get(consultation=consultation, themefinder_id=1)
         respondent_2 = Respondent.objects.get(consultation=consultation, themefinder_id=2)
         respondent_3 = Respondent.objects.get(consultation=consultation, themefinder_id=3)
@@ -153,8 +170,8 @@ class TestImportConsultationFromS3:
         assert question_3.has_multiple_choice is True
 
         # Verify responses for free text question
-        q1_response_1 = Response.objects.get(question=question_1, respondent=respondent_1)
-        assert q1_response_1.free_text == "I strongly support this proposal"
+        q1_response_1a = Response.objects.get(question=question_1, respondent=respondent_1)
+        assert q1_response_1a.free_text == "I strongly support this proposal"
 
         q1_response_2 = Response.objects.get(question=question_1, respondent=respondent_2)
         assert q1_response_2.free_text == "I have some concerns about implementation"
