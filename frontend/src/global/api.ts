@@ -1,9 +1,7 @@
 import type { APIContext, AstroGlobal } from "astro";
 import path from "path";
 
-import { getBackendUrl } from "./utils";
-
-export const internalAccessCookieName = "gdsInternalAccess";
+import { getBackendUrl, getEnv } from "./utils";
 
 export const fetchBackendApi = async <T>(
   astro: Readonly<AstroGlobal> | APIContext,
@@ -11,7 +9,17 @@ export const fetchBackendApi = async <T>(
   options: RequestInit | undefined = {},
 ): Promise<T> => {
   const url = path.join(getBackendUrl(), endpoint);
-  const accessToken = astro.cookies.get(internalAccessCookieName)?.value;
+  const env = getEnv().toLowerCase();
+
+  let accessToken: string | null | undefined;
+  if (env === "local" || env === "test" || env == null) {
+    accessToken =
+      process.env.TEST_INTERNAL_ACCESS_TOKEN ||
+      import.meta.env?.TEST_INTERNAL_ACCESS_TOKEN;
+  } else {
+    accessToken = astro.request.headers.get("x-amzn-oidc-data");
+  }
+
   const response = await fetch(url, {
     ...options,
     headers: {
