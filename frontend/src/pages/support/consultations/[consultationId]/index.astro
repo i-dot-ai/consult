@@ -82,8 +82,7 @@ let questions = await fetchBackendApi<{ results: Question[] }>(
           <tr>
             <th class="py-2 pr-2">email</th>
             <th class="py-2 pr-2">created at</th>
-            <th class="py-2 pr-2">can access support console</th>
-            <th class="py-2">can access dashboards</th>
+            <th class="py-2 pr-2">can access support console & dashboards</th>
             <th class="py-2">actions</th>
           </tr>
         </thead>
@@ -96,7 +95,6 @@ let questions = await fetchBackendApi<{ results: Question[] }>(
                 </td>
                 <td class="py-2 pr-2">{formatDate(user.created_at)}</td>
                 <td class="py-2 pr-2">{user.is_staff ? "Yes" : "No"}</td>
-                <td class="py-2">{user.has_dashboard_access ? "Yes" : "No"}</td>
                 <td class="py-2 pr-2">
                   <Link
                     href={`/support/consultations/${consultationId}/users/${user.id}/remove`}
