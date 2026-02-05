@@ -4,9 +4,9 @@ from django.urls import reverse
 
 
 @pytest.mark.django_db
-def test_validate_token_pass(client, consultation_user):
+def test_validate_token_pass(client, staff_user):
     url = reverse("validate-token")
-    token = jwt.encode({"email": consultation_user.email}, "secret")
+    token = jwt.encode({"email": staff_user.email}, "secret")
     response = client.post(url, data={"internal_access_token": token})
     assert response.status_code == 200
     assert set(response.json()) == {"access", "sessionId"}
@@ -30,7 +30,7 @@ def test_validate_token_pass(client, consultation_user):
         ),
     ],
 )
-def test_validate_token_fail(client, consultation_user, data, status_code, error):
+def test_validate_token_fail(client, staff_user, data, status_code, error):
     url = reverse("validate-token")
     response = client.post(url, data=data)
     assert response.status_code == status_code
