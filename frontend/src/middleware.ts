@@ -8,21 +8,7 @@ import { getBackendUrl } from "./global/utils";
 import { internalAccessCookieName } from "./global/api";
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
-  const nextResponse = await next();
-
-  const EXTRA_HEADERS = {
-    "X-Content-Type-Options": "nosniff",
-    "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Permissions-Policy":
-      "camera=(), microphone=(), geolocation=(), payment=()",
-    "X-Frame-Options": "DENY",
-    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-  };
-
-  for (const [key, value] of Object.entries(EXTRA_HEADERS)) {
-    nextResponse.headers.set(key, value);
-  }
-
+  // ===== AUTHENTICATION MUST HAPPEN BEFORE RENDERING =====
   let internalAccessToken = null;
 
   const env =
@@ -40,6 +26,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const backendUrl = getBackendUrl();
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
+  // Validate and set auth cookie BEFORE rendering the page
   if (!context.cookies.get(internalAccessCookieName)?.value) {
     if (internalAccessToken) {
       try {
@@ -71,14 +58,15 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         });
       } catch (e: unknown) {
         console.error("sign-in error", e);
-        context.redirect(Routes.SignInError);
+        return context.redirect(Routes.SignInError);
       }
     } else {
       console.error("internalAccessToken not set", backendUrl);
-      context.redirect(Routes.SignInError);
+      return context.redirect(Routes.SignInError);
     }
   }
 
+  // Check if user is staff for protected routes
   let userIsStaff = false;
   if (context.cookies.get(internalAccessCookieName)?.value) {
     try {
@@ -97,6 +85,23 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       console.error("redirecting to home");
       return context.redirect(Routes.Home);
     }
+  }
+
+  // ===== NOW RENDER THE PAGE =====
+  const nextResponse = await next();
+
+  // Add security headers to response
+  const EXTRA_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy":
+      "camera=(), microphone=(), geolocation=(), payment=()",
+    "X-Frame-Options": "DENY",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  };
+
+  for (const [key, value] of Object.entries(EXTRA_HEADERS)) {
+    nextResponse.headers.set(key, value);
   }
 
   const fullBackendUrl = path.join(backendUrl, url.pathname) + url.search;
