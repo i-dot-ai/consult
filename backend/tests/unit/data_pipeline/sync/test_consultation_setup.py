@@ -121,6 +121,7 @@ class TestImportConsultationFromS3:
             consultation_title="Test Consultation",
             user_id=user.id,
             enqueue_embeddings=True,
+            batch_size=1,
         )
 
         # Verify consultation was created

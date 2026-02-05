@@ -21,13 +21,13 @@ class QuestionViewSet(ModelViewSet):
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
-        
+
         queryset = models.Question.objects.filter(consultation_id=consultation_uuid)
-        
+
         # Staff users can see all questions, non-staff users only see questions for assigned consultations
         if not self.request.user.is_staff:
             queryset = queryset.filter(consultation__users=self.request.user)
-            
+
         return queryset.annotate(response_count=Count("response")).order_by("number")
 
     @action(

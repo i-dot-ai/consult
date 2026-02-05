@@ -16,9 +16,7 @@ from django.urls import reverse
 
 @pytest.mark.django_db
 class TestResponseViewSet:
-    def test_get_demographic_aggregations_empty(
-        self, client, staff_user_token, free_text_question
-    ):
+    def test_get_demographic_aggregations_empty(self, client, staff_user_token, free_text_question):
         """Test API endpoint returns empty aggregations when no data exists"""
         url = reverse(
             "response-demographic-aggregations",
@@ -802,9 +800,7 @@ class TestResponseViewSet:
         assert history.first().sentiment is None  # Initial state
         assert history.last().sentiment == "AGREEMENT"  # Final state after PATCH
 
-    def test_patch_response_evidence_rich(
-        self, client, staff_user_token, free_text_annotation
-    ):
+    def test_patch_response_evidence_rich(self, client, staff_user_token, free_text_annotation):
         url = reverse(
             "response-detail",
             kwargs={
@@ -903,9 +899,7 @@ class TestResponseViewSet:
 
         assert list(free_text_annotation.get_original_ai_themes()) == [ai_assigned_theme]
 
-    def test_patch_response_themes_invalid(
-        self, client, staff_user_token, free_text_annotation
-    ):
+    def test_patch_response_themes_invalid(self, client, staff_user_token, free_text_annotation):
         url = reverse(
             "response-detail",
             kwargs={

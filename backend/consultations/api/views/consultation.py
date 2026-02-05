@@ -58,11 +58,11 @@ class ConsultationViewSet(ModelViewSet):
         Override permissions for specific actions
         """
         permission_classes = self.permission_classes
-        
-        if self.action == 'destroy':
+
+        if self.action == "destroy":
             # Only admin users can delete consultations
             permission_classes = [IsAuthenticated, IsAdminUser]
-            
+
         return [permission() for permission in permission_classes]
 
     def perform_destroy(self, instance):
