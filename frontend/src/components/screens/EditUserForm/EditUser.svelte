@@ -37,16 +37,6 @@
 
     $userStore.fetch(`/api/users/${userId}/`);
   }
-
-  async function updateHasDashboardAccess(value: boolean) {
-    if (value === $userStore.data?.has_dashboard_access) return; // Don't update if value hasn't changed
-
-    await $userUpdateStore.fetch(`/api/users/${userId}/`, "PATCH", {
-      has_dashboard_access: value,
-    });
-
-    $userStore.fetch(`/api/users/${userId}/`);
-  }
 </script>
 
 <div class="mb-8">
@@ -80,7 +70,7 @@
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <label for="is_staff" class="text-sm font-medium">
-            Can access support console
+            Admin access (support console & dashboards)
           </label>
           <Switch
             id="is_staff"
@@ -88,19 +78,6 @@
             hideLabel={true}
             value={$userStore.data.is_staff}
             handleChange={(value) => updateIsStaff(value)}
-          />
-        </div>
-
-        <div class="flex items-center justify-between">
-          <label for="has_dashboard_access" class="text-sm font-medium">
-            Can access dashboards
-          </label>
-          <Switch
-            id="has_dashboard_access"
-            label=""
-            hideLabel={true}
-            value={$userStore.data.has_dashboard_access}
-            handleChange={(value) => updateHasDashboardAccess(value)}
           />
         </div>
       </div>

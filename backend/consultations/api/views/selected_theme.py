@@ -20,18 +20,31 @@ class SelectedThemeViewSet(ModelViewSet):
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
         question_uuid = self.kwargs["question_pk"]
-        return models.SelectedTheme.objects.filter(
+        
+        queryset = models.SelectedTheme.objects.filter(
             question__consultation_id=consultation_uuid,
             question_id=question_uuid,
-            question__consultation__users=self.request.user,
         )
+        
+        # Staff users can see all themes, non-staff users only see themes for assigned consultations
+        if not self.request.user.is_staff:
+            queryset = queryset.filter(question__consultation__users=self.request.user)
+            
+        return queryset
 
     def perform_create(self, serializer):
-        question = get_object_or_404(
-            models.Question,
-            pk=self.kwargs["question_pk"],
-            consultation__users=self.request.user,
-        )
+        # Staff users can create themes for any question, non-staff users only for assigned consultations
+        if self.request.user.is_staff:
+            question = get_object_or_404(
+                models.Question,
+                pk=self.kwargs["question_pk"],
+            )
+        else:
+            question = get_object_or_404(
+                models.Question,
+                pk=self.kwargs["question_pk"],
+                consultation__users=self.request.user,
+            )
         serializer.save(question=question, last_modified_by=self.request.user)
 
     def _parse_if_match_version(self, request):
