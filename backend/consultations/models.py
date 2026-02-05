@@ -199,6 +199,11 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     """Response to a question - can include both free text and multiple choice"""
+    class Sentiment(models.TextChoices):
+        AGREEMENT = "AGREEMENT", "Agreement"
+        DISAGREEMENT = "DISAGREEMENT", "Disagreement"
+        UNCLEAR = "UNCLEAR", "Unclear"
+
 
     respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
@@ -212,8 +217,40 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
 
     themes = models.ManyToManyField("SelectedTheme", through="ResponseAnnotationTheme", blank=True)
 
+    # AI-generated outputs (only for free text responses)
+    sentiment = models.CharField(max_length=12, choices=Sentiment.choices, null=True, blank=True)
+    evidence_rich = models.BooleanField(default=False, null=True, blank=True)
+
+    # Human review tracking
+    human_reviewed = models.BooleanField(default=False, null=True, blank=True)
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    flagged_by = models.ManyToManyField(to=User, null=True, blank=True, related_name="+")
+
+
     # History tracking
     history = HistoricalRecords(excluded_fields=["search_vector"])
+
+    def mark_human_reviewed(self, user):
+        """Helper method to mark as human reviewed"""
+        self.human_reviewed = True
+        self.reviewed_by = user
+        self.reviewed_at = timezone.now()
+        self.save()
+
+
+    @property
+    def is_edited(self) -> bool:
+        """has this annotation ever been changed?"""
+        if self.history.count() > 1:
+            return True
+
+        # have associated themes ever been changed by a human?
+        return ResponseAnnotationTheme.history.filter(
+            response=self,
+            assigned_by__isnull=False,
+        ).exists()
+
 
     def add_original_ai_themes(self, themes):
         """Add themes as original AI assignments"""
@@ -257,6 +294,20 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
         """Get latest themes assigned by any human or AI"""
         return self.themes.distinct()
 
+    def save(self, *args, **kwargs) -> None:
+        """
+        Override save to prevent accidental direct theme manipulation.
+        Themes should be added using add_original_ai_themes() or set_human_reviewed_themes().
+        """
+        # Check if themes are being passed via save (which shouldn't happen)
+        if "themes" in kwargs:
+            raise ValueError(
+                "Direct theme assignment through save() is not allowed. "
+                "Use add_original_ai_themes() or set_human_reviewed_themes() instead."
+            )
+
+        super().save(*args, **kwargs)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -265,6 +316,9 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
         indexes = [
             GinIndex(fields=["search_vector"]),
+            models.Index(fields=["human_reviewed"]),
+            models.Index(fields=["sentiment"]),
+            models.Index(fields=["evidence_rich"]),
         ]
 
     def __str__(self):
