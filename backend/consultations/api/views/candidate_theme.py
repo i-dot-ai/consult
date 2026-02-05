@@ -19,11 +19,17 @@ class CandidateThemeViewSet(ModelViewSet):
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
         question_uuid = self.kwargs["question_pk"]
-        return models.CandidateTheme.objects.filter(
+        
+        queryset = models.CandidateTheme.objects.filter(
             question__consultation_id=consultation_uuid,
             question_id=question_uuid,
-            question__consultation__users=self.request.user,
-        ).order_by("-approximate_frequency")
+        )
+        
+        # Staff users can see all candidate themes, non-staff users only see themes for assigned consultations
+        if not self.request.user.is_staff:
+            queryset = queryset.filter(question__consultation__users=self.request.user)
+            
+        return queryset.order_by("-approximate_frequency")
 
     def list(self, request, consultation_pk=None, question_pk=None):
         """List candidate themes for a question with nested children"""

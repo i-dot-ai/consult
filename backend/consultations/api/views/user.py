@@ -15,7 +15,6 @@ class UserViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         # Support both single and bulk creation
         data = request.data
-        has_dashboard_access = data.get("has_dashboard_access", False)
 
         # If 'emails' is present and is a list, treat as bulk creation
         if isinstance(data.get("emails"), list):
@@ -23,9 +22,7 @@ class UserViewSet(ModelViewSet):
             created_users = []
             errors = []
             for email in emails:
-                serializer = self.get_serializer(
-                    data={"email": email, "has_dashboard_access": has_dashboard_access}
-                )
+                serializer = self.get_serializer(data={"email": email})
                 if serializer.is_valid():
                     user = serializer.save()
                     created_users.append(user)
