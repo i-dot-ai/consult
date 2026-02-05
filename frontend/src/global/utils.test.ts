@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   formatDate,
   formatTimeDeltaText,
@@ -48,25 +48,33 @@ describe("toTitleCase", () => {
 });
 
 describe("getEnv", () => {
-  it("returns correct env for dev", () => {
-    const result = getEnv("consult-dev.ai.cabinetoffice.gov.uk");
-    expect(result).toEqual("dev");
+  const originalEnv = process.env.PUBLIC_ENVIRONMENT;
+
+  afterEach(() => {
+    process.env.PUBLIC_ENVIRONMENT = originalEnv;
   });
-  it("returns correct env for prod", () => {
-    const result = getEnv("consult.ai.cabinetoffice.gov.uk");
-    expect(result).toEqual("prod");
+
+  it("returns environment from process.env.PUBLIC_ENVIRONMENT", () => {
+    process.env.PUBLIC_ENVIRONMENT = "dev";
+    expect(getEnv()).toEqual("dev");
   });
-  it("returns correct env for local", () => {
-    const result = getEnv("localhost:3000");
-    expect(result).toEqual("local");
+
+  it("returns environment for prod", () => {
+    process.env.PUBLIC_ENVIRONMENT = "prod";
+    expect(getEnv()).toEqual("prod");
   });
-  it.each(["", "foo", "http://127.0.0.1:3000"])(
-    "returns local env for arbitrary strings",
-    () => {
-      const result = getEnv("localhost:3000");
-      expect(result).toEqual("local");
-    },
-  );
+
+  it("returns environment for local", () => {
+    process.env.PUBLIC_ENVIRONMENT = "local";
+    expect(getEnv()).toEqual("local");
+  });
+
+  it("throws error when PUBLIC_ENVIRONMENT is not set", () => {
+    delete process.env.PUBLIC_ENVIRONMENT;
+    expect(() => getEnv()).toThrow(
+      "PUBLIC_ENVIRONMENT environment variable is not set",
+    );
+  });
 });
 
 describe("formatDate", () => {
