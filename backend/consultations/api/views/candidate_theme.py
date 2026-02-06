@@ -36,7 +36,7 @@ class CandidateThemeViewSet(ModelViewSet):
         """List candidate themes for a question with nested children"""
         # Get all themes for this question to build the tree efficiently
         all_themes = list(self.get_queryset())
-        
+
         # Build a lookup of children by parent_id
         children_by_parent = {}
         for theme in all_themes:
@@ -44,16 +44,14 @@ class CandidateThemeViewSet(ModelViewSet):
             if parent_id not in children_by_parent:
                 children_by_parent[parent_id] = []
             children_by_parent[parent_id].append(theme)
-        
+
         # Get root themes (no parent)
         roots = children_by_parent.get(None, [])
-        
+
         # Pass children lookup to serializer context
         page = self.paginate_queryset(roots)
         serializer = CandidateThemeSerializer(
-            page, 
-            many=True, 
-            context={'children_by_parent': children_by_parent}
+            page, many=True, context={"children_by_parent": children_by_parent}
         )
         return self.get_paginated_response(serializer.data)
 
