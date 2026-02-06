@@ -24,7 +24,7 @@ class SelectedThemeViewSet(ModelViewSet):
         queryset = models.SelectedTheme.objects.filter(
             question__consultation_id=consultation_uuid,
             question_id=question_uuid,
-        )
+        ).select_related("last_modified_by")
 
         # Staff users can see all themes, non-staff users only see themes for assigned consultations
         if not self.request.user.is_staff:
