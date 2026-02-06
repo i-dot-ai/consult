@@ -511,7 +511,7 @@ def _ingest_responses(
 
         # Create Response objects with batching based on token count
         responses_to_create: List = []
-        response_theme_associations_to_create = []
+        response_theme_associations_to_create = []  # type: ignore
         max_total_tokens = 100_000
         total_tokens = 0
 
