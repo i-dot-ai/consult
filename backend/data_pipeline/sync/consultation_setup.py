@@ -466,7 +466,7 @@ def _ingest_responses(
         multi_choice_responses = multi_choice_by_question.get(question_number, [])
 
         # Merge free text and multi-choice by themefinder_id
-        responses_by_tf_id: Dict[int, Dict] = defaultdict(dict)
+        responses_by_tf_id: dict[int, dict] = defaultdict(dict)
 
         for resp in free_text_responses:
             responses_by_tf_id[resp.themefinder_id]["free_text"] = resp.text

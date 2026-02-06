@@ -170,8 +170,8 @@ class TestImportConsultationFromS3:
         assert question_3.has_multiple_choice is True
 
         # Verify responses for free text question
-        q1_response_1a = Response.objects.get(question=question_1, respondent=respondent_1)
-        assert q1_response_1a.free_text == "I strongly support this proposal"
+        q1_response_1 = Response.objects.get(question=question_1, respondent=respondent_1)
+        assert q1_response_1.free_text == "I strongly support this proposal"
 
         q1_response_2 = Response.objects.get(question=question_1, respondent=respondent_2)
         assert q1_response_2.free_text == "I have some concerns about implementation"
