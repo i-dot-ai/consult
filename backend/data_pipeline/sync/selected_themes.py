@@ -59,7 +59,12 @@ def export_selected_themes_to_s3(consultation: Consultation) -> int:
             Bucket=settings.AWS_BUCKET_NAME, Key=s3_path, Body=csv_buffer.getvalue()
         )
 
-        logger.info(f"Exported {themes.count()} themes for question {question.number} to {s3_path}")
+        logger.info(
+            "Exported {themes_count} themes for question {question_number} to {s3_path}",
+            themes_count=themes.count(),
+            question_number=question.number,
+            s3_path=s3_path,
+        )
         questions_exported += 1
 
     if questions_exported == 0:

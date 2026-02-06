@@ -36,7 +36,11 @@ def submit_job(
 
     batch = boto3.client("batch")
 
-    logger.info(f"Submitting {job_type} job to AWS Batch for consultation: {consultation_name}")
+    logger.info(
+        "Submitting {job_type} job to AWS Batch for consultation: {consultation_name}",
+        job_type=job_type,
+        consultation_name=consultation_name,
+    )
 
     response = batch.submit_job(
         jobName=job_name,
@@ -47,6 +51,6 @@ def submit_job(
     )
 
     job_id = response["jobId"]
-    logger.info(f"Batch job submitted: {job_id}")
+    logger.info("Batch job submitted: {job_id}", job_id=job_id)
 
     return response

@@ -20,16 +20,16 @@ class SelectedThemeViewSet(ModelViewSet):
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
         question_uuid = self.kwargs["question_pk"]
-        
+
         queryset = models.SelectedTheme.objects.filter(
             question__consultation_id=consultation_uuid,
             question_id=question_uuid,
         )
-        
+
         # Staff users can see all themes, non-staff users only see themes for assigned consultations
         if not self.request.user.is_staff:
             queryset = queryset.filter(question__consultation__users=self.request.user)
-            
+
         return queryset
 
     def perform_create(self, serializer):

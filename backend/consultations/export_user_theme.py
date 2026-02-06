@@ -97,7 +97,9 @@ def export_user_theme(question_id: uuid.UUID, s3_key: str) -> None:
     filename = f"{timestamp}_question_{question_number}_theme_changes.csv"
 
     if not output:
-        logger.warning(f"No responses found for question {question_number}")
+        logger.warning(
+            "No responses found for question {question_number}", question_number=question_number
+        )
         return
 
     if settings.ENVIRONMENT == "local":
@@ -127,7 +129,9 @@ def export_user_theme(question_id: uuid.UUID, s3_key: str) -> None:
         )
         csv_buffer.close()
     logger.info(
-        f"Finishing export for question {question_number} for consultation {question.consultation.title}"
+        "Finishing export for question {question_number} for consultation {consultation_title}",
+        question_number=question_number,
+        consultation_title=question.consultation.title,
     )
 
 
