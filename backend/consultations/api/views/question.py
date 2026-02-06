@@ -1,5 +1,3 @@
-from django.db.models import Count
-
 from backend.consultations import models
 from backend.consultations.api.permissions import (
     CanSeeConsultation,
@@ -8,6 +6,7 @@ from backend.consultations.api.serializers import (
     QuestionSerializer,
     ThemeInformationSerializer,
 )
+from django.db.models import Count, Prefetch
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -31,15 +30,13 @@ class QuestionViewSet(ModelViewSet):
 
         # Prefetch multi-choice answers with response counts and annotate total_responses
         queryset = queryset.prefetch_related(
-            models.Prefetch(
+            Prefetch(
                 "multichoiceanswer_set",
                 queryset=models.MultiChoiceAnswer.objects.annotate(
                     prefetched_response_count=Count("response")
                 ),
             )
-        ).annotate(
-            prefetched_total_responses=Count("response")
-        )
+        ).annotate(prefetched_total_responses=Count("response"))
 
         return queryset.order_by("number")
 

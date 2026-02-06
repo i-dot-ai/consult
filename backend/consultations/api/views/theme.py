@@ -1,10 +1,9 @@
-from django.db.models import Count
-
 from backend.consultations import models
 from backend.consultations.api.permissions import (
     CanSeeConsultation,
 )
 from backend.consultations.api.serializers import CrossCuttingThemeSerializer
+from django.db.models import Count, Prefetch
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
@@ -24,7 +23,7 @@ class ThemeViewSet(ReadOnlyModelViewSet):
 
         # Prefetch selected themes with their response counts to avoid N+1
         queryset = queryset.prefetch_related(
-            models.Prefetch(
+            Prefetch(
                 "selectedtheme_set",
                 queryset=models.SelectedTheme.objects.select_related("question").annotate(
                     prefetched_response_count=Count("responseannotation")
