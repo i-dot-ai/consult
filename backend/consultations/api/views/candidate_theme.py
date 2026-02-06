@@ -1,14 +1,15 @@
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
 from backend.consultations import models
 from backend.consultations.api.permissions import CanSeeConsultation
 from backend.consultations.api.serializers import (
     CandidateThemeSerializer,
     SelectedThemeSerializer,
 )
-from django.shortcuts import get_object_or_404
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
 
 
 class CandidateThemeViewSet(ModelViewSet):
@@ -33,9 +34,27 @@ class CandidateThemeViewSet(ModelViewSet):
 
     def list(self, request, consultation_pk=None, question_pk=None):
         """List candidate themes for a question with nested children"""
-        roots = self.get_queryset().filter(parent__isnull=True)
+        # Get all themes for this question to build the tree efficiently
+        all_themes = list(self.get_queryset())
+        
+        # Build a lookup of children by parent_id
+        children_by_parent = {}
+        for theme in all_themes:
+            parent_id = theme.parent_id
+            if parent_id not in children_by_parent:
+                children_by_parent[parent_id] = []
+            children_by_parent[parent_id].append(theme)
+        
+        # Get root themes (no parent)
+        roots = children_by_parent.get(None, [])
+        
+        # Pass children lookup to serializer context
         page = self.paginate_queryset(roots)
-        serializer = CandidateThemeSerializer(page, many=True)
+        serializer = CandidateThemeSerializer(
+            page, 
+            many=True, 
+            context={'children_by_parent': children_by_parent}
+        )
         return self.get_paginated_response(serializer.data)
 
     @action(

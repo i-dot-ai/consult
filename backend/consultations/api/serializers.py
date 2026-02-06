@@ -175,6 +175,17 @@ class CandidateThemeSerializer(serializers.ModelSerializer):
         ]
 
     def get_children(self, obj):
+        # Use pre-fetched children from context if available (avoids N+1)
+        children_by_parent = self.context.get('children_by_parent')
+        if children_by_parent is not None:
+            children = children_by_parent.get(obj.id, [])
+            return CandidateThemeSerializer(
+                children, 
+                many=True, 
+                context=self.context
+            ).data
+        
+        # Fallback for single object serialization (e.g., retrieve action)
         children = CandidateTheme.objects.filter(parent=obj)
         return CandidateThemeSerializer(children, many=True).data
 
