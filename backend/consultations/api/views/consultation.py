@@ -1,4 +1,3 @@
-import logging
 from typing import Any
 from uuid import UUID
 
@@ -302,7 +301,7 @@ class ConsultationViewSet(ModelViewSet):
 
             for id in validated["question_ids"]:
                 try:
-                    logging.info("Exporting theme audit data - sending to queue")
+                    logger.info("Exporting theme audit data - sending to queue")
                     export_user_theme_job.delay(question_id=UUID(id), s3_key=validated["s3_key"])
                 except Exception:
                     return Response(
