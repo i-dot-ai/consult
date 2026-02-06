@@ -14,7 +14,6 @@ from backend.consultations.models import (
     Question,
     Respondent,
     Response,
-    ResponseAnnotation,
     ResponseAnnotationTheme,
     SelectedTheme,
 )
@@ -196,17 +195,17 @@ def clone_consultation(original: Consultation) -> Consultation:
 
     # Clone responseannotations and responseannotationthemes
     annotation_map = _clone(
-        ResponseAnnotation.objects.filter(response__question__consultation=original),
+        Response.objects.filter(question__consultation=original),
         [("response_id", response_map)],
     )
     annotation_theme_map = _clone(
-        ResponseAnnotationTheme.objects.filter(response__question__consultation=original),
+        ResponseAnnotationTheme.objects.filter(question__consultation=original),
         [("response_id", response_map), ("theme_id", selected_theme_map)],
     )
 
     # Clone historical records for ResponseAnnotation and ResponseAnnotationTheme
     _clone(
-        ResponseAnnotation.history.model.objects.filter(id__in=annotation_map.keys()),
+        Response.history.model.objects.filter(id__in=annotation_map.keys()),
         [("id", annotation_map), ("response_id", response_map)],
         excluded_fields=_HISTORY_EXCLUDED_FIELDS,
     )
@@ -214,7 +213,6 @@ def clone_consultation(original: Consultation) -> Consultation:
         ResponseAnnotationTheme.history.model.objects.filter(id__in=annotation_theme_map.keys()),
         [
             ("id", annotation_theme_map),
-            ("old_response_annotation_id", annotation_map),
             ("response_id", response_map),
             ("theme_id", selected_theme_map),
         ],

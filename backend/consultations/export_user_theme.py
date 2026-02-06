@@ -11,7 +11,6 @@ from django_rq import job
 from backend.consultations.models import (
     Question,
     Response,
-    ResponseAnnotation,
 )
 
 logger = settings.LOGGER
@@ -40,15 +39,14 @@ def get_theme_mapping_output_row(
     reviewed_at = None
 
     try:
-        annotation = response.annotation
         original_themes = response.get_original_ai_themes()
         current_themes = response.get_current_themes()
-        audited = annotation.human_reviewed
-        position = annotation.sentiment
-        if annotation.reviewed_by:
-            auditor_email = annotation.reviewed_by.email
-        reviewed_at = annotation.reviewed_at
-    except ResponseAnnotation.DoesNotExist:
+        audited = response.human_reviewed
+        position = response.sentiment
+        if response.reviewed_by:
+            auditor_email = response.reviewed_by.email
+        reviewed_at = response.reviewed_at
+    except Response.DoesNotExist:
         pass
 
     # Build theme identifiers using SelectedTheme.id

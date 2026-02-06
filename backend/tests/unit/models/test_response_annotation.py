@@ -1,5 +1,4 @@
 import pytest
-from backend.consultations.models import ResponseAnnotation
 from backend.factories import (
     ResponseAnnotationFactory,
     ResponseFactory,
@@ -10,13 +9,15 @@ from backend.factories import (
 from django.utils import timezone
 from freezegun import freeze_time
 
+from backend.consultations.models import Response
+
 
 @pytest.mark.django_db
 class TestResponseAnnotation:
     def test_annotation_creation(self):
         """Test basic annotation creation"""
         annotation = ResponseAnnotationFactory()
-        assert isinstance(annotation, ResponseAnnotation)
+        assert isinstance(annotation, Response)
         assert annotation.sentiment in ["AGREEMENT", "DISAGREEMENT", "UNCLEAR"]
         assert isinstance(annotation.evidence_rich, bool)
         assert not annotation.human_reviewed
@@ -52,34 +53,13 @@ class TestResponseAnnotation:
         response = ResponseFactory()
         theme1 = SelectedThemeFactory(question=response.question)
         theme2 = SelectedThemeFactory(question=response.question)
+        response.add_original_ai_themes([theme1, theme2])
 
-        annotation = ResponseAnnotationFactory(response=response, themes=[theme1, theme2])
+        assert response.response.themes.count() == 2
+        assert theme1 in response.response.themes.all()
+        assert theme2 in response.response.themes.all()
 
-        assert annotation.response.themes.count() == 2
-        assert theme1 in annotation.response.themes.all()
-        assert theme2 in annotation.response.themes.all()
 
-    def test_sentiment_choices(self):
-        """Test sentiment field choices"""
-        response = ResponseFactory()
-
-        # Test each valid choice
-        for sentiment in ["AGREEMENT", "DISAGREEMENT", "UNCLEAR"]:
-            annotation = ResponseAnnotation.objects.create(response=response, sentiment=sentiment)
-            assert annotation.sentiment == sentiment
-            annotation.delete()
-
-    def test_evidence_rich_choices(self):
-        """Test evidence_rich field choices"""
-        response = ResponseFactory()
-
-        # Test each valid choice
-        for evidence in [True, False]:
-            annotation = ResponseAnnotation.objects.create(
-                response=response, evidence_rich=evidence
-            )
-            assert annotation.evidence_rich == evidence
-            annotation.delete()
 
     def test_human_review_tracking(self):
         """Test human review functionality"""
@@ -103,13 +83,3 @@ class TestResponseAnnotation:
         assert reviewed.reviewed_by is not None
         assert reviewed.reviewed_at is not None
 
-    def test_annotation_without_ai_fields(self):
-        """Test that AI fields are optional (for non-free-text responses)"""
-        response = ResponseFactory()
-        annotation = ResponseAnnotation.objects.create(
-            response=response, sentiment=None, evidence_rich=None
-        )
-
-        assert annotation.sentiment is None
-        assert annotation.evidence_rich is None
-        assert annotation.response.themes.count() == 0

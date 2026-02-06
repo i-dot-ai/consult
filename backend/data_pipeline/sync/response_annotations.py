@@ -8,7 +8,6 @@ from backend.consultations.models import (
     Consultation,
     Question,
     Response,
-    ResponseAnnotation,
     SelectedTheme,
 )
 from backend.data_pipeline.models import (
@@ -442,15 +441,6 @@ def _import_response_annotations(
         mappings: List of theme mapping inputs
         theme_lookup: Dictionary mapping theme_key -> SelectedTheme
     """
-    # Delete existing annotations for this question (idempotent)
-    existing_count = ResponseAnnotation.objects.filter(response__question=question).count()
-    if existing_count > 0:
-        logger.info(
-            "Deleting {existing_count} existing annotations for question {question_number}",
-            existing_count=existing_count,
-            question_number=question.number,
-        )
-        ResponseAnnotation.objects.filter(response__question=question).delete()
 
     logger.info(
         "Importing annotations for question {question_number}", question_number=question.number
@@ -466,7 +456,7 @@ def _import_response_annotations(
     response_lookup = {r.respondent.themefinder_id: r for r in responses}
 
     # Create ResponseAnnotation objects
-    annotations_to_create = []
+    annotations_to_update = []
     annotation_theme_data = []  # Store (themefinder_id, theme_keys) for later
 
     for themefinder_id, response in response_lookup.items():
@@ -477,13 +467,7 @@ def _import_response_annotations(
         evidence_rich = detail_lookup.get(themefinder_id, False)
 
         # Create annotation
-        annotation = ResponseAnnotation(
-            response=response,
-            sentiment=sentiment,
-            evidence_rich=evidence_rich,
-            human_reviewed=False,
-        )
-        annotations_to_create.append(annotation)
+        annotations_to_update.append({"sentiment": sentiment, "evidence_rich": evidence_rich, "human_reviewed": False})
 
         # Store theme mappings for this response
         theme_keys = mapping_lookup.get(themefinder_id, [])
@@ -491,7 +475,7 @@ def _import_response_annotations(
             annotation_theme_data.append((themefinder_id, theme_keys))
 
     # Bulk create annotations
-    created_annotations = ResponseAnnotation.objects.bulk_create(annotations_to_create)
+    created_annotations = Response.objects.bulk_update(annotations_to_update)
 
     logger.info(
         "Created {annotation_count} response annotations for question {question_number}",

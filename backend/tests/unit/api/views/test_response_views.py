@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import orjson
 import pytest
-from backend.consultations.models import ResponseAnnotation, ResponseAnnotationTheme
+from backend.consultations.models import ResponseAnnotationTheme, Response
 from backend.factories import (
     RespondentFactory,
     ResponseAnnotationFactory,
@@ -546,10 +546,10 @@ class TestResponseViewSet:
         )
 
         ResponseAnnotationFactory(
-            response=response_1, sentiment=ResponseAnnotation.Sentiment.AGREEMENT
+            response=response_1, sentiment=Response.Sentiment.AGREEMENT
         )
         ResponseAnnotationFactory(
-            response=response_2, sentiment=ResponseAnnotation.Sentiment.UNCLEAR
+            response=response_2, sentiment=Response.Sentiment.UNCLEAR
         )
 
         url = reverse(

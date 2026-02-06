@@ -9,7 +9,6 @@ from backend.consultations.models import (
     Question,
     Respondent,
     Response,
-    ResponseAnnotation,
     ResponseAnnotationTheme,
     SelectedTheme,
 )
@@ -156,7 +155,6 @@ class TestCloneConsultation:
             question=question, name="Theme 1", description="Description"
         )
         response = ResponseFactory(question=question, respondent=respondent)
-        ResponseAnnotation.objects.create(response=response)
         rat = ResponseAnnotationTheme.objects.create(
             response=response, theme=theme, assigned_by=user
         )
@@ -186,7 +184,6 @@ class TestCloneConsultation:
         response = ResponseFactory(question=question, respondent=respondent)
 
         # Create annotation - this creates a history record
-        annotation = ResponseAnnotation.objects.create(response=response)
 
         # Add AI themes - creates history records
         rat1 = ResponseAnnotationTheme.objects.create(
@@ -194,8 +191,8 @@ class TestCloneConsultation:
         )
 
         # Modify annotation to create more history
-        annotation.sentiment = ResponseAnnotation.Sentiment.AGREEMENT
-        annotation.save()
+        response.sentiment = Response.Sentiment.AGREEMENT
+        response.save()
 
         # Add human-assigned theme - creates another history record
         rat2 = ResponseAnnotationTheme.objects.create(
@@ -203,7 +200,7 @@ class TestCloneConsultation:
         )
 
         # Check original history counts before cloning
-        original_annotation_history_count = annotation.history.count()
+        original_annotation_history_count = response.history.count()
         original_rat1_history_count = rat1.history.count()
         original_rat2_history_count = rat2.history.count()
 
@@ -215,12 +212,11 @@ class TestCloneConsultation:
 
         cloned_question = Question.objects.get(consultation=cloned)
         cloned_response = Response.objects.get(question=cloned_question)
-        cloned_annotation = ResponseAnnotation.objects.get(response=cloned_response)
         cloned_themes = SelectedTheme.objects.filter(question=cloned_question)
         cloned_rats = ResponseAnnotationTheme.objects.filter(response=cloned_response)
 
         # Verify history records are cloned for annotation
-        assert cloned_annotation.history.count() == original_annotation_history_count
+        assert cloned_response.history.count() == original_annotation_history_count
 
         # Verify history records are cloned for ResponseAnnotationThemes
         for cloned_rat in cloned_rats:
@@ -231,8 +227,8 @@ class TestCloneConsultation:
                 assert cloned_rat.history.count() == original_rat2_history_count
 
         # Verify history records reference the cloned objects, not originals
-        for history_record in cloned_annotation.history.all():
-            assert history_record.id == cloned_annotation.id
+        for history_record in cloned_response.history.all():
+            assert history_record.id == cloned_response.id
             assert history_record.response_id == cloned_response.id
 
         for cloned_rat in cloned_rats:
@@ -262,13 +258,11 @@ class TestCloneConsultation:
         respondent = RespondentFactory(consultation=original)
         user = UserFactory()
         response = ResponseFactory(question=question, respondent=respondent)
-        annotation = ResponseAnnotation.objects.create(response=response)
-        annotation.flagged_by.add(user)
+        response.flagged_by.add(user)
 
         cloned = clone_consultation(original)
 
         cloned_question = Question.objects.get(consultation=cloned)
         cloned_response = Response.objects.get(question=cloned_question)
-        cloned_annotation = ResponseAnnotation.objects.get(response=cloned_response)
 
-        assert cloned_annotation.flagged_by.count() == 0
+        assert cloned_response.flagged_by.count() == 0

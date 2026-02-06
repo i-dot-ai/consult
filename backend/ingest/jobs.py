@@ -120,7 +120,6 @@ def delete_consultation_job(consultation: models.Consultation):
         logger.info("Deleting response annotation themes...")
         delete_response_annotation_themes(consultation_id)
 
-        delete_response_related_table("consultations_responseannotation", consultation_id)
         delete_response_related_table("consultations_response_chosen_options", consultation_id)
         delete_response_related_table("consultations_response_read_by", consultation_id)
 

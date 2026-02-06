@@ -8,8 +8,7 @@ from django_rq import job
 from backend.consultations.models import (
     Consultation,
     MultiChoiceAnswer,
-    Question,
-    ResponseAnnotation,
+    Question, Response,
 )
 from backend.factories import (
     CandidateThemeFactory,
@@ -119,7 +118,7 @@ def create_response_annotation(response, question):
         selected_themes,
         k=random.randint(1, len(selected_themes)),
     )
-    random_sentiment = random.choice([s[0] for s in ResponseAnnotation.Sentiment.choices])
+    random_sentiment = random.choice([s[0] for s in Response.Sentiment.choices])
     random_evidence_rich = random.choice([True, False])
     ResponseAnnotationFactoryNoThemes(
         response=response,

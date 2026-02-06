@@ -12,7 +12,7 @@ from backend.consultations.api.serializers import (
     ThemeAggregationsSerializer,
     ThemeSerializer,
 )
-from django.db.models import Count, Exists, OuterRef
+from django.db.models import Count, Exists, OuterRef, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -85,16 +85,10 @@ class ResponseViewSet(ModelViewSet):
         )
 
         queryset = queryset.annotate(
-            is_flagged=Exists(
-                models.ResponseAnnotation.objects.filter(
-                    response=OuterRef("pk"), flagged_by=self.request.user
-                )
-            ),
-            is_read_by_user=Exists(
-                models.Response.objects.filter(read_by=self.request.user, pk=OuterRef("pk"))
-            ),
+            is_flagged=Q(flagged_by=self.request.user),
+            is_read_by_user=Q(read_by=self.request.user),
             annotation_is_edited=Exists(
-                models.ResponseAnnotation.history.filter(id=OuterRef("annotation__id")).values(
+                models.Response.history.filter(id=OuterRef("id")).values(
                     "id"
                 )[1:]
             ),

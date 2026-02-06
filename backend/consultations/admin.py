@@ -14,7 +14,6 @@ from backend.consultations.models import (
     Question,
     Respondent,
     Response,
-    ResponseAnnotation,
     ResponseAnnotationTheme,
     SelectedTheme,
 )
@@ -190,15 +189,6 @@ class QuestionAdmin(admin.ModelAdmin):
         )
 
 
-class ResponseAnnotationAdmin(SimpleHistoryAdmin):
-    readonly_fields = [
-        "response",
-        "sentiment",
-        "evidence_rich",
-        "human_reviewed",
-        "reviewed_by",
-        "reviewed_at",
-    ]
 
 
 class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
@@ -238,7 +228,6 @@ admin.site.register(CrossCuttingTheme, CrossCuttingThemeAdmin)
 admin.site.register(Response, ResponseAdmin)
 admin.site.register(Consultation, ConsultationAdmin)
 admin.site.register(Question, QuestionAdmin)
-admin.site.register(ResponseAnnotation, ResponseAnnotationAdmin)
 admin.site.register(ResponseAnnotationTheme, ResponseAnnotationThemeAdmin)
 admin.site.register(Respondent, RespondentAdmin)
 admin.site.register(DemographicOption, DemographicOptionAdmin)

@@ -118,7 +118,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
         # Count human-reviewed responses
         reviewed_responses = self.response_set.filter(
-            free_text__isnull=False, free_text__gt="", annotation__human_reviewed=True
+            free_text__isnull=False, free_text__gt="", human_reviewed=True
         ).count()
 
         return reviewed_responses / total_responses
@@ -223,9 +223,9 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
 
     # Human review tracking
     human_reviewed = models.BooleanField(default=False, null=True, blank=True)
-    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="reviewed_by")
     reviewed_at = models.DateTimeField(null=True, blank=True)
-    flagged_by = models.ManyToManyField(to=User, null=True, blank=True, related_name="+")
+    flagged_by = models.ManyToManyField(to=User, null=True, blank=True, related_name="flagged_by")
 
 
     # History tracking
@@ -447,10 +447,6 @@ class CrossCuttingTheme(UUIDPrimaryKeyModel, TimeStampedModel):
 class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     """Through model to track original AI vs human-reviewed theme assignments"""
 
-    # TODO: delete old_response_annotation
-    old_response_annotation = models.ForeignKey(
-        "ResponseAnnotation", on_delete=models.CASCADE, null=True, blank=True
-    )
     response = models.ForeignKey("Response", on_delete=models.CASCADE)
     theme = models.ForeignKey(SelectedTheme, on_delete=models.CASCADE)
     assigned_by = models.ForeignKey(
@@ -474,70 +470,6 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
 
-class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
-    """AI outputs and human reviews for a response"""
-
-    class Sentiment(models.TextChoices):
-        AGREEMENT = "AGREEMENT", "Agreement"
-        DISAGREEMENT = "DISAGREEMENT", "Disagreement"
-        UNCLEAR = "UNCLEAR", "Unclear"
-
-    response = models.OneToOneField(Response, on_delete=models.CASCADE, related_name="annotation")
-
-    # AI-generated outputs (only for free text responses)
-    # TODO: delete old_themes
-    old_themes = models.ManyToManyField(SelectedTheme, through=ResponseAnnotationTheme, blank=True)
-    sentiment = models.CharField(max_length=12, choices=Sentiment.choices, null=True, blank=True)
-    evidence_rich = models.BooleanField(default=False, null=True, blank=True)
-
-    # Human review tracking
-    human_reviewed = models.BooleanField(default=False)
-    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    reviewed_at = models.DateTimeField(null=True, blank=True)
-    flagged_by = models.ManyToManyField(to=User, blank=True, related_name="flagged_by")
-
-    # History tracking
-    history = HistoricalRecords()
-
-    @property
-    def is_edited(self) -> bool:
-        """has this annotation ever been changed?"""
-        if self.history.count() > 1:
-            return True
-
-        # have associated themes ever been changed by a human?
-        return ResponseAnnotationTheme.history.filter(
-            response=self.response,
-            assigned_by__isnull=False,
-        ).exists()
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        indexes = [
-            models.Index(fields=["human_reviewed"]),
-            models.Index(fields=["sentiment"]),
-            models.Index(fields=["evidence_rich"]),
-        ]
-
-    def mark_human_reviewed(self, user):
-        """Helper method to mark as human reviewed"""
-        self.human_reviewed = True
-        self.reviewed_by = user
-        self.reviewed_at = timezone.now()
-        self.save()
-
-    def save(self, *args, **kwargs) -> None:
-        """
-        Override save to prevent accidental direct theme manipulation.
-        Themes should be added using add_original_ai_themes() or set_human_reviewed_themes().
-        """
-        # Check if themes are being passed via save (which shouldn't happen)
-        if "themes" in kwargs:
-            raise ValueError(
-                "Direct theme assignment through save() is not allowed. "
-                "Use add_original_ai_themes() or set_human_reviewed_themes() instead."
-            )
-
-        super().save(*args, **kwargs)
 
 
 class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]

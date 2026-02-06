@@ -13,7 +13,6 @@ from backend.consultations.models import (
     DemographicOption,
     Respondent,
     Response,
-    ResponseAnnotation,
     ResponseAnnotationTheme,
     SelectedTheme,
 )
@@ -475,7 +474,10 @@ def ai_assigned_theme(free_text_question):
 
 @pytest.fixture
 def free_text_annotation(free_text_response, staff_user, ai_assigned_theme):
-    annotation = ResponseAnnotation.objects.create(response=free_text_response, evidence_rich=True)
+    free_text_response.response=free_text_response
+    free_text_response.evidence_rich=True
+    free_text_response.save()
+
     theme_b = SelectedTheme.objects.create(
         question=free_text_response.question, key="Human assigned theme B"
     )
@@ -485,33 +487,31 @@ def free_text_annotation(free_text_response, staff_user, ai_assigned_theme):
     annotation_b = ResponseAnnotationTheme.objects.create(
         response=free_text_response, theme=theme_b, assigned_by=staff_user
     )
-    yield annotation
+    yield free_text_response
     annotation_a.delete()
     annotation_b.delete()
     theme_b.delete()
-    annotation.delete()
 
 
 @pytest.fixture
 def human_reviewed_annotation(another_response, theme_b):
-    annotation = ResponseAnnotation.objects.create(
-        response=another_response, evidence_rich=True, human_reviewed=False
-    )
+    another_response.evidence_rich=True
+    another_response.human_reviewed=False
+    another_response.save()
+
     annotation_a = ResponseAnnotationTheme.objects.create(response=another_response, theme=theme_b)
-    yield annotation
+    yield another_response
     annotation_a.delete()
-    annotation.delete()
 
 
 @pytest.fixture
 def un_reviewed_annotation(another_response, theme_b):
-    annotation = ResponseAnnotation.objects.create(
-        response=another_response, evidence_rich=True, human_reviewed=True
-    )
+    another_response.evidence_rich=True
+    another_response.human_reviewed=True
+    another_response.save()
     annotation_a = ResponseAnnotationTheme.objects.create(response=another_response, theme=theme_b)
-    yield annotation
+    yield another_response
     annotation_a.delete()
-    annotation.delete()
 
 
 @pytest.fixture
