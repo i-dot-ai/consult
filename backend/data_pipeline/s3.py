@@ -34,7 +34,7 @@ def read_jsonl(
         response = s3_client.get_object(Bucket=bucket_name, Key=key)
     except ClientError as e:
         if not raise_if_missing and e.response["Error"]["Code"] == "NoSuchKey":
-            logger.info(f"File not found (skipping): {key}")
+            logger.info("File not found (skipping): {key}", key=key)
             return []
         raise
 
@@ -73,7 +73,7 @@ def read_json(
         return data
     except ClientError as e:
         if not raise_if_missing and e.response["Error"]["Code"] == "NoSuchKey":
-            logger.info(f"File not found (skipping): {key}")
+            logger.info("File not found (skipping): {key}", key=key)
             return None
         raise
 

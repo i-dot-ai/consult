@@ -1,4 +1,3 @@
-import logging
 from typing import Any
 from uuid import UUID
 
@@ -58,11 +57,11 @@ class ConsultationViewSet(ModelViewSet):
         Override permissions for specific actions
         """
         permission_classes = self.permission_classes
-        
-        if self.action == 'destroy':
+
+        if self.action == "destroy":
             # Only admin users can delete consultations
             permission_classes = [IsAuthenticated, IsAdminUser]
-            
+
         return [permission() for permission in permission_classes]
 
     def perform_destroy(self, instance):
@@ -302,7 +301,7 @@ class ConsultationViewSet(ModelViewSet):
 
             for id in validated["question_ids"]:
                 try:
-                    logging.info("Exporting theme audit data - sending to queue")
+                    logger.info("Exporting theme audit data - sending to queue")
                     export_user_theme_job.delay(question_id=UUID(id), s3_key=validated["s3_key"])
                 except Exception:
                     return Response(
