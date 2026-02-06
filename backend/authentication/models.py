@@ -48,7 +48,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     # boilerplate required by django admin
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    has_dashboard_access = models.BooleanField(default=False)
 
     def has_perm(self, perm, obj=None):
         return True
