@@ -1,4 +1,3 @@
-from collections import defaultdict
 from typing import Dict, List, Optional
 from uuid import UUID
 
@@ -302,7 +301,6 @@ def import_consultation_data(
     Args:
         batch: Validated consultation data batch from S3
         user_id: User ID to associate with consultation
-        batch_size: int size of batch of responses to process
 
     Returns:
         UUID of created/updated consultation
@@ -343,10 +341,7 @@ def import_consultation_data(
 
     # 4. Create responses (free text and multi-choice)
     _ingest_responses(
-        consultation,
-        batch.responses_by_question,
-        batch.multi_choice_by_question,
-        batch_size=batch_size,
+        consultation, batch.responses_by_question, batch.multi_choice_by_question, batch_size
     )
 
     logger.info(
@@ -463,7 +458,7 @@ def _ingest_responses(
     consultation: Consultation,
     responses_by_question: Dict[int, List[ResponseInput]],
     multi_choice_by_question: Dict[int, List[MultiChoiceInput]],
-    batch_size=2048,
+    batch_size: int = 2048,
 ) -> None:
     """
     Create responses with careful indexing to link correct respondent + question.
@@ -477,12 +472,8 @@ def _ingest_responses(
         consultation: Consultation object
         responses_by_question: Dict mapping question_number to list of ResponseInputs
         multi_choice_by_question: Dict mapping question_number to list of MultiChoiceInputs
-        batch_size: int size of batch of responses to process
     """
     logger.info("Ingesting responses")
-
-    # Association Table
-    ResponseThemeThroughModel = Response.chosen_options.through
 
     # Build lookup dictionaries for efficient indexing
     respondent_lookup = {
@@ -497,27 +488,30 @@ def _ingest_responses(
             "Processing responses for question {question_number}", question_number=question_number
         )
 
-        mc_options_lookup = {
-            opt.text: opt for opt in MultiChoiceAnswer.objects.filter(question=question)
-        }
-
         free_text_responses = responses_by_question.get(question_number, [])
         multi_choice_responses = multi_choice_by_question.get(question_number, [])
 
         # Merge free text and multi-choice by themefinder_id
-        responses_by_tf_id: dict[int, dict] = defaultdict(dict)
+        responses_by_tf_id: Dict[int, Dict] = {}
 
         for resp in free_text_responses:
-            responses_by_tf_id[resp.themefinder_id]["free_text"] = resp.text
+            responses_by_tf_id[resp.themefinder_id] = {
+                "free_text": resp.text,
+                "multi_choice": None,
+            }
 
         for mc in multi_choice_responses:
-            responses_by_tf_id[mc.themefinder_id]["multi_choice"] = mc.options
+            if mc.themefinder_id in responses_by_tf_id:
+                responses_by_tf_id[mc.themefinder_id]["multi_choice"] = mc.options
+            else:
+                responses_by_tf_id[mc.themefinder_id] = {
+                    "free_text": None,
+                    "multi_choice": mc.options,
+                }
 
         # Create Response objects with batching based on token count
-        responses_to_create: list[Response] = []
-        response_theme_associations_to_create: list = []
+        responses_to_create: List = []
         max_total_tokens = 100_000
-
         total_tokens = 0
 
         for i, (tf_id, data) in enumerate(responses_by_tf_id.items()):
@@ -525,7 +519,7 @@ def _ingest_responses(
                 logger.warning("No respondent found for themefinder_id {tf_id}", tf_id=tf_id)
                 continue
 
-            free_text = data.get("free_text")
+            free_text = data["free_text"]
 
             # Calculate tokens for free text
             if free_text:
@@ -542,10 +536,8 @@ def _ingest_responses(
                 total_tokens + token_count > max_total_tokens
                 or len(responses_to_create) >= batch_size
             ):
-                Response.objects.bulk_create(responses_to_create)
-                ResponseThemeThroughModel.objects.bulk_create(response_theme_associations_to_create)
+                Response.objects.bulk_create([r for r, _ in responses_to_create])
                 responses_to_create = []
-                response_theme_associations_to_create = []
                 total_tokens = 0
                 logger.info(
                     f"Saved batch of responses for question {question_number} (total so far: {i + 1})"
@@ -557,21 +549,26 @@ def _ingest_responses(
                 free_text=free_text,
             )
 
-            responses_to_create.append(response)
-
-            for multi_choice_answer_text in data.get("multi_choice", []):
-                if multi_choice_answer := mc_options_lookup.get(multi_choice_answer_text):
-                    m2m = ResponseThemeThroughModel(
-                        response=response, multichoiceanswer=multi_choice_answer
-                    )
-                    response_theme_associations_to_create.append(m2m)
-
+            responses_to_create.append((response, data["multi_choice"]))
             total_tokens += token_count
 
         # Save last batch
         if responses_to_create:
-            created_responses = Response.objects.bulk_create(responses_to_create)
-            ResponseThemeThroughModel.objects.bulk_create(response_theme_associations_to_create)
+            created_responses = Response.objects.bulk_create([r for r, _ in responses_to_create])
+
+            # Set multi-choice options (requires M2M after creation)
+            mc_options_lookup = {
+                opt.text: opt for opt in MultiChoiceAnswer.objects.filter(question=question)
+            }
+
+            for response, (_, mc_options) in zip(created_responses, responses_to_create):
+                if mc_options:
+                    chosen = [
+                        mc_options_lookup[text] for text in mc_options if text in mc_options_lookup
+                    ]
+                    if chosen:
+                        response.chosen_options.set(chosen)
+                        response.save()
 
             # Update search vectors (via signal on save)
             for response in created_responses:
@@ -668,7 +665,6 @@ def import_consultation_from_s3(
         consultation_title: Display name
         user_id: User ID to associate
         enqueue_embeddings: Whether to enqueue embedding jobs (default True)
-        batch_size: int size of batch of responses to process
 
     Returns:
         Consultation UUID

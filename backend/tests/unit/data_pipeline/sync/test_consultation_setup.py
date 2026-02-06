@@ -11,6 +11,7 @@ from backend.data_pipeline.sync.consultation_setup import (
     import_consultation_from_s3,
 )
 from backend.factories import UserFactory
+from django.db.models import Count
 
 
 @pytest.mark.django_db
@@ -74,14 +75,6 @@ class TestImportConsultationFromS3:
         mock_responses_q1 = [
             {"themefinder_id": 1, "text": "I strongly support this proposal"},
             {"themefinder_id": 2, "text": "I have some concerns about implementation"},
-            {"themefinder_id": 3, "text": "this is response 3"},
-            {"themefinder_id": 4, "text": "this is response 4"},
-            {"themefinder_id": 5, "text": "this is response 5"},
-            {"themefinder_id": 6, "text": "this is response 6"},
-            {"themefinder_id": 7, "text": "this is response 7"},
-            {"themefinder_id": 8, "text": "this is response 8"},
-            {"themefinder_id": 9, "text": "this is response 9"},
-            {"themefinder_id": 10, "text": "this is response 10"},
         ]
 
         mock_responses_q3 = [
@@ -93,6 +86,14 @@ class TestImportConsultationFromS3:
         mock_multi_choice_q2 = [
             {"themefinder_id": 1, "options": ["Option A"]},
             {"themefinder_id": 2, "options": ["Option B", "Option C"]},
+            {"themefinder_id": 3, "options": ["Option C"]},
+            {"themefinder_id": 4, "options": ["Option A"]},
+            {"themefinder_id": 5, "options": ["Option B"]},
+            {"themefinder_id": 6, "options": ["Option C"]},
+            {"themefinder_id": 7, "options": ["Option A"]},
+            {"themefinder_id": 8, "options": ["Option B"]},
+            {"themefinder_id": 9, "options": ["Option C"]},
+            {"themefinder_id": 10, "options": ["Option A"]},
         ]
 
         mock_multi_choice_q3 = [
@@ -175,6 +176,19 @@ class TestImportConsultationFromS3:
 
         q1_response_2 = Response.objects.get(question=question_1, respondent=respondent_2)
         assert q1_response_2.free_text == "I have some concerns about implementation"
+
+        # verify that q2_response_1 has 10 responses
+        assert Response.objects.filter(question=question_2).count() == 10
+
+        # verify that all 10 response to q2_response_1 have at least one multi choice answer
+        assert (
+            Response.objects.filter(question=question_2)
+            .values("respondent")
+            .annotate(count=Count("chosen_options"))
+            .filter(count__gt=0)
+            .count()
+            == 10
+        )
 
         # Verify responses for multiple choice question
         q2_response_1 = Response.objects.get(question=question_2, respondent=respondent_1)
