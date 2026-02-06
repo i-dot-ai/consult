@@ -61,7 +61,8 @@ module "backend" {
   environment_variables = merge(local.base_env_vars, local.django_env_vars, {
     "APP_NAME"                 = var.project_name
     "EXECUTION_CONTEXT"        = "ecs"
-    "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-backend",
+    "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-backend"
+    "SENTRY_DSN"               = var.backend_sentry_dsn
   })
 
   secrets = [
@@ -122,6 +123,8 @@ module "frontend" {
     "EXECUTION_CONTEXT"        = "ecs"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
     "PUBLIC_LANGFUSE_URL"      = "https://core-langfuse.i.ai.gov.uk/",
+    "SENTRY_DSN"               = var.frontend_sentry_dsn,
+    "PUBLIC_SENTRY_DSN"        = var.frontend_sentry_dsn,
   })
 
   secrets = [
