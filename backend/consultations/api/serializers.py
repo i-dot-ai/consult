@@ -52,10 +52,7 @@ class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
     response_count = serializers.SerializerMethodField()
 
     def get_response_count(self, obj) -> int:
-        # Use prefetched count if available (avoids N+1)
-        if hasattr(obj, "prefetched_response_count"):
-            return obj.prefetched_response_count
-        return obj.response_set.count()
+        return obj.prefetched_response_count
 
     class Meta:
         model = MultiChoiceAnswer
@@ -71,10 +68,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     total_responses = serializers.SerializerMethodField()
 
     def get_total_responses(self, obj) -> int:
-        # Use prefetched count if available (avoids N+1)
-        if hasattr(obj, "prefetched_total_responses"):
-            return obj.prefetched_total_responses
-        return obj.response_set.count()
+        return obj.prefetched_total_responses
 
     class Meta:
         model = Question
@@ -148,10 +142,7 @@ class ThemeSerializer2(serializers.ModelSerializer):
     response_count = serializers.SerializerMethodField()
 
     def get_response_count(self, theme: SelectedTheme) -> int:
-        # Use prefetched count if available (avoids N+1)
-        if hasattr(theme, "prefetched_response_count"):
-            return theme.prefetched_response_count
-        return Response.objects.filter(annotation__themes=theme).count()
+        return theme.prefetched_response_count
 
     class Meta:
         model = SelectedTheme
@@ -163,10 +154,7 @@ class CrossCuttingThemeSerializer(serializers.ModelSerializer):
     response_count = serializers.SerializerMethodField()
 
     def get_response_count(self, cross_cutting_theme: CrossCuttingTheme) -> int:
-        # Use prefetched count if available (avoids N+1)
-        if hasattr(cross_cutting_theme, "prefetched_response_count"):
-            return cross_cutting_theme.prefetched_response_count
-        return Response.objects.filter(annotation__themes__parent=cross_cutting_theme).count()
+        return cross_cutting_theme.prefetched_response_count
 
     class Meta:
         model = CrossCuttingTheme
