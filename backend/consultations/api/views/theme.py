@@ -1,3 +1,5 @@
+from django.db.models import Count
+
 from backend.consultations import models
 from backend.consultations.api.permissions import (
     CanSeeConsultation,
@@ -19,5 +21,17 @@ class ThemeViewSet(ReadOnlyModelViewSet):
         # Staff users can see all themes, non-staff users only see themes for assigned consultations
         if not self.request.user.is_staff:
             queryset = queryset.filter(consultation__users=self.request.user)
+
+        # Prefetch selected themes with their response counts to avoid N+1
+        queryset = queryset.prefetch_related(
+            models.Prefetch(
+                "selectedtheme_set",
+                queryset=models.SelectedTheme.objects.select_related("question").annotate(
+                    prefetched_response_count=Count("responseannotation")
+                ),
+            )
+        ).annotate(
+            prefetched_response_count=Count("selectedtheme__responseannotation", distinct=True)
+        )
 
         return queryset.order_by("-created_at")

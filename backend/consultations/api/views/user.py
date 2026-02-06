@@ -56,7 +56,7 @@ class UserViewSet(ModelViewSet):
         Get all consultations that a specific user belongs to.
         """
         user = self.get_object()
-        consultations = models.Consultation.objects.filter(users=user)
+        consultations = models.Consultation.objects.filter(users=user).prefetch_related("users")
         serializer = ConsultationSerializer(consultations, many=True, context={"request": request})
         return Response(serializer.data)
 

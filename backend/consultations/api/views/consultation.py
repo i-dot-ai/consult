@@ -47,10 +47,10 @@ class ConsultationViewSet(ModelViewSet):
     def get_queryset(self):
         scope = self.request.query_params.get("scope")
         if scope == "assigned":
-            return Consultation.objects.filter(users=self.request.user).order_by("-created_at")
+            return Consultation.objects.filter(users=self.request.user).prefetch_related("users").order_by("-created_at")
         elif self.request.user.is_staff:
-            return Consultation.objects.all().order_by("-created_at")
-        return Consultation.objects.filter(users=self.request.user).order_by("-created_at")
+            return Consultation.objects.all().prefetch_related("users").order_by("-created_at")
+        return Consultation.objects.filter(users=self.request.user).prefetch_related("users").order_by("-created_at")
 
     def get_permissions(self):
         """
