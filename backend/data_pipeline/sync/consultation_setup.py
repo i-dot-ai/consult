@@ -29,7 +29,7 @@ from backend.embeddings import embed_text
 logger = settings.LOGGER
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
 DEFAULT_TIMEOUT_SECONDS = 3_600
-
+ResponseThemeThroughModel = Response.chosen_options.through
 
 # =============================================================================
 # S3 LOADERS - Load and validate data from S3
@@ -511,6 +511,7 @@ def _ingest_responses(
 
         # Create Response objects with batching based on token count
         responses_to_create: List = []
+        response_theme_associations_to_create = []
         max_total_tokens = 100_000
         total_tokens = 0
 
@@ -518,6 +519,10 @@ def _ingest_responses(
             if tf_id not in respondent_lookup:
                 logger.warning("No respondent found for themefinder_id {tf_id}", tf_id=tf_id)
                 continue
+
+            mc_options_lookup = {
+                opt.text: opt for opt in MultiChoiceAnswer.objects.filter(question=question)
+            }
 
             free_text = data["free_text"]
 
@@ -536,8 +541,12 @@ def _ingest_responses(
                 total_tokens + token_count > max_total_tokens
                 or len(responses_to_create) >= batch_size
             ):
-                Response.objects.bulk_create([r for r, _ in responses_to_create])
+                Response.objects.bulk_create(responses_to_create)
                 responses_to_create = []
+
+                ResponseThemeThroughModel.objects.bulk_create(response_theme_associations_to_create)
+                response_theme_associations_to_create = []
+
                 total_tokens = 0
                 logger.info(
                     f"Saved batch of responses for question {question_number} (total so far: {i + 1})"
@@ -549,26 +558,20 @@ def _ingest_responses(
                 free_text=free_text,
             )
 
-            responses_to_create.append((response, data["multi_choice"]))
+            responses_to_create.append(response)
+
+            for multi_choice_answer_text in data.get("multi_choice") or []:
+                if multi_choice_answer := mc_options_lookup.get(multi_choice_answer_text):
+                    m2m = ResponseThemeThroughModel(
+                        response=response, multichoiceanswer=multi_choice_answer
+                    )
+                    response_theme_associations_to_create.append(m2m)
             total_tokens += token_count
 
         # Save last batch
         if responses_to_create:
-            created_responses = Response.objects.bulk_create([r for r, _ in responses_to_create])
-
-            # Set multi-choice options (requires M2M after creation)
-            mc_options_lookup = {
-                opt.text: opt for opt in MultiChoiceAnswer.objects.filter(question=question)
-            }
-
-            for response, (_, mc_options) in zip(created_responses, responses_to_create):
-                if mc_options:
-                    chosen = [
-                        mc_options_lookup[text] for text in mc_options if text in mc_options_lookup
-                    ]
-                    if chosen:
-                        response.chosen_options.set(chosen)
-                        response.save()
+            created_responses = Response.objects.bulk_create(responses_to_create)
+            ResponseThemeThroughModel.objects.bulk_create(response_theme_associations_to_create)
 
             # Update search vectors (via signal on save)
             for response in created_responses:
