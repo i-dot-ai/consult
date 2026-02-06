@@ -197,3 +197,5 @@ lambda/**/*.zip
 lambda/**/celery/
 lambda/**/redis/
 lambda/**/__pycache__/
+
+.claude/

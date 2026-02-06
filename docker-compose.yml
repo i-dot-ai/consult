@@ -68,6 +68,7 @@ services:
     environment:
       - NODE_ENV=development
       - PUBLIC_BACKEND_URL=http://backend:8000
+      - PUBLIC_ENVIRONMENT=local
       - TEST_INTERNAL_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIn0.k27nav4gbG-2lIArYInTqP1GUz2LRuzb3lWandMKRoY
     volumes:
       - ./frontend:/app
