@@ -1,15 +1,16 @@
-from backend.consultations import models
-from backend.consultations.api.exceptions import (
-    PreconditionFailed,
-    PreconditionRequired,
-)
-from backend.consultations.api.permissions import CanSeeConsultation
-from backend.consultations.api.serializers import SelectedThemeSerializer
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ParseError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
+
+from consultations import models
+from consultations.api.exceptions import (
+    PreconditionFailed,
+    PreconditionRequired,
+)
+from consultations.api.permissions import CanSeeConsultation
+from consultations.api.serializers import SelectedThemeSerializer
 
 
 class SelectedThemeViewSet(ModelViewSet):

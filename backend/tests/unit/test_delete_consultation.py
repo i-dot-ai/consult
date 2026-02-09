@@ -1,8 +1,9 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from backend.authentication.models import User
-from backend.consultations.models import (
+
+from authentication.models import User
+from consultations.models import (
     Consultation,
     DemographicOption,
     MultiChoiceAnswer,
@@ -12,7 +13,7 @@ from backend.consultations.models import (
     ResponseAnnotation,
     SelectedTheme,
 )
-from backend.ingest.jobs import delete_consultation_job
+from ingest.jobs import delete_consultation_job
 
 
 @pytest.mark.django_db
@@ -195,7 +196,7 @@ def test_delete_consultation_job_handles_database_connection(mock_connection):
 
 @pytest.mark.django_db
 @patch("django.db.connection")
-@patch("backend.ingest.jobs.logger")
+@patch("ingest.jobs.logger")
 def test_delete_consultation_job_handles_exceptions(mock_logger, mock_connection):
     """Test that the delete job properly handles and logs exceptions."""
     # Mock connection.close() to prevent test database connection issues
@@ -205,7 +206,7 @@ def test_delete_consultation_job_handles_exceptions(mock_logger, mock_connection
 
     # Mock an exception during the model get operation (after connection.close but before deletion)
     with patch(
-        "backend.consultations.models.Consultation.objects.get",
+        "consultations.models.Consultation.objects.get",
         side_effect=Exception("Database error"),
     ):
         with pytest.raises(Exception) as exc_info:

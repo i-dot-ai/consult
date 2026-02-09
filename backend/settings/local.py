@@ -1,6 +1,6 @@
 from django.conf.global_settings import STORAGES
 
-from backend.settings.base import *  # noqa
+from settings.base import *  # noqa
 
 INSTALLED_APPS.append("django_extensions")  # noqa F405
 

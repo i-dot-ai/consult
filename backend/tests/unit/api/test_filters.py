@@ -2,9 +2,10 @@ import math
 from unittest.mock import patch
 
 import pytest
-from backend.consultations.api.filters import ResponseSearchFilter
-from backend.consultations.models import Response
 from django.conf import settings
+
+from consultations.api.filters import ResponseSearchFilter
+from consultations.models import Response
 
 
 def pad_vector(vector):
@@ -16,7 +17,7 @@ def pad_vector(vector):
 
 
 @pytest.mark.django_db
-@patch("backend.consultations.api.filters.embed_text", return_value=pad_vector([1, 0]))
+@patch("consultations.api.filters.embed_text", return_value=pad_vector([1, 0]))
 @pytest.mark.parametrize("delta, expected", [(+0.0001, True), (-0.0001, False)])
 def test_semantic_threshold_for_response_search_filter(
     mock_embed_text, respondent_1, respondent_2, free_text_question, delta, expected

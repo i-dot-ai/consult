@@ -1,6 +1,7 @@
-from backend.consultations.dummy_data import create_dummy_consultation_from_yaml
-from backend.consultations.models import Consultation
 from django.core.management.base import BaseCommand
+
+from consultations.dummy_data import create_dummy_consultation_from_yaml
+from consultations.models import Consultation
 
 
 class Command(BaseCommand):

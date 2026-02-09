@@ -13,7 +13,7 @@ from django.utils import timezone
 from pgvector.django import VectorField
 from simple_history.models import HistoricalRecords
 
-from backend.authentication.models import User
+from authentication.models import User
 
 
 # TODO: we don't use this anymore, remove it without manage.py makemigrations complaining
