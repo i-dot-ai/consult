@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from django.db.models import Count
 
 from consultations.models import (
     Consultation,
@@ -11,12 +12,7 @@ from consultations.models import (
 from data_pipeline.sync.consultation_setup import (
     import_consultation_from_s3,
 )
-<<<<<<< feature/make-backend-non-importable
 from factories import UserFactory
-=======
-from backend.factories import UserFactory
-from django.db.models import Count
->>>>>>> main
 
 
 @pytest.mark.django_db
