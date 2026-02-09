@@ -1,8 +1,9 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from backend.authentication.models import User
-from backend.consultations.models import (
+
+from authentication.models import User
+from consultations.models import (
     Consultation,
     DemographicOption,
     MultiChoiceAnswer,
@@ -11,7 +12,7 @@ from backend.consultations.models import (
     Response,
     SelectedTheme,
 )
-from backend.ingest.jobs import delete_consultation_job
+from ingest.jobs import delete_consultation_job
 
 
 @pytest.mark.django_db
@@ -71,15 +72,15 @@ def test_delete_consultation_cascading():
     )
 
     # Create response annotations
-    response1.sentiment=Response.Sentiment.AGREEMENT
-    response1.evidence_rich=True
-    response1.human_reviewed=False
+    response1.sentiment = Response.Sentiment.AGREEMENT
+    response1.evidence_rich = True
+    response1.human_reviewed = False
     response1.themes.add(theme1)
     response1.save()
 
-    response2.sentiment=Response.Sentiment.DISAGREEMENT
-    response2.evidence_rich=False
-    response2.human_reviewed=False
+    response2.sentiment = Response.Sentiment.DISAGREEMENT
+    response2.evidence_rich = False
+    response2.human_reviewed = False
     response2.themes.add(theme2)
     response2.save()
 
@@ -143,8 +144,8 @@ def test_delete_consultation_job_success(mock_connection):
         question=question, name="Test theme", description="Test description", key="test"
     )
 
-    response.sentiment=Response.Sentiment.UNCLEAR
-    response.evidence_rich=False
+    response.sentiment = Response.Sentiment.UNCLEAR
+    response.evidence_rich = False
     response.themes.add(theme)
     response.save()
 
@@ -180,7 +181,7 @@ def test_delete_consultation_job_handles_database_connection(mock_connection):
 
 @pytest.mark.django_db
 @patch("django.db.connection")
-@patch("backend.ingest.jobs.logger")
+@patch("ingest.jobs.logger")
 def test_delete_consultation_job_handles_exceptions(mock_logger, mock_connection):
     """Test that the delete job properly handles and logs exceptions."""
     # Mock connection.close() to prevent test database connection issues
@@ -190,7 +191,7 @@ def test_delete_consultation_job_handles_exceptions(mock_logger, mock_connection
 
     # Mock an exception during the model get operation (after connection.close but before deletion)
     with patch(
-        "backend.consultations.models.Consultation.objects.get",
+        "consultations.models.Consultation.objects.get",
         side_effect=Exception("Database error"),
     ):
         with pytest.raises(Exception) as exc_info:
@@ -259,14 +260,13 @@ def test_delete_consultation_with_multiple_questions():
     )
 
     # Create annotations
-    response1.sentiment=Response.Sentiment.AGREEMENT
+    response1.sentiment = Response.Sentiment.AGREEMENT
     response1.themes.add(theme1)
     response1.save()
 
-    response2.sentiment=Response.Sentiment.DISAGREEMENT
+    response2.sentiment = Response.Sentiment.DISAGREEMENT
     response2.themes.add(theme2)
     response2.save()
-
 
     # Verify all data exists
     assert Question.objects.filter(consultation=consultation).count() == 2

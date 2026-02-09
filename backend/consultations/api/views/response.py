@@ -1,17 +1,5 @@
 from collections import defaultdict
 
-from backend.consultations import models
-from backend.consultations.api.filters import ResponseFilter, ResponseSearchFilter
-from backend.consultations.api.permissions import (
-    CanSeeConsultation,
-)
-from backend.consultations.api.serializers import (
-    DemographicAggregationsSerializer,
-    ResponseSerializer,
-    ResponseThemeInformationSerializer,
-    ThemeAggregationsSerializer,
-    ThemeSerializer,
-)
 from django.db.models import Count, Exists, OuterRef, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
@@ -19,6 +7,19 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+
+from consultations import models
+from consultations.api.filters import ResponseFilter, ResponseSearchFilter
+from consultations.api.permissions import (
+    CanSeeConsultation,
+)
+from consultations.api.serializers import (
+    DemographicAggregationsSerializer,
+    ResponseSerializer,
+    ResponseThemeInformationSerializer,
+    ThemeAggregationsSerializer,
+    ThemeSerializer,
+)
 
 
 class BespokeResultsSetPagination(PageNumberPagination):
@@ -87,9 +88,7 @@ class ResponseViewSet(ModelViewSet):
             is_flagged=Q(flagged_by=self.request.user),
             is_read_by_user=Q(read_by=self.request.user),
             annotation_is_edited=Exists(
-                models.Response.history.filter(id=OuterRef("id")).values(
-                    "id"
-                )[1:]
+                models.Response.history.filter(id=OuterRef("id")).values("id")[1:]
             ),
             annotation_has_human_assigned_themes=Exists(
                 models.ResponseAnnotationTheme.history.filter(

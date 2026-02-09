@@ -5,7 +5,7 @@ from django.db import transaction
 from django.db.models import Model, QuerySet
 from django_rq import job
 
-from backend.consultations.models import (
+from consultations.models import (
     CandidateTheme,
     Consultation,
     CrossCuttingTheme,

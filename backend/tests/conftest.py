@@ -8,7 +8,7 @@ from django.test import RequestFactory
 from moto import mock_aws
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from backend.consultations.models import (
+from consultations.models import (
     Consultation,
     DemographicOption,
     Respondent,
@@ -16,7 +16,7 @@ from backend.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
-from backend.factories import (
+from factories import (
     CandidateThemeFactory,
     ConsultationFactory,
     MultiChoiceAnswerFactory,
@@ -474,8 +474,8 @@ def ai_assigned_theme(free_text_question):
 
 @pytest.fixture
 def free_text_annotation(free_text_response, staff_user, ai_assigned_theme):
-    free_text_response.evidence_rich=True
-    free_text_response.sentiment=Response.Sentiment.AGREEMENT
+    free_text_response.evidence_rich = True
+    free_text_response.sentiment = Response.Sentiment.AGREEMENT
     free_text_response.save()
 
     theme_b = SelectedTheme.objects.create(
@@ -495,8 +495,8 @@ def free_text_annotation(free_text_response, staff_user, ai_assigned_theme):
 
 @pytest.fixture
 def human_reviewed_annotation(another_response, theme_b):
-    another_response.evidence_rich=True
-    another_response.human_reviewed=False
+    another_response.evidence_rich = True
+    another_response.human_reviewed = False
     another_response.save()
 
     annotation_a = ResponseAnnotationTheme.objects.create(response=another_response, theme=theme_b)
@@ -506,8 +506,8 @@ def human_reviewed_annotation(another_response, theme_b):
 
 @pytest.fixture
 def un_reviewed_annotation(another_response, theme_b):
-    another_response.evidence_rich=True
-    another_response.human_reviewed=True
+    another_response.evidence_rich = True
+    another_response.human_reviewed = True
     another_response.save()
     annotation_a = ResponseAnnotationTheme.objects.create(response=another_response, theme=theme_b)
     yield another_response

@@ -2,10 +2,9 @@ from django.conf import settings
 from django.contrib import admin, messages
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
-from simple_history.admin import SimpleHistoryAdmin
 
-from backend.consultations.dummy_data import create_dummy_consultation_from_yaml_job
-from backend.consultations.models import (
+from consultations.dummy_data import create_dummy_consultation_from_yaml_job
+from consultations.models import (
     CandidateTheme,
     Consultation,
     CrossCuttingTheme,
@@ -17,8 +16,8 @@ from backend.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
-from backend.consultations.services.clone import clone_consultation_job
-from backend.data_pipeline.jobs import (
+from consultations.services.clone import clone_consultation_job
+from data_pipeline.jobs import (
     import_candidate_themes,
 )
 
@@ -187,8 +186,6 @@ class QuestionAdmin(admin.ModelAdmin):
         return HttpResponseRedirect(
             reverse("admin:consultations_question_change", args=[question_id])
         )
-
-
 
 
 class ResponseAnnotationThemeAdmin(admin.ModelAdmin):

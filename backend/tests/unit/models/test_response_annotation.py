@@ -1,15 +1,15 @@
 import pytest
-from backend.factories import (
+from django.utils import timezone
+from freezegun import freeze_time
+
+from consultations.models import Response
+from factories import (
     ResponseAnnotationFactory,
     ResponseFactory,
     ReviewedResponseAnnotationFactory,
     SelectedThemeFactory,
     UserFactory,
 )
-from django.utils import timezone
-from freezegun import freeze_time
-
-from backend.consultations.models import Response
 
 
 @pytest.mark.django_db
@@ -23,7 +23,6 @@ class TestResponseAnnotation:
         assert not annotation.human_reviewed
         assert annotation.reviewed_by is None
         assert annotation.reviewed_at is None
-
 
     def test_themes_relationship(self):
         """Test many-to-many relationship with themes"""
@@ -47,8 +46,6 @@ class TestResponseAnnotation:
         assert theme1 in response.themes.all()
         assert theme2 in response.themes.all()
 
-
-
     def test_human_review_tracking(self):
         """Test human review functionality"""
         annotation = ResponseAnnotationFactory()
@@ -70,4 +67,3 @@ class TestResponseAnnotation:
         assert reviewed.human_reviewed
         assert reviewed.reviewed_by is not None
         assert reviewed.reviewed_at is not None
-

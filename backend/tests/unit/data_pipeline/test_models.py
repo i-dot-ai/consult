@@ -1,5 +1,8 @@
 import pytest
-from backend.data_pipeline.models import (
+from pydantic import ValidationError
+from themefinder.models import ThemeNode
+
+from data_pipeline.models import (
     AnnotationBatch,
     CandidateThemeBatch,
     ConsultationDataBatch,
@@ -12,8 +15,6 @@ from backend.data_pipeline.models import (
     SentimentInput,
     ThemeMappingInput,
 )
-from pydantic import ValidationError
-from themefinder.models import ThemeNode
 
 
 class TestRespondentInput:

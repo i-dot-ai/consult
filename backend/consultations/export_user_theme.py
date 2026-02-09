@@ -8,7 +8,7 @@ import boto3
 from django.conf import settings
 from django_rq import job
 
-from backend.consultations.models import (
+from consultations.models import (
     Question,
     Response,
 )

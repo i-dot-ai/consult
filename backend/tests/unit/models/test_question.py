@@ -1,10 +1,11 @@
 import django
 import pytest
-from backend.consultations.models import (
+
+from consultations.models import (
     Question,
     Response,
 )
-from backend.factories import (
+from factories import (
     ConsultationFactory,
     QuestionFactory,
     QuestionWithBothFactory,

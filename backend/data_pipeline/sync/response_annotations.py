@@ -3,14 +3,15 @@ from typing import Dict, List, Optional
 from django.conf import settings
 from django.db import transaction
 
-import backend.data_pipeline.s3 as s3
-from backend.consultations.models import (
+import data_pipeline.s3 as s3
+from consultations.models import (
     Consultation,
     Question,
     Response,
-    SelectedTheme, ResponseAnnotationTheme,
+    ResponseAnnotationTheme,
+    SelectedTheme,
 )
-from backend.data_pipeline.models import (
+from data_pipeline.models import (
     AnnotationBatch,
     DetailDetectionInput,
     SelectedThemeInput,
@@ -482,9 +483,10 @@ def _import_response_annotations(
                     question_number=question.number,
                 )
 
-
     # Bulk create annotations
-    annotation_count = Response.objects.bulk_update(responses, ["sentiment","evidence_rich", "human_reviewed"])
+    annotation_count = Response.objects.bulk_update(
+        responses, ["sentiment", "evidence_rich", "human_reviewed"]
+    )
 
     logger.info(
         "Created {annotation_count} response annotations for question {question_number}",

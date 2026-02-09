@@ -13,7 +13,7 @@ from django.utils import timezone
 from pgvector.django import VectorField
 from simple_history.models import HistoricalRecords
 
-from backend.authentication.models import User
+from authentication.models import User
 
 
 # TODO: we don't use this anymore, remove it without manage.py makemigrations complaining
@@ -199,11 +199,11 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     """Response to a question - can include both free text and multiple choice"""
+
     class Sentiment(models.TextChoices):
         AGREEMENT = "AGREEMENT", "Agreement"
         DISAGREEMENT = "DISAGREEMENT", "Disagreement"
         UNCLEAR = "UNCLEAR", "Unclear"
-
 
     respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
@@ -223,10 +223,11 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
 
     # Human review tracking
     human_reviewed = models.BooleanField(default=False, null=True, blank=True)
-    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="reviewed_by")
+    reviewed_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="reviewed_by"
+    )
     reviewed_at = models.DateTimeField(null=True, blank=True)
     flagged_by = models.ManyToManyField(to=User, null=True, blank=True, related_name="flagged_by")
-
 
     # History tracking
     history = HistoricalRecords(excluded_fields=["search_vector"])
@@ -237,7 +238,6 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
         self.reviewed_by = user
         self.reviewed_at = timezone.now()
         self.save()
-
 
     @property
     def is_edited(self) -> bool:
@@ -250,7 +250,6 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
             response=self,
             assigned_by__isnull=False,
         ).exists()
-
 
     def add_original_ai_themes(self, themes):
         """Add themes as original AI assignments"""
@@ -468,8 +467,6 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
                 name="unique_theme_assignment",
             ),
         ]
-
-
 
 
 class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]

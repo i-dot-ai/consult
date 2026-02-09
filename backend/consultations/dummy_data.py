@@ -5,21 +5,21 @@ import yaml
 from django.conf import settings
 from django_rq import job
 
-from backend.consultations.models import (
+from consultations.models import (
     Consultation,
     MultiChoiceAnswer,
-    Question, Response,
+    Question,
+    Response,
 )
-from backend.factories import (
+from factories import (
     CandidateThemeFactory,
     ConsultationFactory,
     QuestionFactory,
     RespondentFactory,
-    ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
     SelectedThemeFactory,
 )
-from backend.hosting_environment import HostingEnvironment
+from hosting_environment import HostingEnvironment
 
 logger = settings.LOGGER
 
@@ -120,8 +120,8 @@ def create_response_annotation(response, question):
     )
     random_sentiment = random.choice([s[0] for s in Response.Sentiment.choices])
     random_evidence_rich = random.choice([True, False])
-    response.sentiment=random_sentiment
-    response.evidence_rich=random_evidence_rich
+    response.sentiment = random_sentiment
+    response.evidence_rich = random_evidence_rich
     response.add_original_ai_themes(themes_for_response)
     response.save()
 

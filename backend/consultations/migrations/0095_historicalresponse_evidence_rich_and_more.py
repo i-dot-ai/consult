@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("consultations", "0094_historicalresponse_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -103,20 +102,14 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="response",
-            index=models.Index(
-                fields=["human_reviewed"], name="consultatio_human_r_53734f_idx"
-            ),
+            index=models.Index(fields=["human_reviewed"], name="consultatio_human_r_53734f_idx"),
         ),
         migrations.AddIndex(
             model_name="response",
-            index=models.Index(
-                fields=["sentiment"], name="consultatio_sentime_450fc3_idx"
-            ),
+            index=models.Index(fields=["sentiment"], name="consultatio_sentime_450fc3_idx"),
         ),
         migrations.AddIndex(
             model_name="response",
-            index=models.Index(
-                fields=["evidence_rich"], name="consultatio_evidenc_fc8cbd_idx"
-            ),
+            index=models.Index(fields=["evidence_rich"], name="consultatio_evidenc_fc8cbd_idx"),
         ),
     ]

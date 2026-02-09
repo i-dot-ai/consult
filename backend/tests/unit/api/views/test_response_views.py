@@ -4,14 +4,13 @@ from uuid import uuid4
 
 import orjson
 import pytest
-from backend.consultations.models import ResponseAnnotationTheme, Response
-from backend.factories import (
+from django.urls import reverse
+
+from consultations.models import Response, ResponseAnnotationTheme
+from factories import (
     RespondentFactory,
-    ResponseAnnotationFactory,
-    ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
 )
-from django.urls import reverse
 
 
 @pytest.mark.django_db
@@ -488,10 +487,10 @@ class TestResponseViewSet:
             question=free_text_question, respondent=respondent_2, free_text="Response 2"
         )
 
-        response_1.evidence_rich=True
+        response_1.evidence_rich = True
         response_1.save()
 
-        response_2.evidence_rich=False
+        response_2.evidence_rich = False
         response_2.save()
 
         url = reverse(
@@ -548,12 +547,11 @@ class TestResponseViewSet:
             question=free_text_question, respondent=respondent_2, free_text="Response 2"
         )
 
-        response_1.sentiment=Response.Sentiment.AGREEMENT
+        response_1.sentiment = Response.Sentiment.AGREEMENT
         response_1.save()
 
-        response_2.sentiment=Response.Sentiment.UNCLEAR
+        response_2.sentiment = Response.Sentiment.UNCLEAR
         response_2.save()
-
 
         url = reverse(
             "response-list",
@@ -834,7 +832,6 @@ class TestResponseViewSet:
         client,
         staff_user,
         staff_user_token,
-        free_text_response,
         free_text_annotation,
         alternative_theme,
         ai_assigned_theme,
@@ -847,7 +844,7 @@ class TestResponseViewSet:
             },
         )
 
-        assert list(free_text_response.themes.values_list("key", flat=True)) == [
+        assert list(free_text_annotation.themes.values_list("key", flat=True)) == [
             "AI assigned theme A",
             "Human assigned theme B",
         ]
@@ -867,10 +864,10 @@ class TestResponseViewSet:
         assert response.json()["is_edited"] is True
 
         # check that there are two versions of the Response (initial + after theme update)
-        assert free_text_response.history.count() == 2
+        assert free_text_annotation.history.count() == 2
 
         # get history of the ResponseAnnotationTheme
-        history = ResponseAnnotationTheme.history.filter(response=free_text_response).order_by(
+        history = ResponseAnnotationTheme.history.filter(response=free_text_annotation).order_by(
             "history_date"
         )
         assert history.count() == 4
@@ -896,7 +893,7 @@ class TestResponseViewSet:
         assert history[3].theme.key == "Human assigned theme C"
         assert history[3].assigned_by == staff_user
 
-        assert list(free_text_response.get_original_ai_themes()) == [ai_assigned_theme]
+        assert list(free_text_annotation.get_original_ai_themes()) == [ai_assigned_theme]
 
     def test_patch_response_themes_invalid(self, client, staff_user_token, free_text_annotation):
         url = reverse(
@@ -1007,7 +1004,7 @@ class TestResponseViewSet:
         )
 
         with patch(
-            "backend.consultations.api.filters.embed_text",
+            "consultations.api.filters.embed_text",
             return_value=embedded_responses["search_mode"]["semantic"]["embedding"],
         ):
             response = client.get(
@@ -1051,7 +1048,7 @@ class TestResponseViewSet:
         theme_description = "Local councils should invest in public transport infrastructure"
 
         with patch(
-            "backend.consultations.api.filters.embed_text",
+            "consultations.api.filters.embed_text",
             return_value=embedded_responses["search_mode"]["representative"]["embedding"],
         ):
             """

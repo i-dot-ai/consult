@@ -1,15 +1,16 @@
 import json
 
 import pytest
-from backend.consultations.models import User
 from django.urls import reverse
+
+from consultations.models import User
 
 
 @pytest.mark.django_db
 class TestUserViewSet:
     def test_users_list(self, client, staff_user_token, non_staff_user):
         # Create a second non-staff user to get total of 3 users
-        from backend.factories import UserFactory
+        from factories import UserFactory
 
         additional_user = UserFactory(is_staff=False)
 
