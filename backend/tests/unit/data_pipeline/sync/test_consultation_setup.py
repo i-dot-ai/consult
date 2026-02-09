@@ -11,7 +11,12 @@ from consultations.models import (
 from data_pipeline.sync.consultation_setup import (
     import_consultation_from_s3,
 )
+<<<<<<< feature/make-backend-non-importable
 from factories import UserFactory
+=======
+from backend.factories import UserFactory
+from django.db.models import Count
+>>>>>>> main
 
 
 @pytest.mark.django_db
@@ -34,6 +39,13 @@ class TestImportConsultationFromS3:
             {"themefinder_id": 1, "demographic_data": {"age": ["25-34"]}},
             {"themefinder_id": 2, "demographic_data": {"region": ["North"]}},
             {"themefinder_id": 3, "demographic_data": {}},
+            {"themefinder_id": 4, "demographic_data": {}},
+            {"themefinder_id": 5, "demographic_data": {}},
+            {"themefinder_id": 6, "demographic_data": {}},
+            {"themefinder_id": 7, "demographic_data": {}},
+            {"themefinder_id": 8, "demographic_data": {}},
+            {"themefinder_id": 9, "demographic_data": {}},
+            {"themefinder_id": 10, "demographic_data": {}},
         ]
 
         # Mock question folders
@@ -79,6 +91,14 @@ class TestImportConsultationFromS3:
         mock_multi_choice_q2 = [
             {"themefinder_id": 1, "options": ["Option A"]},
             {"themefinder_id": 2, "options": ["Option B", "Option C"]},
+            {"themefinder_id": 3, "options": ["Option C"]},
+            {"themefinder_id": 4, "options": ["Option A"]},
+            {"themefinder_id": 5, "options": ["Option B"]},
+            {"themefinder_id": 6, "options": ["Option C"]},
+            {"themefinder_id": 7, "options": ["Option A"]},
+            {"themefinder_id": 8, "options": ["Option B"]},
+            {"themefinder_id": 9, "options": ["Option C"]},
+            {"themefinder_id": 10, "options": ["Option A"]},
         ]
 
         mock_multi_choice_q3 = [
@@ -122,6 +142,7 @@ class TestImportConsultationFromS3:
             consultation_title="Test Consultation",
             user_id=user.id,
             enqueue_embeddings=True,
+            batch_size=2,
         )
 
         # Verify consultation was created
@@ -130,8 +151,10 @@ class TestImportConsultationFromS3:
         assert consultation.title == "Test Consultation"
         assert user in consultation.users.all()
 
+        # verify that the number of responses is much larger than the batch size=2
+        assert Respondent.objects.filter(consultation=consultation).count() == 10
+
         # Verify respondents were created with correct themefinder_ids
-        assert Respondent.objects.filter(consultation=consultation).count() == 3
         respondent_1 = Respondent.objects.get(consultation=consultation, themefinder_id=1)
         respondent_2 = Respondent.objects.get(consultation=consultation, themefinder_id=2)
         respondent_3 = Respondent.objects.get(consultation=consultation, themefinder_id=3)
@@ -158,6 +181,19 @@ class TestImportConsultationFromS3:
 
         q1_response_2 = Response.objects.get(question=question_1, respondent=respondent_2)
         assert q1_response_2.free_text == "I have some concerns about implementation"
+
+        # verify that q2_response_1 has 10 responses
+        assert Response.objects.filter(question=question_2).count() == 10
+
+        # verify that all 10 response to q2_response_1 have at least one multi choice answer
+        assert (
+            Response.objects.filter(question=question_2)
+            .values("respondent")
+            .annotate(count=Count("chosen_options"))
+            .filter(count__gt=0)
+            .count()
+            == 10
+        )
 
         # Verify responses for multiple choice question
         q2_response_1 = Response.objects.get(question=question_2, respondent=respondent_1)
