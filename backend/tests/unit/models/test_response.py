@@ -44,13 +44,6 @@ class TestResponse:
                 free_text="Duplicate response",
             )
 
-    def test_response_annotation_relationship(self):
-        """Test one-to-one relationship with ResponseAnnotation"""
-        response = factories.ResponseFactory()
-        annotation = factories.ResponseAnnotationFactory(response=response)
-
-        assert response.annotation == annotation
-        assert annotation.response == response
 
 
 @pytest.mark.django_db

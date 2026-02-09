@@ -114,7 +114,7 @@ class TestImportResponseAnnotationsFromS3:
         assert theme_a in response1.themes.all()
 
         # Verify annotation data for respondent 2
-        response2 = Response.objects.get(espondent=respondent2)
+        response2 = Response.objects.get(respondent=respondent2)
         assert response2.sentiment == "DISAGREEMENT"
         assert response2.evidence_rich is False
         assert theme_b in response2.themes.all()

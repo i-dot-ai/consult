@@ -142,7 +142,7 @@ class ThemeSerializer2(serializers.ModelSerializer):
     response_count = serializers.SerializerMethodField()
 
     def get_response_count(self, theme: SelectedTheme) -> int:
-        return Response.objects.filter(annotation__themes=theme).count()
+        return Response.objects.filter(themes=theme).count()
 
     class Meta:
         model = SelectedTheme
@@ -154,7 +154,7 @@ class CrossCuttingThemeSerializer(serializers.ModelSerializer):
     response_count = serializers.SerializerMethodField()
 
     def get_response_count(self, cross_cutting_theme: CrossCuttingTheme) -> int:
-        return Response.objects.filter(annotation__themes__parent=cross_cutting_theme).count()
+        return Response.objects.filter(themes__parent=cross_cutting_theme).count()
 
     class Meta:
         model = CrossCuttingTheme
@@ -229,9 +229,9 @@ class ResponseSerializer(serializers.ModelSerializer):
     multiple_choice_answer = serializers.SlugRelatedField(
         source="chosen_options", slug_field="text", many=True, read_only=True
     )
-    evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
-    sentiment = serializers.CharField(source="annotation.sentiment")
-    human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
+    evidenceRich = serializers.BooleanField(source="evidence_rich", default=False)
+    sentiment = serializers.CharField()
+    human_reviewed = serializers.BooleanField()
     is_flagged = serializers.BooleanField(read_only=True)
     is_edited = serializers.SerializerMethodField()
     is_read = serializers.SerializerMethodField()

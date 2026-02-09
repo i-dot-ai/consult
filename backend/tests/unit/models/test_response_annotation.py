@@ -24,29 +24,17 @@ class TestResponseAnnotation:
         assert annotation.reviewed_by is None
         assert annotation.reviewed_at is None
 
-    def test_one_to_one_relationship(self):
-        """Test one-to-one relationship with Response"""
-        response = ResponseFactory()
-        annotation = ResponseAnnotationFactory(response=response)
-
-        # Check bidirectional relationship
-        assert response.annotation == annotation
-        assert annotation.response == response
-
-        # Can't create another annotation for same response
-        with pytest.raises(Exception):  # Will raise IntegrityError
-            ResponseAnnotationFactory(response=response)
 
     def test_themes_relationship(self):
         """Test many-to-many relationship with themes"""
-        annotation = ResponseAnnotationFactory()
+        response = ResponseAnnotationFactory()
 
         # Should have auto-created themes
-        assert annotation.response.themes.count() >= 1
+        assert response.themes.count() >= 1
 
         # All themes should be for the same question as the response
-        for theme in annotation.response.themes.all():
-            assert theme.question == annotation.response.question
+        for theme in response.themes.all():
+            assert theme.question == response.question
 
     def test_custom_themes(self):
         """Test creating annotation with specific themes"""
@@ -55,9 +43,9 @@ class TestResponseAnnotation:
         theme2 = SelectedThemeFactory(question=response.question)
         response.add_original_ai_themes([theme1, theme2])
 
-        assert response.response.themes.count() == 2
-        assert theme1 in response.response.themes.all()
-        assert theme2 in response.response.themes.all()
+        assert response.themes.count() == 2
+        assert theme1 in response.themes.all()
+        assert theme2 in response.themes.all()
 
 
 

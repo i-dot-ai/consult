@@ -120,12 +120,10 @@ def create_response_annotation(response, question):
     )
     random_sentiment = random.choice([s[0] for s in Response.Sentiment.choices])
     random_evidence_rich = random.choice([True, False])
-    ResponseAnnotationFactoryNoThemes(
-        response=response,
-        sentiment=random_sentiment,
-        evidence_rich=random_evidence_rich,
-    )
+    response.sentiment=random_sentiment
+    response.evidence_rich=random_evidence_rich
     response.add_original_ai_themes(themes_for_response)
+    response.save()
 
 
 def create_response_chosen_options(response, multiple_choice_options):

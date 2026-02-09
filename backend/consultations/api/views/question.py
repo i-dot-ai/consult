@@ -80,7 +80,7 @@ class QuestionViewSet(ModelViewSet):
                 free_text__gt="",  # Non-empty free text
             )
             .exclude(
-                annotation__human_reviewed=True  # Exclude already reviewed
+                human_reviewed=True  # Exclude already reviewed
             )
             .order_by("?")
             .first()

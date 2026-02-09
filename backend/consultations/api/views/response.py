@@ -74,7 +74,6 @@ class ResponseViewSet(ModelViewSet):
         # Optimize queryset with select_related and prefetch_related
         queryset = queryset.select_related(
             "respondent",
-            "annotation",
             "question",
         ).prefetch_related(
             "chosen_options",
@@ -191,11 +190,11 @@ class ResponseViewSet(ModelViewSet):
     def toggle_flag(self, request, consultation_pk=None, pk=None):
         """Toggle flag on/off for the user"""
         response = self.get_object()
-        if response.annotation.flagged_by.contains(request.user):
-            response.annotation.flagged_by.remove(request.user)
+        if response.flagged_by.contains(request.user):
+            response.flagged_by.remove(request.user)
         else:
-            response.annotation.flagged_by.add(request.user)
-        response.annotation.save()
+            response.flagged_by.add(request.user)
+        response.save()
         return Response()
 
     @action(

@@ -229,7 +229,6 @@ class TestCloneConsultation:
         # Verify history records reference the cloned objects, not originals
         for history_record in cloned_response.history.all():
             assert history_record.id == cloned_response.id
-            assert history_record.response_id == cloned_response.id
 
         for cloned_rat in cloned_rats:
             for history_record in cloned_rat.history.all():

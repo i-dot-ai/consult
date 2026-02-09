@@ -134,8 +134,7 @@ def test_api_urls_permission_required(
     404 (Not Found) for unauthorized access.
     """
 
-    response = factories.ResponseFactory(question=free_text_question)
-    factories.ResponseAnnotationFactory(response=response)
+    factories.ResponseFactory(question=free_text_question)
 
     url = build_url(url_pattern, free_text_question)
 

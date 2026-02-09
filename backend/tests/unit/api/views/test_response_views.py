@@ -488,8 +488,11 @@ class TestResponseViewSet:
             question=free_text_question, respondent=respondent_2, free_text="Response 2"
         )
 
-        ResponseAnnotationFactory(response=response_1, evidence_rich=True)
-        ResponseAnnotationFactory(response=response_2, evidence_rich=False)
+        response_1.evidence_rich=True
+        response_1.save()
+
+        response_2.evidence_rich=False
+        response_2.save()
 
         url = reverse(
             "response-list",
@@ -545,12 +548,12 @@ class TestResponseViewSet:
             question=free_text_question, respondent=respondent_2, free_text="Response 2"
         )
 
-        ResponseAnnotationFactory(
-            response=response_1, sentiment=Response.Sentiment.AGREEMENT
-        )
-        ResponseAnnotationFactory(
-            response=response_2, sentiment=Response.Sentiment.UNCLEAR
-        )
+        response_1.sentiment=Response.Sentiment.AGREEMENT
+        response_1.save()
+
+        response_2.sentiment=Response.Sentiment.UNCLEAR
+        response_2.save()
+
 
         url = reverse(
             "response-list",
@@ -592,14 +595,14 @@ class TestResponseViewSet:
 
         url = reverse(
             "response-list",
-            kwargs={"consultation_pk": free_text_annotation.response.question.consultation.id},
+            kwargs={"consultation_pk": free_text_annotation.question.consultation.id},
         )
 
         response = client.get(
             url,
             query_params={
                 "is_flagged": is_flagged,
-                "question_id": free_text_annotation.response.question.id,
+                "question_id": free_text_annotation.question.id,
             },
             headers={"Authorization": f"Bearer {staff_user_token}"},
         )
@@ -665,19 +668,20 @@ class TestResponseViewSet:
         is_edited,
     ):
         if is_flagged:
+            human_reviewed_annotation.is_flagged = True
             human_reviewed_annotation.flagged_by.add(staff_user)
             human_reviewed_annotation.save()
 
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": human_reviewed_annotation.response.question.consultation.id,
-                "pk": human_reviewed_annotation.response.id,
+                "consultation_pk": human_reviewed_annotation.question.consultation.id,
+                "pk": human_reviewed_annotation.id,
             },
         )
         response = client.get(
             url,
-            query_params={"question_id": human_reviewed_annotation.response.question.id},
+            query_params={"question_id": human_reviewed_annotation.question.id},
             headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
@@ -729,8 +733,8 @@ class TestResponseViewSet:
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": free_text_annotation.question.consultation.id,
+                "pk": free_text_annotation.id,
             },
         )
 
@@ -767,8 +771,8 @@ class TestResponseViewSet:
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": free_text_annotation.question.consultation.id,
+                "pk": free_text_annotation.id,
             },
         )
 
@@ -798,8 +802,8 @@ class TestResponseViewSet:
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": free_text_annotation.question.consultation.id,
+                "pk": free_text_annotation.id,
             },
         )
 
@@ -838,8 +842,8 @@ class TestResponseViewSet:
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": free_text_annotation.question.consultation.id,
+                "pk": free_text_annotation.id,
             },
         )
 
@@ -898,8 +902,8 @@ class TestResponseViewSet:
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": free_text_annotation.question.consultation.id,
+                "pk": free_text_annotation.id,
             },
         )
 
@@ -928,8 +932,8 @@ class TestResponseViewSet:
         url = reverse(
             "response-toggle-flag",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": free_text_annotation.question.consultation.id,
+                "pk": free_text_annotation.id,
             },
         )
 
@@ -1094,9 +1098,6 @@ class TestResponseViewSet:
         # Create test response
         respondent = RespondentFactory(consultation=free_text_question.consultation)
         response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
-
-        # Create annotation with themes
-        _ = ResponseAnnotationFactoryNoThemes(response=response_obj)
 
         url = reverse(
             "response-themes",

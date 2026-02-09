@@ -474,8 +474,8 @@ def ai_assigned_theme(free_text_question):
 
 @pytest.fixture
 def free_text_annotation(free_text_response, staff_user, ai_assigned_theme):
-    free_text_response.response=free_text_response
     free_text_response.evidence_rich=True
+    free_text_response.sentiment=Response.Sentiment.AGREEMENT
     free_text_response.save()
 
     theme_b = SelectedTheme.objects.create(

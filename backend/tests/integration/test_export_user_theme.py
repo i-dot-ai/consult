@@ -30,24 +30,21 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
     theme3 = factories.SelectedThemeFactory(question=free_text_question, key="C")
 
     # Create response annotations with AI-assigned themes
-    annotation1 = factories.ResponseAnnotationFactoryNoThemes(
-        response=response,
-        sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT,
-        human_reviewed=False,
-    )
+    response.sentiment = models.Response.Sentiment.AGREEMENT
+    response.human_reviewed = False
     response.add_original_ai_themes([theme1, theme2])
+    response.save()
 
-    factories.ResponseAnnotationFactoryNoThemes(
-        response=response2,
-        sentiment=models.ResponseAnnotation.Sentiment.UNCLEAR,
-        human_reviewed=False,
-    )
+
+    response2.sentiment=models.Response.Sentiment.UNCLEAR
+    response2.human_reviewed=False
     response2.add_original_ai_themes([theme3])
+    response2.save()
 
     with freeze_time("2023-01-01 12:00:00"):
         # Simulate user review - changing themes for response1
         response.set_human_reviewed_themes([theme2, theme3], user)
-        annotation1.mark_human_reviewed(user)
+        response.mark_human_reviewed(user)
 
     # Call the method
     export_user_theme(free_text_question.id, "test_key")
@@ -105,11 +102,11 @@ def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_tex
     response = factories.ResponseFactory(question=free_text_question, respondent=respondent)
 
     # Create annotation so there's something to export
-    factories.ResponseAnnotationFactoryNoThemes(
-        response=response, sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT
-    )
+    response.sentiment=models.Response.Sentiment.AGREEMENT
+
     theme = factories.SelectedThemeFactory(question=free_text_question)
     response.add_original_ai_themes([theme])
+    response.save()
 
     # Mock the enqueue to capture the call
     mock_enqueue.return_value = None

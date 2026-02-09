@@ -86,16 +86,15 @@ def test_theme_factory():
 
 @pytest.mark.django_db
 def test_response_annotation_factory():
-    annotation = factories.ResponseAnnotationFactory()
-    assert models.Response.objects.filter(id=annotation.id).exists()
-    assert annotation.sentiment in [choice.value for choice in models.Response.Sentiment]
-    assert isinstance(annotation.evidence_rich, bool)
-    assert not annotation.human_reviewed
-    assert annotation.response.themes.count() >= 1
+    response = factories.ResponseAnnotationFactory()
+    assert response.sentiment in [choice.value for choice in models.Response.Sentiment]
+    assert isinstance(response.evidence_rich, bool)
+    assert not response.human_reviewed
+    assert response.themes.count() >= 1
 
     # Test themes are for the same question
-    for theme in annotation.response.themes.all():
-        assert theme.question == annotation.response.question
+    for theme in response.themes.all():
+        assert theme.question == response.question
 
 
 @pytest.mark.django_db
