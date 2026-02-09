@@ -494,13 +494,17 @@ def free_text_annotation(free_text_response, staff_user, ai_assigned_theme):
 
 
 @pytest.fixture
-def human_reviewed_annotation(another_response, theme_b):
-    another_response.evidence_rich = True
-    another_response.human_reviewed = False
-    another_response.save()
-
-    annotation_a = ResponseAnnotationTheme.objects.create(response=another_response, theme=theme_b)
-    yield another_response
+def human_reviewed_annotation(free_text_question, respondent_2, theme_b):
+    response = Response.objects.create(
+        question=free_text_question,
+        respondent=respondent_2,
+        free_text="i agree",
+        evidence_rich=True,
+        human_reviewed=False,
+    )
+    annotation_a = ResponseAnnotationTheme.objects.create(response=response, theme=theme_b)
+    yield response
+    response.delete()
     annotation_a.delete()
 
 

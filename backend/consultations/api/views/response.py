@@ -85,8 +85,10 @@ class ResponseViewSet(ModelViewSet):
         )
 
         queryset = queryset.annotate(
-            is_flagged=Q(flagged_by=self.request.user),
-            is_read_by_user=Q(read_by=self.request.user),
+            is_flagged=Exists(
+                models.Response.objects.filter(pk=OuterRef("pk"), flagged_by=self.request.user)
+            ),
+            is_read=Q(read_by=self.request.user),
             annotation_is_edited=Exists(
                 models.Response.history.filter(id=OuterRef("id")).values("id")[1:]
             ),

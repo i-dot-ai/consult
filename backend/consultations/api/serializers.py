@@ -234,7 +234,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     human_reviewed = serializers.BooleanField()
     is_flagged = serializers.BooleanField(read_only=True)
     is_edited = serializers.SerializerMethodField()
-    is_read = serializers.SerializerMethodField()
+    is_read = serializers.CharField()
     question_id = serializers.UUIDField()
 
     def get_is_edited(self, obj):
@@ -243,13 +243,6 @@ class ResponseSerializer(serializers.ModelSerializer):
         This replicates annotation.is_edited property logic in a way that avoids N+1 queries.
         """
         return obj.annotation_is_edited or obj.annotation_has_human_assigned_themes
-
-    def get_is_read(self, obj):
-        """
-        Returns True if the current user has read this response.
-        Uses the annotated field is_read_by_user to avoid N+1 queries.
-        """
-        return getattr(obj, "is_read_by_user", False)
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
