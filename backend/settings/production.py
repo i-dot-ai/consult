@@ -78,7 +78,7 @@ LOGGER = StructuredLogger(
     },
 )
 
-if env.str("ENVIRONMENT", "prod").lower() != "prod":
+if env.str("ENVIRONMENT", "prod").lower() != "prod":  # noqa: F405
     INSTALLED_APPS.append("drf_spectacular")  # noqa F405
 
     REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"  # noqa F405
