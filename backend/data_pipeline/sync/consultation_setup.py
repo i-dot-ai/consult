@@ -29,7 +29,7 @@ from backend.embeddings import embed_text
 logger = settings.LOGGER
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
 DEFAULT_TIMEOUT_SECONDS = 3_600
-
+ResponseThemeThroughModel = Response.chosen_options.through
 
 # =============================================================================
 # S3 LOADERS - Load and validate data from S3
@@ -279,7 +279,9 @@ def load_consultation_data_batch(
 
 
 @transaction.atomic
-def import_consultation_data(batch: ConsultationDataBatch, user_id: UUID) -> UUID:
+def import_consultation_data(
+    batch: ConsultationDataBatch, user_id: UUID, batch_size: int = 2048
+) -> UUID:
     """
     Import base consultation data (consultation, respondents, questions, responses) into database.
 
@@ -338,7 +340,9 @@ def import_consultation_data(batch: ConsultationDataBatch, user_id: UUID) -> UUI
     _ingest_questions(consultation, batch.questions)
 
     # 4. Create responses (free text and multi-choice)
-    _ingest_responses(consultation, batch.responses_by_question, batch.multi_choice_by_question)
+    _ingest_responses(
+        consultation, batch.responses_by_question, batch.multi_choice_by_question, batch_size
+    )
 
     logger.info(
         "Completed consultation data ingestion for {consultation_code}",
@@ -454,6 +458,7 @@ def _ingest_responses(
     consultation: Consultation,
     responses_by_question: Dict[int, List[ResponseInput]],
     multi_choice_by_question: Dict[int, List[MultiChoiceInput]],
+    batch_size: int = 2048,
 ) -> None:
     """
     Create responses with careful indexing to link correct respondent + question.
@@ -506,14 +511,18 @@ def _ingest_responses(
 
         # Create Response objects with batching based on token count
         responses_to_create: List = []
+        response_theme_associations_to_create = []  # type: ignore
         max_total_tokens = 100_000
-        max_batch_size = 2048
         total_tokens = 0
 
         for i, (tf_id, data) in enumerate(responses_by_tf_id.items()):
             if tf_id not in respondent_lookup:
                 logger.warning("No respondent found for themefinder_id {tf_id}", tf_id=tf_id)
                 continue
+
+            mc_options_lookup = {
+                opt.text: opt for opt in MultiChoiceAnswer.objects.filter(question=question)
+            }
 
             free_text = data["free_text"]
 
@@ -530,10 +539,14 @@ def _ingest_responses(
             # Batch by token count or size
             if (
                 total_tokens + token_count > max_total_tokens
-                or len(responses_to_create) >= max_batch_size
+                or len(responses_to_create) >= batch_size
             ):
-                Response.objects.bulk_create([r for r, _ in responses_to_create])
+                Response.objects.bulk_create(responses_to_create)
                 responses_to_create = []
+
+                ResponseThemeThroughModel.objects.bulk_create(response_theme_associations_to_create)
+                response_theme_associations_to_create = []
+
                 total_tokens = 0
                 logger.info(
                     f"Saved batch of responses for question {question_number} (total so far: {i + 1})"
@@ -545,26 +558,20 @@ def _ingest_responses(
                 free_text=free_text,
             )
 
-            responses_to_create.append((response, data["multi_choice"]))
+            responses_to_create.append(response)
+
+            for multi_choice_answer_text in data.get("multi_choice") or []:
+                if multi_choice_answer := mc_options_lookup.get(multi_choice_answer_text):
+                    m2m = ResponseThemeThroughModel(
+                        response=response, multichoiceanswer=multi_choice_answer
+                    )
+                    response_theme_associations_to_create.append(m2m)
             total_tokens += token_count
 
         # Save last batch
         if responses_to_create:
-            created_responses = Response.objects.bulk_create([r for r, _ in responses_to_create])
-
-            # Set multi-choice options (requires M2M after creation)
-            mc_options_lookup = {
-                opt.text: opt for opt in MultiChoiceAnswer.objects.filter(question=question)
-            }
-
-            for response, (_, mc_options) in zip(created_responses, responses_to_create):
-                if mc_options:
-                    chosen = [
-                        mc_options_lookup[text] for text in mc_options if text in mc_options_lookup
-                    ]
-                    if chosen:
-                        response.chosen_options.set(chosen)
-                        response.save()
+            created_responses = Response.objects.bulk_create(responses_to_create)
+            ResponseThemeThroughModel.objects.bulk_create(response_theme_associations_to_create)
 
             # Update search vectors (via signal on save)
             for response in created_responses:
@@ -645,6 +652,7 @@ def import_consultation_from_s3(
     consultation_title: str,
     user_id: UUID,
     enqueue_embeddings: bool = True,
+    batch_size: int = 2048,
 ) -> UUID:
     """
     Import consultation base data from S3.
@@ -673,7 +681,7 @@ def import_consultation_from_s3(
     )
 
     # Import consultation data into database
-    consultation_id = import_consultation_data(batch, user_id)
+    consultation_id = import_consultation_data(batch, user_id, batch_size)
 
     # Enqueue async jobs for embeddings
     if enqueue_embeddings:
