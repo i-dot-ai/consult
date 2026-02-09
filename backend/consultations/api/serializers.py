@@ -4,8 +4,8 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from backend.authentication.models import User
-from backend.consultations.models import (
+from authentication.models import User
+from consultations.models import (
     CandidateTheme,
     Consultation,
     CrossCuttingTheme,

@@ -1,15 +1,16 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from backend.consultations.models import SelectedTheme
-from backend.data_pipeline.sync.selected_themes import export_selected_themes_to_s3
-from backend.factories import ConsultationFactory, QuestionFactory
+
+from consultations.models import SelectedTheme
+from data_pipeline.sync.selected_themes import export_selected_themes_to_s3
+from factories import ConsultationFactory, QuestionFactory
 
 
 @pytest.mark.django_db
 class TestExportSelectedThemesToS3:
-    @patch("backend.data_pipeline.sync.selected_themes.boto3")
-    @patch("backend.data_pipeline.sync.selected_themes.settings")
+    @patch("data_pipeline.sync.selected_themes.boto3")
+    @patch("data_pipeline.sync.selected_themes.settings")
     def test_export_selected_themes_to_s3(self, mock_settings, mock_boto3):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
         mock_s3_client = Mock()

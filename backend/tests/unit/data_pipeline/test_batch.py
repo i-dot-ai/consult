@@ -1,11 +1,11 @@
 from unittest.mock import Mock, patch
 
-from backend.data_pipeline.batch import submit_job
+from data_pipeline.batch import submit_job
 
 
 class TestSubmitBatchJob:
-    @patch("backend.data_pipeline.batch.boto3")
-    @patch("backend.data_pipeline.batch.settings")
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
     def test_submit_find_themes_job(self, mock_settings, mock_boto3):
         """Test submitting a FIND_THEMES batch job"""
         # Mock settings
@@ -49,8 +49,8 @@ class TestSubmitBatchJob:
         # Verify response
         assert response["jobId"] == "test-job-id-123"
 
-    @patch("backend.data_pipeline.batch.boto3")
-    @patch("backend.data_pipeline.batch.settings")
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
     def test_submit_assign_themes_job(self, mock_settings, mock_boto3):
         """Test submitting an ASSIGN_THEMES batch job"""
         # Mock settings

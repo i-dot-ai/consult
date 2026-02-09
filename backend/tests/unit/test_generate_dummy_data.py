@@ -2,12 +2,13 @@ import os
 from unittest.mock import patch
 
 import pytest
-from backend.consultations import models
-from backend.consultations.dummy_data import create_dummy_consultation_from_yaml
+
+from consultations import models
+from consultations.dummy_data import create_dummy_consultation_from_yaml
 
 
 @pytest.mark.django_db
-@patch("backend.hosting_environment.HostingEnvironment.is_local", return_value=True)
+@patch("hosting_environment.HostingEnvironment.is_local", return_value=True)
 def test_a_consultation_is_generated(settings):
     assert models.Consultation.objects.count() == 0
     create_dummy_consultation_from_yaml()

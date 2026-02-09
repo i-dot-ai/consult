@@ -1,14 +1,15 @@
-from backend.consultations import models
-from backend.consultations.api.permissions import CanSeeConsultation
-from backend.consultations.api.serializers import (
-    CandidateThemeSerializer,
-    SelectedThemeSerializer,
-)
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+
+from consultations import models
+from consultations.api.permissions import CanSeeConsultation
+from consultations.api.serializers import (
+    CandidateThemeSerializer,
+    SelectedThemeSerializer,
+)
 
 
 class CandidateThemeViewSet(ModelViewSet):

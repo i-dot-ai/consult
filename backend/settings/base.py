@@ -46,9 +46,9 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.admin",
     "django.contrib.postgres",
-    "backend.authentication",
-    "backend.consultations",
-    "backend.ingest",
+    "authentication",
+    "consultations",
+    "ingest",
     "django.contrib.humanize",
     "django_rq",
     "simple_history",
@@ -64,18 +64,18 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "backend.middleware.JWTAuthenticationMiddleware",
+    "middleware.JWTAuthenticationMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "backend.middleware.CSRFExemptMiddleware",  # Must be before CsrfViewMiddleware
+    "middleware.CSRFExemptMiddleware",  # Must be before CsrfViewMiddleware
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "backend.middleware.SupportAppStaffRequiredMiddleware",
+    "middleware.SupportAppStaffRequiredMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
 ]
 
-ROOT_URLCONF = "backend.urls"
+ROOT_URLCONF = "urls"
 
 TEMPLATES = [
     {

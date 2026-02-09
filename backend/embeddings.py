@@ -4,7 +4,7 @@ import random
 from django.conf import settings
 from openai import AzureOpenAI
 
-from backend.hosting_environment import HostingEnvironment
+from hosting_environment import HostingEnvironment
 
 hosting_environment = HostingEnvironment()
 

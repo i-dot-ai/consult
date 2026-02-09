@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Take environment variables from .env.test file
 environ.Env.read_env(os.path.join(BASE_DIR, ".env.test"))
 
-from backend.settings.base import *  # noqa
+from settings.base import *  # noqa
 
 STORAGES["default"] = {
     "BACKEND": "django.core.files.storage.InMemoryStorage",

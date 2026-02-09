@@ -3,7 +3,7 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
-import backend.consultations.models
+import consultations.models
 
 
 class Migration(migrations.Migration):
@@ -23,9 +23,7 @@ class Migration(migrations.Migration):
             field=models.JSONField(
                 blank=True,
                 null=True,
-                validators=[
-                    backend.consultations.models.MultipleChoiceSchemaValidator(limit_value=None)
-                ],
+                validators=[consultations.models.MultipleChoiceSchemaValidator(limit_value=None)],
             ),
         ),
         migrations.AlterField(
@@ -44,9 +42,7 @@ class Migration(migrations.Migration):
             field=models.JSONField(
                 blank=True,
                 null=True,
-                validators=[
-                    backend.consultations.models.MultipleChoiceSchemaValidator(limit_value=None)
-                ],
+                validators=[consultations.models.MultipleChoiceSchemaValidator(limit_value=None)],
             ),
         ),
     ]

@@ -1,5 +1,6 @@
 import pytest
-from backend.consultations.models import Consultation
+
+from consultations.models import Consultation
 
 
 @pytest.mark.django_db
