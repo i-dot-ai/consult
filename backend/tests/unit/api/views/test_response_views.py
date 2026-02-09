@@ -740,6 +740,8 @@ class TestResponseViewSet:
         assert free_text_annotation.reviewed_by is None
         assert free_text_annotation.reviewed_at is None
 
+        start_count = free_text_annotation.history.count()
+
         response = client.patch(
             url,
             data={"human_reviewed": True},
@@ -753,7 +755,7 @@ class TestResponseViewSet:
 
         # Verify version history captures the change from True to False using django-simple-history
         history = free_text_annotation.history.all().order_by("history_date")
-        assert history.count() == 2
+        assert history.count() == start_count + 1
 
         # The first version should have human_reviewed=False
         assert history.first().human_reviewed is False
@@ -776,6 +778,8 @@ class TestResponseViewSet:
 
         assert free_text_annotation.evidence_rich is True
 
+        start_count = free_text_annotation.history.count()
+
         response = client.patch(
             url,
             data={"sentiment": "AGREEMENT"},
@@ -790,13 +794,14 @@ class TestResponseViewSet:
 
         # Verify version history captures the change from True to False using django-simple-history
         history = free_text_annotation.history.all().order_by("history_date")
-        assert history.count() == 2
+        assert history.count() == start_count + 1
 
         # The first version should have sentiment=null, latest should have sentiment="AGREEMENT"
         assert history.first().sentiment is None  # Initial state
         assert history.last().sentiment == "AGREEMENT"  # Final state after PATCH
 
     def test_patch_response_evidence_rich(self, client, staff_user_token, free_text_annotation):
+        start_count = free_text_annotation.history.count()
         url = reverse(
             "response-detail",
             kwargs={
@@ -821,10 +826,10 @@ class TestResponseViewSet:
 
         # Verify version history captures the change from True to False using django-simple-history
         history = free_text_annotation.history.all().order_by("history_date")
-        assert history.count() == 2
+        assert history.count() == start_count + 1
 
         # The first version should have evidence_rich=True, latest should have evidence_rich=False
-        assert history.first().evidence_rich is True  # Initial state
+        assert list(history.all())[-2].evidence_rich is True  # Initial state
         assert history.last().evidence_rich is False  # Final state after PATCH
 
     def test_patch_response_themes(
@@ -836,6 +841,8 @@ class TestResponseViewSet:
         alternative_theme,
         ai_assigned_theme,
     ):
+        start_count = free_text_annotation.history.count()
+
         url = reverse(
             "response-detail",
             kwargs={
@@ -864,7 +871,7 @@ class TestResponseViewSet:
         assert response.json()["is_edited"] is True
 
         # check that there are two versions of the Response (initial + after theme update)
-        assert free_text_annotation.history.count() == 2
+        assert free_text_annotation.history.count() == start_count + 1
 
         # get history of the ResponseAnnotationTheme
         history = ResponseAnnotationTheme.history.filter(response=free_text_annotation).order_by(

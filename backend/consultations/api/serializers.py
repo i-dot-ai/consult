@@ -255,33 +255,17 @@ class ResponseSerializer(serializers.ModelSerializer):
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
 
     def update(self, instance: Response, validated_data):
-        if annotation := validated_data.get("annotation"):
-            if "human_reviewed" in annotation:
-                human_reviewed = annotation["human_reviewed"]
-                instance.annotation.human_reviewed = human_reviewed
-                instance.annotation.reviewed_by = (
-                    self.context["request"].user if human_reviewed else None
-                )
-                instance.annotation.reviewed_at = timezone.now() if human_reviewed else None
-
-            if "evidence_rich" in annotation:
-                instance.annotation.evidence_rich = annotation["evidence_rich"]
-
-            if "sentiment" in annotation:
-                instance.annotation.sentiment = annotation["sentiment"]
-
-            instance.annotation.save()
-
-        if "responseannotationtheme_set" in validated_data:
+        if themes := validated_data.pop("responseannotationtheme_set", None):
             instance.set_human_reviewed_themes(
-                themes=validated_data["responseannotationtheme_set"],
+                themes=themes,
                 user=self.context["request"].user,
             )
-            # Save instance to trigger history record for Response when themes change
-            instance.save()
 
-        instance.refresh_from_db()
-        return instance
+        if validated_data.get("human_reviewed") is True and instance.reviewed_at is None:
+            instance.reviewed_by = self.context["request"].user
+            instance.reviewed_at = timezone.now()
+
+        return super().update(instance, validated_data)
 
     class Meta:
         model = Response
