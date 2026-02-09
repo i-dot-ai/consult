@@ -52,13 +52,15 @@ def load_respondents_from_s3(
     """
     key = f"app_data/consultations/{consultation_code}/inputs/respondents.jsonl"
 
-    logger.info(f"Loading respondents from {key}")
+    logger.info("Loading respondents from {key}", key=key)
 
     raw_data = s3.read_jsonl(bucket_name, key, s3_client)
 
     respondents = [RespondentInput(**data) for data in raw_data]
 
-    logger.info(f"Loaded and validated {len(respondents)} respondents")
+    logger.info(
+        "Loaded and validated {respondent_count} respondents", respondent_count=len(respondents)
+    )
     return respondents
 
 
@@ -79,7 +81,9 @@ def load_question_from_s3(
     """
     key = f"app_data/consultations/{consultation_code}/inputs/question_part_{question_number}/question.json"
 
-    logger.info(f"Loading question {question_number} from {key}")
+    logger.info(
+        "Loading question {question_number} from {key}", question_number=question_number, key=key
+    )
 
     data = s3.read_json(bucket_name, key, s3_client)
 
@@ -91,7 +95,7 @@ def load_question_from_s3(
 
     question = QuestionInput(**data)
 
-    logger.info(f"Loaded and validated question {question_number}")
+    logger.info("Loaded and validated question {question_number}", question_number=question_number)
     return question
 
 
@@ -112,7 +116,11 @@ def load_responses_from_s3(
     """
     key = f"app_data/consultations/{consultation_code}/inputs/question_part_{question_number}/responses.jsonl"
 
-    logger.info(f"Loading responses for question {question_number} from {key}")
+    logger.info(
+        "Loading responses for question {question_number} from {key}",
+        question_number=question_number,
+        key=key,
+    )
 
     raw_data = s3.read_jsonl(bucket_name, key, s3_client, raise_if_missing=False)
 
@@ -122,7 +130,11 @@ def load_responses_from_s3(
         if data.get("text"):
             responses.append(ResponseInput(**data))
 
-    logger.info(f"Loaded and validated {len(responses)} responses for question {question_number}")
+    logger.info(
+        "Loaded and validated {response_count} responses for question {question_number}",
+        response_count=len(responses),
+        question_number=question_number,
+    )
     return responses
 
 
@@ -143,7 +155,11 @@ def load_multi_choice_from_s3(
     """
     key = f"app_data/consultations/{consultation_code}/inputs/question_part_{question_number}/multi_choice.jsonl"
 
-    logger.info(f"Loading multi-choice data for question {question_number} from {key}")
+    logger.info(
+        "Loading multi-choice data for question {question_number} from {key}",
+        question_number=question_number,
+        key=key,
+    )
 
     raw_data = s3.read_jsonl(bucket_name, key, s3_client, raise_if_missing=False)
 
@@ -154,7 +170,9 @@ def load_multi_choice_from_s3(
             multi_choices.append(MultiChoiceInput(**data))
 
     logger.info(
-        f"Loaded and validated {len(multi_choices)} multi-choice responses for question {question_number}"
+        "Loaded and validated {multi_choice_count} multi-choice responses for question {question_number}",
+        multi_choice_count=len(multi_choices),
+        question_number=question_number,
     )
     return multi_choices
 
@@ -184,7 +202,10 @@ def load_consultation_data_batch(
     if bucket_name is None:
         bucket_name = settings.AWS_BUCKET_NAME
 
-    logger.info(f"Loading consultation data batch for {consultation_code}")
+    logger.info(
+        "Loading consultation data batch for {consultation_code}",
+        consultation_code=consultation_code,
+    )
 
     s3_client = boto3.client("s3")
 
@@ -243,9 +264,10 @@ def load_consultation_data_batch(
     )
 
     logger.info(
-        f"Loaded consultation data batch: {len(respondents)} respondents, "
-        f"{len(questions)} questions, "
-        f"{sum(len(r) for r in responses_by_question.values())} total responses"
+        "Loaded consultation data batch: {respondent_count} respondents, {question_count} questions, {response_count} total responses",
+        respondent_count=len(respondents),
+        question_count=len(questions),
+        response_count=sum(len(r) for r in responses_by_question.values()),
     )
 
     return batch
@@ -284,7 +306,10 @@ def import_consultation_data(batch: ConsultationDataBatch, user_id: UUID) -> UUI
     Raises:
         User.DoesNotExist: If user_id doesn't exist
     """
-    logger.info(f"Starting consultation data ingestion for {batch.consultation_code}")
+    logger.info(
+        "Starting consultation data ingestion for {consultation_code}",
+        consultation_code=batch.consultation_code,
+    )
 
     # 1. Create or update consultation
     consultation, created = Consultation.objects.get_or_create(
@@ -295,7 +320,10 @@ def import_consultation_data(batch: ConsultationDataBatch, user_id: UUID) -> UUI
     )
 
     if not created:
-        logger.warning(f"Consultation {batch.consultation_code} already exists, updating...")
+        logger.warning(
+            "Consultation {consultation_code} already exists, updating...",
+            consultation_code=batch.consultation_code,
+        )
         consultation.title = batch.consultation_title
         consultation.save()
 
@@ -312,7 +340,10 @@ def import_consultation_data(batch: ConsultationDataBatch, user_id: UUID) -> UUI
     # 4. Create responses (free text and multi-choice)
     _ingest_responses(consultation, batch.responses_by_question, batch.multi_choice_by_question)
 
-    logger.info(f"Completed consultation data ingestion for {consultation.code}")
+    logger.info(
+        "Completed consultation data ingestion for {consultation_code}",
+        consultation_code=consultation.code,
+    )
     return consultation.id
 
 
@@ -326,12 +357,15 @@ def _ingest_respondents(consultation: Consultation, respondents: List[Respondent
         consultation: Consultation object
         respondents: List of validated respondent inputs
     """
-    logger.info(f"Ingesting {len(respondents)} respondents")
+    logger.info("Ingesting {respondent_count} respondents", respondent_count=len(respondents))
 
     # Delete existing respondents for idempotency (cascades to responses)
     existing_count = Respondent.objects.filter(consultation=consultation).count()
     if existing_count > 0:
-        logger.warning(f"Deleting {existing_count} existing respondents for idempotency")
+        logger.warning(
+            "Deleting {existing_count} existing respondents for idempotency",
+            existing_count=existing_count,
+        )
         Respondent.objects.filter(consultation=consultation).delete()
 
     # Create respondents
@@ -363,7 +397,7 @@ def _ingest_respondents(consultation: Consultation, respondents: List[Respondent
         if demographic_options:
             respondent.demographics.set(demographic_options)
 
-    logger.info(f"Created {len(created_respondents)} respondents")
+    logger.info("Created {respondent_count} respondents", respondent_count=len(created_respondents))
 
 
 def _ingest_questions(consultation: Consultation, questions: List[QuestionInput]) -> None:
@@ -376,12 +410,15 @@ def _ingest_questions(consultation: Consultation, questions: List[QuestionInput]
         consultation: Consultation object
         questions: List of validated question inputs
     """
-    logger.info(f"Ingesting {len(questions)} questions")
+    logger.info("Ingesting {question_count} questions", question_count=len(questions))
 
     # Delete existing questions for idempotency (cascades to responses)
     existing_count = Question.objects.filter(consultation=consultation).count()
     if existing_count > 0:
-        logger.warning(f"Deleting {existing_count} existing questions for idempotency")
+        logger.warning(
+            "Deleting {existing_count} existing questions for idempotency",
+            existing_count=existing_count,
+        )
         Question.objects.filter(consultation=consultation).delete()
 
     # Create questions
@@ -410,7 +447,7 @@ def _ingest_questions(consultation: Consultation, questions: List[QuestionInput]
         ]
         MultiChoiceAnswer.objects.bulk_create(options)
 
-    logger.info(f"Created {len(created_questions)} questions")
+    logger.info("Created {question_count} questions", question_count=len(created_questions))
 
 
 def _ingest_responses(
@@ -442,7 +479,9 @@ def _ingest_responses(
 
     # Process each question
     for question_number, question in question_lookup.items():
-        logger.info(f"Processing responses for question {question_number}")
+        logger.info(
+            "Processing responses for question {question_number}", question_number=question_number
+        )
 
         free_text_responses = responses_by_question.get(question_number, [])
         multi_choice_responses = multi_choice_by_question.get(question_number, [])
@@ -473,7 +512,7 @@ def _ingest_responses(
 
         for i, (tf_id, data) in enumerate(responses_by_tf_id.items()):
             if tf_id not in respondent_lookup:
-                logger.warning(f"No respondent found for themefinder_id {tf_id}")
+                logger.warning("No respondent found for themefinder_id {tf_id}", tf_id=tf_id)
                 continue
 
             free_text = data["free_text"]
@@ -482,7 +521,7 @@ def _ingest_responses(
             if free_text:
                 token_count = len(encoding.encode(free_text))
                 if token_count > 8192:
-                    logger.warning(f"Truncated text for themefinder_id: {tf_id}")
+                    logger.warning("Truncated text for themefinder_id: {tf_id}", tf_id=tf_id)
                     free_text = free_text[:1000]
                     token_count = len(encoding.encode(free_text))
             else:
@@ -565,7 +604,11 @@ def create_embeddings_for_question(question_id: UUID) -> None:
     total = queryset.count()
     batch_size = 1_000
 
-    logger.info(f"Creating embeddings for {total} responses in question {question_id}")
+    logger.info(
+        "Creating embeddings for {total} responses in question {question_id}",
+        total=total,
+        question_id=question_id,
+    )
 
     for i in range(0, total, batch_size):
         responses = queryset.order_by("id")[i : i + batch_size]
@@ -583,9 +626,13 @@ def create_embeddings_for_question(question_id: UUID) -> None:
 
         Response.objects.bulk_update(responses, ["embedding", "search_vector"])
 
-        logger.info(f"Created embeddings for batch {i // batch_size + 1} of question {question_id}")
+        logger.info(
+            "Created embeddings for batch {batch_num} of question {question_id}",
+            batch_num=i // batch_size + 1,
+            question_id=question_id,
+        )
 
-    logger.info(f"Completed embedding creation for question {question_id}")
+    logger.info("Completed embedding creation for question {question_id}", question_id=question_id)
 
 
 # =============================================================================
@@ -617,7 +664,7 @@ def import_consultation_from_s3(
     Returns:
         Consultation UUID
     """
-    logger.info(f"Starting S3 import for {consultation_code}")
+    logger.info("Starting S3 import for {consultation_code}", consultation_code=consultation_code)
 
     # Load and validate data from S3
     batch = load_consultation_data_batch(
@@ -635,8 +682,11 @@ def import_consultation_from_s3(
 
         for question in Question.objects.filter(consultation=consultation):
             if question.has_free_text:
-                logger.info(f"Enqueueing embedding job for question {question.number}")
+                logger.info(
+                    "Enqueueing embedding job for question {question_number}",
+                    question_number=question.number,
+                )
                 queue.enqueue(create_embeddings_for_question, question.id)
 
-    logger.info(f"Completed S3 import for {consultation_code}")
+    logger.info("Completed S3 import for {consultation_code}", consultation_code=consultation_code)
     return consultation_id

@@ -1,4 +1,3 @@
-import logging
 from typing import Dict, List, Optional
 
 from django.conf import settings
@@ -9,7 +8,7 @@ import backend.data_pipeline.s3 as s3
 from backend.consultations.models import CandidateTheme, Consultation, Question
 from backend.data_pipeline.models import CandidateThemeBatch, ThemeNodeList
 
-logger = logging.getLogger(__name__)
+logger = settings.LOGGER
 
 
 # ============================================================================
@@ -46,7 +45,7 @@ def load_candidate_themes_from_s3(
     # Build S3 key for clustered_themes.json
     key = f"app_data/consultations/{consultation_code}/outputs/sign_off/{timestamp}/question_part_{question_number}/clustered_themes.json"
 
-    logger.info(f"Loading candidate themes from {key}")
+    logger.info("Loading candidate themes from {key}", key=key)
 
     # Read and parse JSON file
     theme_data = s3.read_json(
@@ -54,13 +53,15 @@ def load_candidate_themes_from_s3(
     )
 
     if theme_data is None:
-        logger.info(f"No candidate themes file found at {key}")
+        logger.info("No candidate themes file found at {key}", key=key)
         return []
 
     validated_themes = ThemeNodeList.model_validate(theme_data).theme_nodes
 
     logger.info(
-        f"Loaded and validated {len(validated_themes)} candidate themes for question {question_number}"
+        "Loaded and validated {theme_count} candidate themes for question {question_number}",
+        theme_count=len(validated_themes),
+        question_number=question_number,
     )
 
     return validated_themes
@@ -106,8 +107,10 @@ def load_candidate_themes_batch(
             )
 
     logger.info(
-        f"Loading candidate themes for consultation '{consultation_code}' "
-        f"(timestamp: {timestamp}) across {len(question_numbers)} questions"
+        "Loading candidate themes for consultation '{consultation_code}' (timestamp: {timestamp}) across {question_count} questions",
+        consultation_code=consultation_code,
+        timestamp=timestamp,
+        question_count=len(question_numbers),
     )
 
     # Load themes for each question
@@ -133,7 +136,9 @@ def load_candidate_themes_batch(
 
     total_themes = sum(len(themes) for themes in themes_by_question.values())
     logger.info(
-        f"Loaded {total_themes} total candidate themes across {len(themes_by_question)} questions"
+        "Loaded {total_themes} total candidate themes across {question_count} questions",
+        total_themes=total_themes,
+        question_count=len(themes_by_question),
     )
 
     return batch
@@ -159,18 +164,27 @@ def _import_candidate_themes_for_question(question: Question, themes: List[Theme
         themes: List of validated ThemeNode objects
     """
     if not themes:
-        logger.info(f"No candidate themes to import for question {question.number}")
+        logger.info(
+            "No candidate themes to import for question {question_number}",
+            question_number=question.number,
+        )
         return
 
     # Delete existing candidate themes for this question (idempotent)
     existing_count = CandidateTheme.objects.filter(question=question).count()
     if existing_count > 0:
         logger.info(
-            f"Deleting {existing_count} existing candidate themes for question {question.number}"
+            "Deleting {existing_count} existing candidate themes for question {question_number}",
+            existing_count=existing_count,
+            question_number=question.number,
         )
         CandidateTheme.objects.filter(question=question).delete()
 
-    logger.info(f"Importing {len(themes)} candidate themes for question {question.number}")
+    logger.info(
+        "Importing {theme_count} candidate themes for question {question_number}",
+        theme_count=len(themes),
+        question_number=question.number,
+    )
 
     # First pass: create all themes without parent relationships
     themes_to_create = [
@@ -209,15 +223,24 @@ def _import_candidate_themes_for_question(question: Question, themes: List[Theme
             themes_to_update.append(candidate_theme)
         else:
             logger.warning(
-                f"Parent theme with topic_id '{parent_id}' not found for theme '{candidate_theme.name}'"
+                "Parent theme with topic_id '{parent_id}' not found for theme '{theme_name}'",
+                parent_id=parent_id,
+                theme_name=candidate_theme.name,
             )
 
     # Bulk update parent relationships
     if themes_to_update:
         CandidateTheme.objects.bulk_update(themes_to_update, ["parent"])
-        logger.info(f"Set {len(themes_to_update)} parent relationships")
+        logger.info(
+            "Set {relationship_count} parent relationships",
+            relationship_count=len(themes_to_update),
+        )
 
-    logger.info(f"Created {len(created_themes)} candidate themes for question {question.number}")
+    logger.info(
+        "Created {theme_count} candidate themes for question {question_number}",
+        theme_count=len(created_themes),
+        question_number=question.number,
+    )
 
 
 @transaction.atomic
@@ -247,12 +270,17 @@ def import_candidate_themes(batch: CandidateThemeBatch) -> None:
             "Base consultation data must be imported before candidate themes."
         )
 
-    logger.info(f"Starting candidate themes import for consultation '{consultation.title}'")
+    logger.info(
+        "Starting candidate themes import for consultation '{consultation_title}'",
+        consultation_title=consultation.title,
+    )
 
     # Update consultation timestamp
     if consultation.timestamp != batch.timestamp:
         logger.info(
-            f"Updating consultation timestamp from '{consultation.timestamp}' to '{batch.timestamp}'"
+            "Updating consultation timestamp from '{old_timestamp}' to '{new_timestamp}'",
+            old_timestamp=consultation.timestamp,
+            new_timestamp=batch.timestamp,
         )
         consultation.timestamp = batch.timestamp
         consultation.save(update_fields=["timestamp"])
@@ -278,8 +306,9 @@ def import_candidate_themes(batch: CandidateThemeBatch) -> None:
         total_themes_created += len(themes)
 
     logger.info(
-        f"Candidate themes import complete: "
-        f"{total_themes_created} themes across {questions_imported} questions"
+        "Candidate themes import complete: {total_themes_created} themes across {questions_imported} questions",
+        total_themes_created=total_themes_created,
+        questions_imported=questions_imported,
     )
 
 
@@ -311,8 +340,9 @@ def import_candidate_themes_from_s3(
         ValueError: If consultation or questions don't exist
     """
     logger.info(
-        f"Starting candidate themes import for consultation '{consultation_code}' "
-        f"(timestamp: {timestamp})"
+        "Starting candidate themes import for consultation '{consultation_code}' (timestamp: {timestamp})",
+        consultation_code=consultation_code,
+        timestamp=timestamp,
     )
 
     # Load from S3
@@ -325,4 +355,7 @@ def import_candidate_themes_from_s3(
     # Import into database
     import_candidate_themes(batch)
 
-    logger.info(f"Candidate themes import complete for consultation '{consultation_code}'")
+    logger.info(
+        "Candidate themes import complete for consultation '{consultation_code}'",
+        consultation_code=consultation_code,
+    )
