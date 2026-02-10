@@ -176,12 +176,6 @@ async def process_consultation(consultation_dir: str, llm) -> str:
 
 
 if __name__ == "__main__":
-    llm = ChatOpenAI(
-        model="gpt-4o-sweden",
-        temperature=0,
-        openai_api_base=os.environ["LLM_GATEWAY_URL"],
-        openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-    )
 
     parser = argparse.ArgumentParser(description="Download a subdirectory from S3.")
     parser.add_argument(
@@ -196,8 +190,20 @@ if __name__ == "__main__":
         required=False,
         help="Type of job to execute.",
     )
+    parser.add_argument(
+        "--llm",
+        type=str,
+        required=False,
+        default="gpt-4o-sweden",
+    )
     args = parser.parse_args()
 
+    llm = ChatOpenAI(
+        model=args.llm,
+        temperature=0,
+        openai_api_base=os.environ["LLM_GATEWAY_URL"],
+        openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+    )
     logger.info("Starting processing for subdirectory: %s", args.subdir)
     download_s3_subdir(args.subdir)
     output_dir = asyncio.run(process_consultation(args.subdir, llm))

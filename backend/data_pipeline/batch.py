@@ -12,6 +12,7 @@ def submit_job(
     consultation_code: str,
     consultation_name: str,
     user_id: int,
+    llm: str,
 ) -> dict:
     """
     Submit a job to AWS Batch for ThemeFinder processing.
@@ -46,7 +47,9 @@ def submit_job(
         jobName=job_name,
         jobQueue=job_queue,
         jobDefinition=job_definition,
-        containerOverrides={"command": ["--subdir", consultation_code, "--job-type", job_type]},
+        containerOverrides={
+            "command": ["--subdir", consultation_code, "--job-type", job_type, "--llm", llm]
+        },
         parameters=parameters,
     )
 
