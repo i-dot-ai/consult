@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 import pytest
 
 DASHBOARD_ACCESS = "Dashboard access"
@@ -235,6 +237,52 @@ def test_0093_historicalresponseannotationtheme_response_and_more(migrator):
 
     assert new_response_annotation_theme.response.pk == response.pk
     assert new_response_annotation_theme.theme.pk == theme.pk
+
+    # Cleanup:
+    migrator.reset()
+
+
+@pytest.mark.django_db()
+def test_0095_historicalresponse_evidence_rich_and_more(migrator):
+    # Check group doesn't exist before migration
+    old_state = migrator.apply_initial_migration(
+        ("consultations", "0094_historicalresponse_and_more")
+    )
+    User = old_state.apps.get_model("authentication", "User")
+    Consultation = old_state.apps.get_model("consultations", "Consultation")
+    Question = old_state.apps.get_model("consultations", "Question")
+    Respondent = old_state.apps.get_model("consultations", "Respondent")
+    Response = old_state.apps.get_model("consultations", "Response")
+    ResponseAnnotation = old_state.apps.get_model("consultations", "ResponseAnnotation")
+
+    consultation = Consultation.objects.create(title="example")
+    question = Question.objects.create(consultation=consultation, number=1)
+    respondent = Respondent.objects.create(consultation=consultation)
+    old_response = Response.objects.create(respondent=respondent, question=question)
+
+    reviewer = User.objects.create(email="reviewer@example.com")
+    now = datetime.now(timezone.utc)
+    ResponseAnnotation.objects.create(
+        response=old_response,
+        evidence_rich=True,
+        human_reviewed=True,
+        reviewed_at=now,
+        reviewed_by=reviewer,
+        sentiment="DISAGREEMENT",
+    )
+
+    # Run the migration that creates the group
+    new_state = migrator.apply_tested_migration(
+        ("consultations", "0095_historicalresponse_evidence_rich_and_more")
+    )
+    NewResponse = new_state.apps.get_model("consultations", "Response")
+    new_response = NewResponse.objects.get(pk=old_response.pk)
+
+    assert new_response.evidence_rich is True
+    assert new_response.human_reviewed is True
+    assert new_response.reviewed_at == now
+    assert new_response.reviewed_by.email == "reviewer@example.com"
+    assert new_response.sentiment == "DISAGREEMENT"
 
     # Cleanup:
     migrator.reset()

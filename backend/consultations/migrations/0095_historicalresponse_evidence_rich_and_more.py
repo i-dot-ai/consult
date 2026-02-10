@@ -5,6 +5,27 @@ from django.conf import settings
 from django.db import migrations, models
 
 
+def back_populate_responses(apps, schema_editor):
+    HistoricalResponseAnnotation = apps.get_model("consultations", "HistoricalResponseAnnotation")
+    ResponseAnnotation = apps.get_model("consultations", "ResponseAnnotation")
+
+    for item in HistoricalResponseAnnotation.objects.all():
+        item.response.evidence_rich = item.evidence_rich
+        item.response.human_reviewed = item.human_reviewed
+        item.response.reviewed_at = item.reviewed_at
+        item.response.reviewed_by = item.reviewed_by
+        item.response.sentiment = item.sentiment
+        item.response.save()
+
+    for item in ResponseAnnotation.objects.all():
+        item.response.evidence_rich = item.evidence_rich
+        item.response.human_reviewed = item.human_reviewed
+        item.response.reviewed_at = item.reviewed_at
+        item.response.reviewed_by = item.reviewed_by
+        item.response.sentiment = item.sentiment
+        item.response.save()
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("consultations", "0094_historicalresponse_and_more"),
@@ -112,4 +133,5 @@ class Migration(migrations.Migration):
             model_name="response",
             index=models.Index(fields=["evidence_rich"], name="consultatio_evidenc_fc8cbd_idx"),
         ),
+        migrations.RunPython(back_populate_responses),
     ]
