@@ -1,7 +1,7 @@
 import uuid
 from uuid import uuid4
 
-from backend.consultations.api.serializers import (
+from consultations.api.serializers import (
     ConsultationExportSerializer,
     DemographicAggregationsSerializer,
     QuestionSerializer,

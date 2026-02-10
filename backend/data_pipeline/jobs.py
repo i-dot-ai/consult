@@ -21,7 +21,7 @@ def import_consultation(
     user_id: UUID,
 ) -> UUID:
     """Import consultation setup data from S3."""
-    from backend.data_pipeline.sync.consultation_setup import (
+    from data_pipeline.sync.consultation_setup import (
         import_consultation_from_s3,
     )
 
@@ -41,7 +41,7 @@ def import_candidate_themes(
     run_date: str,
 ) -> None:
     """Import candidate themes from S3 (find-themes batch job output)."""
-    from backend.data_pipeline.sync.candidate_themes import (
+    from data_pipeline.sync.candidate_themes import (
         import_candidate_themes_from_s3,
     )
 
@@ -59,7 +59,7 @@ def import_response_annotations(
     run_date: str,
 ) -> None:
     """Import response annotations from S3 (assign-themes batch job output)."""
-    from backend.data_pipeline.sync.response_annotations import (
+    from data_pipeline.sync.response_annotations import (
         import_response_annotations_from_s3,
     )
 

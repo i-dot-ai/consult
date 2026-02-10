@@ -2,9 +2,10 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
-from backend.consultations.models import Consultation, Question, SelectedTheme
-from backend.factories import ConsultationFactory, RespondentFactory, UserFactory
 from django.urls import reverse
+
+from consultations.models import Consultation, Question, SelectedTheme
+from factories import ConsultationFactory, RespondentFactory, UserFactory
 
 
 @pytest.mark.django_db
@@ -175,8 +176,9 @@ class TestConsultationViewSet:
 
     def test_cannot_get_consultation_detail_for_unauthorized_users(self, client, consultation):
         """Test API endpoint denies access to unauthorized users"""
-        from backend.factories import UserFactory
         from rest_framework_simplejwt.tokens import RefreshToken
+
+        from factories import UserFactory
 
         # Create a user who is NOT assigned to any consultation
         isolated_user = UserFactory(is_staff=False)
@@ -475,7 +477,7 @@ class TestSetupConsultationEndpoint:
             "consultation_code": "test-code",
         }
 
-        with patch("backend.consultations.api.views.consultation.jobs") as mock_jobs:
+        with patch("consultations.api.views.consultation.jobs") as mock_jobs:
             mock_jobs.import_consultation.delay.return_value = None
 
             response = client.post(
@@ -515,7 +517,7 @@ class TestGetConsultationFoldersEndpoint:
         """Test setup stage returns all S3 folders when no consultations exist"""
         url = reverse("consultations-folders")
 
-        with patch("backend.data_pipeline.s3.get_consultation_folders") as mock_get_folders:
+        with patch("data_pipeline.s3.get_consultation_folders") as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026", "transport-2026", "education-2026"]
 
             response = client.get(
@@ -535,7 +537,7 @@ class TestGetConsultationFoldersEndpoint:
 
         url = reverse("consultations-folders")
 
-        with patch("backend.data_pipeline.s3.get_consultation_folders") as mock_get_folders:
+        with patch("data_pipeline.s3.get_consultation_folders") as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026", "transport-2026", "education-2026"]
 
             response = client.get(
@@ -557,7 +559,7 @@ class TestGetConsultationFoldersEndpoint:
 
         url = reverse("consultations-folders")
 
-        with patch("backend.data_pipeline.s3.get_consultation_folders") as mock_get_folders:
+        with patch("data_pipeline.s3.get_consultation_folders") as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026", "transport-2026", "education-2026"]
 
             response = client.get(
@@ -583,7 +585,7 @@ class TestGetConsultationFoldersEndpoint:
 
         url = reverse("consultations-folders")
 
-        with patch("backend.data_pipeline.s3.get_consultation_folders") as mock_get_folders:
+        with patch("data_pipeline.s3.get_consultation_folders") as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026", "education-2026"]
 
             response = client.get(
@@ -604,7 +606,7 @@ class TestGetConsultationFoldersEndpoint:
 
         url = reverse("consultations-folders")
 
-        with patch("backend.data_pipeline.s3.get_consultation_folders") as mock_get_folders:
+        with patch("data_pipeline.s3.get_consultation_folders") as mock_get_folders:
             mock_get_folders.return_value = ["healthcare-2026"]
 
             response = client.get(
@@ -656,7 +658,7 @@ class TestFindThemesEndpoint:
 
         url = reverse("consultations-find-themes", kwargs={"pk": consultation.id})
 
-        with patch("backend.data_pipeline.batch.submit_job") as mock_submit:
+        with patch("data_pipeline.batch.submit_job") as mock_submit:
             mock_submit.return_value = {"jobId": "test-job-123"}
 
             response = client.post(
@@ -705,9 +707,9 @@ class TestAssignThemesEndpoint:
 
         with (
             patch(
-                "backend.consultations.api.views.consultation.export_selected_themes_to_s3"
+                "consultations.api.views.consultation.export_selected_themes_to_s3"
             ) as mock_export,
-            patch("backend.consultations.api.views.consultation.batch") as mock_batch,
+            patch("consultations.api.views.consultation.batch") as mock_batch,
         ):
             mock_export.return_value = 1
             mock_batch.submit_job.return_value = {"jobId": "test-job-456"}
@@ -737,7 +739,7 @@ class TestAssignThemesEndpoint:
         url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
 
         with patch(
-            "backend.consultations.api.views.consultation.export_selected_themes_to_s3"
+            "consultations.api.views.consultation.export_selected_themes_to_s3"
         ) as mock_export:
             mock_export.side_effect = ValueError("No questions with selected themes found")
 

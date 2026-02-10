@@ -4,9 +4,9 @@ from django.conf import settings
 from django.db import transaction
 from themefinder.models import ThemeNode
 
-import backend.data_pipeline.s3 as s3
-from backend.consultations.models import CandidateTheme, Consultation, Question
-from backend.data_pipeline.models import CandidateThemeBatch, ThemeNodeList
+import data_pipeline.s3 as s3
+from consultations.models import CandidateTheme, Consultation, Question
+from data_pipeline.models import CandidateThemeBatch, ThemeNodeList
 
 logger = settings.LOGGER
 

@@ -4,7 +4,7 @@ from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
 from i_dot_ai_utilities.logging.types.enrichment_types import ExecutionEnvironmentType
 from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 
-from backend.settings.base import *  # noqa
+from settings.base import *  # noqa
 
 CSRF_TRUSTED_ORIGINS = ["https://" + env("DOMAIN_NAME")]  # noqa: F405
 
@@ -77,3 +77,18 @@ LOGGER = StructuredLogger(
         "ship_logs": True,
     },
 )
+
+if env.str("ENVIRONMENT", "prod").lower() != "prod":  # noqa: F405
+    INSTALLED_APPS.append("drf_spectacular")  # noqa F405
+
+    REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"  # noqa F405
+
+    # DRF Spectacular settings
+    SPECTACULAR_SETTINGS = {
+        "TITLE": "Consultation Analyser API",
+        "DESCRIPTION": "REST API for the i.AI Consultation Analyser platform",
+        "VERSION": "1.0.0",
+        "SERVE_INCLUDE_SCHEMA": False,
+        "COMPONENT_SPLIT_REQUEST": True,
+        "SCHEMA_PATH_PREFIX": "/api/",
+    }

@@ -1,8 +1,9 @@
 import pytest
-from backend.consultations.models import Question
-from backend.factories import QuestionFactory, RespondentFactory, ResponseFactory
 from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from consultations.models import Question
+from factories import QuestionFactory, RespondentFactory, ResponseFactory
 
 
 @pytest.mark.django_db
@@ -302,7 +303,7 @@ class TestQuestionViewSet:
 
     def test_permission_requires_consultation_access(self, client, free_text_question):
         """Test that QuestionViewSet requires consultation access"""
-        from backend.factories import UserFactory
+        from factories import UserFactory
 
         # Create a user who is NOT assigned to any consultation
         isolated_user = UserFactory(is_staff=False)

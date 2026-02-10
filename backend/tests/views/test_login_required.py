@@ -1,8 +1,8 @@
 import pytest
-from backend import factories
-from backend.consultations.urls import urlpatterns
 from django.urls import reverse
 
+import factories
+from consultations.urls import urlpatterns
 from tests.utils import build_url
 
 PUBLIC_URL_NAMES = ["git-sha"]
