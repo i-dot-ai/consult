@@ -44,7 +44,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         THEME_MAPPING = "theme_mapping", "Theme Mapping"
         ANALYSIS = "analysis", "Analysis"
 
-    class LLM(models.TextChoices):
+    class ModelName(models.TextChoices):
         GPT_4O = "gpt-4o-sweden"
         GPT_41 = "gpt-4.1"
 
@@ -63,8 +63,8 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         default=True,
         help_text="does a user see the AI selected themes in the evaluations page?",
     )
-    llm = models.CharField(
-        choices=LLM, default=LLM.GPT_41, null=True, blank=True, help_text="llm to use"
+    model_name = models.CharField(
+        choices=ModelName, default=ModelName.GPT_41, null=True, blank=True, help_text="llm to use"
     )
 
     def __str__(self):

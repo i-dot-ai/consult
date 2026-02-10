@@ -675,7 +675,7 @@ class TestFindThemesEndpoint:
                 consultation_code=consultation.code,
                 consultation_name=consultation.title,
                 user_id=mock_submit.call_args.kwargs["user_id"],
-                llm=consultation.llm,
+                model_name=consultation.model_name,
             )
 
     def test_find_themes_no_free_text_questions(self, client, staff_user_token, consultation):
@@ -731,7 +731,7 @@ class TestAssignThemesEndpoint:
                 consultation_code=consultation.code,
                 consultation_name=consultation.title,
                 user_id=mock_batch.submit_job.call_args.kwargs["user_id"],
-                llm=consultation.llm,
+                model_name=consultation.model_name,
             )
 
     def test_assign_themes_no_selected_themes(self, client, staff_user_token, free_text_question):

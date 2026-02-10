@@ -298,7 +298,7 @@ if __name__ == "__main__":
         help="Type of job to execute.",
     )
     parser.add_argument(
-        "--llm",
+        "--model-name",
         type=str,
         required=False,
         default="gpt-4o-sweden",
@@ -308,6 +308,6 @@ if __name__ == "__main__":
 
     logger.info("Starting processing for subdirectory: %s", args.subdir)
     download_s3_subdir(args.subdir)
-    output_dir = asyncio.run(process_consultation(args.subdir, args.llm))
+    output_dir = asyncio.run(process_consultation(args.subdir, args.model_name))
     upload_directory_to_s3(output_dir)
     logger.info("Processing completed for subdirectory: %s", args.subdir)
