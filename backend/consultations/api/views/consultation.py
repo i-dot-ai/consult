@@ -54,7 +54,7 @@ class ConsultationViewSet(ModelViewSet):
                 .order_by("-created_at")
             )
         elif self.request.user.is_staff:
-            return Consultation.objects.all().prefetch_related("users").order_by("-created_at")
+            return Consultation.objects.prefetch_related("users").order_by("-created_at")
         return (
             Consultation.objects.filter(users=self.request.user)
             .prefetch_related("users")
