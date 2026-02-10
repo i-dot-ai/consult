@@ -103,7 +103,7 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
     return question, responses, themes
 
 
-async def process_consultation(consultation_dir: str, llm) -> str:
+async def process_consultation(consultation_dir: str, model_name: str) -> str:
     """
     Process all questions in a consultation directory, generating theme analyses.
 
@@ -115,11 +115,18 @@ async def process_consultation(consultation_dir: str, llm) -> str:
 
     Args:
         consultation_dir: Directory containing question subdirectories
-        llm: Language model instance for processing
+        model_name: Language model instance for processing
 
     Returns:
         str: Path to the output directory
     """
+    llm = ChatOpenAI(
+        model=model_name,
+        temperature=0,
+        openai_api_base=os.environ["LLM_GATEWAY_URL"],
+        openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+    )
+
     date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
     skipped_questions = []
     for question_dir in os.listdir(Path(consultation_dir) / "inputs"):
@@ -176,12 +183,6 @@ async def process_consultation(consultation_dir: str, llm) -> str:
 
 
 if __name__ == "__main__":
-    llm = ChatOpenAI(
-        model="gpt-4.1",
-        temperature=0,
-        openai_api_base=os.environ["LLM_GATEWAY_URL"],
-        openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-    )
 
     parser = argparse.ArgumentParser(description="Download a subdirectory from S3.")
     parser.add_argument(
@@ -196,10 +197,15 @@ if __name__ == "__main__":
         required=False,
         help="Type of job to execute.",
     )
+    parser.add_argument(
+        "--model-name",
+        type=str,
+        required=True,
+    )
     args = parser.parse_args()
 
     logger.info("Starting processing for subdirectory: %s", args.subdir)
     download_s3_subdir(args.subdir)
-    output_dir = asyncio.run(process_consultation(args.subdir, llm))
+    output_dir = asyncio.run(process_consultation(args.subdir, args.model_name))
     upload_directory_to_s3(output_dir)
     logger.info("Processing completed for subdirectory: %s", args.subdir)

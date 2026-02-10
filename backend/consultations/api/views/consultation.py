@@ -175,6 +175,7 @@ class ConsultationViewSet(ModelViewSet):
                 consultation_code=consultation.code,
                 consultation_name=consultation.title,
                 user_id=request.user.id,
+                model_name=consultation.model_name,
             )
 
             logger.info(
@@ -268,6 +269,7 @@ class ConsultationViewSet(ModelViewSet):
                 consultation_code=consultation.code,
                 consultation_name=consultation.title,
                 user_id=request.user.id,
+                model_name=consultation.model_name,
             )
         except Exception as e:
             sentry_sdk.capture_exception(e)
