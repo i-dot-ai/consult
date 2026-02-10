@@ -17,7 +17,9 @@ class RespondentViewSet(ModelViewSet):
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
 
-        queryset = models.Respondent.objects.filter(consultation_id=consultation_uuid)
+        queryset = models.Respondent.objects.filter(
+            consultation_id=consultation_uuid
+        ).prefetch_related("demographics")
 
         # Staff users can see all respondents, non-staff users only see respondents for assigned consultations
         if not self.request.user.is_staff:
