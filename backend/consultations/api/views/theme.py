@@ -1,3 +1,4 @@
+from django.db.models import Count, Prefetch
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
@@ -5,7 +6,6 @@ from consultations import models
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
-from django.db.models import Count, Prefetch
 from consultations.api.serializers import CrossCuttingThemeSerializer
 
 
