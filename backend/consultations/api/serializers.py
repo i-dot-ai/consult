@@ -175,6 +175,11 @@ class CandidateThemeSerializer(serializers.ModelSerializer):
         ]
 
     def get_children(self, obj):
+        # Use prefetched children if available (set by Prefetch with to_attr)
+        if hasattr(obj, "prefetched_children"):
+            return CandidateThemeSerializer(obj.prefetched_children, many=True).data
+
+        # Fallback for single object serialization (e.g., retrieve action)
         children = CandidateTheme.objects.filter(parent=obj)
         return CandidateThemeSerializer(children, many=True).data
 
