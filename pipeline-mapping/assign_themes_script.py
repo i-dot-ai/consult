@@ -103,7 +103,7 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
     return question, responses, themes
 
 
-async def process_consultation(consultation_dir: str, llm) -> str:
+async def process_consultation(consultation_dir: str, model_name: str) -> str:
     """
     Process all questions in a consultation directory, generating theme analyses.
 
@@ -120,6 +120,13 @@ async def process_consultation(consultation_dir: str, llm) -> str:
     Returns:
         str: Path to the output directory
     """
+    llm = ChatOpenAI(
+        model=model_name,
+        temperature=0,
+        openai_api_base=os.environ["LLM_GATEWAY_URL"],
+        openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+    )
+
     date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
     skipped_questions = []
     for question_dir in os.listdir(Path(consultation_dir) / "inputs"):
@@ -162,6 +169,7 @@ async def process_consultation(consultation_dir: str, llm) -> str:
 
                 themes_df = themes_df[["topic_id", "Theme Name", "Theme Description"]]
                 themes_df.columns = ["theme_key", "theme_name", "theme_description"]
+                themes_df["llm_model_name"] = model_name
                 themes_df.to_json(question_output_dir / "themes.json", orient="records")
 
                 logger.info(
@@ -198,14 +206,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    llm = ChatOpenAI(
-        model=args.llm,
-        temperature=0,
-        openai_api_base=os.environ["LLM_GATEWAY_URL"],
-        openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-    )
     logger.info("Starting processing for subdirectory: %s", args.subdir)
     download_s3_subdir(args.subdir)
-    output_dir = asyncio.run(process_consultation(args.subdir, llm))
+    output_dir = asyncio.run(process_consultation(args.subdir, args.llm))
     upload_directory_to_s3(output_dir)
     logger.info("Processing completed for subdirectory: %s", args.subdir)

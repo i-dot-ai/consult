@@ -18,7 +18,7 @@ from themefinder.models import HierarchicalClusteringResponse, ThemeNode
 
 class ThemeNodeList(BaseModel):
     """List of theme nodes for serialization to JSON."""
-
+    model_name: str|None = None
     theme_nodes: list[ThemeNode]
 
 
@@ -107,13 +107,14 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
     return question, responses
 
 
-async def generate_themes(question: str, responses_df):
+async def generate_themes(question: str, responses_df, llm):
     """
     Generate refined themes from question and responses through multiple analysis steps.
 
     Args:
         question: The survey question text
         responses_df: DataFrame containing survey responses
+        llm: the model to use
 
     Returns:
         pd.DataFrame: DataFrame containing refined themes
@@ -197,7 +198,7 @@ def agentic_theme_clustering(
     return all_themes_df
 
 
-async def process_consultation(consultation_dir: str, llm) -> str:
+async def process_consultation(consultation_dir: str, model_name:str) -> str:
     """
     Process all questions in a consultation directory, generating theme analyses.
 
@@ -211,6 +212,13 @@ async def process_consultation(consultation_dir: str, llm) -> str:
         consultation_dir: Directory containing question subdirectories
         llm: Language model instance for processing
     """
+    llm = ChatOpenAI(
+        model=model_name,
+        temperature=0,
+        openai_api_base=os.environ["LLM_GATEWAY_URL"],
+        openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+    )
+
     date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
 
     skipped_questions = []
@@ -230,7 +238,7 @@ async def process_consultation(consultation_dir: str, llm) -> str:
                 question, responses_df = load_question(consultation_dir, question_dir)
 
                 # Generate themes
-                refined_themes_df = await generate_themes(question, responses_df)
+                refined_themes_df = await generate_themes(question, responses_df, llm)
 
                 def refined_themes_to_theme_node(row: dict):
                     topic_label, topic_description = row["topic"].split(":")
@@ -261,7 +269,7 @@ async def process_consultation(consultation_dir: str, llm) -> str:
                     ]
 
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
-                    f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
+                    f.write(ThemeNodeList(theme_nodes=all_themes_list, model_name=model_name).model_dump_json())
 
                 logger.info(
                     "Completed processing %s, saved to %s", question_dir, question_output_dir
@@ -297,15 +305,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    llm = ChatOpenAI(
-        model=args.llm,
-        temperature=0,
-        openai_api_base=os.environ["LLM_GATEWAY_URL"],
-        openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-    )
 
     logger.info("Starting processing for subdirectory: %s", args.subdir)
     download_s3_subdir(args.subdir)
-    output_dir = asyncio.run(process_consultation(args.subdir, llm))
+    output_dir = asyncio.run(process_consultation(args.subdir, args.llm))
     upload_directory_to_s3(output_dir)
     logger.info("Processing completed for subdirectory: %s", args.subdir)
