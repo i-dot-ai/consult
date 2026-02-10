@@ -2,10 +2,11 @@ import csv
 from unittest.mock import patch
 
 import pytest
-from backend import factories
-from backend.consultations import models
-from backend.consultations.export_user_theme import export_user_theme
 from freezegun import freeze_time
+
+import factories
+from consultations import models
+from consultations.export_user_theme import export_user_theme
 
 
 def format_theme_string(themes: list[models.SelectedTheme]) -> str:
@@ -13,8 +14,8 @@ def format_theme_string(themes: list[models.SelectedTheme]) -> str:
 
 
 @pytest.mark.django_db
-@patch("backend.consultations.export_user_theme.boto3.client")
-@patch("backend.consultations.export_user_theme.settings.ENVIRONMENT", "production")
+@patch("consultations.export_user_theme.boto3.client")
+@patch("consultations.export_user_theme.settings.ENVIRONMENT", "production")
 def test_export_user_theme(mock_boto_client, consultation, free_text_question):
     user = factories.UserFactory(is_staff=True)
     # Set up consultation with question and responses
@@ -91,10 +92,10 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
 
 @pytest.mark.django_db
 @patch("django_rq.enqueue")
-@patch("backend.consultations.export_user_theme.boto3.client")
+@patch("consultations.export_user_theme.boto3.client")
 def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_text_question):
     """Test that the export job is correctly enqueued"""
-    from backend.consultations.export_user_theme import export_user_theme_job
+    from consultations.export_user_theme import export_user_theme_job
 
     user = factories.UserFactory(is_staff=True)
     # Set up consultation with question and response

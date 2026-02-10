@@ -1,14 +1,16 @@
-from backend.consultations import models
-from backend.consultations.api.permissions import CanSeeConsultation
-from backend.consultations.api.serializers import (
-    CandidateThemeSerializer,
-    SelectedThemeSerializer,
-)
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+
+from consultations import models
+from consultations.api.permissions import CanSeeConsultation
+from consultations.api.serializers import (
+    CandidateThemeSerializer,
+    SelectedThemeSerializer,
+)
 
 
 class CandidateThemeViewSet(ModelViewSet):
@@ -19,22 +21,34 @@ class CandidateThemeViewSet(ModelViewSet):
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
         question_uuid = self.kwargs["question_pk"]
-        
+
         queryset = models.CandidateTheme.objects.filter(
             question__consultation_id=consultation_uuid,
             question_id=question_uuid,
         )
-        
+
         # Staff users can see all candidate themes, non-staff users only see themes for assigned consultations
         if not self.request.user.is_staff:
             queryset = queryset.filter(question__consultation__users=self.request.user)
-            
+
         return queryset.order_by("-approximate_frequency")
 
     def list(self, request, consultation_pk=None, question_pk=None):
         """List candidate themes for a question with nested children"""
-        roots = self.get_queryset().filter(parent__isnull=True)
-        page = self.paginate_queryset(roots)
+        # Prefetch children to avoid N+1 queries
+        queryset = (
+            self.get_queryset()
+            .filter(parent__isnull=True)
+            .prefetch_related(
+                Prefetch(
+                    "candidatetheme_set",
+                    queryset=models.CandidateTheme.objects.order_by("-approximate_frequency"),
+                    to_attr="prefetched_children",
+                )
+            )
+        )
+
+        page = self.paginate_queryset(queryset)
         serializer = CandidateThemeSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 

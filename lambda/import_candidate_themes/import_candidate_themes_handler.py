@@ -50,7 +50,7 @@ def lambda_handler(event, _context):
         queue = Queue(queue_name, connection=redis_conn)
         logger.info("Enqueueing RQ job to import candidate themes...")
         job = queue.enqueue(
-            "backend.data_pipeline.jobs.import_candidate_themes",
+            "data_pipeline.jobs.import_candidate_themes",
             consultation_code,
             run_date,
         )

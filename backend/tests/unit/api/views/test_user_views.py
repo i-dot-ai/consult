@@ -1,17 +1,19 @@
 import json
 
 import pytest
-from backend.consultations.models import User
 from django.urls import reverse
+
+from consultations.models import User
 
 
 @pytest.mark.django_db
 class TestUserViewSet:
     def test_users_list(self, client, staff_user_token, non_staff_user):
         # Create a second non-staff user to get total of 3 users
-        from backend.factories import UserFactory
+        from factories import UserFactory
+
         additional_user = UserFactory(is_staff=False)
-        
+
         url = reverse("user-list")
         response = client.get(
             url,
@@ -123,9 +125,7 @@ class TestUserViewSet:
         assert response.status_code == 400
         assert "You cannot remove admin privileges from yourself" in response.json()["is_staff"]
 
-    def test_user_consultations_success(
-        self, client, staff_user, consultation, staff_user_token
-    ):
+    def test_user_consultations_success(self, client, staff_user, consultation, staff_user_token):
         """Test that admin can access user's consultations"""
         # Add staff_user to the consultation so they have consultations to return
         consultation.users.add(staff_user)
@@ -147,9 +147,7 @@ class TestUserViewSet:
         assert data[0]["id"] == str(consultation.id)
         assert data[0]["title"] == consultation.title
 
-    def test_user_consultations_no_consultations(
-        self, client, non_staff_user, staff_user_token
-    ):
+    def test_user_consultations_no_consultations(self, client, non_staff_user, staff_user_token):
         """Test that endpoint returns empty list for user with no consultations"""
         url = reverse(
             "user-consultations",
@@ -166,9 +164,7 @@ class TestUserViewSet:
         data = response.json()
         assert len(data) == 0
 
-    def test_user_consultations_requires_admin(
-        self, client, staff_user, non_staff_user_token
-    ):
+    def test_user_consultations_requires_admin(self, client, staff_user, non_staff_user_token):
         """Test that non-admin users cannot access this endpoint"""
         url = reverse(
             "user-consultations",

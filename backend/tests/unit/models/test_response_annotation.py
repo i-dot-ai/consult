@@ -1,14 +1,15 @@
 import pytest
-from backend.consultations.models import ResponseAnnotation
-from backend.factories import (
+from django.utils import timezone
+from freezegun import freeze_time
+
+from consultations.models import ResponseAnnotation
+from factories import (
     ResponseAnnotationFactory,
     ResponseFactory,
     ReviewedResponseAnnotationFactory,
     SelectedThemeFactory,
     UserFactory,
 )
-from django.utils import timezone
-from freezegun import freeze_time
 
 
 @pytest.mark.django_db

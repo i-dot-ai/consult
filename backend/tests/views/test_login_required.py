@@ -1,8 +1,8 @@
 import pytest
-from backend import factories
-from backend.consultations.urls import urlpatterns
 from django.urls import reverse
 
+import factories
+from consultations.urls import urlpatterns
 from tests.utils import build_url
 
 PUBLIC_URL_NAMES = ["git-sha"]
@@ -157,7 +157,6 @@ def test_api_urls_permission_required(
     client.force_login(user_no_access)
     check_expected_status_code(client, url, 403)
     client.logout()
-
 
 
 @pytest.mark.django_db

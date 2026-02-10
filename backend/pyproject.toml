@@ -20,7 +20,7 @@ filterwarnings = [
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
 boto3 = "^1.42.17"
-django = "^5.2.10"
+django = "^5.2.11"
 django-environ = "^0.12.0"
 django-filter = "^25.2"
 django-redis = "^6.0.0"
@@ -40,10 +40,11 @@ psycopg = "^3.3.2"
 pydantic = "^2.12.5"
 pytest-random-order = "^1.2.0"
 sentry-sdk = {version = ">=2.24.1", extras = ["django", "redis", "rq"]}
-themefinder = "^0.7.7"
+themefinder = "^0.7.8"
 
 [tool.poetry.group.development.dependencies]
 django-extensions = "^4.1"
+pydot = "^4.0.1"
 django-test-migrations = "^1.5.0"
 django-types = "^0.22.0"
 factory_boy = "^3.3.1"
@@ -58,6 +59,7 @@ ruff = "^0.14.13"
 [tool.mypy]
 files = '**/*.py'
 exclude = ['^consultations/migrations/']
+
 
 
 

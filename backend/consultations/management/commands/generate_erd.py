@@ -1,5 +1,6 @@
-from backend.hosting_environment import HostingEnvironment
 from django.core.management import BaseCommand, call_command
+
+from hosting_environment import HostingEnvironment
 
 
 class Command(BaseCommand):
@@ -18,6 +19,6 @@ class Command(BaseCommand):
                 "-X",
                 "UUIDPrimaryKeyModel,TimeStampedModel",
                 "-o",
-                "docs/erd.png",
+                "../docs/erd.png",
             ],
         )

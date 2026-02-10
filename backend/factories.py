@@ -6,10 +6,10 @@ from factory import fuzzy
 from factory.django import DjangoModelFactory
 from faker import Faker
 
-from backend.authentication.models import User
-from backend.consultations import models
-from backend.consultations.models import DemographicOption, MultiChoiceAnswer
-from backend.embeddings import embed_text
+from authentication.models import User
+from consultations import models
+from consultations.models import DemographicOption, MultiChoiceAnswer
+from embeddings import embed_text
 
 fake = Faker()
 

@@ -2,11 +2,11 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
-from backend.consultations.api.permissions import (
+
+from consultations.api.permissions import (
     CanSeeConsultation,
 )
-from backend.factories import UserFactory
-
+from factories import UserFactory
 from tests.utils import build_url
 
 
@@ -26,13 +26,11 @@ class TestCanSeeConsultation:
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is True
 
-    def test_user_without_consultation_access(
-        self, request_factory, non_staff_user, consultation
-    ):
+    def test_user_without_consultation_access(self, request_factory, non_staff_user, consultation):
         """Test that user without access to consultation is denied permission"""
         # Remove the user from consultation to test denial
         consultation.users.remove(non_staff_user)
-        
+
         request = request_factory.get("/")
         request.user = non_staff_user
 
@@ -207,8 +205,9 @@ class TestAPIViewPermissions:
         self, client, free_text_question, endpoint_name
     ):
         """Test that users without consultation access cannot access any API endpoint"""
-        from backend.factories import UserFactory
         from rest_framework_simplejwt.tokens import RefreshToken
+
+        from factories import UserFactory
 
         # Create a user who is NOT assigned to any consultation
         isolated_user = UserFactory(is_staff=False)

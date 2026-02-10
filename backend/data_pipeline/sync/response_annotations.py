@@ -1,18 +1,17 @@
-import logging
 from typing import Dict, List, Optional
 
 from django.conf import settings
 from django.db import transaction
 
-import backend.data_pipeline.s3 as s3
-from backend.consultations.models import (
+import data_pipeline.s3 as s3
+from consultations.models import (
     Consultation,
     Question,
     Response,
     ResponseAnnotation,
     SelectedTheme,
 )
-from backend.data_pipeline.models import (
+from data_pipeline.models import (
     AnnotationBatch,
     DetailDetectionInput,
     SelectedThemeInput,
@@ -20,7 +19,7 @@ from backend.data_pipeline.models import (
     ThemeMappingInput,
 )
 
-logger = logging.getLogger(__name__)
+logger = settings.LOGGER
 
 
 # ============================================================================
@@ -56,7 +55,7 @@ def load_selected_themes_from_s3(
     # Build S3 key for themes.json
     key = f"app_data/consultations/{consultation_code}/outputs/mapping/{timestamp}/question_part_{question_number}/themes.json"
 
-    logger.info(f"Loading selected themes from {key}")
+    logger.info("Loading selected themes from {key}", key=key)
 
     # Read and parse JSON file
     theme_data = s3.read_json(
@@ -69,7 +68,9 @@ def load_selected_themes_from_s3(
     validated_themes = [SelectedThemeInput(**theme) for theme in theme_data]
 
     logger.info(
-        f"Loaded and validated {len(validated_themes)} selected themes for question {question_number}"
+        "Loaded and validated {theme_count} selected themes for question {question_number}",
+        theme_count=len(validated_themes),
+        question_number=question_number,
     )
 
     return validated_themes
@@ -101,7 +102,7 @@ def load_sentiments_from_s3(
 
     key = f"app_data/consultations/{consultation_code}/outputs/mapping/{timestamp}/question_part_{question_number}/sentiment.jsonl"
 
-    logger.info(f"Loading sentiments from {key}")
+    logger.info("Loading sentiments from {key}", key=key)
 
     # Read JSONL file (raise_if_missing=False because sentiment is optional)
     sentiment_data = s3.read_jsonl(
@@ -109,14 +110,16 @@ def load_sentiments_from_s3(
     )
 
     if not sentiment_data:
-        logger.info(f"No sentiment file found at {key} (this is optional)")
+        logger.info("No sentiment file found at {key} (this is optional)", key=key)
         return []
 
     # Validate each sentiment using Pydantic
     validated_sentiments = [SentimentInput(**item) for item in sentiment_data]
 
     logger.info(
-        f"Loaded and validated {len(validated_sentiments)} sentiments for question {question_number}"
+        "Loaded and validated {sentiment_count} sentiments for question {question_number}",
+        sentiment_count=len(validated_sentiments),
+        question_number=question_number,
     )
 
     return validated_sentiments
@@ -149,7 +152,7 @@ def load_detail_detections_from_s3(
 
     key = f"app_data/consultations/{consultation_code}/outputs/mapping/{timestamp}/question_part_{question_number}/detail_detection.jsonl"
 
-    logger.info(f"Loading detail detections from {key}")
+    logger.info("Loading detail detections from {key}", key=key)
 
     # Read JSONL file
     detail_data = s3.read_jsonl(
@@ -160,7 +163,9 @@ def load_detail_detections_from_s3(
     validated_details = [DetailDetectionInput(**item) for item in detail_data]
 
     logger.info(
-        f"Loaded and validated {len(validated_details)} detail detections for question {question_number}"
+        "Loaded and validated {detail_count} detail detections for question {question_number}",
+        detail_count=len(validated_details),
+        question_number=question_number,
     )
 
     return validated_details
@@ -193,7 +198,7 @@ def load_theme_mappings_from_s3(
 
     key = f"app_data/consultations/{consultation_code}/outputs/mapping/{timestamp}/question_part_{question_number}/mapping.jsonl"
 
-    logger.info(f"Loading theme mappings from {key}")
+    logger.info("Loading theme mappings from {key}", key=key)
 
     # Read JSONL file
     mapping_data = s3.read_jsonl(
@@ -204,7 +209,9 @@ def load_theme_mappings_from_s3(
     validated_mappings = [ThemeMappingInput(**item) for item in mapping_data]
 
     logger.info(
-        f"Loaded and validated {len(validated_mappings)} theme mappings for question {question_number}"
+        "Loaded and validated {mapping_count} theme mappings for question {question_number}",
+        mapping_count=len(validated_mappings),
+        question_number=question_number,
     )
 
     return validated_mappings
@@ -257,8 +264,10 @@ def load_annotation_batch(
             )
 
     logger.info(
-        f"Loading annotations for consultation '{consultation_code}' "
-        f"(timestamp: {timestamp}) across {len(question_numbers)} questions"
+        "Loading annotations for consultation '{consultation_code}' (timestamp: {timestamp}) across {question_count} questions",
+        consultation_code=consultation_code,
+        timestamp=timestamp,
+        question_count=len(question_numbers),
     )
 
     # Load data for each question
@@ -309,8 +318,12 @@ def load_annotation_batch(
     total_themes = sum(len(t) for t in selected_themes_by_question.values())
 
     logger.info(
-        f"Loaded annotation batch: {total_themes} themes, {total_sentiments} sentiments, "
-        f"{total_details} detail detections, {total_mappings} mappings across {len(question_numbers)} questions"
+        "Loaded annotation batch: {total_themes} themes, {total_sentiments} sentiments, {total_details} detail detections, {total_mappings} mappings across {question_count} questions",
+        total_themes=total_themes,
+        total_sentiments=total_sentiments,
+        total_details=total_details,
+        total_mappings=total_mappings,
+        question_count=len(question_numbers),
     )
 
     return batch
@@ -343,15 +356,20 @@ def _build_batch_key_to_db_theme_lookup(
         ValueError: If batch output contains themes not found in database
     """
     if not batch_themes:
-        logger.info(f"No themes in batch output for question {question.number}")
+        logger.info(
+            "No themes in batch output for question {question_number}",
+            question_number=question.number,
+        )
         return {}
 
     # Get existing SelectedTheme records from database (source of truth)
     db_themes = SelectedTheme.objects.filter(question=question)
 
     logger.info(
-        f"Building theme lookup for question {question.number}: "
-        f"{len(batch_themes)} in batch output, {db_themes.count()} in database"
+        "Building theme lookup for question {question_number}: {batch_count} in batch output, {db_count} in database",
+        question_number=question.number,
+        batch_count=len(batch_themes),
+        db_count=db_themes.count(),
     )
 
     # Build lookup by name (the stable identifier across batch output and database)
@@ -373,8 +391,9 @@ def _build_batch_key_to_db_theme_lookup(
         else:
             missing_themes.append(batch_theme.theme_name)
             logger.warning(
-                f"Theme '{batch_theme.theme_name}' from batch output not found in database "
-                f"for question {question.number}"
+                "Theme '{theme_name}' from batch output not found in database for question {question_number}",
+                theme_name=batch_theme.theme_name,
+                question_number=question.number,
             )
 
     if missing_themes:
@@ -387,11 +406,15 @@ def _build_batch_key_to_db_theme_lookup(
     if themes_to_update:
         SelectedTheme.objects.bulk_update(themes_to_update, ["key"])
         logger.info(
-            f"Updated keys for {len(themes_to_update)} themes for question {question.number}"
+            "Updated keys for {theme_count} themes for question {question_number}",
+            theme_count=len(themes_to_update),
+            question_number=question.number,
         )
 
     logger.info(
-        f"Built theme lookup with {len(batch_key_to_db_theme)} themes for question {question.number}"
+        "Built theme lookup with {theme_count} themes for question {question_number}",
+        theme_count=len(batch_key_to_db_theme),
+        question_number=question.number,
     )
 
     return batch_key_to_db_theme
@@ -423,11 +446,15 @@ def _import_response_annotations(
     existing_count = ResponseAnnotation.objects.filter(response__question=question).count()
     if existing_count > 0:
         logger.info(
-            f"Deleting {existing_count} existing annotations for question {question.number}"
+            "Deleting {existing_count} existing annotations for question {question_number}",
+            existing_count=existing_count,
+            question_number=question.number,
         )
         ResponseAnnotation.objects.filter(response__question=question).delete()
 
-    logger.info(f"Importing annotations for question {question.number}")
+    logger.info(
+        "Importing annotations for question {question_number}", question_number=question.number
+    )
 
     # Build lookups for efficient matching
     sentiment_lookup = {s.themefinder_id: s.sentiment for s in sentiments}
@@ -467,7 +494,9 @@ def _import_response_annotations(
     created_annotations = ResponseAnnotation.objects.bulk_create(annotations_to_create)
 
     logger.info(
-        f"Created {len(created_annotations)} response annotations for question {question.number}"
+        "Created {annotation_count} response annotations for question {question_number}",
+        annotation_count=len(created_annotations),
+        question_number=question.number,
     )
 
     # Now link annotations to themes
@@ -489,7 +518,9 @@ def _import_response_annotations(
                 themes_to_link.append(theme_lookup[theme_key])
             else:
                 logger.warning(
-                    f"Theme key '{theme_key}' not found in selected themes for question {question.number}"
+                    "Theme key '{theme_key}' not found in selected themes for question {question_number}",
+                    theme_key=theme_key,
+                    question_number=question.number,
                 )
 
         # Link themes to annotation (as AI-assigned themes)
@@ -497,7 +528,11 @@ def _import_response_annotations(
             annotation.add_original_ai_themes(themes_to_link)
             themes_linked += len(themes_to_link)
 
-    logger.info(f"Linked {themes_linked} theme assignments for question {question.number}")
+    logger.info(
+        "Linked {themes_linked} theme assignments for question {question_number}",
+        themes_linked=themes_linked,
+        question_number=question.number,
+    )
 
 
 @transaction.atomic
@@ -529,12 +564,17 @@ def import_response_annotations(batch: AnnotationBatch) -> None:
             "Base consultation data must be imported before annotations."
         )
 
-    logger.info(f"Starting annotation import for consultation '{consultation.title}'")
+    logger.info(
+        "Starting annotation import for consultation '{consultation_title}'",
+        consultation_title=consultation.title,
+    )
 
     # Update consultation timestamp
     if consultation.timestamp != batch.timestamp:
         logger.info(
-            f"Updating consultation timestamp from '{consultation.timestamp}' to '{batch.timestamp}'"
+            "Updating consultation timestamp from '{old_timestamp}' to '{new_timestamp}'",
+            old_timestamp=consultation.timestamp,
+            new_timestamp=batch.timestamp,
         )
         consultation.timestamp = batch.timestamp
         consultation.save(update_fields=["timestamp"])
@@ -565,7 +605,10 @@ def import_response_annotations(batch: AnnotationBatch) -> None:
 
         questions_processed += 1
 
-    logger.info(f"Response annotations import complete for {questions_processed} questions")
+    logger.info(
+        "Response annotations import complete for {questions_processed} questions",
+        questions_processed=questions_processed,
+    )
 
     # Update consultation stage to ANALYSIS now that annotations are imported
     consultation.stage = Consultation.Stage.ANALYSIS
@@ -600,8 +643,9 @@ def import_response_annotations_from_s3(
         ValueError: If consultation or questions don't exist
     """
     logger.info(
-        f"Starting response annotations import for consultation '{consultation_code}' "
-        f"(timestamp: {timestamp})"
+        "Starting response annotations import for consultation '{consultation_code}' (timestamp: {timestamp})",
+        consultation_code=consultation_code,
+        timestamp=timestamp,
     )
 
     # Load from S3
@@ -614,4 +658,7 @@ def import_response_annotations_from_s3(
     # Import into database
     import_response_annotations(batch)
 
-    logger.info(f"Response annotations import complete for consultation '{consultation_code}'")
+    logger.info(
+        "Response annotations import complete for consultation '{consultation_code}'",
+        consultation_code=consultation_code,
+    )
