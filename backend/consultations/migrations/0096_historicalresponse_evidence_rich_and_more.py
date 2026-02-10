@@ -28,7 +28,7 @@ def back_populate_responses(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("consultations", "0094_historicalresponse_and_more"),
+        ("consultations", "0095_historicalresponse_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

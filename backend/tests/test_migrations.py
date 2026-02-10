@@ -201,11 +201,9 @@ def test_0069_alter_demographicoption_field_value(migrator):
 
 
 @pytest.mark.django_db()
-def test_0093_historicalresponseannotationtheme_response_and_more(migrator):
+def test_0094_historicalresponseannotationtheme_response_and_more(migrator):
     # Check group doesn't exist before migration
-    old_state = migrator.apply_initial_migration(
-        ("consultations", "0092_consultation_display_ai_selected_themes")
-    )
+    old_state = migrator.apply_initial_migration(("consultations", "0093_consultation_model_name"))
     Consultation = old_state.apps.get_model("consultations", "Consultation")
     Question = old_state.apps.get_model("consultations", "Question")
     Respondent = old_state.apps.get_model("consultations", "Respondent")
@@ -228,7 +226,7 @@ def test_0093_historicalresponseannotationtheme_response_and_more(migrator):
 
     # Run the migration that creates the group
     new_state = migrator.apply_tested_migration(
-        ("consultations", "0093_historicalresponseannotationtheme_response_and_more")
+        ("consultations", "0094_historicalresponseannotationtheme_response_and_more")
     )
     NewesponseAnnotationTheme = new_state.apps.get_model("consultations", "ResponseAnnotationTheme")
     new_response_annotation_theme = NewesponseAnnotationTheme.objects.get(
@@ -243,10 +241,10 @@ def test_0093_historicalresponseannotationtheme_response_and_more(migrator):
 
 
 @pytest.mark.django_db()
-def test_0095_historicalresponse_evidence_rich_and_more(migrator):
+def test_0096_historicalresponse_evidence_rich_and_more(migrator):
     # Check group doesn't exist before migration
     old_state = migrator.apply_initial_migration(
-        ("consultations", "0094_historicalresponse_and_more")
+        ("consultations", "0095_historicalresponse_and_more")
     )
     User = old_state.apps.get_model("authentication", "User")
     Consultation = old_state.apps.get_model("consultations", "Consultation")
@@ -273,7 +271,7 @@ def test_0095_historicalresponse_evidence_rich_and_more(migrator):
 
     # Run the migration that creates the group
     new_state = migrator.apply_tested_migration(
-        ("consultations", "0095_historicalresponse_evidence_rich_and_more")
+        ("consultations", "0096_historicalresponse_evidence_rich_and_more")
     )
     NewResponse = new_state.apps.get_model("consultations", "Response")
     new_response = NewResponse.objects.get(pk=old_response.pk)

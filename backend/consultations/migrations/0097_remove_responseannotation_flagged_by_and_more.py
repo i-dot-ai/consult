@@ -7,7 +7,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("consultations", "0095_historicalresponse_evidence_rich_and_more"),
+        ("consultations", "0096_historicalresponse_evidence_rich_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

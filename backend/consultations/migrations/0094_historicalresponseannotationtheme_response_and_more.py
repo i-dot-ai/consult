@@ -21,7 +21,7 @@ def back_populate_responses(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("consultations", "0092_consultation_display_ai_selected_themes"),
+        ("consultations", "0093_consultation_model_name"),
     ]
 
     operations = [
