@@ -5,7 +5,6 @@ import factories
 from consultations.urls import urlpatterns
 from tests.utils import build_url
 
-PUBLIC_URL_NAMES = ["git-sha"]
 AUTHENTICATION_URL_NAMES = [
     "sign_in",
     "sign_out",
@@ -24,17 +23,7 @@ API_URL_NAMES = [
     "question-detail",
 ]
 
-URL_NAMES_TO_EXCLUDE = (
-    PUBLIC_URL_NAMES + AUTHENTICATION_URL_NAMES + JSON_SCHEMA_URL_NAMES + API_URL_NAMES
-)
-
-
-@pytest.mark.django_db
-def test_access_public_urls_no_login(client):
-    for url_name in PUBLIC_URL_NAMES:
-        url = reverse(url_name)
-        response = client.get(url)
-        assert response.status_code == 200
+URL_NAMES_TO_EXCLUDE = AUTHENTICATION_URL_NAMES + JSON_SCHEMA_URL_NAMES + API_URL_NAMES
 
 
 def set_up_consultation(user, free_text_question):

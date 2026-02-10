@@ -6,7 +6,6 @@ from rest_framework_nested.routers import NestedDefaultRouter
 from .api.views.auth import validate_token
 from .api.views.candidate_theme import CandidateThemeViewSet
 from .api.views.consultation import ConsultationViewSet
-from .api.views.git_sha import get_git_sha
 from .api.views.question import QuestionViewSet
 from .api.views.respondent import RespondentViewSet
 from .api.views.response import ResponseViewSet
@@ -42,9 +41,6 @@ urlpatterns = [
     path("api/user/", get_current_user, name="user"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-    path(
-        "git-sha/", get_git_sha, name="git-sha"
-    ),  # TODO: Remove this, frontend has access via vars
     # JWT
     path("api/validate-token/", validate_token, name="validate-token"),
 ]

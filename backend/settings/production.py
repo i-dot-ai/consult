@@ -11,7 +11,6 @@ CSRF_TRUSTED_ORIGINS = ["https://" + env("DOMAIN_NAME")]  # noqa: F405
 
 SENTRY_DSN = env("SENTRY_DSN")  # noqa: F405
 EXECUTION_CONTEXT = env("EXECUTION_CONTEXT")  # noqa: F405
-GIT_SHA = env("GIT_SHA")  # noqa: F405
 
 
 STORAGES["default"] = {  # noqa: F405
@@ -58,7 +57,6 @@ def sentry_before_send(event, hint):
 sentry_sdk.init(
     dsn=SENTRY_DSN,
     environment=ENVIRONMENT,  # noqa: F405
-    release=GIT_SHA,
     before_send=sentry_before_send,
     traces_sample_rate=1.0,
     profile_session_sample_rate=1.0,

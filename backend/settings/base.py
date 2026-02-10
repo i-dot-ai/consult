@@ -243,10 +243,6 @@ FIND_THEMES_BATCH_JOB_NAME = env("FIND_THEMES_BATCH_JOB_NAME")
 FIND_THEMES_BATCH_JOB_QUEUE = env("FIND_THEMES_BATCH_JOB_QUEUE")
 FIND_THEMES_BATCH_JOB_DEFINITION = env("FIND_THEMES_BATCH_JOB_DEFINITION")
 
-
-# version info
-GIT_SHA = env("GIT_SHA", default=None)
-
 # redis
 redis_host = env.str("REDIS_HOST", "localhost")
 redis_port = env.str("REDIS_PORT", "6379")

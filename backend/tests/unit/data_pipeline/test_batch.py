@@ -24,6 +24,7 @@ class TestSubmitBatchJob:
             consultation_code="test-code",
             consultation_name="Test Consultation",
             user_id=123,
+            model_name="my-model",
         )
 
         # Verify batch client was called correctly
@@ -39,6 +40,8 @@ class TestSubmitBatchJob:
             "test-code",
             "--job-type",
             "FIND_THEMES",
+            "--model-name",
+            "my-model",
         ]
         assert call_args["parameters"]["consultation_code"] == "test-code"
         assert call_args["parameters"]["consultation_name"] == "Test Consultation"
@@ -69,6 +72,7 @@ class TestSubmitBatchJob:
             consultation_code="test-code-2",
             consultation_name="Test Consultation 2",
             user_id=456,
+            model_name="my-model",
         )
 
         # Verify batch client was called correctly
@@ -81,6 +85,8 @@ class TestSubmitBatchJob:
             "test-code-2",
             "--job-type",
             "ASSIGN_THEMES",
+            "--model-name",
+            "my-model",
         ]
         assert call_args["parameters"]["job_type"] == "ASSIGN_THEMES"
 
