@@ -6,7 +6,6 @@ from rest_framework_nested.routers import NestedDefaultRouter
 from .api.views.auth import validate_token
 from .api.views.candidate_theme import CandidateThemeViewSet
 from .api.views.consultation import ConsultationViewSet
-from .api.views.git_sha import get_git_sha
 from .api.views.question import QuestionViewSet
 from .api.views.respondent import RespondentViewSet
 from .api.views.response import ResponseViewSet
