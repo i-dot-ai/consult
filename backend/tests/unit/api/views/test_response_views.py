@@ -4,14 +4,15 @@ from uuid import uuid4
 
 import orjson
 import pytest
-from backend.consultations.models import ResponseAnnotation, ResponseAnnotationTheme
-from backend.factories import (
+from django.urls import reverse
+
+from consultations.models import ResponseAnnotation, ResponseAnnotationTheme
+from factories import (
     RespondentFactory,
     ResponseAnnotationFactory,
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
 )
-from django.urls import reverse
 
 
 @pytest.mark.django_db
@@ -1008,7 +1009,7 @@ class TestResponseViewSet:
         )
 
         with patch(
-            "backend.consultations.api.filters.embed_text",
+            "consultations.api.filters.embed_text",
             return_value=embedded_responses["search_mode"]["semantic"]["embedding"],
         ):
             response = client.get(
@@ -1052,7 +1053,7 @@ class TestResponseViewSet:
         theme_description = "Local councils should invest in public transport infrastructure"
 
         with patch(
-            "backend.consultations.api.filters.embed_text",
+            "consultations.api.filters.embed_text",
             return_value=embedded_responses["search_mode"]["representative"]["embedding"],
         ):
             """

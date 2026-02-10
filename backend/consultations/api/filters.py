@@ -6,9 +6,9 @@ from pgvector.django import CosineDistance
 from rest_framework import serializers
 from rest_framework.filters import SearchFilter
 
-from backend.authentication.models import User
-from backend.consultations.models import Response
-from backend.embeddings import embed_text
+from authentication.models import User
+from consultations.models import Response
+from embeddings import embed_text
 
 
 class ResponseFilter(FilterSet):

@@ -275,7 +275,7 @@ async def process_consultation(consultation_dir: str, llm) -> str:
 
 if __name__ == "__main__":
     llm = ChatOpenAI(
-        model="gpt-4o-sweden",
+        model="gpt-4.1",
         temperature=0,
         openai_api_base=os.environ["LLM_GATEWAY_URL"],
         openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],

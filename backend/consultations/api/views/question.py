@@ -1,16 +1,17 @@
-from backend.consultations import models
-from backend.consultations.api.permissions import (
-    CanSeeConsultation,
-)
-from backend.consultations.api.serializers import (
-    QuestionSerializer,
-    ThemeInformationSerializer,
-)
 from django.db.models import Count, Prefetch
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+
+from consultations import models
+from consultations.api.permissions import (
+    CanSeeConsultation,
+)
+from consultations.api.serializers import (
+    QuestionSerializer,
+    ThemeInformationSerializer,
+)
 
 
 class QuestionViewSet(ModelViewSet):

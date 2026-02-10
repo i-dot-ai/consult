@@ -3,15 +3,15 @@ from typing import Dict, List, Optional
 from django.conf import settings
 from django.db import transaction
 
-import backend.data_pipeline.s3 as s3
-from backend.consultations.models import (
+import data_pipeline.s3 as s3
+from consultations.models import (
     Consultation,
     Question,
     Response,
     ResponseAnnotation,
     SelectedTheme,
 )
-from backend.data_pipeline.models import (
+from data_pipeline.models import (
     AnnotationBatch,
     DetailDetectionInput,
     SelectedThemeInput,

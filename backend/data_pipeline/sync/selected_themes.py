@@ -4,7 +4,7 @@ import io
 import boto3
 from django.conf import settings
 
-from backend.consultations.models import (
+from consultations.models import (
     Consultation,
     SelectedTheme,
 )
