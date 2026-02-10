@@ -76,7 +76,9 @@ class SelectedThemeViewSet(ModelViewSet):
                         "message": "Version mismatch",
                         "latest_version": instance.version,
                         "last_modified_by": {
-                            "email": instance.last_modified_by.email if instance.last_modified_by else None,
+                            "email": instance.last_modified_by.email
+                            if instance.last_modified_by
+                            else None,
                         },
                     }
                 )
