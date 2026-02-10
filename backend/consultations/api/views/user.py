@@ -13,6 +13,12 @@ from consultations.api.serializers import (
 
 
 class UserViewSet(ModelViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    pagination_class = PageNumberPagination
+    filterset_class = UserFilter
+    http_method_names = ["get", "post", "patch", "delete"]
+
     def create(self, request, *args, **kwargs):
         # Support both single and bulk creation
         data = request.data
@@ -40,11 +46,6 @@ class UserViewSet(ModelViewSet):
         queryset = models.User.objects.all()
         filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
         return filterset.qs.distinct()
-
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
-    pagination_class = PageNumberPagination
-    filterset_class = UserFilter
 
     @action(
         detail=True,
