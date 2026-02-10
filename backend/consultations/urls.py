@@ -42,9 +42,6 @@ urlpatterns = [
     path("api/user/", get_current_user, name="user"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-    path(
-        "git-sha/", get_git_sha, name="git-sha"
-    ),  # TODO: Remove this, frontend has access via vars
     # JWT
     path("api/validate-token/", validate_token, name="validate-token"),
 ]
