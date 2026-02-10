@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -34,8 +35,20 @@ class CandidateThemeViewSet(ModelViewSet):
 
     def list(self, request, consultation_pk=None, question_pk=None):
         """List candidate themes for a question with nested children"""
-        roots = self.get_queryset().filter(parent__isnull=True)
-        page = self.paginate_queryset(roots)
+        # Prefetch children to avoid N+1 queries
+        queryset = (
+            self.get_queryset()
+            .filter(parent__isnull=True)
+            .prefetch_related(
+                Prefetch(
+                    "candidatetheme_set",
+                    queryset=models.CandidateTheme.objects.order_by("-approximate_frequency"),
+                    to_attr="prefetched_children",
+                )
+            )
+        )
+
+        page = self.paginate_queryset(queryset)
         serializer = CandidateThemeSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 

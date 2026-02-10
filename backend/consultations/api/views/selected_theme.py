@@ -25,7 +25,7 @@ class SelectedThemeViewSet(ModelViewSet):
         queryset = models.SelectedTheme.objects.filter(
             question__consultation_id=consultation_uuid,
             question_id=question_uuid,
-        )
+        ).select_related("last_modified_by")
 
         # Staff users can see all themes, non-staff users only see themes for assigned consultations
         if not self.request.user.is_staff:
@@ -63,7 +63,11 @@ class SelectedThemeViewSet(ModelViewSet):
 
         with transaction.atomic():
             # Lock the selected theme to prevent concurrent updates
-            qs = self.get_queryset().filter(pk=serializer.instance.pk).select_for_update()
+            qs = models.SelectedTheme.objects.filter(
+                question__consultation_id=self.kwargs["consultation_pk"],
+                question_id=self.kwargs["question_pk"],
+                pk=serializer.instance.pk,
+            ).select_for_update()
             instance = qs.get()
 
             if instance.version != expected_version:
@@ -72,7 +76,7 @@ class SelectedThemeViewSet(ModelViewSet):
                         "message": "Version mismatch",
                         "latest_version": instance.version,
                         "last_modified_by": {
-                            "email": instance.last_modified_by.email,
+                            "email": instance.last_modified_by.email if instance.last_modified_by else None,
                         },
                     }
                 )
