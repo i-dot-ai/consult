@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -29,7 +29,17 @@ class QuestionViewSet(ModelViewSet):
         if not self.request.user.is_staff:
             queryset = queryset.filter(consultation__users=self.request.user)
 
-        return queryset.annotate(response_count=Count("response")).order_by("number")
+        # Prefetch multi-choice answers with response counts and annotate total_responses
+        queryset = queryset.prefetch_related(
+            Prefetch(
+                "multichoiceanswer_set",
+                queryset=models.MultiChoiceAnswer.objects.annotate(
+                    prefetched_response_count=Count("response")
+                ),
+            )
+        ).annotate(prefetched_total_responses=Count("response"))
+
+        return queryset.order_by("number")
 
     @action(
         detail=True,
