@@ -17,7 +17,6 @@ from themefinder.models import HierarchicalClusteringResponse, ThemeNode
 
 class ThemeNodeList(BaseModel):
     """List of theme nodes for serialization to JSON."""
-    model_name: str|None = None
     theme_nodes: list[ThemeNode]
 
 
@@ -268,7 +267,7 @@ async def process_consultation(consultation_dir: str, model_name:str) -> str:
                     ]
 
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
-                    f.write(ThemeNodeList(theme_nodes=all_themes_list, model_name=model_name).model_dump_json())
+                    f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
 
                 logger.info(
                     "Completed processing %s, saved to %s", question_dir, question_output_dir

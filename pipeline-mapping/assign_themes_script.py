@@ -169,7 +169,6 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
 
                 themes_df = themes_df[["topic_id", "Theme Name", "Theme Description"]]
                 themes_df.columns = ["theme_key", "theme_name", "theme_description"]
-                themes_df["llm_model_name"] = model_name
                 themes_df.to_json(question_output_dir / "themes.json", orient="records")
 
                 logger.info(
