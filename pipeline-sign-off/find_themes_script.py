@@ -9,7 +9,6 @@ from pathlib import Path
 import boto3
 import pandas as pd
 from langchain_openai import ChatOpenAI
-from pkg_resources import require
 from pydantic import BaseModel
 from themefinder import theme_condensation, theme_generation, theme_refinement
 from themefinder.advanced_tasks.theme_clustering_agent import ThemeClusteringAgent
@@ -210,7 +209,7 @@ async def process_consultation(consultation_dir: str, model_name:str) -> str:
 
     Args:
         consultation_dir: Directory containing question subdirectories
-        llm: Language model instance for processing
+        model_name: Language model instance for processing
     """
     llm = ChatOpenAI(
         model=model_name,

@@ -115,7 +115,7 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
 
     Args:
         consultation_dir: Directory containing question subdirectories
-        llm: Language model instance for processing
+        model_name: Language model instance for processing
 
     Returns:
         str: Path to the output directory
