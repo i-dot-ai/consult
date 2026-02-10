@@ -298,8 +298,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model-name",
         type=str,
-        required=False,
-        default="gpt-4o-sweden",
+        required=True,
     )
     args = parser.parse_args()
 
