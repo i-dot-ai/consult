@@ -122,8 +122,6 @@ module "frontend" {
     "EXECUTION_CONTEXT"        = "ecs"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
     "PUBLIC_LANGFUSE_URL"      = "https://core-langfuse.i.ai.gov.uk/",
-    "SENTRY_DSN"               = var.frontend_sentry_dsn,
-    "PUBLIC_SENTRY_DSN"        = var.frontend_sentry_dsn,
   })
 
   secrets = [

@@ -25,11 +25,6 @@ variable "env" {
   default     = "dev"
 }
 
-variable "frontend_sentry_dsn" {
-  type        = string
-  description = "The sentry DSN for the backend application"
-}
-
 variable "github_org" {
   type        = string
   default     = "github.com/i-dot-ai/"
