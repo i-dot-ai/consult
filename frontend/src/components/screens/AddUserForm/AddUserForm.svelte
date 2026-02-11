@@ -73,26 +73,23 @@
     bind:value={emailsInput}
     disabled={loading}
   ></textarea>
-    {#if error}
-      {#if typeof error === "string"}
-        <p class="text-sm text-red-500">{`Error: ${error}`}</p>
-      {:else}
-        {#each error as err, i (i)}
-          <p class="text-sm text-red-500">
-            {`Error for ${err.email}: ${err.error}`}
-          </p>
-        {/each}
-      {/if}
+  {#if error}
+    {#if typeof error === "string"}
+      <p class="text-sm text-red-500">{`Error: ${error}`}</p>
+    {:else}
+      {#each error as err, i (i)}
+        <p class="text-sm text-red-500">
+          {`Error for ${err.email}: ${err.error}`}
+        </p>
+      {/each}
     {/if}
+  {/if}
 
-    <div class="flex">
-      <Button variant="primary" disabled={loading}>Add user</Button>
-    </div>
+  <div class="flex">
+    <Button variant="primary" disabled={loading}>Add user</Button>
+  </div>
 
-    <div class="mt-4">
-      <a href="/support/users" class="text-gray-700 underline"
-        >← Back to users</a
-      >
-    </div>
-  </label>
+  <div class="mt-4">
+    <a href="/support/users" class="text-gray-700 underline">← Back to users</a>
+  </div>
 </form>
