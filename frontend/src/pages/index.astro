@@ -15,8 +15,18 @@ const listItemClasses = clsx(["flex", "items-center", "gap-6"]);
 const h3Classes = clsx(["text-xl", "font-bold", "mb-1"]);
 ---
 
+<script>
+  function handleClick() {
+    throw new Error("This is a test error");
+  }
+  document
+    .querySelector("#error-button")
+    .addEventListener("click", handleClick);
+</script>
+
 <Layout>
   <section class="bg-primary text-white">
+    <button id="error-button">Throw test error</button>
     <div class={clsx(["px-10", "py-12", "md:pl-[120px]", "lg:w-2/3"])}>
       <h1 class={clsx(["text-4xl", "md:text-5xl", "font-bold", "mb-8"])}>
         Use machine learning to help you understand consultation responses
