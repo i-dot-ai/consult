@@ -15,17 +15,9 @@ export const onRequest: MiddlewareHandler = async (
     return next();
   }
 
-  // /health/ should proxy directly to the backend
+  // Skip authentication for /health - handled by frontend health check
   if (/^\/health[/]?$/.test(url.pathname)) {
-    const fullBackendUrl = new URL(
-      url.pathname + url.search,
-      backendUrl,
-    ).toString();
-    const response = await fetch(fullBackendUrl);
-    return new Response(await response.arrayBuffer(), {
-      status: response.status,
-      headers: response.headers,
-    });
+    return next();
   }
 
   let internalAccessToken = null;
