@@ -75,7 +75,7 @@ module "backend" {
 
   health_check = {
     accepted_response   = 200
-    path                = "/"
+    path                = "/api/health"
     interval            = 60
     timeout             = 70
     healthy_threshold   = 2
