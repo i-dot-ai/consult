@@ -6,7 +6,7 @@
   import { parseEmails } from "./parseEmails";
 
   let emailsInput: string = "";
-  let isStaff: boolean = true;
+  let isStaff: boolean = false;
   let loading: boolean = false;
 
   type MultipleUserError = { email: string; error: string }[];
@@ -73,42 +73,26 @@
     bind:value={emailsInput}
     disabled={loading}
   ></textarea>
-
-  <label class="flex items-center gap-2">
-    <!--
-      This checkbox has a lot of the default styles which makes it 
-      look a bit inconsistent with the rest of the app. Since it's
-      only internal users that access the support console, we can
-      revisit this later if needed.
-     -->
-    <input
-      id="isStaff"
-      type="checkbox"
-      checked={isStaff}
-      on:change={(e) => (isStaff = (e.target as HTMLInputElement).checked)}
-      disabled={loading}
-      class="h-6 w-6 focus:ring-2 focus:ring-yellow-300"
-    />
-    Admin access (support console & dashboards)
-  </label>
-
-  {#if error}
-    {#if typeof error === "string"}
-      <p class="text-sm text-red-500">{`Error: ${error}`}</p>
-    {:else}
-      {#each error as err, i (i)}
-        <p class="text-sm text-red-500">
-          {`Error for ${err.email}: ${err.error}`}
-        </p>
-      {/each}
+    {#if error}
+      {#if typeof error === "string"}
+        <p class="text-sm text-red-500">{`Error: ${error}`}</p>
+      {:else}
+        {#each error as err, i (i)}
+          <p class="text-sm text-red-500">
+            {`Error for ${err.email}: ${err.error}`}
+          </p>
+        {/each}
+      {/if}
     {/if}
-  {/if}
 
-  <div class="flex">
-    <Button variant="primary" disabled={loading}>Add user</Button>
-  </div>
+    <div class="flex">
+      <Button variant="primary" disabled={loading}>Add user</Button>
+    </div>
 
-  <div class="mt-4">
-    <a href="/support/users" class="text-gray-700 underline">← Back to users</a>
-  </div>
+    <div class="mt-4">
+      <a href="/support/users" class="text-gray-700 underline"
+        >← Back to users</a
+      >
+    </div>
+  </label>
 </form>
