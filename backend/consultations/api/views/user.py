@@ -1,17 +1,24 @@
-from backend.consultations import models
-from backend.consultations.api.filters import UserFilter
-from backend.consultations.api.serializers import (
-    ConsultationSerializer,
-    UserSerializer,
-)
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from consultations import models
+from consultations.api.filters import UserFilter
+from consultations.api.serializers import (
+    ConsultationSerializer,
+    UserSerializer,
+)
+
 
 class UserViewSet(ModelViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    pagination_class = PageNumberPagination
+    filterset_class = UserFilter
+    http_method_names = ["get", "post", "patch", "delete"]
+
     def create(self, request, *args, **kwargs):
         # Support both single and bulk creation
         data = request.data
@@ -40,11 +47,6 @@ class UserViewSet(ModelViewSet):
         filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
         return filterset.qs.distinct()
 
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
-    pagination_class = PageNumberPagination
-    filterset_class = UserFilter
-
     @action(
         detail=True,
         methods=["get"],
@@ -56,7 +58,7 @@ class UserViewSet(ModelViewSet):
         Get all consultations that a specific user belongs to.
         """
         user = self.get_object()
-        consultations = models.Consultation.objects.filter(users=user)
+        consultations = models.Consultation.objects.filter(users=user).prefetch_related("users")
         serializer = ConsultationSerializer(consultations, many=True, context={"request": request})
         return Response(serializer.data)
 

@@ -5,13 +5,13 @@ import yaml
 from django.conf import settings
 from django_rq import job
 
-from backend.consultations.models import (
+from consultations.models import (
     Consultation,
     MultiChoiceAnswer,
     Question,
     ResponseAnnotation,
 )
-from backend.factories import (
+from factories import (
     CandidateThemeFactory,
     ConsultationFactory,
     QuestionFactory,
@@ -20,7 +20,7 @@ from backend.factories import (
     ResponseFactory,
     SelectedThemeFactory,
 )
-from backend.hosting_environment import HostingEnvironment
+from hosting_environment import HostingEnvironment
 
 logger = settings.LOGGER
 

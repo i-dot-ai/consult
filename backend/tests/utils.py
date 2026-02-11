@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 from django.conf import settings
 from django.urls import reverse
 
-from backend.consultations.models import Question
+from consultations.models import Question
 
 
 def build_url(url_pattern: str, question: Question) -> str:

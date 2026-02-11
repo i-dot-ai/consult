@@ -1,6 +1,4 @@
 import jwt
-from backend.consultations.api.serializers import TokenSerializer
-from backend.hosting_environment import HostingEnvironment
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.http import JsonResponse
@@ -8,6 +6,9 @@ from i_dot_ai_utilities.auth.auth_api import AuthApiClient
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import AccessToken
+
+from consultations.api.serializers import TokenSerializer
+from hosting_environment import HostingEnvironment
 
 User = get_user_model()
 logger = settings.LOGGER

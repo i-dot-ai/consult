@@ -1,7 +1,8 @@
 from unittest.mock import patch
 
 import pytest
-from backend.consultations.models import (
+
+from consultations.models import (
     CandidateTheme,
     CrossCuttingTheme,
     DemographicOption,
@@ -13,8 +14,8 @@ from backend.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
-from backend.consultations.services.clone import clone_consultation
-from backend.factories import (
+from consultations.services.clone import clone_consultation
+from factories import (
     CandidateThemeFactory,
     ConsultationFactory,
     MultiChoiceAnswerFactory,
@@ -30,7 +31,7 @@ from backend.factories import (
 class TestCloneConsultation:
     @pytest.fixture(autouse=True)
     def _small_batch_size(self):
-        with patch("backend.consultations.services.clone._BATCH_SIZE", 1):
+        with patch("consultations.services.clone._BATCH_SIZE", 1):
             yield
 
     def test_consultation(self):

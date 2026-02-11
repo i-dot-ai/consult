@@ -1,10 +1,11 @@
 import pytest
-from backend.consultations.models import SelectedTheme
-from backend.factories import (
+from django.db.utils import IntegrityError
+
+from consultations.models import SelectedTheme
+from factories import (
     QuestionFactory,
     SelectedThemeFactory,
 )
-from django.db.utils import IntegrityError
 
 
 @pytest.mark.django_db
