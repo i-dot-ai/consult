@@ -1,17 +1,18 @@
 from unittest.mock import patch
 
 import pytest
-from backend.consultations.models import CandidateTheme
-from backend.data_pipeline.sync.candidate_themes import (
+
+from consultations.models import CandidateTheme
+from data_pipeline.sync.candidate_themes import (
     import_candidate_themes_from_s3,
 )
-from backend.factories import ConsultationFactory, QuestionFactory
+from factories import ConsultationFactory, QuestionFactory
 
 
 @pytest.mark.django_db
 class TestImportCandidateThemesFromS3:
-    @patch("backend.data_pipeline.sync.candidate_themes.s3")
-    @patch("backend.data_pipeline.sync.candidate_themes.settings")
+    @patch("data_pipeline.sync.candidate_themes.s3")
+    @patch("data_pipeline.sync.candidate_themes.settings")
     def test_import_candidate_themes_from_s3(self, mock_settings, mock_s3):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 

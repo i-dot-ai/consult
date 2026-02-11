@@ -5,7 +5,6 @@ locals {
   base_env_vars = {
     "ENVIRONMENT" = terraform.workspace
     "DEBUG"       = var.env == "prod" ? false : true
-    "GIT_SHA"     = var.image_tag
     "REPO"        = var.project_name
   }
 

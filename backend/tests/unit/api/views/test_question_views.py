@@ -1,15 +1,14 @@
 import pytest
-from backend.consultations.models import Question
-from backend.factories import QuestionFactory, RespondentFactory, ResponseFactory
 from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from consultations.models import Question
+from factories import QuestionFactory, RespondentFactory, ResponseFactory
 
 
 @pytest.mark.django_db
 class TestQuestionViewSet:
-    def test_get_theme_information_no_themes(
-        self, client, staff_user_token, free_text_question
-    ):
+    def test_get_theme_information_no_themes(self, client, staff_user_token, free_text_question):
         """Test API endpoint returns empty themes list when no themes exist"""
         url = reverse(
             "question-theme-information",
@@ -59,9 +58,7 @@ class TestQuestionViewSet:
             assert "name" in theme_data
             assert "description" in theme_data
 
-    def test_get_free_text_question(
-        self, client, staff_user, free_text_question, staff_user_token
-    ):
+    def test_get_free_text_question(self, client, staff_user, free_text_question, staff_user_token):
         """Test API endpoint returns question information correctly"""
         # Add a known response count with free text
         for i in range(3):
@@ -304,12 +301,10 @@ class TestQuestionViewSet:
         assert data["has_free_text"] is False
         assert data["message"] == "This question does not have free text responses."
 
-    def test_permission_requires_consultation_access(
-        self, client, free_text_question
-    ):
+    def test_permission_requires_consultation_access(self, client, free_text_question):
         """Test that QuestionViewSet requires consultation access"""
-        from backend.factories import UserFactory
-        
+        from factories import UserFactory
+
         # Create a user who is NOT assigned to any consultation
         isolated_user = UserFactory(is_staff=False)
         refresh = RefreshToken.for_user(isolated_user)

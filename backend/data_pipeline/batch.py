@@ -12,6 +12,7 @@ def submit_job(
     consultation_code: str,
     consultation_name: str,
     user_id: int,
+    model_name: str,
 ) -> dict:
     """
     Submit a job to AWS Batch for ThemeFinder processing.
@@ -36,17 +37,30 @@ def submit_job(
 
     batch = boto3.client("batch")
 
-    logger.info(f"Submitting {job_type} job to AWS Batch for consultation: {consultation_name}")
+    logger.info(
+        "Submitting {job_type} job to AWS Batch for consultation: {consultation_name}",
+        job_type=job_type,
+        consultation_name=consultation_name,
+    )
 
     response = batch.submit_job(
         jobName=job_name,
         jobQueue=job_queue,
         jobDefinition=job_definition,
-        containerOverrides={"command": ["--subdir", consultation_code, "--job-type", job_type]},
+        containerOverrides={
+            "command": [
+                "--subdir",
+                consultation_code,
+                "--job-type",
+                job_type,
+                "--model-name",
+                model_name,
+            ]
+        },
         parameters=parameters,
     )
 
     job_id = response["jobId"]
-    logger.info(f"Batch job submitted: {job_id}")
+    logger.info("Batch job submitted: {job_id}", job_id=job_id)
 
     return response

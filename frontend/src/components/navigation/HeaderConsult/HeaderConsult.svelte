@@ -2,7 +2,6 @@
   import { slide } from "svelte/transition";
 
   import { Routes } from "../../../global/routes";
-  import { getLangfuseUrl } from "../../../global/utils";
   import type { ConsultationStage } from "../../../global/types";
 
   import Button from "../../inputs/Button/Button.svelte";
@@ -19,6 +18,7 @@
     showProcess?: boolean;
     consultationId?: string;
     consultationStage?: ConsultationStage;
+    langfuseUrl?: string;
   }
 
   let {
@@ -29,6 +29,7 @@
     showProcess,
     consultationId,
     consultationStage,
+    langfuseUrl = "/",
   }: Props = $props();
 
   let showBreadcrumbs = $state(false);
@@ -57,7 +58,7 @@
               },
               { label: "Manage Users", url: Routes.SupportUsers },
               { label: "Data Pipeline", url: Routes.SupportDataPipeline },
-              { label: "Langfuse", url: getLangfuseUrl(), external: true },
+              { label: "Langfuse", url: langfuseUrl, external: true },
             ],
           },
         ]

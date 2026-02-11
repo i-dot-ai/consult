@@ -17,11 +17,10 @@ on:
       - ".github/workflows/backend-ci.yml"
   workflow_dispatch:
 
-
 jobs:
   test:
     runs-on: ubuntu-latest
-#    container: python:3.12.3 # Match exact version specified in .python-version and Dockerfile
+    #    container: python:3.12.3 # Match exact version specified in .python-version and Dockerfile
 
     steps:
       - uses: actions/checkout@v6
@@ -57,7 +56,7 @@ jobs:
         working-directory: ./backend
 
       - name: Run app tests
-        run: make test
+        run: make test-backend
 
   lint:
     runs-on: ubuntu-latest

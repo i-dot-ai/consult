@@ -196,5 +196,3 @@ def test_0069_alter_demographicoption_field_value(migrator):
     NewDemographicOption = new_state.apps.get_model("consultations", "DemographicOption")
     for name, _, new_value in test_values:
         assert NewDemographicOption.objects.get(field_name=name).field_value == new_value
-
-

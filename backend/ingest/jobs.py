@@ -1,9 +1,10 @@
 from uuid import UUID
 
-from backend.consultations import models
 from django.conf import settings
 from django.db import connection
 from django_rq import job
+
+from consultations import models
 
 logger = settings.LOGGER
 
@@ -93,7 +94,7 @@ def delete_responses_in_batches(consultation_id: UUID, batch_size: int = 1000):
             """,
                 [consultation_id, batch_size],
             )
-            logger.info(f"Deleted {batch_size} responses")
+            logger.info("Deleted {batch_size} responses", batch_size=batch_size)
 
             if cursor.rowcount == 0:
                 break
@@ -141,7 +142,9 @@ def delete_consultation_job(consultation: models.Consultation):
         consultation.delete()
 
         logger.info(
-            f"Successfully deleted consultation '{consultation_title}' (ID: {consultation_id})"
+            "Successfully deleted consultation '{consultation_title}' (ID: {consultation_id})",
+            consultation_title=consultation_title,
+            consultation_id=consultation_id,
         )
 
     except Exception as e:

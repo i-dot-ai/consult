@@ -46,16 +46,15 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.admin",
     "django.contrib.postgres",
-    "backend.authentication",
-    "backend.consultations",
-    "backend.ingest",
+    "authentication",
+    "consultations",
+    "ingest",
     "django.contrib.humanize",
     "django_rq",
     "simple_history",
     "rest_framework",
     "django_filters",
     "rest_framework_simplejwt",
-    "drf_spectacular",
 ]
 
 
@@ -64,18 +63,18 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "backend.middleware.JWTAuthenticationMiddleware",
+    "middleware.JWTAuthenticationMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "backend.middleware.CSRFExemptMiddleware",  # Must be before CsrfViewMiddleware
+    "middleware.CSRFExemptMiddleware",  # Must be before CsrfViewMiddleware
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "backend.middleware.SupportAppStaffRequiredMiddleware",
+    "middleware.SupportAppStaffRequiredMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
 ]
 
-ROOT_URLCONF = "backend.urls"
+ROOT_URLCONF = "urls"
 
 TEMPLATES = [
     {
@@ -244,10 +243,6 @@ FIND_THEMES_BATCH_JOB_NAME = env("FIND_THEMES_BATCH_JOB_NAME")
 FIND_THEMES_BATCH_JOB_QUEUE = env("FIND_THEMES_BATCH_JOB_QUEUE")
 FIND_THEMES_BATCH_JOB_DEFINITION = env("FIND_THEMES_BATCH_JOB_DEFINITION")
 
-
-# version info
-GIT_SHA = env("GIT_SHA", default=None)
-
 # redis
 redis_host = env.str("REDIS_HOST", "localhost")
 redis_port = env.str("REDIS_PORT", "6379")
@@ -293,21 +288,10 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=18),
-}
-
-# DRF Spectacular settings
-SPECTACULAR_SETTINGS = {
-    "TITLE": "Consultation Analyser API",
-    "DESCRIPTION": "REST API for the i.AI Consultation Analyser platform",
-    "VERSION": "1.0.0",
-    "SERVE_INCLUDE_SCHEMA": False,
-    "COMPONENT_SPLIT_REQUEST": True,
-    "SCHEMA_PATH_PREFIX": "/api/",
 }
 
 AUTH_API_URL = env.str("AUTH_API_URL", None)

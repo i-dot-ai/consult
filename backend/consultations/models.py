@@ -13,7 +13,7 @@ from django.utils import timezone
 from pgvector.django import VectorField
 from simple_history.models import HistoricalRecords
 
-from backend.authentication.models import User
+from authentication.models import User
 
 
 # TODO: we don't use this anymore, remove it without manage.py makemigrations complaining
@@ -44,6 +44,10 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         THEME_MAPPING = "theme_mapping", "Theme Mapping"
         ANALYSIS = "analysis", "Analysis"
 
+    class ModelName(models.TextChoices):
+        GPT_4O = "gpt-4o-sweden"
+        GPT_41 = "gpt-4.1"
+
     title = models.CharField(max_length=256)
     users = models.ManyToManyField(User)
     stage = models.CharField(
@@ -58,6 +62,9 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         blank=True,
         default=True,
         help_text="does a user see the AI selected themes in the evaluations page?",
+    )
+    model_name = models.CharField(
+        choices=ModelName, default=ModelName.GPT_41, null=True, blank=True, help_text="llm to use"
     )
 
     def __str__(self):

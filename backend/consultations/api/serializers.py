@@ -4,8 +4,8 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from backend.authentication.models import User
-from backend.consultations.models import (
+from authentication.models import User
+from consultations.models import (
     CandidateTheme,
     Consultation,
     CrossCuttingTheme,
@@ -52,7 +52,7 @@ class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
     response_count = serializers.SerializerMethodField()
 
     def get_response_count(self, obj) -> int:
-        return obj.response_set.count()
+        return obj.prefetched_response_count
 
     class Meta:
         model = MultiChoiceAnswer
@@ -68,7 +68,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     total_responses = serializers.SerializerMethodField()
 
     def get_total_responses(self, obj) -> int:
-        return obj.response_set.count()
+        return obj.prefetched_total_responses
 
     class Meta:
         model = Question
@@ -142,7 +142,7 @@ class ThemeSerializer2(serializers.ModelSerializer):
     response_count = serializers.SerializerMethodField()
 
     def get_response_count(self, theme: SelectedTheme) -> int:
-        return Response.objects.filter(annotation__themes=theme).count()
+        return theme.prefetched_response_count
 
     class Meta:
         model = SelectedTheme
@@ -154,7 +154,7 @@ class CrossCuttingThemeSerializer(serializers.ModelSerializer):
     response_count = serializers.SerializerMethodField()
 
     def get_response_count(self, cross_cutting_theme: CrossCuttingTheme) -> int:
-        return Response.objects.filter(annotation__themes__parent=cross_cutting_theme).count()
+        return cross_cutting_theme.prefetched_response_count
 
     class Meta:
         model = CrossCuttingTheme
@@ -175,6 +175,11 @@ class CandidateThemeSerializer(serializers.ModelSerializer):
         ]
 
     def get_children(self, obj):
+        # Use prefetched children if available (set by Prefetch with to_attr)
+        if hasattr(obj, "prefetched_children"):
+            return CandidateThemeSerializer(obj.prefetched_children, many=True).data
+
+        # Fallback for single object serialization (e.g., retrieve action)
         children = CandidateTheme.objects.filter(parent=obj)
         return CandidateThemeSerializer(children, many=True).data
 

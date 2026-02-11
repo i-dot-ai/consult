@@ -8,7 +8,7 @@ from django.test import RequestFactory
 from moto import mock_aws
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from backend.consultations.models import (
+from consultations.models import (
     Consultation,
     DemographicOption,
     Respondent,
@@ -17,7 +17,7 @@ from backend.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
-from backend.factories import (
+from factories import (
     CandidateThemeFactory,
     ConsultationFactory,
     MultiChoiceAnswerFactory,
