@@ -27,7 +27,7 @@ export const onRequest: MiddlewareHandler = async (
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
   // Check for test env and load dummy token
-  if (env === "local" || env === "test" || env == null) {
+  if (env === "local" || env === "test") {
     internalAccessToken =
       process.env.TEST_INTERNAL_ACCESS_TOKEN ||
       import.meta.env?.TEST_INTERNAL_ACCESS_TOKEN;
