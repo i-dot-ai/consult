@@ -80,6 +80,7 @@
   let sortAscending: boolean = $state(false);
   let flaggedOnly: boolean = $state(false);
   let dataRequested: boolean = $state(false);
+  let isAnswersLoading: boolean = $state(true);
 
   const consultationStore = createFetchStore<ConsultationResponse>();
   const questionsStore = createFetchStore<QuestionsResponse>();
@@ -138,6 +139,7 @@
       const newAnswers = $answersStore.data?.all_respondents;
       answers = [...answers, ...newAnswers];
     }
+    isAnswersLoading = false;
     hasMorePages = $answersStore.data?.has_more_pages || false;
 
     currPage += 1;
@@ -186,6 +188,7 @@
     answers = [];
     currPage = 1;
     hasMorePages = true;
+    isAnswersLoading = true;
   }
 
   const resetFilters = () => {
@@ -384,7 +387,7 @@
         questionId={question?.id}
         pageSize={PAGE_SIZE}
         {answers}
-        isAnswersLoading={!dataRequested || $answersStore.isLoading}
+        isAnswersLoading={isAnswersLoading}
         answersError={$answersStore.error}
         filteredTotal={$answersStore.data?.filtered_total}
         {hasMorePages}
