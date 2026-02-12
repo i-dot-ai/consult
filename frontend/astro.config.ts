@@ -4,10 +4,20 @@ import svelte from "@astrojs/svelte";
 import tailwind from "@astrojs/tailwind";
 import node from "@astrojs/node";
 
+import sentry from "@sentry/astro";
+
 // https://astro.build/config
 export default defineConfig({
   output: "server",
-  integrations: [svelte(), tailwind({ applyBaseStyles: false })],
+  integrations: [
+    svelte(),
+    tailwind({ applyBaseStyles: false }),
+    sentry({
+      project: "consult-frontend",
+      org: "incubator-for-ai",
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    }),
+  ],
 
   vite: {
     optimizeDeps: {

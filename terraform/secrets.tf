@@ -13,10 +13,6 @@ locals {
       value = module.app_bucket.id
     },
     {
-      name  = "SENTRY_DSN"
-      value = "placeholder" # Update value in SSM - Do not hardcode - Empty value will disable sentry
-    },
-    {
       name  = "POSTGRES_PORT"
       value = 5432
     },
@@ -75,7 +71,12 @@ locals {
     {
       name  = "PUBLIC_INTERNAL_ACCESS_CLIENT_ID"
       value = aws_ssm_parameter.oidc_secrets["client_id"].value,
-    }
+    },
+    {
+      # For the frontend connection
+      name  = "SENTRY_AUTH_TOKEN"
+      value = "placeholder"
+    },
   ]
 
   # These settings are used by the platform team to configure authentication into the application.
