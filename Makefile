@@ -90,7 +90,7 @@ dummy_data: ## Generate dummy consultations. Only works in dev
 
 .PHONY: dev_admin_user
 dev_admin_user:
-	cd backend && PYTHONPATH=.. poetry run python manage.py shell -c "from backend.authentication.models import User; from backend.consultations.models import Consultation; user = User.objects.create_user(email='email@example.com', password='admin', is_staff=True); user.has_dashboard_access = True; user.save(); [c.users.add(user) for c in Consultation.objects.all()]" # pragma: allowlist secret
+	cd backend && PYTHONPATH=.. poetry run python manage.py shell -c "from authentication.models import User; from consultations.models import Consultation; user = User.objects.create_user(email='email@example.com', password='admin', is_staff=True); user.save(); [c.users.add(user) for c in Consultation.objects.all()]" # pragma: allowlist secret
 
 .PHONY: dev_environment
 dev_environment: reset_db migrate dummy_data dev_admin_user ## set up the database with dummy data
