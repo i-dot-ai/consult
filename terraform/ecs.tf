@@ -179,6 +179,7 @@ module "worker" {
     "APP_NAME"                 = var.project_name
     "EXECUTION_CONTEXT"        = "ecs"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-worker",
+    "SENTRY_DSN"               = var.backend_sentry_dsn
   })
 
   secrets = [
