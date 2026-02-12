@@ -388,7 +388,7 @@
         questionId={question?.id}
         pageSize={PAGE_SIZE}
         {answers}
-        isAnswersLoading={isAnswersLoading}
+        {isAnswersLoading}
         answersError={$answersStore.error}
         filteredTotal={$answersStore.data?.filtered_total}
         {hasMorePages}
