@@ -99,6 +99,7 @@
   });
 
   async function loadData() {
+    isAnswersLoading = true;
     const queryString = buildQuery({
       questionId: questionId,
       searchValue: searchValue,
