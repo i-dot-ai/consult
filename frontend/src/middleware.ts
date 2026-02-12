@@ -70,7 +70,7 @@ export const onRequest: MiddlewareHandler = async (
   const response = await next();
 
   // Add security headers to response
-  const EXTRA_HEADERS = {
+  let EXTRA_HEADERS: Record<string, string> = {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy":
@@ -78,6 +78,15 @@ export const onRequest: MiddlewareHandler = async (
     "X-Frame-Options": "DENY",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
   };
+
+  const csrfCookie = context.cookies.get("csrftoken");
+
+  if (csrfCookie) {
+    EXTRA_HEADERS = {
+      ...EXTRA_HEADERS,
+      "X-CSRFToken": csrfCookie.value,
+    };
+  }
 
   for (const [key, value] of Object.entries(EXTRA_HEADERS)) {
     response.headers.set(key, value);
