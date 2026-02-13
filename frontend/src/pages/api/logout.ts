@@ -49,7 +49,7 @@ const handleLogout: APIRoute = async (context) => {
   }
 
   const expiredCookies = cookiesToClear.map(
-    (name) => `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`
+    (name) => `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`,
   );
 
   // 4. Return redirect response with cookie clearing headers
