@@ -1,4 +1,5 @@
 from datetime import datetime
+from pickle import FALSE
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -1247,3 +1248,30 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200
+
+
+    @pytest.mark.parametrize("annotation_exists, empty_themes_encoding", [(True, []), (False, None)])
+    def test_empty_themes_encoding(
+        self, client, staff_user_token, free_text_question, respondent_1, annotation_exists, empty_themes_encoding
+    ):
+        """Test API endpoint works if the underlying them has no key"""
+        # Create test response without annotation
+        response = ResponseFactory(question=free_text_question, respondent=respondent_1)
+
+        if annotation_exists:
+            ResponseAnnotation.objects.create(response=response)
+
+        url = reverse(
+            "response-list",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+            },
+        )
+
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        assert response.json()["all_respondents"][0]["themes"] == empty_themes_encoding
