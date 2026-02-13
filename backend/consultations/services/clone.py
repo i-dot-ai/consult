@@ -14,7 +14,6 @@ from consultations.models import (
     Question,
     Respondent,
     Response,
-    ResponseAnnotation,
     ResponseAnnotationTheme,
     SelectedTheme,
 )
@@ -195,28 +194,26 @@ def clone_consultation(original: Consultation) -> Consultation:
     )
 
     # Clone responseannotations and responseannotationthemes
-    annotation_map = _clone(
-        ResponseAnnotation.objects.filter(response__question__consultation=original),
-        [("response_id", response_map)],
-    )
+    # annotation_map = _clone(
+    #     Response.objects.filter(question__consultation=original),
+    #     [("id", response_map)],
+    # )
     annotation_theme_map = _clone(
-        ResponseAnnotationTheme.objects.filter(
-            response_annotation__response__question__consultation=original
-        ),
-        [("response_annotation_id", annotation_map), ("theme_id", selected_theme_map)],
+        ResponseAnnotationTheme.objects.filter(response__question__consultation=original),
+        [("response_id", response_map), ("theme_id", selected_theme_map)],
     )
 
-    # Clone historical records for ResponseAnnotation and ResponseAnnotationTheme
+    # Clone historical records for Response and ResponseAnnotationTheme
     _clone(
-        ResponseAnnotation.history.model.objects.filter(id__in=annotation_map.keys()),
-        [("id", annotation_map), ("response_id", response_map)],
+        Response.history.model.objects.filter(id__in=response_map.keys()),
+        [("id", response_map)],
         excluded_fields=_HISTORY_EXCLUDED_FIELDS,
     )
     _clone(
         ResponseAnnotationTheme.history.model.objects.filter(id__in=annotation_theme_map.keys()),
         [
             ("id", annotation_theme_map),
-            ("response_annotation_id", annotation_map),
+            ("response_id", response_map),
             ("theme_id", selected_theme_map),
         ],
         excluded_fields=_HISTORY_EXCLUDED_FIELDS,

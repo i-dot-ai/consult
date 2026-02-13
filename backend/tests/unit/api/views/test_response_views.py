@@ -6,11 +6,9 @@ import orjson
 import pytest
 from django.urls import reverse
 
-from consultations.models import ResponseAnnotation, ResponseAnnotationTheme
+from consultations.models import Response, ResponseAnnotationTheme
 from factories import (
     RespondentFactory,
-    ResponseAnnotationFactory,
-    ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
 )
 
@@ -172,11 +170,9 @@ class TestResponseViewSet:
         response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
 
         # Create annotations with themes
-        annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
-        annotation1.add_original_ai_themes([theme_a])
+        response1.add_original_ai_themes([theme_a])
 
-        annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
-        annotation2.add_original_ai_themes([theme_a, theme_b])
+        response2.add_original_ai_themes([theme_a, theme_b])
 
         url = reverse(
             "response-theme-aggregations",
@@ -208,12 +204,10 @@ class TestResponseViewSet:
         response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
 
         # Response 1: has theme1 and theme2
-        annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
-        annotation1.add_original_ai_themes([theme_a, theme_b])
+        response1.add_original_ai_themes([theme_a, theme_b])
 
         # Response 2: has only theme1
-        annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
-        annotation2.add_original_ai_themes([theme_a])
+        response2.add_original_ai_themes([theme_a])
 
         url = reverse(
             "response-theme-aggregations",
@@ -270,8 +264,9 @@ class TestResponseViewSet:
         - 1 query to get responses with related data (includes is_read annotation)
         - 1 query to prefetch multiple choice answers
         - 1 query to prefetch demographic data
+        - 1 query to prefetch theme data
         """
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(8):
             response = client.get(
                 url,
                 query_params={"question_id": free_text_question.id},
@@ -395,16 +390,13 @@ class TestResponseViewSet:
         )
 
         # Response 1: has theme and theme2
-        annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
-        annotation1.add_original_ai_themes([theme_a, theme_b])
+        response1.add_original_ai_themes([theme_a, theme_b])
 
         # Response 2: has only theme
-        annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
-        annotation2.add_original_ai_themes([theme_a])
+        response2.add_original_ai_themes([theme_a])
 
         # Response 3: has only theme2
-        annotation3 = ResponseAnnotationFactoryNoThemes(response=response3)
-        annotation3.add_original_ai_themes([theme_b])
+        response3.add_original_ai_themes([theme_b])
 
         url = reverse(
             "response-list",
@@ -495,8 +487,11 @@ class TestResponseViewSet:
             question=free_text_question, respondent=respondent_2, free_text="Response 2"
         )
 
-        ResponseAnnotationFactory(response=response_1, evidence_rich=True)
-        ResponseAnnotationFactory(response=response_2, evidence_rich=False)
+        response_1.evidence_rich = True
+        response_1.save()
+
+        response_2.evidence_rich = False
+        response_2.save()
 
         url = reverse(
             "response-list",
@@ -552,12 +547,11 @@ class TestResponseViewSet:
             question=free_text_question, respondent=respondent_2, free_text="Response 2"
         )
 
-        ResponseAnnotationFactory(
-            response=response_1, sentiment=ResponseAnnotation.Sentiment.AGREEMENT
-        )
-        ResponseAnnotationFactory(
-            response=response_2, sentiment=ResponseAnnotation.Sentiment.UNCLEAR
-        )
+        response_1.sentiment = Response.Sentiment.AGREEMENT
+        response_1.save()
+
+        response_2.sentiment = Response.Sentiment.UNCLEAR
+        response_2.save()
 
         url = reverse(
             "response-list",
@@ -599,14 +593,14 @@ class TestResponseViewSet:
 
         url = reverse(
             "response-list",
-            kwargs={"consultation_pk": free_text_annotation.response.question.consultation.id},
+            kwargs={"consultation_pk": free_text_annotation.question.consultation.id},
         )
 
         response = client.get(
             url,
             query_params={
                 "is_flagged": is_flagged,
-                "question_id": free_text_annotation.response.question.id,
+                "question_id": free_text_annotation.question.id,
             },
             headers={"Authorization": f"Bearer {staff_user_token}"},
         )
@@ -672,19 +666,20 @@ class TestResponseViewSet:
         is_edited,
     ):
         if is_flagged:
+            human_reviewed_annotation.is_flagged = True
             human_reviewed_annotation.flagged_by.add(staff_user)
             human_reviewed_annotation.save()
 
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": human_reviewed_annotation.response.question.consultation.id,
-                "pk": human_reviewed_annotation.response.id,
+                "consultation_pk": human_reviewed_annotation.question.consultation.id,
+                "pk": human_reviewed_annotation.id,
             },
         )
         response = client.get(
             url,
-            query_params={"question_id": human_reviewed_annotation.response.question.id},
+            query_params={"question_id": human_reviewed_annotation.question.id},
             headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
@@ -736,14 +731,16 @@ class TestResponseViewSet:
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": free_text_annotation.question.consultation.id,
+                "pk": free_text_annotation.id,
             },
         )
 
         assert free_text_annotation.human_reviewed is False
         assert free_text_annotation.reviewed_by is None
         assert free_text_annotation.reviewed_at is None
+
+        start_count = free_text_annotation.history.count()
 
         response = client.patch(
             url,
@@ -758,7 +755,7 @@ class TestResponseViewSet:
 
         # Verify version history captures the change from True to False using django-simple-history
         history = free_text_annotation.history.all().order_by("history_date")
-        assert history.count() == 2
+        assert history.count() == start_count + 1
 
         # The first version should have human_reviewed=False
         assert history.first().human_reviewed is False
@@ -774,12 +771,14 @@ class TestResponseViewSet:
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": free_text_annotation.question.consultation.id,
+                "pk": free_text_annotation.id,
             },
         )
 
         assert free_text_annotation.evidence_rich is True
+
+        start_count = free_text_annotation.history.count()
 
         response = client.patch(
             url,
@@ -795,18 +794,19 @@ class TestResponseViewSet:
 
         # Verify version history captures the change from True to False using django-simple-history
         history = free_text_annotation.history.all().order_by("history_date")
-        assert history.count() == 2
+        assert history.count() == start_count + 1
 
         # The first version should have sentiment=null, latest should have sentiment="AGREEMENT"
         assert history.first().sentiment is None  # Initial state
         assert history.last().sentiment == "AGREEMENT"  # Final state after PATCH
 
     def test_patch_response_evidence_rich(self, client, staff_user_token, free_text_annotation):
+        start_count = free_text_annotation.history.count()
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": free_text_annotation.question.consultation.id,
+                "pk": free_text_annotation.id,
             },
         )
 
@@ -826,10 +826,10 @@ class TestResponseViewSet:
 
         # Verify version history captures the change from True to False using django-simple-history
         history = free_text_annotation.history.all().order_by("history_date")
-        assert history.count() == 2
+        assert history.count() == start_count + 1
 
         # The first version should have evidence_rich=True, latest should have evidence_rich=False
-        assert history.first().evidence_rich is True  # Initial state
+        assert list(history.all())[-2].evidence_rich is True  # Initial state
         assert history.last().evidence_rich is False  # Final state after PATCH
 
     def test_patch_response_themes(
@@ -841,11 +841,13 @@ class TestResponseViewSet:
         alternative_theme,
         ai_assigned_theme,
     ):
+        start_count = free_text_annotation.history.count()
+
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": free_text_annotation.question.consultation.id,
+                "pk": free_text_annotation.id,
             },
         )
 
@@ -868,13 +870,13 @@ class TestResponseViewSet:
 
         assert response.json()["is_edited"] is True
 
-        # check that there are two versions of the ResponseAnnotation
-        assert free_text_annotation.history.count() == 2
+        # check that there are two versions of the Response (initial + after theme update)
+        assert free_text_annotation.history.count() == start_count + 1
 
-        # get history of the ResponseAnnotation
-        history = ResponseAnnotationTheme.history.filter(
-            response_annotation=free_text_annotation
-        ).order_by("history_date")
+        # get history of the ResponseAnnotationTheme
+        history = ResponseAnnotationTheme.history.filter(response=free_text_annotation).order_by(
+            "history_date"
+        )
         assert history.count() == 4
 
         # check all stages of history
@@ -904,8 +906,8 @@ class TestResponseViewSet:
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": free_text_annotation.question.consultation.id,
+                "pk": free_text_annotation.id,
             },
         )
 
@@ -934,8 +936,8 @@ class TestResponseViewSet:
         url = reverse(
             "response-toggle-flag",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": free_text_annotation.question.consultation.id,
+                "pk": free_text_annotation.id,
             },
         )
 
@@ -1067,8 +1069,9 @@ class TestResponseViewSet:
             - 1 query to calculate standard deviation of hybrid_score across responses
             - 1 query to prefetch multiple choice answers
             - 1 query to prefetch demographic data
+            - 1 query to prefetch theme data
             """
-            with django_assert_num_queries(9):
+            with django_assert_num_queries(10):
                 response = client.get(
                     url,
                     query_params={
@@ -1099,9 +1102,6 @@ class TestResponseViewSet:
         # Create test response
         respondent = RespondentFactory(consultation=free_text_question.consultation)
         response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
-
-        # Create annotation with themes
-        _ = ResponseAnnotationFactoryNoThemes(response=response_obj)
 
         url = reverse(
             "response-themes",
@@ -1144,8 +1144,7 @@ class TestResponseViewSet:
         response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
 
         # Create annotation with specific themes
-        annotation = ResponseAnnotationFactoryNoThemes(response=response_obj)
-        annotation.add_original_ai_themes([theme_a])
+        response_obj.add_original_ai_themes([theme_a])
 
         url = reverse(
             "response-themes",
@@ -1195,35 +1194,6 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 404
-
-    def test_get_themes_creates_annotation_if_not_exists(
-        self, client, staff_user_token, free_text_question
-    ):
-        """Test API endpoint creates annotation if it doesn't exist"""
-        # Create test response without annotation
-        respondent = RespondentFactory(consultation=free_text_question.consultation)
-        response_obj = ResponseFactory(question=free_text_question, respondent=respondent)
-
-        # Verify no annotation exists initially
-        assert not ResponseAnnotation.objects.filter(response=response_obj).exists()
-
-        url = reverse(
-            "response-themes",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "pk": response_obj.id,
-            },
-        )
-
-        response = client.get(
-            url,
-            headers={"Authorization": f"Bearer {staff_user_token}"},
-        )
-
-        assert response.status_code == 200
-
-        # Verify annotation was created
-        assert ResponseAnnotation.objects.filter(response=response_obj).exists()
 
     def test_get_themes_works_with_null_keys(
         self, client, staff_user_token, free_text_question, theme_c

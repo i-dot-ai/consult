@@ -2,7 +2,6 @@ from django.conf import settings
 from django.contrib import admin, messages
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
-from simple_history.admin import SimpleHistoryAdmin
 
 from consultations.dummy_data import create_dummy_consultation_from_yaml_job
 from consultations.models import (
@@ -14,7 +13,6 @@ from consultations.models import (
     Question,
     Respondent,
     Response,
-    ResponseAnnotation,
     ResponseAnnotationTheme,
     SelectedTheme,
 )
@@ -190,21 +188,9 @@ class QuestionAdmin(admin.ModelAdmin):
         )
 
 
-class ResponseAnnotationAdmin(SimpleHistoryAdmin):
-    readonly_fields = [
-        "response",
-        "themes",
-        "sentiment",
-        "evidence_rich",
-        "human_reviewed",
-        "reviewed_by",
-        "reviewed_at",
-    ]
-
-
 class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
     readonly_fields = [
-        "response_annotation",
+        "response",
         "theme",
         "assigned_by",
     ]
@@ -239,7 +225,6 @@ admin.site.register(CrossCuttingTheme, CrossCuttingThemeAdmin)
 admin.site.register(Response, ResponseAdmin)
 admin.site.register(Consultation, ConsultationAdmin)
 admin.site.register(Question, QuestionAdmin)
-admin.site.register(ResponseAnnotation, ResponseAnnotationAdmin)
 admin.site.register(ResponseAnnotationTheme, ResponseAnnotationThemeAdmin)
 admin.site.register(Respondent, RespondentAdmin)
 admin.site.register(DemographicOption, DemographicOptionAdmin)

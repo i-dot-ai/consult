@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from consultations.models import (
-    ResponseAnnotation,
+    Response,
     SelectedTheme,
 )
 from data_pipeline.sync.response_annotations import (
@@ -109,19 +109,19 @@ class TestImportResponseAnnotationsFromS3:
         )
 
         # Verify annotations were created
-        assert ResponseAnnotation.objects.filter(response__question=question).count() == 2
+        assert Response.objects.filter(question=question).count() == 2
 
         # Verify annotation data for respondent 1
-        annotation1 = ResponseAnnotation.objects.get(response__respondent=respondent1)
-        assert annotation1.sentiment == "AGREEMENT"
-        assert annotation1.evidence_rich is True
-        assert theme_a in annotation1.themes.all()
+        response1 = Response.objects.get(respondent=respondent1)
+        assert response1.sentiment == "AGREEMENT"
+        assert response1.evidence_rich is True
+        assert theme_a in response1.themes.all()
 
         # Verify annotation data for respondent 2
-        annotation2 = ResponseAnnotation.objects.get(response__respondent=respondent2)
-        assert annotation2.sentiment == "DISAGREEMENT"
-        assert annotation2.evidence_rich is False
-        assert theme_b in annotation2.themes.all()
+        response2 = Response.objects.get(respondent=respondent2)
+        assert response2.sentiment == "DISAGREEMENT"
+        assert response2.evidence_rich is False
+        assert theme_b in response2.themes.all()
 
         # Verify consultation stage was updated
         consultation.refresh_from_db()

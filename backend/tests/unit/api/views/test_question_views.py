@@ -242,7 +242,7 @@ class TestQuestionViewSet:
         assert response.status_code == 200
 
         data = response.json()
-        assert data["next_response"]["id"] == str(human_reviewed_annotation.response.id)
+        assert data["next_response"]["id"] == str(human_reviewed_annotation.id)
         assert data["has_free_text"] is True
         assert data["message"] == "Next response found."
 

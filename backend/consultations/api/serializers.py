@@ -230,18 +230,16 @@ class ResponseSerializer(serializers.ModelSerializer):
     respondent = RespondentSerializer(read_only=True)
     free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
     demographic_data = serializers.SerializerMethodField(read_only=True)
-    themes = ResponseAnnotationThemeSerializer(
-        source="annotation.responseannotationtheme_set", many=True
-    )
+    themes = ResponseAnnotationThemeSerializer(source="responseannotationtheme_set", many=True)
     multiple_choice_answer = serializers.SlugRelatedField(
         source="chosen_options", slug_field="text", many=True, read_only=True
     )
-    evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
-    sentiment = serializers.CharField(source="annotation.sentiment")
-    human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
+    evidenceRich = serializers.BooleanField(source="evidence_rich", default=False)
+    sentiment = serializers.CharField()
+    human_reviewed = serializers.BooleanField()
     is_flagged = serializers.BooleanField(read_only=True)
     is_edited = serializers.SerializerMethodField()
-    is_read = serializers.SerializerMethodField()
+    is_read = serializers.CharField()
     question_id = serializers.UUIDField()
 
     def get_is_edited(self, obj):
@@ -251,42 +249,21 @@ class ResponseSerializer(serializers.ModelSerializer):
         """
         return obj.annotation_is_edited or obj.annotation_has_human_assigned_themes
 
-    def get_is_read(self, obj):
-        """
-        Returns True if the current user has read this response.
-        Uses the annotated field is_read_by_user to avoid N+1 queries.
-        """
-        return getattr(obj, "is_read_by_user", False)
-
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
 
     def update(self, instance: Response, validated_data):
-        if annotation := validated_data.get("annotation"):
-            if "human_reviewed" in annotation:
-                human_reviewed = annotation["human_reviewed"]
-                instance.annotation.human_reviewed = human_reviewed
-                instance.annotation.reviewed_by = (
-                    self.context["request"].user if human_reviewed else None
-                )
-                instance.annotation.reviewed_at = timezone.now() if human_reviewed else None
+        if themes := validated_data.pop("responseannotationtheme_set", None):
+            instance.set_human_reviewed_themes(
+                themes=themes,
+                user=self.context["request"].user,
+            )
 
-            if "evidence_rich" in annotation:
-                instance.annotation.evidence_rich = annotation["evidence_rich"]
+        if validated_data.get("human_reviewed") is True and instance.reviewed_at is None:
+            instance.reviewed_by = self.context["request"].user
+            instance.reviewed_at = timezone.now()
 
-            if "responseannotationtheme_set" in annotation:
-                instance.annotation.set_human_reviewed_themes(
-                    themes=annotation["responseannotationtheme_set"],
-                    user=self.context["request"].user,
-                )
-
-            if "sentiment" in annotation:
-                instance.annotation.sentiment = annotation["sentiment"]
-
-            instance.annotation.save()
-
-        instance.refresh_from_db()
-        return instance
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         # this hack exists to ensure that an empty list is returned when there is no ResponseAnnotation

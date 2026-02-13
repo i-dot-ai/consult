@@ -10,7 +10,6 @@ from consultations.models import (
     Question,
     Respondent,
     Response,
-    ResponseAnnotation,
     SelectedTheme,
 )
 from ingest.jobs import delete_consultation_job
@@ -73,21 +72,17 @@ def test_delete_consultation_cascading():
     )
 
     # Create response annotations
-    annotation1 = ResponseAnnotation.objects.create(
-        response=response1,
-        sentiment=ResponseAnnotation.Sentiment.AGREEMENT,
-        evidence_rich=True,
-        human_reviewed=False,
-    )
-    annotation1.themes.add(theme1)
+    response1.sentiment = Response.Sentiment.AGREEMENT
+    response1.evidence_rich = True
+    response1.human_reviewed = False
+    response1.themes.add(theme1)
+    response1.save()
 
-    annotation2 = ResponseAnnotation.objects.create(
-        response=response2,
-        sentiment=ResponseAnnotation.Sentiment.DISAGREEMENT,
-        evidence_rich=False,
-        human_reviewed=False,
-    )
-    annotation2.themes.add(theme2)
+    response2.sentiment = Response.Sentiment.DISAGREEMENT
+    response2.evidence_rich = False
+    response2.human_reviewed = False
+    response2.themes.add(theme2)
+    response2.save()
 
     # Create multiple choice question
     multiple_choice_question = Question.objects.create(
@@ -111,7 +106,6 @@ def test_delete_consultation_cascading():
     assert Respondent.objects.count() == 2
     assert Response.objects.count() == 4
     assert SelectedTheme.objects.count() == 2
-    assert ResponseAnnotation.objects.count() == 2
     assert MultiChoiceAnswer.objects.count() == 3
 
     # Delete the consultation
@@ -123,7 +117,6 @@ def test_delete_consultation_cascading():
     assert Respondent.objects.count() == 0
     assert Response.objects.count() == 0
     assert SelectedTheme.objects.count() == 0
-    assert ResponseAnnotation.objects.count() == 0
     assert MultiChoiceAnswer.objects.count() == 0
 
 
@@ -151,12 +144,10 @@ def test_delete_consultation_job_success(mock_connection):
         question=question, name="Test theme", description="Test description", key="test"
     )
 
-    annotation = ResponseAnnotation.objects.create(
-        response=response,
-        sentiment=ResponseAnnotation.Sentiment.UNCLEAR,
-        evidence_rich=False,
-    )
-    annotation.themes.add(theme)
+    response.sentiment = Response.Sentiment.UNCLEAR
+    response.evidence_rich = False
+    response.themes.add(theme)
+    response.save()
 
     consultation_id = consultation.id
 
@@ -166,9 +157,6 @@ def test_delete_consultation_job_success(mock_connection):
     assert Respondent.objects.filter(consultation_id=consultation_id).exists()
     assert Response.objects.filter(question__consultation_id=consultation_id).exists()
     assert SelectedTheme.objects.filter(question__consultation_id=consultation_id).exists()
-    assert ResponseAnnotation.objects.filter(
-        response__question__consultation_id=consultation_id
-    ).exists()
 
     # Run the delete job
     delete_consultation_job(consultation)
@@ -179,9 +167,6 @@ def test_delete_consultation_job_success(mock_connection):
     assert not Respondent.objects.filter(consultation_id=consultation_id).exists()
     assert not Response.objects.filter(question__consultation_id=consultation_id).exists()
     assert not SelectedTheme.objects.filter(question__consultation_id=consultation_id).exists()
-    assert not ResponseAnnotation.objects.filter(
-        response__question__consultation_id=consultation_id
-    ).exists()
 
 
 @pytest.mark.django_db
@@ -275,24 +260,18 @@ def test_delete_consultation_with_multiple_questions():
     )
 
     # Create annotations
-    annotation1 = ResponseAnnotation.objects.create(
-        response=response1, sentiment=ResponseAnnotation.Sentiment.AGREEMENT
-    )
-    annotation2 = ResponseAnnotation.objects.create(
-        response=response2, sentiment=ResponseAnnotation.Sentiment.DISAGREEMENT
-    )
+    response1.sentiment = Response.Sentiment.AGREEMENT
+    response1.themes.add(theme1)
+    response1.save()
 
-    annotation1.themes.add(theme1)
-    annotation2.themes.add(theme2)
+    response2.sentiment = Response.Sentiment.DISAGREEMENT
+    response2.themes.add(theme2)
+    response2.save()
 
     # Verify all data exists
     assert Question.objects.filter(consultation=consultation).count() == 2
     assert Response.objects.filter(question__consultation=consultation).count() == 2
     assert SelectedTheme.objects.filter(question__consultation=consultation).count() == 2
-    assert (
-        ResponseAnnotation.objects.filter(response__question__consultation=consultation).count()
-        == 2
-    )
 
     # Delete consultation
     consultation.delete()
@@ -301,9 +280,3 @@ def test_delete_consultation_with_multiple_questions():
     assert Question.objects.filter(consultation_id=consultation.id).count() == 0
     assert Response.objects.filter(question__consultation_id=consultation.id).count() == 0
     assert SelectedTheme.objects.filter(question__consultation_id=consultation.id).count() == 0
-    assert (
-        ResponseAnnotation.objects.filter(
-            response__question__consultation_id=consultation.id
-        ).count()
-        == 0
-    )

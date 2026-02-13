@@ -169,12 +169,11 @@ class CandidateThemeFactory(DjangoModelFactory):
     description = factory.LazyAttribute(lambda o: fake.paragraph())
 
 
-class ResponseAnnotationFactory(DjangoModelFactory):
+class ResponseAnnotationFactory(ResponseFactory):
     class Meta:
-        model = models.ResponseAnnotation
+        model = models.Response
 
-    response = factory.SubFactory(ResponseFactory)
-    sentiment = fuzzy.FuzzyChoice(models.ResponseAnnotation.Sentiment.values)
+    sentiment = fuzzy.FuzzyChoice(models.Response.Sentiment.values)
     evidence_rich = fuzzy.FuzzyChoice([True, False])
     human_reviewed = False
     reviewed_by = None
@@ -193,7 +192,7 @@ class ResponseAnnotationFactory(DjangoModelFactory):
             num_themes = random.randint(1, 3)
             themes_to_add = []
             for _ in range(num_themes):
-                theme = SelectedThemeFactory(question=self.response.question)
+                theme = SelectedThemeFactory(question=self.question)
                 themes_to_add.append(theme)
             self.add_original_ai_themes(themes_to_add)
 
@@ -216,7 +215,7 @@ class ResponseAnnotationFactoryNoThemes(ResponseAnnotationFactory):
     """Factory that doesn't automatically create themes"""
 
     class Meta:
-        model = models.ResponseAnnotation
+        model = models.Response
         skip_postgeneration_save = True
 
     @factory.post_generation

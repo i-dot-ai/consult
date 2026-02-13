@@ -67,9 +67,8 @@ def delete_response_annotation_themes(consultation_id: UUID):
         cursor.execute(  # nosec B608
             """
         DELETE FROM consultations_responseannotationtheme
-        WHERE response_annotation_id IN (
-            SELECT a.id from consultations_responseannotation a
-            JOIN consultations_response r ON a.response_id = r.id
+        WHERE response_id IN (
+            SELECT r.id from consultations_response r
             JOIN consultations_question q ON r.question_id = q.id
             WHERE q.consultation_id = %s
         )""",
@@ -122,7 +121,6 @@ def delete_consultation_job(consultation: models.Consultation):
         logger.info("Deleting response annotation themes...")
         delete_response_annotation_themes(consultation_id)
 
-        delete_response_related_table("consultations_responseannotation", consultation_id)
         delete_response_related_table("consultations_response_chosen_options", consultation_id)
         delete_response_related_table("consultations_response_read_by", consultation_id)
 

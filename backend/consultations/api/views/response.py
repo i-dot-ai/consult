@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from django.db.models import Count, Exists, OuterRef
+from django.db.models import Count, Exists, OuterRef, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -75,33 +75,26 @@ class ResponseViewSet(ModelViewSet):
         # Optimize queryset with select_related and prefetch_related
         queryset = queryset.select_related(
             "respondent",
-            "annotation",
             "question",
         ).prefetch_related(
             "chosen_options",
             "respondent__demographics",
-            "annotation__responseannotationtheme_set__assigned_by",
-            "annotation__responseannotationtheme_set",
-            "annotation__responseannotationtheme_set__theme",
+            "responseannotationtheme_set__assigned_by",
+            "responseannotationtheme_set",
+            "responseannotationtheme_set__theme",
         )
 
         queryset = queryset.annotate(
             is_flagged=Exists(
-                models.ResponseAnnotation.objects.filter(
-                    response=OuterRef("pk"), flagged_by=self.request.user
-                )
+                models.Response.objects.filter(pk=OuterRef("pk"), flagged_by=self.request.user)
             ),
-            is_read_by_user=Exists(
-                models.Response.objects.filter(read_by=self.request.user, pk=OuterRef("pk"))
-            ),
+            is_read=Q(read_by=self.request.user),
             annotation_is_edited=Exists(
-                models.ResponseAnnotation.history.filter(id=OuterRef("annotation__id")).values(
-                    "id"
-                )[1:]
+                models.Response.history.filter(id=OuterRef("id")).values("id")[1:]
             ),
             annotation_has_human_assigned_themes=Exists(
                 models.ResponseAnnotationTheme.history.filter(
-                    response_annotation_id=OuterRef("annotation__id"),
+                    response_id=OuterRef("id"),
                     assigned_by__isnull=False,
                 )
             ),
@@ -148,11 +141,11 @@ class ResponseViewSet(ModelViewSet):
         # Get theme counts from the filtered responses
         theme_counts = (
             models.SelectedTheme.objects.filter(
-                responseannotation__response__in=self.get_queryset(),
-                responseannotation__response__question__has_free_text__isnull=False,
+                response__in=self.get_queryset(),
+                response__question__has_free_text__isnull=False,
             )
             .values("id")
-            .annotate(count=Count("responseannotation", distinct=True))
+            .annotate(count=Count("response", distinct=True))
         )
 
         theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
@@ -174,8 +167,7 @@ class ResponseViewSet(ModelViewSet):
 
         all_themes = models.SelectedTheme.objects.filter(question=response.question)
         if response.question.consultation.display_ai_selected_themes:
-            annotation, _ = models.ResponseAnnotation.objects.get_or_create(response=response)
-            selected_themes = annotation.themes.all()
+            selected_themes = response.themes.all()
         else:
             selected_themes = []
 
@@ -199,11 +191,11 @@ class ResponseViewSet(ModelViewSet):
     def toggle_flag(self, request, consultation_pk=None, pk=None):
         """Toggle flag on/off for the user"""
         response = self.get_object()
-        if response.annotation.flagged_by.contains(request.user):
-            response.annotation.flagged_by.remove(request.user)
+        if response.flagged_by.contains(request.user):
+            response.flagged_by.remove(request.user)
         else:
-            response.annotation.flagged_by.add(request.user)
-        response.annotation.save()
+            response.flagged_by.add(request.user)
+        response.save()
         return Response()
 
     @action(

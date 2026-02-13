@@ -13,8 +13,8 @@ from embeddings import embed_text
 
 class ResponseFilter(FilterSet):
     # TODO: adjust the frontend to match sensible DRF defaults
-    sentimentFilters = BaseInFilter(field_name="annotation__sentiment", lookup_expr="in")
-    evidenceRich = BooleanFilter(field_name="annotation__evidence_rich")
+    sentimentFilters = BaseInFilter(field_name="sentiment", lookup_expr="in")
+    evidenceRich = BooleanFilter(field_name="evidence_rich")
     unseenResponsesOnly = BaseInFilter(method="filter_seen", lookup_expr="in")
     themeFilters = BaseInFilter(method="filter_themes", lookup_expr="in")
     demographics = BaseInFilter(field_name="respondent__demographics", lookup_expr="in")
@@ -51,8 +51,8 @@ class ResponseFilter(FilterSet):
             return queryset
         # Use single JOIN with HAVING clause for AND logic
         qs = (
-            queryset.filter(annotation__themes__id__in=value)
-            .annotate(matched_theme_count=Count("annotation__themes", distinct=True))
+            queryset.filter(themes__id__in=value)
+            .annotate(matched_theme_count=Count("themes", distinct=True))
             .filter(matched_theme_count=len(value))
         )
         return qs
