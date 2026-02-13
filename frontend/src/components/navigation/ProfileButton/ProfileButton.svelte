@@ -51,18 +51,8 @@
   }
 </script>
 
-{#snippet linkElement(text: string, url: string)}
-  <a href={url} class="block hover:text-primary">
-    <Button variant="ghost" fullWidth={true}>
-      <span class="w-full text-start">
-        {text}
-      </span>
-    </Button>
-  </a>
-{/snippet}
-
 {#snippet buttonElement(text: string, onclick: () => void)}
-  <button onclick={onclick} class="block w-full hover:text-primary">
+  <button {onclick} class="block w-full hover:text-primary">
     <Button variant="ghost" fullWidth={true}>
       <span class="w-full text-start">
         {text}
