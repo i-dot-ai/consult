@@ -10,10 +10,10 @@
 
   interface Props {
     isSignedIn: boolean;
-    homepageUrl?: string;
+    clientId?: string;
   }
 
-  let { isSignedIn = false, homepageUrl = "/" }: Props = $props();
+  let { isSignedIn = false, clientId = "" }: Props = $props();
 
   let expanded = $state(false);
 
@@ -38,10 +38,10 @@
     // 1. Clear all cookies in the browser
     clearAllCookies();
 
-    // 2. Navigate to SSO sign-out (user's browser sends SSO cookies)
-    // The SSO provider will clear their session, then we redirect to homepage
-    // The ALB will intercept and show login since SSO session is now invalid
-    window.location.href = `https://sso.service.security.gov.uk/sign-out?post_logout_redirect_uri=${encodeURIComponent(homepageUrl)}`;
+    // 2. Navigate to SSO sign-out with client_id (user's browser sends SSO cookies)
+    // The SSO provider will clear their session
+    // The ALB will intercept subsequent requests and show login since SSO session is now invalid
+    window.location.href = `https://sso.service.security.gov.uk/sign-out?client_id=${encodeURIComponent(clientId)}`;
   }
 </script>
 

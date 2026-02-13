@@ -8,7 +8,7 @@ import FloatingPanelContent from "../components/navigation/FloatingPanelContent/
 import { fetchBackendApi } from "../global/api";
 import { getApiConsultationUrl, Routes, Suffixes } from "../global/routes";
 import type { AstroGlobalRuntime, Consultation } from "../global/types";
-import { getHomepageUrl, getLangfuseUrl } from "../global/utils";
+import { getClientId, getLangfuseUrl } from "../global/utils";
 
 function isConsultationSubUrl(url: string): boolean {
   const consultationUrlRe = /\/consultations\/.*\S.*/;
@@ -78,8 +78,8 @@ if (consultationId) {
 // Get langfuse URL server-side so it's available at runtime in ECS
 const langfuseUrl = getLangfuseUrl();
 
-// Get homepage URL for logout redirect
-const homepageUrl = getHomepageUrl();
+// Get OIDC client ID for SSO sign-out
+const clientId = getClientId();
 
 const CSP_RULES = [
   "default-src 'self'",
@@ -113,7 +113,7 @@ const CSP_RULES = [
         consultationId={consultationId}
         consultationStage={consultation?.stage}
         langfuseUrl={langfuseUrl}
-        homepageUrl={homepageUrl}
+        clientId={clientId}
       />
 
       <main class="grow">
