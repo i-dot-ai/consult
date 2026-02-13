@@ -12,11 +12,43 @@
 
   interface Props {
     isSignedIn: boolean;
+    homepageUrl?: string;
   }
 
-  let { isSignedIn = false }: Props = $props();
+  let { isSignedIn = false, homepageUrl = "/" }: Props = $props();
 
   let expanded = $state(false);
+
+  function clearCookies() {
+    const cookiesToClear = [
+      "gdsInternalAccess",
+      "sessionId",
+      "csrftoken",
+      "AWSALBAuthSessionCookie",
+      "AWSALBAuthSessionCookie-0",
+      "AWSALBAuthSessionCookie-1",
+      "x-amzn-oidc-data",
+    ];
+
+    for (const cookieName of cookiesToClear) {
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    }
+  }
+
+  async function handleSignOut() {
+    try {
+      // Call backend first to clear Django session (while we still have auth cookies)
+      await fetch(Routes.SignOut, { method: "POST" });
+    } catch (e) {
+      console.error("Logout failed:", e);
+    } finally {
+      // Clear all frontend cookies
+      clearCookies();
+
+      // Always redirect to homepage (external URL)
+      window.location.href = homepageUrl;
+    }
+  }
 </script>
 
 {#snippet linkElement(text: string, url: string)}
@@ -27,6 +59,16 @@
       </span>
     </Button>
   </a>
+{/snippet}
+
+{#snippet buttonElement(text: string, onclick: () => void)}
+  <button onclick={onclick} class="block w-full hover:text-primary">
+    <Button variant="ghost" fullWidth={true}>
+      <span class="w-full text-start">
+        {text}
+      </span>
+    </Button>
+  </button>
 {/snippet}
 
 <div class="relative m-auto w-max">
@@ -80,9 +122,7 @@
         <!-- <hr /> -->
 
         {#if isSignedIn}
-          {@render linkElement("Sign Out", Routes.SignOut)}
-        {:else}
-          {@render linkElement("Sign In", Routes.SignIn)}
+          {@render buttonElement("Sign Out", handleSignOut)}
         {/if}
       </div>
     {/if}

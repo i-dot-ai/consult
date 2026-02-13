@@ -19,6 +19,7 @@
     consultationId?: string;
     consultationStage?: ConsultationStage;
     langfuseUrl?: string;
+    homepageUrl?: string;
   }
 
   let {
@@ -30,6 +31,7 @@
     consultationId,
     consultationStage,
     langfuseUrl = "/",
+    homepageUrl = "/",
   }: Props = $props();
 
   let showBreadcrumbs = $state(false);
@@ -87,7 +89,7 @@
         </div>
       {/if}
 
-      <ProfileButton {isSignedIn} />
+      <ProfileButton {isSignedIn} {homepageUrl} />
     </div>
   {/snippet}
 </Header>
