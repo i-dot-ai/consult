@@ -20,18 +20,19 @@
   let expanded = $state(false);
 
   function clearCookies() {
-    const cookiesToClear = [
-      "gdsInternalAccess",
-      "sessionId",
-      "csrftoken",
-      "AWSALBAuthSessionCookie",
-      "AWSALBAuthSessionCookie-0",
-      "AWSALBAuthSessionCookie-1",
-      "x-amzn-oidc-data",
-    ];
+    const domain = window.location.hostname;
 
-    for (const cookieName of cookiesToClear) {
-      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    // Get all cookies and clear them
+    const allCookies = document.cookie.split(";");
+
+    for (const cookie of allCookies) {
+      const cookieName = cookie.split("=")[0].trim();
+      if (cookieName) {
+        // Clear with domain
+        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain}`;
+        // Also try clearing without domain (for cookies set without explicit domain)
+        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+      }
     }
   }
 
