@@ -5,7 +5,6 @@
 
   import type { AnswersResponse, GeneratedTheme } from "../../../global/types";
   import { createFetchStore, type MockFetch } from "../../../global/stores";
-  import { getApiAnswersUrl } from "../../../global/routes";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
@@ -14,7 +13,6 @@
   import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
   import Tag from "../../Tag/Tag.svelte";
   import AnswersList from "../AnswersList/AnswersList.svelte";
-  import Visibility from "../../svg/material/Visibility.svelte";
   import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
 
   export interface Props {
@@ -122,6 +120,8 @@
               </div>
             </Button>
 
+            <!-- 
+            TODO: Remove all relevant representative responses code
             <Button
               size="sm"
               handleClick={() => {
@@ -149,6 +149,7 @@
                 </span>
               </div>
             </Button>
+            -->
           </footer>
         {/if}
       </div>

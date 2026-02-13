@@ -109,43 +109,6 @@ exports[`SelectedThemeCard > should render 1`] = `
               </button>
               
               <!---->
-               
-              <!---->
-              <button
-                aria-pressed="false"
-                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                data-variant="default"
-                role="button"
-                tabindex="0"
-              >
-                <!---->
-                <!---->
-                <svg
-                  class="fill-neutral-500"
-                  height="1rem"
-                  role="img"
-                  viewBox="0 -960 960 960"
-                  width="1rem"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M320-440h320v-80H320v80Zm0 120h320v-80H320v80Zm0 120h200v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"
-                    xmlns="http://www.w3.org/2000/svg"
-                  />
-                  <!---->
-                </svg>
-                <!---->
-                 
-                <span
-                  class="block w-full text-start"
-                >
-                  Representative Responses
-                </span>
-                
-                
-              </button>
-              
-              <!---->
             </footer>
           </div>
            
