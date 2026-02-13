@@ -81,6 +81,7 @@
   let flaggedOnly: boolean = $state(false);
   let dataRequested: boolean = $state(false);
   let isAnswersLoading: boolean = $state(true);
+  let _loadDataCallCount = 0;
 
   const consultationStore = createFetchStore<ConsultationResponse>();
   const questionsStore = createFetchStore<QuestionsResponse>();
@@ -99,6 +100,8 @@
   });
 
   async function loadData() {
+    const _callId = ++_loadDataCallCount;
+    console.log(`[loadData #${_callId}] START currPage=${currPage} answers=${answers.length}`);
     isAnswersLoading = true;
     const queryString = buildQuery({
       questionId: questionId,
@@ -132,9 +135,10 @@
     }
 
     // Append next page of answers to existing answers
-    await $answersStore.fetch(
-      `${getApiAnswersUrl(consultationId)}${queryString}`,
-    );
+    const _answersUrl = `${getApiAnswersUrl(consultationId)}${queryString}`;
+    console.log(`[loadData #${_callId}] fetching ${_answersUrl}`);
+    await $answersStore.fetch(_answersUrl);
+    console.log(`[loadData #${_callId}] fetch resolved, storeData count=${$answersStore.data?.all_respondents?.length ?? "null"}`);
 
     if ($answersStore.data?.all_respondents) {
       const newAnswers = $answersStore.data?.all_respondents;
@@ -142,7 +146,7 @@
       const deduped = newAnswers.filter((a) => !existingIds.has(a.id));
       if (deduped.length !== newAnswers.length) {
         console.warn(
-          "[loadData] duplicate answer IDs received from API:",
+          `[loadData #${_callId}] DUPLICATE IDs from API (${newAnswers.length - deduped.length} dupes):`,
           newAnswers.filter((a) => existingIds.has(a.id)).map((a) => a.id),
         );
       }
@@ -152,6 +156,7 @@
     hasMorePages = $answersStore.data?.has_more_pages || false;
 
     currPage += 1;
+    console.log(`[loadData #${_callId}] END answers=${answers.length} nextPage=${currPage}`);
   }
 
   function buildQuery(filters: QueryFilters) {
@@ -194,6 +199,7 @@
   }
 
   function resetAnswers() {
+    console.log(`[resetAnswers] currPage was ${currPage}, answers was ${answers.length}`);
     answers = [];
     currPage = 1;
     hasMorePages = true;

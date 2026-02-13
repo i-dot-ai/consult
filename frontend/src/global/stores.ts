@@ -82,6 +82,7 @@ export const createFetchStore = <T>({
   let prevPromise: Promise<void> | null = null;
   let resolvePrev: (() => void) | null = null;
   let debouncedFetch: ReturnType<typeof debounce> | null = null;
+  let _lastRequestedUrl: string | null = null;
 
   const doFetch = async (
     url: string,
@@ -95,6 +96,10 @@ export const createFetchStore = <T>({
 
     if (!debouncedFetch) {
       debouncedFetch = debounce(async () => {
+        if (url !== _lastRequestedUrl) {
+          console.warn(`[fetchStore] STALE URL: debounce firing with "${url}" but last requested was "${_lastRequestedUrl}"`);
+        }
+        console.log(`[fetchStore] debounce firing with url=${url}`);
         try {
           if (mockFetch) {
             const mockData = mockFetch({
@@ -145,6 +150,8 @@ export const createFetchStore = <T>({
       }, debounceDelay);
     }
 
+    _lastRequestedUrl = url;
+    console.log(`[fetchStore] doFetch called url=${url} debouncedFetchExists=${debouncedFetch !== null}`);
     prevPromise = new Promise<void>((resolve) => {
       resolvePrev = resolve;
 
