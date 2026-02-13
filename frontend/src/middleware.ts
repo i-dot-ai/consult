@@ -15,11 +15,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     return next();
   }
 
-  // Allow logout without authentication (user may have expired session)
-  if (/^\/api\/logout[/]?$/.test(url.pathname)) {
-    return next();
-  }
-
   // ===== AUTHENTICATION MUST HAPPEN BEFORE RENDERING =====
   let internalAccessToken = null;
 
@@ -127,7 +122,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/sign-in-error[/]?$/,
     /^\/api\/astro\/.*/,
     /^\/api\/health[/]?$/,
-    /^\/api\/logout[/]?$/,
     /^\/health[/]?$/,
     /^\/.well-known\/.*/,
     /^\/consultations.*/,
