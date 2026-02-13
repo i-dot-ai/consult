@@ -122,7 +122,7 @@ module "frontend" {
     "EXECUTION_CONTEXT"        = "ecs"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
     "PUBLIC_LANGFUSE_URL"      = "https://core-langfuse.i.ai.gov.uk/",
-    "PUBLIC_HOMEPAGE_URL"      = local.host
+    "PUBLIC_HOMEPAGE_URL"      = "https://${local.host}"
   })
 
   secrets = [
