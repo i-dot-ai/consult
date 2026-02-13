@@ -295,7 +295,6 @@ class ResponseSerializer(serializers.ModelSerializer):
             representation["themes"] = []
         return representation
 
-
     class Meta:
         model = Response
         fields = [
