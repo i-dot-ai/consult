@@ -138,7 +138,15 @@
 
     if ($answersStore.data?.all_respondents) {
       const newAnswers = $answersStore.data?.all_respondents;
-      answers = [...answers, ...newAnswers];
+      const existingIds = new Set(answers.map((a) => a.id));
+      const deduped = newAnswers.filter((a) => !existingIds.has(a.id));
+      if (deduped.length !== newAnswers.length) {
+        console.warn(
+          "[loadData] duplicate answer IDs received from API:",
+          newAnswers.filter((a) => existingIds.has(a.id)).map((a) => a.id),
+        );
+      }
+      answers = [...answers, ...deduped];
     }
     isAnswersLoading = false;
     hasMorePages = $answersStore.data?.has_more_pages || false;
