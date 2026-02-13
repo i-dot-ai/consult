@@ -288,6 +288,14 @@ class ResponseSerializer(serializers.ModelSerializer):
         instance.refresh_from_db()
         return instance
 
+    def to_representation(self, instance):
+        # this hack exists to ensure that an empty list is returned when there is no ResponseAnnotation
+        representation = super().to_representation(instance)
+        if representation["themes"] is None:
+            representation["themes"] = []
+        return representation
+
+
     class Meta:
         model = Response
         fields = [
