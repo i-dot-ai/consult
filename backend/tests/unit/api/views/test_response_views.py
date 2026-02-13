@@ -1252,7 +1252,7 @@ class TestResponseViewSet:
     def test_empty_themes_encoding(
         self, client, staff_user_token, free_text_question, respondent_1, annotation_exists
     ):
-        """Test API endpoint works if the underlying them has no key"""
+        """Test API endpoint to ensure that empty themes are always encoded consistently"""
         # Create test response without annotation
         response = ResponseFactory(question=free_text_question, respondent=respondent_1)
 
