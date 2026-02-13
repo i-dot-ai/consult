@@ -12,43 +12,19 @@
 
   interface Props {
     isSignedIn: boolean;
-    homepageUrl?: string;
   }
 
-  let { isSignedIn = false, homepageUrl = "/" }: Props = $props();
+  let { isSignedIn = false }: Props = $props();
 
   let expanded = $state(false);
 
-  function clearCookies() {
-    const domain = window.location.hostname;
-
-    // Get all cookies and clear them
-    const allCookies = document.cookie.split(";");
-
-    for (const cookie of allCookies) {
-      const cookieName = cookie.split("=")[0].trim();
-      if (cookieName) {
-        // Clear with domain
-        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain}`;
-        // Also try clearing without domain (for cookies set without explicit domain)
-        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
-      }
-    }
-  }
-
-  async function handleSignOut() {
-    try {
-      // Call backend first to clear Django session (while we still have auth cookies)
-      await fetch(Routes.SignOut, { method: "POST" });
-    } catch (e) {
-      console.error("Logout failed:", e);
-    }
-
-    // Clear all frontend cookies
-    clearCookies();
-
-    // Sign out from SSO provider then redirect to homepage
-    window.location.href = `https://sso.service.security.gov.uk/sign-out?post_logout_redirect_uri=${encodeURIComponent(homepageUrl)}`;
+  function handleSignOut() {
+    // Submit to the server-side logout endpoint which handles:
+    // - Django session logout
+    // - SSO provider sign-out
+    // - Cookie clearing
+    // - Redirect to homepage
+    window.location.href = Routes.SignOut;
   }
 </script>
 
