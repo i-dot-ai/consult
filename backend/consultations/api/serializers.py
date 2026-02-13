@@ -225,7 +225,7 @@ class RespondentSerializer(serializers.ModelSerializer):
 
 
 class ResponseSerializer(serializers.ModelSerializer):
-    identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
+    identifier = serializers.CharField(source="respondent.id", read_only=True)
     respondent_id = serializers.UUIDField(source="respondent.id", read_only=True)
     respondent = RespondentSerializer(read_only=True)
     free_text_answer_text = serializers.CharField(source="free_text", read_only=True)

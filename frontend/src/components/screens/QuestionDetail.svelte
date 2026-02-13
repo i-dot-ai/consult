@@ -101,7 +101,9 @@
 
   async function loadData() {
     const _callId = ++_loadDataCallCount;
-    console.log(`[loadData #${_callId}] START currPage=${currPage} answers=${answers.length}`);
+    console.log(
+      `[loadData #${_callId}] START currPage=${currPage} answers=${answers.length}`,
+    );
     isAnswersLoading = true;
     const queryString = buildQuery({
       questionId: questionId,
@@ -138,7 +140,9 @@
     const _answersUrl = `${getApiAnswersUrl(consultationId)}${queryString}`;
     console.log(`[loadData #${_callId}] fetching ${_answersUrl}`);
     await $answersStore.fetch(_answersUrl);
-    console.log(`[loadData #${_callId}] fetch resolved, storeData count=${$answersStore.data?.all_respondents?.length ?? "null"}`);
+    console.log(
+      `[loadData #${_callId}] fetch resolved, storeData count=${$answersStore.data?.all_respondents?.length ?? "null"}`,
+    );
 
     if ($answersStore.data?.all_respondents) {
       const newAnswers = $answersStore.data?.all_respondents;
@@ -156,7 +160,9 @@
     hasMorePages = $answersStore.data?.has_more_pages || false;
 
     currPage += 1;
-    console.log(`[loadData #${_callId}] END answers=${answers.length} nextPage=${currPage}`);
+    console.log(
+      `[loadData #${_callId}] END answers=${answers.length} nextPage=${currPage}`,
+    );
   }
 
   function buildQuery(filters: QueryFilters) {
@@ -199,7 +205,9 @@
   }
 
   function resetAnswers() {
-    console.log(`[resetAnswers] currPage was ${currPage}, answers was ${answers.length}`);
+    console.log(
+      `[resetAnswers] currPage was ${currPage}, answers was ${answers.length}`,
+    );
     answers = [];
     currPage = 1;
     hasMorePages = true;

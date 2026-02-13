@@ -127,7 +127,7 @@ resource "null_resource" "build_import_candidate_themes_lambda" {
 
       # Install dependencies in build directory with specific options
       cd ${path.root}/../lambda/import_candidate_themes/build
-      pip install -r requirements.txt -t . --no-cache-dir --platform linux_x86_64 --only-binary=:all:
+      pip3 install -r requirements.txt -t . --no-cache-dir --platform linux_x86_64 --only-binary=:all:
 
       # Verify packages were installed
       echo "Installed packages:"
@@ -161,7 +161,7 @@ resource "null_resource" "build_import_response_annotations_lambda" {
 
       # Install dependencies in build directory with specific options
       cd ${path.root}/../lambda/import_response_annotations/build
-      pip install -r requirements.txt -t . --no-cache-dir --platform linux_x86_64 --only-binary=:all:
+      pip3 install -r requirements.txt -t . --no-cache-dir --platform linux_x86_64 --only-binary=:all:
 
       # Verify packages were installed
       echo "Installed packages:"
