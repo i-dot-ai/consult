@@ -42,13 +42,13 @@
       await fetch(Routes.SignOut, { method: "POST" });
     } catch (e) {
       console.error("Logout failed:", e);
-    } finally {
-      // Clear all frontend cookies
-      clearCookies();
-
-      // Always redirect to homepage (external URL)
-      window.location.href = homepageUrl;
     }
+
+    // Clear all frontend cookies
+    clearCookies();
+
+    // Sign out from SSO provider then redirect to homepage
+    window.location.href = `https://sso.service.security.gov.uk/sign-out?post_logout_redirect_uri=${encodeURIComponent(homepageUrl)}`;
   }
 </script>
 
