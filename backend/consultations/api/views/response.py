@@ -108,7 +108,7 @@ class ResponseViewSet(ModelViewSet):
         )
         # Apply additional FilterSet filtering (including themeFilters)
         filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
-        return filterset.qs.distinct()
+        return filterset.qs.distinct().order_by("id")
 
     @action(
         detail=False,

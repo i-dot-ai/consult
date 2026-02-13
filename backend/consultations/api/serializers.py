@@ -293,6 +293,13 @@ class ResponseSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         if representation["themes"] is None:
             representation["themes"] = []
+
+        if representation["evidenceRich"] is None:
+            representation["evidenceRich"] = False
+
+        if representation["human_reviewed"] is None:
+            representation["human_reviewed"] = False
+
         return representation
 
     class Meta:
