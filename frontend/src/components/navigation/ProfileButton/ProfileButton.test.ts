@@ -4,36 +4,39 @@ import { render, screen, waitFor } from "@testing-library/svelte";
 
 import ProfileButton from "./ProfileButton.svelte";
 
-describe("Header", () => {
-  const AUTH_LINK_LABELS = [
-    { value: true, text: "Sign Out" },
-    { value: false, text: "Sign In" },
-  ];
+describe("ProfileButton", () => {
+  it("should render Sign Out when signed in", async () => {
+    const user = userEvent.setup();
 
-  it.each([true, false])(
-    "should render correct contents",
-    async (isSignedIn) => {
-      const user = userEvent.setup();
+    render(ProfileButton, { isSignedIn: true });
 
-      const labelText = AUTH_LINK_LABELS.find(
-        (label) => label.value === isSignedIn,
-      )!.text;
+    // Links initially hidden
+    expect(screen.queryByText("Sign Out")).toBeFalsy();
 
-      render(ProfileButton, { isSignedIn });
+    // Click on button to expand links
+    const button = screen.getByRole("button");
+    await user.click(button);
 
-      // Links initially hidden
-      expect(screen.queryByText(labelText)).toBeFalsy();
+    // Sign Out should be revealed after the click
+    await waitFor(() => {
+      expect(screen.getByText("Sign Out")).toBeInTheDocument();
+    });
+  });
 
-      // Click on button to expand links
-      const button = screen.getByRole("button");
-      await user.click(button);
+  it("should not render Sign Out when not signed in", async () => {
+    const user = userEvent.setup();
 
-      // Links should be revealed after the click
-      await waitFor(() => {
-        expect(screen.getByText(labelText)).toBeInTheDocument();
-      });
-    },
-  );
+    render(ProfileButton, { isSignedIn: false });
+
+    // Click on button to expand panel
+    const button = screen.getByRole("button");
+    await user.click(button);
+
+    // Sign Out should not be present when not signed in
+    await waitFor(() => {
+      expect(screen.queryByText("Sign Out")).not.toBeInTheDocument();
+    });
+  });
 
   it("matches snapshot", () => {
     const { container } = render(ProfileButton);

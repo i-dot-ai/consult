@@ -1247,3 +1247,29 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200
+
+    @pytest.mark.parametrize("annotation_exists", [True, False])
+    def test_empty_themes_encoding(
+        self, client, staff_user_token, free_text_question, respondent_1, annotation_exists
+    ):
+        """Test API endpoint to ensure that empty themes are always encoded consistently"""
+        # Create test response without annotation
+        response = ResponseFactory(question=free_text_question, respondent=respondent_1)
+
+        if annotation_exists:
+            ResponseAnnotation.objects.create(response=response)
+
+        url = reverse(
+            "response-list",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+            },
+        )
+
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        assert response.json()["all_respondents"][0]["themes"] == []

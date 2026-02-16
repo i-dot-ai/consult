@@ -3,8 +3,6 @@
 
   import { slide } from "svelte/transition";
 
-  import { Routes } from "../../../global/routes";
-
   import WithExternalClick from "../../WithExternalClick/WithExternalClick.svelte";
   import Button from "../../inputs/Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
@@ -80,9 +78,7 @@
         <!-- <hr /> -->
 
         {#if isSignedIn}
-          {@render linkElement("Sign Out", Routes.SignOut)}
-        {:else}
-          {@render linkElement("Sign In", Routes.SignIn)}
+          {@render linkElement("Sign Out", "/api/logout")}
         {/if}
       </div>
     {/if}

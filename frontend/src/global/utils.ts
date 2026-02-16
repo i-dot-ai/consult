@@ -65,6 +65,19 @@ export const getLangfuseUrl = (): string => {
   return "/";
 };
 
+export const getHomepageUrl = (): string => {
+  if (typeof process !== "undefined" && process.env?.PUBLIC_HOMEPAGE_URL) {
+    return process.env.PUBLIC_HOMEPAGE_URL;
+  }
+
+  const homepageUrl = import.meta.env.PUBLIC_HOMEPAGE_URL;
+  if (homepageUrl) {
+    return homepageUrl;
+  }
+
+  return "/";
+};
+
 export const applyHighlight = (
   fullText: string,
   matchedText: string,

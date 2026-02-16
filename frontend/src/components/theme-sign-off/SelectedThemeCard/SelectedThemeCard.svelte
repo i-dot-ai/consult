@@ -5,7 +5,6 @@
 
   import type { AnswersResponse, SelectedTheme } from "../../../global/types";
   import { createFetchStore, type MockFetch } from "../../../global/stores";
-  import { getApiAnswersUrl } from "../../../global/routes";
   import {
     formatTimeDeltaText,
     getTimeDeltaInMinutes,
@@ -15,7 +14,6 @@
   import Button from "../../inputs/Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Delete from "../../svg/material/Delete.svelte";
-  import Docs from "../../svg/material/Docs.svelte";
   import EditSquare from "../../svg/material/EditSquare.svelte";
   import ThemeForm from "../ThemeForm/ThemeForm.svelte";
   import AnswersList from "../AnswersList/AnswersList.svelte";
@@ -32,8 +30,6 @@
   }
 
   let {
-    consultationId,
-    questionId,
     theme,
     removeTheme = () => {},
     updateTheme = () => {},
@@ -110,6 +106,8 @@
                 Remove
               </Button>
 
+              <!-- 
+              TODO: Remove all relevant representative responses code
               <Button
                 size="sm"
                 handleClick={() => {
@@ -135,6 +133,7 @@
                   Representative Responses
                 </span>
               </Button>
+              -->
             </footer>
           </div>
 

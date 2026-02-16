@@ -3,7 +3,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import routers
 from rest_framework_nested.routers import NestedDefaultRouter
 
-from .api.views.auth import validate_token
+from .api.views.auth import logout_view, validate_token
 from .api.views.candidate_theme import CandidateThemeViewSet
 from .api.views.consultation import ConsultationViewSet
 from .api.views.health import health_check
@@ -45,4 +45,5 @@ urlpatterns = [
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     # JWT
     path("api/validate-token/", validate_token, name="validate-token"),
+    path("api/logout/", logout_view, name="logout"),
 ]

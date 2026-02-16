@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Header > matches snapshot 1`] = `
+exports[`ProfileButton > matches snapshot 1`] = `
 <div>
   <div
     class="relative m-auto w-max"

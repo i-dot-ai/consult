@@ -1,6 +1,6 @@
 import jwt
 from django.conf import settings
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model, login, logout
 from django.http import JsonResponse
 from i_dot_ai_utilities.auth.auth_api import AuthApiClient
 from rest_framework.decorators import api_view, permission_classes
@@ -64,3 +64,14 @@ def validate_token(request):
             "sessionId": request.session.session_key,
         }
     )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def logout_view(request):
+    """
+    Logout endpoint that flushes the Django session.
+    Called by the frontend to clear backend session state.
+    """
+    logout(request)
+    return JsonResponse({"status": "logged_out"})
