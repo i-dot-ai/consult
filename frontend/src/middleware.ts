@@ -15,8 +15,10 @@ const getCspValue = (): string => {
     img-src 'self' data:;
     font-src 'self' data:;
     connect-src 'self' *.ingest.de.sentry.io;
-  `.replace(/\n/g, " ").trim();
-}
+  `
+    .replace(/\n/g, " ")
+    .trim();
+};
 export const onRequest: MiddlewareHandler = async (context, next) => {
   const url = context.url;
 
