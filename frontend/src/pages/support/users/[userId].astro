@@ -24,31 +24,25 @@ if (!userId) {
   return (Astro as unknown as AstroGlobalRuntime).redirect(Routes.SupportUsers);
 }
 
-// Fetch current logged-in user
 const currentUser = await fetchBackendApi<User>(Astro, Routes.ApiUser);
 
-// Fetch the user being viewed
 const viewedUser = await fetchBackendApi<User>(
   Astro,
   getApiUserDetails(userId),
 );
 
-// Fetch all consultations for this user
 const consultationsData = await fetchBackendApi<ConsultationResponse[]>(
   Astro,
   getApiUserConsultations(userId),
 );
 
-// Check if viewing own profile
 const isOwnProfile = currentUser.id === viewedUser.id;
 ---
 
 <Layout>
   <Section>
-    <!-- User Permissions -->
     <EditUser client:load userId={userId} />
 
-    <!-- Delete User Section (only show if not viewing own profile) -->
     {
       !isOwnProfile && (
         <div class="mt-8 border-t pt-8">
@@ -63,7 +57,6 @@ const isOwnProfile = currentUser.id === viewedUser.id;
       )
     }
 
-    <!-- Consultations Section -->
     <div class="mt-8 border-t pt-8">
       <Title level={2} text="Consultations" />
 
