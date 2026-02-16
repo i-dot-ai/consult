@@ -7,6 +7,18 @@ import { getBackendUrl } from "./global/utils";
 
 import { internalAccessCookieName } from "./global/api";
 
+const getCspValue = (): string => {
+  return `
+    default-src 'self';
+    style-src 'self' 'unsafe-inline';
+    script-src 'self' 'unsafe-inline';
+    img-src 'self' data:;
+    font-src 'self' data:;
+    connect-src 'self' *.ingest.de.sentry.io;
+  `
+    .replace(/\n/g, " ")
+    .trim();
+};
 export const onRequest: MiddlewareHandler = async (context, next) => {
   const url = context.url;
 
@@ -109,6 +121,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       "camera=(), microphone=(), geolocation=(), payment=()",
     "X-Frame-Options": "DENY",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "Content-Security-Policy": getCspValue(),
   };
 
   for (const [key, value] of Object.entries(EXTRA_HEADERS)) {
@@ -258,6 +271,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       status: response.status,
       headers: response.headers,
     });
+
+    newResponse.headers.set("Content-Security-Policy", getCspValue());
 
     return newResponse;
   } catch (err: unknown) {
