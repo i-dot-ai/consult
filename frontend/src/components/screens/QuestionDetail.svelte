@@ -356,7 +356,7 @@
             $questionStore.isLoading ||
             $questionStore.data?.has_free_text,
         )}
-        themes={Object.keys($themeAggrStore.data?.theme_aggregations || []).map(
+        themes={Object.keys($themeAggrStore.data?.theme_aggregations || {}).map(
           (themeId) => {
             return {
               id: themeId,
