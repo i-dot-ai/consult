@@ -15,23 +15,16 @@
   let { isSignedIn = false }: Props = $props();
 
   let expanded = $state(false);
-
-  function handleSignOut() {
-    // Navigate to server-side logout endpoint which:
-    // 1. Clears all cookies server-side (including HttpOnly ALB cookies)
-    // 2. Redirects to SSO sign-out
-    window.location.href = "/api/logout";
-  }
 </script>
 
-{#snippet buttonElement(text: string, onclick: () => void)}
-  <button {onclick} class="block w-full hover:text-primary">
+{#snippet linkElement(text: string, url: string)}
+  <a href={url} class="block hover:text-primary">
     <Button variant="ghost" fullWidth={true}>
       <span class="w-full text-start">
         {text}
       </span>
     </Button>
-  </button>
+  </a>
 {/snippet}
 
 <div class="relative m-auto w-max">
@@ -85,7 +78,7 @@
         <!-- <hr /> -->
 
         {#if isSignedIn}
-          {@render buttonElement("Sign Out", handleSignOut)}
+          {@render linkElement("Sign Out", "/api/logout")}
         {/if}
       </div>
     {/if}

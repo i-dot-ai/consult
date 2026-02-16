@@ -54,7 +54,6 @@ describe("HeaderConsult", () => {
 
     const user = userEvent.setup();
     await user.click(profileButton!);
-    // When not signed in, Sign Out should not be present (no Sign In option exists either)
     await waitFor(() =>
       expect(screen.queryByText("Sign Out")).not.toBeInTheDocument(),
     );
