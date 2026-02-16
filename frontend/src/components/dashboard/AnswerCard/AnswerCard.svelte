@@ -104,7 +104,7 @@
               </div>
             {/each}
           {:else}
-            {#each demoData as demoDataItem (demoDataItem)}
+            {#each demoData as demoDataItem, i (i)}
               <Tag>
                 <span class="text-xs">{demoDataItem.replaceAll("'", "")}</span>
               </Tag>
