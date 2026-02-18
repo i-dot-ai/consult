@@ -119,10 +119,19 @@ class ResponseViewSet(ModelViewSet):
     def demographic_aggregations(self, request, consultation_pk=None):
         """Get demographic aggregations for filtered responses"""
 
+        # Get the filtered response IDs first to avoid nested EXISTS subquery
+        filtered_response_ids = self.get_queryset().values_list("id", flat=True)
+
+        # Get respondent IDs from filtered responses
+        filtered_respondent_ids = (
+            models.Response.objects.filter(id__in=filtered_response_ids)
+            .values_list("respondent_id", flat=True)
+            .distinct()
+        )
+
+        # Aggregate demographics directly from respondents using IN query
         aggregations = (
-            models.DemographicOption.objects.filter(
-                Exists(self.get_queryset().filter(respondent=OuterRef("respondent")))
-            )
+            models.DemographicOption.objects.filter(respondent__id__in=filtered_respondent_ids)
             .values("field_name", "field_value")
             .annotate(count=Count("respondent", distinct=True))
         )
