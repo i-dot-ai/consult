@@ -61,7 +61,7 @@
 </script>
 
 <div
-  class={clsx(["mb-5", errorMessage && "mr-4 border-l-4 border-red-600 pl-3"])}
+  class={clsx([errorMessage && "mr-4 border-l-4 border-red-600 pl-3"])}
 >
   {#if labelText && !hideLabel}
     <label class={tailwindLabelClasses} for={id}>
