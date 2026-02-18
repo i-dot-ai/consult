@@ -86,4 +86,11 @@ describe("Learnings", () => {
       expect(screen.getByText(testData.items.at(0)!.text)).not.toBeInTheDocument();
     })
   });
+
+  it("renders id passed as prop", async () => {
+    const testId = "test-id";
+    const {container} = render(Learnings, {...testData, id: testId});
+
+    expect(container.querySelector(`#${testId}`));
+  });
 });
