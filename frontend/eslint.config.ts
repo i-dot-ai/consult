@@ -14,7 +14,6 @@ export default defineConfig([
     "coverage/",
     "dist/",
     "node_modules/",
-    "public/lit/",
   ]),
   {
     files: ["**/*.{js,ts,svelte,astro}"],
