@@ -1,0 +1,26 @@
+---
+import { fetchBackendApi } from "../../../../global/api";
+import type { AstroGlobalRuntime, User } from "../../../../global/types";
+
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section/Section.svelte";
+import Title from "../../../../components/Title.svelte";
+import DeleteUserForm from "../../../../components/screens/DeleteUserForm.svelte";
+import { getApiUserDetails, Routes } from "../../../../global/routes";
+
+const { userId } = (Astro as unknown as AstroGlobalRuntime).params;
+
+if (!userId) {
+  return (Astro as unknown as AstroGlobalRuntime).redirect(Routes.SupportUsers);
+}
+
+// Fetch user data
+let user = await fetchBackendApi<User>(Astro, getApiUserDetails(userId));
+---
+
+<Layout>
+  <Section>
+    <Title level={1} text="Delete user" />
+    <DeleteUserForm user={user} client:load />
+  </Section>
+</Layout>
