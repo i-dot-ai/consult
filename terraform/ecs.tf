@@ -75,7 +75,7 @@ module "backend" {
 
   health_check = {
     accepted_response   = 200
-    path                = "/"
+    path                = "/api/health"
     interval            = 60
     timeout             = 70
     healthy_threshold   = 2
@@ -116,6 +116,7 @@ module "frontend" {
   permissions_boundary_name    = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
 
   environment_variables = merge(local.base_env_vars, {
+    "PUBLIC_ENVIRONMENT"       = var.env
     "PUBLIC_BACKEND_URL"       = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
     "BACKEND_URL"              = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
     "APP_NAME"                 = var.project_name
