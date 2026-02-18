@@ -30,7 +30,6 @@
   <input
     class={clsx([
       "h-9 w-full",
-      "mt-1",
       "p-1",
       "border",
       "border-gray-300",
