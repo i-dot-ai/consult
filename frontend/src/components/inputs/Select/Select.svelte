@@ -90,8 +90,8 @@
 
   <select
     class={clsx([
-      "h-10 w-full border border-neutral-300 bg-white px-1 py-1 text-base leading-5 text-neutral-900",
-      "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400",
+      "w-full rounded-sm border border-gray-300 bg-white px-2 py-1.5 text-base leading-5 text-neutral-900",
+      "focus:border-transparent focus:outline-2 focus:outline-yellow-300",
       "disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50",
       "md:text-lg md:leading-6",
       errorMessage && "border-red-600",
