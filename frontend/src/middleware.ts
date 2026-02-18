@@ -3,6 +3,19 @@ import { Routes } from "./global/routes";
 import { fetchBackendApi } from "./global/api";
 import { getBackendUrl, getEnv } from "./global/utils";
 
+const getCspValue = (): string => {
+  return `
+    default-src 'self';
+    style-src 'self' 'unsafe-inline';
+    script-src 'self' 'unsafe-inline';
+    img-src 'self' data:;
+    font-src 'self' data:;
+    connect-src 'self' *.ingest.de.sentry.io;
+  `
+    .replace(/\n/g, " ")
+    .trim();
+};
+
 export const onRequest: MiddlewareHandler = async (
   context: APIContext,
   next: MiddlewareNext,
@@ -10,12 +23,10 @@ export const onRequest: MiddlewareHandler = async (
   const url = context.url;
   const backendUrl = getBackendUrl();
 
-  // Skip authentication for /api/* routes - handled by the API proxy
   if (/^\/api\//.test(url.pathname)) {
     return next();
   }
 
-  // Skip authentication for /health - handled by frontend health check
   if (/^\/health[/]?$/.test(url.pathname)) {
     return next();
   }
@@ -26,7 +37,6 @@ export const onRequest: MiddlewareHandler = async (
   const env = getEnv().toLowerCase();
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
-  // Check for test env and load dummy token
   if (env === "local" || env === "test") {
     internalAccessToken =
       process.env.TEST_INTERNAL_ACCESS_TOKEN ||
@@ -35,7 +45,6 @@ export const onRequest: MiddlewareHandler = async (
     internalAccessToken = context.request.headers.get("x-amzn-oidc-data");
   }
 
-  // Validate token with the backend
   if (internalAccessToken) {
     try {
       await validateUserToken(backendUrl, internalAccessToken, context);
@@ -48,7 +57,6 @@ export const onRequest: MiddlewareHandler = async (
     return context.redirect(Routes.SignInError);
   }
 
-  // Check if user is staff for protected routes
   try {
     const resp = await fetchBackendApi<{ is_staff: boolean }>(
       context,
@@ -66,27 +74,17 @@ export const onRequest: MiddlewareHandler = async (
     }
   }
 
-  // ===== NOW RENDER THE PAGE =====
   const response = await next();
 
-  // Add security headers to response
-  let EXTRA_HEADERS: Record<string, string> = {
+  const EXTRA_HEADERS: Record<string, string> = {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy":
       "camera=(), microphone=(), geolocation=(), payment=()",
     "X-Frame-Options": "DENY",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "Content-Security-Policy": getCspValue(),
   };
-
-  const csrfCookie = context.cookies.get("csrftoken");
-
-  if (csrfCookie) {
-    EXTRA_HEADERS = {
-      ...EXTRA_HEADERS,
-      "X-CSRFToken": csrfCookie.value,
-    };
-  }
 
   for (const [key, value] of Object.entries(EXTRA_HEADERS)) {
     response.headers.set(key, value);
