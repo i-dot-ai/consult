@@ -1,13 +1,55 @@
 [project]
 name = "consult"
-license = "MIT"
+version = "0.1.0"
+description = "Consult backend application"
+license = {text = "MIT"}
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "boto3>=1.42.17",
+  "django>=5.2.11",
+  "django-environ>=0.12.0",
+  "django-filter>=25.2",
+  "django-redis>=6.0.0",
+  "django-rq>=3.2",
+  "django-simple-history>=3.11.0",
+  "django-storages>=1.14.6",
+  "djangorestframework>=3.16.1",
+  "djangorestframework-simplejwt[crypto]>=5.5.1",
+  "drf-nested-routers>=0.95.0",
+  "drf-orjson-renderer>=1.8.0",
+  "drf-spectacular==0.29.0",
+  "gunicorn>=23.0.0",
+  "i-dot-ai-utilities[auth]>=0.4.4",
+  "openai>=2.14.0",
+  "pgvector>=0.4.2",
+  "psycopg>=3.3.2",
+  "pydantic>=2.12.5",
+  "pytest-random-order>=1.2.0",
+  "sentry-sdk[django,redis,rq]>=2.24.1",
+  "themefinder>=0.7.8",
+]
+
+[project.optional-dependencies]
+dev = [
+  "django-extensions>=4.1",
+  "pydot>=4.0.1",
+  "django-test-migrations>=1.5.0",
+  "django-types>=0.22.0",
+  "factory_boy>=3.3.1",
+  "freezegun>=1.5.5",
+  "honcho>=2.0.0",
+  "moto>=5.1.19",
+  "mypy>=1.19.1",
+  "pre-commit>=4.5.1",
+  "pytest-lazy-fixtures>=1.4.0",
+  "ruff>=0.14.13",
+  "pytest-django>=4.11.1",
+  "django-webtest>=1.9.14",
+]
 
 [tool.ruff]
 line-length = 100
 target-version = 'py312'
-
-[tool.poetry]
-package-mode=false
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "settings.test"
@@ -17,60 +59,9 @@ filterwarnings = [
   "ignore::SyntaxWarning:.*sentence_transformers.*",
 ]
 
-[tool.poetry.dependencies]
-python = ">=3.12,<3.13"
-boto3 = "^1.42.17"
-django = "^5.2.11"
-django-environ = "^0.12.0"
-django-filter = "^25.2"
-django-redis = "^6.0.0"
-django-rq = "^3.2"
-django-simple-history = "^3.11.0"
-django-storages = "^1.14.6"
-djangorestframework = "^3.16.1"
-djangorestframework-simplejwt = {extras = ["crypto"], version = "^5.5.1"}
-drf-nested-routers = "^0.95.0"
-drf-orjson-renderer = "^1.8.0"
-drf-spectacular = "0.29.0"
-gunicorn = "^23.0.0"
-i-dot-ai-utilities = {extras = ["auth"], version = "^0.4.4"}
-openai = "^2.14.0"
-pgvector = "^0.4.2"
-psycopg = "^3.3.2"
-pydantic = "^2.12.5"
-pytest-random-order = "^1.2.0"
-sentry-sdk = {version = ">=2.24.1", extras = ["django", "redis", "rq"]}
-themefinder = "^0.7.8"
-
-[tool.poetry.group.development.dependencies]
-django-extensions = "^4.1"
-pydot = "^4.0.1"
-django-test-migrations = "^1.5.0"
-django-types = "^0.22.0"
-factory_boy = "^3.3.1"
-freezegun = "^1.5.5"
-honcho = "^2.0.0"
-moto = "^5.1.19"
-mypy = "^1.19.1"
-pre-commit = "^4.5.1"
-pytest-lazy-fixtures = "^1.4.0"
-ruff = "^0.14.13"
-
 [tool.mypy]
 files = '**/*.py'
 exclude = ['^consultations/migrations/']
 
-
-
-
-[tool.poetry.group.test.dependencies]
-pytest-django = "^4.11.1"
-django-webtest = "^1.9.14"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
 [tool.bandit]
 exclude = "*/.cruft.json"
-

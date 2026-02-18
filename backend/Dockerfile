@@ -1,19 +1,17 @@
-# poetry
-FROM python:3.12.3-slim AS poetry-packages
+# uv
+FROM python:3.12.3-slim AS uv-packages
 
 RUN apt-get update && apt-get install --yes build-essential > /dev/null
 
-RUN pip install poetry poetry-plugin-bundle
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /src
 
 COPY ./backend/pyproject.toml .
-COPY ./backend/poetry.lock .
+COPY ./backend/uv.lock .
 
-# do this so that poetry bundle can run without the project - can't pass --no-root to bundle
-RUN touch README.md
-
-RUN poetry bundle venv ./venv
+RUN uv export --frozen --no-hashes --no-dev > requirements.txt
+RUN uv pip install --python 3.12 --prefix=/src/venv -r requirements.txt
 
 
 # app
@@ -25,7 +23,7 @@ WORKDIR /src
 
 COPY ./backend ./backend
 
-COPY --from=poetry-packages /src/venv ./backend/venv
+COPY --from=uv-packages /src/venv ./backend/venv
 
 ENV DJANGO_SETTINGS_MODULE='backend.settings.production'
 ENV PYTHONPATH "${PYTHONPATH}:/src/"

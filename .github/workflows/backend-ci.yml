@@ -38,21 +38,22 @@ jobs:
           docker compose up -d postgres redis
           docker compose exec -T postgres pg_isready -U postgres || (sleep 5 && docker compose exec -T postgres pg_isready -U postgres) || (sleep 10 && docker compose exec -T postgres pg_isready -U postgres)
 
-      - name: install poetry & deps
+      - name: install uv
         run: |
-          python -m pip install --upgrade poetry
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
         working-directory: ./backend
 
       - name: install dependencies
-        run: poetry install --with development
+        run: uv sync --all-extras
         working-directory: ./backend
 
       - name: Setup app
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          poetry run python manage.py migrate
-          poetry run python manage.py makemigrations --check
+          uv run python manage.py migrate
+          uv run python manage.py makemigrations --check
         working-directory: ./backend
 
       - name: Run app tests
@@ -60,16 +61,18 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    container: python:3.12.3 # Match exact version specified in .python-version and Dockerfile
+    container: python:3.12.3
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install Poetry
-        run: python -m pip install --upgrade poetry
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
-        run: poetry install --with development
+        run: uv sync --all-extras
         working-directory: ./backend
 
       - name: Check code formatting
