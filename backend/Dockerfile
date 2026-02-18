@@ -5,13 +5,16 @@ RUN apt-get update && apt-get install --yes build-essential > /dev/null
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-WORKDIR /src
+WORKDIR /app
 
-COPY ./backend/pyproject.toml .
-COPY ./backend/uv.lock .
+COPY ./backend/pyproject.toml ./backend/uv.lock ./
 
-RUN uv export --frozen --no-hashes --no-dev > requirements.txt
-RUN uv pip install --python 3.12 --prefix=/src/venv -r requirements.txt
+RUN uv venv /app/venv
+
+ENV VIRTUAL_ENV=/app/venv
+ENV PATH="/app/venv/bin:$PATH"
+
+RUN uv sync --frozen --no-dev --no-install-project
 
 
 # app
@@ -23,7 +26,7 @@ WORKDIR /src
 
 COPY ./backend ./backend
 
-COPY --from=uv-packages /src/venv ./backend/venv
+COPY --from=uv-packages /app/venv ./backend/venv
 
 ENV DJANGO_SETTINGS_MODULE='backend.settings.production'
 ENV PYTHONPATH "${PYTHONPATH}:/src/"
