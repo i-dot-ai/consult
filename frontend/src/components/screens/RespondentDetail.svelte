@@ -96,7 +96,9 @@
   );
 
   let answersToDisplay = $derived(
-    ($answersStore.data?.all_respondents || []).map((answer) => {
+    (Array.isArray($answersStore.data?.all_respondents) 
+      ? $answersStore.data.all_respondents 
+      : []).map((answer) => {
       const question = $questionsStore.data?.results?.find(
         (question) => question.id === answer.question_id,
       );
