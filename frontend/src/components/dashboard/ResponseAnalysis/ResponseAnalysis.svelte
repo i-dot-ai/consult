@@ -182,9 +182,9 @@
             {/if}
 
             <div
-              class="flex flex-col-reverse items-stretch justify-between gap-4 sm:flex-row"
+              class="flex flex-col-reverse items-center justify-between gap-4 sm:flex-row"
             >
-              <div class="flex w-full grow sm:w-auto">
+              <div class="w-full grow sm:w-auto">
                 <TextInput
                   variant="search"
                   id="search-input"
@@ -196,7 +196,7 @@
                 />
               </div>
 
-              <div class="flex w-full sm:w-auto">
+              <div class="w-full sm:w-auto">
                 <Select
                   id="search_mode"
                   label="Search Mode"
