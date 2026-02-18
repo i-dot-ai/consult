@@ -9,7 +9,8 @@
     | "primary"
     | "ghost"
     | "approve"
-    | "outline" = "default";
+    | "outline"
+    | "dot" = "default";
   export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
   export let highlighted: boolean = false;
   export let highlightVariant:
@@ -26,6 +27,7 @@
   export let target: string | undefined = undefined;
   export let rel: string | undefined = undefined;
   export let ariaControls: string | undefined = undefined;
+  export let ariaLabel: string | undefined = undefined;
   export let noPadding: boolean = false;
   export let fixedHoverColor: boolean = false;
 </script>
@@ -45,14 +47,15 @@
     `text-${size}`,
     "cursor-pointer",
     "rounded-md",
-    !noPadding && clsx([size === "xs" ? "py-0.5" : "py-1"]),
-    !noPadding && clsx([size === "xs" ? "px-1" : "px-2"]),
+    !noPadding && variant !== "dot" && clsx([size === "xs" ? "py-0.5" : "py-1"]),
+    !noPadding && variant !== "dot" && clsx([size === "xs" ? "px-1" : "px-2"]),
     "border",
     variant === "default" && "border-gray-300 bg-white",
     variant === "gray" && "border-gray-300 bg-neutral-100",
     variant === "primary" && "border-gray-300 bg-primary text-white",
     variant === "approve" && "border-gray-300 bg-secondary text-white",
     variant === "ghost" && "border-transparent",
+    variant === "dot" && "border-transparent text-neutral-400",
     variant === "outline" &&
       clsx(["bg-transparent", "border border-primary", "text-primary"]),
     "transition-colors",
@@ -61,7 +64,12 @@
     noPadding ? "block" : "inline-flex",
     "gap-1",
     "items-center",
-    "hover:bg-gray-100",
+    variant === "dot"
+      ? clsx([
+        highlightVariant === "primary" && "hover:text-primary",
+        highlightVariant === "approve" && "hover:text-secondary",
+      ])
+      : "hover:bg-gray-100",
     fixedHoverColor && "fixed-hover-color",
     variant === "primary" && "hover:border-primary hover:text-primary",
     variant === "approve" && "hover:border-secondary hover:text-secondary",
@@ -79,6 +87,7 @@
 
     highlighted &&
       !disabled &&
+      variant !== "dot" &&
       clsx([
         highlightVariant === "dark" &&
           "!bg-neutral-800 text-white hover:bg-neutral-700",
@@ -89,6 +98,11 @@
         highlightVariant === "approve" &&
           "border-secondary text-secondary hover:bg-teal-500",
       ]),
+
+    highlighted && !disabled && variant === "dot" && clsx([
+      highlightVariant === "primary" && "text-primary",
+      highlightVariant === "approve" && "text-secondary",
+    ])
   ])}
   {disabled}
   on:click={handleClick}
@@ -97,10 +111,15 @@
       ? "true"
       : "false"
     : undefined}
+  aria-label={ariaLabel}
   aria-controls={ariaControls}
   data-testid={testId ? testId : undefined}
 >
-  <slot />
+    {#if variant === "dot"}
+      •
+    {:else}
+      <slot />
+    {/if}
 </svelte:element>
 
 <style>
