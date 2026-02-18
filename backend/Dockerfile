@@ -10,10 +10,10 @@ WORKDIR /src/backend
 
 COPY ./backend/pyproject.toml ./backend/uv.lock ./
 
-# Create venv at the final destination path
-RUN uv venv venv
+# Configure uv to create venv in 'venv' directory instead of '.venv'
+ENV UV_PROJECT_ENVIRONMENT=venv
 
-# Install dependencies
+# Install dependencies - this will create venv directory
 RUN uv sync --frozen --no-dev --no-install-project
 
 
@@ -29,7 +29,7 @@ COPY ./backend ./backend
 COPY --from=uv-packages /src/backend/venv ./backend/venv
 
 ENV DJANGO_SETTINGS_MODULE='backend.settings.production'
-ENV PYTHONPATH "${PYTHONPATH}:/src/"
+ENV PYTHONPATH="${PYTHONPATH}:/src/"
 
 EXPOSE 8000
 
