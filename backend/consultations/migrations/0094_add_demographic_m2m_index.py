@@ -9,9 +9,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Add composite index on the M2M table between Respondent and DemographicOption
-        # This optimizes the reverse lookup: DemographicOption -> Respondent
-        # which is used in demographic aggregations queries
         migrations.RunSQL(
             sql="""
             CREATE INDEX IF NOT EXISTS consultations_respondent_demographics_composite
@@ -21,7 +18,6 @@ class Migration(migrations.Migration):
             DROP INDEX IF EXISTS consultations_respondent_demographics_composite;
             """,
         ),
-        # Add index on respondent_id for faster filtering in aggregation queries
         migrations.RunSQL(
             sql="""
             CREATE INDEX IF NOT EXISTS consultations_respondent_demographics_respondent
