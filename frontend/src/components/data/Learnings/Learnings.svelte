@@ -134,6 +134,7 @@
         ariaLabel={getStepLabel(i)}
         title={getStepLabel(i)}
         ariaControls={id}
+        testId="Learnings Button"
       />
     {/each}
 
