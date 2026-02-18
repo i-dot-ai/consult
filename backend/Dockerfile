@@ -5,16 +5,15 @@ RUN apt-get update && apt-get install --yes build-essential > /dev/null
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-WORKDIR /app
+# Set up the project directory structure
+WORKDIR /src/backend
 
 COPY ./backend/pyproject.toml ./backend/uv.lock ./
 
-# Create venv at the final destination path to avoid shebang issues
-RUN uv venv /src/backend/venv
+# Create venv at the final destination path
+RUN uv venv venv
 
-ENV VIRTUAL_ENV=/src/backend/venv
-ENV PATH="/src/backend/venv/bin:$PATH"
-
+# Install dependencies
 RUN uv sync --frozen --no-dev --no-install-project
 
 
