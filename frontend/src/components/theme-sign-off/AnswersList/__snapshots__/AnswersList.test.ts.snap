@@ -3,7 +3,7 @@
 exports[`AnswersList > should render 1`] = `
 <div>
   <div
-    class="flex items-center gap-1"
+    class="theme-sign-off__answers-list flex items-center gap-1"
   >
     <div
       class="shrink-0"

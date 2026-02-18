@@ -92,14 +92,22 @@
             </small>
 
             <footer class="flex flex-wrap items-center gap-2">
-              <Button size="sm" handleClick={() => (editing = !editing)}>
+              <Button
+                size="sm"
+                handleClick={() => (editing = !editing)}
+                ariaLabel={`Edit Theme ${theme.name}`}
+              >
                 <MaterialIcon color="fill-neutral-500">
                   <EditSquare />
                 </MaterialIcon>
                 Edit
               </Button>
 
-              <Button size="sm" handleClick={() => removeTheme(theme.id)}>
+              <Button
+                size="sm"
+                handleClick={() => removeTheme(theme.id)}
+                ariaLabel={`Remove Theme ${theme.name}`}
+              >
                 <MaterialIcon color="fill-neutral-500">
                   <Delete />
                 </MaterialIcon>
