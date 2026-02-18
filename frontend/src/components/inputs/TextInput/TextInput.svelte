@@ -23,13 +23,13 @@
   export let variant: "default" | "search" = "default";
 </script>
 
-<div class="relative">
+<div class="relative flex h-full">
   <label for={id} class={clsx([hideLabel && "sr-only"])}>
     {label}
   </label>
   <input
     class={clsx([
-      "w-full",
+      "h-full w-full",
       "mt-1",
       "p-1",
       "border",
