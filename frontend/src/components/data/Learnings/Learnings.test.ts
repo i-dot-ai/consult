@@ -93,4 +93,10 @@ describe("Learnings", () => {
 
     expect(container.querySelector(`#${testId}`));
   });
+
+  it("displays no learnings message if there are no learnings", () => {
+    render(Learnings, { items: [] });
+
+    expect(screen.getByText("No learnings available")).toBeInTheDocument();
+  })
 });

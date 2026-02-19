@@ -12,5 +12,12 @@ export default {
     { name: "items", value: items, type: "json" },
     { name: "id", value: id, type: "text" },
   ],
-  stories: [],
+  stories: [
+    {
+      name: "Empty",
+      props: {
+        items: [],
+      },
+    },
+  ],
 };

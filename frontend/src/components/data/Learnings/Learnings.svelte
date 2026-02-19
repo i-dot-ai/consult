@@ -57,7 +57,16 @@
     "rounded-lg",
   ])}>
     <div class="flex gap-2">
-      {#if currItem}
+      {#if items.length === 0}
+        <p class={clsx([
+          "w-full",
+          "text-neutral-600",
+          "text-sm",
+          "text-center",
+        ])}>
+          No learnings available
+        </p>
+      {:else if currItem}
         <div class={clsx([
           "flex",
           "items-center",
@@ -105,6 +114,7 @@
   ])}>
     <div class={clsx(["my-auto", "rotate-180"])}>
       <Button
+        disabled={items.length === 0}
         title={PREV_BUTTON_LABEL}
         ariaLabel={PREV_BUTTON_LABEL}
         ariaControls={id}
@@ -140,6 +150,7 @@
 
     <div class="my-auto">
       <Button
+        disabled={items.length === 0}
         title={NEXT_BUTTON_LABEL}
         ariaLabel={NEXT_BUTTON_LABEL}  
         ariaControls={id}
