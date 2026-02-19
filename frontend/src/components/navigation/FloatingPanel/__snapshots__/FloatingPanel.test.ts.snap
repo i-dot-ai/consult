@@ -24,6 +24,7 @@ exports[`FloatingPanel > renders correct direction 1`] = `
         tabindex="0"
       >
         <!---->
+        <!---->
         <div
           class="rounded-full bg-secondary p-2 transition-all hover:bg-teal-500 hover:p-2.5"
         >
@@ -44,6 +45,7 @@ exports[`FloatingPanel > renders correct direction 1`] = `
           </svg>
           <!---->
         </div>
+        
         
         
       </button>
@@ -80,6 +82,7 @@ exports[`FloatingPanel > renders correct direction 1`] = `
           tabindex="0"
         >
           <!---->
+          <!---->
           <svg
             class="fill-neutral-500"
             height="1rem"
@@ -93,6 +96,7 @@ exports[`FloatingPanel > renders correct direction 1`] = `
             />
             <!---->
           </svg>
+          
           
           
         </button>
@@ -130,6 +134,7 @@ exports[`FloatingPanel > renders correct direction 2`] = `
         tabindex="0"
       >
         <!---->
+        <!---->
         <div
           class="rounded-full bg-secondary p-2 transition-all hover:bg-teal-500 hover:p-2.5"
         >
@@ -150,6 +155,7 @@ exports[`FloatingPanel > renders correct direction 2`] = `
           </svg>
           <!---->
         </div>
+        
         
         
       </button>
@@ -186,6 +192,7 @@ exports[`FloatingPanel > renders correct direction 2`] = `
           tabindex="0"
         >
           <!---->
+          <!---->
           <svg
             class="fill-neutral-500"
             height="1rem"
@@ -199,6 +206,7 @@ exports[`FloatingPanel > renders correct direction 2`] = `
             />
             <!---->
           </svg>
+          
           
           
         </button>

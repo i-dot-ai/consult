@@ -61,6 +61,7 @@ exports[`FloatingPanelContent > matches snapshot 1`] = `
           tabindex="0"
         >
           <!---->
+          <!---->
           <div
             class="flex items-center gap-2"
           >
@@ -102,6 +103,7 @@ exports[`FloatingPanelContent > matches snapshot 1`] = `
           </div>
           
           
+          
         </a>
         
         <!---->
@@ -119,6 +121,7 @@ exports[`FloatingPanelContent > matches snapshot 1`] = `
           role="link"
           tabindex="0"
         >
+          <!---->
           <!---->
           <div
             class="flex items-center gap-2"
@@ -160,6 +163,7 @@ exports[`FloatingPanelContent > matches snapshot 1`] = `
           </div>
           
           
+          
         </a>
         
         <!---->
@@ -177,6 +181,7 @@ exports[`FloatingPanelContent > matches snapshot 1`] = `
           role="link"
           tabindex="0"
         >
+          <!---->
           <!---->
           <div
             class="flex items-center gap-2"
@@ -217,6 +222,7 @@ exports[`FloatingPanelContent > matches snapshot 1`] = `
               </p>
             </div>
           </div>
+          
           
           
         </a>
