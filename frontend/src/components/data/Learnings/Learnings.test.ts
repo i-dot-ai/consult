@@ -11,7 +11,9 @@ describe("Learnings", () => {
   it("should render learning text", () => {
     render(Learnings, testData);
 
-    expect(screen.getByText(`"${testData.items.at(0)!.text}"`)).toBeInTheDocument();
+    expect(
+      screen.getByText(`"${testData.items.at(0)!.text}"`),
+    ).toBeInTheDocument();
   });
 
   it("should render learning author", () => {
@@ -23,80 +25,96 @@ describe("Learnings", () => {
   it("should render learning organisation", () => {
     render(Learnings, testData);
 
-    expect(screen.getByText(testData.items.at(0)!.organisation)).toBeInTheDocument();
+    expect(
+      screen.getByText(testData.items.at(0)!.organisation),
+    ).toBeInTheDocument();
   });
 
   it("should render first learning only", () => {
     render(Learnings, testData);
 
-    expect(screen.getByText(`"${testData.items.at(0)!.text}"`)).toBeInTheDocument();
+    expect(
+      screen.getByText(`"${testData.items.at(0)!.text}"`),
+    ).toBeInTheDocument();
 
-    testData.items.slice(1).forEach(item => {
+    testData.items.slice(1).forEach((item) => {
       expect(screen.queryByText(`"${item.text}"`)).not.toBeInTheDocument();
-    })
+    });
   });
 
   it("should render same number of buttons as items", () => {
     render(Learnings, testData);
 
-    expect(screen.getAllByTestId("Learnings Button")).toHaveLength(testData.items.length);
+    expect(screen.getAllByTestId("Learnings Button")).toHaveLength(
+      testData.items.length,
+    );
   });
 
-  it.each(["Previous Learning", "Next Learning"])("should render button", (label) => {
-    render(Learnings, testData);
+  it.each(["Previous Learning", "Next Learning"])(
+    "should render button",
+    (label) => {
+      render(Learnings, testData);
 
-    expect(screen.getByLabelText(label)).toBeInTheDocument();
-  });
+      expect(screen.getByLabelText(label)).toBeInTheDocument();
+    },
+  );
 
   it("should show next step if next button is clicked", async () => {
     const user = userEvent.setup();
     render(Learnings, testData);
-    
+
     const nextButton = screen.getByLabelText("Next Learning");
     await user.click(nextButton);
 
-    waitFor(() => {
-      expect(screen.getByText(testData.items.at(1)!.text)).toBeInTheDocument();
-      expect(screen.getByText(testData.items.at(0)!.text)).not.toBeInTheDocument();
-    })
+    await waitFor(() => {
+      expect(screen.getByText(`"${testData.items.at(1)!.text}"`)).toBeInTheDocument();
+      expect(
+        screen.queryByText(`"${testData.items.at(0)!.text}"`),
+      ).not.toBeInTheDocument();
+    });
   });
 
   it("should show previous step if previous button is clicked", async () => {
     const user = userEvent.setup();
     render(Learnings, testData);
-    
+
     const nextButton = screen.getByLabelText("Previous Learning");
     await user.click(nextButton);
 
-    waitFor(() => {
-      expect(screen.getByText(testData.items.at(-1)!.text)).toBeInTheDocument();
-      expect(screen.getByText(testData.items.at(0)!.text)).not.toBeInTheDocument();
-    })
+    await waitFor(() => {
+      expect(screen.getByText(`"${testData.items.at(-1)!.text}"`)).toBeInTheDocument();
+      expect(
+        screen.queryByText(`"${testData.items.at(0)!.text}"`),
+      ).not.toBeInTheDocument();
+    });
   });
 
   it("should show respective step if a step button is clicked", async () => {
     const user = userEvent.setup();
     render(Learnings, testData);
-    
+
     const nextButton = screen.getByLabelText("Learning 2");
     await user.click(nextButton);
 
-    waitFor(() => {
-      expect(screen.getByText(testData.items.at(1)!.text)).toBeInTheDocument();
-      expect(screen.getByText(testData.items.at(0)!.text)).not.toBeInTheDocument();
-    })
+    await waitFor(() => {
+      expect(screen.getByText(`"${testData.items.at(1)!.text}"`)).toBeInTheDocument();
+      expect(
+        screen.queryByText(`"${testData.items.at(0)!.text}"`),
+      ).not.toBeInTheDocument();
+    });
   });
 
   it("renders id passed as prop", async () => {
     const testId = "test-id";
-    const {container} = render(Learnings, {...testData, id: testId});
+    const { container } = render(Learnings, { ...testData, id: testId });
 
-    expect(container.querySelector(`#${testId}`));
+    // eslint-disable-next-line testing-library/no-container
+    expect(container.querySelector(`#${testId}`)).toBeInTheDocument();
   });
 
   it("displays no learnings message if there are no learnings", () => {
     render(Learnings, { items: [] });
 
     expect(screen.getByText("No learnings available")).toBeInTheDocument();
-  })
+  });
 });

@@ -47,7 +47,9 @@
     `text-${size}`,
     "cursor-pointer",
     "rounded-md",
-    !noPadding && variant !== "dot" && clsx([size === "xs" ? "py-0.5" : "py-1"]),
+    !noPadding &&
+      variant !== "dot" &&
+      clsx([size === "xs" ? "py-0.5" : "py-1"]),
     !noPadding && variant !== "dot" && clsx([size === "xs" ? "px-1" : "px-2"]),
     "border",
     variant === "default" && "border-gray-300 bg-white",
@@ -66,9 +68,9 @@
     "items-center",
     variant === "dot"
       ? clsx([
-        highlightVariant === "primary" && "hover:text-primary",
-        highlightVariant === "approve" && "hover:text-secondary",
-      ])
+          highlightVariant === "primary" && "hover:text-primary",
+          highlightVariant === "approve" && "hover:text-secondary",
+        ])
       : "hover:bg-gray-100",
     fixedHoverColor && "fixed-hover-color",
     variant === "primary" && "hover:border-primary hover:text-primary",
@@ -99,10 +101,13 @@
           "border-secondary text-secondary hover:bg-teal-500",
       ]),
 
-    highlighted && !disabled && variant === "dot" && clsx([
-      highlightVariant === "primary" && "text-primary",
-      highlightVariant === "approve" && "text-secondary",
-    ])
+    highlighted &&
+      !disabled &&
+      variant === "dot" &&
+      clsx([
+        highlightVariant === "primary" && "text-primary",
+        highlightVariant === "approve" && "text-secondary",
+      ]),
   ])}
   {disabled}
   on:click={handleClick}
@@ -115,11 +120,11 @@
   aria-controls={ariaControls}
   data-testid={testId ? testId : undefined}
 >
-    {#if variant === "dot"}
-      •
-    {:else}
-      <slot />
-    {/if}
+  {#if variant === "dot"}
+    •
+  {:else}
+    <slot />
+  {/if}
 </svelte:element>
 
 <style>
