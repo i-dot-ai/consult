@@ -67,7 +67,9 @@ describe("Learnings", () => {
     await user.click(nextButton);
 
     await waitFor(() => {
-      expect(screen.getByText(`"${testData.items.at(1)!.text}"`)).toBeInTheDocument();
+      expect(
+        screen.getByText(`"${testData.items.at(1)!.text}"`),
+      ).toBeInTheDocument();
       expect(
         screen.queryByText(`"${testData.items.at(0)!.text}"`),
       ).not.toBeInTheDocument();
@@ -82,7 +84,9 @@ describe("Learnings", () => {
     await user.click(nextButton);
 
     await waitFor(() => {
-      expect(screen.getByText(`"${testData.items.at(-1)!.text}"`)).toBeInTheDocument();
+      expect(
+        screen.getByText(`"${testData.items.at(-1)!.text}"`),
+      ).toBeInTheDocument();
       expect(
         screen.queryByText(`"${testData.items.at(0)!.text}"`),
       ).not.toBeInTheDocument();
@@ -97,7 +101,9 @@ describe("Learnings", () => {
     await user.click(nextButton);
 
     await waitFor(() => {
-      expect(screen.getByText(`"${testData.items.at(1)!.text}"`)).toBeInTheDocument();
+      expect(
+        screen.getByText(`"${testData.items.at(1)!.text}"`),
+      ).toBeInTheDocument();
       expect(
         screen.queryByText(`"${testData.items.at(0)!.text}"`),
       ).not.toBeInTheDocument();
