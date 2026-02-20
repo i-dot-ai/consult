@@ -1,10 +1,10 @@
 import Checklist from "./Checklist.svelte";
 import { TEST_DATA } from "./testData";
 
-let items = $state(TEST_DATA.items);
+const items = $state(TEST_DATA.items);
 
-let onChange = $state((id: string, checked: boolean) => {
-  items.find(item => item.id === id)!.checked = checked;
+const onChange = $state((id: string, checked: boolean) => {
+  items.find((item) => item.id === id)!.checked = checked;
 });
 
 export default {

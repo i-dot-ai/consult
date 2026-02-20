@@ -33,7 +33,9 @@ describe("Checklist", () => {
     const user = userEvent.setup();
     render(Checklist, testData);
 
-    const checkbox = screen.getByRole("checkbox", { name: new RegExp(item.title, "i") })
+    const checkbox = screen.getByRole("checkbox", {
+      name: new RegExp(item.title, "i"),
+    });
     await user.click(checkbox);
 
     expect(testData.onChange).toHaveBeenCalledWith(item.id, true);
