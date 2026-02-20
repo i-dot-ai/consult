@@ -25,6 +25,7 @@ jobs:
       - name: Start services with docker compose
         run: |
           docker compose up -d postgres
+          docker compose build backend
           docker compose up -d backend
           docker compose up -d frontend
           sleep 10
