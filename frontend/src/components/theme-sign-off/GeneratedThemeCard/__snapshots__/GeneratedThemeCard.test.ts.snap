@@ -64,12 +64,14 @@ exports[`GeneratedThemeCard > should render 1`] = `
               tabindex="0"
             >
               <!---->
+              <!---->
               <div
                 class="flex items-center gap-1"
               >
                 Select 
                 <!---->
               </div>
+              
               
               
             </button>
