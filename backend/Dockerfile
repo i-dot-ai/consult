@@ -13,14 +13,8 @@ COPY ./backend/pyproject.toml ./backend/uv.lock ./
 # Configure uv to create venv in 'venv' directory instead of '.venv'
 ENV UV_PROJECT_ENVIRONMENT=venv
 
-ARG ENVIRONMENT=production
-
-# conditionally include dev deps for local/test environments
-RUN if [ "$ENVIRONMENT" = "local" ] || [ "$ENVIRONMENT" = "test" ]; then \
-      uv sync --frozen --no-install-project; \
-    else \
-      uv sync --frozen --no-dev --no-install-project; \
-    fi
+# Install dependencies - this will create venv directory
+RUN uv sync --frozen --no-install-project
 
 
 # app
