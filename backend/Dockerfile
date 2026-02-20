@@ -14,7 +14,7 @@ COPY ./backend/pyproject.toml ./backend/uv.lock ./
 ENV UV_PROJECT_ENVIRONMENT=venv
 
 # Install dependencies - this will create venv directory
-RUN uv sync --frozen --no-dev --no-install-project
+RUN uv sync --frozen --no-install-project
 
 
 # app
