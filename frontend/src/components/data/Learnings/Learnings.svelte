@@ -30,7 +30,7 @@
   };
 </script>
 
-<div class={clsx(["border", "border-secondary", "p-4", "px-4", "rounded-lg"])}>
+<div class={clsx(["border", "border-secondary", "p-4", "rounded-lg"])}>
   <Title level={3}>
     <span class={clsx(["block", "text-sm", "font-[500]", "mb-2"])}>
       Learnings from other departments
