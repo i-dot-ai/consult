@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
 import Checklist from "./Checklist.svelte";
 import { TEST_DATA } from "./testData";
 
 describe("Checklist", () => {
-  const testData = { items: TEST_DATA.items };
+  const testData = { items: TEST_DATA.items, onChange: vi.fn() };
 
   it.each(testData.items)("should render title", (item) => {
     render(Checklist, testData);

@@ -8,13 +8,15 @@
     id: string;
     title: string;
     text: string;
+    checked: boolean;
   }
 
   interface Props {
     items: Item[];
+    onChange: (id: string, checked: boolean) => void;
   }
 
-  let { items = [] }: Props = $props();
+  let { items = [], onChange }: Props = $props();
 
   function getCheckboxId(id: string) {
     return `checklist-${id}`;
@@ -53,6 +55,8 @@
           size="sm"
           hideLabel={true}
           value={item.id}
+          checked={item.checked}
+          onchange={(checked, value) => onChange(value!, checked)}
         />
 
         <label for={getCheckboxId(item.id)} class="hover:cursor-pointer">
