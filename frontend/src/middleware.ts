@@ -31,6 +31,13 @@ export const onRequest: MiddlewareHandler = async (
     return next();
   }
 
+  if (
+    /^\/admin(\/|$)/.test(url.pathname) ||
+    /^\/django-rq(\/|$)/.test(url.pathname)
+  ) {
+    return await proxyToDjango(context, backendUrl);
+  }
+
   let internalAccessToken = null;
   let userIsStaff = false;
 
@@ -116,4 +123,78 @@ async function validateUserToken(
     path: "/",
     sameSite: "strict",
   });
+}
+
+async function proxyToDjango(context: APIContext, backendUrl: string) {
+  const url = context.url;
+  const fullBackendUrl = new URL(
+    url.pathname + url.search,
+    backendUrl,
+  ).toString();
+
+  const hasBody = !["GET", "HEAD", "DELETE"].includes(context.request.method);
+
+  try {
+    const cookieHeader = context.request.headers.get("cookie") || "";
+
+    let requestBody = undefined;
+    if (hasBody) {
+      requestBody = await context.request.arrayBuffer();
+    }
+
+    const headersToSend = new Headers();
+
+    for (const [key, value] of context.request.headers.entries()) {
+      headersToSend.set(key, value);
+    }
+
+    const accessToken = context.cookies.get("accessToken")?.value;
+    if (accessToken) {
+      headersToSend.set("Authorization", `Bearer ${accessToken}`);
+    }
+    headersToSend.set("Cookie", cookieHeader);
+
+    const csrfCookie = context.cookies.get("csrftoken");
+    if (csrfCookie) {
+      headersToSend.set("X-CSRFToken", csrfCookie.value);
+    }
+
+    const response = await fetch(fullBackendUrl, {
+      method: context.request.method,
+      headers: headersToSend,
+      body: requestBody,
+      redirect: "manual",
+    });
+
+    const redirectStatuses = [301, 302, 303, 307, 308] as const;
+    type RedirectStatus = (typeof redirectStatuses)[number];
+    if (redirectStatuses.includes(response.status as RedirectStatus)) {
+      const location = response.headers.get("location");
+      if (location) {
+        return context.redirect(location, response.status as RedirectStatus);
+      }
+    }
+
+    if (response.status === 401) {
+      console.log("Django admin 401 error - redirecting to sign in");
+      return context.redirect(Routes.SignInError);
+    }
+
+    const body = await response.arrayBuffer();
+    const newResponse = new Response(body, {
+      status: response.status,
+      headers: response.headers,
+    });
+
+    return newResponse;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "unknown";
+    console.error("Error proxying to Django:", message);
+    return new Response(
+      JSON.stringify({ message: "Error connecting to backend" }),
+      {
+        status: 500,
+      },
+    );
+  }
 }
