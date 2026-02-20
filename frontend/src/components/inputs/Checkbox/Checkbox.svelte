@@ -89,10 +89,10 @@
         "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400",
         "shrink-0 disabled:cursor-not-allowed disabled:opacity-50",
         "checked:border-primary checked:bg-primary",
-        size === "xs" && "w-3 h-3",
-        size === "sm" && "w-4 h-4",
-        size === "md" && "w-5 h-5",
-        size === "lg" && "w-6 h-6",
+        size === "xs" && "h-3 w-3",
+        size === "sm" && "h-4 w-4",
+        size === "md" && "h-5 w-5",
+        size === "lg" && "h-6 w-6",
         errorMessage && "border-red-600",
       ])}
       {id}

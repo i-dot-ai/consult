@@ -22,6 +22,9 @@ describe("Checklist", () => {
   it.each(testData.items)("should render id", (item) => {
     const { container } = render(Checklist, testData);
 
-    expect(container.querySelector(`#checklist-${item.id}`)).toBeInTheDocument();
+    expect(
+      // eslint-disable-next-line testing-library/no-container
+      container.querySelector(`#checklist-${item.id}`),
+    ).toBeInTheDocument();
   });
 });

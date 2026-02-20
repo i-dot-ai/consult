@@ -21,13 +21,7 @@
   }
 </script>
 
-<div class={clsx([
-  "border",
-  "border-secondary",
-  "p-4",
-  "px-4",
-  "rounded-lg",
-])}>
+<div class={clsx(["border", "border-secondary", "p-4", "px-4", "rounded-lg"])}>
   <Title level={3}>
     <span class={clsx(["block", "text-sm", "font-[500]", "mb-2"])}>
       Before uploading, tick off each requirement as you complete it:
@@ -35,17 +29,19 @@
   </Title>
 
   <div class="mt-4">
-    {#each items as item}
-      <div class={clsx(
-        "bg-neutral-100",
-        "text-xs",
-        "p-2",
-        "rounded-lg",
-        "flex",
-        "gap-2",
-        "mb-3",
-        "last:mb-0"
-      )}>
+    {#each items as item (item.id)}
+      <div
+        class={clsx(
+          "bg-neutral-100",
+          "text-xs",
+          "p-2",
+          "rounded-lg",
+          "flex",
+          "gap-2",
+          "mb-3",
+          "last:mb-0",
+        )}
+      >
         <Checkbox
           id={getCheckboxId(item.id)}
           size="sm"
