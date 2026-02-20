@@ -30,7 +30,7 @@ dependencies = [
   "themefinder>=0.7.8",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
   "django-extensions>=4.1",
   "pydot>=4.0.1",
