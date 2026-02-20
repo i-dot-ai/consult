@@ -31,7 +31,7 @@ export const onRequest: MiddlewareHandler = async (
     return next();
   }
 
-  if (/^\/admin\//.test(url.pathname) || /^\/django-rq\//.test(url.pathname)) {
+  if (/^\/admin(\/|$)/.test(url.pathname) || /^\/django-rq(\/|$)/.test(url.pathname)) {
     return await proxyToDjango(context, backendUrl);
   }
 
