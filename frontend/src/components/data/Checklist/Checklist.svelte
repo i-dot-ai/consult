@@ -3,6 +3,7 @@
 
   import Title from "../../Title.svelte";
   import Checkbox from "../../inputs/Checkbox/Checkbox.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
 
   interface Item {
     id: string;
@@ -16,6 +17,7 @@
     onChange: (id: string, checked: boolean) => void;
   }
 
+  let expanded: string[] = $state([]);
   let { items = [], onChange }: Props = $props();
 
   function getCheckboxId(id: string) {
@@ -59,16 +61,33 @@
           onchange={(checked, value) => onChange(value!, checked)}
         />
 
-        <label for={getCheckboxId(item.id)} class="hover:cursor-pointer">
-          <Title level={4}>
-            <span class={clsx(["block", "font-[500]", "mb-1"])}>
-              {item.title}
+        <div>
+          <label for={getCheckboxId(item.id)} class="hover:cursor-pointer">
+            <Title level={4}>
+              <span class={clsx(["block", "mb-1"])}>
+                {item.title}
+              </span>
+            </Title>
+          </label>
+
+          <Button variant="ghost" handleClick={() => {
+            if (expanded.includes(item.id)) {
+              expanded = expanded.filter(itemId => itemId !== item.id);
+            } else {
+              expanded = [...expanded, item.id];
+            }
+          }}>
+            <span class="text-secondary hover:underline -ml-2">
+              {expanded.includes(item.id) ? "Hide example" : "Show me an example"}
             </span>
-          </Title>
-          <p class="text-neutral-600">
-            {item.text}
-          </p>
-        </label>
+          </Button>
+
+          {#if expanded.includes(item.id)}
+            <div class="bg-white text-neutral-500 rounded-lg p-2 my-2">
+              {@html item.text}
+            </div>
+          {/if}
+        </div>
       </div>
     {/each}
   </div>
