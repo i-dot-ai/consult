@@ -40,12 +40,12 @@ Pre-commit identifies some potential secrets on commit (but will not catch all p
 - [Docker Desktop](https://docs.docker.com/desktop/install/mac-install/)
 - GraphViz (`brew install graphviz`), used for generating database diagrams
 - pyenv ([instructions](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation))
-- poetry ([instructions](https://python-poetry.org/docs/#installation))
+- uv ([instructions](https://docs.astral.sh/uv/getting-started/installation/))
 
 #### Installation
 
 1. Install the correct Python version by running `pyenv install`
-2. Install dependencies with `cd backend && poetry install`
+2. Install dependencies with `cd backend && uv sync`
 3. Populate `.env` by copying `.env.test`
 
 #### Database setup
@@ -130,7 +130,7 @@ This project includes VSCode configuration files to ensure consistent developmen
 
 When you open the project in VSCode, you'll be prompted to install recommended extensions. These include:
 
-- **Python** - Python language support with Poetry integration
+- **Python** - Python language support with uv integration
 - **Ruff** - Python linter and formatter
 - **ESLint** - JavaScript/TypeScript linter
 - **Prettier** - JavaScript/TypeScript code formatter
