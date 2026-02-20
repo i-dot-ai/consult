@@ -146,7 +146,7 @@
                 title="Representative Responses"
                 loading={$answersStore.isLoading}
                 answers={$answersStore.data?.all_respondents
-                  .slice(0, maxAnswers)
+                  ?.slice(0, maxAnswers)
                   .map((answer) => answer.free_text_answer_text) || []}
               />
             </aside>
