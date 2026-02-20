@@ -29,8 +29,7 @@
   </label>
   <input
     class={clsx([
-      "w-full",
-      "mt-1",
+      "h-9 w-full",
       "p-1",
       "border",
       "border-gray-300",

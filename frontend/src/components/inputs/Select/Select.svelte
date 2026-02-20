@@ -60,9 +60,7 @@
   }
 </script>
 
-<div
-  class={clsx(["mb-5", errorMessage && "mr-4 border-l-4 border-red-600 pl-3"])}
->
+<div class={clsx([errorMessage && "mr-4 border-l-4 border-red-600 pl-3"])}>
   {#if labelText && !hideLabel}
     <label class={tailwindLabelClasses} for={id}>
       {labelText}
@@ -90,10 +88,9 @@
 
   <select
     class={clsx([
-      "h-10 w-full border border-neutral-300 bg-white px-1 py-1 text-base leading-5 text-neutral-900",
-      "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400",
+      "h-9 w-full rounded-sm border border-gray-300 bg-white p-1 text-neutral-700",
+      "focus:outline-2 focus:outline-yellow-300",
       "disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50",
-      "md:text-lg md:leading-6",
       errorMessage && "border-red-600",
     ])}
     {id}
