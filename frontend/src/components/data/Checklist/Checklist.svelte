@@ -4,6 +4,7 @@
   import Title from "../../Title.svelte";
   import Checkbox from "../../inputs/Checkbox/Checkbox.svelte";
   import Button from "../../inputs/Button/Button.svelte";
+  import { slide } from "svelte/transition";
 
   interface Item {
     id: string;
@@ -83,7 +84,7 @@
           </Button>
 
           {#if expanded.includes(item.id)}
-            <div class="bg-white text-neutral-500 rounded-lg p-2 my-2">
+            <div transition:slide class="bg-white text-neutral-500 rounded-lg p-2 my-2">
               {@html item.text}
             </div>
           {/if}
