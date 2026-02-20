@@ -8,5 +8,12 @@ export default {
   component: Checklist,
   category: "data",
   props: [{ name: "items", value: items, type: "json" }],
-  stories: [],
+  stories: [
+    {
+      name: "Empty",
+      props: {
+        items: [],
+      },
+    },
+  ],
 };

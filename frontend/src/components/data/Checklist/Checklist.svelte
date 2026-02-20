@@ -29,6 +29,10 @@
   </Title>
 
   <div class="mt-4">
+    {#if items.length === 0}
+      <p class="w-full text-neutral-500 text-sm">No checklist items available</p>
+    {/if}
+
     {#each items as item (item.id)}
       <div
         class={clsx(
