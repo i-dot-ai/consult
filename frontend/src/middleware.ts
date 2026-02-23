@@ -31,9 +31,11 @@ export const onRequest: MiddlewareHandler = async (
     return next();
   }
 
+  // Proxy Django admin and static files without applying frontend security headers
   if (
     /^\/admin(\/|$)/.test(url.pathname) ||
-    /^\/django-rq(\/|$)/.test(url.pathname)
+    /^\/django-rq(\/|$)/.test(url.pathname) ||
+    /^\/static(\/|$)/.test(url.pathname)
   ) {
     return await proxyToDjango(context, backendUrl);
   }
