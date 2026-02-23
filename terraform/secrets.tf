@@ -1,9 +1,3 @@
-resource "random_password" "django_pass" {
-  length  = 24
-  special = false
-}
-
-
 locals {
   # Add secrets to this list as required to make them available within the container.
   # Values must not be hardcoded here - they must either be references or updated in SSM Parameter Store.
@@ -90,6 +84,11 @@ locals {
       value = "placeholder" # Update value in SSM - Do not hardcode
     },
   ]
+}
+
+resource "random_password" "django_pass" {
+  length  = 24
+  special = false
 }
 
 resource "aws_ssm_parameter" "oidc_secrets" {

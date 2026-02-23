@@ -23,17 +23,6 @@ data "aws_iam_policy_document" "ecs_exec_custom_policy" {
       module.app_bucket.arn
     ]
   }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "ssm:GetParameter",
-      "ssm:GetParameters",
-    ]
-    resources = [
-      "arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/${local.name}/env_secrets/*"
-    ]
-  }
   
   statement {
     effect = "Allow"
@@ -77,8 +66,6 @@ resource "aws_iam_policy" "ecs_exec_custom_policy" {
   description = "ECS task custom policy"
   policy      = data.aws_iam_policy_document.ecs_exec_custom_policy.json
 }
-
-
 
 data "aws_iam_policy_document" "lambda_exec_custom_policy" {
   statement {
