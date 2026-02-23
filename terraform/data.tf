@@ -33,13 +33,9 @@ data "terraform_remote_state" "universal" {
 
 locals {
   record_prefix            = var.env == "prod" ? var.project_name : "${var.project_name}-${var.env}"
-  host                     = terraform.workspace == "prod" ? "${var.project_name}.ai.cabinetoffice.gov.uk" :
-    "${var.project_name}-${terraform.workspace}.ai.cabinetoffice.gov.uk"
-  host_backend             = terraform.workspace == "prod" ?
-    "${var.project_name}-backend-external.ai.cabinetoffice.gov.uk" :
-    "${var.project_name}-backend-external-${terraform.workspace}.ai.cabinetoffice.gov.uk"
-  public_host              = terraform.workspace == "prod" ? "${var.project_name}.i.ai.gov.uk" :
-    "${var.project_name}.${terraform.workspace}.i.ai.gov.uk"
+  host                     = terraform.workspace == "prod" ? "${var.project_name}.ai.cabinetoffice.gov.uk" : "${var.project_name}-${terraform.workspace}.ai.cabinetoffice.gov.uk"
+  host_backend             = terraform.workspace == "prod" ? "${var.project_name}-backend-external.ai.cabinetoffice.gov.uk" : "${var.project_name}-backend-external-${terraform.workspace}.ai.cabinetoffice.gov.uk"
+  public_host              = terraform.workspace == "prod" ? "${var.project_name}.i.ai.gov.uk" : "${var.project_name}.${terraform.workspace}.i.ai.gov.uk"
   name                     = "${var.team_name}-${var.env}-${var.project_name}"
   batch_mapping_image_url  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-pipeline-mapping:${var.image_tag}"
   batch_sign_off_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-pipeline-sign-off:${var.image_tag}"
