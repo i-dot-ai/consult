@@ -109,7 +109,7 @@ resource "aws_ssm_parameter" "oidc_secrets" {
 
 resource "aws_ssm_parameter" "env_secrets" {
   for_each = { for ev in local.env_secrets : ev.name => ev }
-  
+
   type   = "SecureString"
   key_id = data.terraform_remote_state.platform.outputs.kms_key_arn
 

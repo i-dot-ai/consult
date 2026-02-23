@@ -2,11 +2,11 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">=4.2.0"
+      version = "~> 6.33"
     }
   }
 
-  required_version = ">= 1.2.2"
+  required_version = "~> 1.14"
 
   backend "s3" {
     key = "consultation-analyser/terraform.tfstate"

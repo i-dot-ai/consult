@@ -133,7 +133,7 @@ module "frontend" {
   container_port = local.frontend_port
 
   health_check = {
-    accepted_response = 200
+    accepted_response   = 200
     interval            = 60
     timeout             = 70
     healthy_threshold   = 2
@@ -153,7 +153,7 @@ module "frontend" {
 }
 
 module "worker" {
-  name                         = "${local.name}-worker"
+  name = "${local.name}-worker"
   # checkov:skip=CKV_SECRET_4:Skip secret check as these have to be used within the Github Action
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes

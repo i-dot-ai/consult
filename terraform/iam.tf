@@ -23,7 +23,7 @@ data "aws_iam_policy_document" "ecs_exec_custom_policy" {
       module.app_bucket.arn
     ]
   }
-  
+
   statement {
     effect = "Allow"
     actions = [

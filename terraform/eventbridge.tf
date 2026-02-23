@@ -3,10 +3,10 @@ resource "aws_cloudwatch_event_rule" "batch_job_import_response_annotations" {
   description = "Trigger response annotations import when assign themes batch job succeeds"
 
   event_pattern = jsonencode({
-    source = ["aws.batch"],
+    source      = ["aws.batch"],
     detail-type = ["Batch Job State Change"],
     detail = {
-      status = ["SUCCEEDED"],
+      status  = ["SUCCEEDED"],
       jobName = ["${local.name}-assign-themes-job"]
     }
   })
@@ -18,10 +18,10 @@ resource "aws_cloudwatch_event_rule" "batch_job_import_candidate_themes" {
   description = "Trigger candidate themes import when find themes batch job succeeds"
 
   event_pattern = jsonencode({
-    source = ["aws.batch"],
+    source      = ["aws.batch"],
     detail-type = ["Batch Job State Change"],
     detail = {
-      status = ["SUCCEEDED"],
+      status  = ["SUCCEEDED"],
       jobName = ["${local.name}-find-themes-job"]
     }
   })
@@ -33,10 +33,10 @@ resource "aws_cloudwatch_event_rule" "batch_job_state_change" {
   description = "Capture AWS Batch job state changes for notifications"
 
   event_pattern = jsonencode({
-    source = ["aws.batch"],
+    source      = ["aws.batch"],
     detail-type = ["Batch Job State Change"],
     detail = {
-      status = ["SUCCEEDED", "FAILED", "RUNNING"],
+      status  = ["SUCCEEDED", "FAILED", "RUNNING"],
       jobName = ["${local.name}-assign-themes-job", "${local.name}-find-themes-job"]
     }
   })
