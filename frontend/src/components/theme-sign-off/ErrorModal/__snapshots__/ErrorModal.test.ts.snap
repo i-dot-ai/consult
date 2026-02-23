@@ -5,6 +5,5 @@ exports[`ErrorModal > should match snapshot 1`] = `
   <!---->
   
   
-  
 </div>
 `;
