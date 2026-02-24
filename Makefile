@@ -70,7 +70,10 @@ test-end-to-end:
 		@echo "Starting backend and frontend services..."
 		DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test docker compose up -d backend  # pragma: allowlist secret
 		docker compose up -d frontend
-		@sleep 5
+		@echo "Waiting for services to be ready..."
+		@timeout 60 sh -c 'until curl -f http://localhost:3000 > /dev/null 2>&1; do sleep 1; done' || (echo "Frontend failed to start" && exit 1)
+		@timeout 60 sh -c 'until curl -f http://localhost:8000/api/user/ > /dev/null 2>&1; do sleep 1; done' || (echo "Backend failed to start" && exit 1)
+		@echo "Services ready!"
 		@echo "Running end-to-end tests..."
 		cd e2e_tests && npm install
 		@if [ -z "$$CI" ]; then cd e2e_tests && npx playwright install --with-deps; fi
