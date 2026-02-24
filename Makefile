@@ -59,6 +59,8 @@ test-end-to-end:
 		@cp .env .env.backup
 		@echo "Setting test DATABASE_URL..."
 		@sed -i.tmp 's|DATABASE_URL=.*|DATABASE_URL=psql://postgres:postgres@localhost:5432/consult_e2e_test|' .env && rm .env.tmp  # pragma: allowlist secret
+		@echo "Running migrations on test database..."
+		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py migrate
 		@echo "Creating admin user..."
 		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py createadminusers
 		@echo "Generating dummy data..."
