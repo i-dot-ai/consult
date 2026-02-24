@@ -65,7 +65,7 @@ test-end-to-end:
 		docker compose run backend venv/bin/python manage.py generate_dummy_data
 		@echo "Running end-to-end tests..."
 		cd e2e_tests && npm install
-		cd e2e_tests && npx playwright install --with-deps
+		@if [ -z "$$CI" ]; then cd e2e_tests && npx playwright install --with-deps; fi
 		cd e2e_tests && npm run e2e
 		@echo "Cleaning up test database..."
 		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;"
