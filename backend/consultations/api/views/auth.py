@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import AccessToken
 
 from consultations.api.serializers import TokenSerializer
-from consultations.auth.jwt_verifier import get_jwt_verifier
+from authentication.jwt_verifier import get_jwt_verifier
 from hosting_environment import HostingEnvironment
 
 User = get_user_model()
@@ -31,32 +31,32 @@ def validate_token(request):
 
     try:
         internal_access_token = serializer.validated_data["internal_access_token"]
-        
+
         # Use proper JWT verification for deployed environments (dev, preprod, prod)
         if jwt_verifier is not None:
             try:
                 # Verify JWT signature and claims using SSO provider's public keys
                 payload = jwt_verifier.verify_token(internal_access_token)
                 email = payload.get("email")
-                
+
                 if not email:
                     logger.error("JWT token missing email claim")
                     return JsonResponse(data={"detail": "authentication failed"}, status=403)
-                
+
                 logger.info(
                     "JWT token verified successfully",
                     email=email,
                     sub=payload.get("sub"),
                 )
-                
+
             except jwt.ExpiredSignatureError:
                 logger.error("JWT token has expired")
                 return JsonResponse(data={"detail": "token expired"}, status=401)
-            
+
             except jwt.InvalidTokenError as e:
                 logger.error("JWT token verification failed", error=str(e))
                 return JsonResponse(data={"detail": "invalid token"}, status=403)
-            
+
             # Also check with auth API for additional authorization (department/role checks)
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
@@ -67,7 +67,7 @@ def validate_token(request):
                 )
                 # TODO: reinstate this once DSIT (and other departments have been added to the consult clients)
                 # return JsonResponse(data={"detail": "authentication failed"}, status=403)
-        
+
         # Local/test environment - skip verification
         elif HostingEnvironment.is_deployed():
             # Fallback to auth API only (no JWT verification)
@@ -81,7 +81,7 @@ def validate_token(request):
                 # TODO: reinstate this once DSIT (and other departments have been added to the consult clients)
                 # return JsonResponse(data={"detail": "authentication failed"}, status=403)
             email = user_authorisation_info.email
-        
+
         else:
             # Local development - no verification
             email = jwt.decode(internal_access_token, options={"verify_signature": False})["email"]
