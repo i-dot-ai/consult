@@ -39,6 +39,16 @@ jobs:
       - name: run tests
         run: make test-end-to-end
 
+      - name: Show docker logs on failure
+        if: failure()
+        run: |
+          echo "=== Backend logs ==="
+          docker compose logs backend
+          echo "=== Frontend logs ==="
+          docker compose logs frontend
+          echo "=== Postgres logs ==="
+          docker compose logs postgres
+
       - name: Stop docker-compose services
         run: docker compose down
         if: always()
