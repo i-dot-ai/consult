@@ -13,16 +13,14 @@ RUN npm ci
 # Copy application code
 COPY frontend/ .
 
-# Create non-root user for security
-RUN groupadd -g 1001 nodejs
-RUN useradd -r -u 1001 -g nodejs -m nextjs
+# Create non-root user and group
+RUN groupadd --system nonroot && useradd --system --gid nonroot nonroot
 
 # Change ownership of app directory
-RUN chown -R nextjs:nodejs /app
-RUN chown -R nextjs:nodejs /home/nextjs
+RUN chown -R nonroot:nonroot /app
 
-# Switch to non-root user
-USER nextjs
+# Run under context of "nonroot" user
+USER nonroot
 
 # Build the application
 RUN npm run build
@@ -40,5 +38,5 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
 
-# Start the application with non-root verification
-CMD ["sh", "-c", "id && [ $(id -u) -ne 0 ] && echo 'Running as non-root user' || (echo 'ERROR: Running as root!' && exit 1); node /app/dist/server/entry.mjs"]
+# Start the application
+CMD ["node", "/app/dist/server/entry.mjs"]
