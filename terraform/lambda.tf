@@ -119,6 +119,7 @@ module "slack_notifier_lambda" {
     "LAMBDA_AWS_REGION" = data.aws_region.current.id,
     "ENVIRONMENT"       = terraform.workspace,
     "AWS_BUCKET_NAME"   = module.app_bucket.id,
+    "AWS_ACCOUNT_ID"    = data.aws_caller_identity.current.account_id
   }
 }
 
@@ -141,6 +142,7 @@ module "import_response_annotations_lambda" {
     REDIS_PORT        = module.elasticache.redis_port
     AWS_BUCKET_NAME   = module.app_bucket.id
     LAMBDA_AWS_REGION = data.aws_region.current.id
+    AWS_ACCOUNT_ID    = data.aws_caller_identity.current.account_id
   }
 }
 
@@ -163,5 +165,6 @@ module "import_candidate_themes_lambda" {
     REDIS_PORT        = module.elasticache.redis_port
     AWS_BUCKET_NAME   = module.app_bucket.id
     LAMBDA_AWS_REGION = data.aws_region.current.id
+    AWS_ACCOUNT_ID    = data.aws_caller_identity.current.account_id
   }
 }

@@ -29,6 +29,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
+ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID")
 BASE_PREFIX = "app_data/consultations/"
 
 
@@ -46,7 +47,7 @@ def download_s3_subdir(subdir: str) -> None:
     paginator = s3.get_paginator("list_objects_v2")
     inputs_prefix = str(Path(BASE_PREFIX) / subdir / "inputs").rstrip("/") + "/"
     logger.info("S3 inputs prefix: %s", inputs_prefix)
-    pages = paginator.paginate(Bucket=BUCKET_NAME, Prefix=inputs_prefix)
+    pages = paginator.paginate(Bucket=BUCKET_NAME, Prefix=inputs_prefix, ExpectedBucketOwner=ACCOUNT_ID)
     logger.info("Created paginator for bucket: %s with prefix: %s", BUCKET_NAME, inputs_prefix)
 
     for page in pages:
@@ -57,7 +58,7 @@ def download_s3_subdir(subdir: str) -> None:
                 relative_path = os.path.relpath(key, prefix)
                 local_path = Path(subdir) / relative_path
                 local_path.parent.mkdir(parents=True, exist_ok=True)
-                s3.download_file(BUCKET_NAME, key, str(local_path))
+                s3.download_file(BUCKET_NAME, key, str(local_path), ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID})
                 logger.info("Downloaded %s to %s", key, local_path)
 
 
@@ -74,7 +75,7 @@ def upload_directory_to_s3(local_path: str) -> None:
         for file in files:
             local_file_path = Path(root) / file
             s3_key = str(Path(BASE_PREFIX) / local_file_path).replace("\\", "/")
-            s3.upload_file(str(local_file_path), BUCKET_NAME, s3_key)
+            s3.upload_file(str(local_file_path), BUCKET_NAME, s3_key, ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID})
             logger.info("Uploaded %s to s3://%s/%s", local_file_path, BUCKET_NAME, s3_key)
 
 
