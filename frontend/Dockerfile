@@ -40,5 +40,5 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
 
-# Start the application
-CMD ["node", "/app/dist/server/entry.mjs"]
+# Start the application with non-root verification
+CMD ["sh", "-c", "id && [ $(id -u) -ne 0 ] && echo 'Running as non-root user' || (echo 'ERROR: Running as root!' && exit 1); node /app/dist/server/entry.mjs"]
