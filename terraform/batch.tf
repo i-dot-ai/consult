@@ -30,6 +30,7 @@ module "batch_job_mapping" {
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-mapping"
     "APP_NAME"                 = "${var.project_name}-mapping"
     "LLM_GATEWAY_URL"          = local.llm_gateway_url
+    "AWS_ACCOUNT_ID"           = data.aws_caller_identity.current.account_id
   })
   additional_iam_policies = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
   secrets = [
@@ -54,8 +55,9 @@ module "batch_job_sign_off" {
   env_vars = merge(local.base_env_vars, {
     "EXECUTION_CONTEXT"        = "batch"
     "APP_NAME"                 = "${var.project_name}-sign-off"
-    "DOCKER_BUILDER_CONTAINER" = "consult-sign-off",
+    "DOCKER_BUILDER_CONTAINER" = "consult-sign-off"
     "LLM_GATEWAY_URL"          = local.llm_gateway_url
+    "AWS_ACCOUNT_ID"           = data.aws_caller_identity.current.account_id
   })
   additional_iam_policies = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
   secrets = [
