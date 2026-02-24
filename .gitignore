@@ -175,6 +175,7 @@ frontend/django_extensions
 !.vscode/extensions.json
 
 # Local .terraform directories
+**/.terraform
 **/.terraform/*
 **/.terraform.lock.hcl
 
