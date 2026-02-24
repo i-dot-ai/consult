@@ -24,12 +24,10 @@ jobs:
         run: |
           cp .env.test .env
 
-      - name: Start services with docker compose
+      - name: Start postgres
         run: |
           docker compose up -d postgres
-          docker compose up -d backend
-          docker compose up -d frontend
-          sleep 10
+          sleep 5
 
       - name: Set up Node.js (for Playwright only)
         uses: actions/setup-node@v6
