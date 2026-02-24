@@ -65,6 +65,8 @@ test-end-to-end:
 		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py createadminusers
 		@echo "Generating dummy data..."
 		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py generate_dummy_data
+		@echo "Adding user to all consultations..."
+		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py shell -c "from authentication.models import User; from consultations.models import Consultation; user = User.objects.get(email='email@example.com'); [c.users.add(user) for c in Consultation.objects.all()]"
 		@echo "Running end-to-end tests..."
 		cd e2e_tests && npm install
 		@if [ -z "$$CI" ]; then cd e2e_tests && npx playwright install --with-deps; fi
