@@ -68,7 +68,7 @@ test-end-to-end:
 		@echo "Adding user to all consultations..."
 		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py shell -c "from authentication.models import User; from consultations.models import Consultation; user = User.objects.get(email='email@example.com'); [c.users.add(user) for c in Consultation.objects.all()]"  # pragma: allowlist secret
 		@echo "Starting backend and frontend services..."
-		docker compose up -d backend
+		DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test docker compose up -d backend  # pragma: allowlist secret
 		docker compose up -d frontend
 		@sleep 5
 		@echo "Running end-to-end tests..."
