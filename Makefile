@@ -51,49 +51,38 @@ test-frontend: ## Run the frontend tests
 	cd frontend && npm run test
 
 .PHONY: test-end-to-end
-test-end-to-end:
-		@echo "Creating test database..."
-		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;" || true
-		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "CREATE DATABASE consult_e2e_test;"
-		@echo "Backing up current DATABASE_URL..."
-		@cp .env .env.backup
-		@echo "Setting test DATABASE_URL..."
-		@sed -i.tmp 's|DATABASE_URL=.*|DATABASE_URL=psql://postgres:postgres@localhost:5432/consult_e2e_test|' .env && rm .env.tmp  # pragma: allowlist secret
-		@echo "Running migrations on test database..."
-		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py migrate  # pragma: allowlist secret
-		@echo "Creating admin user..."
-		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py createadminusers  # pragma: allowlist secret
-		@echo "Generating dummy data..."
-		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py generate_dummy_data  # pragma: allowlist secret
-		@echo "Adding user to all consultations..."
-		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py shell -c "from authentication.models import User; from consultations.models import Consultation; user = User.objects.get(email='email@example.com'); [c.users.add(user) for c in Consultation.objects.all()]"  # pragma: allowlist secret
-		@echo "Creating docker-compose override for test database..."
-		@echo "services:" > docker-compose.override.yml
-		@echo "  backend:" >> docker-compose.override.yml
-		@echo "    environment:" >> docker-compose.override.yml
-		@echo "      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test" >> docker-compose.override.yml  # pragma: allowlist secret
-		@echo "Stopping any existing backend container..."
-		@docker compose down backend 2>/dev/null || true
-		@echo "Starting backend and frontend services with test database..."
-		docker compose up -d backend
-		docker compose up -d frontend
-		@echo "Verifying backend is using correct database..."
-		@sleep 3
-		@docker compose exec backend sh -c 'echo "DATABASE_URL=$$DATABASE_URL"'
-		@echo "Waiting for services to be ready..."
-		@timeout 60 sh -c 'until curl -s http://localhost:3000 > /dev/null; do echo "Waiting for frontend..."; sleep 2; done' || (echo "Frontend failed to start" && docker compose logs frontend && exit 1)
-		@timeout 60 sh -c 'until curl -s http://localhost:8000/api/user/ > /dev/null; do echo "Waiting for backend..."; sleep 2; done' || (echo "Backend failed to start" && docker compose logs backend && exit 1)
-		@echo "Services ready!"
-		@echo "Running end-to-end tests..."
-		cd e2e_tests && npm install
-		@if [ -z "$$CI" ]; then cd e2e_tests && npx playwright install --with-deps; fi
-		cd e2e_tests && npm run e2e
-		@echo "Cleaning up test database..."
-		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;"
-		@echo "Restoring original .env..."
-		@mv .env.backup .env
-		@echo "Removing docker-compose override..."
-		@rm -f docker-compose.override.yml
+test-end-to-end: ## Run end-to-end tests with Playwright
+	$(eval E2E_DB_URL := postgresql://postgres:postgres@postgres:5432/consult_e2e_test)  # pragma: allowlist secret
+	@echo "Setting up test database..."
+	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;" || true
+	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "CREATE DATABASE consult_e2e_test;"
+	@echo "Initializing test data..."
+	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py migrate
+	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py createadminusers
+	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py generate_dummy_data
+	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py shell -c \
+		"from authentication.models import User; from consultations.models import Consultation; \
+		user = User.objects.get(email='email@example.com'); \
+		[c.users.add(user) for c in Consultation.objects.all()]"
+	@echo "Starting services..."
+	@echo "services:" > docker-compose.override.yml
+	@echo "  backend:" >> docker-compose.override.yml
+	@echo "    environment:" >> docker-compose.override.yml
+	@echo "      - DATABASE_URL=$(E2E_DB_URL)" >> docker-compose.override.yml
+	@docker compose down backend 2>/dev/null || true
+	@docker compose up -d backend frontend
+	@echo "Waiting for services to be ready..."
+	@timeout 60 sh -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 2; done' || \
+		(echo "Frontend failed to start" && docker compose logs frontend && exit 1)
+	@timeout 60 sh -c 'until curl -s http://localhost:8000/api/user/ > /dev/null; do sleep 2; done' || \
+		(echo "Backend failed to start" && docker compose logs backend && exit 1)
+	@echo "Running tests..."
+	@cd e2e_tests && npm install
+	@if [ -z "$$CI" ]; then cd e2e_tests && npx playwright install --with-deps; fi
+	@cd e2e_tests && npm run e2e
+	@echo "Cleaning up..."
+	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;"
+	@rm -f docker-compose.override.yml
 
 
 .PHONY: check-python-code
