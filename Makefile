@@ -67,8 +67,11 @@ test-end-to-end:
 		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py generate_dummy_data  # pragma: allowlist secret
 		@echo "Adding user to all consultations..."
 		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py shell -c "from authentication.models import User; from consultations.models import Consultation; user = User.objects.get(email='email@example.com'); [c.users.add(user) for c in Consultation.objects.all()]"  # pragma: allowlist secret
+		@echo "Updating .env to use postgres hostname for containers..."
+		@sed -i.tmp 's|DATABASE_URL=.*|DATABASE_URL=psql://postgres:postgres@postgres:5432/consult_e2e_test|' .env && rm .env.tmp  # pragma: allowlist secret
 		@echo "Starting backend and frontend services..."
-		DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test docker compose up -d backend  # pragma: allowlist secret
+		docker compose down backend || true
+		docker compose up -d backend
 		docker compose up -d frontend
 		@echo "Verifying backend is using correct database..."
 		@sleep 3
