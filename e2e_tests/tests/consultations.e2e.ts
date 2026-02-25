@@ -1,9 +1,27 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
+
+// Helper function to find the first valid consultation link
+async function getFirstConsultationLink(page: Page) {
+  const allLinks = page.locator('a[href*="/consultations/"]');
+  const count = await allLinks.count();
+
+  for (let i = 0; i < count; i++) {
+    const link = allLinks.nth(i);
+    const href = await link.getAttribute("href");
+    if (href && href !== "/consultations" && !href.endsWith("/consultations")) {
+      return { link, href };
+    }
+  }
+  return null;
+}
 
 test.describe("Consultations - List Page", () => {
-  test("displays consultations user has been added to", async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await page.goto("/consultations");
+    await page.waitForLoadState("networkidle");
+  });
 
+  test("displays consultations user has been added to", async ({ page }) => {
     // Check the page heading
     await expect(
       page.getByRole("heading", { name: /Your consultations/i }),
@@ -13,9 +31,6 @@ test.describe("Consultations - List Page", () => {
     await expect(
       page.getByText(/review themes/i),
     ).toBeVisible();
-
-    // Wait for consultations to load
-    await page.waitForLoadState("networkidle");
 
     // Check that at least one consultation is displayed
     const consultationItems = page
@@ -38,28 +53,11 @@ test.describe("Consultations - List Page", () => {
   });
 
   test("can navigate to a consultation detail page", async ({ page }) => {
-    await page.goto("/consultations");
+    // Find first valid consultation link
+    const result = await getFirstConsultationLink(page);
+    expect(result).toBeTruthy();
 
-    // Wait for consultations to load
-    await page.waitForLoadState("networkidle");
-
-    // Find all consultation links
-    const allLinks = page.locator('a[href*="/consultations/"]');
-    const count = await allLinks.count();
-
-    // Find first link that's not exactly /consultations
-    let consultationLink = null;
-    for (let i = 0; i < count; i++) {
-      const link = allLinks.nth(i);
-      const href = await link.getAttribute("href");
-      if (href && href !== "/consultations" && !href.endsWith("/consultations")) {
-        consultationLink = link;
-        break;
-      }
-    }
-
-    expect(consultationLink).toBeTruthy();
-    await consultationLink!.click();
+    await result!.link.click();
 
     // Verify we navigated to a consultation detail page (could be root or a subpage)
     await expect(page).toHaveURL(new RegExp(`/consultations/[^/]+`));
@@ -67,31 +65,25 @@ test.describe("Consultations - List Page", () => {
 });
 
 test.describe("Consultations - Detail/Dashboard Page", () => {
-  test("consultation dashboard displays key metrics and questions", async ({
-    page,
-  }) => {
+  let consultationId: string;
+
+  test.beforeEach(async ({ page }) => {
+    // Navigate to consultations list
     await page.goto("/consultations");
     await page.waitForLoadState("networkidle");
 
     // Navigate to first consultation
-    const allLinks = page.locator('a[href*="/consultations/"]');
-    const count = await allLinks.count();
+    const result = await getFirstConsultationLink(page);
+    expect(result).toBeTruthy();
 
-    let consultationLink = null;
-    for (let i = 0; i < count; i++) {
-      const link = allLinks.nth(i);
-      const href = await link.getAttribute("href");
-      if (href && href !== "/consultations" && !href.endsWith("/consultations")) {
-        consultationLink = link;
-        break;
-      }
-    }
-
-    expect(consultationLink).toBeTruthy();
-    await consultationLink!.click();
-
+    consultationId = result!.href.match(/\/consultations\/([^/]+)/)?.[1]!;
+    await result!.link.click();
     await page.waitForLoadState("networkidle");
+  });
 
+  test("consultation dashboard displays key metrics and questions", async ({
+    page,
+  }) => {
     // Check for key dashboard elements
     // 1. Search functionality should be present
     const searchInput = page.locator("#search-input");
@@ -123,34 +115,6 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
   test("can navigate to evaluation page from consultation", async ({
     page,
   }) => {
-    await page.goto("/consultations");
-    await page.waitForLoadState("networkidle");
-
-    // Navigate to first consultation
-    const allLinks = page.locator('a[href*="/consultations/"]');
-    const count = await allLinks.count();
-
-    let consultationLink = null;
-    let consultationUrl = null;
-    for (let i = 0; i < count; i++) {
-      const link = allLinks.nth(i);
-      const href = await link.getAttribute("href");
-      if (href && href !== "/consultations" && !href.endsWith("/consultations")) {
-        consultationLink = link;
-        consultationUrl = href;
-        break;
-      }
-    }
-
-    expect(consultationLink).toBeTruthy();
-    await consultationLink!.click();
-
-    await page.waitForLoadState("networkidle");
-
-    // Extract consultation ID from URL
-    const consultationId = consultationUrl?.match(/\/consultations\/([^/]+)/)?.[1];
-    expect(consultationId).toBeTruthy();
-
     // Look for a link to the evaluation page
     const evalLink = page
       .locator(`a[href*="/evaluations/${consultationId}/questions"]`)
@@ -168,32 +132,24 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
 });
 
 test.describe("Consultations - Evaluation Page", () => {
-  test("evaluation page displays all questions", async ({ page }) => {
+  let consultationId: string;
+
+  test.beforeEach(async ({ page }) => {
     // First navigate to consultations list
     await page.goto("/consultations");
     await page.waitForLoadState("networkidle");
 
     // Get first consultation
-    const allLinks = page.locator('a[href*="/consultations/"]');
-    const count = await allLinks.count();
-
-    let consultationUrl = null;
-    for (let i = 0; i < count; i++) {
-      const link = allLinks.nth(i);
-      const href = await link.getAttribute("href");
-      if (href && href !== "/consultations" && !href.endsWith("/consultations")) {
-        consultationUrl = href;
-        break;
-      }
-    }
-
-    expect(consultationUrl).toBeTruthy();
-    const consultationId = consultationUrl?.match(/\/consultations\/([^/]+)/)?.[1];
+    const result = await getFirstConsultationLink(page);
+    expect(result).toBeTruthy();
+    consultationId = result!.href.match(/\/consultations\/([^/]+)/)?.[1]!;
 
     // Navigate directly to evaluation page
     await page.goto(`/evaluations/${consultationId}/questions`);
     await page.waitForLoadState("networkidle");
+  });
 
+  test("evaluation page displays all questions", async ({ page }) => {
     // Verify we're on the evaluation page
     await expect(page).toHaveURL(new RegExp(`/evaluations/.+/questions`));
 
@@ -221,31 +177,6 @@ test.describe("Consultations - Evaluation Page", () => {
   });
 
   test("can click on a question from evaluation page", async ({ page }) => {
-    // Navigate to consultations
-    await page.goto("/consultations");
-    await page.waitForLoadState("networkidle");
-
-    // Get first consultation
-    const allLinks = page.locator('a[href*="/consultations/"]');
-    const count = await allLinks.count();
-
-    let consultationUrl = null;
-    for (let i = 0; i < count; i++) {
-      const link = allLinks.nth(i);
-      const href = await link.getAttribute("href");
-      if (href && href !== "/consultations" && !href.endsWith("/consultations")) {
-        consultationUrl = href;
-        break;
-      }
-    }
-
-    expect(consultationUrl).toBeTruthy();
-    const consultationId = consultationUrl?.match(/\/consultations\/([^/]+)/)?.[1];
-
-    // Navigate to evaluation page
-    await page.goto(`/evaluations/${consultationId}/questions`);
-    await page.waitForLoadState("networkidle");
-
     // Find and click on first question link
     const questionLink = page
       .locator('a[href*="/responses/"]')
