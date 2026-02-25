@@ -94,15 +94,15 @@ class JWTVerifier:
             logger.exception("JWT token has expired")
             raise
 
-        except jwt.InvalidIssuerError as e:
+        except jwt.InvalidIssuerError:
             logger.exception("JWT token has invalid issuer")
             raise
 
-        except jwt.InvalidAudienceError as e:
+        except jwt.InvalidAudienceError:
             logger.exception("JWT token has invalid audience")
             raise
 
-        except jwt.InvalidTokenError as e:
+        except jwt.InvalidTokenError:
             logger.exception("JWT token validation failed")
             raise
 
