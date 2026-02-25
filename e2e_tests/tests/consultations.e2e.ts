@@ -1,19 +1,5 @@
-import { test, expect, type Page } from "@playwright/test";
-
-// Helper function to find the first valid consultation link
-async function getFirstConsultationLink(page: Page) {
-  const allLinks = page.locator('a[href*="/consultations/"]');
-  const count = await allLinks.count();
-
-  for (let i = 0; i < count; i++) {
-    const link = allLinks.nth(i);
-    const href = await link.getAttribute("href");
-    if (href && href !== "/consultations" && !href.endsWith("/consultations")) {
-      return { link, href };
-    }
-  }
-  return null;
-}
+import { test, expect } from "@playwright/test";
+import { getFirstConsultationLink } from "./helpers";
 
 test.describe("Consultations - List Page", () => {
   test.beforeEach(async ({ page }) => {
