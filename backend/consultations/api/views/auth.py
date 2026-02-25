@@ -16,8 +16,6 @@ logger = settings.LOGGER
 client = AuthApiClient(
     app_name="consult", auth_api_url=settings.AUTH_API_URL, logger=logger, timeout=10
 )
-
-# Initialize JWT verifier for deployed environments
 jwt_verifier = get_jwt_verifier()
 
 
@@ -32,10 +30,8 @@ def validate_token(request):
     try:
         internal_access_token = serializer.validated_data["internal_access_token"]
 
-        # Use proper JWT verification for deployed environments (dev, preprod, prod)
         if jwt_verifier is not None:
             try:
-                # Verify JWT signature and claims using SSO provider's public keys
                 payload = jwt_verifier.verify_token(internal_access_token)
                 email = payload.get("email")
 
@@ -57,7 +53,6 @@ def validate_token(request):
                 logger.error("JWT token verification failed", error=str(e))
                 return JsonResponse(data={"detail": "invalid token"}, status=403)
 
-            # Also check with auth API for additional authorization (department/role checks)
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
                 logger.error(
@@ -65,12 +60,8 @@ def validate_token(request):
                     email=user_authorisation_info.email,
                     auth_reason=user_authorisation_info.auth_reason,
                 )
-                # TODO: reinstate this once DSIT (and other departments have been added to the consult clients)
-                # return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
-        # Local/test environment - skip verification
         elif HostingEnvironment.is_deployed():
-            # Fallback to auth API only (no JWT verification)
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
                 logger.error(
@@ -78,12 +69,9 @@ def validate_token(request):
                     email=user_authorisation_info.email,
                     auth_reason=user_authorisation_info.auth_reason,
                 )
-                # TODO: reinstate this once DSIT (and other departments have been added to the consult clients)
-                # return JsonResponse(data={"detail": "authentication failed"}, status=403)
             email = user_authorisation_info.email
 
         else:
-            # Local development - no verification
             email = jwt.decode(internal_access_token, options={"verify_signature": False})["email"]
             logger.info("Local environment - skipping JWT verification", email=email)
 
@@ -96,7 +84,6 @@ def validate_token(request):
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
     login(request, user)
-    # Ensure session is created if it doesn't exist
     if not request.session.session_key:
         request.session.save()
 
