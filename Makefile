@@ -67,10 +67,14 @@ test-end-to-end:
 		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py generate_dummy_data  # pragma: allowlist secret
 		@echo "Adding user to all consultations..."
 		docker compose run -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test backend venv/bin/python manage.py shell -c "from authentication.models import User; from consultations.models import Consultation; user = User.objects.get(email='email@example.com'); [c.users.add(user) for c in Consultation.objects.all()]"  # pragma: allowlist secret
-		@echo "Updating .env to use postgres hostname for containers..."
-		@sed -i.tmp 's|DATABASE_URL=.*|DATABASE_URL=psql://postgres:postgres@postgres:5432/consult_e2e_test|' .env && rm .env.tmp  # pragma: allowlist secret
-		@echo "Starting backend and frontend services..."
-		docker compose down backend || true
+		@echo "Creating docker-compose override for test database..."
+		@echo "services:" > docker-compose.override.yml
+		@echo "  backend:" >> docker-compose.override.yml
+		@echo "    environment:" >> docker-compose.override.yml
+		@echo "      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test" >> docker-compose.override.yml  # pragma: allowlist secret
+		@echo "Stopping any existing backend container..."
+		@docker compose down backend 2>/dev/null || true
+		@echo "Starting backend and frontend services with test database..."
 		docker compose up -d backend
 		docker compose up -d frontend
 		@echo "Verifying backend is using correct database..."
@@ -88,6 +92,8 @@ test-end-to-end:
 		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;"
 		@echo "Restoring original .env..."
 		@mv .env.backup .env
+		@echo "Removing docker-compose override..."
+		@rm -f docker-compose.override.yml
 
 
 .PHONY: check-python-code
