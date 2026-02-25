@@ -1,0 +1,4 @@
+services:
+  backend:
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consult_e2e_test

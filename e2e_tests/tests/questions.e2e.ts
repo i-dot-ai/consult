@@ -16,15 +16,15 @@ test.describe("Questions - Detail Page with Tabs", () => {
     await page.goto(`/evaluations/${consultationId}/questions`);
     await page.waitForLoadState("networkidle");
 
-    // Find and click on first question
-    const questionLink = page
-      .locator('a[href*="/responses/"]')
-      .or(page.locator('a[href*="/questions/"]'))
-      .first();
+    // Find and click on first "Show next" button to navigate to a response
+    const showNextButton = page.getByRole("button", { name: /show next/i }).first();
 
-    if ((await questionLink.count()) > 0) {
-      await questionLink.click();
+    if ((await showNextButton.count()) > 0) {
+      await showNextButton.click();
       await page.waitForLoadState("networkidle");
+
+      // Verify we navigated to a response detail page
+      await page.waitForURL(/\/evaluations\/.*\/questions\/.*\/responses\/.*/);
     }
   });
 
