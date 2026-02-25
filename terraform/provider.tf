@@ -6,7 +6,7 @@ terraform {
     }
   }
 
-  required_version = "~> 1.14"
+  required_version = "~> 1.9"
 
   backend "s3" {
     key = "consultation-analyser/terraform.tfstate"
