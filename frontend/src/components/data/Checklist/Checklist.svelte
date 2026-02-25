@@ -14,12 +14,13 @@
   }
 
   interface Props {
+    title: string;
     items: Item[];
     onChange: (id: string, checked: boolean) => void;
   }
 
   let expanded: string[] = $state([]);
-  let { items = [], onChange }: Props = $props();
+  let { title = "Checklist", items = [], onChange }: Props = $props();
 
   function getCheckboxId(id: string) {
     return `checklist-${id}`;
@@ -29,7 +30,7 @@
 <div class={clsx(["border", "border-secondary", "p-4", "px-4", "rounded-lg"])}>
   <Title level={3}>
     <span class={clsx(["block", "text-sm", "font-[500]", "mb-2"])}>
-      Before uploading, tick off each requirement as you complete it:
+      {title}
     </span>
   </Title>
 
