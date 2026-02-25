@@ -7,8 +7,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import AccessToken
 
-from consultations.api.serializers import TokenSerializer
 from authentication.jwt_verifier import get_jwt_verifier
+from consultations.api.serializers import TokenSerializer
 from hosting_environment import HostingEnvironment
 
 User = get_user_model()
