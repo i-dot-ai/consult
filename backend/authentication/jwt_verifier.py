@@ -20,9 +20,8 @@ class JWTVerifier:
         jwks_url: str,
         issuer: str,
         audience: Optional[str] = None,
-        cache_keys: bool = True,
-        cache_maxsize: int = 16,
-        cache_timeout: int = 3600,  # 1 hour
+        cache_jwk_set: bool = True,
+        lifespan: int = 3600,  # 1 hour in seconds
     ):
         """
         Initialize the JWT verifier.
@@ -31,17 +30,15 @@ class JWTVerifier:
             jwks_url: URL to the JWKS endpoint
             issuer: Expected issuer claim (iss)
             audience: Expected audience claim (aud), optional
-            cache_keys: Whether to cache fetched keys
-            cache_maxsize: Maximum number of keys to cache
-            cache_timeout: How long to cache keys (seconds)
+            cache_jwk_set: Whether to cache fetched keys
+            lifespan: How long to cache keys (seconds)
         """
         self.issuer = issuer
         self.audience = audience
         self.jwks_client = PyJWKClient(
             jwks_url,
-            cache_keys=cache_keys,
-            max_cached_keys=cache_maxsize,
-            cache_jwk_set_timeout=cache_timeout,
+            cache_jwk_set=cache_jwk_set,
+            lifespan=lifespan,
         )
 
     def verify_token(self, token: str) -> dict[str, Any]:
@@ -139,7 +136,6 @@ def get_jwt_verifier() -> Optional[JWTVerifier]:
         jwks_url=jwks_url,
         issuer=issuer,
         audience=audience,
-        cache_keys=True,
-        cache_maxsize=16,
-        cache_timeout=3600,
+        cache_jwk_set=True,
+        lifespan=3600,
     )
