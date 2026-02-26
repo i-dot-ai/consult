@@ -8,20 +8,12 @@ export async function getFirstConsultationLink(page: Page) {
   const allLinks = page.locator('a[href*="/consultations/"]');
   const count = await allLinks.count();
 
-  // Get all hrefs and find the first valid one
-  const hrefs = allLinks.map(link => link.getAttribute("href"));
-
-  const validHref = hrefs.find(
-    (href) => href && href !== "/consultations" && !href.endsWith("/consultations")
-  );
-
-  if (!validHref) {
-    return null;
+  for (let i = 0; i < count; i++) {
+    const link = allLinks.nth(i);
+    const href = await link.getAttribute("href");
+    if (href && href !== "/consultations" && !href.endsWith("/consultations")) {
+      return { link, href };
+    }
   }
-
-  // Return the link element and href for the valid consultation
-  return {
-    link: page.locator(`a[href="${validHref}"]`).first(),
-    href: validHref,
-  };
+  return null;
 }
