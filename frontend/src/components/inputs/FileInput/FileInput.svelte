@@ -3,9 +3,11 @@
 
   import clsx from "clsx";
 
+  import Button from "../Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Upload from "../../svg/material/Upload.svelte";
-  import Button from "../Button/Button.svelte";
+  import Close from "../../svg/material/Close.svelte";
+
 
   interface Props {
     title: string;
@@ -26,6 +28,41 @@
   let files: File[] = $state([]);
   let isDragging = $state(false);
   let inputEl;
+
+  function removeFile(fileIndex: number) {
+    const dataTransfer = new DataTransfer();
+
+    for (let i=0; i<files.length; i++) {
+      if (i !== fileIndex) {
+        dataTransfer.items.add(inputEl!.files.item(i)!);
+      }
+    }
+
+    updateInputFiles(dataTransfer);
+  }
+
+  function updateInputFiles(dataTransfer: DataTransfer) {
+    inputEl!.files = dataTransfer.files;
+    inputEl!.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  function handleFileDrop(dataTransfer: DataTransfer) {
+    const droppedFiles = dataTransfer.files;
+
+    if (droppedFiles) {
+      const dataTransfer = new DataTransfer();
+
+      // Only add first file if not multiple,
+      // otherwise add all files
+      for (let i=0; i<droppedFiles.length; i++) {
+        if (i === 0 || multiple) {
+          dataTransfer.items.add(droppedFiles.item(i)!);
+        }
+      }
+
+      updateInputFiles(dataTransfer);
+    }
+  }
 </script>
 
 <label
@@ -57,23 +94,7 @@
   ondrop={(e) => {
     e.preventDefault();
     isDragging = false;
-
-    const droppedFiles = e.dataTransfer?.files;
-
-    if (droppedFiles) {
-      const dataTransfer = new DataTransfer();
-
-      // Only add first file if not multiple,
-      // otherwise add all files
-      for (let i=0; i<droppedFiles.length; i++) {
-        if (i === 0 || multiple) {
-          dataTransfer.items.add(droppedFiles.item(i)!);
-        }
-      }
-
-      inputEl!.files = dataTransfer.files;
-      inputEl!.dispatchEvent(new Event('change', { bubbles: true }));
-    }
+    handleFileDrop(e.dataTransfer!);
   }}
 >
   <MaterialIcon color="fill-neutral-400" size="3rem">
@@ -100,10 +121,30 @@
   <ul class={clsx([
     "text-xs",
     "text-neutral-500",
-    "list-disc",
   ])}>
-    {#each files as file}
-      <li class="my-0.5">{file.name}</li>
+    {#each files as file, i (i)}
+      <li class="my-0.5">
+        <div class={clsx([
+          "flex",
+          "items-center",
+          "gap-1",
+        ])}>
+          <Button
+            variant="ghost"
+            handleClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              removeFile(i);
+            }}
+          >
+            <MaterialIcon color="fill-neutral-500" size="0.8rem">
+              <Close />
+            </MaterialIcon>
+          </Button>
+
+          <p>{file.name}</p>
+        </div>
+      </li>
     {/each}
   </ul>
 
