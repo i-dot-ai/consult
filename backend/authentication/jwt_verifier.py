@@ -1,49 +1,78 @@
+"""
+JWT verification utility for validating tokens from AWS ALB.
+
+AWS ALB provides JWTs via the x-amzn-oidc-data header after validating
+OIDC authentication. These JWTs are signed with AWS's regional keys.
+"""
+
+import urllib.request
+from functools import lru_cache
 from typing import Any, Optional
 
 import jwt
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 from django.conf import settings
-from jwt import PyJWKClient
 
 logger = settings.LOGGER
 
 
-class JWTVerifier:
+class ALBJWTVerifier:
     """
-    Handles JWT verification for SSO tokens.
-
-    Uses PyJWKClient to automatically fetch and cache public keys from the
-    SSO provider's JWKS endpoint.
+    Handles JWT verification for AWS ALB tokens.
+    
+    AWS ALB doesn't provide a traditional JWKS endpoint. Instead, public keys
+    must be fetched individually using: 
+    https://public-keys.auth.elb.{region}.amazonaws.com/{kid}
     """
 
     def __init__(
         self,
-        jwks_url: str,
-        issuer: Optional[str] = None,
+        region: str,
         audience: Optional[str] = None,
-        cache_jwk_set: bool = True,
-        lifespan: int = 3600,  # 1 hour in seconds
     ):
         """
-        Initialize the JWT verifier.
+        Initialize the ALB JWT verifier.
 
         Args:
-            jwks_url: URL to the JWKS endpoint
-            issuer: Expected issuer claim (iss), optional
+            region: AWS region (e.g., eu-west-2)
             audience: Expected audience claim (aud), optional
-            cache_jwk_set: Whether to cache fetched keys
-            lifespan: How long to cache keys (seconds)
         """
-        self.issuer = issuer
+        self.region = region
         self.audience = audience
-        self.jwks_client = PyJWKClient(
-            jwks_url,
-            cache_jwk_set=cache_jwk_set,
-            lifespan=lifespan,
-        )
+        self.public_key_url_template = f"https://public-keys.auth.elb.{region}.amazonaws.com/{{}}"
+
+    @lru_cache(maxsize=10)
+    def _fetch_public_key(self, kid: str) -> str:
+        """
+        Fetch a public key from AWS ALB by key ID.
+        
+        Args:
+            kid: Key ID from the JWT header
+            
+        Returns:
+            PEM-formatted public key
+            
+        Raises:
+            jwt.InvalidTokenError: If key cannot be fetched
+        """
+        url = self.public_key_url_template.format(kid)
+        
+        try:
+            with urllib.request.urlopen(url, timeout=10) as response:  # nosec B310
+                return response.read().decode('utf-8')
+        except Exception as e:
+            logger.error(
+                "Failed to fetch ALB public key",
+                kid=kid,
+                url=url,
+                error=str(e)
+            )
+            raise jwt.InvalidTokenError(f"Cannot fetch public key for kid {kid}: {str(e)}")
 
     def verify_token(self, token: str) -> dict[str, Any]:
         """
-        Verify and decode a JWT token.
+        Verify and decode an AWS ALB JWT token.
 
         Args:
             token: The JWT token string to verify
@@ -54,69 +83,70 @@ class JWTVerifier:
         Raises:
             jwt.InvalidTokenError: If the token is invalid
             jwt.ExpiredSignatureError: If the token has expired
-            jwt.InvalidIssuerError: If the issuer doesn't match
-            jwt.InvalidAudienceError: If the audience doesn't match
         """
         try:
-            signing_key = self.jwks_client.get_signing_key_from_jwt(token)
-
+            # Decode header to get kid
+            header = jwt.get_unverified_header(token)
+            kid = header.get("kid")
+            
+            if not kid:
+                raise jwt.InvalidTokenError("Token missing 'kid' in header")
+            
+            # Fetch public key from AWS
+            public_key_pem = self._fetch_public_key(kid)
+            
+            # Verify and decode the token
             options = {
                 "verify_signature": True,
                 "verify_exp": True,
                 "verify_iat": False,
                 "verify_iss": False,
+                "verify_aud": bool(self.audience),
                 "require_exp": True,
                 "require_iat": False,
             }
 
             verify_kwargs = {
-                "key": signing_key.key,
-                "algorithms": ["RS256", "ES256"],
+                "key": public_key_pem,
+                "algorithms": ["ES256", "RS256"],
                 "options": options,
             }
 
             if self.audience:
                 verify_kwargs["audience"] = self.audience
-                options["verify_aud"] = True
 
             payload = jwt.decode(token, **verify_kwargs)
 
             logger.info(
-                "Successfully verified JWT token",
-                email= payload.get("email"), sub= payload.get("sub")
+                "Successfully verified ALB JWT token",
+                email=payload.get("email"),
+                sub=payload.get("sub"),
+                kid=kid
             )
 
             return payload
 
         except jwt.ExpiredSignatureError:
-            logger.exception("JWT token has expired")
+            logger.warning("ALB JWT token has expired")
             raise
 
-        except jwt.InvalidIssuerError:
-            logger.exception("JWT token has invalid issuer")
-            raise
-
-        except jwt.InvalidAudienceError:
-            logger.exception("JWT token has invalid audience")
-            raise
-
-        except jwt.InvalidTokenError:
-            logger.exception("JWT token validation failed")
+        except jwt.InvalidTokenError as e:
+            logger.error("ALB JWT token validation failed", error=str(e))
             raise
 
         except Exception as e:
-            logger.exception("Unexpected error verifying JWT token")
+            logger.exception("Unexpected error verifying ALB JWT token")
             raise jwt.InvalidTokenError(f"Token verification failed: {str(e)}")
 
 
-def get_jwt_verifier() -> Optional[JWTVerifier]:
+def get_jwt_verifier() -> Optional[ALBJWTVerifier]:
     """
-    Get a configured JWT verifier instance.
+    Get a configured JWT verifier instance for AWS ALB tokens.
 
     Returns None if JWT verification is not enabled for this environment.
     Only enabled for dev, preprod, and prod environments.
-
-    Note: The JWT tokens come from AWS ALB (not directly from SSO provider).
+    
+    Note: The JWT tokens come from AWS ALB (x-amzn-oidc-data header).
     AWS ALB validates OIDC with the SSO provider, then creates its own JWT
     signed with AWS's regional keys.
     """
@@ -124,31 +154,24 @@ def get_jwt_verifier() -> Optional[JWTVerifier]:
     # Only enable JWT verification for deployed environments
     if settings.ENVIRONMENT.lower() not in ["dev", "preprod", "prod"]:
         logger.info(
-            "JWT verification disabled for environment"
+            "JWT verification disabled for environment",
+            environment=settings.ENVIRONMENT
         )
         return None
 
-    # AWS ALB JWKS endpoint (region-specific)
-    # The JWT is signed by AWS ALB after it validates OIDC with the SSO provider
+    # Get AWS region from settings
     aws_region = getattr(settings, "AWS_REGION", "eu-west-2")
-    jwks_url = f"https://public-keys.auth.elb.{aws_region}.amazonaws.com"
-
-    # Issuer is not strictly validated for ALB tokens
-    # ALB doesn't include a standard iss claim
-    issuer = None
-
-    # Audience validation is optional
+    
+    # Audience validation is optional for ALB tokens
     audience = None
 
     logger.info(
         "JWT verification enabled for AWS ALB tokens",
-        region= aws_region, jwks_url=jwks_url
+        region=aws_region,
+        environment=settings.ENVIRONMENT
     )
 
-    return JWTVerifier(
-        jwks_url=jwks_url,
-        issuer=issuer,
+    return ALBJWTVerifier(
+        region=aws_region,
         audience=audience,
-        cache_jwk_set=True,
-        lifespan=3600,
     )
