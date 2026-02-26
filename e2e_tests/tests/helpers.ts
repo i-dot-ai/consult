@@ -9,9 +9,7 @@ export async function getFirstConsultationLink(page: Page) {
   const count = await allLinks.count();
 
   // Get all hrefs and find the first valid one
-  const hrefs = await Promise.all(
-    Array.from({ length: count }, (_, i) => allLinks.nth(i).getAttribute("href"))
-  );
+  const hrefs = allLinks.map(link => link.getAttribute("href"));
 
   const validHref = hrefs.find(
     (href) => href && href !== "/consultations" && !href.endsWith("/consultations")
