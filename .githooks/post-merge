@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Check if any dependency files changed after a pull/merge
+changed_files=$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD)
+
+if echo "$changed_files" | grep -qE "backend/uv\.lock|backend/pyproject\.toml|frontend/package-lock\.json|frontend/package\.json|e2e_tests/package-lock\.json|e2e_tests/package\.json"; then
+    echo ""
+    echo "⚠️  Dependencies have changed. Run 'make install' to update."
+    echo ""
+fi
