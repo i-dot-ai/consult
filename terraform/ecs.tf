@@ -6,6 +6,7 @@ locals {
     "ENVIRONMENT" = terraform.workspace
     "DEBUG"       = var.env == "prod" ? false : true
     "REPO"        = var.project_name
+    "AWS_ACCOUNT_ID"  = data.aws_caller_identity.current.account_id
   }
 
   django_env_vars = {
