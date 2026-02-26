@@ -39,48 +39,40 @@ def validate_token(request):
                     logger.error("JWT token missing email claim")
                     return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
-                logger.info(
-                    "JWT token verified successfully",
-                    email=email,
-                    sub=payload.get("sub"),
-                )
-
             except jwt.ExpiredSignatureError:
-                logger.error("JWT token has expired")
+                logger.warning("JWT token has expired")
                 return JsonResponse(data={"detail": "token expired"}, status=401)
 
             except jwt.InvalidTokenError as e:
-                logger.error("JWT token verification failed", error=str(e))
+                logger.warning("JWT token verification failed")
                 return JsonResponse(data={"detail": "invalid token"}, status=403)
 
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
-                logger.error(
-                    "{email} is not authorized because {auth_reason}",
+                logger.warning(
+                    "User not authorized",
                     email=user_authorisation_info.email,
-                    auth_reason=user_authorisation_info.auth_reason,
                 )
 
         elif HostingEnvironment.is_deployed():
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
-                logger.error(
-                    "{email} is not authenticated because {auth_reason}",
+                logger.warning(
+                    "User not authenticated",
                     email=user_authorisation_info.email,
-                    auth_reason=user_authorisation_info.auth_reason,
                 )
             email = user_authorisation_info.email
 
         else:
             email = jwt.decode(internal_access_token, options={"verify_signature": False})["email"]
-            logger.info("Local environment - skipping JWT verification", email=email)
+            logger.info("Local environment authentication", email=email)
 
         user = User.objects.get(email=email)
     except User.DoesNotExist:
-        logger.error("error authenticating request {error}", error="user does not exist")
+        logger.warning("User does not exist")
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
     except Exception as ex:
-        logger.error("error authenticating request {error}", error=", ".join(map(str, ex.args)))
+        logger.error("Error authenticating request", error=str(ex))
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
     login(request, user)
@@ -89,7 +81,7 @@ def validate_token(request):
 
     access_token = AccessToken.for_user(user)
 
-    logger.info("user {email} authenticated", email=user.email)
+    logger.info("User authenticated successfully", email=user.email)
 
     return JsonResponse(
         {

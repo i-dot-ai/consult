@@ -10,8 +10,6 @@ from functools import lru_cache
 from typing import Any, Optional
 
 import jwt
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import ec
 from django.conf import settings
 
 logger = settings.LOGGER
@@ -85,17 +83,14 @@ class ALBJWTVerifier:
             jwt.ExpiredSignatureError: If the token has expired
         """
         try:
-            # Decode header to get kid
             header = jwt.get_unverified_header(token)
             kid = header.get("kid")
             
             if not kid:
                 raise jwt.InvalidTokenError("Token missing 'kid' in header")
             
-            # Fetch public key from AWS
             public_key_pem = self._fetch_public_key(kid)
             
-            # Verify and decode the token
             options = {
                 "verify_signature": True,
                 "verify_exp": True,
@@ -117,12 +112,7 @@ class ALBJWTVerifier:
 
             payload = jwt.decode(token, **verify_kwargs)
 
-            logger.info(
-                "Successfully verified ALB JWT token",
-                email=payload.get("email"),
-                sub=payload.get("sub"),
-                kid=kid
-            )
+            logger.info("Successfully verified ALB JWT token", email=payload.get("email"))
 
             return payload
 
@@ -145,13 +135,7 @@ def get_jwt_verifier() -> Optional[ALBJWTVerifier]:
 
     Returns None if JWT verification is not enabled for this environment.
     Only enabled for dev, preprod, and prod environments.
-    
-    Note: The JWT tokens come from AWS ALB (x-amzn-oidc-data header).
-    AWS ALB validates OIDC with the SSO provider, then creates its own JWT
-    signed with AWS's regional keys.
     """
-
-    # Only enable JWT verification for deployed environments
     if settings.ENVIRONMENT.lower() not in ["dev", "preprod", "prod"]:
         logger.info(
             "JWT verification disabled for environment",
@@ -159,10 +143,7 @@ def get_jwt_verifier() -> Optional[ALBJWTVerifier]:
         )
         return None
 
-    # Get AWS region from settings
     aws_region = getattr(settings, "AWS_REGION", "eu-west-2")
-    
-    # Audience validation is optional for ALB tokens
     audience = None
 
     logger.info(
@@ -171,7 +152,4 @@ def get_jwt_verifier() -> Optional[ALBJWTVerifier]:
         environment=settings.ENVIRONMENT
     )
 
-    return ALBJWTVerifier(
-        region=aws_region,
-        audience=audience,
-    )
+    return ALBJWTVerifier(region=aws_region, audience=audience)
