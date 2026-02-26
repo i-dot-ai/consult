@@ -10,6 +10,7 @@
 
 
   interface Props {
+    id: string;
     title: string;
     subtitle: string;
     accept: string;
@@ -18,6 +19,7 @@
   }
 
   let {
+    id = "file-input",
     title = "Drag and drop files here",
     subtitle,
     accept,
@@ -66,7 +68,7 @@
 </script>
 
 <label
-  id="file-input"
+  {id}
   class={clsx([
     "flex",
     "flex-col",
@@ -110,11 +112,11 @@
 
   <input
     bind:this={inputEl}
-    class="sr-only"
-    type="file"
-    id="file-input"
+    {id}
     {multiple}
     {accept}
+    class="sr-only"
+    type="file"
     onchange={(e) => files = e.target!.files}
   />
 

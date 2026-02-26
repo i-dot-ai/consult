@@ -3,6 +3,7 @@ import type { File } from "buffer";
 import FileInput from "./FileInput.svelte";
 import { TEST_DATA } from "./testData";
 
+let id = $state(TEST_DATA.id);
 let title = $state(TEST_DATA.title);
 let subtitle = $state(TEST_DATA.subtitle);
 let accept = $state(TEST_DATA.accept);
@@ -14,6 +15,7 @@ export default {
   component: FileInput,
   category: "Inputs",
   props: [
+    { name: "id", value: id, type: "text" },
     { name: "title", value: title, type: "text" },
     { name: "subtitle", value: subtitle, type: "text" },
     { name: "accept", value: accept, type: "text" },
@@ -23,7 +25,7 @@ export default {
   stories: [
     {
       name: "Default",
-      props: {},
+      props: { id: "file-input-default" },
     },
   ],
 };
