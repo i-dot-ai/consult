@@ -43,7 +43,7 @@ def validate_token(request):
                 logger.warning("JWT token has expired")
                 return JsonResponse(data={"detail": "token expired"}, status=401)
 
-            except jwt.InvalidTokenError as e:
+            except jwt.InvalidTokenError:
                 logger.warning("JWT token verification failed")
                 return JsonResponse(data={"detail": "invalid token"}, status=403)
 
