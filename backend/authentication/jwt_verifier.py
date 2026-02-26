@@ -83,7 +83,7 @@ class JWTVerifier:
 
             logger.info(
                 "Successfully verified JWT token",
-                extra={"email": payload.get("email"), "sub": payload.get("sub")}
+                email= payload.get("email"), sub= payload.get("sub")
             )
 
             return payload
@@ -115,7 +115,7 @@ def get_jwt_verifier() -> Optional[JWTVerifier]:
 
     Returns None if JWT verification is not enabled for this environment.
     Only enabled for dev, preprod, and prod environments.
-    
+
     Note: The JWT tokens come from AWS ALB (not directly from SSO provider).
     AWS ALB validates OIDC with the SSO provider, then creates its own JWT
     signed with AWS's regional keys.
@@ -132,7 +132,7 @@ def get_jwt_verifier() -> Optional[JWTVerifier]:
     # The JWT is signed by AWS ALB after it validates OIDC with the SSO provider
     aws_region = getattr(settings, "AWS_REGION", "eu-west-2")
     jwks_url = f"https://public-keys.auth.elb.{aws_region}.amazonaws.com"
-    
+
     # Issuer is not strictly validated for ALB tokens
     # ALB doesn't include a standard iss claim
     issuer = None
@@ -142,7 +142,7 @@ def get_jwt_verifier() -> Optional[JWTVerifier]:
 
     logger.info(
         "JWT verification enabled for AWS ALB tokens",
-        extra={"region": aws_region, "jwks_url": jwks_url}
+        region= aws_region, jwks_url=jwks_url
     )
 
     return JWTVerifier(
