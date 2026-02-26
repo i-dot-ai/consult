@@ -7,7 +7,6 @@
   import Upload from "../../svg/material/Upload.svelte";
   import Button from "../Button/Button.svelte";
 
-
   interface Props {
     title: string;
     subtitle: string;
@@ -25,24 +24,58 @@
   }: Props = $props();
 
   let files: File[] = $state([]);
+  let isDragging = $state(false);
+  let inputEl;
 </script>
 
-<label id="file-input" class={clsx([
-  "flex",
-  "flex-col",
-  "items-center",
-  "gap-2",
-  "p-4",
-  "border",
-  "border-dashed",
-  "border-neutral-300",
-  "hover:border-secondary",
-  "rounded-lg",
-  "transition-colors",
-  "cursor-pointer",
-  "text-md",
-  "text-neutral-800",
-])}>
+<label
+  id="file-input"
+  class={clsx([
+    "flex",
+    "flex-col",
+    "items-center",
+    "gap-2",
+    "p-4",
+    "border",
+    "border-dashed",
+    isDragging ? "border-secondary" : "border-neutral-300",
+    isDragging && "bg-neutral-100",
+    "hover:border-secondary",
+    "rounded-lg",
+    "transition-colors",
+    "cursor-pointer",
+    "text-md",
+    "text-neutral-800",
+  ])}
+  ondragover={(e) => {
+    e.preventDefault();
+    isDragging = true;
+  }}
+  ondragleave={(e) => {
+    isDragging = false;
+  }}
+  ondrop={(e) => {
+    e.preventDefault();
+    isDragging = false;
+
+    const droppedFiles = e.dataTransfer?.files;
+
+    if (droppedFiles) {
+      const dataTransfer = new DataTransfer();
+
+      // Only add first file if not multiple,
+      // otherwise add all files
+      for (let i=0; i<droppedFiles.length; i++) {
+        if (i === 0 || multiple) {
+          dataTransfer.items.add(droppedFiles.item(i)!);
+        }
+      }
+
+      inputEl!.files = dataTransfer.files;
+      inputEl!.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }}
+>
   <MaterialIcon color="fill-neutral-400" size="3rem">
     <Upload />
   </MaterialIcon>
@@ -55,6 +88,7 @@
   ])}>{subtitle}</small>
 
   <input
+    bind:this={inputEl}
     class="sr-only"
     type="file"
     id="file-input"
