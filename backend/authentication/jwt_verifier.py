@@ -18,9 +18,9 @@ logger = settings.LOGGER
 class ALBJWTVerifier:
     """
     Handles JWT verification for AWS ALB tokens.
-    
+
     AWS ALB doesn't provide a traditional JWKS endpoint. Instead, public keys
-    must be fetched individually using: 
+    must be fetched individually using:
     https://public-keys.auth.elb.{region}.amazonaws.com/{kid}
     """
 
@@ -44,27 +44,24 @@ class ALBJWTVerifier:
     def _fetch_public_key(self, kid: str) -> str:
         """
         Fetch a public key from AWS ALB by key ID.
-        
+
         Args:
             kid: Key ID from the JWT header
-            
+
         Returns:
             PEM-formatted public key
-            
+
         Raises:
             jwt.InvalidTokenError: If key cannot be fetched
         """
         url = self.public_key_url_template.format(kid)
-        
+
         try:
             with urllib.request.urlopen(url, timeout=10) as response:  # nosec B310
                 return response.read().decode('utf-8')
         except Exception as e:
             logger.error(
-                "Failed to fetch ALB public key",
-                kid=kid,
-                url=url,
-                error=str(e)
+                "Failed to fetch ALB public key"
             )
             raise jwt.InvalidTokenError(f"Cannot fetch public key for kid {kid}: {str(e)}")
 
@@ -85,12 +82,12 @@ class ALBJWTVerifier:
         try:
             header = jwt.get_unverified_header(token)
             kid = header.get("kid")
-            
+
             if not kid:
                 raise jwt.InvalidTokenError("Token missing 'kid' in header")
-            
+
             public_key_pem = self._fetch_public_key(kid)
-            
+
             options = {
                 "verify_signature": True,
                 "verify_exp": True,
@@ -112,7 +109,7 @@ class ALBJWTVerifier:
 
             payload = jwt.decode(token, **verify_kwargs)
 
-            logger.info("Successfully verified ALB JWT token", email=payload.get("email"))
+            logger.info("Successfully verified ALB JWT token")
 
             return payload
 
@@ -120,8 +117,8 @@ class ALBJWTVerifier:
             logger.warning("ALB JWT token has expired")
             raise
 
-        except jwt.InvalidTokenError as e:
-            logger.error("ALB JWT token validation failed", error=str(e))
+        except jwt.InvalidTokenError:
+            logger.error("ALB JWT token validation failed")
             raise
 
         except Exception as e:
@@ -138,8 +135,7 @@ def get_jwt_verifier() -> Optional[ALBJWTVerifier]:
     """
     if settings.ENVIRONMENT.lower() not in ["dev", "preprod", "prod"]:
         logger.info(
-            "JWT verification disabled for environment",
-            environment=settings.ENVIRONMENT
+            "JWT verification disabled for environment"
         )
         return None
 
@@ -147,9 +143,7 @@ def get_jwt_verifier() -> Optional[ALBJWTVerifier]:
     audience = None
 
     logger.info(
-        "JWT verification enabled for AWS ALB tokens",
-        region=aws_region,
-        environment=settings.ENVIRONMENT
+        "JWT verification enabled for AWS ALB tokens"
     )
 
     return ALBJWTVerifier(region=aws_region, audience=audience)

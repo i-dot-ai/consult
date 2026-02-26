@@ -50,29 +50,27 @@ def validate_token(request):
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
                 logger.warning(
-                    "User not authorized",
-                    email=user_authorisation_info.email,
+                    "User not authorized"
                 )
 
         elif HostingEnvironment.is_deployed():
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
                 logger.warning(
-                    "User not authenticated",
-                    email=user_authorisation_info.email,
+                    "User not authenticated"
                 )
             email = user_authorisation_info.email
 
         else:
             email = jwt.decode(internal_access_token, options={"verify_signature": False})["email"]
-            logger.info("Local environment authentication", email=email)
+            logger.info("Local environment authentication")
 
         user = User.objects.get(email=email)
     except User.DoesNotExist:
         logger.warning("User does not exist")
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
-    except Exception as ex:
-        logger.error("Error authenticating request", error=str(ex))
+    except Exception:
+        logger.error("Error authenticating request")
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
     login(request, user)
@@ -81,7 +79,7 @@ def validate_token(request):
 
     access_token = AccessToken.for_user(user)
 
-    logger.info("User authenticated successfully", email=user.email)
+    logger.info("User authenticated successfully")
 
     return JsonResponse(
         {
