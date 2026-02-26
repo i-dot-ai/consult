@@ -37,7 +37,7 @@ def validate_token(request):
 
                 if not email:
                     logger.error("JWT token missing email claim")
-                    return JsonResponse(data={"detail": "authentication failed"}, status=403)
+                    return JsonResponse(data={"detail": "authentication failed"}, status=401)
 
             except jwt.ExpiredSignatureError:
                 logger.warning("JWT token has expired")
@@ -45,13 +45,14 @@ def validate_token(request):
 
             except jwt.InvalidTokenError:
                 logger.warning("JWT token verification failed")
-                return JsonResponse(data={"detail": "invalid token"}, status=403)
+                return JsonResponse(data={"detail": "invalid token"}, status=401)
 
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
                 logger.warning(
                     "User not authorized"
                 )
+                return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
         elif HostingEnvironment.is_deployed():
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
@@ -59,6 +60,7 @@ def validate_token(request):
                 logger.warning(
                     "User not authenticated"
                 )
+                return JsonResponse(data={"detail": "authentication failed"}, status=403)
             email = user_authorisation_info.email
 
         else:
