@@ -85,8 +85,23 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     Replaces the Question/QuestionPart split.
     """
 
+    # New properties
+    class QuestionType(models.TextChoices):
+        DEMOGRAPHIC = "demographic", "Demographic"
+        CLOSED = "closed", "Closed"
+        OPEN = "open", "Open"
+
+    closed_question = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
+    order = models.PositiveSmallIntegerField(blank=True, null=True)
+    identifier = models.TextField(blank=True, null=True)
+    type = models.CharField(
+        max_length=32, choices=QuestionType.choices, blank=True, null=True,
+    )
+
     class ThemeStatus(models.TextChoices):
         DRAFT = "draft", "Draft"
+        CONFIGURED = "configured", "Configured"
+        FINALISING_THEMES = "finalising_themes", "Finalising Themes"
         CONFIRMED = "confirmed", "Confirmed"
 
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
