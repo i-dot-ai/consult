@@ -24,13 +24,6 @@
     consultations = consultationData.results;
     loading = false;
   });
-
-  onMount(async () => {
-    loading = true;
-    const response = await fetch(Routes.ApiUser);
-    const userData = await response.json();
-    loading = false;
-  });
 </script>
 
 <section class="mt-4">
