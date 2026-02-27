@@ -42,6 +42,11 @@
   -webkit-animation: 2s growshrink ease-in-out infinite;
 }
 
+.hozshift {
+  animation: 2s hozshift ease-in-out infinite;
+  -webkit-animation: 2s hozshift ease-in-out infinite;
+}
+
 @view-transition {
   navigation: auto;
 }
@@ -67,6 +72,20 @@
 
   50% {
     transform: scale(0.8);
+  }
+}
+
+@keyframes hozshift {
+
+  0%,
+  100% {
+    transform: translateX(0px);
+    opacity: 1;
+  }
+
+  50% {
+    transform: translateX(-10px);
+    opacity: 0.5;
   }
 }
 

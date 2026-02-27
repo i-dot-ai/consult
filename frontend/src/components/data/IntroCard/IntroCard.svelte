@@ -4,6 +4,7 @@
   import type { Component } from "svelte";
 
   import MaterialIcon from "../../MaterialIcon.svelte";  
+  import ArrowForward from "../../svg/material/ArrowForward.svelte";
 
 
   interface Props {
@@ -22,6 +23,7 @@
 </script>
 
 <div class={clsx([
+  "relative",
   "flex",
   "flex-col",
   "gap-1",
@@ -68,4 +70,15 @@
   ])}>
     {subtitle}
   </p>
+
+  <div class={clsx([
+    "hozshift",
+    "absolute",
+    "top-[33%]",
+    "-right-4",
+  ])}>
+    <MaterialIcon color="fill-secondary" size="1.5rem">
+      <ArrowForward />
+    </MaterialIcon>
+  </div>
 </div>
