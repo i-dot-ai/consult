@@ -150,33 +150,51 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
       headersToSend.set(key, value);
     }
 
-    // Rewrite Origin, Referer, and Host headers to backend URL
-    // This prevents Django CSRF "Cross-site POST form submissions are forbidden" errors
-    // when the frontend proxy forwards requests to Django admin
+    // Handle Origin/Referer/Host headers for Django CSRF protection
+    // Django CSRF checks that the Origin matches CSRF_TRUSTED_ORIGINS
+    //
+    // Architecture:
+    // - Local dev: frontend (localhost:3000) proxies to backend (localhost:8000)
+    //   Origin needs rewriting since they're on different ports
+    // - Production: Both use public URL (e.g., https://consult-preprod.ai.cabinetoffice.gov.uk)
+    //   Frontend proxies to internal backend URL, but Origin should stay as public URL
+    //
+    // Strategy: Keep original Origin/Referer unless they explicitly point to localhost
+    // on a different port than the backend (local dev scenario)
+
     const backendUrlObj = new URL(backendUrl);
-
-    // Rewrite Origin header to backend URL
     const origin = context.request.headers.get("origin");
+
+    // Check if this is local development (localhost with mismatched ports)
     if (origin) {
-      headersToSend.set("Origin", backendUrl);
-    }
+      const originObj = new URL(origin);
+      const isLocalDev =
+        originObj.hostname === "localhost" &&
+        backendUrlObj.hostname === "localhost" &&
+        originObj.port !== backendUrlObj.port;
 
-    // Rewrite Referer header to backend URL
-    const referer = context.request.headers.get("referer");
-    if (referer) {
-      try {
-        const refererUrl = new URL(referer);
-        refererUrl.protocol = backendUrlObj.protocol;
-        refererUrl.host = backendUrlObj.host;
-        headersToSend.set("Referer", refererUrl.toString());
-      } catch {
-        // If referer is malformed, just use the backend URL
-        headersToSend.set("Referer", backendUrl);
+      if (isLocalDev) {
+        // Local dev: rewrite to backend URL
+        headersToSend.set("Origin", backendUrl);
+
+        // Also rewrite Referer if present
+        const referer = context.request.headers.get("referer");
+        if (referer) {
+          try {
+            const refererUrl = new URL(referer);
+            refererUrl.protocol = backendUrlObj.protocol;
+            refererUrl.host = backendUrlObj.host;
+            headersToSend.set("Referer", refererUrl.toString());
+          } catch {
+            headersToSend.set("Referer", backendUrl);
+          }
+        }
+
+        // Set Host header to backend
+        headersToSend.set("Host", backendUrlObj.host);
       }
+      // Production: Keep original Origin/Referer/Host - they're already correct
     }
-
-    // Set Host header to backend
-    headersToSend.set("Host", backendUrlObj.host);
 
     const accessToken = context.cookies.get("accessToken")?.value;
     if (accessToken) {
