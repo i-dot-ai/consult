@@ -31,7 +31,6 @@ env = environ.Env(DEBUG=(bool, False))
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
 ENVIRONMENT = env("ENVIRONMENT")
-PUBLIC_INTERNAL_ACCESS_CLIENT_ID = env("PUBLIC_INTERNAL_ACCESS_CLIENT_ID", default=None)
 AWS_ACCOUNT_ID = env("AWS_ACCOUNT_ID", default=None)
 
 DOMAIN_NAME = env("DOMAIN_NAME", default="0.0.0.0")  # nosec
