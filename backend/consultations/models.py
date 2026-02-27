@@ -40,8 +40,13 @@ class TimeStampedModel(models.Model):
 
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     class Stage(models.TextChoices):
+        # New stages
         SETUP = "setup", "Data Setup"
         FINDING_THEMES = "finding_themes", "Finding Themes"
+        FINALISING_THEMES = "finalising_themes", "Finalising Themes"
+        ASSIGNING_THEMES = "assigning_themes", "Assigning Themes"
+
+        # Old stages
         THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
         THEME_MAPPING = "theme_mapping", "Theme Mapping"
         ANALYSIS = "analysis", "Analysis"
@@ -224,6 +229,9 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
 class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     """Response to a question - can include both free text and multiple choice"""
 
+    # New properties
+    text = models.TextField(null=True, blank=True)
+
     respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
@@ -235,11 +243,6 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     read_by = models.ManyToManyField(User, blank=True)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["respondent", "question"], name="unique_question_response"
-            ),
-        ]
         indexes = [
             GinIndex(fields=["search_vector"]),
         ]
