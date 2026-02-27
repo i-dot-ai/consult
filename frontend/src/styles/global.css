@@ -8,12 +8,14 @@
   font-weight: normal;
   font-style: normal;
 }
+
 @font-face {
   font-family: "Inter";
   src: url(/fonts/inter/Inter-Bold.ttf) format("truetype");
   font-weight: bold;
   font-style: normal;
 }
+
 @font-face {
   font-family: "Inter";
   src: url(/fonts/inter/Inter-SemiBold.ttf) format("truetype");
@@ -35,17 +37,36 @@
   -webkit-animation: 2s blink ease-in-out infinite;
 }
 
+.growshrink {
+  animation: 2s growshrink ease-in-out infinite;
+  -webkit-animation: 2s growshrink ease-in-out infinite;
+}
+
 @view-transition {
   navigation: auto;
 }
 
 @keyframes blink {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.33;
+  }
+}
+
+@keyframes growshrink {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(0.8);
   }
 }
 
@@ -56,22 +77,28 @@ iai-csv-download iai-silver-button button {
   align-items: center;
   gap: 0.5rem;
 }
+
 iai-csv-download iai-silver-button .material-symbols-outlined {
   font-size: 1.3rem;
 }
+
 iai-progress-bar .container .bar.full {
   border-radius: 0.5em !important;
 }
+
 table iai-progress-bar .container {
   max-width: 3rem;
 }
+
 table iai-progress-bar .container .bar {
   height: 0.5rem;
 }
+
 .demo-filter iai-progress-bar .container,
 .demo-filter iai-progress-bar .container .bar {
   height: 0.5rem;
 }
+
 .demo-filter iai-progress-bar .container,
 table iai-progress-bar .container {
   background-color: #bebebe !important;
