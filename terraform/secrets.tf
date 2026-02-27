@@ -87,7 +87,7 @@ locals {
 }
 
 resource "random_password" "django_pass" {
-  length  = 24
+  length  = 50
   special = false
 }
 
