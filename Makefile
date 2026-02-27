@@ -58,7 +58,7 @@ test-end-to-end: ## Run end-to-end tests with Playwright
 	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "CREATE DATABASE consult_e2e_test;"
 	@echo "Initializing test data..."
 	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py migrate
-	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py createadminusers
+	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) -e ADMIN_USERS=email@example.com backend venv/bin/python manage.py createadminusers
 	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py generate_dummy_data
 	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py shell -c \
 		"from authentication.models import User; from consultations.models import Consultation; \
@@ -72,9 +72,9 @@ test-end-to-end: ## Run end-to-end tests with Playwright
 	@docker compose down backend 2>/dev/null || true
 	@docker compose up -d backend frontend
 	@echo "Waiting for services to be ready..."
-	@timeout 60 sh -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 2; done' || \
+	@timeout 120 sh -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 2; done' || \
 		(echo "Frontend failed to start" && docker compose logs frontend && exit 1)
-	@timeout 60 sh -c 'until curl -s http://localhost:8000/api/user/ > /dev/null; do sleep 2; done' || \
+	@timeout 120 sh -c 'until curl -s http://localhost:8000/api/user/ > /dev/null; do sleep 2; done' || \
 		(echo "Backend failed to start" && docker compose logs backend && exit 1)
 	@echo "Running tests..."
 	@cd e2e_tests && npm install
