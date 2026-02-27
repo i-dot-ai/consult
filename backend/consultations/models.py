@@ -40,6 +40,13 @@ class TimeStampedModel(models.Model):
 
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     class Stage(models.TextChoices):
+        # New stages
+        SETUP = "setup", "Data Setup"
+        FINDING_THEMES = "finding_themes", "Finding Themes"
+        FINALISING_THEMES = "finalising_themes", "Finalising Themes"
+        ASSIGNING_THEMES = "assigning_themes", "Assigning Themes"
+
+        # Old stages
         THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
         THEME_MAPPING = "theme_mapping", "Theme Mapping"
         ANALYSIS = "analysis", "Analysis"
@@ -83,8 +90,23 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     Replaces the Question/QuestionPart split.
     """
 
+    # New properties
+    class QuestionType(models.TextChoices):
+        DEMOGRAPHIC = "demographic", "Demographic"
+        CLOSED = "closed", "Closed"
+        OPEN = "open", "Open"
+
+    closed_question = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
+    order = models.PositiveSmallIntegerField(blank=True, null=True)
+    identifier = models.TextField(blank=True, null=True)
+    type = models.CharField(
+        max_length=32, choices=QuestionType.choices, blank=True, null=True,
+    )
+
     class ThemeStatus(models.TextChoices):
         DRAFT = "draft", "Draft"
+        CONFIGURED = "configured", "Configured"
+        FINALISING_THEMES = "finalising_themes", "Finalising Themes"
         CONFIRMED = "confirmed", "Confirmed"
 
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
@@ -191,7 +213,6 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, editable=False)
     themefinder_id = models.IntegerField(null=True, blank=True, editable=False)
-    demographics = models.ManyToManyField("DemographicOption", blank=True)
     name = models.TextField(null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
@@ -207,6 +228,9 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
 class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     """Response to a question - can include both free text and multiple choice"""
 
+    # New properties
+    text = models.TextField(null=True, blank=True)
+
     respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
@@ -218,11 +242,6 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     read_by = models.ManyToManyField(User, blank=True)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["respondent", "question"], name="unique_question_response"
-            ),
-        ]
         indexes = [
             GinIndex(fields=["search_vector"]),
         ]
@@ -255,28 +274,6 @@ def update_search_vector(sender, instance, created, **kwargs):
     Response.objects.filter(pk=instance.pk).update(
         search_vector=SearchVector("free_text", config="english")
     )
-
-
-class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
-    """Normalized storage of demographic field options for efficient querying across pages"""
-
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
-    field_name = models.CharField(max_length=128)
-    field_value = models.JSONField()
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        constraints = [
-            models.UniqueConstraint(
-                fields=["consultation", "field_name", "field_value"],
-                name="unique_demographic_option",
-            ),
-        ]
-        indexes = [
-            models.Index(fields=["consultation", "field_name"]),
-        ]
-
-    def __str__(self):
-        return f"{self.field_name}={self.field_value}"
 
 
 class SelectedTheme(UUIDPrimaryKeyModel, TimeStampedModel):
