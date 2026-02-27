@@ -213,7 +213,6 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, editable=False)
     themefinder_id = models.IntegerField(null=True, blank=True, editable=False)
-    demographics = models.ManyToManyField("DemographicOption", blank=True)
     name = models.TextField(null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
@@ -275,28 +274,6 @@ def update_search_vector(sender, instance, created, **kwargs):
     Response.objects.filter(pk=instance.pk).update(
         search_vector=SearchVector("free_text", config="english")
     )
-
-
-class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
-    """Normalized storage of demographic field options for efficient querying across pages"""
-
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
-    field_name = models.CharField(max_length=128)
-    field_value = models.JSONField()
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        constraints = [
-            models.UniqueConstraint(
-                fields=["consultation", "field_name", "field_value"],
-                name="unique_demographic_option",
-            ),
-        ]
-        indexes = [
-            models.Index(fields=["consultation", "field_name"]),
-        ]
-
-    def __str__(self):
-        return f"{self.field_name}={self.field_value}"
 
 
 class SelectedTheme(UUIDPrimaryKeyModel, TimeStampedModel):
