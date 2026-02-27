@@ -150,6 +150,34 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
       headersToSend.set(key, value);
     }
 
+    // Rewrite Origin, Referer, and Host headers to backend URL
+    // This prevents Django CSRF "Cross-site POST form submissions are forbidden" errors
+    // when the frontend proxy forwards requests to Django admin
+    const backendUrlObj = new URL(backendUrl);
+
+    // Rewrite Origin header to backend URL
+    const origin = context.request.headers.get("origin");
+    if (origin) {
+      headersToSend.set("Origin", backendUrl);
+    }
+
+    // Rewrite Referer header to backend URL
+    const referer = context.request.headers.get("referer");
+    if (referer) {
+      try {
+        const refererUrl = new URL(referer);
+        refererUrl.protocol = backendUrlObj.protocol;
+        refererUrl.host = backendUrlObj.host;
+        headersToSend.set("Referer", refererUrl.toString());
+      } catch {
+        // If referer is malformed, just use the backend URL
+        headersToSend.set("Referer", backendUrl);
+      }
+    }
+
+    // Set Host header to backend
+    headersToSend.set("Host", backendUrlObj.host);
+
     const accessToken = context.cookies.get("accessToken")?.value;
     if (accessToken) {
       headersToSend.set("Authorization", `Bearer ${accessToken}`);
