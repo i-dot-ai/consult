@@ -40,6 +40,8 @@ class TimeStampedModel(models.Model):
 
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     class Stage(models.TextChoices):
+        SETUP = "setup", "Data Setup"
+        FINDING_THEMES = "finding_themes", "Finding Themes"
         THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
         THEME_MAPPING = "theme_mapping", "Theme Mapping"
         ANALYSIS = "analysis", "Analysis"
