@@ -23,6 +23,9 @@ export const onRequest: MiddlewareHandler = async (
   const url = context.url;
   const backendUrl = getBackendUrl();
 
+  // DEBUG: Log ALL requests to see if middleware is running
+  console.log(`[MIDDLEWARE] ${context.request.method} ${url.pathname}`);
+
   if (/^\/api\//.test(url.pathname)) {
     return next();
   }
