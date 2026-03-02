@@ -30,7 +30,7 @@ serve: ## Run the backend and frontend together
 .PHONY: backend
 backend: ## Run the backend and the worker
 	docker compose up -d postgres redis
-	uv tool run honcho start -f Procfile.dev web worker worker2
+	cd backend && uv run honcho start
 
 .PHONY: frontend
 frontend: ## Run the frontend

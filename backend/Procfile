@@ -1,0 +1,3 @@
+web: PYTHONPATH=.. uv run gunicorn --reload --workers=1 -c gunicorn_config.py backend.wsgi
+worker: PYTHONPATH=.. OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES uv run python manage.py rqworker default --worker-class 'rq.worker.SimpleWorker'
+worker2: PYTHONPATH=.. OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES uv run python manage.py rqworker default --worker-class 'rq.worker.SimpleWorker'
