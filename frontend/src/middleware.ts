@@ -164,6 +164,15 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
 
     const backendUrlObj = new URL(backendUrl);
     const origin = context.request.headers.get("origin");
+    const referer = context.request.headers.get("referer");
+
+    // Debug logging for CSRF issues
+    if (context.request.method === "POST") {
+      console.log("[proxyToDjango] POST request to:", url.pathname);
+      console.log("[proxyToDjango] Original Origin:", origin);
+      console.log("[proxyToDjango] Original Referer:", referer);
+      console.log("[proxyToDjango] Backend URL:", backendUrl);
+    }
 
     // Check if this is local development (localhost with mismatched ports)
     if (origin) {
@@ -178,7 +187,6 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
         headersToSend.set("Origin", backendUrl);
 
         // Also rewrite Referer if present
-        const referer = context.request.headers.get("referer");
         if (referer) {
           try {
             const refererUrl = new URL(referer);
@@ -194,6 +202,13 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
         headersToSend.set("Host", backendUrlObj.host);
       }
       // Production: Keep original Origin/Referer/Host - they're already correct
+    }
+
+    // Debug logging continued
+    if (context.request.method === "POST") {
+      console.log("[proxyToDjango] Final Origin being sent:", headersToSend.get("Origin"));
+      console.log("[proxyToDjango] Final Referer being sent:", headersToSend.get("Referer"));
+      console.log("[proxyToDjango] Final Host being sent:", headersToSend.get("Host"));
     }
 
     const accessToken = context.cookies.get("accessToken")?.value;
