@@ -20,6 +20,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    #    container: python:3.12.3 # Match exact version specified in .python-version and Dockerfile
 
     steps:
       - uses: actions/checkout@v6
