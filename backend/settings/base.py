@@ -108,15 +108,6 @@ if ENVIRONMENT.lower() == "preprod":
 
 CSRF_TRUSTED_ORIGINS = [TRUSTED_ORIGIN]
 
-# CSRF Cookie Settings
-# Ensure CSRF cookies work when proxied through frontend middleware
-CSRF_COOKIE_SECURE = ENVIRONMENT.lower() != "local"  # Use secure cookies in deployed environments
-CSRF_COOKIE_HTTPONLY = False  # Must be False so JavaScript can read the token
-CSRF_COOKIE_SAMESITE = "Lax"  # Allow the cookie to be sent with same-site requests
-CSRF_USE_SESSIONS = False  # Store in cookie, not session
-SESSION_COOKIE_SECURE = ENVIRONMENT.lower() != "local"  # Use secure cookies in deployed environments  
-SESSION_COOKIE_SAMESITE = "Lax"  # Match CSRF cookie setting
-
 # Database with Connection Pooling
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
