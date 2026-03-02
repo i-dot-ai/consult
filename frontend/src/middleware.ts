@@ -230,18 +230,9 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
 
     // Debug logging continued
     if (context.request.method === "POST") {
-      console.log(
-        "[proxyToDjango] Final Origin being sent:",
-        headersToSend.get("Origin"),
-      );
-      console.log(
-        "[proxyToDjango] Final Referer being sent:",
-        headersToSend.get("Referer"),
-      );
-      console.log(
-        "[proxyToDjango] Final Host being sent:",
-        headersToSend.get("Host"),
-      );
+      console.log("[proxyToDjango] Final Origin being sent:", headersToSend.get("Origin"));
+      console.log("[proxyToDjango] Final Referer being sent:", headersToSend.get("Referer"));
+      console.log("[proxyToDjango] Final Host being sent:", headersToSend.get("Host"));
     }
 
     const accessToken = context.cookies.get("accessToken")?.value;
@@ -281,6 +272,14 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
       status: response.status,
       headers: response.headers,
     });
+
+    // Add debug headers to response for visibility in browser DevTools
+    if (context.request.method === "POST") {
+      newResponse.headers.set("X-Debug-Origin-Sent", headersToSend.get("Origin") || "none");
+      newResponse.headers.set("X-Debug-Referer-Sent", headersToSend.get("Referer") || "none");
+      newResponse.headers.set("X-Debug-IsLocalDev", isLocalDev ? "true" : "false");
+      newResponse.headers.set("X-Debug-Backend-URL", backendUrl);
+    }
 
     return newResponse;
   } catch (err: unknown) {
