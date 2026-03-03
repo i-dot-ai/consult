@@ -50,7 +50,7 @@ def rule_3_semantic_similarity_must_be_less_than_90pc(
         return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 
     response = client.embeddings.create(
-        input=[x.topic_lable + ": " + x.topic_description for x in clustered_themes],
+        input=[x.topic_label + ": " + x.topic_description for x in clustered_themes],
         model="text-embedding-3-large",
     )
     embeddings = [d.embedding for d in response.data]
