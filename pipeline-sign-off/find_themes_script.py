@@ -8,11 +8,51 @@ from pathlib import Path
 
 import boto3
 import pandas as pd
+import numpy as np
 from langchain_openai import ChatOpenAI
+from openai import OpenAI
 from pydantic import BaseModel
 from themefinder import theme_condensation, theme_generation, theme_refinement
 from themefinder.advanced_tasks.theme_clustering_agent import ThemeClusteringAgent
 from themefinder.models import HierarchicalClusteringResponse, ThemeNode
+
+import urllib3
+
+http = urllib3.PoolManager()
+
+client = OpenAI(
+    api_base = os.environ["LLM_GATEWAY_URL"],
+    api_key = os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+)
+
+SLACK_WEBHOOK_URL = os.environ["SLACK_WEBHOOK_URL"]
+
+
+def rule_1_total_theme_number_less_than_70(clustered_themes: list) -> int | None:
+    """
+    The number of child themes should be no more than 70
+    Rationale: Users typically want less themes than this, so we do not want Consultation owners to have to much work to do to reduce the theme-set to meet their expectations.
+    """
+    if len(clustered_themes) <= 70:
+        return len(clustered_themes)
+    return None
+
+
+def rule_3_semantic_similarity_must_be_less_than_90pc(clustered_themes: list[ThemeNode]) -> list[tuple[str, str, float]]:
+    """
+    The semantic similarity between theme titles and descriptions must be less than 90%
+    Rationale: We do not want multiple instances of very similar themes, i.e. "environment" and "environmental"
+    """
+
+    def cosine_similarity(a, b):
+        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+
+    response = client.embeddings.create(input=[x.topic_lable + ": " + x.topic_description for x in clustered_themes], model="text-embedding-3-large")
+    embeddings = [d.embedding for d in response.data]
+
+    results = [(x, y, cosine_similarity(x, y)) for i, x in enumerate(embeddings) for y in embeddings[i+1:]]
+    return [(clustered_themes[x].topic_label, clustered_themes[y].topic_label, r) for x, y, r in results if r < 0.9]
 
 
 class ThemeNodeList(BaseModel):
@@ -266,6 +306,64 @@ async def process_consultation(consultation_dir: str, model_name:str) -> str:
                     all_themes_list = [
                         refined_themes_to_theme_node(row) for _, row in refined_themes_df.iterrows()
                     ]
+
+                message_blocks = []
+                if theme_number := rule_1_total_theme_number_less_than_70(all_themes_list):
+                    message_blocks.append(
+                        {
+                            "type": "section",
+                            "fields": [
+                                {
+                                    "type": "mrkdwn",
+                                    "text": f"Rule 1 failed",
+                                },
+                                {
+                                    "type": "mrkdwn",
+                                    "text": f"*expected:* no more than 70 themes",
+                                },
+                                {
+                                    "type": "mrkdwn",
+                                    "text": f"*actual:* got {theme_number} themes",
+                                },
+                            ],
+                        },
+                    )
+
+
+                if semantic_failures := rule_3_semantic_similarity_must_be_less_than_90pc(all_themes_list):
+                    message_blocks.append(
+                        {
+                            "type": "section",
+                            "fields": [
+                                {
+                                    "type": "mrkdwn",
+                                    "text": f"Rule 3 failed",
+                                },
+                                {
+                                    "type": "mrkdwn",
+                                    "text": f"*expected:* all themes to have a semantic distance of at least 90%",
+                                },
+                                {
+                                    "type": "mrkdwn",
+                                    "text": f"*actual:* The following themes are too similar:\n{"\n".join(f"* {x} & {y} > {r}" for x, y, r in semantic_failures)}",
+                                },
+                            ],
+                        },
+                    )
+
+                if message_blocks:
+                    message_title = f"{consultation_dir}/{question_dir}"
+                    message = {
+                        "text": message_title,
+                        "blocks": message_blocks,
+                    }
+                    http.request(
+                        "POST",
+                        SLACK_WEBHOOK_URL,
+                        body=json.dumps(message),
+                        headers={"Content-Type": "application/json"},
+                    )
+
 
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
                     f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
