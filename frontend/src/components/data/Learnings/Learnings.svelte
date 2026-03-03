@@ -5,11 +5,13 @@
   import Title from "../../Title.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import ChevronRight from "../../svg/material/ChevronRight.svelte";
+  import Star from "../../svg/material/Star.svelte";
 
   interface Item {
     text: string;
     author: string;
     organisation: string;
+    abbreviation?: string;
   }
 
   interface Props {
@@ -37,8 +39,8 @@
     </span>
   </Title>
 
-  <div {id} class={clsx(["bg-neutral-100", "p-3", "rounded-lg"])}>
-    <div class="flex gap-2">
+  <div {id} class={clsx(["bg-neutral-100", "p-4", "rounded-lg"])}>
+    <div class="flex gap-4">
       {#if items.length === 0}
         <p
           class={clsx(["w-full", "text-neutral-600", "text-sm", "text-center"])}
@@ -51,16 +53,22 @@
             "flex",
             "items-center",
             "justify-center",
-            "text-white",
-            "bg-secondary",
-            "p-4",
-            "rounded-full",
-            "w-4",
-            "h-4",
+            "flex-col",
+            "mb-auto",
+            "py-2",
+            "px-4",
             "font-bold",
+            "text-xs",
+            "text-neutral-700",
+            "bg-white",
+            "border-2",
+            "border-neutral-500",
           ])}
         >
-          {currItem.organisation.charAt(0)}
+          <MaterialIcon color="fill-neutral-700" size="1.5rem">
+            <Star fill={true} />
+          </MaterialIcon>
+          {currItem.abbreviation || currItem.organisation.charAt(0)}
         </div>
         <div>
           <p class={clsx(["text-sm", "text-neutral-600", "mb-2"])}>
