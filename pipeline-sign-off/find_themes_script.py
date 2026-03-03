@@ -331,6 +331,7 @@ async def process_consultation(consultation_dir: str, model_name:str) -> str:
 
 
                 if semantic_failures := rule_3_semantic_similarity_must_be_less_than_90pc(all_themes_list):
+                    text = "\n".join(f"* {x} & {y} > {r}" for x, y, r in semantic_failures)
                     message_blocks.append(
                         {
                             "type": "section",
@@ -345,7 +346,7 @@ async def process_consultation(consultation_dir: str, model_name:str) -> str:
                                 },
                                 {
                                     "type": "mrkdwn",
-                                    "text": f"*actual:* The following themes are too similar:\n{"\n".join(f"* {x} & {y} > {r}" for x, y, r in semantic_failures)}",
+                                    "text": f"*actual:* The following themes are too similar:\n{text}",
                                 },
                             ],
                         },
