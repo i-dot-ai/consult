@@ -23,6 +23,9 @@ export default {
   stories: [
     { name: "inactive", props: { ...TEST_DATA, isActive: false } },
     { name: "no arrow", props: { ...TEST_DATA, showArrow: false } },
-    { name: "inactive no arrow", props: { ...TEST_DATA, isActive: false, showArrow: false } },
+    {
+      name: "inactive no arrow",
+      props: { ...TEST_DATA, isActive: false, showArrow: false },
+    },
   ],
 };
