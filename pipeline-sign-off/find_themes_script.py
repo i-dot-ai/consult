@@ -4,6 +4,7 @@ import datetime
 import json
 import logging
 import os
+from itertools import pairwise
 from pathlib import Path
 
 import boto3
@@ -53,18 +54,16 @@ def rule_3_semantic_similarity_must_be_less_than_90pc(
         input=[x.topic_label + ": " + x.topic_description for x in clustered_themes],
         model="text-embedding-3-large",
     )
-    embeddings = [d.embedding for d in response.data]
 
-    results = [
-        (x, y, cosine_similarity(x, y))
-        for i, x in enumerate(embeddings)
-        for y in embeddings[i + 1 :]
-    ]
-    return [
-        (clustered_themes[x].topic_label, clustered_themes[y].topic_label, r)
-        for x, y, r in results
-        if r < 0.9
-    ]
+    labeled_embeddings = zip(clustered_themes, response.data)
+
+    results = []
+    for (label_1, embedding_1), (label_2, embedding_2) in pairwise(labeled_embeddings):
+        similarity = cosine_similarity(embedding_1.embedding, embedding_2.embedding)
+        results.append((label_1.topic_label, label_2.topic_label, similarity))
+
+
+    return results
 
 
 class ThemeNodeList(BaseModel):
