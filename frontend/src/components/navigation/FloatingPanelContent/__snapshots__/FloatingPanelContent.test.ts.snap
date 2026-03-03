@@ -233,6 +233,5 @@ exports[`FloatingPanelContent > matches snapshot 1`] = `
     </ul>
   </div>
   
-  
 </div>
 `;

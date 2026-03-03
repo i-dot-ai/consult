@@ -480,6 +480,5 @@ exports[`Header > matches snapshot 1`] = `
     <!---->
   </header>
   
-  
 </div>
 `;
