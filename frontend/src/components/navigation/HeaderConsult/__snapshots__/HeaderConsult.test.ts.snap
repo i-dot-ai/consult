@@ -199,12 +199,14 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                       tabindex="0"
                     >
                       <!---->
+                      <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
                         Privacy notice 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -280,12 +282,14 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                       tabindex="0"
                     >
                       <!---->
+                      <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
                         Manage Consultations 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -309,12 +313,14 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                       tabindex="0"
                     >
                       <!---->
+                      <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
                         Manage Users 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -338,12 +344,14 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                       tabindex="0"
                     >
                       <!---->
+                      <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
                         Data Pipeline 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -369,6 +377,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                       target="_blank"
                     >
                       <!---->
+                      <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                       >
@@ -389,6 +398,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                         </svg>
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -428,7 +438,9 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                 tabindex="0"
               >
                 <!---->
+                <!---->
                 Process
+                
                 
                 
               </button>
