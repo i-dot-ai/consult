@@ -34,7 +34,7 @@ def rule_1_total_theme_number_less_than_70(clustered_themes: list) -> int | None
     The number of child themes should be no more than 70
     Rationale: Users typically want less themes than this, so we do not want Consultation owners to have to much work to do to reduce the theme-set to meet their expectations.
     """
-    if len(clustered_themes) <= 3:
+    if len(clustered_themes) <= 70:
         return len(clustered_themes)
     return None
 
@@ -60,9 +60,8 @@ def rule_3_semantic_similarity_must_be_less_than_90pc(
     results = []
     for (label_1, embedding_1), (label_2, embedding_2) in pairwise(labeled_embeddings):
         similarity = cosine_similarity(embedding_1.embedding, embedding_2.embedding)
-        results.append((label_1.topic_label, label_2.topic_label, similarity))
-
-    logger.info("labeled_embeddings=%s", results)
+        if similarity > .9:
+            results.append((label_1.topic_label, label_2.topic_label, similarity))
 
     return results
 
@@ -370,10 +369,10 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                                             {
                                                 "type": "rich_text_section",
                                                 "elements": [
-                                                    {"type": "text", "text": f'"{x}" & "{y}" > {r}'}
+                                                    {"type": "text", "text": f'`{x}` & `{y}`'}
                                                 ],
                                             }
-                                            for x, y, r in semantic_failures
+                                            for x, y, _ in semantic_failures
                                         ],
                                     }
                                 ],
@@ -387,11 +386,11 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
 
                 if passed:
                     message_title = (
-                        f"theme set rules failed ✅ for {consultation_dir}/{question_dir}"
+                        f"theme set rules passed ✅ for {consultation_dir}/{question_dir}"
                     )
                 else:
                     message_title = (
-                        f"theme set rules passed ❌ for {consultation_dir}/{question_dir}"
+                        f"theme set rules failed ❌ for {consultation_dir}/{question_dir}"
                     )
 
                 message_title_block = {
