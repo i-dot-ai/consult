@@ -7,8 +7,9 @@ import os
 from pathlib import Path
 
 import boto3
-import pandas as pd
 import numpy as np
+import pandas as pd
+import urllib3
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
 from pydantic import BaseModel
@@ -16,14 +17,13 @@ from themefinder import theme_condensation, theme_generation, theme_refinement
 from themefinder.advanced_tasks.theme_clustering_agent import ThemeClusteringAgent
 from themefinder.models import HierarchicalClusteringResponse, ThemeNode
 
-import urllib3
-
 http = urllib3.PoolManager()
 
 client = OpenAI(
-    api_base = os.environ["LLM_GATEWAY_URL"],
-    api_key = os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+    base_url=os.environ["LLM_GATEWAY_URL"],
+    api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
 )
+
 
 SLACK_WEBHOOK_URL = os.environ["SLACK_WEBHOOK_URL"]
 
@@ -38,7 +38,9 @@ def rule_1_total_theme_number_less_than_70(clustered_themes: list) -> int | None
     return None
 
 
-def rule_3_semantic_similarity_must_be_less_than_90pc(clustered_themes: list[ThemeNode]) -> list[tuple[str, str, float]]:
+def rule_3_semantic_similarity_must_be_less_than_90pc(
+    clustered_themes: list[ThemeNode],
+) -> list[tuple[str, str, float]]:
     """
     The semantic similarity between theme titles and descriptions must be less than 90%
     Rationale: We do not want multiple instances of very similar themes, i.e. "environment" and "environmental"
@@ -47,16 +49,27 @@ def rule_3_semantic_similarity_must_be_less_than_90pc(clustered_themes: list[The
     def cosine_similarity(a, b):
         return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 
-
-    response = client.embeddings.create(input=[x.topic_lable + ": " + x.topic_description for x in clustered_themes], model="text-embedding-3-large")
+    response = client.embeddings.create(
+        input=[x.topic_lable + ": " + x.topic_description for x in clustered_themes],
+        model="text-embedding-3-large",
+    )
     embeddings = [d.embedding for d in response.data]
 
-    results = [(x, y, cosine_similarity(x, y)) for i, x in enumerate(embeddings) for y in embeddings[i+1:]]
-    return [(clustered_themes[x].topic_label, clustered_themes[y].topic_label, r) for x, y, r in results if r < 0.9]
+    results = [
+        (x, y, cosine_similarity(x, y))
+        for i, x in enumerate(embeddings)
+        for y in embeddings[i + 1 :]
+    ]
+    return [
+        (clustered_themes[x].topic_label, clustered_themes[y].topic_label, r)
+        for x, y, r in results
+        if r < 0.9
+    ]
 
 
 class ThemeNodeList(BaseModel):
     """List of theme nodes for serialization to JSON."""
+
     theme_nodes: list[ThemeNode]
 
 
@@ -87,7 +100,9 @@ def download_s3_subdir(subdir: str) -> None:
     paginator = s3.get_paginator("list_objects_v2")
     inputs_prefix = str(Path(BASE_PREFIX) / subdir / "inputs").rstrip("/") + "/"
     logger.info("S3 inputs prefix: %s", inputs_prefix)
-    pages = paginator.paginate(Bucket=BUCKET_NAME, Prefix=inputs_prefix, ExpectedBucketOwner=ACCOUNT_ID)
+    pages = paginator.paginate(
+        Bucket=BUCKET_NAME, Prefix=inputs_prefix, ExpectedBucketOwner=ACCOUNT_ID
+    )
     logger.info("Created paginator for bucket: %s with prefix: %s", BUCKET_NAME, inputs_prefix)
 
     for page in pages:
@@ -98,7 +113,9 @@ def download_s3_subdir(subdir: str) -> None:
                 relative_path = os.path.relpath(key, prefix)
                 local_path = Path(subdir) / relative_path
                 local_path.parent.mkdir(parents=True, exist_ok=True)
-                s3.download_file(BUCKET_NAME, key, str(local_path), ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID})
+                s3.download_file(
+                    BUCKET_NAME, key, str(local_path), ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID}
+                )
                 logger.info("Downloaded %s to %s", key, local_path)
 
 
@@ -115,7 +132,12 @@ def upload_directory_to_s3(local_path: str) -> None:
         for file in files:
             local_file_path = Path(root) / file
             s3_key = str(Path(BASE_PREFIX) / local_file_path).replace("\\", "/")
-            s3.upload_file(str(local_file_path), BUCKET_NAME, s3_key, ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID})
+            s3.upload_file(
+                str(local_file_path),
+                BUCKET_NAME,
+                s3_key,
+                ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID},
+            )
             logger.info("Uploaded %s to s3://%s/%s", local_file_path, BUCKET_NAME, s3_key)
 
 
@@ -237,7 +259,7 @@ def agentic_theme_clustering(
     return all_themes_df
 
 
-async def process_consultation(consultation_dir: str, model_name:str) -> str:
+async def process_consultation(consultation_dir: str, model_name: str) -> str:
     """
     Process all questions in a consultation directory, generating theme analyses.
 
@@ -315,11 +337,11 @@ async def process_consultation(consultation_dir: str, model_name:str) -> str:
                             "fields": [
                                 {
                                     "type": "mrkdwn",
-                                    "text": f"Rule 1 failed",
+                                    "text": "Rule 1 failed",
                                 },
                                 {
                                     "type": "mrkdwn",
-                                    "text": f"*expected:* no more than 70 themes",
+                                    "text": "*expected:* no more than 70 themes",
                                 },
                                 {
                                     "type": "mrkdwn",
@@ -329,8 +351,9 @@ async def process_consultation(consultation_dir: str, model_name:str) -> str:
                         },
                     )
 
-
-                if semantic_failures := rule_3_semantic_similarity_must_be_less_than_90pc(all_themes_list):
+                if semantic_failures := rule_3_semantic_similarity_must_be_less_than_90pc(
+                    all_themes_list
+                ):
                     text = "\n".join(f"* {x} & {y} > {r}" for x, y, r in semantic_failures)
                     message_blocks.append(
                         {
@@ -338,11 +361,11 @@ async def process_consultation(consultation_dir: str, model_name:str) -> str:
                             "fields": [
                                 {
                                     "type": "mrkdwn",
-                                    "text": f"Rule 3 failed",
+                                    "text": "Rule 3 failed",
                                 },
                                 {
                                     "type": "mrkdwn",
-                                    "text": f"*expected:* all themes to have a semantic distance of at least 90%",
+                                    "text": "*expected:* all themes to have a semantic distance of at least 90%",
                                 },
                                 {
                                     "type": "mrkdwn",
@@ -353,7 +376,9 @@ async def process_consultation(consultation_dir: str, model_name:str) -> str:
                     )
 
                 if message_blocks:
-                    message_title = f"theme set rules failed ❌ for {consultation_dir}/{question_dir}"
+                    message_title = (
+                        f"theme set rules failed ❌ for {consultation_dir}/{question_dir}"
+                    )
                     message = {
                         "text": message_title,
                         "blocks": message_blocks,
@@ -364,7 +389,6 @@ async def process_consultation(consultation_dir: str, model_name:str) -> str:
                         body=json.dumps(message),
                         headers={"Content-Type": "application/json"},
                     )
-
 
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
                     f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
@@ -381,7 +405,6 @@ async def process_consultation(consultation_dir: str, model_name:str) -> str:
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description="Download a subdirectory from S3.")
     parser.add_argument(
         "--subdir",
@@ -401,7 +424,6 @@ if __name__ == "__main__":
         required=True,
     )
     args = parser.parse_args()
-
 
     logger.info("Starting processing for subdirectory: %s", args.subdir)
     download_s3_subdir(args.subdir)
