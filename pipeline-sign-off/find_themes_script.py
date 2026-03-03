@@ -330,7 +330,9 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                     ]
 
                 message_blocks = []
+                passed = True
                 if theme_number := rule_1_total_theme_number_less_than_70(all_themes_list):
+                    passed = False
                     message_blocks.append(
                         {
                             "blocks": [
@@ -343,13 +345,26 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                                 }
                             ]
                         }
-
+                    )
+                else:
+                    message_blocks.append(
+                        {
+                            "blocks": [
+                                {
+                                    "type": "section",
+                                    "text": {
+                                        "type": "mrkdwn",
+                                        "text": f"Rule 1 passed"
+                                    }
+                                }
+                            ]
+                        }
                     )
 
                 if semantic_failures := rule_3_semantic_similarity_must_be_less_than_90pc(
                     all_themes_list
                 ):
-
+                    passed = False
                     message_blocks.append(
                         {
                             "blocks": [
@@ -385,23 +400,44 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                             ]
                         },
                     )
-
-                if message_blocks:
-                    message_title = (
-                        f"theme set rules failed ❌ for {consultation_dir}/{question_dir}"
+                else:
+                    message_blocks.append(
+                        {
+                            "blocks": [
+                                {
+                                    "type": "section",
+                                    "text": {
+                                        "type": "mrkdwn",
+                                        "text": f"Rule 3 passed"
+                                    }
+                                }
+                            ]
+                        }
                     )
 
-                    message_title_block = {"type": "header", "text": {"type": "plain_text", "text": message_title}}
-                    message = {
-                        "text": message_title,
-                        "blocks": [message_title_block] + message_blocks,
-                    }
+                if passed:
+                    message_title = (
+                        f"theme set rules failed ✅ for {consultation_dir}/{question_dir}"
+                    )
+                else:
+                    message_title = (
+                        f"theme set rules passed ❌ for {consultation_dir}/{question_dir}"
+                    )
+
+                message_title_block = {"type": "header", "text": {"type": "plain_text", "text": message_title}}
+                message = {
+                    "text": message_title,
+                    "blocks": [message_title_block] + message_blocks,
+                }
+                try:
                     http.request(
                         "POST",
                         SLACK_WEBHOOK_URL,
                         body=json.dumps(message),
                         headers={"Content-Type": "application/json"},
                     )
+                except Exception as e:
+                    logger.error("failed to send slack message %s", e)
 
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
                     f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
