@@ -119,5 +119,6 @@ exports[`MetricsSummary > should render data 1`] = `
   </div>
   <!---->
   
+  
 </div>
 `;

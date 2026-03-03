@@ -30,6 +30,14 @@ describe("Learnings", () => {
     ).toBeInTheDocument();
   });
 
+  it("should render learning abbreviation", () => {
+    render(Learnings, testData);
+
+    expect(
+      screen.getByText(testData.items.at(0)!.abbreviation),
+    ).toBeInTheDocument();
+  });
+
   it("should render first learning only", () => {
     render(Learnings, testData);
 
@@ -123,4 +131,9 @@ describe("Learnings", () => {
 
     expect(screen.getByText("No learnings available")).toBeInTheDocument();
   });
+
+  it("should match snapshot", () => {
+    const { container } = render(Learnings, testData);
+    expect(container).toMatchSnapshot();
+  })
 });

@@ -96,5 +96,6 @@ exports[`GeneratedThemeCard > should render 1`] = `
     <!---->
   </div>
   
+  
 </div>
 `;

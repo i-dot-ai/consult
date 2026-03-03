@@ -50,6 +50,7 @@ exports[`Accordion > should render correctly 1`] = `
    
   <!---->
   
+  
 </div>
 `;
 
@@ -102,6 +103,7 @@ exports[`Accordion > should render correctly 2`] = `
   <!---->
    
   <!---->
+  
   
 </div>
 `;
