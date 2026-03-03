@@ -135,5 +135,5 @@ describe("Learnings", () => {
   it("should match snapshot", () => {
     const { container } = render(Learnings, testData);
     expect(container).toMatchSnapshot();
-  })
+  });
 });
