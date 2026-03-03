@@ -36,6 +36,8 @@
     !isActive && "opacity-50",
     "transition-opacity",
   ])}
+  aria-current={isActive ? "true" : undefined}
+  data-testid="intro-card"
 >
   <div
     class={clsx([
@@ -77,6 +79,7 @@
         "top-[33%]",
         "-right-4",
       ])}
+      data-testid="intro-card-arrow"
     >
       <MaterialIcon
         color={isActive ? "fill-secondary" : "fill-neutral-400"}
