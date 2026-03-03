@@ -4,7 +4,6 @@ import { render, screen } from "@testing-library/svelte";
 import IntroCard from "./IntroCard.svelte";
 import { TEST_DATA } from "./testData";
 
-
 describe("IntroCard", () => {
   const testData = TEST_DATA;
 
