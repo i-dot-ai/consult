@@ -17,6 +17,7 @@ import HeaderConsultStory from "../navigation/HeaderConsult/HeaderConsultStory.s
 import BreadcrumbsStory from "../navigation/Breadcrumbs/BreadcrumbsStory.svelte";
 import ProfileButtonStory from "../navigation/ProfileButton/ProfileButtonStory.svelte";
 import FloatingPanelStory from "../navigation/FloatingPanel/FloatingPanelStory.svelte";
+import IntroCardStory from "../data/IntroCard/IntroCardStory.svelte";
 import LearningsStory from "../data/Learnings/LearningsStory.svelte";
 
 interface StoryProp {
@@ -61,5 +62,6 @@ export default [
   BreadcrumbsStory,
   ProfileButtonStory,
   FloatingPanelStory,
+  IntroCardStory,
   LearningsStory,
 ] as Story[];
