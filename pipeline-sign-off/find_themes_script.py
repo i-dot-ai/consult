@@ -351,32 +351,34 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                     all_themes_list
                 ):
                     passed = False
-                    message_blocks.append(
-                        {
-                            "type": "section",
-                            "text": {
-                                "type": "mrkdwn",
-                                "text": "Rule 3 failed\n*expected:* all themes to have a semantic distance of at least 90%\n*actual:* the following themes are too similar:",
+                    message_blocks.extend(
+                        [
+                            {
+                                "type": "section",
+                                "text": {
+                                    "type": "mrkdwn",
+                                    "text": "Rule 3 failed\n*expected:* all themes to have a semantic distance of at least 90%\n*actual:* the following themes are too similar:",
+                                },
                             },
-                        },
-                        {
-                            "type": "rich_text",
-                            "elements": [
-                                {  # type: ignore
-                                    "type": "rich_text_list",
-                                    "style": "bullet",
-                                    "elements": [
-                                        {
-                                            "type": "rich_text_section",
-                                            "elements": [
-                                                {"type": "text", "text": f'"{x}" & "{y}" > {r}'}
-                                            ],
-                                        }
-                                        for x, y, r in semantic_failures
-                                    ],
-                                }
-                            ],
-                        },
+                            {
+                                "type": "rich_text",
+                                "elements": [
+                                    {  # type: ignore
+                                        "type": "rich_text_list",
+                                        "style": "bullet",
+                                        "elements": [
+                                            {
+                                                "type": "rich_text_section",
+                                                "elements": [
+                                                    {"type": "text", "text": f'"{x}" & "{y}" > {r}'}
+                                                ],
+                                            }
+                                            for x, y, r in semantic_failures
+                                        ],
+                                    }
+                                ],
+                            },
+                        ]
                     )
                 else:
                     message_blocks.append(
