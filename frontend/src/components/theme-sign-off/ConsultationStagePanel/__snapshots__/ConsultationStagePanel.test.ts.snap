@@ -574,6 +574,7 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
           type="button"
         >
           <!---->
+          <!---->
           <span
             class="mx-auto flex items-center gap-2"
           >
@@ -594,6 +595,7 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
             <!---->
              Confirm and Proceed to Mapping
           </span>
+          
           
           
         </button>

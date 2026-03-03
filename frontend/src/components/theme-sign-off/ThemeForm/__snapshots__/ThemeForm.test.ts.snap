@@ -45,6 +45,7 @@ exports[`ThemeForm > should render add variant 1`] = `
         tabindex="0"
       >
         <!---->
+        <!---->
         <div
           class="flex w-full items-center justify-between gap-2"
         >
@@ -90,6 +91,7 @@ exports[`ThemeForm > should render add variant 1`] = `
             <!---->
           </div>
         </div>
+        
         
         
       </button>
@@ -159,7 +161,9 @@ exports[`ThemeForm > should render add variant 1`] = `
         tabindex="0"
       >
         <!---->
+        <!---->
         Add Theme
+        
         
         
       </button>
@@ -175,7 +179,9 @@ exports[`ThemeForm > should render add variant 1`] = `
         tabindex="0"
       >
         <!---->
+        <!---->
         Cancel
+        
         
         
       </button>
