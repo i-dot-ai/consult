@@ -4,12 +4,6 @@ import { render, screen } from "@testing-library/svelte";
 import IntroCard from "./IntroCard.svelte";
 import { TEST_DATA } from "./testData";
 
-// Icon: UnknownDocument,
-//   order: 1,
-//   title: "Prepare data outside Consult",
-//   subtitle: "Export from your collection tool and structure your files",
-//   isActive: true,
-//   showArrow: true,
 
 describe("IntroCard", () => {
   const testData = TEST_DATA;
