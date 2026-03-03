@@ -333,45 +333,56 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                 if theme_number := rule_1_total_theme_number_less_than_70(all_themes_list):
                     message_blocks.append(
                         {
-                            "type": "section",
-                            "fields": [
+                            "blocks": [
                                 {
-                                    "type": "mrkdwn",
-                                    "text": "Rule 1 failed",
-                                },
-                                {
-                                    "type": "mrkdwn",
-                                    "text": "*expected:* no more than 70 themes",
-                                },
-                                {
-                                    "type": "mrkdwn",
-                                    "text": f"*actual:* got {theme_number} themes",
-                                },
-                            ],
-                        },
+                                    "type": "section",
+                                    "text": {
+                                        "type": "mrkdwn",
+                                        "text": f"Rule 1 failed\n*expected:* no more than 70 themes\n*actual:* got {theme_number} themes"
+                                    }
+                                }
+                            ]
+                        }
+
                     )
 
                 if semantic_failures := rule_3_semantic_similarity_must_be_less_than_90pc(
                     all_themes_list
                 ):
-                    text = "\n".join(f"* {x} & {y} > {r}" for x, y, r in semantic_failures)
+
                     message_blocks.append(
                         {
-                            "type": "section",
-                            "fields": [
+                            "blocks": [
                                 {
-                                    "type": "mrkdwn",
-                                    "text": "Rule 3 failed",
+                                    "type": "section",
+                                    "text": {
+                                        "type": "mrkdwn",
+                                        "text": "Rule 3 failed\n*expected:* all themes to have a semantic distance of at least 90%\n*actual:* the following themes are too similar:"
+                                    }
                                 },
                                 {
-                                    "type": "mrkdwn",
-                                    "text": "*expected:* all themes to have a semantic distance of at least 90%",
-                                },
-                                {
-                                    "type": "mrkdwn",
-                                    "text": f"*actual:* The following themes are too similar:\n{text}",
-                                },
-                            ],
+                                    "type": "rich_text",
+                                    "elements": [
+                                        {  # type: ignore
+                                            "type": "rich_text_list",
+                                            "style": "bullet",
+                                            "elements": [
+                                                {
+                                                    "type": "rich_text_section",
+                                                    "elements": [
+                                                        {
+                                                            "type": "text",
+                                                            "text": f"\"{x}\" & \"{y}\" > {r}"
+                                                        }
+                                                    ]
+                                                }
+
+                                                for x, y, r in semantic_failures
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
                         },
                     )
 
@@ -379,9 +390,11 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                     message_title = (
                         f"theme set rules failed ❌ for {consultation_dir}/{question_dir}"
                     )
+
+                    message_title_block = {"type": "header", "text": {"type": "plain_text", "text": message_title}}
                     message = {
                         "text": message_title,
-                        "blocks": message_blocks,
+                        "blocks": [message_title_block] + message_blocks,
                     }
                     http.request(
                         "POST",
