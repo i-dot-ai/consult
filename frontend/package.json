@@ -21,7 +21,7 @@
     "typecheck:update-baseline": "bash scripts/update-type-errors.sh"
   },
   "dependencies": {
-    "@astrojs/node": "9.5.1",
+    "@astrojs/node": "9.3.3",
     "@astrojs/svelte": "^7.1.0",
     "@astrojs/tailwind": "^5.1.2",
     "@codemirror/lang-json": "^6.0.2",
@@ -30,7 +30,7 @@
     "@sentry/astro": "^10.38.0",
     "@testing-library/svelte": "^5.2.8",
     "@testing-library/user-event": "^14.6.1",
-    "astro": "^5.16.6",
+    "astro": "5.16.6",
     "chart.js": "^4.5.0",
     "clsx": "^2.1.1",
     "express": "^5.1.0",
