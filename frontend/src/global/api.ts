@@ -1,17 +1,15 @@
 import type { APIContext, AstroGlobal } from "astro";
-import path from "path";
 
 import { getBackendUrl } from "./utils";
-
-export const internalAccessCookieName = "gdsInternalAccess";
 
 export const fetchBackendApi = async <T>(
   astro: Readonly<AstroGlobal> | APIContext,
   endpoint: string,
   options: RequestInit | undefined = {},
 ): Promise<T> => {
-  const url = path.join(getBackendUrl(), endpoint);
-  const accessToken = astro.cookies.get(internalAccessCookieName)?.value;
+  const url = new URL(endpoint, getBackendUrl()).toString();
+  const accessToken = astro.cookies.get("accessToken")?.value;
+
   const response = await fetch(url, {
     ...options,
     headers: {

@@ -16,21 +16,12 @@
 
   let consultations: Consultation[] = [];
   let loading: boolean = true;
-  let dashboardPermitted: boolean = false;
 
   onMount(async () => {
     loading = true;
     const response = await fetch(`${Routes.ApiConsultations}?scope=assigned`);
     const consultationData = await response.json();
     consultations = consultationData.results;
-    loading = false;
-  });
-
-  onMount(async () => {
-    loading = true;
-    const response = await fetch(Routes.ApiUser);
-    const userData = await response.json();
-    dashboardPermitted = userData.is_staff;
     loading = false;
   });
 </script>
@@ -53,11 +44,9 @@
             <Link href={getThemeSignOffUrl(consultation.id)}>
               Theme Sign Off
             </Link>
-            {#if dashboardPermitted}
-              <Link href={getConsultationDetailUrl(consultation.id)}>
-                View Dashboard
-              </Link>
-            {/if}
+            <Link href={getConsultationDetailUrl(consultation.id)}>
+              View Dashboard
+            </Link>
           </div>
         </li>
       {/each}

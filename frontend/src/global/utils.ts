@@ -1,11 +1,18 @@
-export const getEnv = (url: string): string => {
-  if (url.includes("consult-dev.ai.cabinetoffice.gov.uk")) {
-    return "dev";
+export const getEnv = (): string => {
+  // Try runtime environment variable first (for server-side)
+  if (typeof process !== "undefined" && process.env?.PUBLIC_ENVIRONMENT) {
+    return process.env.PUBLIC_ENVIRONMENT;
   }
-  if (url.includes("consult.ai.cabinetoffice.gov.uk")) {
-    return "prod";
+
+  // Fall back to build-time public env var (for client-side)
+  const env = import.meta.env.PUBLIC_ENVIRONMENT;
+  if (env) {
+    return env;
   }
-  return "local";
+
+  throw new Error(
+    "PUBLIC_ENVIRONMENT environment variable is not set. This is required for the application to function.",
+  );
 };
 
 export const getBackendUrl = (): string => {

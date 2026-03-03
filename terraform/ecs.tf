@@ -6,6 +6,7 @@ locals {
     "ENVIRONMENT" = terraform.workspace
     "DEBUG"       = var.env == "prod" ? false : true
     "REPO"        = var.project_name
+    "AWS_ACCOUNT_ID"  = data.aws_caller_identity.current.account_id
   }
 
   django_env_vars = {
@@ -22,7 +23,6 @@ locals {
   }
 
   additional_policy_arns = { for idx, arn in [aws_iam_policy.ecs_exec_custom_policy.arn] : idx => arn }
-
 }
 
 module "backend" {
@@ -30,7 +30,7 @@ module "backend" {
   # checkov:skip=CKV_SECRET_4:Skip secret check as these have to be used within the Github Action
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
-  source                        = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.8.0-ecs"
+  source                        = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v6.0.0-ecs"
   image_tag                     = var.image_tag
   ecr_repository_uri            = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-backend"
   vpc_id                        = data.terraform_remote_state.vpc.outputs.vpc_id
@@ -75,14 +75,13 @@ module "backend" {
 
   health_check = {
     accepted_response   = 200
-    path                = "/"
+    path                = "/api/health"
     interval            = 60
     timeout             = 70
     healthy_threshold   = 2
     unhealthy_threshold = 5
     port                = local.backend_port
   }
-
 
   additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
@@ -91,7 +90,6 @@ module "backend" {
 
   memory = 4096
   cpu    = 1024
-
 }
 
 module "frontend" {
@@ -99,7 +97,7 @@ module "frontend" {
   # checkov:skip=CKV_SECRET_4:Skip secret check as these have to be used within the Github Action
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
-  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.8.0-ecs"
+  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v6.0.0-ecs"
   image_tag                    = var.image_tag
   ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-frontend"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
@@ -116,6 +114,7 @@ module "frontend" {
   permissions_boundary_name    = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
 
   environment_variables = merge(local.base_env_vars, {
+    "PUBLIC_ENVIRONMENT"       = var.env
     "PUBLIC_BACKEND_URL"       = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
     "BACKEND_URL"              = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
     "APP_NAME"                 = var.project_name
@@ -131,11 +130,11 @@ module "frontend" {
       valueFrom = v.arn
     }
   ]
+
   container_port = local.frontend_port
 
   health_check = {
-    accepted_response = 200
-
+    accepted_response   = 200
     interval            = 60
     timeout             = 70
     healthy_threshold   = 2
@@ -155,11 +154,11 @@ module "frontend" {
 }
 
 module "worker" {
-  name                         = "${local.name}-worker"
+  name = "${local.name}-worker"
   # checkov:skip=CKV_SECRET_4:Skip secret check as these have to be used within the Github Action
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
-  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.8.0-ecs"
+  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v6.0.0-ecs"
   image_tag                    = var.image_tag
   ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-backend"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
@@ -173,8 +172,6 @@ module "worker" {
   certificate_arn              = module.acm_certificate.arn
   create_networking            = false
   create_listener              = false
-
-
 
   environment_variables = merge(local.base_env_vars, local.django_env_vars, {
     "APP_NAME"                 = var.project_name
@@ -237,11 +234,10 @@ resource "aws_service_discovery_service" "service_discovery_service" {
   }
 }
 
-
 module "sns_topic" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   # source                       = "../../i-dot-ai-core-terraform-modules/modules/observability/cloudwatch-slack-integration"
-  source        = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/cloudwatch-slack-integration?ref=v2.0.1-cloudwatch-slack-integration"
+  source        = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/cloudwatch-slack-integration?ref=v2.0.2-cloudwatch-slack-integration"
   name          = local.name
   slack_webhook = data.aws_secretsmanager_secret_version.platform_slack_webhook.secret_string
 
@@ -257,6 +253,7 @@ module "backend-ecs-alarm" {
   ecs_cluster_name = data.terraform_remote_state.platform.outputs.ecs_cluster_name
   sns_topic_arn    = [module.sns_topic.sns_topic_arn]
 }
+
 module "frontend-ecs-alarm" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   # source                       = "../../i-dot-ai-core-terraform-modules/modules/observability/ecs-alarms"
@@ -266,6 +263,7 @@ module "frontend-ecs-alarm" {
   ecs_cluster_name = data.terraform_remote_state.platform.outputs.ecs_cluster_name
   sns_topic_arn    = [module.sns_topic.sns_topic_arn]
 }
+
 module "backend-alb-alarm" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   # source                       = "../../i-dot-ai-core-terraform-modules/modules/observability/alb-alarms"
@@ -275,6 +273,7 @@ module "backend-alb-alarm" {
   target_group  = module.backend.aws_lb_target_group_name
   sns_topic_arn = [module.sns_topic.sns_topic_arn]
 }
+
 module "frontend-alb-alarm" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   # source                       = "../../i-dot-ai-core-terraform-modules/modules/observability/alb-alarms"

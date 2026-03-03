@@ -3,14 +3,19 @@ import { fetchBackendApi } from "../../../global/api";
 import type {
   AstroGlobalRuntime,
   ConsultationResponse,
+  User,
 } from "../../../global/types";
 
 import Layout from "../../../layouts/Layout.astro";
 import Section from "../../../components/Section/Section.svelte";
 import Link from "../../../components/Link.svelte";
 import Title from "../../../components/Title.svelte";
+import Button from "../../../components/inputs/Button/Button.svelte";
 import EditUser from "../../../components/screens/EditUserForm/EditUser.svelte";
-import { getApiUserConsultations } from "../../../global/routes";
+import {
+  getApiUserConsultations,
+  getApiUserDetails,
+} from "../../../global/routes";
 import { Routes } from "../../../global/routes";
 
 const { userId } = (Astro as unknown as AstroGlobalRuntime).params;
@@ -19,20 +24,40 @@ if (!userId) {
   return (Astro as unknown as AstroGlobalRuntime).redirect(Routes.SupportUsers);
 }
 
-// Fetch all consultations to filter by this user
+const currentUser = await fetchBackendApi<User>(Astro, Routes.ApiUser);
+
+const viewedUser = await fetchBackendApi<User>(
+  Astro,
+  getApiUserDetails(userId),
+);
+
 const consultationsData = await fetchBackendApi<ConsultationResponse[]>(
   Astro,
   getApiUserConsultations(userId),
 );
+
+const isOwnProfile = currentUser.id === viewedUser.id;
 ---
 
 <Layout>
   <Section>
-    <!-- User Permissions -->
     <EditUser client:load userId={userId} />
 
-    <!-- Consultations Section -->
-    <div>
+    {
+      !isOwnProfile && (
+        <div class="mt-8 border-t pt-8">
+          <Title level={2} text="Delete User" />
+          <p class="mb-4 text-gray-600">
+            This action cannot be undone. The user will be permanently removed.
+          </p>
+          <a href={`/support/users/${userId}/delete`}>
+            <Button variant="primary">Delete user</Button>
+          </a>
+        </div>
+      )
+    }
+
+    <div class="mt-8 border-t pt-8">
       <Title level={2} text="Consultations" />
 
       {

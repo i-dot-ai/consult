@@ -56,6 +56,64 @@ class TestUserViewSet:
         assert response.status_code == 204
         assert not User.objects.filter(pk=staff_user.pk).exists()
 
+    def test_users_delete_user_with_consultation(self, client, staff_user_token, consultation, non_staff_user):
+        """Test that deleting a user who is assigned to a consultation succeeds"""
+        # non_staff_user is already assigned to consultation via the fixture
+        assert consultation.users.filter(pk=non_staff_user.pk).exists()
+
+        url = reverse(
+            "user-detail",
+            kwargs={"pk": non_staff_user.pk},
+        )
+        response = client.delete(
+            url,
+            content_type="application/json",
+            headers={
+                "Authorization": f"Bearer {staff_user_token}",
+            },
+        )
+        assert response.status_code == 204
+        assert not User.objects.filter(pk=non_staff_user.pk).exists()
+        # Consultation should still exist
+        consultation.refresh_from_db()
+        assert consultation is not None
+
+    def test_users_delete_requires_admin(self, client, non_staff_user, non_staff_user_token):
+        """Test that non-admin users cannot delete users"""
+        from factories import UserFactory
+
+        user_to_delete = UserFactory()
+
+        url = reverse(
+            "user-detail",
+            kwargs={"pk": user_to_delete.pk},
+        )
+        response = client.delete(
+            url,
+            content_type="application/json",
+            headers={
+                "Authorization": f"Bearer {non_staff_user_token}",
+            },
+        )
+        assert response.status_code == 403
+        assert User.objects.filter(pk=user_to_delete.pk).exists()
+        user_to_delete.delete()
+
+    def test_users_delete_not_found(self, client, staff_user_token):
+        """Test that deleting a non-existent user returns 404"""
+        url = reverse(
+            "user-detail",
+            kwargs={"pk": 99999},
+        )
+        response = client.delete(
+            url,
+            content_type="application/json",
+            headers={
+                "Authorization": f"Bearer {staff_user_token}",
+            },
+        )
+        assert response.status_code == 404
+
     def test_users_create(self, client, staff_user_token):
         email = "Test@Example.com"
         assert not User.objects.filter(email="test@example.com").exists()

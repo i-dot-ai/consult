@@ -37,7 +37,6 @@ exports[`AnswersList > should render 1`] = `
     </div>
   </div>
    
-  <!---->
   <ol
     class="mt-2 max-h-[20rem] overflow-y-auto"
   >
@@ -73,9 +72,7 @@ exports[`AnswersList > should render 1`] = `
     </li>
     
   </ol>
-  
   <!---->
-  
   
 </div>
 `;

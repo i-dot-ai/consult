@@ -7,7 +7,7 @@ resource "aws_cloudwatch_event_rule" "batch_job_import_response_annotations" {
     detail-type = ["Batch Job State Change"],
     detail = {
       status  = ["SUCCEEDED"],
-      jobName   = ["${local.name}-assign-themes-job"]
+      jobName = ["${local.name}-assign-themes-job"]
     }
   })
   tags = var.universal_tags
@@ -22,7 +22,7 @@ resource "aws_cloudwatch_event_rule" "batch_job_import_candidate_themes" {
     detail-type = ["Batch Job State Change"],
     detail = {
       status  = ["SUCCEEDED"],
-      jobName   = ["${local.name}-find-themes-job"]
+      jobName = ["${local.name}-find-themes-job"]
     }
   })
   tags = var.universal_tags
@@ -37,34 +37,11 @@ resource "aws_cloudwatch_event_rule" "batch_job_state_change" {
     detail-type = ["Batch Job State Change"],
     detail = {
       status  = ["SUCCEEDED", "FAILED", "RUNNING"],
-      jobName   = ["${local.name}-assign-themes-job", "${local.name}-find-themes-job"]
+      jobName = ["${local.name}-assign-themes-job", "${local.name}-find-themes-job"]
     }
   })
   tags = var.universal_tags
 }
-
-resource "aws_iam_role_policy" "eventbridge_policy" {
-  name = "${local.name}-eventbridge-policy"
-  role = aws_iam_role.eventbridge_invoke_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Action = [
-          "lambda:InvokeFunction"
-        ],
-        Effect = "Allow",
-        Resource = [
-          "arn:aws:lambda:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:function:${local.name}-slack-notifier-lambda",
-          "arn:aws:lambda:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:function:${local.name}-import-response-annotations-lambda",
-          "arn:aws:lambda:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:function:${local.name}-import-candidate-themes-lambda"
-        ]
-      }
-    ]
-  })
-}
-
 
 resource "aws_cloudwatch_event_target" "slack_lambda_target" {
   rule      = aws_cloudwatch_event_rule.batch_job_state_change.name

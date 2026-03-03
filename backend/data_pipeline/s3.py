@@ -7,6 +7,7 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 
 logger = settings.LOGGER
+account_id = settings.AWS_ACCOUNT_ID
 
 
 def read_jsonl(
@@ -31,7 +32,7 @@ def read_jsonl(
         s3_client = boto3.client("s3")
 
     try:
-        response = s3_client.get_object(Bucket=bucket_name, Key=key)
+        response = s3_client.get_object(Bucket=bucket_name, Key=key, ExpectedBucketOwner=account_id)
     except ClientError as e:
         if not raise_if_missing and e.response["Error"]["Code"] == "NoSuchKey":
             logger.info("File not found (skipping): {key}", key=key)
@@ -68,7 +69,7 @@ def read_json(
         s3_client = boto3.client("s3")
 
     try:
-        response = s3_client.get_object(Bucket=bucket_name, Key=key)
+        response = s3_client.get_object(Bucket=bucket_name, Key=key, ExpectedBucketOwner=account_id)
         data = json.loads(response["Body"].read())
         return data
     except ClientError as e:
@@ -90,7 +91,7 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
         Sorted list of question folder paths ending with /
     """
     s3 = boto3.resource("s3")
-    objects = s3.Bucket(bucket_name).objects.filter(Prefix=inputs_path)
+    objects = s3.Bucket(bucket_name).objects.filter(Prefix=inputs_path, ExpectedBucketOwner=account_id)
     object_names_set = {obj.key for obj in objects}
 
     # Get set of all subfolders
@@ -119,7 +120,8 @@ def get_consultation_folders() -> list[str]:
     try:
         s3 = boto3.resource("s3")
         objects = s3.Bucket(settings.AWS_BUCKET_NAME).objects.filter(
-            Prefix="app_data/consultations/"
+            Prefix="app_data/consultations/",
+            ExpectedBucketOwner=account_id,
         )
 
         # Get unique consultation folders

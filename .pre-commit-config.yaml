@@ -20,7 +20,7 @@ repos:
     rev: v1.4.0
     hooks:
     -   id: detect-secrets
-        exclude: (poetry.lock|.env.test|^.github/workflows/|\.cruft\.json)
+        exclude: (uv.lock|.env.test|^.github/workflows/|\.cruft\.json)
   - repo: local
     hooks:
     -   id: detect-ip

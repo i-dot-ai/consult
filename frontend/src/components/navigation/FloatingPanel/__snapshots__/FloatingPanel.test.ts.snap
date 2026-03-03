@@ -106,7 +106,6 @@ exports[`FloatingPanel > renders correct direction 1`] = `
     </div>
   </div>
   
-  
 </div>
 `;
 
@@ -215,7 +214,6 @@ exports[`FloatingPanel > renders correct direction 2`] = `
       </div>
     </div>
   </div>
-  
   
 </div>
 `;

@@ -36,6 +36,5 @@ exports[`ProfileButton > matches snapshot 1`] = `
     <!---->
   </div>
   
-  
 </div>
 `;

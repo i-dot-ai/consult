@@ -13,24 +13,19 @@ RUN npm ci
 # Copy application code
 COPY frontend/ .
 
-# Create non-root user for security
-RUN groupadd -g 1001 nodejs
-RUN useradd -r -u 1001 -g nodejs -m nextjs
-
-# Change ownership of app directory
-RUN chown -R nextjs:nodejs /app
-RUN chown -R nextjs:nodejs /home/nextjs
-
-# Switch to non-root user
-USER nextjs
-
-# Build the application
+# Build the application (as root to avoid permission issues)
 RUN npm run build
 
 # Verify build output exists
 RUN ls -la dist/
 RUN ls -la dist/server/
 RUN test -f dist/server/entry.mjs && echo "Server entry file exists" || echo "Server entry file NOT found"
+
+# Create non-root user and group
+RUN groupadd --system nonroot && useradd --system --gid nonroot --create-home nonroot
+
+# Change ownership of app directory
+RUN chown -R nonroot:nonroot /app
 
 # Expose port
 EXPOSE 3000
@@ -39,6 +34,9 @@ EXPOSE 3000
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
+
+# Run under context of "nonroot" user
+USER nonroot
 
 # Start the application
 CMD ["node", "/app/dist/server/entry.mjs"]
