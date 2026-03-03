@@ -352,7 +352,7 @@ async def process_consultation(consultation_dir: str, model_name:str) -> str:
                     )
 
                 if message_blocks:
-                    message_title = f"{consultation_dir}/{question_dir}"
+                    message_title = f"theme set rules failed ❌ for {consultation_dir}/{question_dir}"
                     message = {
                         "text": message_title,
                         "blocks": message_blocks,
