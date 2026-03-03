@@ -335,30 +335,16 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                     passed = False
                     message_blocks.append(
                         {
-                            "blocks": [
-                                {
-                                    "type": "section",
-                                    "text": {
-                                        "type": "mrkdwn",
-                                        "text": f"Rule 1 failed\n*expected:* no more than 70 themes\n*actual:* got {theme_number} themes"
-                                    }
-                                }
-                            ]
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": f"Rule 1 failed\n*expected:* no more than 70 themes\n*actual:* got {theme_number} themes",
+                            },
                         }
                     )
                 else:
                     message_blocks.append(
-                        {
-                            "blocks": [
-                                {
-                                    "type": "section",
-                                    "text": {
-                                        "type": "mrkdwn",
-                                        "text": f"Rule 1 passed"
-                                    }
-                                }
-                            ]
-                        }
+                        {"type": "section", "text": {"type": "mrkdwn", "text": "Rule 1 passed"}}
                     )
 
                 if semantic_failures := rule_3_semantic_similarity_must_be_less_than_90pc(
@@ -367,52 +353,34 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                     passed = False
                     message_blocks.append(
                         {
-                            "blocks": [
-                                {
-                                    "type": "section",
-                                    "text": {
-                                        "type": "mrkdwn",
-                                        "text": "Rule 3 failed\n*expected:* all themes to have a semantic distance of at least 90%\n*actual:* the following themes are too similar:"
-                                    }
-                                },
-                                {
-                                    "type": "rich_text",
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": "Rule 3 failed\n*expected:* all themes to have a semantic distance of at least 90%\n*actual:* the following themes are too similar:",
+                            },
+                        },
+                        {
+                            "type": "rich_text",
+                            "elements": [
+                                {  # type: ignore
+                                    "type": "rich_text_list",
+                                    "style": "bullet",
                                     "elements": [
-                                        {  # type: ignore
-                                            "type": "rich_text_list",
-                                            "style": "bullet",
+                                        {
+                                            "type": "rich_text_section",
                                             "elements": [
-                                                {
-                                                    "type": "rich_text_section",
-                                                    "elements": [
-                                                        {
-                                                            "type": "text",
-                                                            "text": f"\"{x}\" & \"{y}\" > {r}"
-                                                        }
-                                                    ]
-                                                }
-
-                                                for x, y, r in semantic_failures
-                                            ]
+                                                {"type": "text", "text": f'"{x}" & "{y}" > {r}'}
+                                            ],
                                         }
-                                    ]
+                                        for x, y, r in semantic_failures
+                                    ],
                                 }
-                            ]
+                            ],
                         },
                     )
                 else:
                     message_blocks.append(
-                        {
-                            "blocks": [
-                                {
-                                    "type": "section",
-                                    "text": {
-                                        "type": "mrkdwn",
-                                        "text": f"Rule 3 passed"
-                                    }
-                                }
-                            ]
-                        }
+                        {"type": "section", "text": {"type": "mrkdwn", "text": "Rule 3 passed"}}
                     )
 
                 if passed:
@@ -424,7 +392,10 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                         f"theme set rules passed ❌ for {consultation_dir}/{question_dir}"
                     )
 
-                message_title_block = {"type": "header", "text": {"type": "plain_text", "text": message_title}}
+                message_title_block = {
+                    "type": "header",
+                    "text": {"type": "plain_text", "text": message_title},
+                }
                 message = {
                     "text": message_title,
                     "blocks": [message_title_block] + message_blocks,
@@ -436,8 +407,12 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                     headers={"Content-Type": "application/json"},
                 )
                 if response.status != 200:
-                    response_data = response.data.decode("utf-8") if response.data else "No response data"
-                    error_message = f"Slack webhook failed with status {response.status}: {response_data}"
+                    response_data = (
+                        response.data.decode("utf-8") if response.data else "No response data"
+                    )
+                    error_message = (
+                        f"Slack webhook failed with status {response.status}: {response_data}"
+                    )
                     logger.error(error_message)
                     raise Exception(error_message)
 
