@@ -429,15 +429,17 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                     "text": message_title,
                     "blocks": [message_title_block] + message_blocks,
                 }
-                try:
-                    http.request(
-                        "POST",
-                        SLACK_WEBHOOK_URL,
-                        body=json.dumps(message),
-                        headers={"Content-Type": "application/json"},
-                    )
-                except Exception as e:
-                    logger.error("failed to send slack message %s", e)
+                response = http.request(
+                    "POST",
+                    SLACK_WEBHOOK_URL,
+                    body=json.dumps(message),
+                    headers={"Content-Type": "application/json"},
+                )
+                if response.status != 200:
+                    response_data = response.data.decode("utf-8") if response.data else "No response data"
+                    error_message = f"Slack webhook failed with status {response.status}: {response_data}"
+                    logger.error(error_message)
+                    raise Exception(error_message)
 
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
                     f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
