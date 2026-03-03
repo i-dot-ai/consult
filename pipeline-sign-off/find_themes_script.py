@@ -62,6 +62,7 @@ def rule_3_semantic_similarity_must_be_less_than_90pc(
         similarity = cosine_similarity(embedding_1.embedding, embedding_2.embedding)
         results.append((label_1.topic_label, label_2.topic_label, similarity))
 
+    logger.info("labeled_embeddings=%s", results)
 
     return results
 
