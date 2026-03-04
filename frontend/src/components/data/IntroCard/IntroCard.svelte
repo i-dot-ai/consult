@@ -35,6 +35,7 @@
     "w-[15rem]",
     !isActive && "opacity-50",
     "transition-opacity",
+    "duration-500",
   ])}
   aria-current={isActive ? "true" : undefined}
   data-testid="intro-card"
