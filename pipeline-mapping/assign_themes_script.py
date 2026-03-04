@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import collections
 import datetime
 import json
 import logging
@@ -8,6 +9,7 @@ from pathlib import Path
 
 import boto3
 import pandas as pd
+import urllib3
 from langchain_openai import ChatOpenAI
 from themefinder import detail_detection, theme_mapping
 
@@ -22,6 +24,56 @@ logger = logging.getLogger(__name__)
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID")
 BASE_PREFIX = "app_data/consultations/"
+
+http = urllib3.PoolManager()
+
+
+SLACK_WEBHOOK_URL = os.environ["SLACK_WEBHOOK_URL"]
+
+
+def rule_2_themes_must_have_a_non_negligible_number_of_responses(
+    mapping: list[dict],
+) -> list[tuple[str, int, int]]:
+    """
+    A child theme must be assigned to at least 0.1% or 5, whichever is the greater, of the responses
+    Rationale: We want to remove anomalous results from the consultation.
+    """
+
+    counter = collections.defaultdict(int)
+
+    for line in mapping:
+        for theme_key in line["theme_keys"]:
+            counter[theme_key] += 1
+
+    return [
+        (theme_key, count, len(mapping))
+        for theme_key, count in counter.items()
+        if count / len(mapping) >= 0.001 or count > 5
+    ]
+
+
+def rule_4_themes_should_not_overlap(mapping: list[dict]) -> list[tuple[str, str, float]]:
+    """
+    The size of intersection of any two themes representative responses divined by the size of the union of its representative responses should be less than 70%
+    Rationale: We do not want 2 themes, even if semantically distinct, to be mapped to the same response-set, in this case they can be merged.
+    """
+    counter = collections.defaultdict(set)
+
+    for line in mapping:
+        for theme_key in line["theme_keys"]:
+            counter[theme_key].add(line["themefinder_id"])
+
+    theme_keys = list(counter)
+
+    results = []
+    for i, theme_key_a in enumerate(theme_keys):
+        for theme_key_b in enumerate(theme_keys[i + 1 :]):
+            response_a, response_b = theme_keys[theme_key_a], theme_keys[theme_key_b]
+            intersection = len(set.intersection(response_a, response_b))
+            union = len(set.union(response_a, response_b))
+            if intersection / union > 0.7:
+                results.append((theme_key_a, theme_key_b, intersection / union))
+    return results
 
 
 def download_s3_subdir(subdir: str) -> None:
@@ -38,7 +90,9 @@ def download_s3_subdir(subdir: str) -> None:
     paginator = s3.get_paginator("list_objects_v2")
     inputs_prefix = str(Path(BASE_PREFIX) / subdir / "inputs").rstrip("/") + "/"
     logger.info("S3 inputs prefix: %s", inputs_prefix)
-    pages = paginator.paginate(Bucket=BUCKET_NAME, Prefix=inputs_prefix, ExpectedBucketOwner=ACCOUNT_ID)
+    pages = paginator.paginate(
+        Bucket=BUCKET_NAME, Prefix=inputs_prefix, ExpectedBucketOwner=ACCOUNT_ID
+    )
     logger.info("Created paginator for bucket: %s with prefix: %s", BUCKET_NAME, inputs_prefix)
 
     for page in pages:
@@ -49,7 +103,9 @@ def download_s3_subdir(subdir: str) -> None:
                 relative_path = os.path.relpath(key, prefix)
                 local_path = Path(subdir) / relative_path
                 local_path.parent.mkdir(parents=True, exist_ok=True)
-                s3.download_file(BUCKET_NAME, key, str(local_path), ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID})
+                s3.download_file(
+                    BUCKET_NAME, key, str(local_path), ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID}
+                )
                 logger.info("Downloaded %s to %s", key, local_path)
 
 
@@ -66,7 +122,12 @@ def upload_directory_to_s3(local_path: str) -> None:
         for file in files:
             local_file_path = Path(root) / file
             s3_key = str(Path(BASE_PREFIX) / local_file_path).replace("\\", "/")
-            s3.upload_file(str(local_file_path), BUCKET_NAME, s3_key, ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID})
+            s3.upload_file(
+                str(local_file_path),
+                BUCKET_NAME,
+                s3_key,
+                ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID},
+            )
             logger.info("Uploaded %s to s3://%s/%s", local_file_path, BUCKET_NAME, s3_key)
 
 
@@ -175,6 +236,124 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                 logger.info(
                     "Completed processing %s, saved to %s", question_dir, question_output_dir
                 )
+
+                message_blocks = []
+                passed = True
+                if sparse_responses := rule_2_themes_must_have_a_non_negligible_number_of_responses(
+                    themes_df.to_dict(orient="records")
+                ):
+                    passed = False
+                    message_blocks.extend(
+                        [
+                            {
+                                "type": "section",
+                                "text": {
+                                    "type": "mrkdwn",
+                                    "text": "Rule 2 failed\n*expected:* all responses to be mapped to at least 0.1% of responses\n*actual:* the following themes are too sparse",
+                                },
+                            },
+                            {
+                                "type": "rich_text",
+                                "elements": [
+                                    {  # type: ignore
+                                        "type": "rich_text_list",
+                                        "style": "bullet",
+                                        "elements": [
+                                            {
+                                                "type": "rich_text_section",
+                                                "elements": [
+                                                    {
+                                                        "type": "text",
+                                                        "text": f"`{theme}` is mapped to {coverage} responses",
+                                                    }
+                                                ],
+                                            }
+                                            for theme, coverage, _ in sparse_responses
+                                        ],
+                                    }
+                                ],
+                            },
+                        ]
+                    )
+                else:
+                    message_blocks.append(
+                        {"type": "section", "text": {"type": "mrkdwn", "text": "Rule 2 passed"}}
+                    )
+
+                if overlapping_themes := rule_4_themes_should_not_overlap(
+                    themes_df.to_dict(orient="records")
+                ):
+                    # str, str, float
+                    passed = False
+                    message_blocks.extend(
+                        [
+                            {
+                                "type": "section",
+                                "text": {
+                                    "type": "mrkdwn",
+                                    "text": "Rule 4 failed\n*expected:* no themes should have mapped responses that overlap by more than 70%%\n*actual:* the following themes overlap",
+                                },
+                            },
+                            {
+                                "type": "rich_text",
+                                "elements": [
+                                    {  # type: ignore
+                                        "type": "rich_text_list",
+                                        "style": "bullet",
+                                        "elements": [
+                                            {
+                                                "type": "rich_text_section",
+                                                "elements": [
+                                                    {
+                                                        "type": "text",
+                                                        "text": f"`{theme_a}` & `{theme_b}` overlap by {overlap}",
+                                                    }
+                                                ],
+                                            }
+                                            for theme_a, theme_b, overlap in overlapping_themes
+                                        ],
+                                    }
+                                ],
+                            },
+                        ]
+                    )
+                else:
+                    message_blocks.append(
+                        {"type": "section", "text": {"type": "mrkdwn", "text": "Rule 4 passed"}}
+                    )
+
+                if passed:
+                    message_title = (
+                        f"theme set rules passed ✅ for {consultation_dir}/{question_dir}"
+                    )
+                else:
+                    message_title = (
+                        f"theme set rules failed ❌ for {consultation_dir}/{question_dir}"
+                    )
+
+                message_title_block = {
+                    "type": "header",
+                    "text": {"type": "plain_text", "text": message_title},
+                }
+                message = {
+                    "text": message_title,
+                    "blocks": [message_title_block] + message_blocks,
+                }
+                response = http.request(
+                    "POST",
+                    SLACK_WEBHOOK_URL,
+                    body=json.dumps(message),
+                    headers={"Content-Type": "application/json"},
+                )
+                if response.status != 200:
+                    response_data = (
+                        response.data.decode("utf-8") if response.data else "No response data"
+                    )
+                    error_message = (
+                        f"Slack webhook failed with status {response.status}: {response_data}"
+                    )
+                    logger.error(error_message)
+
             except Exception:
                 logger.exception("Error processing %s", question_dir)
                 skipped_questions.append(question_dir)
@@ -184,7 +363,6 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description="Download a subdirectory from S3.")
     parser.add_argument(
         "--subdir",

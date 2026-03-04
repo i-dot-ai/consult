@@ -60,7 +60,7 @@ def rule_3_semantic_similarity_must_be_less_than_90pc(
     results = []
     for (label_1, embedding_1), (label_2, embedding_2) in pairwise(labeled_embeddings):
         similarity = cosine_similarity(embedding_1.embedding, embedding_2.embedding)
-        if similarity > .9:
+        if similarity > 0.9:
             results.append((label_1.topic_label, label_2.topic_label, similarity))
 
     return results
@@ -369,7 +369,7 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                                             {
                                                 "type": "rich_text_section",
                                                 "elements": [
-                                                    {"type": "text", "text": f'`{x}` & `{y}`'}
+                                                    {"type": "text", "text": f"`{x}` & `{y}`"}
                                                 ],
                                             }
                                             for x, y, _ in semantic_failures
@@ -415,7 +415,6 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                         f"Slack webhook failed with status {response.status}: {response_data}"
                     )
                     logger.error(error_message)
-                    raise Exception(error_message)
 
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
                     f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
