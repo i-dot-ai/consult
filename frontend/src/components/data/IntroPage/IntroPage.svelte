@@ -36,12 +36,16 @@
 
   let interval: NodeJS.Timeout;
 
+  function alternateCards() {
+    activeCard += 1;
+    if (activeCard >= CARDS.length) {
+      activeCard = 0;
+    }
+  }
+
   onMount(() => {
     interval = setInterval(() => {
-      activeCard += 1;
-      if (activeCard >= CARDS.length) {
-        activeCard = 0;
-      }
+      alternateCards();
     }, CARD_SWITCH_SPEED)
   })
   onDestroy(() => {
