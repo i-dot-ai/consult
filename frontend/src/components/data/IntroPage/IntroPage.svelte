@@ -72,7 +72,7 @@
     <span class={clsx(["text-md", "mb-2"])}> What you'll do </span>
   </Title>
 
-  <div class={clsx(["flex", "my-4", "min-w-[50rem]"])}>
+  <div class={clsx(["flex", "gap-2", "my-4", "min-w-[50rem]"])}>
     {#each CARDS as card, i (i)}
       <IntroCard
         order={i + 1}
