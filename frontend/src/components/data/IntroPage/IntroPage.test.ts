@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import IntroPage from "./IntroPage.svelte";
 
 describe("IntroPage", () => {
   beforeEach(() => {
     vi.useFakeTimers();
-  })
+  });
 
   afterEach(() => {
     vi.useRealTimers();
-  })
+  });
 
   it("should alternate active card every 2 seconds", async () => {
     render(IntroPage);
@@ -43,12 +43,12 @@ describe("IntroPage", () => {
   it.each([
     "Prepare data outside Consult",
     "Upload & validate",
-    "Define question structure"
+    "Define question structure",
   ])("should render card titles", (title) => {
     render(IntroPage);
 
     expect(screen.getByText(title)).toBeInTheDocument();
-  })
+  });
 
   it.each([
     "Export from your collection tool and structure your files",
@@ -58,7 +58,7 @@ describe("IntroPage", () => {
     render(IntroPage);
 
     expect(screen.getByText(subtitle)).toBeInTheDocument();
-  })
+  });
 
   it("should match snapshot", () => {
     const { container } = render(IntroPage);
