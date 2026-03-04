@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
 
   import Title from "../../Title.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
@@ -34,13 +34,18 @@
 
   let activeCard = $state(0);
 
+  let interval: NodeJS.Timeout;
+
   onMount(() => {
-    setInterval(() => {
+    interval = setInterval(() => {
       activeCard += 1;
       if (activeCard >= CARDS.length) {
         activeCard = 0;
       }
     }, CARD_SWITCH_SPEED)
+  })
+  onDestroy(() => {
+    clearInterval(interval);
   })
 </script>
 

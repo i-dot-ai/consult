@@ -4,7 +4,7 @@ exports[`IntroCard > should match snapshot 1`] = `
 <div>
   <div
     aria-current="true"
-    class="relative flex flex-col gap-1 items-center w-[15rem] transition-opacity"
+    class="relative flex flex-col gap-1 items-center w-[15rem] transition-opacity duration-500"
     data-testid="intro-card"
   >
     <div
