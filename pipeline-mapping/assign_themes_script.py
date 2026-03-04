@@ -39,7 +39,7 @@ def rule_2_themes_must_have_a_non_negligible_number_of_responses(
     Rationale: We want to remove anomalous results from the consultation.
     """
 
-    counter = collections.defaultdict(int)
+    counter: collections.defaultdict[str, int] = collections.defaultdict(int)
 
     for line in mapping:
         for theme_key in line["theme_keys"]:
@@ -67,8 +67,8 @@ def rule_4_themes_should_not_overlap(mapping: list[dict]) -> list[tuple[str, str
 
     results = []
     for i, theme_key_a in enumerate(theme_keys):
-        for theme_key_b in enumerate(theme_keys[i + 1 :]):
-            response_a, response_b = theme_keys[theme_key_a], theme_keys[theme_key_b]
+        for theme_key_b in theme_keys[i + 1 :]:
+            response_a, response_b = counter[theme_key_a], counter[theme_key_b]
             intersection = len(set.intersection(response_a, response_b))
             union = len(set.union(response_a, response_b))
             if intersection / union > 0.7:
