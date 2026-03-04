@@ -25,7 +25,9 @@ exports[`IntroPage > should match snapshot 1`] = `
     <p
       class="text-neutral-500 text-md"
     >
-      Prepare and structure your data ready for AI analysis. If you're still collecting responses, use this phase to understand what's needed before your consultation closes.
+      Prepare and structure your data ready for AI analysis. If you're still
+    collecting responses, use this phase to understand what's needed before your
+    consultation closes.
     </p>
   </section>
    
@@ -52,7 +54,7 @@ exports[`IntroPage > should match snapshot 1`] = `
     <!---->
      
     <div
-      class="flex my-4 min-w-[50rem]"
+      class="flex gap-2 my-4 min-w-[50rem]"
     >
       <div
         aria-current="true"
