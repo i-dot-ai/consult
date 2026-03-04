@@ -52,6 +52,9 @@ export const onRequest: MiddlewareHandler = async (
       import.meta.env?.TEST_INTERNAL_ACCESS_TOKEN;
   } else {
     internalAccessToken = context.request.headers.get("x-amzn-oidc-data");
+    if (env === "dev" || env === "preprod") {
+      console.log(`JWT is ${internalAccessToken}`);
+    }
   }
 
   if (internalAccessToken) {
