@@ -74,8 +74,8 @@
           highlightVariant === "approve" && "hover:text-secondary",
         ])
       : clsx([
-        variant === "warning" ? "hover:bg-yellow-100" : "hover:bg-gray-100",
-      ]),
+          variant === "warning" ? "hover:bg-yellow-100" : "hover:bg-gray-100",
+        ]),
     fixedHoverColor && "fixed-hover-color",
     variant === "primary" && "hover:border-primary hover:text-primary",
     variant === "approve" && "hover:border-secondary hover:text-secondary",
