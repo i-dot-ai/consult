@@ -56,7 +56,7 @@
   }
 </script>
 
-{#snippet navButton(label: string, url?: string, external?: boolean)}
+{#snippet navButton(label: string, url?: string, external?: boolean, tabindex?: number)}
   <div class="hover:text-primary">
     <Button
       variant="ghost"
@@ -65,6 +65,7 @@
       href={url}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
+      {tabindex}
     >
       <span
         class={clsx([
@@ -212,6 +213,7 @@
                       subItem.label,
                       subItem.url,
                       subItem.external,
+                      activeSubmenu === id ? 0 : -1,
                     )}
                   </li>
                 {/each}
