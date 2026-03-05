@@ -34,43 +34,6 @@ client = OpenAI(
 SLACK_WEBHOOK_URL = os.environ["SLACK_WEBHOOK_URL"]
 
 
-def rule_1_total_theme_number_less_than_70(clustered_themes: list) -> int | None:
-    """
-    The number of child themes should be no more than 70
-    Rationale: Users typically want less themes than this, so we do not want Consultation owners to have to much work to do to reduce the theme-set to meet their expectations.
-    """
-    if len(clustered_themes) <= 70:
-        return len(clustered_themes)
-    return None
-
-
-def rule_3_semantic_similarity_must_be_less_than_90pc(
-    clustered_themes: list[ThemeNode],
-) -> list[tuple[str, str, float]]:
-    """
-    The semantic similarity between theme titles and descriptions must be less than 90%
-    Rationale: We do not want multiple instances of very similar themes, i.e. "environment" and "environmental"
-    """
-
-    def cosine_similarity(a, b):
-        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-
-    response = client.embeddings.create(
-        input=[x.topic_label + ": " + x.topic_description for x in clustered_themes],
-        model="text-embedding-3-large",
-    )
-
-    labeled_embeddings = zip(clustered_themes, response.data)
-
-    results = []
-    for (label_1, embedding_1), (label_2, embedding_2) in pairwise(labeled_embeddings):
-        similarity = cosine_similarity(embedding_1.embedding, embedding_2.embedding)
-        if similarity > 0.9:
-            results.append((label_1.topic_label, label_2.topic_label, similarity))
-
-    return results
-
-
 class ThemeNodeList(BaseModel):
     """List of theme nodes for serialization to JSON."""
 
