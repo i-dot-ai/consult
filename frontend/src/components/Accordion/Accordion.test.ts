@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
 import Accordion, { type Props } from "./Accordion.svelte";
@@ -48,5 +48,20 @@ describe("Accordion", () => {
 
     const propsDefined = AccordionStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual(["title", "content"]);
+  });
+
+  it("should render close button if onClose prop is passed", () => {
+    render(Accordion, { ...testData, onClose: vi.fn() });
+    expect(screen.getByLabelText("close accordion")).toBeInTheDocument();
+  });
+
+  it("should call onClose if close button is clicked", async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+
+    render(Accordion, { ...testData, onClose });
+
+    await user.click(screen.getByLabelText("close accordion"));
+    expect(onClose).toHaveBeenCalledOnce();
   });
 });

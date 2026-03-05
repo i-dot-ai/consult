@@ -1,6 +1,7 @@
 import { createRawSnippet } from "svelte";
 
 import Accordion from "./Accordion.svelte";
+import Lightbulb2 from "../svg/material/Lightbulb2.svelte";
 
 const createSnippetWithDefault = (html: string) => {
   try {
@@ -42,6 +43,59 @@ export default {
     },
   ],
   stories: [
-    /* TODO: Add stories */
+    {
+      name: "With Icon",
+      props: {
+        title: titleComponent,
+        content: contentComponent,
+        Icon: Lightbulb2,
+      },
+    },
+    {
+      name: "Variant Warning",
+      props: {
+        title: titleComponent,
+        content: contentComponent,
+        variant: "warning",
+        Icon: Lightbulb2,
+      },
+    },
+    {
+      name: "Variant Gray",
+      props: {
+        title: titleComponent,
+        content: contentComponent,
+        variant: "gray",
+        Icon: Lightbulb2,
+      },
+    },
+    {
+      name: "Variant Light",
+      props: {
+        title: titleComponent,
+        content: contentComponent,
+        variant: "light",
+        Icon: Lightbulb2,
+      },
+    },
+    {
+      name: "With Close",
+      props: {
+        title: titleComponent,
+        content: contentComponent,
+        Icon: Lightbulb2,
+        onClose: () => alert("Close button clicked"),
+      },
+    },
+    {
+      name: "With Close Warning",
+      props: {
+        title: titleComponent,
+        content: contentComponent,
+        Icon: Lightbulb2,
+        variant: "warning",
+        onClose: () => alert("Close button clicked"),
+      },
+    },
   ],
 };

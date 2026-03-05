@@ -104,3 +104,25 @@ resource "aws_iam_role" "eventbridge_invoke_role" {
     ]
   })
 }
+
+resource "aws_iam_role_policy" "eventbridge_policy" {
+  name = "${local.name}-eventbridge-policy"
+  role = aws_iam_role.eventbridge_invoke_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "lambda:InvokeFunction"
+        ],
+        Resource = [
+          module.slack_notifier_lambda.arn,
+          module.import_response_annotations_lambda.arn,
+          module.import_candidate_themes_lambda.arn
+        ]
+      }
+    ]
+  })
+}
