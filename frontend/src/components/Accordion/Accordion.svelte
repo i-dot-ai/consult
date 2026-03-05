@@ -2,7 +2,7 @@
   import clsx from "clsx";
 
   import { slide } from "svelte/transition";
-  import { type Snippet } from "svelte";
+  import { type Component, type Snippet } from "svelte";
 
   import Button from "../inputs/Button/Button.svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
@@ -12,9 +12,10 @@
     title: Snippet;
     content: Snippet;
     variant?: "light" | "gray";
+    Icon?: Component;
   }
 
-  let { title, content, variant = "light" }: Props = $props();
+  let { title, content, variant = "light", Icon }: Props = $props();
 
   let expanded = $state(false);
 </script>
@@ -25,7 +26,19 @@
   fullWidth={true}
 >
   <div class="flex w-full items-center justify-between gap-2">
-    {@render title()}
+    <div class={clsx([
+      "flex",
+      "gap-1",
+      "items-center",
+    ])}>
+      {#if Icon}
+        <MaterialIcon color="fill-neutral-700" size="1.2rem">
+          <Icon />
+        </MaterialIcon>
+      {/if}
+
+      {@render title()}
+    </div>
 
     <div class={clsx(["transition-transform", expanded && "rotate-90"])}>
       <MaterialIcon color="fill-neutral-500">

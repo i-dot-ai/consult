@@ -1,6 +1,7 @@
 import { createRawSnippet } from "svelte";
 
 import Accordion from "./Accordion.svelte";
+import Lightbulb2 from "../svg/material/Lightbulb2.svelte";
 
 const createSnippetWithDefault = (html: string) => {
   try {
@@ -42,6 +43,13 @@ export default {
     },
   ],
   stories: [
-    /* TODO: Add stories */
+    {
+      name: "With Icon",
+      props: {
+        title: titleComponent,
+        content: contentComponent,
+        Icon: Lightbulb2,
+      },
+    },
   ],
 };

@@ -19,6 +19,7 @@ import ProfileButtonStory from "../navigation/ProfileButton/ProfileButtonStory.s
 import FloatingPanelStory from "../navigation/FloatingPanel/FloatingPanelStory.svelte";
 import IntroCardStory from "../data/IntroCard/IntroCardStory.svelte";
 import LearningsStory from "../data/Learnings/LearningsStory.svelte";
+import StepOneAPageStory from "../data/StepOneAPage/StepOneAPageStory.svelte.ts";
 
 interface StoryProp {
   name: string;
@@ -64,4 +65,5 @@ export default [
   FloatingPanelStory,
   IntroCardStory,
   LearningsStory,
+  StepOneAPageStory,
 ] as Story[];
