@@ -67,6 +67,7 @@
             onClose();
           }}
           variant="ghost"
+          ariaLabel="close accordion"
         >
           <MaterialIcon
             color={variant === "warning"
