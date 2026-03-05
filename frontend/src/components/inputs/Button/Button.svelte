@@ -10,6 +10,7 @@
     | "ghost"
     | "approve"
     | "outline"
+    | "warning"
     | "dot" = "default";
   export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
   export let highlighted: boolean = false;
@@ -30,6 +31,7 @@
   export let ariaLabel: string | undefined = undefined;
   export let noPadding: boolean = false;
   export let fixedHoverColor: boolean = false;
+  export let tabindex: number | undefined = undefined;
 </script>
 
 <svelte:element
@@ -38,7 +40,7 @@
   {type}
   title={title || undefined}
   data-variant={variant}
-  tabindex="0"
+  tabindex={tabindex || 0}
   {href}
   {target}
   {rel}
@@ -56,6 +58,7 @@
     variant === "gray" && "border-gray-300 bg-neutral-100",
     variant === "primary" && "border-gray-300 bg-primary text-white",
     variant === "approve" && "border-gray-300 bg-secondary text-white",
+    variant === "warning" && "border-yellow-300 bg-yellow-50",
     variant === "ghost" && "border-transparent",
     variant === "dot" && "border-transparent text-neutral-400",
     variant === "outline" &&
@@ -71,7 +74,9 @@
           highlightVariant === "primary" && "hover:text-primary",
           highlightVariant === "approve" && "hover:text-secondary",
         ])
-      : "hover:bg-gray-100",
+      : clsx([
+          variant === "warning" ? "hover:bg-yellow-100" : "hover:bg-gray-100",
+        ]),
     fixedHoverColor && "fixed-hover-color",
     variant === "primary" && "hover:border-primary hover:text-primary",
     variant === "approve" && "hover:border-secondary hover:text-secondary",
