@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from consultations.models import Question
-from factories import QuestionFactory, RespondentFactory, ResponseFactory, MultiChoiceAnswerFactory
+from factories import MultiChoiceAnswerFactory, QuestionFactory, RespondentFactory, ResponseFactory
 
 
 @pytest.mark.django_db
