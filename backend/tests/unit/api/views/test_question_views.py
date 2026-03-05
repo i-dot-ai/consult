@@ -391,11 +391,12 @@ class TestQuestionViewSet:
             },
         )
 
-        with pytest.raises(AttributeError) as e:
-            client.patch(
+        response = client.patch(
                 url,
                 data={"theme_status": Question.ThemeStatus.CONFIRMED},
                 content_type="application/json",
                 headers={"Authorization": f"Bearer {staff_user_token}"},
             )
-        assert e.value.args[0] == "'MultiChoiceAnswer' object has no attribute 'prefetched_response_count'"
+
+        assert response.status_code == 200
+        assert response.json()["theme_status"] == "confirmed"
