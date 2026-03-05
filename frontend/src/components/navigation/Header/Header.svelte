@@ -56,7 +56,12 @@
   }
 </script>
 
-{#snippet navButton(label: string, url?: string, external?: boolean, tabindex?: number)}
+{#snippet navButton(
+  label: string,
+  url?: string,
+  external?: boolean,
+  tabindex?: number,
+)}
   <div class="hover:text-primary">
     <Button
       variant="ghost"
