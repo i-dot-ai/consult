@@ -4,23 +4,25 @@ import datetime
 import json
 import logging
 import os
-from itertools import pairwise
 from pathlib import Path
 
 import boto3
-import numpy as np
 import pandas as pd
 import urllib3
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
 from pydantic import BaseModel
-from themefinder import theme_condensation, theme_generation, theme_refinement
+from themefinder import (
+    theme_condensation,
+    theme_generation,
+    theme_refinement,
+    rule_1_total_theme_number_less_than_70_slack,
+    rule_3_semantic_similarity_must_be_less_than_90pc_slack,
+)
 from themefinder.advanced_tasks.theme_clustering_agent import ThemeClusteringAgent
 from themefinder.models import (
     HierarchicalClusteringResponse,
     ThemeNode,
-    rule_1_total_theme_number_less_than_70_slack,
-    rule_3_semantic_similarity_must_be_less_than_90pc_slack,
 )
 
 http = urllib3.PoolManager()
