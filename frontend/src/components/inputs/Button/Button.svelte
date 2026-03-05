@@ -31,6 +31,7 @@
   export let ariaLabel: string | undefined = undefined;
   export let noPadding: boolean = false;
   export let fixedHoverColor: boolean = false;
+  export let tabindex: number | undefined = undefined;
 </script>
 
 <svelte:element
@@ -39,7 +40,7 @@
   {type}
   title={title || undefined}
   data-variant={variant}
-  tabindex="0"
+  tabindex={tabindex || 0}
   {href}
   {target}
   {rel}
