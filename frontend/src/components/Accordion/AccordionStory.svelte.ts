@@ -78,5 +78,24 @@ export default {
         Icon: Lightbulb2,
       },
     },
+    {
+      name: "With Close",
+      props: {
+        title: titleComponent,
+        content: contentComponent,
+        Icon: Lightbulb2,
+        onClose: () => alert("Close button clicked"),
+      },
+    },
+    {
+      name: "With Close Warning",
+      props: {
+        title: titleComponent,
+        content: contentComponent,
+        Icon: Lightbulb2,
+        variant: "warning",
+        onClose: () => alert("Close button clicked"),
+      },
+    },
   ],
 };
