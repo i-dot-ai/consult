@@ -78,7 +78,7 @@ exports[`ThemeForm > should render add variant 1`] = `
           </div>
            
           <div
-            class="flex items-center gap-0.5"
+            class="flex items-center gap-0.5 shrink-0 mx-1"
           >
             <div
               class="transition-transform"
