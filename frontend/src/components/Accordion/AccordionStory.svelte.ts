@@ -51,5 +51,32 @@ export default {
         Icon: Lightbulb2,
       },
     },
+    {
+      name: "Variant Warning",
+      props: {
+        title: titleComponent,
+        content: contentComponent,
+        variant: "warning",
+        Icon: Lightbulb2,
+      },
+    },
+    {
+      name: "Variant Gray",
+      props: {
+        title: titleComponent,
+        content: contentComponent,
+        variant: "gray",
+        Icon: Lightbulb2,
+      },
+    },
+    {
+      name: "Variant Light",
+      props: {
+        title: titleComponent,
+        content: contentComponent,
+        variant: "light",
+        Icon: Lightbulb2,
+      },
+    },
   ],
 };

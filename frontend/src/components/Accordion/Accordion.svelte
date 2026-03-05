@@ -11,17 +11,27 @@
   export interface Props {
     title: Snippet;
     content: Snippet;
-    variant?: "light" | "gray";
+    variant?: "light" | "gray" | "warning";
     Icon?: Component;
   }
 
   let { title, content, variant = "light", Icon }: Props = $props();
 
   let expanded = $state(false);
+
+  function getButtonVariant() {
+    if (variant === "gray") {
+      return "gray";
+    }
+    if (variant === "warning") {
+      return "warning";
+    }
+    return "default";
+  }
 </script>
 
 <Button
-  variant={variant === "gray" ? "gray" : "default"}
+  variant={getButtonVariant()}
   handleClick={() => (expanded = !expanded)}
   fullWidth={true}
 >
@@ -32,7 +42,13 @@
       "items-center",
     ])}>
       {#if Icon}
-        <MaterialIcon color="fill-neutral-700" size="1.2rem">
+        <MaterialIcon
+          color={variant === "warning"
+            ? "fill-yellow-600"
+            : "fill-neutral-600"
+          }
+          size="1.2rem"
+        >
           <Icon />
         </MaterialIcon>
       {/if}
@@ -41,7 +57,12 @@
     </div>
 
     <div class={clsx(["transition-transform", expanded && "rotate-90"])}>
-      <MaterialIcon color="fill-neutral-500">
+      <MaterialIcon
+        color={variant === "warning"
+          ? "fill-yellow-500"
+          : "fill-neutral-500"
+        }
+      >
         <ChevronRight />
       </MaterialIcon>
     </div>
@@ -54,6 +75,7 @@
     class={clsx([
       variant === "light" && "bg-white",
       variant === "gray" && "bg-neutral-100",
+      variant ==="warning" && "border-yellow-300 bg-yellow-50",
       "rounded-b-lg border border-t-0 border-neutral-300 p-4",
     ])}
   >

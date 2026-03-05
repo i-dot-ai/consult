@@ -10,6 +10,7 @@
     | "ghost"
     | "approve"
     | "outline"
+    | "warning"
     | "dot" = "default";
   export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
   export let highlighted: boolean = false;
@@ -56,6 +57,7 @@
     variant === "gray" && "border-gray-300 bg-neutral-100",
     variant === "primary" && "border-gray-300 bg-primary text-white",
     variant === "approve" && "border-gray-300 bg-secondary text-white",
+    variant === "warning" && "border-yellow-300 bg-yellow-50",
     variant === "ghost" && "border-transparent",
     variant === "dot" && "border-transparent text-neutral-400",
     variant === "outline" &&
