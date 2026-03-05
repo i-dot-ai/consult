@@ -16,28 +16,40 @@ exports[`Accordion > should render correctly 1`] = `
     <div
       class="flex w-full items-center justify-between gap-2"
     >
-      <h2>
-        Test Title
-      </h2>
-      <!---->
+      <div
+        class="flex gap-1 items-center"
+      >
+        <!---->
+         
+        <h2>
+          Test Title
+        </h2>
+        <!---->
+      </div>
        
       <div
-        class="transition-transform"
+        class="flex items-center gap-0.5 shrink-0 mx-1"
       >
-        <svg
-          class="fill-neutral-500"
-          height="1rem"
-          role="img"
-          viewBox="0 -960 960 960"
-          width="1rem"
-          xmlns="http://www.w3.org/2000/svg"
+        <div
+          class="transition-transform"
         >
-          <path
-            d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+          <svg
+            class="fill-neutral-500"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
             xmlns="http://www.w3.org/2000/svg"
-          />
+          >
+            <path
+              d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
           <!---->
-        </svg>
+        </div>
+         
         <!---->
       </div>
     </div>
@@ -69,28 +81,40 @@ exports[`Accordion > should render correctly 2`] = `
     <div
       class="flex w-full items-center justify-between gap-2"
     >
-      <h2>
-        Test Title
-      </h2>
-      <!---->
+      <div
+        class="flex gap-1 items-center"
+      >
+        <!---->
+         
+        <h2>
+          Test Title
+        </h2>
+        <!---->
+      </div>
        
       <div
-        class="transition-transform"
+        class="flex items-center gap-0.5 shrink-0 mx-1"
       >
-        <svg
-          class="fill-neutral-500"
-          height="1rem"
-          role="img"
-          viewBox="0 -960 960 960"
-          width="1rem"
-          xmlns="http://www.w3.org/2000/svg"
+        <div
+          class="transition-transform"
         >
-          <path
-            d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+          <svg
+            class="fill-neutral-500"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
             xmlns="http://www.w3.org/2000/svg"
-          />
+          >
+            <path
+              d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
           <!---->
-        </svg>
+        </div>
+         
         <!---->
       </div>
     </div>
