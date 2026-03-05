@@ -58,7 +58,17 @@
       {@render title()}
     </div>
 
-    <div class={clsx(["flex", "items-center", "gap-0.5"])}>
+    <div class={clsx([
+      "flex",
+      "items-center",
+      "gap-0.5",
+      "shrink-0",
+      "mx-1",
+      Icon && clsx([
+        "my-2.5",
+        "self-start",
+      ]),
+    ])}>
       <div class={clsx(["transition-transform", expanded && "rotate-90"])}>
         <MaterialIcon
           color={variant === "warning" ? "fill-yellow-500" : "fill-neutral-500"}
