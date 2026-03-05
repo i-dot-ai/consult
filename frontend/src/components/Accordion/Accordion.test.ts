@@ -51,17 +51,17 @@ describe("Accordion", () => {
   });
 
   it("should render close button if onClose prop is passed", () => {
-    render(Accordion, {...testData, onClose: vi.fn()});
+    render(Accordion, { ...testData, onClose: vi.fn() });
     expect(screen.getByLabelText("close accordion")).toBeInTheDocument();
-  })
+  });
 
   it("should call onClose if close button is clicked", async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
 
-    render(Accordion, {...testData, onClose});
+    render(Accordion, { ...testData, onClose });
 
     await user.click(screen.getByLabelText("close accordion"));
     expect(onClose).toHaveBeenCalledOnce();
-  })
+  });
 });
