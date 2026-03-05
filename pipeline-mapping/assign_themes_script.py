@@ -1,6 +1,5 @@
 import argparse
 import asyncio
-import collections
 import datetime
 import json
 import logging
@@ -11,7 +10,12 @@ import boto3
 import pandas as pd
 import urllib3
 from langchain_openai import ChatOpenAI
-from themefinder import detail_detection, theme_mapping
+from themefinder import (
+    detail_detection,
+    rule_2_themes_must_have_a_non_negligible_number_of_responses_slack,
+    rule_4_themes_should_not_overlap_slack,
+    theme_mapping,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -29,51 +33,6 @@ http = urllib3.PoolManager()
 
 
 SLACK_WEBHOOK_URL = os.environ["SLACK_WEBHOOK_URL"]
-
-
-def rule_2_themes_must_have_a_non_negligible_number_of_responses(
-    mapping: list[dict],
-) -> list[tuple[str, int, int]]:
-    """
-    A child theme must be assigned to at least 0.1% or 5, whichever is the greater, of the responses
-    Rationale: We want to remove anomalous results from the consultation.
-    """
-
-    counter: collections.defaultdict[str, int] = collections.defaultdict(int)
-
-    for line in mapping:
-        for theme_key in line["theme_keys"]:
-            counter[theme_key] += 1
-
-    return [
-        (theme_key, count, len(mapping))
-        for theme_key, count in counter.items()
-        if count / len(mapping) >= 0.001 or count > 5
-    ]
-
-
-def rule_4_themes_should_not_overlap(mapping: list[dict]) -> list[tuple[str, str, float]]:
-    """
-    The size of intersection of any two themes representative responses divined by the size of the union of its representative responses should be less than 70%
-    Rationale: We do not want 2 themes, even if semantically distinct, to be mapped to the same response-set, in this case they can be merged.
-    """
-    counter = collections.defaultdict(set)
-
-    for line in mapping:
-        for theme_key in line["theme_keys"]:
-            counter[theme_key].add(line["themefinder_id"])
-
-    theme_keys = list(counter)
-
-    results = []
-    for i, theme_key_a in enumerate(theme_keys):
-        for theme_key_b in theme_keys[i + 1 :]:
-            response_a, response_b = counter[theme_key_a], counter[theme_key_b]
-            intersection = len(set.intersection(response_a, response_b))
-            union = len(set.union(response_a, response_b))
-            if intersection / union > 0.7:
-                results.append((theme_key_a, theme_key_b, intersection / union))
-    return results
 
 
 def download_s3_subdir(subdir: str) -> None:
@@ -237,107 +196,28 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                     "Completed processing %s, saved to %s", question_dir, question_output_dir
                 )
 
-                message_blocks = []
-                passed = True
-                if sparse_responses := rule_2_themes_must_have_a_non_negligible_number_of_responses(
-                    themes_df.to_dict(orient="records")
-                ):
-                    passed = False
-                    message_blocks.extend(
-                        [
-                            {
-                                "type": "section",
-                                "text": {
-                                    "type": "mrkdwn",
-                                    "text": "Rule 2 failed\n*expected:* all responses to be mapped to at least 0.1% of responses\n*actual:* the following themes are too sparse",
-                                },
-                            },
-                            {
-                                "type": "rich_text",
-                                "elements": [
-                                    {  # type: ignore
-                                        "type": "rich_text_list",
-                                        "style": "bullet",
-                                        "elements": [
-                                            {
-                                                "type": "rich_text_section",
-                                                "elements": [
-                                                    {
-                                                        "type": "text",
-                                                        "text": f"`{theme}` is mapped to {coverage} responses",
-                                                    }
-                                                ],
-                                            }
-                                            for theme, coverage, _ in sparse_responses
-                                        ],
-                                    }
-                                ],
-                            },
-                        ]
+                rule_2_messages, rule_2_passed = (
+                    rule_2_themes_must_have_a_non_negligible_number_of_responses_slack(
+                        themes_df.to_dict(orient="records")
                     )
-                else:
-                    message_blocks.append(
-                        {"type": "section", "text": {"type": "mrkdwn", "text": "Rule 2 passed"}}
-                    )
+                )
 
-                if overlapping_themes := rule_4_themes_should_not_overlap(
+                rule_3_messages, rule_3_passed = rule_4_themes_should_not_overlap_slack(
                     themes_df.to_dict(orient="records")
-                ):
-                    # str, str, float
-                    passed = False
-                    message_blocks.extend(
-                        [
-                            {
-                                "type": "section",
-                                "text": {
-                                    "type": "mrkdwn",
-                                    "text": "Rule 4 failed\n*expected:* no themes should have mapped responses that overlap by more than 70%%\n*actual:* the following themes overlap",
-                                },
-                            },
-                            {
-                                "type": "rich_text",
-                                "elements": [
-                                    {  # type: ignore
-                                        "type": "rich_text_list",
-                                        "style": "bullet",
-                                        "elements": [
-                                            {
-                                                "type": "rich_text_section",
-                                                "elements": [
-                                                    {
-                                                        "type": "text",
-                                                        "text": f"`{theme_a}` & `{theme_b}` overlap by {overlap}",
-                                                    }
-                                                ],
-                                            }
-                                            for theme_a, theme_b, overlap in overlapping_themes
-                                        ],
-                                    }
-                                ],
-                            },
-                        ]
-                    )
-                else:
-                    message_blocks.append(
-                        {"type": "section", "text": {"type": "mrkdwn", "text": "Rule 4 passed"}}
-                    )
+                )
 
-                if passed:
-                    message_title = (
-                        f"theme set rules passed ✅ for {consultation_dir}/{question_dir}"
-                    )
-                else:
-                    message_title = (
-                        f"theme set rules failed ❌ for {consultation_dir}/{question_dir}"
-                    )
+                msg = "passed ✅" if rule_2_passed and rule_3_passed else "failed ❌"
 
                 message_title_block = {
                     "type": "header",
-                    "text": {"type": "plain_text", "text": message_title},
+                    "text": {
+                        "type": "plain_text",
+                        "text": f"theme set rules {msg} for {consultation_dir}/{question_dir}",
+                    },
                 }
                 message = {
-                    "text": message_title,
-                    "blocks": [message_title_block] + message_blocks,
+                    "text": f"theme set rules {msg} for {consultation_dir}/{question_dir}",
+                    "blocks": [message_title_block] + rule_2_messages + rule_3_messages,
                 }
                 response = http.request(
                     "POST",

@@ -16,7 +16,12 @@ from openai import OpenAI
 from pydantic import BaseModel
 from themefinder import theme_condensation, theme_generation, theme_refinement
 from themefinder.advanced_tasks.theme_clustering_agent import ThemeClusteringAgent
-from themefinder.models import HierarchicalClusteringResponse, ThemeNode
+from themefinder.models import (
+    HierarchicalClusteringResponse,
+    ThemeNode,
+    rule_1_total_theme_number_less_than_70_slack,
+    rule_3_semantic_similarity_must_be_less_than_90pc_slack,
+)
 
 http = urllib3.PoolManager()
 
@@ -328,78 +333,26 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                         refined_themes_to_theme_node(row) for _, row in refined_themes_df.iterrows()
                     ]
 
-                message_blocks = []
-                passed = True
-                if theme_number := rule_1_total_theme_number_less_than_70(all_themes_list):
-                    passed = False
-                    message_blocks.append(
-                        {
-                            "type": "section",
-                            "text": {
-                                "type": "mrkdwn",
-                                "text": f"Rule 1 failed\n*expected:* no more than 70 themes\n*actual:* got {theme_number} themes",
-                            },
-                        }
-                    )
-                else:
-                    message_blocks.append(
-                        {"type": "section", "text": {"type": "mrkdwn", "text": "Rule 1 passed"}}
-                    )
-
-                if semantic_failures := rule_3_semantic_similarity_must_be_less_than_90pc(
+                rule_1_messages, rule_1_passed = rule_1_total_theme_number_less_than_70_slack(
                     all_themes_list
-                ):
-                    passed = False
-                    message_blocks.extend(
-                        [
-                            {
-                                "type": "section",
-                                "text": {
-                                    "type": "mrkdwn",
-                                    "text": "Rule 3 failed\n*expected:* all themes to have a semantic distance of at least 90%\n*actual:* the following themes are too similar:",
-                                },
-                            },
-                            {
-                                "type": "rich_text",
-                                "elements": [
-                                    {  # type: ignore
-                                        "type": "rich_text_list",
-                                        "style": "bullet",
-                                        "elements": [
-                                            {
-                                                "type": "rich_text_section",
-                                                "elements": [
-                                                    {"type": "text", "text": f"`{x}` & `{y}`"}
-                                                ],
-                                            }
-                                            for x, y, _ in semantic_failures
-                                        ],
-                                    }
-                                ],
-                            },
-                        ]
-                    )
-                else:
-                    message_blocks.append(
-                        {"type": "section", "text": {"type": "mrkdwn", "text": "Rule 3 passed"}}
-                    )
+                )
 
-                if passed:
-                    message_title = (
-                        f"theme set rules passed ✅ for {consultation_dir}/{question_dir}"
-                    )
-                else:
-                    message_title = (
-                        f"theme set rules failed ❌ for {consultation_dir}/{question_dir}"
-                    )
+                rule_3_messages, rule_3_passed = (
+                    rule_3_semantic_similarity_must_be_less_than_90pc_slack(all_themes_list)
+                )
+
+                msg = "passed ✅" if rule_1_passed and rule_3_passed else "failed ❌"
 
                 message_title_block = {
                     "type": "header",
-                    "text": {"type": "plain_text", "text": message_title},
+                    "text": {
+                        "type": "plain_text",
+                        "text": f"theme set rules {msg} for {consultation_dir}/{question_dir}",
+                    },
                 }
                 message = {
-                    "text": message_title,
-                    "blocks": [message_title_block] + message_blocks,
+                    "text": f"theme set rules {msg} for {consultation_dir}/{question_dir}",
+                    "blocks": [message_title_block] + rule_1_messages + rule_3_messages,
                 }
                 response = http.request(
                     "POST",
