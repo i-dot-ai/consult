@@ -200,3 +200,5 @@ lambda/**/redis/
 lambda/**/__pycache__/
 
 .claude/
+
+backend/scripts/temp_data/*
