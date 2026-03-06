@@ -9,9 +9,9 @@ from pathlib import Path
 import boto3
 import pandas as pd
 import urllib3
-from langchain_openai import ChatOpenAI
 from openai import OpenAI
 from pydantic import BaseModel
+from themefinder.llm import OpenAILLM
 from themefinder import (
     theme_condensation,
     theme_generation,
@@ -165,7 +165,7 @@ async def generate_themes(question: str, responses_df, llm):
     return refined_themes_df
 
 
-def agentic_theme_clustering(
+async def agentic_theme_clustering(
     refined_themes_df,
     llm,
     max_cluster_iterations=0,
@@ -204,8 +204,9 @@ def agentic_theme_clustering(
         for _, row in refined_themes_df.iterrows()
     ]
     agent = ThemeClusteringAgent(
-        llm.with_structured_output(HierarchicalClusteringResponse),
+        llm,
         initial_themes,
+        target_themes=n_target_themes,
     )
     logger.info(
         f"Clustering themes with max_iterations={max_cluster_iterations}, target_themes={n_target_themes}"
@@ -213,7 +214,7 @@ def agentic_theme_clustering(
     all_themes_df = None
     for i in range(3):
         try:
-            all_themes_df = agent.cluster_themes(
+            all_themes_df = await agent.cluster_themes(
                 max_iterations=max_cluster_iterations, target_themes=n_target_themes
             )
             if len(all_themes_df) > 0:
@@ -242,11 +243,11 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
         consultation_dir: Directory containing question subdirectories
         model_name: Language model instance for processing
     """
-    llm = ChatOpenAI(
+    llm = OpenAILLM(
         model=model_name,
-        temperature=0,
-        openai_api_base=os.environ["LLM_GATEWAY_URL"],
-        openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+        request_kwargs={"temperature": 0},
+        base_url=os.environ["LLM_GATEWAY_URL"],
+        api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
     )
 
     date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
@@ -283,7 +284,7 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
 
                 # Cluster themes if more than 20
                 if len(refined_themes_df) > 20:
-                    all_themes_df = agentic_theme_clustering(refined_themes_df, llm)
+                    all_themes_df = await agentic_theme_clustering(refined_themes_df, llm)
                     if all_themes_df is not None:
                         all_themes_list = [ThemeNode(**row) for _, row in all_themes_df.iterrows()]
                     else:

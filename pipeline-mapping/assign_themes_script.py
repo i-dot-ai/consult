@@ -9,7 +9,7 @@ from pathlib import Path
 import boto3
 import pandas as pd
 import urllib3
-from langchain_openai import ChatOpenAI
+from themefinder.llm import OpenAILLM
 from themefinder import (
     detail_detection,
     rule_2_themes_must_have_a_non_negligible_number_of_responses_slack,
@@ -141,11 +141,11 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
     Returns:
         str: Path to the output directory
     """
-    llm = ChatOpenAI(
+    llm = OpenAILLM(
         model=model_name,
-        temperature=0,
-        openai_api_base=os.environ["LLM_GATEWAY_URL"],
-        openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+        request_kwargs={"temperature": 0},
+        base_url=os.environ["LLM_GATEWAY_URL"],
+        api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
     )
 
     date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
