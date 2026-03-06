@@ -1,0 +1,23 @@
+# Load Test Configuration
+# This file defines the consultations to generate for load testing
+
+consultations:
+  - name: "Healthcare Consultation 2026"
+    code: "healthcare-2026"
+    stage: "analysis"  # Options: "no themes", "finalising themes", "with candidate themes", "analysis"
+    num_questions: 20
+    num_respondents: 1000
+    question_types:
+      open: 40          # Percentage: has_free_text=true, no multi_choice_options
+      hybrid: 40        # Percentage: has_free_text=true, with multi_choice_options
+      multiple_choice: 20  # Percentage: has_free_text=false, with multi_choice_options
+    
+  - name: "Transport Survey"
+    code: "transport-survey"
+    stage: "no themes"
+    num_questions: 15
+    num_respondents: 500
+    question_types:
+      open: 50
+      hybrid: 30
+      multiple_choice: 20
