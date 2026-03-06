@@ -233,6 +233,9 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                         f"Slack webhook failed with status {response.status}: {response_data}"
                     )
                     logger.error(error_message)
+                else:
+                    logger.info(message)
+
 
             except Exception:
                 logger.exception("Error processing %s", question_dir)

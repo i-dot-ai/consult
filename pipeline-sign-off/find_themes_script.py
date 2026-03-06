@@ -334,6 +334,8 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                         f"Slack webhook failed with status {response.status}: {response_data}"
                     )
                     logger.error(error_message)
+                else:
+                    logger.info(message)
 
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
                     f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
