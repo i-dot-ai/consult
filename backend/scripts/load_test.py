@@ -102,7 +102,7 @@ def run_load_test(
 
     # Main processing loop - placeholder for now
     print("Running load test with the following parameters:")
-    print(f"  Environment: {environment}")
+    print(f"  Environment: {environment.value}")
     print(f"  Consultation: {name_of_consultation}")
     print(f"  Number of questions: {num_of_questions}")
     print(f"  Number of respondents: {num_of_respondents}")
@@ -112,9 +112,9 @@ def run_load_test(
     print(f"Sample response: {get_random_response(data)}")
 
     endpoint = (
-        f"https://consult.{environment}.ai.cabinetoffice.gov.uk"
-        if environment.lower() in ["dev", "preprod"]
-        else "https://consult.{environment}.ai.cabinetoffice.gov.uk"
+        f"https://consult-{environment.value.lower()}.ai.cabinetoffice.gov.uk"
+        if environment.value.lower() in ["dev", "preprod"]
+        else "https://consult.ai.cabinetoffice.gov.uk"
     )
 
     # Create HTTP client with authentication header
@@ -135,10 +135,12 @@ def run_load_test(
         "model_name": "gpt-4.1",
     }
 
+    print("Sending to", endpoint)
+
     response = client.post(f"{endpoint}/api/consultations/", json=create_consultation_data)
     response.raise_for_status()
-    consultation = response.json()
-    print(f"\nCreated consultation: {consultation['id']}")
+    consultation = response.status_code
+    print(f"\nCreated consultation: {consultation}")
 
 
 def main() -> None:
