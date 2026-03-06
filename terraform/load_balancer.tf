@@ -25,6 +25,18 @@ module "waf" {
     header_name  = "x-custom-edge-router"
     secret_value = data.aws_ssm_parameter.edge_secret.value
   } : null
+
+  header_secured_access_configuration = [
+    {
+      kms_key_id = data.terraform_remote_state.platform.outputs.kms_key_arn
+      hostname   = local.host_backend
+      client_configs = [
+        {
+          client_name = "load_test",
+        },
+      ]
+    }
+  ]
 }
 
 resource "aws_route53_record" "type_a_record" {
