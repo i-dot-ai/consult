@@ -38,7 +38,7 @@
 
 <section>
   {#if !hintShown}
-    <div transition:fade class={clsx([ "my-4", "shadow-lg", ])}>
+    <div transition:fade class={clsx(["my-4", "shadow-lg"])}>
       <Accordion
         variant="warning"
         Icon={Lightbulb2}
@@ -47,26 +47,33 @@
         {#snippet title()}
           <p class={clsx(["text-sm", "text-start", "py-2"])}>
             <strong class={clsx(["text-yellow-600"])}>Hint:</strong>
-            <span class={clsx([ "text-neutral-600" ])}>
-              Following these export settings will make it quicker to integrate your
-              data into Consult and reduce the work you'll need to do when defining questions
-              later.
+            <span class={clsx(["text-neutral-600"])}>
+              Following these export settings will make it quicker to integrate
+              your data into Consult and reduce the work you'll need to do when
+              defining questions later.
             </span>
           </p>
         {/snippet}
 
         {#snippet content()}
-          <div class={clsx([
-            "text-sm",
-          ])}>
+          <div class={clsx(["text-sm"])}>
             <strong class={clsx(["text-yellow-600"])}>
               Why this matters:
             </strong>
 
-            <ul class="list-disc marker:text-yellow-600 pl-8 text-neutral-600">
-              <li>Properly formatted exports reduce data cleaning time by up to 70%</li>
-              <li>Question types are automatically detected when data is structured correctly</li>
-              <li>Consistent formatting ensures accurate AI theme detection in later steps</li>
+            <ul class="list-disc pl-8 text-neutral-600 marker:text-yellow-600">
+              <li>
+                Properly formatted exports reduce data cleaning time by up to
+                70%
+              </li>
+              <li>
+                Question types are automatically detected when data is
+                structured correctly
+              </li>
+              <li>
+                Consistent formatting ensures accurate AI theme detection in
+                later steps
+              </li>
             </ul>
           </div>
         {/snippet}
@@ -75,24 +82,28 @@
   {/if}
 
   <Title level={2}>
-    <span class={clsx([ "text-sm", "font-[500]", ])}>
+    <span class={clsx(["text-sm", "font-[500]"])}>
       Which tool are you using?
     </span>
   </Title>
 
-  <p class={clsx([ "text-sm", "text-neutral-500", ])}>
+  <p class={clsx(["text-sm", "text-neutral-500"])}>
     Select your consultation platform to see tailored export instructions
   </p>
 
-  <div class={clsx([ "flex", "gap-4", "flex-wrap", "justify-center", "my-4", ])}>
+  <div class={clsx(["flex", "gap-4", "flex-wrap", "justify-center", "my-4"])}>
     <Button
       highlighted={selected === SelectedValues.Qualtrics}
       highlightVariant="approve"
       handleClick={() => handleTabClick(SelectedValues.Qualtrics)}
       ariaLabel="Qualtrics tab"
     >
-      <div class={clsx([ "px-8", "py-4", "w-[12rem]", ])}>
-        <img class={clsx([ "w-full", ])} src="images/qualtrics.png" alt="Qualtrics logo" />
+      <div class={clsx(["px-8", "py-4", "w-[12rem]"])}>
+        <img
+          class={clsx(["w-full"])}
+          src="images/qualtrics.png"
+          alt="Qualtrics logo"
+        />
       </div>
     </Button>
 
@@ -102,8 +113,12 @@
       handleClick={() => handleTabClick(SelectedValues.SmartSurvey)}
       ariaLabel="Smart Survey tab"
     >
-      <div class={clsx([ "px-8", "py-4", "w-[23rem]" ])}>
-        <img class={clsx([ "w-full", ])} src="images/smartsurvey.png" alt="Smart Survey logo" />
+      <div class={clsx(["px-8", "py-4", "w-[23rem]"])}>
+        <img
+          class={clsx(["w-full"])}
+          src="images/smartsurvey.png"
+          alt="Smart Survey logo"
+        />
       </div>
     </Button>
 
@@ -113,8 +128,12 @@
       handleClick={() => handleTabClick(SelectedValues.CitizenSpace)}
       ariaLabel="Citizen Space tab"
     >
-      <div class={clsx([ "px-8", "py-4", "w-[21rem]", ])}>
-        <img class={clsx([ "w-full", ])} src="images/citizenspace.png" alt="Citizen Space logo" />
+      <div class={clsx(["px-8", "py-4", "w-[21rem]"])}>
+        <img
+          class={clsx(["w-full"])}
+          src="images/citizenspace.png"
+          alt="Citizen Space logo"
+        />
       </div>
     </Button>
   </div>
@@ -123,47 +142,40 @@
 {#snippet decimalList(items: string[])}
   <ol>
     {#each items as item, i (i)}
-      <li class={clsx([
-        "relative",
-        "my-6",
-        "ml-6",
-        "text-sm",
-        "flex",
-        "group",
-      ])}>
-        <div class={clsx([ "ml-6", ])}>
+      <li
+        class={clsx(["relative", "my-6", "ml-6", "text-sm", "flex", "group"])}
+      >
+        <div class={clsx(["ml-6"])}>
           {@html item}
         </div>
-        <div class={clsx([
-          "absolute",
-          "top-0",
-          "-left-4",
-          "border-2",
-          "border-neutral-300",
-          "rounded-full",
-          "w-6",
-          "h-6",
-          "flex",
-          "justify-center",
-          "items-center",
-          "group-hover:border-secondary",
-          "transition-colors",
-          "text-xs",
-        ])}>{i+1}</div>
+        <div
+          class={clsx([
+            "absolute",
+            "top-0",
+            "-left-4",
+            "border-2",
+            "border-neutral-300",
+            "rounded-full",
+            "w-6",
+            "h-6",
+            "flex",
+            "justify-center",
+            "items-center",
+            "group-hover:border-secondary",
+            "transition-colors",
+            "text-xs",
+          ])}
+        >
+          {i + 1}
+        </div>
       </li>
     {/each}
   </ol>
 {/snippet}
 
 {#snippet reminder(text: string)}
-  <div class={clsx([
-    "flex",
-    "gap-1",
-    "items-center",
-    "text-sm",
-    "mt-4",
-  ])}>
-    <div class={clsx([ "shrink-0", "self-start", ])}>
+  <div class={clsx(["flex", "gap-1", "items-center", "text-sm", "mt-4"])}>
+    <div class={clsx(["shrink-0", "self-start"])}>
       <MaterialIcon color="fill-red-500">
         <Lightbulb2 />
       </MaterialIcon>
@@ -172,10 +184,10 @@
   </div>
 {/snippet}
 
-{#snippet tabContent(title: string, listItems: string[], reminderText?: string )}
+{#snippet tabContent(title: string, listItems: string[], reminderText?: string)}
   <div in:fade>
     <Title>
-      <span class={clsx([ "text-md", "font-[500]", ])}>
+      <span class={clsx(["text-md", "font-[500]"])}>
         {title}
       </span>
     </Title>
@@ -185,7 +197,7 @@
     {#if reminderText}
       <hr />
 
-      {@render reminder(reminderText)}  
+      {@render reminder(reminderText)}
     {/if}
   </div>
 {/snippet}
@@ -212,21 +224,18 @@
   {/if}
 
   {#if selected === SelectedValues.SmartSurvey}
-    {@render tabContent(
-      "Smart Survey export instructions",
-      [
-        "Go to Results, then Export",
-        "Select CSV as your export format  ",
-        `Under export options, check:
+    {@render tabContent("Smart Survey export instructions", [
+      "Go to Results, then Export",
+      "Select CSV as your export format  ",
+      `Under export options, check:
           <ul class="list-disc ml-8 marker:text-neutral-400 flex flex-col gap-2 mt-2">
             <li>Full question text in column headers (not abbreviated or coded)</li>
             <li>All responses included — not just complete submissions</li>
             <li>All questions included — even those left unanswered</li>
           </ul>
         `,
-        "Click <strong>Download</strong>",
-      ],
-    )}
+      "Click <strong>Download</strong>",
+    ])}
   {/if}
 
   {#if selected === SelectedValues.CitizenSpace}
@@ -245,55 +254,74 @@
 </Panel>
 
 <section>
-  <Accordion bind:this={accordionRef} variant="gray-white" onClick={() => (selected = SelectedValues.Other)}>
+  <Accordion
+    bind:this={accordionRef}
+    variant="gray-white"
+    onClick={() => (selected = SelectedValues.Other)}
+  >
     {#snippet title()}
-      <div class="my-2 mx-2 text-sm">
-        Using another tool? <small>(Microsoft Forms, Google Forms, spreadsheet, etc.)</small>
+      <div class="mx-2 my-2 text-sm">
+        Using another tool? <small
+          >(Microsoft Forms, Google Forms, spreadsheet, etc.)</small
+        >
       </div>
     {/snippet}
 
     {#snippet content()}
       <div class="text-sm">
         <Title level={3}>
-          <span class="block mb-4 font-[500]">Preparing your file</span>
+          <span class="mb-4 block font-[500]">Preparing your file</span>
         </Title>
 
         <p class="text-neutral-500">
-          If you've collected responses using Microsoft Forms, Google Forms, a spreadsheet, or another tool, your file needs to meet the following requirements before uploading.
+          If you've collected responses using Microsoft Forms, Google Forms, a
+          spreadsheet, or another tool, your file needs to meet the following
+          requirements before uploading.
         </p>
 
         <Panel variant="white" bg={true}>
           <p>Your file must have:</p>
 
-          <ul class={clsx([
-            "text-neutral-500",
-            "list-disc",
-            "ml-4",
-            "flex",
-            "flex-col",
-            "gap-2",
-            "mt-2",
-          ])}>
-            <li><strong>Question text in row 1</strong> — one question per column</li>
-            <li><strong>One response per row</strong> — each row is one person's submission</li>
-            <li><strong>Each question in a separate column</strong> — no combined or merged questions</li>
+          <ul
+            class={clsx([
+              "text-neutral-500",
+              "list-disc",
+              "ml-4",
+              "flex",
+              "flex-col",
+              "gap-2",
+              "mt-2",
+            ])}
+          >
+            <li>
+              <strong>Question text in row 1</strong> — one question per column
+            </li>
+            <li>
+              <strong>One response per row</strong> — each row is one person's submission
+            </li>
+            <li>
+              <strong>Each question in a separate column</strong> — no combined or
+              merged questions
+            </li>
             <li><strong>No merged cells</strong></li>
           </ul>
         </Panel>
-        <p class="text-neutral-500 mb-4">
+        <p class="mb-4 text-neutral-500">
           Not sure if your file is set up correctly?
         </p>
 
         <Button handleClick={() => {}} fullWidth={true}>
-          <div class={clsx([
-            "flex",
-            "items-center",
-            "gap-1",
-            "justify-center",
-            "w-full",
-            "py-1",
-            "text-xs",
-          ])}>
+          <div
+            class={clsx([
+              "flex",
+              "items-center",
+              "gap-1",
+              "justify-center",
+              "w-full",
+              "py-1",
+              "text-xs",
+            ])}
+          >
             <MaterialIcon color="fill-neutral-500" size="1.2rem">
               <Download />
             </MaterialIcon>

@@ -18,7 +18,14 @@
     onClick?: () => void;
   }
 
-  let { title, content, variant = "light", Icon, onClose, onClick }: Props = $props();
+  let {
+    title,
+    content,
+    variant = "light",
+    Icon,
+    onClose,
+    onClick,
+  }: Props = $props();
 
   let expanded = $state(false);
 
