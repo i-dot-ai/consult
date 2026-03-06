@@ -251,7 +251,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pytest-random-order", specifier = ">=1.2.0" },
     { name = "sentry-sdk", extras = ["django", "redis", "rq"], specifier = ">=2.24.1" },
-    { name = "themefinder", specifier = ">=0.8.1" },
+    { name = "themefinder", specifier = ">=0.8.2" },
     { name = "werkzeug", specifier = "==3.1.6" },
 ]
 
@@ -1913,7 +1913,7 @@ wheels = [
 
 [[package]]
 name = "themefinder"
-version = "0.8.1"
+version = "0.8.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "boto3" },
@@ -1935,9 +1935,9 @@ dependencies = [
     { name = "scikit-learn" },
     { name = "toml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a5/06/4f04a7487b57132f884dc2ed16c4cf8fe9562e865d14b1a39cb044ed7210/themefinder-0.8.1.tar.gz", hash = "sha256:b250fe209412fa90701d05c74f8b4ac45b381e2cdb327b04c216e52ab9bee126", size = 38850 }
+sdist = { url = "https://files.pythonhosted.org/packages/b8/06/73e3e3f53e12095eeae0295065d24d12a24c435c15c796c6f25c6158ab91/themefinder-0.8.2.tar.gz", hash = "sha256:4cdaa5fb20e4b3c1e319aa09e5211c633a2685866e30e64def34793b02c023b8", size = 38830 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/91/b8/a01ca6146dced6987f45265acf6f9f0b7d67a81d4c2c1ce8932491a5d927/themefinder-0.8.1-py3-none-any.whl", hash = "sha256:1791e8d79b6cf527bc0eda0a5dfca2da10bd786ce9c90b755b36ec78090d53a5", size = 28958 },
+    { url = "https://files.pythonhosted.org/packages/5a/11/9649c473ba4177f6bcc00649dd31287e5e775f2f00b19875327eeee67a16/themefinder-0.8.2-py3-none-any.whl", hash = "sha256:d6981590b17a557714f991211fb2321a95890c2940661cb714b2b868914a43ab", size = 28958 },
 ]
 
 [[package]]
