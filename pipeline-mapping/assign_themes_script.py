@@ -196,17 +196,17 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                     "Completed processing %s, saved to %s", question_dir, question_output_dir
                 )
 
-                rule_2_messages, rule_2_passed = (
+                rule_2_messages, rule_2_failed = (
                     rule_2_themes_must_have_a_non_negligible_number_of_responses_slack(
                         mapped_df.to_dict(orient="records")
                     )
                 )
 
-                rule_3_messages, rule_3_passed = rule_4_themes_should_not_overlap_slack(
+                rule_3_messages, rule_3_failed = rule_4_themes_should_not_overlap_slack(
                     mapped_df.to_dict(orient="records")
                 )
 
-                msg = "passed ✅" if (rule_2_passed and rule_3_passed) else "failed ❌"
+                msg = "failed ❌" if (rule_2_failed or rule_3_failed) else "passed ✅"
 
                 message_title_block = {
                     "type": "header",

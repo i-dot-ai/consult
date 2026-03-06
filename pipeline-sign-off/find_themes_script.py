@@ -299,15 +299,15 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                         refined_themes_to_theme_node(row) for _, row in refined_themes_df.iterrows()
                     ]
 
-                rule_1_messages, rule_1_passed = rule_1_total_theme_number_less_than_70_slack(
+                rule_1_messages, rule_1_failed = rule_1_total_theme_number_less_than_70_slack(
                     all_themes_list
                 )
 
-                rule_3_messages, rule_3_passed = (
+                rule_3_messages, rule_3_failed = (
                     rule_3_semantic_similarity_must_be_less_than_90pc_slack(all_themes_list, client)
                 )
 
-                msg = "passed ✅" if (rule_1_passed and rule_3_passed) else "failed ❌"
+                msg = "failed ❌" if (rule_1_failed or rule_3_failed) else "passed ✅"
 
                 message_title_block = {
                     "type": "header",
