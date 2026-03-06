@@ -304,7 +304,7 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                 )
 
                 rule_3_messages, rule_3_passed = (
-                    rule_3_semantic_similarity_must_be_less_than_90pc_slack(all_themes_list)
+                    rule_3_semantic_similarity_must_be_less_than_90pc_slack(all_themes_list, client)
                 )
 
                 msg = "passed ✅" if rule_1_passed and rule_3_passed else "failed ❌"
