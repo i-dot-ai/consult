@@ -79,6 +79,7 @@ def load_sample_data(yaml_path: Path) -> dict[str, Any]:
 def run_load_test(
     environment: Environment,
     jwt: str,
+    waf_token: str,
     name_of_consultation: str,
     num_of_questions: int,
     num_of_respondents: int,
@@ -90,6 +91,7 @@ def run_load_test(
     Args:
         environment: Environment to run the test against
         jwt: JWT token for authentication
+        waf_token: WAF token for authentication
         name_of_consultation: Name of the consultation
         num_of_questions: Number of questions to generate
         num_of_respondents: Number of respondents to simulate
@@ -112,14 +114,44 @@ def run_load_test(
     print(f"Sample response: {get_random_response(data)}")
 
     endpoint = (
-        f"https://consult-{environment.value.lower()}.ai.cabinetoffice.gov.uk"
+        f"https://consult-backend-external-{environment.value.lower()}.ai.cabinetoffice.gov.uk"
         if environment.value.lower() in ["dev", "preprod"]
-        else "https://consult.ai.cabinetoffice.gov.uk"
+        else "https://consult-backend-external.ai.cabinetoffice.gov.uk"
     )
 
-    # Create HTTP client with authentication header
+    print(f"\nStep 1: Validating OIDC token and obtaining Django JWT...")
+
     client = requests.Session()
-    client.headers.update({"x-amzn-oidc-data": jwt, "Content-Type": "application/json"})
+    validate_response = client.post(
+        f"{endpoint}/api/validate-token/",
+        json={"internal_access_token": jwt},
+        headers={
+            "Content-Type": "application/json",
+            "x-external-access-token": waf_token
+        }
+    )
+
+    if validate_response.status_code != 200:
+        print(f"Token validation failed!")
+        print(f"Status: {validate_response.status_code}")
+        print(f"Response: {validate_response.text}")
+        validate_response.raise_for_status()
+
+    token_data = validate_response.json()
+    django_jwt = token_data["access"]
+    session_id = token_data.get("sessionId")
+
+    print(f"✓ Token validated successfully")
+    print(f"  Django JWT: {django_jwt[:50]}...")
+    print(f"  Session ID: {session_id}")
+
+    # Step 2: Update client headers with Django JWT for subsequent requests
+    client.headers.update({
+        "Authorization": f"Bearer {django_jwt}",
+        "x-external-access-token": waf_token,
+        "Content-Type": "application/json"
+    })
+
     stage_mapping = {
         Stage.NO_THEMES: "theme_sign_off",
         Stage.FINALISING_THEMES: "theme_sign_off",
@@ -135,12 +167,23 @@ def run_load_test(
         "model_name": "gpt-4.1",
     }
 
-    print("Sending to", endpoint)
+    print(f"\nStep 2: Creating consultation with authenticated session...")
+    print(f"Sending POST request to: {endpoint}/api/consultations/")
+    print(f"Headers: Authorization=Bearer {django_jwt[:30]}..., x-external-access-token={waf_token}")
+    print(f"Payload: {create_consultation_data}\n")
 
     response = client.post(f"{endpoint}/api/consultations/", json=create_consultation_data)
+
+    print(f"Response Status: {response.status_code}")
+    print(f"Response Headers: {dict(response.headers)}")
+    if response.status_code != 201:
+        print(f"Response Body: {response.text[:1000]}")
+
     response.raise_for_status()
-    consultation = response.status_code
-    print(f"\nCreated consultation: {consultation}")
+    consultation = response.json()
+    print(f"\nSuccessfully created consultation!")
+    print(f"Consultation ID: {consultation.get('id')}")
+    print(f"Consultation details: {consultation}")
 
 
 def main() -> None:
@@ -166,6 +209,13 @@ def main() -> None:
         type=str,
         required=True,
         help="JWT token for authentication (required, secret)",
+    )
+
+    parser.add_argument(
+        "--waf-token",
+        type=str,
+        required=True,
+        help="WAF token for authentication (required, secret)",
     )
 
     parser.add_argument(
@@ -209,6 +259,7 @@ def main() -> None:
     run_load_test(
         environment=args.environment,
         jwt=args.jwt,
+        waf_token=args.waf_token,
         name_of_consultation=args.name_of_consultation,
         num_of_questions=args.num_of_questions,
         num_of_respondents=args.num_of_respondents,
