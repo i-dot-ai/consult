@@ -1,3 +1,43 @@
+demographics:
+  "Individual or business":
+    - "Individual"
+    - "Business"
+    - "Organisation"
+    - "Charity"
+    - "Not Provided"
+  
+  "Organisation name":
+    - "Not Provided"
+    - "ABC Corp"
+    - "XYZ Limited"
+    - "Council Services"
+    - "Community Group"
+    - "Educational Institution"
+    - "Healthcare Provider"
+  
+  "How respondent heard about this consultation":
+    - "Email from 3rd party"
+    - "Social media"
+    - "Government website"
+    - "Direct mail"
+    - "Word of mouth"
+    - "Local news"
+    - "Community event"
+  
+  "Happy to be published":
+    - "Yes, but without PII"
+    - "Yes, with full details"
+    - "No"
+    - "Unsure"
+  
+  "Region":
+    - "North"
+    - "South"
+    - "East"
+    - "West"
+    - "Central"
+    - "Not Provided"
+
 questions:
   - What improvements would you suggest for public transportation in your area?
   - How satisfied are you with the current state of local healthcare services?
@@ -9,6 +49,26 @@ questions:
   - Should more funding be allocated to adult education programs?
   - What improvements would you like to see in local sports and recreation facilities?
   - How can we better support small businesses in the community?
+  - What are your thoughts on the current waste management and recycling services?
+  - How would you rate the quality of local schools and educational facilities?
+  - What improvements could be made to digital infrastructure and internet connectivity?
+  - Do you agree with the proposed changes to parking regulations in the town center?
+  - What measures should be taken to address traffic congestion during peak hours?
+  - How can we improve accessibility for people with disabilities in public spaces?
+  - What are your views on the proposed development of new housing in the area?
+  - Should there be more investment in arts and cultural facilities?
+  - How satisfied are you with the current library and community center services?
+  - What improvements would you suggest for local parks and outdoor spaces?
+  - Do you support the introduction of low emission zones in the city?
+  - What additional support services are needed for elderly residents?
+  - How can we better engage young people in community decision-making?
+  - What measures should be taken to improve public safety and reduce crime?
+  - Do you agree with the proposed changes to local business rates?
+  - How satisfied are you with the current state of street lighting and maintenance?
+  - What improvements could be made to cycling infrastructure in the area?
+  - Should more funding be allocated to mental health services?
+  - What are your views on the proposed changes to council tax rates?
+  - How can we improve communication between the council and residents?
 
 responses:
   - I believe this would greatly benefit our community and improve quality of life for residents.
@@ -21,3 +81,45 @@ responses:
   - This would be a positive step forward but should be accompanied by additional measures.
   - I oppose this proposal as it does not adequately address the underlying issues.
   - This is a thoughtful approach that balances different community needs effectively.
+  - I think this requires more investment and resources to be successful.
+  - The proposal seems well-researched but may face practical challenges in implementation.
+  - I am concerned about the financial implications and long-term costs of this initiative.
+  - This addresses an important issue but I would like to see more detailed plans.
+  - I fully support this and believe it will make a significant positive difference.
+  - I'm not convinced this is the right priority given other pressing issues in our area.
+  - The concept is good but the execution plan needs more clarity and detail.
+  - I appreciate the effort but feel this could be improved with additional community input.
+  - This is a reasonable compromise that takes into account different perspectives.
+  - I have serious reservations and would prefer to see alternative options explored.
+  - The proposal aligns well with community needs and should move forward.
+  - I think this is unnecessary and resources could be better allocated elsewhere.
+  - While not perfect, this represents a meaningful step in the right direction.
+  - I'm disappointed that this doesn't go far enough to address the core problems.
+  - This seems like a sensible approach that balances various competing interests.
+  - I have some concerns but overall I think the benefits outweigh the drawbacks.
+  - The proposal lacks sufficient detail for me to form a fully informed opinion.
+  - I strongly disagree with this approach and believe it will cause more problems.
+  - This is exactly what our community needs and I hope it proceeds quickly.
+  - I'm neutral on this matter as I don't feel sufficiently informed to take a position.
+
+multiple_choice_options:
+  - Strongly Agree
+  - Agree
+  - Neutral
+  - Disagree
+  - Strongly Disagree
+  - Not Provided
+  - Unsure or no opinion
+  - Somewhat agree
+  - Somewhat disagree
+  - No response
+  - Prefer not to say
+  - Very satisfied
+  - Satisfied
+  - Dissatisfied
+  - Very dissatisfied
+  - Excellent
+  - Good
+  - Fair
+  - Poor
+  - Very poor

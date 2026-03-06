@@ -181,9 +181,35 @@ def run_load_test(
 
     response.raise_for_status()
     consultation = response.json()
-    print(f"\nSuccessfully created consultation!")
-    print(f"Consultation ID: {consultation.get('id')}")
-    print(f"Consultation details: {consultation}")
+    consultation_id = consultation.get('id')
+    print(f"\n✓ Successfully created consultation!")
+    print(f"  Consultation ID: {consultation_id}")
+    print(f"  Consultation Code: {consultation['code']}")
+    
+    # Step 3: Create questions and responses using Django ORM
+    # Note: The API does not support POST for questions/responses directly
+    # They are typically imported via /api/consultations/setup/ from S3
+    # For load testing, we'll need to use Django ORM or database access
+    
+    print(f"\nStep 3: Creating {num_of_questions} questions with {num_of_respondents} responses each...")
+    print(f"Note: Questions and Responses cannot be created via REST API")
+    print(f"      They must be created using Django ORM or imported from S3")
+    print(f"\nTo populate this consultation with test data:")
+    print(f"  1. Use Django shell: python manage.py shell")
+    print(f"  2. Create questions using: Question.objects.create(consultation_id='{consultation_id}', ...)")
+    print(f"  3. Create respondents using: Respondent.objects.create(consultation_id='{consultation_id}', ...)")
+    print(f"  4. Create responses using: Response.objects.create(question=question, respondent=respondent, ...)")
+    print(f"\nAlternatively, prepare S3 data and use: POST /api/consultations/setup/")
+    
+    # TODO: If include_s3_generation is True, generate S3 files and trigger import
+    if include_s3_generation:
+        print(f"\n⚠ S3 generation not yet implemented")
+        print(f"  This would generate CSV/JSON files in S3 with:")
+        print(f"    - {num_of_questions} questions")
+        print(f"    - {num_of_respondents} respondents")
+        print(f"    - {num_of_respondents * num_of_questions} responses")
+        print(f"  Then trigger: POST {endpoint}/api/consultations/setup/")
+
 
 
 def main() -> None:
