@@ -206,17 +206,17 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                     mapped_df.to_dict(orient="records")
                 )
 
-                msg = "passed ✅" if rule_2_passed and rule_3_passed else "failed ❌"
+                msg = "passed ✅" if (rule_2_passed and rule_3_passed) else "failed ❌"
 
                 message_title_block = {
                     "type": "header",
                     "text": {
                         "type": "plain_text",
-                        "text": f"theme set rules {msg} for {consultation_dir}/{question_dir}",
+                        "text": f"theme set mapping rules {msg} for {consultation_dir}/{question_dir}",
                     },
                 }
                 message = {
-                    "text": f"theme set rules {msg} for {consultation_dir}/{question_dir}",
+                    "text": f"theme set mapping rules {msg} for {consultation_dir}/{question_dir}",
                     "blocks": [message_title_block] + rule_2_messages + rule_3_messages,
                 }
                 response = http.request(
