@@ -9,6 +9,7 @@
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Lightbulb2 from "../../svg/material/Lightbulb2.svelte";
+  import Download from "../../svg/material/Download.svelte";
 
   const SelectedValues = {
     Qualtrics: "qualtrics",
@@ -24,6 +25,13 @@
   );
 
   let hintShown = $state(false);
+
+  let accordionRef: Accordion;
+
+  function handleTabClick(value: SelectedValue) {
+    selected = value;
+    accordionRef.close();
+  }
 </script>
 
 <Title level={1}>Step 1a: Export your data from your collection tool</Title>
@@ -80,7 +88,7 @@
     <Button
       highlighted={selected === SelectedValues.Qualtrics}
       highlightVariant="approve"
-      handleClick={() => (selected = SelectedValues.Qualtrics)}
+      handleClick={() => handleTabClick(SelectedValues.Qualtrics)}
       ariaLabel="Qualtrics tab"
     >
       <div class={clsx([ "px-8", "py-4", "w-[12rem]", ])}>
@@ -91,7 +99,7 @@
     <Button
       highlighted={selected === SelectedValues.SmartSurvey}
       highlightVariant="approve"
-      handleClick={() => (selected = SelectedValues.SmartSurvey)}
+      handleClick={() => handleTabClick(SelectedValues.SmartSurvey)}
       ariaLabel="Smart Survey tab"
     >
       <div class={clsx([ "px-8", "py-4", "w-[23rem]" ])}>
@@ -102,7 +110,8 @@
     <Button
       highlighted={selected === SelectedValues.CitizenSpace}
       highlightVariant="approve"
-      handleClick={() => (selected = SelectedValues.CitizenSpace)}
+      handleClick={() => handleTabClick(SelectedValues.CitizenSpace)}
+      ariaLabel="Citizen Space tab"
     >
       <div class={clsx([ "px-8", "py-4", "w-[21rem]", ])}>
         <img class={clsx([ "w-full", ])} src="images/citizenspace.png" alt="Citizen Space logo" />
@@ -234,6 +243,67 @@
     )}
   {/if}
 </Panel>
+
+<section>
+  <Accordion bind:this={accordionRef} variant="gray-white" onClick={() => (selected = SelectedValues.Other)}>
+    {#snippet title()}
+      <div class="my-2 mx-2 text-sm">
+        Using another tool? <small>(Microsoft Forms, Google Forms, spreadsheet, etc.)</small>
+      </div>
+    {/snippet}
+
+    {#snippet content()}
+      <div class="text-sm">
+        <Title level={3}>
+          <span class="block mb-4 font-[500]">Preparing your file</span>
+        </Title>
+
+        <p class="text-neutral-500">
+          If you've collected responses using Microsoft Forms, Google Forms, a spreadsheet, or another tool, your file needs to meet the following requirements before uploading.
+        </p>
+
+        <Panel variant="white" bg={true}>
+          <p>Your file must have:</p>
+
+          <ul class={clsx([
+            "text-neutral-500",
+            "list-disc",
+            "ml-4",
+            "flex",
+            "flex-col",
+            "gap-2",
+            "mt-2",
+          ])}>
+            <li><strong>Question text in row 1</strong> — one question per column</li>
+            <li><strong>One response per row</strong> — each row is one person's submission</li>
+            <li><strong>Each question in a separate column</strong> — no combined or merged questions</li>
+            <li><strong>No merged cells</strong></li>
+          </ul>
+        </Panel>
+        <p class="text-neutral-500 mb-4">
+          Not sure if your file is set up correctly?
+        </p>
+
+        <Button handleClick={() => {}} fullWidth={true}>
+          <div class={clsx([
+            "flex",
+            "items-center",
+            "gap-1",
+            "justify-center",
+            "w-full",
+            "py-1",
+            "text-xs",
+          ])}>
+            <MaterialIcon color="fill-neutral-500" size="1.2rem">
+              <Download />
+            </MaterialIcon>
+            Download blank template and use it as a guide
+          </div>
+        </Button>
+      </div>
+    {/snippet}
+  </Accordion>
+</section>
 
 <style>
   :global(button[aria-pressed="true"]):hover {
