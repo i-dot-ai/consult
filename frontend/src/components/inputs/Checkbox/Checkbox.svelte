@@ -16,6 +16,7 @@
     disabled?: boolean;
     errorMessage?: string;
     hint?: string;
+    size?: "xs" | "sm" | "md" | "lg";
     onchange?: (checked: boolean, value?: string) => void;
   }
 
@@ -29,6 +30,7 @@
     disabled = false,
     errorMessage,
     hint,
+    size = "md",
     onchange,
   }: Props = $props();
 
@@ -83,10 +85,14 @@
     <input
       type="checkbox"
       class={clsx([
-        "mt-0.5 h-5 w-5 rounded border border-neutral-300 bg-white text-neutral-900",
+        "mt-0.5 rounded border border-neutral-300 bg-white text-neutral-900",
         "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400",
         "shrink-0 disabled:cursor-not-allowed disabled:opacity-50",
         "checked:border-primary checked:bg-primary",
+        size === "xs" && "h-3 w-3",
+        size === "sm" && "h-4 w-4",
+        size === "md" && "h-5 w-5",
+        size === "lg" && "h-6 w-6",
         errorMessage && "border-red-600",
       ])}
       {id}
