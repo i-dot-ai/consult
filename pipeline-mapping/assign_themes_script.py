@@ -8,8 +8,14 @@ from pathlib import Path
 
 import boto3
 import pandas as pd
-from langchain_openai import ChatOpenAI
-from themefinder import detail_detection, theme_mapping
+import urllib3
+from themefinder.llm import OpenAILLM
+from themefinder import (
+    detail_detection,
+    rule_2_themes_must_have_a_non_negligible_number_of_responses_slack,
+    rule_4_themes_should_not_overlap_slack,
+    theme_mapping,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -22,6 +28,11 @@ logger = logging.getLogger(__name__)
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID")
 BASE_PREFIX = "app_data/consultations/"
+
+http = urllib3.PoolManager()
+
+
+SLACK_WEBHOOK_URL = os.environ["SLACK_WEBHOOK_URL"]
 
 
 def download_s3_subdir(subdir: str) -> None:
@@ -38,7 +49,9 @@ def download_s3_subdir(subdir: str) -> None:
     paginator = s3.get_paginator("list_objects_v2")
     inputs_prefix = str(Path(BASE_PREFIX) / subdir / "inputs").rstrip("/") + "/"
     logger.info("S3 inputs prefix: %s", inputs_prefix)
-    pages = paginator.paginate(Bucket=BUCKET_NAME, Prefix=inputs_prefix, ExpectedBucketOwner=ACCOUNT_ID)
+    pages = paginator.paginate(
+        Bucket=BUCKET_NAME, Prefix=inputs_prefix, ExpectedBucketOwner=ACCOUNT_ID
+    )
     logger.info("Created paginator for bucket: %s with prefix: %s", BUCKET_NAME, inputs_prefix)
 
     for page in pages:
@@ -49,7 +62,9 @@ def download_s3_subdir(subdir: str) -> None:
                 relative_path = os.path.relpath(key, prefix)
                 local_path = Path(subdir) / relative_path
                 local_path.parent.mkdir(parents=True, exist_ok=True)
-                s3.download_file(BUCKET_NAME, key, str(local_path), ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID})
+                s3.download_file(
+                    BUCKET_NAME, key, str(local_path), ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID}
+                )
                 logger.info("Downloaded %s to %s", key, local_path)
 
 
@@ -66,7 +81,12 @@ def upload_directory_to_s3(local_path: str) -> None:
         for file in files:
             local_file_path = Path(root) / file
             s3_key = str(Path(BASE_PREFIX) / local_file_path).replace("\\", "/")
-            s3.upload_file(str(local_file_path), BUCKET_NAME, s3_key, ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID})
+            s3.upload_file(
+                str(local_file_path),
+                BUCKET_NAME,
+                s3_key,
+                ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID},
+            )
             logger.info("Uploaded %s to s3://%s/%s", local_file_path, BUCKET_NAME, s3_key)
 
 
@@ -121,11 +141,11 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
     Returns:
         str: Path to the output directory
     """
-    llm = ChatOpenAI(
+    llm = OpenAILLM(
         model=model_name,
-        temperature=0,
-        openai_api_base=os.environ["LLM_GATEWAY_URL"],
-        openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+        request_kwargs={"temperature": 0},
+        base_url=os.environ["LLM_GATEWAY_URL"],
+        api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
     )
 
     date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
@@ -175,6 +195,48 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                 logger.info(
                     "Completed processing %s, saved to %s", question_dir, question_output_dir
                 )
+
+                rule_2_messages, rule_2_failed = (
+                    rule_2_themes_must_have_a_non_negligible_number_of_responses_slack(
+                        mapped_df.to_dict(orient="records")
+                    )
+                )
+
+                rule_3_messages, rule_3_failed = rule_4_themes_should_not_overlap_slack(
+                    mapped_df.to_dict(orient="records")
+                )
+
+                msg = "failed ❌" if (rule_2_failed or rule_3_failed) else "passed ✅"
+
+                message_title_block = {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": f"theme set mapping rules {msg} for {consultation_dir}/{question_dir}",
+                    },
+                }
+                message = {
+                    "text": f"theme set mapping rules {msg} for {consultation_dir}/{question_dir}",
+                    "blocks": [message_title_block] + rule_2_messages + rule_3_messages,
+                }
+                response = http.request(
+                    "POST",
+                    SLACK_WEBHOOK_URL,
+                    body=json.dumps(message),
+                    headers={"Content-Type": "application/json"},
+                )
+                if response.status != 200:
+                    response_data = (
+                        response.data.decode("utf-8") if response.data else "No response data"
+                    )
+                    error_message = (
+                        f"Slack webhook failed with status {response.status}: {response_data}"
+                    )
+                    logger.error(error_message)
+                else:
+                    logger.info(message)
+
+
             except Exception:
                 logger.exception("Error processing %s", question_dir)
                 skipped_questions.append(question_dir)
@@ -184,7 +246,6 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description="Download a subdirectory from S3.")
     parser.add_argument(
         "--subdir",
