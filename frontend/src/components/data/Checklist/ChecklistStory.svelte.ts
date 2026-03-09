@@ -11,7 +11,7 @@ const onChange = $state((id: string, checked: boolean) => {
 export default {
   name: "Checklist",
   component: Checklist,
-  category: "data",
+  category: "Data",
   props: [
     { name: "title", value: title, type: "text" },
     { name: "items", value: items, type: "json" },
