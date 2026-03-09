@@ -11,8 +11,8 @@
 <Title level={1}>Step 1b: Prepare and get to know your data</Title>
 
 <section>
-  <p class={clsx(["text-sm", "text-neutral-500"])}>
-    Select your consultation platform to see tailored export instructions
+  <p class={clsx(["text-sm", "text-neutral-500", "py-4", "pb-6"])}>
+    Before uploading, you'll need to clean and format your spreadsheet. Use this as your chance to read through the responses — you'll go into the analysis phase with much stronger context.
   </p>
 
   <Learnings items={[
@@ -39,7 +39,7 @@
 
 <section>
   <div class={clsx(["flex", "justify-between", "gap-1", "flex-wrap", "my-12"])}>
-    <Button handleClick={() => {}}>
+    <Button handleClick={() => {}} size="sm">
       <div class="rotate-180">
         <MaterialIcon color="fill-neutral-500" size="0.9rem">
           <ArrowForward />
@@ -48,7 +48,7 @@
       <span class="pl-2">Back</span>
     </Button>
 
-    <Button handleClick={() => {}} variant="approve">
+    <Button handleClick={() => {}} variant="approve" size="sm">
       <span class="pr-2">My data is ready to upload</span>
       <MaterialIcon color="fill-white" size="0.9rem">
         <ArrowForward />
