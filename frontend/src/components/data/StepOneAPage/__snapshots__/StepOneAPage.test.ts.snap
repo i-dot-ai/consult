@@ -293,10 +293,12 @@ exports[`StepOneAPage > should match snapshot 1`] = `
           <div
             class="ml-6"
           >
-            Go to 
-            <strong>
-              Data & Analysis
-            </strong>
+            <div>
+              Go to 
+              <strong>
+                Data & Analysis
+              </strong>
+            </div>
             <!---->
           </div>
            
@@ -312,14 +314,16 @@ exports[`StepOneAPage > should match snapshot 1`] = `
           <div
             class="ml-6"
           >
-            Select 
-            <strong>
-              Export & Import
-            </strong>
-            , then 
-            <strong>
-              Export Data
-            </strong>
+            <div>
+              Select 
+              <strong>
+                Export & Import
+              </strong>
+              , then 
+              <strong>
+                Export Data
+              </strong>
+            </div>
             <!---->
           </div>
            
@@ -335,11 +339,13 @@ exports[`StepOneAPage > should match snapshot 1`] = `
           <div
             class="ml-6"
           >
-            Choose 
-            <strong>
-              CSV
-            </strong>
-             as your file format
+            <div>
+              Choose 
+              <strong>
+                CSV
+              </strong>
+               as your file format
+            </div>
             <!---->
           </div>
            
@@ -355,34 +361,41 @@ exports[`StepOneAPage > should match snapshot 1`] = `
           <div
             class="ml-6"
           >
-            Under export options, check the following:
-            
-            <ul
-              class="list-disc ml-8 marker:text-neutral-400 flex flex-col gap-2 mt-2"
-            >
-              
-              
-              <li>
-                <strong>
-                  Use choice text
-                </strong>
-                 — not "Use numeric values." This exports the actual response text rather than coded numbers
-              </li>
-              
-              
-              <li>
-                Include all response fields
-              </li>
-              
-              
-              <li>
-                Keep original question text — this ensures full question wording appears in your column headers
-              </li>
+            <div>
               
             
-            </ul>
+              <p>
+                Under export options, check the following:
+              </p>
+              
             
+              <ul
+                class="list-disc ml-8 marker:text-neutral-400 flex flex-col gap-2 mt-2"
+              >
+                
+              
+                <li>
+                  <strong>
+                    Use choice text
+                  </strong>
+                   — not "Use numeric values." This exports the actual response text rather than coded numbers
+                </li>
+                
+              
+                <li>
+                  Include all response fields
+                </li>
+                
+              
+                <li>
+                  Keep original question text — this ensures full question wording appears in your column headers
+                </li>
+                
+            
+              </ul>
+              
           
+            </div>
             <!---->
           </div>
            
@@ -398,10 +411,12 @@ exports[`StepOneAPage > should match snapshot 1`] = `
           <div
             class="ml-6"
           >
-            Click 
-            <strong>
-              Download
-            </strong>
+            <div>
+              Click 
+              <strong>
+                Download
+              </strong>
+            </div>
             <!---->
           </div>
            
