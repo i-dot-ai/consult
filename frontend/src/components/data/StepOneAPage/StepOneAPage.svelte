@@ -11,6 +11,7 @@
   import LightbulbTwo from "../../svg/material/LightbulbTwo.svelte";
   import Download from "../../svg/material/Download.svelte";
   import ArrowForward from "../../svg/material/ArrowForward.svelte";
+  import { createRawSnippet, type Snippet } from "svelte";
 
   const SelectedValues = {
     Qualtrics: "qualtrics",
@@ -32,6 +33,12 @@
   function handleTabClick(value: SelectedValue) {
     selected = value;
     accordionRef.close();
+  }
+
+  function makeSnippet(str: string) {
+    return createRawSnippet(() => ({
+      render: () => `<div>${str}</div>`,
+    }));
   }
 </script>
 
@@ -141,14 +148,14 @@
   </div>
 </section>
 
-{#snippet decimalList(items: string[])}
+{#snippet decimalList(items: Snippet[])}
   <ol>
     {#each items as item, i (i)}
       <li
         class={clsx(["relative", "my-6", "ml-6", "text-sm", "flex", "group"])}
       >
         <div class={clsx(["ml-6"])}>
-          {@html item}
+          {@render item()}
         </div>
         <div
           class={clsx([
@@ -186,7 +193,11 @@
   </div>
 {/snippet}
 
-{#snippet tabContent(title: string, listItems: string[], reminderText?: string)}
+{#snippet tabContent(
+  title: string,
+  listItems: Snippet[],
+  reminderText?: string,
+)}
   <div in:fade>
     <Title>
       <span class={clsx(["text-md", "font-[500]"])}>
@@ -210,17 +221,20 @@
       {@render tabContent(
         "Qualtrics export instructions",
         [
-          "Go to <strong>Data & Analysis</strong>",
-          "Select <strong>Export & Import</strong>, then <strong>Export Data</strong>",
-          "Choose <strong>CSV</strong> as your file format",
-          `Under export options, check the following:
+          makeSnippet(`Go to <strong>Data & Analysis</strong>`),
+          makeSnippet(
+            `Select <strong>Export & Import</strong>, then <strong>Export Data</strong>`,
+          ),
+          makeSnippet(`Choose <strong>CSV</strong> as your file format`),
+          makeSnippet(`
+            <p>Under export options, check the following:</p>
             <ul class="list-disc ml-8 marker:text-neutral-400 flex flex-col gap-2 mt-2">
               <li><strong>Use choice text</strong> — not "Use numeric values." This exports the actual response text rather than coded numbers</li>
               <li>Include all response fields</li>
               <li>Keep original question text — this ensures full question wording appears in your column headers</li>
             </ul>
-          `,
-          "Click <strong>Download</strong>",
+          `),
+          makeSnippet(`Click <strong>Download</strong>`),
         ],
         "Qualtrics files include two header rows. Open your file and delete row 2, keeping only row 1 (the full question text). Uploading with both rows will cause errors.",
       )}
@@ -228,16 +242,19 @@
 
     {#if selected === SelectedValues.SmartSurvey}
       {@render tabContent("Smart Survey export instructions", [
-        "Go to Results, then Export",
-        "Select CSV as your export format  ",
-        `Under export options, check:
-            <ul class="list-disc ml-8 marker:text-neutral-400 flex flex-col gap-2 mt-2">
-              <li>Full question text in column headers (not abbreviated or coded)</li>
-              <li>All responses included — not just complete submissions</li>
-              <li>All questions included — even those left unanswered</li>
-            </ul>
-          `,
-        "Click <strong>Download</strong>",
+        makeSnippet(
+          `Go to <strong>Results</strong>, then <strong>Export</strong>`,
+        ),
+        makeSnippet(`Select <strong>CSV</strong> as your export format`),
+        makeSnippet(`
+          <p>Under export options, check:</p>
+          <ul class="list-disc ml-8 marker:text-neutral-400 flex flex-col gap-2 mt-2">
+            <li>Full question text in column headers (not abbreviated or coded)</li>
+            <li>All responses included — not just complete submissions</li>
+            <li>All questions included — even those left unanswered</li>
+          </ul>
+        `),
+        makeSnippet(`Click <strong>Download</strong>`),
       ])}
     {/if}
 
@@ -245,11 +262,17 @@
       {@render tabContent(
         "Citizen Space export instructions",
         [
-          "Open your consultation and go to the Responses section",
-          "Check that no filters are applied — you should be viewing the full response set",
-          "Select Export responses (or Download, depending on your version)",
-          "Choose CSV format",
-          "Click <strong>Download</strong>",
+          makeSnippet(
+            `Open your consultation and go to the <strong>Responses</strong> section`,
+          ),
+          makeSnippet(
+            `Check that no filters are applied — you should be viewing the full response set`,
+          ),
+          makeSnippet(
+            `Select <strong>Export responses</strong> (or Download, depending on your version)`,
+          ),
+          makeSnippet(`Choose <strong>CSV format</strong>`),
+          makeSnippet(`Click <strong>Download</strong>`),
         ],
         "Before closing, check that open text responses are included in full. Citizen Space can truncate long answers in some views — your export should not.",
       )}
@@ -340,24 +363,18 @@
 </section>
 
 <section>
-  <div class={clsx([
-    "flex",
-    "justify-between",
-    "gap-1",
-    "flex-wrap",
-    "my-12",
-  ])}>
+  <div class={clsx(["flex", "justify-between", "gap-1", "flex-wrap", "my-12"])}>
     <Button handleClick={() => {}}>
       <div class="rotate-180">
         <MaterialIcon color="fill-neutral-500" size="0.9rem">
           <ArrowForward />
         </MaterialIcon>
       </div>
-      <span class={"pl-2"}>Back</span>
+      <span class="pl-2">Back</span>
     </Button>
 
     <Button handleClick={() => {}} variant="approve">
-      <span class={"pr-2"}>Continue</span>
+      <span class="pr-2">Continue</span>
       <MaterialIcon color="fill-white" size="0.9rem">
         <ArrowForward />
       </MaterialIcon>

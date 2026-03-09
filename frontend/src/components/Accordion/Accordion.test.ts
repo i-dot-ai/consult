@@ -50,7 +50,9 @@ describe("Accordion", () => {
 
   it("should render aria label if passed", () => {
     render(Accordion, { ...testData, ariaLabel: "test-label" });
-    expect(screen.getByRole("button", { name: "test-label" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "test-label" }),
+    ).toBeInTheDocument();
   });
 
   it("should call onClose if close button is clicked", async () => {
@@ -63,11 +65,14 @@ describe("Accordion", () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it.each(["light", "gray", "warning"])("should render correctly", (variant) => {
-    const { container } = render(Accordion, {
-      ...testData,
-      variant: variant as Props["variant"],
-    });
-    expect(container).toMatchSnapshot();
-  });
+  it.each(["light", "gray", "warning"])(
+    "should render correctly",
+    (variant) => {
+      const { container } = render(Accordion, {
+        ...testData,
+        variant: variant as Props["variant"],
+      });
+      expect(container).toMatchSnapshot();
+    },
+  );
 });
