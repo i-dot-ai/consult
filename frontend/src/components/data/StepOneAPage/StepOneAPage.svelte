@@ -8,7 +8,7 @@
   import Button from "../../inputs/Button/Button.svelte";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
-  import Lightbulb2 from "../../svg/material/Lightbulb2.svelte";
+  import LightbulbTwo from "../../svg/material/LightbulbTwo.svelte";
   import Download from "../../svg/material/Download.svelte";
   import ArrowForward from "../../svg/material/ArrowForward.svelte";
 
@@ -42,7 +42,7 @@
     <div transition:fade class={clsx(["my-4", "shadow-lg"])}>
       <Accordion
         variant="warning"
-        Icon={Lightbulb2}
+        Icon={LightbulbTwo}
         onClose={() => (hintShown = true)}
       >
         {#snippet title()}
@@ -178,7 +178,7 @@
   <div class={clsx(["flex", "gap-1", "items-center", "text-sm", "mt-4"])}>
     <div class={clsx(["shrink-0", "self-start"])}>
       <MaterialIcon color="fill-red-500">
-        <Lightbulb2 />
+        <LightbulbTwo />
       </MaterialIcon>
     </div>
     <small><strong>Reminder:</strong> {text}</small>
