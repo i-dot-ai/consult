@@ -16,10 +16,11 @@
 
   interface Props {
     id?: string;
+    title?: string;
     items: Item[];
   }
 
-  let { id = "learnings-component", items = [] }: Props = $props();
+  let { id = "learnings-component", title = "What other departments have found:", items = [] }: Props = $props();
 
   let currStep: number = $state(0);
   let currItem = $derived(items.at(currStep));
@@ -35,7 +36,7 @@
 <div class={clsx(["border", "border-secondary", "p-4", "rounded-lg"])}>
   <Title level={3}>
     <span class={clsx(["block", "text-sm", "font-[500]", "mb-2"])}>
-      Learnings from other departments
+      {title}
     </span>
   </Title>
 
