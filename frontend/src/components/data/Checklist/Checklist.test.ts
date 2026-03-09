@@ -6,7 +6,11 @@ import { TEST_DATA } from "./testData";
 import userEvent from "@testing-library/user-event";
 
 describe("Checklist", () => {
-  const testData = { title: TEST_DATA.title, items: TEST_DATA.items, onChange: vi.fn() };
+  const testData = {
+    title: TEST_DATA.title,
+    items: TEST_DATA.items,
+    onChange: vi.fn(),
+  };
 
   it.each(testData.items)("should render title", (item) => {
     render(Checklist, testData);

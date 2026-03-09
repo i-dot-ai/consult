@@ -1,15 +1,17 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { slide } from "svelte/transition";
+  import type { Snippet } from "svelte";
+
   import Title from "../../Title.svelte";
   import Checkbox from "../../inputs/Checkbox/Checkbox.svelte";
   import Button from "../../inputs/Button/Button.svelte";
-  import { slide } from "svelte/transition";
 
   interface Item {
     id: string;
     title: string;
-    text: string;
+    text: string | Snippet;
     checked: boolean;
   }
 
@@ -72,21 +74,33 @@
             </Title>
           </label>
 
-          <Button variant="ghost" handleClick={() => {
-            if (expanded.includes(item.id)) {
-              expanded = expanded.filter(itemId => itemId !== item.id);
-            } else {
-              expanded = [...expanded, item.id];
-            }
-          }}>
-            <span class="text-secondary hover:underline -ml-2">
-              {expanded.includes(item.id) ? "Hide example" : "Show me an example"}
+          <Button
+            variant="ghost"
+            handleClick={() => {
+              if (expanded.includes(item.id)) {
+                expanded = expanded.filter((itemId) => itemId !== item.id);
+              } else {
+                expanded = [...expanded, item.id];
+              }
+            }}
+          >
+            <span class="-ml-2 text-secondary hover:underline">
+              {expanded.includes(item.id)
+                ? "Hide example"
+                : "Show me an example"}
             </span>
           </Button>
 
           {#if expanded.includes(item.id)}
-            <div transition:slide class="bg-white text-neutral-500 rounded-lg p-2 my-2">
-              {@html item.text}
+            <div
+              transition:slide
+              class="my-2 rounded-lg bg-white p-2 text-neutral-500"
+            >
+              {#if typeof item.text === "string"}
+                {item.text}
+              {:else}
+                {@render item.text()}
+              {/if}
             </div>
           {/if}
         </div>
