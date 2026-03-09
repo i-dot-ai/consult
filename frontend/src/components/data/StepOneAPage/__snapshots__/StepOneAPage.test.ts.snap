@@ -1,0 +1,621 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`StepOneAPage > should match snapshot 1`] = `
+<div>
+  <!---->
+  <!---->
+  <h1
+    class="text-neutral-700 text-xl"
+    style=""
+  >
+    <!---->
+    <!---->
+    Step 1a: Export your data from your collection tool
+    
+    
+    
+  </h1>
+  
+  <!---->
+   
+  <section>
+    <div
+      class="my-4 shadow-lg"
+    >
+      <!---->
+      <!---->
+      <button
+        aria-label="hint-accordion"
+        aria-pressed="false"
+        class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-yellow-300 bg-yellow-50 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-yellow-100 svelte-1d0mdzt"
+        data-variant="warning"
+        role="button"
+        tabindex="0"
+      >
+        <!---->
+        <!---->
+        <div
+          class="flex w-full items-center justify-between gap-2"
+        >
+          <div
+            class="flex gap-1 items-center"
+          >
+            <div
+              class="self-start shrink-0 my-2.5 mx-1"
+            >
+              <svg
+                class="fill-yellow-600"
+                height="1.2rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1.2rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!---->
+                <path
+                  d="M400-240q-33 0-56.5-23.5T320-320v-50q-57-39-88.5-100T200-600q0-117 81.5-198.5T480-880q117 0 198.5 81.5T760-600q0 69-31.5 129.5T640-370v50q0 33-23.5 56.5T560-240H400Zm0-80h160v-92l34-24q41-28 63.5-71.5T680-600q0-83-58.5-141.5T480-800q-83 0-141.5 58.5T280-600q0 49 22.5 92.5T366-436l34 24v92Zm0 240q-17 0-28.5-11.5T360-120v-40h240v40q0 17-11.5 28.5T560-80H400Zm80-520Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                
+                <!---->
+              </svg>
+              <!---->
+            </div>
+            <!---->
+             
+            <p
+              class="text-sm text-start py-2"
+            >
+              <strong
+                class="text-yellow-600"
+              >
+                Hint:
+              </strong>
+               
+              <span
+                class="text-neutral-600"
+              >
+                Following these export settings will make it quicker to integrate
+              your data into Consult and reduce the work you'll need to do when
+              defining questions later.
+              </span>
+            </p>
+            <!---->
+          </div>
+           
+          <div
+            class="flex items-center gap-0.5 shrink-0 mx-1 my-2.5 self-start"
+          >
+            <div
+              class="transition-transform"
+            >
+              <svg
+                class="fill-yellow-500"
+                height="1rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <!---->
+            <button
+              aria-label="close hint-accordion"
+              aria-pressed="false"
+              class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              data-variant="ghost"
+              role="button"
+              tabindex="0"
+            >
+              <!---->
+              <!---->
+              <svg
+                class="fill-yellow-500"
+                height="1rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
+                />
+                <!---->
+              </svg>
+              
+              
+              
+            </button>
+            
+            <!---->
+          </div>
+        </div>
+        
+        
+        
+      </button>
+      
+      <!---->
+       
+      <!---->
+      <!---->
+    </div>
+    <!---->
+     
+    <!---->
+    <h2
+      class="text-neutral-700 text-lg"
+      style=""
+    >
+      <!---->
+      <!---->
+      <span
+        class="text-sm font-[500]"
+      >
+        Which tool are you using?
+      </span>
+      
+      
+      
+    </h2>
+    
+    <!---->
+     
+    <p
+      class="text-sm text-neutral-500"
+    >
+      Select your consultation platform to see tailored export instructions
+    </p>
+     
+    <div
+      class="flex gap-4 flex-wrap justify-center my-4"
+    >
+      <!---->
+      <button
+        aria-label="Qualtrics tab"
+        aria-pressed="true"
+        class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 border-secondary text-secondary hover:bg-teal-500 svelte-1d0mdzt"
+        data-variant="default"
+        role="button"
+        tabindex="0"
+      >
+        <!---->
+        <!---->
+        <div
+          class="px-8 py-4 w-[12rem]"
+        >
+          <img
+            alt="Qualtrics logo"
+            class="w-full"
+            src="images/qualtrics.png"
+          />
+        </div>
+        
+        
+        
+      </button>
+      
+      <!---->
+       
+      <!---->
+      <button
+        aria-label="Smart Survey tab"
+        aria-pressed="false"
+        class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+        data-variant="default"
+        role="button"
+        tabindex="0"
+      >
+        <!---->
+        <!---->
+        <div
+          class="px-8 py-4 w-[23rem]"
+        >
+          <img
+            alt="Smart Survey logo"
+            class="w-full"
+            src="images/smartsurvey.png"
+          />
+        </div>
+        
+        
+        
+      </button>
+      
+      <!---->
+       
+      <!---->
+      <button
+        aria-label="Citizen Space tab"
+        aria-pressed="false"
+        class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+        data-variant="default"
+        role="button"
+        tabindex="0"
+      >
+        <!---->
+        <!---->
+        <div
+          class="px-8 py-4 w-[21rem]"
+        >
+          <img
+            alt="Citizen Space logo"
+            class="w-full"
+            src="images/citizenspace.png"
+          />
+        </div>
+        
+        
+        
+      </button>
+      
+      <!---->
+    </div>
+  </section>
+    
+  <div
+    class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+    data-testid="panel-component"
+  >
+    <!---->
+    <div>
+      <!---->
+      <h1
+        class="text-neutral-700 text-xl"
+        style=""
+      >
+        <!---->
+        <!---->
+        <span
+          class="text-md font-[500]"
+        >
+          Qualtrics export instructions
+        </span>
+        
+        
+        
+      </h1>
+      
+      <!---->
+       
+      <ol>
+        <li
+          class="relative my-6 ml-6 text-sm flex group"
+        >
+          <div
+            class="ml-6"
+          >
+            Go to 
+            <strong>
+              Data & Analysis
+            </strong>
+            <!---->
+          </div>
+           
+          <div
+            class="absolute top-0 -left-4 border-2 border-neutral-300 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-secondary transition-colors text-xs"
+          >
+            1
+          </div>
+        </li>
+        <li
+          class="relative my-6 ml-6 text-sm flex group"
+        >
+          <div
+            class="ml-6"
+          >
+            Select 
+            <strong>
+              Export & Import
+            </strong>
+            , then 
+            <strong>
+              Export Data
+            </strong>
+            <!---->
+          </div>
+           
+          <div
+            class="absolute top-0 -left-4 border-2 border-neutral-300 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-secondary transition-colors text-xs"
+          >
+            2
+          </div>
+        </li>
+        <li
+          class="relative my-6 ml-6 text-sm flex group"
+        >
+          <div
+            class="ml-6"
+          >
+            Choose 
+            <strong>
+              CSV
+            </strong>
+             as your file format
+            <!---->
+          </div>
+           
+          <div
+            class="absolute top-0 -left-4 border-2 border-neutral-300 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-secondary transition-colors text-xs"
+          >
+            3
+          </div>
+        </li>
+        <li
+          class="relative my-6 ml-6 text-sm flex group"
+        >
+          <div
+            class="ml-6"
+          >
+            Under export options, check the following:
+            
+            <ul
+              class="list-disc ml-8 marker:text-neutral-400 flex flex-col gap-2 mt-2"
+            >
+              
+              
+              <li>
+                <strong>
+                  Use choice text
+                </strong>
+                 — not "Use numeric values." This exports the actual response text rather than coded numbers
+              </li>
+              
+              
+              <li>
+                Include all response fields
+              </li>
+              
+              
+              <li>
+                Keep original question text — this ensures full question wording appears in your column headers
+              </li>
+              
+            
+            </ul>
+            
+          
+            <!---->
+          </div>
+           
+          <div
+            class="absolute top-0 -left-4 border-2 border-neutral-300 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-secondary transition-colors text-xs"
+          >
+            4
+          </div>
+        </li>
+        <li
+          class="relative my-6 ml-6 text-sm flex group"
+        >
+          <div
+            class="ml-6"
+          >
+            Click 
+            <strong>
+              Download
+            </strong>
+            <!---->
+          </div>
+           
+          <div
+            class="absolute top-0 -left-4 border-2 border-neutral-300 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-secondary transition-colors text-xs"
+          >
+            5
+          </div>
+        </li>
+        
+      </ol>
+      <!---->
+       
+      <hr />
+       
+      <div
+        class="flex gap-1 items-center text-sm mt-4"
+      >
+        <div
+          class="shrink-0 self-start"
+        >
+          <svg
+            class="fill-red-500"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M400-240q-33 0-56.5-23.5T320-320v-50q-57-39-88.5-100T200-600q0-117 81.5-198.5T480-880q117 0 198.5 81.5T760-600q0 69-31.5 129.5T640-370v50q0 33-23.5 56.5T560-240H400Zm0-80h160v-92l34-24q41-28 63.5-71.5T680-600q0-83-58.5-141.5T480-800q-83 0-141.5 58.5T280-600q0 49 22.5 92.5T366-436l34 24v92Zm0 240q-17 0-28.5-11.5T360-120v-40h240v40q0 17-11.5 28.5T560-80H400Zm80-520Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         
+        <small>
+          <strong>
+            Reminder:
+          </strong>
+           Qualtrics files include two header rows. Open your file and delete row 2, keeping only row 1 (the full question text). Uploading with both rows will cause errors.
+        </small>
+      </div>
+      <!---->
+      <!---->
+    </div>
+    <!---->
+     
+    <!---->
+     
+    <!---->
+    <!---->
+  </div>
+  <!---->
+   
+  <hr
+    class="my-8"
+  />
+   
+  <section>
+    <!---->
+    <!---->
+    <button
+      aria-pressed="false"
+      class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+      data-variant="default"
+      role="button"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      <div
+        class="flex w-full items-center justify-between gap-2"
+      >
+        <div
+          class="flex gap-1 items-center"
+        >
+          <!---->
+           
+          <div
+            class="mx-2 my-2 text-sm"
+          >
+            Using another tool? 
+            <small>
+              (Microsoft Forms, Google Forms, spreadsheet, etc.)
+            </small>
+          </div>
+          <!---->
+        </div>
+         
+        <div
+          class="flex items-center gap-0.5 shrink-0 mx-1"
+        >
+          <div
+            class="transition-transform"
+          >
+            <svg
+              class="fill-neutral-500"
+              height="1rem"
+              role="img"
+              viewBox="0 -960 960 960"
+              width="1rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <!---->
+        </div>
+      </div>
+      
+      
+      
+    </button>
+    
+    <!---->
+     
+    <!---->
+    <!---->
+  </section>
+   
+  <section>
+    <div
+      class="flex justify-between gap-1 flex-wrap my-12"
+    >
+      <!---->
+      <button
+        aria-pressed="false"
+        class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+        data-variant="default"
+        role="button"
+        tabindex="0"
+      >
+        <!---->
+        <!---->
+        <div
+          class="rotate-180"
+        >
+          <svg
+            class="fill-neutral-500"
+            height="0.9rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="0.9rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         
+        <span
+          class="pl-2"
+        >
+          Back
+        </span>
+        
+        
+        
+      </button>
+      
+      <!---->
+       
+      <!---->
+      <button
+        aria-pressed="false"
+        class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-secondary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-secondary hover:text-secondary svelte-1d0mdzt"
+        data-variant="approve"
+        role="button"
+        tabindex="0"
+      >
+        <!---->
+        <!---->
+        <span
+          class="pr-2"
+        >
+          Continue
+        </span>
+         
+        <svg
+          class="fill-white"
+          height="0.9rem"
+          role="img"
+          viewBox="0 -960 960 960"
+          width="0.9rem"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+          <!---->
+        </svg>
+        <!---->
+        
+        
+        
+      </button>
+      
+      <!---->
+    </div>
+  </section>
+  
+</div>
+`;

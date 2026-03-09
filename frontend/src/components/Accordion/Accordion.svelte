@@ -16,6 +16,7 @@
     Icon?: Component;
     onClose?: () => void;
     onClick?: () => void;
+    ariaLabel?: string;
   }
 
   let {
@@ -25,6 +26,7 @@
     Icon,
     onClose,
     onClick,
+    ariaLabel,
   }: Props = $props();
 
   let expanded = $state(false);
@@ -58,6 +60,7 @@
     }
   }}
   fullWidth={true}
+  {ariaLabel}
 >
   <div class="flex w-full items-center justify-between gap-2">
     <div class={clsx(["flex", "gap-1", "items-center"])}>
@@ -102,7 +105,7 @@
             onClose();
           }}
           variant="ghost"
-          ariaLabel="close accordion"
+          ariaLabel={`close ${ariaLabel || "accordion"}`}
         >
           <MaterialIcon
             color={variant === "warning"

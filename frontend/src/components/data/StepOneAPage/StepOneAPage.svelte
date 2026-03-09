@@ -44,6 +44,7 @@
         variant="warning"
         Icon={LightbulbTwo}
         onClose={() => (hintShown = true)}
+        ariaLabel="hint-accordion"
       >
         {#snippet title()}
           <p class={clsx(["text-sm", "text-start", "py-2"])}>
