@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import AccessToken
 
+from authentication.jwt_verifier import get_jwt_verifier
 from consultations.api.serializers import TokenSerializer
 from hosting_environment import HostingEnvironment
 
@@ -15,6 +16,7 @@ logger = settings.LOGGER
 client = AuthApiClient(
     app_name="consult", auth_api_url=settings.AUTH_API_URL, logger=logger, timeout=10
 )
+jwt_verifier = get_jwt_verifier()
 
 
 @api_view(["POST"])
@@ -27,36 +29,59 @@ def validate_token(request):
 
     try:
         internal_access_token = serializer.validated_data["internal_access_token"]
-        if HostingEnvironment.is_deployed():
+
+        if jwt_verifier is not None:
+            try:
+                payload = jwt_verifier.verify_token(internal_access_token)
+                email = payload.get("email")
+
+                if not email:
+                    logger.error("JWT token missing email claim")
+                    return JsonResponse(data={"detail": "authentication failed"}, status=401)
+
+            except jwt.ExpiredSignatureError:
+                logger.warning("JWT token has expired")
+                return JsonResponse(data={"detail": "token expired"}, status=401)
+
+            except jwt.InvalidTokenError:
+                logger.warning("JWT token verification failed")
+                return JsonResponse(data={"detail": "invalid token"}, status=401)
+
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
-                logger.error(
-                    "{email} is not authenticated because {auth_reason}",
-                    email=user_authorisation_info.email,
-                    auth_reason=user_authorisation_info.auth_reason,
+                logger.warning(
+                    "User not authorized"
                 )
-                # TODO: reinstate this once DSIT (and other departments have been added to the consult clients)
-                # return JsonResponse(data={"detail": "authentication failed"}, status=403)
+                return JsonResponse(data={"detail": "authentication failed"}, status=403)
+
+        elif HostingEnvironment.is_deployed():
+            user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
+            if not user_authorisation_info.is_authorised:
+                logger.warning(
+                    "User not authenticated"
+                )
+                return JsonResponse(data={"detail": "authentication failed"}, status=403)
             email = user_authorisation_info.email
+
         else:
             email = jwt.decode(internal_access_token, options={"verify_signature": False})["email"]
+            logger.info("Local environment authentication")
 
         user = User.objects.get(email=email)
     except User.DoesNotExist:
-        logger.error("error authenticating request {error}", error="user does not exist")
+        logger.warning("User does not exist")
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
-    except Exception as ex:
-        logger.error("error authenticating request {error}", error=", ".join(map(str, ex.args)))
+    except Exception:
+        logger.error("Error authenticating request")
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
     login(request, user)
-    # Ensure session is created if it doesn't exist
     if not request.session.session_key:
         request.session.save()
 
     access_token = AccessToken.for_user(user)
 
-    logger.info("user {email} authenticated", email=user.email)
+    logger.info("User authenticated successfully")
 
     return JsonResponse(
         {

@@ -1,9 +1,3 @@
-resource "random_password" "django_pass" {
-  length  = 24
-  special = false
-}
-
-
 locals {
   # Add secrets to this list as required to make them available within the container.
   # Values must not be hardcoded here - they must either be references or updated in SSM Parameter Store.
@@ -92,6 +86,11 @@ locals {
   ]
 }
 
+resource "random_password" "django_pass" {
+  length  = 50
+  special = false
+}
+
 resource "aws_ssm_parameter" "oidc_secrets" {
   for_each = { for os in local.oidc_secrets : os.name => os }
 
@@ -110,7 +109,7 @@ resource "aws_ssm_parameter" "oidc_secrets" {
 
 resource "aws_ssm_parameter" "env_secrets" {
   for_each = { for ev in local.env_secrets : ev.name => ev }
-  
+
   type   = "SecureString"
   key_id = data.terraform_remote_state.platform.outputs.kms_key_arn
 

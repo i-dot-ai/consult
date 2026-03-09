@@ -1,0 +1,230 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Learnings > should match snapshot 1`] = `
+<div>
+  <div
+    class="border border-secondary p-4 rounded-lg"
+  >
+    <!---->
+    <h3
+      class="text-neutral-700 text-md"
+      style=""
+    >
+      <!---->
+      <!---->
+      <span
+        class="block text-sm font-[500] mb-2"
+      >
+        Learnings from other departments
+      </span>
+      
+      
+      
+    </h3>
+    
+    <!---->
+     
+    <div
+      class="bg-neutral-100 p-4 rounded-lg"
+      id="learnings-component"
+    >
+      <div
+        class="flex gap-4"
+      >
+        <div
+          class="flex items-center justify-center flex-col mb-auto py-2 px-4 font-bold text-xs text-neutral-700 bg-white border-2 border-neutral-500"
+        >
+          <svg
+            class="fill-neutral-700"
+            height="1.5rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1.5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!---->
+            <path
+              d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"
+            />
+            
+            <!---->
+          </svg>
+          <!---->
+           DfE
+        </div>
+         
+        <div>
+          <p
+            class="text-sm text-neutral-600 mb-2"
+          >
+            "Taking time to prepare our data correctly at the start saved us hours during the analysis phase. We were able to jump straight into insights rather than troubleshooting data issues."
+          </p>
+           
+          <!---->
+          <h4
+            class="text-neutral-700 text-sm"
+            style=""
+          >
+            <!---->
+            <!---->
+            <span
+              class="font-[500] text-xs"
+            >
+              Senior Policy Analyst
+            </span>
+            
+            
+            
+          </h4>
+          
+          <!---->
+           
+          <p
+            class="text-xs text-neutral-600"
+          >
+            Department for Education
+          </p>
+        </div>
+        <!---->
+      </div>
+    </div>
+     
+    <div
+      class="flex justify-center items-center gap-1 flex-wrap p-2 mt-2"
+    >
+      <div
+        class="my-auto rotate-180"
+      >
+        <!---->
+        <button
+          aria-controls="learnings-component"
+          aria-label="Previous Learning"
+          aria-pressed="false"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          data-variant="default"
+          role="button"
+          tabindex="0"
+          title="Previous Learning"
+        >
+          <!---->
+          <!---->
+          <svg
+            class="neutral-500"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
+          
+          
+          
+        </button>
+        
+        <!---->
+      </div>
+       
+      <!---->
+      <button
+        aria-controls="learnings-component"
+        aria-label="Learning 1"
+        aria-pressed="true"
+        class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary text-secondary svelte-1d0mdzt"
+        data-testid="Learnings Button"
+        data-variant="dot"
+        role="button"
+        tabindex="0"
+        title="Learning 1"
+      >
+        <!---->
+        •
+        
+        
+      </button>
+      
+      <!---->
+      <button
+        aria-controls="learnings-component"
+        aria-label="Learning 2"
+        aria-pressed="false"
+        class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
+        data-testid="Learnings Button"
+        data-variant="dot"
+        role="button"
+        tabindex="0"
+        title="Learning 2"
+      >
+        <!---->
+        •
+        
+        
+      </button>
+      
+      <!---->
+      <button
+        aria-controls="learnings-component"
+        aria-label="Learning 3"
+        aria-pressed="false"
+        class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
+        data-testid="Learnings Button"
+        data-variant="dot"
+        role="button"
+        tabindex="0"
+        title="Learning 3"
+      >
+        <!---->
+        •
+        
+        
+      </button>
+      
+      <!---->
+       
+      <div
+        class="my-auto"
+      >
+        <!---->
+        <button
+          aria-controls="learnings-component"
+          aria-label="Next Learning"
+          aria-pressed="false"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          data-variant="default"
+          role="button"
+          tabindex="0"
+          title="Next Learning"
+        >
+          <!---->
+          <!---->
+          <svg
+            class="neutral-500"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
+          
+          
+          
+        </button>
+        
+        <!---->
+      </div>
+    </div>
+  </div>
+  
+</div>
+`;

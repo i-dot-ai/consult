@@ -1,0 +1,292 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`IntroPage > should match snapshot 1`] = `
+<div>
+  <section>
+    <!---->
+    <h2
+      class="text-neutral-700 text-lg"
+      style=""
+    >
+      <!---->
+      <!---->
+      <span
+        class="block text-2xl mb-2"
+      >
+        Set up your consultation data
+      </span>
+      
+      
+      
+    </h2>
+    
+    <!---->
+     
+    <p
+      class="text-neutral-500 text-md"
+    >
+      Prepare and structure your data ready for AI analysis. If you're still
+    collecting responses, use this phase to understand what's needed before your
+    consultation closes.
+    </p>
+  </section>
+   
+  <section
+    class="my-8 overflow-x-auto"
+  >
+    <!---->
+    <h3
+      class="text-neutral-700 text-md"
+      style=""
+    >
+      <!---->
+      <!---->
+      <span
+        class="text-md mb-2"
+      >
+        What you'll do
+      </span>
+      
+      
+      
+    </h3>
+    
+    <!---->
+     
+    <div
+      class="flex gap-2 my-4 min-w-[50rem]"
+    >
+      <div
+        aria-current="true"
+        class="relative flex flex-col gap-1 items-center w-[15rem] transition-opacity duration-500"
+        data-testid="intro-card"
+      >
+        <div
+          class="bg-secondary p-2 rounded-full w-12 h-12 shadow-lg"
+        >
+          <div
+            class="growshrink"
+          >
+            <svg
+              class="fill-white"
+              height="2rem"
+              role="img"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <path
+                d="M440-200h80v-167l64 64 56-57-160-160-160 160 57 56 63-63v167ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+        </div>
+         
+        <small
+          class="text-secondary text-xs text-center mt-1"
+        >
+          Step 1
+        </small>
+         
+        <h3
+          class="text-sm text-center"
+        >
+          Prepare data outside Consult
+        </h3>
+         
+        <p
+          class="text-neutral-500 text-xs text-center"
+        >
+          Export from your collection tool and structure your files
+        </p>
+         
+        <div
+          class="hozshift absolute top-[33%] -right-4"
+          data-testid="intro-card-arrow"
+        >
+          <svg
+            class="fill-secondary"
+            height="1.5rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1.5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
+          <!---->
+        </div>
+        <!---->
+      </div>
+      <div
+        class="relative flex flex-col gap-1 items-center w-[15rem] opacity-50 transition-opacity duration-500"
+        data-testid="intro-card"
+      >
+        <div
+          class="bg-teal-100 p-2 rounded-full w-12 h-12 shadow-lg"
+        >
+          <div>
+            <svg
+              class="fill-secondary"
+              height="2rem"
+              role="img"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <path
+                d="m438-240 226-226-58-58-169 169-84-84-57 57 142 142ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+        </div>
+         
+        <small
+          class="text-secondary text-xs text-center mt-1"
+        >
+          Step 2
+        </small>
+         
+        <h3
+          class="text-sm text-center"
+        >
+          Upload & validate
+        </h3>
+         
+        <p
+          class="text-neutral-500 text-xs text-center"
+        >
+          Check your data meets the required format
+        </p>
+         
+        <div
+          class="absolute top-[33%] -right-4"
+          data-testid="intro-card-arrow"
+        >
+          <svg
+            class="fill-neutral-400"
+            height="1.5rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1.5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
+          <!---->
+        </div>
+        <!---->
+      </div>
+      <div
+        class="relative flex flex-col gap-1 items-center w-[15rem] opacity-50 transition-opacity duration-500"
+        data-testid="intro-card"
+      >
+        <div
+          class="bg-teal-100 p-2 rounded-full w-12 h-12 shadow-lg"
+        >
+          <div>
+            <svg
+              class="fill-secondary"
+              height="2rem"
+              role="img"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <path
+                d="M222-200 80-342l56-56 85 85 170-170 56 57-225 226Zm0-320L80-662l56-56 85 85 170-170 56 57-225 226Zm298 240v-80h360v80H520Zm0-320v-80h360v80H520Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+        </div>
+         
+        <small
+          class="text-secondary text-xs text-center mt-1"
+        >
+          Step 3
+        </small>
+         
+        <h3
+          class="text-sm text-center"
+        >
+          Define question structure
+        </h3>
+         
+        <p
+          class="text-neutral-500 text-xs text-center"
+        >
+          Configure how each question should be analysed
+        </p>
+         
+        <!---->
+      </div>
+      
+    </div>
+  </section>
+   
+  <section
+    class="my-8"
+  >
+    <!---->
+    <button
+      aria-pressed="false"
+      class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-gray-300 bg-secondary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-secondary hover:text-secondary svelte-1d0mdzt"
+      data-variant="approve"
+      role="button"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      <div
+        class="flex gap-1 items-center justify-center p-1"
+      >
+        Start data preparation 
+        <svg
+          class="fill-white"
+          height="1rem"
+          role="img"
+          viewBox="0 -960 960 960"
+          width="1rem"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+          <!---->
+        </svg>
+        <!---->
+      </div>
+      
+      
+      
+    </button>
+    
+    <!---->
+  </section>
+  
+</div>
+`;

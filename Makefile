@@ -4,11 +4,105 @@ export AWS_REGION
 export ECR_REPO_NAME
 export APP_NAME
 
-
 .PHONY: help
 help:     ## Show this help.
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-30s\033[0m %s\n", $$1, $$2}'
 
+.PHONY: install
+install: ## Install all dependencies
+	pre-commit install
+	cp .githooks/* .git/hooks/
+	cd backend && uv sync
+	. "$(NVM_DIR)/nvm.sh" && cd frontend && nvm install && npm install
+	. "$(NVM_DIR)/nvm.sh" && cd e2e_tests && nvm install && npm install
+
+.PHONY: setup
+setup: ## Set up env files and database with dummy data
+	test -f .env || cp .env.test .env
+	test -f frontend/.env || cp frontend/.env.example frontend/.env
+	$(MAKE) dev_environment
+
+.PHONY: serve
+serve: ## Run the backend and frontend together
+	docker compose up -d postgres redis
+	uv tool run honcho start -f Procfile.dev
+
+.PHONY: backend
+backend: ## Run the backend and the worker
+	docker compose up -d postgres redis
+	uv tool run honcho start -f Procfile.dev web worker worker2
+
+.PHONY: frontend
+frontend: ## Run the frontend
+	cd frontend && npm run dev
+
+.PHONY: test-backend
+test-backend: ## Run the backend tests
+	cd backend && PYTHONPATH=.. uv run pytest tests/ --random-order
+
+.PHONY: test-frontend
+test-frontend: ## Run the frontend tests
+	cd frontend && npm run test
+
+.PHONY: test-end-to-end
+test-end-to-end: ## Run end-to-end tests with Playwright
+	$(eval E2E_DB_URL := postgresql://postgres:postgres@postgres:5432/consult_e2e_test)  # pragma: allowlist secret
+	@echo "Setting up test database..."
+	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;" || true
+	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "CREATE DATABASE consult_e2e_test;"
+	@echo "Initializing test data..."
+	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py migrate
+	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) -e ADMIN_USERS=email@example.com backend venv/bin/python manage.py createadminusers
+	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py generate_dummy_data
+	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py shell -c \
+		"from authentication.models import User; from consultations.models import Consultation; \
+		user = User.objects.get(email='email@example.com'); \
+		[c.users.add(user) for c in Consultation.objects.all()]"
+	@echo "Starting services..."
+	@echo "services:" > docker-compose.override.yml
+	@echo "  backend:" >> docker-compose.override.yml
+	@echo "    environment:" >> docker-compose.override.yml
+	@echo "      - DATABASE_URL=$(E2E_DB_URL)" >> docker-compose.override.yml
+	@docker compose down backend 2>/dev/null || true
+	@docker compose up -d backend frontend
+	@echo "Waiting for services to be ready..."
+	@timeout 120 sh -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 2; done' || \
+		(echo "Frontend failed to start" && docker compose logs frontend && exit 1)
+	@timeout 120 sh -c 'until curl -s http://localhost:8000/api/user/ > /dev/null; do sleep 2; done' || \
+		(echo "Backend failed to start" && docker compose logs backend && exit 1)
+	@echo "Running tests..."
+	@cd e2e_tests && npm install
+	@if [ -z "$$CI" ]; then cd e2e_tests && npx playwright install --with-deps; fi
+	@cd e2e_tests && npm run e2e
+	@echo "Cleaning up..."
+	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;"
+	@rm -f docker-compose.override.yml
+
+
+.PHONY: check-python-code
+check-python-code: ## Check Python code - linting and mypy
+	cd backend && uv run ruff check --select I .
+	cd backend && uv run ruff check .
+	# Re-add mypy here and remove from pre-commit once errors fixed
+	# cd backend && uv run mypy . --ignore-missing-imports
+
+.PHONY: format-python-code
+format-python-code: ## Format Python code including sorting imports
+	cd backend && uv run ruff check --select I . --fix
+	cd backend && uv run ruff check . --fix
+	cd backend && uv run ruff format .
+
+
+# Database
+
+.PHONY: migrations
+migrations: ## Generate migrations
+	cd backend && PYTHONPATH=.. uv run python manage.py makemigrations
+
+.PHONY: migrate
+migrate: ## Apply migrations
+	cd backend && PYTHONPATH=.. uv run python manage.py migrate
+	cd backend && PYTHONPATH=.. uv run python manage.py generate_erd
 
 .PHONY: setup_db
 setup_db: ## Set up the development db on docker
@@ -22,75 +116,15 @@ reset_db: ## Reset the dev db
 
 .PHONY: check_db
 check_db: ## Make sure the db is addressable
-	cd backend && PYTHONPATH=.. poetry run python manage.py check --database default
-
-.PHONY: migrations
-migrations: ## Generate migrations
-	cd backend && PYTHONPATH=.. poetry run python manage.py makemigrations
-
-.PHONY: migrate
-migrate: ## Apply migrations
-	cd backend && PYTHONPATH=.. poetry run python manage.py migrate
-	cd backend && PYTHONPATH=.. poetry run python manage.py generate_erd
-
-.PHONY: backend
-backend: ## Run the backend and the worker
-	docker compose up -d postgres redis
-	cd backend && poetry run honcho start
-
-.PHONY: frontend
-frontend: ## Run the frontend
-	cd frontend && npm run dev
-
-.PHONY: test-backend
-test-backend: ## Run the backend tests
-	cd backend && PYTHONPATH=.. poetry run pytest tests/ --random-order
-
-.PHONY: test-frontend
-test-frontend: ## Run the frontend tests
-	cd frontend && npm run test
-
-.PHONY: test-end-to-end
-test-end-to-end:
-		@echo "Creating test database..."
-		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;" || true
-		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "CREATE DATABASE consult_e2e_test;"
-		@echo "Backing up current DATABASE_URL..."
-		@cp .env .env.backup
-		@echo "Setting test DATABASE_URL..."
-		@sed -i.tmp 's|DATABASE_URL=.*|DATABASE_URL=psql://postgres:postgres@localhost:5432/consult_e2e_test|' .env && rm .env.tmp  # pragma: allowlist secret
-		@echo "create user"
-		docker compose run backend venv/bin/python manage.py createadminusers
-		@echo "Running end-to-end tests..."
-		cd e2e_tests && npm install
-		cd e2e_tests && npx playwright install --with-deps
-		cd e2e_tests && npm run e2e
-		@echo "Cleaning up test database..."
-		@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;"
-		@echo "Restoring original .env..."
-		@mv .env.backup .env
-
-
-.PHONY: check-python-code
-check-python-code: ## Check Python code - linting and mypy
-	cd backend && poetry run ruff check --select I .
-	cd backend && poetry run ruff check .
-	# Re-add mypy here and remove from pre-commit once errors fixed
-	# cd backend && poetry run mypy . --ignore-missing-imports
-
-.PHONY: format-python-code
-format-python-code: ## Format Python code including sorting imports
-	cd backend && poetry run ruff check --select I . --fix
-	cd backend && poetry run ruff check . --fix
-	cd backend && poetry run ruff format .
+	cd backend && PYTHONPATH=.. uv run python manage.py check --database default
 
 .PHONY: dummy_data
 dummy_data: ## Generate dummy consultations. Only works in dev
-	cd backend && PYTHONPATH=.. poetry run python manage.py generate_dummy_data
+	cd backend && PYTHONPATH=.. uv run python manage.py generate_dummy_data
 
 .PHONY: dev_admin_user
 dev_admin_user:
-	cd backend && PYTHONPATH=.. poetry run python manage.py shell -c "from authentication.models import User; from consultations.models import Consultation; user = User.objects.create_user(email='email@example.com', password='admin', is_staff=True); user.save(); [c.users.add(user) for c in Consultation.objects.all()]" # pragma: allowlist secret
+	cd backend && PYTHONPATH=.. uv run python manage.py shell -c "from authentication.models import User; from consultations.models import Consultation; user = User.objects.create_user(email='email@example.com', password='admin', is_staff=True); user.save(); [c.users.add(user) for c in Consultation.objects.all()]" # pragma: allowlist secret
 
 .PHONY: dev_environment
 dev_environment: reset_db migrate dummy_data dev_admin_user ## set up the database with dummy data
@@ -212,7 +246,7 @@ tf_init_and_set_workspace:
 
 .PHONY: tf_init
 tf_init: ## Initialise terraform
-	terraform -chdir=./terraform/$(instance) init -backend-config=$(TF_BACKEND_CONFIG) -reconfigure
+	terraform -chdir=./terraform/$(instance) init -backend-config=$(TF_BACKEND_CONFIG) -upgrade
 
 .PHONY: tf_plan
 tf_plan: ## Plan terraform

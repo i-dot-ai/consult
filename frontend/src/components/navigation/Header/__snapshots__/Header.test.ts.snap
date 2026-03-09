@@ -160,12 +160,14 @@ exports[`Header > matches snapshot 1`] = `
                   tabindex="0"
                 >
                   <!---->
+                  <!---->
                   <span
                     class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
                   >
                     Home 
                     <!---->
                   </span>
+                  
                   
                   
                 </a>
@@ -233,8 +235,9 @@ exports[`Header > matches snapshot 1`] = `
                       disabled="false"
                       href="/walkthrough"
                       role="link"
-                      tabindex="0"
+                      tabindex="-1"
                     >
+                      <!---->
                       <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
@@ -242,6 +245,7 @@ exports[`Header > matches snapshot 1`] = `
                         Walkthrough 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -262,8 +266,9 @@ exports[`Header > matches snapshot 1`] = `
                       disabled="false"
                       href="/guidance"
                       role="link"
-                      tabindex="0"
+                      tabindex="-1"
                     >
+                      <!---->
                       <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
@@ -271,6 +276,7 @@ exports[`Header > matches snapshot 1`] = `
                         Guidance 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -291,8 +297,9 @@ exports[`Header > matches snapshot 1`] = `
                       disabled="false"
                       href="/feedback"
                       role="link"
-                      tabindex="0"
+                      tabindex="-1"
                     >
+                      <!---->
                       <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
@@ -300,6 +307,7 @@ exports[`Header > matches snapshot 1`] = `
                         Feedback 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -320,8 +328,9 @@ exports[`Header > matches snapshot 1`] = `
                       disabled="false"
                       href="/privacy"
                       role="link"
-                      tabindex="0"
+                      tabindex="-1"
                     >
+                      <!---->
                       <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
@@ -329,6 +338,7 @@ exports[`Header > matches snapshot 1`] = `
                         Privacy notice 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -401,8 +411,9 @@ exports[`Header > matches snapshot 1`] = `
                       disabled="false"
                       href="/consultations"
                       role="link"
-                      tabindex="0"
+                      tabindex="-1"
                     >
+                      <!---->
                       <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
@@ -410,6 +421,7 @@ exports[`Header > matches snapshot 1`] = `
                         Consultations 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -430,8 +442,9 @@ exports[`Header > matches snapshot 1`] = `
                       disabled="false"
                       href="/users"
                       role="link"
-                      tabindex="0"
+                      tabindex="-1"
                     >
+                      <!---->
                       <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
@@ -439,6 +452,7 @@ exports[`Header > matches snapshot 1`] = `
                         Users 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -465,7 +479,6 @@ exports[`Header > matches snapshot 1`] = `
      
     <!---->
   </header>
-  
   
 </div>
 `;

@@ -189,7 +189,6 @@ exports[`ConsultationStagePanel > should render correctly for analysis stage 1`]
     <!---->
   </div>
   
-  
 </div>
 `;
 
@@ -384,7 +383,6 @@ exports[`ConsultationStagePanel > should render correctly for theme_mapping stag
     <!---->
   </div>
   
-  
 </div>
 `;
 
@@ -576,6 +574,7 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
           type="button"
         >
           <!---->
+          <!---->
           <span
             class="mx-auto flex items-center gap-2"
           >
@@ -598,6 +597,7 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
           </span>
           
           
+          
         </button>
         
         <!---->
@@ -606,7 +606,6 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
     </div>
     <!---->
   </div>
-  
   
 </div>
 `;
