@@ -63,18 +63,21 @@ describe("StepOneAPage", () => {
     { label: "Qualtrics tab", title: "Qualtrics export instructions" },
     { label: "Smart Survey tab", title: "Smart Survey export instructions" },
     { label: "Citizen Space tab", title: "Citizen Space export instructions" },
-  ])("should render smart survey content when its tab is clicked", async ({ label, title }) => {
-    render(StepOneAPage);
+  ])(
+    "should render smart survey content when its tab is clicked",
+    async ({ label, title }) => {
+      render(StepOneAPage);
 
-    const tabButton = screen.getByRole("button", { name: label });
+      const tabButton = screen.getByRole("button", { name: label });
 
-    const user = userEvent.setup();
-    await user.click(tabButton);
+      const user = userEvent.setup();
+      await user.click(tabButton);
 
-    await waitFor(() => {
-      expect(screen.getByText(title)).toBeInTheDocument();
-    });
-  });
+      await waitFor(() => {
+        expect(screen.getByText(title)).toBeInTheDocument();
+      });
+    },
+  );
 
   it("should match snapshot", () => {
     const { container } = render(StepOneAPage);
