@@ -323,7 +323,7 @@
             ])}
           >
             <li>
-              <strong>Question text in row 1</strong> — one question per column
+              <strong>Question text in row 1</strong> — 1 question per column
             </li>
             <li>
               <strong>One response per row</strong> — each row is one person's submission
