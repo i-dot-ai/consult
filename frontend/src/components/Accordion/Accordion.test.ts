@@ -24,13 +24,6 @@ describe("Accordion", () => {
     render(Accordion, testData);
     expect(screen.queryByText("Test Contents")).not.toBeInTheDocument();
   });
-  it.each(["light", "gray"])("should render correctly", (variant) => {
-    const { container } = render(Accordion, {
-      ...testData,
-      variant: variant as Props["variant"],
-    });
-    expect(container).toMatchSnapshot();
-  });
   it("should render contents when expanded", async () => {
     const user = userEvent.setup();
     render(Accordion, testData);
@@ -55,6 +48,13 @@ describe("Accordion", () => {
     expect(screen.getByLabelText("close accordion")).toBeInTheDocument();
   });
 
+  it("should render aria label if passed", () => {
+    render(Accordion, { ...testData, ariaLabel: "test-label" });
+    expect(
+      screen.getByRole("button", { name: "test-label" }),
+    ).toBeInTheDocument();
+  });
+
   it("should call onClose if close button is clicked", async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
@@ -64,4 +64,15 @@ describe("Accordion", () => {
     await user.click(screen.getByLabelText("close accordion"));
     expect(onClose).toHaveBeenCalledOnce();
   });
+
+  it.each(["light", "gray", "warning"])(
+    "should render correctly",
+    (variant) => {
+      const { container } = render(Accordion, {
+        ...testData,
+        variant: variant as Props["variant"],
+      });
+      expect(container).toMatchSnapshot();
+    },
+  );
 });

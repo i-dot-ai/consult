@@ -12,12 +12,22 @@
   export interface Props {
     title: Snippet;
     content: Snippet;
-    variant?: "light" | "gray" | "warning";
+    variant?: "light" | "gray" | "gray-white" | "warning";
     Icon?: Component;
     onClose?: () => void;
+    onClick?: () => void;
+    ariaLabel?: string;
   }
 
-  let { title, content, variant = "light", Icon, onClose }: Props = $props();
+  let {
+    title,
+    content,
+    variant = "light",
+    Icon,
+    onClose,
+    onClick,
+    ariaLabel,
+  }: Props = $props();
 
   let expanded = $state(false);
 
@@ -30,12 +40,27 @@
     }
     return "default";
   }
+
+  export function open() {
+    expanded = true;
+  }
+
+  export function close() {
+    expanded = false;
+  }
 </script>
 
 <Button
   variant={getButtonVariant()}
-  handleClick={() => (expanded = !expanded)}
+  handleClick={() => {
+    expanded = !expanded;
+
+    if (onClick) {
+      onClick();
+    }
+  }}
   fullWidth={true}
+  {ariaLabel}
 >
   <div class="flex w-full items-center justify-between gap-2">
     <div class={clsx(["flex", "gap-1", "items-center"])}>
@@ -80,7 +105,7 @@
             onClose();
           }}
           variant="ghost"
-          ariaLabel="close accordion"
+          ariaLabel={`close ${ariaLabel || "accordion"}`}
         >
           <MaterialIcon
             color={variant === "warning"
@@ -101,6 +126,7 @@
     class={clsx([
       variant === "light" && "bg-white",
       variant === "gray" && "bg-neutral-100",
+      variant === "gray-white" && "bg-neutral-100",
       variant === "warning" && "border-yellow-300 bg-yellow-50",
       "rounded-b-lg border border-t-0 border-neutral-300 p-4",
     ])}
