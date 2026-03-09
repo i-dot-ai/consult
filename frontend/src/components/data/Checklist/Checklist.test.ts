@@ -23,7 +23,9 @@ describe("Checklist", () => {
 
     expect(screen.queryByText(item.text)).not.toBeInTheDocument();
 
-    const expandDetailsButton = screen.getByRole("button", { name: `Show/Hide ${item.id}-details` });
+    const expandDetailsButton = screen.getByRole("button", {
+      name: `Show/Hide ${item.id}-details`,
+    });
 
     const user = userEvent.setup();
     await user.click(expandDetailsButton);
