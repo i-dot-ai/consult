@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/svelte";
+import { render, screen, waitFor } from "@testing-library/svelte";
 
 import Checklist from "./Checklist.svelte";
 import { TEST_DATA } from "./testData";
@@ -18,10 +18,19 @@ describe("Checklist", () => {
     expect(screen.getByText(item.title)).toBeInTheDocument();
   });
 
-  it.each(testData.items)("should render text", (item) => {
+  it.each(testData.items)("should render text", async (item) => {
     render(Checklist, testData);
 
-    expect(screen.getByText(item.text)).toBeInTheDocument();
+    expect(screen.queryByText(item.text)).not.toBeInTheDocument();
+
+    const expandDetailsButton = screen.getByRole("button", { name: `Show/Hide ${item.id}-details` });
+
+    const user = userEvent.setup();
+    await user.click(expandDetailsButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(item.text)).toBeInTheDocument();
+    });
   });
 
   it.each(testData.items)("should render id", (item) => {

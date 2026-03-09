@@ -83,6 +83,8 @@
                 expanded = [...expanded, item.id];
               }
             }}
+            ariaControls={`${item.id}-details`}
+            ariaLabel={`Show/Hide ${item.id}-details`}
           >
             <span class="-ml-2 text-secondary hover:underline">
               {expanded.includes(item.id)
@@ -93,6 +95,7 @@
 
           {#if expanded.includes(item.id)}
             <div
+              id={`${item.id}-details`}
               transition:slide
               class="my-2 rounded-lg bg-white p-2 text-neutral-500"
             >
