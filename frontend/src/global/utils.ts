@@ -252,6 +252,6 @@ export function debounce<T extends (...args: unknown[]) => void>(
 
 export function makeSnippet(str: string, wrapDiv: boolean | undefined = true) {
   return createRawSnippet(() => ({
-    render: () => wrapDiv ? `<div>${str}</div>` : str,
+    render: () => (wrapDiv ? `<div>${str}</div>` : str),
   }));
 }

@@ -63,7 +63,8 @@
     },
     {
       id: "ag",
-      title: "Check formatting is consistent throughout the file (ie dates or free text responses that should be categories)",
+      title:
+        "Check formatting is consistent throughout the file (ie dates or free text responses that should be categories)",
       text: makeSnippet(`
         <p class="mb-2"><strong>Dates:</strong> Use the same format throughout (e.g., all DD/MM/YYYY or all YYYY-MM-DD)</p>
         <p><strong>Categories:</strong> Ensure consistent spelling and capitalisation (e.g., "Yes" not "yes" or "YES")</p>
@@ -84,7 +85,8 @@
     },
     {
       id: "bb",
-      title: "All personally identifiable information has been anonymised or removed — names, email addresses, postcodes, phone numbers",
+      title:
+        "All personally identifiable information has been anonymised or removed — names, email addresses, postcodes, phone numbers",
       text: makeSnippet(`
         <p class="font-bold">Remove or redact:</p>
         <ul class="list-disc pl-4 flex flex-col gap-1 mt-1">
@@ -99,7 +101,8 @@
     },
     {
       id: "bc",
-      title: "Add in from any other sources to create one data set (ie email submissions). Ensure columns map to the same questions",
+      title:
+        "Add in from any other sources to create one data set (ie email submissions). Ensure columns map to the same questions",
       text: makeSnippet(`
         <p>If you collected responses via online survey (rows 2-50) and email (rows 51-60):</p>
         <ul class="list-disc pl-4 flex flex-col gap-1 mt-1">
@@ -113,7 +116,10 @@
   ];
 
   function isAllItemsChecked() {
-    return checkedItems.length !== CHECKLIST_A_ITEMS.length + CHECKLIST_B_ITEMS.length;
+    return (
+      checkedItems.length !==
+      CHECKLIST_A_ITEMS.length + CHECKLIST_B_ITEMS.length
+    );
   }
   function isItemChecked(itemId: string) {
     return checkedItems.includes(itemId);
@@ -123,7 +129,7 @@
     if (checked) {
       checkedItems = [...checkedItems, id];
     } else {
-      checkedItems = checkedItems.filter(item => item !== id);
+      checkedItems = checkedItems.filter((item) => item !== id);
     }
   }
 </script>
@@ -132,34 +138,38 @@
 
 <section>
   <p class={clsx(["text-sm", "text-neutral-500", "py-4", "pb-6"])}>
-    Before uploading, you'll need to clean and format your spreadsheet. Use this as your chance to read through the responses — you'll go into the analysis phase with much stronger context.
+    Before uploading, you'll need to clean and format your spreadsheet. Use this
+    as your chance to read through the responses — you'll go into the analysis
+    phase with much stronger context.
   </p>
 
-  <Learnings items={[
-    {
-      text: "Taking time to prepare our data correctly at the start saved us hours during the analysis phase. We were able to jump straight into insights rather than troubleshooting data issues.",
-      author: "Senior Policy Analyst",
-      organisation: "Department for Education",
-      abbreviation: "DfE",
-    },
-    {
-      text: "Having consistent question formatting across all responses made the AI theme detection incredibly accurate. It's worth the extra 20 minutes to get this right.",
-      author: "Consultation Lead",
-      organisation: "Department for Transport",
-      abbreviation: "DfT",
-    },
-    {
-      text: "We collated responses from three different survey platforms into one file. The standardised structure meant the tool handled everything seamlessly.",
-      author: "Data Manager",
-      organisation: "Ministry of Justice",
-      abbreviation: "MoJ",
-    },
-  ]} />
+  <Learnings
+    items={[
+      {
+        text: "Taking time to prepare our data correctly at the start saved us hours during the analysis phase. We were able to jump straight into insights rather than troubleshooting data issues.",
+        author: "Senior Policy Analyst",
+        organisation: "Department for Education",
+        abbreviation: "DfE",
+      },
+      {
+        text: "Having consistent question formatting across all responses made the AI theme detection incredibly accurate. It's worth the extra 20 minutes to get this right.",
+        author: "Consultation Lead",
+        organisation: "Department for Transport",
+        abbreviation: "DfT",
+      },
+      {
+        text: "We collated responses from three different survey platforms into one file. The standardised structure meant the tool handled everything seamlessly.",
+        author: "Data Manager",
+        organisation: "Ministry of Justice",
+        abbreviation: "MoJ",
+      },
+    ]}
+  />
 </section>
 
 <section class="my-8">
   <Panel variant="default">
-    <div class={clsx([ "mt-2", ])}>
+    <div class={clsx(["mt-2"])}>
       <Checklist
         title="Structure your spreadsheet"
         items={CHECKLIST_A_ITEMS}
@@ -167,7 +177,7 @@
       />
     </div>
 
-    <div class={clsx([ "mt-8", ])}>
+    <div class={clsx(["mt-8"])}>
       <Checklist
         title="Check your content"
         items={CHECKLIST_B_ITEMS}
@@ -175,12 +185,11 @@
       />
     </div>
 
-    <small class={clsx([
-      "block",
-      "mt-4",
-      "text-xs",
-      "text-neutral-500",
-    ])}>As you review, note which questions are open (free-text) and which are closed (yes/no, multiple choice) — Consult will handle these differently during analysis.</small>
+    <small class={clsx(["block", "mt-4", "text-xs", "text-neutral-500"])}
+      >As you review, note which questions are open (free-text) and which are
+      closed (yes/no, multiple choice) — Consult will handle these differently
+      during analysis.</small
+    >
   </Panel>
 </section>
 
