@@ -8,6 +8,7 @@
   import Learnings from "../Learnings/Learnings.svelte";
   import Checklist from "../Checklist/Checklist.svelte";
   import Panel from "../../dashboard/Panel/Panel.svelte";
+  import { makeSnippet } from "../../../global/utils";
 
   let checkedItems: string[] = $state([]);
 
@@ -15,12 +16,16 @@
     {
       id: "aa",
       title: "First row contains your question text, not a response",
-      text: `
-        ✓ Correct:
-        Row 1: "What are your views on this proposal?" | "Do you support this?"
-
-        ✗ Incorrect:
-        Row 1: "I think this is a good idea" | "Yes"`,
+      text: makeSnippet(`
+        <div class="mb-2">
+          <p class="font-bold">✓ Correct:</p>
+          <p>Row 1: "What are your views on this proposal?" | "Do you support this?"</p>
+        </div>
+        <div>
+          <p class="font-bold">✗ Incorrect:</p>
+          <p>Row 1: "I think this is a good idea" | "Yes"</p>
+        </div>
+      `),
       checked: isItemChecked("aa"),
     },
     {
@@ -50,19 +55,19 @@
     {
       id: "af",
       title: "Remove any Excel formulas — cells should contain raw text only",
-      text: `
-        If a cell contains a formula like =CONCATENATE(A1,B1), copy the cell and paste as values only.
-        In Excel: Copy → Paste Special → Values
-      `,
+      text: makeSnippet(`
+        <p>If a cell contains a formula like <code class="bg-neutral-100 px-1 rounded">=CONCATENATE(A1,B1)</code>, copy the cell and paste as values only.</p>
+        <p>In Excel: Copy → Paste Special → Values</p>
+      `),
       checked: isItemChecked("af"),
     },
     {
       id: "ag",
       title: "Check formatting is consistent throughout the file (ie dates or free text responses that should be categories)",
-      text: `
-        Dates: Use the same format throughout (e.g., all DD/MM/YYYY or all YYYY-MM-DD)
-        Categories: Ensure consistent spelling and capitalisation (e.g., "Yes" not "yes" or "YES")
-      `,
+      text: makeSnippet(`
+        <p class="mb-2"><strong>Dates:</strong> Use the same format throughout (e.g., all DD/MM/YYYY or all YYYY-MM-DD)</p>
+        <p><strong>Categories:</strong> Ensure consistent spelling and capitalisation (e.g., "Yes" not "yes" or "YES")</p>
+      `),
       checked: isItemChecked("ag"),
     },
   ];
@@ -71,34 +76,38 @@
     {
       id: "ba",
       title: "Questions are worded consistently across all rows",
-      text: `
-        The question text in row 1 should stay the same across all submissions. Don't change the wording between different batches of responses.
-        Example: Column A should always say "What are your views?" not sometimes "Your views" or "Please share your opinion"
-      `,
+      text: makeSnippet(`
+        <p class="mb-1">The question text in row 1 should stay the same across all submissions. Don't change the wording between different batches of responses.</p>
+        <small class="text-xs">Example: Column A should always say "What are your views?" not sometimes "Your views" or "Please share your opinion"</small>
+      `),
       checked: isItemChecked("ba"),
     },
     {
       id: "bb",
       title: "All personally identifiable information has been anonymised or removed — names, email addresses, postcodes, phone numbers",
-      text: `
-        Remove or redact:
-          Full names → Replace with "Respondent 1", "Respondent 2"
-          Email addresses → Delete column entirely
-          Postcodes → Keep first part only (e.g., "SW1" not "SW1A 2AA")
-          Phone numbers → Delete
-          Addresses → Remove or use area name only
-      `,
+      text: makeSnippet(`
+        <p class="font-bold">Remove or redact:</p>
+        <ul class="list-disc pl-4 flex flex-col gap-1 mt-1">
+          <li>Full names → Replace with "Respondent 1", "Respondent 2"</li>
+          <li>Email addresses → Delete column entirely</li>
+          <li>Postcodes → Keep first part only (e.g., "SW1" not "SW1A 2AA")</li>
+          <li>Phone numbers → Delete</li>
+          <li>Addresses → Remove or use area name only</li>
+        </ul>
+      `),
       checked: isItemChecked("bb"),
     },
     {
       id: "bc",
       title: "Add in from any other sources to create one data set (ie email submissions). Ensure columns map to the same questions",
-      text: `
-        If you collected responses via online survey (rows 2-50) and email (rows 51-60):
-        Ensure Column A represents the same question across all three sources
-        Match column order so Question 1 is always Column A, Question 2 is always Column B, etc.
-        Fill blank cells with "No response" if someone skipped a question
-      `,
+      text: makeSnippet(`
+        <p>If you collected responses via online survey (rows 2-50) and email (rows 51-60):</p>
+        <ul class="list-disc pl-4 flex flex-col gap-1 mt-1">
+          <li>Ensure Column A represents the same question across all three sources</li>
+          <li>Match column order so Question 1 is always Column A, Question 2 is always Column B, etc.</li>
+          <li>Fill blank cells with "No response" if someone skipped a question</li>
+        </ul>
+      `),
       checked: isItemChecked("bc"),
     },
   ];
