@@ -72,9 +72,11 @@ describe("StepOneBPage", () => {
   it("should disable continue button initially", () => {
     render(StepOneBPage);
 
-    const continueButton = screen.getByRole("button", { name: "My data is ready to upload" });
+    const continueButton = screen.getByRole("button", {
+      name: "My data is ready to upload",
+    });
     expect(continueButton).toBeDisabled();
-  })
+  });
 
   it("should enable continue button if all checkboxes are checked", async () => {
     render(StepOneBPage);
@@ -86,12 +88,14 @@ describe("StepOneBPage", () => {
       await user.click(checkbox);
     }
 
-    const continueButton = screen.getByRole("button", { name: "My data is ready to upload" });
+    const continueButton = screen.getByRole("button", {
+      name: "My data is ready to upload",
+    });
 
     await waitFor(() => {
       expect(continueButton).not.toBeDisabled();
-    })
-  })
+    });
+  });
 
   it("should match snapshot", () => {
     const { container } = render(StepOneBPage);
