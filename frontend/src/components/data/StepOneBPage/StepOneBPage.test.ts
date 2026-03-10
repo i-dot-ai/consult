@@ -24,17 +24,11 @@ describe("StepOneBPage", () => {
   it("should initially render first learning only", () => {
     render(StepOneBPage);
 
-    expect(
-      screen.getByText("Senior Policy Analyst"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Senior Policy Analyst")).toBeInTheDocument();
 
-    expect(
-      screen.queryByText("Consultation Lead"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Consultation Lead")).not.toBeInTheDocument();
 
-    expect(
-      screen.queryByText("Data Manager"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Data Manager")).not.toBeInTheDocument();
   });
 
   it("should render next learning when next button is clicked", async () => {
@@ -45,24 +39,22 @@ describe("StepOneBPage", () => {
     await user.click(nextButton);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Consultation Lead"),
-      ).toBeInTheDocument();
-    })
+      expect(screen.getByText("Consultation Lead")).toBeInTheDocument();
+    });
   });
 
   it("should render last learning when prev button is clicked on first item", async () => {
     render(StepOneBPage);
 
-    const nextButton = screen.getByRole("button", { name: "Previous Learning" });
+    const nextButton = screen.getByRole("button", {
+      name: "Previous Learning",
+    });
     const user = userEvent.setup();
     await user.click(nextButton);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Data Manager"),
-      ).toBeInTheDocument();
-    })
+      expect(screen.getByText("Data Manager")).toBeInTheDocument();
+    });
   });
 
   it("should render respective learning if its learning button is clicked", async () => {
@@ -73,10 +65,8 @@ describe("StepOneBPage", () => {
     await user.click(nextButton);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Data Manager"),
-      ).toBeInTheDocument();
-    })
+      expect(screen.getByText("Data Manager")).toBeInTheDocument();
+    });
   });
 
   it("should match snapshot", () => {
