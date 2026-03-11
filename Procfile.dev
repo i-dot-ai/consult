@@ -1,0 +1,4 @@
+web: cd backend && OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES PYTHONPATH=.. uv run gunicorn --reload --workers=1 -c gunicorn_config.py backend.wsgi
+worker: cd backend && OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES PYTHONPATH=.. uv run python manage.py rqworker default --worker-class 'rq.worker.SimpleWorker'
+worker2: cd backend && OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES PYTHONPATH=.. uv run python manage.py rqworker default --worker-class 'rq.worker.SimpleWorker'
+frontend: cd frontend && npm run dev

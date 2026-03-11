@@ -57,6 +57,7 @@ exports[`SelectedThemeCard > should render 1`] = `
               >
                 <!---->
                 <!---->
+                <!---->
                 <svg
                   class="fill-neutral-500"
                   height="1rem"
@@ -74,6 +75,7 @@ exports[`SelectedThemeCard > should render 1`] = `
                  Edit
                 
                 
+                
               </button>
               
               <!---->
@@ -86,6 +88,7 @@ exports[`SelectedThemeCard > should render 1`] = `
                 role="button"
                 tabindex="0"
               >
+                <!---->
                 <!---->
                 <!---->
                 <svg
@@ -104,6 +107,7 @@ exports[`SelectedThemeCard > should render 1`] = `
                 </svg>
                 <!---->
                  Remove
+                
                 
                 
               </button>

@@ -12,34 +12,48 @@ exports[`Accordion > should render correctly 1`] = `
     tabindex="0"
   >
     <!---->
+    <!---->
     <div
       class="flex w-full items-center justify-between gap-2"
     >
-      <h2>
-        Test Title
-      </h2>
-      <!---->
+      <div
+        class="flex gap-1 items-center"
+      >
+        <!---->
+         
+        <h2>
+          Test Title
+        </h2>
+        <!---->
+      </div>
        
       <div
-        class="transition-transform"
+        class="flex items-center gap-0.5 shrink-0 mx-1"
       >
-        <svg
-          class="fill-neutral-500"
-          height="1rem"
-          role="img"
-          viewBox="0 -960 960 960"
-          width="1rem"
-          xmlns="http://www.w3.org/2000/svg"
+        <div
+          class="transition-transform"
         >
-          <path
-            d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+          <svg
+            class="fill-neutral-500"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
             xmlns="http://www.w3.org/2000/svg"
-          />
+          >
+            <path
+              d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
           <!---->
-        </svg>
+        </div>
+         
         <!---->
       </div>
     </div>
+    
     
     
   </button>
@@ -63,34 +77,113 @@ exports[`Accordion > should render correctly 2`] = `
     tabindex="0"
   >
     <!---->
+    <!---->
     <div
       class="flex w-full items-center justify-between gap-2"
     >
-      <h2>
-        Test Title
-      </h2>
-      <!---->
+      <div
+        class="flex gap-1 items-center"
+      >
+        <!---->
+         
+        <h2>
+          Test Title
+        </h2>
+        <!---->
+      </div>
        
       <div
-        class="transition-transform"
+        class="flex items-center gap-0.5 shrink-0 mx-1"
       >
-        <svg
-          class="fill-neutral-500"
-          height="1rem"
-          role="img"
-          viewBox="0 -960 960 960"
-          width="1rem"
-          xmlns="http://www.w3.org/2000/svg"
+        <div
+          class="transition-transform"
         >
-          <path
-            d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+          <svg
+            class="fill-neutral-500"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
             xmlns="http://www.w3.org/2000/svg"
-          />
+          >
+            <path
+              d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
           <!---->
-        </svg>
+        </div>
+         
         <!---->
       </div>
     </div>
+    
+    
+    
+  </button>
+  
+  <!---->
+   
+  <!---->
+  
+</div>
+`;
+
+exports[`Accordion > should render correctly 3`] = `
+<div>
+  <!---->
+  <!---->
+  <button
+    aria-pressed="false"
+    class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-yellow-300 bg-yellow-50 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-yellow-100 svelte-1d0mdzt"
+    data-variant="warning"
+    role="button"
+    tabindex="0"
+  >
+    <!---->
+    <!---->
+    <div
+      class="flex w-full items-center justify-between gap-2"
+    >
+      <div
+        class="flex gap-1 items-center"
+      >
+        <!---->
+         
+        <h2>
+          Test Title
+        </h2>
+        <!---->
+      </div>
+       
+      <div
+        class="flex items-center gap-0.5 shrink-0 mx-1"
+      >
+        <div
+          class="transition-transform"
+        >
+          <svg
+            class="fill-yellow-500"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         
+        <!---->
+      </div>
+    </div>
+    
     
     
   </button>

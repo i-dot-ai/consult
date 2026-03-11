@@ -54,25 +54,24 @@
       const result: ShowNextResponseResult = await response.json();
 
       if (result.next_response) {
-        // Redirect to the next response
         window.location.href = getResponseDetailUrl(
           result.next_response.consultation_id,
           result.next_response.question_id,
           result.next_response.id,
         );
       } else {
-        // No more responses to review - go back to questions list
         if (!result.has_free_text) {
           errors["general"] =
             "This question does not have free text responses.";
+          sending = false;
         } else {
-          // Redirect back to the questions list
           window.location.href = `/evaluations/${consultationId}/questions/`;
         }
       }
     } catch (err) {
       console.error("Error fetching next response:", err);
       errors["general"] = "Failed to fetch next response. Please try again.";
+      sending = false;
     }
   };
 
@@ -99,12 +98,10 @@
         throw new Error(`Error: ${updateResponse.status}`);
       }
 
-      // Use the new API approach to get the next response
       await handleShowNext();
     } catch (err: unknown) {
       errors["general"] =
         err instanceof Error ? err.message : "An unknown error occurred";
-    } finally {
       sending = false;
     }
   };
@@ -118,7 +115,6 @@
     } catch (err: unknown) {
       errors["general"] =
         err instanceof Error ? err.message : "An unknown error occurred";
-    } finally {
       sending = false;
     }
   };

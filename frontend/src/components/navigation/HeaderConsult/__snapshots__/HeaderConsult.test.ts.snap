@@ -196,8 +196,9 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                       disabled="false"
                       href="/privacy"
                       role="link"
-                      tabindex="0"
+                      tabindex="-1"
                     >
+                      <!---->
                       <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
@@ -205,6 +206,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                         Privacy notice 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -277,8 +279,9 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                       disabled="false"
                       href="/support/consultations"
                       role="link"
-                      tabindex="0"
+                      tabindex="-1"
                     >
+                      <!---->
                       <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
@@ -286,6 +289,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                         Manage Consultations 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -306,8 +310,9 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                       disabled="false"
                       href="/support/users"
                       role="link"
-                      tabindex="0"
+                      tabindex="-1"
                     >
+                      <!---->
                       <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
@@ -315,6 +320,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                         Manage Users 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -335,8 +341,9 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                       disabled="false"
                       href="/support/data-pipeline"
                       role="link"
-                      tabindex="0"
+                      tabindex="-1"
                     >
+                      <!---->
                       <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
@@ -344,6 +351,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                         Data Pipeline 
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -365,9 +373,10 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                       href="/"
                       rel="noopener noreferrer"
                       role="link"
-                      tabindex="0"
+                      tabindex="-1"
                       target="_blank"
                     >
+                      <!---->
                       <!---->
                       <span
                         class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
@@ -389,6 +398,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                         </svg>
                         <!---->
                       </span>
+                      
                       
                       
                     </a>
@@ -428,7 +438,9 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                 tabindex="0"
               >
                 <!---->
+                <!---->
                 Process
+                
                 
                 
               </button>
