@@ -1,3 +1,5 @@
+import { createRawSnippet } from "svelte";
+
 export const getEnv = (): string => {
   // Try runtime environment variable first (for server-side)
   if (typeof process !== "undefined" && process.env?.PUBLIC_ENVIRONMENT) {
@@ -246,4 +248,10 @@ export function debounce<T extends (...args: unknown[]) => void>(
       callback(...args);
     }, delay);
   };
+}
+
+export function makeSnippet(str: string, wrapDiv: boolean | undefined = true) {
+  return createRawSnippet(() => ({
+    render: () => (wrapDiv ? `<div>${str}</div>` : str),
+  }));
 }
