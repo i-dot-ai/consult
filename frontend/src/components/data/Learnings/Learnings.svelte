@@ -46,7 +46,7 @@
 
   <div
     {id}
-    class={clsx(["bg-neutral-100", "p-4", "pt-6", "pb-8", "rounded-lg"])}
+    class={clsx(["bg-neutral-100", "px-4", "pt-6", "pb-8", "rounded-lg"])}
   >
     <div class="flex gap-4">
       {#if items.length === 0}
