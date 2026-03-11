@@ -8,7 +8,6 @@
   import Upload from "../../svg/material/Upload.svelte";
   import Close from "../../svg/material/Close.svelte";
 
-
   interface Props {
     id: string;
     title: string;
@@ -36,7 +35,7 @@
   function removeFile(fileIndex: number) {
     const dataTransfer = new DataTransfer();
 
-    for (let i=0; i<files.length; i++) {
+    for (let i = 0; i < files.length; i++) {
       if (i !== fileIndex) {
         dataTransfer.items.add(inputEl!.files.item(i)!);
       }
@@ -63,7 +62,7 @@
     }
 
     inputEl!.files = dataTransfer.files;
-    inputEl!.dispatchEvent(new Event('change', { bubbles: true }));
+    inputEl!.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
   function handleFileDrop(dataTransfer: DataTransfer) {
@@ -74,7 +73,7 @@
 
       // Only add first file if not multiple,
       // otherwise add all files
-      for (let i=0; i<droppedFiles.length; i++) {
+      for (let i = 0; i < droppedFiles.length; i++) {
         if (i === 0 || multiple) {
           dataTransfer.items.add(droppedFiles.item(i)!);
         }
@@ -108,7 +107,7 @@
     e.preventDefault();
     isDragging = true;
   }}
-  ondragleave={(e) => {
+  ondragleave={() => {
     isDragging = false;
   }}
   ondrop={(e) => {
@@ -123,10 +122,7 @@
 
   <span>{title}</span>
 
-  <small class={clsx([
-    "text-neutral-500",
-    "text-xs",
-  ])}>{subtitle}</small>
+  <small class={clsx(["text-neutral-500", "text-xs"])}>{subtitle}</small>
 
   <input
     bind:this={inputEl}
@@ -144,17 +140,10 @@
     }}
   />
 
-  <ul class={clsx([
-    "text-xs",
-    "text-neutral-500",
-  ])}>
+  <ul class={clsx(["text-xs", "text-neutral-500"])}>
     {#each files as file, i (i)}
       <li class="my-0.5">
-        <div class={clsx([
-          "flex",
-          "items-center",
-          "gap-1",
-        ])}>
+        <div class={clsx(["flex", "items-center", "gap-1"])}>
           <Button
             variant="ghost"
             handleClick={(e) => {
@@ -175,19 +164,24 @@
     {/each}
   </ul>
 
-  <div class={clsx([
-    "w-full",
-    "flex",
-    "items-center",
-    "justify-center",
-    "gap-1",
-    "my-2",
-  ])}>
-    <Button size="sm" handleClick={(e) => {
-      // does not propagate automatically
-      const newEvent = new MouseEvent(e.type, e);
-      (e.target as HTMLElement)!.closest("label")!.dispatchEvent(newEvent);
-    }}>
+  <div
+    class={clsx([
+      "w-full",
+      "flex",
+      "items-center",
+      "justify-center",
+      "gap-1",
+      "my-2",
+    ])}
+  >
+    <Button
+      size="sm"
+      handleClick={(e) => {
+        // does not propagate automatically
+        const newEvent = new MouseEvent(e.type, e);
+        (e.target as HTMLElement)!.closest("label")!.dispatchEvent(newEvent);
+      }}
+    >
       Choose file
     </Button>
 

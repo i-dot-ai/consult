@@ -3,13 +3,13 @@ import type { File } from "buffer";
 import FileInput from "./FileInput.svelte";
 import { TEST_DATA } from "./testData";
 
-let id = $state(TEST_DATA.id);
-let title = $state(TEST_DATA.title);
-let subtitle = $state(TEST_DATA.subtitle);
-let accept = $state(TEST_DATA.accept);
-let maxSize = $state(TEST_DATA.maxSize);
-let multiple = $state(TEST_DATA.multiple);
-let onConfirm = $state((files: File[]) => console.log(files));
+const id = $state(TEST_DATA.id);
+const title = $state(TEST_DATA.title);
+const subtitle = $state(TEST_DATA.subtitle);
+const accept = $state(TEST_DATA.accept);
+const maxSize = $state(TEST_DATA.maxSize);
+const multiple = $state(TEST_DATA.multiple);
+const onConfirm = $state((files: File[]) => console.log(files));
 
 export default {
   name: "FileInput",
