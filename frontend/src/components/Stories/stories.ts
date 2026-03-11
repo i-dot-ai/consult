@@ -22,6 +22,7 @@ import IntroCardStory from "../data/IntroCard/IntroCardStory.svelte";
 import LearningsStory from "../data/Learnings/LearningsStory.svelte";
 import IntroPageStory from "../data/IntroPage/IntroPageStory.svelte";
 import StepOneAPageStory from "../data/StepOneAPage/StepOneAPageStory.svelte";
+import StepOneBPageStory from "../data/StepOneBPage/StepOneBPageStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -70,4 +71,5 @@ export default [
   LearningsStory,
   IntroPageStory,
   StepOneAPageStory,
+  StepOneBPageStory,
 ] as Story[];

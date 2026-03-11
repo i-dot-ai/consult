@@ -1,6 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { type Snippet } from "svelte";
   import { fade } from "svelte/transition";
 
   import Accordion from "../../Accordion/Accordion.svelte";
@@ -11,7 +12,7 @@
   import LightbulbTwo from "../../svg/material/LightbulbTwo.svelte";
   import Download from "../../svg/material/Download.svelte";
   import ArrowForward from "../../svg/material/ArrowForward.svelte";
-  import { createRawSnippet, type Snippet } from "svelte";
+  import { makeSnippet } from "../../../global/utils";
 
   const SelectedValues = {
     Qualtrics: "qualtrics",
@@ -33,12 +34,6 @@
   function handleTabClick(value: SelectedValue) {
     selected = value;
     accordionRef.close();
-  }
-
-  function makeSnippet(str: string) {
-    return createRawSnippet(() => ({
-      render: () => `<div>${str}</div>`,
-    }));
   }
 </script>
 
