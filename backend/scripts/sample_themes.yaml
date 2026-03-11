@@ -1,0 +1,288 @@
+# Sample theme data for load testing
+# Used to generate realistic candidate themes, selected themes, and response annotations
+
+candidate_themes:
+  # 40 generic parent themes covering common consultation topics
+  - name: "Improved public services"
+    description: "Calls for better quality and accessibility of public services"
+  
+  - name: "Funding and budget concerns"
+    description: "Concerns about adequate funding and budget allocation"
+  
+  - name: "Infrastructure investment"
+    description: "Need for improved infrastructure and facilities"
+  
+  - name: "Environmental sustainability"
+    description: "Focus on environmental protection and sustainable practices"
+  
+  - name: "Community engagement"
+    description: "Importance of involving local communities in decision-making"
+  
+  - name: "Healthcare access"
+    description: "Improving access to healthcare services and facilities"
+  
+  - name: "Education quality"
+    description: "Enhancing educational standards and opportunities"
+  
+  - name: "Economic development"
+    description: "Supporting local economic growth and opportunities"
+  
+  - name: "Safety and security"
+    description: "Public safety, crime prevention, and security measures"
+  
+  - name: "Transparency and accountability"
+    description: "Need for clear communication and responsible governance"
+  
+  - name: "Accessibility improvements"
+    description: "Making services and facilities accessible to all"
+  
+  - name: "Digital transformation"
+    description: "Modernizing services through technology"
+  
+  - name: "Cost-effectiveness"
+    description: "Value for money and efficient use of resources"
+  
+  - name: "Social equity"
+    description: "Fair treatment and equal opportunities for all groups"
+  
+  - name: "Long-term planning"
+    description: "Forward-thinking strategies and sustainable approaches"
+  
+  - name: "Service quality"
+    description: "Maintaining high standards in service delivery"
+  
+  - name: "Local priorities"
+    description: "Focus on community-specific needs and concerns"
+  
+  - name: "Innovation and modernization"
+    description: "Adopting new approaches and best practices"
+  
+  - name: "Stakeholder collaboration"
+    description: "Working together across different groups and sectors"
+  
+  - name: "Resource allocation"
+    description: "How resources should be distributed and prioritized"
+  
+  - name: "Mental health support"
+    description: "Services and support for mental wellbeing"
+  
+  - name: "Youth services"
+    description: "Programs and facilities for young people"
+  
+  - name: "Elder care"
+    description: "Support and services for elderly residents"
+  
+  - name: "Housing and accommodation"
+    description: "Availability and quality of housing options"
+  
+  - name: "Employment opportunities"
+    description: "Job creation and workforce development"
+  
+  - name: "Cultural facilities"
+    description: "Arts, heritage, and cultural amenities"
+  
+  - name: "Recreation and leisure"
+    description: "Parks, sports facilities, and leisure activities"
+  
+  - name: "Traffic and parking"
+    description: "Road congestion, parking availability, and management"
+  
+  - name: "Waste management"
+    description: "Refuse collection, recycling, and waste disposal"
+  
+  - name: "Air quality"
+    description: "Pollution control and clean air initiatives"
+  
+  - name: "Water quality"
+    description: "Clean water supply and water management"
+  
+  - name: "Energy efficiency"
+    description: "Reducing energy consumption and carbon footprint"
+  
+  - name: "Public consultation"
+    description: "How consultations are conducted and feedback is gathered"
+  
+  - name: "Implementation concerns"
+    description: "Practical challenges in executing proposed changes"
+  
+  - name: "Timing and phasing"
+    description: "When and how changes should be rolled out"
+  
+  - name: "Impact assessment"
+    description: "Understanding potential effects of proposed changes"
+  
+  - name: "Alternative approaches"
+    description: "Different methods or solutions to consider"
+  
+  - name: "Regulatory framework"
+    description: "Rules, policies, and compliance requirements"
+  
+  - name: "Data and evidence"
+    description: "Need for more research and information"
+  
+  - name: "Maintenance and upkeep"
+    description: "Ongoing care and preservation of facilities"
+
+# Child themes for creating hierarchical relationships
+child_themes:
+  "Improved public services":
+    - name: "Digital service delivery"
+      description: "Enhancing online and digital service options"
+    - name: "Service accessibility"
+      description: "Making services easier to access for all"
+    - name: "Response times"
+      description: "Improving speed and efficiency of service delivery"
+  
+  "Infrastructure investment":
+    - name: "Transport infrastructure"
+      description: "Roads, public transport, and connectivity"
+    - name: "Digital infrastructure"
+      description: "Broadband, internet access, and connectivity"
+    - name: "Public buildings"
+      description: "Community centers, libraries, and civic facilities"
+  
+  "Healthcare access":
+    - name: "Primary care services"
+      description: "GP services and frontline healthcare"
+    - name: "Specialist services"
+      description: "Access to specialized medical care"
+    - name: "Mental health services"
+      description: "Psychological and emotional support services"
+  
+  "Education quality":
+    - name: "Teaching standards"
+      description: "Quality of instruction and educators"
+    - name: "Educational facilities"
+      description: "Quality of school buildings and resources"
+    - name: "Curriculum development"
+      description: "What students learn and how it's taught"
+  
+  "Environmental sustainability":
+    - name: "Green spaces"
+      description: "Parks, nature areas, and outdoor spaces"
+    - name: "Climate action"
+      description: "Measures to address climate change"
+    - name: "Biodiversity"
+      description: "Protecting local wildlife and ecosystems"
+  
+  "Community engagement":
+    - name: "Consultation methods"
+      description: "How community input is gathered"
+    - name: "Local involvement"
+      description: "Opportunities for residents to participate"
+    - name: "Feedback mechanisms"
+      description: "Ways to provide ongoing input and comments"
+  
+  "Digital transformation":
+    - name: "Online services"
+      description: "Digital access to public services"
+    - name: "Digital skills"
+      description: "Training and support for technology use"
+    - name: "Digital inclusion"
+      description: "Ensuring everyone can access digital services"
+  
+  "Economic development":
+    - name: "Small business support"
+      description: "Help for local entrepreneurs and businesses"
+    - name: "Job creation"
+      description: "Employment opportunities in the area"
+    - name: "Local economy"
+      description: "Supporting economic activity in the community"
+  
+  "Safety and security":
+    - name: "Crime prevention"
+      description: "Measures to reduce criminal activity"
+    - name: "Emergency services"
+      description: "Fire, police, and ambulance services"
+    - name: "Community safety"
+      description: "Neighborhood watch and safety initiatives"
+  
+  "Housing and accommodation":
+    - name: "Affordable housing"
+      description: "Housing that is within reach financially"
+    - name: "Housing quality"
+      description: "Standards and conditions of homes"
+    - name: "Social housing"
+      description: "Public housing and assistance programs"
+  
+  "Youth services":
+    - name: "Youth facilities"
+      description: "Centers and spaces for young people"
+    - name: "Youth programs"
+      description: "Activities and support for youth"
+    - name: "Education support"
+      description: "Academic and career guidance for young people"
+  
+  "Traffic and parking":
+    - name: "Traffic management"
+      description: "Controlling flow and reducing congestion"
+    - name: "Parking facilities"
+      description: "Availability and access to parking spaces"
+    - name: "Pedestrian safety"
+      description: "Safe walking routes and crossings"
+  
+  "Recreation and leisure":
+    - name: "Sports facilities"
+      description: "Playing fields, gyms, and sports centers"
+    - name: "Cultural activities"
+      description: "Arts, music, and cultural events"
+    - name: "Public parks"
+      description: "Green spaces for relaxation and recreation"
+  
+  "Waste management":
+    - name: "Recycling programs"
+      description: "Collection and processing of recyclables"
+    - name: "Waste collection"
+      description: "Regular refuse collection services"
+    - name: "Waste reduction"
+      description: "Initiatives to minimize waste generation"
+  
+  "Resource allocation":
+    - name: "Budget priorities"
+      description: "Where funding should be directed"
+    - name: "Cost-benefit analysis"
+      description: "Weighing expenses against benefits"
+    - name: "Funding sources"
+      description: "Where money comes from and alternatives"
+
+# Cross-cutting themes that span multiple topics
+cross_cutting_themes:
+  - name: "Equity and fairness"
+    description: "Fair treatment and equal access across all topics"
+  
+  - name: "Sustainability"
+    description: "Environmental and long-term sustainability considerations"
+  
+  - name: "Community wellbeing"
+    description: "Health, safety, and quality of life for residents"
+  
+  - name: "Economic impact"
+    description: "Cost, funding, and economic considerations"
+  
+  - name: "Innovation and modernization"
+    description: "Forward-thinking approaches and new solutions"
+
+# Sentiment distribution (percentages that sum to 100)
+sentiment_distribution:
+  AGREEMENT: 60
+  DISAGREEMENT: 30
+  UNCLEAR: 10
+
+# Percentage of responses marked as evidence-rich
+evidence_rich_percentage: 25
+
+# Theme assignment configuration
+theme_assignment:
+  min_themes_per_response: 1
+  max_themes_per_response: 3
+
+# Candidate theme generation configuration
+candidate_theme_counts:
+  min_per_question: 3
+  max_per_question: 7
+
+# Percentage of candidate themes that become selected themes
+selected_theme_percentage: 70
+
+# Percentage of candidate themes that will have child themes
+hierarchical_theme_percentage: 30
