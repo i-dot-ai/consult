@@ -35,10 +35,10 @@ import django
 django.setup()
 
 # Now we can import Django models
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth import get_user_model  # noqa: E402
+from django.contrib.auth.models import AbstractBaseUser  # noqa: E402
 
-from consultations.models import (
+from consultations.models import (  # noqa: E402
     CandidateTheme,
     Consultation,
     DemographicOption,
@@ -393,10 +393,10 @@ def create_consultation(
         print(f"✓ Using existing user: {user_email}")
     except UserModel.DoesNotExist:
         print(f"✗ ERROR: User '{user_email}' does not exist in the database")
-        print(f"\nPlease create the user first:")
-        print(f"  1. Via Django admin: http://localhost:8000/admin/")
-        print(f"  2. Via Django shell: python manage.py createsuperuser")
-        print(f"  3. Or use an existing user email with --user-email")
+        print("\nPlease create the user first:")
+        print("  1. Via Django admin: http://localhost:8000/admin/")
+        print("  2. Via Django shell: python manage.py createsuperuser")
+        print("  3. Or use an existing user email with --user-email")
         sys.exit(1)
 
     # Create consultation
@@ -601,7 +601,7 @@ def run_load_test(
     print("\n" + "=" * 80)
     print("CONSULT LOAD TEST")
     print("=" * 80)
-    print(f"\nConfiguration:")
+    print("\nConfiguration:")
     print(f"  Consultation: {name_of_consultation}")
     print(f"  Questions: {num_of_questions}")
     print(f"  Respondents: {num_of_respondents}")
@@ -651,11 +651,11 @@ def run_load_test(
     # Load theme data for stages 2, 3, and 4
     if stage in [Stage.CANDIDATE_THEMES, Stage.THEMES_APPROVED, Stage.ANALYSIS]:
         theme_data = load_sample_theme_data(Path(__file__).parent / "sample_themes.yaml")
-        print(f"\n✓ Loaded theme configuration from sample_themes.yaml")
+        print("\n✓ Loaded theme configuration from sample_themes.yaml")
     
     # Stage 2, 3, 4: Create candidate themes
     if stage in [Stage.CANDIDATE_THEMES, Stage.THEMES_APPROVED, Stage.ANALYSIS]:
-        print(f"\nStep 5: Creating candidate themes...")
+        print("\nStep 5: Creating candidate themes...")
         
         all_candidate_themes = {}
         total_candidates = 0
@@ -676,7 +676,7 @@ def run_load_test(
     
     # Stage 3 & 4: Create selected themes (without or with annotations)
     if stage in [Stage.THEMES_APPROVED, Stage.ANALYSIS]:
-        print(f"\nStep 6: Creating selected themes...")
+        print("\nStep 6: Creating selected themes...")
         all_selected_themes = {}
         total_selected = 0
         
@@ -693,7 +693,7 @@ def run_load_test(
         print(f"✓ Created {total_selected} selected themes")
         
         # Mark all themed questions as signed off (theme_status = CONFIRMED)
-        print(f"\nStep 6.5: Marking themed questions as signed off...")
+        print("\nStep 6.5: Marking themed questions as signed off...")
         
         updated_count = Question.objects.filter(
             id__in=[q.id for q in questions_with_themes]
@@ -703,8 +703,8 @@ def run_load_test(
     
     # Stage 4 only: Create response annotations (apply themes to responses)
     if stage == Stage.ANALYSIS:
-        print(f"\nStep 7: Creating response annotations...")
-        print(f"  (This may take several minutes for large datasets)")
+        print("\nStep 7: Creating response annotations...")
+        print("  (This may take several minutes for large datasets)")
         
         total_annotations = 0
         total_theme_assignments = 0
@@ -731,13 +731,13 @@ def run_load_test(
     print("=" * 80)
     
     # Basic counts
-    print(f"\n📊 CONSULTATION DATA:")
+    print("\n📊 CONSULTATION DATA:")
     print(f"  Name: {consultation.title}")
     print(f"  Code: {consultation.code}")
     print(f"  ID: {consultation.id}")
     print(f"  Stage: {consultation.stage}")
     
-    print(f"\n📝 QUESTIONS & RESPONSES:")
+    print("\n📝 QUESTIONS & RESPONSES:")
     print(f"  Questions: {num_of_questions} total")
     print(f"    - Open (free text): {open_count}")
     print(f"    - Hybrid (free text + MC): {hybrid_count}")
@@ -767,7 +767,7 @@ def run_load_test(
         ).exclude(parent=None).count()
         total_candidates = parent_count + child_count
         
-        print(f"\n🎯 CANDIDATE THEMES:")
+        print("\n🎯 CANDIDATE THEMES:")
         print(f"  Total: {total_candidates}")
         print(f"    - Parent themes: {parent_count}")
         print(f"    - Child themes: {child_count}")
@@ -776,7 +776,7 @@ def run_load_test(
     if stage in [Stage.THEMES_APPROVED, Stage.ANALYSIS]:
         selected_count = SelectedTheme.objects.filter(question__consultation=consultation).count()
         
-        print(f"\n✅ SELECTED THEMES:")
+        print("\n✅ SELECTED THEMES:")
         print(f"  Total: {selected_count}")
     
     # Stage 4 only: Response annotations
@@ -789,7 +789,7 @@ def run_load_test(
             response_annotation__response__question__consultation=consultation
         ).count()
         
-        print(f"\n📊 RESPONSE ANALYSIS:")
+        print("\n📊 RESPONSE ANALYSIS:")
         print(f"  Annotations: {annotations_count}")
         print(f"  Theme assignments: {theme_links_count}")
         if annotations_count > 0:
@@ -809,7 +809,7 @@ def run_load_test(
             sentiment="UNCLEAR"
         ).count()
         
-        print(f"\n💭 SENTIMENT DISTRIBUTION:")
+        print("\n💭 SENTIMENT DISTRIBUTION:")
         if annotations_count > 0:
             print(f"  Agreement: {agreement} ({agreement/annotations_count*100:.0f}%)")
             print(f"  Disagreement: {disagreement} ({disagreement/annotations_count*100:.0f}%)")
@@ -823,7 +823,7 @@ def run_load_test(
         if annotations_count > 0:
             print(f"  Evidence-rich: {evidence_rich} ({evidence_rich/annotations_count*100:.0f}%)")
     
-    print(f"\n🔗 ACCESS:")
+    print("\n🔗 ACCESS:")
     print(f"  URL: /consultations/{consultation.id}/")
     print("\n" + "=" * 80 + "\n")
 
