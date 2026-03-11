@@ -245,23 +245,6 @@ child_themes:
     - name: "Funding sources"
       description: "Where money comes from and alternatives"
 
-# Cross-cutting themes that span multiple topics
-cross_cutting_themes:
-  - name: "Equity and fairness"
-    description: "Fair treatment and equal access across all topics"
-  
-  - name: "Sustainability"
-    description: "Environmental and long-term sustainability considerations"
-  
-  - name: "Community wellbeing"
-    description: "Health, safety, and quality of life for residents"
-  
-  - name: "Economic impact"
-    description: "Cost, funding, and economic considerations"
-  
-  - name: "Innovation and modernization"
-    description: "Forward-thinking approaches and new solutions"
-
 # Sentiment distribution (percentages that sum to 100)
 sentiment_distribution:
   AGREEMENT: 60

@@ -35,10 +35,12 @@ import django
 django.setup()
 
 # Now we can import Django models
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractBaseUser
+
 from consultations.models import (
     CandidateTheme,
     Consultation,
-    CrossCuttingTheme,
     DemographicOption,
     MultiChoiceAnswer,
     Question,
@@ -48,8 +50,6 @@ from consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractBaseUser
 
 UserModel = get_user_model()
 # Type alias for mypy
@@ -140,33 +140,6 @@ def generate_theme_key(index: int) -> str:
         index //= 26
     
     return result
-
-
-def create_cross_cutting_themes(
-    consultation: Consultation, 
-    theme_data: dict[str, Any]
-) -> list[CrossCuttingTheme]:
-    """Create consultation-wide cross-cutting themes.
-    
-    Args:
-        consultation: Consultation instance
-        theme_data: Loaded theme data from YAML
-    
-    Returns:
-        List of created CrossCuttingTheme instances
-    """
-    themes_to_create = [
-        CrossCuttingTheme(
-            consultation=consultation,
-            name=theme_config["name"],
-            description=theme_config["description"],
-        )
-        for theme_config in theme_data["cross_cutting_themes"]
-    ]
-    
-    created = CrossCuttingTheme.objects.bulk_create(themes_to_create)
-    print(f"✓ Created {len(created)} cross-cutting themes")
-    return created
 
 
 def create_candidate_themes_for_question(
@@ -261,18 +234,15 @@ def create_candidate_themes_for_question(
 def create_selected_themes_for_question(
     question: Question,
     candidate_themes: list[CandidateTheme],
-    cross_cutting_themes: list[CrossCuttingTheme],
     user: AbstractBaseUser,
 ) -> list[SelectedTheme]:
     """Promote ~70% of candidate themes to selected themes.
     
     Assigns keys (A, B, C, ...).
-    Links 20% to cross-cutting themes.
     
     Args:
         question: Question instance
         candidate_themes: List of CandidateTheme instances
-        cross_cutting_themes: List of CrossCuttingTheme instances
         user: User who is "selecting" the themes
     
     Returns:
@@ -295,9 +265,6 @@ def create_selected_themes_for_question(
     selected_to_create = []
     for key_index, candidate in enumerate(themes_to_promote):
         key = generate_theme_key(key_index)
-        cross_cutting = None
-        if cross_cutting_themes and random.random() < 0.2:
-            cross_cutting = random.choice(cross_cutting_themes)
         
         selected_to_create.append(
             SelectedTheme(
@@ -305,7 +272,7 @@ def create_selected_themes_for_question(
                 name=candidate.name,
                 description=candidate.description,
                 key=key,
-                crosscuttingtheme=cross_cutting,
+                crosscuttingtheme=None,
                 version=1,
                 last_modified_by=user,
             )
@@ -709,10 +676,7 @@ def run_load_test(
     
     # Stage 3 & 4: Create selected themes (without or with annotations)
     if stage in [Stage.THEMES_APPROVED, Stage.ANALYSIS]:
-        print(f"\nStep 6: Creating cross-cutting themes...")
-        cross_cutting_themes = create_cross_cutting_themes(consultation, theme_data)
-        
-        print(f"\nStep 7: Creating selected themes...")
+        print(f"\nStep 6: Creating selected themes...")
         all_selected_themes = {}
         total_selected = 0
         
@@ -721,21 +685,15 @@ def run_load_test(
             selected = create_selected_themes_for_question(
                 question,
                 candidates,
-                cross_cutting_themes,
                 user
             )
             all_selected_themes[question.id] = selected
             total_selected += len(selected)
         
-        total_with_cc = SelectedTheme.objects.filter(
-            question__consultation=consultation,
-            crosscuttingtheme__isnull=False
-        ).count()
-        
-        print(f"✓ Created {total_selected} selected themes ({total_with_cc} with cross-cutting links)")
+        print(f"✓ Created {total_selected} selected themes")
         
         # Mark all themed questions as signed off (theme_status = CONFIRMED)
-        print(f"\nStep 7.5: Marking themed questions as signed off...")
+        print(f"\nStep 6.5: Marking themed questions as signed off...")
         
         updated_count = Question.objects.filter(
             id__in=[q.id for q in questions_with_themes]
@@ -745,7 +703,7 @@ def run_load_test(
     
     # Stage 4 only: Create response annotations (apply themes to responses)
     if stage == Stage.ANALYSIS:
-        print(f"\nStep 8: Creating response annotations...")
+        print(f"\nStep 7: Creating response annotations...")
         print(f"  (This may take several minutes for large datasets)")
         
         total_annotations = 0
@@ -816,17 +774,10 @@ def run_load_test(
     
     # Stage 3 & 4: Selected themes additions
     if stage in [Stage.THEMES_APPROVED, Stage.ANALYSIS]:
-        cc_count = CrossCuttingTheme.objects.filter(consultation=consultation).count()
         selected_count = SelectedTheme.objects.filter(question__consultation=consultation).count()
-        selected_with_cc = SelectedTheme.objects.filter(
-            question__consultation=consultation,
-            crosscuttingtheme__isnull=False
-        ).count()
         
         print(f"\n✅ SELECTED THEMES:")
         print(f"  Total: {selected_count}")
-        print(f"  With cross-cutting links: {selected_with_cc}")
-        print(f"  Cross-cutting themes: {cc_count}")
     
     # Stage 4 only: Response annotations
     if stage == Stage.ANALYSIS:
