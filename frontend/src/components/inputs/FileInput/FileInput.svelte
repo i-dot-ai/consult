@@ -1,6 +1,8 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { slide } from "svelte/transition";
+
   import Button from "../Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Upload from "../../svg/material/Upload.svelte";
@@ -28,7 +30,10 @@
 
   let files: File[] = $state([]);
   let isDragging = $state(false);
+  let errorMessage = $state("");
   let inputEl;
+
+  const FILE_SIZE_ERROR = "File size limit exceeded";
 
   function removeFile(fileIndex: number) {
     const dataTransfer = new DataTransfer();
@@ -51,7 +56,12 @@
   }
 
   function isFilesValid(files: FileList) {
-    return isFilesCorrectSize(files) ? true : false;
+    if (!isFilesCorrectSize(files)) {
+      errorMessage = FILE_SIZE_ERROR;
+      return false;
+    }
+    errorMessage = "";
+    return true;
   }
 
   function updateInputFiles(dataTransfer: DataTransfer) {
@@ -122,6 +132,10 @@
 
   <small class={clsx(["text-neutral-500", "text-xs"])}>{subtitle}</small>
 
+  {#if errorMessage}
+    <small transition:slide class="text-red-500">{errorMessage}</small>
+  {/if}
+
   <input
     bind:this={inputEl}
     {id}
@@ -136,6 +150,7 @@
       }
       files = Array.from(newFiles);
     }}
+    data-testid="file-input"
   />
 
   <ul class={clsx(["text-xs", "text-neutral-500"])}>
