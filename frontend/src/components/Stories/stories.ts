@@ -25,7 +25,6 @@ import StepOneAPageStory from "../data/StepOneAPage/StepOneAPageStory.svelte";
 import StepOneBPageStory from "../data/StepOneBPage/StepOneBPageStory.svelte";
 import FileInputStory from "../inputs/FileInput/FileInputStory.svelte";
 
-
 interface StoryProp {
   name: string;
   value: unknown;
