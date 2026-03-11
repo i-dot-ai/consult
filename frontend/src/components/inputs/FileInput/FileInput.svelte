@@ -14,6 +14,7 @@
     title: string;
     subtitle: string;
     accept: string;
+    maxSize?: number;
     multiple?: boolean;
     onConfirm: (files: File[]) => void;
   }
@@ -23,6 +24,7 @@
     title = "Drag and drop files here",
     subtitle,
     accept,
+    maxSize = Infinity,
     multiple = true,
     onConfirm = () => {},
   }: Props = $props();
@@ -43,7 +45,23 @@
     updateInputFiles(dataTransfer);
   }
 
+  function isFilesCorrectSize(files: FileList) {
+    let totalSize = 0;
+    for (const file of files) {
+      totalSize += file.size;
+    }
+    return totalSize <= maxSize;
+  }
+
+  function isFilesValid(files: FileList) {
+    return isFilesCorrectSize(files) ? true : false;
+  }
+
   function updateInputFiles(dataTransfer: DataTransfer) {
+    if (!isFilesValid(dataTransfer.files)) {
+      return;
+    }
+
     inputEl!.files = dataTransfer.files;
     inputEl!.dispatchEvent(new Event('change', { bubbles: true }));
   }
@@ -117,7 +135,13 @@
     {accept}
     class="sr-only"
     type="file"
-    onchange={(e) => files = e.target!.files}
+    onchange={(e) => {
+      const newFiles = e.target!.files;
+      if (!isFilesValid(newFiles)) {
+        return;
+      }
+      files = newFiles;
+    }}
   />
 
   <ul class={clsx([
@@ -138,6 +162,7 @@
               e.preventDefault();
               removeFile(i);
             }}
+            ariaLabel={`Remove file ${file.name}`}
           >
             <MaterialIcon color="fill-neutral-500" size="0.8rem">
               <Close />
@@ -169,7 +194,7 @@
     {#if files.length > 0}
       <Button variant="approve" handleClick={() => onConfirm(files)} size="sm">
         Confirm
-      </Button>  
+      </Button>
     {/if}
   </div>
 </label>
