@@ -7,7 +7,8 @@ import StepOneBPage from "./StepOneBPage.svelte";
 describe("StepOneBPage", () => {
   const CONTINUE_BUTTON_TEXT = "My data is ready to upload";
   const PREV_LEARNING_BUTTON_TEXT = "Previous Learning";
-  const getLearningButtonText = (learningNumber: number) => `Learning ${learningNumber}`;
+  const getLearningButtonText = (learningNumber: number) =>
+    `Learning ${learningNumber}`;
   const LEARNING_TITLES = [
     "Senior Policy Analyst",
     "Consultation Lead",
@@ -69,7 +70,9 @@ describe("StepOneBPage", () => {
   it("should render respective learning if its learning button is clicked", async () => {
     render(StepOneBPage);
 
-    const nextButton = screen.getByRole("button", { name: getLearningButtonText(3) });
+    const nextButton = screen.getByRole("button", {
+      name: getLearningButtonText(3),
+    });
     const user = userEvent.setup();
     await user.click(nextButton);
 
