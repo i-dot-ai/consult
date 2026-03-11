@@ -123,6 +123,7 @@
     : undefined}
   aria-label={ariaLabel}
   aria-controls={ariaControls}
+  aria-label={ariaLabel}
   data-testid={testId ? testId : undefined}
 >
   {#if variant === "dot"}
