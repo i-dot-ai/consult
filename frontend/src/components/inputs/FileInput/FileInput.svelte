@@ -1,6 +1,4 @@
 <script lang="ts">
-  import type { File } from "buffer";
-
   import clsx from "clsx";
 
   import Button from "../Button/Button.svelte";
@@ -132,11 +130,11 @@
     class="sr-only"
     type="file"
     onchange={(e) => {
-      const newFiles = e.target!.files;
+      const newFiles = (e.target as HTMLInputElement)!.files!;
       if (!isFilesValid(newFiles)) {
         return;
       }
-      files = newFiles;
+      files = Array.from(newFiles);
     }}
   />
 
