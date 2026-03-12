@@ -1,4 +1,4 @@
-import { buildQuery, FetchError } from "../queryClient";
+import { buildQuery, type FetchError } from "../queryClient";
 import type { SelectedTheme, SelectedThemesDeleteResponse, SelectedThemesResponse } from "../types";
 import type { SaveThemeError } from "../../components/theme-sign-off/ErrorModal/types";
 import { getApiGetSelectedThemesUrl, getApiGetSelectedThemeUrl, Suffixes } from "../routes";
@@ -6,6 +6,13 @@ import { getApiGetSelectedThemesUrl, getApiGetSelectedThemeUrl, Suffixes } from 
 // ============================================================
 // Query Keys and API URLs
 // ============================================================
+
+type errorData = {
+  last_modified_by: {
+    email?: string
+  },
+  latest_version: string,
+}
 
 export const selectedThemes = {
   list: {
@@ -173,7 +180,7 @@ export const getSelectedThemesDeleteQuery = (
       onSuccess: async () => {
         resetQueries();
       },
-      onError: async (error: FetchError) => {
+      onError: async (error: FetchError<errorData>) => {
         if (error.status === 404) {
           // SelectedTheme has already been deleted, just refetch
           resetQueries();

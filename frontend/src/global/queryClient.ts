@@ -7,7 +7,7 @@ interface BuildQueryOptions {
   method?: HttpMethod,
   headers?: HeadersInit,
   onSuccess?: (data?: unknown, variables?: MutationArgs) => Promise<void>,
-  onError?: (error: FetchError) => Promise<void>,
+  onError?: (error: any) => Promise<void>,
   getVariables?: <T>(...args: T[]) => unknown,
 }
 
@@ -27,10 +27,10 @@ interface DoFetchArgs {
   headers?: HeadersInit,
 }
 
-export class FetchError extends Error {
-  constructor(public response: Response, message?: string) {
-    super(message);
-  }
+export type FetchError<T> = {
+  status: number,
+  data: T,
+  message: string,
 }
 
 export const queryClient = new QueryClient({
@@ -57,16 +57,18 @@ const doFetch = async ({
     }
   });
   if (!response.ok) {
-    let errorData = null;
+    let errorData: unknown = null;
     try {
       errorData = await response.json();
     } catch {}
 
-    throw {
+    const fetchError = {
       status: response.status,
       data: errorData,
       message: errorMessage || "Unknown",
     }
+
+    throw fetchError;
   };
 
   try {
