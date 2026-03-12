@@ -143,10 +143,7 @@
       />
     {/each}
 
-    <div class={clsx([
-      "flex",
-      "my-auto",
-    ])}>
+    <div class={clsx(["flex", "my-auto"])}>
       <Button
         disabled={items.length === 0}
         title={NEXT_BUTTON_LABEL}
