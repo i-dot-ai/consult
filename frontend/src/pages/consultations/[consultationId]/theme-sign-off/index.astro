@@ -10,17 +10,18 @@ import type {
   ConsultationResponse,
   QuestionsResponse,
 } from "../../../../global/types";
+import { getApiConsultationUrl, getApiQuestionsUrl } from "../../../../global/routes";
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
 const consultation: ConsultationResponse = await fetchBackendApi(
   Astro,
-  `/api/consultations/${consultationId}/`,
+  getApiConsultationUrl(consultationId || ""),
 );
 
 const questionsResponse: QuestionsResponse = await fetchBackendApi(
   Astro,
-  `/api/consultations/${consultationId}/questions/`,
+  getApiQuestionsUrl(consultationId || ""),
 );
 ---
 

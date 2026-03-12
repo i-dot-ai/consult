@@ -12,12 +12,13 @@ import Section from "../../../../components/Section/Section.svelte";
 
 import SignOffEditor from "../../../../components/theme-sign-off/question/SignOffEditor.svelte";
 import SignOffComplete from "../../../../components/theme-sign-off/question/SignOffComplete.svelte";
+import { getApiGetSelectedThemesUrl, getApiQuestionUrl } from "../../../../global/routes";
 
 const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
   .params;
 const question: Question = await fetchBackendApi(
   Astro,
-  `/api/consultations/${consultationId}/questions/${questionId}`,
+  getApiQuestionUrl(consultationId || "", questionId || ""),
 );
 
 // Only fetch selected themes if the question is confirmed (for SignOffComplete)
@@ -26,7 +27,7 @@ const selectedThemes =
     ? (
         (await fetchBackendApi(
           Astro,
-          `/api/consultations/${consultationId}/questions/${questionId}/selected-themes/`,
+          getApiGetSelectedThemesUrl(consultationId || "", questionId || ""),
         )) as SelectedThemesResponse
       ).results
     : [];
