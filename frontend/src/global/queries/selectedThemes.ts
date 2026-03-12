@@ -1,7 +1,8 @@
 import { buildQuery, FetchError } from "../queryClient";
-import type { SelectedTheme, SaveThemeError, SelectedThemesDeleteResponse, SelectedThemesResponse } from "../types";
+import type { SelectedTheme, SelectedThemesDeleteResponse, SelectedThemesResponse } from "../types";
 import { apiUrl, CONSULTATIONS, QUESTIONS, SELECTED_THEMES  } from "./resources";
 export type { SelectedTheme } from "../types";
+import type { SaveThemeError } from "../../components/theme-sign-off/ErrorModal/types";
 
 // ============================================================
 // Query Keys and API URLs
