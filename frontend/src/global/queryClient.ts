@@ -33,9 +33,7 @@ export class FetchError extends Error {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60, // 5 mins
     }
   }
 });
