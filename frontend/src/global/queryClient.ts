@@ -14,7 +14,7 @@ interface BuildQueryOptions {
 interface MutationArgs {
   body?: BodyInit,
   headers?: HeadersInit,
-  params?: { string: string },
+  params?: Record<string, string>,
 }
 
 interface DoFetchArgs {
@@ -78,7 +78,7 @@ const applyParams = (url: string, params: MutationArgs["params"]): string => {
   let result = url.slice(0);
 
   Object.keys(params!).forEach(key => {
-    result = result.replaceAll(`:${key}`, params[key]);
+    result = result.replaceAll(`:${key}`, params![key]);
   })
 
   return result;
@@ -139,7 +139,7 @@ export const buildQuery = <T>(url: string, {
   )};
 
   return Object.assign(result, {
-    fetch: (...args) => {
+    fetch: (...args: unknown[]) => {
       let variables;
 
       if (getVariables){
@@ -148,16 +148,18 @@ export const buildQuery = <T>(url: string, {
 
       // TODO: Refactor to simplify
       if (isMutation) {
+        const mutationResult = result as ReturnType<typeof createMutation>;
         if (variables) {
-          result.mutate(variables);
+          mutationResult.mutate(variables);
         } else {
-          result.mutate.apply(this, args);
+          mutationResult.mutate.apply(this, args);
         }
       } else {
+        const queryResult = result as ReturnType<typeof createQuery>;
         if (variables) {
-          result.refetch(variables);
+          queryResult.refetch(variables);
         } else {
-          result.refetch.apply(this, args);
+          queryResult.refetch.apply(this, args);
         }
       }
     }
