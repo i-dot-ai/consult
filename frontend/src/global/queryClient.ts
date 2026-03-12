@@ -1,4 +1,4 @@
-import { QueryClient, createMutation, createQuery } from "@tanstack/svelte-query";
+import { QueryClient, createMutation, createQuery, type MutateOptions, type RefetchOptions } from "@tanstack/svelte-query";
 import { type HttpMethod } from "../global/types";
 
 interface BuildQueryOptions {
@@ -8,7 +8,7 @@ interface BuildQueryOptions {
   headers?: HeadersInit,
   onSuccess?: (data?: unknown, variables?: MutationArgs) => Promise<void>,
   onError?: (error: FetchError) => Promise<void>,
-  getVariables?: Function,
+  getVariables?: <T>(...args: T[]) => unknown,
 }
 
 interface MutationArgs {
@@ -16,6 +16,8 @@ interface MutationArgs {
   headers?: HeadersInit,
   params?: Record<string, string>,
 }
+type MutateArgs = [variables: unknown, options?: MutateOptions<unknown, unknown, unknown, unknown> | undefined];
+type RefetchArgs = [options?: RefetchOptions | undefined];
 
 interface DoFetchArgs {
   url: string,
@@ -152,14 +154,14 @@ export const buildQuery = <T>(url: string, {
         if (variables) {
           mutationResult.mutate(variables);
         } else {
-          mutationResult.mutate.apply(this, args);
+          mutationResult.mutate.apply(this, args as MutateArgs);
         }
       } else {
         const queryResult = result as ReturnType<typeof createQuery>;
         if (variables) {
           queryResult.refetch(variables);
         } else {
-          queryResult.refetch.apply(this, args);
+          queryResult.refetch.apply(this, args as RefetchArgs);
         }
       }
     }
