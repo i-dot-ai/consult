@@ -1,5 +1,28 @@
+import { buildQuery } from "../queryClient";
 import { getApiConsultationUrl, Routes, Suffixes } from "../routes";
 import type { Consultation } from "../types";
+
+
+export type ListConsultationsResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Consultation[];
+};
+
+export function buildConsultationsGetQuery() {
+  return buildQuery<ListConsultationsResponse>(
+    `${Routes.ApiConsultations}?scope=assigned`,
+    { key: [Suffixes.Consultations] },
+  );
+}
+
+export function buildConsultationGetQuery(consultationId: string) {
+  return buildQuery<ListConsultationsResponse>(
+    getApiConsultationUrl(consultationId),
+    { key: [Suffixes.Consultations, consultationId] },
+  );
+}
 
 // ============================================================
 // Query Keys and API URLs
@@ -21,22 +44,6 @@ export const consultations = {
 // Query Options
 // ============================================================
 
-export type ListConsultationsResponse = {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Consultation[];
-};
-
-export const listConsultationsQueryOptions = () => ({
-  queryKey: consultations.list.key(),
-  queryFn: async (): Promise<ListConsultationsResponse> => {
-    const response = await fetch(consultations.list.url());
-    if (!response.ok) throw new Error("Failed to fetch consultations");
-    return response.json();
-  },
-});
-
 export const detailConsultationQueryOptions = (consultationId: string) => ({
   queryKey: consultations.detail.key(consultationId),
   queryFn: async (): Promise<Consultation> => {
@@ -46,10 +53,6 @@ export const detailConsultationQueryOptions = (consultationId: string) => ({
     return response.json();
   },
 });
-
-// ============================================================
-// Mutation Functions
-// ============================================================
 
 export type UpdateConsultationBody = {
   stage?: "theme_sign_off" | "theme_mapping" | "analysis";

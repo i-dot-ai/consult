@@ -7,7 +7,7 @@ import {
 } from "@tanstack/svelte-query";
 import { type HttpMethod } from "../global/types";
 
-interface BuildQueryOptions {
+export interface BuildQueryOptions {
   key?: string[];
   errorMessage?: string;
   method?: HttpMethod;

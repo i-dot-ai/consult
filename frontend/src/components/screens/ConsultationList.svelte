@@ -1,39 +1,28 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
 
   import Title from "../Title.svelte";
   import Link from "../Link.svelte";
   import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
 
-  import type { Consultation } from "../../global/types.ts";
   import {
-    Routes,
     getConsultationDetailUrl,
     getConsultationEvalUrl,
     getThemeSignOffUrl,
   } from "../../global/routes.ts";
+  import { buildConsultationsGetQuery } from "../../global/queries/consultations.ts";
 
-  let consultations: Consultation[] = [];
-  let loading: boolean = true;
-
-  onMount(async () => {
-    loading = true;
-    const response = await fetch(`${Routes.ApiConsultations}?scope=assigned`);
-    const consultationData = await response.json();
-    consultations = consultationData.results;
-    loading = false;
-  });
+  const consultationsQuery = buildConsultationsGetQuery();
 </script>
 
 <section class="mt-4">
-  {#if loading}
+  {#if consultationsQuery.isPending}
     <p transition:slide>
       <LoadingMessage message="Loading consultations..." />
     </p>
   {:else}
     <ul>
-      {#each consultations as consultation (consultation.id)}
+      {#each consultationsQuery.data?.results as consultation (consultation.id)}
         <li>
           <Title level={2} text={consultation.title} />
 
