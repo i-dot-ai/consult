@@ -1,7 +1,15 @@
 import { buildQuery, type FetchError } from "../queryClient";
-import type { SelectedTheme, SelectedThemesDeleteResponse, SelectedThemesResponse } from "../types";
+import type {
+  SelectedTheme,
+  SelectedThemesDeleteResponse,
+  SelectedThemesResponse,
+} from "../types";
 import type { SaveThemeError } from "../../components/theme-sign-off/ErrorModal/types";
-import { getApiGetSelectedThemesUrl, getApiGetSelectedThemeUrl, Suffixes } from "../routes";
+import {
+  getApiGetSelectedThemesUrl,
+  getApiGetSelectedThemeUrl,
+  Suffixes,
+} from "../routes";
 
 // ============================================================
 // Query Keys and API URLs
@@ -9,15 +17,18 @@ import { getApiGetSelectedThemesUrl, getApiGetSelectedThemeUrl, Suffixes } from 
 
 type errorData = {
   last_modified_by: {
-    email?: string
-  },
-  latest_version: string,
-}
+    email?: string;
+  };
+  latest_version: string;
+};
 
 export const selectedThemes = {
   list: {
-    key: (consultationId: string, questionId: string) =>
-      [Suffixes.SelectedThemes, consultationId, questionId],
+    key: (consultationId: string, questionId: string) => [
+      Suffixes.SelectedThemes,
+      consultationId,
+      questionId,
+    ],
     url: (consultationId: string, questionId: string) =>
       getApiGetSelectedThemesUrl(consultationId, questionId),
   },
@@ -154,18 +165,17 @@ export const deleteSelectedTheme = async (
   }
 };
 
-
 export const getSelectedThemesListQuery = (
   consultationId: string,
-  questionId: string
+  questionId: string,
 ) => {
   return buildQuery<SelectedThemesResponse>(
     selectedThemes.list.url(consultationId, questionId),
     {
       key: selectedThemes.list.key(consultationId, questionId),
-    }
-  )
-}
+    },
+  );
+};
 
 export const getSelectedThemesDeleteQuery = (
   consultationId: string,
@@ -187,7 +197,7 @@ export const getSelectedThemesDeleteQuery = (
         } else if (error.status === 412) {
           showError({
             type: "remove-conflict",
-            lastModifiedBy:  error.data?.last_modified_by?.email || "",
+            lastModifiedBy: error.data?.last_modified_by?.email || "",
             latestVersion: error.data?.latest_version || "",
           });
         } else {
@@ -196,18 +206,18 @@ export const getSelectedThemesDeleteQuery = (
         }
       },
       getVariables: (themeId, version) => {
-        return ({
+        return {
           headers: {
             "Content-Type": "application/json",
             "If-Match": version,
           },
           params: {
-            "themeId": themeId,
+            themeId: themeId,
           },
-        });
-      }
-    }
+        };
+      },
+    },
   );
 
   return query;
-}
+};

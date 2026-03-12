@@ -302,4 +302,4 @@ export type HttpMethod =
   | "PATCH"
   | "DELETE"
   | "HEAD"
-  | "OPTIONS"
+  | "OPTIONS";

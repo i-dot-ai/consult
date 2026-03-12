@@ -11,7 +11,8 @@ export const consultations = {
     url: () => Routes.ApiConsultations,
   },
   detail: {
-    key: (consultationId: string) => [Suffixes.Consultations, consultationId] as const,
+    key: (consultationId: string) =>
+      [Suffixes.Consultations, consultationId] as const,
     url: (consultationId: string) => getApiConsultationUrl(consultationId),
   },
 };

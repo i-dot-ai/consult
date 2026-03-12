@@ -1,4 +1,8 @@
-import { getApiGetGeneratedThemesUrl, getApiSelectGeneratedThemeUrl, Suffixes } from "../routes";
+import {
+  getApiGetGeneratedThemesUrl,
+  getApiSelectGeneratedThemeUrl,
+  Suffixes,
+} from "../routes";
 import type { GeneratedTheme as CandidateTheme } from "../types";
 
 // ============================================================
@@ -18,7 +22,11 @@ export const candidateThemes = {
       questionId: string,
       candidateThemeId: string,
     ) =>
-      getApiSelectGeneratedThemeUrl(consultationId, questionId, candidateThemeId),
+      getApiSelectGeneratedThemeUrl(
+        consultationId,
+        questionId,
+        candidateThemeId,
+      ),
   },
 };
 

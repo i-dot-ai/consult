@@ -7,9 +7,9 @@ import type { AnswersResponse } from "../types";
 
 export const responses = {
   list: {
-    key: (consultationId: string) => [Suffixes.Responses, consultationId] as const,
-    url: (consultationId: string) =>
-      getApiAnswersUrl(consultationId),
+    key: (consultationId: string) =>
+      [Suffixes.Responses, consultationId] as const,
+    url: (consultationId: string) => getApiAnswersUrl(consultationId),
   },
   representativeResponses: {
     key: (variant: string, themeId: string) =>
