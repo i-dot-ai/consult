@@ -165,10 +165,7 @@ export const deleteSelectedTheme = async (
   }
 };
 
-export const getSelectedThemesListQuery = (
-  consultationId: string,
-  questionId: string,
-) => {
+export function buildSelectedThemesGetQuery(consultationId: string, questionId: string) {
   return buildQuery<SelectedThemesResponse>(
     selectedThemes.list.url(consultationId, questionId),
     {

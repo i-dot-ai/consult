@@ -164,7 +164,8 @@ export const buildQuery = <T>(
     );
   }
 
-  return Object.assign(result, {
+  return {
+    query: result,
     fetch: (...args: unknown[]) => {
       let variables;
 
@@ -189,5 +190,5 @@ export const buildQuery = <T>(
         }
       }
     },
-  });
+  };
 };
