@@ -359,7 +359,7 @@
 
 <section>
   <div class={clsx(["flex", "justify-between", "gap-1", "flex-wrap", "my-12"])}>
-    <Button handleClick={() => {}}>
+    <Button handleClick={() => {}} size="sm">
       <div class="rotate-180">
         <MaterialIcon color="fill-neutral-500" size="0.9rem">
           <ArrowForward />
@@ -368,7 +368,7 @@
       <span class="pl-2">Back</span>
     </Button>
 
-    <Button handleClick={() => {}} variant="approve">
+    <Button handleClick={() => {}} variant="approve" size="sm">
       <span class="pr-2">Continue</span>
       <MaterialIcon color="fill-white" size="0.9rem">
         <ArrowForward />
