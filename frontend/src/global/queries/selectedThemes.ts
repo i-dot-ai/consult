@@ -1,8 +1,7 @@
 import { buildQuery, FetchError } from "../queryClient";
 import type { SelectedTheme, SelectedThemesDeleteResponse, SelectedThemesResponse } from "../types";
-import { apiUrl, CONSULTATIONS, QUESTIONS, SELECTED_THEMES  } from "./resources";
-export type { SelectedTheme } from "../types";
 import type { SaveThemeError } from "../../components/theme-sign-off/ErrorModal/types";
+import { getApiGetSelectedThemesUrl, getApiGetSelectedThemeUrl, Suffixes } from "../routes";
 
 // ============================================================
 // Query Keys and API URLs
@@ -11,28 +10,15 @@ import type { SaveThemeError } from "../../components/theme-sign-off/ErrorModal/
 export const selectedThemes = {
   list: {
     key: (consultationId: string, questionId: string) =>
-      [SELECTED_THEMES, consultationId, questionId],
+      [Suffixes.SelectedThemes, consultationId, questionId],
     url: (consultationId: string, questionId: string) =>
-      apiUrl(
-        CONSULTATIONS,
-        consultationId,
-        QUESTIONS,
-        questionId,
-        SELECTED_THEMES,
-      ),
+      getApiGetSelectedThemesUrl(consultationId, questionId),
   },
   detail: {
     key: (selectedThemeId: string) =>
-      [SELECTED_THEMES, selectedThemeId] as const,
+      [Suffixes.SelectedThemes, selectedThemeId] as const,
     url: (consultationId: string, questionId: string, themeId: string) =>
-      apiUrl(
-        CONSULTATIONS,
-        consultationId,
-        QUESTIONS,
-        questionId,
-        SELECTED_THEMES,
-        themeId,
-      ),
+      getApiGetSelectedThemeUrl(consultationId, questionId, themeId),
   },
 };
 

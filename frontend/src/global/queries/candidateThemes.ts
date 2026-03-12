@@ -1,11 +1,5 @@
+import { getApiGetGeneratedThemesUrl, getApiSelectGeneratedThemeUrl, Suffixes } from "../routes";
 import type { GeneratedTheme as CandidateTheme } from "../types";
-export type { GeneratedTheme as CandidateTheme } from "../types";
-import {
-  apiUrl,
-  CANDIDATE_THEMES,
-  CONSULTATIONS,
-  QUESTIONS,
-} from "./resources";
 
 // ============================================================
 // Query Keys and API URLs
@@ -14,15 +8,9 @@ import {
 export const candidateThemes = {
   list: {
     key: (consultationId: string, questionId: string) =>
-      [CANDIDATE_THEMES, consultationId, questionId] as const,
+      [Suffixes.CandidateThemes, consultationId, questionId] as const,
     url: (consultationId: string, questionId: string) =>
-      apiUrl(
-        CONSULTATIONS,
-        consultationId,
-        QUESTIONS,
-        questionId,
-        CANDIDATE_THEMES,
-      ),
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
   },
   select: {
     url: (
@@ -30,15 +18,7 @@ export const candidateThemes = {
       questionId: string,
       candidateThemeId: string,
     ) =>
-      apiUrl(
-        CONSULTATIONS,
-        consultationId,
-        QUESTIONS,
-        questionId,
-        CANDIDATE_THEMES,
-        candidateThemeId,
-        "select",
-      ),
+      getApiSelectGeneratedThemeUrl(consultationId, questionId, candidateThemeId),
   },
 };
 

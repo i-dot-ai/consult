@@ -1,6 +1,5 @@
+import { getApiQuestionsUrl, getApiQuestionUrl, Suffixes } from "../routes";
 import type { Question } from "../types";
-export type { Question } from "../types";
-import { apiUrl, CONSULTATIONS, QUESTIONS } from "./resources";
 
 // ============================================================
 // Routes and Keys
@@ -8,14 +7,14 @@ import { apiUrl, CONSULTATIONS, QUESTIONS } from "./resources";
 
 export const questions = {
   list: {
-    key: (consultationId: string) => [QUESTIONS, consultationId] as const,
+    key: (consultationId: string) => [Suffixes.Questions, consultationId] as const,
     url: (consultationId: string) =>
-      apiUrl(CONSULTATIONS, consultationId, QUESTIONS),
+      getApiQuestionsUrl(consultationId)
   },
   detail: {
-    key: (questionId: string) => [QUESTIONS, questionId] as const,
+    key: (questionId: string) => [Suffixes.Questions, questionId] as const,
     url: (consultationId: string, questionId: string) =>
-      apiUrl(CONSULTATIONS, consultationId, QUESTIONS, questionId),
+      getApiQuestionUrl(consultationId, questionId),
   },
 };
 

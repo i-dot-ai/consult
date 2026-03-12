@@ -1,6 +1,5 @@
+import { getApiAnswersUrl, Suffixes } from "../routes";
 import type { AnswersResponse } from "../types";
-export type { AnswersResponse } from "../types";
-import { apiUrl, CONSULTATIONS, RESPONSES } from "./resources";
 
 // ============================================================
 // Query Keys and API URLs
@@ -8,9 +7,9 @@ import { apiUrl, CONSULTATIONS, RESPONSES } from "./resources";
 
 export const responses = {
   list: {
-    key: (consultationId: string) => [RESPONSES, consultationId] as const,
+    key: (consultationId: string) => [Suffixes.Responses, consultationId] as const,
     url: (consultationId: string) =>
-      apiUrl(CONSULTATIONS, consultationId, RESPONSES),
+      getApiAnswersUrl(consultationId),
   },
   representativeResponses: {
     key: (variant: string, themeId: string) =>
