@@ -202,7 +202,7 @@ export const getSelectedThemesDeleteQuery = (
           console.error(error);
         }
       },
-      getVariables: (themeId: string, version: string) => {
+      getVariables: (themeId, version) => {
         return ({
           headers: {
             "Content-Type": "application/json",
