@@ -14,7 +14,7 @@ interface BuildQueryOptions {
   headers?: HeadersInit;
   onSuccess?: (data?: unknown, variables?: MutationArgs) => Promise<void>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onError?: (error: any) => Promise<void>;
+  onError?: (error: FetchError<any>) => Promise<void>;
   getVariables?: <T>(...args: T[]) => unknown;
 }
 
@@ -137,9 +137,9 @@ export const buildQuery = <T>(
             onSuccess(data, variables);
           }
         },
-        onError: (data) => {
+        onError: (error: FetchError<unknown>) => {
           if (onError) {
-            onError(data);
+            onError(error);
           }
         },
       }),
