@@ -223,6 +223,21 @@ export const getApiGetSelectedThemesUrl = (
     "/",
   );
 };
+export const getApiGetSelectedThemeUrl = (
+  consultationId: string,
+  questionId: string,
+  themeId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.SelectedThemes,
+    themeId,
+    "/",
+  );
+};
 export const getApiDeleteSelectedThemeUrl = (
   consultationId: string,
   questionId: string,
