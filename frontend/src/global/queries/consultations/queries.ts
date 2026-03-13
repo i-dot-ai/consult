@@ -2,12 +2,10 @@ import { buildQuery } from "../../queryClient";
 import { consultationQueryParts, consultationsQueryParts } from "./parts";
 import type { ConsultationsGetResponse, UpdateConsultationBody } from "./types";
 
-
 export function buildConsultationsGetQuery() {
-  return buildQuery<ConsultationsGetResponse>(
-    consultationsQueryParts.url(),
-    { key: consultationsQueryParts.key()},
-  );
+  return buildQuery<ConsultationsGetResponse>(consultationsQueryParts.url(), {
+    key: consultationsQueryParts.key(),
+  });
 }
 
 export function buildConsultationGetQuery(consultationId: string) {
