@@ -109,7 +109,6 @@
         const themeId = variables.params.themeId;
 
         themesBeingSelected = themesBeingSelected.filter((themeId) => {
-          console.log(themeId, themeId);
           return themeId !== themeId;
         });
 
@@ -263,11 +262,9 @@
 
   const refreshThemes = async () => {
     await selectedThemes.fetch();
-    console.log("SelectedThemes fetched");
     await generatedThemes.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
-    console.log("GeneratedThemes fetched");
   };
 
   const confirmSignOff = async () => {
