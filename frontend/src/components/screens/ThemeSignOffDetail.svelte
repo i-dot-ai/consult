@@ -74,29 +74,18 @@
   );
   let selectedThemesCreate = $derived(
     buildSelectedThemeCreateQuery(consultationId, questionId, async () => {
-      selectedThemes.fetch();
-      $generatedThemesStore.fetch(
-        getApiGetGeneratedThemesUrl(consultationId, questionId),
-      );
+      refreshThemes();
     }),
   );
   let selectedThemesDelete = $derived(
     buildSelectedThemeDeleteQuery(
       consultationId,
       questionId,
-      async () => {
-        selectedThemes.fetch();
-        $generatedThemesStore.fetch(
-          getApiGetGeneratedThemesUrl(consultationId, questionId),
-        );
-      },
+      async () => refreshThemes(),
       async (error) => {
         if (error.status === 404) {
           // No action or error needed if status 404 (theme already deselected)
-          selectedThemes.fetch();
-          $generatedThemesStore.fetch(
-            getApiGetGeneratedThemesUrl(consultationId, questionId),
-          );
+          refreshThemes();
         } else if (error.status === 412) {
           errorData = {
             type: "remove-conflict",
@@ -275,6 +264,13 @@
         `article[data-themeid="${updatedTheme?.selectedtheme_id}"]`,
       )
       ?.scrollIntoView();
+  };
+
+  const refreshThemes = () => {
+    selectedThemes.fetch();
+    $generatedThemesStore.fetch(
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
+    );
   };
 
   const confirmSignOff = async () => {
