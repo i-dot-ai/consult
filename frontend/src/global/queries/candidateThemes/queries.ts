@@ -43,9 +43,9 @@ export function buildCandidateThemeSelectQuery(
       onSuccess: onSuccess,
       getVariables: (themeId) => ({
         params: {
-          "themeId": themeId,
-        }
-      })
+          themeId: themeId,
+        },
+      }),
     },
   );
 }
