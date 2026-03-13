@@ -1,17 +1,13 @@
 import { buildQuery, type FetchError } from "../../queryClient";
-import type {
-  SelectedTheme,
-  SelectedThemesDeleteResponse,
-} from "../../types";
+import type { SelectedTheme, SelectedThemesDeleteResponse } from "../../types";
 import type { SaveThemeError } from "../../../components/theme-sign-off/ErrorModal/types";
 import type {
   errorData,
   SelectedThemeMutationError,
   SelectedThemesGetResponse,
-  UpdateSelectedThemeBody
+  UpdateSelectedThemeBody,
 } from "./types";
 import { selectedThemeQueryParts, selectedThemesQueryParts } from "./parts";
-
 
 export const detailSelectedThemeQueryOptions = (
   consultationId: string,
@@ -76,14 +72,17 @@ export const deleteSelectedTheme = async (
   }
 };
 
-export function buildSelectedThemesGetQuery(consultationId: string, questionId: string) {
+export function buildSelectedThemesGetQuery(
+  consultationId: string,
+  questionId: string,
+) {
   return buildQuery<SelectedThemesGetResponse>(
     selectedThemesQueryParts.url(consultationId, questionId),
     {
       key: selectedThemesQueryParts.key(consultationId, questionId),
     },
   );
-};
+}
 
 export function buildSelectedThemeCreateQuery(
   consultationId: string,
@@ -98,7 +97,7 @@ export function buildSelectedThemeCreateQuery(
       onSuccess: onSuccess,
     },
   );
-};
+}
 
 export function buildSelectedThemeDeleteQuery(
   consultationId: string,
@@ -126,7 +125,7 @@ export function buildSelectedThemeDeleteQuery(
       },
     },
   );
-};
+}
 
 export const getSelectedThemesDeleteQuery = (
   consultationId: string,

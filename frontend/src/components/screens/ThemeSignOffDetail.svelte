@@ -46,7 +46,7 @@
   import {
     buildSelectedThemeCreateQuery,
     buildSelectedThemeDeleteQuery,
-    buildSelectedThemesGetQuery
+    buildSelectedThemesGetQuery,
   } from "../../global/queries/selectedThemes/queries";
 
   interface Props {
@@ -70,19 +70,15 @@
   }: Props = $props();
 
   let selectedThemes = $derived(
-    buildSelectedThemesGetQuery(consultationId, questionId)
+    buildSelectedThemesGetQuery(consultationId, questionId),
   );
   let selectedThemesCreate = $derived(
-    buildSelectedThemeCreateQuery(
-      consultationId,
-      questionId,
-      async () => {
-        selectedThemes.fetch();
-        $generatedThemesStore.fetch(
-          getApiGetGeneratedThemesUrl(consultationId, questionId),
-        );
-      },
-    )
+    buildSelectedThemeCreateQuery(consultationId, questionId, async () => {
+      selectedThemes.fetch();
+      $generatedThemesStore.fetch(
+        getApiGetGeneratedThemesUrl(consultationId, questionId),
+      );
+    }),
   );
   let selectedThemesDelete = $derived(
     buildSelectedThemeDeleteQuery(
@@ -112,7 +108,7 @@
           console.error(error.message);
         }
       },
-    )
+    ),
   );
   const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
     mockFetch: generatedThemesMock,
