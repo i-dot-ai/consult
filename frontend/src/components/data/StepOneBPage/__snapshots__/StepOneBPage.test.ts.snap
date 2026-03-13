@@ -118,7 +118,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
         class="flex justify-center items-center gap-1 flex-wrap p-2 mt-2"
       >
         <div
-          class="my-auto rotate-180"
+          class="flex my-auto rotate-180"
         >
           <!---->
           <button
@@ -212,7 +212,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
         <!---->
          
         <div
-          class="my-auto"
+          class="flex my-auto"
         >
           <!---->
           <button
