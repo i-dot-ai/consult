@@ -21,7 +21,7 @@
     "typecheck:update-baseline": "bash scripts/update-type-errors.sh"
   },
   "dependencies": {
-    "@astrojs/node": "9.3.3",
+    "@astrojs/node": "9.5.4",
     "@astrojs/svelte": "^7.1.0",
     "@astrojs/tailwind": "^5.1.2",
     "@codemirror/lang-json": "^6.0.2",
