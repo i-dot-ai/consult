@@ -10,19 +10,19 @@
     getConsultationEvalUrl,
     getThemeSignOffUrl,
   } from "../../global/routes.ts";
-  import { buildConsultationsGetQuery } from "../../global/queries/consultations.ts";
+  import { buildConsultationsGetQuery } from "../../global/queries/consultations/queries.ts";
 
-  const consultationsQuery = buildConsultationsGetQuery();
+  const consultations = buildConsultationsGetQuery();
 </script>
 
 <section class="mt-4">
-  {#if consultationsQuery.isPending}
+  {#if consultations.query.isPending}
     <p transition:slide>
       <LoadingMessage message="Loading consultations..." />
     </p>
   {:else}
     <ul>
-      {#each consultationsQuery.data?.results as consultation (consultation.id)}
+      {#each consultations.query.data?.results as consultation (consultation.id)}
         <li>
           <Title level={2} text={consultation.title} />
 
