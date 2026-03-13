@@ -7,7 +7,6 @@
   import { createFetchStore, type MockFetch } from "../../global/stores";
   import {
     getApiConfirmSignOffUrl,
-    getApiDeleteSelectedThemeUrl,
     getApiGetGeneratedThemesUrl,
     getApiGetSelectedThemesUrl,
     getApiQuestionUrl,
@@ -17,7 +16,6 @@
   } from "../../global/routes";
 
   import {
-    type SelectedThemesDeleteResponse,
     type GeneratedThemesResponse,
     type Question,
     type GeneratedTheme,
@@ -45,7 +43,11 @@
   import ErrorModal, {
     type ErrorType,
   } from "../theme-sign-off/ErrorModal/ErrorModal.svelte";
-  import { buildSelectedThemeCreateQuery, buildSelectedThemesGetQuery } from "../../global/queries/selectedThemes/queries";
+  import {
+    buildSelectedThemeCreateQuery,
+    buildSelectedThemeDeleteQuery,
+    buildSelectedThemesGetQuery
+  } from "../../global/queries/selectedThemes/queries";
 
   interface Props {
     consultationId: string;
@@ -74,11 +76,44 @@
     buildSelectedThemeCreateQuery(
       consultationId,
       questionId,
-      async () => selectedThemes.fetch(),
+      async () => {
+        selectedThemes.fetch();
+        $generatedThemesStore.fetch(
+          getApiGetGeneratedThemesUrl(consultationId, questionId),
+        );
+      },
     )
   );
-  const selectedThemesDeleteStore =
-    createFetchStore<SelectedThemesDeleteResponse>();
+  let selectedThemesDelete = $derived(
+    buildSelectedThemeDeleteQuery(
+      consultationId,
+      questionId,
+      async () => {
+        selectedThemes.fetch();
+        $generatedThemesStore.fetch(
+          getApiGetGeneratedThemesUrl(consultationId, questionId),
+        );
+      },
+      async (error) => {
+        if (error.status === 404) {
+          // No action or error needed if status 404 (theme already deselected)
+          selectedThemes.fetch();
+          $generatedThemesStore.fetch(
+            getApiGetGeneratedThemesUrl(consultationId, questionId),
+          );
+        } else if (error.status === 412) {
+          errorData = {
+            type: "remove-conflict",
+            lastModifiedBy: error.data?.last_modified_by?.email || "",
+            latestVersion: error.data?.latest_version || "",
+          };
+        } else {
+          errorData = { type: "unexpected" };
+          console.error(error.message);
+        }
+      },
+    )
+  );
   const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
     mockFetch: generatedThemesMock,
   });
@@ -160,37 +195,7 @@
       return;
     }
 
-    await $selectedThemesDeleteStore.fetch(
-      getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
-      "DELETE",
-      undefined,
-      {
-        "Content-Type": "application/json",
-        "If-Match": selectedTheme.version,
-      },
-    );
-
-    if (
-      !$selectedThemesDeleteStore.error ||
-      $selectedThemesDeleteStore.status === 404
-    ) {
-      // No action or error needed if status 404 (theme already deselected)
-      selectedThemes.fetch({ foo: "bar" });
-      $generatedThemesStore.fetch(
-        getApiGetGeneratedThemesUrl(consultationId, questionId),
-      );
-    } else if ($selectedThemesDeleteStore.status === 412) {
-      const respData = $selectedThemesDeleteStore.data;
-
-      errorData = {
-        type: "remove-conflict",
-        lastModifiedBy: respData?.last_modified_by?.email || "",
-        latestVersion: respData?.latest_version || "",
-      };
-    } else {
-      errorData = { type: "unexpected" };
-      console.error($selectedThemesDeleteStore.error);
-    }
+    selectedThemesDelete.fetch(themeId, selectedTheme.version);
   };
 
   const updateTheme = async (
@@ -324,6 +329,11 @@
     ),
   );
 </script>
+
+{#if errorData}
+  <p>TRUE</p>
+  <ErrorModal {...errorData} onClose={errorModalOnClose} />
+{/if}
 
 <TitleRow
   level={1}

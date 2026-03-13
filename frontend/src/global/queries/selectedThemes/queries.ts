@@ -90,12 +90,40 @@ export function buildSelectedThemeCreateQuery(
   questionId: string,
   onSuccess: () => Promise<void>,
 ) {
-  return buildQuery(
+  return buildQuery<SelectedThemesGetResponse>(
     selectedThemesQueryParts.url(consultationId, questionId),
     {
       key: selectedThemesQueryParts.key(consultationId, questionId),
       method: "POST",
       onSuccess: onSuccess,
+    },
+  );
+};
+
+export function buildSelectedThemeDeleteQuery(
+  consultationId: string,
+  questionId: string,
+  onSuccess: () => Promise<void>,
+  onError: (error: FetchError<errorData>) => Promise<void>,
+) {
+  return buildQuery<SelectedThemesDeleteResponse>(
+    selectedThemeQueryParts.url(consultationId, questionId, ":themeId"),
+    {
+      key: selectedThemesQueryParts.key(consultationId, questionId),
+      method: "DELETE",
+      onSuccess: onSuccess,
+      onError: onError,
+      getVariables: (themeId, version) => {
+        return {
+          headers: {
+            "Content-Type": "application/json",
+            "If-Match": version,
+          },
+          params: {
+            themeId: themeId,
+          },
+        };
+      },
     },
   );
 };
