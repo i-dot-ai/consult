@@ -383,8 +383,8 @@ def create_consultation(
     stage_mapping = {
         Stage.NO_THEMES: Consultation.Stage.THEME_SIGN_OFF,
         Stage.CANDIDATE_THEMES: Consultation.Stage.THEME_SIGN_OFF,
-        Stage.THEMES_APPROVED: Consultation.Stage.THEME_SIGN_OFF,
-        Stage.ANALYSIS: Consultation.Stage.THEME_MAPPING,
+        Stage.THEMES_APPROVED: Consultation.Stage.THEME_MAPPING,  # After "Confirm and Proceed" clicked
+        Stage.ANALYSIS: Consultation.Stage.ANALYSIS,  # After response annotations imported
     }
 
     # Get user - must already exist
