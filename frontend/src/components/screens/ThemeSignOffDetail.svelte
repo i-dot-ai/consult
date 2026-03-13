@@ -48,25 +48,20 @@
     buildSelectedThemeDeleteQuery,
     buildSelectedThemesGetQuery,
   } from "../../global/queries/selectedThemes/queries";
+    import { buildCandidateThemeSelectQuery, buildCandidateThemesGetQuery } from "../../global/queries/candidateThemes/queries";
 
   interface Props {
     consultationId: string;
     questionId: string;
     questionDataMock?: () => unknown;
-    generatedThemesMock?: () => unknown;
-    selectedThemesMock?: () => unknown;
-    createThemeMock?: () => unknown;
     answersMock?: MockFetch;
-    selectGeneratedThemeMock?: () => unknown;
   }
 
   let {
     consultationId = "",
     questionId = "",
     questionDataMock,
-    generatedThemesMock,
     answersMock,
-    selectGeneratedThemeMock,
   }: Props = $props();
 
   let selectedThemes = $derived(
@@ -99,13 +94,40 @@
       },
     ),
   );
-  const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
-    mockFetch: generatedThemesMock,
-  });
-  const generatedThemesSelectStore = createFetchStore({
-    mockFetch: selectGeneratedThemeMock,
-    debounceDelay: 0,
-  });
+  let generatedThemes = $derived(
+    buildCandidateThemesGetQuery(consultationId, questionId),
+  );
+  let generatedThemesSelect = $derived(
+    buildCandidateThemeSelectQuery(
+      consultationId,
+      questionId,
+      ":themeId",
+      async (_, variables) => {
+        await refreshThemes();
+
+        const themeId = variables.params.themeId;
+
+        themesBeingSelected = themesBeingSelected.filter(
+          (themeId) => {
+            console.log(themeId, themeId);
+            return themeId !== themeId;
+          }
+        );
+
+        // get selectedtheme_id created after back end select action is complete
+        const updatedTheme = flattenGeneratedThemes(
+          generatedThemes.query.data?.results || [],
+        ).find((generatedTheme) => generatedTheme.id === themeId);
+
+        // scroll up to equivalent in selected themes list
+        document
+          .querySelector(
+            `article[data-themeid="${updatedTheme?.selectedtheme_id}"]`,
+          )
+          ?.scrollIntoView();
+      }
+    ),
+  );
   const questionStore = createFetchStore<Question>({
     mockFetch: questionDataMock,
   });
@@ -132,7 +154,7 @@
   };
 
   let flatGeneratedThemes = $derived(
-    flattenGeneratedThemes($generatedThemesStore.data?.results),
+    flattenGeneratedThemes(generatedThemes.query.data?.results),
   );
 
   let expandedThemes: string[] = $derived(
@@ -147,14 +169,14 @@
     selectedThemes.fetch(
       getApiGetSelectedThemesUrl(consultationId, questionId),
     );
-    $generatedThemesStore.fetch(
+    generatedThemes.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
     errorData = null;
   };
 
   onMount(() => {
-    $generatedThemesStore.fetch(
+    generatedThemes.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
     $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
@@ -237,40 +259,18 @@
   const handleSelectGeneratedTheme = async (newTheme: GeneratedTheme) => {
     themesBeingSelected = [...themesBeingSelected, newTheme.id];
 
-    await $generatedThemesSelectStore.fetch(
-      getApiSelectGeneratedThemeUrl(consultationId, questionId, newTheme.id),
-      "POST",
-    );
-
-    await selectedThemes.fetch(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
-    await $generatedThemesStore.fetch(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
-
-    themesBeingSelected = themesBeingSelected.filter(
-      (themeId) => themeId !== newTheme.id,
-    );
-
-    // get selectedtheme_id created after back end select action is complete
-    const updatedTheme = flattenGeneratedThemes(
-      $generatedThemesStore.data?.results || [],
-    ).find((generatedTheme) => generatedTheme.id === newTheme.id);
-
-    // scroll up to equivalent in selected themes list
-    document
-      .querySelector(
-        `article[data-themeid="${updatedTheme?.selectedtheme_id}"]`,
-      )
-      ?.scrollIntoView();
+    generatedThemesSelect.fetch({
+      params: { themeId: newTheme.id }
+    });
   };
 
-  const refreshThemes = () => {
-    selectedThemes.fetch();
-    $generatedThemesStore.fetch(
+  const refreshThemes = async () => {
+    await selectedThemes.fetch();
+    console.log("SelectedThemes fetched")
+    await generatedThemes.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
+    console.log("GeneratedThemes fetched")
   };
 
   const confirmSignOff = async () => {
@@ -316,7 +316,7 @@
   };
 
   let hasNestedThemes = $derived(
-    $generatedThemesStore.data?.results?.some((theme: GeneratedTheme) =>
+    generatedThemes.query.data?.results?.some((theme: GeneratedTheme) =>
       Boolean(theme.children && theme.children.length > 0),
     ),
   );
@@ -566,7 +566,7 @@
 
               <Tag variant="success">
                 {flattenGeneratedThemes(
-                  $generatedThemesStore.data?.results || [],
+                  generatedThemes.query.data?.results || [],
                 ).length} available
               </Tag>
             </div>
@@ -614,7 +614,7 @@
         </Panel>
       </div>
 
-      {#each $generatedThemesStore.data?.results as theme (theme.id)}
+      {#each generatedThemes.query.data?.results as theme (theme.id)}
         <GeneratedThemeCard
           {consultationId}
           {questionId}
