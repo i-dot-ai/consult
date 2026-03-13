@@ -258,9 +258,7 @@
   const handleSelectGeneratedTheme = async (newTheme: GeneratedTheme) => {
     themesBeingSelected = [...themesBeingSelected, newTheme.id];
 
-    generatedThemesSelect.fetch({
-      params: { themeId: newTheme.id },
-    });
+    generatedThemesSelect.fetch(newTheme.id);
   };
 
   const refreshThemes = async () => {

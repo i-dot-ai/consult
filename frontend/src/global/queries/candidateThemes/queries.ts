@@ -41,6 +41,11 @@ export function buildCandidateThemeSelectQuery(
       ),
       method: "POST",
       onSuccess: onSuccess,
+      getVariables: (themeId) => ({
+        params: {
+          "themeId": themeId,
+        }
+      })
     },
   );
 }
