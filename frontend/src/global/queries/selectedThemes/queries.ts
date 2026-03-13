@@ -1,64 +1,16 @@
-import { buildQuery, type FetchError } from "../queryClient";
+import { buildQuery, type FetchError } from "../../queryClient";
 import type {
   SelectedTheme,
   SelectedThemesDeleteResponse,
-  SelectedThemesResponse,
-} from "../types";
-import type { SaveThemeError } from "../../components/theme-sign-off/ErrorModal/types";
-import {
-  getApiGetSelectedThemesUrl,
-  getApiGetSelectedThemeUrl,
-  Suffixes,
-} from "../routes";
-
-
-export type CreateSelectedThemeBody = {
-  name: string;
-  description: string;
-};
-
-export type UpdateSelectedThemeBody = {
-  name: string;
-  description: string;
-};
-
-export type SelectedThemeMutationError = {
-  status: number;
-  last_modified_by?: { email: string };
-  latest_version?: string;
-};
-
-export type SelectedThemesGetResponse = {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: SelectedTheme[];
-};
-
-export type errorData = {
-  last_modified_by: {
-    email?: string;
-  };
-  latest_version: string;
-};
-
-
-export const selectedThemesQueryDetails = {
-  key: (consultationId: string, questionId: string) => [
-    Suffixes.SelectedThemes,
-    consultationId,
-    questionId,
-  ],
-  url: (consultationId: string, questionId: string) =>
-    getApiGetSelectedThemesUrl(consultationId, questionId),
-}
-
-export const selectedThemeQueryDetails = {
-  key: (selectedThemeId: string) =>
-      [Suffixes.SelectedThemes, selectedThemeId] as const,
-  url: (consultationId: string, questionId: string, themeId: string) =>
-    getApiGetSelectedThemeUrl(consultationId, questionId, themeId),
-}
+} from "../../types";
+import type { SaveThemeError } from "../../../components/theme-sign-off/ErrorModal/types";
+import type {
+  errorData,
+  SelectedThemeMutationError,
+  SelectedThemesGetResponse,
+  UpdateSelectedThemeBody
+} from "./types";
+import { selectedThemeQueryParts, selectedThemesQueryParts } from "./parts";
 
 
 export const detailSelectedThemeQueryOptions = (
@@ -66,10 +18,10 @@ export const detailSelectedThemeQueryOptions = (
   questionId: string,
   selectedThemeId: string,
 ) => ({
-  queryKey: selectedThemeQueryDetails.key(selectedThemeId),
+  queryKey: selectedThemeQueryParts.key(selectedThemeId),
   queryFn: async (): Promise<SelectedTheme> => {
     const response = await fetch(
-      selectedThemeQueryDetails.url(consultationId, questionId, selectedThemeId),
+      selectedThemeQueryParts.url(consultationId, questionId, selectedThemeId),
     );
     if (!response.ok)
       throw new Error(`Failed to fetch selected theme: ${selectedThemeId}`);
@@ -85,7 +37,7 @@ export const updateSelectedTheme = async (
   body: UpdateSelectedThemeBody,
 ): Promise<SelectedTheme> => {
   const response = await fetch(
-    selectedThemeQueryDetails.url(consultationId, questionId, themeId),
+    selectedThemeQueryParts.url(consultationId, questionId, themeId),
     {
       method: "PATCH",
       headers: {
@@ -109,7 +61,7 @@ export const deleteSelectedTheme = async (
   version: number,
 ): Promise<void> => {
   const response = await fetch(
-    selectedThemeQueryDetails.url(consultationId, questionId, themeId),
+    selectedThemeQueryParts.url(consultationId, questionId, themeId),
     {
       method: "DELETE",
       headers: {
@@ -126,9 +78,9 @@ export const deleteSelectedTheme = async (
 
 export function buildSelectedThemesGetQuery(consultationId: string, questionId: string) {
   return buildQuery<SelectedThemesGetResponse>(
-    selectedThemesQueryDetails.url(consultationId, questionId),
+    selectedThemesQueryParts.url(consultationId, questionId),
     {
-      key: selectedThemesQueryDetails.key(consultationId, questionId),
+      key: selectedThemesQueryParts.key(consultationId, questionId),
     },
   );
 };
@@ -139,9 +91,9 @@ export function buildSelectedThemeCreateQuery(
   onSuccess: () => Promise<void>,
 ) {
   return buildQuery(
-    selectedThemesQueryDetails.url(consultationId, questionId),
+    selectedThemesQueryParts.url(consultationId, questionId),
     {
-      key: selectedThemesQueryDetails.key(consultationId, questionId),
+      key: selectedThemesQueryParts.key(consultationId, questionId),
       method: "POST",
       onSuccess: onSuccess,
     },
@@ -155,7 +107,7 @@ export const getSelectedThemesDeleteQuery = (
   showError: (args: SaveThemeError) => void,
 ) => {
   const query = buildQuery<SelectedThemesDeleteResponse>(
-    selectedThemeQueryDetails.url(consultationId, questionId, ":themeId"),
+    selectedThemeQueryParts.url(consultationId, questionId, ":themeId"),
     {
       method: "DELETE",
       onSuccess: async () => {

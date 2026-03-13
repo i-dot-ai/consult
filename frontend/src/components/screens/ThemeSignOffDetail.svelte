@@ -7,7 +7,6 @@
   import { createFetchStore, type MockFetch } from "../../global/stores";
   import {
     getApiConfirmSignOffUrl,
-    getApiCreateSelectedThemeUrl,
     getApiDeleteSelectedThemeUrl,
     getApiGetGeneratedThemesUrl,
     getApiGetSelectedThemesUrl,
@@ -46,7 +45,7 @@
   import ErrorModal, {
     type ErrorType,
   } from "../theme-sign-off/ErrorModal/ErrorModal.svelte";
-  import { buildSelectedThemeCreateQuery, buildSelectedThemesGetQuery } from "../../global/queries/selectedThemes";
+  import { buildSelectedThemeCreateQuery, buildSelectedThemesGetQuery } from "../../global/queries/selectedThemes/queries";
 
   interface Props {
     consultationId: string;
@@ -64,7 +63,6 @@
     questionId = "",
     questionDataMock,
     generatedThemesMock,
-    createThemeMock,
     answersMock,
     selectGeneratedThemeMock,
   }: Props = $props();
