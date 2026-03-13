@@ -1,6 +1,9 @@
 import { buildQuery } from "../../queryClient";
 import type { GeneratedTheme } from "../../types";
-import { candidateThemesGetQueryParts, candidateThemesSelectQueryParts } from "./parts";
+import {
+  candidateThemesGetQueryParts,
+  candidateThemesSelectQueryParts,
+} from "./parts";
 import type { CandidateThemesGetResponse } from "./types";
 
 export function buildCandidateThemesGetQuery(
@@ -19,12 +22,23 @@ export function buildCandidateThemeSelectQuery(
   consultationId: string,
   questionId: string,
   candidateThemeId: string,
-  onSuccess: (data: unknown, variables: { params: { themeId: string } }) => Promise<void>,
+  onSuccess: (
+    data: unknown,
+    variables: { params: { themeId: string } },
+  ) => Promise<void>,
 ) {
   return buildQuery<GeneratedTheme>(
-    candidateThemesSelectQueryParts.url(consultationId, questionId, candidateThemeId),
+    candidateThemesSelectQueryParts.url(
+      consultationId,
+      questionId,
+      candidateThemeId,
+    ),
     {
-      key: candidateThemesSelectQueryParts.key(consultationId, questionId, candidateThemeId),
+      key: candidateThemesSelectQueryParts.key(
+        consultationId,
+        questionId,
+        candidateThemeId,
+      ),
       method: "POST",
       onSuccess: onSuccess,
     },

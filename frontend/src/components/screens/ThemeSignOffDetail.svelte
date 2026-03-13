@@ -10,13 +10,11 @@
     getApiGetGeneratedThemesUrl,
     getApiGetSelectedThemesUrl,
     getApiQuestionUrl,
-    getApiSelectGeneratedThemeUrl,
     getApiUpdateSelectedThemeUrl,
     getThemeSignOffUrl,
   } from "../../global/routes";
 
   import {
-    type GeneratedThemesResponse,
     type Question,
     type GeneratedTheme,
     type SelectedTheme,
@@ -48,7 +46,10 @@
     buildSelectedThemeDeleteQuery,
     buildSelectedThemesGetQuery,
   } from "../../global/queries/selectedThemes/queries";
-    import { buildCandidateThemeSelectQuery, buildCandidateThemesGetQuery } from "../../global/queries/candidateThemes/queries";
+  import {
+    buildCandidateThemeSelectQuery,
+    buildCandidateThemesGetQuery,
+  } from "../../global/queries/candidateThemes/queries";
 
   interface Props {
     consultationId: string;
@@ -107,12 +108,10 @@
 
         const themeId = variables.params.themeId;
 
-        themesBeingSelected = themesBeingSelected.filter(
-          (themeId) => {
-            console.log(themeId, themeId);
-            return themeId !== themeId;
-          }
-        );
+        themesBeingSelected = themesBeingSelected.filter((themeId) => {
+          console.log(themeId, themeId);
+          return themeId !== themeId;
+        });
 
         // get selectedtheme_id created after back end select action is complete
         const updatedTheme = flattenGeneratedThemes(
@@ -125,7 +124,7 @@
             `article[data-themeid="${updatedTheme?.selectedtheme_id}"]`,
           )
           ?.scrollIntoView();
-      }
+      },
     ),
   );
   const questionStore = createFetchStore<Question>({
@@ -260,17 +259,17 @@
     themesBeingSelected = [...themesBeingSelected, newTheme.id];
 
     generatedThemesSelect.fetch({
-      params: { themeId: newTheme.id }
+      params: { themeId: newTheme.id },
     });
   };
 
   const refreshThemes = async () => {
     await selectedThemes.fetch();
-    console.log("SelectedThemes fetched")
+    console.log("SelectedThemes fetched");
     await generatedThemes.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
-    console.log("GeneratedThemes fetched")
+    console.log("GeneratedThemes fetched");
   };
 
   const confirmSignOff = async () => {
