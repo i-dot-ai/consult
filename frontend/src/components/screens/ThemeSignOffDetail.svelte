@@ -46,7 +46,7 @@
   import ErrorModal, {
     type ErrorType,
   } from "../theme-sign-off/ErrorModal/ErrorModal.svelte";
-  import { buildSelectedThemesGetQuery } from "../../global/queries/selectedThemes";
+  import { buildSelectedThemeCreateQuery, buildSelectedThemesGetQuery } from "../../global/queries/selectedThemes";
 
   interface Props {
     consultationId: string;
@@ -72,10 +72,13 @@
   let selectedThemes = $derived(
     buildSelectedThemesGetQuery(consultationId, questionId)
   );
-
-  const selectedThemesCreateStore = createFetchStore({
-    mockFetch: createThemeMock,
-  });
+  let selectedThemesCreate = $derived(
+    buildSelectedThemeCreateQuery(
+      consultationId,
+      questionId,
+      async () => selectedThemes.fetch(),
+    )
+  );
   const selectedThemesDeleteStore =
     createFetchStore<SelectedThemesDeleteResponse>();
   const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
@@ -141,16 +144,12 @@
   });
 
   const createTheme = async (title: string, description: string) => {
-    await $selectedThemesCreateStore.fetch(
-      getApiCreateSelectedThemeUrl(consultationId, questionId),
-      "POST",
-      {
+    selectedThemesCreate.fetch({
+      body: {
         name: title,
         description: description,
       },
-    );
-
-    selectedThemes.fetch();
+    });
   };
 
   const removeTheme = async (themeId: string) => {

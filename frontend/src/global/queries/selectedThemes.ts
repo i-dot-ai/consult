@@ -11,100 +11,10 @@ import {
   Suffixes,
 } from "../routes";
 
-// ============================================================
-// Query Keys and API URLs
-// ============================================================
-
-type errorData = {
-  last_modified_by: {
-    email?: string;
-  };
-  latest_version: string;
-};
-
-export const selectedThemes = {
-  list: {
-    key: (consultationId: string, questionId: string) => [
-      Suffixes.SelectedThemes,
-      consultationId,
-      questionId,
-    ],
-    url: (consultationId: string, questionId: string) =>
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-  },
-  detail: {
-    key: (selectedThemeId: string) =>
-      [Suffixes.SelectedThemes, selectedThemeId] as const,
-    url: (consultationId: string, questionId: string, themeId: string) =>
-      getApiGetSelectedThemeUrl(consultationId, questionId, themeId),
-  },
-};
-
-// ============================================================
-// Query Options
-// ============================================================
-
-export type ListSelectedThemesResponse = {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: SelectedTheme[];
-};
-
-export const listSelectedThemesQueryOptions = (
-  consultationId: string,
-  questionId: string,
-) => ({
-  queryKey: selectedThemes.list.key(consultationId, questionId),
-  queryFn: async (): Promise<ListSelectedThemesResponse> => {
-    const response = await fetch(
-      selectedThemes.list.url(consultationId, questionId),
-    );
-    if (!response.ok) throw new Error("Failed to fetch selected themes");
-    return response.json();
-  },
-});
-
-export const detailSelectedThemeQueryOptions = (
-  consultationId: string,
-  questionId: string,
-  selectedThemeId: string,
-) => ({
-  queryKey: selectedThemes.detail.key(selectedThemeId),
-  queryFn: async (): Promise<SelectedTheme> => {
-    const response = await fetch(
-      selectedThemes.detail.url(consultationId, questionId, selectedThemeId),
-    );
-    if (!response.ok)
-      throw new Error(`Failed to fetch selected theme: ${selectedThemeId}`);
-    return response.json();
-  },
-});
-
-// ============================================================
-// Mutation Functions
-// ============================================================
 
 export type CreateSelectedThemeBody = {
   name: string;
   description: string;
-};
-
-export const createSelectedTheme = async (
-  consultationId: string,
-  questionId: string,
-  body: CreateSelectedThemeBody,
-): Promise<SelectedTheme> => {
-  const response = await fetch(
-    selectedThemes.list.url(consultationId, questionId),
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    },
-  );
-  if (!response.ok) throw new Error("Failed to create theme");
-  return response.json();
 };
 
 export type UpdateSelectedThemeBody = {
@@ -118,6 +28,55 @@ export type SelectedThemeMutationError = {
   latest_version?: string;
 };
 
+export type SelectedThemesGetResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: SelectedTheme[];
+};
+
+export type errorData = {
+  last_modified_by: {
+    email?: string;
+  };
+  latest_version: string;
+};
+
+
+export const selectedThemesQueryDetails = {
+  key: (consultationId: string, questionId: string) => [
+    Suffixes.SelectedThemes,
+    consultationId,
+    questionId,
+  ],
+  url: (consultationId: string, questionId: string) =>
+    getApiGetSelectedThemesUrl(consultationId, questionId),
+}
+
+export const selectedThemeQueryDetails = {
+  key: (selectedThemeId: string) =>
+      [Suffixes.SelectedThemes, selectedThemeId] as const,
+  url: (consultationId: string, questionId: string, themeId: string) =>
+    getApiGetSelectedThemeUrl(consultationId, questionId, themeId),
+}
+
+
+export const detailSelectedThemeQueryOptions = (
+  consultationId: string,
+  questionId: string,
+  selectedThemeId: string,
+) => ({
+  queryKey: selectedThemeQueryDetails.key(selectedThemeId),
+  queryFn: async (): Promise<SelectedTheme> => {
+    const response = await fetch(
+      selectedThemeQueryDetails.url(consultationId, questionId, selectedThemeId),
+    );
+    if (!response.ok)
+      throw new Error(`Failed to fetch selected theme: ${selectedThemeId}`);
+    return response.json();
+  },
+});
+
 export const updateSelectedTheme = async (
   consultationId: string,
   questionId: string,
@@ -126,7 +85,7 @@ export const updateSelectedTheme = async (
   body: UpdateSelectedThemeBody,
 ): Promise<SelectedTheme> => {
   const response = await fetch(
-    selectedThemes.detail.url(consultationId, questionId, themeId),
+    selectedThemeQueryDetails.url(consultationId, questionId, themeId),
     {
       method: "PATCH",
       headers: {
@@ -150,7 +109,7 @@ export const deleteSelectedTheme = async (
   version: number,
 ): Promise<void> => {
   const response = await fetch(
-    selectedThemes.detail.url(consultationId, questionId, themeId),
+    selectedThemeQueryDetails.url(consultationId, questionId, themeId),
     {
       method: "DELETE",
       headers: {
@@ -166,10 +125,25 @@ export const deleteSelectedTheme = async (
 };
 
 export function buildSelectedThemesGetQuery(consultationId: string, questionId: string) {
-  return buildQuery<SelectedThemesResponse>(
-    selectedThemes.list.url(consultationId, questionId),
+  return buildQuery<SelectedThemesGetResponse>(
+    selectedThemesQueryDetails.url(consultationId, questionId),
     {
-      key: selectedThemes.list.key(consultationId, questionId),
+      key: selectedThemesQueryDetails.key(consultationId, questionId),
+    },
+  );
+};
+
+export function buildSelectedThemeCreateQuery(
+  consultationId: string,
+  questionId: string,
+  onSuccess: () => Promise<void>,
+) {
+  return buildQuery(
+    selectedThemesQueryDetails.url(consultationId, questionId),
+    {
+      key: selectedThemesQueryDetails.key(consultationId, questionId),
+      method: "POST",
+      onSuccess: onSuccess,
     },
   );
 };
@@ -181,7 +155,7 @@ export const getSelectedThemesDeleteQuery = (
   showError: (args: SaveThemeError) => void,
 ) => {
   const query = buildQuery<SelectedThemesDeleteResponse>(
-    selectedThemes.detail.url(consultationId, questionId, ":themeId"),
+    selectedThemeQueryDetails.url(consultationId, questionId, ":themeId"),
     {
       method: "DELETE",
       onSuccess: async () => {
