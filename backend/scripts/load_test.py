@@ -20,6 +20,7 @@ import argparse
 import os
 import random
 import sys
+import time
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -108,6 +109,12 @@ SAMPLE_DEMOGRAPHICS = {
     "Happy to be published": ["Yes, but without PII", "Yes, with full details", "No"],
 }
 
+# Performance optimization constants
+RESPONDENT_BATCH_SIZE = 1000  # Batch size for bulk creating respondents
+RESPONSE_BATCH_SIZE = 5000  # Batch size for bulk creating responses
+M2M_BATCH_SIZE = 10000  # Batch size for bulk creating M2M relationships
+RECONNECT_INTERVAL = 3600  # Reconnect to database every hour (seconds)
+
 
 def load_sample_theme_data(yaml_path: Path) -> dict[str, Any]:
     """Load sample themes, sentiments, and annotation data from YAML file.
@@ -120,6 +127,18 @@ def load_sample_theme_data(yaml_path: Path) -> dict[str, Any]:
     """
     with open(yaml_path, "r") as f:
         return yaml.safe_load(f)
+
+
+def periodic_reconnect() -> None:
+    """Reconnect to database to avoid long-running connection timeouts."""
+    from django.db import connection
+    
+    try:
+        connection.close()
+        connection.ensure_connection()
+        print("  ♻️  Reconnected to database")
+    except Exception as e:
+        print(f"  ⚠️  Warning: Failed to reconnect to database: {e}")
 
 
 def generate_theme_key(index: int) -> str:
@@ -449,7 +468,7 @@ def create_respondents(
     demographics: dict[str, list[DemographicOption]],
 ) -> list[Respondent]:
     """
-    Create respondents for the consultation.
+    Create respondents for the consultation using bulk operations.
 
     Args:
         consultation: Consultation instance
@@ -459,28 +478,55 @@ def create_respondents(
     Returns:
         List of created Respondent instances
     """
-    respondents = []
-
-    print(f"Creating {num_respondents} respondents...")
-
-    for i in range(1, num_respondents + 1):
-        respondent = Respondent.objects.create(
-            consultation=consultation,
-            themefinder_id=i,
-        )
-
-        # Assign random demographics
-        for field_name, options in demographics.items():
-            if options:
-                respondent.demographics.add(random.choice(options))
-
-        respondents.append(respondent)
-
-        if i % 100 == 0:
-            print(f"  Created {i}/{num_respondents} respondents...")
-
-    print(f"✓ Created {len(respondents)} respondents")
-    return respondents
+    print(f"Creating {num_respondents:,} respondents in batches of {RESPONDENT_BATCH_SIZE:,}...")
+    
+    all_respondents = []
+    start_time = time.time()
+    
+    for batch_start in range(0, num_respondents, RESPONDENT_BATCH_SIZE):
+        batch_end = min(batch_start + RESPONDENT_BATCH_SIZE, num_respondents)
+        
+        # Prepare respondents for bulk creation
+        respondents_to_create = [
+            Respondent(
+                consultation=consultation,
+                themefinder_id=i,
+            )
+            for i in range(batch_start + 1, batch_end + 1)
+        ]
+        
+        # Bulk create respondents
+        created_respondents = Respondent.objects.bulk_create(respondents_to_create)
+        all_respondents.extend(created_respondents)
+        
+        # Prepare M2M relationships for demographics
+        demographics_m2m = []
+        for respondent in created_respondents:
+            for field_name, options in demographics.items():
+                if options:
+                    demographics_m2m.append(
+                        Respondent.demographics.through(
+                            respondent_id=respondent.id,
+                            demographicoption_id=random.choice(options).id,
+                        )
+                    )
+        
+        # Bulk create M2M relationships
+        Respondent.demographics.through.objects.bulk_create(demographics_m2m)
+        
+        # Progress tracking
+        elapsed = time.time() - start_time
+        rate = batch_end / elapsed if elapsed > 0 else 0
+        remaining = num_respondents - batch_end
+        eta_seconds = remaining / rate if rate > 0 else 0
+        
+        print(f"  Created {batch_end:,}/{num_respondents:,} respondents "
+              f"({batch_end/num_respondents*100:.1f}%) "
+              f"Rate: {rate:.0f}/sec ETA: {eta_seconds/60:.1f} min")
+    
+    total_time = time.time() - start_time
+    print(f"✓ Created {len(all_respondents):,} respondents in {total_time:.1f} seconds")
+    return all_respondents
 
 
 def create_question(
@@ -532,7 +578,7 @@ def create_responses_for_question(
     coverage_percent: float = 80.0,
 ) -> int:
     """
-    Create responses for a question.
+    Create responses for a question using bulk operations.
 
     Args:
         question: Question instance
@@ -545,31 +591,311 @@ def create_responses_for_question(
     # Determine how many respondents will answer
     num_responding = int(len(respondents) * coverage_percent / 100)
     responding = random.sample(respondents, num_responding)
-
-    responses_created = 0
-
-    for respondent in responding:
-        # Create the response
-        response = Response.objects.create(
+    
+    # Get MC options once if needed
+    mc_options = []
+    if question.has_multiple_choice:
+        mc_options = list(MultiChoiceAnswer.objects.filter(question=question))
+    
+    # Prepare all responses and M2M relationships upfront
+    responses_to_create = []
+    m2m_data = []  # (response_index, option_ids)
+    
+    for idx, respondent in enumerate(responding):
+        response = Response(
             respondent=respondent,
             question=question,
             free_text=random.choice(SAMPLE_RESPONSES) if question.has_free_text else None,
         )
-
-        # Add multiple choice selections if applicable
-        if question.has_multiple_choice:
-            mc_options = list(MultiChoiceAnswer.objects.filter(question=question))
-            if mc_options:
-                num_selections = random.randint(1, min(3, len(mc_options)))
-                selected = random.sample(mc_options, num_selections)
-                response.chosen_options.set(selected)
-
-        responses_created += 1
-
+        responses_to_create.append(response)
+        
+        # Prepare M2M data for this response
+        if question.has_multiple_choice and mc_options:
+            num_selections = random.randint(1, min(3, len(mc_options)))
+            selected = random.sample(mc_options, num_selections)
+            m2m_data.append((idx, [opt.id for opt in selected]))
+    
+    # Bulk create responses in batches
+    all_created = []
+    
+    for i in range(0, len(responses_to_create), RESPONSE_BATCH_SIZE):
+        batch = responses_to_create[i:i + RESPONSE_BATCH_SIZE]
+        created_batch = Response.objects.bulk_create(batch)
+        all_created.extend(created_batch)
+    
+    # Bulk create M2M relationships
+    if m2m_data:
+        m2m_to_create = []
+        for idx, option_ids in m2m_data:
+            response = all_created[idx]
+            for option_id in option_ids:
+                m2m_to_create.append(
+                    Response.chosen_options.through(
+                        response_id=response.id,
+                        multichoiceanswer_id=option_id,
+                    )
+                )
+        
+        # Create M2M in batches
+        for i in range(0, len(m2m_to_create), M2M_BATCH_SIZE):
+            batch = m2m_to_create[i:i + M2M_BATCH_SIZE]
+            Response.chosen_options.through.objects.bulk_create(batch)
+    
     # Update question's total_responses count
     question.update_total_responses()
+    
+    return len(all_created)
 
-    return responses_created
+
+def resume_load_test(
+    consultation_code: str,
+    num_of_questions: int,
+    num_of_respondents: int,
+    stage: Stage,
+    user_email: str,
+    question_type_distribution: dict[str, int] | None = None,
+) -> None:
+    """
+    Resume an existing load test from where it failed.
+    
+    Args:
+        consultation_code: Code of the existing consultation
+        num_of_questions: Target number of questions
+        num_of_respondents: Target number of respondents
+        stage: Target stage of the consultation
+        user_email: Email of user
+        question_type_distribution: Distribution of question types
+    """
+    print("\n" + "=" * 80)
+    print("RESUME EXISTING CONSULTATION")
+    print("=" * 80)
+    print(f"\nLooking up consultation: {consultation_code}")
+    
+    # Look up existing consultation
+    try:
+        consultation = Consultation.objects.get(code=consultation_code)
+        print(f"✓ Found consultation: {consultation.title}")
+        print(f"  ID: {consultation.id}")
+        print(f"  Current Stage: {consultation.stage}")
+    except Consultation.DoesNotExist:
+        print(f"✗ ERROR: Consultation with code '{consultation_code}' not found")
+        sys.exit(1)
+    
+    # Check existing data
+    existing_respondents_count = Respondent.objects.filter(consultation=consultation).count()
+    existing_questions_count = Question.objects.filter(consultation=consultation).count()
+    existing_responses_count = Response.objects.filter(question__consultation=consultation).count()
+    
+    print("\nExisting data:")
+    print(f"  Respondents: {existing_respondents_count:,}/{num_of_respondents:,}")
+    print(f"  Questions: {existing_questions_count}/{num_of_questions}")
+    print(f"  Responses: {existing_responses_count:,}")
+    print()
+    
+    # Get demographics
+    demographics = {}
+    for field_name in SAMPLE_DEMOGRAPHICS.keys():
+        options = list(DemographicOption.objects.filter(
+            consultation=consultation,
+            field_name=field_name
+        ))
+        demographics[field_name] = options
+    
+    # Resume respondent creation if needed
+    if existing_respondents_count < num_of_respondents:
+        print(f"\n⚠️  Resuming respondent creation from {existing_respondents_count:,}...")
+        remaining = num_of_respondents - existing_respondents_count
+        
+        # Create remaining respondents
+        print(f"Creating {remaining:,} additional respondents...")
+        m2m_to_create = []
+        
+        for batch_start in range(existing_respondents_count, num_of_respondents, RESPONDENT_BATCH_SIZE):
+            batch_end = min(batch_start + RESPONDENT_BATCH_SIZE, num_of_respondents)
+            
+            batch_respondents = [
+                Respondent(consultation=consultation, themefinder_id=i)
+                for i in range(batch_start + 1, batch_end + 1)
+            ]
+            
+            created = Respondent.objects.bulk_create(batch_respondents)
+            
+            # Add demographics
+            for respondent in created:
+                for field_name, options in demographics.items():
+                    if options:
+                        m2m_to_create.append(
+                            Respondent.demographics.through(
+                                respondent_id=respondent.id,
+                                demographicoption_id=random.choice(options).id,
+                            )
+                        )
+            
+            Respondent.demographics.through.objects.bulk_create(m2m_to_create)
+            m2m_to_create = []
+            
+            print(f"  Created {batch_end:,}/{num_of_respondents:,} respondents")
+        
+        print("✓ Completed respondent creation")
+    
+    # Get all respondents
+    respondents = list(Respondent.objects.filter(consultation=consultation))
+    print(f"\n✓ Total respondents available: {len(respondents):,}")
+    
+    # Resume question/response creation if needed
+    if existing_questions_count < num_of_questions:
+        print(f"\n⚠️  Resuming question creation from {existing_questions_count}...")
+        
+        # Calculate remaining question types
+        if question_type_distribution is None:
+            question_type_distribution = {"open": 40, "hybrid": 40, "multiple_choice": 20}
+        
+        open_count = int(num_of_questions * question_type_distribution["open"] / 100)
+        hybrid_count = int(num_of_questions * question_type_distribution["hybrid"] / 100)
+        mc_count = num_of_questions - open_count - hybrid_count
+        
+        question_types = ["open"] * open_count + ["hybrid"] * hybrid_count + ["multiple_choice"] * mc_count
+        random.shuffle(question_types)
+        
+        # Create remaining questions
+        last_reconnect = time.time()
+        for i in range(existing_questions_count + 1, num_of_questions + 1):
+            if time.time() - last_reconnect > RECONNECT_INTERVAL:
+                periodic_reconnect()
+                last_reconnect = time.time()
+            
+            question_type = question_types[i - 1]
+            question = create_question(consultation, i, question_type)
+            
+            coverage = random.uniform(70, 90)
+            num_responses = create_responses_for_question(question, respondents, coverage)
+            
+            print(f"  Question {i}/{num_of_questions}: {question_type} - {num_responses:,} responses")
+        
+        print("✓ Completed question creation")
+    else:
+        print(f"\n✓ All {num_of_questions} questions already exist")
+    
+    # Now check if we need to create themes/annotations based on the target stage
+    questions = list(Question.objects.filter(consultation=consultation))
+    questions_with_themes = [q for q in questions if q.has_free_text]
+    
+    # Get user object for theme creation
+    user = UserModel.objects.get(email=user_email)
+    
+    # Check if themes need to be created
+    candidate_count = CandidateTheme.objects.filter(question__consultation=consultation).count()
+    selected_count = SelectedTheme.objects.filter(question__consultation=consultation).count()
+    annotation_count = ResponseAnnotation.objects.filter(response__question__consultation=consultation).count()
+    
+    print("\n📊 Current theme/annotation status:")
+    print(f"  Candidate themes: {candidate_count}")
+    print(f"  Selected themes: {selected_count}")
+    print(f"  Response annotations: {annotation_count:,}")
+    
+    # Load theme data if needed
+    if stage in [Stage.CANDIDATE_THEMES, Stage.THEMES_APPROVED, Stage.ANALYSIS]:
+        theme_data = load_sample_theme_data(Path(__file__).parent / "sample_themes.yaml")
+        
+        # Stage 2, 3, 4: Create candidate themes if missing
+        if candidate_count == 0 and stage in [Stage.CANDIDATE_THEMES, Stage.THEMES_APPROVED, Stage.ANALYSIS]:
+            print("\n⚠️  Creating candidate themes...")
+            
+            all_candidate_themes = {}
+            for question in questions_with_themes:
+                candidates = create_candidate_themes_for_question(question, theme_data)
+                all_candidate_themes[question.id] = candidates
+            
+            total_candidates = CandidateTheme.objects.filter(question__consultation=consultation).count()
+            parent_count = CandidateTheme.objects.filter(
+                question__consultation=consultation,
+                parent=None
+            ).count()
+            child_count = total_candidates - parent_count
+            print(f"✓ Created {total_candidates} candidate themes ({parent_count} parent, {child_count} child)")
+        else:
+            # Load existing candidates
+            all_candidate_themes = {}
+            for question in questions_with_themes:
+                candidates = list(CandidateTheme.objects.filter(question=question))
+                all_candidate_themes[question.id] = candidates
+        
+        # Stage 3 & 4: Create selected themes if missing
+        if selected_count == 0 and stage in [Stage.THEMES_APPROVED, Stage.ANALYSIS]:
+            print("\n⚠️  Creating selected themes...")
+            
+            all_selected_themes = {}
+            for question in questions_with_themes:
+                candidates = all_candidate_themes.get(question.id, [])
+                selected = create_selected_themes_for_question(question, candidates, user)
+                all_selected_themes[question.id] = selected
+            
+            total_selected = SelectedTheme.objects.filter(question__consultation=consultation).count()
+            print(f"✓ Created {total_selected} selected themes")
+            
+            # Mark all themed questions as signed off
+            print("\n⚠️  Marking themed questions as signed off...")
+            updated_count = Question.objects.filter(
+                id__in=[q.id for q in questions_with_themes]
+            ).update(theme_status=Question.ThemeStatus.CONFIRMED)
+            print(f"✓ Marked {updated_count} questions as signed off (theme_status=CONFIRMED)")
+            
+            # Update consultation stage if needed
+            if consultation.stage != Consultation.Stage.THEME_MAPPING:
+                consultation.stage = Consultation.Stage.THEME_MAPPING
+                consultation.save(update_fields=['stage'])
+                print("✓ Updated consultation stage to THEME_MAPPING")
+        else:
+            # Load existing selected themes
+            all_selected_themes = {}
+            for question in questions_with_themes:
+                selected = list(SelectedTheme.objects.filter(question=question))
+                all_selected_themes[question.id] = selected
+        
+        # Stage 4: Create response annotations if missing
+        if annotation_count == 0 and stage == Stage.ANALYSIS:
+            print("\n⚠️  Creating response annotations...")
+            print("  (This may take several minutes for large datasets)")
+            
+            total_annotations = 0
+            total_theme_assignments = 0
+            
+            for question in questions_with_themes:
+                responses_list = list(Response.objects.filter(question=question))
+                selected_themes = all_selected_themes.get(question.id, [])
+                
+                if responses_list and selected_themes:
+                    num_annotations, num_assignments = create_response_annotations(
+                        responses_list,
+                        selected_themes,
+                        theme_data
+                    )
+                    total_annotations += num_annotations
+                    total_theme_assignments += num_assignments
+            
+            print(f"✓ Created {total_annotations:,} response annotations")
+            print(f"✓ Created {total_theme_assignments:,} theme assignments")
+            
+            # Update consultation stage to ANALYSIS
+            if consultation.stage != Consultation.Stage.ANALYSIS:
+                consultation.stage = Consultation.Stage.ANALYSIS
+                consultation.save(update_fields=['stage'])
+                print("✓ Updated consultation stage to ANALYSIS")
+    
+    print("\n" + "=" * 80)
+    print("RESUME COMPLETE - Consultation is now up to date")
+    print("=" * 80)
+    print(f"\nConsultation: {consultation.title}")
+    print(f"Code: {consultation.code}")
+    print(f"Stage: {consultation.stage}")
+    print("\nFinal counts:")
+    print(f"  Respondents: {Respondent.objects.filter(consultation=consultation).count():,}")
+    print(f"  Questions: {Question.objects.filter(consultation=consultation).count()}")
+    print(f"  Responses: {Response.objects.filter(question__consultation=consultation).count():,}")
+    print(f"  Candidate themes: {CandidateTheme.objects.filter(question__consultation=consultation).count()}")
+    print(f"  Selected themes: {SelectedTheme.objects.filter(question__consultation=consultation).count()}")
+    print(f"  Response annotations: {ResponseAnnotation.objects.filter(response__question__consultation=consultation).count():,}")
+    print(f"  Questions signed off: {Question.objects.filter(consultation=consultation, theme_status='confirmed').count()}/{len(questions_with_themes)}")
 
 
 def run_load_test(
@@ -579,6 +905,8 @@ def run_load_test(
     stage: Stage,
     user_email: str,
     question_type_distribution: dict[str, int] | None = None,
+    resume_mode: bool = False,
+    consultation_code: str | None = None,
 ) -> None:
     """
     Run the load test with the specified parameters.
@@ -590,7 +918,20 @@ def run_load_test(
         stage: Stage of the consultation
         user_email: Email of user creating the consultation
         question_type_distribution: Distribution of question types (percentages)
+        resume_mode: Whether to resume an existing consultation
+        consultation_code: Code of consultation to resume (required if resume_mode=True)
     """
+    # Handle resume mode
+    if resume_mode and consultation_code:
+        return resume_load_test(
+            consultation_code,
+            num_of_questions,
+            num_of_respondents,
+            stage,
+            user_email,
+            question_type_distribution,
+        )
+    
     if question_type_distribution is None:
         question_type_distribution = {
             "open": 40,
@@ -624,6 +965,7 @@ def run_load_test(
 
     # Step 4: Create questions and responses
     print(f"\nStep 4: Creating {num_of_questions} questions with responses...")
+    print(f"  Estimated total responses: {int(num_of_questions * num_of_respondents * 0.8):,}")
 
     # Calculate question type distribution
     open_count = int(num_of_questions * question_type_distribution["open"] / 100)
@@ -634,16 +976,34 @@ def run_load_test(
     random.shuffle(question_types)
 
     total_responses = 0
+    last_reconnect = time.time()
+    step4_start = time.time()
 
     for i, question_type in enumerate(question_types, start=1):
+        # Periodic database reconnection to avoid timeouts
+        if time.time() - last_reconnect > RECONNECT_INTERVAL:
+            periodic_reconnect()
+            last_reconnect = time.time()
+        
         question = create_question(consultation, i, question_type)
 
         # Create responses for this question
         coverage = random.uniform(70, 90)
         num_responses = create_responses_for_question(question, respondents, coverage)
         total_responses += num_responses
+        
+        # Enhanced progress tracking
+        elapsed = time.time() - step4_start
+        rate = total_responses / elapsed if elapsed > 0 else 0
+        estimated_total = int(num_of_questions * num_of_respondents * 0.8)
+        remaining = estimated_total - total_responses
+        eta_seconds = remaining / rate if rate > 0 else 0
+        
+        print(f"  Question {i}/{num_of_questions}: {question_type} - {num_responses:,} responses "
+              f"(Total: {total_responses:,}, Rate: {rate:.0f}/sec, ETA: {eta_seconds/60:.1f} min)")
 
-        print(f"  Question {i}/{num_of_questions}: {question_type} - {num_responses} responses")
+    step4_time = time.time() - step4_start
+    print(f"✓ Created {num_of_questions} questions with {total_responses:,} total responses in {step4_time/60:.1f} minutes")
 
     # Get user object for theme creation
     user = UserModel.objects.get(email=user_email)
@@ -868,8 +1228,8 @@ def main() -> None:
     parser.add_argument(
         "--name-of-consultation",
         type=str,
-        required=True,
-        help="Name of the consultation (required)",
+        required=False,
+        help="Name of the consultation (required for new consultations, not needed for --resume)",
     )
 
     parser.add_argument(
@@ -907,8 +1267,33 @@ def main() -> None:
         default="40,40,20",
         help="Question type distribution as percentages: open,hybrid,multiple_choice (default: 40,40,20)",
     )
+    
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume an existing consultation (requires --consultation-code)",
+    )
+    
+    parser.add_argument(
+        "--consultation-code",
+        type=str,
+        help="Code of existing consultation to resume (use with --resume)",
+    )
 
     args = parser.parse_args()
+    
+    # Validate resume arguments
+    if args.resume and not args.consultation_code:
+        print("Error: --consultation-code is required when using --resume")
+        sys.exit(1)
+    
+    if not args.resume and args.consultation_code:
+        print("Warning: --consultation-code specified but --resume not set. Ignoring consultation code.")
+    
+    # Validate name is provided when not resuming
+    if not args.resume and not args.name_of_consultation:
+        print("Error: --name-of-consultation is required when creating a new consultation")
+        sys.exit(1)
 
     # Test database connection first
     print("Checking database connection...")
@@ -931,12 +1316,14 @@ def main() -> None:
         sys.exit(1)
 
     run_load_test(
-        name_of_consultation=args.name_of_consultation,
+        name_of_consultation=args.name_of_consultation or "",  # Empty string when resuming
         num_of_questions=args.num_of_questions,
         num_of_respondents=args.num_of_respondents,
         stage=args.stage,
         user_email=args.user_email,
         question_type_distribution=question_type_distribution,
+        resume_mode=args.resume,
+        consultation_code=args.consultation_code,
     )
 
 
