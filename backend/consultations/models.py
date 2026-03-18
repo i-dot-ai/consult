@@ -225,6 +225,11 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
         indexes = [
             GinIndex(fields=["search_vector"]),
+            models.Index(
+                fields=["question", "free_text"],
+                name="response_question_freetext_idx",
+                condition=models.Q(free_text__isnull=False),
+            ),
         ]
 
     def __str__(self):
@@ -417,6 +422,10 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
             models.Index(fields=["human_reviewed"]),
             models.Index(fields=["sentiment"]),
             models.Index(fields=["evidence_rich"]),
+            models.Index(
+                fields=["response", "human_reviewed"],
+                name="response_ann_resp_reviewed_idx",
+            ),
         ]
 
     def mark_human_reviewed(self, user):
