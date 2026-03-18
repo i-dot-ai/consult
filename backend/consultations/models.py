@@ -229,7 +229,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
             # Note: We index only 'question' field, not the TextField 'free_text' which is too large
             models.Index(
                 fields=["question"],
-                name="response_question_has_freetext_idx",
+                name="resp_q_has_ft_idx",  # Shortened to fit 30 char limit
                 condition=models.Q(free_text__isnull=False) & ~models.Q(free_text=""),
             ),
         ]
@@ -426,7 +426,7 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
             models.Index(fields=["evidence_rich"]),
             models.Index(
                 fields=["response", "human_reviewed"],
-                name="response_ann_resp_reviewed_idx",
+                name="resp_ann_resp_rev_idx",  # Shortened to fit 30 char limit
             ),
         ]
 
