@@ -151,14 +151,16 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.reviewed_responses_count / self.total_responses
 
     def update_total_responses(self):
-        """Update the total_responses count based on current free text responses"""
+        """Update the total_responses count based on current responses"""
         if self.has_free_text:
+            # For questions with free text, count only responses with non-empty free text
             count = self.response_set.filter(free_text__isnull=False, free_text__gt="").count()
-            self.total_responses = count
-            self.save(update_fields=["total_responses"])
         else:
-            self.total_responses = 0
-            self.save(update_fields=["total_responses"])
+            # For multiple-choice-only questions, count all responses
+            count = self.response_set.count()
+        
+        self.total_responses = count
+        self.save(update_fields=["total_responses"])
     
     def update_reviewed_responses_count(self):
         """Update the reviewed_responses_count based on human-reviewed annotations"""
