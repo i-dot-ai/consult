@@ -1,4 +1,4 @@
-from django.db.models import Count, Prefetch
+from django.db.models import Count, Prefetch, Q
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -35,7 +35,7 @@ class QuestionViewSet(ModelViewSet):
         if not self.request.user.is_staff:
             queryset = queryset.filter(consultation__users=self.request.user)
 
-        # Prefetch multi-choice answers with response counts and annotate total_responses
+        # Prefetch multi-choice answers with response counts
         queryset = queryset.prefetch_related(
             Prefetch(
                 "multichoiceanswer_set",
@@ -43,7 +43,31 @@ class QuestionViewSet(ModelViewSet):
                     prefetched_response_count=Count("response")
                 ),
             )
-        ).annotate(prefetched_total_responses=Count("response"))
+        )
+        
+        # Optimized annotation for total_responses and audited proportion
+        # This replaces the N+1 queries in proportion_of_audited_answers property
+        queryset = queryset.annotate(
+            # Total responses with non-empty free text
+            prefetched_total_responses=Count(
+                "response",
+                filter=Q(
+                    response__free_text__isnull=False,
+                    response__free_text__gt=""
+                ) | Q(has_free_text=False),
+                distinct=True
+            ),
+            # Count of human-reviewed responses
+            prefetched_reviewed_responses=Count(
+                "response",
+                filter=Q(
+                    response__free_text__isnull=False,
+                    response__free_text__gt="",
+                    response__annotation__human_reviewed=True
+                ),
+                distinct=True
+            ),
+        )
 
         return queryset.order_by("number")
 

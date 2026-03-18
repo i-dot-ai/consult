@@ -66,11 +66,23 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     multiple_choice_answer = MultiChoiceAnswerSerializer(
         many=True, source="multichoiceanswer_set", read_only=True
     )
-    proportion_of_audited_answers = serializers.ReadOnlyField()
+    proportion_of_audited_answers = serializers.SerializerMethodField()
     total_responses = serializers.SerializerMethodField()
 
     def get_total_responses(self, obj) -> int:
-        return obj.prefetched_total_responses
+        # Use prefetched value if available, otherwise fall back to property
+        if hasattr(obj, 'prefetched_total_responses'):
+            return obj.prefetched_total_responses
+        return obj.total_responses
+
+    def get_proportion_of_audited_answers(self, obj) -> float:
+        # Use prefetched values if available (from optimized query)
+        if hasattr(obj, 'prefetched_reviewed_responses') and hasattr(obj, 'prefetched_total_responses'):
+            if not obj.has_free_text or obj.prefetched_total_responses == 0:
+                return 0.0
+            return obj.prefetched_reviewed_responses / obj.prefetched_total_responses
+        # Fall back to model property (N+1 queries, but works without optimization)
+        return obj.proportion_of_audited_answers
 
     class Meta:
         model = Question
