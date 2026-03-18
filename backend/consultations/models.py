@@ -251,10 +251,12 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta:
         indexes = [
             GinIndex(fields=["search_vector"]),
+            # Partial index for filtering responses by question with non-null free_text
+            # Note: We index only 'question' field, not the TextField 'free_text' which is too large
             models.Index(
-                fields=["question", "free_text"],
-                name="response_question_freetext_idx",
-                condition=models.Q(free_text__isnull=False),
+                fields=["question"],
+                name="response_question_has_freetext_idx",
+                condition=models.Q(free_text__isnull=False) & ~models.Q(free_text=""),
             ),
         ]
 
