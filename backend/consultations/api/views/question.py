@@ -35,6 +35,9 @@ class QuestionViewSet(ModelViewSet):
         if not self.request.user.is_staff:
             queryset = queryset.filter(consultation__users=self.request.user)
 
+        # Select related consultation to avoid N+1 queries
+        queryset = queryset.select_related("consultation")
+        
         # Prefetch multi-choice answers with response counts
         queryset = queryset.prefetch_related(
             Prefetch(
@@ -57,6 +60,7 @@ class QuestionViewSet(ModelViewSet):
             "theme_status",
             "total_responses",
             "reviewed_responses_count",
+            "consultation_id",  # Include FK field for select_related
         )
 
         return queryset.order_by("number")

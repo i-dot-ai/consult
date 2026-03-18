@@ -510,6 +510,11 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     text = models.TextField()
 
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        indexes = [
+            models.Index(fields=["question"]),
+        ]
+
     def __str__(self):
         return f"{self.question.number} = {self.text}"
 
