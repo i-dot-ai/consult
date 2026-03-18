@@ -131,6 +131,10 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         null=True,
         blank=True,
     )
+    reviewed_responses_count = models.IntegerField(
+        default=0,
+        help_text="Denormalized count of human-reviewed responses for performance",
+    )
 
     @property
     def multiple_choice_options(self) -> list:
@@ -140,23 +144,11 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     @property
     def proportion_of_audited_answers(self) -> float:
         """Calculate proportion of human-reviewed responses for free text questions"""
-        if not self.has_free_text:
-            return 0
-
-        # Count total responses with free text
-        total_responses = self.response_set.filter(
-            free_text__isnull=False, free_text__gt=""
-        ).count()
-
-        if total_responses == 0:
-            return 0
-
-        # Count human-reviewed responses
-        reviewed_responses = self.response_set.filter(
-            free_text__isnull=False, free_text__gt="", annotation__human_reviewed=True
-        ).count()
-
-        return reviewed_responses / total_responses
+        if not self.has_free_text or not self.total_responses:
+            return 0.0
+        
+        # Use denormalized count for performance
+        return self.reviewed_responses_count / self.total_responses
 
     def update_total_responses(self):
         """Update the total_responses count based on current free text responses"""
@@ -167,6 +159,20 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         else:
             self.total_responses = 0
             self.save(update_fields=["total_responses"])
+    
+    def update_reviewed_responses_count(self):
+        """Update the reviewed_responses_count based on human-reviewed annotations"""
+        if self.has_free_text:
+            count = self.response_set.filter(
+                free_text__isnull=False,
+                free_text__gt="",
+                annotation__human_reviewed=True
+            ).count()
+            self.reviewed_responses_count = count
+            self.save(update_fields=["reviewed_responses_count"])
+        else:
+            self.reviewed_responses_count = 0
+            self.save(update_fields=["reviewed_responses_count"])
 
     def get_non_empty_responses(self):
         """

@@ -1,4 +1,4 @@
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, Prefetch
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -45,28 +45,18 @@ class QuestionViewSet(ModelViewSet):
             )
         )
         
-        # Optimized annotation for total_responses and audited proportion
-        # This replaces the N+1 queries in proportion_of_audited_answers property
-        queryset = queryset.annotate(
-            # Total responses with non-empty free text
-            prefetched_total_responses=Count(
-                "response",
-                filter=Q(
-                    response__free_text__isnull=False,
-                    response__free_text__gt=""
-                ) | Q(has_free_text=False),
-                distinct=True
-            ),
-            # Count of human-reviewed responses
-            prefetched_reviewed_responses=Count(
-                "response",
-                filter=Q(
-                    response__free_text__isnull=False,
-                    response__free_text__gt="",
-                    response__annotation__human_reviewed=True
-                ),
-                distinct=True
-            ),
+        # Use denormalized fields instead of expensive JOINs with COUNT DISTINCT
+        # The fields total_responses and reviewed_responses_count are updated
+        # when responses are created or annotations are marked as reviewed
+        queryset = queryset.only(
+            "id",
+            "number",
+            "text",
+            "has_free_text",
+            "has_multiple_choice",
+            "theme_status",
+            "total_responses",
+            "reviewed_responses_count",
         )
 
         return queryset.order_by("number")
