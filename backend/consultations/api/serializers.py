@@ -262,9 +262,14 @@ class ResponseSerializer(serializers.ModelSerializer):
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
 
     def update(self, instance: Response, validated_data):
+        human_reviewed_changed = False
+        
         if annotation := validated_data.get("annotation"):
             if "human_reviewed" in annotation:
                 human_reviewed = annotation["human_reviewed"]
+                # Track if human_reviewed status changed
+                if instance.annotation.human_reviewed != human_reviewed:
+                    human_reviewed_changed = True
                 instance.annotation.human_reviewed = human_reviewed
                 instance.annotation.reviewed_by = (
                     self.context["request"].user if human_reviewed else None
@@ -284,6 +289,10 @@ class ResponseSerializer(serializers.ModelSerializer):
                 instance.annotation.sentiment = annotation["sentiment"]
 
             instance.annotation.save()
+            
+            # Update question's reviewed_responses_count if review status changed
+            if human_reviewed_changed and instance.free_text:
+                instance.question.update_reviewed_responses_count()
 
         instance.refresh_from_db()
         return instance

@@ -50,9 +50,5 @@ class Migration(migrations.Migration):
                 help_text='Denormalized count of human-reviewed responses for performance'
             ),
         ),
-        migrations.AddIndex(
-            model_name='question',
-            index=models.Index(fields=['consultation', 'has_free_text'], name='q_consult_ft_idx'),
-        ),
         migrations.RunPython(populate_reviewed_responses_count, reverse_populate),
     ]
