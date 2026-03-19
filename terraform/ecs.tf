@@ -88,8 +88,8 @@ module "backend" {
   }
   entrypoint = ["./start.sh"]
 
-  memory = 4096
-  cpu    = 1024
+  memory = 6144
+  cpu    = 2048
 }
 
 module "frontend" {
@@ -151,6 +151,9 @@ module "frontend" {
 
   task_additional_iam_policies = local.additional_policy_arns
   entrypoint                   = ["npm", "start"]
+
+  cpu = 1024
+  memory = 2048
 }
 
 module "worker" {
