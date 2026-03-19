@@ -35,10 +35,33 @@
   const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
 
   onMount(() => {
-    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
-    $demoOptionsStore.fetch(
+    const startTime = performance.now();
+    console.log(`[ConsultationDetail] Starting data fetch for consultation ${consultationId}`);
+    
+    const questionsPromise = $questionsStore.fetch(getApiQuestionsUrl(consultationId)).then(() => {
+      const questionsDuration = performance.now() - startTime;
+      console.log(
+        `[ConsultationDetail] Questions loaded in ${questionsDuration.toFixed(0)}ms for consultation ${consultationId} - ${$questionsStore.data?.results?.length || 0} questions`
+      );
+    });
+    
+    const demoStartTime = performance.now();
+    const demoPromise = $demoOptionsStore.fetch(
       `/api/consultations/${consultationId}/demographic-options/`,
-    );
+    ).then(() => {
+      const demoDuration = performance.now() - demoStartTime;
+      console.log(
+        `[ConsultationDetail] Demographic options loaded in ${demoDuration.toFixed(0)}ms for consultation ${consultationId} - ${$demoOptionsStore.data?.length || 0} options`
+      );
+    });
+    
+    Promise.all([questionsPromise, demoPromise]).then(() => {
+      const totalDuration = performance.now() - startTime;
+      console.log(
+        `[ConsultationDetail] All data loaded in ${totalDuration.toFixed(0)}ms for consultation ${consultationId}`
+      );
+    });
+    
     dataRequested = true;
   });
 

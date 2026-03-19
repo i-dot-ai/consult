@@ -1,3 +1,6 @@
+from time import time
+
+from django.conf import settings
 from django.db.models import Count, Prefetch
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -14,6 +17,8 @@ from consultations.api.serializers import (
     ThemeInformationSerializer,
 )
 
+logger = settings.LOGGER
+
 
 class QuestionPagination(PageNumberPagination):
     page_size = 500
@@ -26,6 +31,25 @@ class QuestionViewSet(ModelViewSet):
     http_method_names = ["get", "patch", "delete"]
     pagination_class = QuestionPagination
 
+    def list(self, request, *args, **kwargs):
+        """Override list to add performance logging"""
+        start_time = time()
+        consultation_pk = kwargs.get('consultation_pk')
+
+        response = super().list(request, *args, **kwargs)
+
+        duration_ms = int((time() - start_time) * 1000)
+        question_count = len(response.data) if isinstance(response.data, list) else 0
+
+        logger.info(
+            "Question list completed in {duration_ms}ms for consultation {consultation_id} with {question_count} questions",
+            duration_ms=duration_ms,
+            consultation_id=str(consultation_pk),
+            question_count=question_count,
+        )
+
+        return response
+
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
 
@@ -37,7 +61,7 @@ class QuestionViewSet(ModelViewSet):
 
         # Select related consultation to avoid N+1 queries
         queryset = queryset.select_related("consultation")
-        
+
         # Prefetch multi-choice answers with response counts
         queryset = queryset.prefetch_related(
             Prefetch(
@@ -47,7 +71,7 @@ class QuestionViewSet(ModelViewSet):
                 ),
             )
         )
-        
+
         # Use denormalized fields instead of expensive JOINs with COUNT DISTINCT
         # The fields total_responses and reviewed_responses_count are updated
         # when responses are created or annotations are marked as reviewed
@@ -73,6 +97,8 @@ class QuestionViewSet(ModelViewSet):
     )
     def theme_information(self, request, pk=None, consultation_pk=None):
         """Get all theme information for a question"""
+        start_time = time()
+
         # Get the question object with consultation in one query
         question = self.get_object()
 
@@ -83,6 +109,15 @@ class QuestionViewSet(ModelViewSet):
 
         serializer = ThemeInformationSerializer(data={"themes": list(themes)})
         serializer.is_valid()
+
+        duration_ms = int((time() - start_time) * 1000)
+        logger.info(
+            "Theme information completed in {duration_ms}ms for question {question_id} in consultation {consultation_id} with {theme_count} themes",
+            duration_ms=duration_ms,
+            question_id=str(pk),
+            consultation_id=str(consultation_pk),
+            theme_count=len(themes),
+        )
 
         return Response(serializer.data)
 
