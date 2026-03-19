@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from django.db.models import Count, Exists, F, OuterRef
+from django.db.models import BooleanField, Case, Count, Exists, F, OuterRef, Q, Value, When
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -95,13 +95,34 @@ class ResponseViewSet(ModelViewSet):
                 models.Response.objects.filter(read_by=self.request.user, pk=OuterRef("pk"))
             ),
             # CRITICAL PERFORMANCE: History table queries are extremely expensive
-            # The primary way to detect if an annotation is edited is if it has human-assigned themes
-            # This covers the vast majority of "edited" cases without needing history table scans
-            annotation_is_edited=Exists(
-                models.ResponseAnnotationTheme.objects.filter(
-                    response_annotation_id=OuterRef("annotation__id"),
-                    assigned_by__isnull=False,
-                )
+            # The annotation is considered edited if:
+            # 1. It has human-assigned themes (most common case)
+            # 2. OR it has been modified (checked via modified_at != created_at)
+            # Using Case/When to OR these conditions without separate queries
+            annotation_is_edited=Case(
+                # Check for human-assigned themes first
+                When(
+                    Exists(
+                        models.ResponseAnnotationTheme.objects.filter(
+                            response_annotation_id=OuterRef("annotation__id"),
+                            assigned_by__isnull=False,
+                        )
+                    ),
+                    then=Value(True)
+                ),
+                # Check if annotation was modified
+                When(
+                    Exists(
+                        models.ResponseAnnotation.objects.filter(
+                            id=OuterRef("annotation__id"),
+                        ).exclude(
+                            modified_at=F("created_at")
+                        )
+                    ),
+                    then=Value(True)
+                ),
+                default=Value(False),
+                output_field=BooleanField(),
             ),
             annotation_has_human_assigned_themes=Exists(
                 models.ResponseAnnotationTheme.objects.filter(
