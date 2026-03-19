@@ -1,5 +1,7 @@
 from collections import defaultdict
+from time import time
 
+from django.conf import settings
 from django.db.models import BooleanField, Case, Count, Exists, OuterRef, Value, When
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
@@ -20,6 +22,8 @@ from consultations.api.serializers import (
     ThemeAggregationsSerializer,
     ThemeSerializer,
 )
+
+logger = settings.LOGGER
 
 
 class BespokeResultsSetPagination(PageNumberPagination):
@@ -67,6 +71,25 @@ class ResponseViewSet(ModelViewSet):
     filter_backends = [ResponseSearchFilter, DjangoFilterBackend]
     filterset_class = ResponseFilter
     http_method_names = ["get", "patch", "post"]
+    
+    def list(self, request, *args, **kwargs):
+        """Override list to add performance logging"""
+        start_time = time()
+        consultation_pk = kwargs.get('consultation_pk')
+        
+        response = super().list(request, *args, **kwargs)
+        
+        duration_ms = int((time() - start_time) * 1000)
+        result_count = response.data.get('filtered_total', 0) if isinstance(response.data, dict) else len(response.data)
+        
+        logger.info(
+            "Response list completed in {duration_ms}ms for consultation {consultation_id} with {result_count} results",
+            duration_ms=duration_ms,
+            consultation_id=str(consultation_pk),
+            result_count=result_count,
+        )
+        
+        return response
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
@@ -152,9 +175,11 @@ class ResponseViewSet(ModelViewSet):
     )
     def demographic_aggregations(self, request, consultation_pk=None):
         """Get demographic aggregations for filtered responses"""
-
+        start_time = time()
+        
         # More efficient: get respondent IDs from filtered responses, then aggregate demographics
         filtered_respondent_ids = self.get_queryset().values_list('respondent_id', flat=True).distinct()
+        respondent_count = len(list(filtered_respondent_ids))
         
         aggregations = (
             models.DemographicOption.objects.filter(
@@ -170,6 +195,15 @@ class ResponseViewSet(ModelViewSet):
 
         serializer = DemographicAggregationsSerializer(data={"demographic_aggregations": result})
         serializer.is_valid()
+        
+        duration_ms = int((time() - start_time) * 1000)
+        logger.info(
+            "Demographic aggregations completed in {duration_ms}ms for consultation {consultation_id} with {respondent_count} respondents and {field_count} fields",
+            duration_ms=duration_ms,
+            consultation_id=str(consultation_pk),
+            respondent_count=respondent_count,
+            field_count=len(result),
+        )
 
         return Response(serializer.data)
 
@@ -181,10 +215,12 @@ class ResponseViewSet(ModelViewSet):
     )
     def theme_aggregations(self, request, consultation_pk=None):
         """Get theme aggregations for filtered responses"""
+        start_time = time()
 
         # More efficient query: aggregate themes directly from ResponseAnnotationTheme
         # instead of joining through SelectedTheme
         filtered_response_ids = self.get_queryset().values_list('id', flat=True)
+        response_count = len(list(filtered_response_ids))
         
         theme_counts = (
             models.ResponseAnnotationTheme.objects.filter(
@@ -199,6 +235,15 @@ class ResponseViewSet(ModelViewSet):
 
         serializer = ThemeAggregationsSerializer(data={"theme_aggregations": theme_aggregations})
         serializer.is_valid()
+        
+        duration_ms = int((time() - start_time) * 1000)
+        logger.info(
+            "Theme aggregations completed in {duration_ms}ms for consultation {consultation_id} with {response_count} responses and {theme_count} themes",
+            duration_ms=duration_ms,
+            consultation_id=str(consultation_pk),
+            response_count=response_count,
+            theme_count=len(theme_aggregations),
+        )
 
         return Response(serializer.data)
 
