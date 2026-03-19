@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from django.db.models import BooleanField, Case, Count, Exists, F, OuterRef, Q, Value, When
+from django.db.models import BooleanField, Case, Count, Exists, OuterRef, Value, When
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
