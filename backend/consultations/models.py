@@ -118,7 +118,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         """Calculate proportion of human-reviewed responses for free text questions"""
         if not self.has_free_text or not self.total_responses:
             return 0.0
-        
+
         # Use denormalized count for performance
         return self.reviewed_responses_count / self.total_responses
 
@@ -130,10 +130,10 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         else:
             # For multiple-choice-only questions, count all responses
             count = self.response_set.count()
-        
+
         self.total_responses = count
         self.save(update_fields=["total_responses"])
-    
+
     def update_reviewed_responses_count(self):
         """Update the reviewed_responses_count based on human-reviewed annotations"""
         if self.has_free_text:
@@ -240,6 +240,9 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
                 name="resp_q_has_ft_idx",  # Shortened to fit 30 char limit
                 condition=models.Q(free_text__isnull=False) & ~models.Q(free_text=""),
             ),
+            # Composite index for common query: filter by question__consultation_id
+            models.Index(fields=["question", "respondent"]),
+            models.Index(fields=["respondent"]),  # For respondent lookups
         ]
 
     def __str__(self):
@@ -388,6 +391,11 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
                 ],
                 name="unique_theme_assignment",
             ),
+        ]
+        indexes = [
+            models.Index(fields=["response_annotation", "theme"]),
+            models.Index(fields=["theme"]),  # For theme aggregations
+            models.Index(fields=["assigned_by"]),  # For filtering human vs AI assignments
         ]
 
 
