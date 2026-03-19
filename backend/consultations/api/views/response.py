@@ -98,6 +98,54 @@ class ResponseViewSet(ModelViewSet):
             # The annotation is considered edited if:
             # 1. It has human-assigned themes (most common case)
             # 2. OR it has been reviewed (reviewed_by is set)
+            # 3. OR it has been flagged by anyone (flagged_by has entries)
+            # This covers all meaningful edit scenarios without history queries
+            annotation_is_edited=Case(
+                # Check for human-assigned themes
+                When(
+                    Exists(
+                        models.ResponseAnnotationTheme.objects.filter(
+                            response_annotation_id=OuterRef("annotation__id"),
+                            assigned_by__isnull=False,
+                        )
+                    ),
+                    then=Value(True)
+                ),
+                # Check if annotation has been reviewed
+                When(
+                    Exists(
+                        models.ResponseAnnotation.objects.filter(
+                            id=OuterRef("annotation__id"),
+                            reviewed_by__isnull=False,
+                        )
+                    ),
+                    then=Value(True)
+                ),
+                # Check if annotation has been flagged
+                When(
+                    Exists(
+                        models.ResponseAnnotation.flagged_by.through.objects.filter(
+                            responseannotation_id=OuterRef("annotation__id")
+                        )
+                    ),
+                    then=Value(True)
+                ),
+                default=Value(False),
+                output_field=BooleanField(),
+            ),
+            annotation_has_human_assigned_themes=Exists(
+                models.ResponseAnnotationTheme.objects.filter(
+                    response_annotation_id=OuterRef("annotation__id"),
+                    assigned_by__isnull=False,
+                )
+            ),
+            is_read_by_user=Exists(
+                models.Response.objects.filter(read_by=self.request.user, pk=OuterRef("pk"))
+            ),
+            # CRITICAL PERFORMANCE: History table queries are extremely expensive
+            # The annotation is considered edited if:
+            # 1. It has human-assigned themes (most common case)
+            # 2. OR it has been reviewed (reviewed_by is set)
             # This avoids history queries while capturing the main edit scenarios
             annotation_is_edited=Case(
                 # Check for human-assigned themes
