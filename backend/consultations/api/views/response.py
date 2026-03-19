@@ -95,13 +95,12 @@ class ResponseViewSet(ModelViewSet):
                 models.Response.objects.filter(read_by=self.request.user, pk=OuterRef("pk"))
             ),
             # CRITICAL PERFORMANCE: History table queries are extremely expensive
-            # Instead of querying history tables on every response, we can check if 
-            # annotation was modified_at != created_at OR if any human-assigned themes exist
+            # The primary way to detect if an annotation is edited is if it has human-assigned themes
+            # This covers the vast majority of "edited" cases without needing history table scans
             annotation_is_edited=Exists(
-                models.ResponseAnnotation.objects.filter(
-                    id=OuterRef("annotation__id"),
-                ).exclude(
-                    modified_at=F("created_at")
+                models.ResponseAnnotationTheme.objects.filter(
+                    response_annotation_id=OuterRef("annotation__id"),
+                    assigned_by__isnull=False,
                 )
             ),
             annotation_has_human_assigned_themes=Exists(
@@ -163,7 +162,7 @@ class ResponseViewSet(ModelViewSet):
                 response_annotation__response__question__has_free_text=True,
             )
             .values("theme_id")
-            .annotate(count=Count("theme_id", distinct=True))
+            .annotate(count=Count("response_annotation", distinct=True))
         )
 
         theme_aggregations = {str(theme["theme_id"]): theme["count"] for theme in theme_counts}
