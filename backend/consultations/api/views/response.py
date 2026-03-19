@@ -77,10 +77,22 @@ class ResponseViewSet(ModelViewSet):
         start_time = time()
         consultation_pk = kwargs.get('consultation_pk')
         
+        logger.info(
+            "Response list starting for consultation {consultation_id}",
+            consultation_id=str(consultation_pk),
+        )
+        
         response = super().list(request, *args, **kwargs)
         
         duration_ms = int((time() - start_time) * 1000)
-        result_count = response.data.get('filtered_total', 0) if isinstance(response.data, dict) else len(response.data)
+        
+        # Handle paginated response structure
+        if isinstance(response.data, dict):
+            result_count = response.data.get('filtered_total', 0)
+            if result_count == 0 and 'all_respondents' in response.data:
+                result_count = len(response.data['all_respondents'])
+        else:
+            result_count = len(response.data) if isinstance(response.data, list) else 0
         
         logger.info(
             "Response list completed in {duration_ms}ms for consultation {consultation_id} with {result_count} results",

@@ -36,10 +36,30 @@ class QuestionViewSet(ModelViewSet):
         start_time = time()
         consultation_pk = kwargs.get('consultation_pk')
 
+        logger.info(
+            "Question list starting for consultation {consultation_id}",
+            consultation_id=str(consultation_pk),
+        )
+
         response = super().list(request, *args, **kwargs)
 
         duration_ms = int((time() - start_time) * 1000)
-        question_count = len(response.data) if isinstance(response.data, list) else 0
+        # TODO: check me
+        # question_count = len(response.data) if isinstance(response.data, list) else 0
+
+        # Handle different response data structures
+        if isinstance(response.data, list):
+            question_count = len(response.data)
+        elif isinstance(response.data, dict) and 'results' in response.data:
+            question_count = len(response.data['results'])
+        elif isinstance(response.data, dict) and 'count' in response.data:
+            question_count = response.data['count']
+        else:
+            question_count = 0
+            logger.warning(
+                "Unexpected response data structure: {data_type}",
+                data_type=type(response.data).__name__,
+            )
 
         logger.info(
             "Question list completed in {duration_ms}ms for consultation {consultation_id} with {question_count} questions",
@@ -51,6 +71,7 @@ class QuestionViewSet(ModelViewSet):
         return response
 
     def get_queryset(self):
+        query_start = time()
         consultation_uuid = self.kwargs["consultation_pk"]
 
         queryset = models.Question.objects.filter(consultation_id=consultation_uuid)
@@ -87,7 +108,16 @@ class QuestionViewSet(ModelViewSet):
             "consultation_id",  # Include FK field for select_related
         )
 
-        return queryset.order_by("number")
+        final_queryset = queryset.order_by("number")
+
+        query_duration = int((time() - query_start) * 1000)
+        logger.info(
+            "Question queryset built in {duration_ms}ms for consultation {consultation_id}",
+            duration_ms=query_duration,
+            consultation_id=str(consultation_uuid),
+        )
+
+        return final_queryset
 
     @action(
         detail=True,
