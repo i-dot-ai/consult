@@ -97,10 +97,10 @@ class ResponseViewSet(ModelViewSet):
             # CRITICAL PERFORMANCE: History table queries are extremely expensive
             # The annotation is considered edited if:
             # 1. It has human-assigned themes (most common case)
-            # 2. OR it has been modified (checked via modified_at != created_at)
-            # Using Case/When to OR these conditions without separate queries
+            # 2. OR it has been reviewed (reviewed_by is set)
+            # This avoids history queries while capturing the main edit scenarios
             annotation_is_edited=Case(
-                # Check for human-assigned themes first
+                # Check for human-assigned themes
                 When(
                     Exists(
                         models.ResponseAnnotationTheme.objects.filter(
@@ -110,13 +110,12 @@ class ResponseViewSet(ModelViewSet):
                     ),
                     then=Value(True)
                 ),
-                # Check if annotation was modified
+                # Check if annotation has been reviewed (indicates human interaction)
                 When(
                     Exists(
                         models.ResponseAnnotation.objects.filter(
                             id=OuterRef("annotation__id"),
-                        ).exclude(
-                            modified_at=F("created_at")
+                            reviewed_by__isnull=False,
                         )
                     ),
                     then=Value(True)
