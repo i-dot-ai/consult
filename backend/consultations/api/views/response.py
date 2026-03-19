@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from django.db.models import Count, Exists, OuterRef
+from django.db.models import Count, Exists, F, OuterRef
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -101,7 +101,7 @@ class ResponseViewSet(ModelViewSet):
                 models.ResponseAnnotation.objects.filter(
                     id=OuterRef("annotation__id"),
                 ).exclude(
-                    modified_at=models.F("created_at")
+                    modified_at=F("created_at")
                 )
             ),
             annotation_has_human_assigned_themes=Exists(
