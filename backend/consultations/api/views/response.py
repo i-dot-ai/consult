@@ -94,13 +94,18 @@ class ResponseViewSet(ModelViewSet):
             is_read_by_user=Exists(
                 models.Response.objects.filter(read_by=self.request.user, pk=OuterRef("pk"))
             ),
+            # CRITICAL PERFORMANCE: History table queries are extremely expensive
+            # Instead of querying history tables on every response, we can check if 
+            # annotation was modified_at != created_at OR if any human-assigned themes exist
             annotation_is_edited=Exists(
-                models.ResponseAnnotation.history.filter(id=OuterRef("annotation__id")).values(
-                    "id"
-                )[1:]
+                models.ResponseAnnotation.objects.filter(
+                    id=OuterRef("annotation__id"),
+                ).exclude(
+                    modified_at=models.F("created_at")
+                )
             ),
             annotation_has_human_assigned_themes=Exists(
-                models.ResponseAnnotationTheme.history.filter(
+                models.ResponseAnnotationTheme.objects.filter(
                     response_annotation_id=OuterRef("annotation__id"),
                     assigned_by__isnull=False,
                 )
@@ -119,9 +124,12 @@ class ResponseViewSet(ModelViewSet):
     def demographic_aggregations(self, request, consultation_pk=None):
         """Get demographic aggregations for filtered responses"""
 
+        # More efficient: get respondent IDs from filtered responses, then aggregate demographics
+        filtered_respondent_ids = self.get_queryset().values_list('respondent_id', flat=True).distinct()
+        
         aggregations = (
             models.DemographicOption.objects.filter(
-                Exists(self.get_queryset().filter(respondent=OuterRef("respondent")))
+                respondent__id__in=filtered_respondent_ids
             )
             .values("field_name", "field_value")
             .annotate(count=Count("respondent", distinct=True))
@@ -145,17 +153,20 @@ class ResponseViewSet(ModelViewSet):
     def theme_aggregations(self, request, consultation_pk=None):
         """Get theme aggregations for filtered responses"""
 
-        # Get theme counts from the filtered responses
+        # More efficient query: aggregate themes directly from ResponseAnnotationTheme
+        # instead of joining through SelectedTheme
+        filtered_response_ids = self.get_queryset().values_list('id', flat=True)
+        
         theme_counts = (
-            models.SelectedTheme.objects.filter(
-                responseannotation__response__in=self.get_queryset(),
-                responseannotation__response__question__has_free_text__isnull=False,
+            models.ResponseAnnotationTheme.objects.filter(
+                response_annotation__response_id__in=filtered_response_ids,
+                response_annotation__response__question__has_free_text=True,
             )
-            .values("id")
-            .annotate(count=Count("responseannotation", distinct=True))
+            .values("theme_id")
+            .annotate(count=Count("theme_id", distinct=True))
         )
 
-        theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
+        theme_aggregations = {str(theme["theme_id"]): theme["count"] for theme in theme_counts}
 
         serializer = ThemeAggregationsSerializer(data={"theme_aggregations": theme_aggregations})
         serializer.is_valid()
