@@ -246,7 +246,7 @@ tf_init_and_set_workspace:
 
 .PHONY: tf_init
 tf_init: ## Initialise terraform
-	terraform -chdir=./terraform/$(instance) init -backend-config=$(TF_BACKEND_CONFIG) -upgrade
+	terraform -chdir=./terraform/$(instance) init -backend-config=$(TF_BACKEND_CONFIG) -reconfigure
 
 .PHONY: tf_plan
 tf_plan: ## Plan terraform
