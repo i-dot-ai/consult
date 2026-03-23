@@ -98,7 +98,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         CLOSED = "closed", "Closed"
         OPEN = "open", "Open"
 
-    closed_question = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
+    closed_question = models.ForeignKey("self", on_delete=models.SET_NULL, blank=True, null=True)
     order = models.PositiveSmallIntegerField(blank=True, null=True)
     identifier = models.TextField(blank=True, null=True)
     type = models.CharField(
