@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from consultations.models import Question
-from factories import QuestionFactory, RespondentFactory, ResponseFactory
+from factories import MultiChoiceAnswerFactory, QuestionFactory, RespondentFactory, ResponseFactory
 
 
 @pytest.mark.django_db
@@ -370,3 +370,33 @@ class TestQuestionViewSet:
             headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         assert response.status_code == 405
+
+
+    def test_patch_hybrid_question_with_multichoice(self, client, staff_user, consultation, staff_user_token):
+        """Test PATCH request on hybrid question with multiple choice answers"""
+        hybrid_question = QuestionFactory(
+            consultation=consultation,
+            has_free_text=True,
+            has_multiple_choice=True,
+            number=1,
+            text="whats your favourite colour"
+        )
+        MultiChoiceAnswerFactory.create(question=hybrid_question, text="red")
+
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": consultation.id,
+                "pk": hybrid_question.id,
+            },
+        )
+
+        response = client.patch(
+                url,
+                data={"theme_status": Question.ThemeStatus.CONFIRMED},
+                content_type="application/json",
+                headers={"Authorization": f"Bearer {staff_user_token}"},
+            )
+
+        assert response.status_code == 200
+        assert response.json()["theme_status"] == "confirmed"

@@ -294,3 +294,12 @@ export type AstroGlobalRuntime = {
   };
   redirect: (url: string) => void;
 };
+
+export type HttpMethod =
+  | "GET"
+  | "POST"
+  | "PUT"
+  | "PATCH"
+  | "DELETE"
+  | "HEAD"
+  | "OPTIONS";

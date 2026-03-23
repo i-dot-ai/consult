@@ -80,6 +80,7 @@ exports[`MultiChoice > should render data 1`] = `
             tabindex="0"
           >
             <!---->
+            <!---->
             <div
               class="flex items-center justify-between gap-1 text-xs mb-4 last:mb-0 w-full p-1"
             >
@@ -138,6 +139,7 @@ exports[`MultiChoice > should render data 1`] = `
             </div>
             
             
+            
           </button>
           
           <!---->
@@ -153,6 +155,7 @@ exports[`MultiChoice > should render data 1`] = `
             role="button"
             tabindex="0"
           >
+            <!---->
             <!---->
             <div
               class="flex items-center justify-between gap-1 text-xs mb-4 last:mb-0 w-full p-1"
@@ -210,6 +213,7 @@ exports[`MultiChoice > should render data 1`] = `
                 </span>
               </div>
             </div>
+            
             
             
           </button>
