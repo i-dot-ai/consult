@@ -100,7 +100,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
     closed_question = models.ForeignKey("self", on_delete=models.SET_NULL, blank=True, null=True)
     order = models.PositiveSmallIntegerField(blank=True, null=True)
-    identifier = models.TextField(blank=True, null=True)
+    identifier = models.CharField(blank=True, null=True, max_length=8)
     type = models.CharField(
         max_length=32, choices=QuestionType.choices, blank=True, null=True,
     )
