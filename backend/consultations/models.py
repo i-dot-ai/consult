@@ -46,10 +46,12 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         FINALISING_THEMES = "finalising_themes", "Finalising Themes"
         ASSIGNING_THEMES = "assigning_themes", "Assigning Themes"
 
+        # Both old and new stages
+        ANALYSIS = "analysis", "Analysis"
+
         # Old stages
         THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
         THEME_MAPPING = "theme_mapping", "Theme Mapping"
-        ANALYSIS = "analysis", "Analysis"
 
     class ModelName(models.TextChoices):
         GPT_4O = "gpt-4o-sweden"
