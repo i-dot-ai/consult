@@ -1,5 +1,4 @@
 from typing import Any
-from uuid import UUID
 
 import sentry_sdk
 from django.conf import settings
@@ -18,7 +17,6 @@ from consultations.api.permissions import (
     CanSeeConsultation,
 )
 from consultations.api.serializers import (
-    ConsultationExportSerializer,
     ConsultationFolderQuerySerializer,
     ConsultationSerializer,
     ConsultationSetupSerializer,
