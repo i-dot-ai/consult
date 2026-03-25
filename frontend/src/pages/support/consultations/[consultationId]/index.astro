@@ -16,7 +16,6 @@ import {
   getConsultationDetailUrl,
   getConsultationEvalUrl,
   getThemeSignOffUrl,
-  getSupportConsultationExportUrl,
   getSupportConsultationDeleteUrl,
   getApiConsultationUrl,
   getApiQuestionsUrl,
@@ -59,11 +58,6 @@ let questions = await fetchBackendApi<{ results: Question[] }>(
       <li>
         <Link href={getConsultationDetailUrl(consultationId)}
           >View on frontend (dashboard)</Link
-        >
-      </li>
-      <li>
-        <Link href={getSupportConsultationExportUrl(consultationId)}
-          >Export theme mapping audit data for this consultation</Link
         >
       </li>
       <li>
