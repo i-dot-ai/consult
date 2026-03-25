@@ -1,5 +1,4 @@
 from typing import Any
-from uuid import UUID
 
 import sentry_sdk
 from django.conf import settings
@@ -18,13 +17,11 @@ from consultations.api.permissions import (
     CanSeeConsultation,
 )
 from consultations.api.serializers import (
-    ConsultationExportSerializer,
     ConsultationFolderQuerySerializer,
     ConsultationSerializer,
     ConsultationSetupSerializer,
     DemographicOptionSerializer,
 )
-from consultations.export_user_theme import export_user_theme_job
 from consultations.models import (
     Consultation,
     DemographicOption,
@@ -293,46 +290,6 @@ class ConsultationViewSet(ModelViewSet):
             },
             status=status.HTTP_202_ACCEPTED,
         )
-
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="export",
-        permission_classes=[IsAuthenticated, IsAdminUser],
-    )
-    def submit_consultation_export(self, request) -> Response:
-        """
-        Submit consultation export.
-        """
-        try:
-            input_serializer = ConsultationExportSerializer(data=request.data)
-            input_serializer.is_valid(raise_exception=True)
-
-            validated = input_serializer.validated_data
-
-            for id in validated["question_ids"]:
-                try:
-                    logger.info("Exporting theme audit data - sending to queue")
-                    export_user_theme_job.delay(question_id=UUID(id), s3_key=validated["s3_key"])
-                except Exception:
-                    return Response(
-                        {
-                            "message": f"An error occurred while processing question export for question {id}"
-                        },
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    )
-
-            return Response({"message": "Export job completed"}, status=status.HTTP_200_OK)
-        except serializers.ValidationError:
-            return Response(
-                {"message": "An error occurred while starting the export"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        except Exception:
-            return Response(
-                {"message": "An error occurred while starting the export"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
 
     @action(
         detail=False,
