@@ -8,7 +8,6 @@ from authentication.models import User
 from consultations.models import (
     CandidateTheme,
     Consultation,
-    CrossCuttingTheme,
     MultiChoiceAnswer,
     Question,
     Respondent,
@@ -150,18 +149,6 @@ class ThemeSerializer2(serializers.ModelSerializer):
     class Meta:
         model = SelectedTheme
         fields = ["name", "description", "key", "question_id", "response_count"]
-
-
-class CrossCuttingThemeSerializer(serializers.ModelSerializer):
-    themes = ThemeSerializer2(many=True, source="selectedtheme_set", read_only=True)
-    response_count = serializers.SerializerMethodField()
-
-    def get_response_count(self, cross_cutting_theme: CrossCuttingTheme) -> int:
-        return cross_cutting_theme.prefetched_response_count
-
-    class Meta:
-        model = CrossCuttingTheme
-        fields = ["name", "description", "themes", "response_count"]
 
 
 class CandidateThemeSerializer(serializers.ModelSerializer):

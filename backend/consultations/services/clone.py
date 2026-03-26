@@ -8,7 +8,6 @@ from django_rq import job
 from consultations.models import (
     CandidateTheme,
     Consultation,
-    CrossCuttingTheme,
     DemographicOption,
     MultiChoiceAnswer,
     Question,
@@ -170,14 +169,10 @@ def clone_consultation(original: Consultation) -> Consultation:
         [("question_id", question_map)],
     )
 
-    # Clone crosscuttingthemes, selectedthemes and candidatethemes
-    cross_cutting_theme_map = _clone(
-        CrossCuttingTheme.objects.filter(consultation=original),
-        [("consultation_id", consultation_map)],
-    )
+    # Clone selectedthemes and candidatethemes
     selected_theme_map = _clone(
         SelectedTheme.objects.filter(question__consultation=original),
-        [("question_id", question_map), ("crosscuttingtheme_id", cross_cutting_theme_map)],
+        [("question_id", question_map)],
     )
     _clone_candidate_themes(
         CandidateTheme.objects.filter(question__consultation=original),
