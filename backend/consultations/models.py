@@ -491,14 +491,9 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
         return f"{self.question.number} = {self.text}"
 
 
-class FileUpload(UUIDPrimaryKeyModel, TimeStampedModel):
+class FileUpload(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, editable=False)
     uploaded_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True
+        User, on_delete=models.SET_NULL, null=False, blank=False
     )
-    s3_key = models.TextField(null=True, blank=True)
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        indexes = [
-            models.Index(fields=["consultation", "themefinder_id"]),
-        ]
+    s3_key = models.TextField(null=False, blank=False)
