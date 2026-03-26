@@ -494,6 +494,6 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
 class FileUpload(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, editable=False)
     uploaded_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=False, blank=False
+        User, on_delete=models.SET_NULL, null=True, blank=True
     )
     s3_key = models.TextField(null=False, blank=False)
