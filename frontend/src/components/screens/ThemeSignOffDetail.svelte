@@ -164,19 +164,11 @@
   let dataRequested: boolean = $state(false);
 
   const errorModalOnClose = () => {
-    selectedThemes.fetch(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
-    generatedThemes.fetch(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
+    refreshThemes();
     errorData = null;
   };
 
   onMount(() => {
-    generatedThemes.fetch(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
     $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
     dataRequested = true;
   });
