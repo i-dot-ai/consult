@@ -102,7 +102,10 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     order = models.PositiveSmallIntegerField(blank=True, null=True)
     identifier = models.CharField(blank=True, null=True, max_length=8)
     type = models.CharField(
-        max_length=32, choices=QuestionType.choices, blank=True, null=True,
+        max_length=32,
+        choices=QuestionType.choices,
+        blank=True,
+        null=True,
     )
 
     class ThemeStatus(models.TextChoices):
@@ -493,7 +496,5 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
 
 class FileUpload(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, editable=False)
-    uploaded_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     s3_key = models.TextField(null=False, blank=False)
