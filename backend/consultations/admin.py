@@ -8,7 +8,6 @@ from consultations.dummy_data import create_dummy_consultation_from_yaml_job
 from consultations.models import (
     CandidateTheme,
     Consultation,
-    CrossCuttingTheme,
     DemographicOption,
     MultiChoiceAnswer,
     Question,
@@ -219,10 +218,6 @@ class DemographicOptionAdmin(admin.ModelAdmin):
     readonly_fields = ["consultation", "field_name", "field_value"]
 
 
-class CrossCuttingThemeAdmin(admin.ModelAdmin):
-    inlines = [SelectedThemeInline]
-
-
 class CandidateThemeAdmin(admin.ModelAdmin):
     list_filter = ["question__consultation", "question"]
     list_display = ["name", "question", "approximate_frequency"]
@@ -235,7 +230,6 @@ class SelectedThemeAdmin(admin.ModelAdmin):
 
 admin.site.register(CandidateTheme, CandidateThemeAdmin)
 admin.site.register(SelectedTheme, SelectedThemeAdmin)
-admin.site.register(CrossCuttingTheme, CrossCuttingThemeAdmin)
 admin.site.register(Response, ResponseAdmin)
 admin.site.register(Consultation, ConsultationAdmin)
 admin.site.register(Question, QuestionAdmin)
