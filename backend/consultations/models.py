@@ -120,6 +120,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     theme_status = models.CharField(
         max_length=32, choices=ThemeStatus.choices, default=ThemeStatus.DRAFT
     )
+    status = models.CharField(max_length=32, choices=ThemeStatus.choices, default=ThemeStatus.DRAFT)
 
     # Question configuration
     has_free_text = models.BooleanField(default=True)
