@@ -21,6 +21,8 @@
     getQuestionDetailUrl,
   } from "../../global/routes.ts";
   import { createFetchStore, favStore } from "../../global/stores.ts";
+  import { buildPaginatedQuery } from "../../global/queryClient.ts";
+  import LoadingIndicator from "../LoadingIndicator/LoadingIndicator.svelte";
 
   interface Props {
     consultationId: string;
@@ -32,28 +34,46 @@
   let dataRequested: boolean = $state(false);
 
   const questionsStore = createFetchStore<QuestionsResponse>();
+  let currQuestionPage = $state(1);
+
+  const questionsQuery = $derived(buildPaginatedQuery(getApiQuestionsUrl(consultationId) + `?page=${currQuestionPage}`, {
+    getKey: () => [getApiQuestionsUrl(consultationId)],
+    getPageParam: () => currQuestionPage,
+    setPageParam: (newPageParam) => currQuestionPage = newPageParam,
+  }));
+
   const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
 
-  onMount(() => {
-    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
+  onMount(async () => {
     $demoOptionsStore.fetch(
       `/api/consultations/${consultationId}/demographic-options/`,
     );
     dataRequested = true;
+
+    await questionsQuery.fetchNextPage();
+
+    while (questionsQuery.hasNextPage) {
+      await questionsQuery.fetchNextPage();
+    }
   });
 
+  let allQuestions = $derived(questionsQuery.data?.pages
+    .map(page => page.items)
+    .flat()
+  );
+
   let favQuestions = $derived(
-    $questionsStore.data?.results?.filter((question) =>
+    allQuestions?.filter((question) =>
       $favStore.includes(question.id),
-    ),
+    )
   );
 
   let displayQuestions = $derived(
-    $questionsStore.data?.results?.filter((question) =>
+    allQuestions?.filter((question) => (
       `Q${question.number}: ${question.question_text}`
         .toLocaleLowerCase()
-        .includes(searchValue.toLocaleLowerCase()),
-    ),
+        .includes(searchValue.toLocaleLowerCase())
+    ))
   );
 </script>
 
@@ -126,6 +146,7 @@
           hideLabel={true}
           value={searchValue}
           setValue={(value) => (searchValue = value.trim())}
+          disabled={questionsQuery.hasNextPage}
         />
 
         <div class="mb-4">
@@ -144,6 +165,10 @@
                 url={getQuestionDetailUrl(consultationId, question.id || "")}
               />
             {/each}
+          {/if}
+
+          {#if questionsQuery.hasNextPage}
+            <LoadingIndicator />
           {/if}
         </div>
       </div>
