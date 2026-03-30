@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("consultations", "0094_fileupload_remove_response_unique_question_response_and_more"),
+        ("consultations", "0095_fileupload_remove_response_unique_question_response_and_more"),
     ]
 
     operations = [
