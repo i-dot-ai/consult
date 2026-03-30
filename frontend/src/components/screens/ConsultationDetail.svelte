@@ -16,9 +16,7 @@
     DemoOptionsResponse,
     QuestionsResponse,
   } from "../../global/types.ts";
-  import {
-    getQuestionDetailUrl,
-  } from "../../global/routes.ts";
+  import { getQuestionDetailUrl } from "../../global/routes.ts";
   import { createFetchStore, favStore } from "../../global/stores.ts";
   import LoadingIndicator from "../LoadingIndicator/LoadingIndicator.svelte";
   import { getQuestionsPaginated } from "../../global/queries/questions.ts";
@@ -35,10 +33,9 @@
   const questionsStore = createFetchStore<QuestionsResponse>();
   let currQuestionPage = $state(1);
 
-  const questionsQuery = $derived(getQuestionsPaginated(
-    consultationId,
-    currQuestionPage,
-  ));
+  const questionsQuery = $derived(
+    getQuestionsPaginated(consultationId, currQuestionPage),
+  );
 
   const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
 
@@ -55,23 +52,20 @@
     }
   });
 
-  let allQuestions = $derived(questionsQuery.data?.pages
-    .map(page => page.items)
-    .flat()
+  let allQuestions = $derived(
+    questionsQuery.data?.pages.map((page) => page.items).flat(),
   );
 
   let favQuestions = $derived(
-    allQuestions?.filter((question) =>
-      $favStore.includes(question.id),
-    )
+    allQuestions?.filter((question) => $favStore.includes(question.id)),
   );
 
   let displayQuestions = $derived(
-    allQuestions?.filter((question) => (
+    allQuestions?.filter((question) =>
       `Q${question.number}: ${question.question_text}`
         .toLocaleLowerCase()
-        .includes(searchValue.toLocaleLowerCase())
-    ))
+        .includes(searchValue.toLocaleLowerCase()),
+    ),
   );
 </script>
 

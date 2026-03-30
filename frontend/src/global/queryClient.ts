@@ -208,9 +208,10 @@ export const buildPaginatedQuery = (
     getPageParam,
     setPageParam,
     errorMessage = "Query failed",
-  }: BuildPaginatedQueryOptions
+  }: BuildPaginatedQueryOptions,
 ) => {
-  return createInfiniteQuery(() => ({
+  return createInfiniteQuery(
+    () => ({
       queryKey: getKey(),
       queryFn: async () => {
         const data = await doFetch({
@@ -224,13 +225,13 @@ export const buildPaginatedQuery = (
         return {
           items: data.results,
           nextPage: data.next ? getPageParam() : undefined,
-        }
+        };
       },
       initialPageParam: getPageParam(),
       getNextPageParam: (lastPage) => {
-        return lastPage.nextPage || undefined
+        return lastPage.nextPage || undefined;
       },
     }),
     () => queryClient,
   );
-}
+};

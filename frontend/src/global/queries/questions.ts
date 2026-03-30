@@ -83,9 +83,12 @@ export const getQuestionsPaginated = (
   consultationId: string,
   pageParam: number,
 ) => {
-  return buildPaginatedQuery(getApiQuestionsUrl(consultationId) + `?page=${pageParam}`, {
-    getKey: () => [getApiQuestionsUrl(consultationId)],
-    getPageParam: () => pageParam,
-    setPageParam: (newPageParam) => pageParam = newPageParam,
-  });
+  return buildPaginatedQuery(
+    getApiQuestionsUrl(consultationId) + `?page=${pageParam}`,
+    {
+      getKey: () => [getApiQuestionsUrl(consultationId)],
+      getPageParam: () => pageParam,
+      setPageParam: (newPageParam) => (pageParam = newPageParam),
+    },
+  );
 };
