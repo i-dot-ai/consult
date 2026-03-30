@@ -1,3 +1,4 @@
+import { buildPaginatedQuery } from "../queryClient";
 import { getApiQuestionsUrl, getApiQuestionUrl, Suffixes } from "../routes";
 import type { Question } from "../types";
 
@@ -76,4 +77,15 @@ export const updateQuestion = async (
   );
   if (!response.ok) throw new Error(`Failed to update question: ${questionId}`);
   return response.json();
+};
+
+export const getQuestionsPaginated = (
+  consultationId: string,
+  pageParam: number,
+) => {
+  return buildPaginatedQuery(getApiQuestionsUrl(consultationId) + `?page=${pageParam}`, {
+    getKey: () => [getApiQuestionsUrl(consultationId)],
+    getPageParam: () => pageParam,
+    setPageParam: (newPageParam) => pageParam = newPageParam,
+  });
 };

@@ -17,12 +17,11 @@
     QuestionsResponse,
   } from "../../global/types.ts";
   import {
-    getApiQuestionsUrl,
     getQuestionDetailUrl,
   } from "../../global/routes.ts";
   import { createFetchStore, favStore } from "../../global/stores.ts";
-  import { buildPaginatedQuery } from "../../global/queryClient.ts";
   import LoadingIndicator from "../LoadingIndicator/LoadingIndicator.svelte";
+  import { getQuestionsPaginated } from "../../global/queries/questions.ts";
 
   interface Props {
     consultationId: string;
@@ -36,11 +35,10 @@
   const questionsStore = createFetchStore<QuestionsResponse>();
   let currQuestionPage = $state(1);
 
-  const questionsQuery = $derived(buildPaginatedQuery(getApiQuestionsUrl(consultationId) + `?page=${currQuestionPage}`, {
-    getKey: () => [getApiQuestionsUrl(consultationId)],
-    getPageParam: () => currQuestionPage,
-    setPageParam: (newPageParam) => currQuestionPage = newPageParam,
-  }));
+  const questionsQuery = $derived(getQuestionsPaginated(
+    consultationId,
+    currQuestionPage,
+  ));
 
   const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
 
