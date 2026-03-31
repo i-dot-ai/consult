@@ -18,7 +18,6 @@ export enum Suffixes {
   Select = "select",
   ShowNext = "show-next",
   Delete = "delete",
-  Export = "export",
 }
 
 export enum Routes {
@@ -36,7 +35,6 @@ export enum Routes {
   ApiConsultations = "/api/consultations/",
   ApiConsultationFolders = "/api/consultations/folders/",
   ApiConsultationSetup = "/api/consultations/setup/",
-  ApiConsultationExport = "/api/consultations/export/",
   ApiConsultationQuestions = "/api/questions/",
   ApiUser = "/api/user/",
   ApiUsers = "/api/users/",
@@ -61,9 +59,6 @@ export const getConsultationAnalysisUrl = (consultationId: string) => {
 };
 export const getSupportConsultationDeleteUrl = (consultationId: string) => {
   return urlJoin(Routes.SupportConsultations, consultationId, Suffixes.Delete);
-};
-export const getSupportConsultationExportUrl = (consultationId: string) => {
-  return urlJoin(Routes.SupportConsultations, consultationId, Suffixes.Export);
 };
 export const getThemeSignOffUrl = (consultationId: string) => {
   return urlJoin(Routes.Consultations, consultationId, Suffixes.ThemeSignOff);
@@ -220,6 +215,21 @@ export const getApiGetSelectedThemesUrl = (
     Suffixes.Questions,
     questionId,
     Suffixes.SelectedThemes,
+    "/",
+  );
+};
+export const getApiGetSelectedThemeUrl = (
+  consultationId: string,
+  questionId: string,
+  themeId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.SelectedThemes,
+    themeId,
     "/",
   );
 };

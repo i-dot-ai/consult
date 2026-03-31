@@ -4,7 +4,6 @@ import pytest
 
 from consultations.models import (
     CandidateTheme,
-    CrossCuttingTheme,
     DemographicOption,
     MultiChoiceAnswer,
     Question,
@@ -89,14 +88,10 @@ class TestCloneConsultation:
     def test_themes(self):
         original = ConsultationFactory()
         question = QuestionFactory(consultation=original)
-        cross_cutting_theme = CrossCuttingTheme.objects.create(
-            consultation=original, name="Cross Cutting Theme", description="Description"
-        )
         user = UserFactory()
         selected_theme = SelectedThemeFactory(
             question=question,
             name="Theme 1",
-            crosscuttingtheme=cross_cutting_theme,
             last_modified_by=user,
         )
         candidate_theme = CandidateThemeFactory(
@@ -108,11 +103,9 @@ class TestCloneConsultation:
 
         cloned_question = Question.objects.get(consultation=cloned)
         cloned_selected_theme = SelectedTheme.objects.get(question=cloned_question)
-        cloned_cct = CrossCuttingTheme.objects.get(consultation=cloned)
 
         assert cloned_selected_theme.name == "Theme 1"
         assert cloned_selected_theme.last_modified_by == user
-        assert cloned_selected_theme.crosscuttingtheme == cloned_cct
 
         cloned_candidate_themes = CandidateTheme.objects.filter(question=cloned_question)
         cloned_parent = cloned_candidate_themes.get(name="Parent Theme")

@@ -107,7 +107,7 @@
       "mt-2",
     ])}
   >
-    <div class={clsx(["my-auto", "rotate-180"])}>
+    <div class={clsx(["flex", "my-auto", "rotate-180"])}>
       <Button
         disabled={items.length === 0}
         title={PREV_BUTTON_LABEL}
@@ -143,7 +143,7 @@
       />
     {/each}
 
-    <div class="my-auto">
+    <div class={clsx(["flex", "my-auto"])}>
       <Button
         disabled={items.length === 0}
         title={NEXT_BUTTON_LABEL}

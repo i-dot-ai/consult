@@ -21,7 +21,6 @@ from themefinder import (
 )
 from themefinder.advanced_tasks.theme_clustering_agent import ThemeClusteringAgent
 from themefinder.models import (
-    HierarchicalClusteringResponse,
     ThemeNode,
 )
 
