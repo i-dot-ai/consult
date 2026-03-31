@@ -58,11 +58,9 @@ class ALBJWTVerifier:
 
         try:
             with urllib.request.urlopen(url, timeout=10) as response:  # nosec B310
-                return response.read().decode('utf-8')
+                return response.read().decode("utf-8")
         except Exception as e:
-            logger.error(
-                "Failed to fetch ALB public key"
-            )
+            logger.error("Failed to fetch ALB public key")
             raise jwt.InvalidTokenError(f"Cannot fetch public key for kid {kid}: {str(e)}")
 
     def verify_token(self, token: str) -> dict[str, Any]:
@@ -134,16 +132,12 @@ def get_jwt_verifier() -> Optional[ALBJWTVerifier]:
     Only enabled for dev, preprod, and prod environments.
     """
     if settings.ENVIRONMENT.lower() not in ["dev", "preprod", "prod"]:
-        logger.info(
-            "JWT verification disabled for environment"
-        )
+        logger.info("JWT verification disabled for environment")
         return None
 
     aws_region = getattr(settings, "AWS_REGION", "eu-west-2")
     audience = None
 
-    logger.info(
-        "JWT verification enabled for AWS ALB tokens"
-    )
+    logger.info("JWT verification enabled for AWS ALB tokens")
 
     return ALBJWTVerifier(region=aws_region, audience=audience)

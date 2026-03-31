@@ -49,17 +49,13 @@ def validate_token(request):
 
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
-                logger.warning(
-                    "User not authorized"
-                )
+                logger.warning("User not authorized")
                 return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
         elif HostingEnvironment.is_deployed():
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
-                logger.warning(
-                    "User not authenticated"
-                )
+                logger.warning("User not authenticated")
                 return JsonResponse(data={"detail": "authentication failed"}, status=403)
             email = user_authorisation_info.email
 
