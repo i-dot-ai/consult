@@ -1,6 +1,8 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { fly } from "svelte/transition";
+
   import Button from "../../inputs/Button/Button.svelte";
   import Title from "../../Title.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
@@ -12,6 +14,7 @@
     author: string;
     organisation: string;
     abbreviation?: string;
+    icon?: string;
   }
 
   interface Props {
@@ -73,10 +76,23 @@
             "border-neutral-500",
           ])}
         >
-          <MaterialIcon color="fill-neutral-700" size="1.5rem">
-            <Star fill={true} />
-          </MaterialIcon>
-          {currItem.abbreviation || currItem.organisation.charAt(0)}
+          {#if currItem.icon}
+            <div
+              in:fly={{ y: 200, duration: 300 }}
+              class={clsx([ "w-16", "min-h-16", "flex", "items-center", "justify-center" ])}
+            >
+              <img
+                src={currItem.icon}
+                class={clsx([ "block", "w-full" ])}
+                alt={`${currItem.organisation} icon`}
+              />
+            </div>
+          {:else}
+            <MaterialIcon color="fill-neutral-700" size="1.5rem">
+              <Star fill={true} />
+            </MaterialIcon>
+            {currItem.abbreviation || currItem.organisation.charAt(0)}
+          {/if}
         </div>
         <div>
           <p class={clsx(["text-sm", "text-neutral-600", "mb-2"])}>
