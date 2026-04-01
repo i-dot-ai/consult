@@ -27,7 +27,8 @@ exports[`IntroPage > should match snapshot 1`] = `
     >
       Prepare and structure your data ready for AI analysis. 
       <br />
-       If you're still collecting responses, use this phase to understand what's needed before your consultation closes.
+       If you're still collecting responses, use this phase to understand what's needed
+    before your consultation closes.
     </p>
   </section>
    
