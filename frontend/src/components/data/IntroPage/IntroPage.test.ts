@@ -41,9 +41,9 @@ describe("IntroPage", () => {
   });
 
   it.each([
-    "Prepare data outside Consult",
-    "Upload & validate",
-    "Define question structure",
+    "Prepare your data",
+    "Upload & review",
+    "Configure questions",
   ])("should render card titles", (title) => {
     render(IntroPage);
 
@@ -51,9 +51,9 @@ describe("IntroPage", () => {
   });
 
   it.each([
-    "Export from your collection tool and structure your files",
-    "Check your data meets the required format",
-    "Configure how each question should be analysed",
+    "Export from your collection tool and get to know your data",
+    "Upload your file and review validation results",
+    "Confirm question types and configure closed questions",
   ])("should render card subtitles", (subtitle) => {
     render(IntroPage);
 

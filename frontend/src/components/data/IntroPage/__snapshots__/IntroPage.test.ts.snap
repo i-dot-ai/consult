@@ -25,9 +25,9 @@ exports[`IntroPage > should match snapshot 1`] = `
     <p
       class="text-neutral-500 text-md"
     >
-      Prepare and structure your data ready for AI analysis. If you're still
-    collecting responses, use this phase to understand what's needed before your
-    consultation closes.
+      Prepare and structure your data ready for AI analysis. 
+      <br />
+       If you're still collecting responses, use this phase to understand what's needed before your consultation closes.
     </p>
   </section>
    
@@ -52,6 +52,12 @@ exports[`IntroPage > should match snapshot 1`] = `
     </h3>
     
     <!---->
+     
+    <p
+      class="text-neutral-500 text-xs my-4"
+    >
+      You'll complete 5 individual steps, organised into 3 phases:
+    </p>
      
     <div
       class="flex gap-2 my-4 min-w-[50rem]"
@@ -90,19 +96,19 @@ exports[`IntroPage > should match snapshot 1`] = `
         <small
           class="text-secondary text-xs text-center mt-1"
         >
-          Step 1
+          Steps 1 & 2
         </small>
          
         <h3
           class="text-sm text-center"
         >
-          Prepare data outside Consult
+          Prepare your data
         </h3>
          
         <p
           class="text-neutral-500 text-xs text-center"
         >
-          Export from your collection tool and structure your files
+          Export from your collection tool and get to know your data
         </p>
          
         <div
@@ -158,19 +164,19 @@ exports[`IntroPage > should match snapshot 1`] = `
         <small
           class="text-secondary text-xs text-center mt-1"
         >
-          Step 2
+          Step 3
         </small>
          
         <h3
           class="text-sm text-center"
         >
-          Upload & validate
+          Upload & review
         </h3>
          
         <p
           class="text-neutral-500 text-xs text-center"
         >
-          Check your data meets the required format
+          Upload your file and review validation results
         </p>
          
         <div
@@ -226,19 +232,19 @@ exports[`IntroPage > should match snapshot 1`] = `
         <small
           class="text-secondary text-xs text-center mt-1"
         >
-          Step 3
+          Steps 4 & 5
         </small>
          
         <h3
           class="text-sm text-center"
         >
-          Define question structure
+          Configure questions
         </h3>
          
         <p
           class="text-neutral-500 text-xs text-center"
         >
-          Configure how each question should be analysed
+          Confirm question types and configure closed questions
         </p>
          
         <!---->
