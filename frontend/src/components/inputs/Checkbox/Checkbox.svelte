@@ -59,9 +59,7 @@
   }
 </script>
 
-<div
-  class={clsx([errorMessage && "mr-4 border-l-4 border-red-600 pl-3"])}
->
+<div class={clsx([errorMessage && "mr-4 border-l-4 border-red-600 pl-3"])}>
   {#if hint}
     <div
       id="{id}-hint"
