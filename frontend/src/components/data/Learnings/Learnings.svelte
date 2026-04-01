@@ -79,11 +79,17 @@
           {#if currItem.icon}
             <div
               in:fly={{ y: 200, duration: 300 }}
-              class={clsx([ "w-16", "min-h-16", "flex", "items-center", "justify-center" ])}
+              class={clsx([
+                "w-16",
+                "min-h-16",
+                "flex",
+                "items-center",
+                "justify-center",
+              ])}
             >
               <img
                 src={currItem.icon}
-                class={clsx([ "block", "w-full" ])}
+                class={clsx(["block", "w-full"])}
                 alt={`${currItem.organisation} icon`}
               />
             </div>
