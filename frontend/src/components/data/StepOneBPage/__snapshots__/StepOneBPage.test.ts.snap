@@ -59,23 +59,16 @@ exports[`StepOneBPage > should match snapshot 1`] = `
           <div
             class="flex items-center justify-center flex-col mb-auto py-2 px-4 font-bold text-xs text-neutral-700 bg-white border-2 border-neutral-500"
           >
-            <svg
-              class="fill-neutral-700"
-              height="1.5rem"
-              role="img"
-              viewBox="0 -960 960 960"
-              width="1.5rem"
-              xmlns="http://www.w3.org/2000/svg"
+            <div
+              class="w-16 min-h-16 flex items-center justify-center"
             >
-              <!---->
-              <path
-                d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"
+              <img
+                alt="Department for Education icon"
+                class="block w-full"
+                src="images/dfe_logo.svg"
               />
-              
-              <!---->
-            </svg>
+            </div>
             <!---->
-             DfE
           </div>
            
           <div>
