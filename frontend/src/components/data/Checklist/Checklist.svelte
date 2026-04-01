@@ -65,8 +65,8 @@
           onchange={(checked, value) => onChange(value!, checked)}
         />
 
-        <div class={clsx([ "w-full", ])}>
-          <div class={clsx([ "flex", "justify-between", "gap-4", "w-full", ])}>
+        <div class={clsx(["w-full"])}>
+          <div class={clsx(["flex", "justify-between", "gap-4", "w-full"])}>
             <label for={getCheckboxId(item.id)} class="hover:cursor-pointer">
               <Title level={4}>
                 <span class={clsx(["block", "mb-1"])}>
@@ -87,7 +87,7 @@
               ariaControls={`${item.id}-details`}
               ariaLabel={`Show/Hide ${item.id}-details`}
             >
-              <span class="-ml-2 text-secondary hover:underline text-nowrap">
+              <span class="-ml-2 text-nowrap text-secondary hover:underline">
                 {expanded.includes(item.id)
                   ? "Hide example"
                   : "Show me an example"}
