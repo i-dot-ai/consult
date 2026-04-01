@@ -26,8 +26,8 @@
 
   function getStepsText(steps: Props["steps"]) {
     return Array.isArray(steps)
-      ? `Steps ${steps.slice(0, steps.length-1).join(", ")} & ${steps.at(steps.length-1)}`
-      : `Step ${steps.toString()}`
+      ? `Steps ${steps.slice(0, steps.length - 1).join(", ")} & ${steps.at(steps.length - 1)}`
+      : `Step ${steps.toString()}`;
   }
 </script>
 

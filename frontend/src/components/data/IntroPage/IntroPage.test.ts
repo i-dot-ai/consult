@@ -40,15 +40,14 @@ describe("IntroPage", () => {
     expect(cards.at(2)).not.toHaveAttribute("aria-current");
   });
 
-  it.each([
-    "Prepare your data",
-    "Upload & review",
-    "Configure questions",
-  ])("should render card titles", (title) => {
-    render(IntroPage);
+  it.each(["Prepare your data", "Upload & review", "Configure questions"])(
+    "should render card titles",
+    (title) => {
+      render(IntroPage);
 
-    expect(screen.getByText(title)).toBeInTheDocument();
-  });
+      expect(screen.getByText(title)).toBeInTheDocument();
+    },
+  );
 
   it.each([
     "Export from your collection tool and get to know your data",

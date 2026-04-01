@@ -64,8 +64,9 @@
   </Title>
 
   <p class={clsx(["text-neutral-500", "text-md"])}>
-    Prepare and structure your data ready for AI analysis. <br/>
-    If you're still collecting responses, use this phase to understand what's needed before your consultation closes.
+    Prepare and structure your data ready for AI analysis. <br />
+    If you're still collecting responses, use this phase to understand what's needed
+    before your consultation closes.
   </p>
 </section>
 
@@ -74,7 +75,9 @@
     <span class={clsx(["text-md", "mb-2"])}> What you'll do </span>
   </Title>
 
-  <p class={clsx(["text-neutral-500", "text-xs", "my-4"])}>You'll complete 5 individual steps, organised into 3 phases:</p>
+  <p class={clsx(["text-neutral-500", "text-xs", "my-4"])}>
+    You'll complete 5 individual steps, organised into 3 phases:
+  </p>
 
   <div class={clsx(["flex", "gap-2", "my-4", "min-w-[50rem]"])}>
     {#each CARDS as card, i (i)}
