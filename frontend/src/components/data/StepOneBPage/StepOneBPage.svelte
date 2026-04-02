@@ -6,13 +6,15 @@
   import Title from "../../Title.svelte";
   import Button from "../../inputs/Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
+  import Modal from "../../Modal/Modal.svelte";
+  import CheckCircle from "../../svg/material/CheckCircle.svelte";
   import ArrowForward from "../../svg/material/ArrowForward.svelte";
   import Learnings from "../Learnings/Learnings.svelte";
   import Checklist from "../Checklist/Checklist.svelte";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import { makeSnippet } from "../../../global/utils";
 
-  let checkedItems: string[] = $state([]);
+  let checkedItems: string[] = $state(getStoredItems() || []);
 
   export const LEARNINGS_DISPLAYED_KEY = "dataSetupLearningsDisplayed";
 
@@ -123,10 +125,29 @@
 
   function isAllItemsChecked() {
     return (
-      checkedItems.length !==
+      checkedItems.length ===
       CHECKLIST_A_ITEMS.length + CHECKLIST_B_ITEMS.length
     );
   }
+
+  function getStoredItems(): string[] {
+    const storedItemsString = localStorage.getItem("dataSetupCheckedItems");
+    return storedItemsString ? JSON.parse(storedItemsString) : [];
+  }
+  function setStoredItems(newItems: string[]) {
+    localStorage.setItem("dataSetupCheckedItems", JSON.stringify(newItems));
+  }
+  function addToStorage(itemKey: string) {
+    const storedItems = getStoredItems();
+    const newItems = [...storedItems, itemKey];
+    setStoredItems(newItems);
+  }
+  function removeFromStorage(itemKey: string) {
+    const storedItems = getStoredItems();
+    const newItems = storedItems.filter(item => item !== itemKey);
+    setStoredItems(newItems);
+  }
+
   function isItemChecked(itemId: string) {
     return checkedItems.includes(itemId);
   }
@@ -134,8 +155,10 @@
   function handleChecklistChange(id: string, checked: boolean) {
     if (checked) {
       checkedItems = [...checkedItems, id];
+      addToStorage(id);
     } else {
       checkedItems = checkedItems.filter((item) => item !== id);
+      removeFromStorage(id);
     }
   }
 
@@ -228,7 +251,7 @@
       handleClick={() => {}}
       variant="approve"
       size="sm"
-      disabled={isAllItemsChecked()}
+      disabled={!isAllItemsChecked()}
     >
       <span class="pr-2">My data is ready to upload</span>
       <MaterialIcon color="fill-white" size="0.9rem">
@@ -237,3 +260,40 @@
     </Button>
   </div>
 </section>
+
+{#if isAllItemsChecked()}
+  <Modal open={true} canCancel={false} canConfirm={false}>
+    <div class={clsx([
+      "bg-primary",
+      "rounded-full",
+      "w-24",
+      "h-24",
+      "flex",
+      "justify-center",
+      "items-center",
+      "mx-auto",
+      "growshrink",
+    ])}>
+      <MaterialIcon size="4.5rem">
+        <CheckCircle />
+      </MaterialIcon>
+    </div>
+
+    <h2 class={clsx([ "font-bold", "text-2xl", "mt-4", "mb-2", "text-center", ])}>
+      Checklist Complete!
+    </h2>
+
+    <p class={clsx([ "text-neutral-500", "text-md", "text-center", ])}>
+      Great work preparing your data! You've completed all the important checks. Move to the next step when you're ready to upload your file.
+    </p>
+
+    <div class={clsx(["mt-4", "flex", "justify-center",])}>
+      <Button variant="approve">
+        My data is ready to upload
+        <MaterialIcon>
+          <ArrowForward />
+        </MaterialIcon>
+      </Button>
+    </div>
+  </Modal>
+{/if}
