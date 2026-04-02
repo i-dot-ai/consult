@@ -46,15 +46,19 @@
 </script>
 
 <div class={clsx(["border", "border-secondary", "p-4", "rounded-lg"])}>
-  <div class={clsx([ "flex", "gap-2", "justify-between", "items-center" ])}>
+  <div class={clsx(["flex", "gap-2", "justify-between", "items-center"])}>
     <Title level={3}>
       <span class={clsx(["block", "text-sm", "font-[500]", "mt-2", "mb-4"])}>
         {title}
       </span>
     </Title>
 
-    <div class={clsx([ "-mt-1" ])}>
-      <Button variant="ghost" handleClick={onClose} ariaLabel="close-learnings-panel">
+    <div class={clsx(["-mt-1"])}>
+      <Button
+        variant="ghost"
+        handleClick={onClose}
+        ariaLabel="close-learnings-panel"
+      >
         <MaterialIcon color="fill-neutral-500">
           <Close />
         </MaterialIcon>
@@ -133,9 +137,7 @@
     </div>
   </div>
 
-  <div class={clsx([
-    "md:grid grid-cols-3 gap-4",
-  ])}>
+  <div class={clsx(["grid-cols-3 gap-4 md:grid"])}>
     <!-- To offset items by 1 -->
     <div class="invisible shrink-0"></div>
 

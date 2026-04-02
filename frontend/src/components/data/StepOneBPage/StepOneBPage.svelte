@@ -14,7 +14,9 @@
 
   let checkedItems: string[] = $state([]);
 
-  let displayLearnings = $state(!localStorage.getItem("dataSetupLearningsDisplayed"));
+  let displayLearnings = $state(
+    !localStorage.getItem("dataSetupLearningsDisplayed"),
+  );
 
   const CHECKLIST_A_ITEMS = [
     {
