@@ -100,12 +100,15 @@ describe("StepOneBPage", () => {
       await user.click(checkbox);
     }
 
-    const continueButton = screen.getByRole("button", {
+    const continueButtons = screen.getAllByRole("button", {
       name: CONTINUE_BUTTON_TEXT,
     });
 
     await waitFor(() => {
-      expect(continueButton).not.toBeDisabled();
+      continueButtons.forEach(continueButton => {
+        expect(continueButton).toBeInTheDocument();
+        expect(continueButton).not.toBeDisabled();
+      })
     });
   });
 
