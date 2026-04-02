@@ -8,6 +8,7 @@
   import MaterialIcon from "../../MaterialIcon.svelte";
   import ChevronRight from "../../svg/material/ChevronRight.svelte";
   import Star from "../../svg/material/Star.svelte";
+  import Close from "../../svg/material/Close.svelte";
 
   interface Item {
     text: string;
@@ -21,12 +22,16 @@
     id?: string;
     title?: string;
     items: Item[];
+    onClose?: () => void;
+    onPersistentClose?: () => void;
   }
 
   let {
     id = "learnings-component",
     title = "What other departments have found:",
     items = [],
+    onClose = () => {},
+    onPersistentClose = () => {},
   }: Props = $props();
 
   let currStep: number = $state(0);
@@ -41,11 +46,21 @@
 </script>
 
 <div class={clsx(["border", "border-secondary", "p-4", "rounded-lg"])}>
-  <Title level={3}>
-    <span class={clsx(["block", "text-sm", "font-[500]", "mt-2", "mb-4"])}>
-      {title}
-    </span>
-  </Title>
+  <div class={clsx([ "flex", "gap-2", "justify-between", "items-center" ])}>
+    <Title level={3}>
+      <span class={clsx(["block", "text-sm", "font-[500]", "mt-2", "mb-4"])}>
+        {title}
+      </span>
+    </Title>
+
+    <div class={clsx([ "-mt-1" ])}>
+      <Button variant="ghost" handleClick={onClose} ariaLabel="close-learnings-panel">
+        <MaterialIcon color="fill-neutral-500">
+          <Close />
+        </MaterialIcon>
+      </Button>
+    </div>
+  </div>
 
   <div
     {id}
@@ -118,71 +133,87 @@
     </div>
   </div>
 
-  <div
-    class={clsx([
-      "flex",
-      "justify-center",
-      "items-center",
-      "gap-1",
-      "flex-wrap",
-      "p-2",
-      "mt-2",
-    ])}
-  >
-    <div class={clsx(["flex", "my-auto", "rotate-180"])}>
-      <Button
-        disabled={items.length === 0}
-        title={PREV_BUTTON_LABEL}
-        ariaLabel={PREV_BUTTON_LABEL}
-        ariaControls={id}
-        handleClick={() => {
-          const intendedStep = currStep - 1;
-          if (intendedStep < 0) {
-            currStep = items.length - 1;
-          } else {
-            currStep = intendedStep;
-          }
-        }}
-      >
-        <MaterialIcon color="neutral-500">
-          <ChevronRight />
-        </MaterialIcon>
-      </Button>
+  <div class={clsx([
+    "md:grid grid-cols-3 gap-4",
+  ])}>
+    <!-- To offset items by 1 -->
+    <div class="invisible shrink-0"></div>
+
+    <div
+      class={clsx([
+        "flex",
+        "justify-center",
+        "items-center",
+        "gap-1",
+        "flex-wrap",
+        "p-2",
+        "mt-2",
+        "shrink-0",
+      ])}
+    >
+      <div class={clsx(["flex", "my-auto", "rotate-180"])}>
+        <Button
+          disabled={items.length === 0}
+          title={PREV_BUTTON_LABEL}
+          ariaLabel={PREV_BUTTON_LABEL}
+          ariaControls={id}
+          handleClick={() => {
+            const intendedStep = currStep - 1;
+            if (intendedStep < 0) {
+              currStep = items.length - 1;
+            } else {
+              currStep = intendedStep;
+            }
+          }}
+        >
+          <MaterialIcon color="neutral-500">
+            <ChevronRight />
+          </MaterialIcon>
+        </Button>
+      </div>
+
+      {#each items as _, i (i)}
+        <Button
+          variant="dot"
+          highlighted={currStep === i}
+          highlightVariant="approve"
+          handleClick={() => {
+            currStep = i;
+          }}
+          ariaLabel={getStepLabel(i)}
+          title={getStepLabel(i)}
+          ariaControls={id}
+          testId="Learnings Button"
+        />
+      {/each}
+
+      <div class={clsx(["flex", "my-auto"])}>
+        <Button
+          disabled={items.length === 0}
+          title={NEXT_BUTTON_LABEL}
+          ariaLabel={NEXT_BUTTON_LABEL}
+          ariaControls={id}
+          handleClick={() => {
+            const intendedStep = currStep + 1;
+            if (intendedStep > items.length - 1) {
+              currStep = 0;
+            } else {
+              currStep = intendedStep;
+            }
+          }}
+        >
+          <MaterialIcon color="neutral-500">
+            <ChevronRight />
+          </MaterialIcon>
+        </Button>
+      </div>
     </div>
 
-    {#each items as _, i (i)}
-      <Button
-        variant="dot"
-        highlighted={currStep === i}
-        highlightVariant="approve"
-        handleClick={() => {
-          currStep = i;
-        }}
-        ariaLabel={getStepLabel(i)}
-        title={getStepLabel(i)}
-        ariaControls={id}
-        testId="Learnings Button"
-      />
-    {/each}
-
-    <div class={clsx(["flex", "my-auto"])}>
-      <Button
-        disabled={items.length === 0}
-        title={NEXT_BUTTON_LABEL}
-        ariaLabel={NEXT_BUTTON_LABEL}
-        ariaControls={id}
-        handleClick={() => {
-          const intendedStep = currStep + 1;
-          if (intendedStep > items.length - 1) {
-            currStep = 0;
-          } else {
-            currStep = intendedStep;
-          }
-        }}
-      >
-        <MaterialIcon color="neutral-500">
-          <ChevronRight />
-        </MaterialIcon>
+    <div class="m-auto mt-4 flex justify-center md:block">
+      <Button handleClick={onPersistentClose} variant="ghost">
+        <div class={clsx(["underline", "text-xs", "text-neutral-500"])}>
+          Don't show me this again
+        </div>
       </Button>
     </div>
   </div>

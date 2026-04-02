@@ -1,6 +1,8 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { fade } from "svelte/transition";
+
   import Title from "../../Title.svelte";
   import Button from "../../inputs/Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
@@ -11,6 +13,8 @@
   import { makeSnippet } from "../../../global/utils";
 
   let checkedItems: string[] = $state([]);
+
+  let displayLearnings = $state(!localStorage.getItem("dataSetupLearningsDisplayed"));
 
   const CHECKLIST_A_ITEMS = [
     {
@@ -132,6 +136,15 @@
       checkedItems = checkedItems.filter((item) => item !== id);
     }
   }
+
+  function handleLearningsClose() {
+    displayLearnings = false;
+  }
+
+  function handlePersistentClose() {
+    localStorage.setItem("dataSetupLearningsDisplayed", "true");
+    displayLearnings = false;
+  }
 </script>
 
 <Title level={1}>Step 1b: Prepare and get to know your data</Title>
@@ -142,29 +155,34 @@
     as your chance to read through the responses — you'll go into the analysis
     phase with much stronger context.
   </p>
-
-  <Learnings
-    items={[
-      {
-        text: "Taking time to prepare our data correctly at the start saved us hours during the analysis phase. We were able to jump straight into insights rather than troubleshooting data issues.",
-        author: "Senior Policy Analyst",
-        organisation: "Department for Education",
-        icon: "images/dfe_logo.svg",
-      },
-      {
-        text: "Having consistent question formatting across all responses made the AI theme detection incredibly accurate. It's worth the extra 20 minutes to get this right.",
-        author: "Consultation Lead",
-        organisation: "Department for Transport",
-        icon: "images/dft_logo.svg",
-      },
-      {
-        text: "We collated responses from three different survey platforms into one file. The standardised structure meant the tool handled everything seamlessly.",
-        author: "Data Manager",
-        organisation: "Ministry of Justice",
-        icon: "images/moj_logo.svg",
-      },
-    ]}
-  />
+  {#if displayLearnings}
+    <div out:fade>
+      <Learnings
+        items={[
+          {
+            text: "Taking time to prepare our data correctly at the start saved us hours during the analysis phase. We were able to jump straight into insights rather than troubleshooting data issues.",
+            author: "Senior Policy Analyst",
+            organisation: "Department for Education",
+            icon: "images/dfe_logo.svg",
+          },
+          {
+            text: "Having consistent question formatting across all responses made the AI theme detection incredibly accurate. It's worth the extra 20 minutes to get this right.",
+            author: "Consultation Lead",
+            organisation: "Department for Transport",
+            icon: "images/dft_logo.svg",
+          },
+          {
+            text: "We collated responses from three different survey platforms into one file. The standardised structure meant the tool handled everything seamlessly.",
+            author: "Data Manager",
+            organisation: "Ministry of Justice",
+            icon: "images/moj_logo.svg",
+          },
+        ]}
+        onClose={handleLearningsClose}
+        onPersistentClose={handlePersistentClose}
+      />
+    </div>
+  {/if}
 </section>
 
 <section class="my-8">
