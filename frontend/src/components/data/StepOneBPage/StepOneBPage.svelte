@@ -14,8 +14,10 @@
 
   let checkedItems: string[] = $state([]);
 
+  export const LEARNINGS_DISPLAYED_KEY = "dataSetupLearningsDisplayed";
+
   let displayLearnings = $state(
-    !localStorage.getItem("dataSetupLearningsDisplayed"),
+    !localStorage.getItem(LEARNINGS_DISPLAYED_KEY),
   );
 
   const CHECKLIST_A_ITEMS = [
@@ -144,7 +146,7 @@
   }
 
   function handlePersistentClose() {
-    localStorage.setItem("dataSetupLearningsDisplayed", "true");
+    localStorage.setItem(LEARNINGS_DISPLAYED_KEY, "true");
     displayLearnings = false;
   }
 </script>
