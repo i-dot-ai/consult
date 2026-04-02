@@ -27,221 +27,297 @@ exports[`StepOneBPage > should match snapshot 1`] = `
     phase with much stronger context.
     </p>
      
-    <div
-      class="border border-secondary p-4 rounded-lg"
-    >
-      <!---->
-      <h3
-        class="text-neutral-700 text-md"
-        style=""
-      >
-        <!---->
-        <!---->
-        <span
-          class="block text-sm font-[500] mt-2 mb-4"
-        >
-          What other departments have found:
-        </span>
-        
-        
-        
-      </h3>
-      
-      <!---->
-       
+    <div>
       <div
-        class="bg-neutral-100 px-4 pt-6 pb-8 rounded-lg"
-        id="learnings-component"
+        class="border border-secondary p-4 rounded-lg"
       >
         <div
-          class="flex gap-4"
+          class="flex gap-2 justify-between items-center"
+        >
+          <!---->
+          <h3
+            class="text-neutral-700 text-md"
+            style=""
+          >
+            <!---->
+            <!---->
+            <span
+              class="block text-sm font-[500] mt-2 mb-4"
+            >
+              What other departments have found:
+            </span>
+            
+            
+            
+          </h3>
+          
+          <!---->
+           
+          <div
+            class="-mt-1"
+          >
+            <!---->
+            <button
+              aria-label="close-learnings-panel"
+              aria-pressed="false"
+              class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              data-variant="ghost"
+              role="button"
+              tabindex="0"
+            >
+              <!---->
+              <!---->
+              <svg
+                class="fill-neutral-500"
+                height="1rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
+                />
+                <!---->
+              </svg>
+              
+              
+              
+            </button>
+            
+            <!---->
+          </div>
+        </div>
+         
+        <div
+          class="bg-neutral-100 px-4 pt-6 pb-8 rounded-lg"
+          id="learnings-component"
         >
           <div
-            class="flex items-center justify-center flex-col mb-auto py-2 px-4 font-bold text-xs text-neutral-700 bg-white border-2 border-neutral-500"
+            class="flex gap-4"
           >
             <div
-              class="w-16 min-h-16 flex items-center justify-center"
+              class="flex items-center justify-center flex-col mb-auto py-2 px-4 font-bold text-xs text-neutral-700 bg-white border-2 border-neutral-500"
             >
-              <img
-                alt="Department for Education icon"
-                class="block w-full"
-                src="images/dfe_logo.svg"
-              />
+              <div
+                class="w-16 min-h-16 flex items-center justify-center"
+              >
+                <img
+                  alt="Department for Education icon"
+                  class="block w-full"
+                  src="images/dfe_logo.svg"
+                />
+              </div>
+              <!---->
+            </div>
+             
+            <div>
+              <p
+                class="text-sm text-neutral-600 mb-2"
+              >
+                "Taking time to prepare our data correctly at the start saved us hours during the analysis phase. We were able to jump straight into insights rather than troubleshooting data issues."
+              </p>
+               
+              <!---->
+              <h4
+                class="text-neutral-700 text-sm"
+                style=""
+              >
+                <!---->
+                <!---->
+                <span
+                  class="font-[500] text-xs"
+                >
+                  Senior Policy Analyst
+                </span>
+                
+                
+                
+              </h4>
+              
+              <!---->
+               
+              <p
+                class="text-xs text-neutral-600"
+              >
+                Department for Education
+              </p>
             </div>
             <!---->
           </div>
+        </div>
+         
+        <div
+          class="grid-cols-3 gap-4 md:grid"
+        >
+          <div
+            class="invisible shrink-0"
+          />
            
-          <div>
-            <p
-              class="text-sm text-neutral-600 mb-2"
-            >
-              "Taking time to prepare our data correctly at the start saved us hours during the analysis phase. We were able to jump straight into insights rather than troubleshooting data issues."
-            </p>
-             
-            <!---->
-            <h4
-              class="text-neutral-700 text-sm"
-              style=""
+          <div
+            class="flex justify-center items-center gap-1 flex-wrap p-2 mt-2 shrink-0"
+          >
+            <div
+              class="flex my-auto rotate-180"
             >
               <!---->
-              <!---->
-              <span
-                class="font-[500] text-xs"
+              <button
+                aria-controls="learnings-component"
+                aria-label="Previous Learning"
+                aria-pressed="false"
+                class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                data-variant="default"
+                role="button"
+                tabindex="0"
+                title="Previous Learning"
               >
-                Senior Policy Analyst
-              </span>
+                <!---->
+                <!---->
+                <svg
+                  class="neutral-500"
+                  height="1rem"
+                  role="img"
+                  viewBox="0 -960 960 960"
+                  width="1rem"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                    xmlns="http://www.w3.org/2000/svg"
+                  />
+                  <!---->
+                </svg>
+                
+                
+                
+              </button>
+              
+              <!---->
+            </div>
+             
+            <!---->
+            <button
+              aria-controls="learnings-component"
+              aria-label="Learning 1"
+              aria-pressed="true"
+              class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary text-secondary svelte-1d0mdzt"
+              data-testid="Learnings Button"
+              data-variant="dot"
+              role="button"
+              tabindex="0"
+              title="Learning 1"
+            >
+              <!---->
+              •
               
               
+            </button>
+            
+            <!---->
+            <button
+              aria-controls="learnings-component"
+              aria-label="Learning 2"
+              aria-pressed="false"
+              class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
+              data-testid="Learnings Button"
+              data-variant="dot"
+              role="button"
+              tabindex="0"
+              title="Learning 2"
+            >
+              <!---->
+              •
               
-            </h4>
+              
+            </button>
+            
+            <!---->
+            <button
+              aria-controls="learnings-component"
+              aria-label="Learning 3"
+              aria-pressed="false"
+              class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
+              data-testid="Learnings Button"
+              data-variant="dot"
+              role="button"
+              tabindex="0"
+              title="Learning 3"
+            >
+              <!---->
+              •
+              
+              
+            </button>
             
             <!---->
              
-            <p
-              class="text-xs text-neutral-600"
+            <div
+              class="flex my-auto"
             >
-              Department for Education
-            </p>
+              <!---->
+              <button
+                aria-controls="learnings-component"
+                aria-label="Next Learning"
+                aria-pressed="false"
+                class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                data-variant="default"
+                role="button"
+                tabindex="0"
+                title="Next Learning"
+              >
+                <!---->
+                <!---->
+                <svg
+                  class="neutral-500"
+                  height="1rem"
+                  role="img"
+                  viewBox="0 -960 960 960"
+                  width="1rem"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                    xmlns="http://www.w3.org/2000/svg"
+                  />
+                  <!---->
+                </svg>
+                
+                
+                
+              </button>
+              
+              <!---->
+            </div>
           </div>
-          <!---->
-        </div>
-      </div>
-       
-      <div
-        class="flex justify-center items-center gap-1 flex-wrap p-2 mt-2"
-      >
-        <div
-          class="flex my-auto rotate-180"
-        >
-          <!---->
-          <button
-            aria-controls="learnings-component"
-            aria-label="Previous Learning"
-            aria-pressed="false"
-            class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-            data-variant="default"
-            role="button"
-            tabindex="0"
-            title="Previous Learning"
+           
+          <div
+            class="m-auto mt-4 flex justify-center md:block"
           >
             <!---->
-            <!---->
-            <svg
-              class="neutral-500"
-              height="1rem"
-              role="img"
-              viewBox="0 -960 960 960"
-              width="1rem"
-              xmlns="http://www.w3.org/2000/svg"
+            <button
+              aria-pressed="false"
+              class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              data-variant="ghost"
+              role="button"
+              tabindex="0"
             >
-              <path
-                d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
-                xmlns="http://www.w3.org/2000/svg"
-              />
               <!---->
-            </svg>
-            
-            
-            
-          </button>
-          
-          <!---->
-        </div>
-         
-        <!---->
-        <button
-          aria-controls="learnings-component"
-          aria-label="Learning 1"
-          aria-pressed="true"
-          class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary text-secondary svelte-1d0mdzt"
-          data-testid="Learnings Button"
-          data-variant="dot"
-          role="button"
-          tabindex="0"
-          title="Learning 1"
-        >
-          <!---->
-          •
-          
-          
-        </button>
-        
-        <!---->
-        <button
-          aria-controls="learnings-component"
-          aria-label="Learning 2"
-          aria-pressed="false"
-          class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
-          data-testid="Learnings Button"
-          data-variant="dot"
-          role="button"
-          tabindex="0"
-          title="Learning 2"
-        >
-          <!---->
-          •
-          
-          
-        </button>
-        
-        <!---->
-        <button
-          aria-controls="learnings-component"
-          aria-label="Learning 3"
-          aria-pressed="false"
-          class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
-          data-testid="Learnings Button"
-          data-variant="dot"
-          role="button"
-          tabindex="0"
-          title="Learning 3"
-        >
-          <!---->
-          •
-          
-          
-        </button>
-        
-        <!---->
-         
-        <div
-          class="flex my-auto"
-        >
-          <!---->
-          <button
-            aria-controls="learnings-component"
-            aria-label="Next Learning"
-            aria-pressed="false"
-            class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-            data-variant="default"
-            role="button"
-            tabindex="0"
-            title="Next Learning"
-          >
-            <!---->
-            <!---->
-            <svg
-              class="neutral-500"
-              height="1rem"
-              role="img"
-              viewBox="0 -960 960 960"
-              width="1rem"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
-                xmlns="http://www.w3.org/2000/svg"
-              />
               <!---->
-            </svg>
+              <div
+                class="underline text-xs text-neutral-500"
+              >
+                Don't show me this again
+              </div>
+              
+              
+              
+            </button>
             
-            
-            
-          </button>
-          
-          <!---->
+            <!---->
+          </div>
         </div>
       </div>
+      <!---->
     </div>
     <!---->
   </section>
