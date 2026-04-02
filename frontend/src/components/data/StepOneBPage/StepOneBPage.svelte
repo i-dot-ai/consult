@@ -144,7 +144,7 @@
   }
   function removeFromStorage(itemKey: string) {
     const storedItems = getStoredItems();
-    const newItems = storedItems.filter(item => item !== itemKey);
+    const newItems = storedItems.filter((item) => item !== itemKey);
     setStoredItems(newItems);
   }
 
@@ -263,31 +263,34 @@
 
 {#if isAllItemsChecked()}
   <Modal open={true} canCancel={false} canConfirm={false}>
-    <div class={clsx([
-      "bg-primary",
-      "rounded-full",
-      "w-24",
-      "h-24",
-      "flex",
-      "justify-center",
-      "items-center",
-      "mx-auto",
-      "growshrink",
-    ])}>
+    <div
+      class={clsx([
+        "bg-primary",
+        "rounded-full",
+        "w-24",
+        "h-24",
+        "flex",
+        "justify-center",
+        "items-center",
+        "mx-auto",
+        "growshrink",
+      ])}
+    >
       <MaterialIcon size="4.5rem">
         <CheckCircle />
       </MaterialIcon>
     </div>
 
-    <h2 class={clsx([ "font-bold", "text-2xl", "mt-4", "mb-2", "text-center", ])}>
+    <h2 class={clsx(["font-bold", "text-2xl", "mt-4", "mb-2", "text-center"])}>
       Checklist Complete!
     </h2>
 
-    <p class={clsx([ "text-neutral-500", "text-md", "text-center", ])}>
-      Great work preparing your data! You've completed all the important checks. Move to the next step when you're ready to upload your file.
+    <p class={clsx(["text-neutral-500", "text-md", "text-center"])}>
+      Great work preparing your data! You've completed all the important checks.
+      Move to the next step when you're ready to upload your file.
     </p>
 
-    <div class={clsx(["mt-4", "flex", "justify-center",])}>
+    <div class={clsx(["mt-4", "flex", "justify-center"])}>
       <Button variant="approve">
         My data is ready to upload
         <MaterialIcon>
