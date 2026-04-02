@@ -105,10 +105,10 @@ describe("StepOneBPage", () => {
     });
 
     await waitFor(() => {
-      continueButtons.forEach(continueButton => {
+      continueButtons.forEach((continueButton) => {
         expect(continueButton).toBeInTheDocument();
         expect(continueButton).not.toBeDisabled();
-      })
+      });
     });
   });
 
