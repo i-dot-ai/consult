@@ -16,9 +16,7 @@
 
   export const LEARNINGS_DISPLAYED_KEY = "dataSetupLearningsDisplayed";
 
-  let displayLearnings = $state(
-    !localStorage.getItem(LEARNINGS_DISPLAYED_KEY),
-  );
+  let displayLearnings = $state(!localStorage.getItem(LEARNINGS_DISPLAYED_KEY));
 
   const CHECKLIST_A_ITEMS = [
     {
