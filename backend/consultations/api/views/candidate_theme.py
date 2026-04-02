@@ -8,6 +8,7 @@ from rest_framework.viewsets import ModelViewSet
 from consultations import models
 from consultations.api.permissions import CanSeeConsultation
 from consultations.api.serializers import (
+    CandidateThemeResponseSerializer,
     CandidateThemeSerializer,
     SelectedThemeSerializer,
 )
@@ -79,3 +80,20 @@ class CandidateThemeViewSet(ModelViewSet):
 
         serializer = SelectedThemeSerializer(selected_theme)
         return Response(serializer.data, status=201)
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="responses",
+        permission_classes=[IsAuthenticated, CanSeeConsultation],
+    )
+    def responses(self, request, consultation_pk=None, question_pk=None, pk=None):
+        """Get responses assigned to this candidate theme"""
+        candidate_theme = get_object_or_404(self.get_queryset(), pk=pk)
+
+        theme_responses = models.CandidateThemeResponse.objects.filter(
+            candidate_theme=candidate_theme,
+        ).select_related("response")
+
+        serializer = CandidateThemeResponseSerializer(theme_responses, many=True)
+        return Response({"count": len(serializer.data), "results": serializer.data})

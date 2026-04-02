@@ -212,6 +212,14 @@ export interface GeneratedThemesResponse {
   previous: string | null;
   results: GeneratedTheme[];
 }
+export interface CandidateThemeResponseItem {
+  response_id: string;
+  free_text: string;
+}
+export interface CandidateThemeResponsesResponse {
+  count: number;
+  results: CandidateThemeResponseItem[];
+}
 export interface AnswersResponse {
   respondents_total: number;
   filtered_total: number;

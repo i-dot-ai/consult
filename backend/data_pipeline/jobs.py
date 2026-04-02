@@ -69,3 +69,21 @@ def import_response_annotations(
         consultation_code=consultation_code,
         timestamp=run_date,
     )
+
+
+@job("default", timeout=3600)
+def import_candidate_theme_responses(
+    consultation_code: str,
+    run_date: str,
+) -> None:
+    """Import candidate theme response mappings from S3 (assign-themes batch job output during finalising)."""
+    from data_pipeline.sync.candidate_themes import (
+        import_candidate_theme_responses_from_s3,
+    )
+
+    logger.refresh_context()
+
+    import_candidate_theme_responses_from_s3(
+        consultation_code=consultation_code,
+        timestamp=run_date,
+    )

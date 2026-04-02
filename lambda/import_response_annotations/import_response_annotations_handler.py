@@ -22,10 +22,12 @@ def lambda_handler(event, _context):
     parameters = detail["parameters"]
     consultation_code = parameters["consultation_code"]
     run_date = parameters["run_date"]
+    assignment_target = parameters.get("assignment_target", "selected_themes")
 
     logger.info(f"Batch job '{job_name}' completed with status: {job_status}")
     logger.info(f"Consultation code: {consultation_code}")
     logger.info(f"Run date: {run_date}")
+    logger.info(f"Assignment target: {assignment_target}")
 
     try:
         # Connect to Redis
@@ -45,12 +47,19 @@ def lambda_handler(event, _context):
         ping_result = redis_conn.ping()
         logger.info(f"✅ Redis PING result: {ping_result}")
 
-        # Enqueue the RQ job
+        # Enqueue the appropriate RQ job based on assignment target
         queue_name = "default"
         queue = Queue(queue_name, connection=redis_conn)
-        logger.info("Enqueueing RQ job to import response annotations...")
+
+        if assignment_target == "candidate_themes":
+            logger.info("Enqueueing RQ job to import candidate theme responses...")
+            rq_job_name = "data_pipeline.jobs.import_candidate_theme_responses"
+        else:
+            logger.info("Enqueueing RQ job to import response annotations...")
+            rq_job_name = "data_pipeline.jobs.import_response_annotations"
+
         job = queue.enqueue(
-            "data_pipeline.jobs.import_response_annotations",
+            rq_job_name,
             consultation_code,
             run_date,
             job_timeout=3_600,
@@ -58,11 +67,12 @@ def lambda_handler(event, _context):
 
         logger.info("✅ RQ job enqueued successfully!")
         logger.info(f"Job ID: {job.id}")
+        logger.info(f"Job function: {rq_job_name}")
         logger.info(f"Job status: {job.get_status()}")
         logger.info(f"Queue '{queue_name}' now has {len(queue)} jobs")
 
         logger.info(
-            f"✅ Successfully queued response annotations import job {job.id} for: {consultation_code}"
+            f"✅ Successfully queued import job {job.id} for: {consultation_code}"
         )
 
     except Exception as e:

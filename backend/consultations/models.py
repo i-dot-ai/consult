@@ -352,6 +352,31 @@ class CandidateTheme(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.name
 
 
+class CandidateThemeResponse(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Links candidate themes to responses during the finalising themes phase.
+
+    Populated by the assign-themes batch job when run before theme sign-off,
+    so users can see which responses each candidate theme covers.
+    """
+
+    candidate_theme = models.ForeignKey(CandidateTheme, on_delete=models.CASCADE)
+    response = models.ForeignKey(Response, on_delete=models.CASCADE)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                fields=["candidate_theme", "response"],
+                name="unique_candidate_theme_response",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["candidate_theme"]),
+        ]
+
+    def __str__(self):
+        return f"{self.candidate_theme.name} -> {self.response_id}"
+
+
 class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     """Through model to track original AI vs human-reviewed theme assignments"""
 

@@ -3,13 +3,15 @@
 
   import { slide, fly } from "svelte/transition";
 
-  import type { AnswersResponse, GeneratedTheme } from "../../../global/types";
+  import type { CandidateThemeResponsesResponse, GeneratedTheme } from "../../../global/types";
   import { createFetchStore, type MockFetch } from "../../../global/stores";
+  import { getApiCandidateThemeResponsesUrl } from "../../../global/routes";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import ChevronRight from "../../svg/material/ChevronRight.svelte";
+  import Visibility from "../../svg/material/Visibility.svelte";
   import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
   import Tag from "../../Tag/Tag.svelte";
   import AnswersList from "../AnswersList/AnswersList.svelte";
@@ -42,7 +44,7 @@
     answersMock,
   }: Props = $props();
 
-  const answersStore = createFetchStore<AnswersResponse>({
+  const answersStore = createFetchStore<CandidateThemeResponsesResponse>({
     mockFetch: answersMock,
   });
 
@@ -120,20 +122,12 @@
               </div>
             </Button>
 
-            <!-- 
-            TODO: Remove all relevant representative responses code
             <Button
               size="sm"
               handleClick={() => {
                 if (!$answersStore.data) {
-                  const queryString = new URLSearchParams({
-                    searchMode: "representative",
-                    searchValue: `${theme.name} ${theme.description}`,
-                    question_id: questionId,
-                  }).toString();
-
                   $answersStore.fetch(
-                    `${getApiAnswersUrl(consultationId)}?${queryString}`,
+                    getApiCandidateThemeResponsesUrl(consultationId, questionId, theme.id),
                   );
                 }
                 showAnswers = !showAnswers;
@@ -145,11 +139,10 @@
                   <Visibility />
                 </MaterialIcon>
                 <span class="whitespace-nowrap">
-                  {showAnswers ? "Hide" : "Representative"} Responses
+                  {showAnswers ? "Hide" : "Assigned"} Responses
                 </span>
               </div>
             </Button>
-            -->
           </footer>
         {/if}
       </div>
@@ -161,11 +154,11 @@
         >
           <AnswersList
             variant="generated"
-            title="Representative Responses"
+            title="Assigned Responses"
             loading={$answersStore.isLoading}
-            answers={$answersStore.data?.all_respondents
+            answers={$answersStore.data?.results
               ?.slice(0, maxAnswers)
-              .map((answer) => answer.free_text_answer_text) || []}
+              .map((item) => item.free_text) || []}
           />
         </aside>
       {:else}
