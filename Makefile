@@ -146,28 +146,6 @@ cache ?= ./.build-cache
 APP_CACHE_DIR=$(cache)/$(APP_NAME)/$(service)
 IMAGE_TAG=$$(git rev-parse HEAD)
 
-AUTO_APPLY_RESOURCES = module.backend.aws_ecs_task_definition.aws-ecs-task \
-                       module.backend.aws_ecs_service.aws-ecs-service \
-                       module.backend.data.aws_ecs_task_definition.main \
-                       module.backend.aws_lb_listener_rule.authentication[0] \
-                       module.frontend.aws_ecs_task_definition.aws-ecs-task \
-                       module.frontend.aws_ecs_service.aws-ecs-service \
-                       module.frontend.data.aws_ecs_task_definition.main \
-                       module.frontend.aws_lb_listener_rule.authentication[0] \
-                       module.worker.aws_ecs_task_definition.aws-ecs-task \
-                       module.worker.aws_ecs_service.aws-ecs-service \
-                       module.worker.data.aws_ecs_task_definition.main \
-                       module.batch_job_definition.aws_batch_job_definition.job_definition \
-                       module.waf.aws_wafv2_ip_set.host_ip_whitelist \
-                       module.waf.aws_wafv2_ip_set.header_secured_host_ip_whitelist \
-                       module.waf.aws_wafv2_ip_set.uri_path_ip_configuration \
-                       module.waf.aws_wafv2_web_acl.this \
-                       aws_secretsmanager_secret.django_secret \
-                       aws_secretsmanager_secret.debug \
-											 module.load_balancer.aws_security_group_rule.load_balancer_http_whitelist \
-											 module.load_balancer.aws_security_group_rule.load_balancer_https_whitelist
-
-target_modules = $(foreach resource,$(AUTO_APPLY_RESOURCES),-target $(resource))
 IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 
 ifndef cache
@@ -270,7 +248,7 @@ tf_apply_universal: ## Apply terraform
 .PHONY: tf_auto_apply
 tf_auto_apply: ## Auto apply terraform
 	make tf_init_and_set_workspace && \
-	terraform -chdir=./terraform apply -auto-approve -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} $(target_modules)
+	terraform -chdir=./terraform apply -auto-approve -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
 .PHONY: tf_destroy
 tf_destroy: ## Destroy terraform

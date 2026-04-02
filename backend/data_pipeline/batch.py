@@ -13,10 +13,15 @@ def submit_job(
     consultation_name: str,
     user_id: int,
     model_name: str,
+    assignment_target: Literal["selected_themes", "candidate_themes"] = "selected_themes",
 ) -> dict:
     """
     Submit a job to AWS Batch for ThemeFinder processing.
     This will be either to find themes or assign themes.
+
+    assignment_target controls how the results are imported:
+    - "selected_themes": normal flow, imports into ResponseAnnotation
+    - "candidate_themes": imports into CandidateThemeResponse (during finalising)
     """
     if job_type == "FIND_THEMES":
         job_name = settings.FIND_THEMES_BATCH_JOB_NAME
@@ -33,6 +38,7 @@ def submit_job(
         "job_type": job_type,
         "user_id": str(user_id),
         "run_date": datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d"),
+        "assignment_target": assignment_target,
     }
 
     batch = boto3.client("batch")
