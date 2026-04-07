@@ -29,7 +29,9 @@
     });
     return props;
   });
-  let storyTab = $derived(currStory?.stories.find(story => story.name === currStoryTab));
+  let storyTab = $derived(
+    currStory?.stories.find((story) => story.name === currStoryTab),
+  );
   let panel: HTMLElement;
 
   const categories = [...new Set(stories.map((story) => story.category))];
@@ -95,11 +97,13 @@
                 <Button
                   variant="ghost"
                   fullWidth={true}
-                  handleClick={() => currStoryTab = story.name}
+                  handleClick={() => (currStoryTab = story.name)}
                   highlighted={currStoryTab === story.name}
                   highlightVariant="primary"
                 >
-                  <span class="text-center w-full">{toTitleCase(story.name)}</span>
+                  <span class="w-full text-center"
+                    >{toTitleCase(story.name)}</span
+                  >
                 </Button>
 
                 <hr />
@@ -110,9 +114,9 @@
 
         <div class="mt-4">
           {#if currStoryTab !== "interactive" && storyTab}
-            <StoryComponent {...storyTab.props as Object} />  
+            <StoryComponent {...storyTab.props as object} />
           {:else}
-            <StoryComponent {...componentProps as Object} />
+            <StoryComponent {...componentProps as object} />
 
             {#each currStory.props as prop (prop.name)}
               {@const inputId = `input-${prop.name.toLowerCase().replaceAll(" ", "-")}`}
