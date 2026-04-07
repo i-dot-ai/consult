@@ -9,7 +9,7 @@
   import Finance from "../../svg/material/Finance.svelte";
   import WandStars from "../../svg/material/WandStars.svelte";
   import { getConsultationDetailUrl } from "../../../global/routes";
-  import type { Consultation, ConsultationStage } from "../../../global/types";
+  import type { Consultation } from "../../../global/types";
 
   interface Props {
     consultation: { id: Consultation["id"]; stage: Consultation["stage"] };

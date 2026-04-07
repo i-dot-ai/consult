@@ -44,12 +44,11 @@ def import_candidate_themes(
 ) -> None:
     """Import candidate themes from S3, then start assign-themes for candidate theme responses."""
     from consultations.models import Consultation
+    from data_pipeline import batch
     from data_pipeline.sync.candidate_themes import (
         export_candidate_themes_to_s3,
         import_candidate_themes_from_s3,
     )
-
-    from data_pipeline import batch
 
     logger.refresh_context()
 

@@ -8,8 +8,14 @@ from django.db import transaction
 from themefinder.models import ThemeNode
 
 import data_pipeline.s3 as s3
-from consultations.models import CandidateTheme, CandidateThemeResponse, Consultation, Question, Response
-from data_pipeline.models import CandidateThemeBatch, ThemeNodeList, ThemeMappingInput
+from consultations.models import (
+    CandidateTheme,
+    CandidateThemeResponse,
+    Consultation,
+    Question,
+    Response,
+)
+from data_pipeline.models import CandidateThemeBatch, ThemeMappingInput, ThemeNodeList
 
 logger = settings.LOGGER
 
@@ -497,9 +503,7 @@ def _import_candidate_theme_responses(
     before creating new ones (idempotent).
     """
     # Delete existing mappings for this question's candidate themes
-    CandidateThemeResponse.objects.filter(
-        candidate_theme__question=question
-    ).delete()
+    CandidateThemeResponse.objects.filter(candidate_theme__question=question).delete()
 
     # Build response lookup by themefinder_id
     responses = Response.objects.filter(question=question).select_related("respondent")
@@ -550,9 +554,7 @@ def import_candidate_theme_responses(
     try:
         consultation = Consultation.objects.get(code=consultation_code)
     except Consultation.DoesNotExist:
-        raise ValueError(
-            f"Consultation with code '{consultation_code}' does not exist."
-        )
+        raise ValueError(f"Consultation with code '{consultation_code}' does not exist.")
 
     logger.info(
         "Starting candidate theme response import for consultation '{consultation_title}'",
