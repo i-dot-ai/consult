@@ -62,6 +62,36 @@ describe("FileInput Component", () => {
     expect(screen.getByText("File size limit exceeded")).toBeInTheDocument();
   });
 
+  it("renders file name", async () => {
+    render(FileInput, testData);
+
+    const inputEl = screen.getByTestId("file-input");
+
+    await fireEvent.change(inputEl, {
+      target: {
+        files: [FILE_ONE, FILE_TWO],
+      },
+    });
+
+    [FILE_ONE, FILE_TWO].forEach((file) => {
+      expect(screen.getByText(file.name)).toBeInTheDocument();
+    });
+  });
+
+  it("renders file size", async () => {
+    render(FileInput, testData);
+
+    const inputEl = screen.getByTestId("file-input");
+
+    await fireEvent.change(inputEl, {
+      target: {
+        files: [FILE_ONE, FILE_TWO],
+      },
+    });
+
+    expect(screen.getAllByText("4 Bytes")).toHaveLength(2);
+  });
+
   it("renders accept string", () => {
     const ACCEPT = "text/csv";
     render(FileInput, { ...testData, accept: ACCEPT });

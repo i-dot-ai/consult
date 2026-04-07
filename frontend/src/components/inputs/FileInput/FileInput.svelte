@@ -93,14 +93,18 @@
 
   function getSizeText(bytes: number, decimals = 2) {
     if (bytes === 0) {
-      return '0 Bytes';
-    };
-    const UNITS = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+      return "0 Bytes";
+    }
+    const UNITS = ["Bytes", "KB", "MB", "GB", "TB"];
     const kilo = 1024;
     const clampedDecimals = decimals < 0 ? 0 : decimals;
     const result = Math.floor(Math.log(bytes) / Math.log(kilo));
-    return parseFloat((bytes / Math.pow(kilo, result)).toFixed(clampedDecimals)) + ' ' + UNITS[result];
-}
+    return (
+      parseFloat((bytes / Math.pow(kilo, result)).toFixed(clampedDecimals)) +
+      " " +
+      UNITS[result]
+    );
+  }
 </script>
 
 <label
@@ -182,7 +186,9 @@
             </MaterialIcon>
           </Button>
 
-          <p>{file.name} • {getSizeText(file.size)}</p>
+          <p>
+            <span>{file.name}</span> • <span>{getSizeText(file.size)}</span>
+          </p>
         </div>
       </li>
     {/each}
