@@ -7,6 +7,7 @@
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Upload from "../../svg/material/Upload.svelte";
   import Close from "../../svg/material/Close.svelte";
+  import ArrowForward from "../../svg/material/ArrowForward.svelte";
 
   interface Props {
     id: string;
@@ -212,12 +213,17 @@
         (e.target as HTMLElement)!.closest("label")!.dispatchEvent(newEvent);
       }}
     >
-      Choose file
+      Choose different file
     </Button>
 
     {#if files.length > 0}
       <Button variant="approve" handleClick={() => onConfirm(files)} size="sm">
-        Confirm
+        <div class="flex items-center gap-2">
+          {files.length > 1 ? "Use these files" : "Use this file"}
+          <MaterialIcon>
+            <ArrowForward />
+          </MaterialIcon>
+        </div>
       </Button>
     {/if}
   </div>

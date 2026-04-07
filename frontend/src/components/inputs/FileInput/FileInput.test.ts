@@ -23,7 +23,7 @@ describe("FileInput Component", () => {
       },
     });
 
-    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    await user.click(screen.getByRole("button", { name: "Use this file" }));
 
     expect(testData.onConfirm).toHaveBeenCalledWith([FILE_ONE]);
   });
@@ -40,7 +40,7 @@ describe("FileInput Component", () => {
       },
     });
 
-    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    await user.click(screen.getByRole("button", { name: "Use these files" }));
 
     expect(testData.onConfirm).toHaveBeenCalledWith([FILE_ONE, FILE_TWO]);
   });
@@ -57,7 +57,7 @@ describe("FileInput Component", () => {
     });
 
     expect(
-      screen.queryByRole("button", { name: "Confirm" }),
+      screen.queryByRole("button", { name: "Use these files" }),
     ).not.toBeInTheDocument();
     expect(screen.getByText("File size limit exceeded")).toBeInTheDocument();
   });
