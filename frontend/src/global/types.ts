@@ -23,7 +23,10 @@ export interface Question {
   theme_status?: string;
 }
 
-export type ConsultationStage = "theme_sign_off" | "theme_mapping" | "analysis";
+export type ConsultationStage =
+  | "theme_sign_off"
+  | "theme_mapping"
+  | "analysis";
 export interface NextResponseInfo {
   id: string;
   consultation_id: string;
@@ -40,7 +43,7 @@ export interface Consultation {
   id: string;
   title: string;
   code: string;
-  stage: "theme_sign_off" | "theme_mapping" | "analysis";
+  stage: ConsultationStage;
   created_at: string;
 }
 
@@ -188,7 +191,7 @@ export interface ConsultationResponse {
   title: string;
   code: string;
   users: User[];
-  stage: "theme_sign_off" | "theme_mapping" | "analysis";
+  stage: ConsultationStage;
 }
 export interface QuestionsResponse {
   count: number;
@@ -211,6 +214,15 @@ export interface GeneratedThemesResponse {
   next: string | null;
   previous: string | null;
   results: GeneratedTheme[];
+}
+export interface CandidateThemeResponseItem {
+  response_id: string;
+  free_text: string;
+}
+export interface CandidateThemeResponsesResponse {
+  count: number;
+  total_count: number;
+  results: CandidateThemeResponseItem[];
 }
 export interface AnswersResponse {
   respondents_total: number;
