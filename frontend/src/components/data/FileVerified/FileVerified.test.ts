@@ -1,8 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/svelte";
+import { describe, expect, it } from "vitest";
+import { render, screen } from "@testing-library/svelte";
 
 import FileVerified from "./FileVerified.svelte";
-import userEvent from "@testing-library/user-event";
 
 describe("FileVerified", () => {
   const testData = {
