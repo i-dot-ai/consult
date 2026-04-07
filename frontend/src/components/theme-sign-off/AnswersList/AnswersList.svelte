@@ -10,6 +10,7 @@
     answers?: string[];
     loading?: boolean;
     variant?: "selected" | "generated";
+    totalCount?: number;
   }
 
   let {
@@ -17,6 +18,7 @@
     answers = [],
     loading = false,
     variant = "selected",
+    totalCount = Infinity,
   }: Props = $props();
 </script>
 
@@ -113,6 +115,11 @@
       </li>
     {/each}
   </ol>
+  {#if totalCount > answers.length}
+    <p class="mt-2 text-xs text-neutral-500">
+      Showing a sample of {answers.length} out of a total of {totalCount} responses.
+    </p>
+  {/if}
 {:else}
   <p class="mt-2 text-sm italic text-neutral-500">There are no answers</p>
 {/if}
