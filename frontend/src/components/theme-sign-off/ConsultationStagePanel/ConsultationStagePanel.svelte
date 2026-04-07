@@ -9,15 +9,23 @@
   import Finance from "../../svg/material/Finance.svelte";
   import WandStars from "../../svg/material/WandStars.svelte";
   import { getConsultationDetailUrl } from "../../../global/routes";
-  import type { Consultation } from "../../../global/types";
+  import type { Consultation, ConsultationStage } from "../../../global/types";
 
   interface Props {
     consultation: { id: Consultation["id"]; stage: Consultation["stage"] };
     questionsCount: number;
+    finalisedQuestionCount: number;
+    allQuestionsFinalised: boolean;
     onConfirmClick: () => void;
   }
 
-  let { consultation, questionsCount, onConfirmClick }: Props = $props();
+  let {
+    consultation,
+    questionsCount,
+    finalisedQuestionCount,
+    allQuestionsFinalised,
+    onConfirmClick,
+  }: Props = $props();
 
   type Step = {
     order: number;
@@ -25,47 +33,69 @@
     icon: Component;
   };
 
-  const STAGES = {
+  type StageConfig = {
+    step: Step;
+    title: string;
+  };
+
+  const STAGE_CONFIGS: Record<string, StageConfig> = {
     consultation_overview: {
-      step: {
-        order: 1,
-        label: "Consultation Overview",
-        icon: CheckCircle,
-      },
+      step: { order: 1, label: "Consultation Overview", icon: CheckCircle },
+      title: "Consultation Overview",
     },
     theme_sign_off: {
-      step: {
-        order: 2,
-        label: "Theme Sign Off",
-        icon: CheckCircle,
-      },
-      title: "All Questions Signed Off",
-      content: themeSignOffContent,
+      step: { order: 2, label: "Theme Sign Off", icon: CheckCircle },
+      title: "Theme Sign Off",
     },
     theme_mapping: {
-      step: {
-        order: 3,
-        label: "AI Theme Mapping",
-        icon: WandStars,
-      },
+      step: { order: 3, label: "AI Theme Mapping", icon: WandStars },
       title: "AI Mapping in Progress",
-      content: themeMappingContent,
     },
     analysis: {
-      step: {
-        order: 4,
-        label: "Analysis Dashboard",
-        icon: Finance,
-      },
+      step: { order: 4, label: "Analysis Dashboard", icon: Finance },
       title: "AI Mapping Complete",
-      content: analysisContent,
     },
-  } as const;
+  };
 
-  let currentConsultationStage = $derived(STAGES[consultation.stage]);
+  // Steps shown in the progress bar (always the same 4)
+  const STEPS = [
+    STAGE_CONFIGS.consultation_overview,
+    STAGE_CONFIGS.theme_sign_off,
+    STAGE_CONFIGS.theme_mapping,
+    STAGE_CONFIGS.analysis,
+  ];
+
+  let currentStageConfig = $derived(
+    STAGE_CONFIGS[consultation.stage] ?? STAGE_CONFIGS.theme_sign_off,
+  );
+
+  // Determine which content variant to show
+  let isFinalisingThemes = $derived(consultation.stage === "theme_sign_off");
+  let isAssigningThemes = $derived(consultation.stage === "theme_mapping");
+  let isAnalysis = $derived(consultation.stage === "analysis");
+
+  // Title adapts to sub-state during finalising
+  let title = $derived.by(() => {
+    if (isFinalisingThemes && allQuestionsFinalised)
+      return "All Questions Signed Off";
+    if (isFinalisingThemes) return "Finalising Themes";
+    return currentStageConfig.title;
+  });
 </script>
 
-{#snippet themeSignOffContent()}
+{#snippet finalisingInProgressContent()}
+  <p class="my-4 text-center text-sm text-neutral-500">
+    Review and sign off themes for each consultation question.
+    {finalisedQuestionCount} of {questionsCount} questions signed off.
+  </p>
+
+  <p class="my-4 text-center text-sm text-neutral-500">
+    <strong>Next:</strong> Once all questions are signed off, you can confirm and
+    proceed to AI mapping.
+  </p>
+{/snippet}
+
+{#snippet finalisingCompleteContent()}
   <p class="my-4 text-center text-sm text-neutral-500">
     You have successfully reviewed and signed off themes for all {questionsCount}
     consultation questions.
@@ -92,7 +122,7 @@
   </Button>
 {/snippet}
 
-{#snippet themeMappingContent()}
+{#snippet assigningContent()}
   <p class="my-4 text-center text-sm text-neutral-500">
     You have completed the theme sign-off phase for all {questionsCount} consultation
     questions.
@@ -178,18 +208,26 @@
       ])}
       aria-label="Consultation progress"
     >
-      {#each Object.values(STAGES) as { step } (step.label)}
+      {#each STEPS as { step } (step.label)}
         <li>
-          {@render ConsultationStep(step, currentConsultationStage.step)}
+          {@render ConsultationStep(step, currentStageConfig.step)}
         </li>
       {/each}
     </ol>
 
     <div class="px-0 md:px-16">
       <h2 class="text-center text-secondary">
-        {currentConsultationStage.title}
+        {title}
       </h2>
-      {@render currentConsultationStage.content()}
+      {#if isFinalisingThemes && allQuestionsFinalised}
+        {@render finalisingCompleteContent()}
+      {:else if isFinalisingThemes}
+        {@render finalisingInProgressContent()}
+      {:else if isAssigningThemes}
+        {@render assigningContent()}
+      {:else if isAnalysis}
+        {@render analysisContent()}
+      {/if}
     </div>
   </div>
 </Panel>
