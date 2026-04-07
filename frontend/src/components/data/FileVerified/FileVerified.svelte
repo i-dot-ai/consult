@@ -41,9 +41,21 @@
     </div>
 
     <Title level={2}>
-      <span class="font-bold text-lg mt-4 mb-2 block">File structure valid</span>
+      <span class={clsx([
+        "font-bold",
+        "text-lg",
+        "mt-4",
+        "mb-2",
+        "block",
+      ])}>
+        File structure valid
+      </span>
     </Title>
-    <p class="text-md text-center">
+    <p class={clsx([
+      "text-md",
+      "text-center",
+      "text-neutral-600",
+    ])}>
       We've successfully validated your data file and there are <br />
       <strong>{numQuestions < 0 ? "0": numQuestions.toString()}</strong> questions detected.
     </p>
