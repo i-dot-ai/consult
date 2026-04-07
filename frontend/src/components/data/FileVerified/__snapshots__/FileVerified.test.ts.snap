@@ -57,7 +57,8 @@ exports[`FileVerified > should match snapshot 1`] = `
         <strong>
           25
         </strong>
-         questions detected.
+         questions
+      detected.
       </p>
     </div>
     <!---->
