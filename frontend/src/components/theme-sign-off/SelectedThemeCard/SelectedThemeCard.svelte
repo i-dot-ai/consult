@@ -33,7 +33,7 @@
     theme,
     removeTheme = () => {},
     updateTheme = () => {},
-    maxAnswers = 10,
+    maxAnswers = 50,
     answersMock,
   }: Props = $props();
 

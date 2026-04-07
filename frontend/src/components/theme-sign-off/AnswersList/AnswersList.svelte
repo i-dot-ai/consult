@@ -10,6 +10,7 @@
     answers?: string[];
     loading?: boolean;
     variant?: "selected" | "generated";
+    totalCount?: number;
   }
 
   let {
@@ -17,7 +18,12 @@
     answers = [],
     loading = false,
     variant = "selected",
+    totalCount,
   }: Props = $props();
+
+  let isCapped = $derived(
+    totalCount !== undefined && totalCount > answers.length,
+  );
 </script>
 
 <div class="flex items-center gap-1">
@@ -113,6 +119,11 @@
       </li>
     {/each}
   </ol>
+  {#if isCapped}
+    <p class="mt-2 text-xs text-neutral-500">
+      Showing a sample of {answers.length} out of a total of {totalCount} responses.
+    </p>
+  {/if}
 {:else}
   <p class="mt-2 text-sm italic text-neutral-500">There are no answers</p>
 {/if}
