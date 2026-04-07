@@ -1,4 +1,5 @@
-from django.db.models import Prefetch
+from django.db.models import CharField, Prefetch, Value
+from django.db.models.functions import Cast, Concat, MD5
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -8,6 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 from consultations import models
 from consultations.api.permissions import CanSeeConsultation
 from consultations.api.serializers import (
+    CandidateThemeResponseSerializer,
     CandidateThemeSerializer,
     SelectedThemeSerializer,
 )
@@ -79,3 +81,46 @@ class CandidateThemeViewSet(ModelViewSet):
 
         serializer = SelectedThemeSerializer(selected_theme)
         return Response(serializer.data, status=201)
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="responses",
+        permission_classes=[IsAuthenticated, CanSeeConsultation],
+    )
+    def responses(self, request, consultation_pk=None, question_pk=None, pk=None):
+        """Get responses assigned to this candidate theme"""
+        MAX_RESPONSES = 50
+
+        candidate_theme = get_object_or_404(self.get_queryset(), pk=pk)
+
+        theme_responses = (
+            models.CandidateThemeResponse.objects.filter(
+                candidate_theme=candidate_theme,
+            )
+            .select_related("response")
+            .annotate(
+                # Deterministic ordering that varies per theme so that shared
+                # responses don't appear in the same position across themes.
+                sort_key=MD5(
+                    Concat(
+                        Cast("candidate_theme_id", CharField()),
+                        Value("-"),
+                        Cast("response_id", CharField()),
+                    )
+                ),
+            )
+            .order_by("sort_key")
+        )
+
+        total_count = theme_responses.count()
+        capped = theme_responses[:MAX_RESPONSES]
+
+        serializer = CandidateThemeResponseSerializer(capped, many=True)
+        return Response(
+            {
+                "count": len(serializer.data),
+                "total_count": total_count,
+                "results": serializer.data,
+            }
+        )
