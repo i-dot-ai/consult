@@ -97,12 +97,8 @@ def test_delete_consultation_cascading():
         name="Candidate Theme",
         description="A candidate theme",
     )
-    CandidateThemeResponse.objects.create(
-        candidate_theme=candidate_theme, response=response1
-    )
-    CandidateThemeResponse.objects.create(
-        candidate_theme=candidate_theme, response=response2
-    )
+    CandidateThemeResponse.objects.create(candidate_theme=candidate_theme, response=response1)
+    CandidateThemeResponse.objects.create(candidate_theme=candidate_theme, response=response2)
 
     # Create multiple choice question
     multiple_choice_question = Question.objects.create(
