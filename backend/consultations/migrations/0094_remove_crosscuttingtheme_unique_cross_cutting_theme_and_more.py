@@ -4,21 +4,20 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('consultations', '0093_consultation_model_name'),
+        ("consultations", "0093_consultation_model_name"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='crosscuttingtheme',
-            name='unique_cross_cutting_theme',
+            model_name="crosscuttingtheme",
+            name="unique_cross_cutting_theme",
         ),
         migrations.RemoveField(
-            model_name='selectedtheme',
-            name='crosscuttingtheme',
+            model_name="selectedtheme",
+            name="crosscuttingtheme",
         ),
         migrations.DeleteModel(
-            name='CrossCuttingTheme',
+            name="CrossCuttingTheme",
         ),
     ]

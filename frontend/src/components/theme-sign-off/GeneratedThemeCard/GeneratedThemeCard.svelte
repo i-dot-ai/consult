@@ -43,7 +43,6 @@
     setExpandedThemes = () => {},
     handleSelect = () => {},
     themesBeingSelected = [],
-    maxAnswers = 50,
     answersMock,
   }: Props = $props();
 
@@ -163,8 +162,9 @@
             variant="generated"
             title="Representative Responses"
             loading={$answersStore.isLoading}
-            answers={$answersStore.data?.results?.map((item) => item.free_text) ||
-              []}
+            answers={$answersStore.data?.results?.map(
+              (item) => item.free_text,
+            ) || []}
             totalCount={$answersStore.data?.total_count}
           />
         </aside>

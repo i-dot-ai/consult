@@ -1,5 +1,5 @@
 from django.db.models import CharField, Prefetch, Value
-from django.db.models.functions import Cast, Concat, MD5
+from django.db.models.functions import MD5, Cast, Concat
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
