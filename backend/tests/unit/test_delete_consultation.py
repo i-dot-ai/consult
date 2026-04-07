@@ -4,6 +4,8 @@ import pytest
 
 from authentication.models import User
 from consultations.models import (
+    CandidateTheme,
+    CandidateThemeResponse,
     Consultation,
     DemographicOption,
     MultiChoiceAnswer,
@@ -89,6 +91,19 @@ def test_delete_consultation_cascading():
     )
     annotation2.themes.add(theme2)
 
+    # Create candidate themes and candidate theme responses
+    candidate_theme = CandidateTheme.objects.create(
+        question=question,
+        name="Candidate Theme",
+        description="A candidate theme",
+    )
+    CandidateThemeResponse.objects.create(
+        candidate_theme=candidate_theme, response=response1
+    )
+    CandidateThemeResponse.objects.create(
+        candidate_theme=candidate_theme, response=response2
+    )
+
     # Create multiple choice question
     multiple_choice_question = Question.objects.create(
         consultation=consultation,
@@ -112,6 +127,8 @@ def test_delete_consultation_cascading():
     assert Response.objects.count() == 4
     assert SelectedTheme.objects.count() == 2
     assert ResponseAnnotation.objects.count() == 2
+    assert CandidateTheme.objects.count() == 1
+    assert CandidateThemeResponse.objects.count() == 2
     assert MultiChoiceAnswer.objects.count() == 3
 
     # Delete the consultation
@@ -124,6 +141,8 @@ def test_delete_consultation_cascading():
     assert Response.objects.count() == 0
     assert SelectedTheme.objects.count() == 0
     assert ResponseAnnotation.objects.count() == 0
+    assert CandidateTheme.objects.count() == 0
+    assert CandidateThemeResponse.objects.count() == 0
     assert MultiChoiceAnswer.objects.count() == 0
 
 
