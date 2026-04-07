@@ -1,12 +1,15 @@
+import csv
+import io
 from typing import Dict, List, Optional
 
+import boto3
 from django.conf import settings
 from django.db import transaction
 from themefinder.models import ThemeNode
 
 import data_pipeline.s3 as s3
-from consultations.models import CandidateTheme, Consultation, Question
-from data_pipeline.models import CandidateThemeBatch, ThemeNodeList
+from consultations.models import CandidateTheme, CandidateThemeResponse, Consultation, Question, Response
+from data_pipeline.models import CandidateThemeBatch, ThemeNodeList, ThemeMappingInput
 
 logger = settings.LOGGER
 
@@ -357,5 +360,253 @@ def import_candidate_themes_from_s3(
 
     logger.info(
         "Candidate themes import complete for consultation '{consultation_code}'",
+        consultation_code=consultation_code,
+    )
+
+
+# ============================================================================
+# EXPORT - Export candidate themes to S3 for the assign-themes batch job
+# ============================================================================
+
+
+def export_candidate_themes_to_s3(consultation: Consultation) -> int:
+    """
+    Export all candidate themes for a consultation to S3.
+
+    This prepares for the 'assign-themes' batch job during the finalising themes
+    phase, using the same S3 format as selected themes export so the batch job
+    can process them identically.
+
+    Args:
+        consultation: The consultation whose candidate themes should be exported
+
+    Returns:
+        Number of questions that had themes exported
+
+    Raises:
+        ValueError: If no questions have candidate themes
+    """
+    s3_client = boto3.client("s3")
+    questions_exported = 0
+
+    questions = consultation.question_set.filter(has_free_text=True)
+
+    for question in questions:
+        # Only export top-level candidate themes (not children)
+        themes = CandidateTheme.objects.filter(question=question, parent__isnull=True)
+
+        if not themes.exists():
+            logger.warning(
+                "No candidate themes found for question {question_number} "
+                "in consultation {consultation_title}",
+                question_number=question.number,
+                consultation_title=consultation.title,
+            )
+            continue
+
+        csv_buffer = io.StringIO()
+        writer = csv.writer(csv_buffer)
+        writer.writerow(["Theme Name", "Theme Description"])
+
+        for theme in themes:
+            writer.writerow([theme.name, theme.description])
+
+        s3_path = (
+            f"app_data/consultations/{consultation.code}/inputs/"
+            f"question_part_{question.number}/themes.csv"
+        )
+        s3_client.put_object(
+            Bucket=settings.AWS_BUCKET_NAME, Key=s3_path, Body=csv_buffer.getvalue()
+        )
+
+        logger.info(
+            "Exported {themes_count} candidate themes for question {question_number} to {s3_path}",
+            themes_count=themes.count(),
+            question_number=question.number,
+            s3_path=s3_path,
+        )
+        questions_exported += 1
+
+    if questions_exported == 0:
+        raise ValueError(
+            f"No questions with candidate themes found for consultation '{consultation.title}'"
+        )
+
+    logger.info(
+        "Exported candidate themes for {questions_exported} questions in consultation '{consultation_title}'",
+        questions_exported=questions_exported,
+        consultation_title=consultation.title,
+    )
+
+    return questions_exported
+
+
+# ============================================================================
+# IMPORT CANDIDATE THEME RESPONSES - Import batch job mapping results
+# ============================================================================
+
+
+def _build_candidate_theme_lookup(
+    question: Question,
+    batch_themes: List,
+) -> Dict[str, CandidateTheme]:
+    """
+    Build a lookup from batch job theme_keys to database CandidateTheme records.
+
+    Matches on theme NAME (the stable identifier across both systems),
+    mirroring the approach used for SelectedTheme in response_annotations.py.
+    """
+    if not batch_themes:
+        return {}
+
+    db_themes = CandidateTheme.objects.filter(question=question, parent__isnull=True)
+    db_themes_by_name = {theme.name: theme for theme in db_themes}
+
+    batch_key_to_db_theme = {}
+    missing_themes = []
+
+    for batch_theme in batch_themes:
+        if batch_theme.theme_name in db_themes_by_name:
+            batch_key_to_db_theme[batch_theme.theme_key] = db_themes_by_name[batch_theme.theme_name]
+        else:
+            missing_themes.append(batch_theme.theme_name)
+            logger.warning(
+                "Theme '{theme_name}' from batch output not found in candidate themes for question {question_number}",
+                theme_name=batch_theme.theme_name,
+                question_number=question.number,
+            )
+
+    if missing_themes:
+        raise ValueError(
+            f"Batch output contains themes not found in candidate themes for question {question.number}: "
+            f"{missing_themes}."
+        )
+
+    return batch_key_to_db_theme
+
+
+def _import_candidate_theme_responses(
+    question: Question,
+    mappings: List[ThemeMappingInput],
+    theme_lookup: Dict[str, CandidateTheme],
+) -> None:
+    """
+    Import candidate theme to response mappings for a single question.
+
+    Deletes existing CandidateThemeResponse records for this question's themes
+    before creating new ones (idempotent).
+    """
+    # Delete existing mappings for this question's candidate themes
+    CandidateThemeResponse.objects.filter(
+        candidate_theme__question=question
+    ).delete()
+
+    # Build response lookup by themefinder_id
+    responses = Response.objects.filter(question=question).select_related("respondent")
+    response_lookup = {r.respondent.themefinder_id: r for r in responses}
+
+    mapping_lookup = {m.themefinder_id: m.theme_keys for m in mappings}
+
+    records_to_create = []
+
+    for themefinder_id, response in response_lookup.items():
+        theme_keys = mapping_lookup.get(themefinder_id, [])
+        for theme_key in theme_keys:
+            if theme_key in theme_lookup:
+                records_to_create.append(
+                    CandidateThemeResponse(
+                        candidate_theme=theme_lookup[theme_key],
+                        response=response,
+                    )
+                )
+
+    if records_to_create:
+        CandidateThemeResponse.objects.bulk_create(records_to_create, ignore_conflicts=True)
+
+    logger.info(
+        "Created {count} candidate theme response links for question {question_number}",
+        count=len(records_to_create),
+        question_number=question.number,
+    )
+
+
+@transaction.atomic
+def import_candidate_theme_responses(
+    consultation_code: str,
+    timestamp: str,
+) -> None:
+    """
+    Import candidate theme response mappings from S3 batch job output.
+
+    Reads the same mapping.jsonl and themes.json output as the normal
+    assign-themes import, but populates CandidateThemeResponse instead
+    of ResponseAnnotation.
+    """
+    from data_pipeline.sync.response_annotations import (
+        load_selected_themes_from_s3,
+        load_theme_mappings_from_s3,
+    )
+
+    try:
+        consultation = Consultation.objects.get(code=consultation_code)
+    except Consultation.DoesNotExist:
+        raise ValueError(
+            f"Consultation with code '{consultation_code}' does not exist."
+        )
+
+    logger.info(
+        "Starting candidate theme response import for consultation '{consultation_title}'",
+        consultation_title=consultation.title,
+    )
+
+    questions = consultation.question_set.filter(has_free_text=True)
+
+    for question in questions:
+        # Load themes.json (same format as selected themes output)
+        batch_themes = load_selected_themes_from_s3(
+            consultation_code=consultation_code,
+            question_number=question.number,
+            timestamp=timestamp,
+        )
+
+        # Load mapping.jsonl
+        mappings = load_theme_mappings_from_s3(
+            consultation_code=consultation_code,
+            question_number=question.number,
+            timestamp=timestamp,
+        )
+
+        # Build lookup from batch theme_key -> CandidateTheme
+        theme_lookup = _build_candidate_theme_lookup(question, batch_themes)
+
+        # Import mappings
+        _import_candidate_theme_responses(question, mappings, theme_lookup)
+
+    logger.info(
+        "Candidate theme response import complete for consultation '{consultation_title}'",
+        consultation_title=consultation.title,
+    )
+
+
+def import_candidate_theme_responses_from_s3(
+    consultation_code: str,
+    timestamp: str,
+) -> None:
+    """
+    High-level orchestration function to import candidate theme responses from S3.
+    """
+    logger.info(
+        "Starting candidate theme response import for '{consultation_code}' (timestamp: {timestamp})",
+        consultation_code=consultation_code,
+        timestamp=timestamp,
+    )
+
+    import_candidate_theme_responses(
+        consultation_code=consultation_code,
+        timestamp=timestamp,
+    )
+
+    logger.info(
+        "Candidate theme response import complete for '{consultation_code}'",
         consultation_code=consultation_code,
     )
