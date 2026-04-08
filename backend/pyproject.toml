@@ -64,5 +64,8 @@ filterwarnings = [
 files = '**/*.py'
 exclude = ['^consultations/migrations/']
 
+[tool.uv.sources]
+themefinder = { workspace = true }
+
 [tool.bandit]
 exclude = "*/.cruft.json"
