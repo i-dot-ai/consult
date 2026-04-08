@@ -1,5 +1,5 @@
 TOOL_NAME=slack_notifier
-BUILD_DIR=../../build/${TOOL_NAME}
+BUILD_DIR=../build/${TOOL_NAME}
 
 .PHONY: build
 build:

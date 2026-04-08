@@ -194,16 +194,11 @@ tmp
 *.zip
 
 lambda/build/
+lambda/out/
 lambda/**/*.zip
 lambda/**/celery/
 lambda/**/redis/
 lambda/**/__pycache__/
 lambda/**/code/package/
-
-# Lambda build artifacts
-**/build/
-**/out/
-**/packages/
-**/layers/
 
 .claude/

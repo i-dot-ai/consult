@@ -29,8 +29,8 @@ resource "aws_security_group" "lambda_sg" {
 
 data "archive_file" "slack_notifier_archive" {
   type        = "zip"
-  source_dir  = "${path.root}/../build/slack_notifier"
-  output_path = "${path.root}/../out/slack_notifier.zip"
+  source_dir  = "${path.root}/../lambda/build/slack_notifier"
+  output_path = "${path.root}/../lambda/out/slack_notifier.zip"
 }
 
 module "slack_notifier_lambda" {
@@ -57,14 +57,14 @@ module "slack_notifier_lambda" {
 
 data "archive_file" "import_candidate_themes_archive" {
   type        = "zip"
-  source_dir  = "${path.root}/../build/import_candidate_themes"
-  output_path = "${path.root}/../out/import_candidate_themes.zip"
+  source_dir  = "${path.root}/../lambda/build/import_candidate_themes"
+  output_path = "${path.root}/../lambda/out/import_candidate_themes.zip"
 }
 
 data "archive_file" "import_candidate_themes_layer" {
   type        = "zip"
-  source_dir  = "${path.root}/../build/packages/import_candidate_themes"
-  output_path = "${path.root}/../build/layers/import_candidate_themes.zip"
+  source_dir  = "${path.root}/../lambda/build/packages/import_candidate_themes"
+  output_path = "${path.root}/../lambda/build/layers/import_candidate_themes.zip"
 }
 
 resource "aws_lambda_layer_version" "import_candidate_themes_dependencies" {
@@ -102,14 +102,14 @@ module "import_candidate_themes_lambda" {
 
 data "archive_file" "import_response_annotations_archive" {
   type        = "zip"
-  source_dir  = "${path.root}/../build/import_response_annotations"
-  output_path = "${path.root}/../out/import_response_annotations.zip"
+  source_dir  = "${path.root}/../lambda/build/import_response_annotations"
+  output_path = "${path.root}/../lambda/out/import_response_annotations.zip"
 }
 
 data "archive_file" "import_response_annotations_layer" {
   type        = "zip"
-  source_dir  = "${path.root}/../build/packages/import_response_annotations"
-  output_path = "${path.root}/../build/layers/import_response_annotations.zip"
+  source_dir  = "${path.root}/../lambda/build/packages/import_response_annotations"
+  output_path = "${path.root}/../lambda/build/layers/import_response_annotations.zip"
 }
 
 resource "aws_lambda_layer_version" "import_response_annotations_dependencies" {

@@ -71,7 +71,7 @@ jobs:
       - start-runner
     uses: ./.github/workflows/build-lambda-artifacts.yml
     with:
-      upload_directory: ./build
+      upload_directory: ./lambda/build
       commit_hash: ${{ needs.set-vars.outputs.commit-hash }}
 
   apply-infra:
