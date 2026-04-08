@@ -2,6 +2,7 @@
   import clsx from "clsx";
 
   import { createRawSnippet } from "svelte";
+  import fetchMock from 'fetch-mock';
 
   import CodeMirror from "svelte-codemirror-editor";
   import { json } from "@codemirror/lang-json";
@@ -18,6 +19,7 @@
 
   import stories from "./stories.ts";
   import { toTitleCase } from "../../global/utils.ts";
+  import { queryClient } from "../../global/queryClient.ts";
 
   let { selected = "" } = $props();
   let currStory = $state(stories.find((story) => story.name === selected));
@@ -35,6 +37,23 @@
   let panel: HTMLElement;
 
   const categories = [...new Set(stories.map((story) => story.category))];
+
+  $effect.pre(() => {
+    const mock = storyTab?.mock || currStory?.mock;
+    if (mock) {
+      fetchMock.removeRoutes();
+      fetchMock
+        .mockGlobal()
+        .route({
+          url: mock.url,
+          response: mock.response(),
+        });
+    } else {
+      fetchMock.unmockGlobal();
+    }
+
+    queryClient.resetQueries();
+  })
 </script>
 
 <div class="grid grid-cols-4 gap-8">
