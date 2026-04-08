@@ -5,15 +5,21 @@ RUN apt-get update && apt-get install --yes build-essential > /dev/null
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Set up the project directory structure
+WORKDIR /src
+
+# Copy workspace root config and lockfile
+COPY pyproject.toml uv.lock ./
+
+# Copy themefinder package (workspace member)
+COPY themefinder/pyproject.toml ./themefinder/pyproject.toml
+COPY themefinder/src/ ./themefinder/src/
+
+# Copy backend package config
+COPY backend/pyproject.toml ./backend/pyproject.toml
+
+# Install dependencies (resolves themefinder from workspace)
 WORKDIR /src/backend
-
-COPY ./backend/pyproject.toml ./backend/uv.lock ./
-
-# Configure uv to create venv in 'venv' directory instead of '.venv'
 ENV UV_PROJECT_ENVIRONMENT=venv
-
-# Install dependencies - this will create venv directory
 RUN uv sync --frozen --no-install-project
 
 
