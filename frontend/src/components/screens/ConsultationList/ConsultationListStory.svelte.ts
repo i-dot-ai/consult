@@ -6,16 +6,16 @@ export default {
   name: "ConsultationList",
   component: ConsultationList,
   category: "Screens",
-  mock: defaultMock,
+  mocks: [defaultMock],
   props: [],
   stories: [
     {
       name: "No Consultations",
-      mock: emptyMock,
+      mocks: [emptyMock],
     },
     {
       name: "Many Consultations",
-      mock: longMock,
+      mocks: [longMock],
     }
   ],
 };

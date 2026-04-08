@@ -39,15 +39,19 @@
   const categories = [...new Set(stories.map((story) => story.category))];
 
   $effect.pre(() => {
-    const mock = storyTab?.mock || currStory?.mock;
-    if (mock) {
+    const mocks = storyTab?.mocks || currStory?.mocks;
+    if (mocks) {
       fetchMock.removeRoutes();
-      fetchMock
-        .mockGlobal()
-        .route({
-          url: mock.url,
-          response: mock.response(),
-        });
+
+      mocks.forEach(mock => {
+        fetchMock
+          .mockGlobal()
+          .route({
+            url: mock.url,
+            response: mock.response(),
+            method: mock.method || "GET",
+          });
+      })
     } else {
       fetchMock.unmockGlobal();
     }

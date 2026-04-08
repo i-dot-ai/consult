@@ -34,8 +34,6 @@ const CONSULTATIONS = [
   },
 ]
 
-const longConsultations = Array(100).fill(CONSULTATIONS.at(0)).map((item, index) => ({...item, id: index.toString()}));
-
 export const defaultMock = {
   url: URL,
   response: () => ({
@@ -62,6 +60,11 @@ export const longMock = {
     "count": 2,
     "next": null,
     "previous": null,
-    "results": longConsultations
+    "results": Array(100)
+      .fill(CONSULTATIONS.at(0))
+      .map((item, index) => ({
+        ...item,
+        id: index.toString(),
+      })),
   }),
 };
