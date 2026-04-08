@@ -1,3 +1,1 @@
-# Pin themefinder to specific version for reproducibility
-# Update this version when you want to deploy themefinder changes
-themefinder>=0.8.2
+# themefinder is installed from local source in Dockerfile
