@@ -20,3 +20,10 @@ frontend/CACHE
 frontend/govuk-assets
 frontend/admin
 frontend/django_extensions
+
+# Exclude themefinder non-production files from Docker builds
+themefinder/evals/
+themefinder/docs/
+themefinder/tests/
+themefinder/examples/
+themefinder/architecture/
