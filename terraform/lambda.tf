@@ -27,10 +27,6 @@ resource "aws_security_group" "lambda_sg" {
   }
 }
 
-# -------------------------------------------------------------------
-# slack_notifier — simple single-file Lambda (no dependencies)
-# -------------------------------------------------------------------
-
 data "archive_file" "slack_notifier_archive" {
   type        = "zip"
   source_dir  = "${path.root}/../build/slack_notifier"
@@ -58,10 +54,6 @@ module "slack_notifier_lambda" {
     "AWS_ACCOUNT_ID"    = data.aws_caller_identity.current.account_id
   }
 }
-
-# -------------------------------------------------------------------
-# import_candidate_themes — Lambda with dependency layer
-# -------------------------------------------------------------------
 
 data "archive_file" "import_candidate_themes_archive" {
   type        = "zip"
@@ -107,10 +99,6 @@ module "import_candidate_themes_lambda" {
     AWS_ACCOUNT_ID    = data.aws_caller_identity.current.account_id
   }
 }
-
-# -------------------------------------------------------------------
-# import_response_annotations — Lambda with dependency layer
-# -------------------------------------------------------------------
 
 data "archive_file" "import_response_annotations_archive" {
   type        = "zip"
