@@ -1,10 +1,10 @@
 import StepsTitle from "./StepsTitle.svelte";
 import { TEST_DATA } from "./testData";
 
-let text = $state(TEST_DATA.text);
-let currentStep = $state(TEST_DATA.currentStep);
-let totalSteps = $state(TEST_DATA.totalSteps);
-let Icon = $state(TEST_DATA.Icon);
+const text = $state(TEST_DATA.text);
+const currentStep = $state(TEST_DATA.currentStep);
+const totalSteps = $state(TEST_DATA.totalSteps);
+const Icon = $state(TEST_DATA.Icon);
 
 export default {
   name: "StepsTitle",
@@ -14,7 +14,7 @@ export default {
     { name: "text", value: text, type: "text" },
     { name: "currentStep", value: currentStep, type: "number" },
     { name: "totalSteps", value: totalSteps, type: "number" },
-    { name: "Icon", value: Icon},
+    { name: "Icon", value: Icon },
   ],
   stories: [
     {

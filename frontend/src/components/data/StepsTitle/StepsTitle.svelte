@@ -4,7 +4,7 @@
   import type { Component } from "svelte";
 
   import MaterialIcon from "../../MaterialIcon.svelte";
-  import Title from "../../Title.svelte";  
+  import Title from "../../Title.svelte";
 
   interface Props {
     text: string;
@@ -13,12 +13,7 @@
     Icon: Component;
   }
 
-  let {
-    text = "",
-    currentStep,
-    totalSteps,
-    Icon,
-  }: Props = $props();
+  let { text = "", currentStep, totalSteps, Icon }: Props = $props();
 
   let stepsIndeces = $derived([...Array(totalSteps).keys()]);
 
@@ -31,7 +26,7 @@
   <div
     class={clsx([
       "rounded-full",
-      "w-2 h-2",
+      "h-2 w-2",
       active ? "bg-secondary" : "bg-neutral-200",
       "transition-colors",
     ])}
@@ -40,16 +35,18 @@
 {/snippet}
 
 <div class="flex gap-4">
-  <div class={clsx([
-    "bg-secondary",
-    "w-12",
-    "h-12",
-    "rounded-full",
-    "flex",
-    "justify-center",
-    "items-center",
-    "shrink-0",
-  ])}>
+  <div
+    class={clsx([
+      "bg-secondary",
+      "w-12",
+      "h-12",
+      "rounded-full",
+      "flex",
+      "justify-center",
+      "items-center",
+      "shrink-0",
+    ])}
+  >
     <MaterialIcon size="2rem">
       <Icon />
     </MaterialIcon>
@@ -62,14 +59,16 @@
       </span>
     </Title>
 
-    <div class={clsx([
-      "flex",
-      "gap-2",
-      "items-center",
-      "ml-1",
-      "mt-1.5",
-      "flex-wrap",
-    ])}>
+    <div
+      class={clsx([
+        "flex",
+        "gap-2",
+        "items-center",
+        "ml-1",
+        "mt-1.5",
+        "flex-wrap",
+      ])}
+    >
       {#each stepsIndeces as stepIndex (stepIndex)}
         {@render dot(isDotActive(stepIndex))}
       {/each}

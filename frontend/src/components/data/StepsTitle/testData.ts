@@ -5,4 +5,4 @@ export const TEST_DATA = {
   currentStep: 1,
   totalSteps: 5,
   Icon: Download,
-}
+};
