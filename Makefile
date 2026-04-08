@@ -292,3 +292,20 @@ release: ## Deploy app
 	fi
 
 	chmod +x ./terraform/scripts/release.sh && ./terraform/scripts/release.sh $(env)
+
+# Lambda build
+.PHONY: build_lambda_artifacts/ci
+build_lambda_artifacts/ci: ## Build all Lambda artifacts for CI
+	mkdir -p -- build out build/layers build/packages
+	make build_lambda/callable build_target=slack_notifier
+	make build_lambda/callable build_target=import_candidate_themes
+	make build_lambda/callable build_target=import_response_annotations
+
+.PHONY: build_lambda_artifacts/local
+build_lambda_artifacts/local: ## Build all Lambda artifacts locally (wraps in Docker for non-Linux, in case you're building from an arm64 chip)
+	docker run --rm -v "${PWD}:/var/task" -w /var/task --platform linux/amd64 python:3.12 \
+		sh -c "pip install uv && make build_lambda_artifacts/ci"
+
+.PHONY: build_lambda/callable
+build_lambda/callable:
+	cd lambda/${build_target}/ && make build
