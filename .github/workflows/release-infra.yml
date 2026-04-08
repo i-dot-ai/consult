@@ -9,6 +9,7 @@ on:
   workflow_run:
     workflows: [build]
     types: [completed]
+    branches: [main]
 
 jobs:
   set-vars:
@@ -71,7 +72,7 @@ jobs:
       - start-runner
     uses: ./.github/workflows/build-lambda-artifacts.yml
     with:
-      upload_directory: ./build
+      upload_directory: ./lambda/build
 
   build-infra:
     needs:

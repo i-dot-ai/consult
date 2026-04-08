@@ -273,7 +273,7 @@ release: ## Deploy app
 # Lambda build
 .PHONY: build_lambda_artifacts/ci
 build_lambda_artifacts/ci: ## Build all Lambda artifacts for CI
-	mkdir -p -- build out build/layers build/packages
+	mkdir -p -- lambda/build lambda/out lambda/build/layers lambda/build/packages
 	make build_lambda/callable build_target=slack_notifier
 	make build_lambda/callable build_target=import_candidate_themes
 	make build_lambda/callable build_target=import_response_annotations
