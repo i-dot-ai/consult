@@ -46,7 +46,8 @@ jobs:
           if [[ "${{ github.ref_name }}" == main ]]; then
             export ENVIRONMENT=preprod
           else
-            export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $2 }')
+            # export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $2 }')
+            export ENVIRONMENT=dev
           fi
           echo "environment=${ENVIRONMENT}"
           echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
