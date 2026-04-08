@@ -7,12 +7,12 @@ def populate_reviewed_responses_count(apps, schema_editor):
     """Populate the reviewed_responses_count field for existing questions"""
     Question = apps.get_model('consultations', 'Question')
     Response = apps.get_model('consultations', 'Response')
-    
+
     questions = Question.objects.filter(has_free_text=True)
     total = questions.count()
-    
+
     print(f"\nPopulating reviewed_responses_count for {total} questions with free text...")
-    
+
     for i, question in enumerate(questions, 1):
         # Count human-reviewed responses for this question
         count = Response.objects.filter(
@@ -20,13 +20,13 @@ def populate_reviewed_responses_count(apps, schema_editor):
             free_text__isnull=False,
             annotation__human_reviewed=True
         ).exclude(free_text='').count()
-        
+
         question.reviewed_responses_count = count
         question.save(update_fields=['reviewed_responses_count'])
-        
+
         if i % 10 == 0 or i == total:
             print(f"  Progress: {i}/{total} questions ({i/total*100:.1f}%)")
-    
+
     print(f"✓ Completed populating reviewed_responses_count for {total} questions")
 
 
@@ -38,7 +38,7 @@ def reverse_populate(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('consultations', '0094_response_resp_q_has_ft_idx_and_more'),
+        ('consultations', '0097_response_resp_q_has_ft_idx_and_more'),
     ]
 
     operations = [

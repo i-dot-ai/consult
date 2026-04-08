@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('consultations', '0093_consultation_model_name'),
+        ('consultations', '0096_question_status'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

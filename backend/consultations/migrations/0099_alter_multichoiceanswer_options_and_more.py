@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('consultations', '0095_add_reviewed_responses_count'),
+        ('consultations', '0098_add_reviewed_responses_count'),
     ]
 
     operations = [
