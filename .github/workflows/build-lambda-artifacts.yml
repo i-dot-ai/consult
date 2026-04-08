@@ -1,0 +1,55 @@
+name: Build Lambda Artifacts
+
+on:
+  workflow_call:
+    inputs:
+      upload_directory:
+        required: true
+        type: string
+      commit_hash:
+        required: false
+        type: string
+        default: ${{ github.sha }}
+    outputs:
+      target_directory:
+        value: ${{ jobs.build.outputs.target_directory }}
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    outputs:
+      target_directory: ${{ steps.upload_dir.outputs.target_directory }}
+
+    steps:
+    - name: Dump inputs context
+      env:
+        INPUTS: ${{ toJSON(inputs) }}
+      run: echo "$INPUTS"
+
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.commit_hash }}
+        fetch-depth: 0
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v8
+
+    - name: Prepare artifacts
+      run: make build_lambda_artifacts/ci
+
+    - name: upload
+      uses: actions/upload-artifact@v7
+      with:
+        name: artifacts
+        path: ${{ inputs.upload_directory }}
+
+    - name: Set upload directory as output
+      id: upload_dir
+      run: echo "target_directory=${{ inputs.upload_directory }}" >> $GITHUB_OUTPUT
