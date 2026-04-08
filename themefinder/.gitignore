@@ -1,0 +1,100 @@
+venv
+.DS_Store
+.idea
+.gcloudignore
+.git
+.venv
+.vscode/
+__pycache__/
+/setup.cfg
+venv
+.ipynb_checkpoints
+*.ipynb
+.env
+Brewfile.lock.json
+.cache
+
+# Terraform
+**/.terraform/*
+**/terraform/terraform.tfstate.d
+**/.terraform*
+# Terraform lock files
+*/.terraform.lock.hcl
+.terraform.lock.hcl
+*.terraform.lock.hcl 
+
+# Data
+*.csv
+*.xlsx
+*.xls
+*.pkl
+*.parquet
+*.zip
+*.ods
+
+# outputs
+*.pdf
+*.jpg
+*.png
+*.pptx
+*.ppt
+*.docx
+output/
+
+# Rendered presentations
+*.html
+*_files/
+static/
+*.pdf
+
+# Docker cache
+.build-cache
+
+# Ignore dynaconf secret files
+.secrets.*
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Generated when getting test coverage
+.coverage
+
+# Ignore mkdocs site
+site/
+
+# GCP service account credentials
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+
+# Synthetic datasets (generated locally, not committed)
+# Keep gambling_XS as reference dataset
+evals/data/*
+!evals/data/gambling_XS/
+!evals/data/generation/
+!evals/data/condensation/
+
+# Benchmark outputs (generated locally)
+evals/benchmark_*.log
+evals/benchmark_results/
+benchmark_report_*.html
+
+consultations/
