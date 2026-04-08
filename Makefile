@@ -12,7 +12,7 @@ help:     ## Show this help.
 install: ## Install all dependencies
 	pre-commit install
 	cp .githooks/* .git/hooks/
-	cd backend && uv sync
+	uv sync
 	. "$(NVM_DIR)/nvm.sh" && cd frontend && nvm install && npm install
 	. "$(NVM_DIR)/nvm.sh" && cd e2e_tests && nvm install && npm install
 
@@ -43,6 +43,17 @@ test-backend: ## Run the backend tests
 .PHONY: test-frontend
 test-frontend: ## Run the frontend tests
 	cd frontend && npm run test
+
+.PHONY: test-themefinder
+test-themefinder: ## Run themefinder tests
+	cd themefinder && uv run pytest tests/ -v
+
+.PHONY: test-all
+test-all: test-backend test-frontend test-themefinder ## Run all tests
+
+.PHONY: run-evals
+run-evals: ## Run themefinder LLM evals (quick mode)
+	cd themefinder/evals && uv run python benchmark.py --quick
 
 .PHONY: test-end-to-end
 test-end-to-end: ## Run end-to-end tests with Playwright
