@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { createRawSnippet } from "svelte";
+  import { createRawSnippet, onDestroy, onMount } from "svelte";
 
   import CodeMirror from "svelte-codemirror-editor";
   import { json } from "@codemirror/lang-json";
@@ -18,8 +18,17 @@
 
   import stories from "./stories.ts";
 
-  let { selected = "" } = $props();
-  let currStory = $state(stories.find((story) => story.name === selected));
+  const getSelectedUrlParam = () => {
+    return Object.fromEntries(new URLSearchParams(window.location.search)).selected;
+  }
+
+  const updateSelected = () => {
+    const newSelected = getSelectedUrlParam();
+    selected = newSelected;
+  }
+
+  let selected = $derived(getSelectedUrlParam());
+  let currStory = $derived(stories.find((story) => story.name === selected));
   let componentProps: unknown = $derived.by(() => {
     let props: unknown = {};
     currStory?.props.forEach((prop) => {
@@ -28,6 +37,14 @@
     return props;
   });
   let panel: HTMLElement;
+
+  onMount(() => {
+    window.addEventListener("popstate", updateSelected);
+  })
+
+  onDestroy(() => {
+    window.removeEventListener("popstate", updateSelected);
+  })
 
   const categories = [...new Set(stories.map((story) => story.category))];
 </script>
@@ -56,6 +73,12 @@
                   currStory?.name === story.name &&
                     "text-primary hover:text-pink-600",
                 ])}
+                onclick={(e) => {
+                  e.preventDefault();
+                  selected = story.name;
+                  var newurl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?selected=${story.name}`;
+                  window.history.pushState({path:newurl},'',newurl);
+                }}
               >
                 {story.name}
               </a>
