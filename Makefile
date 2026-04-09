@@ -46,7 +46,7 @@ test-frontend: ## Run the frontend tests
 
 .PHONY: test-themefinder
 test-themefinder: ## Run themefinder tests
-	cd themefinder && uv run pytest tests/ -v
+	cd themefinder && uv run --extra dev pytest tests/ -v
 
 .PHONY: test-all
 test-all: test-backend test-frontend test-themefinder ## Run all tests
