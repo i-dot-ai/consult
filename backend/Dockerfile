@@ -19,7 +19,7 @@ COPY backend/pyproject.toml ./backend/pyproject.toml
 
 # Install dependencies (resolves themefinder from workspace)
 WORKDIR /src/backend
-ENV UV_PROJECT_ENVIRONMENT=venv
+ENV UV_PROJECT_ENVIRONMENT=/src/backend/venv
 RUN uv sync --frozen --no-install-project
 
 
