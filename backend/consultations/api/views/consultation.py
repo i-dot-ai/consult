@@ -1,3 +1,4 @@
+from time import time
 from typing import Any
 
 import sentry_sdk
@@ -80,6 +81,7 @@ class ConsultationViewSet(ModelViewSet):
         permission_classes=[IsAuthenticated, CanSeeConsultation | IsAdminUser],
     )
     def demographic_options(self, request, pk=None):
+        start_time = time()
         self.get_object()
 
         data = (
@@ -93,6 +95,14 @@ class ConsultationViewSet(ModelViewSet):
         )
 
         serializer = DemographicOptionSerializer(instance=data, many=True)
+        
+        duration_ms = int((time() - start_time) * 1000)
+        logger.info(
+            "Demographic options completed in {duration_ms}ms for consultation {consultation_id} with {option_count} options",
+            duration_ms=duration_ms,
+            consultation_id=str(pk),
+            option_count=len(data),
+        )
 
         return Response(serializer.data)
 

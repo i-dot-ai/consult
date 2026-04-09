@@ -271,6 +271,9 @@ def multi_choice_responses(multi_choice_question):
     response_2.chosen_options.add(red)
     response_2.save()
 
+    # Update the denormalized total_responses counter
+    multi_choice_question.update_total_responses()
+
     yield respondent_1
 
     response_1.delete()

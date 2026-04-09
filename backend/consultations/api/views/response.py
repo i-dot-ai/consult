@@ -1,6 +1,8 @@
 from collections import defaultdict
+from time import time
 
-from django.db.models import Count, Exists, OuterRef
+from django.conf import settings
+from django.db.models import BooleanField, Case, Count, Exists, OuterRef, Value, When
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -20,6 +22,8 @@ from consultations.api.serializers import (
     ThemeAggregationsSerializer,
     ThemeSerializer,
 )
+
+logger = settings.LOGGER
 
 
 class BespokeResultsSetPagination(PageNumberPagination):
@@ -67,6 +71,37 @@ class ResponseViewSet(ModelViewSet):
     filter_backends = [ResponseSearchFilter, DjangoFilterBackend]
     filterset_class = ResponseFilter
     http_method_names = ["get", "patch", "post"]
+    
+    def list(self, request, *args, **kwargs):
+        """Override list to add performance logging"""
+        start_time = time()
+        consultation_pk = kwargs.get('consultation_pk')
+        
+        logger.info(
+            "Response list starting for consultation {consultation_id}",
+            consultation_id=str(consultation_pk),
+        )
+        
+        response = super().list(request, *args, **kwargs)
+        
+        duration_ms = int((time() - start_time) * 1000)
+        
+        # Handle paginated response structure
+        if isinstance(response.data, dict):
+            result_count = response.data.get('filtered_total', 0)
+            if result_count == 0 and 'all_respondents' in response.data:
+                result_count = len(response.data['all_respondents'])
+        else:
+            result_count = len(response.data) if isinstance(response.data, list) else 0
+        
+        logger.info(
+            "Response list completed in {duration_ms}ms for consultation {consultation_id} with {result_count} results",
+            duration_ms=duration_ms,
+            consultation_id=str(consultation_pk),
+            result_count=result_count,
+        )
+        
+        return response
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
@@ -94,13 +129,47 @@ class ResponseViewSet(ModelViewSet):
             is_read_by_user=Exists(
                 models.Response.objects.filter(read_by=self.request.user, pk=OuterRef("pk"))
             ),
-            annotation_is_edited=Exists(
-                models.ResponseAnnotation.history.filter(id=OuterRef("annotation__id")).values(
-                    "id"
-                )[1:]
+            # CRITICAL PERFORMANCE: History table queries are extremely expensive
+            # The annotation is considered edited if:
+            # 1. It has human-assigned themes (most common case)
+            # 2. OR it has been reviewed (reviewed_by is set)
+            # 3. OR it has been flagged by anyone (flagged_by has entries)
+            # This covers all meaningful edit scenarios without history queries
+            annotation_is_edited=Case(
+                # Check for human-assigned themes
+                When(
+                    Exists(
+                        models.ResponseAnnotationTheme.objects.filter(
+                            response_annotation_id=OuterRef("annotation__id"),
+                            assigned_by__isnull=False,
+                        )
+                    ),
+                    then=Value(True)
+                ),
+                # Check if annotation has been reviewed
+                When(
+                    Exists(
+                        models.ResponseAnnotation.objects.filter(
+                            id=OuterRef("annotation__id"),
+                            reviewed_by__isnull=False,
+                        )
+                    ),
+                    then=Value(True)
+                ),
+                # Check if annotation has been flagged
+                When(
+                    Exists(
+                        models.ResponseAnnotation.flagged_by.through.objects.filter(
+                            responseannotation_id=OuterRef("annotation__id")
+                        )
+                    ),
+                    then=Value(True)
+                ),
+                default=Value(False),
+                output_field=BooleanField(),
             ),
             annotation_has_human_assigned_themes=Exists(
-                models.ResponseAnnotationTheme.history.filter(
+                models.ResponseAnnotationTheme.objects.filter(
                     response_annotation_id=OuterRef("annotation__id"),
                     assigned_by__isnull=False,
                 )
@@ -118,10 +187,15 @@ class ResponseViewSet(ModelViewSet):
     )
     def demographic_aggregations(self, request, consultation_pk=None):
         """Get demographic aggregations for filtered responses"""
-
+        start_time = time()
+        
+        # More efficient: get respondent IDs from filtered responses, then aggregate demographics
+        filtered_respondent_ids = self.get_queryset().values_list('respondent_id', flat=True).distinct()
+        respondent_count = len(list(filtered_respondent_ids))
+        
         aggregations = (
             models.DemographicOption.objects.filter(
-                Exists(self.get_queryset().filter(respondent=OuterRef("respondent")))
+                respondent__id__in=filtered_respondent_ids
             )
             .values("field_name", "field_value")
             .annotate(count=Count("respondent", distinct=True))
@@ -133,6 +207,15 @@ class ResponseViewSet(ModelViewSet):
 
         serializer = DemographicAggregationsSerializer(data={"demographic_aggregations": result})
         serializer.is_valid()
+        
+        duration_ms = int((time() - start_time) * 1000)
+        logger.info(
+            "Demographic aggregations completed in {duration_ms}ms for consultation {consultation_id} with {respondent_count} respondents and {field_count} fields",
+            duration_ms=duration_ms,
+            consultation_id=str(consultation_pk),
+            respondent_count=respondent_count,
+            field_count=len(result),
+        )
 
         return Response(serializer.data)
 
@@ -144,21 +227,35 @@ class ResponseViewSet(ModelViewSet):
     )
     def theme_aggregations(self, request, consultation_pk=None):
         """Get theme aggregations for filtered responses"""
+        start_time = time()
 
-        # Get theme counts from the filtered responses
+        # More efficient query: aggregate themes directly from ResponseAnnotationTheme
+        # instead of joining through SelectedTheme
+        filtered_response_ids = self.get_queryset().values_list('id', flat=True)
+        response_count = len(list(filtered_response_ids))
+        
         theme_counts = (
-            models.SelectedTheme.objects.filter(
-                responseannotation__response__in=self.get_queryset(),
-                responseannotation__response__question__has_free_text__isnull=False,
+            models.ResponseAnnotationTheme.objects.filter(
+                response_annotation__response_id__in=filtered_response_ids,
+                response_annotation__response__question__has_free_text=True,
             )
-            .values("id")
-            .annotate(count=Count("responseannotation", distinct=True))
+            .values("theme_id")
+            .annotate(count=Count("response_annotation", distinct=True))
         )
 
-        theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
+        theme_aggregations = {str(theme["theme_id"]): theme["count"] for theme in theme_counts}
 
         serializer = ThemeAggregationsSerializer(data={"theme_aggregations": theme_aggregations})
         serializer.is_valid()
+        
+        duration_ms = int((time() - start_time) * 1000)
+        logger.info(
+            "Theme aggregations completed in {duration_ms}ms for consultation {consultation_id} with {response_count} responses and {theme_count} themes",
+            duration_ms=duration_ms,
+            consultation_id=str(consultation_pk),
+            response_count=response_count,
+            theme_count=len(theme_aggregations),
+        )
 
         return Response(serializer.data)
 

@@ -131,6 +131,10 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         null=True,
         blank=True,
     )
+    reviewed_responses_count = models.IntegerField(
+        default=0,
+        help_text="Denormalized count of human-reviewed responses for performance",
+    )
 
     @property
     def multiple_choice_options(self) -> list:
@@ -140,33 +144,37 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     @property
     def proportion_of_audited_answers(self) -> float:
         """Calculate proportion of human-reviewed responses for free text questions"""
-        if not self.has_free_text:
-            return 0
+        if not self.has_free_text or not self.total_responses:
+            return 0.0
 
-        # Count total responses with free text
-        total_responses = self.response_set.filter(
-            free_text__isnull=False, free_text__gt=""
-        ).count()
-
-        if total_responses == 0:
-            return 0
-
-        # Count human-reviewed responses
-        reviewed_responses = self.response_set.filter(
-            free_text__isnull=False, free_text__gt="", annotation__human_reviewed=True
-        ).count()
-
-        return reviewed_responses / total_responses
+        # Use denormalized count for performance
+        return self.reviewed_responses_count / self.total_responses
 
     def update_total_responses(self):
-        """Update the total_responses count based on current free text responses"""
+        """Update the total_responses count based on current responses"""
         if self.has_free_text:
+            # For questions with free text, count only responses with non-empty free text
             count = self.response_set.filter(free_text__isnull=False, free_text__gt="").count()
-            self.total_responses = count
-            self.save(update_fields=["total_responses"])
         else:
-            self.total_responses = 0
-            self.save(update_fields=["total_responses"])
+            # For multiple-choice-only questions, count all responses
+            count = self.response_set.count()
+
+        self.total_responses = count
+        self.save(update_fields=["total_responses"])
+
+    def update_reviewed_responses_count(self):
+        """Update the reviewed_responses_count based on human-reviewed annotations"""
+        if self.has_free_text:
+            count = self.response_set.filter(
+                free_text__isnull=False,
+                free_text__gt="",
+                annotation__human_reviewed=True
+            ).count()
+            self.reviewed_responses_count = count
+            self.save(update_fields=["reviewed_responses_count"])
+        else:
+            self.reviewed_responses_count = 0
+            self.save(update_fields=["reviewed_responses_count"])
 
     def get_non_empty_responses(self):
         """
@@ -251,6 +259,16 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta:
         indexes = [
             GinIndex(fields=["search_vector"]),
+            # Partial index for filtering responses by question with non-null free_text
+            # Note: We index only 'question' field, not the TextField 'free_text' which is too large
+            models.Index(
+                fields=["question"],
+                name="resp_q_has_ft_idx",  # Shortened to fit 30 char limit
+                condition=models.Q(free_text__isnull=False) & ~models.Q(free_text=""),
+            ),
+            # Composite index for common query: filter by question__consultation_id
+            models.Index(fields=["question", "respondent"]),
+            models.Index(fields=["respondent"]),  # For respondent lookups
         ]
 
     def __str__(self):
@@ -376,6 +394,11 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
                 name="unique_theme_assignment",
             ),
         ]
+        indexes = [
+            models.Index(fields=["response_annotation", "theme"]),
+            models.Index(fields=["theme"]),  # For theme aggregations
+            models.Index(fields=["assigned_by"]),  # For filtering human vs AI assignments
+        ]
 
 
 class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -419,6 +442,10 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
             models.Index(fields=["human_reviewed"]),
             models.Index(fields=["sentiment"]),
             models.Index(fields=["evidence_rich"]),
+            models.Index(
+                fields=["response", "human_reviewed"],
+                name="resp_ann_resp_rev_idx",  # Shortened to fit 30 char limit
+            ),
         ]
 
     def mark_human_reviewed(self, user):
@@ -490,6 +517,11 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
 
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     text = models.TextField()
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        indexes = [
+            models.Index(fields=["question"]),
+        ]
 
     def __str__(self):
         return f"{self.question.number} = {self.text}"

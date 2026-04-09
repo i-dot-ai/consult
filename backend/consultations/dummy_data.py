@@ -192,6 +192,10 @@ def create_dummy_consultation_from_yaml(
                 logger.info("Multiple choice question - create response chosen options")
                 create_response_chosen_options(response, multiple_choice_options)
 
+        # Update total_responses count after all responses are created
+        logger.info("Updating total_responses count for question {question_number}", question_number=question.number)
+        question.update_total_responses()
+        
         logger.info(
             "Finished adding question and responses for question {question_number}",
             question_number=question.number,

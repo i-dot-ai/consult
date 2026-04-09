@@ -99,6 +99,11 @@
   });
 
   async function loadData() {
+    const loadStartTime = performance.now();
+    console.log(
+      `[QuestionDetail] Starting data load for question ${questionId} in consultation ${consultationId}, page ${currPage}`,
+    );
+
     isAnswersLoading = true;
     const queryString = buildQuery({
       questionId: questionId,
@@ -114,26 +119,69 @@
 
     // Skip the rest of the requests if they are already requested for this filter set
     if (currPage === 1) {
-      $themeAggrStore.fetch(
-        `/api/consultations/${consultationId}/responses/theme-aggregations/${queryString}&question_id=${questionId}`,
-      );
-      $themeInfoStore.fetch(
-        `/api/consultations/${consultationId}/questions/${questionId}/theme-information/${queryString}`,
-      );
-      $demoOptionsStore.fetch(
-        `/api/consultations/${consultationId}/demographic-options/${queryString}`,
-      );
-      $demoAggrStore.fetch(
-        `/api/consultations/${consultationId}/responses/demographic-aggregations/${queryString}&question_id=${questionId}`,
-      );
-      $questionStore.fetch(
-        `/api/consultations/${consultationId}/questions/${questionId}/${queryString}`,
-      );
+      const themeAggrStart = performance.now();
+      $themeAggrStore
+        .fetch(
+          `/api/consultations/${consultationId}/responses/theme-aggregations/${queryString}&question_id=${questionId}`,
+        )
+        .then(() => {
+          console.log(
+            `[QuestionDetail] Theme aggregations loaded in ${(performance.now() - themeAggrStart).toFixed(0)}ms`,
+          );
+        });
+
+      const themeInfoStart = performance.now();
+      $themeInfoStore
+        .fetch(
+          `/api/consultations/${consultationId}/questions/${questionId}/theme-information/${queryString}`,
+        )
+        .then(() => {
+          console.log(
+            `[QuestionDetail] Theme information loaded in ${(performance.now() - themeInfoStart).toFixed(0)}ms`,
+          );
+        });
+
+      const demoOptionsStart = performance.now();
+      $demoOptionsStore
+        .fetch(
+          `/api/consultations/${consultationId}/demographic-options/${queryString}`,
+        )
+        .then(() => {
+          console.log(
+            `[QuestionDetail] Demographic options loaded in ${(performance.now() - demoOptionsStart).toFixed(0)}ms`,
+          );
+        });
+
+      const demoAggrStart = performance.now();
+      $demoAggrStore
+        .fetch(
+          `/api/consultations/${consultationId}/responses/demographic-aggregations/${queryString}&question_id=${questionId}`,
+        )
+        .then(() => {
+          console.log(
+            `[QuestionDetail] Demographic aggregations loaded in ${(performance.now() - demoAggrStart).toFixed(0)}ms`,
+          );
+        });
+
+      const questionStart = performance.now();
+      $questionStore
+        .fetch(
+          `/api/consultations/${consultationId}/questions/${questionId}/${queryString}`,
+        )
+        .then(() => {
+          console.log(
+            `[QuestionDetail] Question detail loaded in ${(performance.now() - questionStart).toFixed(0)}ms`,
+          );
+        });
     }
 
     // Append next page of answers to existing answers
+    const answersStart = performance.now();
     await $answersStore.fetch(
       `${getApiAnswersUrl(consultationId)}${queryString}`,
+    );
+    console.log(
+      `[QuestionDetail] Answers (page ${currPage}) loaded in ${(performance.now() - answersStart).toFixed(0)}ms - ${$answersStore.data?.all_respondents?.length || 0} responses`,
     );
 
     if ($answersStore.data?.all_respondents) {
@@ -144,6 +192,11 @@
     hasMorePages = $answersStore.data?.has_more_pages || false;
 
     currPage += 1;
+
+    const totalDuration = performance.now() - loadStartTime;
+    console.log(
+      `[QuestionDetail] Total data load completed in ${totalDuration.toFixed(0)}ms for question ${questionId}`,
+    );
   }
 
   function buildQuery(filters: QueryFilters) {
