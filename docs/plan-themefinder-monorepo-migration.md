@@ -179,6 +179,32 @@ The migration is split into 3 PRs. Phases 1-3 must land together because the Doc
 
 Day-to-day, you never think about the public repo — it stays in sync automatically.
 
+## PR 1 Verification Results (2026-04-09)
+
+Core migration (Phases 1-3) verified locally:
+
+| Check | Result |
+|---|---|
+| `uv sync` workspace resolution | Pass |
+| `python -c "from themefinder.models import ThemeNode"` | Pass |
+| `make test-themefinder` | Pass (82/82) |
+| `make test-backend` | Pass (346 passed, 9 skipped) |
+| `docker build -f backend/Dockerfile .` | Pass |
+| `docker build -f pipeline-sign-off/Dockerfile .` | Pass |
+| `docker build -f pipeline-mapping/Dockerfile .` | Pass |
+
+Commits on `feat/themefinder-monorepo`:
+1. `bb011ba0` docs: add themefinder monorepo migration plan
+2. `267d7109` feat: copy themefinder repo into consult/themefinder/
+3. `7e16f635` feat: wire up uv workspace with themefinder as member
+4. `534f7c7a` refactor: remove themefinder PyPI pin from pipeline requirements
+5. `2f7f2039` feat: update pipeline Dockerfiles to install local themefinder
+6. `c5d0ae04` feat: update backend Dockerfile for uv workspace
+7. `bfc64a75` chore: exclude themefinder non-production files from Docker builds
+8. `cf1f94df` feat: add themefinder targets to Makefile
+9. `e110eb19` fix: use --extra dev for themefinder test dependencies
+10. `f6951a46` fix: use absolute path for UV_PROJECT_ENVIRONMENT in backend Dockerfile
+
 ## Risks and Mitigations
 
 - **uv.lock conflict**: The old `backend/uv.lock` must be deleted before generating the workspace root lockfile. uv workspaces use a single root-level lockfile.
