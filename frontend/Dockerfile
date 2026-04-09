@@ -1,5 +1,5 @@
-# Using Node 22.12.0 to match development environment (.nvmrc) and ci (.github/workflows/frontend-ci.yml)
-FROM public.ecr.aws/docker/library/node:22.12.0-slim
+# Using Node 25.9.0 to match development environment (.nvmrc) and ci (.github/workflows/frontend-ci.yml)
+FROM public.ecr.aws/docker/library/node:25.9.0-slim
 
 # Set working directory in container
 WORKDIR /app
