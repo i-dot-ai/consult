@@ -1,4 +1,5 @@
-from django.db.models import Count, Prefetch
+from django.db.models import Count, OuterRef, Prefetch, Subquery, Value
+from django.db.models.functions import Coalesce
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -35,15 +36,39 @@ class QuestionViewSet(ModelViewSet):
         if not self.request.user.is_staff:
             queryset = queryset.filter(consultation__users=self.request.user)
 
-        # Prefetch multi-choice answers with response counts and annotate total_responses
+        # Annotate total_responses using a correlated subquery instead of COUNT JOIN
+        # (JOIN scans full response table; subquery uses index on response.question_id)
+        total_responses_subquery = Subquery(
+            models.Response.objects.filter(question_id=OuterRef("pk"))
+            .order_by()
+            .values("question_id")
+            .annotate(c=Count("*"))
+            .values("c")
+        )
+        queryset = queryset.annotate(
+            prefetched_total_responses=Coalesce(total_responses_subquery, Value(0))
+        )
+
+        # Prefetch multi-choice answers with response counts using subquery
+        response_count_subquery = Subquery(
+            models.Response.chosen_options.through.objects.filter(
+                multichoiceanswer_id=OuterRef("pk")
+            )
+            .order_by()
+            .values("multichoiceanswer_id")
+            .annotate(c=Count("*"))
+            .values("c")
+        )
         queryset = queryset.prefetch_related(
             Prefetch(
                 "multichoiceanswer_set",
                 queryset=models.MultiChoiceAnswer.objects.annotate(
-                    prefetched_response_count=Count("response")
+                    prefetched_response_count=Coalesce(
+                        response_count_subquery, Value(0)
+                    )
                 ),
             )
-        ).annotate(prefetched_total_responses=Count("response"))
+        )
 
         return queryset.order_by("number")
 
