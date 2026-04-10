@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "engines": {
-    "node": "25.9"
+    "node": "24.14.1"
   },
   "scripts": {
     "dev": "astro dev --host",
