@@ -1,4 +1,5 @@
-from django.db.models import Count, Prefetch
+from django.db.models import Count, OuterRef, Prefetch, Q, Subquery, Value
+from django.db.models.functions import Coalesce
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -35,15 +36,54 @@ class QuestionViewSet(ModelViewSet):
         if not self.request.user.is_staff:
             queryset = queryset.filter(consultation__users=self.request.user)
 
-        # Prefetch multi-choice answers with response counts and annotate total_responses
+        # Total responses per question (correlated subquery to avoid full-table JOIN)
+        question_response_count = Subquery(
+            models.Response.objects.filter(question_id=OuterRef("pk"))
+            .order_by()
+            .values("question_id")
+            .annotate(c=Count("*"))
+            .values("c")
+        )
+        queryset = queryset.annotate(
+            prefetched_total_responses=Coalesce(question_response_count, Value(0)),
+        )
+
+        # Response count per multi-choice answer (correlated subquery to avoid full-table JOIN)
+        multichoice_response_count = Subquery(
+            models.Response.chosen_options.through.objects.filter(
+                multichoiceanswer_id=OuterRef("pk")
+            )
+            .order_by()
+            .values("multichoiceanswer_id")
+            .annotate(c=Count("*"))
+            .values("c")
+        )
         queryset = queryset.prefetch_related(
             Prefetch(
                 "multichoiceanswer_set",
                 queryset=models.MultiChoiceAnswer.objects.annotate(
-                    prefetched_response_count=Count("response")
+                    prefetched_response_count=Coalesce(multichoice_response_count, Value(0))
                 ),
             )
-        ).annotate(prefetched_total_responses=Count("response"))
+        )
+
+        # Reviewed responses per question (only when explicitly requested)
+        if "proportion_of_audited_answers" in self.request.query_params.get("include", ""):
+            reviewed_response_count = Subquery(
+                models.Response.objects.filter(
+                    question_id=OuterRef("pk"),
+                    free_text__isnull=False,
+                    free_text__gt="",
+                    annotation__human_reviewed=True,
+                )
+                .order_by()
+                .values("question_id")
+                .annotate(c=Count("*"))
+                .values("c")
+            )
+            queryset = queryset.annotate(
+                prefetched_reviewed_responses=Coalesce(reviewed_response_count, Value(0)),
+            )
 
         return queryset.order_by("number")
 
