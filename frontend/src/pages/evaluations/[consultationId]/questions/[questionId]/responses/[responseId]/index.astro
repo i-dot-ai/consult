@@ -28,20 +28,20 @@ if (!responseId || !questionId || !consultationId) {
   );
 }
 
-let question = await fetchBackendApi<Question>(
-  Astro,
-  getApiQuestionUrl(consultationId, questionId),
-);
-
-let response = await fetchBackendApi<QuestionResponseResponse>(
-  Astro,
-  getApiQuestionResponse(consultationId, questionId, responseId),
-);
-
-let themes = await fetchBackendApi<ResponseThemeInformation>(
-  Astro,
-  getThemeInformationResponse(consultationId, questionId, responseId),
-);
+const [question, response, themes] = await Promise.all([
+  fetchBackendApi<Question>(
+    Astro,
+    getApiQuestionUrl(consultationId, questionId),
+  ),
+  fetchBackendApi<QuestionResponseResponse>(
+    Astro,
+    getApiQuestionResponse(consultationId, questionId, responseId),
+  ),
+  fetchBackendApi<ResponseThemeInformation>(
+    Astro,
+    getThemeInformationResponse(consultationId, questionId, responseId),
+  ),
+]);
 ---
 
 <Layout>
