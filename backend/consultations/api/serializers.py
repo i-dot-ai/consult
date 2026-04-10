@@ -67,11 +67,16 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     multiple_choice_answer = MultiChoiceAnswerSerializer(
         many=True, source="multichoiceanswer_set", read_only=True
     )
-    proportion_of_audited_answers = serializers.ReadOnlyField()
+    proportion_of_audited_answers = serializers.SerializerMethodField()
     total_responses = serializers.SerializerMethodField()
 
     def get_total_responses(self, obj) -> int:
         return obj.prefetched_total_responses
+
+    def get_proportion_of_audited_answers(self, obj) -> float:
+        if not obj.has_free_text or not obj.total_responses:
+            return 0
+        return obj.prefetched_reviewed_responses / obj.total_responses
 
     class Meta:
         model = Question
