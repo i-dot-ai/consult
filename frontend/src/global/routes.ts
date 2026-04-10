@@ -131,13 +131,21 @@ export const getApiAnswersUrl = (consultationId: string) => {
     "/",
   );
 };
-export const getApiQuestionsUrl = (consultationId: string) => {
-  return urlJoin(
+export const getApiQuestionsUrl = (
+  consultationId: string,
+  options?: { include?: string },
+) => {
+  const base = urlJoin(
     Routes.ApiConsultations,
     consultationId,
     Suffixes.Questions,
     "/",
   );
+  if (options?.include) {
+    const params = new URLSearchParams({ include: options.include });
+    return `${base}?${params.toString()}`;
+  }
+  return base;
 };
 export const getApiQuestionUrl = (
   consultationId: string,
