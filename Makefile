@@ -25,6 +25,7 @@ setup: ## Set up env files and database with dummy data
 .PHONY: serve
 serve: ## Run the backend and frontend together
 	docker compose up -d postgres redis
+	> backend/sql.log
 	uv tool run honcho start -f Procfile.dev
 
 .PHONY: backend
