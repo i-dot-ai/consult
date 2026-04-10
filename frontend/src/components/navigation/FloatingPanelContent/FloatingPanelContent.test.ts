@@ -26,29 +26,28 @@ describe("FloatingPanelContent", () => {
   });
 
   // TODO: Refactor to mock setItem
-  // it("clears onboardingKeys in localStorage", async () => {
-  //   expect(globalThis.localStorage).toEqual("abc")
-  //   localStorage.setItem(OnboardingKeys.themeSignoff, "true");
-  //   localStorage.setItem(OnboardingKeys.themeSignoffArchive, "true");
+  it.todo("clears onboardingKeys in localStorage", async () => {
+    localStorage.setItem(OnboardingKeys.themeSignoff, "true");
+    localStorage.setItem(OnboardingKeys.themeSignoffArchive, "true");
 
-  //   expect(localStorage.getItem(OnboardingKeys.themeSignoff)).toBeTruthy();
-  //   expect(
-  //     localStorage.getItem(OnboardingKeys.themeSignoffArchive),
-  //   ).toBeTruthy();
+    expect(localStorage.getItem(OnboardingKeys.themeSignoff)).toBeTruthy();
+    expect(
+      localStorage.getItem(OnboardingKeys.themeSignoffArchive),
+    ).toBeTruthy();
 
-  //   render(FloatingPanelContent);
+    render(FloatingPanelContent);
 
-  //   const walkthroughButton = screen.getAllByRole("link").at(0);
-  //   expect(walkthroughButton).toBeTruthy();
+    const walkthroughButton = screen.getAllByRole("link").at(0);
+    expect(walkthroughButton).toBeTruthy();
 
-  //   const user = userEvent.setup();
-  //   await user.click(walkthroughButton!);
+    const user = userEvent.setup();
+    await user.click(walkthroughButton!);
 
-  //   expect(localStorage.getItem(OnboardingKeys.themeSignoff)).toBeFalsy();
-  //   expect(
-  //     localStorage.getItem(OnboardingKeys.themeSignoffArchive),
-  //   ).toBeFalsy();
-  // });
+    expect(localStorage.getItem(OnboardingKeys.themeSignoff)).toBeFalsy();
+    expect(
+      localStorage.getItem(OnboardingKeys.themeSignoffArchive),
+    ).toBeFalsy();
+  });
 
   it("matches snapshot", () => {
     const { container } = render(FloatingPanelContent);
