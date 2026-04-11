@@ -1,5 +1,6 @@
 import {
   QueryClient,
+  createInfiniteQuery,
   createMutation,
   createQuery,
   type MutateOptions,
@@ -51,7 +52,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-const doFetch = async ({
+export const doFetch = async ({
   url,
   method,
   errorMessage,
@@ -191,4 +192,46 @@ export const buildQuery = <T>(
       }
     },
   };
+};
+
+interface BuildPaginatedQueryOptions {
+  getKey: () => string[];
+  getPageParam: () => number;
+  setPageParam: (newPageParam: number) => void;
+  errorMessage?: string;
+}
+
+export const buildPaginatedQuery = (
+  url: string,
+  {
+    getKey,
+    getPageParam,
+    setPageParam,
+    errorMessage = "Query failed",
+  }: BuildPaginatedQueryOptions,
+) => {
+  return createInfiniteQuery(
+    () => ({
+      queryKey: getKey(),
+      queryFn: async () => {
+        const data = await doFetch({
+          url: url,
+          method: "GET",
+          errorMessage,
+        });
+
+        setPageParam(getPageParam() + 1);
+
+        return {
+          items: data.results,
+          nextPage: data.next ? getPageParam() : undefined,
+        };
+      },
+      initialPageParam: getPageParam(),
+      getNextPageParam: (lastPage) => {
+        return lastPage.nextPage || undefined;
+      },
+    }),
+    () => queryClient,
+  );
 };

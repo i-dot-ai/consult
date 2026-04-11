@@ -5,7 +5,7 @@
   import ProgressActivity from "../svg/material/ProgressActivity.svelte";
 
   interface Props {
-    size: string;
+    size?: string;
   }
 
   let { size = "3rem" }: Props = $props();

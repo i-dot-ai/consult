@@ -19,6 +19,7 @@
   export let name: string | undefined = undefined;
   export let setValue: (newValue: string) => void = () => {};
   export let required: boolean = false;
+  export let disabled: boolean | undefined = false;
 
   export let variant: "default" | "search" = "default";
 </script>
@@ -45,6 +46,7 @@
     {value}
     {autocomplete}
     {required}
+    disabled={disabled ? true : undefined}
     on:input={(e) => setValue((e.target as HTMLInputElement).value)}
   />
 
