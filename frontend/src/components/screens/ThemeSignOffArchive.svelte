@@ -71,12 +71,19 @@
     ),
   );
 
-  let isAllQuestionsSignedOff: boolean = $derived(
+  let allQuestionsFinalised: boolean = $derived(
     Boolean(
-      questionsForSignOff?.every(
-        (question: Question) => question.theme_status === "confirmed",
-      ),
+      questionsForSignOff?.length &&
+        questionsForSignOff.every(
+          (question: Question) => question.theme_status === "confirmed",
+        ),
     ),
+  );
+
+  let finalisedQuestionCount = $derived(
+    questionsForSignOff?.filter(
+      (question: Question) => question.theme_status === "confirmed",
+    )?.length || 0,
   );
 </script>
 
@@ -92,14 +99,13 @@
 <hr class="my-6" />
 
 <svelte:boundary>
-  {#if isAllQuestionsSignedOff || $consultationStore.data?.stage === "theme_mapping" || $consultationStore.data?.stage === "analysis"}
+  {#if $consultationStore.data}
     <section in:slide>
       <ConsultationStagePanel
-        consultation={$consultationStore.data || {
-          id: "",
-          stage: "theme_sign_off",
-        }}
+        consultation={$consultationStore.data}
         questionsCount={questionsForSignOff?.length || 0}
+        {finalisedQuestionCount}
+        {allQuestionsFinalised}
         onConfirmClick={() => (isConfirmModalOpen = true)}
       />
 
