@@ -40,9 +40,18 @@ class TimeStampedModel(models.Model):
 
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     class Stage(models.TextChoices):
+        # New stages
+        SETUP = "setup", "Data Setup"
+        FINDING_THEMES = "finding_themes", "Finding Themes"
+        FINALISING_THEMES = "finalising_themes", "Finalising Themes"
+        ASSIGNING_THEMES = "assigning_themes", "Assigning Themes"
+
+        # Both old and new stages
+        ANALYSIS = "analysis", "Analysis"
+
+        # Old stages
         THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
         THEME_MAPPING = "theme_mapping", "Theme Mapping"
-        ANALYSIS = "analysis", "Analysis"
 
     class ModelName(models.TextChoices):
         GPT_4O = "gpt-4o-sweden"
@@ -83,8 +92,26 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     Replaces the Question/QuestionPart split.
     """
 
+    # New properties
+    class QuestionType(models.TextChoices):
+        DEMOGRAPHIC = "demographic", "Demographic"
+        CLOSED = "closed", "Closed"
+        OPEN = "open", "Open"
+
+    closed_question = models.ForeignKey("self", on_delete=models.SET_NULL, blank=True, null=True)
+    order = models.PositiveSmallIntegerField(blank=True, null=True)
+    identifier = models.CharField(blank=True, null=True, max_length=8)
+    type = models.CharField(
+        max_length=32,
+        choices=QuestionType.choices,
+        blank=True,
+        null=True,
+    )
+
     class ThemeStatus(models.TextChoices):
         DRAFT = "draft", "Draft"
+        CONFIGURED = "configured", "Configured"
+        FINALISING_THEMES = "finalising_themes", "Finalising Themes"
         CONFIRMED = "confirmed", "Confirmed"
 
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
@@ -93,6 +120,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     theme_status = models.CharField(
         max_length=32, choices=ThemeStatus.choices, default=ThemeStatus.DRAFT
     )
+    status = models.CharField(max_length=32, choices=ThemeStatus.choices, default=ThemeStatus.DRAFT)
 
     # Question configuration
     has_free_text = models.BooleanField(default=True)
@@ -207,6 +235,9 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
 class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     """Response to a question - can include both free text and multiple choice"""
 
+    # New properties
+    text = models.TextField(null=True, blank=True)
+
     respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
@@ -218,11 +249,6 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     read_by = models.ManyToManyField(User, blank=True)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["respondent", "question"], name="unique_question_response"
-            ),
-        ]
         indexes = [
             GinIndex(fields=["search_vector"]),
         ]
@@ -324,6 +350,31 @@ class CandidateTheme(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def __str__(self):
         return self.name
+
+
+class CandidateThemeResponse(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Responses assigned to candidate themes.
+
+    Populated by the assign-themes batch job when run before assigning themes phase,
+    so users can see which responses each candidate theme covers when finalising themes.
+    """
+
+    candidate_theme = models.ForeignKey(CandidateTheme, on_delete=models.CASCADE)
+    response = models.ForeignKey(Response, on_delete=models.CASCADE)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                fields=["candidate_theme", "response"],
+                name="unique_candidate_theme_response",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["candidate_theme"]),
+        ]
+
+    def __str__(self):
+        return f"{self.candidate_theme.name} -> {self.response_id}"
 
 
 class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -467,3 +518,9 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
 
     def __str__(self):
         return f"{self.question.number} = {self.text}"
+
+
+class FileUpload(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, editable=False)
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    s3_key = models.TextField(null=False, blank=False)

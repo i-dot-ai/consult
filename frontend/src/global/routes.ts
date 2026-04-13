@@ -305,6 +305,22 @@ export const getApiSelectGeneratedThemeUrl = (
     "/",
   );
 };
+export const getApiCandidateThemeResponsesUrl = (
+  consultationId: string,
+  questionId: string,
+  themeId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.CandidateThemes,
+    themeId,
+    Suffixes.Responses,
+    "/",
+  );
+};
 export const getApiConfirmSignOffUrl = (
   consultationId: string,
   questionId: string,
