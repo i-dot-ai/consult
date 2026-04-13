@@ -14,19 +14,22 @@
 
   const CARDS = [
     {
+      steps: [1, 2],
       icon: UploadFile,
-      title: "Prepare data outside Consult",
-      subtitle: "Export from your collection tool and structure your files",
+      title: "Prepare your data",
+      subtitle: "Export from your collection tool and get to know your data",
     },
     {
+      steps: 3,
       icon: Task,
-      title: "Upload & validate",
-      subtitle: "Check your data meets the required format",
+      title: "Upload & review",
+      subtitle: "Upload your file and review validation results",
     },
     {
+      steps: [4, 5],
       icon: Checklist,
-      title: "Define question structure",
-      subtitle: "Configure how each question should be analysed",
+      title: "Configure questions",
+      subtitle: "Confirm question types and configure closed questions",
     },
   ];
 
@@ -61,9 +64,9 @@
   </Title>
 
   <p class={clsx(["text-neutral-500", "text-md"])}>
-    Prepare and structure your data ready for AI analysis. If you're still
-    collecting responses, use this phase to understand what's needed before your
-    consultation closes.
+    Prepare and structure your data ready for AI analysis. <br />
+    If you're still collecting responses, use this phase to understand what's needed
+    before your consultation closes.
   </p>
 </section>
 
@@ -72,10 +75,14 @@
     <span class={clsx(["text-md", "mb-2"])}> What you'll do </span>
   </Title>
 
+  <p class={clsx(["text-neutral-500", "text-xs", "my-4"])}>
+    You'll complete 5 individual steps, organised into 3 phases:
+  </p>
+
   <div class={clsx(["flex", "gap-2", "my-4", "min-w-[50rem]"])}>
     {#each CARDS as card, i (i)}
       <IntroCard
-        order={i + 1}
+        steps={card.steps}
         Icon={card.icon}
         title={card.title}
         subtitle={card.subtitle}
