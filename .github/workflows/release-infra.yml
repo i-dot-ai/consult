@@ -66,10 +66,19 @@ jobs:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
 
+  build-lambdas:
+    needs:
+      - set-vars
+      - start-runner
+    uses: ./.github/workflows/build-lambda-artifacts.yml
+    with:
+      upload_directory: ./lambda/build
+
   build-infra:
     needs:
       - set-vars
       - start-runner
+      - build-lambdas
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/apply-terraform.yml@main
     permissions: write-all
     with:
@@ -79,6 +88,7 @@ jobs:
       PUBLIC_INFRA_DEPLOYMENT: true
       INFRA_CONFIG_REPO: ${{ needs.set-vars.outputs.infra-config-repo }}
       IMAGE_TAG: ${{ github.sha }}
+      ARTIFACTS_PATH: ${{ needs.build-lambdas.outputs.target_directory }}
       USE_OIDC: true
     secrets:
       AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT }}

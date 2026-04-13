@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 from django.urls import reverse
 
-from consultations.models import Consultation, Question, SelectedTheme
+from consultations.models import CandidateTheme, Consultation, Question, SelectedTheme
 from factories import ConsultationFactory, RespondentFactory, UserFactory
 
 
@@ -697,8 +697,10 @@ class TestFindThemesEndpoint:
 @pytest.mark.django_db
 class TestAssignThemesEndpoint:
     def test_assign_themes_success(self, client, staff_user_token, free_text_question):
-        """Test successful assign themes job submission"""
+        """Test successful assign themes job submission (post-finalising stage)"""
         consultation = free_text_question.consultation
+        consultation.stage = Consultation.Stage.ASSIGNING_THEMES
+        consultation.save(update_fields=["stage"])
 
         SelectedTheme.objects.create(
             question=free_text_question, name="Theme Name", description="Theme Description"
@@ -722,7 +724,7 @@ class TestAssignThemesEndpoint:
 
             assert response.status_code == 202
 
-            # Verify seletected themes were exported to S3
+            # Verify selected themes were exported to S3
             mock_export.assert_called_once_with(consultation)
 
             # Verify batch job was submitted
@@ -734,9 +736,58 @@ class TestAssignThemesEndpoint:
                 model_name=consultation.model_name,
             )
 
+    def test_assign_themes_candidate_themes_during_finalising(
+        self, client, staff_user_token, free_text_question
+    ):
+        """Test assign themes exports candidate themes when in finalising stage"""
+        consultation = free_text_question.consultation
+        consultation.stage = Consultation.Stage.FINALISING_THEMES
+        consultation.save(update_fields=["stage"])
+
+        CandidateTheme.objects.create(
+            question=free_text_question, name="Candidate Theme", description="Description"
+        )
+
+        url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
+
+        with (
+            patch(
+                "consultations.api.views.consultation.export_candidate_themes_to_s3"
+            ) as mock_export,
+            patch("consultations.api.views.consultation.batch") as mock_batch,
+        ):
+            mock_export.return_value = 1
+            mock_batch.submit_job.return_value = {"jobId": "test-job-789"}
+
+            response = client.post(
+                url,
+                headers={"Authorization": f"Bearer {staff_user_token}"},
+            )
+
+            assert response.status_code == 202
+
+            # Verify candidate themes were exported
+            mock_export.assert_called_once_with(consultation)
+
+            # Verify batch job was submitted with candidate_themes target
+            mock_batch.submit_job.assert_called_once_with(
+                job_type="ASSIGN_THEMES",
+                consultation_code=consultation.code,
+                consultation_name=consultation.title,
+                user_id=mock_batch.submit_job.call_args.kwargs["user_id"],
+                model_name=consultation.model_name,
+                assignment_target="candidate_themes",
+            )
+
+            # Verify consultation stage was NOT changed
+            consultation.refresh_from_db()
+            assert consultation.stage == Consultation.Stage.FINALISING_THEMES
+
     def test_assign_themes_no_selected_themes(self, client, staff_user_token, free_text_question):
         """Test assign themes fails when no themes are selected"""
         consultation = free_text_question.consultation
+        consultation.stage = Consultation.Stage.ASSIGNING_THEMES
+        consultation.save(update_fields=["stage"])
 
         url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
 

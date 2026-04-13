@@ -7,6 +7,7 @@ from rest_framework.exceptions import ValidationError
 from authentication.models import User
 from consultations.models import (
     CandidateTheme,
+    CandidateThemeResponse,
     Consultation,
     MultiChoiceAnswer,
     Question,
@@ -172,6 +173,15 @@ class CandidateThemeSerializer(serializers.ModelSerializer):
         # Fallback for single object serialization (e.g., retrieve action)
         children = CandidateTheme.objects.filter(parent=obj)
         return CandidateThemeSerializer(children, many=True).data
+
+
+class CandidateThemeResponseSerializer(serializers.ModelSerializer):
+    free_text = serializers.CharField(source="response.free_text", read_only=True)
+    response_id = serializers.UUIDField(source="response.id", read_only=True)
+
+    class Meta:
+        model = CandidateThemeResponse
+        fields = ["response_id", "free_text"]
 
 
 class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):

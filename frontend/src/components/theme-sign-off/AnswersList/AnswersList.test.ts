@@ -8,6 +8,7 @@ describe("AnswersList", () => {
   const testData = {
     title: "Test Title",
     answers: ["Answer 1", "Answer 2"],
+    totalCount: 2,
   };
 
   it("should render", async () => {
