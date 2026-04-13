@@ -23,6 +23,7 @@ import LearningsStory from "../data/Learnings/LearningsStory.svelte";
 import IntroPageStory from "../data/IntroPage/IntroPageStory.svelte";
 import StepOneAPageStory from "../data/StepOneAPage/StepOneAPageStory.svelte";
 import StepOneBPageStory from "../data/StepOneBPage/StepOneBPageStory.svelte";
+import StepsTitleStory from "../data/StepsTitle/StepsTitleStory.svelte";
 import FileInputStory from "../inputs/FileInput/FileInputStory.svelte";
 
 interface StoryProp {
@@ -73,5 +74,6 @@ export default [
   IntroPageStory,
   StepOneAPageStory,
   StepOneBPageStory,
+  StepsTitleStory,
   FileInputStory,
 ] as Story[];
