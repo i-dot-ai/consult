@@ -1,5 +1,6 @@
 from django.db.models import Count, Prefetch
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -14,11 +15,16 @@ from consultations.api.serializers import (
 )
 
 
+class QuestionPagination(PageNumberPagination):
+    page_size = 500
+
+
 class QuestionViewSet(ModelViewSet):
     serializer_class = QuestionSerializer
     permission_classes = [IsAuthenticated, CanSeeConsultation]
     filterset_fields = ["has_free_text"]
     http_method_names = ["get", "patch", "delete"]
+    pagination_class = QuestionPagination
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]

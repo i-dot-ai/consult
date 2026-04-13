@@ -56,7 +56,9 @@ class TestUserViewSet:
         assert response.status_code == 204
         assert not User.objects.filter(pk=staff_user.pk).exists()
 
-    def test_users_delete_user_with_consultation(self, client, staff_user_token, consultation, non_staff_user):
+    def test_users_delete_user_with_consultation(
+        self, client, staff_user_token, consultation, non_staff_user
+    ):
         """Test that deleting a user who is assigned to a consultation succeeds"""
         # non_staff_user is already assigned to consultation via the fixture
         assert consultation.users.filter(pk=non_staff_user.pk).exists()
