@@ -1,0 +1,77 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`FileInput Component > should match snapshot 1`] = `
+<div>
+  <label
+    class="flex flex-col items-center gap-2 p-4 border border-dashed border-neutral-300 hover:border-secondary rounded-lg transition-colors cursor-pointer text-md text-neutral-800"
+    id="file-input"
+  >
+    <svg
+      class="fill-neutral-400"
+      height="3rem"
+      role="img"
+      viewBox="0 -960 960 960"
+      width="3rem"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"
+        xmlns="http://www.w3.org/2000/svg"
+      />
+      <!---->
+    </svg>
+    <!---->
+     
+    <span>
+      Drag and drop files here
+    </span>
+     
+    <small
+      class="text-neutral-500 text-xs"
+    >
+      
+    </small>
+     
+    <!---->
+     
+    <input
+      class="sr-only"
+      data-testid="file-input"
+      id="file-input"
+      multiple=""
+      type="file"
+    />
+     
+    <ul
+      class="text-xs text-neutral-500"
+    >
+      
+    </ul>
+     
+    <div
+      class="w-full flex items-center justify-center gap-1 my-2"
+    >
+      <!---->
+      <button
+        aria-pressed="false"
+        class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+        data-variant="default"
+        role="button"
+        tabindex="0"
+      >
+        <!---->
+        <!---->
+        Choose different file
+        
+        
+        
+      </button>
+      
+      <!---->
+       
+      <!---->
+    </div>
+  </label>
+  
+</div>
+`;
