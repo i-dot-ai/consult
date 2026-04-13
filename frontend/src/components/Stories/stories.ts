@@ -41,9 +41,15 @@ interface StoryProp {
     value: unknown;
   }[];
 }
+interface Mock {
+  url: string;
+  response: unknown;
+  method: string;
+}
 interface StoryConfig {
   name: string;
   props?: unknown;
+  mocks?: Mock[];
 }
 interface Story {
   name: string;
@@ -51,6 +57,7 @@ interface Story {
   category?: string;
   props: StoryProp[];
   stories: StoryConfig[];
+  mocks?: Mock[];
 }
 
 export default [
