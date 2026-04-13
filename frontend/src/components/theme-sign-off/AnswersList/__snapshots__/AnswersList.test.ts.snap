@@ -37,6 +37,12 @@ exports[`AnswersList > should render 1`] = `
     </div>
   </div>
    
+  <p
+    class="mt-2 text-sm text-neutral-500"
+  >
+    Showing a sample of 2 out of a total of 2 responses.
+  </p>
+   
   <ol
     class="mt-2 max-h-[20rem] overflow-y-auto"
   >
