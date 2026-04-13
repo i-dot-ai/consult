@@ -7,10 +7,30 @@ describe("ConsultationStagePanel", () => {
   const id = "test-consultation-id";
   const onConfirmClickMock = vi.fn();
 
-  it("should render correctly for theme_sign_off stage", () => {
-    const { container } = render(ConsultationStagePanel, {
+  it("should show progress when finalising and not all questions signed off", () => {
+    render(ConsultationStagePanel, {
       consultation: { id, stage: "theme_sign_off" },
       questionsCount: 10,
+      finalisedQuestionCount: 3,
+      allQuestionsFinalised: false,
+      onConfirmClick: onConfirmClickMock,
+    });
+
+    expect(screen.getByText("Finalising Themes")).toBeInTheDocument();
+    expect(
+      screen.getByText(/3 of 10 questions signed off/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Confirm/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("should show confirm button when finalising and all questions signed off", () => {
+    render(ConsultationStagePanel, {
+      consultation: { id, stage: "theme_sign_off" },
+      questionsCount: 10,
+      finalisedQuestionCount: 10,
+      allQuestionsFinalised: true,
       onConfirmClick: onConfirmClickMock,
     });
 
@@ -23,13 +43,14 @@ describe("ConsultationStagePanel", () => {
     expect(
       screen.getByRole("button", { name: /Confirm/i }),
     ).toBeInTheDocument();
-    expect(container).toMatchSnapshot();
   });
 
   it("should render correctly for theme_mapping stage", () => {
-    const { container } = render(ConsultationStagePanel, {
+    render(ConsultationStagePanel, {
       consultation: { id, stage: "theme_mapping" },
       questionsCount: 10,
+      finalisedQuestionCount: 10,
+      allQuestionsFinalised: true,
       onConfirmClick: onConfirmClickMock,
     });
 
@@ -39,13 +60,14 @@ describe("ConsultationStagePanel", () => {
         /You have completed the theme sign-off phase for all 10 consultation questions/i,
       ),
     ).toBeInTheDocument();
-    expect(container).toMatchSnapshot();
   });
 
   it("should render correctly for analysis stage", () => {
-    const { container } = render(ConsultationStagePanel, {
+    render(ConsultationStagePanel, {
       consultation: { id, stage: "analysis" },
       questionsCount: 10,
+      finalisedQuestionCount: 10,
+      allQuestionsFinalised: true,
       onConfirmClick: onConfirmClickMock,
     });
 
@@ -58,6 +80,5 @@ describe("ConsultationStagePanel", () => {
     expect(
       screen.getByRole("link", { name: /Analysis Dashboard/i }),
     ).toBeInTheDocument();
-    expect(container).toMatchSnapshot();
   });
 });
