@@ -2,7 +2,7 @@
   import clsx from "clsx";
 
   import { createRawSnippet } from "svelte";
-  import fetchMock from 'fetch-mock';
+  import fetchMock from "fetch-mock";
 
   import CodeMirror from "svelte-codemirror-editor";
   import { json } from "@codemirror/lang-json";
@@ -43,21 +43,19 @@
     if (mocks) {
       fetchMock.removeRoutes();
 
-      mocks.forEach(mock => {
-        fetchMock
-          .mockGlobal()
-          .route({
-            url: mock.url,
-            response: mock.response(),
-            method: mock.method || "GET",
-          });
-      })
+      mocks.forEach((mock) => {
+        fetchMock.mockGlobal().route({
+          url: mock.url,
+          response: mock.response,
+          method: mock.method || "GET",
+        });
+      });
     } else {
       fetchMock.unmockGlobal();
     }
 
     queryClient.resetQueries();
-  })
+  });
 </script>
 
 <div class="grid grid-cols-4 gap-8">

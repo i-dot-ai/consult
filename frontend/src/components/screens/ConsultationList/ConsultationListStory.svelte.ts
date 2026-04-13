@@ -16,6 +16,6 @@ export default {
     {
       name: "Many Consultations",
       mocks: [longMock],
-    }
+    },
   ],
 };
