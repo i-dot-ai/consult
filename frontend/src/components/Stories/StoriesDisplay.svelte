@@ -137,7 +137,9 @@
 
         <div class="mt-4">
           {#if currStoryTab !== "interactive" && storyTab}
-            <StoryComponent {...storyTab.props as object} />
+            {#key currStoryTab}
+              <StoryComponent {...storyTab.props as object} />
+            {/key}
           {:else}
             <StoryComponent {...componentProps as object} />
 
