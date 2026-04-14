@@ -74,7 +74,8 @@ export default {
 
         const generatedTheme = findNestedTheme(
           generatedThemes,
-          (theme: { selectedtheme_id: string}) => theme.selectedtheme_id === themeId,
+          (theme: { selectedtheme_id: string }) =>
+            theme.selectedtheme_id === themeId,
         );
         generatedTheme.selectedtheme_id = null;
       },
