@@ -14,7 +14,7 @@ logger = settings.LOGGER
 DEFAULT_TIMEOUT_SECONDS = 3_600
 
 
-@job("default", timeout=7200)
+@job("default", timeout=14400)
 def import_consultation(
     consultation_name: str,
     consultation_code: str,
