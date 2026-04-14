@@ -2,6 +2,7 @@
   import clsx from "clsx";
 
   import { createRawSnippet } from "svelte";
+  import fetchMock from "fetch-mock";
 
   import CodeMirror from "svelte-codemirror-editor";
   import { json } from "@codemirror/lang-json";
@@ -18,6 +19,7 @@
 
   import stories from "./stories.ts";
   import { toTitleCase } from "../../global/utils.ts";
+  import { queryClient } from "../../global/queryClient.ts";
 
   let { selected = "" } = $props();
   let currStory = $state(stories.find((story) => story.name === selected));
@@ -35,6 +37,37 @@
   let panel: HTMLElement;
 
   const categories = [...new Set(stories.map((story) => story.category))];
+
+  $effect.pre(() => {
+    const mocks = storyTab?.mocks || currStory?.mocks;
+    if (mocks) {
+      fetchMock.removeRoutes();
+
+      mocks.forEach((mock) => {
+        fetchMock.mockGlobal().route(
+          // @ts-expect-error: fetch-mock type not up to date
+          { url: mock.url, method: mock.method || "GET" },
+          () => {
+            if (mock.callback) {
+              mock.callback();
+            }
+
+            if (mock.throws) {
+              throw mock.throws;
+            }
+
+            return new Response(mock.body ? JSON.stringify(mock.body) : null, {
+              status: mock.status || 200,
+            });
+          },
+        );
+      });
+    } else {
+      fetchMock.unmockGlobal();
+    }
+
+    queryClient.resetQueries();
+  });
 </script>
 
 <div class="grid grid-cols-4 gap-8">
@@ -114,7 +147,9 @@
 
         <div class="mt-4">
           {#if currStoryTab !== "interactive" && storyTab}
-            <StoryComponent {...storyTab.props as object} />
+            {#key currStoryTab}
+              <StoryComponent {...storyTab.props as object} />
+            {/key}
           {:else}
             <StoryComponent {...componentProps as object} />
 
