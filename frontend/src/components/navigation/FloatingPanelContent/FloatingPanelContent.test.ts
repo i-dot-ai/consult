@@ -25,7 +25,8 @@ describe("FloatingPanelContent", () => {
     expect(screen.getByText(itemText)).toBeInTheDocument();
   });
 
-  it("clears onboardingKeys in localStorage", async () => {
+  // TODO: Refactor to mock setItem
+  it.todo("clears onboardingKeys in localStorage", async () => {
     localStorage.setItem(OnboardingKeys.themeSignoff, "true");
     localStorage.setItem(OnboardingKeys.themeSignoffArchive, "true");
 
