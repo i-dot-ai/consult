@@ -287,7 +287,7 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
     """Normalized storage of demographic field options for efficient querying across pages"""
 
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
-    field_name = models.CharField(max_length=512)
+    field_name = models.CharField(max_length=128)
     field_value = models.JSONField()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
