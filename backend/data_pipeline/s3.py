@@ -91,7 +91,9 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
         Sorted list of question folder paths ending with /
     """
     s3 = boto3.resource("s3")
-    objects = s3.Bucket(bucket_name).objects.filter(Prefix=inputs_path, ExpectedBucketOwner=account_id)
+    objects = s3.Bucket(bucket_name).objects.filter(
+        Prefix=inputs_path, ExpectedBucketOwner=account_id
+    )
     object_names_set = {obj.key for obj in objects}
 
     # Get set of all subfolders

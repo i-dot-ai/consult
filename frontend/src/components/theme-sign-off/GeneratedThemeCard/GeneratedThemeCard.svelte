@@ -3,13 +3,18 @@
 
   import { slide, fly } from "svelte/transition";
 
-  import type { AnswersResponse, GeneratedTheme } from "../../../global/types";
+  import type {
+    CandidateThemeResponsesResponse,
+    GeneratedTheme,
+  } from "../../../global/types";
   import { createFetchStore, type MockFetch } from "../../../global/stores";
+  import { getApiCandidateThemeResponsesUrl } from "../../../global/routes";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import ChevronRight from "../../svg/material/ChevronRight.svelte";
+  import Visibility from "../../svg/material/Visibility.svelte";
   import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
   import Tag from "../../Tag/Tag.svelte";
   import AnswersList from "../AnswersList/AnswersList.svelte";
@@ -38,11 +43,10 @@
     setExpandedThemes = () => {},
     handleSelect = () => {},
     themesBeingSelected = [],
-    maxAnswers = 10,
     answersMock,
   }: Props = $props();
 
-  const answersStore = createFetchStore<AnswersResponse>({
+  const answersStore = createFetchStore<CandidateThemeResponsesResponse>({
     mockFetch: answersMock,
   });
 
@@ -120,20 +124,16 @@
               </div>
             </Button>
 
-            <!-- 
-            TODO: Remove all relevant representative responses code
             <Button
               size="sm"
               handleClick={() => {
                 if (!$answersStore.data) {
-                  const queryString = new URLSearchParams({
-                    searchMode: "representative",
-                    searchValue: `${theme.name} ${theme.description}`,
-                    question_id: questionId,
-                  }).toString();
-
                   $answersStore.fetch(
-                    `${getApiAnswersUrl(consultationId)}?${queryString}`,
+                    getApiCandidateThemeResponsesUrl(
+                      consultationId,
+                      questionId,
+                      theme.id,
+                    ),
                   );
                 }
                 showAnswers = !showAnswers;
@@ -149,7 +149,6 @@
                 </span>
               </div>
             </Button>
-            -->
           </footer>
         {/if}
       </div>
@@ -163,9 +162,10 @@
             variant="generated"
             title="Representative Responses"
             loading={$answersStore.isLoading}
-            answers={$answersStore.data?.all_respondents
-              ?.slice(0, maxAnswers)
-              .map((answer) => answer.free_text_answer_text) || []}
+            answers={$answersStore.data?.results?.map(
+              (item) => item.free_text,
+            ) || []}
+            totalCount={$answersStore.data?.total_count}
           />
         </aside>
       {:else}

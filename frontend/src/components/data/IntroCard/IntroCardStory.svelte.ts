@@ -2,7 +2,7 @@ import IntroCard from "./IntroCard.svelte";
 import { TEST_DATA } from "./testData";
 
 const Icon = $state(TEST_DATA.Icon);
-const order = $state(TEST_DATA.order);
+const steps = $state(TEST_DATA.steps);
 const title = $state(TEST_DATA.title);
 const subtitle = $state(TEST_DATA.subtitle);
 const isActive = $state(TEST_DATA.isActive);
@@ -14,7 +14,7 @@ export default {
   category: "Data",
   props: [
     { name: "Icon", value: Icon },
-    { name: "order", value: order, type: "number" },
+    { name: "steps", value: steps, type: "json" },
     { name: "title", value: title, type: "text" },
     { name: "subtitle", value: subtitle, type: "text" },
     { name: "isActive", value: isActive, type: "bool" },

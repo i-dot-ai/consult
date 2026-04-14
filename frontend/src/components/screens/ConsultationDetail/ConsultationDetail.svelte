@@ -2,25 +2,25 @@
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
 
-  import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
-  import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
-  import TextInput from "../inputs/TextInput/TextInput.svelte";
-  import Help from "../svg/material/Help.svelte";
-  import Star from "../svg/material/Star.svelte";
-  import TitleRow from "../dashboard/TitleRow.svelte";
-  import Panel from "../dashboard/Panel/Panel.svelte";
-  import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
-  import Metrics from "../dashboard/Metrics/Metrics.svelte";
+  import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
+  import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
+  import TextInput from "../../inputs/TextInput/TextInput.svelte";
+  import Help from "../../svg/material/Help.svelte";
+  import Star from "../../svg/material/Star.svelte";
+  import TitleRow from "../../dashboard/TitleRow.svelte";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import QuestionCard from "../../dashboard/QuestionCard/QuestionCard.svelte";
+  import Metrics from "../../dashboard/Metrics/Metrics.svelte";
 
   import type {
     DemoOptionsResponse,
     QuestionsResponse,
-  } from "../../global/types.ts";
+  } from "../../../global/types.ts";
   import {
     getApiQuestionsUrl,
     getQuestionDetailUrl,
-  } from "../../global/routes.ts";
-  import { createFetchStore, favStore } from "../../global/stores.ts";
+  } from "../../../global/routes.ts";
+  import { createFetchStore, favStore } from "../../../global/stores.ts";
 
   interface Props {
     consultationId: string;
