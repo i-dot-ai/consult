@@ -1,7 +1,7 @@
-// import { defaultMock, emptyMock, longMock } from "./mocks";
-
 import { Routes } from "../../../global/routes";
 import CreateConsultationForm from "./CreateConsultationForm.svelte";
+
+const s3Folders = $state(["folder-1", "folder-2"]);
 
 export default {
   name: "CreateConsultationForm",
@@ -13,7 +13,7 @@ export default {
       method: "POST",
     },
   ],
-  props: [],
+  props: [{ name: "s3Folders", value: s3Folders, type: "json" }],
   stories: [
     {
       name: "Success",
