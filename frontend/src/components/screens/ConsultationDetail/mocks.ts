@@ -122,22 +122,22 @@ const QUESTIONS = [
 
 export const demoOptionsMock = {
   url: DEMO_OPTIONS_URL,
-  response: () => [],
+  body: [],
 };
 
 export const defaultQuestionsMock = {
   url: QUESTIONS_URL,
-  response: () => ({
+  body: {
     count: 4,
     next: null,
     previous: null,
     results: QUESTIONS,
-  }),
+  },
 };
 
 export const emptyQuestionsMock = {
   url: QUESTIONS_URL,
-  response: {
+  body: {
     count: 0,
     next: null,
     previous: null,
@@ -147,7 +147,7 @@ export const emptyQuestionsMock = {
 
 export const longQuestionsMock = {
   url: QUESTIONS_URL,
-  response: {
+  body: {
     count: 0,
     next: null,
     previous: null,

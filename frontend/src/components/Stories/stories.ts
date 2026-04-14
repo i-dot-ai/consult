@@ -28,6 +28,7 @@ import ConsultationDetailStory from "../screens/ConsultationDetail/ConsultationD
 import FileVerifiedStory from "../data/FileVerified/FileVerifiedStory.svelte";
 import StepsTitleStory from "../data/StepsTitle/StepsTitleStory.svelte";
 import FileInputStory from "../inputs/FileInput/FileInputStory.svelte";
+import CreateConsultationFormStory from "../screens/CreateConsultationForm/CreateConsultationFormStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -43,8 +44,11 @@ interface StoryProp {
 }
 interface Mock {
   url: string;
-  response: unknown;
-  method: string;
+  body?: unknown;
+  status?: number;
+  method?: string;
+  throws?: Error;
+  callback?: () => void;
 }
 interface StoryConfig {
   name: string;
@@ -89,4 +93,5 @@ export default [
   FileVerifiedStory,
   StepsTitleStory,
   FileInputStory,
+  CreateConsultationFormStory,
 ] as Story[];

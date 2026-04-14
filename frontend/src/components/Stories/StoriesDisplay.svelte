@@ -44,11 +44,24 @@
       fetchMock.removeRoutes();
 
       mocks.forEach((mock) => {
-        fetchMock.mockGlobal().route({
-          url: mock.url,
-          response: mock.response,
-          method: mock.method || "GET",
-        });
+        fetchMock.mockGlobal().route(
+          // @ts-ignore: fetch-mock type not up to date
+          { url: mock.url, method: mock.method || "GET"},
+          () => {
+            if (mock.callback) {
+              mock.callback();
+            }
+
+            if (mock.throws) {
+              throw mock.throws;
+            }
+
+            return new Response(
+              mock.body ? JSON.stringify(mock.body) : null,
+              { status: mock.status || 200 },
+            )
+          }
+        );
       });
     } else {
       fetchMock.unmockGlobal();

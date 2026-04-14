@@ -1,16 +1,16 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
-  import { Routes } from "../../global/routes";
-  import TextInput from "../inputs/TextInput/TextInput.svelte";
-  import Button from "../inputs/Button/Button.svelte";
-  import Select from "../inputs/Select/Select.svelte";
-  import Link from "../Link.svelte";
+  import { Routes } from "../../../global/routes";
+  import TextInput from "../../inputs/TextInput/TextInput.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
+  import Select from "../../inputs/Select/Select.svelte";
+  import Link from "../../Link.svelte";
 
   interface Props {
     s3Folders: string[];
   }
 
-  let { s3Folders }: Props = $props();
+  let { s3Folders = [] }: Props = $props();
 
   const selectItems = $derived(
     s3Folders.map((name) => ({
@@ -87,7 +87,7 @@
     id="consultation_name"
     name="consultation_name"
     label="Consultation name"
-    required
+    
     value={consultationName}
     setValue={(val) => (consultationName = val)}
   />
@@ -97,7 +97,7 @@
     name="consultation_code"
     label="S3 folder (consultation code)"
     items={selectItems}
-    required
+    
     value={consultationCode}
     onchange={(val) => (consultationCode = val)}
   />

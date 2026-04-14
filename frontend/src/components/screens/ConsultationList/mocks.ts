@@ -36,7 +36,7 @@ const CONSULTATIONS = [
 
 export const defaultMock = {
   url: URL,
-  response: {
+  body: {
     count: 2,
     next: null,
     previous: null,
@@ -46,7 +46,7 @@ export const defaultMock = {
 
 export const emptyMock = {
   url: URL,
-  response: {
+  body: {
     count: 0,
     next: null,
     previous: null,
@@ -56,7 +56,7 @@ export const emptyMock = {
 
 export const longMock = {
   url: URL,
-  response: {
+  body: {
     count: 2,
     next: null,
     previous: null,
