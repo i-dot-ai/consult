@@ -64,17 +64,17 @@ export default {
 
     {
       name: "removeThemeMock",
-      value: (req) => {
+      value: (req: { url: string }) => {
         const themeId = req.url
           .split("/selected-themes/")[1]
           .replaceAll("/", "");
         selectedThemes = [...selectedThemes].filter(
-          (theme) => theme.id !== themeId,
+          (theme: { id: string }) => theme.id !== themeId,
         );
 
         const generatedTheme = findNestedTheme(
           generatedThemes,
-          (theme) => theme.selectedtheme_id === themeId,
+          (theme: { selectedtheme_id: string}) => theme.selectedtheme_id === themeId,
         );
         generatedTheme.selectedtheme_id = null;
       },
@@ -82,7 +82,7 @@ export default {
 
     {
       name: "createThemeMock",
-      value: (req) => {
+      value: (req: { body: string }) => {
         const { name, description } = JSON.parse(req.body);
         const newTheme = {
           id: (selectedThemes.length + 1).toString(),
