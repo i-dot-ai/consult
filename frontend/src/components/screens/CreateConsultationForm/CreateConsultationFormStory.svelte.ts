@@ -23,6 +23,7 @@ export default {
           method: "POST",
         },
       ],
+      props: { s3Folders },
     },
     {
       name: "4xx Error",
@@ -34,6 +35,7 @@ export default {
           body: { message: "Bad request", status: 400 },
         },
       ],
+      props: { s3Folders },
     },
     {
       name: "5xx Error",
@@ -45,6 +47,7 @@ export default {
           body: { message: "Unexpected server error", status: 500 },
         },
       ],
+      props: { s3Folders },
     },
     {
       name: "Fetch Error",
@@ -55,6 +58,7 @@ export default {
           throws: new Error("Fetch failed"),
         },
       ],
+      props: { s3Folders },
     },
   ],
 };
