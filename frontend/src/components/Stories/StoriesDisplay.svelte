@@ -45,8 +45,8 @@
 
       mocks.forEach((mock) => {
         fetchMock.mockGlobal().route(
-          // @ts-ignore: fetch-mock type not up to date
-          { url: mock.url, method: mock.method || "GET"},
+          // @ts-expect-error: fetch-mock type not up to date
+          { url: mock.url, method: mock.method || "GET" },
           () => {
             if (mock.callback) {
               mock.callback();
@@ -56,11 +56,10 @@
               throw mock.throws;
             }
 
-            return new Response(
-              mock.body ? JSON.stringify(mock.body) : null,
-              { status: mock.status || 200 },
-            )
-          }
+            return new Response(mock.body ? JSON.stringify(mock.body) : null, {
+              status: mock.status || 200,
+            });
+          },
         );
       });
     } else {
