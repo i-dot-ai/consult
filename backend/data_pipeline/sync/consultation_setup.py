@@ -280,7 +280,7 @@ def load_consultation_data_batch(
 
 @transaction.atomic
 def import_consultation_data(
-    batch: ConsultationDataBatch, user_id: UUID, batch_size: int = 2048
+    batch: ConsultationDataBatch, user_id: UUID, batch_size: int = 512
 ) -> UUID:
     """
     Import base consultation data (consultation, respondents, questions, responses) into database.
@@ -458,7 +458,7 @@ def _ingest_responses(
     consultation: Consultation,
     responses_by_question: Dict[int, List[ResponseInput]],
     multi_choice_by_question: Dict[int, List[MultiChoiceInput]],
-    batch_size: int = 2048,
+    batch_size: int = 512,
 ) -> None:
     """
     Create responses with careful indexing to link correct respondent + question.
@@ -652,7 +652,7 @@ def import_consultation_from_s3(
     consultation_title: str,
     user_id: UUID,
     enqueue_embeddings: bool = True,
-    batch_size: int = 2048,
+    batch_size: int = 512,
 ) -> UUID:
     """
     Import consultation base data from S3.
