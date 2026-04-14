@@ -87,6 +87,7 @@
     id="consultation_name"
     name="consultation_name"
     label="Consultation name"
+    required
     value={consultationName}
     setValue={(val) => (consultationName = val)}
   />
@@ -96,6 +97,7 @@
     name="consultation_code"
     label="S3 folder (consultation code)"
     items={selectItems}
+    required
     value={consultationCode}
     onchange={(val) => (consultationCode = val)}
   />
