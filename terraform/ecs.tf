@@ -198,7 +198,7 @@ module "worker" {
     port                = 8000
   }
 
-  autoscaling_maximum_target = 4
+  autoscaling_maximum_target = 1
 
   additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
@@ -206,7 +206,7 @@ module "worker" {
   entrypoint = ["./start-worker.sh"]
 
   memory = 4096
-  cpu    = 1024
+  cpu    = 2048
 }
 
 resource "aws_service_discovery_private_dns_namespace" "private_dns_namespace" {
