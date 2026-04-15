@@ -1,6 +1,4 @@
-from collections import defaultdict
-
-from django.db.models import Count, Exists, OuterRef
+from django.db.models import Exists, OuterRef
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -14,10 +12,8 @@ from consultations.api.permissions import (
     CanSeeConsultation,
 )
 from consultations.api.serializers import (
-    DemographicAggregationsSerializer,
     ResponseSerializer,
     ResponseThemeInformationSerializer,
-    ThemeAggregationsSerializer,
     ThemeSerializer,
 )
 
@@ -40,12 +36,13 @@ class BespokeResultsSetPagination(PageNumberPagination):
     def get_paginated_response(self, data):
         original = super().get_paginated_response(data).data
 
-        # Get question_id count from the viewset if available, otherwise calculate once
         if hasattr(self, "_question_respondents_total"):
             respondents_total = self._question_respondents_total
-        elif question_id := self.request._request.GET.get("question_id"):
+        elif question_id := (
+            self.request._request.resolver_match.kwargs.get("question_pk")
+            or self.request._request.GET.get("question_id")
+        ):
             respondents_total = models.Response.objects.filter(question_id=question_id).count()
-            # Cache it on the viewset for subsequent calls
             self._question_respondents_total = respondents_total
         else:
             respondents_total = None
@@ -71,6 +68,11 @@ class ResponseViewSet(ModelViewSet):
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
         queryset = models.Response.objects.filter(question__consultation_id=consultation_uuid)
+
+        # Support nesting under questions: /questions/{question_pk}/responses/
+        question_pk = self.kwargs.get("question_pk")
+        if question_pk:
+            queryset = queryset.filter(question_id=question_pk)
 
         # Optimize queryset with select_related and prefetch_related
         queryset = queryset.select_related(
@@ -108,59 +110,16 @@ class ResponseViewSet(ModelViewSet):
         )
         # Apply additional FilterSet filtering (including themeFilters)
         filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
-        return filterset.qs.distinct()
-
-    @action(
-        detail=False,
-        methods=["get"],
-        url_path="demographic-aggregations",
-        permission_classes=[IsAuthenticated, CanSeeConsultation],
-    )
-    def demographic_aggregations(self, request, consultation_pk=None):
-        """Get demographic aggregations for filtered responses"""
-
-        aggregations = (
-            models.DemographicOption.objects.filter(
-                Exists(self.get_queryset().filter(respondent=OuterRef("respondent")))
-            )
-            .values("field_name", "field_value")
-            .annotate(count=Count("respondent", distinct=True))
-        )
-
-        result = defaultdict(dict)
-        for item in aggregations:
-            result[item["field_name"]][item["field_value"]] = item["count"]
-
-        serializer = DemographicAggregationsSerializer(data={"demographic_aggregations": result})
-        serializer.is_valid()
-
-        return Response(serializer.data)
-
-    @action(
-        detail=False,
-        methods=["get"],
-        url_path="theme-aggregations",
-        permission_classes=[IsAuthenticated, CanSeeConsultation],
-    )
-    def theme_aggregations(self, request, consultation_pk=None):
-        """Get theme aggregations for filtered responses"""
-
-        # Get theme counts from the filtered responses
-        theme_counts = (
-            models.SelectedTheme.objects.filter(
-                responseannotation__response__in=self.get_queryset(),
-                responseannotation__response__question__has_free_text__isnull=False,
-            )
-            .values("id")
-            .annotate(count=Count("responseannotation", distinct=True))
-        )
-
-        theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
-
-        serializer = ThemeAggregationsSerializer(data={"theme_aggregations": theme_aggregations})
-        serializer.is_valid()
-
-        return Response(serializer.data)
+        qs = filterset.qs
+        # Only use .distinct() when filters that JOIN through M2M are active —
+        # these can produce duplicate rows.
+        if (
+            self.request.GET.get("themeFilters")
+            or self.request.GET.get("demographics")
+            or self.request.GET.get("multiple_choice_answer")
+        ):
+            qs = qs.distinct()
+        return qs
 
     @action(
         detail=True,

@@ -33,6 +33,7 @@
   interface Props {
     showThemes: boolean;
     themesLoading?: boolean;
+    filtersLoading?: boolean;
     totalAnswers: number;
     demoData: DemoData;
     demoOptions: DemoOption;
@@ -47,6 +48,7 @@
   let {
     showThemes = true,
     themesLoading = true,
+    filtersLoading = true,
     totalAnswers = 0,
     demoData = {},
     demoOptions = {},
@@ -69,7 +71,7 @@
         {demoOptions}
         {demoData}
         {demoOptionsData}
-        loading={themesLoading}
+        loading={filtersLoading}
       />
 
       {#snippet failed(error)}

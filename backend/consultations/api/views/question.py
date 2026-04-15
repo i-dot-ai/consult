@@ -7,12 +7,13 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultations import models
+from consultations.api.filters import get_filtered_responses
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
 from consultations.api.serializers import (
     QuestionSerializer,
-    ThemeInformationSerializer,
+    QuestionThemeSerializer,
 )
 
 
@@ -90,23 +91,41 @@ class QuestionViewSet(ModelViewSet):
     @action(
         detail=True,
         methods=["get"],
-        url_path="theme-information",
+        url_path="themes",
         permission_classes=[IsAuthenticated, CanSeeConsultation],
     )
-    def theme_information(self, request, pk=None, consultation_pk=None):
-        """Get all theme information for a question"""
-        # Get the question object with consultation in one query
+    def themes(self, request, pk=None, consultation_pk=None):
+        """Get themes for a question with response counts."""
         question = self.get_object()
 
-        # Get all themes for this question
-        themes = models.SelectedTheme.objects.filter(question=question).values(
-            "id", "name", "description"
-        )
+        themes = models.SelectedTheme.objects.filter(question=question)
 
-        serializer = ThemeInformationSerializer(data={"themes": list(themes)})
-        serializer.is_valid()
+        filter_params = [
+            "themeFilters",
+            "demographics",
+            "evidenceRich",
+            "unseenResponsesOnly",
+            "is_flagged",
+            "multiple_choice_answer",
+        ]
+        has_filters = any(request.query_params.get(p) for p in filter_params)
 
-        return Response(serializer.data)
+        if has_filters:
+            filtered_responses = get_filtered_responses(
+                request.query_params, consultation_pk, question_id=pk
+            )
+            themes = themes.annotate(
+                count=Count(
+                    "responseannotation",
+                    filter=Q(responseannotation__response__in=filtered_responses),
+                    distinct=True,
+                )
+            )
+        else:
+            themes = themes.annotate(count=Count("responseannotation", distinct=True))
+
+        serializer = QuestionThemeSerializer(themes, many=True)
+        return Response({"themes": serializer.data})
 
     @action(
         detail=True,

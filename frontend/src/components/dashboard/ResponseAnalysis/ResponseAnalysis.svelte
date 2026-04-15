@@ -40,7 +40,7 @@
   export let questionId: string = "";
   export let pageSize: number = 5;
   export let isAnswersLoading: boolean = true;
-  export let isThemesLoading: boolean = true;
+  export let isFiltersLoading: boolean = true;
   export let answersError: string | null = "";
   export let answers: ResponseAnswer[] = [];
   export let hasMorePages: boolean = true;
@@ -139,7 +139,7 @@
         {setEvidenceRich}
         {unseenResponses}
         {setUnseenResponses}
-        loading={isThemesLoading}
+        loading={isFiltersLoading}
       />
 
       {#snippet failed(error)}

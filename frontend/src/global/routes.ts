@@ -131,6 +131,35 @@ export const getApiAnswersUrl = (consultationId: string) => {
     "/",
   );
 };
+export const getApiQuestionThemesUrl = (
+  consultationId: string,
+  questionId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.Themes,
+    "/",
+  );
+};
+export const getApiDemographicsUrl = (consultationId: string) => {
+  return urlJoin(Routes.ApiConsultations, consultationId, "demographics", "/");
+};
+export const getApiQuestionResponsesUrl = (
+  consultationId: string,
+  questionId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.Responses,
+    "/",
+  );
+};
 export const getApiQuestionsUrl = (
   consultationId: string,
   options?: { include?: string },
