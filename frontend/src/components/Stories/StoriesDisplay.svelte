@@ -22,13 +22,14 @@
   import { queryClient } from "../../global/queryClient.ts";
 
   const getSelectedUrlParam = () => {
-    return Object.fromEntries(new URLSearchParams(window.location.search)).selected;
-  }
+    return Object.fromEntries(new URLSearchParams(window.location.search))
+      .selected;
+  };
 
   const updateSelected = () => {
     const newSelected = getSelectedUrlParam();
     selected = newSelected;
-  }
+  };
 
   let selected = $state(getSelectedUrlParam());
   let currStory = $state(stories.find((story) => story.name === selected));
@@ -39,7 +40,7 @@
     // prop values do not trigger reactive updates
     // therefore this effect rune is needed
     currStory = stories.find((story) => story.name === selected);
-  })
+  });
 
   let componentProps: unknown = $derived.by(() => {
     let props: unknown = {};
@@ -55,11 +56,11 @@
 
   onMount(() => {
     window.addEventListener("popstate", updateSelected);
-  })
+  });
 
   onDestroy(() => {
     window.removeEventListener("popstate", updateSelected);
-  })
+  });
 
   const categories = [...new Set(stories.map((story) => story.category))];
 
@@ -124,7 +125,7 @@
                   selected = story.name;
                   currStoryTab = "interactive";
                   var newurl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?selected=${story.name}`;
-                  window.history.pushState({path:newurl},'',newurl);
+                  window.history.pushState({ path: newurl }, "", newurl);
                 }}
               >
                 {story.name}
