@@ -29,7 +29,7 @@
     "@melt-ui/svelte": "^0.86.6",
     "@sentry/astro": "^10.38.0",
     "@sveltestack/svelte-query": "^1.6.0",
-    "@tanstack/svelte-query": "^6.1.0",
+    "@tanstack/svelte-query": "^6.1.10",
     "@testing-library/svelte": "^5.2.8",
     "@testing-library/user-event": "^14.6.1",
     "astro": "5.16.6",
