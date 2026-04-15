@@ -1,16 +1,16 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
 
-  import Title from "../Title.svelte";
-  import Link from "../Link.svelte";
-  import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
+  import Title from "../../Title.svelte";
+  import Link from "../../Link.svelte";
+  import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
 
   import {
     getConsultationDetailUrl,
     getConsultationEvalUrl,
     getThemeSignOffUrl,
-  } from "../../global/routes.ts";
-  import { buildConsultationsGetQuery } from "../../global/queries/consultations/queries.ts";
+  } from "../../../global/routes.ts";
+  import { buildConsultationsGetQuery } from "../../../global/queries/consultations/queries.ts";
 
   const consultations = buildConsultationsGetQuery();
 </script>
@@ -20,6 +20,8 @@
     <p transition:slide>
       <LoadingMessage message="Loading consultations..." />
     </p>
+  {:else if consultations.query?.data?.results?.length === 0}
+    No consultations available
   {:else}
     <ul>
       {#each consultations.query.data?.results as consultation (consultation.id)}

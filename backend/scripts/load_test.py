@@ -197,23 +197,25 @@ def create_candidate_themes_for_question(
             frequency = random.randint(5, max_freq)
             remaining_frequency -= frequency
 
-        themes_to_create.append({
-            'question': question,
-            'name': theme_config["name"],
-            'description': theme_config["description"],
-            'approximate_frequency': frequency,
-            'parent': None,
-            'parent_name': theme_config["name"]  # For child lookup
-        })
+        themes_to_create.append(
+            {
+                "question": question,
+                "name": theme_config["name"],
+                "description": theme_config["description"],
+                "approximate_frequency": frequency,
+                "parent": None,
+                "parent_name": theme_config["name"],  # For child lookup
+            }
+        )
 
     # Bulk create parent themes
     parent_objects = [
         CandidateTheme(
-            question=t['question'],
-            name=t['name'],
-            description=t['description'],
-            approximate_frequency=t['approximate_frequency'],
-            parent=None
+            question=t["question"],
+            name=t["name"],
+            description=t["description"],
+            approximate_frequency=t["approximate_frequency"],
+            parent=None,
         )
         for t in themes_to_create
     ]
@@ -223,7 +225,7 @@ def create_candidate_themes_for_question(
     child_themes_to_create = []
     for parent_theme, theme_info in zip(parent_themes, themes_to_create):
         if random.random() < 0.3:  # 30% chance
-            parent_name = theme_info['parent_name']
+            parent_name = theme_info["parent_name"]
             child_configs = theme_data.get("child_themes", {}).get(parent_name, [])
 
             if child_configs:
@@ -231,7 +233,7 @@ def create_candidate_themes_for_question(
                 selected_children = random.sample(child_configs, num_children)
 
                 for child_config in selected_children:
-                    child_frequency = theme_info['approximate_frequency'] // len(selected_children)
+                    child_frequency = theme_info["approximate_frequency"] // len(selected_children)
                     child_themes_to_create.append(
                         CandidateTheme(
                             question=question,
@@ -302,7 +304,7 @@ def create_selected_themes_for_question(
     # Link back to candidates (requires update, can't bulk_update the reverse relation efficiently)
     for candidate, selected in zip(themes_to_promote, selected_themes):
         candidate.selectedtheme = selected
-        candidate.save(update_fields=['selectedtheme'])
+        candidate.save(update_fields=["selectedtheme"])
 
     return selected_themes
 
@@ -359,7 +361,7 @@ def create_response_annotations(
     for annotation in annotations:
         num_themes = random.randint(
             theme_assign_config["min_themes_per_response"],
-            min(theme_assign_config["max_themes_per_response"], len(selected_themes))
+            min(theme_assign_config["max_themes_per_response"], len(selected_themes)),
         )
 
         assigned_themes = random.sample(selected_themes, num_themes)
@@ -519,9 +521,11 @@ def create_respondents(
         remaining = num_respondents - batch_end
         eta_seconds = remaining / rate if rate > 0 else 0
 
-        print(f"  Created {batch_end:,}/{num_respondents:,} respondents "
-              f"({batch_end/num_respondents*100:.1f}%) "
-              f"Rate: {rate:.0f}/sec ETA: {eta_seconds/60:.1f} min")
+        print(
+            f"  Created {batch_end:,}/{num_respondents:,} respondents "
+            f"({batch_end / num_respondents * 100:.1f}%) "
+            f"Rate: {rate:.0f}/sec ETA: {eta_seconds / 60:.1f} min"
+        )
 
     total_time = time.time() - start_time
     print(f"✓ Created {len(all_respondents):,} respondents in {total_time:.1f} seconds")
@@ -560,7 +564,9 @@ def create_question(
     # Add multiple choice options if needed
     if has_multiple_choice:
         num_options = random.randint(3, 5)
-        selected_options = random.sample(SAMPLE_MC_OPTIONS, min(num_options, len(SAMPLE_MC_OPTIONS)))
+        selected_options = random.sample(
+            SAMPLE_MC_OPTIONS, min(num_options, len(SAMPLE_MC_OPTIONS))
+        )
 
         for option_text in selected_options:
             MultiChoiceAnswer.objects.create(
@@ -618,7 +624,7 @@ def create_responses_for_question(
     all_created = []
 
     for i in range(0, len(responses_to_create), RESPONSE_BATCH_SIZE):
-        batch = responses_to_create[i:i + RESPONSE_BATCH_SIZE]
+        batch = responses_to_create[i : i + RESPONSE_BATCH_SIZE]
         created_batch = Response.objects.bulk_create(batch)
         all_created.extend(created_batch)
 
@@ -637,7 +643,7 @@ def create_responses_for_question(
 
         # Create M2M in batches
         for i in range(0, len(m2m_to_create), M2M_BATCH_SIZE):
-            batch = m2m_to_create[i:i + M2M_BATCH_SIZE]
+            batch = m2m_to_create[i : i + M2M_BATCH_SIZE]
             Response.chosen_options.through.objects.bulk_create(batch)
 
     # Update question's total_responses count
@@ -694,10 +700,9 @@ def resume_load_test(
     # Get demographics
     demographics = {}
     for field_name in SAMPLE_DEMOGRAPHICS.keys():
-        options = list(DemographicOption.objects.filter(
-            consultation=consultation,
-            field_name=field_name
-        ))
+        options = list(
+            DemographicOption.objects.filter(consultation=consultation, field_name=field_name)
+        )
         demographics[field_name] = options
 
     # Resume respondent creation if needed
@@ -709,7 +714,9 @@ def resume_load_test(
         print(f"Creating {remaining:,} additional respondents...")
         m2m_to_create = []
 
-        for batch_start in range(existing_respondents_count, num_of_respondents, RESPONDENT_BATCH_SIZE):
+        for batch_start in range(
+            existing_respondents_count, num_of_respondents, RESPONDENT_BATCH_SIZE
+        ):
             batch_end = min(batch_start + RESPONDENT_BATCH_SIZE, num_of_respondents)
 
             batch_respondents = [
@@ -753,7 +760,9 @@ def resume_load_test(
         hybrid_count = int(num_of_questions * question_type_distribution["hybrid"] / 100)
         mc_count = num_of_questions - open_count - hybrid_count
 
-        question_types = ["open"] * open_count + ["hybrid"] * hybrid_count + ["multiple_choice"] * mc_count
+        question_types = (
+            ["open"] * open_count + ["hybrid"] * hybrid_count + ["multiple_choice"] * mc_count
+        )
         random.shuffle(question_types)
 
         # Create remaining questions
@@ -769,7 +778,9 @@ def resume_load_test(
             coverage = random.uniform(70, 90)
             num_responses = create_responses_for_question(question, respondents, coverage)
 
-            print(f"  Question {i}/{num_of_questions}: {question_type} - {num_responses:,} responses")
+            print(
+                f"  Question {i}/{num_of_questions}: {question_type} - {num_responses:,} responses"
+            )
 
         print("✓ Completed question creation")
     else:
@@ -785,7 +796,9 @@ def resume_load_test(
     # Check if themes need to be created
     candidate_count = CandidateTheme.objects.filter(question__consultation=consultation).count()
     selected_count = SelectedTheme.objects.filter(question__consultation=consultation).count()
-    annotation_count = ResponseAnnotation.objects.filter(response__question__consultation=consultation).count()
+    annotation_count = ResponseAnnotation.objects.filter(
+        response__question__consultation=consultation
+    ).count()
 
     print("\n📊 Current theme/annotation status:")
     print(f"  Candidate themes: {candidate_count}")
@@ -797,7 +810,11 @@ def resume_load_test(
         theme_data = load_sample_theme_data(Path(__file__).parent / "sample_themes.yaml")
 
         # Stage 2, 3, 4: Create candidate themes if missing
-        if candidate_count == 0 and stage in [Stage.CANDIDATE_THEMES, Stage.THEMES_APPROVED, Stage.ANALYSIS]:
+        if candidate_count == 0 and stage in [
+            Stage.CANDIDATE_THEMES,
+            Stage.THEMES_APPROVED,
+            Stage.ANALYSIS,
+        ]:
             print("\n⚠️  Creating candidate themes...")
 
             all_candidate_themes = {}
@@ -805,13 +822,16 @@ def resume_load_test(
                 candidates = create_candidate_themes_for_question(question, theme_data)
                 all_candidate_themes[question.id] = candidates
 
-            total_candidates = CandidateTheme.objects.filter(question__consultation=consultation).count()
+            total_candidates = CandidateTheme.objects.filter(
+                question__consultation=consultation
+            ).count()
             parent_count = CandidateTheme.objects.filter(
-                question__consultation=consultation,
-                parent=None
+                question__consultation=consultation, parent=None
             ).count()
             child_count = total_candidates - parent_count
-            print(f"✓ Created {total_candidates} candidate themes ({parent_count} parent, {child_count} child)")
+            print(
+                f"✓ Created {total_candidates} candidate themes ({parent_count} parent, {child_count} child)"
+            )
         else:
             # Load existing candidates
             all_candidate_themes = {}
@@ -829,7 +849,9 @@ def resume_load_test(
                 selected = create_selected_themes_for_question(question, candidates, user)
                 all_selected_themes[question.id] = selected
 
-            total_selected = SelectedTheme.objects.filter(question__consultation=consultation).count()
+            total_selected = SelectedTheme.objects.filter(
+                question__consultation=consultation
+            ).count()
             print(f"✓ Created {total_selected} selected themes")
 
             # Mark all themed questions as signed off
@@ -842,7 +864,7 @@ def resume_load_test(
             # Update consultation stage if needed
             if consultation.stage != Consultation.Stage.THEME_MAPPING:
                 consultation.stage = Consultation.Stage.THEME_MAPPING
-                consultation.save(update_fields=['stage'])
+                consultation.save(update_fields=["stage"])
                 print("✓ Updated consultation stage to THEME_MAPPING")
         else:
             # Load existing selected themes
@@ -865,9 +887,7 @@ def resume_load_test(
 
                 if responses_list and selected_themes:
                     num_annotations, num_assignments = create_response_annotations(
-                        responses_list,
-                        selected_themes,
-                        theme_data
+                        responses_list, selected_themes, theme_data
                     )
                     total_annotations += num_annotations
                     total_theme_assignments += num_assignments
@@ -878,7 +898,7 @@ def resume_load_test(
             # Update consultation stage to ANALYSIS
             if consultation.stage != Consultation.Stage.ANALYSIS:
                 consultation.stage = Consultation.Stage.ANALYSIS
-                consultation.save(update_fields=['stage'])
+                consultation.save(update_fields=["stage"])
                 print("✓ Updated consultation stage to ANALYSIS")
 
     print("\n" + "=" * 80)
@@ -891,10 +911,18 @@ def resume_load_test(
     print(f"  Respondents: {Respondent.objects.filter(consultation=consultation).count():,}")
     print(f"  Questions: {Question.objects.filter(consultation=consultation).count()}")
     print(f"  Responses: {Response.objects.filter(question__consultation=consultation).count():,}")
-    print(f"  Candidate themes: {CandidateTheme.objects.filter(question__consultation=consultation).count()}")
-    print(f"  Selected themes: {SelectedTheme.objects.filter(question__consultation=consultation).count()}")
-    print(f"  Response annotations: {ResponseAnnotation.objects.filter(response__question__consultation=consultation).count():,}")
-    print(f"  Questions signed off: {Question.objects.filter(consultation=consultation, theme_status='confirmed').count()}/{len(questions_with_themes)}")
+    print(
+        f"  Candidate themes: {CandidateTheme.objects.filter(question__consultation=consultation).count()}"
+    )
+    print(
+        f"  Selected themes: {SelectedTheme.objects.filter(question__consultation=consultation).count()}"
+    )
+    print(
+        f"  Response annotations: {ResponseAnnotation.objects.filter(response__question__consultation=consultation).count():,}"
+    )
+    print(
+        f"  Questions signed off: {Question.objects.filter(consultation=consultation, theme_status='confirmed').count()}/{len(questions_with_themes)}"
+    )
 
 
 def run_load_test(
@@ -971,7 +999,9 @@ def run_load_test(
     hybrid_count = int(num_of_questions * question_type_distribution["hybrid"] / 100)
     mc_count = num_of_questions - open_count - hybrid_count
 
-    question_types = ["open"] * open_count + ["hybrid"] * hybrid_count + ["multiple_choice"] * mc_count
+    question_types = (
+        ["open"] * open_count + ["hybrid"] * hybrid_count + ["multiple_choice"] * mc_count
+    )
     random.shuffle(question_types)
 
     total_responses = 0
@@ -998,11 +1028,15 @@ def run_load_test(
         remaining = estimated_total - total_responses
         eta_seconds = remaining / rate if rate > 0 else 0
 
-        print(f"  Question {i}/{num_of_questions}: {question_type} - {num_responses:,} responses "
-              f"(Total: {total_responses:,}, Rate: {rate:.0f}/sec, ETA: {eta_seconds/60:.1f} min)")
+        print(
+            f"  Question {i}/{num_of_questions}: {question_type} - {num_responses:,} responses "
+            f"(Total: {total_responses:,}, Rate: {rate:.0f}/sec, ETA: {eta_seconds / 60:.1f} min)"
+        )
 
     step4_time = time.time() - step4_start
-    print(f"✓ Created {num_of_questions} questions with {total_responses:,} total responses in {step4_time/60:.1f} minutes")
+    print(
+        f"✓ Created {num_of_questions} questions with {total_responses:,} total responses in {step4_time / 60:.1f} minutes"
+    )
 
     # Get user object for theme creation
     user = UserModel.objects.get(email=user_email)
@@ -1018,7 +1052,9 @@ def run_load_test(
 
         all_candidate_themes = {}
         total_candidates = 0
-        questions_with_themes = Question.objects.filter(consultation=consultation, has_free_text=True)
+        questions_with_themes = Question.objects.filter(
+            consultation=consultation, has_free_text=True
+        )
 
         for question in questions_with_themes:
             candidates = create_candidate_themes_for_question(question, theme_data)
@@ -1026,12 +1062,13 @@ def run_load_test(
             total_candidates += len(candidates)
 
         parent_count = CandidateTheme.objects.filter(
-            question__consultation=consultation,
-            parent=None
+            question__consultation=consultation, parent=None
         ).count()
         child_count = total_candidates - parent_count
 
-        print(f"✓ Created {total_candidates} candidate themes ({parent_count} parent, {child_count} child)")
+        print(
+            f"✓ Created {total_candidates} candidate themes ({parent_count} parent, {child_count} child)"
+        )
 
     # Stage 3 & 4: Create selected themes (without or with annotations)
     if stage in [Stage.THEMES_APPROVED, Stage.ANALYSIS]:
@@ -1041,11 +1078,7 @@ def run_load_test(
 
         for question in questions_with_themes:
             candidates = all_candidate_themes.get(question.id, [])
-            selected = create_selected_themes_for_question(
-                question,
-                candidates,
-                user
-            )
+            selected = create_selected_themes_for_question(question, candidates, user)
             all_selected_themes[question.id] = selected
             total_selected += len(selected)
 
@@ -1073,9 +1106,7 @@ def run_load_test(
             selected_themes = all_selected_themes.get(question.id, [])
 
             num_annotations, num_assignments = create_response_annotations(
-                responses_list,
-                selected_themes,
-                theme_data
+                responses_list, selected_themes, theme_data
             )
 
             total_annotations += num_annotations
@@ -1108,9 +1139,11 @@ def run_load_test(
         signed_off_count = Question.objects.filter(
             consultation=consultation,
             has_free_text=True,
-            theme_status=Question.ThemeStatus.CONFIRMED
+            theme_status=Question.ThemeStatus.CONFIRMED,
         ).count()
-        print(f"    - Signed off: {signed_off_count}/{questions_with_free_text} questions with free text")
+        print(
+            f"    - Signed off: {signed_off_count}/{questions_with_free_text} questions with free text"
+        )
 
     print(f"  Respondents: {num_of_respondents}")
     print(f"  Responses: {total_responses}")
@@ -1118,12 +1151,13 @@ def run_load_test(
     # Stage 2, 3, 4: Candidate themes additions
     if stage in [Stage.CANDIDATE_THEMES, Stage.THEMES_APPROVED, Stage.ANALYSIS]:
         parent_count = CandidateTheme.objects.filter(
-            question__consultation=consultation,
-            parent=None
+            question__consultation=consultation, parent=None
         ).count()
-        child_count = CandidateTheme.objects.filter(
-            question__consultation=consultation
-        ).exclude(parent=None).count()
+        child_count = (
+            CandidateTheme.objects.filter(question__consultation=consultation)
+            .exclude(parent=None)
+            .count()
+        )
         total_candidates = parent_count + child_count
 
         print("\n🎯 CANDIDATE THEMES:")
@@ -1152,35 +1186,33 @@ def run_load_test(
         print(f"  Annotations: {annotations_count}")
         print(f"  Theme assignments: {theme_links_count}")
         if annotations_count > 0:
-            print(f"  Avg themes per response: {theme_links_count/annotations_count:.1f}")
+            print(f"  Avg themes per response: {theme_links_count / annotations_count:.1f}")
 
         # Sentiment breakdown
         agreement = ResponseAnnotation.objects.filter(
-            response__question__consultation=consultation,
-            sentiment="AGREEMENT"
+            response__question__consultation=consultation, sentiment="AGREEMENT"
         ).count()
         disagreement = ResponseAnnotation.objects.filter(
-            response__question__consultation=consultation,
-            sentiment="DISAGREEMENT"
+            response__question__consultation=consultation, sentiment="DISAGREEMENT"
         ).count()
         unclear = ResponseAnnotation.objects.filter(
-            response__question__consultation=consultation,
-            sentiment="UNCLEAR"
+            response__question__consultation=consultation, sentiment="UNCLEAR"
         ).count()
 
         print("\n💭 SENTIMENT DISTRIBUTION:")
         if annotations_count > 0:
-            print(f"  Agreement: {agreement} ({agreement/annotations_count*100:.0f}%)")
-            print(f"  Disagreement: {disagreement} ({disagreement/annotations_count*100:.0f}%)")
-            print(f"  Unclear: {unclear} ({unclear/annotations_count*100:.0f}%)")
+            print(f"  Agreement: {agreement} ({agreement / annotations_count * 100:.0f}%)")
+            print(f"  Disagreement: {disagreement} ({disagreement / annotations_count * 100:.0f}%)")
+            print(f"  Unclear: {unclear} ({unclear / annotations_count * 100:.0f}%)")
 
         evidence_rich = ResponseAnnotation.objects.filter(
-            response__question__consultation=consultation,
-            evidence_rich=True
+            response__question__consultation=consultation, evidence_rich=True
         ).count()
 
         if annotations_count > 0:
-            print(f"  Evidence-rich: {evidence_rich} ({evidence_rich/annotations_count*100:.0f}%)")
+            print(
+                f"  Evidence-rich: {evidence_rich} ({evidence_rich / annotations_count * 100:.0f}%)"
+            )
 
     print("\n🔗 ACCESS:")
     print(f"  URL: /consultations/{consultation.id}/")
@@ -1209,7 +1241,9 @@ def test_database_connection() -> None:
         print("     - Docker: docker-compose up -d postgres")
         print("     - Native: pg_ctl status")
         print("  2. Verify DATABASE_URL in ../.env file:")
-        print("     DATABASE_URL=psql://username:password@host:port/database_name")  # pragma: allowlist secret
+        print(
+            "     DATABASE_URL=psql://username:password@host:port/database_name"  # pragma: allowlist secret
+        )
         print("  3. Test connection manually:")
         print("     psql -h localhost -U postgres -d consult_e2e_test")
         print("  4. Check if the database exists:")
@@ -1287,7 +1321,9 @@ def main() -> None:
         sys.exit(1)
 
     if not args.resume and args.consultation_code:
-        print("Warning: --consultation-code specified but --resume not set. Ignoring consultation code.")
+        print(
+            "Warning: --consultation-code specified but --resume not set. Ignoring consultation code."
+        )
 
     # Validate name is provided when not resuming
     if not args.resume and not args.name_of_consultation:
@@ -1311,7 +1347,9 @@ def main() -> None:
             "multiple_choice": mc_pct,
         }
     except ValueError:
-        print("Error: Invalid question type distribution format. Use: open,hybrid,multiple_choice (e.g., 40,40,20)")
+        print(
+            "Error: Invalid question type distribution format. Use: open,hybrid,multiple_choice (e.g., 40,40,20)"
+        )
         sys.exit(1)
 
     run_load_test(

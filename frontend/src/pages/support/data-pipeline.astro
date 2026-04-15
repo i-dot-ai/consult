@@ -3,7 +3,7 @@ import { fetchBackendApi } from "../../global/api";
 import Layout from "../../layouts/Layout.astro";
 import Section from "../../components/Section/Section.svelte";
 import Text from "../../components/Text/Text.svelte";
-import CreateConsultationForm from "../../components/screens/CreateConsultationForm.svelte";
+import CreateConsultationForm from "../../components/screens/CreateConsultationForm/CreateConsultationForm.svelte";
 import FindThemesForm from "../../components/screens/FindThemesForm.svelte";
 import AssignThemesForm from "../../components/screens/AssignThemesForm.svelte";
 import Link from "../../components/Link.svelte";
@@ -152,6 +152,12 @@ const assignThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
         Then, everything which was just saved to S3 is read from S3 and saved to
         the database as candidate themes.</Text
       >
+      <Text
+        >Once candidate themes have been imported, an assign-themes job is
+        automatically started to assign candidate themes to individual
+        responses. This allows users to see representative responses for each
+        theme during the finalising stage.</Text
+      >
     </Details>
   </Section>
 
@@ -167,6 +173,12 @@ const assignThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
       themes.</Text
     >
 
+    <Text>
+      For each candidate theme, users can view representative responses that
+      were assigned to that theme. This helps users assess whether they want to
+      select or edit the theme. Up to 50 responses are shown per theme.</Text
+    >
+
     <img
       src="/images/finalise-themes-screenshot.png"
       alt="Screenshot of finalising themes in the Consult app"
@@ -174,7 +186,12 @@ const assignThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
     />
 
     <Details summaryText="What's happening in the background?">
-      <Text>All changes are saved in the database as selected themes.</Text>
+      <Text
+        >All changes are saved in the database as selected themes. The
+        representative responses shown alongside each candidate theme were
+        assigned automatically after the find-themes stage completed (see
+        above).</Text
+      >
     </Details>
   </Section>
 
@@ -186,8 +203,8 @@ const assignThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
     <Text>
       Once users have finalised their themes, we can run <Link
         href={Routes.ThemeFinderRepository}>ThemeFinder</Link
-      > to assign themes to responses. This is a long-running batch process and can
-      take up to a few hours depending on the size of the consultation.
+      > to assign responses to selected themes. This is a long-running batch process
+      and can take up to a few hours depending on the size of the consultation.
     </Text>
 
     <AssignThemesForm client:load consultations={assignThemesFolders} />
@@ -255,27 +272,12 @@ const assignThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
       </ol>
     </Details>
 
-    <div
-      class="my-8 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6"
-    >
-      <div class="mb-4 flex items-center gap-2">
-        <span
-          class="rounded-full bg-teal-100 px-3 py-1 text-sm font-semibold text-teal-800"
-        >
-          Coming Soon
-        </span>
-      </div>
-      <Text>
-        Users will be able to trigger assigning themes directly from the app
-        after finalising themes by clicking the 'Confirm and Proceed to Mapping'
-        button:
-      </Text>
-      <img
-        src="/images/assign-themes-screenshot.png"
-        alt="Screenshot of assigning themes in the Consult app (coming soon)"
-        class="my-4 rounded-md border border-gray-300 shadow-sm"
-      />
-    </div>
+    <Text>
+      Note: During the finalising stage, an assign-themes job with candidate
+      themes is automatically triggered after find-themes completes. This is
+      separate from the assign-themes step here, which assigns responses to the
+      final list of selected themes and moves the consultation to analysis.
+    </Text>
   </Section>
 
   <hr />

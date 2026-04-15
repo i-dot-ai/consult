@@ -48,6 +48,9 @@ dev = [
   "django-webtest>=1.9.14",
 ]
 
+[tool.uv]
+exclude-newer = "P14D"
+
 [tool.ruff]
 line-length = 100
 target-version = 'py312'

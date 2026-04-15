@@ -23,6 +23,12 @@ import LearningsStory from "../data/Learnings/LearningsStory.svelte";
 import IntroPageStory from "../data/IntroPage/IntroPageStory.svelte";
 import StepOneAPageStory from "../data/StepOneAPage/StepOneAPageStory.svelte";
 import StepOneBPageStory from "../data/StepOneBPage/StepOneBPageStory.svelte";
+import ConsultationListStory from "../screens/ConsultationList/ConsultationListStory.svelte";
+import ConsultationDetailStory from "../screens/ConsultationDetail/ConsultationDetailStory.svelte";
+import FileVerifiedStory from "../data/FileVerified/FileVerifiedStory.svelte";
+import StepsTitleStory from "../data/StepsTitle/StepsTitleStory.svelte";
+import FileInputStory from "../inputs/FileInput/FileInputStory.svelte";
+import CreateConsultationFormStory from "../screens/CreateConsultationForm/CreateConsultationFormStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -36,9 +42,18 @@ interface StoryProp {
     value: unknown;
   }[];
 }
+interface Mock {
+  url: string;
+  body?: unknown;
+  status?: number;
+  method?: string;
+  throws?: Error;
+  callback?: () => void;
+}
 interface StoryConfig {
   name: string;
   props?: unknown;
+  mocks?: Mock[];
 }
 interface Story {
   name: string;
@@ -46,6 +61,7 @@ interface Story {
   category?: string;
   props: StoryProp[];
   stories: StoryConfig[];
+  mocks?: Mock[];
 }
 
 export default [
@@ -72,4 +88,10 @@ export default [
   IntroPageStory,
   StepOneAPageStory,
   StepOneBPageStory,
+  ConsultationListStory,
+  ConsultationDetailStory,
+  FileVerifiedStory,
+  StepsTitleStory,
+  FileInputStory,
+  CreateConsultationFormStory,
 ] as Story[];

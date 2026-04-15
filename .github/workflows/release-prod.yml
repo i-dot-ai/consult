@@ -65,10 +65,20 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
+  build-lambdas:
+    needs:
+      - set-vars
+      - start-runner
+    uses: ./.github/workflows/build-lambda-artifacts.yml
+    with:
+      upload_directory: ./lambda/build
+      commit_hash: ${{ needs.set-vars.outputs.commit-hash }}
+
   apply-infra:
     needs:
       - set-vars
       - start-runner
+      - build-lambdas
     permissions: write-all
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/apply-terraform.yml@main
     with:
@@ -79,6 +89,7 @@ jobs:
       PUBLIC_INFRA_DEPLOYMENT: true
       INFRA_CONFIG_REPO: ${{ needs.set-vars.outputs.infra-config-repo }}
       IMAGE_TAG: ${{ needs.set-vars.outputs.commit-hash }}
+      ARTIFACTS_PATH: ${{ needs.build-lambdas.outputs.target_directory }}
       USE_OIDC: true
     secrets:
       AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT }}
@@ -115,7 +126,7 @@ jobs:
     with:
       WORKFLOW_PASSED: ${{ needs.determine-success.outputs.success == 'true' }}
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
-      SUCCESS_PAYLOAD: "{ \"blocks\": [ { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \":large_green_circle: `prod` *deployment succeeded*\\n\\n Deployed SHA: `${{ needs.set-vars.outputs.sha-short }}`"
+      SUCCESS_PAYLOAD: "{ \"blocks\": [ { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \":large_green_circle: `prod` *deployment succeeded*\\n\\n Deployed SHA: `${{ needs.set-vars.outputs.sha-short }}`\" } } ] }"
       FAILURE_PAYLOAD: "{ \"blocks\": [ { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \":x: `prod` *deployment failed*\\n\\n Attempted SHA: `${{ needs.set-vars.outputs.sha-short }}`\\nLogs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\" } } ] }"
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
