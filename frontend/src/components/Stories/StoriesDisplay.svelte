@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { createRawSnippet } from "svelte";
+  import { createRawSnippet, onDestroy, onMount } from "svelte";
   import fetchMock from "fetch-mock";
 
   import CodeMirror from "svelte-codemirror-editor";
@@ -21,9 +21,26 @@
   import { toTitleCase } from "../../global/utils.ts";
   import { queryClient } from "../../global/queryClient.ts";
 
-  let { selected = "" } = $props();
+  const getSelectedUrlParam = () => {
+    return Object.fromEntries(new URLSearchParams(window.location.search))
+      .selected;
+  };
+
+  const handlePopState = () => {
+    selected = getSelectedUrlParam();
+  };
+
+  let selected = $state(getSelectedUrlParam());
   let currStory = $state(stories.find((story) => story.name === selected));
   let currStoryTab = $state("interactive");
+
+  $effect(() => {
+    // if currStory is declared with derived instead of state
+    // prop values do not trigger reactive updates
+    // therefore this effect rune is needed
+    currStory = stories.find((story) => story.name === selected);
+  });
+
   let componentProps: unknown = $derived.by(() => {
     let props: unknown = {};
     currStory?.props.forEach((prop) => {
@@ -35,6 +52,14 @@
     currStory?.stories.find((story) => story.name === currStoryTab),
   );
   let panel: HTMLElement;
+
+  onMount(() => {
+    window.addEventListener("popstate", handlePopState);
+  });
+
+  onDestroy(() => {
+    window.removeEventListener("popstate", handlePopState);
+  });
 
   const categories = [...new Set(stories.map((story) => story.category))];
 
@@ -94,6 +119,13 @@
                   currStory?.name === story.name &&
                     "text-primary hover:text-pink-600",
                 ])}
+                onclick={(e) => {
+                  e.preventDefault();
+                  selected = story.name;
+                  currStoryTab = "interactive";
+                  var newurl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?selected=${story.name}`;
+                  window.history.pushState({ path: newurl }, "", newurl);
+                }}
               >
                 {story.name}
               </a>
@@ -246,6 +278,10 @@
             {/each}
           {/if}
         </div>
+      {:else}
+        <p class="my-8 text-center text-neutral-600">
+          Please select a component to view
+        </p>
       {/if}
     </Panel>
   </div>
