@@ -8,7 +8,7 @@
 
   interface Props {
     Icon: Component;
-    order: number;
+    steps: number | number[];
     title: string;
     subtitle: string;
     isActive?: boolean;
@@ -17,12 +17,18 @@
 
   let {
     Icon,
-    order,
+    steps,
     title,
     subtitle,
     isActive = false,
     showArrow = true,
   }: Props = $props();
+
+  function getStepsText(steps: Props["steps"]) {
+    return Array.isArray(steps)
+      ? `Steps ${steps.slice(0, steps.length - 1).join(", ")} & ${steps.at(steps.length - 1)}`
+      : `Step ${steps.toString()}`;
+  }
 </script>
 
 <div
@@ -61,7 +67,7 @@
   </div>
 
   <small class={clsx(["text-secondary", "text-xs", "text-center", "mt-1"])}>
-    Step {order}
+    {getStepsText(steps)}
   </small>
 
   <h3 class={clsx(["text-sm", "text-center"])}>
