@@ -205,8 +205,8 @@ module "worker" {
   }
   entrypoint = ["./start-worker.sh"]
 
-  memory = 4096
-  cpu    = 2048
+  memory = 8192
+  cpu    = 4096
 }
 
 resource "aws_service_discovery_private_dns_namespace" "private_dns_namespace" {
