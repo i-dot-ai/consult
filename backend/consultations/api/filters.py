@@ -62,6 +62,19 @@ class ResponseFilter(FilterSet):
         fields = ["respondent_id", "chosen_options"]
 
 
+def get_filtered_responses(query_params, consultation_id, question_id=None):
+    """
+    Used by aggregation endpoints (themes, demographics) to filter responses
+    by question if question_id is defined.
+    """
+    queryset = Response.objects.filter(question__consultation_id=consultation_id)
+    if question_id:
+        queryset = queryset.filter(question_id=question_id)
+
+    filterset = ResponseFilter(query_params, queryset=queryset)
+    return filterset.qs
+
+
 class UserFilter(FilterSet):
     is_in = BooleanFilter(method="filter_by_consultation")
     consultation_id = UUIDFilter(method="filter_by_consultation")

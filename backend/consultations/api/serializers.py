@@ -129,6 +129,17 @@ class ResponseThemeInformationSerializer(serializers.Serializer):
     all_themes = ThemeSerializer(many=True)
 
 
+class QuestionThemeSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField()
+    name = serializers.CharField()
+    description = serializers.CharField()
+    count = serializers.IntegerField()
+
+    class Meta:
+        model = SelectedTheme
+        fields = ["id", "name", "description", "count"]
+
+
 class ThemeAggregationsSerializer(serializers.Serializer):
     theme_aggregations = serializers.DictField(child=serializers.IntegerField())
 

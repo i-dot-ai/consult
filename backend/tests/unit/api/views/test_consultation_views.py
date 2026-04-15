@@ -4,8 +4,22 @@ from uuid import uuid4
 import pytest
 from django.urls import reverse
 
-from consultations.models import CandidateTheme, Consultation, Question, SelectedTheme
-from factories import ConsultationFactory, RespondentFactory, UserFactory
+from consultations.models import (
+    CandidateTheme,
+    Consultation,
+    DemographicOption,
+    Question,
+    ResponseAnnotation,
+    ResponseAnnotationTheme,
+    SelectedTheme,
+)
+from factories import (
+    ConsultationFactory,
+    QuestionFactory,
+    RespondentFactory,
+    ResponseFactory,
+    UserFactory,
+)
 
 
 @pytest.mark.django_db
@@ -13,7 +27,7 @@ class TestConsultationViewSet:
     def test_get_demographic_options_empty(self, client, staff_user_token, free_text_question):
         """Test API endpoint returns empty options when no demographic data exists"""
         url = reverse(
-            "consultations-demographic-options",
+            "consultations-demographics",
             kwargs={"pk": free_text_question.consultation.id},
         )
         response = client.get(
@@ -41,7 +55,7 @@ class TestConsultationViewSet:
         )
 
         url = reverse(
-            "consultations-demographic-options",
+            "consultations-demographics",
             kwargs={"pk": free_text_question.consultation.id},
         )
         response = client.get(
@@ -70,10 +84,92 @@ class TestConsultationViewSet:
 
         assert _sort(map(f, data)) == _sort(expected)
 
+    def test_get_demographics_scoped_to_question(
+        self, client, staff_user_token, consultation, free_text_question
+    ):
+        """Test demographics endpoint scopes counts to a specific question when question_id is provided"""
+        # Create two questions with different respondents
+        question_2 = QuestionFactory(consultation=consultation, has_free_text=True, number=3)
+
+        demo = DemographicOption.objects.create(
+            consultation=consultation, field_name="region", field_value="north"
+        )
+
+        # Respondent 1 answers free_text_question only
+        respondent1 = RespondentFactory(consultation=consultation)
+        respondent1.demographics.add(demo)
+        ResponseFactory(question=free_text_question, respondent=respondent1)
+
+        # Respondent 2 answers question_2 only
+        respondent2 = RespondentFactory(consultation=consultation)
+        respondent2.demographics.add(demo)
+        ResponseFactory(question=question_2, respondent=respondent2)
+
+        url = reverse("consultations-demographics", kwargs={"pk": consultation.id})
+
+        # Without question_id — should count both respondents
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        counts = {
+            item["value"]: item["count"] for item in response.json() if item["name"] == "region"
+        }
+        assert counts["north"] == 2
+
+        # With question_id — should count only respondent1
+        response = client.get(
+            url,
+            query_params={"question_id": free_text_question.id},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        counts = {
+            item["value"]: item["count"] for item in response.json() if item["name"] == "region"
+        }
+        assert counts["north"] == 1
+
+    def test_get_demographics_with_theme_filter(
+        self, client, staff_user_token, free_text_question, theme_a
+    ):
+        """Test demographics endpoint filters counts when themeFilters is applied"""
+        demo = DemographicOption.objects.create(
+            consultation=free_text_question.consultation,
+            field_name="individual",
+            field_value=True,
+        )
+
+        respondent1 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent1.demographics.add(demo)
+        respondent2 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent2.demographics.add(demo)
+
+        response1 = ResponseFactory(question=free_text_question, respondent=respondent1)
+        ResponseFactory(question=free_text_question, respondent=respondent2)
+
+        # Only assign theme_a to response1
+        annotation = ResponseAnnotation.objects.create(response=response1)
+        ResponseAnnotationTheme.objects.create(response_annotation=annotation, theme=theme_a)
+
+        url = reverse(
+            "consultations-demographics",
+            kwargs={"pk": free_text_question.consultation.id},
+        )
+        response = client.get(
+            url,
+            query_params={"themeFilters": str(theme_a.id)},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        counts = {item["value"]: item["count"] for item in response.json()}
+        assert counts[True] == 1
+
     def test_permission_required(self, client, free_text_question):
         """Test API endpoint requires proper permissions"""
         url = reverse(
-            "consultations-demographic-options",
+            "consultations-demographics",
             kwargs={"pk": free_text_question.consultation.id},
         )
         response = client.get(url)
@@ -81,7 +177,7 @@ class TestConsultationViewSet:
 
     def test_invalid_consultation_slug(self, client, staff_user_token):
         """Test API endpoint with invalid consultation slug"""
-        url = reverse("consultations-demographic-options", kwargs={"pk": uuid4()})
+        url = reverse("consultations-demographics", kwargs={"pk": uuid4()})
         response = client.get(
             url,
             headers={"Authorization": f"Bearer {staff_user_token}"},
@@ -139,7 +235,7 @@ class TestConsultationViewSet:
 
     def test_nonexistent_consultation(self, client, staff_user_token):
         """Test API endpoints with non-existent consultation"""
-        url = reverse("consultations-demographic-options", kwargs={"pk": uuid4()})
+        url = reverse("consultations-demographics", kwargs={"pk": uuid4()})
         response = client.get(
             url,
             headers={"Authorization": f"Bearer {staff_user_token}"},

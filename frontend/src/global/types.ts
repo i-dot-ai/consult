@@ -179,10 +179,6 @@ export interface DemoData {
 export interface DemoTotalCounts {
   [category: string]: number;
 }
-export interface ThemeAggr {
-  [id: string]: number;
-}
-
 export interface ConsultationResponse {
   id: string;
   title: string;
@@ -234,16 +230,12 @@ export interface RespondentsResponse {
   results: Respondent[];
 }
 
+export interface ThemeWithCount extends ResponseTheme {
+  count: number;
+}
+
 export interface ThemeInfoResponse {
-  themes: ResponseTheme[];
-}
-
-export interface DemoAggrResponse {
-  demographic_aggregations: DemoData;
-}
-
-export interface ThemeAggrResponse {
-  theme_aggregations: ThemeAggr;
+  themes: ThemeWithCount[];
 }
 
 export interface MultiChoiceResponseItem {
