@@ -30,9 +30,16 @@
     selected = newSelected;
   }
 
-  let selected = $derived(getSelectedUrlParam());
-  let currStory = $derived(stories.find((story) => story.name === selected));
+  let selected = $state(getSelectedUrlParam());
+  let currStory = $state(stories.find((story) => story.name === selected));
   let currStoryTab = $state("interactive");
+
+  $effect(() => {
+    // if currStory is declared with derived instead of state
+    // prop values do not trigger reactive updates
+    // therefore this effect rune is needed
+    currStory = stories.find((story) => story.name === selected);
+  })
 
   let componentProps: unknown = $derived.by(() => {
     let props: unknown = {};
