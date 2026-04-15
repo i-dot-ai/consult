@@ -61,7 +61,7 @@ services:
 
   # Frontend
   frontend:
-    image: node:18
+    image: node:24
     working_dir: /app
     ports:
       - "3000:3000"
