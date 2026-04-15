@@ -509,6 +509,10 @@ def _ingest_responses(
                     "multi_choice": mc.options,
                 }
 
+        mc_options_lookup = {
+            opt.text: opt for opt in MultiChoiceAnswer.objects.filter(question=question)
+        }
+
         # Create Response objects with batching based on token count
         responses_to_create: List = []
         response_theme_associations_to_create = []  # type: ignore
@@ -519,10 +523,6 @@ def _ingest_responses(
             if tf_id not in respondent_lookup:
                 logger.warning("No respondent found for themefinder_id {tf_id}", tf_id=tf_id)
                 continue
-
-            mc_options_lookup = {
-                opt.text: opt for opt in MultiChoiceAnswer.objects.filter(question=question)
-            }
 
             free_text = data["free_text"]
 
