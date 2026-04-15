@@ -279,6 +279,10 @@
             {/each}
           {/if}
         </div>
+      {:else}
+        <p class="text-center my-8 text-neutral-600">
+          Please select a component to view
+        </p>
       {/if}
     </Panel>
   </div>
