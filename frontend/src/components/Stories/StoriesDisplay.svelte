@@ -26,9 +26,8 @@
       .selected;
   };
 
-  const updateSelected = () => {
-    const newSelected = getSelectedUrlParam();
-    selected = newSelected;
+  const handlePopState = () => {
+    selected = getSelectedUrlParam();
   };
 
   let selected = $state(getSelectedUrlParam());
@@ -55,11 +54,11 @@
   let panel: HTMLElement;
 
   onMount(() => {
-    window.addEventListener("popstate", updateSelected);
+    window.addEventListener("popstate", handlePopState);
   });
 
   onDestroy(() => {
-    window.removeEventListener("popstate", updateSelected);
+    window.removeEventListener("popstate", handlePopState);
   });
 
   const categories = [...new Set(stories.map((story) => story.category))];
