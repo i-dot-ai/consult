@@ -89,7 +89,7 @@ export const getQuestionDetailUrl = (
   return urlJoin(
     Routes.Consultations,
     consultationId,
-    Suffixes.Responses,
+    Suffixes.Questions,
     questionId,
   );
 };

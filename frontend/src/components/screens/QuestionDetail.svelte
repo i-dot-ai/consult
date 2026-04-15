@@ -18,7 +18,7 @@
   import {
     getApiAnswersUrl,
     getApiConsultationUrl,
-    getApiQuestionsUrl,
+    getApiQuestionUrl,
     getConsultationDetailUrl,
   } from "../../global/routes.ts";
 
@@ -34,7 +34,6 @@
     type DemoOptionsResponseItem,
     type FormattedTheme,
     type Question,
-    type QuestionsResponse,
     type ResponseAnswer,
     type ThemeAggrResponse,
     type ThemeInfoResponse,
@@ -83,7 +82,6 @@
   let isAnswersLoading: boolean = $state(true);
 
   const consultationStore = createFetchStore<ConsultationResponse>();
-  const questionsStore = createFetchStore<QuestionsResponse>();
   const questionStore = createFetchStore<Question>();
   const answersStore = createFetchStore<AnswersResponse>();
   const themeAggrStore = createFetchStore<ThemeAggrResponse>();
@@ -92,9 +90,8 @@
   const demoAggrStore = createFetchStore<DemoAggrResponse>();
 
   onMount(() => {
-    // Load consultation and questions data once on mount
     $consultationStore.fetch(getApiConsultationUrl(consultationId));
-    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
+    $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
     dataRequested = true;
   });
 
@@ -125,9 +122,6 @@
       );
       $demoAggrStore.fetch(
         `/api/consultations/${consultationId}/responses/demographic-aggregations/${queryString}&question_id=${questionId}`,
-      );
-      $questionStore.fetch(
-        `/api/consultations/${consultationId}/questions/${questionId}/${queryString}`,
       );
     }
 
@@ -233,12 +227,6 @@
     untrack(() => loadData());
   });
 
-  let question = $derived(
-    $questionsStore.data?.results?.find(
-      (question) => question.id === questionId,
-    ),
-  );
-
   let formattedDemoOptions = $derived.by(() => {
     if (!$demoOptionsStore.data) {
       return;
@@ -296,23 +284,23 @@
 
 <svelte:boundary>
   <section class="my-4">
-    {#if $consultationStore.error || $questionsStore.error}
+    {#if $consultationStore.error || $questionStore.error}
       <div class="my-2">
         <Alert>
           <span class="text-sm">
             Question Details Error: {$consultationStore.error ||
-              $questionsStore.error}
+              $questionStore.error}
           </span>
         </Alert>
       </div>
     {:else}
       <QuestionCard
         skeleton={!dataRequested ||
-          $questionsStore.isLoading ||
+          $questionStore.isLoading ||
           $consultationStore.isLoading}
         clickable={false}
         consultationId={$consultationStore.data?.id || ""}
-        question={question || {}}
+        question={$questionStore.data || {}}
         hideIcon={true}
         horizontal={true}
       />
@@ -370,7 +358,7 @@
           },
         ) as FormattedTheme[]}
         themesLoading={!dataRequested || $themeAggrStore.isLoading}
-        totalAnswers={question?.total_responses || 0}
+        totalAnswers={$questionStore.data?.total_responses || 0}
         demoData={$demoAggrStore.data?.demographic_aggregations || {}}
         demoOptions={formattedDemoOptions || {}}
         demoOptionsData={$demoOptionsStore.data || undefined}
@@ -385,7 +373,7 @@
     {:else if activeTab === TabNames.ResponseAnalysis}
       <ResponseAnalysis
         consultationId={$consultationStore.data?.id}
-        questionId={question?.id}
+        questionId={$questionStore.data?.id}
         pageSize={PAGE_SIZE}
         {answers}
         {isAnswersLoading}
