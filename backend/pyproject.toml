@@ -49,7 +49,7 @@ dev = [
 ]
 
 [tool.uv]
-exclude-newer = "2 weeks"
+exclude-newer = "P14D"
 
 [tool.ruff]
 line-length = 100
