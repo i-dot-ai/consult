@@ -19,7 +19,7 @@ export default {
     },
     {
       name: "Fetch Error",
-      mocks: [{...defaultMock, throws: new Error("Fetch Error")}],
+      mocks: [{ ...defaultMock, throws: new Error("Fetch Error") }],
     },
   ],
 };

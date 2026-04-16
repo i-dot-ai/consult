@@ -1,6 +1,10 @@
 import ConsultationAnalysis from "./ConsultationAnalysis.svelte";
-import { CONSULTATION_ID, consultationMock, demoOptionsMock, questionsMock } from "./mocks";
-
+import {
+  CONSULTATION_ID,
+  consultationMock,
+  demoOptionsMock,
+  questionsMock,
+} from "./mocks";
 
 const consultationId = $state("test-consultation");
 
@@ -18,11 +22,11 @@ export default {
         {
           ...questionsMock,
           body: {
-            "count": 0,
-            "next": null,
-            "previous": null,
-            "results": []
-          }
+            count: 0,
+            next: null,
+            previous: null,
+            results: [],
+          },
         },
         demoOptionsMock,
       ],
