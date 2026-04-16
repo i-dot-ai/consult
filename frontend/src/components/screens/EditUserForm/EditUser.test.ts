@@ -16,7 +16,7 @@ describe("EditUser", () => {
 
   it("should display error message if fetch fails", async () => {
     mockRoute(getMock);
-    mockRoute({...patchMock, throws: new Error("Fetch failed") });
+    mockRoute({ ...patchMock, throws: new Error("Fetch failed") });
 
     render(EditUserTest, { userId: "test-user" });
 
@@ -24,13 +24,13 @@ describe("EditUser", () => {
 
     await waitFor(async () => {
       expect(screen.getByRole("switch")).toBeInTheDocument();
-    })
+    });
 
     await user.click(screen.getByRole("switch"));
 
     await waitFor(() => {
       expect(screen.getByText("failed to update user")).toBeInTheDocument();
-    })
+    });
 
     fetchMock.unmockGlobal();
     fetchMock.removeRoutes();
