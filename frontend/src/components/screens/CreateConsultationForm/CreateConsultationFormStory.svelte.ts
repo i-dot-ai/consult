@@ -1,5 +1,5 @@
-import { Routes } from "../../../global/routes";
 import CreateConsultationForm from "./CreateConsultationForm.svelte";
+import { defaultMock } from "./mocks";
 
 const s3Folders = $state(["folder-1", "folder-2"]);
 
@@ -8,20 +8,14 @@ export default {
   component: CreateConsultationForm,
   category: "Screens",
   mocks: [
-    {
-      url: Routes.ApiConsultationSetup,
-      method: "POST",
-    },
+    defaultMock,
   ],
   props: [{ name: "s3Folders", value: s3Folders, type: "json" }],
   stories: [
     {
       name: "Success",
       mocks: [
-        {
-          url: Routes.ApiConsultationSetup,
-          method: "POST",
-        },
+        defaultMock,,
       ],
       props: { s3Folders },
     },
@@ -29,8 +23,7 @@ export default {
       name: "4xx Error",
       mocks: [
         {
-          url: Routes.ApiConsultationSetup,
-          method: "POST",
+          ...defaultMock,
           status: 400,
           body: { message: "Bad request", status: 400 },
         },
@@ -41,8 +34,7 @@ export default {
       name: "5xx Error",
       mocks: [
         {
-          url: Routes.ApiConsultationSetup,
-          method: "POST",
+          ...defaultMock,
           status: 500,
           body: { message: "Unexpected server error", status: 500 },
         },
@@ -53,8 +45,7 @@ export default {
       name: "Fetch Error",
       mocks: [
         {
-          url: Routes.ApiConsultationSetup,
-          method: "POST",
+          ...defaultMock,
           throws: new Error("Fetch failed"),
         },
       ],
