@@ -7,16 +7,12 @@ export default {
   name: "CreateConsultationForm",
   component: CreateConsultationForm,
   category: "Screens",
-  mocks: [
-    defaultMock,
-  ],
+  mocks: [defaultMock],
   props: [{ name: "s3Folders", value: s3Folders, type: "json" }],
   stories: [
     {
       name: "Success",
-      mocks: [
-        defaultMock,,
-      ],
+      mocks: [defaultMock],
       props: { s3Folders },
     },
     {
