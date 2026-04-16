@@ -96,7 +96,7 @@
 </script>
 
 <div class="grid grid-cols-4 gap-8">
-  <aside class="col-span-1">
+  <aside class="sticky top-4 col-span-1 h-[80vh]">
     <Panel border={true} bg={false}>
       <ul class="flex flex-col gap-2">
         {#each categories as category (category)}
