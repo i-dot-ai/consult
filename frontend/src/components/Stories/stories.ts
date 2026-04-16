@@ -30,6 +30,7 @@ import StepsTitleStory from "../data/StepsTitle/StepsTitleStory.svelte";
 import FileInputStory from "../inputs/FileInput/FileInputStory.svelte";
 import CreateConsultationFormStory from "../screens/CreateConsultationForm/CreateConsultationFormStory.svelte";
 import EditUserStory from "../screens/EditUserForm/EditUserStory.svelte";
+import ConsultationAnalysisStory from "../screens/ConsultationAnalysis/ConsultationAnalysisStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -96,4 +97,5 @@ export default [
   FileInputStory,
   CreateConsultationFormStory,
   EditUserStory,
+  ConsultationAnalysisStory,
 ] as Story[];

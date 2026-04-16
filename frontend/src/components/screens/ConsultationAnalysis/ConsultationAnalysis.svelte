@@ -7,25 +7,25 @@
     getApiConsultationUrl,
     getApiQuestionsUrl,
     getConsultationDetailUrl,
-  } from "../../global/routes";
+  } from "../../../global/routes";
   import {
     type ConsultationResponse,
     type DemoOptionsResponse,
     type DemoOptionsResponseItem,
     type QuestionMultiAnswer,
     type QuestionsResponse,
-  } from "../../global/types";
-  import { getPercentage } from "../../global/utils";
-  import { createFetchStore } from "../../global/stores";
+  } from "../../../global/types";
+  import { getPercentage } from "../../../global/utils";
+  import { createFetchStore } from "../../../global/stores";
 
-  import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
-  import Chart from "../dashboard/Chart.svelte";
-  import MetricsDemoCard from "../dashboard/MetricsDemoCard/MetricsDemoCard.svelte";
-  import Panel from "../dashboard/Panel/Panel.svelte";
-  import RespondentTopbar from "../dashboard/RespondentTopbar/RespondentTopbar.svelte";
-  import TitleRow from "../dashboard/TitleRow.svelte";
-  import Finance from "../svg/material/Finance.svelte";
-  import PieChart from "../svg/material/PieChart.svelte";
+  import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
+  import Chart from "../../dashboard/Chart.svelte";
+  import MetricsDemoCard from "../../dashboard/MetricsDemoCard/MetricsDemoCard.svelte";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import RespondentTopbar from "../../dashboard/RespondentTopbar/RespondentTopbar.svelte";
+  import TitleRow from "../../dashboard/TitleRow.svelte";
+  import Finance from "../../svg/material/Finance.svelte";
+  import PieChart from "../../svg/material/PieChart.svelte";
 
   interface Props {
     consultationId: string;
