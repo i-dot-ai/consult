@@ -198,7 +198,8 @@ module "worker" {
     port                = 8000
   }
 
-  autoscaling_maximum_target = 1
+  autoscaling_minimum_target = 3
+  autoscaling_maximum_target = 3
 
   additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
