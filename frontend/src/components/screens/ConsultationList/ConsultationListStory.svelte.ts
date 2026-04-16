@@ -17,5 +17,9 @@ export default {
       name: "Many Consultations",
       mocks: [longMock],
     },
+    {
+      name: "Fetch Error",
+      mocks: [{...defaultMock, throws: new Error("Fetch Error")}],
+    },
   ],
 };

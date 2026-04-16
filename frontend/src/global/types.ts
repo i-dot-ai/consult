@@ -312,3 +312,12 @@ export type HttpMethod =
   | "DELETE"
   | "HEAD"
   | "OPTIONS";
+
+export interface Mock {
+  url: string;
+  body?: unknown;
+  status?: number;
+  method?: string;
+  throws?: Error;
+  callback?: () => void;
+}

@@ -11,12 +11,17 @@
     getThemeSignOffUrl,
   } from "../../../global/routes.ts";
   import { buildConsultationsGetQuery } from "../../../global/queries/consultations/queries.ts";
+  import Alert from "../../Alert.svelte";
 
   const consultations = buildConsultationsGetQuery();
 </script>
 
 <section class="mt-4">
-  {#if consultations.query.isPending}
+  {#if consultations.query.error}
+    <Alert>
+      <p>{consultations.query.error?.message || "An error happened"}</p>
+    </Alert>
+  {:else if consultations.query.isPending}
     <p transition:slide>
       <LoadingMessage message="Loading consultations..." />
     </p>

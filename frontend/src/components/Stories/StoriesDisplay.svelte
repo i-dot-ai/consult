@@ -18,7 +18,7 @@
   import Fullscreen from "../svg/material/Fullscreen.svelte";
 
   import stories from "./stories.ts";
-  import { toTitleCase } from "../../global/utils.ts";
+  import { mockRoute, toTitleCase } from "../../global/utils.ts";
   import { queryClient } from "../../global/queryClient.ts";
 
   const getSelectedUrlParam = () => {
@@ -69,23 +69,7 @@
       fetchMock.removeRoutes();
 
       mocks.forEach((mock) => {
-        fetchMock.mockGlobal().route(
-          // @ts-expect-error: fetch-mock type not up to date
-          { url: mock.url, method: mock.method || "GET" },
-          () => {
-            if (mock.callback) {
-              mock.callback();
-            }
-
-            if (mock.throws) {
-              throw mock.throws;
-            }
-
-            return new Response(mock.body ? JSON.stringify(mock.body) : null, {
-              status: mock.status || 200,
-            });
-          },
-        );
+        mockRoute(mock);
       });
     } else {
       fetchMock.unmockGlobal();

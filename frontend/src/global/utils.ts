@@ -1,4 +1,6 @@
+import fetchMock from "fetch-mock";
 import { createRawSnippet } from "svelte";
+import type { Mock } from "./types";
 
 export const getEnv = (): string => {
   // Try runtime environment variable first (for server-side)
@@ -254,4 +256,24 @@ export function makeSnippet(str: string, wrapDiv: boolean | undefined = true) {
   return createRawSnippet(() => ({
     render: () => (wrapDiv ? `<div>${str}</div>` : str),
   }));
+}
+
+export function mockRoute(mock: Mock) {
+  fetchMock.mockGlobal().route(
+    // @ts-expect-error: fetch-mock type not up to date
+    { url: mock.url, method: mock.method || "GET" },
+    () => {
+      if (mock.callback) {
+        mock.callback();
+      }
+
+      if (mock.throws) {
+        throw mock.throws;
+      }
+
+      return new Response(mock.body ? JSON.stringify(mock.body) : null, {
+        status: mock.status || 200,
+      });
+    },
+  );
 }

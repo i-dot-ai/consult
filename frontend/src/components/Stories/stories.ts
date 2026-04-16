@@ -1,5 +1,7 @@
 import { type Component } from "svelte";
 
+import type { Mock } from "../../global/types";
+
 import ProgressStory from "../Progress/ProgressStory.svelte";
 import HeaderStory from "../Header/HeaderStory.svelte";
 import FooterStory from "../Footer/FooterStory.svelte";
@@ -43,14 +45,6 @@ interface StoryProp {
     label: string;
     value: unknown;
   }[];
-}
-interface Mock {
-  url: string;
-  body?: unknown;
-  status?: number;
-  method?: string;
-  throws?: Error;
-  callback?: () => void;
 }
 interface StoryConfig {
   name: string;
