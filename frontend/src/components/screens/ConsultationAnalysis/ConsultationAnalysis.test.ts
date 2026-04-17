@@ -14,13 +14,21 @@ describe("ConsultationAnalysis", () => {
     queryClient.resetQueries();
   });
 
-  it.each(questionsMock.body.results.filter(question => question.has_multiple_choice))("should render all folder options", async (question) => {
-    [consultationMock, questionsMock, demoOptionsMock].forEach((mock) => mockRoute(mock));
+  it.each(
+    questionsMock.body.results.filter(
+      (question) => question.has_multiple_choice,
+    ),
+  )("should render all folder options", async (question) => {
+    [consultationMock, questionsMock, demoOptionsMock].forEach((mock) =>
+      mockRoute(mock),
+    );
 
     render(ConsultationAnalysis, { consultationId: "test-consultation" });
 
     await waitFor(() => {
-      expect(screen.getAllByText(question.question_text).length).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(question.question_text).length,
+      ).toBeGreaterThan(0);
     });
   });
 });
