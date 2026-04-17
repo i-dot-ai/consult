@@ -1,5 +1,7 @@
 import { type Component } from "svelte";
 
+import type { Mock } from "../../global/types";
+
 import ProgressStory from "../Progress/ProgressStory.svelte";
 import HeaderStory from "../Header/HeaderStory.svelte";
 import FooterStory from "../Footer/FooterStory.svelte";
@@ -29,6 +31,8 @@ import FileVerifiedStory from "../data/FileVerified/FileVerifiedStory.svelte";
 import StepsTitleStory from "../data/StepsTitle/StepsTitleStory.svelte";
 import FileInputStory from "../inputs/FileInput/FileInputStory.svelte";
 import CreateConsultationFormStory from "../screens/CreateConsultationForm/CreateConsultationFormStory.svelte";
+import EditUserStory from "../screens/EditUserForm/EditUserStory.svelte";
+import ConsultationAnalysisStory from "../screens/ConsultationAnalysis/ConsultationAnalysisStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -41,14 +45,6 @@ interface StoryProp {
     label: string;
     value: unknown;
   }[];
-}
-interface Mock {
-  url: string;
-  body?: unknown;
-  status?: number;
-  method?: string;
-  throws?: Error;
-  callback?: () => void;
 }
 interface StoryConfig {
   name: string;
@@ -94,4 +90,6 @@ export default [
   StepsTitleStory,
   FileInputStory,
   CreateConsultationFormStory,
+  EditUserStory,
+  ConsultationAnalysisStory,
 ] as Story[];
