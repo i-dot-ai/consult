@@ -33,6 +33,7 @@ import FileInputStory from "../inputs/FileInput/FileInputStory.svelte";
 import CreateConsultationFormStory from "../screens/CreateConsultationForm/CreateConsultationFormStory.svelte";
 import EditUserStory from "../screens/EditUserForm/EditUserStory.svelte";
 import ConsultationAnalysisStory from "../screens/ConsultationAnalysis/ConsultationAnalysisStory.svelte";
+import ThemeSignOffDetailCompletedStory from "../screens/ThemeSignOffDetailCompleted/ThemeSignOffDetailCompletedStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -92,4 +93,5 @@ export default [
   CreateConsultationFormStory,
   EditUserStory,
   ConsultationAnalysisStory,
+  ThemeSignOffDetailCompletedStory,
 ] as Story[];
