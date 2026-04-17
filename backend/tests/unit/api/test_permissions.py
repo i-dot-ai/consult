@@ -145,12 +145,11 @@ class TestAPIViewPermissions:
     @pytest.mark.parametrize(
         "endpoint_name",
         [
-            "consultations-demographic-options",
-            "response-demographic-aggregations",
-            "question-theme-information",
-            "response-theme-aggregations",
+            "consultations-demographics",
+            "question-themes",
             "response-list",
             "question-detail",
+            "question-response-list",
             "respondent-detail",
         ],
     )
@@ -163,12 +162,11 @@ class TestAPIViewPermissions:
     @pytest.mark.parametrize(
         "endpoint_name",
         [
-            "consultations-demographic-options",
-            "response-demographic-aggregations",
-            "question-theme-information",
-            "response-theme-aggregations",
+            "consultations-demographics",
+            "question-themes",
             "response-list",
             "question-detail",
+            "question-response-list",
             "respondent-detail",
         ],
     )
@@ -192,12 +190,11 @@ class TestAPIViewPermissions:
         "endpoint_name",
         [
             "consultations-detail",
-            "consultations-demographic-options",
-            "response-demographic-aggregations",
-            "question-theme-information",
-            "response-theme-aggregations",
+            "consultations-demographics",
+            "question-themes",
             "response-list",
             "question-detail",
+            "question-response-list",
             "respondent-detail",
         ],
     )

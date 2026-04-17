@@ -16,9 +16,11 @@
   import Finance from "../svg/material/Finance.svelte";
 
   import {
-    getApiAnswersUrl,
     getApiConsultationUrl,
-    getApiQuestionsUrl,
+    getApiDemographicsUrl,
+    getApiQuestionResponsesUrl,
+    getApiQuestionThemesUrl,
+    getApiQuestionUrl,
     getConsultationDetailUrl,
   } from "../../global/routes.ts";
 
@@ -28,15 +30,13 @@
     TabNames,
     type AnswersResponse,
     type ConsultationResponse,
-    type DemoAggrResponse,
+    type DemoData,
     type DemoOption,
     type DemoOptionsResponse,
     type DemoOptionsResponseItem,
     type FormattedTheme,
     type Question,
-    type QuestionsResponse,
     type ResponseAnswer,
-    type ThemeAggrResponse,
     type ThemeInfoResponse,
   } from "../../global/types.ts";
   import {
@@ -47,7 +47,6 @@
   import Panel from "../dashboard/Panel/Panel.svelte";
 
   interface QueryFilters {
-    questionId: string;
     searchValue: string;
     themeFilters: string[];
     searchMode: SearchModeValues;
@@ -83,25 +82,20 @@
   let isAnswersLoading: boolean = $state(true);
 
   const consultationStore = createFetchStore<ConsultationResponse>();
-  const questionsStore = createFetchStore<QuestionsResponse>();
   const questionStore = createFetchStore<Question>();
   const answersStore = createFetchStore<AnswersResponse>();
-  const themeAggrStore = createFetchStore<ThemeAggrResponse>();
-  const themeInfoStore = createFetchStore<ThemeInfoResponse>();
-  const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
-  const demoAggrStore = createFetchStore<DemoAggrResponse>();
+  const themesStore = createFetchStore<ThemeInfoResponse>();
+  const demographicsStore = createFetchStore<DemoOptionsResponse>();
 
   onMount(() => {
-    // Load consultation and questions data once on mount
     $consultationStore.fetch(getApiConsultationUrl(consultationId));
-    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
+    $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
     dataRequested = true;
   });
 
   async function loadData() {
     isAnswersLoading = true;
-    const queryString = buildQuery({
-      questionId: questionId,
+    const filters = {
       searchValue: searchValue,
       searchMode: searchMode,
       themeFilters: themeFilters.filters,
@@ -110,30 +104,23 @@
       demoFilters: demoFilters.filters,
       flaggedOnly: flaggedOnly,
       multiAnswerFilters: multiAnswerFilters.filters,
-    });
+    };
+    const filterQs = buildQueryString(filters);
+    const responseQs = buildQueryString(filters, { includeSearch: true });
 
-    // Skip the rest of the requests if they are already requested for this filter set
+    // Only fetch aggregations on the first page (filters haven't changed for subsequent pages)
     if (currPage === 1) {
-      $themeAggrStore.fetch(
-        `/api/consultations/${consultationId}/responses/theme-aggregations/${queryString}&question_id=${questionId}`,
+      $themesStore.fetch(
+        `${getApiQuestionThemesUrl(consultationId, questionId)}${filterQs}`,
       );
-      $themeInfoStore.fetch(
-        `/api/consultations/${consultationId}/questions/${questionId}/theme-information/${queryString}`,
-      );
-      $demoOptionsStore.fetch(
-        `/api/consultations/${consultationId}/demographic-options/${queryString}`,
-      );
-      $demoAggrStore.fetch(
-        `/api/consultations/${consultationId}/responses/demographic-aggregations/${queryString}&question_id=${questionId}`,
-      );
-      $questionStore.fetch(
-        `/api/consultations/${consultationId}/questions/${questionId}/${queryString}`,
+      $demographicsStore.fetch(
+        `${getApiDemographicsUrl(consultationId)}${filterQs}${filterQs ? "&" : "?"}question_id=${questionId}`,
       );
     }
 
     // Append next page of answers to existing answers
     await $answersStore.fetch(
-      `${getApiAnswersUrl(consultationId)}${queryString}`,
+      `${getApiQuestionResponsesUrl(consultationId, questionId)}${responseQs}`,
     );
 
     if ($answersStore.data?.all_respondents) {
@@ -146,19 +133,20 @@
     currPage += 1;
   }
 
-  function buildQuery(filters: QueryFilters) {
+  function buildQueryString(
+    filters: QueryFilters,
+    { includeSearch = false }: { includeSearch?: boolean } = {},
+  ) {
+    const searchParams = {
+      searchValue: filters.searchValue,
+      searchMode: filters.searchMode,
+      page: currPage.toString(),
+      page_size: PAGE_SIZE.toString(),
+    };
+
     const params = new SvelteURLSearchParams({
-      ...(filters.questionId && {
-        question_id: filters.questionId,
-      }),
-      ...(filters.searchValue && {
-        searchValue: filters.searchValue,
-      }),
       ...(filters.themeFilters.length > 0 && {
         themeFilters: filters.themeFilters.join(","),
-      }),
-      ...(searchMode && {
-        searchMode: filters.searchMode,
       }),
       ...(filters.evidenceRich && {
         evidenceRich: JSON.stringify(filters.evidenceRich),
@@ -172,17 +160,14 @@
       ...(filters.multiAnswerFilters.length > 0 && {
         multiple_choice_answer: filters.multiAnswerFilters.join(","),
       }),
-      page: currPage.toString(),
-      page_size: PAGE_SIZE.toString(),
+      ...(filters.demoFilters.length > 0 && {
+        demographics: filters.demoFilters.join(","),
+      }),
+      ...(includeSearch && searchParams),
     });
 
-    // Add demographic filters (now just an array of IDs)
-    if (filters.demoFilters.length > 0) {
-      params.set("demographics", filters.demoFilters.join(","));
-    }
-
-    const queryString = params.toString();
-    return queryString ? `?${queryString}` : "";
+    const qs = params.toString();
+    return qs ? `?${qs}` : "";
   }
 
   function resetAnswers() {
@@ -233,31 +218,40 @@
     untrack(() => loadData());
   });
 
-  let question = $derived(
-    $questionsStore.data?.results?.find(
-      (question) => question.id === questionId,
-    ),
-  );
-
   let formattedDemoOptions = $derived.by(() => {
-    if (!$demoOptionsStore.data) {
+    if (!$demographicsStore.data) {
       return;
     }
 
     const formattedData: DemoOption = {};
     const categories = [
-      ...new Set($demoOptionsStore.data.map((data) => data.name)),
+      ...new Set($demographicsStore.data.map((data) => data.name)),
     ];
 
     for (const category of categories) {
       const categoryData: DemoOptionsResponseItem[] =
-        $demoOptionsStore.data.filter((opt) => opt.name === category);
+        $demographicsStore.data.filter((opt) => opt.name === category);
 
       formattedData[category] = categoryData
         .map((opt) => opt.value)
         .filter((value) => value !== null && value !== undefined);
     }
     return formattedData;
+  });
+
+  let demoData = $derived.by(() => {
+    if (!$demographicsStore.data) {
+      return {};
+    }
+
+    const result: DemoData = {};
+    for (const item of $demographicsStore.data) {
+      if (!result[item.name]) {
+        result[item.name] = {};
+      }
+      result[item.name][item.value] = item.count;
+    }
+    return result;
   });
 </script>
 
@@ -296,23 +290,23 @@
 
 <svelte:boundary>
   <section class="my-4">
-    {#if $consultationStore.error || $questionsStore.error}
+    {#if $consultationStore.error || $questionStore.error}
       <div class="my-2">
         <Alert>
           <span class="text-sm">
             Question Details Error: {$consultationStore.error ||
-              $questionsStore.error}
+              $questionStore.error}
           </span>
         </Alert>
       </div>
     {:else}
       <QuestionCard
         skeleton={!dataRequested ||
-          $questionsStore.isLoading ||
+          $questionStore.isLoading ||
           $consultationStore.isLoading}
         clickable={false}
         consultationId={$consultationStore.data?.id || ""}
-        question={question || {}}
+        question={$questionStore.data || {}}
         hideIcon={true}
         horizontal={true}
       />
@@ -356,24 +350,17 @@
             $questionStore.isLoading ||
             $questionStore.data?.has_free_text,
         )}
-        themes={Object.keys($themeAggrStore.data?.theme_aggregations || {}).map(
-          (themeId) => {
-            return {
-              id: themeId,
-              count: $themeAggrStore.data?.theme_aggregations[themeId],
-              highlighted: themeFilters.filters.includes(themeId),
-              handleClick: () => themeFilters.update(themeId),
-              ...$themeInfoStore.data?.themes?.find(
-                (themeInfo) => themeInfo?.id === themeId,
-              ),
-            };
-          },
-        ) as FormattedTheme[]}
-        themesLoading={!dataRequested || $themeAggrStore.isLoading}
-        totalAnswers={question?.total_responses || 0}
-        demoData={$demoAggrStore.data?.demographic_aggregations || {}}
+        themes={($themesStore.data?.themes || []).map((theme) => ({
+          ...theme,
+          highlighted: themeFilters.filters.includes(theme.id),
+          handleClick: () => themeFilters.update(theme.id),
+        })) as FormattedTheme[]}
+        themesLoading={!dataRequested || $themesStore.isLoading}
+        filtersLoading={!dataRequested || $demographicsStore.isLoading}
+        totalAnswers={$questionStore.data?.total_responses || 0}
+        {demoData}
         demoOptions={formattedDemoOptions || {}}
-        demoOptionsData={$demoOptionsStore.data || undefined}
+        demoOptionsData={$demographicsStore.data || undefined}
         multiChoice={$questionStore.data?.multiple_choice_answer?.filter(
           (item) => Boolean(item.text),
         ) || []}
@@ -385,7 +372,7 @@
     {:else if activeTab === TabNames.ResponseAnalysis}
       <ResponseAnalysis
         consultationId={$consultationStore.data?.id}
-        questionId={question?.id}
+        questionId={$questionStore.data?.id}
         pageSize={PAGE_SIZE}
         {answers}
         {isAnswersLoading}
@@ -402,15 +389,15 @@
         {searchMode}
         setSearchMode={(newSearchMode: SearchModeValues) =>
           (searchMode = newSearchMode)}
-        demoData={$demoAggrStore.data?.demographic_aggregations}
+        {demoData}
         demoOptions={formattedDemoOptions || {}}
-        demoOptionsData={$demoOptionsStore.data || undefined}
-        themes={$themeInfoStore.data?.themes}
+        demoOptionsData={$demographicsStore.data || undefined}
+        themes={$themesStore.data?.themes}
         {evidenceRich}
         {setEvidenceRich}
         unseenResponses={unseenResponsesOnly}
         {setUnseenResponses}
-        isThemesLoading={!dataRequested || $themeAggrStore.isLoading}
+        isFiltersLoading={!dataRequested || $demographicsStore.isLoading}
         {flaggedOnly}
         setFlaggedOnly={(newValue: boolean) => (flaggedOnly = newValue)}
         anyFilterApplied={anyFilterApplied()}

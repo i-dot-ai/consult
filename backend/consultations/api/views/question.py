@@ -1,4 +1,5 @@
-from django.db.models import Count, Prefetch
+from django.db.models import Count, OuterRef, Prefetch, Q, Subquery, Value
+from django.db.models.functions import Coalesce
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -6,12 +7,13 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultations import models
+from consultations.api.filters import get_filtered_responses
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
 from consultations.api.serializers import (
     QuestionSerializer,
-    ThemeInformationSerializer,
+    QuestionThemeSerializer,
 )
 
 
@@ -35,38 +37,95 @@ class QuestionViewSet(ModelViewSet):
         if not self.request.user.is_staff:
             queryset = queryset.filter(consultation__users=self.request.user)
 
-        # Prefetch multi-choice answers with response counts and annotate total_responses
+        # Total responses per question (correlated subquery to avoid full-table JOIN)
+        question_response_count = Subquery(
+            models.Response.objects.filter(question_id=OuterRef("pk"))
+            .order_by()
+            .values("question_id")
+            .annotate(c=Count("*"))
+            .values("c")
+        )
+        queryset = queryset.annotate(
+            prefetched_total_responses=Coalesce(question_response_count, Value(0)),
+        )
+
+        # Response count per multi-choice answer (correlated subquery to avoid full-table JOIN)
+        multichoice_response_count = Subquery(
+            models.Response.chosen_options.through.objects.filter(
+                multichoiceanswer_id=OuterRef("pk")
+            )
+            .order_by()
+            .values("multichoiceanswer_id")
+            .annotate(c=Count("*"))
+            .values("c")
+        )
         queryset = queryset.prefetch_related(
             Prefetch(
                 "multichoiceanswer_set",
                 queryset=models.MultiChoiceAnswer.objects.annotate(
-                    prefetched_response_count=Count("response")
+                    prefetched_response_count=Coalesce(multichoice_response_count, Value(0))
                 ),
             )
-        ).annotate(prefetched_total_responses=Count("response"))
+        )
+
+        # Reviewed responses per question (only when explicitly requested)
+        if "proportion_of_audited_answers" in self.request.query_params.get("include", ""):
+            reviewed_response_count = Subquery(
+                models.Response.objects.filter(
+                    question_id=OuterRef("pk"),
+                    free_text__isnull=False,
+                    free_text__gt="",
+                    annotation__human_reviewed=True,
+                )
+                .order_by()
+                .values("question_id")
+                .annotate(c=Count("*"))
+                .values("c")
+            )
+            queryset = queryset.annotate(
+                prefetched_reviewed_responses=Coalesce(reviewed_response_count, Value(0)),
+            )
 
         return queryset.order_by("number")
 
     @action(
         detail=True,
         methods=["get"],
-        url_path="theme-information",
+        url_path="themes",
         permission_classes=[IsAuthenticated, CanSeeConsultation],
     )
-    def theme_information(self, request, pk=None, consultation_pk=None):
-        """Get all theme information for a question"""
-        # Get the question object with consultation in one query
+    def themes(self, request, pk=None, consultation_pk=None):
+        """Get themes for a question with response counts."""
         question = self.get_object()
 
-        # Get all themes for this question
-        themes = models.SelectedTheme.objects.filter(question=question).values(
-            "id", "name", "description"
-        )
+        themes = models.SelectedTheme.objects.filter(question=question)
 
-        serializer = ThemeInformationSerializer(data={"themes": list(themes)})
-        serializer.is_valid()
+        filter_params = [
+            "themeFilters",
+            "demographics",
+            "evidenceRich",
+            "unseenResponsesOnly",
+            "is_flagged",
+            "multiple_choice_answer",
+        ]
+        has_filters = any(request.query_params.get(p) for p in filter_params)
 
-        return Response(serializer.data)
+        if has_filters:
+            filtered_responses = get_filtered_responses(
+                request.query_params, consultation_pk, question_id=pk
+            )
+            themes = themes.annotate(
+                count=Count(
+                    "responseannotation",
+                    filter=Q(responseannotation__response__in=filtered_responses),
+                    distinct=True,
+                )
+            )
+        else:
+            themes = themes.annotate(count=Count("responseannotation", distinct=True))
+
+        serializer = QuestionThemeSerializer(themes, many=True)
+        return Response({"themes": serializer.data})
 
     @action(
         detail=True,

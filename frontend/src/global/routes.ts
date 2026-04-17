@@ -89,7 +89,7 @@ export const getQuestionDetailUrl = (
   return urlJoin(
     Routes.Consultations,
     consultationId,
-    Suffixes.Responses,
+    Suffixes.Questions,
     questionId,
   );
 };
@@ -131,13 +131,50 @@ export const getApiAnswersUrl = (consultationId: string) => {
     "/",
   );
 };
-export const getApiQuestionsUrl = (consultationId: string) => {
+export const getApiQuestionThemesUrl = (
+  consultationId: string,
+  questionId: string,
+) => {
   return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.Themes,
+    "/",
+  );
+};
+export const getApiDemographicsUrl = (consultationId: string) => {
+  return urlJoin(Routes.ApiConsultations, consultationId, "demographics", "/");
+};
+export const getApiQuestionResponsesUrl = (
+  consultationId: string,
+  questionId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.Responses,
+    "/",
+  );
+};
+export const getApiQuestionsUrl = (
+  consultationId: string,
+  options?: { include?: string },
+) => {
+  const base = urlJoin(
     Routes.ApiConsultations,
     consultationId,
     Suffixes.Questions,
     "/",
   );
+  if (options?.include) {
+    const params = new URLSearchParams({ include: options.include });
+    return `${base}?${params.toString()}`;
+  }
+  return base;
 };
 export const getApiQuestionUrl = (
   consultationId: string,

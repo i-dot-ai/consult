@@ -5,7 +5,7 @@ import Section from "../../../../components/Section/Section.svelte";
 import QuestionDetail from "../../../../components/screens/QuestionDetail.svelte";
 import type { AstroGlobalRuntime } from "../../../../global/types";
 
-const { consultationId, responseId } = (Astro as unknown as AstroGlobalRuntime)
+const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
   .params;
 ---
 
@@ -14,7 +14,7 @@ const { consultationId, responseId } = (Astro as unknown as AstroGlobalRuntime)
     <QuestionDetail
       client:load
       consultationId={consultationId || ""}
-      questionId={responseId || ""}
+      questionId={questionId || ""}
     />
   </Section>
 </Layout>

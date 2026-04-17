@@ -15,12 +15,11 @@ JSON_SCHEMA_URL_NAMES = ["raw_schema"]
 
 # API endpoints return 403 instead of 404 for unauthenticated users
 API_URL_NAMES = [
-    "consultations-demographic-options",
-    "response-demographic-aggregations",
-    "question-theme-information",
-    "response-theme-aggregations",
+    "consultations-demographics",
+    "question-themes",
     "response-list",
     "question-detail",
+    "question-response-list",
 ]
 
 URL_NAMES_TO_EXCLUDE = AUTHENTICATION_URL_NAMES + JSON_SCHEMA_URL_NAMES + API_URL_NAMES

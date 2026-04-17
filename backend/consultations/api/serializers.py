@@ -67,11 +67,17 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     multiple_choice_answer = MultiChoiceAnswerSerializer(
         many=True, source="multichoiceanswer_set", read_only=True
     )
-    proportion_of_audited_answers = serializers.ReadOnlyField()
+    proportion_of_audited_answers = serializers.SerializerMethodField()
     total_responses = serializers.SerializerMethodField()
 
     def get_total_responses(self, obj) -> int:
         return obj.prefetched_total_responses
+
+    def get_proportion_of_audited_answers(self, obj) -> float:
+        if not obj.has_free_text or not obj.total_responses:
+            return 0
+        reviewed = getattr(obj, "prefetched_reviewed_responses", 0) or 0
+        return reviewed / obj.total_responses
 
     class Meta:
         model = Question
@@ -121,6 +127,17 @@ class ThemeInformationSerializer(serializers.Serializer):
 class ResponseThemeInformationSerializer(serializers.Serializer):
     selected_themes = ThemeSerializer(many=True)
     all_themes = ThemeSerializer(many=True)
+
+
+class QuestionThemeSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField()
+    name = serializers.CharField()
+    description = serializers.CharField()
+    count = serializers.IntegerField()
+
+    class Meta:
+        model = SelectedTheme
+        fields = ["id", "name", "description", "count"]
 
 
 class ThemeAggregationsSerializer(serializers.Serializer):

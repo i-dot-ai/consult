@@ -2,7 +2,8 @@ from typing import Any
 
 import sentry_sdk
 from django.conf import settings
-from django.db.models import Count
+from django.db.models import Count, Exists, OuterRef, Subquery, Value
+from django.db.models.functions import Coalesce
 from django.http import Http404
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -13,6 +14,7 @@ from rest_framework.viewsets import ModelViewSet
 import data_pipeline.batch as batch
 import data_pipeline.s3 as s3
 from authentication.models import User
+from consultations.api.filters import get_filtered_responses
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
@@ -26,6 +28,9 @@ from consultations.models import (
     Consultation,
     DemographicOption,
     SelectedTheme,
+)
+from consultations.models import (
+    Response as ConsultationResponse,
 )
 from data_pipeline import jobs
 from data_pipeline.sync.candidate_themes import export_candidate_themes_to_s3
@@ -77,20 +82,58 @@ class ConsultationViewSet(ModelViewSet):
     @action(
         detail=True,
         methods=["get"],
-        url_path="demographic-options",
+        url_path="demographics",
         permission_classes=[IsAuthenticated, CanSeeConsultation | IsAdminUser],
     )
-    def demographic_options(self, request, pk=None):
+    def demographics(self, request, pk=None):
+        """
+        Demographic options with counts, optionally filtered by question/theme/etc.
+        """
         self.get_object()
 
-        data = (
-            (
-                DemographicOption.objects.filter(consultation_id=pk).annotate(
-                    count=Count("respondent")
+        options = DemographicOption.objects.filter(consultation_id=pk)
+
+        filter_params = [
+            "themeFilters",
+            "demographics",
+            "evidenceRich",
+            "unseenResponsesOnly",
+            "is_flagged",
+            "multiple_choice_answer",
+            "searchValue",
+        ]
+        question_id = request.query_params.get("question_id")
+        has_filters = any(request.query_params.get(p) for p in filter_params)
+
+        if has_filters:
+            filtered_responses = get_filtered_responses(request.query_params, pk)
+            options = options.filter(
+                Exists(filtered_responses.filter(respondent=OuterRef("respondent")))
+            ).annotate(count=Count("respondent", distinct=True))
+        elif question_id:
+            # Scope counts to respondents who answered this question
+            respondent_demographics_table = DemographicOption.respondent_set.through
+            options = options.annotate(
+                count=Coalesce(
+                    Subquery(
+                        respondent_demographics_table.objects.filter(
+                            demographicoption_id=OuterRef("pk"),
+                            respondent_id__in=ConsultationResponse.objects.filter(
+                                question_id=question_id
+                            ).values("respondent_id"),
+                        )
+                        .values("demographicoption_id")
+                        .annotate(c=Count("respondent_id", distinct=True))
+                        .values("c")
+                    ),
+                    Value(0),
                 )
             )
-            .values("id", "field_name", "field_value", "count")
-            .order_by("field_name", "field_value")
+        else:
+            options = options.annotate(count=Count("respondent"))
+
+        data = options.values("id", "field_name", "field_value", "count").order_by(
+            "field_name", "field_value"
         )
 
         serializer = DemographicOptionSerializer(instance=data, many=True)

@@ -93,7 +93,7 @@
     $consultationStore.fetch(getApiConsultationUrl(consultationId));
     $questionsStore.fetch(getApiQuestionsUrl(consultationId));
     $demoOptionsStore.fetch(
-      `/api/consultations/${consultationId}/demographic-options/`,
+      `/api/consultations/${consultationId}/demographics/`,
     );
     dataRequested = true;
   });
