@@ -262,9 +262,9 @@ export function mockRoute(mock: Mock) {
   fetchMock.mockGlobal().route(
     // @ts-expect-error: fetch-mock type not up to date
     { url: mock.url, method: mock.method || "GET" },
-    () => {
+    (...args) => {
       if (mock.callback) {
-        mock.callback();
+        mock.callback(...args);
       }
 
       if (mock.throws) {
