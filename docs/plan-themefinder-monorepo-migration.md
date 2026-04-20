@@ -193,6 +193,16 @@ Core migration (Phases 1-3) verified locally:
 | `docker build -f pipeline-sign-off/Dockerfile .` | Pass |
 | `docker build -f pipeline-mapping/Dockerfile .` | Pass |
 
+## Re-verification Results (2026-04-20)
+
+Re-verified after removing redundant requirements.txt files from pipeline Dockerfiles and fixing `NVM_DIR` in Makefile:
+
+| Check | Result |
+|---|---|
+| `make serve` | Pass |
+| `make test-themefinder` | Pass (82/82) |
+| `make test-backend` | Pass (346 passed, 9 skipped) |
+
 Commits on `feat/themefinder-monorepo`:
 1. `bb011ba0` docs: add themefinder monorepo migration plan
 2. `267d7109` feat: copy themefinder repo into consult/themefinder/
