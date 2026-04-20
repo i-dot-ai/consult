@@ -62,34 +62,34 @@ The migration is split into 3 PRs. Phases 1-3 must land together because the Doc
 
 #### Phase 1: Copy and wire up the workspace
 
-- [ ] Copy themefinder repo contents into `consult/themefinder/` (exclude `.git/`, `.github/`)
-- [ ] Create root `consult/pyproject.toml` with uv workspace config:
+- [x] Copy themefinder repo contents into `consult/themefinder/` (exclude `.git/`, `.github/`)
+- [x] Create root `consult/pyproject.toml` with uv workspace config:
   ```toml
   [tool.uv.workspace]
   members = ["backend", "themefinder"]
   ```
-- [ ] Update `backend/pyproject.toml` — add workspace source for themefinder:
+- [x] Update `backend/pyproject.toml` — add workspace source for themefinder:
   ```toml
   [tool.uv.sources]
   themefinder = { workspace = true }
   ```
-- [ ] Delete `backend/uv.lock` (workspace uses root-level lockfile)
-- [ ] Run `uv lock` from repo root to generate new `consult/uv.lock`
-- [ ] Verify: `uv sync` succeeds
-- [ ] Verify: `uv run python -c "from themefinder.models import ThemeNode; print('ok')"` works
-- [ ] Verify: `make test-backend` passes
+- [x] Delete `backend/uv.lock` (workspace uses root-level lockfile)
+- [x] Run `uv lock` from repo root to generate new `consult/uv.lock`
+- [x] Verify: `uv sync` succeeds
+- [x] Verify: `uv run python -c "from themefinder.models import ThemeNode; print('ok')"` works
+- [x] Verify: `make test-backend` passes
 
 #### Phase 2: Update pipeline Dockerfiles
 
-- [ ] Remove `themefinder>=0.8.2` from `pipeline-sign-off/requirements.txt`
-- [ ] Remove `themefinder>=0.8.2` from `pipeline-mapping/requirements.txt`
-- [ ] Update `pipeline-sign-off/Dockerfile` to copy and install local themefinder:
+- [x] Remove `themefinder>=0.8.2` from `pipeline-sign-off/requirements.txt`
+- [x] Remove `themefinder>=0.8.2` from `pipeline-mapping/requirements.txt`
+- [x] Update `pipeline-sign-off/Dockerfile` to copy and install local themefinder:
   ```dockerfile
   COPY themefinder/ ./themefinder/
   RUN pip install --no-cache-dir ./themefinder
   ```
-- [ ] Update `pipeline-mapping/Dockerfile` — same pattern
-- [ ] Update `backend/Dockerfile` uv-packages stage to include workspace root + themefinder:
+- [x] Update `pipeline-mapping/Dockerfile` — same pattern
+- [x] Update `backend/Dockerfile` uv-packages stage to include workspace root + themefinder:
   ```dockerfile
   WORKDIR /src
   COPY pyproject.toml uv.lock ./
@@ -100,19 +100,19 @@ The migration is split into 3 PRs. Phases 1-3 must land together because the Doc
   ENV UV_PROJECT_ENVIRONMENT=venv
   RUN uv sync --frozen --no-install-project
   ```
-- [ ] Add to `.dockerignore`: `themefinder/evals/`, `themefinder/docs/`, `themefinder/tests/` (not needed in production images)
-- [ ] Verify: `docker build -f pipeline-sign-off/Dockerfile .` succeeds
-- [ ] Verify: `docker build -f pipeline-mapping/Dockerfile .` succeeds
-- [ ] Verify: `docker build -f backend/Dockerfile .` succeeds
+- [x] Add to `.dockerignore`: `themefinder/evals/`, `themefinder/docs/`, `themefinder/tests/` (not needed in production images)
+- [x] Verify: `docker build -f pipeline-sign-off/Dockerfile .` succeeds
+- [x] Verify: `docker build -f pipeline-mapping/Dockerfile .` succeeds
+- [x] Verify: `docker build -f backend/Dockerfile .` succeeds
 
 #### Phase 3: Update Makefile and local dev
 
-- [ ] Update `make install` to run `uv sync` from workspace root (not `cd backend && uv sync`)
-- [ ] Add `make test-themefinder` target: `cd themefinder && uv run pytest tests/ -v`
-- [ ] Add `make test-all` target combining backend, frontend, and themefinder tests
-- [ ] Add `make run-evals` target: `cd themefinder/evals && uv run python benchmark.py --quick`
-- [ ] Verify: `make serve` starts successfully
-- [ ] Verify: `make test-themefinder` passes
+- [x] Update `make install` to run `uv sync` from workspace root (not `cd backend && uv sync`)
+- [x] Add `make test-themefinder` target: `cd themefinder && uv run pytest tests/ -v`
+- [x] Add `make test-all` target combining backend, frontend, and themefinder tests
+- [x] Add `make run-evals` target: `cd themefinder/evals && uv run python benchmark.py --quick`
+- [x] Verify: `make serve` starts successfully
+- [x] Verify: `make test-themefinder` passes
 - [ ] Verify: full app works at localhost:3000
 
 ### PR 2: CI Migration
