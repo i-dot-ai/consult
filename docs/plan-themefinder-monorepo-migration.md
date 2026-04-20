@@ -113,7 +113,7 @@ The migration is split into 3 PRs. Phases 1-3 must land together because the Doc
 - [x] Add `make run-evals` target: `cd themefinder/evals && uv run python benchmark.py --quick`
 - [x] Verify: `make serve` starts successfully
 - [x] Verify: `make test-themefinder` passes
-- [ ] Verify: full app works at localhost:3000
+- [x] Verify: full app works at localhost:3000
 
 ### PR 2: CI Migration
 
