@@ -13,13 +13,14 @@
 
   export interface Props {
     variant?: "primary" | "secondary" | "warning";
-    title: string;
-    confirmText: string;
+    title?: string;
+    confirmText?: string;
     canCancel?: boolean;
+    canConfirm?: boolean;
     icon?: Component;
     open?: boolean;
-    setOpen: (newValue: boolean) => void;
-    handleConfirm: MouseEventHandler<HTMLElement>;
+    setOpen?: (newValue: boolean) => void;
+    handleConfirm?: MouseEventHandler<HTMLElement>;
     children?: Snippet;
   }
 
@@ -29,6 +30,7 @@
     open = false,
     confirmText = "Confirm",
     canCancel = true,
+    canConfirm = true,
     icon,
     setOpen = () => {},
     handleConfirm = () => {},
@@ -121,13 +123,15 @@
           </div>
         {/if}
 
-        <Button
-          size="sm"
-          variant={variant === "secondary" ? "approve" : "primary"}
-          handleClick={handleConfirm as () => void}
-        >
-          {confirmText}
-        </Button>
+        {#if canConfirm}
+          <Button
+            size="sm"
+            variant={variant === "secondary" ? "approve" : "primary"}
+            handleClick={handleConfirm as () => void}
+          >
+            {confirmText}
+          </Button>
+        {/if}
       </footer>
     </div>
   </div>

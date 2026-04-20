@@ -27,228 +27,297 @@ exports[`StepOneBPage > should match snapshot 1`] = `
     phase with much stronger context.
     </p>
      
-    <div
-      class="border border-secondary p-4 rounded-lg"
-    >
-      <!---->
-      <h3
-        class="text-neutral-700 text-md"
-        style=""
-      >
-        <!---->
-        <!---->
-        <span
-          class="block text-sm font-[500] mt-2 mb-4"
-        >
-          What other departments have found:
-        </span>
-        
-        
-        
-      </h3>
-      
-      <!---->
-       
+    <div>
       <div
-        class="bg-neutral-100 px-4 pt-6 pb-8 rounded-lg"
-        id="learnings-component"
+        class="border border-secondary p-4 rounded-lg"
       >
         <div
-          class="flex gap-4"
+          class="flex gap-2 justify-between items-center"
+        >
+          <!---->
+          <h3
+            class="text-neutral-700 text-md"
+            style=""
+          >
+            <!---->
+            <!---->
+            <span
+              class="block text-sm font-[500] mt-2 mb-4"
+            >
+              What other departments have found:
+            </span>
+            
+            
+            
+          </h3>
+          
+          <!---->
+           
+          <div
+            class="-mt-1"
+          >
+            <!---->
+            <button
+              aria-label="close-learnings-panel"
+              aria-pressed="false"
+              class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              data-variant="ghost"
+              role="button"
+              tabindex="0"
+            >
+              <!---->
+              <!---->
+              <svg
+                class="fill-neutral-500"
+                height="1rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
+                />
+                <!---->
+              </svg>
+              
+              
+              
+            </button>
+            
+            <!---->
+          </div>
+        </div>
+         
+        <div
+          class="bg-neutral-100 px-4 pt-6 pb-8 rounded-lg"
+          id="learnings-component"
         >
           <div
-            class="flex items-center justify-center flex-col mb-auto py-2 px-4 font-bold text-xs text-neutral-700 bg-white border-2 border-neutral-500"
+            class="flex gap-4"
           >
-            <svg
-              class="fill-neutral-700"
-              height="1.5rem"
-              role="img"
-              viewBox="0 -960 960 960"
-              width="1.5rem"
-              xmlns="http://www.w3.org/2000/svg"
+            <div
+              class="flex items-center justify-center flex-col mb-auto py-2 px-4 font-bold text-xs text-neutral-700 bg-white border-2 border-neutral-500"
             >
+              <div
+                class="w-16 min-h-16 flex items-center justify-center"
+              >
+                <img
+                  alt="Department for Education icon"
+                  class="block w-full"
+                  src="images/dfe_logo.svg"
+                />
+              </div>
               <!---->
-              <path
-                d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"
-              />
+            </div>
+             
+            <div>
+              <p
+                class="text-sm text-neutral-600 mb-2"
+              >
+                "Taking time to prepare our data correctly at the start saved us hours during the analysis phase. We were able to jump straight into insights rather than troubleshooting data issues."
+              </p>
+               
+              <!---->
+              <h4
+                class="text-neutral-700 text-sm"
+                style=""
+              >
+                <!---->
+                <!---->
+                <span
+                  class="font-[500] text-xs"
+                >
+                  Senior Policy Analyst
+                </span>
+                
+                
+                
+              </h4>
               
               <!---->
-            </svg>
+               
+              <p
+                class="text-xs text-neutral-600"
+              >
+                Department for Education
+              </p>
+            </div>
             <!---->
-             DfE
+          </div>
+        </div>
+         
+        <div
+          class="grid-cols-3 gap-4 md:grid"
+        >
+          <div
+            class="invisible shrink-0"
+          />
+           
+          <div
+            class="flex justify-center items-center gap-1 flex-wrap p-2 mt-2 shrink-0"
+          >
+            <div
+              class="flex my-auto rotate-180"
+            >
+              <!---->
+              <button
+                aria-controls="learnings-component"
+                aria-label="Previous Learning"
+                aria-pressed="false"
+                class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                data-variant="default"
+                role="button"
+                tabindex="0"
+                title="Previous Learning"
+              >
+                <!---->
+                <!---->
+                <svg
+                  class="neutral-500"
+                  height="1rem"
+                  role="img"
+                  viewBox="0 -960 960 960"
+                  width="1rem"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                    xmlns="http://www.w3.org/2000/svg"
+                  />
+                  <!---->
+                </svg>
+                
+                
+                
+              </button>
+              
+              <!---->
+            </div>
+             
+            <!---->
+            <button
+              aria-controls="learnings-component"
+              aria-label="Learning 1"
+              aria-pressed="true"
+              class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary text-secondary svelte-1d0mdzt"
+              data-testid="Learnings Button"
+              data-variant="dot"
+              role="button"
+              tabindex="0"
+              title="Learning 1"
+            >
+              <!---->
+              •
+              
+              
+            </button>
+            
+            <!---->
+            <button
+              aria-controls="learnings-component"
+              aria-label="Learning 2"
+              aria-pressed="false"
+              class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
+              data-testid="Learnings Button"
+              data-variant="dot"
+              role="button"
+              tabindex="0"
+              title="Learning 2"
+            >
+              <!---->
+              •
+              
+              
+            </button>
+            
+            <!---->
+            <button
+              aria-controls="learnings-component"
+              aria-label="Learning 3"
+              aria-pressed="false"
+              class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
+              data-testid="Learnings Button"
+              data-variant="dot"
+              role="button"
+              tabindex="0"
+              title="Learning 3"
+            >
+              <!---->
+              •
+              
+              
+            </button>
+            
+            <!---->
+             
+            <div
+              class="flex my-auto"
+            >
+              <!---->
+              <button
+                aria-controls="learnings-component"
+                aria-label="Next Learning"
+                aria-pressed="false"
+                class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                data-variant="default"
+                role="button"
+                tabindex="0"
+                title="Next Learning"
+              >
+                <!---->
+                <!---->
+                <svg
+                  class="neutral-500"
+                  height="1rem"
+                  role="img"
+                  viewBox="0 -960 960 960"
+                  width="1rem"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                    xmlns="http://www.w3.org/2000/svg"
+                  />
+                  <!---->
+                </svg>
+                
+                
+                
+              </button>
+              
+              <!---->
+            </div>
           </div>
            
-          <div>
-            <p
-              class="text-sm text-neutral-600 mb-2"
-            >
-              "Taking time to prepare our data correctly at the start saved us hours during the analysis phase. We were able to jump straight into insights rather than troubleshooting data issues."
-            </p>
-             
+          <div
+            class="m-auto mt-4 flex justify-center md:block"
+          >
             <!---->
-            <h4
-              class="text-neutral-700 text-sm"
-              style=""
+            <button
+              aria-pressed="false"
+              class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              data-variant="ghost"
+              role="button"
+              tabindex="0"
             >
               <!---->
               <!---->
-              <span
-                class="font-[500] text-xs"
+              <div
+                class="underline text-xs text-neutral-500"
               >
-                Senior Policy Analyst
-              </span>
+                Don't show me this again
+              </div>
               
               
               
-            </h4>
+            </button>
             
             <!---->
-             
-            <p
-              class="text-xs text-neutral-600"
-            >
-              Department for Education
-            </p>
           </div>
-          <!---->
         </div>
       </div>
-       
-      <div
-        class="flex justify-center items-center gap-1 flex-wrap p-2 mt-2"
-      >
-        <div
-          class="flex my-auto rotate-180"
-        >
-          <!---->
-          <button
-            aria-controls="learnings-component"
-            aria-label="Previous Learning"
-            aria-pressed="false"
-            class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-            data-variant="default"
-            role="button"
-            tabindex="0"
-            title="Previous Learning"
-          >
-            <!---->
-            <!---->
-            <svg
-              class="neutral-500"
-              height="1rem"
-              role="img"
-              viewBox="0 -960 960 960"
-              width="1rem"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
-                xmlns="http://www.w3.org/2000/svg"
-              />
-              <!---->
-            </svg>
-            
-            
-            
-          </button>
-          
-          <!---->
-        </div>
-         
-        <!---->
-        <button
-          aria-controls="learnings-component"
-          aria-label="Learning 1"
-          aria-pressed="true"
-          class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary text-secondary svelte-1d0mdzt"
-          data-testid="Learnings Button"
-          data-variant="dot"
-          role="button"
-          tabindex="0"
-          title="Learning 1"
-        >
-          <!---->
-          •
-          
-          
-        </button>
-        
-        <!---->
-        <button
-          aria-controls="learnings-component"
-          aria-label="Learning 2"
-          aria-pressed="false"
-          class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
-          data-testid="Learnings Button"
-          data-variant="dot"
-          role="button"
-          tabindex="0"
-          title="Learning 2"
-        >
-          <!---->
-          •
-          
-          
-        </button>
-        
-        <!---->
-        <button
-          aria-controls="learnings-component"
-          aria-label="Learning 3"
-          aria-pressed="false"
-          class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
-          data-testid="Learnings Button"
-          data-variant="dot"
-          role="button"
-          tabindex="0"
-          title="Learning 3"
-        >
-          <!---->
-          •
-          
-          
-        </button>
-        
-        <!---->
-         
-        <div
-          class="flex my-auto"
-        >
-          <!---->
-          <button
-            aria-controls="learnings-component"
-            aria-label="Next Learning"
-            aria-pressed="false"
-            class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-            data-variant="default"
-            role="button"
-            tabindex="0"
-            title="Next Learning"
-          >
-            <!---->
-            <!---->
-            <svg
-              class="neutral-500"
-              height="1rem"
-              role="img"
-              viewBox="0 -960 960 960"
-              width="1rem"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
-                xmlns="http://www.w3.org/2000/svg"
-              />
-              <!---->
-            </svg>
-            
-            
-            
-          </button>
-          
-          <!---->
-        </div>
-      </div>
+      <!---->
     </div>
     <!---->
   </section>
@@ -291,9 +360,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <div
               class="bg-neutral-100 text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
-              <div
-                class="mb-5"
-              >
+              <div>
                 <!---->
                  
                 <!---->
@@ -314,54 +381,60 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
               <!---->
                
-              <div>
-                <label
-                  class="hover:cursor-pointer"
-                  for="checklist-aa"
+              <div
+                class="w-full"
+              >
+                <div
+                  class="flex justify-between gap-4 w-full"
                 >
+                  <label
+                    class="hover:cursor-pointer"
+                    for="checklist-aa"
+                  >
+                    <!---->
+                    <h4
+                      class="text-neutral-700 text-sm"
+                      style=""
+                    >
+                      <!---->
+                      <!---->
+                      <span
+                        class="block mb-1"
+                      >
+                        First row contains your question text, not a response
+                      </span>
+                      
+                      
+                      
+                    </h4>
+                    
+                    <!---->
+                  </label>
+                   
                   <!---->
-                  <h4
-                    class="text-neutral-700 text-sm"
-                    style=""
+                  <button
+                    aria-controls="aa-details"
+                    aria-label="Show/Hide aa-details"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="ghost"
+                    role="button"
+                    tabindex="0"
                   >
                     <!---->
                     <!---->
                     <span
-                      class="block mb-1"
+                      class="-ml-2 text-nowrap text-secondary hover:underline"
                     >
-                      First row contains your question text, not a response
+                      Show me an example
                     </span>
                     
                     
                     
-                  </h4>
+                  </button>
                   
                   <!---->
-                </label>
-                 
-                <!---->
-                <button
-                  aria-controls="aa-details"
-                  aria-label="Show/Hide aa-details"
-                  aria-pressed="false"
-                  class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                  data-variant="ghost"
-                  role="button"
-                  tabindex="0"
-                >
-                  <!---->
-                  <!---->
-                  <span
-                    class="-ml-2 text-secondary hover:underline"
-                  >
-                    Show me an example
-                  </span>
-                  
-                  
-                  
-                </button>
-                
-                <!---->
+                </div>
                  
                 <!---->
               </div>
@@ -369,9 +442,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <div
               class="bg-neutral-100 text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
-              <div
-                class="mb-5"
-              >
+              <div>
                 <!---->
                  
                 <!---->
@@ -392,54 +463,60 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
               <!---->
                
-              <div>
-                <label
-                  class="hover:cursor-pointer"
-                  for="checklist-ab"
+              <div
+                class="w-full"
+              >
+                <div
+                  class="flex justify-between gap-4 w-full"
                 >
+                  <label
+                    class="hover:cursor-pointer"
+                    for="checklist-ab"
+                  >
+                    <!---->
+                    <h4
+                      class="text-neutral-700 text-sm"
+                      style=""
+                    >
+                      <!---->
+                      <!---->
+                      <span
+                        class="block mb-1"
+                      >
+                        Each row represents one respondent's full submission
+                      </span>
+                      
+                      
+                      
+                    </h4>
+                    
+                    <!---->
+                  </label>
+                   
                   <!---->
-                  <h4
-                    class="text-neutral-700 text-sm"
-                    style=""
+                  <button
+                    aria-controls="ab-details"
+                    aria-label="Show/Hide ab-details"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="ghost"
+                    role="button"
+                    tabindex="0"
                   >
                     <!---->
                     <!---->
                     <span
-                      class="block mb-1"
+                      class="-ml-2 text-nowrap text-secondary hover:underline"
                     >
-                      Each row represents one respondent's full submission
+                      Show me an example
                     </span>
                     
                     
                     
-                  </h4>
+                  </button>
                   
                   <!---->
-                </label>
-                 
-                <!---->
-                <button
-                  aria-controls="ab-details"
-                  aria-label="Show/Hide ab-details"
-                  aria-pressed="false"
-                  class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                  data-variant="ghost"
-                  role="button"
-                  tabindex="0"
-                >
-                  <!---->
-                  <!---->
-                  <span
-                    class="-ml-2 text-secondary hover:underline"
-                  >
-                    Show me an example
-                  </span>
-                  
-                  
-                  
-                </button>
-                
-                <!---->
+                </div>
                  
                 <!---->
               </div>
@@ -447,9 +524,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <div
               class="bg-neutral-100 text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
-              <div
-                class="mb-5"
-              >
+              <div>
                 <!---->
                  
                 <!---->
@@ -470,54 +545,60 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
               <!---->
                
-              <div>
-                <label
-                  class="hover:cursor-pointer"
-                  for="checklist-ac"
+              <div
+                class="w-full"
+              >
+                <div
+                  class="flex justify-between gap-4 w-full"
                 >
+                  <label
+                    class="hover:cursor-pointer"
+                    for="checklist-ac"
+                  >
+                    <!---->
+                    <h4
+                      class="text-neutral-700 text-sm"
+                      style=""
+                    >
+                      <!---->
+                      <!---->
+                      <span
+                        class="block mb-1"
+                      >
+                        Remove empty rows and columns
+                      </span>
+                      
+                      
+                      
+                    </h4>
+                    
+                    <!---->
+                  </label>
+                   
                   <!---->
-                  <h4
-                    class="text-neutral-700 text-sm"
-                    style=""
+                  <button
+                    aria-controls="ac-details"
+                    aria-label="Show/Hide ac-details"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="ghost"
+                    role="button"
+                    tabindex="0"
                   >
                     <!---->
                     <!---->
                     <span
-                      class="block mb-1"
+                      class="-ml-2 text-nowrap text-secondary hover:underline"
                     >
-                      Remove empty rows and columns
+                      Show me an example
                     </span>
                     
                     
                     
-                  </h4>
+                  </button>
                   
                   <!---->
-                </label>
-                 
-                <!---->
-                <button
-                  aria-controls="ac-details"
-                  aria-label="Show/Hide ac-details"
-                  aria-pressed="false"
-                  class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                  data-variant="ghost"
-                  role="button"
-                  tabindex="0"
-                >
-                  <!---->
-                  <!---->
-                  <span
-                    class="-ml-2 text-secondary hover:underline"
-                  >
-                    Show me an example
-                  </span>
-                  
-                  
-                  
-                </button>
-                
-                <!---->
+                </div>
                  
                 <!---->
               </div>
@@ -525,9 +606,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <div
               class="bg-neutral-100 text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
-              <div
-                class="mb-5"
-              >
+              <div>
                 <!---->
                  
                 <!---->
@@ -548,54 +627,60 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
               <!---->
                
-              <div>
-                <label
-                  class="hover:cursor-pointer"
-                  for="checklist-ad"
+              <div
+                class="w-full"
+              >
+                <div
+                  class="flex justify-between gap-4 w-full"
                 >
+                  <label
+                    class="hover:cursor-pointer"
+                    for="checklist-ad"
+                  >
+                    <!---->
+                    <h4
+                      class="text-neutral-700 text-sm"
+                      style=""
+                    >
+                      <!---->
+                      <!---->
+                      <span
+                        class="block mb-1"
+                      >
+                        Each cell contains a single value only — no merged cells
+                      </span>
+                      
+                      
+                      
+                    </h4>
+                    
+                    <!---->
+                  </label>
+                   
                   <!---->
-                  <h4
-                    class="text-neutral-700 text-sm"
-                    style=""
+                  <button
+                    aria-controls="ad-details"
+                    aria-label="Show/Hide ad-details"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="ghost"
+                    role="button"
+                    tabindex="0"
                   >
                     <!---->
                     <!---->
                     <span
-                      class="block mb-1"
+                      class="-ml-2 text-nowrap text-secondary hover:underline"
                     >
-                      Each cell contains a single value only — no merged cells
+                      Show me an example
                     </span>
                     
                     
                     
-                  </h4>
+                  </button>
                   
                   <!---->
-                </label>
-                 
-                <!---->
-                <button
-                  aria-controls="ad-details"
-                  aria-label="Show/Hide ad-details"
-                  aria-pressed="false"
-                  class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                  data-variant="ghost"
-                  role="button"
-                  tabindex="0"
-                >
-                  <!---->
-                  <!---->
-                  <span
-                    class="-ml-2 text-secondary hover:underline"
-                  >
-                    Show me an example
-                  </span>
-                  
-                  
-                  
-                </button>
-                
-                <!---->
+                </div>
                  
                 <!---->
               </div>
@@ -603,9 +688,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <div
               class="bg-neutral-100 text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
-              <div
-                class="mb-5"
-              >
+              <div>
                 <!---->
                  
                 <!---->
@@ -626,54 +709,60 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
               <!---->
                
-              <div>
-                <label
-                  class="hover:cursor-pointer"
-                  for="checklist-ae"
+              <div
+                class="w-full"
+              >
+                <div
+                  class="flex justify-between gap-4 w-full"
                 >
+                  <label
+                    class="hover:cursor-pointer"
+                    for="checklist-ae"
+                  >
+                    <!---->
+                    <h4
+                      class="text-neutral-700 text-sm"
+                      style=""
+                    >
+                      <!---->
+                      <!---->
+                      <span
+                        class="block mb-1"
+                      >
+                        Remove cell colours, highlights, and text formatting
+                      </span>
+                      
+                      
+                      
+                    </h4>
+                    
+                    <!---->
+                  </label>
+                   
                   <!---->
-                  <h4
-                    class="text-neutral-700 text-sm"
-                    style=""
+                  <button
+                    aria-controls="ae-details"
+                    aria-label="Show/Hide ae-details"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="ghost"
+                    role="button"
+                    tabindex="0"
                   >
                     <!---->
                     <!---->
                     <span
-                      class="block mb-1"
+                      class="-ml-2 text-nowrap text-secondary hover:underline"
                     >
-                      Remove cell colours, highlights, and text formatting
+                      Show me an example
                     </span>
                     
                     
                     
-                  </h4>
+                  </button>
                   
                   <!---->
-                </label>
-                 
-                <!---->
-                <button
-                  aria-controls="ae-details"
-                  aria-label="Show/Hide ae-details"
-                  aria-pressed="false"
-                  class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                  data-variant="ghost"
-                  role="button"
-                  tabindex="0"
-                >
-                  <!---->
-                  <!---->
-                  <span
-                    class="-ml-2 text-secondary hover:underline"
-                  >
-                    Show me an example
-                  </span>
-                  
-                  
-                  
-                </button>
-                
-                <!---->
+                </div>
                  
                 <!---->
               </div>
@@ -681,9 +770,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <div
               class="bg-neutral-100 text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
-              <div
-                class="mb-5"
-              >
+              <div>
                 <!---->
                  
                 <!---->
@@ -704,54 +791,60 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
               <!---->
                
-              <div>
-                <label
-                  class="hover:cursor-pointer"
-                  for="checklist-af"
+              <div
+                class="w-full"
+              >
+                <div
+                  class="flex justify-between gap-4 w-full"
                 >
+                  <label
+                    class="hover:cursor-pointer"
+                    for="checklist-af"
+                  >
+                    <!---->
+                    <h4
+                      class="text-neutral-700 text-sm"
+                      style=""
+                    >
+                      <!---->
+                      <!---->
+                      <span
+                        class="block mb-1"
+                      >
+                        Remove any Excel formulas — cells should contain raw text only
+                      </span>
+                      
+                      
+                      
+                    </h4>
+                    
+                    <!---->
+                  </label>
+                   
                   <!---->
-                  <h4
-                    class="text-neutral-700 text-sm"
-                    style=""
+                  <button
+                    aria-controls="af-details"
+                    aria-label="Show/Hide af-details"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="ghost"
+                    role="button"
+                    tabindex="0"
                   >
                     <!---->
                     <!---->
                     <span
-                      class="block mb-1"
+                      class="-ml-2 text-nowrap text-secondary hover:underline"
                     >
-                      Remove any Excel formulas — cells should contain raw text only
+                      Show me an example
                     </span>
                     
                     
                     
-                  </h4>
+                  </button>
                   
                   <!---->
-                </label>
-                 
-                <!---->
-                <button
-                  aria-controls="af-details"
-                  aria-label="Show/Hide af-details"
-                  aria-pressed="false"
-                  class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                  data-variant="ghost"
-                  role="button"
-                  tabindex="0"
-                >
-                  <!---->
-                  <!---->
-                  <span
-                    class="-ml-2 text-secondary hover:underline"
-                  >
-                    Show me an example
-                  </span>
-                  
-                  
-                  
-                </button>
-                
-                <!---->
+                </div>
                  
                 <!---->
               </div>
@@ -759,9 +852,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <div
               class="bg-neutral-100 text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
-              <div
-                class="mb-5"
-              >
+              <div>
                 <!---->
                  
                 <!---->
@@ -782,54 +873,60 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
               <!---->
                
-              <div>
-                <label
-                  class="hover:cursor-pointer"
-                  for="checklist-ag"
+              <div
+                class="w-full"
+              >
+                <div
+                  class="flex justify-between gap-4 w-full"
                 >
+                  <label
+                    class="hover:cursor-pointer"
+                    for="checklist-ag"
+                  >
+                    <!---->
+                    <h4
+                      class="text-neutral-700 text-sm"
+                      style=""
+                    >
+                      <!---->
+                      <!---->
+                      <span
+                        class="block mb-1"
+                      >
+                        Check formatting is consistent throughout the file (ie dates or free text responses that should be categories)
+                      </span>
+                      
+                      
+                      
+                    </h4>
+                    
+                    <!---->
+                  </label>
+                   
                   <!---->
-                  <h4
-                    class="text-neutral-700 text-sm"
-                    style=""
+                  <button
+                    aria-controls="ag-details"
+                    aria-label="Show/Hide ag-details"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="ghost"
+                    role="button"
+                    tabindex="0"
                   >
                     <!---->
                     <!---->
                     <span
-                      class="block mb-1"
+                      class="-ml-2 text-nowrap text-secondary hover:underline"
                     >
-                      Check formatting is consistent throughout the file (ie dates or free text responses that should be categories)
+                      Show me an example
                     </span>
                     
                     
                     
-                  </h4>
+                  </button>
                   
                   <!---->
-                </label>
-                 
-                <!---->
-                <button
-                  aria-controls="ag-details"
-                  aria-label="Show/Hide ag-details"
-                  aria-pressed="false"
-                  class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                  data-variant="ghost"
-                  role="button"
-                  tabindex="0"
-                >
-                  <!---->
-                  <!---->
-                  <span
-                    class="-ml-2 text-secondary hover:underline"
-                  >
-                    Show me an example
-                  </span>
-                  
-                  
-                  
-                </button>
-                
-                <!---->
+                </div>
                  
                 <!---->
               </div>
@@ -871,9 +968,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <div
               class="bg-neutral-100 text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
-              <div
-                class="mb-5"
-              >
+              <div>
                 <!---->
                  
                 <!---->
@@ -894,54 +989,60 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
               <!---->
                
-              <div>
-                <label
-                  class="hover:cursor-pointer"
-                  for="checklist-ba"
+              <div
+                class="w-full"
+              >
+                <div
+                  class="flex justify-between gap-4 w-full"
                 >
+                  <label
+                    class="hover:cursor-pointer"
+                    for="checklist-ba"
+                  >
+                    <!---->
+                    <h4
+                      class="text-neutral-700 text-sm"
+                      style=""
+                    >
+                      <!---->
+                      <!---->
+                      <span
+                        class="block mb-1"
+                      >
+                        Questions are worded consistently across all rows
+                      </span>
+                      
+                      
+                      
+                    </h4>
+                    
+                    <!---->
+                  </label>
+                   
                   <!---->
-                  <h4
-                    class="text-neutral-700 text-sm"
-                    style=""
+                  <button
+                    aria-controls="ba-details"
+                    aria-label="Show/Hide ba-details"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="ghost"
+                    role="button"
+                    tabindex="0"
                   >
                     <!---->
                     <!---->
                     <span
-                      class="block mb-1"
+                      class="-ml-2 text-nowrap text-secondary hover:underline"
                     >
-                      Questions are worded consistently across all rows
+                      Show me an example
                     </span>
                     
                     
                     
-                  </h4>
+                  </button>
                   
                   <!---->
-                </label>
-                 
-                <!---->
-                <button
-                  aria-controls="ba-details"
-                  aria-label="Show/Hide ba-details"
-                  aria-pressed="false"
-                  class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                  data-variant="ghost"
-                  role="button"
-                  tabindex="0"
-                >
-                  <!---->
-                  <!---->
-                  <span
-                    class="-ml-2 text-secondary hover:underline"
-                  >
-                    Show me an example
-                  </span>
-                  
-                  
-                  
-                </button>
-                
-                <!---->
+                </div>
                  
                 <!---->
               </div>
@@ -949,9 +1050,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <div
               class="bg-neutral-100 text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
-              <div
-                class="mb-5"
-              >
+              <div>
                 <!---->
                  
                 <!---->
@@ -972,54 +1071,60 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
               <!---->
                
-              <div>
-                <label
-                  class="hover:cursor-pointer"
-                  for="checklist-bb"
+              <div
+                class="w-full"
+              >
+                <div
+                  class="flex justify-between gap-4 w-full"
                 >
+                  <label
+                    class="hover:cursor-pointer"
+                    for="checklist-bb"
+                  >
+                    <!---->
+                    <h4
+                      class="text-neutral-700 text-sm"
+                      style=""
+                    >
+                      <!---->
+                      <!---->
+                      <span
+                        class="block mb-1"
+                      >
+                        All personally identifiable information has been anonymised or removed — names, email addresses, postcodes, phone numbers
+                      </span>
+                      
+                      
+                      
+                    </h4>
+                    
+                    <!---->
+                  </label>
+                   
                   <!---->
-                  <h4
-                    class="text-neutral-700 text-sm"
-                    style=""
+                  <button
+                    aria-controls="bb-details"
+                    aria-label="Show/Hide bb-details"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="ghost"
+                    role="button"
+                    tabindex="0"
                   >
                     <!---->
                     <!---->
                     <span
-                      class="block mb-1"
+                      class="-ml-2 text-nowrap text-secondary hover:underline"
                     >
-                      All personally identifiable information has been anonymised or removed — names, email addresses, postcodes, phone numbers
+                      Show me an example
                     </span>
                     
                     
                     
-                  </h4>
+                  </button>
                   
                   <!---->
-                </label>
-                 
-                <!---->
-                <button
-                  aria-controls="bb-details"
-                  aria-label="Show/Hide bb-details"
-                  aria-pressed="false"
-                  class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                  data-variant="ghost"
-                  role="button"
-                  tabindex="0"
-                >
-                  <!---->
-                  <!---->
-                  <span
-                    class="-ml-2 text-secondary hover:underline"
-                  >
-                    Show me an example
-                  </span>
-                  
-                  
-                  
-                </button>
-                
-                <!---->
+                </div>
                  
                 <!---->
               </div>
@@ -1027,9 +1132,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <div
               class="bg-neutral-100 text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
-              <div
-                class="mb-5"
-              >
+              <div>
                 <!---->
                  
                 <!---->
@@ -1050,54 +1153,60 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
               <!---->
                
-              <div>
-                <label
-                  class="hover:cursor-pointer"
-                  for="checklist-bc"
+              <div
+                class="w-full"
+              >
+                <div
+                  class="flex justify-between gap-4 w-full"
                 >
+                  <label
+                    class="hover:cursor-pointer"
+                    for="checklist-bc"
+                  >
+                    <!---->
+                    <h4
+                      class="text-neutral-700 text-sm"
+                      style=""
+                    >
+                      <!---->
+                      <!---->
+                      <span
+                        class="block mb-1"
+                      >
+                        Add in from any other sources to create one data set (ie email submissions). Ensure columns map to the same questions
+                      </span>
+                      
+                      
+                      
+                    </h4>
+                    
+                    <!---->
+                  </label>
+                   
                   <!---->
-                  <h4
-                    class="text-neutral-700 text-sm"
-                    style=""
+                  <button
+                    aria-controls="bc-details"
+                    aria-label="Show/Hide bc-details"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="ghost"
+                    role="button"
+                    tabindex="0"
                   >
                     <!---->
                     <!---->
                     <span
-                      class="block mb-1"
+                      class="-ml-2 text-nowrap text-secondary hover:underline"
                     >
-                      Add in from any other sources to create one data set (ie email submissions). Ensure columns map to the same questions
+                      Show me an example
                     </span>
                     
                     
                     
-                  </h4>
+                  </button>
                   
                   <!---->
-                </label>
-                 
-                <!---->
-                <button
-                  aria-controls="bc-details"
-                  aria-label="Show/Hide bc-details"
-                  aria-pressed="false"
-                  class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                  data-variant="ghost"
-                  role="button"
-                  tabindex="0"
-                >
-                  <!---->
-                  <!---->
-                  <span
-                    class="-ml-2 text-secondary hover:underline"
-                  >
-                    Show me an example
-                  </span>
-                  
-                  
-                  
-                </button>
-                
-                <!---->
+                </div>
                  
                 <!---->
               </div>
@@ -1206,6 +1315,8 @@ exports[`StepOneBPage > should match snapshot 1`] = `
       <!---->
     </div>
   </section>
+   
+  <!---->
   
 </div>
 `;
