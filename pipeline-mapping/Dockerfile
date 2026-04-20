@@ -5,9 +5,6 @@ WORKDIR /app
 COPY themefinder/ ./themefinder/
 RUN pip install --no-cache-dir ./themefinder
 
-COPY pipeline-mapping/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
 COPY pipeline-mapping/assign_themes_script.py .
 
 # Add non-root user and group

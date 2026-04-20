@@ -1,1 +1,0 @@
-# themefinder is installed from local source in Dockerfile
