@@ -200,3 +200,34 @@ lambda/**/redis/
 lambda/**/__pycache__/
 
 .claude/
+
+# Themefinder files
+
+
+MANIFEST
+
+# Generated when getting test coverage
+.coverage
+
+# Ignore mkdocs site
+themefinder/site/
+
+# GCP service account credentials
+themefinder/*.json
+!themefinder/package.json
+!themefinder/package-lock.json
+!themefinder/tsconfig.json
+
+# Synthetic datasets (generated locally, not committed)
+# Keep gambling_XS as reference dataset
+themefinder/evals/data/*
+!themefinder/evals/data/gambling_XS/
+!themefinder/evals/data/generation/
+!themefinder/evals/data/condensation/
+
+# Benchmark outputs (generated locally)
+themefinder/evals/benchmark_*.log
+themefinder/evals/benchmark_results/
+themefinder/evals/benchmark_report_*.html
+
+themefinder/consultations/
