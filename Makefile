@@ -1,4 +1,5 @@
 -include .env
+NVM_DIR ?= $(HOME)/.nvm
 export AWS_ACCOUNT_ID
 export AWS_REGION
 export ECR_REPO_NAME
