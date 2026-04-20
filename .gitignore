@@ -203,12 +203,6 @@ lambda/**/__pycache__/
 
 # Themefinder files
 
-
-MANIFEST
-
-# Generated when getting test coverage
-.coverage
-
 # Ignore mkdocs site
 themefinder/site/
 
