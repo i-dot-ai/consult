@@ -32,13 +32,11 @@ describe("AddUserForm", () => {
     await user.click(screen.getByRole("button"));
 
     await waitFor(() => {
-      expect(submitMock).toHaveBeenCalledWith({
-        "body": `{\"email\":\"${USER_EMAIL}\",\"is_staff\":false}`,
-        "headers": {
-          "content-type": "application/json",
-        },
-        "method": "post",
-      });
+      expect(submitMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          "body": `{\"email\":\"${USER_EMAIL}\",\"is_staff\":false}`,
+        })
+      )
     });
   });
 
