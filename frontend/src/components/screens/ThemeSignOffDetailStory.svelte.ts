@@ -1,6 +1,6 @@
 import { SvelteDate } from "svelte/reactivity";
 
-import ThemeSignOffDetail from "./ThemeSignOffDetail.svelte";
+import ThemeSignOffDetail from "./ThemeSignOffDetail/ThemeSignOffDetail.svelte";
 
 const consultationId = $state("");
 const questionId = $state("");

@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { fade, slide } from "svelte/transition";
 
-  import { createFetchStore, type MockFetch } from "../../global/stores";
+  import { createFetchStore, type MockFetch } from "../../../global/stores";
   import {
     getApiConfirmSignOffUrl,
     getApiGetGeneratedThemesUrl,
@@ -13,41 +13,41 @@
     getApiSelectGeneratedThemeUrl,
     getApiUpdateSelectedThemeUrl,
     getThemeSignOffUrl,
-  } from "../../global/routes";
+  } from "../../../global/routes";
 
   import {
     type GeneratedThemesResponse,
     type Question,
     type GeneratedTheme,
     type SelectedTheme,
-  } from "../../global/types";
+  } from "../../../global/types";
 
-  import Panel from "../dashboard/Panel/Panel.svelte";
-  import TitleRow from "../dashboard/TitleRow.svelte";
-  import Button from "../inputs/Button/Button.svelte";
-  import MaterialIcon from "../MaterialIcon.svelte";
-  import Price from "../svg/material/Price.svelte";
-  import ThemeForm from "../theme-sign-off/ThemeForm/ThemeForm.svelte";
-  import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
-  import SelectedThemeCard from "../theme-sign-off/SelectedThemeCard/SelectedThemeCard.svelte";
-  import GeneratedThemeCard from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCard.svelte";
-  import CheckCircle from "../svg/material/CheckCircle.svelte";
-  import OnboardingTour from "../OnboardingTour/OnboardingTour.svelte";
-  import SmartToy from "../svg/material/SmartToy.svelte";
-  import Stacks from "../svg/material/Stacks.svelte";
-  import Tag from "../Tag/Tag.svelte";
-  import Modal from "../Modal/Modal.svelte";
-  import Alert from "../Alert.svelte";
-  import Target from "../svg/material/Target.svelte";
-  import EditSquare from "../svg/material/EditSquare.svelte";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import TitleRow from "../../dashboard/TitleRow.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import Price from "../../svg/material/Price.svelte";
+  import ThemeForm from "../../theme-sign-off/ThemeForm/ThemeForm.svelte";
+  import QuestionCard from "../../dashboard/QuestionCard/QuestionCard.svelte";
+  import SelectedThemeCard from "../../theme-sign-off/SelectedThemeCard/SelectedThemeCard.svelte";
+  import GeneratedThemeCard from "../../theme-sign-off/GeneratedThemeCard/GeneratedThemeCard.svelte";
+  import CheckCircle from "../../svg/material/CheckCircle.svelte";
+  import OnboardingTour from "../../OnboardingTour/OnboardingTour.svelte";
+  import SmartToy from "../../svg/material/SmartToy.svelte";
+  import Stacks from "../../svg/material/Stacks.svelte";
+  import Tag from "../../Tag/Tag.svelte";
+  import Modal from "../../Modal/Modal.svelte";
+  import Alert from "../../Alert.svelte";
+  import Target from "../../svg/material/Target.svelte";
+  import EditSquare from "../../svg/material/EditSquare.svelte";
   import ErrorModal, {
     type ErrorType,
-  } from "../theme-sign-off/ErrorModal/ErrorModal.svelte";
+  } from "../../theme-sign-off/ErrorModal/ErrorModal.svelte";
   import {
     buildSelectedThemeCreateQuery,
     buildSelectedThemeDeleteQuery,
     buildSelectedThemesGetQuery,
-  } from "../../global/queries/selectedThemes/queries";
+  } from "../../../global/queries/selectedThemes/queries";
 
   interface Props {
     consultationId: string;
