@@ -307,9 +307,10 @@ export type HttpMethod =
 
 export interface Mock {
   url: string | RegExp;
+  regexp?: string;
   body?: unknown;
   status?: number;
   method?: string;
   throws?: Error;
-  callback?: (args: RequestInit) => void;
+  callback?: (args: RequestInit | { url: string, params: unknown }) => void;
 }
