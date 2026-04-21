@@ -1,3 +1,5 @@
+export const CONSULTATION_ID = "test-consultation";
+
 const DEMO_OPTIONS_URL = /\/api\/consultations\/.*\/demographic-options\//;
 const QUESTIONS_URL = /\/api\/consultations\/.*\/questions\//;
 
