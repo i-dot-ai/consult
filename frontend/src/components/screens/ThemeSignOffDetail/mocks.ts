@@ -97,7 +97,7 @@ let candidateThemes: Theme[] = [
   }
 ];
 
-function flatten(themes: Theme[]) {
+export function flatten(themes: Theme[]) {
   return themes.reduce((acc: Theme[], curr: Theme) => {
     acc.push(curr);
 

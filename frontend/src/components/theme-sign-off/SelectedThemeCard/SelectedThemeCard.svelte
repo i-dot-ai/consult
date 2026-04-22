@@ -50,7 +50,7 @@
   };
 </script>
 
-<article class="rounded-lg bg-white" data-themeid={theme.id}>
+<article class="rounded-lg bg-white" data-testid="selected-theme-card" data-themeid={theme.id}>
   {#if editing}
     <div in:fade>
       <ThemeForm

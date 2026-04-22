@@ -306,7 +306,7 @@ export type HttpMethod =
   | "OPTIONS";
 
 export interface Mock {
-  url: string | RegExp;
+  url?: string | RegExp;
   regexp?: string;
   body?: unknown;
   status?: number;
