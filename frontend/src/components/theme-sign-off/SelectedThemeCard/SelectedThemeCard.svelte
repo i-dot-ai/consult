@@ -92,7 +92,7 @@
             </small>
 
             <footer class="flex flex-wrap items-center gap-2">
-              <Button size="sm" handleClick={() => (editing = !editing)}>
+              <Button size="sm" handleClick={() => (editing = !editing)} testId="selected-theme-edit-button">
                 <MaterialIcon color="fill-neutral-500">
                   <EditSquare />
                 </MaterialIcon>

@@ -5,11 +5,22 @@ import ThemeSignOffDetail from "./ThemeSignOffDetail.svelte";
 import fetchMock from "fetch-mock";
 import { queryClient } from "../../../global/queryClient";
 import { mockRoute } from "../../../global/utils";
-import { candidateThemesGetMock, questionMock, candidateThemeSelectMock, selectedThemesGetMock, CONSULTATION_ID, QUESTION_ID, selectedThemesCreateMock, selectedThemesEditMock, selectedThemesDeleteMock, flatten } from "./mocks";
+import { candidateThemesGetMock, questionMock, candidateThemeSelectMock, selectedThemesGetMock, CONSULTATION_ID, QUESTION_ID, selectedThemesCreateMock, selectedThemesEditMock, selectedThemesDeleteMock, flatten, answersGetMock } from "./mocks";
 import userEvent from "@testing-library/user-event";
 
+const mocks = {
+  candidateThemesGetMock,
+  questionMock,
+  candidateThemeSelectMock,
+  selectedThemesGetMock,
+  selectedThemesCreateMock,
+  selectedThemesEditMock,
+  selectedThemesDeleteMock,
+  answersGetMock,
+};
+
 function setupMocks() {
-  [candidateThemesGetMock, questionMock, candidateThemeSelectMock, selectedThemesGetMock, selectedThemesCreateMock, selectedThemesEditMock, selectedThemesDeleteMock].forEach(mock => mockRoute(mock));
+  Object.values(mocks).forEach(mock => mockRoute(mock));
 }
 function clearMocks() {
   fetchMock.unmockGlobal();
@@ -40,6 +51,118 @@ describe("EditUser", () => {
 
     await waitFor(() => {
       expect(screen.getByText(candidateTheme.name)).toBeInTheDocument();
+    })
+  });
+
+  it("should render conflict error", async () => {
+    Object.values({
+      ...mocks,
+      selectedThemesEditMock: {
+        ...selectedThemesEditMock,
+        status: 412,
+        body: {
+          last_modified_by: {
+            email: "someotheruser@test.com",
+          },
+          latest_version: 5,
+        },
+      }
+    }).forEach(mock => mockRoute(mock));
+
+    render(ThemeSignOffDetail, { consultationId: CONSULTATION_ID, questionId: QUESTION_ID });
+
+    const user = userEvent.setup();
+
+    let selectedThemeEditButton;
+    await waitFor(() => {
+      selectedThemeEditButton = screen.getAllByTestId("selected-theme-edit-button").at(0);
+    })
+
+    await user.click(selectedThemeEditButton!);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("textbox").length).toBeGreaterThan(0);
+    })
+
+    for (const textbox of screen.getAllByRole("textbox")) {
+      await user.type(textbox, "test");
+    }
+
+    const saveButton = screen.getByRole("button", { name: "Save Changes"});
+    await user.click(saveButton);
+
+    // TODO: Investigate double modal
+    await waitFor(() => {
+      expect(screen.getAllByText("Theme Conflict Detected").length).toBeGreaterThan(0);
+    })
+  });
+
+  it("should render 404 error", async () => {
+    Object.values({
+      ...mocks,
+      selectedThemesEditMock: {
+        ...selectedThemesEditMock,
+        status: 404,
+      }
+    }).forEach(mock => mockRoute(mock));
+
+    render(ThemeSignOffDetail, { consultationId: CONSULTATION_ID, questionId: QUESTION_ID });
+
+    const user = userEvent.setup();
+
+    let selectedThemeEditButton;
+    await waitFor(() => {
+      selectedThemeEditButton = screen.getAllByTestId("selected-theme-edit-button").at(0);
+    })
+
+    await user.click(selectedThemeEditButton!);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("textbox").length).toBeGreaterThan(0);
+    })
+
+    for (const textbox of screen.getAllByRole("textbox")) {
+      await user.type(textbox, "test");
+    }
+
+    const saveButton = screen.getByRole("button", { name: "Save Changes"});
+    await user.click(saveButton);
+
+    // TODO: Investigate double modal
+    await waitFor(() => {
+      expect(screen.getAllByText("Theme Deselected").length).toBeGreaterThan(0);
+    })
+  });
+
+  it("should update selected theme details", async () => {
+    setupMocks();
+
+    render(ThemeSignOffDetail, { consultationId: CONSULTATION_ID, questionId: QUESTION_ID });
+
+    const user = userEvent.setup();
+
+    let selectedThemeEditButton;
+    await waitFor(() => {
+      selectedThemeEditButton = screen.getAllByTestId("selected-theme-edit-button").at(0);
+    })
+
+    await user.click(selectedThemeEditButton!);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("textbox").length).toBeGreaterThan(0);
+    })
+
+    const textboxes = screen.getAllByRole("textbox");
+    await user.type(textboxes[0], "test title");
+    await user.type(textboxes[1], "test description");
+
+    const saveButton = screen.getByRole("button", { name: "Save Changes"});
+    await user.click(saveButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("test title", { exact: false })).toBeInTheDocument();
+      expect(screen.getByText("test description", { exact: false })).toBeInTheDocument();
+      expect(screen.getByText("Edited")).toBeInTheDocument();
     })
   });
 

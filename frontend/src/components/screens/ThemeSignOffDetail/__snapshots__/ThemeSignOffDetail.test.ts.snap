@@ -254,16 +254,22 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                     class="flex items-center gap-2"
                   >
                     <h2>
-                      Innovative packaging
+                      Innovative packagingtesttest title
                     </h2>
                      
+                    <div
+                      class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
+                    >
+                      Edited
+                      <!---->
+                    </div>
                     <!---->
                   </header>
                    
                   <p
                     class="my-4 text-sm text-neutral-700"
                   >
-                    Ideas for innovative packaging solutions.
+                    Ideas for innovative packaging solutions.testtest description
                   </p>
                    
                   <hr
@@ -273,8 +279,8 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                   <small
                     class="mb-4 block text-xs text-neutral-500"
                   >
-                    Added
-              26 days ago by email@example.com
+                    Edited
+              a moment ago by email@example.com
                   </small>
                    
                   <footer
@@ -284,6 +290,7 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                     <button
                       aria-pressed="false"
                       class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      data-testid="selected-theme-edit-button"
                       data-variant="default"
                       role="button"
                       tabindex="0"

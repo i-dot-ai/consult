@@ -82,5 +82,22 @@ export default {
       ],
       props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
     },
+    {
+      name: "Edit Theme Conflict 404 Error",
+      mocks: [
+        questionMock,
+        selectedThemesGetMock,
+        candidateThemesGetMock,
+        candidateThemeSelectMock,
+        selectedThemesCreateMock,
+        {
+          ...selectedThemesEditMock,
+          status: 404,
+        },
+        selectedThemesDeleteMock,
+        answersGetMock,
+      ],
+      props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
+    },
   ],
 };
