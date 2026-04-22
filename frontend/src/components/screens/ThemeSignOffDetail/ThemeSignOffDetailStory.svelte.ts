@@ -1,5 +1,5 @@
 import ThemeSignOffDetail from "./ThemeSignOffDetail.svelte";
-import { candidateThemesGetMock, questionMock, candidateThemeSelectMock, selectedThemesGetMock, CONSULTATION_ID, QUESTION_ID, selectedThemesCreateMock, selectedThemesEditMock } from "./mocks";
+import { candidateThemesGetMock, questionMock, candidateThemeSelectMock, selectedThemesGetMock, CONSULTATION_ID, QUESTION_ID, selectedThemesCreateMock, selectedThemesEditMock, selectedThemesDeleteMock } from "./mocks";
 
 const consultationId = $state("test-consultation");
 const questionId = $state("test-question");
@@ -15,6 +15,7 @@ export default {
     candidateThemeSelectMock,
     selectedThemesCreateMock,
     selectedThemesEditMock,
+    selectedThemesDeleteMock,
   ],
   props: [
     { name: "consultationId", value: consultationId, type: "text" },
@@ -34,6 +35,7 @@ export default {
         },
         selectedThemesCreateMock,
         selectedThemesEditMock,
+        selectedThemesDeleteMock,
       ],
       props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
     },
@@ -50,6 +52,29 @@ export default {
         },
         selectedThemesCreateMock,
         selectedThemesEditMock,
+        selectedThemesDeleteMock,
+      ],
+      props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
+    },
+    {
+      name: "Edit Theme Conflict Version Error",
+      mocks: [
+        questionMock,
+        selectedThemesGetMock,
+        candidateThemesGetMock,
+        candidateThemeSelectMock,
+        selectedThemesCreateMock,
+        {
+          ...selectedThemesEditMock,
+          status: 412,
+          body: {
+            last_modified_by: {
+              email: "someotheruser@test.com",
+            },
+            latest_version: 5,
+          },
+        },
+        selectedThemesDeleteMock,
       ],
       props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
     },

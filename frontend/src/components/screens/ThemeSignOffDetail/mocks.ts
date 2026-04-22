@@ -128,10 +128,10 @@ function selectTheme(themeId: string) {
   };
 
   selectedThemes = [...selectedThemes, newSelectedTheme!];
-  candidateThemes = updateCandidateThemeSelectedId(candidateThemes, themeId, newSelectedThemeId);
+  candidateThemes = updateSelectedThemeId(candidateThemes, themeId, newSelectedThemeId);
 }
 
-function updateCandidateThemeSelectedId(themes: Theme[], themeId: string, newSelectedThemeId: string) {
+function updateSelectedThemeId(themes: Theme[], themeId: string, newSelectedThemeId: string | null) {
   return themes.map((theme): Theme => {
     const updatedTheme = theme.id === themeId
       ? { ...theme, selectedtheme_id: newSelectedThemeId }
@@ -140,7 +140,7 @@ function updateCandidateThemeSelectedId(themes: Theme[], themeId: string, newSel
     if (updatedTheme.children && Array.isArray(updatedTheme.children)) {
       return {
         ...updatedTheme,
-        children: updateCandidateThemeSelectedId(updatedTheme.children, themeId, newSelectedThemeId)
+        children: updateSelectedThemeId(updatedTheme.children, themeId, newSelectedThemeId)
       }
     }
 
@@ -222,6 +222,22 @@ export const selectedThemesEditMock = {
     selectedTheme!.modified_at = new Date().toISOString();
 
     return selectedTheme;
+  }
+}
+
+export const selectedThemesDeleteMock = {
+  regexp: "*host" + getApiGetSelectedThemeUrl(CONSULTATION_ID, QUESTION_ID, ":themeId"),
+  method: "DELETE",
+  body: (
+    { body, params }: { body: string, params: { themeId: string } },
+  ) => {
+    const themeId = params.themeId;
+
+    selectedThemes = selectedThemes.filter(theme => theme.id !== themeId);
+
+    const flatCandidateThemes = flatten(candidateThemes);
+    const candidateThemeId = flatCandidateThemes.find(theme => theme.selectedtheme_id === themeId)?.id;
+    candidateThemes = updateSelectedThemeId(candidateThemes, candidateThemeId!, null);
   }
 }
 
