@@ -1,4 +1,4 @@
-import { getApiGetGeneratedThemesUrl, getApiGetSelectedThemesUrl, getApiQuestionUrl } from "../../../global/routes";
+import { getApiGetGeneratedThemesUrl, getApiGetSelectedThemesUrl, getApiGetSelectedThemeUrl, getApiQuestionUrl } from "../../../global/routes";
 
 interface Theme {
   id: string;
@@ -116,7 +116,7 @@ function getCandidateTheme(themeId: string) {
 
 function selectTheme(themeId: string) {
   const candidateTheme = getCandidateTheme(themeId);
-  const newSelectedThemeId = (Math.random() + 1).toString(36).substring(7);
+  const newSelectedThemeId = getRandomString();
 
   const newSelectedTheme = {
     "id": newSelectedThemeId,
@@ -184,6 +184,47 @@ export const selectedThemesGetMock = {
   }),
 };
 
+export const selectedThemesCreateMock = {
+  url: getApiGetSelectedThemesUrl(CONSULTATION_ID, QUESTION_ID),
+  method: "POST",
+  body: (options: { body: string }) => {
+    const data = JSON.parse(options.body);
+
+    const newSelectedTheme = {
+      "id": getRandomString(),
+      "name": data.name,
+      "description": data.description,
+      "version": 1,
+      "modified_at": new Date().toISOString(),
+      "last_modified_by": "email@example.com",
+    };
+
+    selectedThemes = [...selectedThemes, newSelectedTheme];
+
+    return newSelectedTheme;
+  }
+}
+
+export const selectedThemesEditMock = {
+  regexp: "*host" + getApiGetSelectedThemeUrl(CONSULTATION_ID, QUESTION_ID, ":themeId"),
+  method: "PATCH",
+  body: (
+    { body, params }: { body: string, params: { themeId: string } },
+  ) => {
+    const data = JSON.parse(body);
+    const themeId = params.themeId;
+
+    const selectedTheme = selectedThemes.find(theme => theme.id === themeId);
+
+    selectedTheme!.name = data.name;
+    selectedTheme!.description = data.description;
+    selectedTheme!.version = selectedTheme!.version! + 1;
+    selectedTheme!.modified_at = new Date().toISOString();
+
+    return selectedTheme;
+  }
+}
+
 export const candidateThemesGetMock = {
   url: getApiGetGeneratedThemesUrl(CONSULTATION_ID, QUESTION_ID),
   body: () => ({
@@ -193,3 +234,7 @@ export const candidateThemesGetMock = {
     "results": candidateThemes,
   }),
 };
+
+const getRandomString = () => {
+  return (Math.random() + 1).toString(36).substring(7);
+}

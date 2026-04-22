@@ -1,5 +1,5 @@
 import ThemeSignOffDetail from "./ThemeSignOffDetail.svelte";
-import { candidateThemesGetMock, questionMock, candidateThemeSelectMock, selectedThemesGetMock, CONSULTATION_ID, QUESTION_ID } from "./mocks";
+import { candidateThemesGetMock, questionMock, candidateThemeSelectMock, selectedThemesGetMock, CONSULTATION_ID, QUESTION_ID, selectedThemesCreateMock, selectedThemesEditMock } from "./mocks";
 
 const consultationId = $state("test-consultation");
 const questionId = $state("test-question");
@@ -13,6 +13,8 @@ export default {
     selectedThemesGetMock,
     candidateThemesGetMock,
     candidateThemeSelectMock,
+    selectedThemesCreateMock,
+    selectedThemesEditMock,
   ],
   props: [
     { name: "consultationId", value: consultationId, type: "text" },
@@ -30,6 +32,8 @@ export default {
           status: 500,
           callback: undefined,
         },
+        selectedThemesCreateMock,
+        selectedThemesEditMock,
       ],
       props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
     },
@@ -44,6 +48,8 @@ export default {
           throws: new Error("Fetch error"),
           callback: undefined,
         },
+        selectedThemesCreateMock,
+        selectedThemesEditMock,
       ],
       props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
     },
