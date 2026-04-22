@@ -133,6 +133,7 @@ describe("EditUser", () => {
       selectedThemesEditMock: {
         ...selectedThemesEditMock,
         status: 404,
+        body: undefined,
       },
     }).forEach((mock) => mockRoute(mock));
 

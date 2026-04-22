@@ -1,8 +1,14 @@
-import { CONSULTATION_ID, QUESTION_ID, questionMock, selectedThemeEmptyMock, selectedThemesMock } from "./mocks";
+import {
+  CONSULTATION_ID,
+  QUESTION_ID,
+  questionMock,
+  selectedThemeEmptyMock,
+  selectedThemesMock,
+} from "./mocks";
 import ThemeSignOffDetailCompleted from "./ThemeSignOffDetailCompleted.svelte";
 
-let consultationId = $state(CONSULTATION_ID);
-let questionId = $state(QUESTION_ID);
+const consultationId = $state(CONSULTATION_ID);
+const questionId = $state(QUESTION_ID);
 
 export default {
   name: "ThemeSignOffDetailCompleted",

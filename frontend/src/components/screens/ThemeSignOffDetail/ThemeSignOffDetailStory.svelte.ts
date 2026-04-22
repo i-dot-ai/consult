@@ -104,6 +104,7 @@ export default {
         {
           ...selectedThemesEditMock,
           status: 404,
+          body: undefined,
         },
         selectedThemesDeleteMock,
         answersGetMock,

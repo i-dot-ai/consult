@@ -254,7 +254,7 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                     class="flex items-center gap-2"
                   >
                     <h2>
-                      Innovative packagingtesttest title
+                      Innovative packagingtest title
                     </h2>
                      
                     <div
@@ -269,7 +269,7 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                   <p
                     class="my-4 text-sm text-neutral-700"
                   >
-                    Ideas for innovative packaging solutions.testtest description
+                    Ideas for innovative packaging solutions.test description
                   </p>
                    
                   <hr
