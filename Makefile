@@ -54,7 +54,6 @@ test-end-to-end: ## Run end-to-end tests with Playwright
 	@echo "Initializing test data..."
 	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py migrate
 	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) -e ADMIN_USERS=email@example.com backend venv/bin/python manage.py createadminusers
-	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py generate_dummy_data
 	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py shell -c \
 		"from authentication.models import User; from consultations.models import Consultation; \
 		user = User.objects.get(email='email@example.com'); \

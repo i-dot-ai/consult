@@ -24,6 +24,7 @@ from consultations.api.serializers import (
     ConsultationSetupSerializer,
     DemographicOptionSerializer,
 )
+from consultations.dummy_data import create_dummy_consultation_from_yaml
 from consultations.models import (
     Consultation,
     DemographicOption,
@@ -35,6 +36,7 @@ from consultations.models import (
 from data_pipeline import jobs
 from data_pipeline.sync.candidate_themes import export_candidate_themes_to_s3
 from data_pipeline.sync.selected_themes import export_selected_themes_to_s3
+from hosting_environment import HostingEnvironment
 from ingest.jobs import (
     delete_consultation_job,
 )
@@ -528,5 +530,53 @@ class ConsultationViewSet(ModelViewSet):
 
         return Response(
             {"message": f"Successfully removed user {user.email} from consultation"},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="generate-test-consultation",
+        permission_classes=[IsAdminUser],
+    )
+    def generate_test_consultations(self, request) -> Response:
+        """
+        Add dummy test consultation data
+        URL: /api/consultations/generate-test-consultations
+
+        Only permitted in development environments
+        """
+
+        if HostingEnvironment.is_deployed():
+            return Response(
+                {"error": "This endpoint is only for use in automated testing"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            logger.info("Generating dummy consultations...")
+            consultation_sign_off = create_dummy_consultation_from_yaml(
+                number_respondents=5, consultation_stage="theme_sign_off"
+            )
+            consultation_sign_off.users.add(request.user)
+            consultation_analysis = create_dummy_consultation_from_yaml(
+                number_respondents=5, consultation_stage="analysis"
+            )
+            consultation_analysis.users.add(request.user)
+
+        except Exception as e:
+            return Response(
+                {"error": f"An error occurred generating example consultations: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response(
+            {
+                "message": "Successfully added example consultations",
+                "consultations": {
+                    "sign_off": consultation_sign_off.id,
+                    "analysis": consultation_analysis.id,
+                },
+            },
             status=status.HTTP_200_OK,
         )
