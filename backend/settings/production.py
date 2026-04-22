@@ -6,8 +6,7 @@ from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 
 from settings.base import *  # noqa
 
-# Extend CSRF_TRUSTED_ORIGINS from base.py with the DOMAIN_NAME
-CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGIN + ["https://" + env("DOMAIN_NAME")]  # noqa: F405
+CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS + ["https://" + env("DOMAIN_NAME")]  # noqa: F405
 
 
 SENTRY_DSN = env("SENTRY_DSN")  # noqa: F405
