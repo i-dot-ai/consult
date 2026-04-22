@@ -69,10 +69,8 @@ describe("ConsultationList", () => {
 
     await waitFor(() => {
       expect(
-        screen.getAllByText(
-          defaultMock.body.results[0].title,
-          { exact: false },
-        ).length,
+        screen.getAllByText(defaultMock.body.results[0].title, { exact: false })
+          .length,
       ).toBeGreaterThan(0);
     });
     expect(container).toMatchSnapshot();
