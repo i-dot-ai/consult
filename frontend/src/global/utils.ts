@@ -278,12 +278,16 @@ export function mockRoute(mock: Mock) {
         params = results.params;
       }
 
+      const enhancedOptions = {
+        ...options,
+        url: url,
+        params: params,
+      }
+
+      // TODO: Remove callback as body
+      // as function can cover same use cases
       if (mock.callback) {
-        mock.callback({
-          ...options,
-          url: url,
-          params: params,
-        });
+        mock.callback(enhancedOptions);
       }
 
       if (mock.throws) {
@@ -291,7 +295,7 @@ export function mockRoute(mock: Mock) {
       }
 
       if (typeof mock.body === "function") {
-        return new Response(JSON.stringify(mock.body()), {
+        return new Response(JSON.stringify(mock.body(enhancedOptions)), {
           status: mock.status || 200,
         });
       }
