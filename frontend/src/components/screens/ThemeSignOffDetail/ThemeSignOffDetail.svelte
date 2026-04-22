@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { fade, slide } from "svelte/transition";
 
-  import { createFetchStore, type MockFetch } from "../../../global/stores";
+  import { createFetchStore } from "../../../global/stores";
   import {
     getApiConfirmSignOffUrl,
     getApiGetGeneratedThemesUrl,
@@ -52,22 +52,9 @@
   interface Props {
     consultationId: string;
     questionId: string;
-    questionDataMock?: () => unknown;
-    generatedThemesMock?: () => unknown;
-    selectedThemesMock?: () => unknown;
-    createThemeMock?: () => unknown;
-    answersMock?: MockFetch;
-    selectGeneratedThemeMock?: () => unknown;
   }
 
-  let {
-    consultationId = "",
-    questionId = "",
-    questionDataMock,
-    generatedThemesMock,
-    answersMock,
-    selectGeneratedThemeMock,
-  }: Props = $props();
+  let { consultationId = "", questionId = "" }: Props = $props();
 
   let selectedThemes = $derived(
     buildSelectedThemesGetQuery(consultationId, questionId),
@@ -99,16 +86,9 @@
       },
     ),
   );
-  const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({
-    mockFetch: generatedThemesMock,
-  });
-  const generatedThemesSelectStore = createFetchStore({
-    mockFetch: selectGeneratedThemeMock,
-    debounceDelay: 0,
-  });
-  const questionStore = createFetchStore<Question>({
-    mockFetch: questionDataMock,
-  });
+  const generatedThemesStore = createFetchStore<GeneratedThemesResponse>();
+  const generatedThemesSelectStore = createFetchStore();
+  const questionStore = createFetchStore<Question>();
   const confirmSignOffStore = createFetchStore();
 
   let isConfirmSignOffModalOpen: boolean = $state(false);
@@ -450,7 +430,6 @@
               theme={selectedTheme}
               {removeTheme}
               {updateTheme}
-              {answersMock}
             />
           </div>
         {/each}

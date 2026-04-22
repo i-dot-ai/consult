@@ -264,8 +264,8 @@ export function makeSnippet(str: string, wrapDiv: boolean | undefined = true) {
 
 export function mockRoute(mock: Mock) {
   fetchMock.mockGlobal().route(
-    // @ts-expect-error: fetch-mock type not up to date
     {
+      // @ts-expect-error: fetch-mock type not up to date
       url: mock.regexp ? pathToRegexp(mock.regexp).regexp : mock.url,
       method: mock.method || "GET",
     },
