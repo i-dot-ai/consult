@@ -22,8 +22,7 @@ describe("AddUserForm", () => {
     mockRoute({
       ...defaultMock,
       callback: submitMock,
-    }),
-
+    });
     render(AddUserForm);
 
     const user = userEvent.setup();
@@ -34,9 +33,9 @@ describe("AddUserForm", () => {
     await waitFor(() => {
       expect(submitMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          "body": `{\"email\":\"${USER_EMAIL}\",\"is_staff\":false}`,
-        })
-      )
+          body: `{"email":"${USER_EMAIL}","is_staff":false}`,
+        }),
+      );
     });
   });
 
@@ -47,7 +46,7 @@ describe("AddUserForm", () => {
     mockRoute({
       ...defaultMock,
       throws: new Error(FETCH_ERROR),
-    }),
+    });
 
     render(AddUserForm);
 

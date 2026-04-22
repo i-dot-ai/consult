@@ -14,24 +14,30 @@ export default {
     },
     {
       name: "4xx Error",
-      mocks: [{
-        ...defaultMock,
-        status: 400,
-      }],
+      mocks: [
+        {
+          ...defaultMock,
+          status: 400,
+        },
+      ],
     },
     {
       name: "5xx Error",
-      mocks: [{
-        ...defaultMock,
-        status: 500,
-      }],
+      mocks: [
+        {
+          ...defaultMock,
+          status: 500,
+        },
+      ],
     },
     {
       name: "Fetch Error",
-      mocks: [{
-        ...defaultMock,
-        throws: new Error("Fetch Failed"),
-      }],
+      mocks: [
+        {
+          ...defaultMock,
+          throws: new Error("Fetch Failed"),
+        },
+      ],
     },
   ],
 };

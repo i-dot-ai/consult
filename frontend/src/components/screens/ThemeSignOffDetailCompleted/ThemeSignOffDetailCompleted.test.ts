@@ -2,7 +2,12 @@ import { afterEach, describe, expect, it } from "vitest";
 import { render, screen, waitFor } from "@testing-library/svelte";
 
 import ThemeSignOffDetailCompleted from "./ThemeSignOffDetailCompleted.svelte";
-import { CONSULTATION_ID, QUESTION_ID, questionMock, selectedThemesMock } from "./mocks";
+import {
+  CONSULTATION_ID,
+  QUESTION_ID,
+  questionMock,
+  selectedThemesMock,
+} from "./mocks";
 import fetchMock from "fetch-mock";
 import { mockRoute } from "../../../global/utils";
 import { queryClient } from "../../../global/queryClient";
@@ -31,22 +36,21 @@ describe("ThemeSignOffDetailCompleted", () => {
     },
   );
 
-  it(
-    "should display error if selected themes query errors",
-    async () => {
-      mockRoute({...selectedThemesMock, status: 500, body: undefined});
-      mockRoute(questionMock);
+  it("should display error if selected themes query errors", async () => {
+    mockRoute({ ...selectedThemesMock, status: 500, body: undefined });
+    mockRoute(questionMock);
 
-      render(ThemeSignOffDetailCompleted, {
-        consultationId: CONSULTATION_ID,
-        questionId: QUESTION_ID,
-      });
+    render(ThemeSignOffDetailCompleted, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+    });
 
-      await waitFor(() => {
-        expect(screen.getByText("Fetch Error:", { exact: false })).toBeInTheDocument();
-      });
-    }
-  );
+    await waitFor(() => {
+      expect(
+        screen.getByText("Fetch Error:", { exact: false }),
+      ).toBeInTheDocument();
+    });
+  });
 
   it("should match snapshot initially", () => {
     const { container } = render(ThemeSignOffDetailCompleted, {
@@ -54,7 +58,7 @@ describe("ThemeSignOffDetailCompleted", () => {
       questionId: QUESTION_ID,
     });
     expect(container).toMatchSnapshot();
-  })
+  });
 
   it("should match snapshot after loading", async () => {
     mockRoute(selectedThemesMock);
@@ -66,8 +70,10 @@ describe("ThemeSignOffDetailCompleted", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(selectedThemesMock.body.results[0].name)).toBeInTheDocument();
-    })
+      expect(
+        screen.getByText(selectedThemesMock.body.results[0].name),
+      ).toBeInTheDocument();
+    });
     expect(container).toMatchSnapshot();
-  })
+  });
 });

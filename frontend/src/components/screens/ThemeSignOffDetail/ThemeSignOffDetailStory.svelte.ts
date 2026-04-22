@@ -1,5 +1,16 @@
 import ThemeSignOffDetail from "./ThemeSignOffDetail.svelte";
-import { candidateThemesGetMock, questionMock, candidateThemeSelectMock, selectedThemesGetMock, CONSULTATION_ID, QUESTION_ID, selectedThemesCreateMock, selectedThemesEditMock, selectedThemesDeleteMock, answersGetMock } from "./mocks";
+import {
+  candidateThemesGetMock,
+  questionMock,
+  candidateThemeSelectMock,
+  selectedThemesGetMock,
+  CONSULTATION_ID,
+  QUESTION_ID,
+  selectedThemesCreateMock,
+  selectedThemesEditMock,
+  selectedThemesDeleteMock,
+  answersGetMock,
+} from "./mocks";
 
 const consultationId = $state("test-consultation");
 const questionId = $state("test-question");

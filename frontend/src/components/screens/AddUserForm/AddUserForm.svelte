@@ -91,6 +91,8 @@
   </div>
 
   <div class="mt-4">
-    <a href={Routes.SupportUsers} class="text-gray-700 underline">← Back to users</a>
+    <a href={Routes.SupportUsers} class="text-gray-700 underline"
+      >← Back to users</a
+    >
   </div>
 </form>

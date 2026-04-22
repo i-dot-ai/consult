@@ -265,16 +265,15 @@ export function makeSnippet(str: string, wrapDiv: boolean | undefined = true) {
 export function mockRoute(mock: Mock) {
   fetchMock.mockGlobal().route(
     // @ts-expect-error: fetch-mock type not up to date
-    { url: mock.regexp
-      ? pathToRegexp(mock.regexp).regexp
-      : mock.url, method: mock.method || "GET"
+    {
+      url: mock.regexp ? pathToRegexp(mock.regexp).regexp : mock.url,
+      method: mock.method || "GET",
     },
-    ({url, options}) => {
+    ({ url, options }) => {
       let params;
       if (mock.regexp) {
         const matcher = match(mock.regexp);
-        const results = matcher(url);
-        // @ts-expect-error
+        const results = matcher(url) as { params: unknown };
         params = results.params;
       }
 
@@ -282,7 +281,7 @@ export function mockRoute(mock: Mock) {
         ...options,
         url: url,
         params: params,
-      }
+      };
 
       // TODO: Remove callback as body
       // as function can cover same use cases
