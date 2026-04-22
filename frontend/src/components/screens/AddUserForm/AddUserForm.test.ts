@@ -59,4 +59,11 @@ describe("AddUserForm", () => {
       expect(screen.getByText(`Error: ${FETCH_ERROR}`)).toBeInTheDocument();
     });
   });
+
+  it("should match snapshot initially", () => {
+    mockRoute(defaultMock);
+
+    const { container } = render(AddUserForm);
+    expect(container).toMatchSnapshot();
+  });
 });
