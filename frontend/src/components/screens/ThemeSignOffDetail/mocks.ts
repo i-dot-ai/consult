@@ -1,4 +1,4 @@
-import { getApiGetGeneratedThemesUrl, getApiGetSelectedThemesUrl, getApiGetSelectedThemeUrl, getApiQuestionUrl } from "../../../global/routes";
+import { getApiAnswersUrl, getApiCandidateThemeResponsesUrl, getApiGetGeneratedThemesUrl, getApiGetSelectedThemesUrl, getApiGetSelectedThemeUrl, getApiQuestionUrl } from "../../../global/routes";
 
 interface Theme {
   id: string;
@@ -250,6 +250,22 @@ export const candidateThemesGetMock = {
     "results": candidateThemes,
   }),
 };
+
+export const answersGetMock = {
+  regexp: "*host" + getApiCandidateThemeResponsesUrl(
+    CONSULTATION_ID,
+    QUESTION_ID,
+    ":themeId",
+  ),
+  body: {
+    total_count: 3,
+    results: [
+      { free_text: "Example answer 1" },
+      { free_text: "Example answer 2" },
+      { free_text: "Example answer 3" },
+    ],
+  }
+}
 
 const getRandomString = () => {
   return (Math.random() + 1).toString(36).substring(7);

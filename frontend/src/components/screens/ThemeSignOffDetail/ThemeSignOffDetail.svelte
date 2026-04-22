@@ -628,7 +628,6 @@
             }
           }}
           handleSelect={handleSelectGeneratedTheme}
-          {answersMock}
           {themesBeingSelected}
         />
       {/each}

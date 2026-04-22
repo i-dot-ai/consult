@@ -1,5 +1,5 @@
 import ThemeSignOffDetail from "./ThemeSignOffDetail.svelte";
-import { candidateThemesGetMock, questionMock, candidateThemeSelectMock, selectedThemesGetMock, CONSULTATION_ID, QUESTION_ID, selectedThemesCreateMock, selectedThemesEditMock, selectedThemesDeleteMock } from "./mocks";
+import { candidateThemesGetMock, questionMock, candidateThemeSelectMock, selectedThemesGetMock, CONSULTATION_ID, QUESTION_ID, selectedThemesCreateMock, selectedThemesEditMock, selectedThemesDeleteMock, answersGetMock } from "./mocks";
 
 const consultationId = $state("test-consultation");
 const questionId = $state("test-question");
@@ -16,6 +16,7 @@ export default {
     selectedThemesCreateMock,
     selectedThemesEditMock,
     selectedThemesDeleteMock,
+    answersGetMock,
   ],
   props: [
     { name: "consultationId", value: consultationId, type: "text" },
@@ -36,6 +37,7 @@ export default {
         selectedThemesCreateMock,
         selectedThemesEditMock,
         selectedThemesDeleteMock,
+        answersGetMock,
       ],
       props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
     },
@@ -53,6 +55,7 @@ export default {
         selectedThemesCreateMock,
         selectedThemesEditMock,
         selectedThemesDeleteMock,
+        answersGetMock,
       ],
       props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
     },
@@ -75,6 +78,7 @@ export default {
           },
         },
         selectedThemesDeleteMock,
+        answersGetMock,
       ],
       props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
     },
