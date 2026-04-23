@@ -1,7 +1,11 @@
 import { test, expect } from "@playwright/test";
-import { getFirstConsultationLink } from "./helpers";
+import { createConsultationData, getFirstConsultationLink } from "./helpers";
 
 test.describe("Consultations - List Page", () => {
+  test.beforeAll(async ({ request }) => {
+    await createConsultationData(request);
+  });
+
   test.beforeEach(async ({ page }) => {
     await page.goto("/consultations");
     await page.waitForLoadState("networkidle");
@@ -14,9 +18,7 @@ test.describe("Consultations - List Page", () => {
     ).toBeVisible();
 
     // Check for the description text
-    await expect(
-      page.getByText(/review themes/i),
-    ).toBeVisible();
+    await expect(page.getByText(/review themes/i)).toBeVisible();
 
     // Check that at least one consultation is displayed
     const consultationItems = page
@@ -52,6 +54,10 @@ test.describe("Consultations - List Page", () => {
 
 test.describe("Consultations - Detail/Dashboard Page", () => {
   let consultationId: string;
+
+  test.beforeAll(async ({ request }) => {
+    await createConsultationData(request);
+  });
 
   test.beforeEach(async ({ page }) => {
     // Navigate to consultations list
@@ -90,12 +96,10 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
     expect(metricsText).toMatch(/\d+ questions?/);
 
     // 5. Check for specific question text from dummy data
-    await expect(
-      page.getByText(/chocolate bar regulations/i),
-    ).toBeVisible();
+    await expect(page.getByText(/chocolate bar regulations/i)).toBeVisible();
 
-    // 6. Check for response counts (each question has 100 responses)
-    await expect(page.getByText(/100 responses/i).first()).toBeVisible();
+    // 6. Check for response counts (each question has 5 responses)
+    await expect(page.getByText(/5 responses/i).first()).toBeVisible();
   });
 
   test("can navigate to evaluation page from consultation", async ({
@@ -119,6 +123,10 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
 
 test.describe("Consultations - Evaluation Page", () => {
   let consultationId: string;
+
+  test.beforeAll(async ({ request }) => {
+    await createConsultationData(request);
+  });
 
   test.beforeEach(async ({ page }) => {
     // First navigate to consultations list
