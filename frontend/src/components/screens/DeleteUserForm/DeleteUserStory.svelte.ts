@@ -18,17 +18,17 @@ export default {
     },
     {
       name: "Fetch Error",
-      mocks: [{...deleteMock, throws: new Error("Error")}],
+      mocks: [{ ...deleteMock, throws: new Error("Error") }],
       props: { user: user },
     },
     {
       name: "4xx Error",
-      mocks: [{...deleteMock, status: 400}],
+      mocks: [{ ...deleteMock, status: 400 }],
       props: { user: user },
     },
     {
       name: "5xx Error",
-      mocks: [{...deleteMock, status: 500}],
+      mocks: [{ ...deleteMock, status: 500 }],
       props: { user: user },
     },
   ],

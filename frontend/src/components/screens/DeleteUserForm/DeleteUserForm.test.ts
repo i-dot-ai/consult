@@ -15,36 +15,34 @@ describe("DeleteUserForm", () => {
     queryClient.resetQueries();
   });
 
-  it(
-    "should render delete form",
-    async () => {
-      mockRoute(deleteMock);
+  it("should render delete form", async () => {
+    mockRoute(deleteMock);
 
-      render(DeleteUserForm, { user: USER });
+    render(DeleteUserForm, { user: USER });
 
-      await waitFor(() => {
-        expect(screen.getByText(USER.email, { exact: false })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "Yes, delete user" }))
-      });
-    },
-  );
+    await waitFor(() => {
+      expect(
+        screen.getByText(USER.email, { exact: false }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Yes, delete user" }),
+      ).toBeInTheDocument();
+    });
+  });
 
-  it(
-    "should send delete request when button is clicked",
-    async () => {
-      const deleteBodyMock = vi.fn();
-      mockRoute({...deleteMock, body: deleteBodyMock });
+  it("should send delete request when button is clicked", async () => {
+    const deleteBodyMock = vi.fn();
+    mockRoute({ ...deleteMock, body: deleteBodyMock });
 
-      render(DeleteUserForm, { user: USER });
+    render(DeleteUserForm, { user: USER });
 
-      const user = userEvent.setup();
-      await user.click(screen.getByRole("button", { name: "Yes, delete user" }));
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Yes, delete user" }));
 
-      await waitFor(() => {
-        expect(deleteBodyMock).toHaveBeenCalled();
-      });
-    },
-  );
+    await waitFor(() => {
+      expect(deleteBodyMock).toHaveBeenCalled();
+    });
+  });
 
   it("should match snapshot initially", () => {
     mockRoute(deleteMock);

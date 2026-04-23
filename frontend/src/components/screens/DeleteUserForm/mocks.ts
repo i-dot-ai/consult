@@ -5,9 +5,9 @@ export const USER = {
   email: "user@test.com",
   is_staff: false,
   created_at: new Date().toISOString(),
-}
+};
 
 export const deleteMock = {
   url: getApiUserDetails(USER.id.toString()),
   method: "DELETE",
-}
+};
