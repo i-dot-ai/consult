@@ -12,24 +12,24 @@
     getQuestionDetailUrl,
     getQuestionsByRespondentUrl,
     getRespondentDetailUrl,
-  } from "../../global/routes.ts";
-  import { createFetchStore } from "../../global/stores.ts";
+  } from "../../../global/routes.ts";
+  import { createFetchStore } from "../../../global/stores.ts";
   import type {
     AnswersResponse,
     QuestionsResponse,
     Respondent,
     RespondentsResponse,
-  } from "../../global/types.ts";
+  } from "../../../global/types.ts";
 
-  import Alert from "../Alert.svelte";
-  import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
-  import MaterialIcon from "../MaterialIcon.svelte";
-  import Panel from "../dashboard/Panel/Panel.svelte";
-  import ChevronRight from "../svg/material/ChevronRight.svelte";
-  import Button from "../inputs/Button/Button.svelte";
-  import RespondentSidebar from "../dashboard/RespondentSidebar/RespondentSidebar.svelte";
-  import RespondentTopbar from "../dashboard/RespondentTopbar/RespondentTopbar.svelte";
-  import RespondentAnswer from "../dashboard/RespondentAnswer/RespondentAnswer.svelte";
+  import Alert from "../../Alert.svelte";
+  import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import ChevronRight from "../../svg/material/ChevronRight.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
+  import RespondentSidebar from "../../dashboard/RespondentSidebar/RespondentSidebar.svelte";
+  import RespondentTopbar from "../../dashboard/RespondentTopbar/RespondentTopbar.svelte";
+  import RespondentAnswer from "../../dashboard/RespondentAnswer/RespondentAnswer.svelte";
 
   const FLY_ANIMATION_DELAY = 100;
 
