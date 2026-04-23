@@ -213,7 +213,6 @@ class TestQuestionViewSet:
         # Create multi-choice answers
         red = multi_choice_question.multichoiceanswer_set.get(text="red")
         blue = multi_choice_question.multichoiceanswer_set.get(text="blue")
-        green = multi_choice_question.multichoiceanswer_set.get(text="green")
 
         # Create respondents with demographics
         # Respondent 1: northern, chooses red and blue
