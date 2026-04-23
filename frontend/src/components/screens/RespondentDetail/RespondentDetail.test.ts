@@ -52,33 +52,35 @@ describe("RespondentDetail", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getAllByText(question.question_text, { exact: false }).length).toBeGreaterThan(0);
+        expect(
+          screen.getAllByText(question.question_text, { exact: false }).length,
+        ).toBeGreaterThan(0);
       });
     },
   );
 
-  it(
-    "should update stakeholder name",
-    async () => {
-      setupMocks();
+  it("should update stakeholder name", async () => {
+    setupMocks();
 
-      render(RespondentDetail, {
-        consultationId: CONSULTATION_ID,
-        questionId: QUESTION_ID,
-        respondentId: RESPONDENT_ID,
-        themefinderId: 1,
-      });
+    render(RespondentDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+      respondentId: RESPONDENT_ID,
+      themefinderId: 1,
+    });
 
-      const user = userEvent.setup();
-      await user.click(screen.getByTestId("edit-button"));
-      await user.type(screen.getByRole("textbox"), "test name");
-      await user.click(screen.getByRole("button", { name: "Save" }));
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("edit-button"));
+    await user.type(screen.getByRole("textbox"), "test name");
+    await user.click(screen.getByRole("button", { name: "Save" }));
 
-      await waitFor(() => {
+    await waitFor(
+      () => {
         expect(screen.getByText("test name")).toBeInTheDocument();
-      }, {timeout: 10000});
-    }, 10000,
-  );
+      },
+      { timeout: 10000 },
+    );
+  }, 10000);
 
   it("should match snapshot initially", () => {
     setupMocks();
@@ -103,7 +105,12 @@ describe("RespondentDetail", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getAllByText(consultationQuestionsMock.body.results[0].question_text, { exact: false }).length).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(
+          consultationQuestionsMock.body.results[0].question_text,
+          { exact: false },
+        ).length,
+      ).toBeGreaterThan(0);
     });
     expect(container).toMatchSnapshot();
   });
