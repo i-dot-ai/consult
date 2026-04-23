@@ -1,11 +1,11 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
-  import { getApiFindThemesUrl, Routes } from "../../global/routes";
-  import Button from "../inputs/Button/Button.svelte";
-  import Select from "../inputs/Select/Select.svelte";
-  import Link from "../Link.svelte";
+  import { getApiFindThemesUrl, Routes } from "../../../global/routes";
+  import Button from "../../inputs/Button/Button.svelte";
+  import Select from "../../inputs/Select/Select.svelte";
+  import Link from "../../Link.svelte";
 
-  import type { ConsultationFolder } from "../../global/types";
+  import type { ConsultationFolder } from "../../../global/types";
 
   interface Props {
     consultations: ConsultationFolder[];
