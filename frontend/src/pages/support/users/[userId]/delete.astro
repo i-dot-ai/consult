@@ -5,7 +5,7 @@ import type { AstroGlobalRuntime, User } from "../../../../global/types";
 import Layout from "../../../../layouts/Layout.astro";
 import Section from "../../../../components/Section/Section.svelte";
 import Title from "../../../../components/Title.svelte";
-import DeleteUserForm from "../../../../components/screens/DeleteUserForm.svelte";
+import DeleteUserForm from "../../../../components/screens/DeleteUserForm/DeleteUserForm.svelte";
 import { getApiUserDetails, Routes } from "../../../../global/routes";
 
 const { userId } = (Astro as unknown as AstroGlobalRuntime).params;
