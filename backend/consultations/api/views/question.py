@@ -88,6 +88,53 @@ class QuestionViewSet(ModelViewSet):
 
         return queryset.order_by("number")
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Retrieve a single question with dynamically calculated multi-choice counts
+        when filters are applied.
+        """
+        question = self.get_object()
+
+        # Check if any filters are applied
+        filter_params = [
+            "themeFilters",
+            "demographics",
+            "evidenceRich",
+            "unseenResponsesOnly",
+            "is_flagged",
+            "multiple_choice_answer",
+        ]
+        has_filters = any(request.query_params.get(p) for p in filter_params)
+
+        # Recalculate multi-choice counts with filters if needed
+        if has_filters and question.has_multiple_choice:
+            consultation_pk = self.kwargs["consultation_pk"]
+            pk = kwargs["pk"]
+
+            # Get filtered responses
+            filtered_responses = get_filtered_responses(
+                request.query_params, consultation_pk, question_id=pk
+            )
+
+            # Recalculate multi-choice counts with filters
+            multichoice_answers = models.MultiChoiceAnswer.objects.filter(
+                question=question
+            ).annotate(
+                prefetched_response_count=Count(
+                    "response",
+                    filter=Q(response__in=filtered_responses),
+                    distinct=True,
+                )
+            )
+
+            # Replace the prefetched multichoice answers
+            question._prefetched_objects_cache["multichoiceanswer_set"] = list(
+                multichoice_answers
+            )
+
+        serializer = self.get_serializer(question)
+        return Response(serializer.data)
+
     @action(
         detail=True,
         methods=["get"],
