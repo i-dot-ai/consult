@@ -1,0 +1,931 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`EditUser > should match snapshot after loading 1`] = `
+<div>
+  <!---->
+  <!---->
+   
+  <div
+    class="flex gap-4"
+  >
+    <div
+      class="flex items-center justify-center"
+    >
+      <div
+        class="bg-pink-50 p-2 rounded-md"
+      >
+        <svg
+          class="fill-pink-700"
+          height="1.3rem"
+          role="img"
+          viewBox="0 -960 960 960"
+          width="1.3rem"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <!---->
+          <path
+            d="M856-390 570-104q-12 12-27 18t-30 6q-15 0-30-6t-27-18L103-457q-11-11-17-25.5T80-513v-287q0-33 23.5-56.5T160-880h287q16 0 31 6.5t26 17.5l352 353q12 12 17.5 27t5.5 30q0 15-5.5 29.5T856-390ZM513-160l286-286-353-354H160v286l353 354ZM260-640q25 0 42.5-17.5T320-700q0-25-17.5-42.5T260-760q-25 0-42.5 17.5T200-700q0 25 17.5 42.5T260-640Zm220 160Z"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+          
+          <!---->
+        </svg>
+        <!---->
+      </div>
+    </div>
+    <!---->
+     
+    <div
+      class="grow"
+    >
+      <!---->
+      <h1
+        class="text-neutral-700 text-xl"
+        style=""
+      >
+        <!---->
+        Theme Sign Off
+        
+        
+      </h1>
+      
+      <!---->
+       
+      <p
+        class="text-neutral-600 text-md"
+      >
+        Finalise themes to use for AI to map responses to
+      </p>
+      <!---->
+    </div>
+     
+    <div>
+      <div
+        slot="aside"
+      >
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          data-variant="default"
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          <span
+            class="p-1"
+          >
+            Choose another question
+          </span>
+          
+          
+          
+        </button>
+        
+        <!---->
+      </div>
+      <!---->
+    </div>
+    <!---->
+  </div>
+  <!---->
+   
+  <section
+    class="my-8"
+  >
+    <div
+      class="bg-white"
+    >
+      <!---->
+      <!---->
+      <div
+        class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+        data-testid="panel-component"
+      >
+        <article
+          class="flex gap-2 items-start relative flex-col-reverse sm:flex-row"
+        >
+          <div
+            class="mt-0.5 hidden sm:block"
+          >
+            <!---->
+          </div>
+           
+          <div
+            class="grow"
+            data-testid="horizontal-container"
+          >
+            <p
+              class="text-md transition-colors duration-1000 select-none bg-neutral-100 text-neutral-100 blink"
+            >
+              SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON 
+            </p>
+             
+            <div
+              class="text-sm mt-2 transition-colors duration-1000 w-max select-none bg-neutral-100 text-neutral-100 blink"
+            >
+              000 responses
+            </div>
+            <!---->
+          </div>
+           
+          <div
+            class="-ml-2 sm:ml-0 -mt-1"
+          >
+            <!---->
+          </div>
+        </article>
+        <!---->
+      </div>
+      
+      
+      <!---->
+    </div>
+    <!---->
+  </section>
+   
+  <section
+    class="selected-section my-4 p-4 bg-pink-50/25 rounded-xl border border-pink-100 svelte-fjeq1z"
+  >
+    <div
+      class="mb-4"
+      id="onboarding-steps-2-and-3"
+    >
+      <div
+        class="h-full my-4 p-4 rounded-2xl border border-pink-200 bg-pink-50"
+        data-testid="panel-component"
+      >
+        <div
+          class="mb-2 flex items-center justify-between"
+        >
+          <div
+            class="flex items-center gap-2"
+          >
+            <svg
+              class="fill-primary"
+              height="1rem"
+              role="img"
+              viewBox="0 -960 960 960"
+              width="1rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              <!---->
+            </svg>
+            <!---->
+             
+            <h3>
+              Selected Themes
+            </h3>
+             
+            <div
+              class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
+            >
+              1 selected
+              <!---->
+            </div>
+            <!---->
+          </div>
+           
+          <!---->
+          <button
+            aria-pressed="false"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-variant="default"
+            role="button"
+            tabindex="0"
+          >
+            <!---->
+            <!---->
+            <span
+              class="flex items-center justify-between text-primary svelte-fjeq1z"
+            >
+              + Add Custom Theme
+            </span>
+            
+            
+            
+          </button>
+          
+          <!---->
+        </div>
+         
+        <p
+          class="text-sm text-neutral-500"
+        >
+          Manage your 1 selected theme for the AI in mapping responses. Edit titles and descriptions, or
+            add new themes as needed.
+          <!---->
+        </p>
+        <!---->
+      </div>
+      <!---->
+    </div>
+     
+    <!---->
+     
+    <div
+      class="mt-4"
+    >
+      <div
+        class="mb-4 last:mb-0"
+      >
+        <article
+          class="rounded-lg bg-white"
+          data-testid="selected-theme-card"
+          data-themeid="dc1c0652-1042-4b99-b832-89a8f80c3f57"
+        >
+          <div>
+            <div
+              class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+              data-testid="panel-component"
+            >
+              <div
+                class="flex flex-wrap sm:flex-nowrap"
+              >
+                <div
+                  class="md:w-auto"
+                >
+                  <header
+                    class="flex items-center gap-2"
+                  >
+                    <h2>
+                      Innovative packagingtest title
+                    </h2>
+                     
+                    <div
+                      class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
+                    >
+                      Edited
+                      <!---->
+                    </div>
+                    <!---->
+                  </header>
+                   
+                  <p
+                    class="my-4 text-sm text-neutral-700"
+                  >
+                    Ideas for innovative packaging solutions.test description
+                  </p>
+                   
+                  <hr
+                    class="mb-4"
+                  />
+                   
+                  <small
+                    class="mb-4 block text-xs text-neutral-500"
+                  >
+                    Edited
+              a moment ago by email@example.com
+                  </small>
+                   
+                  <footer
+                    class="flex flex-wrap items-center gap-2"
+                  >
+                    <!---->
+                    <button
+                      aria-pressed="false"
+                      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      data-testid="selected-theme-edit-button"
+                      data-variant="default"
+                      role="button"
+                      tabindex="0"
+                    >
+                      <!---->
+                      <!---->
+                      <!---->
+                      <svg
+                        class="fill-neutral-500"
+                        height="1rem"
+                        role="img"
+                        viewBox="0 -960 960 960"
+                        width="1rem"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"
+                        />
+                        <!---->
+                      </svg>
+                      <!---->
+                       Edit
+                      
+                      
+                      
+                    </button>
+                    
+                    <!---->
+                     
+                    <!---->
+                    <button
+                      aria-pressed="false"
+                      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      data-variant="default"
+                      role="button"
+                      tabindex="0"
+                    >
+                      <!---->
+                      <!---->
+                      <!---->
+                      <svg
+                        class="fill-neutral-500"
+                        height="1rem"
+                        role="img"
+                        viewBox="0 -960 960 960"
+                        width="1rem"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
+                          xmlns="http://www.w3.org/2000/svg"
+                        />
+                        <!---->
+                      </svg>
+                      <!---->
+                       Remove
+                      
+                      
+                      
+                    </button>
+                    
+                    <!---->
+                  </footer>
+                </div>
+                 
+                <!---->
+              </div>
+              <!---->
+            </div>
+            <!---->
+          </div>
+          <!---->
+        </article>
+        <!---->
+      </div>
+      
+    </div>
+     
+    <hr
+      class="my-4"
+    />
+     
+    <!---->
+    <button
+      aria-pressed="false"
+      class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+      data-variant="primary"
+      role="button"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      <div
+        class="flex w-full items-center justify-center gap-2"
+      >
+        <svg
+          class="fill-white"
+          height="1rem"
+          role="img"
+          viewBox="0 -960 960 960"
+          width="1rem"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+          <!---->
+        </svg>
+        <!---->
+         
+        <span>
+          Sign Off Selected Themes (1)
+          <!---->
+        </span>
+      </div>
+      
+      
+      
+    </button>
+    
+    <!---->
+    <!---->
+     
+    <!---->
+    
+    <!---->
+  </section>
+  <!---->
+   
+  <div
+    class="relative w-full my-8 after:w-full after:border-b after:absolute after:left-0 after:right-0 after:bottom-1/2 after:-z-10 svelte-fjeq1z"
+  >
+    <p
+      class="m-auto w-max bg-white px-4 text-sm text-neutral-500 svelte-fjeq1z"
+    >
+      Browse AI Generated Themes
+    </p>
+  </div>
+   
+  <section>
+    <div
+      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      data-testid="panel-component"
+    >
+      <div
+        id="onboarding-step-1"
+      >
+        <div
+          class="h-full my-4 p-4 rounded-2xl border border-teal-200 bg-teal-50"
+          data-testid="panel-component"
+        >
+          <div
+            class="mb-2 flex items-center justify-between"
+          >
+            <div
+              class="flex items-center gap-2"
+            >
+              <svg
+                class="fill-secondary"
+                height="1rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M160-360q-50 0-85-35t-35-85q0-50 35-85t85-35v-80q0-33 23.5-56.5T240-760h120q0-50 35-85t85-35q50 0 85 35t35 85h120q33 0 56.5 23.5T800-680v80q50 0 85 35t35 85q0 50-35 85t-85 35v160q0 33-23.5 56.5T720-120H240q-33 0-56.5-23.5T160-200v-160Zm200-80q25 0 42.5-17.5T420-500q0-25-17.5-42.5T360-560q-25 0-42.5 17.5T300-500q0 25 17.5 42.5T360-440Zm240 0q25 0 42.5-17.5T660-500q0-25-17.5-42.5T600-560q-25 0-42.5 17.5T540-500q0 25 17.5 42.5T600-440ZM320-280h320v-80H320v80Zm-80 80h480v-480H240v480Zm240-240Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                <!---->
+              </svg>
+              <!---->
+               
+              <h3>
+                AI Generated Themes
+              </h3>
+               
+              <div
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-secondary bg-teal-50 border border-teal-400"
+              >
+                0 available
+                <!---->
+              </div>
+              <!---->
+            </div>
+             
+            <div
+              class="flex items-center gap-4"
+            >
+              <!---->
+            </div>
+          </div>
+           
+          <p
+            class="text-sm text-neutral-500"
+          >
+            Browse AI-generated themes organised by topic hierarchy. Click
+            "Select Theme" to add themes to your selected list for analysis.
+          </p>
+          <!---->
+        </div>
+        <!---->
+      </div>
+       
+      <!---->
+      <!---->
+    </div>
+    <!---->
+  </section>
+   
+  <!---->
+  <!---->
+   
+  <div>
+     
+    <div
+      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      data-testid="panel-component"
+    >
+      <div
+        class="flex items-center justify-start gap-2 rounded-lg bg-pink-50 p-2"
+      >
+        <!---->
+         
+        <div
+          class="w-full text-pink-700"
+        >
+          Unexpected onboarding tour error
+          <!---->
+        </div>
+      </div>
+      <!---->
+    </div>
+    <!---->
+  </div>
+  <!---->
+  
+</div>
+`;
+
+exports[`EditUser > should match snapshot initially 1`] = `
+<div>
+  <!---->
+  <!---->
+   
+  <div
+    class="flex gap-4"
+  >
+    <div
+      class="flex items-center justify-center"
+    >
+      <div
+        class="bg-pink-50 p-2 rounded-md"
+      >
+        <svg
+          class="fill-pink-700"
+          height="1.3rem"
+          role="img"
+          viewBox="0 -960 960 960"
+          width="1.3rem"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <!---->
+          <path
+            d="M856-390 570-104q-12 12-27 18t-30 6q-15 0-30-6t-27-18L103-457q-11-11-17-25.5T80-513v-287q0-33 23.5-56.5T160-880h287q16 0 31 6.5t26 17.5l352 353q12 12 17.5 27t5.5 30q0 15-5.5 29.5T856-390ZM513-160l286-286-353-354H160v286l353 354ZM260-640q25 0 42.5-17.5T320-700q0-25-17.5-42.5T260-760q-25 0-42.5 17.5T200-700q0 25 17.5 42.5T260-640Zm220 160Z"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+          
+          <!---->
+        </svg>
+        <!---->
+      </div>
+    </div>
+    <!---->
+     
+    <div
+      class="grow"
+    >
+      <!---->
+      <h1
+        class="text-neutral-700 text-xl"
+        style=""
+      >
+        <!---->
+        Theme Sign Off
+        
+        
+      </h1>
+      
+      <!---->
+       
+      <p
+        class="text-neutral-600 text-md"
+      >
+        Finalise themes to use for AI to map responses to
+      </p>
+      <!---->
+    </div>
+     
+    <div>
+      <div
+        slot="aside"
+      >
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          data-variant="default"
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          <span
+            class="p-1"
+          >
+            Choose another question
+          </span>
+          
+          
+          
+        </button>
+        
+        <!---->
+      </div>
+      <!---->
+    </div>
+    <!---->
+  </div>
+  <!---->
+   
+  <section
+    class="my-8"
+  >
+    <div
+      class="bg-white"
+    >
+      <!---->
+      <!---->
+      <div
+        class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+        data-testid="panel-component"
+      >
+        <article
+          class="flex gap-2 items-start relative flex-col-reverse sm:flex-row"
+        >
+          <div
+            class="mt-0.5 hidden sm:block"
+          >
+            <!---->
+          </div>
+           
+          <div
+            class="grow"
+            data-testid="horizontal-container"
+          >
+            <p
+              class="text-md transition-colors duration-1000 select-none bg-neutral-100 text-neutral-100 blink"
+            >
+              SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON 
+            </p>
+             
+            <div
+              class="text-sm mt-2 transition-colors duration-1000 w-max select-none bg-neutral-100 text-neutral-100 blink"
+            >
+              000 responses
+            </div>
+            <!---->
+          </div>
+           
+          <div
+            class="-ml-2 sm:ml-0 -mt-1"
+          >
+            <!---->
+          </div>
+        </article>
+        <!---->
+      </div>
+      
+      
+      <!---->
+    </div>
+    <!---->
+  </section>
+   
+  <section
+    class="selected-section my-4 p-4 bg-pink-50/25 rounded-xl border border-pink-100 svelte-fjeq1z"
+  >
+    <div
+      class="mb-4"
+      id="onboarding-steps-2-and-3"
+    >
+      <div
+        class="h-full my-4 p-4 rounded-2xl border border-pink-200 bg-pink-50"
+        data-testid="panel-component"
+      >
+        <div
+          class="mb-2 flex items-center justify-between"
+        >
+          <div
+            class="flex items-center gap-2"
+          >
+            <svg
+              class="fill-primary"
+              height="1rem"
+              role="img"
+              viewBox="0 -960 960 960"
+              width="1rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              <!---->
+            </svg>
+            <!---->
+             
+            <h3>
+              Selected Themes
+            </h3>
+             
+            <div
+              class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
+            >
+               selected
+              <!---->
+            </div>
+            <!---->
+          </div>
+           
+          <!---->
+          <button
+            aria-pressed="false"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-variant="default"
+            role="button"
+            tabindex="0"
+          >
+            <!---->
+            <!---->
+            <span
+              class="flex items-center justify-between text-primary svelte-fjeq1z"
+            >
+              + Add Custom Theme
+            </span>
+            
+            
+            
+          </button>
+          
+          <!---->
+        </div>
+         
+        <p
+          class="text-sm text-neutral-500"
+        >
+          Finalise the themes for the AI to map responses to. Choose from the
+            AI generated themes or add new.
+          <!---->
+        </p>
+        <!---->
+      </div>
+      <!---->
+    </div>
+     
+    <!---->
+     
+    <div
+      class="mt-4"
+    >
+      
+    </div>
+     
+    <hr
+      class="my-4"
+    />
+     
+    <!---->
+    <button
+      aria-pressed="false"
+      class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+      data-variant="primary"
+      disabled=""
+      role="button"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      <div
+        class="flex w-full items-center justify-center gap-2"
+      >
+        <svg
+          class="fill-white"
+          height="1rem"
+          role="img"
+          viewBox="0 -960 960 960"
+          width="1rem"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+          <!---->
+        </svg>
+        <!---->
+         
+        <span>
+          Loading Selected Themes
+          <!---->
+        </span>
+      </div>
+      
+      
+      
+    </button>
+    
+    <!---->
+    <!---->
+     
+    <!---->
+    
+    <!---->
+  </section>
+  <!---->
+   
+  <div
+    class="relative w-full my-8 after:w-full after:border-b after:absolute after:left-0 after:right-0 after:bottom-1/2 after:-z-10 svelte-fjeq1z"
+  >
+    <p
+      class="m-auto w-max bg-white px-4 text-sm text-neutral-500 svelte-fjeq1z"
+    >
+      Browse AI Generated Themes
+    </p>
+  </div>
+   
+  <section>
+    <div
+      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      data-testid="panel-component"
+    >
+      <div
+        id="onboarding-step-1"
+      >
+        <div
+          class="h-full my-4 p-4 rounded-2xl border border-teal-200 bg-teal-50"
+          data-testid="panel-component"
+        >
+          <div
+            class="mb-2 flex items-center justify-between"
+          >
+            <div
+              class="flex items-center gap-2"
+            >
+              <svg
+                class="fill-secondary"
+                height="1rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M160-360q-50 0-85-35t-35-85q0-50 35-85t85-35v-80q0-33 23.5-56.5T240-760h120q0-50 35-85t85-35q50 0 85 35t35 85h120q33 0 56.5 23.5T800-680v80q50 0 85 35t35 85q0 50-35 85t-85 35v160q0 33-23.5 56.5T720-120H240q-33 0-56.5-23.5T160-200v-160Zm200-80q25 0 42.5-17.5T420-500q0-25-17.5-42.5T360-560q-25 0-42.5 17.5T300-500q0 25 17.5 42.5T360-440Zm240 0q25 0 42.5-17.5T660-500q0-25-17.5-42.5T600-560q-25 0-42.5 17.5T540-500q0 25 17.5 42.5T600-440ZM320-280h320v-80H320v80Zm-80 80h480v-480H240v480Zm240-240Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                <!---->
+              </svg>
+              <!---->
+               
+              <h3>
+                AI Generated Themes
+              </h3>
+               
+              <div
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-secondary bg-teal-50 border border-teal-400"
+              >
+                0 available
+                <!---->
+              </div>
+              <!---->
+            </div>
+             
+            <div
+              class="flex items-center gap-4"
+            >
+              <!---->
+            </div>
+          </div>
+           
+          <p
+            class="text-sm text-neutral-500"
+          >
+            Browse AI-generated themes organised by topic hierarchy. Click
+            "Select Theme" to add themes to your selected list for analysis.
+          </p>
+          <!---->
+        </div>
+        <!---->
+      </div>
+       
+      <!---->
+      <!---->
+    </div>
+    <!---->
+  </section>
+   
+  <!---->
+  <!---->
+   
+  <div>
+     
+    <div
+      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      data-testid="panel-component"
+    >
+      <div
+        class="flex items-center justify-start gap-2 rounded-lg bg-pink-50 p-2"
+      >
+        <!---->
+         
+        <div
+          class="w-full text-pink-700"
+        >
+          Unexpected onboarding tour error
+          <!---->
+        </div>
+      </div>
+      <!---->
+    </div>
+    <!---->
+  </div>
+  <!---->
+  
+</div>
+`;

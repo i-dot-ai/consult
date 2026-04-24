@@ -7,7 +7,7 @@
     CandidateThemeResponsesResponse,
     GeneratedTheme,
   } from "../../../global/types";
-  import { createFetchStore, type MockFetch } from "../../../global/stores";
+  import { createFetchStore } from "../../../global/stores";
   import { getApiCandidateThemeResponsesUrl } from "../../../global/routes";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
@@ -31,7 +31,6 @@
     handleSelect: (theme: GeneratedTheme) => void;
     themesBeingSelected: string[];
     maxAnswers?: number;
-    answersMock?: MockFetch;
   }
   let {
     consultationId,
@@ -43,12 +42,9 @@
     setExpandedThemes = () => {},
     handleSelect = () => {},
     themesBeingSelected = [],
-    answersMock,
   }: Props = $props();
 
-  const answersStore = createFetchStore<CandidateThemeResponsesResponse>({
-    mockFetch: answersMock,
-  });
+  const answersStore = createFetchStore<CandidateThemeResponsesResponse>();
 
   let expanded = $derived(expandedThemes.includes(theme.id));
   let showAnswers = $state(false);
@@ -184,7 +180,6 @@
           level={level + 1}
           {handleSelect}
           {themesBeingSelected}
-          {answersMock}
           {expandedThemes}
           {setExpandedThemes}
         />

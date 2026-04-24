@@ -13,7 +13,7 @@ import ThemeFormStory from "../theme-sign-off/ThemeForm/ThemeFormStory.svelte";
 import SelectedThemeCardStory from "../theme-sign-off/SelectedThemeCard/SelectedThemeCardStory.svelte";
 import AnswersListStory from "../theme-sign-off/AnswersList/AnswersListStory.svelte";
 import GeneratedThemeCardStory from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCardStory.svelte";
-import ThemeSignoffDetailStory from "../screens/ThemeSignOffDetailStory.svelte";
+import ThemeSignoffDetailStory from "../screens/ThemeSignOffDetail/ThemeSignOffDetailStory.svelte";
 import NavigationHeaderStory from "../navigation/Header/HeaderStory.svelte";
 import HeaderConsultStory from "../navigation/HeaderConsult/HeaderConsultStory.svelte";
 import BreadcrumbsStory from "../navigation/Breadcrumbs/BreadcrumbsStory.svelte";
@@ -33,6 +33,8 @@ import FileInputStory from "../inputs/FileInput/FileInputStory.svelte";
 import CreateConsultationFormStory from "../screens/CreateConsultationForm/CreateConsultationFormStory.svelte";
 import EditUserStory from "../screens/EditUserForm/EditUserStory.svelte";
 import ConsultationAnalysisStory from "../screens/ConsultationAnalysis/ConsultationAnalysisStory.svelte";
+import ThemeSignOffDetailCompletedStory from "../screens/ThemeSignOffDetailCompleted/ThemeSignOffDetailCompletedStory.svelte";
+import AddUserFormStory from "../screens/AddUserForm/AddUserFormStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -92,4 +94,6 @@ export default [
   CreateConsultationFormStory,
   EditUserStory,
   ConsultationAnalysisStory,
+  ThemeSignOffDetailCompletedStory,
+  AddUserFormStory,
 ] as Story[];

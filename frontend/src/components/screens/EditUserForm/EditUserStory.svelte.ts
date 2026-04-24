@@ -6,7 +6,7 @@ const userId = $state(["test-user"]);
 export default {
   name: "EditUser",
   component: EditUser,
-  category: "Screens",
+  category: "Screens / Support",
   mocks: [getMock, patchMock],
   props: [{ name: "userId", value: userId, type: "text" }],
   stories: [

@@ -50,7 +50,11 @@
   };
 </script>
 
-<article class="rounded-lg bg-white" data-themeid={theme.id}>
+<article
+  class="rounded-lg bg-white"
+  data-testid="selected-theme-card"
+  data-themeid={theme.id}
+>
   {#if editing}
     <div in:fade>
       <ThemeForm
@@ -92,7 +96,11 @@
             </small>
 
             <footer class="flex flex-wrap items-center gap-2">
-              <Button size="sm" handleClick={() => (editing = !editing)}>
+              <Button
+                size="sm"
+                handleClick={() => (editing = !editing)}
+                testId="selected-theme-edit-button"
+              >
                 <MaterialIcon color="fill-neutral-500">
                   <EditSquare />
                 </MaterialIcon>

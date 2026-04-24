@@ -1,0 +1,204 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ConsultationList > should match snapshot after loading 1`] = `
+<div>
+  <section
+    class="mt-4"
+  >
+    <ul>
+      <li>
+        <!---->
+        <h2
+          class="text-neutral-700 text-lg"
+          style=""
+        >
+          <!---->
+          Dummy Consultation at Analysis Stage
+          
+          
+        </h2>
+        
+        <!---->
+         
+        <div
+          class="flex flex-wrap gap-4"
+        >
+          <!---->
+          <a
+            aria-label=""
+            class="transition-colors duration-300 text-primary hover:underline"
+            data-testid=""
+            href="/evaluations/95ab7567-9381-48eb-8d20-ddeb43691b58/questions/"
+            role="button"
+            tabindex="0"
+            title=""
+          >
+            <!---->
+            View Evaluation
+            
+            
+          </a>
+          
+          <!---->
+           
+          <!---->
+          <a
+            aria-label=""
+            class="transition-colors duration-300 text-primary hover:underline"
+            data-testid=""
+            href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58/theme-sign-off"
+            role="button"
+            tabindex="0"
+            title=""
+          >
+            <!---->
+            Theme Sign Off
+            
+            
+          </a>
+          
+          <!---->
+           
+          <!---->
+          <a
+            aria-label=""
+            class="transition-colors duration-300 text-primary hover:underline"
+            data-testid=""
+            href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58"
+            role="button"
+            tabindex="0"
+            title=""
+          >
+            <!---->
+            View Dashboard
+            
+            
+          </a>
+          
+          <!---->
+        </div>
+      </li>
+      <li>
+        <!---->
+        <h2
+          class="text-neutral-700 text-lg"
+          style=""
+        >
+          <!---->
+          Dummy Consultation at Theme Sign Off Stage
+          
+          
+        </h2>
+        
+        <!---->
+         
+        <div
+          class="flex flex-wrap gap-4"
+        >
+          <!---->
+          <a
+            aria-label=""
+            class="transition-colors duration-300 text-primary hover:underline"
+            data-testid=""
+            href="/evaluations/4d1414d5-9300-447b-b788-50d0bef7e807/questions/"
+            role="button"
+            tabindex="0"
+            title=""
+          >
+            <!---->
+            View Evaluation
+            
+            
+          </a>
+          
+          <!---->
+           
+          <!---->
+          <a
+            aria-label=""
+            class="transition-colors duration-300 text-primary hover:underline"
+            data-testid=""
+            href="/consultations/4d1414d5-9300-447b-b788-50d0bef7e807/theme-sign-off"
+            role="button"
+            tabindex="0"
+            title=""
+          >
+            <!---->
+            Theme Sign Off
+            
+            
+          </a>
+          
+          <!---->
+           
+          <!---->
+          <a
+            aria-label=""
+            class="transition-colors duration-300 text-primary hover:underline"
+            data-testid=""
+            href="/consultations/4d1414d5-9300-447b-b788-50d0bef7e807"
+            role="button"
+            tabindex="0"
+            title=""
+          >
+            <!---->
+            View Dashboard
+            
+            
+          </a>
+          
+          <!---->
+        </div>
+      </li>
+      
+    </ul>
+    <!---->
+  </section>
+  
+</div>
+`;
+
+exports[`ConsultationList > should match snapshot initially 1`] = `
+<div>
+  <section
+    class="mt-4"
+  >
+    <p>
+      <div
+        class="my-8"
+      >
+        <div
+          class="animate-spin ease-in-out w-max m-auto"
+          style="animation-timing-function: ease-in-out;"
+        >
+          <svg
+            class="fill-neutral-300"
+            height="5rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M480-80q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-83 31.5-155.5t86-127Q252-817 325-848.5T480-880q17 0 28.5 11.5T520-840q0 17-11.5 28.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-17 11.5-28.5T840-520q17 0 28.5 11.5T880-480q0 82-31.5 155t-86 127.5q-54.5 54.5-127 86T480-80Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
+          <!---->
+        </div>
+        <!---->
+         
+        <p
+          class="text-center text-neutral-500"
+        >
+          Loading consultations...
+        </p>
+      </div>
+      <!---->
+    </p>
+    <!---->
+  </section>
+  
+</div>
+`;

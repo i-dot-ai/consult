@@ -1,0 +1,72 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AddUserForm > should match snapshot initially 1`] = `
+<div>
+  <!---->
+  <!---->
+  <h1
+    class="text-neutral-700 text-xl"
+    style=""
+  >
+    <!---->
+    Add a user
+    
+    
+  </h1>
+  
+  <!---->
+   
+  <form
+    class="max-w-md mt-4 flex flex-col gap-4"
+  >
+    <label
+      for="emailsInput"
+    >
+      Email addresses
+    </label>
+     
+    <textarea
+      class="rounded border border-gray-300 px-3 py-2"
+      id="emailsInput"
+      placeholder="Enter one or more email addresses, separated by comma, space, or newline."
+      rows="3"
+    />
+     
+    <!---->
+     
+    <div
+      class="flex"
+    >
+      <!---->
+      <button
+        aria-pressed="false"
+        class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+        data-variant="primary"
+        role="button"
+        tabindex="0"
+      >
+        <!---->
+        <!---->
+        Add user
+        
+        
+        
+      </button>
+      
+      <!---->
+    </div>
+     
+    <div
+      class="mt-4"
+    >
+      <a
+        class="text-gray-700 underline"
+        href="/support/users"
+      >
+        ← Back to users
+      </a>
+    </div>
+  </form>
+  
+</div>
+`;
