@@ -97,16 +97,16 @@ WSGI_APPLICATION = "wsgi.application"
 AUTH_USER_MODEL = "authentication.User"
 
 # Local and testing origin
-TRUSTED_ORIGIN = "http://localhost:3000"
+TRUSTED_ORIGINS = ["http://localhost:3000"]
 
 if ENVIRONMENT.lower() == "prod":
-    TRUSTED_ORIGIN = "https://consult.ai.cabinetoffice.gov.uk"
+    TRUSTED_ORIGINS = ["https://consult.ai.cabinetoffice.gov.uk", "https://consult.i.ai.gov.uk"]
 if ENVIRONMENT.lower() == "dev":
-    TRUSTED_ORIGIN = "https://consult-dev.ai.cabinetoffice.gov.uk"
+    TRUSTED_ORIGINS = ["https://consult-dev.ai.cabinetoffice.gov.uk", "https://consult.dev.i.ai.gov.uk"]
 if ENVIRONMENT.lower() == "preprod":
-    TRUSTED_ORIGIN = "https://consult-preprod.ai.cabinetoffice.gov.uk"
+    TRUSTED_ORIGINS = ["https://consult-preprod.ai.cabinetoffice.gov.uk", "https://consult.preprod.i.ai.gov.uk"]
 
-CSRF_TRUSTED_ORIGINS = [TRUSTED_ORIGIN]
+CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS
 
 # Database with Connection Pooling
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
