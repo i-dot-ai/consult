@@ -265,8 +265,18 @@ class ResponseSerializer(serializers.ModelSerializer):
         """
         Returns True if annotation was edited.
         This replicates annotation.is_edited property logic in a way that avoids N+1 queries.
+
+        Note: These fields are only populated if include_history=true query param is passed.
         """
-        return obj.annotation_is_edited or obj.annotation_has_human_assigned_themes
+        # Check if history annotations were included in the query
+        annotation_is_edited = getattr(obj, "annotation_is_edited", None)
+        annotation_has_human_assigned_themes = getattr(obj, "annotation_has_human_assigned_themes", None)
+
+        # If history wasn't queried, we can't determine edit status efficiently
+        if annotation_is_edited is None and annotation_has_human_assigned_themes is None:
+            return None
+
+        return annotation_is_edited or annotation_has_human_assigned_themes
 
     def get_is_read(self, obj):
         """

@@ -1,4 +1,4 @@
-from django.db.models import Count, OuterRef, Prefetch, Q, Subquery, Value
+from django.db.models import Case, Count, IntegerField, OuterRef, Prefetch, Q, Subquery, Value, When
 from django.db.models.functions import Coalesce
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultations import models
-from consultations.api.filters import get_filtered_responses
+from consultations.api.filters import get_filtered_response_ids, get_filtered_responses
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
@@ -111,18 +111,18 @@ class QuestionViewSet(ModelViewSet):
             consultation_pk = self.kwargs["consultation_pk"]
             pk = kwargs["pk"]
 
-            # Get filtered responses
-            filtered_responses = get_filtered_responses(
-                request.query_params, consultation_pk, question_id=pk
+            filtered_response_ids = get_filtered_response_ids(
+                request.query_params, consultation_pk, question_id=pk, request=request
             )
 
-            # Recalculate multi-choice counts with filters
             multichoice_answers = models.MultiChoiceAnswer.objects.filter(
                 question=question
             ).annotate(
                 prefetched_response_count=Count(
-                    "response",
-                    filter=Q(response__in=filtered_responses),
+                    Case(
+                        When(response__id__in=filtered_response_ids, then=1),
+                        output_field=IntegerField(),
+                    ),
                     distinct=True,
                 )
             )
@@ -158,13 +158,15 @@ class QuestionViewSet(ModelViewSet):
         has_filters = any(request.query_params.get(p) for p in filter_params)
 
         if has_filters:
-            filtered_responses = get_filtered_responses(
-                request.query_params, consultation_pk, question_id=pk
+            filtered_response_ids = get_filtered_response_ids(
+                request.query_params, consultation_pk, question_id=pk, request=request
             )
             themes = themes.annotate(
                 count=Count(
-                    "responseannotation",
-                    filter=Q(responseannotation__response__in=filtered_responses),
+                    Case(
+                        When(responseannotation__response_id__in=filtered_response_ids, then=1),
+                        output_field=IntegerField(),
+                    ),
                     distinct=True,
                 )
             )

@@ -96,18 +96,26 @@ class ResponseViewSet(ModelViewSet):
             is_read_by_user=Exists(
                 models.Response.objects.filter(read_by=self.request.user, pk=OuterRef("pk"))
             ),
-            annotation_is_edited=Exists(
-                models.ResponseAnnotation.history.filter(id=OuterRef("annotation__id")).values(
-                    "id"
-                )[1:]
-            ),
-            annotation_has_human_assigned_themes=Exists(
-                models.ResponseAnnotationTheme.history.filter(
-                    response_annotation_id=OuterRef("annotation__id"),
-                    assigned_by__isnull=False,
-                )
-            ),
         )
+
+        # Only add expensive history queries if explicitly requested
+        include_history = self.request.query_params.get('include_history', 'false').lower() == 'true'
+
+        if include_history:
+            queryset = queryset.annotate(
+                annotation_is_edited=Exists(
+                    models.ResponseAnnotation.history.filter(id=OuterRef("annotation__id")).values(
+                        "id"
+                    )[1:]
+                ),
+                annotation_has_human_assigned_themes=Exists(
+                    models.ResponseAnnotationTheme.history.filter(
+                        response_annotation_id=OuterRef("annotation__id"),
+                        assigned_by__isnull=False,
+                    )
+                ),
+            )
+
         # Apply additional FilterSet filtering (including themeFilters)
         filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
         qs = filterset.qs

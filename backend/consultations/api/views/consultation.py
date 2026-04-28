@@ -129,7 +129,9 @@ class ConsultationViewSet(ModelViewSet):
         has_filters = any(request.query_params.get(p) for p in filter_params)
 
         if has_filters:
-            filtered_responses = get_filtered_responses(request.query_params, pk)
+            filtered_responses = get_filtered_responses(
+                request.query_params, pk, request=request
+            )
             options = options.filter(
                 Exists(filtered_responses.filter(respondent=OuterRef("respondent")))
             ).annotate(count=Count("respondent", distinct=True))
