@@ -1,4 +1,4 @@
-from django.db.models import Case, Count, IntegerField, OuterRef, Prefetch, Q, Subquery, Value, When
+from django.db.models import Case, Count, IntegerField, OuterRef, Prefetch, Subquery, Value, When
 from django.db.models.functions import Coalesce
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultations import models
-from consultations.api.filters import get_filtered_response_ids, get_filtered_responses
+from consultations.api.filters import get_filtered_response_ids
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
