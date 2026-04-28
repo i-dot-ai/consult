@@ -111,10 +111,10 @@ class QuestionViewSet(ModelViewSet):
             consultation_pk = self.kwargs["consultation_pk"]
             pk = kwargs["pk"]
 
-            # Get filtered response IDs - use list() to evaluate queryset once
-            filtered_response_ids = list(get_filtered_response_ids(
+            # Get filtered response IDs as queryset (not materialized)
+            filtered_response_ids = get_filtered_response_ids(
                 request.query_params, consultation_pk, question_id=pk, request=request
-            ))
+            )
 
             # Use filter with Q for accurate counting
             multichoice_answers = models.MultiChoiceAnswer.objects.filter(
@@ -158,10 +158,10 @@ class QuestionViewSet(ModelViewSet):
         has_filters = any(request.query_params.get(p) for p in filter_params)
 
         if has_filters:
-            # Get filtered response IDs - use list() to evaluate queryset once
-            filtered_response_ids = list(get_filtered_response_ids(
+            # Get filtered response IDs as queryset (not materialized)
+            filtered_response_ids = get_filtered_response_ids(
                 request.query_params, consultation_pk, question_id=pk, request=request
-            ))
+            )
             themes = themes.annotate(
                 count=Count(
                     "responseannotation",
