@@ -1,4 +1,4 @@
-import { answersMock, answerUpdateMock, CONSULTATION_ID, consultationMock, demoMock, QUESTION_ID, questionMock, themesMock } from "./mocks";
+import { answersMock, answerUpdateMock, CONSULTATION_ID, consultationMock, demoMock, flagMock, QUESTION_ID, questionMock, themesMock } from "./mocks";
 import QuestionDetail from "./QuestionDetail.svelte";
 
 const consultationId = $state(CONSULTATION_ID);
@@ -12,6 +12,7 @@ export default {
     consultationMock,
     questionMock,
     themesMock,
+    flagMock,
     answersMock,
     demoMock,
     answerUpdateMock,

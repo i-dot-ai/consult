@@ -1,4 +1,4 @@
-import { getApiConsultationUrl, getApiDemographicsUrl, getApiQuestionResponsesUrl, getApiQuestionThemesUrl, getApiQuestionUrl, updateResponseReadStatus } from "../../../global/routes";
+import { getApiAnswerFlagUrl, getApiConsultationUrl, getApiDemographicsUrl, getApiQuestionResponsesUrl, getApiQuestionThemesUrl, getApiQuestionUrl, updateResponseReadStatus } from "../../../global/routes";
 import { paginateArray } from "../../../global/utils";
 
 export const CONSULTATION_ID = "test-consultation";
@@ -66,12 +66,20 @@ let answers = [
     "question_id": "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     "free_text_answer_text": "Yes, I agree with the proposal as it will create a standardized framework that benefits both consumers and manufacturers.",
     "demographic_data": {},
-    "themes": [],
+    "themes": [
+      {
+        "id": "test-theme",
+        "assigned_by": "AI",
+        "name": "Test Theme",
+        "description": "A test framework that benefits both consumers and manufacturers.",
+        "key": "A",
+      },
+    ],
     "multiple_choice_answer": [
         "Don't know",
         "Yes"
     ],
-    "evidenceRich": null,
+    "evidenceRich": true,
     "sentiment": null,
     "human_reviewed": null,
     "is_flagged": false,
@@ -118,7 +126,22 @@ let answers = [
     "question_id": "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     "free_text_answer_text": "",
     "demographic_data": {},
-    "themes": [],
+    "themes": [
+      {
+        "id": "test-theme",
+        "assigned_by": "AI",
+        "name": "Test Theme",
+        "description": "A test framework that benefits both consumers and manufacturers.",
+        "key": "A",
+      },
+      {
+        "id": "26656d42-9b12-413f-bef8-1879d04f0d98",
+        "assigned_by": "AI",
+        "name": "Standardized framework",
+        "description": "A standardized framework that benefits both consumers and manufacturers.",
+        "key": "A",
+      },
+    ],
     "multiple_choice_answer": [
         "Don't know",
         "Yes"
@@ -139,6 +162,26 @@ const filterAnswers = (answers: any[], params: any) => {
   let result = intendedPage > pages.length
     ? []
     : pages[intendedPage - 1];
+
+  if (params.evidenceRich) {
+    result = result.filter(item => item.evidenceRich)
+  }
+
+  if (params.themeFilters) {
+    const themes = params.themeFilters.split(",");
+    result = result.filter(item => {
+      for (const theme of themes) {
+        if (!item.themes.find(itemTheme => itemTheme.id === theme)) {
+          return false;
+        }
+      }
+      return true;
+    })
+  }
+
+  if (params.is_flagged) {
+    result = result.filter(item => item.is_flagged)
+  }
 
   if (params.searchValue) {
     result = result.filter(item => (
@@ -206,16 +249,22 @@ export const questionMock = {
 
 export const themesMock = {
   url: "path:" + getApiQuestionThemesUrl(CONSULTATION_ID, QUESTION_ID),
-  body: {
+  body: () => ({
     "themes": [
-        {
-            "id": "26656d42-9b12-413f-bef8-1879d04f0d98",
-            "name": "Standardized framework",
-            "description": "A standardized framework that benefits both consumers and manufacturers.",
-            "count": 0
-        }
+      {
+        "id": "26656d42-9b12-413f-bef8-1879d04f0d98",
+        "name": "Standardized framework",
+        "description": "A standardized framework that benefits both consumers and manufacturers.",
+        "count": 0
+      },
+      {
+        "id": "test-theme",
+        "name": "Test Theme",
+        "description": "A test framework that benefits both consumers and manufacturers.",
+        "count": 0
+      }
     ]
-  }
+  })
 }
 
 export const answersMock = {
@@ -240,6 +289,16 @@ export const demoMock = {
 }
 
 export const answerUpdateMock = {
-  regexp: "*host" + updateResponseReadStatus(CONSULTATION_ID, ":answerId"),
+  regexp: "*host" + updateResponseReadStatus(":consultationId", ":answerId"),
   method: "POST",
+}
+
+export const flagMock = {
+  regexp: "*host" + getApiAnswerFlagUrl(":consultationId", ":answerId"),
+  method: "PATCH",
+  body: ({ params }) => {
+    answers = answers.map(answer => answer.id === params.answerId
+      ? {...answer, is_flagged: !answer.is_flagged }
+      : answer)
+  },
 }
