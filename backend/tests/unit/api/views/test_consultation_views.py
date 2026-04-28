@@ -357,14 +357,31 @@ class TestConsultationViewSet:
 
     def test_delete_consultation(self, client, consultation, staff_user_token):
         """test that a user can delete their own consultation"""
+        from unittest.mock import patch
+
         url = reverse("consultations-detail", kwargs={"pk": consultation.id})
-        response = client.delete(
-            url,
-            headers={"Authorization": f"Bearer {staff_user_token}"},
-        )
-        assert response.status_code == 204
-        assert not response.content
-        assert not Consultation.objects.filter(pk=consultation.pk).exists()
+
+        # Mock the job enqueueing
+        with patch("ingest.jobs.delete_consultation_job.delay") as mock_delay:
+            response = client.delete(
+                url,
+                headers={"Authorization": f"Bearer {staff_user_token}"},
+            )
+
+            # Verify API returned 202 Accepted
+            assert response.status_code == 202
+
+            # Verify response contains expected message
+            response_data = response.json()
+            assert "message" in response_data
+            assert "queued" in response_data["message"]
+            assert "consultation_id" in response_data
+
+            # Verify job was enqueued with correct parameter
+            mock_delay.assert_called_once_with(consultation.id)
+
+        # Consultation should still exist (worker will delete it)
+        assert Consultation.objects.filter(pk=consultation.pk).exists()
 
     def test_delete_consultation_fail(self, client, consultation, non_staff_user_token):
         """test that a user cannot delete a consultation they do not own"""

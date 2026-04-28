@@ -100,17 +100,30 @@ def delete_responses_in_batches(consultation_id: UUID, batch_size: int = 1000):
                 break
 
 
-@job("default", timeout=3_600)
-def delete_consultation_job(consultation: models.Consultation):
+@job("default", timeout=28_800)  # 8 hours
+def delete_consultation_job(consultation_id: UUID):
+    """
+    RQ job to delete a consultation and all related data.
+
+    This job is executed asynchronously on the worker container.
+
+    Args:
+        consultation_id: UUID of the consultation to delete
+    """
     logger.refresh_context()
 
-    consultation_id = consultation.id
-    consultation_title = consultation.title
+    try:
+        # Fetch the consultation from database
+        consultation = models.Consultation.objects.get(id=consultation_id)
+        consultation_title = consultation.title
+    except models.Consultation.DoesNotExist:
+        logger.error(
+            "Consultation {consultation_id} not found, may have already been deleted",
+            consultation_id=consultation_id,
+        )
+        return
 
     try:
-        # Re-fetch the consultation to ensure we have a fresh DB connection
-        consultation = models.Consultation.objects.get(id=consultation_id)
-
         # Delete related objects in order to avoid foreign key constraints
         logger.info(
             "Deleting consultation '{consultation_title}' (ID: {consultation_id})",
