@@ -2,7 +2,7 @@ from typing import Any
 
 import sentry_sdk
 from django.conf import settings
-from django.db.models import Count, Exists, OuterRef, Subquery, Value
+from django.db.models import Count, OuterRef, Subquery, Value
 from django.db.models.functions import Coalesce
 from django.http import Http404
 from rest_framework import serializers, status
