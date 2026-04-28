@@ -162,13 +162,20 @@ class QuestionViewSet(ModelViewSet):
             filtered_response_ids = get_filtered_response_ids(
                 request.query_params, consultation_pk, question_id=pk, request=request
             )
-            themes = themes.annotate(
-                count=Count(
-                    "responseannotation",
-                    filter=Q(responseannotation__response_id__in=filtered_response_ids),
-                    distinct=True,
+            
+            # Use Subquery to count theme assignments for filtered responses
+            # This is much faster than LEFT JOIN with filter because it reverses the join order
+            theme_count_subquery = Subquery(
+                models.ResponseAnnotationTheme.objects.filter(
+                    theme_id=OuterRef("pk"),
+                    response_annotation__response_id__in=filtered_response_ids,
                 )
+                .values("theme_id")
+                .annotate(c=Count("id", distinct=True))
+                .values("c")
             )
+            
+            themes = themes.annotate(count=Coalesce(theme_count_subquery, Value(0)))
         else:
             themes = themes.annotate(count=Count("responseannotation", distinct=True))
 
