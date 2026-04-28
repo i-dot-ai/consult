@@ -129,16 +129,30 @@ class ConsultationViewSet(ModelViewSet):
         has_filters = any(request.query_params.get(p) for p in filter_params)
 
         if has_filters:
-            # Get filtered respondent IDs once - much faster than Exists subquery per option
+            # Get filtered respondent IDs once - use Subquery instead of Exists for better performance
             filtered_responses = get_filtered_responses(
                 request.query_params, pk, request=request
             )
             filtered_respondent_ids = list(
                 filtered_responses.values_list("respondent_id", flat=True).distinct()
             )
-            options = options.filter(
-                respondent__id__in=filtered_respondent_ids
-            ).annotate(count=Count("respondent", distinct=True))
+            
+            # Use the through table to count respondents efficiently
+            respondent_demographics_table = DemographicOption.respondent_set.through
+            options = options.annotate(
+                count=Coalesce(
+                    Subquery(
+                        respondent_demographics_table.objects.filter(
+                            demographicoption_id=OuterRef("pk"),
+                            respondent_id__in=filtered_respondent_ids,
+                        )
+                        .values("demographicoption_id")
+                        .annotate(c=Count("respondent_id", distinct=True))
+                        .values("c")
+                    ),
+                    Value(0),
+                )
+            )
         elif question_id:
             # Scope counts to respondents who answered this question
             respondent_demographics_table = DemographicOption.respondent_set.through
