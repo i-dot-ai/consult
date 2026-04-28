@@ -1,4 +1,4 @@
-from django.db.models import Case, Count, IntegerField, OuterRef, Prefetch, Subquery, Value, When
+from django.db.models import Count, OuterRef, Prefetch, Q, Subquery, Value
 from django.db.models.functions import Coalesce
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -111,18 +111,18 @@ class QuestionViewSet(ModelViewSet):
             consultation_pk = self.kwargs["consultation_pk"]
             pk = kwargs["pk"]
 
-            filtered_response_ids = get_filtered_response_ids(
+            # Get filtered response IDs - use list() to evaluate queryset once
+            filtered_response_ids = list(get_filtered_response_ids(
                 request.query_params, consultation_pk, question_id=pk, request=request
-            )
+            ))
 
+            # Use filter with Q for accurate counting
             multichoice_answers = models.MultiChoiceAnswer.objects.filter(
                 question=question
             ).annotate(
                 prefetched_response_count=Count(
-                    Case(
-                        When(response__id__in=filtered_response_ids, then=1),
-                        output_field=IntegerField(),
-                    ),
+                    "response",
+                    filter=Q(response__id__in=filtered_response_ids),
                     distinct=True,
                 )
             )
@@ -158,15 +158,14 @@ class QuestionViewSet(ModelViewSet):
         has_filters = any(request.query_params.get(p) for p in filter_params)
 
         if has_filters:
-            filtered_response_ids = get_filtered_response_ids(
+            # Get filtered response IDs - use list() to evaluate queryset once
+            filtered_response_ids = list(get_filtered_response_ids(
                 request.query_params, consultation_pk, question_id=pk, request=request
-            )
+            ))
             themes = themes.annotate(
                 count=Count(
-                    Case(
-                        When(responseannotation__response_id__in=filtered_response_ids, then=1),
-                        output_field=IntegerField(),
-                    ),
+                    "responseannotation",
+                    filter=Q(responseannotation__response_id__in=filtered_response_ids),
                     distinct=True,
                 )
             )
