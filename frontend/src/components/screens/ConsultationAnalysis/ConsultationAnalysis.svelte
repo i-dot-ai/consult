@@ -67,6 +67,7 @@
         return b.count - a.count; // Descending order by count
       })
       .map((demoOption: DemoOptionsResponseItem) => ({
+        id: demoOption.id,
         title: demoOption.value.replaceAll("'", ""),
         count: demoOption.count,
         percentage: getPercentage(demoOption.count, total),
@@ -84,7 +85,7 @@
       },
       {} as Record<
         string,
-        Array<{ title: string; count: number; percentage: number }>
+        Array<{ id: string; title: string; count: number; percentage: number }>
       >,
     ),
   );
