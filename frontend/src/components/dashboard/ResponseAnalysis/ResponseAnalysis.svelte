@@ -8,11 +8,8 @@
   import AnswerCard from "../AnswerCard/AnswerCard.svelte";
   import Finance from "../../svg/material/Finance.svelte";
   import FiltersSidebar from "../FiltersSidebar/FiltersSidebar.svelte";
-  import Select from "../../inputs/Select/Select.svelte";
 
   import {
-    SearchModeLabels,
-    SearchModeValues,
     type DemoData,
     type DemoOption,
     type DemoOptionsResponse,
@@ -50,8 +47,6 @@
 
   export let searchValue: string = "";
   export let setSearchValue = (_value: string) => {};
-  export let searchMode: SearchModeValues = SearchModeValues.KEYWORD;
-  export let setSearchMode = (_searchMode: SearchModeValues) => {};
 
   export let demoOptions: DemoOption = {};
   export let demoData: DemoData = {};
@@ -193,24 +188,6 @@
                   hideLabel={true}
                   value={searchValue}
                   setValue={(value: string) => setSearchValue(value.trim())}
-                />
-              </div>
-
-              <div class="w-full sm:w-auto">
-                <Select
-                  id="search_mode"
-                  label="Search Mode"
-                  hideLabel={true}
-                  value={searchMode}
-                  items={[
-                    {
-                      value: SearchModeValues.KEYWORD,
-                      label: SearchModeLabels.KEYWORD,
-                    },
-                  ]}
-                  onchange={(nextValue: string) => {
-                    setSearchMode(nextValue as SearchModeValues);
-                  }}
                 />
               </div>
             </div>

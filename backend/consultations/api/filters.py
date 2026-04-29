@@ -98,7 +98,7 @@ class UserFilter(FilterSet):
 
 
 class ResponseSearchSerializer(serializers.Serializer):
-    searchMode = serializers.ChoiceField(choices=["keyword", "semantic"], required=False)
+    searchMode = serializers.ChoiceField(choices=["keyword"], required=False, default="keyword")
     searchValue = serializers.CharField(required=False)
 
 
