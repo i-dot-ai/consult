@@ -62,17 +62,40 @@ class ResponseFilter(FilterSet):
         fields = ["respondent_id", "chosen_options"]
 
 
-def get_filtered_responses(query_params, consultation_id, question_id=None):
+def get_filtered_responses(query_params, consultation_id, question_id=None, request=None):
     """
     Used by aggregation endpoints (themes, demographics) to filter responses
     by question if question_id is defined.
+
+    Args:
+        query_params: Query parameters for filtering
+        consultation_id: UUID of the consultation
+        question_id: Optional UUID of the question to filter by
+        request: Optional request object for user-specific filters
     """
     queryset = Response.objects.filter(question__consultation_id=consultation_id)
     if question_id:
         queryset = queryset.filter(question_id=question_id)
 
-    filterset = ResponseFilter(query_params, queryset=queryset)
+    filterset = ResponseFilter(query_params, queryset=queryset, request=request)
     return filterset.qs
+
+
+def get_filtered_response_ids(query_params, consultation_id, question_id=None, request=None):
+    """
+    Get IDs of filtered responses
+
+    Args:
+        query_params: Query parameters for filtering
+        consultation_id: UUID of the consultation
+        question_id: Optional UUID of the question to filter by
+        request: Optional request object for user-specific filters
+
+    Returns:
+        List of response UUIDs
+    """
+    qs = get_filtered_responses(query_params, consultation_id, question_id, request)
+    return qs.values_list('id', flat=True)
 
 
 class UserFilter(FilterSet):

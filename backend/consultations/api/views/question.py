@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultations import models
-from consultations.api.filters import get_filtered_responses
+from consultations.api.filters import get_filtered_response_ids
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
@@ -111,18 +111,18 @@ class QuestionViewSet(ModelViewSet):
             consultation_pk = self.kwargs["consultation_pk"]
             pk = kwargs["pk"]
 
-            # Get filtered responses
-            filtered_responses = get_filtered_responses(
-                request.query_params, consultation_pk, question_id=pk
+            # Get filtered response IDs as queryset (not materialized)
+            filtered_response_ids = get_filtered_response_ids(
+                request.query_params, consultation_pk, question_id=pk, request=request
             )
 
-            # Recalculate multi-choice counts with filters
+            # Use filter with Q for accurate counting
             multichoice_answers = models.MultiChoiceAnswer.objects.filter(
                 question=question
             ).annotate(
                 prefetched_response_count=Count(
                     "response",
-                    filter=Q(response__in=filtered_responses),
+                    filter=Q(response__id__in=filtered_response_ids),
                     distinct=True,
                 )
             )
@@ -158,16 +158,24 @@ class QuestionViewSet(ModelViewSet):
         has_filters = any(request.query_params.get(p) for p in filter_params)
 
         if has_filters:
-            filtered_responses = get_filtered_responses(
-                request.query_params, consultation_pk, question_id=pk
+            # Get filtered response IDs as queryset (not materialized)
+            filtered_response_ids = get_filtered_response_ids(
+                request.query_params, consultation_pk, question_id=pk, request=request
             )
-            themes = themes.annotate(
-                count=Count(
-                    "responseannotation",
-                    filter=Q(responseannotation__response__in=filtered_responses),
-                    distinct=True,
+            
+            # Use Subquery to count theme assignments for filtered responses
+            # This is much faster than LEFT JOIN with filter because it reverses the join order
+            theme_count_subquery = Subquery(
+                models.ResponseAnnotationTheme.objects.filter(
+                    theme_id=OuterRef("pk"),
+                    response_annotation__response_id__in=filtered_response_ids,
                 )
+                .values("theme_id")
+                .annotate(c=Count("id", distinct=True))
+                .values("c")
             )
+            
+            themes = themes.annotate(count=Coalesce(theme_count_subquery, Value(0)))
         else:
             themes = themes.annotate(count=Count("responseannotation", distinct=True))
 

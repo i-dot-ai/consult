@@ -2,7 +2,7 @@ from typing import Any
 
 import sentry_sdk
 from django.conf import settings
-from django.db.models import Count, Exists, OuterRef, Subquery, Value
+from django.db.models import Count, OuterRef, Subquery, Value
 from django.db.models.functions import Coalesce
 from django.http import Http404
 from rest_framework import serializers, status
@@ -129,10 +129,27 @@ class ConsultationViewSet(ModelViewSet):
         has_filters = any(request.query_params.get(p) for p in filter_params)
 
         if has_filters:
-            filtered_responses = get_filtered_responses(request.query_params, pk)
-            options = options.filter(
-                Exists(filtered_responses.filter(respondent=OuterRef("respondent")))
-            ).annotate(count=Count("respondent", distinct=True))
+            # Get filtered responses as queryset (not materialized list)
+            filtered_responses = get_filtered_responses(
+                request.query_params, pk, request=request
+            )
+            # Use Subquery with through table for better performance than Exists
+            # This evaluates the filtered_responses query once instead of per demographic option
+            respondent_demographics_table = DemographicOption.respondent_set.through
+            options = options.annotate(
+                count=Coalesce(
+                    Subquery(
+                        respondent_demographics_table.objects.filter(
+                            demographicoption_id=OuterRef("pk"),
+                            respondent_id__in=filtered_responses.values("respondent_id"),
+                        )
+                        .values("demographicoption_id")
+                        .annotate(c=Count("respondent_id", distinct=True))
+                        .values("c")
+                    ),
+                    Value(0),
+                )
+            )
         elif question_id:
             # Scope counts to respondents who answered this question
             respondent_demographics_table = DemographicOption.respondent_set.through

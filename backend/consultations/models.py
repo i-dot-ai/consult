@@ -251,6 +251,9 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta:
         indexes = [
             GinIndex(fields=["search_vector"]),
+            models.Index(fields=["question"]),
+            models.Index(fields=["respondent"]),
+            models.Index(fields=["question", "respondent"]),
         ]
 
     def __str__(self):
@@ -401,6 +404,12 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
                 name="unique_theme_assignment",
             ),
         ]
+        indexes = [
+            models.Index(fields=["response_annotation"]),
+            models.Index(fields=["theme"]),
+            models.Index(fields=["response_annotation", "theme"]),
+            models.Index(fields=["assigned_by"]),
+        ]
 
 
 class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -441,9 +450,11 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         indexes = [
+            models.Index(fields=["response"]),
             models.Index(fields=["human_reviewed"]),
             models.Index(fields=["sentiment"]),
             models.Index(fields=["evidence_rich"]),
+            models.Index(fields=["sentiment", "evidence_rich"]),
         ]
 
     def mark_human_reviewed(self, user):
