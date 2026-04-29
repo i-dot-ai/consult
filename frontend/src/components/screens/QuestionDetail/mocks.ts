@@ -1,10 +1,11 @@
 import { getApiAnswerFlagUrl, getApiConsultationUrl, getApiDemographicsUrl, getApiQuestionResponsesUrl, getApiQuestionThemesUrl, getApiQuestionUrl, updateResponseReadStatus } from "../../../global/routes";
+import type { ResponseAnswer } from "../../../global/types";
 import { paginateArray } from "../../../global/utils";
 
 export const CONSULTATION_ID = "test-consultation";
 export const QUESTION_ID = "test-question";
 
-let answers = [
+let answers: ResponseAnswer[] = [
   {
     "id": "f3f8f938-281b-4b74-ac80-6db7390e2171",
     "identifier": "1",
@@ -159,7 +160,7 @@ const filterAnswers = (answers: any[], params: any) => {
   let pages = paginateArray(answers, Number.parseInt(params.page_size));
   let intendedPage = Number.parseInt(params.page);
 
-  let result = intendedPage > pages.length
+  let result: ResponseAnswer[] = intendedPage > pages.length
     ? []
     : pages[intendedPage - 1];
 
@@ -171,7 +172,7 @@ const filterAnswers = (answers: any[], params: any) => {
     const themes = params.themeFilters.split(",");
     result = result.filter(item => {
       for (const theme of themes) {
-        if (!item.themes.find(itemTheme => itemTheme.id === theme)) {
+        if (!item.themes?.find((itemTheme) => itemTheme.id === theme)) {
           return false;
         }
       }
@@ -296,7 +297,7 @@ export const answerUpdateMock = {
 export const flagMock = {
   regexp: "*host" + getApiAnswerFlagUrl(":consultationId", ":answerId"),
   method: "PATCH",
-  body: ({ params }) => {
+  body: ({ params }: { params: { answerId: string } }) => {
     answers = answers.map(answer => answer.id === params.answerId
       ? {...answer, is_flagged: !answer.is_flagged }
       : answer)
