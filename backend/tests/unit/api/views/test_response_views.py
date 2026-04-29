@@ -820,58 +820,6 @@ class TestResponseViewSet:
             "The local library needs more funding for children's programs",
         ]
 
-    def test_representative_response_search(
-        self, client, staff_user_token, embedded_responses, django_assert_num_queries
-    ):
-        """Test API endpoint returns representative responses for a theme"""
-        url = reverse(
-            "response-list",
-            kwargs={"consultation_pk": embedded_responses["consultation_id"]},
-        )
-        theme_name = "Public Transport"
-        theme_description = "Local councils should invest in public transport infrastructure"
-
-        with patch(
-            "consultations.api.filters.embed_text",
-            return_value=embedded_responses["search_mode"]["representative"]["embedding"],
-        ):
-            """
-            Test for no N+1 queries. Regardless of the number of responses, we expect:
-            - 1 query to get authentication user for permission checking
-            - 1 query to get authentication user for is_flagged annotation
-            - 1 query to count respondents
-            - 1 query to count filtered responses
-            - 1 query to get responses with related data (includes is_read annotation)
-            - 1 query to calculate average hybrid_score across responses
-            - 1 query to calculate standard deviation of hybrid_score across responses
-            - 1 query to prefetch multiple choice answers
-            - 1 query to prefetch demographic data
-            """
-            with django_assert_num_queries(9):
-                response = client.get(
-                    url,
-                    query_params={
-                        "question_id": embedded_responses["question_id"],
-                        "searchMode": "representative",
-                        "searchValue": f"{theme_name} {theme_description}",
-                    },
-                    headers={"Authorization": f"Bearer {staff_user_token}"},
-                )
-
-        assert response.status_code == 200
-
-        # Parse the response
-        data = orjson.loads(response.content)
-
-        assert len(data["all_respondents"]) == 1
-        assert data["respondents_total"] == 5
-        assert data["filtered_total"] == 1
-
-        # Verify which responses are considered representative
-        response_texts = [r["free_text_answer_text"] for r in data["all_respondents"]]
-        assert response_texts == [
-            "The local council should really be investing in public transport infrastructure to help reduce carbon emissions",
-        ]
 
     def test_get_themes_for_response(self, client, staff_user_token, free_text_question):
         """Test API endpoint returns themes for a specific response"""

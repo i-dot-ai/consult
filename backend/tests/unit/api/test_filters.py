@@ -1,4 +1,3 @@
-import math
 from unittest.mock import patch
 
 import pytest
@@ -18,30 +17,34 @@ def pad_vector(vector):
 
 @pytest.mark.django_db
 @patch("consultations.api.filters.embed_text", return_value=pad_vector([1, 0]))
-@pytest.mark.parametrize("delta, expected", [(+0.0001, True), (-0.0001, False)])
-def test_semantic_threshold_for_response_search_filter(
-    mock_embed_text, respondent_1, respondent_2, free_text_question, delta, expected
-):
-    """we are checking just above and below the semantic-threshold boundary to see that
-    ResponseSearchFilter is correctly filtering the right responses"""
+def test_semantic_search_filter(mock_embed_text, respondent_1, free_text_question):
+    """Test that ResponseSearchFilter orders responses by semantic distance"""
 
-    angle = 0.3 + delta
-
-    # here we construct the vector need to match the semantic-threshold given
-    # that embed_text is mocked to always return the unit vector
-    embedding = pad_vector([angle, math.sqrt(1 - math.pow(angle, 2))])
-
-    Response.objects.create(
+    # Create responses with different embeddings
+    response_close = Response.objects.create(
         respondent=respondent_1,
         question=free_text_question,
-        embedding=embedding,
+        embedding=pad_vector([0.9, 0.436]),  # Close to [1, 0]
+    )
+
+    response_far = Response.objects.create(
+        respondent=respondent_1,
+        question=free_text_question,
+        embedding=pad_vector([0.3, 0.954]),  # Far from [1, 0]
     )
 
     response_search_filter = ResponseSearchFilter()
 
     class FakeRequest:
         def __init__(self):
-            self.query_params = {"searchMode": "representative", "searchValue": "something"}
+            self.query_params = {"searchMode": "semantic", "searchValue": "something"}
 
     queryset = response_search_filter.filter_queryset(FakeRequest(), Response.objects.all(), None)
-    assert queryset.exists() is expected
+
+    # Semantic search returns all responses ordered by distance
+    results = list(queryset)
+    assert len(results) == 2
+
+    # The closest response should come first
+    assert results[0] == response_close
+    assert results[1] == response_far
