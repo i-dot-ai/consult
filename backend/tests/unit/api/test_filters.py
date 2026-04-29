@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import pytest
 from django.conf import settings
 
@@ -16,35 +14,43 @@ def pad_vector(vector):
 
 
 @pytest.mark.django_db
-@patch("consultations.api.filters.embed_text", return_value=pad_vector([1, 0]))
-def test_semantic_search_filter(mock_embed_text, respondent_1, free_text_question):
-    """Test that ResponseSearchFilter orders responses by semantic distance"""
+def test_keyword_search_filter(respondent_1, free_text_question):
+    """Test that ResponseSearchFilter correctly filters responses using keyword search"""
 
-    # Create responses with different embeddings
-    response_close = Response.objects.create(
+    response_with_match = Response.objects.create(
         respondent=respondent_1,
         question=free_text_question,
-        embedding=pad_vector([0.9, 0.436]),  # Close to [1, 0]
+        free_text="This is about climate policy",
     )
 
-    response_far = Response.objects.create(
+    response_without_match = Response.objects.create(
         respondent=respondent_1,
         question=free_text_question,
-        embedding=pad_vector([0.3, 0.954]),  # Far from [1, 0]
+        free_text="This is about other topics",
     )
 
     response_search_filter = ResponseSearchFilter()
 
     class FakeRequest:
-        def __init__(self):
-            self.query_params = {"searchMode": "semantic", "searchValue": "something"}
+        def __init__(self, search_value):
+            self.query_params = {"searchMode": "keyword", "searchValue": search_value}
 
-    queryset = response_search_filter.filter_queryset(FakeRequest(), Response.objects.all(), None)
+    # Test matching keyword
+    queryset = response_search_filter.filter_queryset(
+        FakeRequest("climate"), Response.objects.all(), None
+    )
+    assert queryset.count() == 1
+    assert response_with_match in queryset
+    assert response_without_match not in queryset
 
-    # Semantic search returns all responses ordered by distance
-    results = list(queryset)
-    assert len(results) == 2
+    # Test case-insensitive matching
+    queryset = response_search_filter.filter_queryset(
+        FakeRequest("CLIMATE"), Response.objects.all(), None
+    )
+    assert queryset.count() == 1
 
-    # The closest response should come first
-    assert results[0] == response_close
-    assert results[1] == response_far
+    # Test non-matching keyword
+    queryset = response_search_filter.filter_queryset(
+        FakeRequest("nonexistent"), Response.objects.all(), None
+    )
+    assert queryset.count() == 0

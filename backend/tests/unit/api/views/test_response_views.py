@@ -1,5 +1,4 @@
 from datetime import datetime
-from unittest.mock import patch
 from uuid import uuid4
 
 import orjson
@@ -774,52 +773,6 @@ class TestResponseViewSet:
         respondent = data["all_respondents"][0]
         assert respondent["identifier"] == str(respondent1.identifier)
         assert respondent["free_text_answer_text"] == response1.free_text
-
-    def test_semantic_search(
-        self,
-        client,
-        staff_user_token,
-        embedded_responses,
-    ):
-        """Test API endpoint returns responses in order of semantic similarity"""
-        url = reverse(
-            "response-list",
-            kwargs={"consultation_pk": embedded_responses["consultation_id"]},
-        )
-
-        with patch(
-            "consultations.api.filters.embed_text",
-            return_value=embedded_responses["search_mode"]["semantic"]["embedding"],
-        ):
-            response = client.get(
-                url,
-                query_params={
-                    "question_id": embedded_responses["question_id"],
-                    "searchMode": "semantic",
-                    "searchValue": "public transport",
-                },
-                headers={"Authorization": f"Bearer {staff_user_token}"},
-            )
-
-        assert response.status_code == 200
-
-        # Parse the response
-        data = orjson.loads(response.content)
-
-        assert len(data["all_respondents"]) == 5
-        assert data["respondents_total"] == 5
-        assert data["filtered_total"] == 5
-
-        # Verify order of responses by semantic similarity to searchValue
-        response_texts = [r["free_text_answer_text"] for r in data["all_respondents"]]
-        assert response_texts == [
-            "We need better buses and trains to connect our neighbourhoods",
-            "The local council should really be investing in public transport infrastructure to help reduce carbon emissions",
-            "I drive to work every day and fuel costs are rising rapidly",
-            "Something must be done about bin collections in my area",
-            "The local library needs more funding for children's programs",
-        ]
-
 
     def test_get_themes_for_response(self, client, staff_user_token, free_text_question):
         """Test API endpoint returns themes for a specific response"""
