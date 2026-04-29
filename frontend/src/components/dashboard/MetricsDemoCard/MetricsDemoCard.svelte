@@ -36,7 +36,7 @@
 </script>
 
 {#snippet cardItem(
-  { id, title, count, percentage }: MetricsDemoItem,
+  { id: _id, title, count, percentage }: MetricsDemoItem,
   index: number,
 )}
   {#if displayAll || index < hideThreshold}
