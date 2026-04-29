@@ -651,7 +651,7 @@ def import_consultation_from_s3(
     consultation_code: str,
     consultation_title: str,
     user_id: UUID,
-    enqueue_embeddings: bool = True,
+    enqueue_embeddings: bool = False,  # Whether to enqueue embedding jobs after import (default False for consultation setup for now)
     batch_size: int = 512,
 ) -> UUID:
     """

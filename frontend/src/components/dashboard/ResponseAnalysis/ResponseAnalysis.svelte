@@ -207,10 +207,6 @@
                       value: SearchModeValues.KEYWORD,
                       label: SearchModeLabels.KEYWORD,
                     },
-                    {
-                      value: SearchModeValues.SEMANTIC,
-                      label: SearchModeLabels.SEMANTIC,
-                    },
                   ]}
                   onchange={(nextValue: string) => {
                     setSearchMode(nextValue as SearchModeValues);
