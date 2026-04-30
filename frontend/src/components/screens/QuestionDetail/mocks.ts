@@ -335,3 +335,14 @@ export const flagMock = {
       : answer)
   },
 }
+
+export const mocks = {
+  answerEditMock,
+  answersMock,
+  answerUpdateMock,
+  consultationMock,
+  demoMock,
+  flagMock,
+  questionMock,
+  themesMock,
+}
