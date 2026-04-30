@@ -1,4 +1,4 @@
-import { getApiAnswerFlagUrl, getApiConsultationUrl, getApiDemographicsUrl, getApiQuestionResponsesUrl, getApiQuestionThemesUrl, getApiQuestionUrl, updateResponseReadStatus } from "../../../global/routes";
+import { getApiAnswerFlagUrl, getApiAnswerUrl, getApiConsultationUrl, getApiDemographicsUrl, getApiQuestionResponsesUrl, getApiQuestionThemesUrl, getApiQuestionUrl, updateResponseReadStatus } from "../../../global/routes";
 import type { ResponseAnswer } from "../../../global/types";
 import { paginateArray } from "../../../global/utils";
 
@@ -156,6 +156,21 @@ let answers: ResponseAnswer[] = [
   }
 ];
 
+let themes = [
+  {
+    "id": "26656d42-9b12-413f-bef8-1879d04f0d98",
+    "name": "Standardized framework",
+    "description": "A standardized framework that benefits both consumers and manufacturers.",
+    "count": 0
+  },
+  {
+    "id": "test-theme",
+    "name": "Test Theme",
+    "description": "A test framework that benefits both consumers and manufacturers.",
+    "count": 0
+  }
+]
+
 const filterAnswers = (answers: any[], params: any) => {
   let pages = paginateArray(answers, Number.parseInt(params.page_size));
   let intendedPage = Number.parseInt(params.page);
@@ -251,20 +266,7 @@ export const questionMock = {
 export const themesMock = {
   url: "path:" + getApiQuestionThemesUrl(CONSULTATION_ID, QUESTION_ID),
   body: () => ({
-    "themes": [
-      {
-        "id": "26656d42-9b12-413f-bef8-1879d04f0d98",
-        "name": "Standardized framework",
-        "description": "A standardized framework that benefits both consumers and manufacturers.",
-        "count": 0
-      },
-      {
-        "id": "test-theme",
-        "name": "Test Theme",
-        "description": "A test framework that benefits both consumers and manufacturers.",
-        "count": 0
-      }
-    ]
+    "themes": themes,
   })
 }
 
@@ -292,6 +294,36 @@ export const demoMock = {
 export const answerUpdateMock = {
   regexp: "*host" + updateResponseReadStatus(":consultationId", ":answerId"),
   method: "POST",
+}
+
+export const answerEditMock = {
+  regexp: "*host" + getApiAnswerUrl(":consultationId", ":answerId"),
+  method: "PATCH",
+  body: ({ body, params }: { body: string, params: { answerId: string } }) => {
+    const parsedBody = JSON.parse(body);
+
+    const answer = answers.find(answer => answer.id === params.answerId);
+
+    if (!answer) {
+      return;
+    }
+
+    answer.evidenceRich = parsedBody.evidenceRich || null;
+    answer.themes = [];
+
+    parsedBody.themes.forEach((theme: {id: string}) => {
+      const newTheme = themes.find(item => item.id === theme.id);
+
+      const themeExists = answer.themes?.find(item => item.id === theme.id);
+      if (!themeExists) {
+        answer.themes = [...answer.themes!, {
+          id: newTheme!.id,
+          description: newTheme!.description,
+          name: newTheme!.name,
+        }]
+      }
+    })
+  }
 }
 
 export const flagMock = {
