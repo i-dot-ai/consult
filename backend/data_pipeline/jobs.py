@@ -31,7 +31,6 @@ def import_consultation(
         consultation_code=consultation_code,
         consultation_title=consultation_name,
         user_id=user_id,
-        enqueue_embeddings=True,
     )
 
 
