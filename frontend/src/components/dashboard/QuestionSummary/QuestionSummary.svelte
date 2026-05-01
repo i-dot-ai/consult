@@ -175,17 +175,18 @@
 
                 <div class="flex flex-wrap gap-1">
                   {#each themeFilters.filters as themeFilterId (themeFilterId)}
+                    {@const themeName = themes.find((theme) => theme.id === themeFilterId)?.name || themeFilterId}
                     <div transition:fly={{ x: 300 }}>
                       <Tag variant="primary">
                         <span>
-                          {themes.find((theme) => theme.id === themeFilterId)
-                            ?.name || themeFilterId}
+                          {themeName}
                         </span>
 
                         <Button
                           variant="ghost"
                           size="xs"
                           handleClick={() => themeFilters.update(themeFilterId)}
+                          ariaLabel={`Remove theme filter for ${themeName}`}
                         >
                           <MaterialIcon color="fill-white">
                             <Close />
