@@ -587,8 +587,8 @@
           </div>
 
           <p class="text-sm text-neutral-500">
-            Browse AI-generated themes organised by topic hierarchy. Click
-            "Select Theme" to add themes to your selected list for analysis.
+            Browse themes found by the AI and click "Select" to add a theme to
+            your list of selected themes for analysis.
           </p>
         </Panel>
       </div>
@@ -597,6 +597,7 @@
         <GeneratedThemeCard
           {consultationId}
           {questionId}
+          {hasNestedThemes}
           {theme}
           {expandedThemes}
           setExpandedThemes={(id) => {
