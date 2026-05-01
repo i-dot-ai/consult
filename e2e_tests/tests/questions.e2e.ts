@@ -1,7 +1,21 @@
 import { test, expect } from "@playwright/test";
-import { getFirstConsultationLink } from "./helpers";
+import {
+  createFixtureData,
+  deleteFixtureData,
+  getFirstConsultationLink,
+} from "./helpers";
+import { analysisConsultation } from "../fixtures";
+import type { FixtureReference } from "../fixtures";
 
 test.describe("Questions - Detail Page with Tabs", () => {
+  let testData: FixtureReference = {};
+
+  test.beforeAll(async ({ request }) => {
+    testData = await createFixtureData(request, {
+      consultations: [analysisConsultation],
+    });
+  });
+
   test.beforeEach(async ({ page }) => {
     // Navigate to consultations to find a consultation
     await page.goto("/consultations");
@@ -17,7 +31,9 @@ test.describe("Questions - Detail Page with Tabs", () => {
     await page.waitForLoadState("networkidle");
 
     // Find and click on first "Show next" button to navigate to a response
-    const showNextButton = page.getByRole("button", { name: /show next/i }).first();
+    const showNextButton = page
+      .getByRole("button", { name: /show next/i })
+      .first();
 
     if ((await showNextButton.count()) > 0) {
       await showNextButton.click();
@@ -101,9 +117,8 @@ test.describe("Questions - Detail Page with Tabs", () => {
 
       // Verify Summary tab is active
       const summaryTabElement = summaryTab.first();
-      const summaryAriaSelected = await summaryTabElement.getAttribute(
-        "aria-selected",
-      );
+      const summaryAriaSelected =
+        await summaryTabElement.getAttribute("aria-selected");
       if (summaryAriaSelected !== null) {
         expect(summaryAriaSelected).toBe("true");
       }
@@ -114,9 +129,8 @@ test.describe("Questions - Detail Page with Tabs", () => {
 
       // Verify Response Analysis tab is active
       const responseTabElement = responseTab.first();
-      const responseAriaSelected = await responseTabElement.getAttribute(
-        "aria-selected",
-      );
+      const responseAriaSelected =
+        await responseTabElement.getAttribute("aria-selected");
       if (responseAriaSelected !== null) {
         expect(responseAriaSelected).toBe("true");
       }
@@ -132,5 +146,9 @@ test.describe("Questions - Detail Page with Tabs", () => {
     const bodyContent = await page.textContent("body");
     expect(bodyContent).toBeTruthy();
     expect(bodyContent!.length).toBeGreaterThan(50);
+  });
+
+  test.afterAll(async () => {
+    await deleteFixtureData(testData);
   });
 });
