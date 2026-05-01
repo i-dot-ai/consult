@@ -126,4 +126,28 @@ describe("QuestionDetail", () => {
       expect(screen.queryByText("Results are filtered")).not.toBeInTheDocument();
     });
   })
+
+  it("should match snapshot initially", () => {
+    setupMocks();
+
+    const { container } = render(QuestionDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+    });
+    expect(container).toMatchSnapshot();
+  });
+
+  it("should match snapshot after loading", async () => {
+    setupMocks();
+
+    const { container } = render(QuestionDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(mocks.questionMock.body.question_text, { exact: false })).toBeInTheDocument();
+    });
+    expect(container).toMatchSnapshot();
+  });
 });
