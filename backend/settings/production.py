@@ -6,7 +6,7 @@ from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 
 from settings.base import *  # noqa
 
-CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS + ["https://" + env("DOMAIN_NAME")]  # noqa: F405
+CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS
 
 
 SENTRY_DSN = env("SENTRY_DSN")  # noqa: F405
@@ -75,6 +75,8 @@ LOGGER = StructuredLogger(
         "ship_logs": True,
     },
 )
+
+LOGGER.info("CSRF domains: {csrf}", csrf=CSRF_TRUSTED_ORIGINS)
 
 if env.str("ENVIRONMENT", "prod").lower() != "prod":  # noqa: F405
     INSTALLED_APPS.append("drf_spectacular")  # noqa F405
