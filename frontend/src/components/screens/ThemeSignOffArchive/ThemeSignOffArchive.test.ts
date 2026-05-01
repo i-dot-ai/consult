@@ -96,6 +96,94 @@ describe("ThemeSignOffArchive", () => {
     },
   );
 
+  it(
+    "should render correct panel for analysis stage",
+    async () => {
+      mockRoute({
+        ...consultationMock,
+        body: {
+          ...consultationMock.body,
+          stage: "analysis",
+        }
+      });
+      mockRoute(questionsAllSignedOffMock);
+
+      render(ThemeSignOffArchive, {
+        consultationId: CONSULTATION_ID,
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText("AI Mapping Complete")).toBeInTheDocument();
+      });
+    },
+  );
+
+  it(
+    "should render correct panel for mapping stage",
+    async () => {
+      mockRoute({
+        ...consultationMock,
+        body: {
+          ...consultationMock.body,
+          stage: "theme_mapping",
+        }
+      });
+      mockRoute(questionsAllSignedOffMock);
+
+      render(ThemeSignOffArchive, {
+        consultationId: CONSULTATION_ID,
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText("AI Mapping in Progress")).toBeInTheDocument();
+      });
+    },
+  );
+
+  it(
+    "should render correct panel for sign off stage",
+    async () => {
+      mockRoute({
+        ...consultationMock,
+        body: {
+          ...consultationMock.body,
+          stage: "theme_sign_off",
+        }
+      });
+      mockRoute(questionsMock);
+
+      render(ThemeSignOffArchive, {
+        consultationId: CONSULTATION_ID,
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText("Finalising Themes")).toBeInTheDocument();
+      });
+    },
+  );
+
+  it(
+    "should render correct panel for sign off stage all questions signed off",
+    async () => {
+      mockRoute({
+        ...consultationMock,
+        body: {
+          ...consultationMock.body,
+          stage: "theme_sign_off",
+        }
+      });
+      mockRoute(questionsAllSignedOffMock);
+
+      render(ThemeSignOffArchive, {
+        consultationId: CONSULTATION_ID,
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText("All Questions Signed Off")).toBeInTheDocument();
+      });
+    },
+  );
+
   it("should match snapshot initially", () => {
     setupMocks();
 
