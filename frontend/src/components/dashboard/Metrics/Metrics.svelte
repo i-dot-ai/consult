@@ -211,6 +211,7 @@
                   },
                 )
                 .map((demoOption: DemoOptionsResponseItem) => ({
+                  id: demoOption.id,
                   title: demoOption.value,
                   count: demoOption.count,
                   percentage: getPercentage(demoOption.count, total),
