@@ -8,7 +8,7 @@ export const consultationMock = {
     "id": "5ae41198-94ed-4770-9914-264b54f62f5e",
     "title": "Demo Consultation",
     "code": "demo_consultation",
-    "stage": "theme_signoff",
+    "stage": "theme_sign_off",
     "users": [
       {
         "id": 15,
@@ -74,4 +74,20 @@ export const questionsMock = {
         }
     ]
   }
+}
+
+export const questionsAllSignedOffMock = {
+  url: getApiQuestionsUrl(CONSULTATION_ID),
+  body: {
+    ...questionsMock.body,
+    results: questionsMock.body.results.map(item => ({
+      ...item,
+      theme_status: "confirmed",
+    }))
+  }
+}
+
+export const consultationUpdateMock = {
+  url: getApiConsultationUrl(CONSULTATION_ID),
+  method: "PATCH",
 }

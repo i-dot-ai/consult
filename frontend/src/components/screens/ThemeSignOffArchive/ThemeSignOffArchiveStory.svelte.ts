@@ -1,4 +1,4 @@
-import { CONSULTATION_ID, consultationMock, questionsMock } from "./mocks";
+import { CONSULTATION_ID, consultationMock, consultationUpdateMock, questionsAllSignedOffMock, questionsMock } from "./mocks";
 import ThemeSignOffArchive from "./ThemeSignOffArchive.svelte";
 
 const consultationId = $state("test-consultation");
@@ -9,6 +9,7 @@ export default {
   category: "Screens",
   mocks: [
     consultationMock,
+    consultationUpdateMock,
     questionsMock,
   ],
   props: [
@@ -20,6 +21,15 @@ export default {
       mocks: [
         consultationMock,
         questionsMock,
+      ],
+      props: { consultationId: CONSULTATION_ID },
+    },
+    {
+      name: "Success Theme Sign Off Stage All Signed Off",
+      mocks: [
+        consultationMock,
+        consultationUpdateMock,
+        questionsAllSignedOffMock,
       ],
       props: { consultationId: CONSULTATION_ID },
     },
