@@ -5,7 +5,7 @@ import { paginateArray } from "../../../global/utils";
 export const CONSULTATION_ID = "test-consultation";
 export const QUESTION_ID = "test-question";
 
-let answers: ResponseAnswer[] = [
+export let answers: ResponseAnswer[] = [
   {
     "id": "f3f8f938-281b-4b74-ac80-6db7390e2171",
     "identifier": "1",

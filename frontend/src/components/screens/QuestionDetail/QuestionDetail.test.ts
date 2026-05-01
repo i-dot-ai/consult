@@ -5,7 +5,7 @@ import QuestionDetail from "./QuestionDetail.svelte";
 import fetchMock from "fetch-mock";
 import { queryClient } from "../../../global/queryClient";
 import { mockRoute } from "../../../global/utils";
-import { CONSULTATION_ID, mocks, QUESTION_ID } from "./mocks";
+import { answers, CONSULTATION_ID, mocks, QUESTION_ID } from "./mocks";
 import userEvent from "@testing-library/user-event";
 
 
@@ -40,6 +40,21 @@ describe("EditUser", () => {
     await waitFor(() => {
       expect(screen.getByText(theme.name)).toBeInTheDocument();
       expect(screen.getByText(theme.description)).toBeInTheDocument();
+    })
+  });
+
+  it.each([...new Set(
+    //@ts-expect-error to be resolved
+    answers.reduce((acc, curr) => [
+      ...acc,
+      ...(curr.multiple_choice_answer || [])
+    ], [])
+  )] as string[])("should render multi answers", async (multiAnswer) => {
+    setupMocks();
+
+    render(QuestionDetail, { consultationId: CONSULTATION_ID, questionId: QUESTION_ID });
+    await waitFor(() => {
+      expect(screen.getByText(multiAnswer)).toBeInTheDocument();
     })
   });
 });
