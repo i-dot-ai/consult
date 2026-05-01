@@ -8,7 +8,10 @@ export default getViteConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,svelte}"],
-      exclude: coverageConfigDefaults.exclude,
+      exclude: [
+        ...coverageConfigDefaults.exclude,
+        '**\/*Story.svelte.ts'
+      ],
     },
     globals: true,
   },
