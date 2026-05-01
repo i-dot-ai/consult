@@ -389,9 +389,6 @@
         }}
         {searchValue}
         setSearchValue={(value: string) => (searchValue = value)}
-        {searchMode}
-        setSearchMode={(newSearchMode: SearchModeValues) =>
-          (searchMode = newSearchMode)}
         {demoData}
         demoOptions={formattedDemoOptions || {}}
         demoOptionsData={$demographicsStore.data || undefined}
