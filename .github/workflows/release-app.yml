@@ -1,0 +1,231 @@
+name: release-app
+
+on:
+  push:
+    tags:
+      - release-dev-**
+      - release-preprod-**
+
+jobs:
+  set-vars:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.head_branch == 'main' || github.event_name == 'push'
+    outputs:
+      app-name: ${{ steps.export.outputs.app-name }}
+      ec2-instance-type: ${{ steps.export.outputs.ec2-instance-type }}
+      version: ${{ steps.export.outputs.version }}
+      runner-size: ${{ steps.export.outputs.runner-size }}
+      docker-build-instance: ${{ steps.export.outputs.docker-build-instance }}
+      service: ${{ steps.export.outputs.service }}
+      service_matrix: ${{ steps.build-services-matrix.outputs.result }}
+      environment: ${{ steps.env-var.outputs.environment }}
+      infra-config-repo: ${{ steps.export.outputs.infra-config-repo }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Load environment
+        run: grep -v '^\s*#' .github/.github.env | grep -v '^\s*$' >> $GITHUB_ENV
+
+      - id: export
+        run: |
+          echo "ec2-instance-type=${EC2_INSTANCE_TYPE}" >> $GITHUB_OUTPUT
+          echo "app-name=${APP_NAME}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "runner-size=${RUNNER_SIZE}" >> $GITHUB_OUTPUT
+          echo "docker-build-instance=${DOCKER_BUILD_INSTANCE}" >> $GITHUB_OUTPUT
+          echo "service=${SERVICE}" >> $GITHUB_OUTPUT
+          echo "infra-config-repo=${INFRA_CONFIG_REPO}" >> $GITHUB_OUTPUT
+
+      - id: env-var
+        run: |
+          if [[ "${{ github.ref_name }}" == main ]]; then
+            export ENVIRONMENT=preprod
+          else
+            export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $2 }')
+          fi
+          echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
+
+      - id: build-services-matrix
+        run: |
+          result=$(
+            for service in $(echo $SERVICE | tr ',' ' '); do
+              tag=$(git log -1 --format="%H" -- ${service}/)
+              printf '{"service":"%s","tag":"%s"}\n' "$service" "$tag"
+            done | jq -sc '.'
+          )
+          echo "result=$result" >> $GITHUB_OUTPUT
+
+  start-runner:
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@main
+    needs: set-vars
+    permissions: write-all
+    with:
+        EC2_INSTANCE_TYPE: ${{ needs.set-vars.outputs.ec2-instance-type }}
+        RUNNER_SIZE: ${{ needs.set-vars.outputs.runner-size }}
+        ENVIRONMENT: ${{ needs.set-vars.outputs.environment }}
+        USE_OIDC: true
+    secrets:
+        AWS_GITHUBRUNNER_USER_ACCESS_KEY: ${{ secrets.AWS_GITHUBRUNNER_USER_ACCESS_KEY }}
+        AWS_GITHUBRUNNER_USER_SECRET_ID: ${{ secrets.AWS_GITHUBRUNNER_USER_SECRET_ID }}
+        AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT}}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
+  # Compares the per-service git SHA computed in set-vars against the currently
+  # deployed tag stored in SSM Parameter Store. Only services whose tag has changed
+  # are included in the outputs.
+  #
+  # services_matrix: one entry per changed service — used by build-images and update-ssm-image-tags.
+  # targets_matrix:  one entry per Terraform target — used by deploy-containers
+  #                  (e.g. backend expands to module.backend and module.worker).
+  filter-services:
+    runs-on: ${{ needs.start-runner.outputs.label }}
+    needs:
+      - set-vars
+      - start-runner
+    outputs:
+      services_matrix: ${{ steps.filter.outputs.services_matrix }}
+      targets_matrix: ${{ steps.filter.outputs.targets_matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Filter services with changed image tags
+        id: filter
+        run: |
+          config=$(cat .github/service-config.json)
+          services_entries='[]'
+          targets_entries='[]'
+
+          # Process substitution avoids a pipe subshell so entries
+          # accumulate correctly across iterations
+          while read row; do
+            service=$(echo $row | jq -r '.service')
+            new_tag=$(echo $row | jq -r '.tag')
+
+            # Falls back to empty string if the parameter doesn't exist yet (first deploy)
+            ssm_name="/i-dot-ai-${{ needs.set-vars.outputs.environment }}-consult/env_secrets/${service}/IMAGE_TAG"
+            echo "querying SSM: ${ssm_name}"
+            current_tag=$(aws ssm get-parameter \
+              --name "${ssm_name}" \
+              --query "Parameter.Value" \
+              --output text 2>&1) && echo "SSM result: ${current_tag}" || { echo "SSM error: ${current_tag}"; current_tag=""; }
+
+            echo "service=${service} new_tag=${new_tag} current_tag=${current_tag} match=$([[ "$new_tag" == "$current_tag" ]] && echo yes || echo no)"
+            if [[ "$new_tag" != "$current_tag" ]]; then
+              services_entries=$(echo $services_entries | jq -c --arg s "$service" --arg t "$new_tag" \
+                '. + [{"service": $s, "tag": $t}]')
+              targets_entries=$(echo $targets_entries | jq -c --arg s "$service" --arg t "$new_tag" \
+                --argjson config "$config" \
+                '. + ($config[$s] | map({"service": $s, "tag": $t, "target": .}))')
+            fi
+          done < <(echo '${{ needs.set-vars.outputs.service_matrix }}' | jq -c '.[]')
+
+          echo "services_matrix=$services_entries" >> $GITHUB_OUTPUT
+          echo "targets_matrix=$targets_entries" >> $GITHUB_OUTPUT
+
+  build-images:
+    if: ${{ needs.filter-services.outputs.services_matrix != '[]' }}
+    strategy:
+      matrix:
+        object: ${{ fromJson(needs.filter-services.outputs.services_matrix) }}
+    needs:
+      - set-vars
+      - start-runner
+      - filter-services
+    permissions: write-all
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-docker.yml@main
+    with:
+      APP_NAME: ${{ needs.set-vars.outputs.app-name }}
+      RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
+      INFRASTRUCTURE_FOLDER: "infrastructure"
+      DOCKER_BUILD_INSTANCE: ${{ needs.set-vars.outputs.docker-build-instance }}
+      SERVICE: ${{ matrix.object.service }}
+      COMMIT_HASH: ${{ matrix.object.tag }}
+      USE_OIDC: true
+    secrets:
+      AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT}}
+      AWS_GITHUBRUNNER_PAT_USER: ${{ secrets.AWS_GITHUBRUNNER_PAT_USER }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
+  # Updates SSM with the new image tag for each changed service, once per service,
+  # before Terraform reads it during deploy-containers.
+  update-ssm-image-tags:
+    if: ${{ needs.filter-services.outputs.services_matrix != '[]' }}
+    runs-on: ${{ needs.start-runner.outputs.label }}
+    strategy:
+      matrix:
+        object: ${{ fromJson(needs.filter-services.outputs.services_matrix) }}
+    needs:
+      - set-vars
+      - start-runner
+      - filter-services
+      - build-images
+    steps:
+      - name: Update image tag in SSM
+        run: |
+          aws ssm put-parameter \
+            --name "/i-dot-ai-${{ needs.set-vars.outputs.environment }}-consult/env_secrets/${{ matrix.object.service }}/IMAGE_TAG" \
+            --value "${{ matrix.object.tag }}" \
+            --type String \
+            --overwrite
+          aws ssm add-tags-to-resource \
+            --resource-type Parameter \
+            --resource-id "/i-dot-ai-${{ needs.set-vars.outputs.environment }}-consult/env_secrets/${{ matrix.object.service }}/IMAGE_TAG" \
+            --tags "Key=environment,Value=${{ needs.set-vars.outputs.environment }}"
+
+  # Runs terraform apply -target=<target> for every entry in the targets matrix.
+  # Terraform reads the updated image tags from SSM (written by update-ssm-image-tags)
+  # so only task definitions whose tag has changed will be updated in ECS.
+  deploy-containers:
+    if: ${{ needs.filter-services.outputs.targets_matrix != '[]' }}
+    strategy:
+      matrix:
+        object: ${{ fromJson(needs.filter-services.outputs.targets_matrix) }}
+    needs:
+      - set-vars
+      - start-runner
+      - filter-services
+      - update-ssm-image-tags
+    permissions: write-all
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/apply-terraform.yml@grajamanoharan/con-264-deploy-consult-container-services-independently
+    with:
+      APP_NAME: ${{ needs.set-vars.outputs.app-name }}
+      RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
+      ENVIRONMENT: ${{ needs.set-vars.outputs.environment }}
+      PUBLIC_INFRA_DEPLOYMENT: true
+      INFRA_CONFIG_REPO: ${{ needs.set-vars.outputs.infra-config-repo }}
+      TF_TARGET: ${{ matrix.object.target }}
+      USE_OIDC: true
+    secrets:
+      AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT }}
+      AWS_GITHUBRUNNER_PAT_USER: ${{ secrets.AWS_GITHUBRUNNER_PAT_USER }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
+  stop-runner:
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@main
+    if: always() && needs.start-runner.outputs.use-persisted == 0
+    needs:
+      - set-vars
+      - start-runner
+      - filter-services
+      - build-images
+      - update-ssm-image-tags
+      - deploy-containers
+    permissions: write-all
+    with:
+      RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
+      EC2_INSTANCE_ID: ${{ needs.start-runner.outputs.ec2-instance-id }}
+      USE_OIDC: true
+    secrets:
+      AWS_GITHUBRUNNER_USER_ACCESS_KEY: ${{ secrets.AWS_GITHUBRUNNER_USER_ACCESS_KEY }}
+      AWS_GITHUBRUNNER_USER_SECRET_ID: ${{ secrets.AWS_GITHUBRUNNER_USER_SECRET_ID }}
+      AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT}}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

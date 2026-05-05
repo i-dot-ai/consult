@@ -7,7 +7,7 @@ module "rds" {
   public_subnet_ids_list                = data.terraform_remote_state.vpc.outputs.public_subnets
   vpc_id                                = data.terraform_remote_state.vpc.outputs.vpc_id
   engine                                = "aurora-postgresql"
-  engine_version                        = "16.8"
+  engine_version                        = "16.11"
   family                                = null
   engine_mode                           = "provisioned"
   aurora_min_scaling                    = 2

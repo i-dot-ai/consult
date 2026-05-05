@@ -3,7 +3,7 @@ name: release-infrastructure
 on:
   push:
     tags:
-      - release-dev-**
+      - release-infra-dev-**
       - release-preprod-**
 
   workflow_run:
@@ -21,6 +21,7 @@ jobs:
       repo: ${{ steps.export.outputs.repo }}
       infra-config-repo: ${{ steps.export.outputs.infra-config-repo }}
       environment: ${{ steps.env-var.outputs.environment }}
+      terraform-changed: ${{ steps.check-terraform.outputs.terraform-changed }}
 
     steps:
       - name: Checkout
@@ -44,13 +45,20 @@ jobs:
           if [[ "${{ github.ref_name }}" == main ]]; then
             export ENVIRONMENT=preprod
           else
-            export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $2 }')
+            export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $3 }')
           fi
           echo "environment=${ENVIRONMENT}"
           echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
 
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3.0.3
+        id: check-terraform
+        with:
+          filters: |
+            terraform-changed:
+              - 'terraform/**'
 
   start-runner:
+    if: needs.set-vars.outputs.terraform-changed == 'true'
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@main
     needs: set-vars
     permissions: write-all
@@ -87,7 +95,6 @@ jobs:
       ENVIRONMENT: ${{ needs.set-vars.outputs.environment }}
       PUBLIC_INFRA_DEPLOYMENT: true
       INFRA_CONFIG_REPO: ${{ needs.set-vars.outputs.infra-config-repo }}
-      IMAGE_TAG: ${{ github.sha }}
       ARTIFACTS_PATH: ${{ needs.build-lambdas.outputs.target_directory }}
       USE_OIDC: true
     secrets:
@@ -103,7 +110,7 @@ jobs:
       - build-infra
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@main
     permissions: write-all
-    if: needs.start-runner.outputs.use-persisted == 0 && always()
+    if: always() && needs.set-vars.outputs.terraform-changed == 'true' && needs.start-runner.outputs.use-persisted == 0
     with:
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
       EC2_INSTANCE_ID: ${{ needs.start-runner.outputs.ec2-instance-id }}
