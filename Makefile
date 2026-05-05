@@ -203,7 +203,7 @@ CONFIG_DIR=../../../consult-infra-config
 env=prod
 else
 CONFIG_DIR=../../consult-infra-config
-tf_build_args=-var "image_tag=$(IMAGE_TAG)"
+tf_build_args=$(if $(TF_TARGET),-target $(TF_TARGET),)
 endif
 
 TF_BACKEND_CONFIG=$(CONFIG_DIR)/backend.hcl

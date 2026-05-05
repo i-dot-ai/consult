@@ -18,9 +18,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Load environment
+        run: grep -v '^\s*#' .github/.github.env | grep -v '^\s*$' >> $GITHUB_ENV
+
       - id: export
         run: |
-          . ./.github/.github.env
           echo "ec2-instance-type=${EC2_INSTANCE_TYPE}" >> $GITHUB_OUTPUT
           echo "app-name=${APP_NAME}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
@@ -28,25 +33,15 @@ jobs:
           echo "docker-build-instance=${DOCKER_BUILD_INSTANCE}" >> $GITHUB_OUTPUT
           echo "service=${SERVICE}" >> $GITHUB_OUTPUT
 
-      - uses: actions/github-script@v9
-        id: build-services-matrix
-        env:
-          SERVICES: ${{ steps.export.outputs.service }}
-        with:
-          result-encoding: string
-          script: |
-            const { SERVICES } = process.env;
-            if (!SERVICES) {
-              throw new Error("SERVICES environment variable is undefined or empty");
-            }
-            const servicesArray = SERVICES.split(',')
-                                          .map(value => ({ service: value.trim() }));
-            console.log("Parsed Services Array:", servicesArray);
-            // Return as JSON string
-            return JSON.stringify(servicesArray);
-
-      - name: Service Matrix
-        run: echo "${{ steps.build-services-matrix.outputs.result }}"
+      - id: build-services-matrix
+        run: |
+          result=$(
+            for service in $(echo $SERVICE | tr ',' ' '); do
+              tag=$(git log -1 --format="%H" -- ${service}/)
+              printf '{"service":"%s","tag":"%s"}\n' "$service" "$tag"
+            done | jq -sc '.'
+          )
+          echo "result=$result" >> $GITHUB_OUTPUT
 
   start-runner:
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@main
@@ -78,7 +73,7 @@ jobs:
       INFRASTRUCTURE_FOLDER: "infrastructure"
       DOCKER_BUILD_INSTANCE: ${{ needs.set-vars.outputs.docker-build-instance }}
       SERVICE: ${{ matrix.object.service }}
-      COMMIT_HASH: ${{ github.sha }}
+      COMMIT_HASH: ${{ matrix.object.tag }}
       USE_OIDC: true
     secrets:
       AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT}}
