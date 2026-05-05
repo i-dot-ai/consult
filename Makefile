@@ -203,7 +203,7 @@ CONFIG_DIR=../../../consult-infra-config
 env=prod
 else
 CONFIG_DIR=../../consult-infra-config
-tf_build_args=-var "image_tag=$(IMAGE_TAG)"
+tf_build_args=$(if $(TF_TARGET),-target $(TF_TARGET),)
 endif
 
 TF_BACKEND_CONFIG=$(CONFIG_DIR)/backend.hcl
@@ -223,7 +223,7 @@ tf_init_and_set_workspace:
 
 .PHONY: tf_init
 tf_init: ## Initialise terraform
-	terraform -chdir=./terraform/$(instance) init -backend-config=$(TF_BACKEND_CONFIG) -reconfigure
+	terraform -chdir=./terraform/$(instance) init -backend-config=$(TF_BACKEND_CONFIG) -reconfigure -lock-timeout=10m
 
 .PHONY: tf_plan
 tf_plan: ## Plan terraform
@@ -247,7 +247,7 @@ tf_apply_universal: ## Apply terraform
 .PHONY: tf_auto_apply
 tf_auto_apply: ## Auto apply terraform
 	make tf_init_and_set_workspace && \
-	terraform -chdir=./terraform apply -auto-approve -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+	terraform -chdir=./terraform apply -auto-approve -lock-timeout=10m -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
 .PHONY: tf_destroy
 tf_destroy: ## Destroy terraform

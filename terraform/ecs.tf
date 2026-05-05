@@ -31,8 +31,8 @@ module "backend" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
   source                        = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v6.0.1-ecs"
-  image_tag                     = var.image_tag
-  ecr_repository_uri            = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-backend"
+  image_tag                     = data.aws_ssm_parameter.image_tags["backend"].value
+  ecr_repository_uri            = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/${var.project_name}-backend"
   vpc_id                        = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets               = data.terraform_remote_state.vpc.outputs.private_subnets
   host                          = local.host_backend
@@ -42,8 +42,8 @@ module "backend" {
   ecs_cluster_name              = data.terraform_remote_state.platform.outputs.ecs_cluster_name
   task_additional_iam_policies  = local.additional_policy_arns
   certificate_arn               = module.acm_certificate.arn
-  target_group_name_override    = "consult-backend-${var.env}-tg"
-  permissions_boundary_name     = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
+  target_group_name_override    = "${var.project_name}-backend-${var.env}-tg"
+  permissions_boundary_name     = "infra/i-dot-ai-${var.env}-${var.project_name}-perms-boundary-app"
   https_listener_arn            = module.frontend.https_listener_arn
   service_discovery_service_arn = aws_service_discovery_service.service_discovery_service.arn
   create_networking             = false
@@ -98,8 +98,8 @@ module "frontend" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
   source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v6.0.1-ecs"
-  image_tag                    = var.image_tag
-  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-frontend"
+  image_tag                    = data.aws_ssm_parameter.image_tags["frontend"].value
+  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/${var.project_name}-frontend"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   host                         = local.host
@@ -110,8 +110,8 @@ module "frontend" {
   ecs_cluster_name             = data.terraform_remote_state.platform.outputs.ecs_cluster_name
   create_listener              = true
   certificate_arn              = data.terraform_remote_state.universal.outputs.certificate_arn
-  target_group_name_override   = "consult-frontend-${var.env}-tg"
-  permissions_boundary_name    = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
+  target_group_name_override   = "${var.project_name}-frontend-${var.env}-tg"
+  permissions_boundary_name    = "infra/i-dot-ai-${var.env}-${var.project_name}-perms-boundary-app"
 
   environment_variables = merge(local.base_env_vars, {
     "PUBLIC_ENVIRONMENT"       = var.env
@@ -159,8 +159,8 @@ module "worker" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
   source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v6.0.1-ecs"
-  image_tag                    = var.image_tag
-  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-backend"
+  image_tag                    = data.aws_ssm_parameter.image_tags["backend"].value
+  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/${var.project_name}-backend"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   host                         = local.host_backend
@@ -242,7 +242,7 @@ module "sns_topic" {
   name          = local.name
   slack_webhook = data.aws_secretsmanager_secret_version.platform_slack_webhook.secret_string
 
-  permissions_boundary_name = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
+  permissions_boundary_name = "infra/i-dot-ai-${var.env}-${var.project_name}-perms-boundary-app"
 }
 
 module "backend-ecs-alarm" {
