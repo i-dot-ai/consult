@@ -31,6 +31,7 @@
     handleSelect: (theme: GeneratedTheme) => void;
     themesBeingSelected: string[];
     maxAnswers?: number;
+    hasNestedThemes?: boolean;
   }
   let {
     consultationId,
@@ -42,6 +43,7 @@
     setExpandedThemes = () => {},
     handleSelect = () => {},
     themesBeingSelected = [],
+    hasNestedThemes = false,
   }: Props = $props();
 
   const answersStore = createFetchStore<CandidateThemeResponsesResponse>();
@@ -90,12 +92,13 @@
 
             <div class="flex flex-wrap items-center gap-2">
               <h3>{theme.name}</h3>
-
-              <div class={clsx([disabled && "grayscale"])}>
-                <Tag variant="success">
-                  Level {level + 1}
-                </Tag>
-              </div>
+              {#if hasNestedThemes}
+                <div class={clsx([disabled && "grayscale"])}>
+                  <Tag variant="success">
+                    Level {level + 1}
+                  </Tag>
+                </div>
+              {/if}
             </div>
           </div>
         </div>
@@ -169,7 +172,6 @@
       {/if}
     </article>
   </Panel>
-
   {#if expanded}
     <div transition:slide class="pt-4">
       {#each theme.children as childTheme (childTheme.id)}
@@ -177,6 +179,7 @@
           {consultationId}
           {questionId}
           theme={childTheme}
+          {hasNestedThemes}
           level={level + 1}
           {handleSelect}
           {themesBeingSelected}

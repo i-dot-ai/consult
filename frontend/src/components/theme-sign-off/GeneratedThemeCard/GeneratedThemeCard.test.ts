@@ -17,6 +17,7 @@ describe("GeneratedThemeCard", () => {
     setExpandedThemes: () => {},
     handleSelect: () => {},
     themesBeingSelected: [],
+    hasNestedThemes: false,
   };
   const answers = ["Answer 1", "Answer 2"];
 
@@ -91,5 +92,37 @@ describe("GeneratedThemeCard", () => {
       "handleSelect",
       "answersMock",
     ]);
+  });
+
+  it("should render level tag only if theme has children", async () => {
+    const CHILD_THEME = {
+      id: "child-theme",
+      name: "Child Theme",
+      description: "This is a child theme",
+    };
+    render(GeneratedThemeCard, {
+      ...testData,
+      hasNestedThemes: true,
+      theme: {
+        ...testData.theme,
+        children: [CHILD_THEME],
+      },
+      expandedThemes: [testData.theme.id],
+    });
+
+    expect(screen.getByText("Level 1")).toBeInTheDocument();
+  });
+
+  it("should not render level tag if theme has no children", async () => {
+    render(GeneratedThemeCard, {
+      ...testData,
+      theme: {
+        ...testData.theme,
+        children: [],
+      },
+      expandedThemes: [testData.theme.id],
+    });
+
+    expect(screen.queryByText("Level 1")).toBeNull();
   });
 });
