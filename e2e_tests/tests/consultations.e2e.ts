@@ -36,7 +36,7 @@ test.describe("Consultations - List Page", () => {
       page.getByText(/Dummy Consultation at Analysis Stage/i).first(),
     ).toBeVisible();
     await expect(
-      page.getByText(/Dummy Consultation at Theme Sign Off/i).first(),
+      page.getByText(/Dummy Consultation at Finalising Themes/i).first(),
     ).toBeVisible();
   });
 

@@ -25,7 +25,7 @@
     {
       icon: Replay,
       title: "Walkthrough",
-      subtitle: "Interactive tutorial for Theme Sign Off",
+      subtitle: "Interactive tutorial for Finalising Themes",
       handleClick: () => {
         localStorage.removeItem(OnboardingKeys.themeSignoff);
         localStorage.removeItem(OnboardingKeys.themeSignoffArchive);

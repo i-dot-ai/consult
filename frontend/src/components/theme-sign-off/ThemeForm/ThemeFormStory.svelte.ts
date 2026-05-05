@@ -9,7 +9,7 @@ const handleCancel = () => alert("Cancel event triggered");
 export default {
   name: "ThemeForm",
   component: ThemeForm,
-  category: "Theme Sign Off",
+  category: "Finalising Themes",
   props: [
     {
       name: "variant",

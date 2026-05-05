@@ -44,7 +44,7 @@ exports[`EditUser > should match snapshot after loading 1`] = `
         style=""
       >
         <!---->
-        Theme Sign Off
+        Finalise Themes
         
         
       </h1>
@@ -576,7 +576,7 @@ exports[`EditUser > should match snapshot initially 1`] = `
         style=""
       >
         <!---->
-        Theme Sign Off
+        Finalise Themes
         
         
       </h1>

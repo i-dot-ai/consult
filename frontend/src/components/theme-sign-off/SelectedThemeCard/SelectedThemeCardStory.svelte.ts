@@ -16,7 +16,7 @@ const updateTheme = $state((...args: unknown[]) =>
 export default {
   name: "SelectedThemeCard",
   component: SelectedThemeCard,
-  category: "Theme Sign Off",
+  category: "Finalising Themes",
   props: [
     {
       name: "theme",

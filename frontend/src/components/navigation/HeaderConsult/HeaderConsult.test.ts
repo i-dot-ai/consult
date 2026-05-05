@@ -10,7 +10,7 @@ const testData: Props = {
   isStaff: true,
   showProcess: true,
   consultationId: "test-id",
-  consultationStage: "theme_sign_off",
+  consultationStage: "finalising_themes",
 };
 
 describe("HeaderConsult", () => {

@@ -42,7 +42,7 @@ exports[`ThemeSignOffDetailCompleted > should match snapshot after loading 1`] =
         style=""
       >
         <!---->
-        Theme Sign Off
+        Finalise Themes
         
         
       </h1>
@@ -174,7 +174,7 @@ exports[`ThemeSignOffDetailCompleted > should match snapshot after loading 1`] =
               <span
                 class="py-0.5"
               >
-                Themes Signed Off
+                Themes finalised
               </span>
               <!---->
             </div>
@@ -184,9 +184,8 @@ exports[`ThemeSignOffDetailCompleted > should match snapshot after loading 1`] =
           <p
             class="text-sm text-neutral-500"
           >
-            This question has completed the theme sign-off process. The selected
-            themes below have been approved for AI analysis and are ready to be
-            used for mapping consultation responses.
+            Themes for this question have been finalised. The selected themes
+            are approved and ready for AI to assign to consultation responses.
           </p>
         </div>
          
@@ -386,7 +385,7 @@ exports[`ThemeSignOffDetailCompleted > should match snapshot initially 1`] = `
         style=""
       >
         <!---->
-        Theme Sign Off
+        Finalise Themes
         
         
       </h1>
@@ -518,7 +517,7 @@ exports[`ThemeSignOffDetailCompleted > should match snapshot initially 1`] = `
               <span
                 class="py-0.5"
               >
-                Themes Signed Off
+                Themes finalised
               </span>
               <!---->
             </div>
@@ -528,9 +527,8 @@ exports[`ThemeSignOffDetailCompleted > should match snapshot initially 1`] = `
           <p
             class="text-sm text-neutral-500"
           >
-            This question has completed the theme sign-off process. The selected
-            themes below have been approved for AI analysis and are ready to be
-            used for mapping consultation responses.
+            Themes for this question have been finalised. The selected themes
+            are approved and ready for AI to assign to consultation responses.
           </p>
         </div>
          

@@ -8,7 +8,7 @@ const loading = $state(false);
 export default {
   name: "AnswersList",
   component: AnswersList,
-  category: "Theme Sign Off",
+  category: "Finalising Themes",
   props: [
     {
       name: "variant",
