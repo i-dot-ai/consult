@@ -21,7 +21,7 @@ const CONSULTATIONS = [
     id: "4d1414d5-9300-447b-b788-50d0bef7e807",
     title: "Dummy Consultation at Finalising Themes Stage",
     code: "",
-    stage: "finalising_themes",
+    stage: "theme_sign_off",
     users: [
       {
         id: 1,

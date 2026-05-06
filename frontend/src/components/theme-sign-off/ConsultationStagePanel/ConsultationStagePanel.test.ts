@@ -9,7 +9,7 @@ describe("ConsultationStagePanel", () => {
 
   it("should show progress when finalising and not all questions signed off", () => {
     render(ConsultationStagePanel, {
-      consultation: { id, stage: "finalising_themes" },
+      consultation: { id, stage: "theme_sign_off" },
       questionsCount: 10,
       finalisedQuestionCount: 3,
       allQuestionsFinalised: false,
@@ -26,7 +26,7 @@ describe("ConsultationStagePanel", () => {
 
   it("should show confirm button when finalising and all questions signed off", () => {
     render(ConsultationStagePanel, {
-      consultation: { id, stage: "finalising_themes" },
+      consultation: { id, stage: "theme_sign_off" },
       questionsCount: 10,
       finalisedQuestionCount: 10,
       allQuestionsFinalised: true,
