@@ -20,6 +20,7 @@
     "typecheck:check-baseline": "bash scripts/check-type-errors.sh",
     "typecheck:update-baseline": "bash scripts/update-type-errors.sh"
   },
+  "//": "WARNING: Do not upgrade astro beyond 5.16.6 or @astrojs/node beyond 9.3.3 - versions 5.17+ and 9.5+ break CSRF token forwarding for Django admin",
   "dependencies": {
     "@astrojs/node": "9.3.3",
     "@astrojs/svelte": "^7.2.5",
