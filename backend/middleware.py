@@ -1,9 +1,6 @@
-from django.conf import settings
 from django.http import Http404
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-
-logger = settings.LOGGER
 
 
 class JWTAuthenticationMiddleware:
@@ -66,22 +63,5 @@ class CSRFExemptMiddleware:
         # Disable CSRF checks for support console routes
         if request.path.startswith("/support/"):
             setattr(request, "_dont_enforce_csrf_checks", True)
-
-        # Debug logging for admin CSRF issues
-        if request.path.startswith("/admin/") and request.method == "POST":
-            csrf_cookie = request.COOKIES.get("csrftoken", "NOT_SET")
-            csrf_post = request.POST.get("csrfmiddlewaretoken", "NOT_SET")
-            csrf_header = request.META.get("HTTP_X_CSRFTOKEN", "NOT_SET")
-
-            logger.info(
-                "[CSRF Debug] Admin POST to {request_path} - "
-                "Cookie: {csrf_cookie}..., "
-                "POST body: {csrf_post}..., "
-                "Header: {header}",
-                request_path=request.path,
-                csrf_cookie=csrf_cookie[:20],
-                csrf_post=csrf_post[:20],
-                header=csrf_header[:20] if csrf_header != 'NOT_SET' else 'NOT_SET'
-            )
 
         return self.get_response(request)

@@ -161,18 +161,8 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
     // with a different value causes Django to reject the request
     const isAdminRequest = url.pathname.startsWith("/admin");
     const csrfCookie = context.cookies.get("csrftoken");
-
-    console.log(
-      `[CSRF Debug] Path: ${url.pathname}, isAdmin: ${isAdminRequest}, Method: ${context.request.method}, HasCSRFCookie: ${!!csrfCookie}`,
-    );
-
     if (csrfCookie && !isAdminRequest) {
-      console.log(
-        `[CSRF Debug] Setting X-CSRFToken header for non-admin request`,
-      );
       headersToSend.set("X-CSRFToken", csrfCookie.value);
-    } else if (isAdminRequest) {
-      console.log(`[CSRF Debug] Skipping X-CSRFToken header for admin request`);
     }
 
     const response = await fetch(fullBackendUrl, {
