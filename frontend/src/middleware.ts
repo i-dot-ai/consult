@@ -156,12 +156,8 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
     }
     headersToSend.set("Cookie", cookieHeader);
 
-    // Only set X-CSRFToken header for API requests, not for admin/form submissions
-    // Admin forms include the CSRF token in the POST body, and setting the header
-    // with a different value causes Django to reject the request
-    const isAdminRequest = url.pathname.startsWith("/admin");
     const csrfCookie = context.cookies.get("csrftoken");
-    if (csrfCookie && !isAdminRequest) {
+    if (csrfCookie) {
       headersToSend.set("X-CSRFToken", csrfCookie.value);
     }
 

@@ -76,8 +76,6 @@ LOGGER = StructuredLogger(
     },
 )
 
-LOGGER.info("CSRF domains: {csrf}", csrf=CSRF_TRUSTED_ORIGINS)
-
 if env.str("ENVIRONMENT", "prod").lower() != "prod":  # noqa: F405
     INSTALLED_APPS.append("drf_spectacular")  # noqa F405
 
