@@ -30,11 +30,9 @@ jobs:
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-        working-directory: ./backend
 
       - name: install dependencies
-        run: uv sync --all-extras
-        working-directory: ./backend
+        run: uv sync --all-packages --all-extras --group dev
 
       - name: Setup app
         env:
@@ -60,8 +58,7 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
-        run: uv sync --all-extras
-        working-directory: ./backend
+        run: uv sync --all-packages --all-extras --group dev
 
       - name: Check code formatting
         run: |
