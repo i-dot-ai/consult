@@ -6,6 +6,10 @@ COPY pipeline-mapping/requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install themefinder from the local workspace copy (single source of truth in monorepo)
+COPY themefinder/ ./themefinder/
+RUN pip install --no-cache-dir ./themefinder
+
 COPY pipeline-mapping/assign_themes_script.py .
 
 # Add non-root user and group
