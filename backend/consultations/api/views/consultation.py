@@ -79,7 +79,28 @@ class ConsultationViewSet(ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def perform_destroy(self, instance):
-        delete_consultation_job(instance)
+        """
+        Enqueue consultation deletion job to worker container
+        """
+        delete_consultation_job.delay(instance.id)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Delete consultation asynchronously via worker.
+
+        Returns 202 Accepted to indicate the deletion has been queued
+        and will be processed asynchronously.
+        """
+        instance = self.get_object()
+        self.perform_destroy(instance)
+
+        return Response(
+            {
+                "message": f"Deletion of consultation '{instance.title}' has been queued",
+                "consultation_id": str(instance.id),
+            },
+            status=status.HTTP_202_ACCEPTED,
+        )
 
     @action(
         detail=True,

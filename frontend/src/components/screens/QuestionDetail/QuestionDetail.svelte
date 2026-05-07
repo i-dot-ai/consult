@@ -110,6 +110,9 @@
 
     // Only fetch aggregations on the first page (filters haven't changed for subsequent pages)
     if (currPage === 1) {
+      $questionStore.fetch(
+        `${getApiQuestionUrl(consultationId, questionId)}${filterQs}`,
+      );
       $themesStore.fetch(
         `${getApiQuestionThemesUrl(consultationId, questionId)}${filterQs}`,
       );
@@ -386,9 +389,6 @@
         }}
         {searchValue}
         setSearchValue={(value: string) => (searchValue = value)}
-        {searchMode}
-        setSearchMode={(newSearchMode: SearchModeValues) =>
-          (searchMode = newSearchMode)}
         {demoData}
         demoOptions={formattedDemoOptions || {}}
         demoOptionsData={$demographicsStore.data || undefined}
