@@ -16,7 +16,7 @@ describe("FloatingPanelContent", () => {
   );
 
   it.each([
-    "Interactive tutorial for Theme Sign Off",
+    "Interactive tutorial for Finalising Themes",
     "View help documentation",
     "View our privacy policy",
   ])("renders subtitles", (itemText) => {

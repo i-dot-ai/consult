@@ -86,7 +86,7 @@
 
 <TitleRow
   level={1}
-  title="Theme Sign Off"
+  title="Finalise Themes"
   subtitle="Finalise themes to use for AI to map responses to"
 >
   <Price slot="icon" />
@@ -156,13 +156,12 @@
               <MaterialIcon color="fill-primary">
                 <CheckCircle />
               </MaterialIcon>
-              <span class="py-0.5"> Themes Signed Off </span>
+              <span class="py-0.5">Themes finalised </span>
             </Tag>
           </div>
           <p class="text-sm text-neutral-500">
-            This question has completed the theme sign-off process. The selected
-            themes below have been approved for AI analysis and are ready to be
-            used for mapping consultation responses.
+            Themes for this question have been finalised. The selected themes
+            are approved and ready for AI to assign to consultation responses.
           </p>
         </div>
 

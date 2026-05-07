@@ -44,8 +44,8 @@
       title: "Consultation Overview",
     },
     theme_sign_off: {
-      step: { order: 2, label: "Theme Sign Off", icon: CheckCircle },
-      title: "Theme Sign Off",
+      step: { order: 2, label: "Finalising Themes", icon: CheckCircle },
+      title: "Finalising Themes",
     },
     theme_mapping: {
       step: { order: 3, label: "AI Theme Mapping", icon: WandStars },
@@ -124,7 +124,7 @@
 
 {#snippet assigningContent()}
   <p class="my-4 text-center text-sm text-neutral-500">
-    You have completed the theme sign-off phase for all {questionsCount} consultation
+    You have completed finalising themes phase for all {questionsCount} consultation
     questions.
   </p>
 

@@ -16,7 +16,6 @@ describe("ConsultationStagePanel", () => {
       onConfirmClick: onConfirmClickMock,
     });
 
-    expect(screen.getByText("Finalising Themes")).toBeInTheDocument();
     expect(
       screen.getByText(/3 of 10 questions signed off/i),
     ).toBeInTheDocument();
@@ -57,7 +56,7 @@ describe("ConsultationStagePanel", () => {
     expect(screen.getByText("AI Mapping in Progress")).toBeInTheDocument();
     expect(
       screen.getByText(
-        /You have completed the theme sign-off phase for all 10 consultation questions/i,
+        /You have completed finalising themes phase for all 10 consultation questions/i,
       ),
     ).toBeInTheDocument();
   });
