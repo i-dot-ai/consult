@@ -1,2 +1,5 @@
 [tool.uv.workspace]
-members = ["backend", "themefinder"]
+members = ["backend", "themefinder", "pipeline-sign-off", "pipeline-mapping"]
+
+[tool.uv]
+exclude-newer = "P14D"
