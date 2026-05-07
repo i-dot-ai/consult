@@ -8,11 +8,13 @@ import { mockRoute } from "../../../global/utils";
 import { queryClient } from "../../../global/queryClient";
 import userEvent from "@testing-library/user-event";
 
-const CONSULTATIONS = [{
-  id: CONSULTATION_ID,
-  title: "Folder One",
-  code: "folder-one",
-}]
+const CONSULTATIONS = [
+  {
+    id: CONSULTATION_ID,
+    title: "Folder One",
+    code: "folder-one",
+  },
+];
 
 describe("AssignThemesForm", () => {
   afterEach(() => {
@@ -43,7 +45,9 @@ describe("AssignThemesForm", () => {
     render(AssignThemesForm, { consultations: CONSULTATIONS });
 
     const user = userEvent.setup();
-    await user.selectOptions(screen.getByRole('combobox'), [CONSULTATIONS[0].id])
+    await user.selectOptions(screen.getByRole("combobox"), [
+      CONSULTATIONS[0].id,
+    ]);
     await user.click(screen.getByRole("button", { name: "Assign Themes" }));
 
     await waitFor(() => {
@@ -57,7 +61,9 @@ describe("AssignThemesForm", () => {
     render(AssignThemesForm, { consultations: CONSULTATIONS });
 
     const user = userEvent.setup();
-    await user.selectOptions(screen.getByRole('combobox'), [CONSULTATIONS[0].id])
+    await user.selectOptions(screen.getByRole("combobox"), [
+      CONSULTATIONS[0].id,
+    ]);
     await user.click(screen.getByRole("button", { name: "Assign Themes" }));
 
     await waitFor(() => {
@@ -68,7 +74,9 @@ describe("AssignThemesForm", () => {
   it("should match snapshot initially", () => {
     mockRoute(assignMock);
 
-    const { container } = render(AssignThemesForm, { consultations: CONSULTATIONS });
+    const { container } = render(AssignThemesForm, {
+      consultations: CONSULTATIONS,
+    });
     expect(container).toMatchSnapshot();
   });
 });

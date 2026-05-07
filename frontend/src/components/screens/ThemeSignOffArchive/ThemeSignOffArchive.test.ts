@@ -5,7 +5,13 @@ import ThemeSignOffArchive from "./ThemeSignOffArchive.svelte";
 import fetchMock from "fetch-mock";
 import { queryClient } from "../../../global/queryClient";
 import { mockRoute } from "../../../global/utils";
-import { CONSULTATION_ID, consultationMock, consultationUpdateMock, questionsAllSignedOffMock, questionsMock } from "./mocks";
+import {
+  CONSULTATION_ID,
+  consultationMock,
+  consultationUpdateMock,
+  questionsAllSignedOffMock,
+  questionsMock,
+} from "./mocks";
 import userEvent from "@testing-library/user-event";
 
 const mocks = {
@@ -38,151 +44,141 @@ describe("ThemeSignOffArchive", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(question.question_text, { exact: false })).toBeInTheDocument();
+        expect(
+          screen.getByText(question.question_text, { exact: false }),
+        ).toBeInTheDocument();
       });
     },
   );
 
-  it(
-    "should display signed off tag if questions are signed off",
-    async () => {
-      mockRoute(consultationMock);
-      mockRoute(questionsAllSignedOffMock);
+  it("should display signed off tag if questions are signed off", async () => {
+    mockRoute(consultationMock);
+    mockRoute(questionsAllSignedOffMock);
 
-      render(ThemeSignOffArchive, {
-        consultationId: CONSULTATION_ID,
-      });
+    render(ThemeSignOffArchive, {
+      consultationId: CONSULTATION_ID,
+    });
 
-      await waitFor(() => {
-        expect(screen.getAllByText("Signed off").length).toEqual(questionsAllSignedOffMock.body.results.length);
-      });
-    },
-  );
+    await waitFor(() => {
+      expect(screen.getAllByText("Signed off").length).toEqual(
+        questionsAllSignedOffMock.body.results.length,
+      );
+    });
+  });
 
-  it(
-    "should trigger mapping if confirm button is pressed",
-    async () => {
-      const mockedUpdate = {
-        ...consultationUpdateMock,
-        body: vi.fn(),
-      };
-      mockRoute(consultationMock);
-      mockRoute(questionsAllSignedOffMock);
-      mockRoute(mockedUpdate);
+  it("should trigger mapping if confirm button is pressed", async () => {
+    const mockedUpdate = {
+      ...consultationUpdateMock,
+      body: vi.fn(),
+    };
+    mockRoute(consultationMock);
+    mockRoute(questionsAllSignedOffMock);
+    mockRoute(mockedUpdate);
 
-      render(ThemeSignOffArchive, {
-        consultationId: CONSULTATION_ID,
-      });
+    render(ThemeSignOffArchive, {
+      consultationId: CONSULTATION_ID,
+    });
 
-      await waitFor(() => {
-        expect(screen.getAllByText("Signed off").length).toBeGreaterThan(0);
-      });
+    await waitFor(() => {
+      expect(screen.getAllByText("Signed off").length).toBeGreaterThan(0);
+    });
 
-      const confirmButton = screen.getByRole("button", { name: "Confirm and Proceed to Mapping" });
-      const user = userEvent.setup();
+    const confirmButton = screen.getByRole("button", {
+      name: "Confirm and Proceed to Mapping",
+    });
+    const user = userEvent.setup();
 
-      await user.click(confirmButton);
+    await user.click(confirmButton);
 
-      await waitFor(() => {
-        expect(screen.getByText("Confirm AI Mapping")).toBeInTheDocument();
-      })
+    await waitFor(() => {
+      expect(screen.getByText("Confirm AI Mapping")).toBeInTheDocument();
+    });
 
-      const modalConfirmButton = screen.getByRole("button", { name: "Yes, Start AI Mapping" });
-      await user.click(modalConfirmButton);
+    const modalConfirmButton = screen.getByRole("button", {
+      name: "Yes, Start AI Mapping",
+    });
+    await user.click(modalConfirmButton);
 
-      await waitFor(() => {
-        expect(mockedUpdate.body).toHaveBeenCalled();
-      })
-    },
-  );
+    await waitFor(() => {
+      expect(mockedUpdate.body).toHaveBeenCalled();
+    });
+  });
 
-  it(
-    "should render correct panel for analysis stage",
-    async () => {
-      mockRoute({
-        ...consultationMock,
-        body: {
-          ...consultationMock.body,
-          stage: "analysis",
-        }
-      });
-      mockRoute(questionsAllSignedOffMock);
+  it("should render correct panel for analysis stage", async () => {
+    mockRoute({
+      ...consultationMock,
+      body: {
+        ...consultationMock.body,
+        stage: "analysis",
+      },
+    });
+    mockRoute(questionsAllSignedOffMock);
 
-      render(ThemeSignOffArchive, {
-        consultationId: CONSULTATION_ID,
-      });
+    render(ThemeSignOffArchive, {
+      consultationId: CONSULTATION_ID,
+    });
 
-      await waitFor(() => {
-        expect(screen.getByText("AI Mapping Complete")).toBeInTheDocument();
-      });
-    },
-  );
+    await waitFor(() => {
+      expect(screen.getByText("AI Mapping Complete")).toBeInTheDocument();
+    });
+  });
 
-  it(
-    "should render correct panel for mapping stage",
-    async () => {
-      mockRoute({
-        ...consultationMock,
-        body: {
-          ...consultationMock.body,
-          stage: "theme_mapping",
-        }
-      });
-      mockRoute(questionsAllSignedOffMock);
+  it("should render correct panel for mapping stage", async () => {
+    mockRoute({
+      ...consultationMock,
+      body: {
+        ...consultationMock.body,
+        stage: "theme_mapping",
+      },
+    });
+    mockRoute(questionsAllSignedOffMock);
 
-      render(ThemeSignOffArchive, {
-        consultationId: CONSULTATION_ID,
-      });
+    render(ThemeSignOffArchive, {
+      consultationId: CONSULTATION_ID,
+    });
 
-      await waitFor(() => {
-        expect(screen.getByText("AI Mapping in Progress")).toBeInTheDocument();
-      });
-    },
-  );
+    await waitFor(() => {
+      expect(screen.getByText("AI Mapping in Progress")).toBeInTheDocument();
+    });
+  });
 
-  it(
-    "should render correct panel for sign off stage",
-    async () => {
-      mockRoute({
-        ...consultationMock,
-        body: {
-          ...consultationMock.body,
-          stage: "theme_sign_off",
-        }
-      });
-      mockRoute(questionsMock);
+  it("should render correct panel for sign off stage", async () => {
+    mockRoute({
+      ...consultationMock,
+      body: {
+        ...consultationMock.body,
+        stage: "theme_sign_off",
+      },
+    });
+    mockRoute(questionsMock);
 
-      render(ThemeSignOffArchive, {
-        consultationId: CONSULTATION_ID,
-      });
+    render(ThemeSignOffArchive, {
+      consultationId: CONSULTATION_ID,
+    });
 
-      await waitFor(() => {
-        expect(screen.getByText("Finalising Themes")).toBeInTheDocument();
-      });
-    },
-  );
+    await waitFor(() => {
+      expect(screen.getByText("Finalising Themes")).toBeInTheDocument();
+    });
+  });
 
-  it(
-    "should render correct panel for sign off stage all questions signed off",
-    async () => {
-      mockRoute({
-        ...consultationMock,
-        body: {
-          ...consultationMock.body,
-          stage: "theme_sign_off",
-        }
-      });
-      mockRoute(questionsAllSignedOffMock);
+  it("should render correct panel for sign off stage all questions signed off", async () => {
+    mockRoute({
+      ...consultationMock,
+      body: {
+        ...consultationMock.body,
+        stage: "theme_sign_off",
+      },
+    });
+    mockRoute(questionsAllSignedOffMock);
 
-      render(ThemeSignOffArchive, {
-        consultationId: CONSULTATION_ID,
-      });
+    render(ThemeSignOffArchive, {
+      consultationId: CONSULTATION_ID,
+    });
 
-      await waitFor(() => {
-        expect(screen.getByText("All Questions Signed Off")).toBeInTheDocument();
-      });
-    },
-  );
+    await waitFor(() => {
+      expect(screen.getByText("All Questions Signed Off")).toBeInTheDocument();
+    });
+  });
 
   it("should match snapshot initially", () => {
     setupMocks();
@@ -202,7 +198,9 @@ describe("ThemeSignOffArchive", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(questionsMock.body.results[0].question_text, { exact: false }),
+        screen.getByText(questionsMock.body.results[0].question_text, {
+          exact: false,
+        }),
       ).toBeInTheDocument();
     });
     expect(container).toMatchSnapshot();

@@ -1,4 +1,10 @@
-import { CONSULTATION_ID, consultationMock, consultationUpdateMock, questionsAllSignedOffMock, questionsMock } from "./mocks";
+import {
+  CONSULTATION_ID,
+  consultationMock,
+  consultationUpdateMock,
+  questionsAllSignedOffMock,
+  questionsMock,
+} from "./mocks";
 import ThemeSignOffArchive from "./ThemeSignOffArchive.svelte";
 
 const consultationId = $state("test-consultation");
@@ -7,21 +13,12 @@ export default {
   name: "ThemeSignOffArchive",
   component: ThemeSignOffArchive,
   category: "Screens",
-  mocks: [
-    consultationMock,
-    consultationUpdateMock,
-    questionsMock,
-  ],
-  props: [
-    { name: "consultationId", value: consultationId, type: "text" },
-  ],
+  mocks: [consultationMock, consultationUpdateMock, questionsMock],
+  props: [{ name: "consultationId", value: consultationId, type: "text" }],
   stories: [
     {
       name: "Success Theme Sign Off Stage",
-      mocks: [
-        consultationMock,
-        questionsMock,
-      ],
+      mocks: [consultationMock, questionsMock],
       props: { consultationId: CONSULTATION_ID },
     },
     {
@@ -41,7 +38,7 @@ export default {
           body: {
             ...consultationMock.body,
             stage: "theme_mapping",
-          }
+          },
         },
         questionsMock,
       ],
@@ -55,7 +52,7 @@ export default {
           body: {
             ...consultationMock.body,
             stage: "analysis",
-          }
+          },
         },
         questionsMock,
       ],
