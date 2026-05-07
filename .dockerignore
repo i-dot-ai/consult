@@ -20,3 +20,16 @@ frontend/CACHE
 frontend/govuk-assets
 frontend/admin
 frontend/django_extensions
+
+# themefinder: development-only directories not needed in production images
+themefinder/evals
+themefinder/docs
+themefinder/tests
+themefinder/examples
+themefinder/architecture
+themefinder/.venv
+themefinder/.pytest_cache
+themefinder/.mypy_cache
+themefinder/.ruff_cache
+themefinder/**/__pycache__
+themefinder/*.egg-info

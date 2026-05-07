@@ -5,15 +5,22 @@ RUN apt-get update && apt-get install --yes build-essential > /dev/null
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Set up the project directory structure
-WORKDIR /src/backend
+# Set up workspace at /src so the layout matches the repo: pyproject + uv.lock at root,
+# with backend/ and themefinder/ as workspace members.
+WORKDIR /src
 
-COPY ./backend/pyproject.toml ./backend/uv.lock ./
+COPY ./pyproject.toml ./uv.lock ./
+COPY ./themefinder/pyproject.toml ./themefinder/pyproject.toml
+COPY ./themefinder/src/ ./themefinder/src/
+COPY ./backend/pyproject.toml ./backend/pyproject.toml
+
+WORKDIR /src/backend
 
 # Configure uv to create venv in 'venv' directory instead of '.venv'
 ENV UV_PROJECT_ENVIRONMENT=venv
 
-# Install dependencies - this will create venv directory
+# Install dependencies (workspace-aware) - creates /src/backend/venv with an editable
+# install pointing at /src/themefinder/src
 RUN uv sync --frozen --no-install-project
 
 
@@ -26,6 +33,11 @@ RUN apt-get update && apt-get install --yes libpq-dev > /dev/null
 RUN groupadd --system nonroot && useradd --system --gid nonroot nonroot
 
 WORKDIR /src
+
+# uv installs the themefinder workspace member as editable; the venv contains a .pth
+# pointing at /src/themefinder/src, so that path must exist at runtime too.
+COPY ./themefinder/pyproject.toml ./themefinder/pyproject.toml
+COPY ./themefinder/src/ ./themefinder/src/
 
 COPY ./backend ./backend
 
