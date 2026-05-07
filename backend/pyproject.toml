@@ -66,3 +66,6 @@ exclude = ['^consultations/migrations/']
 
 [tool.bandit]
 exclude = "*/.cruft.json"
+
+[tool.uv.sources]
+themefinder = { workspace = true }
