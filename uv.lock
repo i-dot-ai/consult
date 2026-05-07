@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = "==3.12.*"
 resolution-markers = [
     "sys_platform == 'win32'",
@@ -1716,7 +1716,7 @@ wheels = [
 [[package]]
 name = "pipeline-mapping"
 version = "0.1.0"
-source = { editable = "pipeline-mapping" }
+source = { virtual = "pipeline-mapping" }
 dependencies = [
     { name = "boto3" },
     { name = "pandas" },
@@ -1735,7 +1735,7 @@ requires-dist = [
 [[package]]
 name = "pipeline-sign-off"
 version = "0.1.0"
-source = { editable = "pipeline-sign-off" }
+source = { virtual = "pipeline-sign-off" }
 dependencies = [
     { name = "boto3" },
     { name = "openai" },
