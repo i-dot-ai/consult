@@ -11,6 +11,15 @@ import {
 import type { ResponseAnswer } from "../../../global/types";
 import { paginateArray } from "../../../global/utils";
 
+type QueryParams = {
+  page_size: string;
+  page: string;
+  evidenceRich: boolean;
+  themeFilters: string;
+  searchValue: string;
+  is_flagged: string;
+};
+
 export const CONSULTATION_ID = "test-consultation";
 export const QUESTION_ID = "test-question";
 
@@ -173,7 +182,7 @@ const themes = [
   },
 ];
 
-const filterAnswers = (answers: any[], params: any) => {
+const filterAnswers = (answers: ResponseAnswer[], params: QueryParams) => {
   const pages = paginateArray(answers, Number.parseInt(params.page_size));
   const intendedPage = Number.parseInt(params.page);
 
@@ -279,7 +288,7 @@ export const answersMock = {
   body: ({ url }: { url: string }) => {
     const queryParams = Object.fromEntries(
       new URLSearchParams(url.split("?")[1]),
-    );
+    ) as unknown as QueryParams;
 
     const filteredAnswers = filterAnswers(answers, queryParams);
 
