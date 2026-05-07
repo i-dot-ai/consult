@@ -16,8 +16,10 @@ COPY ./backend/pyproject.toml ./backend/pyproject.toml
 
 WORKDIR /src/backend
 
-# Configure uv to create venv in 'venv' directory instead of '.venv'
-ENV UV_PROJECT_ENVIRONMENT=venv
+# Use an absolute path: with a uv workspace, a relative UV_PROJECT_ENVIRONMENT is
+# resolved against the workspace root (/src), not the cwd, which would put the
+# venv at /src/venv instead of /src/backend/venv.
+ENV UV_PROJECT_ENVIRONMENT=/src/backend/venv
 
 # Install dependencies (workspace-aware) - creates /src/backend/venv with an editable
 # install pointing at /src/themefinder/src
