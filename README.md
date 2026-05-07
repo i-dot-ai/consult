@@ -80,6 +80,24 @@ Run end-to-end tests:
 make test-end-to-end
 ```
 
+### Setting up a new consultation
+
+The `scripts/` directory contains CLI tools for preparing a consultation's
+data for the ThemeFinder pipeline:
+
+```bash
+# Generate an opinionated Q.U. workbook template with live in-sheet validation:
+make build-consultation-template
+
+# Validate a Q.U. workbook against response data, build the ThemeFinder
+# input layout, and upload it to S3:
+make setup-consultation name=my_consultation
+```
+
+See [`scripts/README.md`](scripts/README.md) for the full pipeline
+walkthrough and [`scripts/setup_consultation_checks.md`](scripts/setup_consultation_checks.md)
+for the list of validation rules.
+
 ### VSCode setup (recommended)
 
 This project includes VSCode configuration files to ensure consistent development experience:

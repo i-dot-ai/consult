@@ -79,6 +79,22 @@ test-end-to-end: ## Run end-to-end tests with Playwright
 	@rm -f docker-compose.override.yml
 
 
+.PHONY: build-consultation-template
+build-consultation-template: ## Generate scripts/consult_data_template.xlsx (opinionated Q.U. workbook with live validation)
+	cd backend && uv run --group scripts python ../scripts/build_consult_data_template.py
+
+.PHONY: setup-consultation
+setup-consultation: ## Set up a new ThemeFinder consultation: validate, build inputs, upload to S3. Args: name=<slug> [until=validate|build|upload] [responses=<path>] [qu=<path>]
+	@if [ -z "$(name)" ]; then echo "Usage: make setup-consultation name=<slug> [until=validate|build|upload]"; exit 1; fi
+	cd backend && uv run --group scripts python ../scripts/setup_consultation.py "$(name)" \
+		$(if $(until),--until $(until)) \
+		$(if $(responses),--responses $(responses)) \
+		$(if $(qu),--qu $(qu))
+
+.PHONY: test-consultation-scripts
+test-consultation-scripts: ## Run tests for the consultation setup scripts
+	cd backend && PYTHONPATH=../scripts uv run --group scripts pytest ../scripts/tests/
+
 .PHONY: check-python-code
 check-python-code: ## Check Python code - linting and mypy
 	cd backend && uv run ruff check --select I .
