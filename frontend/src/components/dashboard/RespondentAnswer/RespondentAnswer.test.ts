@@ -10,7 +10,7 @@ describe("RespondentAnswer", () => {
     questionTitle:
       "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
     questionNumber: 1,
-    answerText:
+    responseText:
       "I agree in principle, but I think the guidelines should include a provision for periodic review to adapt to market changes.",
     multiChoice: ["multi 1", "multi 2"],
     themes: ["Innovation", "Standardized framework"],
@@ -24,7 +24,7 @@ describe("RespondentAnswer", () => {
 
     expect(screen.getByText(testData.questionTitle)).toBeInTheDocument();
     expect(screen.getByText(`Q${testData.questionNumber}`)).toBeInTheDocument();
-    expect(screen.getByText(testData.answerText)).toBeInTheDocument();
+    expect(screen.getByText(testData.responseText)).toBeInTheDocument();
     testData.multiChoice.forEach((multiAnswer) =>
       expect(screen.getByText(multiAnswer)).toBeInTheDocument(),
     );

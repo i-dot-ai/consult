@@ -119,7 +119,7 @@ describe("ThemeSignOffArchive", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("AI Mapping Complete")).toBeInTheDocument();
+      expect(screen.getByText("AI Assignment Complete")).toBeInTheDocument();
     });
   });
 
@@ -138,7 +138,7 @@ describe("ThemeSignOffArchive", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("AI Mapping in Progress")).toBeInTheDocument();
+      expect(screen.getByText("AI Assignment in Progress")).toBeInTheDocument();
     });
   });
 

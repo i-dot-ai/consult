@@ -16,7 +16,7 @@ describe("SelectedThemeCard", () => {
       modified_at: new Date().toISOString(),
       last_modified_by: "testuser",
     },
-    answers: ["Answer 1", "Answer 2"],
+    responses: ["Answer 1", "Answer 2"],
     removeTheme: () => {},
     updateTheme: () => {},
   };
@@ -27,9 +27,9 @@ describe("SelectedThemeCard", () => {
     expect(screen.getByText(testData.theme.name)).toBeInTheDocument();
     expect(screen.getByText(testData.theme.description)).toBeInTheDocument();
 
-    // Answers hidden initially
-    testData.answers?.forEach((answer) => {
-      expect(screen.queryByText(answer)).toBeNull();
+    // Responses hidden initially
+    testData.responses?.forEach((response) => {
+      expect(screen.queryByText(response)).toBeNull();
     });
 
     expect(container).toMatchSnapshot();
@@ -46,7 +46,7 @@ describe("SelectedThemeCard", () => {
     const propsDefined = SelectedThemeCardStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual([
       "theme",
-      "answers",
+      "responses",
       "removeTheme",
       "updateTheme",
     ]);

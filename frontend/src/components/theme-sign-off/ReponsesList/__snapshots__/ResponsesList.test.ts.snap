@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`AnswersList > should render 1`] = `
+exports[`ResponsesList > should render 1`] = `
 <div>
   <div
     class="flex items-center gap-1"
@@ -58,7 +58,7 @@ exports[`AnswersList > should render 1`] = `
       <p
         class="text-sm"
       >
-        Answer 1
+        Response 1
       </p>
     </li>
     <li
@@ -73,7 +73,7 @@ exports[`AnswersList > should render 1`] = `
       <p
         class="text-sm"
       >
-        Answer 2
+        Response 2
       </p>
     </li>
     
