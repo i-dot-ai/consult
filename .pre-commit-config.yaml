@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
         name: Check for files larger than 5 MB
@@ -17,10 +17,11 @@ repos:
         files: '^backend/.*\.py$'
 
   - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.4.0
+    rev: v1.5.0
     hooks:
     -   id: detect-secrets
-        exclude: (uv.lock|.env.test|^.github/workflows/|\.cruft\.json)
+        exclude: (uv\.lock|\.env\.example|\.env\.test|^\.github/workflows/|\.cruft\.json)
+
   - repo: local
     hooks:
     -   id: detect-ip
@@ -29,12 +30,14 @@ repos:
         language: pygrep
         exclude: '^static/|\.lock'
         files: .
+
   - repo: local
     hooks:
     -   id: detect-aws-account
         name: Detect AWS account numbers
         language: pygrep
         entry: ':\d{12}:'
+
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.8.0
     hooks:
@@ -43,7 +46,16 @@ repos:
         additional_dependencies: [ "types-PyYAML" ]
         files: '^backend/.*\.py$'
         exclude: .*migrations
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.11
+    hooks:
+      - id: ruff
+        files: ^themefinder/
+      - id: ruff-format
+        files: ^themefinder/
+
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.7.1
+    rev: 0.9.1
     hooks:
       - id: nbstripout
