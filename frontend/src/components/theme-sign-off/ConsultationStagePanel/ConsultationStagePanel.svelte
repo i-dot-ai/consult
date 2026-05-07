@@ -48,12 +48,12 @@
       title: "Finalising Themes",
     },
     theme_mapping: {
-      step: { order: 3, label: "AI Theme Mapping", icon: WandStars },
-      title: "AI Mapping in Progress",
+      step: { order: 3, label: "Assigning Themes (AI)", icon: WandStars },
+      title: "AI Assignment in Progress",
     },
     analysis: {
       step: { order: 4, label: "Analysis Dashboard", icon: Finance },
-      title: "AI Mapping Complete",
+      title: "AI Assignment Complete",
     },
   };
 
@@ -102,8 +102,8 @@
   </p>
 
   <p class="my-4 text-center text-sm text-neutral-500">
-    <strong>Next:</strong> Confirm and proceed to the AI mapping phase where responses
-    will be mapped to your selected themes.
+    <strong>Next:</strong> Confirm and proceed to the AI assignment phase where responses
+    will be assigned to your selected themes.
   </p>
 
   <Button
@@ -129,20 +129,20 @@
   </p>
 
   <p class="my-4 text-center text-sm text-neutral-500">
-    AI is currently mapping consultation responses to your signed-off themes.
+    AI is currently assigning consultation responses to your selected themes.
     This process analyses each response and assigns it to the most relevant
     themes you've selected.
   </p>
 
   <p class="my-4 text-center text-sm text-neutral-500">
-    <strong>Next:</strong> When mapping is complete, you'll be able to access the
-    Analysis Dashboard to view all mapped data for detailed insights and reporting.
+    <strong>Next:</strong> When assigning themes is complete, you'll be able to access
+    the Analysis Dashboard to view all assigned responses and detailed insights.
   </p>
 {/snippet}
 
 {#snippet analysisContent()}
   <p class="my-4 text-center text-sm text-neutral-500">
-    All consultation responses have been successfully mapped against your
+    All consultation responses have been successfully assigned against your
     selected themes.
   </p>
 

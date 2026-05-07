@@ -69,7 +69,7 @@
               Are specific and descriptive (e.g., "Data Privacy Concerns")
             </li>
             <li>Use clear, jargon-free language</li>
-            <li>Focus on the main topic or concern</li>
+            <li>Focus on the main theme or concern</li>
           </ul>
 
           <h4 class="mt-2">Good theme descriptions:</h4>

@@ -17,7 +17,7 @@
   import Visibility from "../../svg/material/Visibility.svelte";
   import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
   import Tag from "../../Tag/Tag.svelte";
-  import AnswersList from "../AnswersList/AnswersList.svelte";
+  import ResponsesList from "../ReponsesList/ResponsesList.svelte";
   import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
 
   export interface Props {
@@ -46,10 +46,10 @@
     hasNestedThemes = false,
   }: Props = $props();
 
-  const answersStore = createFetchStore<CandidateThemeResponsesResponse>();
+  const responsesStore = createFetchStore<CandidateThemeResponsesResponse>();
 
   let expanded = $derived(expandedThemes.includes(theme.id));
-  let showAnswers = $state(false);
+  let showResponses = $state(false);
 
   let disabled = $derived(Boolean(theme.selectedtheme_id));
   let isBeingSelected = $derived(themesBeingSelected.includes(theme.id));
@@ -67,7 +67,7 @@
           "transition-all",
           "duration-300",
           "w-auto",
-          showAnswers && !disabled ? "md:w-1/3" : "md:w-auto",
+          showResponses && !disabled ? "md:w-1/3" : "md:w-auto",
         ])}
       >
         <div class="mb-2 flex items-center justify-between">
@@ -126,8 +126,8 @@
             <Button
               size="sm"
               handleClick={() => {
-                if (!$answersStore.data) {
-                  $answersStore.fetch(
+                if (!$responsesStore.data) {
+                  $responsesStore.fetch(
                     getApiCandidateThemeResponsesUrl(
                       consultationId,
                       questionId,
@@ -135,16 +135,16 @@
                     ),
                   );
                 }
-                showAnswers = !showAnswers;
+                showResponses = !showResponses;
               }}
-              disabled={$answersStore.isLoading}
+              disabled={$responsesStore.isLoading}
             >
               <div class="flex items-center gap-1 text-secondary">
                 <MaterialIcon color="fill-secondary">
                   <Visibility />
                 </MaterialIcon>
                 <span class="whitespace-nowrap">
-                  {showAnswers ? "Hide" : "Representative"} Responses
+                  {showResponses ? "Hide" : "Representative"} Responses
                 </span>
               </div>
             </Button>
@@ -152,19 +152,19 @@
         {/if}
       </div>
 
-      {#if showAnswers && !disabled}
+      {#if showResponses && !disabled}
         <aside
           transition:fly={{ x: 300 }}
           class="grow pt-4 sm:ml-4 sm:w-2/3 sm:border-l sm:border-neutral-200 sm:pl-4 sm:pt-0"
         >
-          <AnswersList
+          <ResponsesList
             variant="generated"
             title="Representative Responses"
-            loading={$answersStore.isLoading}
-            answers={$answersStore.data?.results?.map(
+            loading={$responsesStore.isLoading}
+            responses={$responsesStore.data?.results?.map(
               (item) => item.free_text,
             ) || []}
-            totalCount={$answersStore.data?.total_count}
+            totalCount={$responsesStore.data?.total_count}
           />
         </aside>
       {:else}

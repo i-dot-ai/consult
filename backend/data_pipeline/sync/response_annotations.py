@@ -375,7 +375,7 @@ def _build_batch_key_to_db_theme_lookup(
     # Build lookup by name (the stable identifier across batch output and database)
     db_themes_by_name = {theme.name: theme for theme in db_themes}
 
-    # Map batch theme_key -> database SelectedTheme (joined on name)
+    # Assign batch theme_key -> database SelectedTheme (joined on name)
     batch_key_to_db_theme = {}
     missing_themes = []
     themes_to_update = []

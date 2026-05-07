@@ -28,7 +28,7 @@
   import {
     SearchModeValues,
     TabNames,
-    type AnswersResponse,
+    type ResponsesBody,
     type ConsultationResponse,
     type DemoData,
     type DemoOption,
@@ -83,7 +83,7 @@
 
   const consultationStore = createFetchStore<ConsultationResponse>();
   const questionStore = createFetchStore<Question>();
-  const answersStore = createFetchStore<AnswersResponse>();
+  const responsesStore = createFetchStore<ResponsesBody>();
   const themesStore = createFetchStore<ThemeInfoResponse>();
   const demographicsStore = createFetchStore<DemoOptionsResponse>();
 
@@ -122,16 +122,16 @@
     }
 
     // Append next page of answers to existing answers
-    await $answersStore.fetch(
+    await $responsesStore.fetch(
       `${getApiQuestionResponsesUrl(consultationId, questionId)}${responseQs}`,
     );
 
-    if ($answersStore.data?.all_respondents) {
-      const newAnswers = $answersStore.data?.all_respondents;
+    if ($responsesStore.data?.all_respondents) {
+      const newAnswers = $responsesStore.data?.all_respondents;
       answers = [...answers, ...newAnswers];
     }
     isAnswersLoading = false;
-    hasMorePages = $answersStore.data?.has_more_pages || false;
+    hasMorePages = $responsesStore.data?.has_more_pages || false;
 
     currPage += 1;
   }
@@ -379,8 +379,8 @@
         pageSize={PAGE_SIZE}
         {answers}
         {isAnswersLoading}
-        answersError={$answersStore.error}
-        filteredTotal={$answersStore.data?.filtered_total}
+        answersError={$responsesStore.error}
+        filteredTotal={$responsesStore.data?.filtered_total}
         {hasMorePages}
         handleLoadClick={() => loadData()}
         resetData={() => {

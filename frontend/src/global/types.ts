@@ -219,7 +219,7 @@ export interface CandidateThemeResponsesResponse {
   total_count: number;
   results: CandidateThemeResponseItem[];
 }
-export interface AnswersResponse {
+export interface ResponsesBody {
   respondents_total: number;
   filtered_total: number;
   has_more_pages: boolean;

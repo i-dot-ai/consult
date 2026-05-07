@@ -1,13 +1,13 @@
-import AnswersList from "./AnswersList.svelte";
+import ResponsesList from "./ResponsesList.svelte";
 
 const variant = $state("selected");
 const title = $state("Test Title");
-const answers = $state(["Answer 1", "Answer 2", "Answer 3"]);
+const responses = $state(["response 1", "response 2", "response 3"]);
 const loading = $state(false);
 
 export default {
-  name: "AnswersList",
-  component: AnswersList,
+  name: "ResponsesList",
+  component: ResponsesList,
   category: "Finalising Themes",
   props: [
     {
@@ -25,8 +25,8 @@ export default {
       type: "text",
     },
     {
-      name: "answers",
-      value: answers,
+      name: "responses",
+      value: responses,
       type: "json",
     },
     {
@@ -37,11 +37,11 @@ export default {
   ],
   stories: [
     {
-      name: "No Answers",
+      name: "No responses",
       props: {
         variant: "selected",
-        answers: [],
-        title: "No Answers Story",
+        responses: [],
+        title: "No Responses Story",
       },
     },
   ],

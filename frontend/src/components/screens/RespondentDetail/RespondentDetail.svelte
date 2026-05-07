@@ -15,10 +15,11 @@
   } from "../../../global/routes.ts";
   import { createFetchStore } from "../../../global/stores.ts";
   import type {
-    AnswersResponse,
+    ResponsesBody,
     QuestionsResponse,
     Respondent,
     RespondentsResponse,
+    ResponseAnswer,
   } from "../../../global/types.ts";
 
   import Alert from "../../Alert.svelte";
@@ -51,7 +52,7 @@
   const respondentStore = createFetchStore<Respondent>();
   const consultationQuestionsStore = createFetchStore<QuestionsResponse>();
   const questionsStore = createFetchStore<QuestionsResponse>();
-  const answersStore = createFetchStore<AnswersResponse>();
+  const responsesStore = createFetchStore<ResponsesBody>();
 
   let dataRequested: boolean = $state(false);
 
@@ -61,7 +62,7 @@
     $questionsStore.fetch(
       getQuestionsByRespondentUrl(consultationId, respondentId),
     );
-    $answersStore.fetch(
+    $responsesStore.fetch(
       `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
     );
     dataRequested = true;
@@ -95,20 +96,22 @@
     ) ?? null,
   );
 
-  let answersToDisplay = $derived(
-    ($answersStore.data?.all_respondents || []).map((answer) => {
-      const question = $questionsStore.data?.results?.find(
-        (question) => question.id === answer.question_id,
-      );
+  let responsesToDisplay = $derived(
+    ($responsesStore.data?.all_respondents || []).map(
+      (response: ResponseAnswer) => {
+        const question = $questionsStore.data?.results?.find(
+          (question) => question.id === response.question_id,
+        );
 
-      return {
-        ...answer,
-        question: {
-          title: question?.question_text || "",
-          number: question?.number || 0,
-        },
-      };
-    }),
+        return {
+          ...response,
+          question: {
+            title: question?.question_text || "",
+            number: question?.number || 0,
+          },
+        };
+      },
+    ),
   );
 </script>
 
@@ -198,28 +201,28 @@
               number
             </p>
 
-            {#if !dataRequested || $answersStore.isLoading}
-              <LoadingMessage message="Loading Answers..." />
+            {#if !dataRequested || $responsesStore.isLoading}
+              <LoadingMessage message="Loading Responses..." />
             {/if}
 
             <ul>
-              {#each answersToDisplay.sort((a, b) => {
+              {#each responsesToDisplay.sort((a, b) => {
                 if (a.question.number < b.question.number) {
                   return -1;
                 } else if (a.question.number > b.question.number) {
                   return 1;
                 }
                 return 0;
-              }) as answer, i (answer.id)}
+              }) as response, i (response.id)}
                 <RespondentAnswer
                   {consultationId}
-                  questionId={answer.question_id}
-                  questionTitle={answer.question.title}
-                  questionNumber={answer.question.number}
-                  answerText={answer.free_text_answer_text}
-                  multiChoice={answer.multiple_choice_answer}
-                  themes={answer.themes?.map((theme) => theme.name) || []}
-                  evidenceRich={answer.evidenceRich}
+                  questionId={response.question_id}
+                  questionTitle={response.question.title}
+                  questionNumber={response.question.number}
+                  responseText={response.free_text_answer_text}
+                  multiChoice={response.multiple_choice_answer}
+                  themes={response.themes?.map((theme) => theme.name) || []}
+                  evidenceRich={response.evidenceRich}
                   delay={FLY_ANIMATION_DELAY * i}
                 />
               {/each}
