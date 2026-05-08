@@ -3,7 +3,7 @@ import Layout from "../../../../../../../layouts/Layout.astro";
 import Section from "../../../../../../../components/Section/Section.svelte";
 import Text from "../../../../../../../components/Text/Text.svelte";
 import Title from "../../../../../../../components/Title.svelte";
-import ThemeSelectionForm from "../../../../../../../components/screens/ThemeSelectionForm.svelte";
+import ThemeSelectionForm from "../../../../../../../components/screens/ThemeSelectionForm/ThemeSelectionForm.svelte";
 import { fetchBackendApi } from "../../../../../../../global/api";
 import type {
   AstroGlobalRuntime,
@@ -73,8 +73,9 @@ const [question, response, themes] = await Promise.all([
         </div>
         <ThemeSelectionForm
           client:load
-          response={response}
-          themes={themes}
+          responseId={response.id}
+          allThemes={themes.all_themes}
+          selectedThemes={themes.selected_themes}
           consultationId={consultationId}
           questionId={questionId}
         />
