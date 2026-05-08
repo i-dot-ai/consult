@@ -52,6 +52,84 @@ exports[`ThemeSelectionForm > should match snapshot initially 1`] = `
           </div>
           <!---->
         </div>
+        <div
+          class="rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
+        >
+          <div
+            class="mb-5"
+          >
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="theme-two"
+                name="selected_themes"
+                type="checkbox"
+                value="theme-two"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="theme-two"
+              >
+                Theme Two
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <div
+            class="ml-6 mt-1 text-sm text-gray-600"
+          >
+            Theme two description
+          </div>
+          <!---->
+        </div>
+        <div
+          class="rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
+        >
+          <div
+            class="mb-5"
+          >
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="theme-three"
+                name="selected_themes"
+                type="checkbox"
+                value="theme-three"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="theme-three"
+              >
+                Theme Three
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <div
+            class="ml-6 mt-1 text-sm text-gray-600"
+          >
+            Theme three description
+          </div>
+          <!---->
+        </div>
         
       </div>
        
