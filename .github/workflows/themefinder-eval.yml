@@ -1,0 +1,169 @@
+name: themefinder LLM evaluation
+
+on:
+  pull_request:
+    paths:
+      - 'themefinder/evals/**'
+      - 'themefinder/src/themefinder/**'
+      - '.github/workflows/themefinder-eval.yml'
+  workflow_dispatch:
+    inputs:
+      dataset:
+        description: 'Dataset identifier (e.g., gambling_XS, healthcare_M)'
+        type: string
+        default: 'gambling_XS'
+      eval_type:
+        description: 'Which eval to run'
+        type: choice
+        options:
+          - generation
+          - mapping
+          - condensation
+          - refinement
+          - all
+        default: 'generation'
+
+jobs:
+  themefinder-eval-start-runner:
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@main
+    permissions: write-all
+    with:
+      EC2_INSTANCE_TYPE: t3.medium
+      ENVIRONMENT: prod
+    secrets:
+      AWS_GITHUBRUNNER_USER_ACCESS_KEY: ${{ secrets.AWS_GITHUBRUNNER_USER_ACCESS_KEY }}
+      AWS_GITHUBRUNNER_USER_SECRET_ID: ${{ secrets.AWS_GITHUBRUNNER_USER_SECRET_ID }}
+      AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
+  themefinder-eval:
+    needs: themefinder-eval-start-runner
+    runs-on: ${{ needs.themefinder-eval-start-runner.outputs.label }}
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: '.python-version'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b  # v8.1.0
+
+      - name: Install dependencies
+        run: uv sync --package themefinder --extra dev
+
+      - name: Get version info
+        id: version
+        run: |
+          VERSION=$(python -c "import tomllib; print(tomllib.load(open('themefinder/pyproject.toml', 'rb'))['project']['version'])")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "short_sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Run eval
+        id: eval
+        env:
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          OPENAI_API_VERSION: ${{ secrets.OPENAI_API_VERSION }}
+          LLM_GATEWAY_URL: ${{ secrets.LLM_GATEWAY_URL }}
+          CONSULT_EVAL_LITELLM_API_KEY: ${{ secrets.CONSULT_EVAL_LITELLM_API_KEY }}
+          AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT: ${{ secrets.AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          ENVIRONMENT: production
+          DATASET: ${{ github.event.inputs.dataset || 'gambling_XS' }}
+          EVAL_TYPE: ${{ github.event.inputs.eval_type || 'generation' }}
+        run: |
+          set -o pipefail
+          cd themefinder/evals
+
+          if [ "$EVAL_TYPE" = "all" ]; then
+            echo "Running all evals for $DATASET..."
+            uv run python benchmark.py --quick 2>&1 | tee results.txt
+          else
+            echo "Running $EVAL_TYPE eval for $DATASET..."
+            uv run python benchmark.py --quick --evals "$EVAL_TYPE" 2>&1 | tee results.txt
+          fi
+
+          if grep -q "Eval Results\|experiment\|accuracy\|f1" results.txt; then
+            echo "eval_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "eval_success=false" >> $GITHUB_OUTPUT
+          fi
+
+          BENCHMARK_ID=$(grep "BENCHMARK_ID=" results.txt | tail -1 | cut -d= -f2)
+          echo "benchmark_id=$BENCHMARK_ID" >> $GITHUB_OUTPUT
+
+          SCORES=$(grep -E "^\s+(question|f1|accuracy)" results.txt | head -6 | sed 's/^[[:space:]]*//' | tr '\n' ' · ' || echo "")
+          echo "scores=$SCORES" >> $GITHUB_OUTPUT
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: eval-results-${{ github.run_id }}
+          path: |
+            themefinder/evals/benchmark_results/
+            themefinder/evals/results.txt
+          retention-days: 90
+
+      - name: Notify Slack on success
+        if: steps.eval.outputs.eval_success == 'true'
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "✅ ThemeFinder Eval Complete",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "✅ *ThemeFinder Eval*\n`v${{ steps.version.outputs.version }}` · `${{ steps.version.outputs.short_sha }}`\n*Dataset:* ${{ github.event.inputs.dataset || 'gambling_XS' }} · *Benchmark:* `${{ steps.eval.outputs.benchmark_id }}`\n${{ steps.eval.outputs.scores }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run · Download Report>"
+                  }
+                }
+              ]
+            }
+
+      - name: Notify Slack on failure
+        if: failure() || steps.eval.outputs.eval_success == 'false'
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "⚠️ ThemeFinder Eval Failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "⚠️ *ThemeFinder Eval Failed*\n`v${{ steps.version.outputs.version }}` · `${{ steps.version.outputs.short_sha }}`\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                  }
+                }
+              ]
+            }
+
+  themefinder-eval-stop-runner:
+    needs: [themefinder-eval-start-runner, themefinder-eval]
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@main
+    if: needs.themefinder-eval-start-runner.outputs.use-persisted == 0 && always()
+    permissions: write-all
+    with:
+      RUNNER_LABEL: ${{ needs.themefinder-eval-start-runner.outputs.label }}
+      EC2_INSTANCE_ID: ${{ needs.themefinder-eval-start-runner.outputs.ec2-instance-id }}
+    secrets:
+      AWS_GITHUBRUNNER_USER_ACCESS_KEY: ${{ secrets.AWS_GITHUBRUNNER_USER_ACCESS_KEY }}
+      AWS_GITHUBRUNNER_USER_SECRET_ID: ${{ secrets.AWS_GITHUBRUNNER_USER_SECRET_ID }}
+      AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
