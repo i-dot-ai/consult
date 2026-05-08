@@ -48,17 +48,16 @@ consult/
 
 ## PR Structure
 
-The migration is split into 3 PRs. Phases 1-3 must land together because the Docker build CI (`build-gh.yml`) runs on every push and builds all 4 images — if the workspace is set up but the Dockerfiles aren't updated, builds break.
+The migration is split into 2 PRs. Phases 1–4 land together because the Docker build CI (`build-gh.yml`) runs on every push and builds all 4 images — if the workspace is set up but the Dockerfiles or CI aren't updated, builds break.
 
 | PR | Phases | What | Can merge independently? |
 |---|---|---|---|
-| **PR 1** | 1 + 2 + 3 | Core migration: copy themefinder, workspace config, Dockerfiles, Makefile | Yes (this is the big one) |
-| **PR 2** | 4 | CI: add themefinder-ci.yml, themefinder-eval.yml, update backend-ci.yml triggers | Yes, after PR 1 |
-| **PR 3** | 5 | Public repo sync: auto-push workflow, update public repo README | Yes, after PR 1 |
+| **PR 1** | 1 + 2 + 3 + 4 | Core migration + CI: copy themefinder, workspace config, Dockerfiles, Makefile, themefinder/eval CI, merged pre-commit | Yes (this is the big one) |
+| **PR 2** | 5 | Public repo sync: auto-push workflow, update public repo README | Yes, after PR 1 |
 
 ## Implementation Checklist
 
-### PR 1: Core Migration
+### PR 1: Core Migration + CI
 
 #### Phase 1: Copy and wire up the workspace
 
@@ -115,7 +114,7 @@ The migration is split into 3 PRs. Phases 1-3 must land together because the Doc
 - [ ] Verify: `make test-themefinder` passes
 - [ ] Verify: full app works at localhost:3000
 
-### PR 2: CI Migration
+#### Phase 4: CI migration
 
 - [ ] Create `.github/workflows/themefinder-ci.yml` — runs themefinder tests on PR/push when `themefinder/**` changes (Python 3.10, 3.11, 3.12 matrix, 95% coverage gate)
 - [ ] Create `.github/workflows/themefinder-eval.yml` — runs LLM evals on PR when `themefinder/**` changes, supports manual dispatch with dataset/eval_type inputs. Uses EC2 self-hosted runner via `i-dot-ai-core-github-actions`
@@ -130,7 +129,7 @@ The migration is split into 3 PRs. Phases 1-3 must land together because the Doc
   - `THEMEFINDER_S3_BUCKET_NAME`
   - `SLACK_WEBHOOK_URL`
 
-### PR 3: Public Repo Sync
+### PR 2: Public Repo Sync
 
 - [ ] Create `.github/workflows/sync-themefinder.yml` — auto-pushes `themefinder/` subtree to `i-dot-ai/themefinder` on merge to main:
   ```yaml
