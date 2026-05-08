@@ -42,6 +42,7 @@ import AssignThemesFormStory from "../screens/AssignThemesForm/AssignThemesFormS
 import QuestionDetailStory from "../screens/QuestionDetail/QuestionDetailStory.svelte";
 import ThemeSignOffArchiveStory from "../screens/ThemeSignOffArchive/ThemeSignOffArchiveStory.svelte";
 import ThemeSelectionFormStory from "../screens/ThemeSelectionForm/ThemeSelectionFormStory.svelte";
+import QuestionsReviewListStorySvelte from "../screens/QuestionsReviewList/QuestionsReviewListStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -110,4 +111,5 @@ export default [
   QuestionDetailStory,
   ThemeSignOffArchiveStory,
   ThemeSelectionFormStory,
+  QuestionsReviewListStorySvelte,
 ] as Story[];

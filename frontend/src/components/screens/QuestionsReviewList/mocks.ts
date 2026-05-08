@@ -1,0 +1,1 @@
+export const CONSULTATION_ID = "test-consultation";
