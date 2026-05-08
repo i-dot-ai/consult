@@ -12,7 +12,7 @@ on:
       - ".github/workflows/themefinder-ci.yml"
 
 jobs:
-  test:
+  themefinder-test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
