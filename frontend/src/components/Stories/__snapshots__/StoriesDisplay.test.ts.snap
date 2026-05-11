@@ -397,6 +397,14 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
               ThemeSelectionForm
             </a>
           </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=QuestionsReviewList"
+            >
+              QuestionsReviewList
+            </a>
+          </li>
           <!---->
           
         </ul>
