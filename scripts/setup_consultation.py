@@ -49,6 +49,7 @@ import logging
 import re
 import shutil
 import sys
+import unicodedata
 from difflib import SequenceMatcher
 from pathlib import Path
 
@@ -696,10 +697,11 @@ def create_respondents_jsonl(
             df[c]
             .astype(str)
             .str.replace("_x000D_", "", regex=False)
-            .str.encode("ascii", "ignore")
-            .str.decode("ascii")
+            .apply(_strip_control_chars)
         )
-        df[c] = df[c].apply(lambda x: list(dict.fromkeys(x.split(","))))
+        df[c] = df[c].apply(
+            lambda x: list(dict.fromkeys(x.rstrip(",").split(",")))
+        )
     df.rename(columns=dict(zip(demographic_columns, demographic_labels)), inplace=True)
     df["demographic_data"] = df[demographic_labels].to_dict(orient="records")
     df[["themefinder_id", "demographic_data"]].to_json(
@@ -707,9 +709,19 @@ def create_respondents_jsonl(
     )
 
 
+def _strip_control_chars(text: str) -> str:
+    """Remove unicode control characters (category 'C*') while preserving
+    printable unicode such as accents, smart quotes, and non-breaking hyphens."""
+    return "".join(ch for ch in text if unicodedata.category(ch)[0] != "C")
+
+
 def _clean_text_column(series: pd.Series) -> pd.Series:
-    """Remove unwanted characters and non-ASCII bytes from a text column."""
-    series = series.astype(str).str.encode("ascii", "ignore").str.decode("ascii")
+    """Strip control characters and known noise strings from a text column.
+
+    Preserves printable unicode (e.g. 'Community‑based' with U+2011) so legitimate
+    option names and free-text aren't mangled.
+    """
+    series = series.astype(str).apply(_strip_control_chars)
     for bad_string in CHARACTERS_TO_REMOVE:
         series = series.apply(lambda x, bs=bad_string: x.replace(bs, " "))
     return series.str.strip()
@@ -773,7 +785,7 @@ def create_question_inputs(
                 else question["column_name"]
             )
             answers[options_col] = answers[options_col].apply(
-                lambda x: list(dict.fromkeys(x.split(",")))
+                lambda x: list(dict.fromkeys(x.rstrip(",").split(",")))
             )
             answers.rename(columns={options_col: "options"}, inplace=True)
             answers[["themefinder_id", "options"]].to_json(

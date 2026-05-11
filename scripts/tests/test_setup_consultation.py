@@ -17,6 +17,7 @@ from pathlib import Path
 from setup_consultation import (
     _load_qu_sheet,
     _normalise_null_like,
+    _strip_control_chars,
     create_question_inputs,
     create_respondents_jsonl,
     load_and_number_question_sheets,
@@ -479,6 +480,94 @@ def test_create_respondents_jsonl_deduplicates(tmp_path):
     assert rows[2]["demographic_data"]["Region"] == ["West", "East"]
 
 
+def test_create_respondents_jsonl_strips_trailing_comma(tmp_path):
+    """Demographic value 'North,' must not produce a phantom '' bucket."""
+    df = pd.DataFrame(
+        {"themefinder_id": [1, 2], "D": ["North,", "North,South,"]}
+    )
+    create_respondents_jsonl(df, ["D"], ["Region"], tmp_path)
+    rows = [
+        json.loads(line)
+        for line in (tmp_path / "respondents.jsonl").read_text().splitlines()
+    ]
+    assert rows[0]["demographic_data"]["Region"] == ["North"]
+    assert rows[1]["demographic_data"]["Region"] == ["North", "South"]
+
+
+def test_create_question_inputs_strips_trailing_comma_in_closed(tmp_path):
+    """Closed question: 'Option A,' must not produce a phantom '' bucket."""
+    df = pd.DataFrame(
+        {
+            "themefinder_id": [1, 2, 3, 4],
+            "C": [
+                "Option A,",            # single option with trailing comma
+                "Option A,Option B,",   # two options with trailing comma
+                "Option A,Option B,,",  # multiple trailing commas
+                "Option A,Option B",    # no trailing comma — control case
+            ],
+        }
+    )
+    questions = [{"question_number": 1, "column_name": "C", "question_text": "?"}]
+    create_question_inputs(df, questions, "closed", tmp_path)
+
+    rows = [
+        json.loads(line)
+        for line in (
+            tmp_path / "question_part_1" / "multi_choice.jsonl"
+        ).read_text().splitlines()
+    ]
+    assert rows[0]["options"] == ["Option A"]
+    assert rows[1]["options"] == ["Option A", "Option B"]
+    assert rows[2]["options"] == ["Option A", "Option B"]
+    assert rows[3]["options"] == ["Option A", "Option B"]
+
+    q = json.loads((tmp_path / "question_part_1" / "question.json").read_text())
+    assert "" not in q["multi_choice_options"]
+
+
+def test_create_question_inputs_keeps_internal_empty_token_in_closed(tmp_path):
+    """Internal empty tokens (e.g. 'A,,B') are preserved — only trailing strip."""
+    df = pd.DataFrame(
+        {"themefinder_id": [1], "C": ["A,,B"]}
+    )
+    questions = [{"question_number": 1, "column_name": "C", "question_text": "?"}]
+    create_question_inputs(df, questions, "closed", tmp_path)
+    rows = [
+        json.loads(line)
+        for line in (
+            tmp_path / "question_part_1" / "multi_choice.jsonl"
+        ).read_text().splitlines()
+    ]
+    assert rows[0]["options"] == ["A", "", "B"]
+
+
+def test_create_question_inputs_strips_trailing_comma_in_hybrid(tmp_path):
+    """Hybrid question: trailing comma on the closed side is also stripped."""
+    df = pd.DataFrame(
+        {
+            "themefinder_id": [1],
+            "B": ["Strongly agree,Agree,"],
+            "C": ["Free-text answer"],
+        }
+    )
+    questions = [
+        {
+            "question_number": 1,
+            "open_column": "C",
+            "closed_column": "B",
+            "question_text": "?",
+        }
+    ]
+    create_question_inputs(df, questions, "hybrid", tmp_path)
+    rows = [
+        json.loads(line)
+        for line in (
+            tmp_path / "question_part_1" / "multi_choice.jsonl"
+        ).read_text().splitlines()
+    ]
+    assert rows[0]["options"] == ["Strongly agree", "Agree"]
+
+
 def test_create_question_inputs_deduplicates_closed_options(tmp_path):
     """Closed question: comma-separated option values with duplicates are deduplicated."""
     df = pd.DataFrame(
@@ -714,3 +803,59 @@ def test_load_responses_drops_rows_emptied_by_null_normalisation(tmp_path):
     df, _ = load_responses(csv)
     assert len(df) == 2
     assert df["A"].tolist() == ["real answer", "another"]
+
+
+# ── _strip_control_chars / unicode preservation ──────────────────────────────
+
+
+@pytest.mark.parametrize(
+    "raw,expected",
+    [
+        ("Community‑based", "Community‑based"),  # non-breaking hyphen kept
+        ("en–dash", "en–dash"),
+        ("em—dash", "em—dash"),
+        ("smart ‘quote’", "smart ‘quote’"),
+        ("smart “quote”", "smart “quote”"),
+        ("ellipsis…", "ellipsis…"),
+        ("café", "café"),
+        ("£100", "£100"),
+        # Control characters removed:
+        ("bad\x00null", "badnull"),
+        ("bell\x07char", "bellchar"),
+        ("zero​width", "zerowidth"),
+        ("﻿BOM", "BOM"),
+    ],
+)
+def test_strip_control_chars(raw, expected):
+    assert _strip_control_chars(raw) == expected
+
+
+def test_clean_text_column_preserves_non_breaking_hyphen_in_options(tmp_path):
+    """Q54-style: 'Community‑based' must round-trip through closed-question parsing."""
+    df = pd.DataFrame(
+        {"themefinder_id": [1, 2], "C": ["Community‑based", "Faith"]}
+    )
+    questions = [{"question_number": 1, "column_name": "C", "question_text": "?"}]
+    create_question_inputs(df, questions, "closed", tmp_path)
+    rows = [
+        json.loads(line)
+        for line in (
+            tmp_path / "question_part_1" / "multi_choice.jsonl"
+        ).read_text().splitlines()
+    ]
+    assert rows[0]["options"] == ["Community‑based"]
+    assert rows[1]["options"] == ["Faith"]
+
+    q = json.loads((tmp_path / "question_part_1" / "question.json").read_text())
+    assert "Community‑based" in q["multi_choice_options"]
+    assert "Communitybased" not in q["multi_choice_options"]
+
+
+def test_create_respondents_jsonl_preserves_unicode(tmp_path):
+    """Demographic values with accents / smart punctuation are not mangled."""
+    df = pd.DataFrame(
+        {"themefinder_id": [1], "D": ["café d‘Or"]}
+    )
+    create_respondents_jsonl(df, ["D"], ["Place"], tmp_path)
+    row = json.loads((tmp_path / "respondents.jsonl").read_text().splitlines()[0])
+    assert row["demographic_data"]["Place"] == ["café d‘Or"]
