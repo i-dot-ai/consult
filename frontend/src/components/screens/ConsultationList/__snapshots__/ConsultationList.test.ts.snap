@@ -52,7 +52,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
             title=""
           >
             <!---->
-            Theme Sign Off
+            Finalise Themes
             
             
           </a>
@@ -85,7 +85,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
           style=""
         >
           <!---->
-          Dummy Consultation at Theme Sign Off Stage
+          Dummy Consultation at Finalising Themes Stage
           
           
         </h2>
@@ -124,7 +124,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
             title=""
           >
             <!---->
-            Theme Sign Off
+            Finalise Themes
             
             
           </a>

@@ -309,7 +309,7 @@
 
 <TitleRow
   level={1}
-  title="Theme Sign Off"
+  title="Finalise Themes"
   subtitle="Finalise themes to use for AI to map responses to"
 >
   <Price slot="icon" />
@@ -465,11 +465,11 @@
 
     <Modal
       variant="primary"
-      title="Confirm Theme Sign Off"
+      title="Confirm Finalising Themes"
       icon={CheckCircle}
       open={isConfirmSignOffModalOpen}
       setOpen={(newOpen: boolean) => (isConfirmSignOffModalOpen = newOpen)}
-      confirmText="Confirm Sign Off"
+      confirmText="Confirm Finalising Themes"
       handleConfirm={confirmSignOff}
     >
       <p class="text-sm text-neutral-500">

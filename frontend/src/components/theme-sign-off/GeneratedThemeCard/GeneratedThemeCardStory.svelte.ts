@@ -23,7 +23,7 @@ const answersMock = () => ({
 export default {
   name: "GeneratedThemeCard",
   component: GeneratedThemeCard,
-  category: "Theme Sign Off",
+  category: "Finalising Themes",
   props: [
     {
       name: "theme",

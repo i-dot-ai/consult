@@ -30,7 +30,7 @@ DATA_BY_STAGE = {
         "QUESTION_THEME_STATUS": Question.ThemeStatus.CONFIRMED,
     },
     Consultation.Stage.THEME_SIGN_OFF: {
-        "CONSULTATION_NAME": "Dummy Consultation at Theme Sign Off Stage",
+        "CONSULTATION_NAME": "Dummy Consultation at Finalising Themes Stage",
         "QUESTION_THEME_STATUS": Question.ThemeStatus.DRAFT,
     },
 }

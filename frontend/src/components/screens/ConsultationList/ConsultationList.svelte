@@ -38,7 +38,7 @@
               View Evaluation
             </Link>
             <Link href={getThemeSignOffUrl(consultation.id)}>
-              Theme Sign Off
+              Finalise Themes
             </Link>
             <Link href={getConsultationDetailUrl(consultation.id)}>
               View Dashboard

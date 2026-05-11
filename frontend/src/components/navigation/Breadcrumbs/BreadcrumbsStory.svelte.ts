@@ -7,7 +7,7 @@ export default {
   props: [{ name: "consultationStage", value: "analysis", type: "text" }],
   stories: [
     {
-      name: "Stage Theme Sign Off",
+      name: "Stage Finalising Themes",
       props: { consultationStage: "theme_sign_off" },
     },
     {

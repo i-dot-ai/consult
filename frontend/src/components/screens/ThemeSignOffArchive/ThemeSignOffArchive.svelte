@@ -90,7 +90,7 @@
 <TitleRow
   level={1}
   context="theme-sign-off"
-  title="Theme Sign Off"
+  title="Finalise Themes"
   subtitle="Finalise themes to use for AI to map responses to"
 >
   <Price slot="icon" />
@@ -291,7 +291,7 @@
 </svelte:boundary>
 
 {#snippet onboardingBody()}
-  <p>Here's how the theme sign-off process works:</p>
+  <p>Here's how to finalise themes:</p>
   <ol class="mt-4">
     {@render onboardingBodyItem(
       1,
@@ -350,7 +350,7 @@
     steps={[
       {
         id: "onboarding-step-1",
-        title: "Welcome to Theme Sign Off",
+        title: "Welcome to Finalise Themes",
         subtitle: "3-step process to finalise themes",
         body: onboardingBody,
         icon: Target,
