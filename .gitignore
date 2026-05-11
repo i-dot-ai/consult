@@ -122,4 +122,4 @@ lambda/**/__pycache__/
 lambda/**/code/package/
 
 .claude/
-/consultations
+/consultations/*
