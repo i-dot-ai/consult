@@ -1,0 +1,193 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 20px 0;
+    }
+    .form-row {
+        margin-bottom: 20px;
+    }
+    .form-row label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .form-row input[type="text"],
+    .form-row input[type="number"] {
+        width: 100%;
+        max-width: 500px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .form-row .helptext {
+        font-size: 11px;
+        color: #666;
+        margin-top: 5px;
+        display: block;
+    }
+    .warning-box {
+        background: #fff9e6;
+        border: 1px solid #ffcc00;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+    }
+    .warning-box strong {
+        color: #d63301;
+    }
+    .warning-box ul {
+        margin: 10px 0 0 20px;
+    }
+    .submit-row {
+        padding: 12px 14px;
+        margin: 20px 0;
+        background: #f8f8f8;
+        border: 1px solid #eee;
+        border-radius: 4px;
+    }
+    .submit-row input[type="submit"] {
+        background: #417690;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .submit-row input[type="submit"]:hover {
+        background: #205067;
+    }
+    .submit-row .cancel-link {
+        margin-left: 10px;
+        padding: 10px 15px;
+        background: #ba2121;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+    .submit-row .cancel-link:hover {
+        background: #a41515;
+    }
+    .consultation-info {
+        background: #f0f0f0;
+        padding: 15px;
+        border-radius: 4px;
+        margin: 20px 0;
+    }
+    .consultation-info strong {
+        display: inline-block;
+        min-width: 120px;
+    }
+    .monitoring-section {
+        margin-top: 30px;
+        padding: 15px;
+        background: #e8f5e9;
+        border: 1px solid #4caf50;
+        border-radius: 4px;
+    }
+    .monitoring-section h2 {
+        margin-top: 0;
+        font-size: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:consultations_consultation_changelist' %}">Consultations</a>
+    &rsaquo; <a href="{% url 'admin:consultations_consultation_change' consultation.id %}">{{ consultation.title }}</a>
+    &rsaquo; Import Response Annotations
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>Import Response Annotations from S3</h1>
+
+<div class="consultation-info">
+    <p><strong>Consultation:</strong> {{ consultation.title }}</p>
+    <p><strong>Code:</strong> {{ consultation.code }}</p>
+    <p><strong>Current Timestamp:</strong> {{ consultation.timestamp|date:'Y-m-d' }}</p>
+</div>
+
+<div class="warning-box">
+    <strong>⚠️ Warning:</strong> This operation will:
+    <ul>
+        <li>Delete all existing response annotations for this consultation</li>
+        <li>Import new annotations from S3 based on the specified run date</li>
+        <li>Update the consultation's timestamp and stage</li>
+        <li><strong>This operation cannot be undone</strong></li>
+    </ul>
+</div>
+
+<div class="form-container">
+    <form method="post" onsubmit="return confirm('Are you sure you want to import response annotations?\n\nThis will DELETE all existing annotations and import new ones from S3.\n\nThis action CANNOT be undone.\n\nClick OK to proceed.');">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <label for="run_date">Run Date (timestamp): <span style="color: red;">*</span></label>
+            <input type="text" name="run_date" id="run_date" 
+                   placeholder="2026-05-01" 
+                   pattern="\d{4}-\d{2}-\d{2}"
+                   title="Date format: YYYY-MM-DD"
+                   value="{{ consultation.timestamp|date:'Y-m-d' }}"
+                   required>
+            <span class="helptext">
+                S3 timestamp folder for the mapping run (format: YYYY-MM-DD). 
+                Defaults to consultation's current timestamp. This must match an existing S3 folder.
+            </span>
+        </div>
+        
+        <div class="form-row">
+            <label for="timeout">Job Timeout (seconds): <span style="color: red;">*</span></label>
+            <input type="number" name="timeout" id="timeout" 
+                   min="60" max="{{ max_timeout }}"
+                   title="Timeout must be between 60 and {{ max_timeout }} seconds"
+                   value="{{ default_timeout }}"
+                   required>
+            <span class="helptext">
+                Maximum time allowed for the import job (60 - {{ max_timeout }} seconds). 
+                Default: {{ default_timeout }} seconds (4 hours). Large consultations may need more time.
+            </span>
+        </div>
+        
+        <div class="form-row">
+            <label for="question_numbers">Question Numbers (optional):</label>
+            <input type="text" name="question_numbers" id="question_numbers" 
+                   placeholder="1, 2, 3"
+                   pattern="^(\s*\d+\s*)(,\s*\d+\s*)*$"
+                   title="Enter comma-separated numbers, e.g., 1, 2, 3">
+            <span class="helptext">
+                Optional: Comma-separated list of question numbers to import (e.g., "1, 2, 3"). 
+                Leave empty to import all questions. Note: The job wrapper currently doesn't support this parameter.
+            </span>
+        </div>
+        
+        <div class="submit-row">
+            <input type="submit" value="Start Import Job">
+            <a href="{% url 'admin:consultations_consultation_change' consultation.id %}" 
+               class="cancel-link">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<div class="monitoring-section">
+    <h2>📊 Job Monitoring</h2>
+    <p>
+        After submitting, monitor the job progress at: 
+        <a href="/django-rq/" target="_blank" style="font-weight: bold;">/django-rq/</a>
+    </p>
+    <p style="font-size: 12px; color: #666; margin-top: 10px;">
+        The import job will run in the background. You can safely navigate away from this page.
+        Check the RQ dashboard to see job status, progress, and any errors.
+    </p>
+</div>
+
+{% endblock %}
