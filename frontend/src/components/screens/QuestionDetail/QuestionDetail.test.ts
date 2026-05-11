@@ -57,10 +57,9 @@ describe("QuestionDetail", () => {
 
   it.each([
     ...new Set(
-      //@ts-expect-error to be resolved
       answers.reduce(
         (acc, curr) => [...acc, ...(curr.multiple_choice_answer || [])],
-        [],
+        [] as Array<string>,
       ),
     ),
   ] as string[])("should render multi answers", async (multiAnswer) => {
