@@ -42,7 +42,7 @@ exports[`ThemeSignOffArchive > should match snapshot after loading 1`] = `
         style=""
       >
         <!---->
-        Theme Sign Off
+        Finalise Themes
         
         
       </h1>
@@ -141,7 +141,7 @@ exports[`ThemeSignOffArchive > should match snapshot after loading 1`] = `
               <h3
                 class="text-xs text-secondary"
               >
-                Theme Sign Off
+                Finalising Themes
               </h3>
             </div>
             <!---->
@@ -893,7 +893,7 @@ exports[`ThemeSignOffArchive > should match snapshot initially 1`] = `
         style=""
       >
         <!---->
-        Theme Sign Off
+        Finalise Themes
         
         
       </h1>

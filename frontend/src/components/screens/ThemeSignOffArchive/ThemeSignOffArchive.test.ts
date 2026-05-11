@@ -157,7 +157,7 @@ describe("ThemeSignOffArchive", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("Finalising Themes")).toBeInTheDocument();
+      expect(screen.getAllByText("Finalising Themes")).toHaveLength(2);
     });
   });
 
