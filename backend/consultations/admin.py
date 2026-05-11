@@ -104,68 +104,48 @@ def create_cloned_consultation(modeladmin, request, queryset):
         messages.error(request, f"Failed to start clone job: {e}")
 
 
-@admin.action(description="Import response annotations from S3")
-def import_response_annotations_action(modeladmin, request, queryset):
-    if queryset.count() != 1:
-        messages.error(request, "Please select exactly one consultation")
-        return
-
-    consultation = queryset.first()
-    # Redirect to custom form view
-    return HttpResponseRedirect(
-        reverse(
-            "admin:consultations_consultation_import_annotations", args=[consultation.id]
-        )
-    )
-
-
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [
         create_small_dummy_consultation,
         create_large_dummy_consultation,
         import_candidate_themes_from_s3_job,
         create_cloned_consultation,
-        import_response_annotations_action,
     ]
+    change_list_template = "admin/consultations/consultation/change_list.html"
 
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
             path(
-                "<uuid:consultation_id>/import-response-annotations/",
+                "import-response-annotations/",
                 self.admin_site.admin_view(self.import_annotations_view),
                 name="consultations_consultation_import_annotations",
             ),
         ]
         return custom_urls + urls
 
-    def import_annotations_view(self, request, consultation_id):
-        consultation = Consultation.objects.get(pk=consultation_id)
+    def import_annotations_view(self, request):
+        # Get all consultations for the dropdown
+        consultations = Consultation.objects.all().order_by('-created_at')
 
         if request.method == "POST":
             try:
                 # Extract and validate form data
+                consultation_id = request.POST.get("consultation_id")
                 run_date = request.POST.get("run_date")
                 timeout = int(request.POST.get("timeout", 14400))
-                question_numbers_raw = request.POST.get("question_numbers", "").strip()
+
+                # Validate consultation selection
+                if not consultation_id:
+                    raise ValueError("Please select a consultation")
+                
+                consultation = Consultation.objects.get(pk=consultation_id)
 
                 # Validate run_date format (YYYY-MM-DD)
                 if not run_date:
                     raise ValueError("Run date is required")
 
                 datetime.strptime(run_date, "%Y-%m-%d")
-
-                # Parse question_numbers (optional, comma-separated)
-                question_numbers = None
-                if question_numbers_raw:
-                    question_numbers = [
-                        int(num.strip()) for num in question_numbers_raw.split(",")
-                    ]
-                    # Store for reference only (current job doesn't support this)
-                    logger.info(
-                        "Question numbers provided but not yet supported by job: {nums}",
-                        nums=question_numbers,
-                    )
 
                 # Validate timeout range
                 if timeout < 60 or timeout > 86400:
@@ -186,49 +166,25 @@ class ConsultationAdmin(admin.ModelAdmin):
                     f"(run_date: {run_date}, timeout: {timeout}s). "
                     f"Job ID: {job.id}. Monitor progress at /django-rq/",
                 )
+                return HttpResponseRedirect(
+                    reverse("admin:consultations_consultation_changelist")
+                )
+            except Consultation.DoesNotExist:
+                messages.error(request, "Selected consultation does not exist")
             except ValueError as e:
                 messages.error(request, f"Invalid input: {e}")
-                return render(
-                    request,
-                    "admin/consultations/consultation/import_annotations_form.html",
-                    {
-                        "consultation": consultation,
-                        "default_timeout": 14400,
-                        "max_timeout": 86400,
-                        "opts": self.model._meta,
-                        "has_view_permission": self.has_view_permission(
-                            request, consultation
-                        ),
-                    },
-                )
             except Exception as e:
                 logger.exception(f"Error starting import job: {e}")
                 messages.error(request, f"Failed to start import: {e}")
-                return render(
-                    request,
-                    "admin/consultations/consultation/import_annotations_form.html",
-                    {
-                        "consultation": consultation,
-                        "default_timeout": 14400,
-                        "max_timeout": 86400,
-                        "opts": self.model._meta,
-                        "has_view_permission": self.has_view_permission(
-                            request, consultation
-                        ),
-                    },
-                )
 
-            return HttpResponseRedirect(
-                reverse("admin:consultations_consultation_change", args=[consultation_id])
-            )
-
-        # GET request: render form
+        # GET request or error: render form
         context = {
-            "consultation": consultation,
+            "consultations": consultations,
+            "consultation": None,  # No pre-selection
             "default_timeout": 14400,
             "max_timeout": 86400,
             "opts": self.model._meta,
-            "has_view_permission": self.has_view_permission(request, consultation),
+            "has_view_permission": True,
         }
         return render(
             request,

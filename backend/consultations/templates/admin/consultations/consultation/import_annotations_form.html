@@ -103,7 +103,6 @@
 <div class="breadcrumbs">
     <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
     &rsaquo; <a href="{% url 'admin:consultations_consultation_changelist' %}">Consultations</a>
-    &rsaquo; <a href="{% url 'admin:consultations_consultation_change' consultation.id %}">{{ consultation.title }}</a>
     &rsaquo; Import Response Annotations
 </div>
 {% endblock %}
@@ -111,11 +110,13 @@
 {% block content %}
 <h1>Import Response Annotations from S3</h1>
 
+{% if consultation %}
 <div class="consultation-info">
-    <p><strong>Consultation:</strong> {{ consultation.title }}</p>
+    <p><strong>Selected Consultation:</strong> {{ consultation.title }}</p>
     <p><strong>Code:</strong> {{ consultation.code }}</p>
     <p><strong>Current Timestamp:</strong> {{ consultation.timestamp|date:'Y-m-d' }}</p>
 </div>
+{% endif %}
 
 <div class="warning-box">
     <strong>⚠️ Warning:</strong> This operation will:
@@ -132,12 +133,27 @@
         {% csrf_token %}
         
         <div class="form-row">
+            <label for="consultation">Consultation: <span style="color: red;">*</span></label>
+            <select name="consultation_id" id="consultation" required style="width: 100%; max-width: 500px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;">
+                <option value="">---------</option>
+                {% for cons in consultations %}
+                <option value="{{ cons.id }}" {% if consultation and cons.id == consultation.id %}selected{% endif %}>
+                    {{ cons.title }} ({{ cons.code }})
+                </option>
+                {% endfor %}
+            </select>
+            <span class="helptext">
+                Select the consultation to import response annotations for.
+            </span>
+        </div>
+        
+        <div class="form-row">
             <label for="run_date">Run Date (timestamp): <span style="color: red;">*</span></label>
             <input type="text" name="run_date" id="run_date" 
                    placeholder="2026-05-01" 
                    pattern="\d{4}-\d{2}-\d{2}"
                    title="Date format: YYYY-MM-DD"
-                   value="{{ consultation.timestamp|date:'Y-m-d' }}"
+                   {% if consultation %}value="{{ consultation.timestamp|date:'Y-m-d' }}"{% endif %}
                    required>
             <span class="helptext">
                 S3 timestamp folder for the mapping run (format: YYYY-MM-DD). 
@@ -158,21 +174,9 @@
             </span>
         </div>
         
-        <div class="form-row">
-            <label for="question_numbers">Question Numbers (optional):</label>
-            <input type="text" name="question_numbers" id="question_numbers" 
-                   placeholder="1, 2, 3"
-                   pattern="^(\s*\d+\s*)(,\s*\d+\s*)*$"
-                   title="Enter comma-separated numbers, e.g., 1, 2, 3">
-            <span class="helptext">
-                Optional: Comma-separated list of question numbers to import (e.g., "1, 2, 3"). 
-                Leave empty to import all questions. Note: The job wrapper currently doesn't support this parameter.
-            </span>
-        </div>
-        
         <div class="submit-row">
             <input type="submit" value="Start Import Job">
-            <a href="{% url 'admin:consultations_consultation_change' consultation.id %}" 
+            <a href="{% url 'admin:consultations_consultation_changelist' %}" 
                class="cancel-link">Cancel</a>
         </div>
     </form>
