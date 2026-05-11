@@ -11,8 +11,6 @@ on:
     types: [completed]
     branches: [main]
 
-
-
 jobs:
   set-vars:
     runs-on: ubuntu-latest
@@ -23,7 +21,6 @@ jobs:
       repo: ${{ steps.export.outputs.repo }}
       infra-config-repo: ${{ steps.export.outputs.infra-config-repo }}
       environment: ${{ steps.env-var.outputs.environment }}
-
 
     steps:
       - name: Checkout

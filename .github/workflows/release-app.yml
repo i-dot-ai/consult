@@ -6,11 +6,6 @@ on:
       - release-dev-**
       - release-preprod-**
 
-  workflow_run:
-    workflows: [build]
-    types: [completed]
-    branches: [main]
-
 jobs:
   set-vars:
     runs-on: ubuntu-latest
