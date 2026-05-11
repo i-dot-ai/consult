@@ -75,23 +75,62 @@ PRIMARY_COL_ID_FIELD: dict[str, str] = {
     key: fields[0] for key, fields in COL_ID_FIELDS.items()
 }
 
-# Sheet name, expected column count, and column names for each Q.U. sheet type.
-QU_SHEET_SPECS: dict[str, tuple[str, int, list[str]]] = {
-    "open": ("Open questions", 3, ["column_name", "question_number", "question_text"]),
+# Sheet name(s), expected column count, and column names for each Q.U. sheet type.
+# First name in each tuple is the canonical (current) name; subsequent entries
+# are legacy aliases we still accept when loading older workbooks.
+QU_SHEET_SPECS: dict[str, tuple[tuple[str, ...], int, list[str]]] = {
+    "open": (
+        ("Open Questions", "Open questions"),
+        3,
+        ["column_name", "question_number", "question_text"],
+    ),
     "hybrid": (
-        "Hybrid questions",
+        ("Hybrid Questions", "Hybrid questions"),
         4,
         ["open_column", "question_number", "question_text", "closed_column"],
     ),
     "closed": (
-        "Multiple Choice",
+        ("Multiple Choice Questions", "Multiple Choice"),
         3,
         ["column_name", "question_number", "question_text"],
     ),
 }
 
+DEMOGRAPHIC_SHEET_ALIASES: tuple[str, ...] = ("Demographics", "Demographic")
+
 # Characters stripped from free-text columns during ingestion.
 CHARACTERS_TO_REMOVE: list[str] = ["/", "\\", "- Text", "_x000D_"]
+
+# Values that signify a missing/blank response. Matched case-insensitively
+# after stripping whitespace and surrounding punctuation.
+NULL_LIKE_VALUES: frozenset[str] = frozenset(
+    {
+        "",
+        "-",
+    }
+)
+
+
+def _normalise_null_like(df: pd.DataFrame) -> pd.DataFrame:
+    """Replace null-type signifiers (e.g. "-", "N/A", "none") with NaN.
+
+    Operates only on object/string columns and leaves the themefinder_id alone.
+    Comparison is done on a stripped, lowercased copy so we don't lose the
+    original casing of real responses.
+    """
+    for col in df.columns:
+        if col == "themefinder_id":
+            continue
+        if not (
+            pd.api.types.is_object_dtype(df[col])
+            or pd.api.types.is_string_dtype(df[col])
+        ):
+            continue
+        stripped = df[col].astype(str).str.strip().str.lower()
+        mask = stripped.isin(NULL_LIKE_VALUES) & df[col].notna()
+        if mask.any():
+            df.loc[mask, col] = pd.NA
+    return df
 
 
 def to_snake_case(s: str) -> str:
@@ -131,30 +170,33 @@ _EXCEL_COL_RE = re.compile(r"^[A-Z]{1,3}\s*$")
 
 def _load_qu_sheet(
     path: Path,
-    sheet_name: str,
+    sheet_name: str | tuple[str, ...],
     n_columns: int,
     column_names: list[str],
 ) -> pd.DataFrame | None:
     """Load a single sheet from a Question Understanding Excel file.
 
-    Q.U. files come in two formats:
-      Format A (e.g. mhclg_cur047): 3 header rows then data at row 4.
-      Format B (e.g. LGR files):    3 header rows, then an instruction sub-header
-                                     row ("Which column does the question appear
-                                     in..."), then data at row 5.
+    Supports both the legacy layout (3 preamble rows + optional instruction
+    sub-header row, then data) and the current template (single header row,
+    then data). We auto-detect the data start by scanning for the first row
+    whose first cell is a valid Excel column ID (e.g. "A", "AC", "BF").
+    Any preamble / header / instruction rows above that are discarded.
 
-    Rather than hardcoding skiprows, we always skip the first 3 rows (title,
-    description, column-header labels) and then auto-detect the instruction row.
-    Real data rows start with an Excel column ID like "A", "AC", or "BF";
-    instruction rows contain long descriptive text that fails that check.
-
-    At most one instruction row is skipped. If a file contains additional
-    description rows beyond the standard format, it is considered malformed
-    and the team should correct it before re-running.
+    `sheet_name` may be a single name or a tuple of candidate names (used to
+    accept legacy sheet titles like "Multiple Choice" alongside the current
+    "Multiple Choice Questions").
     """
-    try:
-        df = pd.read_excel(path, sheet_name=sheet_name, skiprows=3, header=None)
-    except Exception:
+    candidates = (sheet_name,) if isinstance(sheet_name, str) else sheet_name
+    df = None
+    matched_name = None
+    for candidate in candidates:
+        try:
+            df = pd.read_excel(path, sheet_name=candidate, header=None)
+            matched_name = candidate
+            break
+        except Exception:
+            continue
+    if df is None:
         return None
 
     if df.empty:
@@ -164,24 +206,26 @@ def _load_qu_sheet(
     # (e.g. abbreviated titles or notes in columns 4-5 of Multiple Choice)
     df = df.iloc[:, :n_columns]
 
-    # Drop fully-empty trailing rows (the template has ~1000 rows in some sheets)
+    # Drop fully-empty rows (preamble blank rows and trailing empties)
     df = df.dropna(how="all").reset_index(drop=True)
 
     if df.empty:
         return None
 
-    # Auto-detect instruction sub-header row.
-    # If the first cell is NOT a valid Excel column ID, it's an instruction row
-    # like "Which column does the question appear in on the export spreadsheet?"
-    # or "Very short title to appear in the dashboard".
-    first_cell = str(df.iloc[0, 0]).strip()
-    if not _EXCEL_COL_RE.match(first_cell):
+    # Find the first row whose leading cell looks like an Excel column letter.
+    # Everything above it is preamble / header / instruction text.
+    data_start = None
+    for i in range(len(df)):
+        if _EXCEL_COL_RE.match(str(df.iloc[i, 0]).strip()):
+            data_start = i
+            break
+    if data_start is None:
+        return None
+    if data_start > 0:
         logger.info(
-            "Detected instruction row in sheet '%s', skipping: '%s'",
-            sheet_name,
-            first_cell[:60],
+            "Skipping %d preamble row(s) on sheet '%s'", data_start, matched_name
         )
-        df = df.iloc[1:].reset_index(drop=True)
+        df = df.iloc[data_start:].reset_index(drop=True)
 
     if df.empty:
         return None
@@ -285,7 +329,7 @@ def validate_data(
     # ── Missing fields in Q.U. rows ─────────────────────────────────────
     incomplete_rows: list[str] = []
     for sheet_key, df in question_sheets.items():
-        sheet_name = QU_SHEET_SPECS[sheet_key][0]
+        sheet_name = QU_SHEET_SPECS[sheet_key][0][0]
         expected_fields = QU_SHEET_SPECS[sheet_key][2]
         for idx, row in df.iterrows():
             missing = [
@@ -398,7 +442,7 @@ def validate_data(
         n_unique, n_responses, ratio = stats
         if ratio <= UNIQUENESS_RATIO_THRESHOLD:
             return
-        sheet_name = QU_SHEET_SPECS[sheet_key][0]
+        sheet_name = QU_SHEET_SPECS[sheet_key][0][0]
         msg = (
             f'Column {col_id} (Q{q_num}, {col_role}) — on Q.U. sheet "{sheet_name}" — '
             f"looks like free text, not multichoice: "
@@ -421,7 +465,7 @@ def validate_data(
         n_unique, n_responses, ratio = stats
         if ratio >= UNIQUENESS_RATIO_THRESHOLD:
             return
-        sheet_name = QU_SHEET_SPECS[sheet_key][0]
+        sheet_name = QU_SHEET_SPECS[sheet_key][0][0]
         msg = (
             f'Column {col_id} (Q{q_num}, {col_role}) — on Q.U. sheet "{sheet_name}" — '
             f"only {n_unique}/{n_responses} responses are unique ({ratio:.0%}) — "
@@ -556,8 +600,8 @@ def load_and_number_question_sheets(
     """
     sheets: dict[str, pd.DataFrame] = {}
 
-    for sheet_key, (sheet_name, ncols, col_names) in QU_SHEET_SPECS.items():
-        df = _load_qu_sheet(question_understanding_path, sheet_name, ncols, col_names)
+    for sheet_key, (sheet_aliases, ncols, col_names) in QU_SHEET_SPECS.items():
+        df = _load_qu_sheet(question_understanding_path, sheet_aliases, ncols, col_names)
         if df is not None:
             sheets[sheet_key] = df
 
@@ -578,7 +622,7 @@ def load_and_number_question_sheets(
             " — a column ID-based fallback will be applied:"
         )
         for key, df in sheets.items():
-            sheet_name = QU_SHEET_SPECS[key][0]
+            sheet_name = QU_SHEET_SPECS[key][0][0]
             for idx, val in enumerate(df["question_number"].astype(str)):
                 try:
                     int(val.strip())
@@ -684,8 +728,6 @@ def create_question_inputs(
 
     for question in questions:
         q_num = question["question_number"]
-        q_dir = output_dir / f"question_part_{q_num}"
-        q_dir.mkdir(parents=True, exist_ok=True)
 
         # Select relevant columns and drop empty rows
         if question_type == "hybrid":
@@ -701,6 +743,20 @@ def create_question_inputs(
             col = question["column_name"]
             data_cols = [col]
             answers = df[["themefinder_id"] + data_cols].dropna()
+
+        # Skip questions with no responses — the loader discovers questions by
+        # folder existence, so omitting the folder drops the question cleanly
+        # from the consultation. Writing an empty .jsonl file would produce a
+        # blank-line file that breaks the import step.
+        if answers.empty:
+            print(
+                f"  ⚠ Q{q_num} ({question_type}): no responses after dropping nulls"
+                f" — skipping question_part_{q_num}"
+            )
+            continue
+
+        q_dir = output_dir / f"question_part_{q_num}"
+        q_dir.mkdir(parents=True, exist_ok=True)
 
         if sample_size is not None and sample_size < len(answers):
             answers = answers.sample(sample_size)
@@ -785,11 +841,17 @@ def _is_subheader_row(row: pd.Series) -> bool:
     return median_len > 25
 
 
-def load_responses(path: Path) -> tuple[pd.DataFrame, dict[str, str]]:
+def load_responses(
+    path: Path, sheet_name: str | None = None
+) -> tuple[pd.DataFrame, dict[str, str]]:
     """Load responses from CSV or Excel file.
 
     Returns the DataFrame (with columns renamed to Excel letters) and a
     dict mapping Excel column letter -> original column header string.
+
+    When `sheet_name` is given (new single-workbook format), responses are
+    read from that sheet. Otherwise the whole file is treated as the response
+    grid (legacy two-file format).
 
     Handles three layout patterns automatically:
       - Single header row, then data  (LGR files)
@@ -797,10 +859,15 @@ def load_responses(path: Path) -> tuple[pd.DataFrame, dict[str, str]]:
       - Two header rows (short IDs + full question text), then data  (Biomass)
     """
     ext = path.suffix.lower()
-    read_fn = pd.read_csv if ext == ".csv" else pd.read_excel
+    if ext == ".csv":
+        read_fn = pd.read_csv
+        read_kwargs: dict = {}
+    else:
+        read_fn = pd.read_excel
+        read_kwargs = {"sheet_name": sheet_name} if sheet_name else {}
 
     # Read first 3 rows raw to detect layout
-    raw = read_fn(path, header=None, nrows=3)
+    raw = read_fn(path, header=None, nrows=3, **read_kwargs)
 
     header_row = 0
 
@@ -810,9 +877,16 @@ def load_responses(path: Path) -> tuple[pd.DataFrame, dict[str, str]]:
         header_row = 1
 
     # Full read with detected layout
-    df = read_fn(path, header=header_row)
+    df = read_fn(path, header=header_row, **read_kwargs)
 
     # Drop all-NaN rows (handles blank separator rows and trailing empties)
+    df = df.dropna(how="all").reset_index(drop=True)
+
+    # Replace null-type signifiers ("-", "N/A", "none", ...) with NaN so the
+    # rest of the pipeline treats them as missing rather than as text answers.
+    df = _normalise_null_like(df)
+
+    # Re-drop fully-empty rows in case normalisation emptied any.
     df = df.dropna(how="all").reset_index(drop=True)
 
     original_headers = {
@@ -821,6 +895,20 @@ def load_responses(path: Path) -> tuple[pd.DataFrame, dict[str, str]]:
     df.columns = [get_excel_column_name(i) for i in range(len(df.columns))]
     df["themefinder_id"] = range(1, len(df) + 1)
     return df, original_headers
+
+
+def _prompt_format() -> str:
+    """Ask the user whether they have a single-workbook (new) or two-file (old) input."""
+    print("\nWhich input format are you using?")
+    print("  [1] new — single workbook with a 'Responses' sheet plus Q.U. sheets")
+    print("  [2] old — two separate files: a responses file + a Q.U. workbook")
+    while True:
+        choice = input("Enter 1 or 2: ").strip()
+        if choice == "1":
+            return "new"
+        if choice == "2":
+            return "old"
+        print("Invalid choice, try again.")
 
 
 def prompt_file_selection(files: list[Path], role: str) -> Path:
@@ -836,6 +924,8 @@ def prompt_file_selection(files: list[Path], role: str) -> Path:
 
 
 PIPELINE_STAGES = ("validate", "build", "upload")
+FORMATS = ("old", "new")
+RESPONSES_SHEET_NAME = "Responses"
 
 
 def run_pipeline(
@@ -843,12 +933,23 @@ def run_pipeline(
     question_understanding_path: Path,
     output_dir: Path,
     until: str = "upload",
+    fmt: str = "old",
 ) -> None:
-    """Run the setup pipeline: load → validate → build → upload."""
+    """Run the setup pipeline: load → validate → build → upload.
+
+    `fmt` is "old" (two separate files: responses + Q.U. workbook) or
+    "new" (single workbook with a "Responses" sheet plus Q.U. sheets — in
+    which case `responses_path` and `question_understanding_path` point at
+    the same file).
+    """
+
+    responses_sheet = RESPONSES_SHEET_NAME if fmt == "new" else None
 
     # ── Load ──────────────────────────────────────────────────────────
     print(f"\nLoading responses from: {responses_path.name}")
-    responses_df, original_headers = load_responses(responses_path)
+    responses_df, original_headers = load_responses(
+        responses_path, sheet_name=responses_sheet
+    )
     print(f"  Loaded {len(responses_df)} responses")
 
     question_sheets = load_and_number_question_sheets(question_understanding_path)
@@ -856,7 +957,10 @@ def run_pipeline(
     demographic_columns: list[str] | None = None
     demographic_labels: list[str] | None = None
     demographic_info = _load_qu_sheet(
-        question_understanding_path, "Demographic", 2, ["column_id", "label"]
+        question_understanding_path,
+        DEMOGRAPHIC_SHEET_ALIASES,
+        2,
+        ["column_id", "label"],
     )
     if demographic_info is not None:
         demographic_columns = demographic_info["column_id"].tolist()
@@ -989,7 +1093,19 @@ def main() -> None:
         default="upload",
         help="How far to run the pipeline: validate, build, or upload (default: upload)",
     )
+    parser.add_argument(
+        "--format",
+        choices=FORMATS,
+        dest="fmt",
+        help=(
+            "Input format: 'old' (two files: responses + Q.U. workbook) or "
+            "'new' (single workbook with a 'Responses' sheet plus Q.U. sheets). "
+            "Prompted if omitted."
+        ),
+    )
     args = parser.parse_args()
+
+    fmt = args.fmt or _prompt_format()
 
     name = args.name
     if not name and args.dir:
@@ -1015,7 +1131,35 @@ def main() -> None:
     print(f"Consultation directory: {consultation_dir}")
 
     # Step 2: Resolve file paths
-    if args.responses and args.qu:
+    if fmt == "new":
+        # Single workbook contains both responses and Q.U. sheets.
+        if args.responses:
+            responses_path = args.responses.resolve()
+            if not responses_path.exists():
+                print(f"Error: file not found: {responses_path}")
+                sys.exit(1)
+        else:
+            print(
+                "\nPlease copy the consultation data workbook (single .xlsx with"
+                " a 'Responses' sheet plus Q.U. sheets) into:"
+            )
+            print(f"  {consultation_dir}")
+            input("\nPress Enter when the file is in place...")
+            files = find_data_files(consultation_dir)
+            if not files:
+                print(
+                    f"\nError: Expected an .xlsx data file but found none in"
+                    f" {consultation_dir}."
+                )
+                sys.exit(1)
+            if len(files) == 1:
+                responses_path = files[0]
+                print(f"\nUsing '{responses_path.name}' as the consultation workbook.")
+            else:
+                responses_path = prompt_file_selection(files, "consultation workbook")
+        qu_path = responses_path
+        print(f"Consultation workbook: {responses_path.name}")
+    elif args.responses and args.qu:
         responses_path = args.responses.resolve()
         qu_path = args.qu.resolve()
         for label, path in [("Responses", responses_path), ("Q.U.", qu_path)]:
@@ -1063,7 +1207,7 @@ def main() -> None:
 
     # Step 3: Run pipeline
     output_dir = consultation_dir / "inputs"
-    run_pipeline(responses_path, qu_path, output_dir, until=args.until)
+    run_pipeline(responses_path, qu_path, output_dir, until=args.until, fmt=fmt)
 
     if args.until == "validate":
         return

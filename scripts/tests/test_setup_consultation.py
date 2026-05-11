@@ -16,6 +16,7 @@ from pathlib import Path
 
 from setup_consultation import (
     _load_qu_sheet,
+    _normalise_null_like,
     create_question_inputs,
     create_respondents_jsonl,
     load_and_number_question_sheets,
@@ -549,3 +550,167 @@ def test_create_question_inputs_strips_response_text_whitespace(tmp_path):
     assert rows[0]["text"] == "leading spaces"
     assert rows[1]["text"] == "trailing spaces"
     assert rows[2]["text"] == "whitespace surrounded by newlines and tabs"
+
+
+# ── _normalise_null_like ──────────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "-",
+        "",
+        "   ",
+        "  -  ",
+    ],
+)
+def test_normalise_null_like_replaces_null_signifiers(value):
+    df = pd.DataFrame({"themefinder_id": [1], "A": [value]})
+    out = _normalise_null_like(df)
+    assert out["A"].isna().all(), f"expected {value!r} to be treated as null"
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "A",
+        "Yes",
+        "No",
+        "real answer",
+        "Other",
+        # Values intentionally NOT normalised — only "" and "-" are treated as
+        # null-like. Anything else is preserved as a real answer.
+        "--",
+        "---",
+        ".",
+        "...",
+        "N/A",
+        "n/a",
+        "n.a.",
+        "NA",
+        "None",
+        "none",
+        "NULL",
+        "null",
+        "nil",
+        "nan",
+        "Not Provided",
+        "not applicable",
+        "no response",
+        "no answer",
+        "no comment",
+        "I have no comment to make on this",
+        "A long free-text response that mentions N/A in passing",
+        "0",
+    ],
+)
+def test_normalise_null_like_preserves_real_answers(value):
+    df = pd.DataFrame({"themefinder_id": [1], "A": [value]})
+    out = _normalise_null_like(df)
+    assert out["A"].iloc[0] == value
+
+
+def test_normalise_null_like_leaves_themefinder_id_untouched():
+    """themefinder_id is numeric and must never be normalised."""
+    df = pd.DataFrame({"themefinder_id": [1, 2, 3], "A": ["-", "x", ""]})
+    out = _normalise_null_like(df)
+    assert list(out["themefinder_id"]) == [1, 2, 3]
+    assert out["A"].isna().tolist() == [True, False, True]
+
+
+def test_normalise_null_like_mixed_column():
+    df = pd.DataFrame(
+        {
+            "themefinder_id": [1, 2, 3, 4, 5],
+            "A": ["real", "-", "another", "", "  -  "],
+        }
+    )
+    out = _normalise_null_like(df)
+    assert out["A"].isna().tolist() == [False, True, False, True, True]
+    assert out["A"].iloc[0] == "real"
+    assert out["A"].iloc[2] == "another"
+
+
+def test_load_responses_normalises_null_like_in_csv(tmp_path):
+    """End-to-end: '-' cells in the CSV become NaN after loading."""
+    csv = tmp_path / "responses.csv"
+    csv.write_text(
+        "Q1,Q2\n"
+        "real answer,Agree\n"
+        "-,Disagree\n"
+        "another response,-\n"
+    )
+    df, _ = load_responses(csv)
+    assert df["A"].isna().tolist() == [False, True, False]
+    assert df["B"].isna().tolist() == [False, False, True]
+    assert df["A"].iloc[0] == "real answer"
+
+
+def test_create_question_inputs_skips_question_with_no_responses(tmp_path, capsys):
+    """Closed question whose responses are all NaN: folder is not created."""
+    df = pd.DataFrame(
+        {
+            "themefinder_id": [1, 2, 3],
+            "A": [pd.NA, pd.NA, pd.NA],
+        }
+    )
+    questions = [{"question_number": 7, "column_name": "A", "question_text": "?"}]
+    create_question_inputs(df, questions, "closed", tmp_path)
+    assert not (tmp_path / "question_part_7").exists()
+    out = capsys.readouterr().out
+    assert "Q7" in out and "skipping" in out
+
+
+def test_create_question_inputs_skips_open_with_no_responses(tmp_path, capsys):
+    df = pd.DataFrame({"themefinder_id": [1, 2], "C": [pd.NA, pd.NA]})
+    questions = [{"question_number": 3, "column_name": "C", "question_text": "?"}]
+    create_question_inputs(df, questions, "open", tmp_path)
+    assert not (tmp_path / "question_part_3").exists()
+
+
+def test_create_question_inputs_skips_hybrid_with_no_responses(tmp_path):
+    df = pd.DataFrame(
+        {
+            "themefinder_id": [1, 2],
+            "A": [pd.NA, pd.NA],
+            "B": [pd.NA, pd.NA],
+        }
+    )
+    questions = [
+        {
+            "question_number": 9,
+            "open_column": "B",
+            "closed_column": "A",
+            "question_text": "?",
+        }
+    ]
+    create_question_inputs(df, questions, "hybrid", tmp_path)
+    assert not (tmp_path / "question_part_9").exists()
+
+
+def test_create_question_inputs_still_writes_when_some_responses_present(tmp_path):
+    """Sanity check: the skip only triggers when ALL responses are null."""
+    df = pd.DataFrame(
+        {"themefinder_id": [1, 2, 3], "A": ["Yes,No", pd.NA, "Maybe"]}
+    )
+    questions = [{"question_number": 4, "column_name": "A", "question_text": "?"}]
+    create_question_inputs(df, questions, "closed", tmp_path)
+    assert (tmp_path / "question_part_4" / "multi_choice.jsonl").exists()
+    lines = (
+        (tmp_path / "question_part_4" / "multi_choice.jsonl").read_text().splitlines()
+    )
+    assert len(lines) == 2
+
+
+def test_load_responses_drops_rows_emptied_by_null_normalisation(tmp_path):
+    """A row containing only null signifiers (e.g. all '-') is dropped entirely."""
+    csv = tmp_path / "responses.csv"
+    csv.write_text(
+        "Q1,Q2\n"
+        "real answer,Agree\n"
+        "-,-\n"
+        "another,Disagree\n"
+    )
+    df, _ = load_responses(csv)
+    assert len(df) == 2
+    assert df["A"].tolist() == ["real answer", "another"]

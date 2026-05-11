@@ -1,8 +1,8 @@
 """Build consult_data_template.xlsx — an opinionated workbook skeleton.
 
 Generates a single .xlsx file at the root of the repo with sheets:
-Guide, Active issues, Responses, Demographics, Open questions, Closed
-questions, Hybrid questions, plus a hidden Issues sheet that drives the
+Guide, Active issues, Responses, Demographics, Open Questions, Closed
+questions, Hybrid Questions, plus a hidden Issues sheet that drives the
 audit. The four metadata sheets (Demographics, Open, Closed, Hybrid)
 together tell Consult how to interpret each column on Responses.
 
@@ -85,7 +85,10 @@ from build_consult_data_dummy_content import (
     DUMMY_EXPLANATIONS,
 )
 
-OUTPUT_PATH = Path(__file__).resolve().parent / "consult_data_template.xlsx"
+VERSION = "_v003"
+OUTPUT_PATH = (
+    Path(__file__).resolve().parent / f"consult_data_template{VERSION} - example.xlsx"
+)
 
 DATA_ROWS = 100000  # rows pre-wired with checks on each metadata sheet
 # Upper bound on Responses rows the live audit covers (uniqueness ratio,
@@ -144,10 +147,10 @@ HELPER_SIM_START_ROW = 5  # Excel row where per-row data begins (row 4 holds hea
 LABEL_SIM_FIELDS = ["L", "H", "a", "b", "na", "nb", "inter", "sim"]
 LABEL_SIM_BLOCK_WIDTH = len(LABEL_SIM_FIELDS)
 LABEL_SIM_BLOCKS = [
-    ("Open questions", "A"),
-    ("Closed questions", "A"),
-    ("Hybrid questions", "A"),
-    ("Hybrid questions", "D"),
+    ("Open Questions", "A"),
+    ("Multiple Choice Questions", "A"),
+    ("Hybrid Questions", "A"),
+    ("Hybrid Questions", "D"),
 ]
 
 
@@ -592,10 +595,10 @@ def _qu_col_ranges() -> list[str]:
     """
     last = QU_RANGE_LAST_ROW
     return [
-        f"'Open questions'!$A$2:$A${last}",
-        f"'Closed questions'!$A$2:$A${last}",
-        f"'Hybrid questions'!$A$2:$A${last}",
-        f"'Hybrid questions'!$D$2:$D${last}",
+        f"'Open Questions'!$A$2:$A${last}",
+        f"'Multiple Choice Questions'!$A$2:$A${last}",
+        f"'Hybrid Questions'!$A$2:$A${last}",
+        f"'Hybrid Questions'!$D$2:$D${last}",
     ]
 
 
@@ -603,9 +606,9 @@ def _qu_qnum_ranges() -> list[str]:
     """Ranges holding question_number values across Open/Closed/Hybrid sheets."""
     last = QU_RANGE_LAST_ROW
     return [
-        f"'Open questions'!$B$2:$B${last}",
-        f"'Closed questions'!$B$2:$B${last}",
-        f"'Hybrid questions'!$B$2:$B${last}",
+        f"'Open Questions'!$B$2:$B${last}",
+        f"'Multiple Choice Questions'!$B$2:$B${last}",
+        f"'Hybrid Questions'!$B$2:$B${last}",
     ]
 
 
@@ -718,7 +721,7 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
             ),
         ],
     },
-    "Open questions": {
+    "Open Questions": {
         "cols": ["A", "B", "C"],
         "rules": [
             (
@@ -782,7 +785,7 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
                 "Open column looks multichoice",
                 "open_uniqueness",
                 "Column '{value}' has very few different answers (≤20% are unique). That usually means it's a multiple-choice question rather than free text.",
-                "If respondents picked from a list, move this row to the Closed questions sheet. If it really is free text, you can ignore this warning.",
+                "If respondents picked from a list, move this row to the Multiple Choice Questions sheet. If it really is free text, you can ignore this warning.",
             ),
             (
                 "A",
@@ -793,7 +796,7 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
             ),
         ],
     },
-    "Closed questions": {
+    "Multiple Choice Questions": {
         "cols": ["A", "B", "C"],
         "rules": [
             (
@@ -857,7 +860,7 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
                 "Closed column looks like free text",
                 "closed_uniqueness",
                 "Column '{value}' has lots of different answers (>20% are unique). That usually means it's a free-text question rather than multiple choice.",
-                "If respondents typed their own answers, move this row to the Open questions sheet. If it really is multiple choice, you can ignore this warning.",
+                "If respondents typed their own answers, move this row to the Open Questions sheet. If it really is multiple choice, you can ignore this warning.",
             ),
             (
                 "A",
@@ -868,7 +871,7 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
             ),
         ],
     },
-    "Hybrid questions": {
+    "Hybrid Questions": {
         "cols": ["A", "B", "C", "D"],
         "rules": [
             (
@@ -961,14 +964,14 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
                 "Open column looks multichoice",
                 "open_uniqueness",
                 "Column '{value}' has very few different answers (≤20% are unique), which looks more like multiple choice than free text.",
-                "If respondents picked from a list, this column belongs in the Closed questions sheet (or as the closed_column of a hybrid). If it really is free text, you can ignore this warning.",
+                "If respondents picked from a list, this column belongs in the Multiple Choice Questions sheet (or as the closed_column of a hybrid). If it really is free text, you can ignore this warning.",
             ),
             (
                 "D",
                 "Closed column looks like free text",
                 "closed_uniqueness",
                 "Column '{value}' has lots of different answers (>20% are unique), which looks more like free text than multiple choice.",
-                "If respondents typed their own answers, this column belongs in the Open questions sheet (or as the open_column of a hybrid). If it really is multiple choice, you can ignore this warning.",
+                "If respondents typed their own answers, this column belongs in the Open Questions sheet (or as the open_column of a hybrid). If it really is multiple choice, you can ignore this warning.",
             ),
             (
                 "A",
@@ -1465,7 +1468,7 @@ def build_guide_sheet(ws, wb, fmts: dict) -> None:
         row,
         2,
         "The Responses sheet holds your raw answers. The Demographics, Open "
-        "questions, Closed questions and Hybrid questions sheets sit "
+        "questions, Multiple Choice Questions and Hybrid Questions sheets sit "
         "alongside it and tell Consult how to interpret each column on "
         "Responses — which columns hold demographics, which hold free-text, "
         "which hold multiple-choice, and what each question was actually "
@@ -1546,17 +1549,17 @@ def build_guide_sheet(ws, wb, fmts: dict) -> None:
             "organisation type) to short labels. Used to filter and segment results.",
         ),
         (
-            "Open questions",
+            "Open Questions",
             "One row per free-text question. Points at a Responses column whose "
             "answers are free and open text.",
         ),
         (
-            "Closed questions",
+            "Multiple Choice Questions",
             "One row per multiple-choice question. Points at a Responses column "
             "whose answers come from a fixed list (e.g. Yes/No, Agree/Disagree, …).",
         ),
         (
-            "Hybrid questions",
+            "Hybrid Questions",
             "One row per question that has BOTH a multiple-choice part and a "
             "free-text 'why?' part — points at the two Responses columns that hold them.",
         ),
@@ -1606,7 +1609,7 @@ def build_guide_sheet(ws, wb, fmts: dict) -> None:
         row += 1
     row += 1
 
-    section("Examples — Open questions")
+    section("Examples — Open Questions")
     example_pair(
         good="What role would you and/or your organisation play in achieving "
         "the proposed outcomes?",
@@ -1635,7 +1638,7 @@ def build_guide_sheet(ws, wb, fmts: dict) -> None:
         height=78,
     )
 
-    section("Examples — Closed questions")
+    section("Examples — Multiple Choice Questions")
     example_pair(
         good="To what extent do you agree or disagree that the proposed "
         "councils are the right size to be efficient?",
@@ -1648,7 +1651,7 @@ def build_guide_sheet(ws, wb, fmts: dict) -> None:
         height=44,
     )
 
-    section("Examples — Hybrid questions")
+    section("Examples — Hybrid Questions")
     example_pair(
         good="Where do each of the proposed outcomes sit on a scale from very "
         "useful to not useful at all? Please explain your answer.",
@@ -1715,9 +1718,9 @@ def main() -> None:
     ws_active = wb.add_worksheet("Active issues")
     ws_resp = wb.add_worksheet("Responses")
     ws_demo = wb.add_worksheet("Demographics")
-    ws_open = wb.add_worksheet("Open questions")
-    ws_closed = wb.add_worksheet("Closed questions")
-    ws_hyb = wb.add_worksheet("Hybrid questions")
+    ws_open = wb.add_worksheet("Open Questions")
+    ws_closed = wb.add_worksheet("Multiple Choice Questions")
+    ws_hyb = wb.add_worksheet("Hybrid Questions")
     ws_issues = wb.add_worksheet("Issues")
     ws_helpers = wb.add_worksheet(HELPER_SHEET)
 
@@ -1727,7 +1730,7 @@ def main() -> None:
 
     write_headers(
         ws_demo,
-        ["Column letter (in Responses sheet)", "Demographic label"],
+        ["Column letter (in Responses sheet)", "Demographics label"],
         [32, 36],
         fmts["header"],
     )
@@ -1791,7 +1794,7 @@ def main() -> None:
     add_column_id_check(ws_open, "A", fmts)
     add_integer_check(ws_open, "B", fmts)
     highlight_missing_response_column(ws_open, "A", fmts)
-    add_offlimit_columns_check(ws_open, "D", "Open questions", fmts)
+    add_offlimit_columns_check(ws_open, "D", "Open Questions", fmts)
     write_data_rows(
         ws_open,
         [("I", 3, "Do you have any other suggestions or comments?")],
@@ -1828,7 +1831,7 @@ def main() -> None:
     add_column_id_check(ws_closed, "A", fmts)
     add_integer_check(ws_closed, "B", fmts)
     highlight_missing_response_column(ws_closed, "A", fmts)
-    add_offlimit_columns_check(ws_closed, "D", "Closed questions", fmts)
+    add_offlimit_columns_check(ws_closed, "D", "Multiple Choice Questions", fmts)
     write_data_rows(
         ws_closed,
         [("J", 4, "Would you recommend this approach to others?")],
@@ -1874,7 +1877,7 @@ def main() -> None:
     add_integer_check(ws_hyb, "B", fmts)
     highlight_missing_response_column(ws_hyb, "A", fmts)
     highlight_missing_response_column(ws_hyb, "D", fmts)
-    add_offlimit_columns_check(ws_hyb, "E", "Hybrid questions", fmts)
+    add_offlimit_columns_check(ws_hyb, "E", "Hybrid Questions", fmts)
     write_data_rows(
         ws_hyb,
         [
