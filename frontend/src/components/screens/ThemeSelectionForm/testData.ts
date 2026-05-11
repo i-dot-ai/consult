@@ -30,4 +30,4 @@ export const selectedThemes = [
     description: "Theme one description",
     key: "theme-one",
   },
-]
+];

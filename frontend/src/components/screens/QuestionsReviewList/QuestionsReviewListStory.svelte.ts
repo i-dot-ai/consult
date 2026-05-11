@@ -1,4 +1,10 @@
-import { CONSULTATION_ID, showNextFetchErrorMock, showNextFreeTextErrorMock, showNextMock, showNextNoMoreErrorMock } from "./mocks";
+import {
+  CONSULTATION_ID,
+  showNextFetchErrorMock,
+  showNextFreeTextErrorMock,
+  showNextMock,
+  showNextNoMoreErrorMock,
+} from "./mocks";
 import QuestionsReviewList from "./QuestionsReviewList.svelte";
 import { questionsData } from "./testData";
 
@@ -9,9 +15,7 @@ export default {
   name: "QuestionsReviewList",
   component: QuestionsReviewList,
   category: "Screens / Support",
-  mocks: [
-    showNextMock,
-  ],
+  mocks: [showNextMock],
   props: [
     { name: "consultationId", value: consultationId, type: "text" },
     { name: "questions", value: questions, type: "json" },
@@ -23,9 +27,7 @@ export default {
         consultationId,
         questions,
       },
-      mocks: [
-        showNextFreeTextErrorMock,
-      ]
+      mocks: [showNextFreeTextErrorMock],
     },
     {
       name: "Fetch Error",
@@ -33,9 +35,7 @@ export default {
         consultationId,
         questions,
       },
-      mocks: [
-        showNextFetchErrorMock,
-      ]
+      mocks: [showNextFetchErrorMock],
     },
     {
       name: "No More Responses Error",
@@ -43,9 +43,7 @@ export default {
         consultationId,
         questions,
       },
-      mocks: [
-        showNextNoMoreErrorMock,
-      ]
-    }
+      mocks: [showNextNoMoreErrorMock],
+    },
   ],
 };

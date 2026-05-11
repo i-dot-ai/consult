@@ -45,7 +45,9 @@
         ownSelectedThemes = [...ownSelectedThemes, themeToAdd];
       }
     } else {
-      ownSelectedThemes = ownSelectedThemes.filter((theme) => theme.id !== value);
+      ownSelectedThemes = ownSelectedThemes.filter(
+        (theme) => theme.id !== value,
+      );
     }
   };
 

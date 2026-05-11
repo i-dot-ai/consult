@@ -6,9 +6,14 @@ import fetchMock from "fetch-mock";
 import { queryClient } from "../../../global/queryClient";
 import { mockRoute } from "../../../global/utils";
 import { questionsData } from "./testData";
-import { CONSULTATION_ID, showNextFetchErrorMock, showNextFreeTextErrorMock, showNextMock, showNextNoMoreErrorMock } from "./mocks";
+import {
+  CONSULTATION_ID,
+  showNextFetchErrorMock,
+  showNextFreeTextErrorMock,
+  showNextMock,
+  showNextNoMoreErrorMock,
+} from "./mocks";
 import userEvent from "@testing-library/user-event";
-
 
 const clearMocks = () => {
   fetchMock.unmockGlobal();
@@ -30,13 +35,11 @@ describe("QuestionsReviewList", () => {
     });
 
     await waitFor(() => {
-      expect(
-        screen.getByText(question.question_text),
-      ).toBeInTheDocument();
+      expect(screen.getByText(question.question_text)).toBeInTheDocument();
     });
   });
 
-  it.each(questionsData)("should render all questions", async (question) => {
+  it.each(questionsData)("should render percentages", async (question) => {
     mockRoute(showNextMock);
 
     render(QuestionsReviewList, {
@@ -46,12 +49,14 @@ describe("QuestionsReviewList", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(`${question.proportion_of_audited_answers * 100}% reviewed`),
+        screen.getByText(
+          `${question.proportion_of_audited_answers * 100}% reviewed`,
+        ),
       ).toBeInTheDocument();
     });
   });
 
-  it("should render free text error", async () => {
+  it("should render next response error", async () => {
     mockRoute(showNextFetchErrorMock);
 
     render(QuestionsReviewList, {
@@ -60,7 +65,9 @@ describe("QuestionsReviewList", () => {
     });
 
     const user = userEvent.setup();
-    await user.click(screen.getAllByRole("button", { name: "Show next" }).at(0)!);
+    await user.click(
+      screen.getAllByRole("button", { name: "Show next" }).at(0)!,
+    );
 
     await waitFor(() => {
       expect(
@@ -78,7 +85,9 @@ describe("QuestionsReviewList", () => {
     });
 
     const user = userEvent.setup();
-    await user.click(screen.getAllByRole("button", { name: "Show next" }).at(0)!);
+    await user.click(
+      screen.getAllByRole("button", { name: "Show next" }).at(0)!,
+    );
 
     await waitFor(() => {
       expect(
@@ -96,7 +105,9 @@ describe("QuestionsReviewList", () => {
     });
 
     const user = userEvent.setup();
-    await user.click(screen.getAllByRole("button", { name: "Show next" }).at(0)!);
+    await user.click(
+      screen.getAllByRole("button", { name: "Show next" }).at(0)!,
+    );
 
     await waitFor(() => {
       expect(

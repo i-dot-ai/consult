@@ -1,4 +1,10 @@
-import { CONSULTATION_ID, QUESTION_ID, RESPONSE_ID, showNextMock, submitMock } from "./mocks";
+import {
+  CONSULTATION_ID,
+  QUESTION_ID,
+  RESPONSE_ID,
+  showNextMock,
+  submitMock,
+} from "./mocks";
 import { allThemes, selectedThemes } from "./testData";
 import ThemeSelectionForm from "./ThemeSelectionForm.svelte";
 
@@ -6,15 +12,11 @@ const consultationId = $state(CONSULTATION_ID);
 const questionId = $state(QUESTION_ID);
 const responseId = $state(RESPONSE_ID);
 
-
 export default {
   name: "ThemeSelectionForm",
   component: ThemeSelectionForm,
   category: "Screens / Support",
-  mocks: [
-    showNextMock,
-    submitMock,
-  ],
+  mocks: [showNextMock, submitMock],
   props: [
     { name: "consultationId", value: consultationId, type: "text" },
     { name: "questionId", value: questionId, type: "text" },

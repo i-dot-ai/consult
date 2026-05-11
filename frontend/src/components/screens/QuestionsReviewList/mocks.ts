@@ -10,24 +10,24 @@ export const showNextMock = {
       question_id: "test-question",
       id: "test-response",
     },
-  })
-}
+  }),
+};
 
 export const showNextFreeTextErrorMock = {
   regexp: "*host" + getApiShowNextResponse(":consultationId", ":questionId"),
   body: () => ({
     has_free_text: false,
-  })
-}
+  }),
+};
 
 export const showNextNoMoreErrorMock = {
   regexp: "*host" + getApiShowNextResponse(":consultationId", ":questionId"),
   body: () => ({
     has_free_text: true,
-  })
-}
+  }),
+};
 
 export const showNextFetchErrorMock = {
   regexp: "*host" + getApiShowNextResponse(":consultationId", ":questionId"),
   throws: new Error("Fetch failed"),
-}
+};
