@@ -1,4 +1,4 @@
-import { CONSULTATION_ID, showNextFreeTextErrorMock, showNextMock } from "./mocks";
+import { CONSULTATION_ID, showNextFetchErrorMock, showNextFreeTextErrorMock, showNextMock, showNextNoMoreErrorMock } from "./mocks";
 import QuestionsReviewList from "./QuestionsReviewList.svelte";
 import { questionsData } from "./testData";
 
@@ -25,6 +25,26 @@ export default {
       },
       mocks: [
         showNextFreeTextErrorMock,
+      ]
+    },
+    {
+      name: "Fetch Error",
+      props: {
+        consultationId,
+        questions,
+      },
+      mocks: [
+        showNextFetchErrorMock,
+      ]
+    },
+    {
+      name: "No More Responses Error",
+      props: {
+        consultationId,
+        questions,
+      },
+      mocks: [
+        showNextNoMoreErrorMock,
       ]
     }
   ],
