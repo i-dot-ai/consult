@@ -443,14 +443,13 @@ def _import_response_annotations(
         theme_lookup: Dictionary mapping theme_key -> SelectedTheme
     """
     # Delete existing annotations for this question (idempotent)
-    existing_count = ResponseAnnotation.objects.filter(response__question=question).count()
-    if existing_count > 0:
+    deleted_count, _ = ResponseAnnotation.objects.filter(response__question=question).delete()
+    if deleted_count > 0:
         logger.info(
-            "Deleting {existing_count} existing annotations for question {question_number}",
-            existing_count=existing_count,
+            "Deleted {deleted_count} existing annotations for question {question_number}",
+            deleted_count=deleted_count,
             question_number=question.number,
         )
-        ResponseAnnotation.objects.filter(response__question=question).delete()
 
     logger.info(
         "Importing annotations for question {question_number}", question_number=question.number
@@ -463,7 +462,12 @@ def _import_response_annotations(
 
     # Get all responses for this question with their respondent themefinder_ids
     responses = Response.objects.filter(question=question).select_related("respondent")
-    response_lookup = {r.respondent.themefinder_id: r for r in responses}
+    # Filter out responses without themefinder_id since we can't match them to batch data
+    response_lookup = {
+        r.respondent.themefinder_id: r 
+        for r in responses 
+        if r.respondent.themefinder_id is not None
+    }
 
     # Create ResponseAnnotation objects
     annotations_to_create = []
@@ -500,22 +504,55 @@ def _import_response_annotations(
     )
 
     # Now link annotations to themes
-    # Rebuild lookup with created annotation objects
-    annotation_by_tf_id = {}
-    for annotation in created_annotations:
-        tf_id = annotation.response.respondent.themefinder_id
-        annotation_by_tf_id[tf_id] = annotation
+    # Build lookup from created annotations using the response_id to avoid N+1 queries
+    # We use response_id because it's available on the annotation object without triggering a query
+    annotation_by_response_id = {ann.response_id: ann for ann in created_annotations}  # type: ignore[attr-defined]
+    
+    # Build reverse lookup from themefinder_id to response_id using our prefetched responses
+    response_id_by_tf_id = {
+        r.respondent.themefinder_id: r.id 
+        for r in responses 
+        if r.respondent.themefinder_id is not None
+    }
 
-    # Create ResponseAnnotationThemes
+    # Collect all ResponseAnnotationTheme records to create in bulk
+    from consultations.models import ResponseAnnotationTheme
+    
+    annotation_themes_to_create = []
     themes_linked = 0
+    
     for themefinder_id, theme_keys in annotation_theme_data:
-        annotation = annotation_by_tf_id[themefinder_id]
+        # Get the response_id from our prefetched lookup
+        response_id = response_id_by_tf_id.get(themefinder_id)
+        if not response_id:
+            logger.warning(
+                "No response found for themefinder_id {themefinder_id}",
+                themefinder_id=themefinder_id,
+            )
+            continue
+            
+        maybe_annotation = annotation_by_response_id.get(response_id)
+        if maybe_annotation is None:
+            logger.warning(
+                "No annotation found for response_id {response_id}",
+                response_id=response_id,
+            )
+            continue
+        
+        # Type narrowing for mypy - at this point we know the annotation is not None
+        ann: ResponseAnnotation = maybe_annotation
 
         # Get SelectedTheme objects for these keys
-        themes_to_link = []
         for theme_key in theme_keys:
             if theme_key in theme_lookup:
-                themes_to_link.append(theme_lookup[theme_key])
+                annotation_themes_to_create.append(
+                    ResponseAnnotationTheme(
+                        response_annotation=ann,
+                        theme=theme_lookup[theme_key],
+                        assigned_by=None,  # AI assignment
+                    )
+                )
+                themes_linked += 1
             else:
                 logger.warning(
                     "Theme key '{theme_key}' not found in selected themes for question {question_number}",
@@ -523,10 +560,12 @@ def _import_response_annotations(
                     question_number=question.number,
                 )
 
-        # Link themes to annotation (as AI-assigned themes)
-        if themes_to_link:
-            annotation.add_original_ai_themes(themes_to_link)
-            themes_linked += len(themes_to_link)
+    # Bulk create all theme assignments at once
+    if annotation_themes_to_create:
+        ResponseAnnotationTheme.objects.bulk_create(
+            annotation_themes_to_create,
+            ignore_conflicts=True,  # Handle duplicates gracefully
+        )
 
     logger.info(
         "Linked {themes_linked} theme assignments for question {question_number}",
