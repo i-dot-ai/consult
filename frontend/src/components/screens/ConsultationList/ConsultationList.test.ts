@@ -54,4 +54,25 @@ describe("ConsultationList", () => {
       { timeout: 20000 },
     );
   }, 20000);
+
+  it("should match snapshot initially", () => {
+    mockRoute(defaultMock);
+
+    const { container } = render(ConsultationList);
+    expect(container).toMatchSnapshot();
+  });
+
+  it("should match snapshot after loading", async () => {
+    mockRoute(defaultMock);
+
+    const { container } = render(ConsultationList);
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByText(defaultMock.body.results[0].title, { exact: false })
+          .length,
+      ).toBeGreaterThan(0);
+    });
+    expect(container).toMatchSnapshot();
+  });
 });

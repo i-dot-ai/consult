@@ -18,6 +18,7 @@ Installation instructions assume using a Mac with Homebrew.
 - nvm ([instructions](https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script))
 - GraphViz (`brew install graphviz`), used for generating database diagrams
 - pre-commit (`brew install pre-commit`)
+- Postegres(optional) (`brew install postgresql`) if you are getting `psycopg2` error during `make setup`
 
 ### Clone and install
 
@@ -78,6 +79,12 @@ Run end-to-end tests:
 
 ```
 make test-end-to-end
+```
+
+ If you are getting error while running e2e that the frontend is failing to start during the docker spin up its likely because of the timeout module that is missing and you will need to run
+
+```shell
+brew install coreutils
 ```
 
 ### VSCode setup (recommended)

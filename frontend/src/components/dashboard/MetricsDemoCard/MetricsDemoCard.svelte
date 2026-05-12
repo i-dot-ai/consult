@@ -12,6 +12,7 @@
   import { getConsultationAnalysisUrl } from "../../../global/routes";
 
   interface MetricsDemoItem {
+    id: string;
     title: string;
     count: number;
     percentage: number;
@@ -69,7 +70,7 @@
   <Panel bg={true} border={true}>
     <Title level={4} text={title} />
 
-    {#each items as item, index (item.title)}
+    {#each items as item, index (item.id)}
       {@render cardItem(item, index)}
     {/each}
 

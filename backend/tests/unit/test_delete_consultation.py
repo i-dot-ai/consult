@@ -128,7 +128,7 @@ def test_delete_consultation_cascading():
     assert MultiChoiceAnswer.objects.count() == 3
 
     # Delete the consultation
-    delete_consultation_job(consultation)
+    delete_consultation_job(consultation.id)
 
     # Verify cascading deletion
     assert Consultation.objects.count() == 0
@@ -186,7 +186,7 @@ def test_delete_consultation_job_success(mock_connection):
     ).exists()
 
     # Run the delete job
-    delete_consultation_job(consultation)
+    delete_consultation_job(consultation.id)
 
     # Verify all objects are deleted
     assert not Consultation.objects.filter(id=consultation_id).exists()
@@ -206,7 +206,7 @@ def test_delete_consultation_job_handles_database_connection(mock_connection):
     consultation = Consultation.objects.create(title="Test Consultation")
 
     # Run the delete job
-    delete_consultation_job(consultation)
+    delete_consultation_job(consultation.id)
 
 
 @pytest.mark.django_db
@@ -225,7 +225,7 @@ def test_delete_consultation_job_handles_exceptions(mock_logger, mock_connection
         side_effect=Exception("Database error"),
     ):
         with pytest.raises(Exception) as exc_info:
-            delete_consultation_job(consultation)
+            delete_consultation_job(consultation.id)
 
         assert "Database error" in str(exc_info.value)
 

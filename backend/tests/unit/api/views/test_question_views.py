@@ -199,6 +199,87 @@ class TestQuestionViewSet:
         answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
         assert answer_counts == {"blue": 1, "green": 0, "red": 2}
 
+    def test_get_multiple_choice_question_with_demographic_filter(
+        self,
+        client,
+        staff_user_token,
+        multi_choice_question,
+        northern_demographic,
+        southern_demographic,
+    ):
+        """Test that demographic filters correctly update multiple choice counts"""
+        from consultations.models import Response
+
+        # Create multi-choice answers
+        red = multi_choice_question.multichoiceanswer_set.get(text="red")
+        blue = multi_choice_question.multichoiceanswer_set.get(text="blue")
+
+        # Create respondents with demographics
+        # Respondent 1: northern, chooses red and blue
+        respondent_1 = RespondentFactory(consultation=multi_choice_question.consultation)
+        respondent_1.demographics.add(northern_demographic)
+        response_1 = Response.objects.create(
+            respondent=respondent_1, question=multi_choice_question
+        )
+        response_1.chosen_options.add(red, blue)
+
+        # Respondent 2: northern, chooses red
+        respondent_2 = RespondentFactory(consultation=multi_choice_question.consultation)
+        respondent_2.demographics.add(northern_demographic)
+        response_2 = Response.objects.create(
+            respondent=respondent_2, question=multi_choice_question
+        )
+        response_2.chosen_options.add(red)
+
+        # Respondent 3: southern, chooses blue
+        respondent_3 = RespondentFactory(consultation=multi_choice_question.consultation)
+        respondent_3.demographics.add(southern_demographic)
+        response_3 = Response.objects.create(
+            respondent=respondent_3, question=multi_choice_question
+        )
+        response_3.chosen_options.add(blue)
+
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": multi_choice_question.consultation.id,
+                "pk": multi_choice_question.id,
+            },
+        )
+
+        # Test 1: No filter - should show all counts
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
+        assert answer_counts == {"blue": 2, "red": 2, "green": 0}
+
+        # Test 2: Filter by northern demographic - should show filtered counts
+        response = client.get(
+            url + f"?demographics={northern_demographic.id}",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
+        assert answer_counts == {"blue": 1, "red": 2, "green": 0}
+
+        # Test 3: Filter by southern demographic - should show filtered counts
+        response = client.get(
+            url + f"?demographics={southern_demographic.id}",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
+        assert answer_counts == {"blue": 1, "red": 0, "green": 0}
+
     def test_patch_question_theme_status(
         self, client, staff_user, free_text_question, staff_user_token
     ):

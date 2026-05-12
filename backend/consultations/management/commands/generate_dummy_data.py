@@ -6,7 +6,7 @@ from consultations.models import Consultation
 
 class Command(BaseCommand):
     help = (
-        "Generate two dummy consultations, one at theme sign off stage and one at analysis stage."
+        "Generate two dummy consultations, one at finalising themes stage and one at analysis stage."
     )
 
     def handle(self, *args, **options):

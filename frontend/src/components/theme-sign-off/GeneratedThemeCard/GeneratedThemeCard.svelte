@@ -7,7 +7,7 @@
     CandidateThemeResponsesResponse,
     GeneratedTheme,
   } from "../../../global/types";
-  import { createFetchStore, type MockFetch } from "../../../global/stores";
+  import { createFetchStore } from "../../../global/stores";
   import { getApiCandidateThemeResponsesUrl } from "../../../global/routes";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
@@ -31,7 +31,7 @@
     handleSelect: (theme: GeneratedTheme) => void;
     themesBeingSelected: string[];
     maxAnswers?: number;
-    answersMock?: MockFetch;
+    hasNestedThemes?: boolean;
   }
   let {
     consultationId,
@@ -43,12 +43,10 @@
     setExpandedThemes = () => {},
     handleSelect = () => {},
     themesBeingSelected = [],
-    answersMock,
+    hasNestedThemes = false,
   }: Props = $props();
 
-  const answersStore = createFetchStore<CandidateThemeResponsesResponse>({
-    mockFetch: answersMock,
-  });
+  const answersStore = createFetchStore<CandidateThemeResponsesResponse>();
 
   let expanded = $derived(expandedThemes.includes(theme.id));
   let showAnswers = $state(false);
@@ -94,12 +92,13 @@
 
             <div class="flex flex-wrap items-center gap-2">
               <h3>{theme.name}</h3>
-
-              <div class={clsx([disabled && "grayscale"])}>
-                <Tag variant="success">
-                  Level {level + 1}
-                </Tag>
-              </div>
+              {#if hasNestedThemes}
+                <div class={clsx([disabled && "grayscale"])}>
+                  <Tag variant="success">
+                    Level {level + 1}
+                  </Tag>
+                </div>
+              {/if}
             </div>
           </div>
         </div>
@@ -173,7 +172,6 @@
       {/if}
     </article>
   </Panel>
-
   {#if expanded}
     <div transition:slide class="pt-4">
       {#each theme.children as childTheme (childTheme.id)}
@@ -181,10 +179,10 @@
           {consultationId}
           {questionId}
           theme={childTheme}
+          {hasNestedThemes}
           level={level + 1}
           {handleSelect}
           {themesBeingSelected}
-          {answersMock}
           {expandedThemes}
           {setExpandedThemes}
         />

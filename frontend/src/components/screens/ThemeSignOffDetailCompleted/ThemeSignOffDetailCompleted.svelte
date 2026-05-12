@@ -4,26 +4,26 @@
   import { onMount } from "svelte";
   import { fade, slide } from "svelte/transition";
 
-  import { createFetchStore } from "../../global/stores";
+  import { createFetchStore } from "../../../global/stores";
   import {
     getApiGetSelectedThemesUrl,
     getApiQuestionUrl,
     getThemeSignOffUrl,
     Routes,
-  } from "../../global/routes";
-  import type { Question, SelectedThemesResponse } from "../../global/types";
+  } from "../../../global/routes";
+  import type { Question, SelectedThemesResponse } from "../../../global/types";
 
-  import Panel from "../dashboard/Panel/Panel.svelte";
-  import TitleRow from "../dashboard/TitleRow.svelte";
-  import Tag from "../Tag/Tag.svelte";
-  import Button from "../inputs/Button/Button.svelte";
-  import MaterialIcon from "../MaterialIcon.svelte";
-  import Price from "../svg/material/Price.svelte";
-  import CheckCircle from "../svg/material/CheckCircle.svelte";
-  import Headphones from "../svg/material/Headphones.svelte";
-  import Help from "../svg/material/Help.svelte";
-  import ArrowForward from "../svg/material/ArrowForward.svelte";
-  import Alert from "../Alert.svelte";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import TitleRow from "../../dashboard/TitleRow.svelte";
+  import Tag from "../../Tag/Tag.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import Price from "../../svg/material/Price.svelte";
+  import CheckCircle from "../../svg/material/CheckCircle.svelte";
+  import Headphones from "../../svg/material/Headphones.svelte";
+  import Help from "../../svg/material/Help.svelte";
+  import ArrowForward from "../../svg/material/ArrowForward.svelte";
+  import Alert from "../../Alert.svelte";
 
   interface Props {
     questionId: string;
@@ -86,7 +86,7 @@
 
 <TitleRow
   level={1}
-  title="Theme Sign Off"
+  title="Finalise Themes"
   subtitle="Finalise themes to use for AI to map responses to"
 >
   <Price slot="icon" />
@@ -156,13 +156,12 @@
               <MaterialIcon color="fill-primary">
                 <CheckCircle />
               </MaterialIcon>
-              <span class="py-0.5"> Themes Signed Off </span>
+              <span class="py-0.5">Themes finalised </span>
             </Tag>
           </div>
           <p class="text-sm text-neutral-500">
-            This question has completed the theme sign-off process. The selected
-            themes below have been approved for AI analysis and are ready to be
-            used for mapping consultation responses.
+            Themes for this question have been finalised. The selected themes
+            are approved and ready for AI to assign to consultation responses.
           </p>
         </div>
 
@@ -215,7 +214,7 @@
         {:else if $selectedThemesStore.error}
           <div class="my-2">
             <Alert>
-              {$questionStore.error}
+              {$selectedThemesStore.error}
             </Alert>
           </div>
         {:else}

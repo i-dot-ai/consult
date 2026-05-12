@@ -1,6 +1,3 @@
-import math
-from unittest.mock import patch
-
 import pytest
 from django.conf import settings
 
@@ -17,31 +14,43 @@ def pad_vector(vector):
 
 
 @pytest.mark.django_db
-@patch("consultations.api.filters.embed_text", return_value=pad_vector([1, 0]))
-@pytest.mark.parametrize("delta, expected", [(+0.0001, True), (-0.0001, False)])
-def test_semantic_threshold_for_response_search_filter(
-    mock_embed_text, respondent_1, respondent_2, free_text_question, delta, expected
-):
-    """we are checking just above and below the semantic-threshold boundary to see that
-    ResponseSearchFilter is correctly filtering the right responses"""
+def test_keyword_search_filter(respondent_1, free_text_question):
+    """Test that ResponseSearchFilter correctly filters responses using keyword search"""
 
-    angle = 0.3 + delta
-
-    # here we construct the vector need to match the semantic-threshold given
-    # that embed_text is mocked to always return the unit vector
-    embedding = pad_vector([angle, math.sqrt(1 - math.pow(angle, 2))])
-
-    Response.objects.create(
+    response_with_match = Response.objects.create(
         respondent=respondent_1,
         question=free_text_question,
-        embedding=embedding,
+        free_text="This is about climate policy",
+    )
+
+    response_without_match = Response.objects.create(
+        respondent=respondent_1,
+        question=free_text_question,
+        free_text="This is about other topics",
     )
 
     response_search_filter = ResponseSearchFilter()
 
     class FakeRequest:
-        def __init__(self):
-            self.query_params = {"searchMode": "representative", "searchValue": "something"}
+        def __init__(self, search_value):
+            self.query_params = {"searchMode": "keyword", "searchValue": search_value}
 
-    queryset = response_search_filter.filter_queryset(FakeRequest(), Response.objects.all(), None)
-    assert queryset.exists() is expected
+    # Test matching keyword
+    queryset = response_search_filter.filter_queryset(
+        FakeRequest("climate"), Response.objects.all(), None
+    )
+    assert queryset.count() == 1
+    assert response_with_match in queryset
+    assert response_without_match not in queryset
+
+    # Test case-insensitive matching
+    queryset = response_search_filter.filter_queryset(
+        FakeRequest("CLIMATE"), Response.objects.all(), None
+    )
+    assert queryset.count() == 1
+
+    # Test non-matching keyword
+    queryset = response_search_filter.filter_queryset(
+        FakeRequest("nonexistent"), Response.objects.all(), None
+    )
+    assert queryset.count() == 0

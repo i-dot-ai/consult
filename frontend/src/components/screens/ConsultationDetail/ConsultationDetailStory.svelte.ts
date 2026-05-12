@@ -4,9 +4,10 @@ import {
   defaultQuestionsMock,
   emptyQuestionsMock,
   longQuestionsMock,
+  CONSULTATION_ID,
 } from "./mocks";
 
-const consultationId = $state("test-consultation");
+const consultationId = $state(CONSULTATION_ID);
 
 export default {
   name: "ConsultationDetail",
@@ -19,14 +20,14 @@ export default {
       name: "No Questions",
       mocks: [emptyQuestionsMock, demoOptionsMock],
       props: {
-        consultationId: "test-consultation",
+        consultationId: CONSULTATION_ID,
       },
     },
     {
       name: "Many Questions",
       mocks: [longQuestionsMock, demoOptionsMock],
       props: {
-        consultationId: "test-consultation",
+        consultationId: CONSULTATION_ID,
       },
     },
   ],

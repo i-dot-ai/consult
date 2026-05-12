@@ -31,17 +31,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
                   Test Theme
                 </h3>
                  
-                <div
-                  class="svelte-2iwj05"
-                >
-                  <div
-                    class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-secondary bg-teal-50 border border-teal-400"
-                  >
-                    Level 1
-                    <!---->
-                  </div>
-                  <!---->
-                </div>
+                <!---->
               </div>
             </div>
           </div>

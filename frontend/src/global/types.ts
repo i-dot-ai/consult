@@ -306,10 +306,11 @@ export type HttpMethod =
   | "OPTIONS";
 
 export interface Mock {
-  url: string;
+  url?: string | RegExp;
+  regexp?: string;
   body?: unknown;
   status?: number;
   method?: string;
   throws?: Error;
-  callback?: () => void;
+  callback?: (args: RequestInit | { url: string; params: unknown }) => void;
 }

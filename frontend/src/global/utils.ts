@@ -1,5 +1,9 @@
 import fetchMock from "fetch-mock";
+
+import { match, pathToRegexp } from "path-to-regexp";
+
 import { createRawSnippet } from "svelte";
+
 import type { Mock } from "./types";
 
 export const getEnv = (): string => {
@@ -260,15 +264,39 @@ export function makeSnippet(str: string, wrapDiv: boolean | undefined = true) {
 
 export function mockRoute(mock: Mock) {
   fetchMock.mockGlobal().route(
-    // @ts-expect-error: fetch-mock type not up to date
-    { url: mock.url, method: mock.method || "GET" },
-    () => {
+    {
+      // @ts-expect-error: fetch-mock type not up to date
+      url: mock.regexp ? pathToRegexp(mock.regexp).regexp : mock.url,
+      method: mock.method || "GET",
+    },
+    ({ url, options }) => {
+      let params;
+      if (mock.regexp) {
+        const matcher = match(mock.regexp);
+        const results = matcher(url) as { params: unknown };
+        params = results.params;
+      }
+
+      const enhancedOptions = {
+        ...options,
+        url: url,
+        params: params,
+      };
+
+      // TODO: Remove callback as body
+      // as function can cover same use cases
       if (mock.callback) {
-        mock.callback();
+        mock.callback(enhancedOptions);
       }
 
       if (mock.throws) {
         throw mock.throws;
+      }
+
+      if (typeof mock.body === "function") {
+        return new Response(JSON.stringify(mock.body(enhancedOptions)), {
+          status: mock.status || 200,
+        });
       }
 
       return new Response(mock.body ? JSON.stringify(mock.body) : null, {

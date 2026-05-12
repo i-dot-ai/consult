@@ -6,7 +6,7 @@ const s3Folders = $state(["folder-1", "folder-2"]);
 export default {
   name: "CreateConsultationForm",
   component: CreateConsultationForm,
-  category: "Screens",
+  category: "Screens / Support",
   mocks: [defaultMock],
   props: [{ name: "s3Folders", value: s3Folders, type: "json" }],
   stories: [

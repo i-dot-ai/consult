@@ -31,7 +31,6 @@ def import_consultation(
         consultation_code=consultation_code,
         consultation_title=consultation_name,
         user_id=user_id,
-        enqueue_embeddings=True,
     )
 
 
@@ -73,7 +72,7 @@ def import_candidate_themes(
     )
 
 
-@job("default", timeout=3600)
+@job("default", timeout=14400)
 def import_response_annotations(
     consultation_code: str,
     run_date: str,
