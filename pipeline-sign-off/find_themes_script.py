@@ -271,7 +271,7 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                 refined_themes_df = await generate_themes(question, responses_df, llm)
 
                 def refined_themes_to_theme_node(row: dict):
-                    topic_label, topic_description = row["topic"].split(":")
+                    topic_label, topic_description = row["topic"].split(":", 1)
                     return ThemeNode(
                         topic_id=row["topic_id"],
                         topic_label=topic_label,
