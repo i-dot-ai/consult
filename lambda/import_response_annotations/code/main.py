@@ -2,10 +2,21 @@ import logging
 import os
 
 import redis  # type: ignore
+import sentry_sdk
 from rq import Queue
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+# Initialize Sentry if DSN is provided
+sentry_dsn = os.environ.get("SENTRY_DSN")
+if sentry_dsn:
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        environment=os.environ.get("ENVIRONMENT", "unknown"),
+        traces_sample_rate=1.0,
+    )
+    logger.info("Sentry initialized")
 
 
 def lambda_handler(event, _context):
@@ -79,4 +90,6 @@ def lambda_handler(event, _context):
         error_msg = f"Failed to enqueue response annotations import job: {str(e)}"
         logger.error(f"ERROR: {error_msg}")
         logger.error(f"Exception type: {type(e).__name__}")
+        if sentry_dsn:
+            sentry_sdk.capture_exception(e)
         raise
