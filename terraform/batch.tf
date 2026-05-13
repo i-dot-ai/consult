@@ -32,6 +32,8 @@ module "batch_job_mapping" {
     "APP_NAME"                 = "${var.project_name}-mapping"
     "LLM_GATEWAY_URL"          = local.llm_gateway_url
     "AWS_ACCOUNT_ID"           = data.aws_caller_identity.current.account_id
+    "SENTRY_DSN"               = var.backend_sentry_dsn
+    "ENVIRONMENT"              = terraform.workspace
   })
   additional_iam_policies = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
   secrets = [
@@ -60,6 +62,8 @@ module "batch_job_sign_off" {
     "DOCKER_BUILDER_CONTAINER" = "consult-sign-off"
     "LLM_GATEWAY_URL"          = local.llm_gateway_url
     "AWS_ACCOUNT_ID"           = data.aws_caller_identity.current.account_id
+    "SENTRY_DSN"               = var.backend_sentry_dsn
+    "ENVIRONMENT"              = terraform.workspace
   })
   additional_iam_policies = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
   secrets = [
