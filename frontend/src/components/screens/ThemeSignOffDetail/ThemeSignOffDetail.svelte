@@ -152,7 +152,7 @@
 
   const removeTheme = async (themeId: string) => {
     const selectedTheme = selectedThemes.query.data?.results.find(
-      (theme) => theme.id === themeId,
+      (theme: { id: string }) => theme.id === themeId,
     );
 
     if (!selectedTheme) {
@@ -169,7 +169,7 @@
     description: string,
   ) => {
     const selectedTheme = selectedThemes.query.data?.results.find(
-      (theme) => theme.id === themeId,
+      (theme: { id: string }) => theme.id === themeId,
     );
 
     if (!selectedTheme) {
@@ -441,7 +441,7 @@
         variant="primary"
         fullWidth={true}
         disabled={!dataRequested ||
-          selectedThemes.query.isLoading ||
+          selectedThemes.query.isPending ||
           selectedThemes.query.data?.results.length === 0}
         handleClick={() =>
           (isConfirmSignOffModalOpen = !isConfirmSignOffModalOpen)}
@@ -452,7 +452,7 @@
           </MaterialIcon>
 
           <span>
-            {#if !dataRequested || selectedThemes.query.isLoading}
+            {#if !dataRequested || selectedThemes.query.isPending}
               Loading Selected Themes
             {:else}
               Sign Off Selected Themes ({selectedThemes.query.data?.results

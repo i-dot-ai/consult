@@ -52,10 +52,10 @@ export interface ConsultationFolder {
 
 export interface Respondent {
   id: string;
-  consultation: string;
+  consultation?: string;
   themefinder_id: number;
   demographics: RespondentDemoItem[];
-  name?: string;
+  name?: string | null;
 }
 
 export interface RespondentDemoItem {
@@ -129,6 +129,7 @@ export interface SearchableSelectOption<T> {
 export interface ResponseTheme {
   id: string;
   name: string;
+  assigned_by?: string;
   description: string;
   key?: string;
 }
@@ -153,16 +154,17 @@ export interface QuestionResponseResponse {
 
 export interface ResponseAnswer {
   id: string;
-  identifier: number; // respondent themefinder id
+  identifier: number | string; // respondent themefinder id
   question_id: string;
   respondent_id: string;
+  respondent?: Respondent;
   free_text_answer_text: string;
   demographic_data: { [category: string]: string };
   themes: ResponseTheme[] | null;
   multiple_choice_answer: string[];
-  evidenceRich: boolean;
+  evidenceRich: boolean | null;
   sentiment: string | null;
-  human_reviewed: boolean;
+  human_reviewed: boolean | null;
   is_flagged: boolean;
   is_edited?: boolean;
   is_read: boolean;

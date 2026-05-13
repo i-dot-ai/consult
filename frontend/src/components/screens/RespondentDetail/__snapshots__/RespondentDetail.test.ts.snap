@@ -1,0 +1,1058 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`RespondentDetail > should match snapshot after loading 1`] = `
+<div>
+  <section>
+    <div
+      class="flex items-center justify-center md:justify-between flex-wrap gap-4 mb-4"
+    >
+      <div
+        class="flex items-center gap-4"
+      >
+        <div
+          class="m-auto"
+        >
+          <!---->
+          <button
+            aria-pressed="false"
+            class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-variant="ghost"
+            role="button"
+            tabindex="0"
+          >
+            <!---->
+            <!---->
+            <div
+              class="rotate-180"
+            >
+              <svg
+                class="fill-neutral-700"
+                height="1rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <span>
+              Back to Analysis
+            </span>
+            
+            
+            
+          </button>
+          
+          <!---->
+        </div>
+         
+        <h1
+          class="text-center text-lg font-bold"
+        >
+          Respondent 1
+        </h1>
+      </div>
+       
+      <div
+        class="flex items-center gap-4"
+      >
+        <!---->
+        <!---->
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+          data-variant="default"
+          disabled=""
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          <div
+            class="rotate-180"
+          >
+            <svg
+              class="fill-neutral-700"
+              height="1rem"
+              role="img"
+              viewBox="0 -960 960 960"
+              width="1rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <span
+            class="my-[0.1rem] mr-2"
+          >
+            Previous Respondent
+          </span>
+          
+          
+          
+        </button>
+        
+        <!---->
+         
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          data-variant="default"
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          <span
+            class="my-[0.1rem] ml-2"
+          >
+            Next Respondent
+          </span>
+           
+          <svg
+            class="fill-neutral-700"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
+          <!---->
+          
+          
+          
+        </button>
+        
+        <!---->
+        
+        <!---->
+      </div>
+    </div>
+    <!---->
+     
+    <div
+      class="grid grid-cols-12 gap-4"
+    >
+      <div
+        class="col-span-12 h-max md:sticky md:top-4 md:col-span-3"
+      >
+        <div
+          class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+          data-testid="panel-component"
+        >
+          <div
+            class="mb-6 flex items-center gap-2"
+          >
+            <svg
+              class="fill-neutral-700"
+              height="1.5rem"
+              role="img"
+              viewBox="0 -960 960 960"
+              width="1.5rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              <!---->
+            </svg>
+            <!---->
+             
+            <h2
+              class="text-sm"
+            >
+              Respondent Demographics
+            </h2>
+          </div>
+           
+          <div
+            class="pl-4"
+          >
+            <div
+              class="mt-4 flex items-start gap-2 text-xs"
+            >
+              <!---->
+               
+              <div
+                class="flex w-full flex-col flex-wrap bg-white"
+              >
+                <div
+                  class="flex items-start justify-between"
+                >
+                  <h3
+                    class="uppercase text-neutral-500"
+                  >
+                    Test Demo
+                  </h3>
+                   
+                  <!---->
+                </div>
+                 
+                <p>
+                  Test demo value
+                </p>
+                <!---->
+              </div>
+            </div>
+            <!---->
+             
+            <div
+              class="mt-4 flex items-start gap-2 text-xs"
+            >
+              <!---->
+               
+              <div
+                class="flex w-full flex-col flex-wrap bg-white"
+              >
+                <div
+                  class="flex items-start justify-between"
+                >
+                  <h3
+                    class="uppercase text-neutral-500"
+                  >
+                    Stakeholder Name
+                  </h3>
+                   
+                  <div
+                    class="-mt-1"
+                  >
+                    <!---->
+                    <button
+                      aria-pressed="false"
+                      class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      data-testid="edit-button"
+                      data-variant="ghost"
+                      role="button"
+                      tabindex="0"
+                    >
+                      <!---->
+                      <!---->
+                      <svg
+                        class="fill-neutral-700"
+                        height="1rem"
+                        role="img"
+                        viewBox="0 -960 960 960"
+                        width="1rem"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"
+                        />
+                        <!---->
+                      </svg>
+                      
+                      
+                      
+                    </button>
+                    
+                    <!---->
+                  </div>
+                  <!---->
+                </div>
+                 
+                <p>
+                  test name
+                </p>
+                <!---->
+              </div>
+            </div>
+            <!---->
+             
+            <hr
+              class="my-4"
+            />
+             
+            <div
+              class="mt-4 flex items-start gap-2 text-xs"
+            >
+              <div
+                class="h-max rounded-lg bg-neutral-100 p-1"
+              >
+                <svg
+                  class="fill-neutral-700"
+                  height="1.3rem"
+                  role="img"
+                  viewBox="0 -960 960 960"
+                  width="1.3rem"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <!---->
+                  <path
+                    d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z"
+                    xmlns="http://www.w3.org/2000/svg"
+                  />
+                  
+                  <!---->
+                </svg>
+                <!---->
+              </div>
+              <!---->
+               
+              <div
+                class="flex w-full flex-col flex-wrap bg-white"
+              >
+                <div
+                  class="flex items-start justify-between"
+                >
+                  <h3
+                    class="uppercase text-neutral-500"
+                  >
+                    Questions Answered
+                  </h3>
+                   
+                  <!---->
+                </div>
+                 
+                <p>
+                  100% (4/4)
+                </p>
+                <!---->
+              </div>
+            </div>
+            <!---->
+          </div>
+          <!---->
+        </div>
+        <!---->
+      </div>
+       
+      <div
+        class="col-span-12 md:col-span-9"
+      >
+        <div
+          class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+          data-testid="panel-component"
+        >
+          <article>
+            <h2
+              class="text-sm"
+            >
+              Responses to Consultation Questions
+            </h2>
+             
+            <p
+              class="text-sm text-neutral-500"
+            >
+              All responses submitted by this respondent, ordered by question
+              number
+            </p>
+             
+            <!---->
+             
+            <ul>
+              <div>
+                <div
+                  class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+                  data-testid="panel-component"
+                >
+                  <article>
+                    <header
+                      class="mb-4 flex flex-col-reverse items-start justify-between gap-2 gap-y-4 md:flex-row"
+                    >
+                      <a
+                        class="svelte-blsmte"
+                        href="/consultations/test-consultation/questions/5e8176da-fdcd-4f55-ab7b-b2ca8a12a467"
+                      >
+                        <div
+                          class="flex items-start gap-2"
+                        >
+                          <div
+                            class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-blsmte"
+                          >
+                            Q1
+                          </div>
+                           
+                          <h3
+                            class="text-xs text-neutral-500 transition-colors mt-0.5 svelte-blsmte"
+                          >
+                            Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?
+                          </h3>
+                        </div>
+                      </a>
+                       
+                      <div
+                        class="whitespace-nowrap"
+                      >
+                        <!---->
+                      </div>
+                    </header>
+                     
+                    <div>
+                      <h4
+                        class="mb-1 mt-4 text-xs uppercase text-neutral-500"
+                      >
+                        Multiple Choice Response:
+                      </h4>
+                       
+                      <ul
+                        class="flex flex-wrap items-center gap-1"
+                      >
+                        <li
+                          class="text-xs"
+                        >
+                          Yes
+                        </li>
+                        
+                      </ul>
+                    </div>
+                    <!---->
+                     
+                    <div>
+                      <h4
+                        class="mb-1 mt-4 text-xs uppercase text-neutral-500"
+                      >
+                        Additional Comments:
+                      </h4>
+                      <!---->
+                       
+                      <p
+                        class="text-sm"
+                      >
+                        
+                      </p>
+                    </div>
+                     
+                    <!---->
+                  </article>
+                  <!---->
+                </div>
+                <!---->
+              </div>
+              <div>
+                <div
+                  class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+                  data-testid="panel-component"
+                >
+                  <article>
+                    <header
+                      class="mb-4 flex flex-col-reverse items-start justify-between gap-2 gap-y-4 md:flex-row"
+                    >
+                      <a
+                        class="svelte-blsmte"
+                        href="/consultations/test-consultation/questions/ef855675-af2b-4cfe-871d-ad108360e57a"
+                      >
+                        <div
+                          class="flex items-start gap-2"
+                        >
+                          <div
+                            class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-blsmte"
+                          >
+                            Q2
+                          </div>
+                           
+                          <h3
+                            class="text-xs text-neutral-500 transition-colors mt-0.5 svelte-blsmte"
+                          >
+                            Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?
+                          </h3>
+                        </div>
+                      </a>
+                       
+                      <div
+                        class="whitespace-nowrap"
+                      >
+                        <!---->
+                      </div>
+                    </header>
+                     
+                    <div>
+                      <h4
+                        class="mb-1 mt-4 text-xs uppercase text-neutral-500"
+                      >
+                        Multiple Choice Response:
+                      </h4>
+                       
+                      <ul
+                        class="flex flex-wrap items-center gap-1"
+                      >
+                        <li
+                          class="text-xs"
+                        >
+                          No
+                        </li>
+                        
+                      </ul>
+                    </div>
+                    <!---->
+                     
+                    <div>
+                      <h4
+                        class="mb-1 mt-4 text-xs uppercase text-neutral-500"
+                      >
+                        Additional Comments:
+                      </h4>
+                      <!---->
+                       
+                      <p
+                        class="text-sm"
+                      >
+                        
+                      </p>
+                    </div>
+                     
+                    <!---->
+                  </article>
+                  <!---->
+                </div>
+                <!---->
+              </div>
+              <div>
+                <div
+                  class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+                  data-testid="panel-component"
+                >
+                  <article>
+                    <header
+                      class="mb-4 flex flex-col-reverse items-start justify-between gap-2 gap-y-4 md:flex-row"
+                    >
+                      <a
+                        class="svelte-blsmte"
+                        href="/consultations/test-consultation/questions/92848794-2072-41c4-b3bf-78248a6995da"
+                      >
+                        <div
+                          class="flex items-start gap-2"
+                        >
+                          <div
+                            class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-blsmte"
+                          >
+                            Q3
+                          </div>
+                           
+                          <h3
+                            class="text-xs text-neutral-500 transition-colors mt-0.5 svelte-blsmte"
+                          >
+                            Which of the following factors do you believe are important when considering the packaging of chocolate bars? Please select all that apply: a) Sustainability, b) Design, c) Cost-effectiveness, d) Durability, e) Brand recognition.
+                          </h3>
+                        </div>
+                      </a>
+                       
+                      <div
+                        class="whitespace-nowrap"
+                      >
+                        <!---->
+                      </div>
+                    </header>
+                     
+                    <div>
+                      <h4
+                        class="mb-1 mt-4 text-xs uppercase text-neutral-500"
+                      >
+                        Multiple Choice Response:
+                      </h4>
+                       
+                      <ul
+                        class="flex flex-wrap items-center gap-1"
+                      >
+                        <li
+                          class="text-xs"
+                        >
+                          Brand recognition
+                        </li>
+                        <li
+                          class="text-xs"
+                        >
+                          Design
+                        </li>
+                        <li
+                          class="text-xs"
+                        >
+                          Cost-effectiveness
+                        </li>
+                        
+                      </ul>
+                    </div>
+                    <!---->
+                     
+                    <div>
+                      <h4
+                        class="mb-1 mt-4 text-xs uppercase text-neutral-500"
+                      >
+                        Additional Comments:
+                      </h4>
+                      <!---->
+                       
+                      <p
+                        class="text-sm"
+                      >
+                        
+                      </p>
+                    </div>
+                     
+                    <!---->
+                  </article>
+                  <!---->
+                </div>
+                <!---->
+              </div>
+              <div>
+                <div
+                  class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+                  data-testid="panel-component"
+                >
+                  <article>
+                    <header
+                      class="mb-4 flex flex-col-reverse items-start justify-between gap-2 gap-y-4 md:flex-row"
+                    >
+                      <a
+                        class="svelte-blsmte"
+                        href="/consultations/test-consultation/questions/b20f35ee-411b-4746-9029-1e9b02610dea"
+                      >
+                        <div
+                          class="flex items-start gap-2"
+                        >
+                          <div
+                            class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-blsmte"
+                          >
+                            Q4
+                          </div>
+                           
+                          <h3
+                            class="text-xs text-neutral-500 transition-colors mt-0.5 svelte-blsmte"
+                          >
+                            What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?
+                          </h3>
+                        </div>
+                      </a>
+                       
+                      <div
+                        class="whitespace-nowrap"
+                      >
+                        <!---->
+                      </div>
+                    </header>
+                     
+                    <!---->
+                     
+                    <div>
+                      <!---->
+                       
+                      <p
+                        class="text-sm"
+                      >
+                        It would be beneficial to include mandatory allergen warnings on all packaging to enhance consumer safety.
+                      </p>
+                    </div>
+                     
+                    <!---->
+                  </article>
+                  <!---->
+                </div>
+                <!---->
+              </div>
+              
+            </ul>
+          </article>
+          <!---->
+        </div>
+        <!---->
+      </div>
+    </div>
+  </section>
+  
+</div>
+`;
+
+exports[`RespondentDetail > should match snapshot initially 1`] = `
+<div>
+  <section>
+    <div
+      class="flex items-center justify-center md:justify-between flex-wrap gap-4 mb-4"
+    >
+      <div
+        class="flex items-center gap-4"
+      >
+        <div
+          class="m-auto"
+        >
+          <!---->
+          <button
+            aria-pressed="false"
+            class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-variant="ghost"
+            role="button"
+            tabindex="0"
+          >
+            <!---->
+            <!---->
+            <div
+              class="rotate-180"
+            >
+              <svg
+                class="fill-neutral-700"
+                height="1rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <span>
+              Back to Analysis
+            </span>
+            
+            
+            
+          </button>
+          
+          <!---->
+        </div>
+         
+        <h1
+          class="text-center text-lg font-bold"
+        >
+          Respondent 1
+        </h1>
+      </div>
+       
+      <div
+        class="flex items-center gap-4"
+      >
+        <!---->
+        <!---->
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+          data-variant="default"
+          disabled=""
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          <div
+            class="rotate-180"
+          >
+            <svg
+              class="fill-neutral-700"
+              height="1rem"
+              role="img"
+              viewBox="0 -960 960 960"
+              width="1rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <span
+            class="my-[0.1rem] mr-2"
+          >
+            Previous Respondent
+          </span>
+          
+          
+          
+        </button>
+        
+        <!---->
+         
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+          data-variant="default"
+          disabled=""
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          <span
+            class="my-[0.1rem] ml-2"
+          >
+            Next Respondent
+          </span>
+           
+          <svg
+            class="fill-neutral-700"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
+          <!---->
+          
+          
+          
+        </button>
+        
+        <!---->
+        
+        <!---->
+      </div>
+    </div>
+    <!---->
+     
+    <div
+      class="grid grid-cols-12 gap-4"
+    >
+      <div
+        class="col-span-12 h-max md:sticky md:top-4 md:col-span-3"
+      >
+        <div
+          class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+          data-testid="panel-component"
+        >
+          <div
+            class="mb-6 flex items-center gap-2"
+          >
+            <svg
+              class="fill-neutral-700"
+              height="1.5rem"
+              role="img"
+              viewBox="0 -960 960 960"
+              width="1.5rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              <!---->
+            </svg>
+            <!---->
+             
+            <h2
+              class="text-sm"
+            >
+              Respondent Demographics
+            </h2>
+          </div>
+           
+          <div
+            class="pl-4"
+          >
+            <!---->
+             
+            <div
+              class="mt-4 flex items-start gap-2 text-xs"
+            >
+              <!---->
+               
+              <div
+                class="flex w-full flex-col flex-wrap bg-white"
+              >
+                <div
+                  class="flex items-start justify-between"
+                >
+                  <h3
+                    class="uppercase text-neutral-500"
+                  >
+                    Stakeholder Name
+                  </h3>
+                   
+                  <div
+                    class="-mt-1"
+                  >
+                    <!---->
+                    <button
+                      aria-pressed="false"
+                      class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      data-testid="edit-button"
+                      data-variant="ghost"
+                      role="button"
+                      tabindex="0"
+                    >
+                      <!---->
+                      <!---->
+                      <svg
+                        class="fill-neutral-700"
+                        height="1rem"
+                        role="img"
+                        viewBox="0 -960 960 960"
+                        width="1rem"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"
+                        />
+                        <!---->
+                      </svg>
+                      
+                      
+                      
+                    </button>
+                    
+                    <!---->
+                  </div>
+                  <!---->
+                </div>
+                 
+                <p
+                  class="text-neutral-400"
+                >
+                  
+                </p>
+                <!---->
+              </div>
+            </div>
+            <!---->
+             
+            <hr
+              class="my-4"
+            />
+             
+            <div
+              class="mt-4 flex items-start gap-2 text-xs"
+            >
+              <div
+                class="h-max rounded-lg bg-neutral-100 p-1"
+              >
+                <svg
+                  class="fill-neutral-700"
+                  height="1.3rem"
+                  role="img"
+                  viewBox="0 -960 960 960"
+                  width="1.3rem"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <!---->
+                  <path
+                    d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z"
+                    xmlns="http://www.w3.org/2000/svg"
+                  />
+                  
+                  <!---->
+                </svg>
+                <!---->
+              </div>
+              <!---->
+               
+              <div
+                class="flex w-full flex-col flex-wrap bg-white"
+              >
+                <div
+                  class="flex items-start justify-between"
+                >
+                  <h3
+                    class="uppercase text-neutral-500"
+                  >
+                    Questions Answered
+                  </h3>
+                   
+                  <!---->
+                </div>
+                 
+                <p>
+                  0% (0/0)
+                </p>
+                <!---->
+              </div>
+            </div>
+            <!---->
+          </div>
+          <!---->
+        </div>
+        <!---->
+      </div>
+       
+      <div
+        class="col-span-12 md:col-span-9"
+      >
+        <div
+          class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+          data-testid="panel-component"
+        >
+          <article>
+            <h2
+              class="text-sm"
+            >
+              Responses to Consultation Questions
+            </h2>
+             
+            <p
+              class="text-sm text-neutral-500"
+            >
+              All responses submitted by this respondent, ordered by question
+              number
+            </p>
+             
+            <div
+              class="my-8"
+            >
+              <div
+                class="animate-spin ease-in-out w-max m-auto"
+                style="animation-timing-function: ease-in-out;"
+              >
+                <svg
+                  class="fill-neutral-300"
+                  height="5rem"
+                  role="img"
+                  viewBox="0 -960 960 960"
+                  width="5rem"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M480-80q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-83 31.5-155.5t86-127Q252-817 325-848.5T480-880q17 0 28.5 11.5T520-840q0 17-11.5 28.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-17 11.5-28.5T840-520q17 0 28.5 11.5T880-480q0 82-31.5 155t-86 127.5q-54.5 54.5-127 86T480-80Z"
+                    xmlns="http://www.w3.org/2000/svg"
+                  />
+                  <!---->
+                </svg>
+                <!---->
+              </div>
+              <!---->
+               
+              <p
+                class="text-center text-neutral-500"
+              >
+                Loading Answers...
+              </p>
+            </div>
+            <!---->
+             
+            <ul>
+              
+            </ul>
+          </article>
+          <!---->
+        </div>
+        <!---->
+      </div>
+    </div>
+  </section>
+  
+</div>
+`;

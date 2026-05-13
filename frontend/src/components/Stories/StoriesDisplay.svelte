@@ -42,7 +42,7 @@
   });
 
   let componentProps: unknown = $derived.by(() => {
-    let props: unknown = {};
+    let props: Record<string, unknown> = {};
     currStory?.props.forEach((prop) => {
       props[prop.name] = prop.value;
     });

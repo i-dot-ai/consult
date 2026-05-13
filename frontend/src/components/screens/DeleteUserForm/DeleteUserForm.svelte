@@ -3,11 +3,11 @@
 
   import { slide } from "svelte/transition";
 
-  import { getApiUserDetails, Routes } from "../../global/routes";
+  import { getApiUserDetails, Routes } from "../../../global/routes";
 
-  import Button from "../inputs/Button/Button.svelte";
-  import Text from "../Text/Text.svelte";
-  import type { User } from "../../global/types";
+  import Button from "../../inputs/Button/Button.svelte";
+  import Text from "../../Text/Text.svelte";
+  import type { User } from "../../../global/types";
 
   let sending: boolean = $state(false);
   let errors: Record<string, string> = $state({});
@@ -18,7 +18,9 @@
 
   let { user }: Props = $props();
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: MouseEvent) => {
+    e.preventDefault();
+
     errors = {};
     sending = true;
     try {

@@ -35,6 +35,14 @@ import EditUserStory from "../screens/EditUserForm/EditUserStory.svelte";
 import ConsultationAnalysisStory from "../screens/ConsultationAnalysis/ConsultationAnalysisStory.svelte";
 import ThemeSignOffDetailCompletedStory from "../screens/ThemeSignOffDetailCompleted/ThemeSignOffDetailCompletedStory.svelte";
 import AddUserFormStory from "../screens/AddUserForm/AddUserFormStory.svelte";
+import RespondentDetailStory from "../screens/RespondentDetail/RespondentDetailStory.svelte";
+import DeleteUserStory from "../screens/DeleteUserForm/DeleteUserStory.svelte";
+import FindThemesFormStory from "../screens/FindThemesForm/FindThemesFormStory.svelte";
+import AssignThemesFormStory from "../screens/AssignThemesForm/AssignThemesFormStory.svelte";
+import QuestionDetailStory from "../screens/QuestionDetail/QuestionDetailStory.svelte";
+import ThemeSignOffArchiveStory from "../screens/ThemeSignOffArchive/ThemeSignOffArchiveStory.svelte";
+import ThemeSelectionFormStory from "../screens/ThemeSelectionForm/ThemeSelectionFormStory.svelte";
+import QuestionsReviewListStorySvelte from "../screens/QuestionsReviewList/QuestionsReviewListStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -96,4 +104,12 @@ export default [
   ConsultationAnalysisStory,
   ThemeSignOffDetailCompletedStory,
   AddUserFormStory,
+  RespondentDetailStory,
+  DeleteUserStory,
+  FindThemesFormStory,
+  AssignThemesFormStory,
+  QuestionDetailStory,
+  ThemeSignOffArchiveStory,
+  ThemeSelectionFormStory,
+  QuestionsReviewListStorySvelte,
 ] as Story[];

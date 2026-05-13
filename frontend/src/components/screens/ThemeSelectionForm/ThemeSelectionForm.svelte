@@ -7,37 +7,47 @@
     getApiQuestionResponse,
     getApiShowNextResponse,
     getResponseDetailUrl,
-  } from "../../global/routes";
+  } from "../../../global/routes";
 
   import type {
-    QuestionResponseResponse,
     ResponseTheme,
-    ResponseThemeInformation,
     ShowNextResponseResult,
-  } from "../../global/types";
-  import Button from "../inputs/Button/Button.svelte";
-  import Checkbox from "../inputs/Checkbox/Checkbox.svelte";
+  } from "../../../global/types";
+  import Button from "../../inputs/Button/Button.svelte";
+  import Checkbox from "../../inputs/Checkbox/Checkbox.svelte";
 
-  let sending: boolean = false;
-  let errors: Record<string, string> = {};
+  interface Props {
+    allThemes: ResponseTheme[];
+    selectedThemes: ResponseTheme[];
+    responseId: string;
+    consultationId: string;
+    questionId: string;
+  }
 
-  export let themes: ResponseThemeInformation;
-  export let response: QuestionResponseResponse;
-  export let consultationId: string;
-  export let questionId: string;
+  const {
+    allThemes,
+    selectedThemes,
+    responseId,
+    consultationId,
+    questionId,
+  }: Props = $props();
 
-  let selectedThemes: ResponseTheme[] = themes.selected_themes;
+  let ownSelectedThemes = $state(selectedThemes);
+  let sending: boolean = $state(false);
+  let errors: Record<string, string> = $state({});
 
   const setSelectedThemes = (checked: boolean, value?: string) => {
     if (!value) return;
 
     if (checked) {
-      const themeToAdd = themes.all_themes.find((theme) => theme.id === value);
+      const themeToAdd = allThemes.find((theme) => theme.id === value);
       if (themeToAdd && !selectedThemes.some((theme) => theme.id === value)) {
-        selectedThemes = [...selectedThemes, themeToAdd];
+        ownSelectedThemes = [...ownSelectedThemes, themeToAdd];
       }
     } else {
-      selectedThemes = selectedThemes.filter((theme) => theme.id !== value);
+      ownSelectedThemes = ownSelectedThemes.filter(
+        (theme) => theme.id !== value,
+      );
     }
   };
 
@@ -81,7 +91,7 @@
 
     try {
       const updateResponse = await fetch(
-        getApiQuestionResponse(consultationId, questionId, response.id),
+        getApiQuestionResponse(consultationId, questionId, responseId),
         {
           method: "PATCH",
           headers: {
@@ -123,7 +133,10 @@
 <div class="rounded-xl border border-gray-200 bg-white p-6">
   <form
     class={clsx(["flex", "flex-col", "gap-4"])}
-    on:submit|preventDefault={handleSubmit}
+    onsubmit={(e) => {
+      e.preventDefault();
+      handleSubmit();
+    }}
   >
     {#if "general" in errors}
       <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
@@ -131,7 +144,7 @@
       </small>
     {/if}
     <div class="space-y-3">
-      {#each themes.all_themes as theme (theme.id)}
+      {#each allThemes as theme (theme.id)}
         <div
           class="rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
         >

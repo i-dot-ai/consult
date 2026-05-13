@@ -1,12 +1,12 @@
 <script lang="ts">
-  import type { Question, ShowNextResponseResult } from "../../global/types";
+  import type { Question, ShowNextResponseResult } from "../../../global/types";
   import {
     getApiShowNextResponse,
     getResponseDetailUrl,
-  } from "../../global/routes";
-  import MaterialIcon from "../MaterialIcon.svelte";
-  import Visibility from "../svg/material/Visibility.svelte";
-  import Button from "../inputs/Button/Button.svelte";
+  } from "../../../global/routes";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import Visibility from "../../svg/material/Visibility.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
 
   export let consultationId: string;
   export let questions: Question[] = [];

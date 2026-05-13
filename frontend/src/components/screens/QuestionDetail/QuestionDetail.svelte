@@ -4,16 +4,16 @@
   import { onMount, untrack } from "svelte";
   import { SvelteURLSearchParams } from "svelte/reactivity";
 
-  import MaterialIcon from "../MaterialIcon.svelte";
-  import Button from "../inputs/Button/Button.svelte";
-  import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
-  import TabView from "../TabView/TabView.svelte";
-  import QuestionSummary from "../dashboard/QuestionSummary/QuestionSummary.svelte";
-  import ResponseAnalysis from "../dashboard/ResponseAnalysis/ResponseAnalysis.svelte";
-  import Alert from "../Alert.svelte";
-  import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
-  import Lan from "../svg/material/Lan.svelte";
-  import Finance from "../svg/material/Finance.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
+  import QuestionCard from "../../dashboard/QuestionCard/QuestionCard.svelte";
+  import TabView from "../../TabView/TabView.svelte";
+  import QuestionSummary from "../../dashboard/QuestionSummary/QuestionSummary.svelte";
+  import ResponseAnalysis from "../../dashboard/ResponseAnalysis/ResponseAnalysis.svelte";
+  import Alert from "../../Alert.svelte";
+  import KeyboardArrowDown from "../../svg/material/KeyboardArrowDown.svelte";
+  import Lan from "../../svg/material/Lan.svelte";
+  import Finance from "../../svg/material/Finance.svelte";
 
   import {
     getApiConsultationUrl,
@@ -22,9 +22,9 @@
     getApiQuestionThemesUrl,
     getApiQuestionUrl,
     getConsultationDetailUrl,
-  } from "../../global/routes.ts";
+  } from "../../../global/routes.ts";
 
-  import { createFetchStore } from "../../global/stores.ts";
+  import { createFetchStore } from "../../../global/stores.ts";
   import {
     SearchModeValues,
     TabNames,
@@ -38,13 +38,13 @@
     type Question,
     type ResponseAnswer,
     type ThemeInfoResponse,
-  } from "../../global/types.ts";
+  } from "../../../global/types.ts";
   import {
     themeFilters,
     demoFilters,
     multiAnswerFilters,
-  } from "../../global/state.svelte.ts";
-  import Panel from "../dashboard/Panel/Panel.svelte";
+  } from "../../../global/state.svelte.ts";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
 
   interface QueryFilters {
     searchValue: string;
