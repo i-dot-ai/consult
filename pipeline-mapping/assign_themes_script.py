@@ -252,8 +252,6 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
             except Exception:
                 logger.exception("Error processing %s", question_dir)
                 skipped_questions.append(question_dir)
-                if sentry_dsn:
-                    sentry_sdk.capture_exception()
     if skipped_questions:
         logger.warning("Skipped questions: %s", skipped_questions)
     return str(Path(consultation_dir) / "outputs" / "mapping" / date)

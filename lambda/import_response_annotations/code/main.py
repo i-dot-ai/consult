@@ -90,6 +90,4 @@ def lambda_handler(event, _context):
         error_msg = f"Failed to enqueue response annotations import job: {str(e)}"
         logger.error(f"ERROR: {error_msg}")
         logger.error(f"Exception type: {type(e).__name__}")
-        if sentry_dsn:
-            sentry_sdk.capture_exception(e)
         raise
