@@ -76,20 +76,19 @@ jobs:
 
   # Compares the per-service git SHA computed in set-vars against the currently
   # deployed tag stored in SSM Parameter Store. Only services whose tag has changed
-  # are included in the deploy_matrix.
+  # are included in the outputs.
   #
-  # Each changed service is expanded into one entry per Terraform target using
-  # service-config.json (e.g. backend maps to both module.backend and module.worker).
-  # The first target per service is marked primary=true; the rest primary=false.
-  # This lets build-images and update-ssm-image-tags run once per service while
-  # deploy-containers runs once per Terraform target.
+  # services_matrix: one entry per changed service — used by build-images and update-ssm-image-tags.
+  # targets_matrix:  one entry per Terraform target — used by deploy-containers
+  #                  (e.g. backend expands to module.backend and module.worker).
   filter-services:
     runs-on: ${{ needs.start-runner.outputs.label }}
     needs:
       - set-vars
       - start-runner
     outputs:
-      deploy_matrix: ${{ steps.filter.outputs.deploy_matrix }}
+      services_matrix: ${{ steps.filter.outputs.services_matrix }}
+      targets_matrix: ${{ steps.filter.outputs.targets_matrix }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -98,10 +97,11 @@ jobs:
         id: filter
         run: |
           config=$(cat .github/service-config.json)
-          deploy_entries='[]'
+          services_entries='[]'
+          targets_entries='[]'
 
-          # Process substitution avoids a pipe subshell so deploy_entries
-          # accumulates correctly across iterations
+          # Process substitution avoids a pipe subshell so entries
+          # accumulate correctly across iterations
           while read row; do
             service=$(echo $row | jq -r '.service')
             new_tag=$(echo $row | jq -r '.tag')
@@ -113,23 +113,22 @@ jobs:
               --output text 2>/dev/null || echo "")
 
             if [[ "$new_tag" != "$current_tag" ]]; then
-              # Expand each service into one entry per Terraform target.
-              # to_entries gives index+value pairs so .key == 0 marks the first target as primary.
-              deploy_entries=$(echo $deploy_entries | jq -c --arg s "$service" --arg t "$new_tag" \
+              services_entries=$(echo $services_entries | jq -c --arg s "$service" --arg t "$new_tag" \
+                '. + [{"service": $s, "tag": $t}]')
+              targets_entries=$(echo $targets_entries | jq -c --arg s "$service" --arg t "$new_tag" \
                 --argjson config "$config" \
-                '. + ($config[$s] | to_entries | map({"service": $s, "tag": $t, "target": .value, "primary": (.key == 0)}))')
+                '. + ($config[$s] | map({"service": $s, "tag": $t, "target": .}))')
             fi
           done < <(echo '${{ needs.set-vars.outputs.service_matrix }}' | jq -c '.[]')
 
-          echo "deploy_matrix=$deploy_entries" >> $GITHUB_OUTPUT
+          echo "services_matrix=$services_entries" >> $GITHUB_OUTPUT
+          echo "targets_matrix=$targets_entries" >> $GITHUB_OUTPUT
 
-  # Only builds images for primary entries (one per service) to avoid building
-  # the same image multiple times when a service maps to more than one Terraform target
   build-images:
-    if: ${{ needs.filter-services.outputs.deploy_matrix != '[]' && matrix.object.primary }}
+    if: ${{ needs.filter-services.outputs.services_matrix != '[]' }}
     strategy:
       matrix:
-        object: ${{ fromJson(needs.filter-services.outputs.deploy_matrix) }}
+        object: ${{ fromJson(needs.filter-services.outputs.services_matrix) }}
     needs:
       - set-vars
       - start-runner
@@ -150,15 +149,14 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
-  # Updates SSM with the new image tag for each changed service. Runs only for
-  # primary entries so each service's parameter is written exactly once,
+  # Updates SSM with the new image tag for each changed service, once per service,
   # before Terraform reads it during deploy-containers.
   update-ssm-image-tags:
-    if: ${{ needs.filter-services.outputs.deploy_matrix != '[]' && matrix.object.primary }}
+    if: ${{ needs.filter-services.outputs.services_matrix != '[]' }}
     runs-on: ${{ needs.start-runner.outputs.label }}
     strategy:
       matrix:
-        object: ${{ fromJson(needs.filter-services.outputs.deploy_matrix) }}
+        object: ${{ fromJson(needs.filter-services.outputs.services_matrix) }}
     needs:
       - set-vars
       - start-runner
@@ -173,14 +171,14 @@ jobs:
             --type String \
             --overwrite
 
-  # Runs terraform apply -target=<target> for every entry in the deploy matrix.
+  # Runs terraform apply -target=<target> for every entry in the targets matrix.
   # Terraform reads the updated image tags from SSM (written by update-ssm-image-tags)
   # so only task definitions whose tag has changed will be updated in ECS.
   deploy-containers:
-    if: ${{ needs.filter-services.outputs.deploy_matrix != '[]' }}
+    if: ${{ needs.filter-services.outputs.targets_matrix != '[]' }}
     strategy:
       matrix:
-        object: ${{ fromJson(needs.filter-services.outputs.deploy_matrix) }}
+        object: ${{ fromJson(needs.filter-services.outputs.targets_matrix) }}
     needs:
       - set-vars
       - start-runner
