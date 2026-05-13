@@ -1,7 +1,7 @@
 <script lang="ts">
   import Switch from "../../inputs/Switch/Switch.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
-  import RespondentAnswer from "./RespondentAnswer.svelte";
+  import RespondentResponse from "./RespondentResponse.svelte";
 
   let consultationId = $state("123");
   let questionId = $state("456");
@@ -16,7 +16,7 @@
   let evidenceRich = $state(true);
 </script>
 
-<RespondentAnswer
+<RespondentResponse
   {consultationId}
   {questionId}
   {questionTitle}

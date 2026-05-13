@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
-import RespondentAnswer from "./RespondentAnswer.svelte";
+import RespondentResponse from "./RespondentResponse.svelte";
 
-describe("RespondentAnswer", () => {
+describe("RespondentResponse", () => {
   const testData = {
     consultationId: "123",
     questionId: "456",
@@ -18,7 +18,7 @@ describe("RespondentAnswer", () => {
   };
 
   it("should render data", () => {
-    render(RespondentAnswer, {
+    render(RespondentResponse, {
       ...testData,
     });
 
@@ -36,7 +36,7 @@ describe("RespondentAnswer", () => {
 
   it("should not fail if no themes presenet", () => {
     expect(() => {
-      render(RespondentAnswer, {
+      render(RespondentResponse, {
         ...testData,
         themes: [],
       });
@@ -44,7 +44,7 @@ describe("RespondentAnswer", () => {
   });
 
   it("should not render evidence rich tag if not evidence rich", () => {
-    render(RespondentAnswer, {
+    render(RespondentResponse, {
       ...testData,
       evidenceRich: false,
     });

@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/svelte";
 
-import ThemeSignOffArchive from "./ThemeSignOffArchive.svelte";
+import FinalisingThemeArchive from "./FinalisingThemeArchive.svelte";
 import fetchMock from "fetch-mock";
 import { queryClient } from "../../../global/queryClient";
 import { mockRoute } from "../../../global/utils";
+import { getFinaliseThemesUrl } from "../../../global/routes";
 import {
   CONSULTATION_ID,
   consultationMock,
@@ -29,7 +30,7 @@ function clearMocks() {
   queryClient.resetQueries();
 }
 
-describe("ThemeSignOffArchive", () => {
+describe("FinalisingThemeArchive", () => {
   beforeEach(() => {
     clearMocks();
   });
@@ -39,7 +40,7 @@ describe("ThemeSignOffArchive", () => {
     async (question) => {
       setupMocks();
 
-      render(ThemeSignOffArchive, {
+      render(FinalisingThemeArchive, {
         consultationId: CONSULTATION_ID,
       });
 
@@ -55,7 +56,7 @@ describe("ThemeSignOffArchive", () => {
     mockRoute(consultationMock);
     mockRoute(questionsAllSignedOffMock);
 
-    render(ThemeSignOffArchive, {
+    render(FinalisingThemeArchive, {
       consultationId: CONSULTATION_ID,
     });
 
@@ -68,14 +69,15 @@ describe("ThemeSignOffArchive", () => {
 
   it("should trigger mapping if confirm button is pressed", async () => {
     const mockedUpdate = {
-      ...consultationUpdateMock,
-      body: vi.fn(),
+      url: getFinaliseThemesUrl(CONSULTATION_ID),
+      method: "PATCH",
+      body: vi.fn(() => ({ ...consultationMock.body, stage: "theme_mapping" })),
     };
     mockRoute(consultationMock);
     mockRoute(questionsAllSignedOffMock);
     mockRoute(mockedUpdate);
 
-    render(ThemeSignOffArchive, {
+    render(FinalisingThemeArchive, {
       consultationId: CONSULTATION_ID,
     });
 
@@ -114,7 +116,7 @@ describe("ThemeSignOffArchive", () => {
     });
     mockRoute(questionsAllSignedOffMock);
 
-    render(ThemeSignOffArchive, {
+    render(FinalisingThemeArchive, {
       consultationId: CONSULTATION_ID,
     });
 
@@ -133,7 +135,7 @@ describe("ThemeSignOffArchive", () => {
     });
     mockRoute(questionsAllSignedOffMock);
 
-    render(ThemeSignOffArchive, {
+    render(FinalisingThemeArchive, {
       consultationId: CONSULTATION_ID,
     });
 
@@ -152,7 +154,7 @@ describe("ThemeSignOffArchive", () => {
     });
     mockRoute(questionsMock);
 
-    render(ThemeSignOffArchive, {
+    render(FinalisingThemeArchive, {
       consultationId: CONSULTATION_ID,
     });
 
@@ -171,7 +173,7 @@ describe("ThemeSignOffArchive", () => {
     });
     mockRoute(questionsAllSignedOffMock);
 
-    render(ThemeSignOffArchive, {
+    render(FinalisingThemeArchive, {
       consultationId: CONSULTATION_ID,
     });
 
@@ -183,7 +185,7 @@ describe("ThemeSignOffArchive", () => {
   it("should match snapshot initially", () => {
     setupMocks();
 
-    const { container } = render(ThemeSignOffArchive, {
+    const { container } = render(FinalisingThemeArchive, {
       consultationId: CONSULTATION_ID,
     });
     expect(container).toMatchSnapshot();
@@ -192,7 +194,7 @@ describe("ThemeSignOffArchive", () => {
   it("should match snapshot after loading", async () => {
     setupMocks();
 
-    const { container } = render(ThemeSignOffArchive, {
+    const { container } = render(FinalisingThemeArchive, {
       consultationId: CONSULTATION_ID,
     });
 

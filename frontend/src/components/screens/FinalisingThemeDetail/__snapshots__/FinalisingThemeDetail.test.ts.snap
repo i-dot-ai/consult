@@ -146,7 +146,7 @@ exports[`EditUser > should match snapshot after loading 1`] = `
   </section>
    
   <section
-    class="selected-section my-4 p-4 bg-pink-50/25 rounded-xl border border-pink-100 svelte-fjeq1z"
+    class="selected-section my-4 p-4 bg-pink-50/25 rounded-xl border border-pink-100 svelte-t6w6nt"
   >
     <div
       class="mb-4"
@@ -202,7 +202,7 @@ exports[`EditUser > should match snapshot after loading 1`] = `
             <!---->
             <!---->
             <span
-              class="flex items-center justify-between text-primary svelte-fjeq1z"
+              class="flex items-center justify-between text-primary svelte-t6w6nt"
             >
               + Add Custom Theme
             </span>
@@ -422,10 +422,10 @@ exports[`EditUser > should match snapshot after loading 1`] = `
   <!---->
    
   <div
-    class="relative w-full my-8 after:w-full after:border-b after:absolute after:left-0 after:right-0 after:bottom-1/2 after:-z-10 svelte-fjeq1z"
+    class="relative w-full my-8 after:w-full after:border-b after:absolute after:left-0 after:right-0 after:bottom-1/2 after:-z-10 svelte-t6w6nt"
   >
     <p
-      class="m-auto w-max bg-white px-4 text-sm text-neutral-500 svelte-fjeq1z"
+      class="m-auto w-max bg-white px-4 text-sm text-neutral-500 svelte-t6w6nt"
     >
       Browse AI Generated Themes
     </p>
@@ -678,7 +678,7 @@ exports[`EditUser > should match snapshot initially 1`] = `
   </section>
    
   <section
-    class="selected-section my-4 p-4 bg-pink-50/25 rounded-xl border border-pink-100 svelte-fjeq1z"
+    class="selected-section my-4 p-4 bg-pink-50/25 rounded-xl border border-pink-100 svelte-t6w6nt"
   >
     <div
       class="mb-4"
@@ -734,7 +734,7 @@ exports[`EditUser > should match snapshot initially 1`] = `
             <!---->
             <!---->
             <span
-              class="flex items-center justify-between text-primary svelte-fjeq1z"
+              class="flex items-center justify-between text-primary svelte-t6w6nt"
             >
               + Add Custom Theme
             </span>
@@ -820,10 +820,10 @@ exports[`EditUser > should match snapshot initially 1`] = `
   <!---->
    
   <div
-    class="relative w-full my-8 after:w-full after:border-b after:absolute after:left-0 after:right-0 after:bottom-1/2 after:-z-10 svelte-fjeq1z"
+    class="relative w-full my-8 after:w-full after:border-b after:absolute after:left-0 after:right-0 after:bottom-1/2 after:-z-10 svelte-t6w6nt"
   >
     <p
-      class="m-auto w-max bg-white px-4 text-sm text-neutral-500 svelte-fjeq1z"
+      class="m-auto w-max bg-white px-4 text-sm text-neutral-500 svelte-t6w6nt"
     >
       Browse AI Generated Themes
     </p>

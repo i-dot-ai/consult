@@ -5,14 +5,14 @@ import {
   selectedThemeEmptyMock,
   selectedThemesMock,
 } from "./mocks";
-import ThemeSignOffDetailCompleted from "./FinalisingThemeDetailCompleted.svelte";
+import FinalisingThemeDetailCompleted from "./FinalisingThemeDetailCompleted.svelte";
 
 const consultationId = $state(CONSULTATION_ID);
 const questionId = $state(QUESTION_ID);
 
 export default {
-  name: "ThemeSignOffDetailCompleted",
-  component: ThemeSignOffDetailCompleted,
+  name: "FinalisingThemeDetailCompleted",
+  component: FinalisingThemeDetailCompleted,
   category: "Screens",
   mocks: [questionMock, selectedThemesMock],
   props: [

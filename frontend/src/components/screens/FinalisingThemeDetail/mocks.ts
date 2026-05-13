@@ -278,7 +278,7 @@ export const candidateThemesGetMock = {
   }),
 };
 
-export const answersGetMock = {
+export const responsesGetMock = {
   regexp:
     "*host" +
     getApiCandidateThemeResponsesUrl(CONSULTATION_ID, QUESTION_ID, ":themeId"),

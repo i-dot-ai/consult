@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
-import AnswerCard from "./AnswerCard.svelte";
+import ResponseCard from "./ResponseCard.svelte";
 
-describe("AnswerCard", () => {
+describe("ResponseCard", () => {
   const testData = {
     consultationId: "consultation-id",
     answerId: "answer-id",
@@ -20,7 +20,7 @@ describe("AnswerCard", () => {
   };
 
   it("should render data", () => {
-    render(AnswerCard, {
+    render(ResponseCard, {
       ...testData,
     });
 
@@ -41,7 +41,7 @@ describe("AnswerCard", () => {
   });
 
   it("should not render data if skeleton", async () => {
-    render(AnswerCard, {
+    render(ResponseCard, {
       ...testData,
       skeleton: true,
     });
@@ -64,7 +64,7 @@ describe("AnswerCard", () => {
 
   it("should highlight text if passed", async () => {
     const HIGHLIGHT_TEXT = "answer";
-    render(AnswerCard, {
+    render(ResponseCard, {
       ...testData,
       highlightText: HIGHLIGHT_TEXT,
     });

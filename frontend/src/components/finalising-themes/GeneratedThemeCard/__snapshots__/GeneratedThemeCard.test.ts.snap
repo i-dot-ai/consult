@@ -3,7 +3,7 @@
 exports[`GeneratedThemeCard > should render 1`] = `
 <div>
   <div
-    class="generated-theme-card svelte-2iwj05"
+    class="generated-theme-card svelte-ptevz"
     style="margin-left: 0rem;"
   >
     <div
@@ -14,7 +14,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
         class="flex flex-wrap sm:flex-nowrap"
       >
         <div
-          class="transition-all duration-300 w-auto md:w-auto svelte-2iwj05"
+          class="transition-all duration-300 w-auto md:w-auto svelte-ptevz"
         >
           <div
             class="mb-2 flex items-center justify-between"

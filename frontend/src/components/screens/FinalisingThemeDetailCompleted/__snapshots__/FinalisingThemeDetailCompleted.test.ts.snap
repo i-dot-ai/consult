@@ -52,7 +52,7 @@ exports[`FinalisingThemeDetailCompleted > should match snapshot after loading 1`
       <p
         class="text-neutral-600 text-md"
       >
-        Finalise themes to use for AI to map responses to
+        Finalise themes to use for AI to assign responses to
       </p>
       <!---->
     </div>
@@ -395,7 +395,7 @@ exports[`FinalisingThemeDetailCompleted > should match snapshot initially 1`] = 
       <p
         class="text-neutral-600 text-md"
       >
-        Finalise themes to use for AI to map responses to
+        Finalise themes to use for AI to assign responses to
       </p>
       <!---->
     </div>

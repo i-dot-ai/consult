@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`ThemeSignOffArchive > should match snapshot after loading 1`] = `
+exports[`FinalisingThemeArchive > should match snapshot after loading 1`] = `
 <div>
   <!---->
   <div
@@ -851,7 +851,7 @@ exports[`ThemeSignOffArchive > should match snapshot after loading 1`] = `
 </div>
 `;
 
-exports[`ThemeSignOffArchive > should match snapshot initially 1`] = `
+exports[`FinalisingThemeArchive > should match snapshot initially 1`] = `
 <div>
   <!---->
   <div

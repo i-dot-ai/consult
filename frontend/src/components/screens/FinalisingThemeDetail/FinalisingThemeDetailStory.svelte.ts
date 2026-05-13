@@ -1,4 +1,4 @@
-import ThemeSignOffDetail from "./FinalisingThemeDetail.svelte";
+import FinalisingThemeDetail from "./FinalisingThemeDetail.svelte";
 import {
   candidateThemesGetMock,
   questionMock,
@@ -9,15 +9,15 @@ import {
   selectedThemesCreateMock,
   selectedThemesEditMock,
   selectedThemesDeleteMock,
-  answersGetMock,
+  responsesGetMock,
 } from "./mocks";
 
 const consultationId = $state("test-consultation");
 const questionId = $state("test-question");
 
 export default {
-  name: "ThemeSignOffDetail",
-  component: ThemeSignOffDetail,
+  name: "FinalisingThemeDetail",
+  component: FinalisingThemeDetail,
   category: "Screens",
   mocks: [
     questionMock,
@@ -27,7 +27,7 @@ export default {
     selectedThemesCreateMock,
     selectedThemesEditMock,
     selectedThemesDeleteMock,
-    answersGetMock,
+    responsesGetMock,
   ],
   props: [
     { name: "consultationId", value: consultationId, type: "text" },
@@ -48,7 +48,7 @@ export default {
         selectedThemesCreateMock,
         selectedThemesEditMock,
         selectedThemesDeleteMock,
-        answersGetMock,
+        responsesGetMock,
       ],
       props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
     },
@@ -66,7 +66,7 @@ export default {
         selectedThemesCreateMock,
         selectedThemesEditMock,
         selectedThemesDeleteMock,
-        answersGetMock,
+        responsesGetMock,
       ],
       props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
     },
@@ -89,7 +89,7 @@ export default {
           },
         },
         selectedThemesDeleteMock,
-        answersGetMock,
+        responsesGetMock,
       ],
       props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
     },
@@ -107,7 +107,7 @@ export default {
           body: undefined,
         },
         selectedThemesDeleteMock,
-        answersGetMock,
+        responsesGetMock,
       ],
       props: { consultationId: CONSULTATION_ID, questionId: QUESTION_ID },
     },

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { render, screen, waitFor } from "@testing-library/svelte";
 
-import ThemeSignOffDetail from "./ThemeSignOffDetail.svelte";
+import FinalisingThemeDetail from "./FinalisingThemeDetail.svelte";
 import fetchMock from "fetch-mock";
 import { queryClient } from "../../../global/queryClient";
 import { mockRoute } from "../../../global/utils";
@@ -16,7 +16,7 @@ import {
   selectedThemesEditMock,
   selectedThemesDeleteMock,
   flatten,
-  answersGetMock,
+  responsesGetMock,
 } from "./mocks";
 import userEvent from "@testing-library/user-event";
 
@@ -28,7 +28,7 @@ const mocks = {
   selectedThemesCreateMock,
   selectedThemesEditMock,
   selectedThemesDeleteMock,
-  answersGetMock,
+  responsesGetMock,
 };
 
 function setupMocks() {
@@ -50,7 +50,7 @@ describe("EditUser", () => {
     async (selectedTheme) => {
       setupMocks();
 
-      render(ThemeSignOffDetail, {
+      render(FinalisingThemeDetail, {
         consultationId: CONSULTATION_ID,
         questionId: QUESTION_ID,
       });
@@ -66,7 +66,7 @@ describe("EditUser", () => {
     async (candidateTheme) => {
       setupMocks();
 
-      render(ThemeSignOffDetail, {
+      render(FinalisingThemeDetail, {
         consultationId: CONSULTATION_ID,
         questionId: QUESTION_ID,
       });
@@ -92,7 +92,7 @@ describe("EditUser", () => {
       },
     }).forEach((mock) => mockRoute(mock));
 
-    render(ThemeSignOffDetail, {
+    render(FinalisingThemeDetail, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });
@@ -137,7 +137,7 @@ describe("EditUser", () => {
       },
     }).forEach((mock) => mockRoute(mock));
 
-    render(ThemeSignOffDetail, {
+    render(FinalisingThemeDetail, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });
@@ -173,7 +173,7 @@ describe("EditUser", () => {
   it("should update selected theme details", async () => {
     setupMocks();
 
-    render(ThemeSignOffDetail, {
+    render(FinalisingThemeDetail, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });
@@ -214,7 +214,7 @@ describe("EditUser", () => {
   it("should match snapshot initially", () => {
     setupMocks();
 
-    const { container } = render(ThemeSignOffDetail, {
+    const { container } = render(FinalisingThemeDetail, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });
@@ -224,7 +224,7 @@ describe("EditUser", () => {
   it("should match snapshot after loading", async () => {
     setupMocks();
 
-    const { container } = render(ThemeSignOffDetail, {
+    const { container } = render(FinalisingThemeDetail, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });
