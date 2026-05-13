@@ -24,7 +24,6 @@ from consultations.api.serializers import (
     ConsultationSetupSerializer,
     DemographicOptionSerializer,
 )
-from consultations.dummy_data import create_dummy_consultation_from_yaml
 from consultations.models import (
     Consultation,
     DemographicOption,
@@ -32,6 +31,10 @@ from consultations.models import (
 )
 from consultations.models import (
     Response as ConsultationResponse,
+)
+from consultations.test_support.load_test_fixtures import (
+    create_data_from_fixtures,
+    delete_data_from_fixtures,
 )
 from data_pipeline import jobs
 from data_pipeline.sync.candidate_themes import export_candidate_themes_to_s3
@@ -557,15 +560,15 @@ class ConsultationViewSet(ModelViewSet):
     @action(
         detail=False,
         methods=["post"],
-        url_path="generate-test-consultation",
+        url_path="create-test-data",
         permission_classes=[IsAdminUser],
     )
-    def generate_test_consultations(self, request) -> Response:
+    def create_test_data(self, request) -> Response:
         """
-        Add dummy test consultation data
-        URL: /api/consultations/generate-test-consultations
+        Add dummy test data from fixtures
+        URL: /api/consultations/create-test-data
 
-        Only permitted in development environments
+        Only permitted in local and test environments
         """
 
         if HostingEnvironment.is_deployed():
@@ -574,30 +577,41 @@ class ConsultationViewSet(ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        try:
-            logger.info("Generating dummy consultations...")
-            consultation_sign_off = create_dummy_consultation_from_yaml(
-                number_respondents=5, consultation_stage="theme_sign_off"
-            )
-            consultation_sign_off.users.add(request.user)
-            consultation_analysis = create_dummy_consultation_from_yaml(
-                number_respondents=5, consultation_stage="analysis"
-            )
-            consultation_analysis.users.add(request.user)
+        if fixtures := request.data.get("fixtures", []):
+            created_fixtures = create_data_from_fixtures(fixtures)
 
-        except Exception as e:
-            return Response(
-                {"error": f"An error occurred generating example consultations: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return Response(created_fixtures)
 
         return Response(
-            {
-                "message": "Successfully added example consultations",
-                "consultations": {
-                    "sign_off": consultation_sign_off.id,
-                    "analysis": consultation_analysis.id,
-                },
-            },
-            status=status.HTTP_200_OK,
+            {"error": "No fixture data provided"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="delete-test-data",
+        permission_classes=[IsAdminUser],
+    )
+    def delete_test_data(self, request) -> Response:
+        """
+        Delete dummy test consultation data from fixtures
+        URL: /api/consultations/delete-test-data
+
+        Only permitted in local and test environments
+        """
+
+        if HostingEnvironment.is_deployed():
+            return Response(
+                {"error": "This endpoint is only for use in automated testing"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if fixtures := request.data.get("fixtures", []):
+            delete_data_from_fixtures(fixtures)
+            return Response()
+
+        return Response(
+            {"error": "No fixture data provided"},
+            status=status.HTTP_400_BAD_REQUEST,
         )
