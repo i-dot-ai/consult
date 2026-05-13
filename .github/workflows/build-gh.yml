@@ -1,6 +1,8 @@
 name: build
 on:
   push:
+    branches:
+      - '**'
 
 jobs:
   set-vars:
@@ -66,7 +68,7 @@ jobs:
       - set-vars
       - start-runner
     permissions: write-all
-    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-docker.yml@main
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-docker.yml@grajamanoharan/con-264-deploy-consult-container-services-independently
     with:
       APP_NAME: ${{ needs.set-vars.outputs.app-name }}
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
@@ -74,6 +76,7 @@ jobs:
       DOCKER_BUILD_INSTANCE: ${{ needs.set-vars.outputs.docker-build-instance }}
       SERVICE: ${{ matrix.object.service }}
       COMMIT_HASH: ${{ matrix.object.tag }}
+      PUSH_IMAGE: false
       USE_OIDC: true
     secrets:
       AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT}}
