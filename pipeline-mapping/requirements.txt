@@ -1,3 +1,4 @@
 # Pin themefinder to specific version for reproducibility
 # Update this version when you want to deploy themefinder changes
 themefinder>=0.8.2
+sentry-sdk==2.59.0
