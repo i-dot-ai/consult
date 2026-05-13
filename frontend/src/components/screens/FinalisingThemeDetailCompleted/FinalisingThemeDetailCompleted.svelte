@@ -8,7 +8,7 @@
   import {
     getApiGetSelectedThemesUrl,
     getApiQuestionUrl,
-    getThemeSignOffUrl,
+    getFinaliseThemesUrl,
     Routes,
   } from "../../../global/routes";
   import type { Question, SelectedThemesResponse } from "../../../global/types";
@@ -97,7 +97,7 @@
     <Button
       variant="ghost"
       size="sm"
-      handleClick={() => (location.href = getThemeSignOffUrl(consultationId))}
+      handleClick={() => (location.href = getFinaliseThemesUrl(consultationId))}
     >
       <div class="flex items-center gap-2 text-neutral-700">
         <div class="rotate-180">
@@ -261,7 +261,7 @@
         <Button
           size="sm"
           handleClick={() =>
-            (location.href = getThemeSignOffUrl(consultationId))}
+            (location.href = getFinaliseThemesUrl(consultationId))}
         >
           Select Another Question
         </Button>

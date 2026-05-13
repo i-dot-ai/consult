@@ -3,7 +3,7 @@
 
   import { fly } from "svelte/transition";
 
-  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import Panel from "../Panel/Panel.svelte";
   import Tag from "../../Tag/Tag.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Diamond from "../../svg/material/Diamond.svelte";
@@ -15,7 +15,7 @@
     questionTitle: string;
     questionNumber: number;
     responseText: string;
-    multiChoice: string[];
+    multiChoice?: string[];
     themes: string[];
     evidenceRich: boolean;
     delay?: number;

@@ -14,8 +14,8 @@ function isConsultationSubUrl(url: string): boolean {
   const consultationUrlRe = /\/consultations\/.*\S.*/;
   return consultationUrlRe.test(url);
 }
-function isThemeSignOffUrl(url: string): boolean {
-  return url.includes(Suffixes.ThemeSignOff);
+function isFinalisingThemeUrl(url: string): boolean {
+  return url.includes(Suffixes.FinaliseThemes);
 }
 function isEvaluationsUrl(url: string): boolean {
   return url.startsWith(Routes.Evaluations);
@@ -25,7 +25,8 @@ function isDashboardUrl(url: string): boolean {
     return false;
   }
   return (
-    url.includes(Suffixes.Consultations) && !url.includes(Suffixes.ThemeSignOff)
+    url.includes(Suffixes.Consultations) &&
+    !url.includes(Suffixes.FinaliseThemes)
   );
 }
 function getPathText(url: string, consultation?: Consultation): string[] {
@@ -35,7 +36,7 @@ function getPathText(url: string, consultation?: Consultation): string[] {
     parts.push(consultation.title);
   }
 
-  if (isThemeSignOffUrl(url)) {
+  if (isFinalisingThemeUrl(url)) {
     parts.push("Finalising Themes");
   } else if (isDashboardUrl(url)) {
     parts.push("Dashboard");

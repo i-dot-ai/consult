@@ -17,7 +17,7 @@
   import Visibility from "../../svg/material/Visibility.svelte";
   import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
   import Tag from "../../Tag/Tag.svelte";
-  import ResponsesList from "../ReponsesList/ResponsesList.svelte";
+  import ResponsesList from "../ResponsesList/ResponsesList.svelte";
   import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
 
   export interface Props {

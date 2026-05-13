@@ -12,7 +12,7 @@
     getApiQuestionUrl,
     getApiSelectGeneratedThemeUrl,
     getApiUpdateSelectedThemeUrl,
-    getThemeSignOffUrl,
+    getFinaliseThemesUrl,
   } from "../../../global/routes";
 
   import {
@@ -27,10 +27,10 @@
   import Button from "../../inputs/Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Price from "../../svg/material/Price.svelte";
-  import ThemeForm from "../../theme-sign-off/ThemeForm/ThemeForm.svelte";
+  import ThemeForm from "../../finalising-themes/ThemeForm/ThemeForm.svelte";
   import QuestionCard from "../../dashboard/QuestionCard/QuestionCard.svelte";
-  import SelectedThemeCard from "../../theme-sign-off/SelectedThemeCard/SelectedThemeCard.svelte";
-  import GeneratedThemeCard from "../../theme-sign-off/GeneratedThemeCard/GeneratedThemeCard.svelte";
+  import SelectedThemeCard from "../../finalising-themes/SelectedThemeCard/SelectedThemeCard.svelte";
+  import GeneratedThemeCard from "../../finalising-themes/GeneratedThemeCard/GeneratedThemeCard.svelte";
   import CheckCircle from "../../svg/material/CheckCircle.svelte";
   import OnboardingTour from "../../OnboardingTour/OnboardingTour.svelte";
   import SmartToy from "../../svg/material/SmartToy.svelte";
@@ -42,7 +42,7 @@
   import EditSquare from "../../svg/material/EditSquare.svelte";
   import ErrorModal, {
     type ErrorType,
-  } from "../../theme-sign-off/ErrorModal/ErrorModal.svelte";
+  } from "../../finalising-themes/ErrorModal/ErrorModal.svelte";
   import {
     buildSelectedThemeCreateQuery,
     buildSelectedThemeDeleteQuery,
@@ -266,7 +266,7 @@
       isConfirmSignOffModalOpen = false;
       errorData = { type: "unexpected" };
     } else {
-      location.replace(getThemeSignOffUrl(consultationId));
+      location.replace(getFinaliseThemesUrl(consultationId));
     }
   };
   const numSelectedThemesText = (themes?: Array<SelectedTheme>): string => {
@@ -317,7 +317,7 @@
   <div slot="aside">
     <Button
       size="xs"
-      handleClick={() => (location.href = getThemeSignOffUrl(consultationId))}
+      handleClick={() => (location.href = getFinaliseThemesUrl(consultationId))}
     >
       <span class="p-1"> Choose another question </span>
     </Button>
@@ -631,7 +631,7 @@
 
 <svelte:boundary>
   <OnboardingTour
-    key="theme-sign-off"
+    key="finalising-themes"
     steps={[
       {
         id: "onboarding-step-1",

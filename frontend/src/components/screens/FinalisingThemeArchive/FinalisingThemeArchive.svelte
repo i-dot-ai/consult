@@ -7,7 +7,7 @@
   import {
     getApiConsultationUrl,
     getApiQuestionsUrl,
-    getThemeSignOffDetailUrl,
+    getFinaliseThemesUrl,
     Routes,
   } from "../../../global/routes.ts";
   import { createFetchStore } from "../../../global/stores.ts";
@@ -16,7 +16,6 @@
     type Question,
     type QuestionsResponse,
   } from "../../../global/types.ts";
-
   import Tag from "../../Tag/Tag.svelte";
   import Modal from "../../Modal/Modal.svelte";
   import Alert from "../../Alert.svelte";
@@ -26,8 +25,7 @@
   import TitleRow from "../../dashboard/TitleRow.svelte";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import QuestionCard from "../../dashboard/QuestionCard/QuestionCard.svelte";
-  import ConsultationStagePanel from "../../theme-sign-off/ConsultationStagePanel/ConsultationStagePanel.svelte";
-
+  import ConsultationStagePanel from "../../finalising-themes/ConsultationStagePanel/ConsultationStagePanel.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Checklist from "../../svg/material/Checklist.svelte";
   import Warning from "../../svg/material/Warning.svelte";
@@ -89,7 +87,7 @@
 
 <TitleRow
   level={1}
-  context="theme-sign-off"
+  context="finalising-themes"
   title="Finalise Themes"
   subtitle="Finalise themes to use for AI to map responses to"
 >
@@ -118,7 +116,7 @@
         setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
         handleConfirm={async () => {
           await $consultationUpdateStore.fetch(
-            getApiConsultationUrl(consultationId),
+            getFinaliseThemesUrl(consultationId),
             "PATCH",
             {
               stage: "theme_mapping",
@@ -247,10 +245,7 @@
                   highlightText={searchValue}
                   clickable={question.has_free_text}
                   disabled={!question.has_free_text}
-                  url={getThemeSignOffDetailUrl(
-                    consultationId,
-                    question.id || "",
-                  )}
+                  url={getFinaliseThemesUrl(consultationId)}
                   subtext={!question.has_free_text
                     ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
                     : undefined}
@@ -296,7 +291,7 @@
     {@render onboardingBodyItem(
       1,
       "Choose a Question",
-      "Select any consultation question to start working with themes AI has found",
+      "Select any consultation question to start working with AI-generated themes",
       true,
     )}
     {@render onboardingBodyItem(
@@ -346,7 +341,7 @@
 
 <svelte:boundary>
   <OnboardingTour
-    key="theme-sign-off-archive"
+    key="finalising-themes-archive"
     steps={[
       {
         id: "onboarding-step-1",

@@ -3,7 +3,11 @@
 
   import { fade, fly } from "svelte/transition";
 
-  import type { ResponsesBody, SelectedTheme } from "../../../global/types";
+  import type {
+    ResponsesBody,
+    ResponseBody,
+    SelectedTheme,
+  } from "../../../global/types";
   import { createFetchStore, type MockFetch } from "../../../global/stores";
   import {
     formatTimeDeltaText,
@@ -16,7 +20,7 @@
   import Delete from "../../svg/material/Delete.svelte";
   import EditSquare from "../../svg/material/EditSquare.svelte";
   import ThemeForm from "../ThemeForm/ThemeForm.svelte";
-  import ResponsesList from "../ReponsesList/ResponsesList.svelte";
+  import ResponsesList from "../ResponsesList/ResponsesList.svelte";
   import Tag from "../../Tag/Tag.svelte";
 
   export interface Props {
@@ -155,7 +159,9 @@
                 loading={$responsesStore.isLoading}
                 responses={$responsesStore.data?.all_respondents
                   ?.slice(0, maxResponses)
-                  .map((response) => response.free_text_answer_text) || []}
+                  .map(
+                    (response: ResponseBody) => response.free_text_answer_text,
+                  ) || []}
               />
             </aside>
           {/if}

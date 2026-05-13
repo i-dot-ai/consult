@@ -5,7 +5,7 @@ import {
   selectedThemeEmptyMock,
   selectedThemesMock,
 } from "./mocks";
-import ThemeSignOffDetailCompleted from "./ThemeSignOffDetailCompleted.svelte";
+import ThemeSignOffDetailCompleted from "./FinalisingThemeDetailCompleted.svelte";
 
 const consultationId = $state(CONSULTATION_ID);
 const questionId = $state(QUESTION_ID);

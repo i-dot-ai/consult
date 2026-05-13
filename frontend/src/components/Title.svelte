@@ -8,7 +8,7 @@
     level?: TitleLevels;
     weight?: "light" | "normal" | "bold";
     maxChars?: number;
-    context?: "dashboard" | "public" | "theme-sign-off";
+    context?: "dashboard" | "public" | "finalising-themes";
   } & (
     | { text: string; children?: never }
     | { text?: never; children?: Snippet }
@@ -43,7 +43,7 @@
     weight === "bold" && "font-bold",
     weight === "light" && "font-light",
     level === 1 && context === "dashboard" && "text-xl",
-    level === 1 && context === "theme-sign-off" && "text-2xl",
+    level === 1 && context === "finalising-themes" && "text-2xl",
     level === 2 && "text-lg",
     level === 3 && "text-md",
     level === 4 && "text-sm",

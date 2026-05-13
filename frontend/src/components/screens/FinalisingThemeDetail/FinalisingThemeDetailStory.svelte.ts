@@ -1,4 +1,4 @@
-import ThemeSignOffDetail from "./ThemeSignOffDetail.svelte";
+import ThemeSignOffDetail from "./FinalisingThemeDetail.svelte";
 import {
   candidateThemesGetMock,
   questionMock,
