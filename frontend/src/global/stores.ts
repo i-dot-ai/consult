@@ -80,6 +80,7 @@ export const createFetchStore = <T>({
   });
 
   let prevPromise: Promise<void> | null = null;
+  let prevUrl: string;
   let resolvePrev: (() => void) | null = null;
   let debouncedFetch: ReturnType<typeof debounce> | null = null;
 
@@ -93,7 +94,7 @@ export const createFetchStore = <T>({
     // even though it awaits debounce timeout
     store.update((store) => ({ ...store, isLoading: true, error: "" }));
 
-    if (!debouncedFetch) {
+    if (!debouncedFetch || (prevUrl && prevUrl !== url)) {
       debouncedFetch = debounce(async () => {
         try {
           if (mockFetch) {
@@ -150,6 +151,8 @@ export const createFetchStore = <T>({
 
       debouncedFetch!();
     });
+
+    prevUrl = url;
 
     return prevPromise;
   };
