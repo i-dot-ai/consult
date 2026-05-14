@@ -143,7 +143,7 @@
               0} questions
           </li>
           <li class="mb-2">
-            Map responses to your selected themes using AI analysis
+            Assign responses to your selected themes using AI analysis
           </li>
           <li class="mb-2">Incur computational costs for the AI processing</li>
           <li class="mb-2">
@@ -296,7 +296,7 @@
     {@render onboardingBodyItem(
       1,
       "Choose a Question",
-      "Select any consultation question to start working with its AI-generated themes",
+      "Select any consultation question to start working with themes AI has found",
       true,
     )}
     {@render onboardingBodyItem(

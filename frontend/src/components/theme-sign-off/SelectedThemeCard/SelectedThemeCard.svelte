@@ -3,7 +3,7 @@
 
   import { fade, fly } from "svelte/transition";
 
-  import type { AnswersResponse, SelectedTheme } from "../../../global/types";
+  import type { ResponsesBody, SelectedTheme } from "../../../global/types";
   import { createFetchStore, type MockFetch } from "../../../global/stores";
   import {
     formatTimeDeltaText,
@@ -16,7 +16,7 @@
   import Delete from "../../svg/material/Delete.svelte";
   import EditSquare from "../../svg/material/EditSquare.svelte";
   import ThemeForm from "../ThemeForm/ThemeForm.svelte";
-  import AnswersList from "../AnswersList/AnswersList.svelte";
+  import ResponsesList from "../ReponsesList/ResponsesList.svelte";
   import Tag from "../../Tag/Tag.svelte";
 
   export interface Props {
@@ -25,27 +25,27 @@
     theme: SelectedTheme;
     removeTheme: (themeId: string) => void;
     updateTheme: (themeId: string, title: string, description: string) => void;
-    maxAnswers?: number;
-    answersMock?: MockFetch;
+    maxResponses?: number;
+    responsesMock?: MockFetch<ResponsesBody>;
   }
 
   let {
     theme,
     removeTheme = () => {},
     updateTheme = () => {},
-    maxAnswers = 50,
-    answersMock,
+    maxResponses = 50,
+    responsesMock,
   }: Props = $props();
 
-  const answersStore = createFetchStore<AnswersResponse>({
-    mockFetch: answersMock,
+  const responsesStore = createFetchStore<ResponsesBody>({
+    mockFetch: responsesMock,
   });
 
   let showAnswers = $state(false);
   let editing = $state(false);
 
   const resetAnswers = () => {
-    $answersStore.data = null;
+    $responsesStore.data = null;
     showAnswers = false;
   };
 </script>
@@ -150,12 +150,12 @@
               transition:fly={{ x: 300 }}
               class="grow pt-4 sm:ml-4 sm:w-2/3 sm:border-l sm:border-neutral-200 sm:pl-4 sm:pt-0"
             >
-              <AnswersList
+              <ResponsesList
                 title="Representative Responses"
-                loading={$answersStore.isLoading}
-                answers={$answersStore.data?.all_respondents
-                  ?.slice(0, maxAnswers)
-                  .map((answer) => answer.free_text_answer_text) || []}
+                loading={$responsesStore.isLoading}
+                responses={$responsesStore.data?.all_respondents
+                  ?.slice(0, maxResponses)
+                  .map((response) => response.free_text_answer_text) || []}
               />
             </aside>
           {/if}

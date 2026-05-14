@@ -11,7 +11,7 @@ import DemoFilterStory from "../DemoFilter/DemoFilterStory.svelte";
 import RespondentSidebarItemStory from "../dashboard/RespondentSidebarItem/RespondentSidebarItemStory.svelte";
 import ThemeFormStory from "../theme-sign-off/ThemeForm/ThemeFormStory.svelte";
 import SelectedThemeCardStory from "../theme-sign-off/SelectedThemeCard/SelectedThemeCardStory.svelte";
-import AnswersListStory from "../theme-sign-off/AnswersList/AnswersListStory.svelte";
+import AnswersListStory from "../theme-sign-off/ReponsesList/ResponsesListStory.svelte";
 import GeneratedThemeCardStory from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCardStory.svelte";
 import ThemeSignoffDetailStory from "../screens/ThemeSignOffDetail/ThemeSignOffDetailStory.svelte";
 import NavigationHeaderStory from "../navigation/Header/HeaderStory.svelte";

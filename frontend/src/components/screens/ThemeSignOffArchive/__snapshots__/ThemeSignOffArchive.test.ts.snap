@@ -175,7 +175,7 @@ exports[`ThemeSignOffArchive > should match snapshot after loading 1`] = `
               <h3
                 class="text-xs"
               >
-                AI Theme Mapping
+                Assigning Themes (AI)
               </h3>
             </div>
             <!---->

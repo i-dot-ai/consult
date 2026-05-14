@@ -13,10 +13,10 @@ const leftPadding = $state(1);
 const handleSelect = (theme: GeneratedTheme) =>
   alert(`Select theme event triggered with: ${theme.name}`);
 
-const answersMock = () => ({
+const responsesMock = () => ({
   all_respondents: [
-    { free_text_answer_text: "Answer 1" },
-    { free_text_answer_text: "Answer 2" },
+    { free_text_response: "Answer 1" },
+    { free_text_response: "Answer 2" },
   ],
 });
 
@@ -47,8 +47,8 @@ export default {
       schema: `(theme: GeneratedTheme) => void`,
     },
     {
-      name: "answersMock",
-      value: answersMock,
+      name: "responsesMock",
+      value: responsesMock,
     },
   ],
   stories: [
@@ -76,7 +76,7 @@ export default {
           ],
         },
         handleSelect: handleSelect,
-        answersMock: answersMock,
+        responsesMock: responsesMock,
       },
     },
     {
@@ -89,7 +89,7 @@ export default {
           description: "Theme level 1",
         },
         handleSelect: handleSelect,
-        answersMock: () => {},
+        responsesMock: () => {},
       },
     },
     {
@@ -104,7 +104,7 @@ export default {
           selectedtheme_id: "test-theme-id",
         },
         handleSelect: handleSelect,
-        answersMock: () => {},
+        responsesMock: () => {},
       },
     },
   ],

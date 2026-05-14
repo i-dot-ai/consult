@@ -310,7 +310,7 @@
 <TitleRow
   level={1}
   title="Finalise Themes"
-  subtitle="Finalise themes to use for AI to map responses to"
+  subtitle="Finalise themes to use for AI to assign responses to"
 >
   <Price slot="icon" />
 
@@ -383,11 +383,11 @@
           {#if (selectedThemes.query.data?.results?.length ?? 0) > 0}
             Manage your {numSelectedThemesText(
               selectedThemes.query.data?.results,
-            )} for the AI in mapping responses. Edit titles and descriptions, or
+            )} for the AI in assigning responses. Edit titles and descriptions, or
             add new themes as needed.
           {:else}
-            Finalise the themes for the AI to map responses to. Choose from the
-            AI generated themes or add new.
+            Finalise the themes for the AI to assign responses to. Choose from
+            the AI found themes or add new.
           {/if}
         </p>
       </Panel>
@@ -417,7 +417,7 @@
 
         <h3 class="text-md text-neutral-500">No themes selected yet</h3>
         <p class="text-xs text-neutral-500">
-          Select themes from the AI-generated suggestions below
+          Select themes from the AI-found suggestions below
         </p>
       </div>
     {:else}
@@ -469,7 +469,7 @@
       icon={CheckCircle}
       open={isConfirmSignOffModalOpen}
       setOpen={(newOpen: boolean) => (isConfirmSignOffModalOpen = newOpen)}
-      confirmText="Confirm Finalising Themes"
+      confirmText="Confirm Finalisation"
       handleConfirm={confirmSignOff}
     >
       <p class="text-sm text-neutral-500">
@@ -636,7 +636,7 @@
       {
         id: "onboarding-step-1",
         title: "Select Themes",
-        body: `Browse the AI-generated themes and click "Select Theme" to move them to your selected themes list. You can view example responses for each theme to understand what types of consultation responses it represents.`,
+        body: `Browse the AI-found themes and click "Select Theme" to move them to your selected themes list. You can view example responses for each theme to understand what types of consultation responses it represents.`,
         icon: Target,
       },
       {

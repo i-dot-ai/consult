@@ -9,7 +9,7 @@
     "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
   );
   let questionNumber = $state(1);
-  let answerText = $state(
+  let responseText = $state(
     "I agree in principle, but I think the guidelines should include a provision for periodic review to adapt to market changes.",
   );
   let themes = $state(["Innovation", "Standardized framework"]);
@@ -21,7 +21,7 @@
   {questionId}
   {questionTitle}
   {questionNumber}
-  {answerText}
+  {responseText}
   {themes}
   {evidenceRich}
 />
@@ -57,10 +57,10 @@
 />
 
 <TextInput
-  id="input-answer-text"
-  label="Answer Text"
-  value={answerText}
-  setValue={(newValue) => (answerText = newValue)}
+  id="input-response-text"
+  label="Response Text"
+  value={responseText}
+  setValue={(newValue) => (responseText = newValue)}
 />
 
 <TextInput

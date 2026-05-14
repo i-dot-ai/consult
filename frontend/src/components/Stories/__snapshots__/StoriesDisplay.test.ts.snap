@@ -117,9 +117,9 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           <li>
             <a
               class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
-              href="/stories?selected=AnswersList"
+              href="/stories?selected=ResponsesList"
             >
-              AnswersList
+              ResponsesList
             </a>
           </li>
           <li>

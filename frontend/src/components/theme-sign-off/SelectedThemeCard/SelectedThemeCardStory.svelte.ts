@@ -5,7 +5,7 @@ const theme = $state({
   name: "Theme Name",
   description: "Theme description",
 });
-const answers = $state(["Answer 1", "Answer 2"]);
+const responses = $state(["response 1", "response 2"]);
 const removeTheme = $state((themeId: string) =>
   alert(`Remove theme event triggered with: ${themeId}`),
 );
@@ -24,8 +24,8 @@ export default {
       type: "json",
     },
     {
-      name: "answers",
-      value: answers,
+      name: "responses",
+      value: responses,
       type: "json",
     },
     {

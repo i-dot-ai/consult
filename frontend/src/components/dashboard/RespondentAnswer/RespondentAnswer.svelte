@@ -14,7 +14,7 @@
     questionId: string;
     questionTitle: string;
     questionNumber: number;
-    answerText: string;
+    responseText: string;
     multiChoice: string[];
     themes: string[];
     evidenceRich: boolean;
@@ -26,7 +26,7 @@
     questionId = "",
     questionTitle = "",
     questionNumber = 0,
-    answerText = "",
+    responseText = "",
     multiChoice = [],
     themes = [],
     evidenceRich = false,
@@ -106,7 +106,7 @@
           </h4>
         {/if}
         <p class="text-sm">
-          {answerText}
+          {responseText}
         </p>
       </div>
 

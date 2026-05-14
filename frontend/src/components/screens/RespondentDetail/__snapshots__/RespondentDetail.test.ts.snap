@@ -1038,7 +1038,7 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
               <p
                 class="text-center text-neutral-500"
               >
-                Loading Answers...
+                Loading Responses...
               </p>
             </div>
             <!---->
