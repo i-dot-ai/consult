@@ -107,10 +107,12 @@ jobs:
             new_tag=$(echo $row | jq -r '.tag')
 
             # Falls back to empty string if the parameter doesn't exist yet (first deploy)
+            ssm_name="/i-dot-ai-${{ needs.set-vars.outputs.environment }}-consult/pipeline_secrets/${service}/IMAGE_TAG"
+            echo "querying SSM: ${ssm_name}"
             current_tag=$(aws ssm get-parameter \
-              --name "/i-dot-ai-${{ needs.set-vars.outputs.environment }}-consult/pipeline_secrets/${service}/IMAGE_TAG" \
+              --name "${ssm_name}" \
               --query "Parameter.Value" \
-              --output text 2>/dev/null || echo "")
+              --output text 2>&1) && echo "SSM result: ${current_tag}" || { echo "SSM error: ${current_tag}"; current_tag=""; }
 
             echo "service=${service} new_tag=${new_tag} current_tag=${current_tag} match=$([[ "$new_tag" == "$current_tag" ]] && echo yes || echo no)"
             if [[ "$new_tag" != "$current_tag" ]]; then
