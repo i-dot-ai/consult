@@ -7,7 +7,7 @@
     { name: "Country", value: "England" },
     { name: "Age", value: "25-35" },
   ];
-  let stakeholderName: string = $state("Test stakeholder");
+  let stakeholderName: string | null = $state("Test stakeholder");
   let questionsAnswered: number = $state(8);
   let totalQuestions: number = $state(10);
 </script>
@@ -26,7 +26,7 @@
 <TextInput
   id="input-stakeholderName"
   label="Stakeholder Name"
-  value={stakeholderName}
+  value={stakeholderName || ""}
   setValue={(newValue) => (stakeholderName = newValue)}
 />
 

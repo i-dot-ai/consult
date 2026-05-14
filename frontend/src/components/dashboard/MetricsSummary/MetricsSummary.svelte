@@ -19,7 +19,8 @@
   <div class="my-2 flex w-full items-center justify-between gap-4">
     <div class="flex items-center">
       <MaterialIcon color="fill-neutral-500">
-        <svelte:component this={icon} />
+        {@const Component = { icon }}
+        <Component.icon />
       </MaterialIcon>
 
       <span class="ml-2 text-sm text-neutral-700">

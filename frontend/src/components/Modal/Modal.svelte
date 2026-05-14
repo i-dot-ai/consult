@@ -95,7 +95,8 @@
       <div class="mb-2 flex items-center gap-2">
         {#if icon}
           <MaterialIcon color={getIconColor()} size="1.3rem">
-            <svelte:component this={icon} />
+            {@const Component = { icon }}
+            <Component.icon />
           </MaterialIcon>
         {/if}
         <h3

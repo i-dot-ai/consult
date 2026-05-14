@@ -310,13 +310,15 @@ export type HttpMethod =
   | "HEAD"
   | "OPTIONS";
 
+export type MockCallbackArgs = RequestInit & { url: string; params: unknown };
+
 export interface Mock {
+  name?: string;
   url?: string | RegExp;
   regexp?: string;
   body?: unknown;
   status?: number;
   method?: string;
   throws?: Error;
-  name?: string;
-  callback?: (args: RequestInit | { url: string; params: unknown }) => void;
+  callback?: (args: MockCallbackArgs) => void;
 }

@@ -2,6 +2,7 @@
   // Using melt-ui switch
   // Docs: https://www.melt-ui.com/docs/builders/switch
 
+  import type { Snippet } from "svelte";
   import clsx from "clsx";
 
   import { createSwitch, melt } from "@melt-ui/svelte";
@@ -12,6 +13,7 @@
     hideLabel?: boolean;
     value: boolean;
     handleChange: (newValue: boolean) => void;
+    labelSnippet?: Snippet;
   }
 
   let {
@@ -20,6 +22,7 @@
     hideLabel = false,
     value = false,
     handleChange = () => {},
+    labelSnippet,
   }: Props = $props();
 
   const {
@@ -50,8 +53,8 @@
       for={id}
       id={`${id}-label`}
     >
-      {#if $$slots.label}
-        <slot name="label" />
+      {#if labelSnippet}
+        {@render labelSnippet()}
       {:else}
         {label}
       {/if}

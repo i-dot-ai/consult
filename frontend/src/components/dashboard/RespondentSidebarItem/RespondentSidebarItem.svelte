@@ -13,21 +13,21 @@
 
   export interface Props {
     title: string;
-    subtitle: string;
+    subtitle: string | null;
     icon?: Component;
     editable?: boolean;
-    updateSubtitle?: (newSubtitle: string) => void;
+    updateSubtitle?: (newSubtitle: string | null) => void;
   }
 
   let {
     title = "",
-    subtitle = "",
+    subtitle = null,
     icon,
     editable = false,
     updateSubtitle = () => {},
   }: Props = $props();
 
-  let stagedSubtitle: string = $derived(subtitle);
+  let stagedSubtitle = $derived(subtitle);
   let editing: boolean = $state(false);
 
   const toggleEditing = () => {
@@ -43,7 +43,8 @@
   {#if icon}
     <div class="h-max rounded-lg bg-neutral-100 p-1">
       <MaterialIcon size="1.3rem" color="fill-neutral-700">
-        <svelte:component this={icon} />
+        {@const Component = { icon }}
+        <Component.icon />
       </MaterialIcon>
     </div>
   {/if}
@@ -73,7 +74,7 @@
           id="edit-subtitle-input"
           label="Edit Subtitle"
           hideLabel={true}
-          value={stagedSubtitle}
+          value={stagedSubtitle || ""}
           placeholder="Business or organisation name"
           setValue={(newValue) => (stagedSubtitle = newValue.trim())}
         />

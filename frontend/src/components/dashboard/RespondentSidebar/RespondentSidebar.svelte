@@ -11,15 +11,15 @@
 
   export interface Props {
     demoData: RespondentDemoItem[];
-    stakeholderName?: string;
+    stakeholderName?: string | null;
     questionsAnswered: number;
     totalQuestions: number;
-    updateStakeholderName?: (newStakeholderName: string) => void;
+    updateStakeholderName?: (newStakeholderName: string | null) => void;
   }
 
   let {
     demoData = [],
-    stakeholderName = "",
+    stakeholderName = null,
     questionsAnswered = 0,
     totalQuestions = 0,
     updateStakeholderName = () => {},

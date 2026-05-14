@@ -178,6 +178,7 @@
                 class={clsx([disabled && "grayscale"])}
               >
                 <div
+                  role="presentation"
                   onkeypress={(e) => e.stopPropagation()}
                   onclick={(e) => e.stopPropagation()}
                 >

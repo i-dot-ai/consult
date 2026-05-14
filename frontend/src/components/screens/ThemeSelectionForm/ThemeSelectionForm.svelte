@@ -1,6 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { untrack } from "svelte";
   import { slide } from "svelte/transition";
 
   import {
@@ -32,7 +33,7 @@
     questionId,
   }: Props = $props();
 
-  let ownSelectedThemes = $state(selectedThemes);
+  let ownSelectedThemes = $state(untrack(() => [...selectedThemes]));
   let sending: boolean = $state(false);
   let errors: Record<string, string> = $state({});
 

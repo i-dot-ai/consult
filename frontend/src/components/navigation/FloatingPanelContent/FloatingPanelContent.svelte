@@ -75,7 +75,8 @@
           ])}
         >
           <MaterialIcon color="fill-neutral-500">
-            <svelte:component this={icon} />
+            {@const Component = { icon }}
+            <Component.icon />
           </MaterialIcon>
         </div>
         <div>

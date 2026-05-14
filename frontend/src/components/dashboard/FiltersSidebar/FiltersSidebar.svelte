@@ -72,15 +72,17 @@
       {value}
       handleChange={(value: boolean) => handle_change(value)}
     >
-      <div slot="label" class="flex items-center gap-1">
-        <div class="rounded-2xl {bgColour} p-0.5 text-xs">
-          <MaterialIcon size="1rem" color={iconColour}>
-            <ToggleIcon></ToggleIcon>
-          </MaterialIcon>
-        </div>
+      {#snippet labelSnippet()}
+        <div class="flex items-center gap-1">
+          <div class="rounded-2xl {bgColour} p-0.5 text-xs">
+            <MaterialIcon size="1rem" color={iconColour}>
+              <ToggleIcon></ToggleIcon>
+            </MaterialIcon>
+          </div>
 
-        <span class="text-xs">{text}</span>
-      </div>
+          <span class="text-xs">{text}</span>
+        </div>
+      {/snippet}
     </Switch>
   </Panel>
 {/snippet}

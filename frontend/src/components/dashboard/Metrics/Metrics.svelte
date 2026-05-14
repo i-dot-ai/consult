@@ -168,7 +168,6 @@
     <div transition:slide class="mt-8">
       <TabView
         variant="dots"
-        title="Demographics Breakdown"
         tabs={paginatedCategories.map((_: string[], index: number) => ({
           title: `Demo option category page ${index + 1}`,
           id: `tab-${index}`,
