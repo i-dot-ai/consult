@@ -133,6 +133,7 @@ resource "aws_ssm_parameter" "image_tag_placeholders" {
   lifecycle {
     ignore_changes = [
       value,
+      tags,
     ]
   }
 }

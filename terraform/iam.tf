@@ -32,6 +32,7 @@ data "aws_iam_policy_document" "ecs_exec_custom_policy" {
     ]
     resources = [
       "arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/${local.name}/env_secrets/*",
+      "arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/${local.name}/env_secrets/*/*",
       "arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/${var.team_name}-${var.env}-core-llm-gateway/env_secrets/*",
     ]
   }
@@ -85,18 +86,4 @@ resource "aws_iam_policy" "lambda_exec_custom_policy" {
   name        = "${local.name}-batch-lambda-policy"
   description = "lambda custom policy"
   policy      = data.aws_iam_policy_document.lambda_exec_custom_policy.json
-}
-
-resource "aws_iam_role_policy" "runner_ssm_read" {
-  name = "${local.name}-runner-ssm-read"
-  role = "i-dot-ai-prod-github-runner-role"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["ssm:GetParameter"]
-      Resource = "arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/${local.name}/env_secrets/*"
-    }]
-  })
 }
