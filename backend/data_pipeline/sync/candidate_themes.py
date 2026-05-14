@@ -398,8 +398,7 @@ def export_candidate_themes_to_s3(consultation: Consultation) -> int:
     questions = consultation.question_set.filter(has_free_text=True)
 
     for question in questions:
-        # Only export top-level candidate themes (not children)
-        themes = CandidateTheme.objects.filter(question=question, parent__isnull=True)
+        themes = CandidateTheme.objects.filter(question=question)
 
         if not themes.exists():
             logger.warning(
@@ -465,7 +464,7 @@ def _build_candidate_theme_lookup(
     if not batch_themes:
         return {}
 
-    db_themes = CandidateTheme.objects.filter(question=question, parent__isnull=True)
+    db_themes = CandidateTheme.objects.filter(question=question)
     db_themes_by_name = {theme.name: theme for theme in db_themes}
 
     batch_key_to_db_theme = {}
