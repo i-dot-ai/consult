@@ -112,6 +112,7 @@ jobs:
               --query "Parameter.Value" \
               --output text 2>/dev/null || echo "")
 
+            echo "service=${service} new_tag=${new_tag} current_tag=${current_tag} match=$([[ "$new_tag" == "$current_tag" ]] && echo yes || echo no)"
             if [[ "$new_tag" != "$current_tag" ]]; then
               services_entries=$(echo $services_entries | jq -c --arg s "$service" --arg t "$new_tag" \
                 '. + [{"service": $s, "tag": $t}]')
