@@ -3,7 +3,7 @@ name: release-infrastructure
 on:
   push:
     tags:
-      - release-dev-**
+      - release-infra-dev-**
       - release-preprod-**
 
   workflow_run:
