@@ -173,6 +173,10 @@ jobs:
             --value "${{ matrix.object.tag }}" \
             --type String \
             --overwrite
+          aws ssm add-tags-to-resource \
+            --resource-type Parameter \
+            --resource-id "/i-dot-ai-${{ needs.set-vars.outputs.environment }}-consult/env_secrets/${{ matrix.object.service }}/IMAGE_TAG" \
+            --tags "Key=environment,Value=${{ needs.set-vars.outputs.environment }}"
 
   # Runs terraform apply -target=<target> for every entry in the targets matrix.
   # Terraform reads the updated image tags from SSM (written by update-ssm-image-tags)
