@@ -94,6 +94,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: AWS Authentication
+        uses: i-dot-ai/i-dot-ai-core-github-actions/.github/actions/authenticate-aws@main
+        with:
+          APP_NAME: ${{ needs.set-vars.outputs.app-name }}
+          ENVIRONMENT: ${{ needs.set-vars.outputs.environment }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          USE_OIDC: true
+
       - name: Filter services with changed image tags
         id: filter
         run: |
