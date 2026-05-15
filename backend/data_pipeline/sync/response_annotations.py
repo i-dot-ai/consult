@@ -7,7 +7,6 @@ import data_pipeline.s3 as s3
 from consultations.models import (
     Consultation,
     Question,
-    Response,
     ResponseAnnotation,
     SelectedTheme,
 )
@@ -460,13 +459,11 @@ def _import_response_annotations(
     detail_lookup = {d.themefinder_id: d.as_bool for d in details}
     mapping_lookup = {m.themefinder_id: m.theme_keys for m in mappings}
 
-    # Get all responses for this question with their respondent themefinder_ids
-    responses = Response.objects.filter(question=question).select_related("respondent")
+    # Get all responses for this question, excluding empty/placeholder responses
+    responses = question.get_non_empty_responses().select_related("respondent")
     # Filter out responses without themefinder_id since we can't match them to batch data
     response_lookup = {
-        r.respondent.themefinder_id: r 
-        for r in responses 
-        if r.respondent.themefinder_id is not None
+        r.respondent.themefinder_id: r for r in responses if r.respondent.themefinder_id is not None
     }
 
     # Create ResponseAnnotation objects
@@ -507,20 +504,20 @@ def _import_response_annotations(
     # Build lookup from created annotations using the response_id to avoid N+1 queries
     # We use response_id because it's available on the annotation object without triggering a query
     annotation_by_response_id = {ann.response_id: ann for ann in created_annotations}  # type: ignore[attr-defined]
-    
+
     # Build reverse lookup from themefinder_id to response_id using our prefetched responses
     response_id_by_tf_id = {
-        r.respondent.themefinder_id: r.id 
-        for r in responses 
+        r.respondent.themefinder_id: r.id
+        for r in responses
         if r.respondent.themefinder_id is not None
     }
 
     # Collect all ResponseAnnotationTheme records to create in bulk
     from consultations.models import ResponseAnnotationTheme
-    
+
     annotation_themes_to_create = []
     themes_linked = 0
-    
+
     for themefinder_id, theme_keys in annotation_theme_data:
         # Get the response_id from our prefetched lookup
         response_id = response_id_by_tf_id.get(themefinder_id)
@@ -530,7 +527,7 @@ def _import_response_annotations(
                 themefinder_id=themefinder_id,
             )
             continue
-            
+
         maybe_annotation = annotation_by_response_id.get(response_id)
         if maybe_annotation is None:
             logger.warning(
@@ -538,7 +535,7 @@ def _import_response_annotations(
                 response_id=response_id,
             )
             continue
-        
+
         # Type narrowing for mypy - at this point we know the annotation is not None
         ann: ResponseAnnotation = maybe_annotation
 
