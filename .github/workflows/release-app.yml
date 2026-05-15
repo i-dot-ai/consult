@@ -95,6 +95,8 @@ jobs:
     outputs:
       services_matrix: ${{ steps.filter.outputs.services_matrix }}
       targets_matrix: ${{ steps.filter.outputs.targets_matrix }}
+    permissions:
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
