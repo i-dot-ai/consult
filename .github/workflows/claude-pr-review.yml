@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [opened, ready_for_review, synchronize]
     branches: "*"
-    
+
   workflow_dispatch:
     inputs:
       pr_number:
@@ -25,7 +25,7 @@ jobs:
       aws-region: ${{ steps.export.outputs.aws-region }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - id: export
         run: |
