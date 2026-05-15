@@ -13,7 +13,6 @@ from consultations.models import (
     CandidateThemeResponse,
     Consultation,
     Question,
-    Response,
 )
 from data_pipeline.models import CandidateThemeBatch, ThemeMappingInput, ThemeNodeList
 
@@ -504,8 +503,8 @@ def _import_candidate_theme_responses(
     # Delete existing mappings for this question's candidate themes
     CandidateThemeResponse.objects.filter(candidate_theme__question=question).delete()
 
-    # Build response lookup by themefinder_id
-    responses = Response.objects.filter(question=question).select_related("respondent")
+    # Build response lookup by themefinder_id, excluding empty/placeholder responses
+    responses = question.get_non_empty_responses().select_related("respondent")
     response_lookup = {r.respondent.themefinder_id: r for r in responses}
 
     mapping_lookup = {m.themefinder_id: m.theme_keys for m in mappings}

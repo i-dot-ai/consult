@@ -128,9 +128,7 @@ class QuestionViewSet(ModelViewSet):
             )
 
             # Replace the prefetched multichoice answers
-            question._prefetched_objects_cache["multichoiceanswer_set"] = list(
-                multichoice_answers
-            )
+            question._prefetched_objects_cache["multichoiceanswer_set"] = list(multichoice_answers)
 
         serializer = self.get_serializer(question)
         return Response(serializer.data)
@@ -157,6 +155,10 @@ class QuestionViewSet(ModelViewSet):
         ]
         has_filters = any(request.query_params.get(p) for p in filter_params)
 
+        non_empty_filter = ~Q(
+            responseannotation__response__free_text__in=models.EMPTY_FREE_TEXT_VALUES
+        )
+
         if has_filters:
             filtered_responses = get_filtered_responses(
                 request.query_params, consultation_pk, question_id=pk
@@ -164,12 +166,15 @@ class QuestionViewSet(ModelViewSet):
             themes = themes.annotate(
                 count=Count(
                     "responseannotation",
-                    filter=Q(responseannotation__response__in=filtered_responses),
+                    filter=Q(responseannotation__response__in=filtered_responses)
+                    & non_empty_filter,
                     distinct=True,
                 )
             )
         else:
-            themes = themes.annotate(count=Count("responseannotation", distinct=True))
+            themes = themes.annotate(
+                count=Count("responseannotation", filter=non_empty_filter, distinct=True)
+            )
 
         serializer = QuestionThemeSerializer(themes, many=True)
         return Response({"themes": serializer.data})
