@@ -3,7 +3,7 @@ name: release-infrastructure
 on:
   push:
     tags:
-      - release-infra-dev-**
+      - release-dev-**
       - release-preprod-**
 
   workflow_run:
@@ -45,7 +45,7 @@ jobs:
           if [[ "${{ github.ref_name }}" == main ]]; then
             export ENVIRONMENT=preprod
           else
-            export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $3 }')
+            export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $2 }')
           fi
           echo "environment=${ENVIRONMENT}"
           echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
