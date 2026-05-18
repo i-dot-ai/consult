@@ -941,27 +941,7 @@ def test_safe_replace_refuses_unsafe_path(tmp_path, monkeypatch):
 # ── upload_inputs_to_s3 ───────────────────────────────────────────────────────
 
 
-def test_upload_dry_run_does_not_call_boto3(tmp_path, monkeypatch, capsys):
-    """--dry-run lists files and skips boto3 entirely (no credentials needed)."""
-    (tmp_path / "question_part_1").mkdir()
-    (tmp_path / "question_part_1" / "question.json").write_text("{}")
-    (tmp_path / "respondents.jsonl").write_text("{}\n")
-
-    def fail_if_called(*args, **kwargs):
-        raise AssertionError("boto3.client should not be called in dry-run mode")
-
-    monkeypatch.setattr(setup_consultation.boto3, "client", fail_if_called)
-
-    upload_inputs_to_s3(tmp_path, "my-bucket", "some/prefix/", dry_run=True)
-
-    out = capsys.readouterr().out
-    assert "[dry-run]" in out
-    assert "my-bucket" in out
-    assert "question_part_1/question.json" in out  # posix path, not Windows-style
-    assert "respondents.jsonl" in out
-
-
 def test_upload_empty_dir_is_noop(tmp_path, capsys):
     """Empty dir prints a notice and returns without constructing a client."""
-    upload_inputs_to_s3(tmp_path, "my-bucket", "prefix/", dry_run=False)
+    upload_inputs_to_s3(tmp_path, "my-bucket", "prefix/")
     assert "No files found" in capsys.readouterr().out

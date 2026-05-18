@@ -1095,30 +1095,15 @@ def run_pipeline(
 DEFAULT_S3_BUCKET = "i-dot-ai-prod-consult-data"
 
 
-def upload_inputs_to_s3(
-    local_dir: Path,
-    bucket: str,
-    s3_prefix: str,
-    dry_run: bool = False,
-) -> None:
+def upload_inputs_to_s3(local_dir: Path, bucket: str, s3_prefix: str) -> None:
     """Upload all files in local_dir to s3://bucket/s3_prefix, preserving directory structure.
 
     Checks for existing objects at the S3 prefix before uploading. If any exist,
     warns and requires confirmation. Always prompts before uploading.
-
-    When `dry_run` is True, prints what would be uploaded and returns without
-    contacting S3 — no client is constructed, so no credentials are needed.
     """
     files = [f for f in local_dir.rglob("*") if f.is_file()]
     if not files:
         print(f"No files found in {local_dir} to upload.")
-        return
-
-    if dry_run:
-        print(f"\n[dry-run] Would upload {len(files)} file(s) to s3://{bucket}/{s3_prefix}:")
-        for file_path in files:
-            relative = file_path.relative_to(local_dir).as_posix()
-            print(f"  {relative}")
         return
 
     s3 = boto3.client("s3")
@@ -1200,11 +1185,6 @@ def main() -> None:
         "--bucket",
         default=DEFAULT_S3_BUCKET,
         help=f"S3 bucket to upload to (default: {DEFAULT_S3_BUCKET})",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="List files that would be uploaded without contacting S3.",
     )
     args = parser.parse_args()
 
@@ -1323,9 +1303,7 @@ def main() -> None:
     if args.until == "upload":
         s3_prefix = f"app_data/consultations/{name}/inputs/"
         try:
-            upload_inputs_to_s3(
-                output_dir, args.bucket, s3_prefix, dry_run=args.dry_run
-            )
+            upload_inputs_to_s3(output_dir, args.bucket, s3_prefix)
         except botocore.exceptions.NoCredentialsError as e:
             print(f"\nAWS error: {e}")
             print("\nTo fix, either:")
