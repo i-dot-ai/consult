@@ -24,7 +24,7 @@ ENV UV_PROJECT_ENVIRONMENT=/src/backend/venv
 
 # Install dependencies (workspace-aware) - creates /src/backend/venv with an editable
 # install pointing at /src/themefinder/src
-RUN uv sync --frozen --no-install-project --package consult
+RUN uv sync --frozen --no-install-project --no-dev --package consult
 
 
 # app
@@ -44,7 +44,7 @@ COPY --chown=nonroot:nonroot ./themefinder/src/ ./themefinder/src/
 
 COPY --chown=nonroot:nonroot ./backend ./backend
 
-COPY --from=uv-packages --chown=nonroot:nonroot /src/backend/venv ./backend/venv
+COPY --chown=nonroot:nonroot --from=uv-packages /src/backend/venv ./backend/venv
 
 ENV DJANGO_SETTINGS_MODULE='backend.settings.production'
 ENV PYTHONPATH="${PYTHONPATH}:/src/"
