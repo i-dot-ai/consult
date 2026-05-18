@@ -709,6 +709,27 @@ def create_respondents_jsonl(
     )
 
 
+def _collapse_other_specify(value: object) -> object:
+    """Collapse "Other (please specify): ..." style answers down to "Other".
+
+    Operates per comma-separated token so multi-select cells are handled
+    correctly. A token is collapsed only when it equals "Other" or starts
+    with "Other (" — substring matches like "Other religion" or "Mother"
+    are left untouched (the previous behavior of `"Other" in x` lost real
+    answers).
+    """
+    if not isinstance(value, str):
+        return value
+    parts = []
+    for tok in value.split(","):
+        stripped = tok.strip()
+        if stripped == "Other" or stripped.startswith("Other ("):
+            parts.append("Other")
+        else:
+            parts.append(stripped)
+    return ",".join(parts)
+
+
 def _strip_control_chars(text: str) -> str:
     """Remove unicode control characters (category 'C*') while preserving
     printable unicode such as accents, smart quotes, and non-breaking hyphens."""
@@ -1003,9 +1024,7 @@ def run_pipeline(
         print("Writing demographics...")
         for c in demographic_columns:
             responses_df[c] = responses_df[c].fillna("Not Provided")
-            responses_df[c] = responses_df[c].apply(
-                lambda x: "Other" if isinstance(x, str) and "Other" in x else x
-            )
+            responses_df[c] = responses_df[c].apply(_collapse_other_specify)
         create_respondents_jsonl(
             responses_df, demographic_columns, demographic_labels, output_dir
         )

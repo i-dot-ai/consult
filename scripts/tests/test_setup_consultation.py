@@ -15,6 +15,7 @@ import openpyxl
 from pathlib import Path
 
 from setup_consultation import (
+    _collapse_other_specify,
     _load_qu_sheet,
     _normalise_null_like,
     _strip_control_chars,
@@ -859,3 +860,31 @@ def test_create_respondents_jsonl_preserves_unicode(tmp_path):
     create_respondents_jsonl(df, ["D"], ["Place"], tmp_path)
     row = json.loads((tmp_path / "respondents.jsonl").read_text().splitlines()[0])
     assert row["demographic_data"]["Place"] == ["café d‘Or"]
+
+
+# ── _collapse_other_specify ───────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("Other", "Other"),
+        ("Other (please specify): an explanation", "Other"),
+        ("Other (something)", "Other"),
+        # Substring matches must NOT collapse — these are real answers.
+        ("Other religion", "Other religion"),
+        ("Mother", "Mother"),
+        ("Brother", "Brother"),
+        # Multi-select: only the matching token collapses.
+        (
+            "Christian, Other (please specify): Quaker",
+            "Christian,Other",
+        ),
+        ("North, Other (write-in)", "North,Other"),
+        # Non-string passthrough.
+        (None, None),
+        (42, 42),
+    ],
+)
+def test_collapse_other_specify(value, expected):
+    assert _collapse_other_specify(value) == expected
