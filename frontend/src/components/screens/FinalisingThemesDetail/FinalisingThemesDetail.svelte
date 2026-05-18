@@ -6,7 +6,7 @@
 
   import { createFetchStore } from "../../../global/stores";
   import {
-    getApiConfirmSignOffUrl,
+    getApiConfirmFinalisingThemesUrl,
     getApiGetGeneratedThemesUrl,
     getApiGetSelectedThemesUrl,
     getApiQuestionUrl,
@@ -89,9 +89,9 @@
   const generatedThemesStore = createFetchStore<GeneratedThemesResponse>();
   const generatedThemesSelectStore = createFetchStore();
   const questionStore = createFetchStore<Question>();
-  const confirmSignOffStore = createFetchStore();
+  const confirmFinalisingThemesStore = createFetchStore();
 
-  let isConfirmSignOffModalOpen: boolean = $state(false);
+  let isConfirmFinalisingThemesModalOpen: boolean = $state(false);
   let addingCustomTheme: boolean = $state(false);
 
   const flattenGeneratedThemes = (
@@ -253,17 +253,17 @@
     );
   };
 
-  const confirmSignOff = async () => {
-    await $confirmSignOffStore.fetch(
-      getApiConfirmSignOffUrl(consultationId, questionId),
+  const confirmFinalisingThemes = async () => {
+    await $confirmFinalisingThemesStore.fetch(
+      getApiConfirmFinalisingThemesUrl(consultationId, questionId),
       "PATCH",
       {
         theme_status: "confirmed",
       },
     );
 
-    if ($confirmSignOffStore.error) {
-      isConfirmSignOffModalOpen = false;
+    if ($confirmFinalisingThemesStore.error) {
+      isConfirmFinalisingThemesModalOpen = false;
       errorData = { type: "unexpected" };
     } else {
       location.replace(getFinaliseThemesUrl(consultationId));
@@ -444,7 +444,8 @@
           selectedThemes.query.isPending ||
           selectedThemes.query.data?.results.length === 0}
         handleClick={() =>
-          (isConfirmSignOffModalOpen = !isConfirmSignOffModalOpen)}
+          (isConfirmFinalisingThemesModalOpen =
+            !isConfirmFinalisingThemesModalOpen)}
       >
         <div class="flex w-full items-center justify-center gap-2">
           <MaterialIcon color="fill-white">
@@ -467,10 +468,11 @@
       variant="primary"
       title="Confirm Finalising Themes"
       icon={CheckCircle}
-      open={isConfirmSignOffModalOpen}
-      setOpen={(newOpen: boolean) => (isConfirmSignOffModalOpen = newOpen)}
+      open={isConfirmFinalisingThemesModalOpen}
+      setOpen={(newOpen: boolean) =>
+        (isConfirmFinalisingThemesModalOpen = newOpen)}
       confirmText="Confirm Finalisation"
-      handleConfirm={confirmSignOff}
+      handleConfirm={confirmFinalisingThemes}
     >
       <p class="text-sm text-neutral-500">
         Are you sure you want to sign off on these {numSelectedThemesText(

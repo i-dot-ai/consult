@@ -1,7 +1,7 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
 
-import FinalisingThemeArchive from "../../../../components/screens/FinalisingThemeArchive/FinalisingThemeArchive.svelte";
+import FinalisingThemesArchive from "../../../../components/screens/FinalisingThemesArchive/FinalisingThemesArchive.svelte";
 import Section from "../../../../components/Section/Section.svelte";
 import type { AstroGlobalRuntime } from "../../../../global/types";
 
@@ -10,7 +10,7 @@ const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
 <Layout>
   <Section>
-    <FinalisingThemeArchive
+    <FinalisingThemesArchive
       client:only="svelte"
       consultationId={consultationId || ""}
     />

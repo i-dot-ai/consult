@@ -358,7 +358,7 @@ export const getApiCandidateThemeResponsesUrl = (
     "/",
   );
 };
-export const getApiConfirmSignOffUrl = (
+export const getApiConfirmFinalisingThemesUrl = (
   consultationId: string,
   questionId: string,
 ) => {

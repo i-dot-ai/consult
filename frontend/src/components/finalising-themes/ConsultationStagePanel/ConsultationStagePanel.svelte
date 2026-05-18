@@ -91,7 +91,7 @@
 
   <p class="my-4 text-center text-sm text-neutral-500">
     <strong>Next:</strong> Once all questions are signed off, you can confirm and
-    proceed to AI mapping.
+    proceed to AI assignment.
   </p>
 {/snippet}
 
@@ -117,7 +117,7 @@
       <MaterialIcon>
         <CheckCircle />
       </MaterialIcon>
-      Confirm and Proceed to Mapping
+      Confirm and Proceed to Assignment
     </span>
   </Button>
 {/snippet}

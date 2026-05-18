@@ -6,8 +6,8 @@ import type { AstroGlobalRuntime, Question } from "../../../../global/types";
 import Layout from "../../../../layouts/Layout.astro";
 import Section from "../../../../components/Section/Section.svelte";
 
-import FinalisingThemeDetail from "../../../../components/screens/FinalisingThemeDetail/FinalisingThemeDetail.svelte";
-import FinalisingThemeDetailCompleted from "../../../../components/screens/FinalisingThemeDetailCompleted/FinalisingThemeDetailCompleted.svelte";
+import FinalisingThemesDetail from "../../../../components/screens/FinalisingThemesDetail/FinalisingThemesDetail.svelte";
+import FinalisingThemesDetailCompleted from "../../../../components/screens/FinalisingThemesDetailCompleted/FinalisingThemesDetailCompleted.svelte";
 
 const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
   .params;
@@ -21,13 +21,13 @@ const question: Question = await fetchBackendApi(
   <Section>
     {
       question?.theme_status === "confirmed" ? (
-        <FinalisingThemeDetailCompleted
+        <FinalisingThemesDetailCompleted
           client:only="svelte"
           consultationId={consultationId || ""}
           questionId={questionId || ""}
         />
       ) : (
-        <FinalisingThemeDetail
+        <FinalisingThemesDetail
           client:only="svelte"
           consultationId={consultationId || ""}
           questionId={questionId || ""}

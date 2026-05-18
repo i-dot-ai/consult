@@ -1,4 +1,4 @@
-import FinalisingThemeDetail from "./FinalisingThemeDetail.svelte";
+import FinalisingThemesDetail from "./FinalisingThemesDetail.svelte";
 import {
   candidateThemesGetMock,
   questionMock,
@@ -16,8 +16,8 @@ const consultationId = $state("test-consultation");
 const questionId = $state("test-question");
 
 export default {
-  name: "FinalisingThemeDetail",
-  component: FinalisingThemeDetail,
+  name: "FinalisingThemesDetail",
+  component: FinalisingThemesDetail,
   category: "Screens",
   mocks: [
     questionMock,

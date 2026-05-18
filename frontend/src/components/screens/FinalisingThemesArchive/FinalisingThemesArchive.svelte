@@ -7,7 +7,7 @@
   import {
     getApiConsultationUrl,
     getApiQuestionsUrl,
-    getFinaliseThemesUrl,
+    getFinaliseThemesDetailUrl,
     Routes,
   } from "../../../global/routes.ts";
   import { createFetchStore } from "../../../global/stores.ts";
@@ -109,14 +109,14 @@
 
       <Modal
         variant="secondary"
-        title="Confirm AI Mapping"
-        confirmText="Yes, Start AI Mapping"
+        title="Confirm AI Assignment"
+        confirmText="Yes, Start AI Assignment"
         icon={Warning}
         open={isConfirmModalOpen}
         setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
         handleConfirm={async () => {
           await $consultationUpdateStore.fetch(
-            getFinaliseThemesUrl(consultationId),
+            getApiConsultationUrl(consultationId),
             "PATCH",
             {
               stage: "theme_mapping",
@@ -245,7 +245,10 @@
                   highlightText={searchValue}
                   clickable={question.has_free_text}
                   disabled={!question.has_free_text}
-                  url={getFinaliseThemesUrl(consultationId)}
+                  url={getFinaliseThemesDetailUrl(
+                    consultationId,
+                    question.id || "",
+                  )}
                   subtext={!question.has_free_text
                     ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
                     : undefined}
