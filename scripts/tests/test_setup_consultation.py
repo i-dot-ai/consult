@@ -14,10 +14,12 @@ import pandas as pd
 import openpyxl
 from pathlib import Path
 
+import setup_consultation
 from setup_consultation import (
     _collapse_other_specify,
     _load_qu_sheet,
     _normalise_null_like,
+    _safe_replace_output_dir,
     _strip_control_chars,
     create_question_inputs,
     create_respondents_jsonl,
@@ -888,3 +890,48 @@ def test_create_respondents_jsonl_preserves_unicode(tmp_path):
 )
 def test_collapse_other_specify(value, expected):
     assert _collapse_other_specify(value) == expected
+
+
+# ── _safe_replace_output_dir ──────────────────────────────────────────────────
+
+
+def test_safe_replace_noop_when_missing(tmp_path, monkeypatch):
+    """Returns cleanly when the directory doesn't exist."""
+    monkeypatch.setattr(
+        setup_consultation, "_SAFE_OUTPUT_ROOTS", (tmp_path.resolve(),)
+    )
+    _safe_replace_output_dir(tmp_path / "does-not-exist")
+
+
+def test_safe_replace_moves_existing_to_backup(tmp_path, monkeypatch, capsys):
+    """Existing dir under a safe root is renamed to <name>.bak.<ts>/, not deleted."""
+    monkeypatch.setattr(
+        setup_consultation, "_SAFE_OUTPUT_ROOTS", (tmp_path.resolve(),)
+    )
+    target = tmp_path / "inputs"
+    target.mkdir()
+    (target / "marker").write_text("keep me")
+
+    _safe_replace_output_dir(target)
+
+    assert not target.exists()
+    backups = list(tmp_path.glob("inputs.bak.*"))
+    assert len(backups) == 1
+    assert (backups[0] / "marker").read_text() == "keep me"
+
+
+def test_safe_replace_refuses_unsafe_path(tmp_path, monkeypatch):
+    """A path outside the safe roots raises SystemExit instead of deleting."""
+    safe = tmp_path / "safe"
+    safe.mkdir()
+    monkeypatch.setattr(setup_consultation, "_SAFE_OUTPUT_ROOTS", (safe.resolve(),))
+
+    unsafe = tmp_path / "elsewhere" / "inputs"
+    unsafe.mkdir(parents=True)
+    (unsafe / "do-not-delete").write_text("important")
+
+    with pytest.raises(SystemExit, match="Refusing to replace"):
+        _safe_replace_output_dir(unsafe)
+
+    # File is untouched.
+    assert (unsafe / "do-not-delete").read_text() == "important"

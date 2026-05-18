@@ -47,8 +47,8 @@ import argparse
 import json
 import logging
 import re
-import shutil
 import sys
+import time
 import unicodedata
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -960,6 +960,35 @@ PIPELINE_STAGES = ("validate", "build", "upload")
 FORMATS = ("old", "new")
 RESPONSES_SHEET_NAME = "Responses"
 
+# Roots under which `_safe_replace_output_dir` will agree to move an existing
+# directory out of the way. Anything outside these is refused — protects users
+# who point `--dir` at an unrelated path.
+_SAFE_OUTPUT_ROOTS: tuple[Path, ...] = (
+    (Path(__file__).resolve().parent / "consultations").resolve(),
+    (Path.cwd() / "consultations").resolve(),
+)
+
+
+def _safe_replace_output_dir(output_dir: Path) -> None:
+    """Move an existing `output_dir` aside (timestamped backup) rather than rmtree it.
+
+    Refuses to touch paths that aren't under one of the project's
+    consultations roots, so a stray `--dir /some/unrelated/path` can't
+    nuke real data. If the dir doesn't exist, this is a no-op.
+    """
+    if not output_dir.exists():
+        return
+    resolved = output_dir.resolve()
+    if not any(resolved.is_relative_to(root) for root in _SAFE_OUTPUT_ROOTS):
+        raise SystemExit(
+            f"Refusing to replace {resolved}: not under any of "
+            f"{[str(r) for r in _SAFE_OUTPUT_ROOTS]}. "
+            "Move or delete the directory manually if you want to overwrite it."
+        )
+    backup = output_dir.with_name(f"{output_dir.name}.bak.{int(time.time())}")
+    output_dir.rename(backup)
+    print(f"  Moved existing {output_dir.name}/ -> {backup.name}/")
+
 
 def run_pipeline(
     responses_path: Path,
@@ -1015,8 +1044,7 @@ def run_pipeline(
         return
 
     # ── Build ─────────────────────────────────────────────────────────
-    if output_dir.exists():
-        shutil.rmtree(output_dir)
+    _safe_replace_output_dir(output_dir)
     output_dir.mkdir(parents=True)
 
     # Demographics
