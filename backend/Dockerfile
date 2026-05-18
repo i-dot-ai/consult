@@ -24,7 +24,7 @@ ENV UV_PROJECT_ENVIRONMENT=/src/backend/venv
 
 # Install dependencies (workspace-aware) - creates /src/backend/venv with an editable
 # install pointing at /src/themefinder/src
-RUN uv sync --frozen --no-install-project --package consult
+RUN uv sync --frozen --no-install-project --no-dev --package consult
 
 
 # app
@@ -39,15 +39,12 @@ WORKDIR /src
 
 # uv installs the themefinder workspace member as editable; the venv contains a .pth
 # pointing at /src/themefinder/src, so that path must exist at runtime too.
-COPY ./themefinder/pyproject.toml ./themefinder/pyproject.toml
-COPY ./themefinder/src/ ./themefinder/src/
+COPY --chown=nonroot:nonroot ./themefinder/pyproject.toml ./themefinder/pyproject.toml
+COPY --chown=nonroot:nonroot ./themefinder/src/ ./themefinder/src/
 
-COPY ./backend ./backend
+COPY --chown=nonroot:nonroot ./backend ./backend
 
-COPY --from=uv-packages /src/backend/venv ./backend/venv
-
-# Change ownership of application directory
-RUN chown -R nonroot:nonroot /src
+COPY --chown=nonroot:nonroot --from=uv-packages /src/backend/venv ./backend/venv
 
 ENV DJANGO_SETTINGS_MODULE='backend.settings.production'
 ENV PYTHONPATH="${PYTHONPATH}:/src/"

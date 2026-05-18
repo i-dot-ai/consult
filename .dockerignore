@@ -33,3 +33,11 @@ themefinder/.mypy_cache
 themefinder/.ruff_cache
 themefinder/**/__pycache__
 themefinder/*.egg-info
+
+# Local dev artifacts (sql.log may contain sensitive query data)
+**/sql.log
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.venv
