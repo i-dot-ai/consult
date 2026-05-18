@@ -1,3 +1,8 @@
+# themefinder is published to PyPI with `requires-python = ">=3.10,<3.13"`,
+# so this matrix exists to protect that contract. The workspace itself is
+# pinned to 3.12 via backend, hence the isolated `.ci-venv` below.
+# When themefinder is sunset as a public package — or its floor is raised
+# to 3.12 — collapse the matrix to a single job and drop the isolated venv.
 name: themefinder CI
 
 on:
