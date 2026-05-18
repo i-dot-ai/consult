@@ -26,7 +26,7 @@ where `<FILE_PATH>` is the location of your local version of `themefinder`.
 
 The `evals/` directory contains our benchmarking evaluation suite used to measure system performance. When you make a change to the `themefinder` pipeline, run the evaluations to ensure you haven't reduced performance. 
 
-The `eval_mapping` and `eval_sentiment` evaluations use sensitive data stored in our AWS environment. These specific evaluations will only function with proper AWS account access and credentials. Similarly, the `make run_evals` command assumes you have AWS access configured.
+The `eval_mapping` and `eval_sentiment` evaluations use sensitive data stored in our AWS environment. These specific evaluations will only function with proper AWS account access and credentials. Similarly, the `make run-evals` command assumes you have AWS access configured.
 
 These evaluations use the Azure Open AI endpoint.
 
@@ -39,7 +39,7 @@ Install packages for this repo: `poetry install`.
 Ensure you have AWS access set up, and assume your AWS role to allow you to access the data.
 
 These evaluations can be executed either:
-- By running `make run_evals` to execute the complete evaluation suite (or `poetry run make run_evals` if you're using `poetry`)
+- By running `make run-evals` from the repo root to execute the complete evaluation suite
 - By directly running individual evaluation files that begin with `eval_` prefix
 
 Note that the evals specifically use GPT-4o, and JSON structured output.
