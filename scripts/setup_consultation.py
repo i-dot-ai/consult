@@ -1077,17 +1077,36 @@ def run_pipeline(
     print(f"\nAll input files written to: {output_dir}")
 
 
-def upload_inputs_to_s3(local_dir: Path, bucket: str, s3_prefix: str) -> None:
+DEFAULT_S3_BUCKET = "i-dot-ai-prod-consult-data"
+
+
+def upload_inputs_to_s3(
+    local_dir: Path,
+    bucket: str,
+    s3_prefix: str,
+    dry_run: bool = False,
+) -> None:
     """Upload all files in local_dir to s3://bucket/s3_prefix, preserving directory structure.
 
     Checks for existing objects at the S3 prefix before uploading. If any exist,
     warns and requires confirmation. Always prompts before uploading.
+
+    When `dry_run` is True, prints what would be uploaded and returns without
+    contacting S3 — no client is constructed, so no credentials are needed.
     """
-    s3 = boto3.client("s3")
     files = [f for f in local_dir.rglob("*") if f.is_file()]
     if not files:
         print(f"No files found in {local_dir} to upload.")
         return
+
+    if dry_run:
+        print(f"\n[dry-run] Would upload {len(files)} file(s) to s3://{bucket}/{s3_prefix}:")
+        for file_path in files:
+            relative = file_path.relative_to(local_dir).as_posix()
+            print(f"  {relative}")
+        return
+
+    s3 = boto3.client("s3")
 
     # Check for existing data at this S3 prefix
     print(f"\nChecking for existing data at s3://{bucket}/{s3_prefix} ...")
@@ -1107,7 +1126,7 @@ def upload_inputs_to_s3(local_dir: Path, bucket: str, s3_prefix: str) -> None:
 
     print(f"\nReady to upload {len(files)} file(s) to s3://{bucket}/{s3_prefix}")
     for file_path in files:
-        relative = file_path.relative_to(local_dir)
+        relative = file_path.relative_to(local_dir).as_posix()
         print(f"  {relative}")
     answer = input("Proceed with upload? (y/n): ").strip().lower()
     if answer != "y":
@@ -1115,8 +1134,8 @@ def upload_inputs_to_s3(local_dir: Path, bucket: str, s3_prefix: str) -> None:
         return
 
     for file_path in files:
-        relative = file_path.relative_to(local_dir)
-        s3_key = s3_prefix + str(relative)
+        relative = file_path.relative_to(local_dir).as_posix()
+        s3_key = s3_prefix + relative
         print(f"  Uploading {relative} -> s3://{bucket}/{s3_key}")
         s3.upload_file(str(file_path), bucket, s3_key)
     print("Upload complete.")
@@ -1161,6 +1180,16 @@ def main() -> None:
             "'new' (single workbook with a 'Responses' sheet plus Q.U. sheets). "
             "Prompted if omitted."
         ),
+    )
+    parser.add_argument(
+        "--bucket",
+        default=DEFAULT_S3_BUCKET,
+        help=f"S3 bucket to upload to (default: {DEFAULT_S3_BUCKET})",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="List files that would be uploaded without contacting S3.",
     )
     args = parser.parse_args()
 
@@ -1275,7 +1304,9 @@ def main() -> None:
     if args.until == "upload":
         s3_prefix = f"app_data/consultations/{name}/inputs/"
         try:
-            upload_inputs_to_s3(output_dir, "i-dot-ai-prod-consult-data", s3_prefix)
+            upload_inputs_to_s3(
+                output_dir, args.bucket, s3_prefix, dry_run=args.dry_run
+            )
         except botocore.exceptions.NoCredentialsError as e:
             print(f"\nAWS error: {e}")
             print("\nTo fix, either:")
