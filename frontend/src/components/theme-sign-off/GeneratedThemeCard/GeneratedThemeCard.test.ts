@@ -19,7 +19,7 @@ describe("GeneratedThemeCard", () => {
     themesBeingSelected: [],
     hasNestedThemes: false,
   };
-  const answers = ["Answer 1", "Answer 2"];
+  const responses = ["Answer 1", "Answer 2"];
 
   it("should render", async () => {
     const { container } = render(GeneratedThemeCard, testData);
@@ -27,9 +27,9 @@ describe("GeneratedThemeCard", () => {
     expect(screen.getByText(testData.theme.name)).toBeInTheDocument();
     expect(screen.getByText(testData.theme.description)).toBeInTheDocument();
 
-    // Answers hidden initially
-    answers.forEach((answer) => {
-      expect(screen.queryByText(answer)).toBeNull();
+    // Responses hidden initially
+    responses.forEach((response) => {
+      expect(screen.queryByText(response)).toBeNull();
     });
 
     expect(container).toMatchSnapshot();
@@ -90,7 +90,7 @@ describe("GeneratedThemeCard", () => {
       "level",
       "leftPadding",
       "handleSelect",
-      "answersMock",
+      "responsesMock",
     ]);
   });
 

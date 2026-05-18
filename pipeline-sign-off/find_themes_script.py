@@ -8,6 +8,7 @@ from pathlib import Path
 
 import boto3
 import pandas as pd
+import sentry_sdk
 import urllib3
 from openai import OpenAI
 from pydantic import BaseModel
@@ -48,6 +49,17 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
+
+# Initialize Sentry if DSN is provided
+sentry_dsn = os.environ.get("SENTRY_DSN")
+if sentry_dsn:
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        environment=os.environ.get("ENVIRONMENT", "unknown"),
+        traces_sample_rate=1.0,
+    )
+    logger.info("Sentry initialized")
+
 
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID")
@@ -271,7 +283,7 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                 refined_themes_df = await generate_themes(question, responses_df, llm)
 
                 def refined_themes_to_theme_node(row: dict):
-                    topic_label, topic_description = row["topic"].split(":")
+                    topic_label, topic_description = row["topic"].split(":", 1)
                     return ThemeNode(
                         topic_id=row["topic_id"],
                         topic_label=topic_label,

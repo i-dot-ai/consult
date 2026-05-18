@@ -97,6 +97,8 @@ module "import_candidate_themes_lambda" {
     AWS_BUCKET_NAME   = module.app_bucket.id
     LAMBDA_AWS_REGION = data.aws_region.current.id
     AWS_ACCOUNT_ID    = data.aws_caller_identity.current.account_id
+    SENTRY_DSN        = var.backend_sentry_dsn
+    ENVIRONMENT       = terraform.workspace
   }
 }
 
@@ -142,5 +144,7 @@ module "import_response_annotations_lambda" {
     AWS_BUCKET_NAME   = module.app_bucket.id
     LAMBDA_AWS_REGION = data.aws_region.current.id
     AWS_ACCOUNT_ID    = data.aws_caller_identity.current.account_id
+    SENTRY_DSN        = var.backend_sentry_dsn
+    ENVIRONMENT       = terraform.workspace
   }
 }

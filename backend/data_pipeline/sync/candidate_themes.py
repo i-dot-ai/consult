@@ -13,7 +13,6 @@ from consultations.models import (
     CandidateThemeResponse,
     Consultation,
     Question,
-    Response,
 )
 from data_pipeline.models import CandidateThemeBatch, ThemeMappingInput, ThemeNodeList
 
@@ -398,8 +397,7 @@ def export_candidate_themes_to_s3(consultation: Consultation) -> int:
     questions = consultation.question_set.filter(has_free_text=True)
 
     for question in questions:
-        # Only export top-level candidate themes (not children)
-        themes = CandidateTheme.objects.filter(question=question, parent__isnull=True)
+        themes = CandidateTheme.objects.filter(question=question)
 
         if not themes.exists():
             logger.warning(
@@ -465,7 +463,7 @@ def _build_candidate_theme_lookup(
     if not batch_themes:
         return {}
 
-    db_themes = CandidateTheme.objects.filter(question=question, parent__isnull=True)
+    db_themes = CandidateTheme.objects.filter(question=question)
     db_themes_by_name = {theme.name: theme for theme in db_themes}
 
     batch_key_to_db_theme = {}
@@ -505,8 +503,8 @@ def _import_candidate_theme_responses(
     # Delete existing mappings for this question's candidate themes
     CandidateThemeResponse.objects.filter(candidate_theme__question=question).delete()
 
-    # Build response lookup by themefinder_id
-    responses = Response.objects.filter(question=question).select_related("respondent")
+    # Build response lookup by themefinder_id, excluding empty/placeholder responses
+    responses = question.get_non_empty_responses().select_related("respondent")
     response_lookup = {r.respondent.themefinder_id: r for r in responses}
 
     mapping_lookup = {m.themefinder_id: m.theme_keys for m in mappings}

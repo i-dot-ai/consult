@@ -87,7 +87,7 @@
 <TitleRow
   level={1}
   title="Finalise Themes"
-  subtitle="Finalise themes to use for AI to map responses to"
+  subtitle="Finalise themes to use for AI to assign responses to"
 >
   <Price slot="icon" />
 </TitleRow>

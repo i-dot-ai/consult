@@ -102,9 +102,15 @@ TRUSTED_ORIGINS = ["http://localhost:3000"]
 if ENVIRONMENT.lower() == "prod":
     TRUSTED_ORIGINS = ["https://consult.ai.cabinetoffice.gov.uk", "https://consult.i.ai.gov.uk"]
 if ENVIRONMENT.lower() == "dev":
-    TRUSTED_ORIGINS = ["https://consult-dev.ai.cabinetoffice.gov.uk", "https://consult.dev.i.ai.gov.uk"]
+    TRUSTED_ORIGINS = [
+        "https://consult-dev.ai.cabinetoffice.gov.uk",
+        "https://consult.dev.i.ai.gov.uk",
+    ]
 if ENVIRONMENT.lower() == "preprod":
-    TRUSTED_ORIGINS = ["https://consult-preprod.ai.cabinetoffice.gov.uk", "https://consult.preprod.i.ai.gov.uk"]
+    TRUSTED_ORIGINS = [
+        "https://consult-preprod.ai.cabinetoffice.gov.uk",
+        "https://consult.preprod.i.ai.gov.uk",
+    ]
 
 CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS
 

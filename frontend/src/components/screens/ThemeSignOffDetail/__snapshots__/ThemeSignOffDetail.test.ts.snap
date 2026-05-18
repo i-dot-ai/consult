@@ -54,7 +54,7 @@ exports[`EditUser > should match snapshot after loading 1`] = `
       <p
         class="text-neutral-600 text-md"
       >
-        Finalise themes to use for AI to map responses to
+        Finalise themes to use for AI to assign responses to
       </p>
       <!---->
     </div>
@@ -217,7 +217,7 @@ exports[`EditUser > should match snapshot after loading 1`] = `
         <p
           class="text-sm text-neutral-500"
         >
-          Manage your 1 selected theme for the AI in mapping responses. Edit titles and descriptions, or
+          Manage your 1 selected theme for the AI in assigning responses. Edit titles and descriptions, or
             add new themes as needed.
           <!---->
         </p>
@@ -586,7 +586,7 @@ exports[`EditUser > should match snapshot initially 1`] = `
       <p
         class="text-neutral-600 text-md"
       >
-        Finalise themes to use for AI to map responses to
+        Finalise themes to use for AI to assign responses to
       </p>
       <!---->
     </div>
@@ -749,8 +749,8 @@ exports[`EditUser > should match snapshot initially 1`] = `
         <p
           class="text-sm text-neutral-500"
         >
-          Finalise the themes for the AI to map responses to. Choose from the
-            AI generated themes or add new.
+          Finalise the themes for the AI to assign responses to. Choose from
+            the AI found themes or add new.
           <!---->
         </p>
         <!---->

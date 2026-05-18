@@ -11,7 +11,7 @@ export default {
       props: { consultationStage: "theme_sign_off" },
     },
     {
-      name: "Stage Theme Mapping",
+      name: "Stage Assigning Themes (AI)",
       props: { consultationStage: "theme_mapping" },
     },
     {

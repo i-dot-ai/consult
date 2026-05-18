@@ -1,0 +1,181 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ThemeSelectionForm > should match snapshot initially 1`] = `
+<div>
+  <div
+    class="rounded-xl border border-gray-200 bg-white p-6"
+  >
+    <form
+      class="flex flex-col gap-4"
+    >
+      <!---->
+       
+      <div
+        class="space-y-3"
+      >
+        <div
+          class="rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
+        >
+          <div
+            class="mb-5"
+          >
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="theme-one"
+                name="selected_themes"
+                type="checkbox"
+                value="theme-one"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="theme-one"
+              >
+                Theme One
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <div
+            class="ml-6 mt-1 text-sm text-gray-600"
+          >
+            Theme one description
+          </div>
+          <!---->
+        </div>
+        <div
+          class="rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
+        >
+          <div
+            class="mb-5"
+          >
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="theme-two"
+                name="selected_themes"
+                type="checkbox"
+                value="theme-two"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="theme-two"
+              >
+                Theme Two
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <div
+            class="ml-6 mt-1 text-sm text-gray-600"
+          >
+            Theme two description
+          </div>
+          <!---->
+        </div>
+        <div
+          class="rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
+        >
+          <div
+            class="mb-5"
+          >
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="theme-three"
+                name="selected_themes"
+                type="checkbox"
+                value="theme-three"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="theme-three"
+              >
+                Theme Three
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <div
+            class="ml-6 mt-1 text-sm text-gray-600"
+          >
+            Theme three description
+          </div>
+          <!---->
+        </div>
+        
+      </div>
+       
+      <div
+        class="space-y-3 border-t border-gray-200 pt-4"
+      >
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+          data-variant="primary"
+          role="button"
+          tabindex="0"
+          type="submit"
+        >
+          <!---->
+          <!---->
+          Save and continue to next response
+          
+          
+          
+        </button>
+        
+        <!---->
+         
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          data-variant="gray"
+          role="button"
+          tabindex="0"
+          type="button"
+        >
+          <!---->
+          <!---->
+          Skip this response
+          
+          
+          
+        </button>
+        
+        <!---->
+      </div>
+    </form>
+  </div>
+  
+</div>
+`;

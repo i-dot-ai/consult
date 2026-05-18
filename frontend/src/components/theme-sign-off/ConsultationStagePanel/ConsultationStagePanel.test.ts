@@ -44,7 +44,7 @@ describe("ConsultationStagePanel", () => {
     ).toBeInTheDocument();
   });
 
-  it("should render correctly for theme_mapping stage", () => {
+  it("should render correctly for assigning themes stage", () => {
     render(ConsultationStagePanel, {
       consultation: { id, stage: "theme_mapping" },
       questionsCount: 10,
@@ -53,7 +53,7 @@ describe("ConsultationStagePanel", () => {
       onConfirmClick: onConfirmClickMock,
     });
 
-    expect(screen.getByText("AI Mapping in Progress")).toBeInTheDocument();
+    expect(screen.getByText("AI Assignment in Progress")).toBeInTheDocument();
     expect(
       screen.getByText(
         /You have completed finalising themes phase for all 10 consultation questions/i,
@@ -70,10 +70,10 @@ describe("ConsultationStagePanel", () => {
       onConfirmClick: onConfirmClickMock,
     });
 
-    expect(screen.getByText("AI Mapping Complete")).toBeInTheDocument();
+    expect(screen.getByText("AI Assignment Complete")).toBeInTheDocument();
     expect(
       screen.getByText(
-        /All consultation responses have been successfully mapped/i,
+        /All consultation responses have been successfully assigned against your selected themes/i,
       ),
     ).toBeInTheDocument();
     expect(
