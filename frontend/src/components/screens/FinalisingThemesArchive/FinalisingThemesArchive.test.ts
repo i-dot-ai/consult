@@ -1,11 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/svelte";
 
-import FinalisingThemeArchive from "./FinalisingThemeArchive.svelte";
+import FinalisingThemesArchive from "./FinalisingThemesArchive.svelte";
 import fetchMock from "fetch-mock";
 import { queryClient } from "../../../global/queryClient";
 import { mockRoute } from "../../../global/utils";
-import { getFinaliseThemesUrl } from "../../../global/routes";
 import {
   CONSULTATION_ID,
   consultationMock,
@@ -30,7 +29,7 @@ function clearMocks() {
   queryClient.resetQueries();
 }
 
-describe("FinalisingThemeArchive", () => {
+describe("FinalisingThemesArchive", () => {
   beforeEach(() => {
     clearMocks();
   });
@@ -40,7 +39,7 @@ describe("FinalisingThemeArchive", () => {
     async (question) => {
       setupMocks();
 
-      render(FinalisingThemeArchive, {
+      render(FinalisingThemesArchive, {
         consultationId: CONSULTATION_ID,
       });
 
@@ -56,7 +55,7 @@ describe("FinalisingThemeArchive", () => {
     mockRoute(consultationMock);
     mockRoute(questionsAllSignedOffMock);
 
-    render(FinalisingThemeArchive, {
+    render(FinalisingThemesArchive, {
       consultationId: CONSULTATION_ID,
     });
 
@@ -67,17 +66,16 @@ describe("FinalisingThemeArchive", () => {
     });
   });
 
-  it("should trigger mapping if confirm button is pressed", async () => {
+  it("should trigger assignment if confirm button is pressed", async () => {
     const mockedUpdate = {
-      url: getFinaliseThemesUrl(CONSULTATION_ID),
-      method: "PATCH",
-      body: vi.fn(() => ({ ...consultationMock.body, stage: "theme_mapping" })),
+      ...consultationUpdateMock,
+      body: vi.fn(),
     };
     mockRoute(consultationMock);
     mockRoute(questionsAllSignedOffMock);
     mockRoute(mockedUpdate);
 
-    render(FinalisingThemeArchive, {
+    render(FinalisingThemesArchive, {
       consultationId: CONSULTATION_ID,
     });
 
@@ -86,18 +84,18 @@ describe("FinalisingThemeArchive", () => {
     });
 
     const confirmButton = screen.getByRole("button", {
-      name: "Confirm and Proceed to Mapping",
+      name: "Confirm and Proceed to Assignment",
     });
     const user = userEvent.setup();
 
     await user.click(confirmButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Confirm AI Mapping")).toBeInTheDocument();
+      expect(screen.getByText("Confirm AI Assignment")).toBeInTheDocument();
     });
 
     const modalConfirmButton = screen.getByRole("button", {
-      name: "Yes, Start AI Mapping",
+      name: "Yes, Start AI Assignment",
     });
     await user.click(modalConfirmButton);
 
@@ -116,7 +114,7 @@ describe("FinalisingThemeArchive", () => {
     });
     mockRoute(questionsAllSignedOffMock);
 
-    render(FinalisingThemeArchive, {
+    render(FinalisingThemesArchive, {
       consultationId: CONSULTATION_ID,
     });
 
@@ -125,7 +123,7 @@ describe("FinalisingThemeArchive", () => {
     });
   });
 
-  it("should render correct panel for mapping stage", async () => {
+  it("should render correct panel for Assignment stage", async () => {
     mockRoute({
       ...consultationMock,
       body: {
@@ -135,7 +133,7 @@ describe("FinalisingThemeArchive", () => {
     });
     mockRoute(questionsAllSignedOffMock);
 
-    render(FinalisingThemeArchive, {
+    render(FinalisingThemesArchive, {
       consultationId: CONSULTATION_ID,
     });
 
@@ -144,7 +142,7 @@ describe("FinalisingThemeArchive", () => {
     });
   });
 
-  it("should render correct panel for sign off stage", async () => {
+  it("should render correct panel for finalising themes stage", async () => {
     mockRoute({
       ...consultationMock,
       body: {
@@ -154,7 +152,7 @@ describe("FinalisingThemeArchive", () => {
     });
     mockRoute(questionsMock);
 
-    render(FinalisingThemeArchive, {
+    render(FinalisingThemesArchive, {
       consultationId: CONSULTATION_ID,
     });
 
@@ -163,7 +161,7 @@ describe("FinalisingThemeArchive", () => {
     });
   });
 
-  it("should render correct panel for sign off stage all questions signed off", async () => {
+  it("should render correct panel for finalising themes stage all questions signed off", async () => {
     mockRoute({
       ...consultationMock,
       body: {
@@ -173,7 +171,7 @@ describe("FinalisingThemeArchive", () => {
     });
     mockRoute(questionsAllSignedOffMock);
 
-    render(FinalisingThemeArchive, {
+    render(FinalisingThemesArchive, {
       consultationId: CONSULTATION_ID,
     });
 
@@ -185,7 +183,7 @@ describe("FinalisingThemeArchive", () => {
   it("should match snapshot initially", () => {
     setupMocks();
 
-    const { container } = render(FinalisingThemeArchive, {
+    const { container } = render(FinalisingThemesArchive, {
       consultationId: CONSULTATION_ID,
     });
     expect(container).toMatchSnapshot();
@@ -194,7 +192,7 @@ describe("FinalisingThemeArchive", () => {
   it("should match snapshot after loading", async () => {
     setupMocks();
 
-    const { container } = render(FinalisingThemeArchive, {
+    const { container } = render(FinalisingThemesArchive, {
       consultationId: CONSULTATION_ID,
     });
 

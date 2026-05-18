@@ -13,7 +13,7 @@ import ThemeFormStory from "../finalising-themes/ThemeForm/ThemeFormStory.svelte
 import SelectedThemeCardStory from "../finalising-themes/SelectedThemeCard/SelectedThemeCardStory.svelte";
 import ResponsesListStory from "../finalising-themes/ResponsesList/ResponsesListStory.svelte";
 import GeneratedThemeCardStory from "../finalising-themes/GeneratedThemeCard/GeneratedThemeCardStory.svelte";
-import FinalisingThemeDetailStory from "../screens/FinalisingThemeDetail/FinalisingThemeDetailStory.svelte";
+import FinalisingThemesDetailStory from "../screens/FinalisingThemesDetail/FinalisingThemesDetailStory.svelte";
 import NavigationHeaderStory from "../navigation/Header/HeaderStory.svelte";
 import HeaderConsultStory from "../navigation/HeaderConsult/HeaderConsultStory.svelte";
 import BreadcrumbsStory from "../navigation/Breadcrumbs/BreadcrumbsStory.svelte";
@@ -33,14 +33,14 @@ import FileInputStory from "../inputs/FileInput/FileInputStory.svelte";
 import CreateConsultationFormStory from "../screens/CreateConsultationForm/CreateConsultationFormStory.svelte";
 import EditUserStory from "../screens/EditUserForm/EditUserStory.svelte";
 import ConsultationAnalysisStory from "../screens/ConsultationAnalysis/ConsultationAnalysisStory.svelte";
-import FinalisingThemeDetailCompletedStory from "../screens/FinalisingThemeDetailCompleted/FinalisingThemeDetailCompletedStory.svelte";
+import FinalisingThemesDetailCompletedStory from "../screens/FinalisingThemesDetailCompleted/FinalisingThemesDetailCompletedStory.svelte";
 import AddUserFormStory from "../screens/AddUserForm/AddUserFormStory.svelte";
 import RespondentDetailStory from "../screens/RespondentDetail/RespondentDetailStory.svelte";
 import DeleteUserStory from "../screens/DeleteUserForm/DeleteUserStory.svelte";
 import FindThemesFormStory from "../screens/FindThemesForm/FindThemesFormStory.svelte";
 import AssignThemesFormStory from "../screens/AssignThemesForm/AssignThemesFormStory.svelte";
 import QuestionDetailStory from "../screens/QuestionDetail/QuestionDetailStory.svelte";
-import FinalisingThemeArchiveStory from "../screens/FinalisingThemeArchive/FinalisingThemeArchiveStory.svelte";
+import FinalisingThemesArchiveStory from "../screens/FinalisingThemesArchive/FinalisingThemesArchiveStory.svelte";
 import ThemeSelectionFormStory from "../screens/ThemeSelectionForm/ThemeSelectionFormStory.svelte";
 import QuestionsReviewListStorySvelte from "../screens/QuestionsReviewList/QuestionsReviewListStory.svelte";
 
@@ -82,7 +82,7 @@ export default [
   SelectedThemeCardStory,
   ResponsesListStory,
   GeneratedThemeCardStory,
-  FinalisingThemeDetailStory,
+  FinalisingThemesDetailStory,
   NavigationHeaderStory,
   HeaderConsultStory,
   BreadcrumbsStory,
@@ -102,14 +102,14 @@ export default [
   CreateConsultationFormStory,
   EditUserStory,
   ConsultationAnalysisStory,
-  FinalisingThemeDetailCompletedStory,
+  FinalisingThemesDetailCompletedStory,
   AddUserFormStory,
   RespondentDetailStory,
   DeleteUserStory,
   FindThemesFormStory,
   AssignThemesFormStory,
   QuestionDetailStory,
-  FinalisingThemeArchiveStory,
+  FinalisingThemesArchiveStory,
   ThemeSelectionFormStory,
   QuestionsReviewListStorySvelte,
 ] as Story[];

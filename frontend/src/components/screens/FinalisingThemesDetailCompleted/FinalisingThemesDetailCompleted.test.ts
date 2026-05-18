@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { render, screen, waitFor } from "@testing-library/svelte";
 
-import FinalisingThemeDetailCompleted from "./FinalisingThemeDetailCompleted.svelte";
+import FinalisingThemesDetailCompleted from "./FinalisingThemesDetailCompleted.svelte";
 import {
   CONSULTATION_ID,
   QUESTION_ID,
@@ -12,7 +12,7 @@ import fetchMock from "fetch-mock";
 import { mockRoute } from "../../../global/utils";
 import { queryClient } from "../../../global/queryClient";
 
-describe("FinalisingThemeDetailCompleted", () => {
+describe("FinalisingThemesDetailCompleted", () => {
   afterEach(() => {
     fetchMock.unmockGlobal();
     fetchMock.removeRoutes();
@@ -25,7 +25,7 @@ describe("FinalisingThemeDetailCompleted", () => {
       mockRoute(selectedThemesMock);
       mockRoute(questionMock);
 
-      render(FinalisingThemeDetailCompleted, {
+      render(FinalisingThemesDetailCompleted, {
         consultationId: CONSULTATION_ID,
         questionId: QUESTION_ID,
       });
@@ -40,7 +40,7 @@ describe("FinalisingThemeDetailCompleted", () => {
     mockRoute({ ...selectedThemesMock, status: 500, body: undefined });
     mockRoute(questionMock);
 
-    render(FinalisingThemeDetailCompleted, {
+    render(FinalisingThemesDetailCompleted, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });
@@ -53,7 +53,7 @@ describe("FinalisingThemeDetailCompleted", () => {
   });
 
   it("should match snapshot initially", () => {
-    const { container } = render(FinalisingThemeDetailCompleted, {
+    const { container } = render(FinalisingThemesDetailCompleted, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });
@@ -64,7 +64,7 @@ describe("FinalisingThemeDetailCompleted", () => {
     mockRoute(selectedThemesMock);
     mockRoute(questionMock);
 
-    const { container } = render(FinalisingThemeDetailCompleted, {
+    const { container } = render(FinalisingThemesDetailCompleted, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });

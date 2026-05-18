@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`FinalisingThemeDetailCompleted > should match snapshot after loading 1`] = `
+exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1`] = `
 <div>
   <!---->
   <div
@@ -256,7 +256,7 @@ exports[`FinalisingThemeDetailCompleted > should match snapshot after loading 1`
             data-testid="panel-component"
           >
             <div
-              class="flex justify-between relative pl-4 text-sm before:absolute before:top-[45%] before:left-0 before:transform before:-translate-y-1/2 before:w-2 before:h-2 before:bg-primary before:rounded-full svelte-1mid769"
+              class="flex justify-between relative pl-4 text-sm before:absolute before:top-[45%] before:left-0 before:transform before:-translate-y-1/2 before:w-2 before:h-2 before:bg-primary before:rounded-full svelte-l2s5md"
             >
               <h3>
                 More innovative
@@ -281,7 +281,7 @@ exports[`FinalisingThemeDetailCompleted > should match snapshot after loading 1`
             data-testid="panel-component"
           >
             <div
-              class="flex justify-between relative pl-4 text-sm before:absolute before:top-[45%] before:left-0 before:transform before:-translate-y-1/2 before:w-2 before:h-2 before:bg-primary before:rounded-full svelte-1mid769"
+              class="flex justify-between relative pl-4 text-sm before:absolute before:top-[45%] before:left-0 before:transform before:-translate-y-1/2 before:w-2 before:h-2 before:bg-primary before:rounded-full svelte-l2s5md"
             >
               <h3>
                 Innovative packaging
@@ -343,7 +343,7 @@ exports[`FinalisingThemeDetailCompleted > should match snapshot after loading 1`
 </div>
 `;
 
-exports[`FinalisingThemeDetailCompleted > should match snapshot initially 1`] = `
+exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] = `
 <div>
   <!---->
   <div
@@ -599,7 +599,7 @@ exports[`FinalisingThemeDetailCompleted > should match snapshot initially 1`] = 
             data-testid="panel-component"
           >
             <div
-              class="flex justify-between relative pl-4 text-sm svelte-1mid769"
+              class="flex justify-between relative pl-4 text-sm svelte-l2s5md"
             >
               <p
                 class="blink w-full select-none bg-neutral-200 text-xs text-neutral-100"
@@ -618,7 +618,7 @@ exports[`FinalisingThemeDetailCompleted > should match snapshot initially 1`] = 
             data-testid="panel-component"
           >
             <div
-              class="flex justify-between relative pl-4 text-sm svelte-1mid769"
+              class="flex justify-between relative pl-4 text-sm svelte-l2s5md"
             >
               <p
                 class="blink w-full select-none bg-neutral-200 text-xs text-neutral-100"

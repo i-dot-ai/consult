@@ -317,26 +317,26 @@ export const responsesEditMock = {
   body: ({ body, params }: { body: string; params: { answerId: string } }) => {
     const parsedBody = JSON.parse(body);
 
-    const userResponse = responses.find(
+    const consultationResponse = responses.find(
       (response) => response.id === params.answerId,
     );
 
-    if (!userResponse) {
+    if (!consultationResponse) {
       return;
     }
 
-    userResponse.evidenceRich = parsedBody.evidenceRich || null;
-    userResponse.themes = [];
+    consultationResponse.evidenceRich = parsedBody.evidenceRich || null;
+    consultationResponse.themes = [];
 
     parsedBody.themes.forEach((theme: { id: string }) => {
       const newTheme = themes.find((item) => item.id === theme.id);
 
-      const themeExists = userResponse.themes?.find(
+      const themeExists = consultationResponse.themes?.find(
         (item) => item.id === theme.id,
       );
       if (!themeExists) {
-        userResponse.themes = [
-          ...userResponse.themes!,
+        consultationResponse.themes = [
+          ...consultationResponse.themes!,
           {
             id: newTheme!.id,
             description: newTheme!.description,

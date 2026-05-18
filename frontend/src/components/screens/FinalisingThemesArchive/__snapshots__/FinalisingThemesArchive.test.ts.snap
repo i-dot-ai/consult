@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`FinalisingThemeArchive > should match snapshot after loading 1`] = `
+exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
 <div>
   <!---->
   <div
@@ -240,7 +240,7 @@ exports[`FinalisingThemeArchive > should match snapshot after loading 1`] = `
               Next:
             </strong>
              Once all questions are signed off, you can confirm and
-    proceed to AI mapping.
+    proceed to AI assignment.
           </p>
           <!---->
         </div>
@@ -851,7 +851,7 @@ exports[`FinalisingThemeArchive > should match snapshot after loading 1`] = `
 </div>
 `;
 
-exports[`FinalisingThemeArchive > should match snapshot initially 1`] = `
+exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
 <div>
   <!---->
   <div

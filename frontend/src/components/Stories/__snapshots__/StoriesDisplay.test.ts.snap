@@ -140,9 +140,9 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           <li>
             <a
               class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
-              href="/stories?selected=FinalisingThemeDetail"
+              href="/stories?selected=FinalisingThemesDetail"
             >
-              FinalisingThemeDetail
+              FinalisingThemesDetail
             </a>
           </li>
           <li>
@@ -172,9 +172,9 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           <li>
             <a
               class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
-              href="/stories?selected=FinalisingThemeDetailCompleted"
+              href="/stories?selected=FinalisingThemesDetailCompleted"
             >
-              FinalisingThemeDetailCompleted
+              FinalisingThemesDetailCompleted
             </a>
           </li>
           <li>
@@ -196,9 +196,9 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           <li>
             <a
               class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
-              href="/stories?selected=FinalisingThemeArchive"
+              href="/stories?selected=FinalisingThemesArchive"
             >
-              FinalisingThemeArchive
+              FinalisingThemesArchive
             </a>
           </li>
           <!---->

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { render, screen, waitFor } from "@testing-library/svelte";
 
-import FinalisingThemeDetail from "./FinalisingThemeDetail.svelte";
+import FinalisingThemesDetail from "./FinalisingThemesDetail.svelte";
 import fetchMock from "fetch-mock";
 import { queryClient } from "../../../global/queryClient";
 import { mockRoute } from "../../../global/utils";
@@ -50,7 +50,7 @@ describe("EditUser", () => {
     async (selectedTheme) => {
       setupMocks();
 
-      render(FinalisingThemeDetail, {
+      render(FinalisingThemesDetail, {
         consultationId: CONSULTATION_ID,
         questionId: QUESTION_ID,
       });
@@ -66,7 +66,7 @@ describe("EditUser", () => {
     async (candidateTheme) => {
       setupMocks();
 
-      render(FinalisingThemeDetail, {
+      render(FinalisingThemesDetail, {
         consultationId: CONSULTATION_ID,
         questionId: QUESTION_ID,
       });
@@ -92,7 +92,7 @@ describe("EditUser", () => {
       },
     }).forEach((mock) => mockRoute(mock));
 
-    render(FinalisingThemeDetail, {
+    render(FinalisingThemesDetail, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });
@@ -137,7 +137,7 @@ describe("EditUser", () => {
       },
     }).forEach((mock) => mockRoute(mock));
 
-    render(FinalisingThemeDetail, {
+    render(FinalisingThemesDetail, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });
@@ -173,7 +173,7 @@ describe("EditUser", () => {
   it("should update selected theme details", async () => {
     setupMocks();
 
-    render(FinalisingThemeDetail, {
+    render(FinalisingThemesDetail, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });
@@ -214,7 +214,7 @@ describe("EditUser", () => {
   it("should match snapshot initially", () => {
     setupMocks();
 
-    const { container } = render(FinalisingThemeDetail, {
+    const { container } = render(FinalisingThemesDetail, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });
@@ -224,7 +224,7 @@ describe("EditUser", () => {
   it("should match snapshot after loading", async () => {
     setupMocks();
 
-    const { container } = render(FinalisingThemeDetail, {
+    const { container } = render(FinalisingThemesDetail, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });

@@ -5,13 +5,13 @@ import {
   questionsAllSignedOffMock,
   questionsMock,
 } from "./mocks";
-import FinalisingThemeArchiveArchive from "./FinalisingThemeArchive.svelte";
+import FinalisingThemesArchive from "./FinalisingThemesArchive.svelte";
 
 const consultationId = $state("test-consultation");
 
 export default {
-  name: "FinalisingThemeArchive",
-  component: FinalisingThemeArchiveArchive,
+  name: "FinalisingThemesArchive",
+  component: FinalisingThemesArchive,
   category: "Screens",
   mocks: [consultationMock, consultationUpdateMock, questionsMock],
   props: [{ name: "consultationId", value: consultationId, type: "text" }],
