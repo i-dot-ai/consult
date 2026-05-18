@@ -32,14 +32,6 @@ dependencies = [
 ]
 
 [dependency-groups]
-# Optional deps for the consultation setup CLIs in /scripts.
-# Not pulled in by default; enable with `uv sync --group scripts` or
-# run via `uv run --group scripts python ../scripts/<file>.py`.
-scripts = [
-  "pandas>=2.0",
-  "openpyxl>=3.1",
-  "xlsxwriter>=3.2",
-]
 dev = [
   "django-extensions>=4.1",
   "pydot>=4.0.1",
