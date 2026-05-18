@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install --yes build-essential > /dev/null
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Set up workspace at /src so the layout matches the repo: pyproject + uv.lock at root,
-# with backend/ and themefinder/ as workspace members.
+# with backend/ and themefinder/ as workspace members. Only the manifests required by
+# the target package (consult) are copied; uv tolerates missing non-target members.
 WORKDIR /src
 
 COPY ./pyproject.toml ./uv.lock ./
@@ -23,7 +24,7 @@ ENV UV_PROJECT_ENVIRONMENT=/src/backend/venv
 
 # Install dependencies (workspace-aware) - creates /src/backend/venv with an editable
 # install pointing at /src/themefinder/src
-RUN uv sync --frozen --no-install-project
+RUN uv sync --frozen --no-install-project --package consult
 
 
 # app
