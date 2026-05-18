@@ -49,7 +49,7 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: install dependencies
-        run: uv sync --all-packages --all-extras --group dev
+        run: uv sync --all-packages --group dev
 
       - name: Setup app
         env:
@@ -75,7 +75,7 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
-        run: uv sync --all-packages --all-extras --group dev
+        run: uv sync --all-packages --group dev
 
       - name: Check code formatting
         run: |
