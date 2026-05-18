@@ -2,12 +2,11 @@ FROM public.ecr.aws/docker/library/python:3.12-slim AS uv-packages
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# All workspace member manifests are required for uv to resolve the workspace.
+# Only the manifests required by the target package are copied; uv tolerates missing
+# non-target workspace members.
 WORKDIR /src
 COPY pyproject.toml uv.lock .python-version ./
-COPY backend/pyproject.toml ./backend/
 COPY pipeline-mapping/pyproject.toml ./pipeline-mapping/
-COPY pipeline-sign-off/pyproject.toml ./pipeline-sign-off/
 COPY themefinder/pyproject.toml ./themefinder/
 COPY themefinder/src/ ./themefinder/src/
 
