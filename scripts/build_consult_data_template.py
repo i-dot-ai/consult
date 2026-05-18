@@ -85,9 +85,9 @@ from build_consult_data_dummy_content import (
     DUMMY_EXPLANATIONS,
 )
 
-VERSION = "_v003"
+VERSION = "v003"
 OUTPUT_PATH = (
-    Path(__file__).resolve().parent / f"consult_data_template{VERSION} - example.xlsx"
+    Path(__file__).resolve().parent / f"consult_data_template_{VERSION}.xlsx"
 )
 
 DATA_ROWS = 100000  # rows pre-wired with checks on each metadata sheet

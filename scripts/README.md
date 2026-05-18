@@ -1,18 +1,18 @@
 # Consultation setup scripts
 
 Standalone CLI tools for preparing a new consultation for the
-ThemeFinder pipeline. They run outside the Django backend but reuse its
-`uv` environment for dependencies.
+ThemeFinder pipeline. They run as a self-contained `uv` project under
+`scripts/` — independent of the Django backend env.
 
 | Script | Purpose |
 | --- | --- |
 | `setup_consultation.py` | Validate a Q.U. workbook against a response file, build the ThemeFinder input layout (`respondents.jsonl`, `question_part_<n>/...`), and upload the result to S3. |
-| `build_consult_data_template.py` | Generate `consult_data_template.xlsx` — an opinionated Q.U. workbook skeleton with live in-sheet validation rules and a pre-populated dummy Responses sheet. |
+| `build_consult_data_template.py` | Generate `consult_data_template_v003.xlsx` — an opinionated Q.U. workbook skeleton with live in-sheet validation rules and a pre-populated dummy Responses sheet. |
 | `build_consult_data_dummy_content.py` | Static word lists used as dummy content by the template builder. Not run directly. |
 
 The full set of validation rules implemented in both
 `setup_consultation.py` and the in-sheet checks in
-`consult_data_template.xlsx` is documented in
+`consult_data_template_v003.xlsx` is documented in
 [`setup_consultation_checks.md`](./setup_consultation_checks.md).
 
 ## Running the scripts
@@ -20,7 +20,7 @@ The full set of validation rules implemented in both
 From the repo root:
 
 ```bash
-# Build the opinionated Q.U. template (writes consult_data_template.xlsx
+# Build the opinionated Q.U. template (writes consult_data_template_v003.xlsx
 # next to the script):
 make build-consultation-template
 
@@ -29,14 +29,16 @@ make setup-consultation name=my_consultation
 ```
 
 Stop early with `until=validate` (just print the validation report) or
-`until=build` (build inputs locally, skip the S3 upload).
+`until=build` (build inputs locally, skip the S3 upload). Pass
+`--dry-run` to list what would be uploaded without contacting S3,
+and `--bucket` to point at a non-default bucket.
 
 To run the scripts directly:
 
 ```bash
-cd backend
-uv run python ../scripts/build_consult_data_template.py
-uv run python ../scripts/setup_consultation.py my_consultation --until validate
+cd scripts
+uv run python build_consult_data_template.py
+uv run python setup_consultation.py my_consultation --until validate
 ```
 
 ## How `setup_consultation.py` finds files
@@ -54,8 +56,7 @@ working without credentials.
 ## Tests
 
 ```bash
-cd backend
-uv run pytest ../scripts/tests/
+make test-consultation-scripts
 ```
 
 Fixtures in `tests/fixtures/setup_consultation/` cover the three

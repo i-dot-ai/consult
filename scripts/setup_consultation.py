@@ -113,11 +113,13 @@ NULL_LIKE_VALUES: frozenset[str] = frozenset(
 
 
 def _normalise_null_like(df: pd.DataFrame) -> pd.DataFrame:
-    """Replace null-type signifiers (e.g. "-", "N/A", "none") with NaN.
+    """Replace null-type signifiers (the values in ``NULL_LIKE_VALUES``) with NaN.
 
     Operates only on object/string columns and leaves the themefinder_id alone.
     Comparison is done on a stripped, lowercased copy so we don't lose the
-    original casing of real responses.
+    original casing of real responses. Today the matched values are ``""`` and
+    ``"-"``; if more signifiers turn up in real data (e.g. ``"n/a"``,
+    ``"none"``), add them to ``NULL_LIKE_VALUES``.
     """
     for col in df.columns:
         if col == "themefinder_id":
@@ -195,7 +197,9 @@ def _load_qu_sheet(
             df = pd.read_excel(path, sheet_name=candidate, header=None)
             matched_name = candidate
             break
-        except Exception:
+        except ValueError:
+            # pandas raises ValueError("Worksheet named '...' not found") when
+            # the sheet is absent. Real I/O / parse errors are not caught here.
             continue
     if df is None:
         return None
@@ -692,6 +696,9 @@ def create_respondents_jsonl(
     demographic_labels: list[str],
     output_dir: Path,
 ) -> None:
+    # Work on a copy — callers don't expect their dataframe to be rewritten
+    # (rename, derived `demographic_data` column).
+    df = df.copy()
     for c in demographic_columns:
         df[c] = (
             df[c]
@@ -833,8 +840,12 @@ def create_question_inputs(
             "has_free_text": has_free_text,
         }
         if has_options:
+            # "Not Provided" is a sentinel we fill in for missing hybrid
+            # cells — it's not a real option and must not leak into the
+            # canonical option list on question.json.
             question_data["multi_choice_options"] = sorted(
-                set(item for sublist in answers["options"] for item in sublist)
+                {item for sublist in answers["options"] for item in sublist}
+                - {"Not Provided"}
             )
         with open(q_dir / "question.json", "w") as f:
             json.dump(question_data, f, indent=4)
@@ -1012,6 +1023,10 @@ def run_pipeline(
     responses_df, original_headers = load_responses(
         responses_path, sheet_name=responses_sheet
     )
+    # The pipeline mutates `responses_df` (fillna, Other-collapse, demographic
+    # rename via create_respondents_jsonl). Defensive copy keeps callers' df
+    # intact in case they're reusing it.
+    responses_df = responses_df.copy()
     print(f"  Loaded {len(responses_df)} responses")
 
     question_sheets = load_and_number_question_sheets(question_understanding_path)
@@ -1205,8 +1220,12 @@ def main() -> None:
             print("Error: consultation name cannot be empty.")
             sys.exit(1)
 
+    original_name = name
     name = to_snake_case(name)
-    print(f"Using consultation name: {name}")
+    if name != original_name:
+        print(f"Using consultation name: {name} (rewrote from {original_name!r})")
+    else:
+        print(f"Using consultation name: {name}")
 
     base_dir = Path(__file__).resolve().parent / "consultations"
 
