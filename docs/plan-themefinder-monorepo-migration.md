@@ -1,6 +1,6 @@
 # Plan: Move ThemeFinder into Consult as a Monorepo
 
-> **Updated 2026-04-30.** This supersedes the original 2026-04-08 plan. The shape of the migration (uv workspace, 3 PRs, subtree sync to public repo) is unchanged. The deltas are in the **Changes since original plan** section at the bottom — read those first if you've seen the prior version.
+> **Updated 2026-05-18.** Supersedes the 2026-04-30 revision. The shape (uv workspace, 3 PRs) is unchanged, but PR 3 is now "publish PyPI from consult + archive the public repo with a redirect notice" rather than an outbound subtree sync. Rationale: reviewer feedback on PR #1321 — archiving with a redirect is the standard consolidation pattern (e.g. `googleapis/python-bigquery` → `google-cloud-python`) and avoids a force-pushing sync workflow for no practical gain. The deltas are in the **Changes since previous revision** section at the bottom.
 
 ## Context
 
@@ -55,7 +55,7 @@ consult/
 └── .github/workflows/
     ├── themefinder-ci.yml      ← NEW: tests + 95% coverage
     ├── themefinder-eval.yml    ← NEW: LLM evals (moved from public repo)
-    ├── sync-themefinder.yml    ← NEW: auto-push subtree to public repo
+    ├── deploy-themefinder-pypi.yml ← NEW: publishes themefinder to PyPI on release tag
     ├── backend-ci.yml          ← MODIFIED: also trigger on themefinder/** changes; sync from root
     └── ... (existing workflows unchanged)
 ```
@@ -68,7 +68,7 @@ The migration is split into 3 PRs. Phases 1–3 must land together because `buil
 |---|---|---|---|
 | **PR 1** | 1 + 2 + 3 | Core migration: copy themefinder, workspace config, Dockerfiles, Makefile | Atomic: must land as one |
 | **PR 2** | 4 | CI: themefinder-ci.yml, themefinder-eval.yml, backend-ci.yml triggers, merged pre-commit | After PR 1 |
-| **PR 3** | 5 | Public repo sync: sync workflow + token + README updates | After PR 1 |
+| **PR 3** | 5 | Publish from consult + archive public repo with redirect notice | After PR 1 |
 
 ## Implementation Checklist
 
@@ -278,35 +278,28 @@ Consult's `.pre-commit-config.yaml` and themefinder's differ in versions, hook s
 - [ ] Keep the local `detect-ip` and `detect-aws-account` hooks.
 - [ ] `run_precommit.yml` already uses `python-version-file: 'backend/pyproject.toml'`. That's fine, no change needed.
 
-### PR 3: Public Repo Sync
+### PR 3: Publish from consult, archive public repo
 
-- [ ] Create `.github/workflows/sync-themefinder.yml`:
-  ```yaml
-  name: Sync themefinder to public repo
-  on:
-    push:
-      branches: [main]
-      paths: ['themefinder/**']
-  jobs:
-    sync:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v6
-          with:
-            fetch-depth: 0
-        - name: Push themefinder subtree to public repo
-          run: |
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git remote add themefinder https://x-access-token:${{ secrets.THEMEFINDER_PUSH_TOKEN }}@github.com/i-dot-ai/themefinder.git
-            git subtree split --prefix=themefinder -b themefinder-sync
-            git push themefinder themefinder-sync:main --force
-  ```
-- [ ] Create `THEMEFINDER_PUSH_TOKEN` secret in consult repo (GitHub PAT with push access to `i-dot-ai/themefinder`).
-- [ ] In the public `i-dot-ai/themefinder` repo: keep `deploy-pypi.yml` (release-tag triggered) and `deploy-docs.yml` (push-to-main triggered, fires automatically after each sync). **Delete `tests.yml`, `eval.yml`, `pre-commit.yml` from the public repo** to avoid duplicate work — those run in consult now.
-- [ ] Update public repo README: development happens in `i-dot-ai/consult`; this repo is a published mirror. Issues + PyPI releases still happen here.
-- [ ] Verify: merge a no-op `themefinder/` change to consult main; confirm it appears in public repo and `deploy-docs.yml` succeeds.
-- [ ] Document the PyPI release process in consult `docs/`: bump version in `consult/themefinder/pyproject.toml` → merge to main → wait for sync → create release on public repo with tag matching version → `deploy-pypi.yml` fires.
+The public `i-dot-ai/themefinder` repo is archived (read-only) with a redirect notice. PyPI releases are cut from consult going forward. Historic source and release tags remain browseable on the archive.
+
+**In consult:**
+
+- [ ] Port `deploy-pypi.yml` from the public themefinder repo to `consult/.github/workflows/deploy-themefinder-pypi.yml`. Trigger: `release` event with a tag prefix like `themefinder-v*` (namespaced so it can't collide with future consult releases). Working dir: `themefinder/`. Build with `uv build --package themefinder` from repo root; publish via the existing trusted-publisher setup on PyPI (or `PYPI_API_TOKEN` secret — copy from themefinder repo if not already set).
+- [ ] Port docs deploy: `themefinder/mkdocs.yml` and `docs/` come over with the copy in PR 1. Add `.github/workflows/deploy-themefinder-docs.yml` (or fold into an existing docs workflow) triggered on push to `main` with `paths: ['themefinder/docs/**', 'themefinder/src/**']`.
+- [ ] Copy secrets required by `deploy-pypi.yml` / `deploy-docs.yml` from themefinder repo into consult (PyPI token if not using trusted publishing; docs deploy creds).
+- [ ] Document the PyPI release process in `consult/docs/`: bump version in `themefinder/pyproject.toml` → merge to consult main → cut a GitHub release in consult with tag `themefinder-vX.Y.Z` → `deploy-themefinder-pypi.yml` fires.
+
+**In the public `i-dot-ai/themefinder` repo:**
+
+- [ ] Update README to a short redirect notice at the top: "ThemeFinder development has moved to [i-dot-ai/consult](https://github.com/i-dot-ai/consult/tree/main/themefinder). File issues and PRs there. This repo is preserved read-only for historic source and PyPI release tags. `pip install themefinder` continues to work unchanged."
+- [ ] Disable issues and PRs (Settings → Features) so traffic is funnelled to consult.
+- [ ] Archive the repo (Settings → Archive this repository). All workflows (`tests.yml`, `eval.yml`, `pre-commit.yml`, `deploy-pypi.yml`, `deploy-docs.yml`) stop running on the archive — no need to delete them.
+
+**Verification:**
+
+- [ ] After archive, confirm the redirect notice is the first thing visible on the repo landing page.
+- [ ] In consult: cut a no-op `themefinder-vX.Y.Z+test` patch release; confirm `deploy-themefinder-pypi.yml` publishes to PyPI TestPyPI (or a pre-release version on PyPI) and `pip install themefinder==X.Y.Z+test` resolves.
+- [ ] Confirm `pip install themefinder` (latest release) still works after the next real release is cut from consult.
 
 ## Workflow Locations After Migration
 
@@ -317,9 +310,9 @@ Consult's `.pre-commit-config.yaml` and themefinder's differ in versions, hook s
 | Backend tests | consult repo (existing) | PR/push touching `backend/**`, `themefinder/**`, `pyproject.toml`, `uv.lock` |
 | Pre-commit | consult repo (existing, with merged config) | PR/push to main |
 | Docker builds (4 images) | consult repo (existing) | Every push |
-| Auto-sync to public repo | consult repo | Push to main touching `themefinder/**` |
-| Docs deploy | public themefinder repo (kept) | Push to main (fires after auto-sync) |
-| PyPI publish | public themefinder repo (kept) | Release tag (manual) |
+| Docs deploy | consult repo | Push to main touching `themefinder/docs/**` or `themefinder/src/**` |
+| PyPI publish | consult repo | Release with tag `themefinder-v*` |
+| Public `i-dot-ai/themefinder` | archived, read-only | n/a — historic source + release tags only |
 
 ## Risks and Mitigations
 
@@ -333,7 +326,7 @@ Consult's `.pre-commit-config.yaml` and themefinder's differ in versions, hook s
 
 5. **Ruff scoping.** Themefinder's pre-commit runs ruff project-wide; consult deliberately runs ruff only via the Makefile. PR 2 scopes the ruff hooks to `^themefinder/` to avoid changing consult's lint policy in a CI PR. A follow-up decision: do we want ruff at root scope?
 
-6. **Subtree force-push rewrites public repo history.** Each sync is `git subtree split` then `git push --force`. PyPI release tags stay attached to the commits they were cut from, but new releases land on a new history. Acceptable because development now happens in consult; document this in the public repo README.
+6. **PyPI publishing moves to consult — must not break installs.** The PyPI project remains `themefinder` and external `pip install themefinder` continues to resolve unchanged; only the upload origin changes. Risks: (a) trusted-publisher configuration on PyPI is tied to the public repo — either reconfigure trusted publishing for `i-dot-ai/consult` or fall back to a `PYPI_API_TOKEN` secret; (b) tag namespace collides if both repos remain active — archiving the public repo (Phase 5) prevents accidental double-publish.
 
 7. **Eval workflow secret duplication.** Many secrets need copying from themefinder repo to consult. Use a GitHub `eval` environment in consult to scope them (matching themefinder's setup). Some AWS_* secrets already exist in consult — reuse, don't duplicate.
 
@@ -345,7 +338,17 @@ Consult's `.pre-commit-config.yaml` and themefinder's differ in versions, hook s
 
 11. **Pipelines becoming workspace members is a structural change.** Pipelines previously had no `pyproject.toml` and pulled their dep set transitively through `themefinder>=0.8.2`. After migration each pipeline declares its own deps explicitly, locked under the root `uv.lock`. Implications: (a) version drift between backend and pipelines can no longer happen silently — a single resolution must satisfy all four packages, which is the point but may surface conflicts on Phase 1 lock; (b) the inferred dep list (`boto3`, `pandas`, `urllib3`, `openai`, `pydantic`) must be verified against `find_themes_script.py` and `assign_themes_script.py` imports — a missed import will only surface at runtime. (c) Bumps base image from `python:3.11-slim-bullseye` to `python:3.12-slim` to match the workspace lock; smoke-test the built images against AWS Lambda / ECR target environment before merging.
 
-## Changes since the original plan (2026-04-08 → 2026-04-30)
+## Changes since previous revision (2026-04-30 → 2026-05-18)
+
+Driven by review feedback on PR #1321: drop the subtree mirror, archive the public repo with a redirect, publish PyPI from consult.
+
+- **PR 3 reshaped.** Was: outbound `git subtree split` + `git push --force` to the public repo on every `themefinder/**` change, with `deploy-pypi.yml` / `deploy-docs.yml` still firing on the public repo. Now: port `deploy-pypi.yml` (and docs deploy) into consult and archive the public repo read-only with a redirect notice.
+- **No `THEMEFINDER_PUSH_TOKEN` secret needed.** Sync workflow removed; no cross-repo write credentials required.
+- **Release tag scheme.** Releases in consult use a `themefinder-v*` tag prefix to avoid colliding with any future consult-level release tags. Documented in the new release-process note in `consult/docs/`.
+- **Trusted-publisher reconfiguration on PyPI.** New risk #6 — PyPI's trusted-publisher binding (if used) is tied to the public repo and must be moved to `i-dot-ai/consult`, or replaced with a token-based publish. To check before merging PR 3.
+- **External-user surface unchanged.** `pip install themefinder` still resolves; historic releases remain attached to their commits on the (now archived) public repo. Issues redirect to consult via the archived repo's README.
+
+## Changes from original plan (2026-04-08 → 2026-04-30)
 
 The 3-PR shape and the workspace approach are unchanged. Concrete deltas:
 
