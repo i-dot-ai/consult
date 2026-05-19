@@ -254,22 +254,16 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                     class="flex items-center gap-2"
                   >
                     <h2>
-                      Innovative packagingtest title
+                      Innovative packaging
                     </h2>
                      
-                    <div
-                      class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
-                    >
-                      Edited
-                      <!---->
-                    </div>
                     <!---->
                   </header>
                    
                   <p
                     class="my-4 text-sm text-neutral-700"
                   >
-                    Ideas for innovative packaging solutions.test description
+                    Ideas for innovative packaging solutions.
                   </p>
                    
                   <hr
@@ -279,8 +273,8 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                   <small
                     class="mb-4 block text-xs text-neutral-500"
                   >
-                    Edited
-              a moment ago by email@example.com
+                    Added
+              1 months ago by email@example.com
                   </small>
                    
                   <footer

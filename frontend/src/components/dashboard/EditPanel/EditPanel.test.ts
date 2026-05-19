@@ -17,7 +17,7 @@ describe("EditPanel", () => {
     evidenceRich: false,
     resetData: () => {},
     setEditing: () => {},
-    updateResponseMock: () => {},
+    updateResponseMock: () => Promise.resolve(),
   };
 
   it("should match snapshot", async () => {

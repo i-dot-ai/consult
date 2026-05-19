@@ -110,7 +110,9 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
               <div
                 data-testid="fav-button"
               >
-                <div>
+                <div
+                  role="presentation"
+                >
                   <!---->
                   <button
                     aria-pressed="false"
@@ -203,12 +205,10 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
               width="1rem"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <!---->
               <path
                 d="M120-80v-280h120v-160h200v-80H320v-280h320v280H520v80h200v160h120v280H520v-280h120v-80H320v80h120v280H120Zm280-600h160v-120H400v120ZM200-160h160v-120H200v120Zm400 0h160v-120H600v120ZM480-680ZM360-280Zm240 0Z"
                 xmlns="http://www.w3.org/2000/svg"
               />
-              
               <!---->
             </svg>
             <!---->
@@ -239,12 +239,10 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
               width="1rem"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <!---->
               <path
                 d="M200-120q-33 0-56.5-23.5T120-200v-640h80v640h640v80H200Zm40-120v-360h160v360H240Zm200 0v-560h160v560H440Zm200 0v-200h160v200H640Z"
                 xmlns="http://www.w3.org/2000/svg"
               />
-              
               <!---->
             </svg>
             <!---->
@@ -1517,12 +1515,10 @@ exports[`QuestionDetail > should match snapshot initially 1`] = `
               width="1rem"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <!---->
               <path
                 d="M120-80v-280h120v-160h200v-80H320v-280h320v280H520v80h200v160h120v280H520v-280h120v-80H320v80h120v280H120Zm280-600h160v-120H400v120ZM200-160h160v-120H200v120Zm400 0h160v-120H600v120ZM480-680ZM360-280Zm240 0Z"
                 xmlns="http://www.w3.org/2000/svg"
               />
-              
               <!---->
             </svg>
             <!---->

@@ -924,7 +924,7 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
                 <p
                   class="text-neutral-400"
                 >
-                  
+                  Add a stakeholder's name
                 </p>
                 <!---->
               </div>

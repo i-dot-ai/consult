@@ -12,7 +12,9 @@
 
 {#if labelSlot}
   <Switch {id} {label} {value} {handleChange}>
-    <p slot="label">{labelSlot}</p>
+    {#snippet labelSnippet()}
+      <p>{labelSlot}</p>
+    {/snippet}
   </Switch>
 {:else}
   <Switch {id} {label} {value} {handleChange} />
