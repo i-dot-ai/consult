@@ -159,8 +159,13 @@ def get_excel_column_name(n: int) -> str:
 def excel_column_to_number(col: str) -> int:
     """Convert Excel column name to number for sorting (A=1, Z=26, AA=27)."""
     result = 0
-    for c in col.strip().upper():
-        result = result * 26 + (ord(c) - ord("A") + 1)
+    try:
+        for c in col:
+            c = c.strip().upper()
+            result = result * 26 + (ord(c) - ord("A") + 1)
+    except TypeError:
+        print('Non-string column ID:', col)
+        return int(1e9)  # put non-string IDs at the end
     return result
 
 
@@ -192,7 +197,7 @@ def _load_qu_sheet(
     matched_name = None
     for candidate in candidates:
         try:
-            df = pd.read_excel(path, sheet_name=candidate, header=None)
+            df = pd.read_excel(path, sheet_name=candidate, header=None, na_filter=False)
             matched_name = candidate
             break
         except Exception:
@@ -233,6 +238,11 @@ def _load_qu_sheet(
 
     df.columns = column_names
 
+    # Check for NaN values in any of the expected columns — these might indicate mistakes in question understanding
+    for col in column_names:
+        if df[col].isna().any():
+            logger.warning("NaN values found in column '%s' on sheet '%s'", col, matched_name)
+
     # Strip whitespace from column-ID fields — some files have "C " instead of "C"
     for col in column_names:
         if "column" in col.lower():
@@ -247,7 +257,7 @@ def _parse_question_numbers(values: pd.Series) -> list[int] | None:
     for val in values.astype(str):
         try:
             parsed.append(int(val.strip()))
-        except ValueError:
+        except (ValueError, AttributeError):
             return None
     return parsed
 
@@ -419,11 +429,19 @@ def validate_data(
     # well below it and free-text columns well above.
     UNIQUENESS_RATIO_THRESHOLD = 0.2
 
-    def _uniqueness_ratio(col_id: str) -> tuple[int, int, float] | None:
-        """Return (n_unique, n_responses, ratio) for a column, or None if empty."""
+    def _uniqueness_ratio(col_id: str, drop_na: bool = True) -> tuple[int, int, float] | None:
+        """Return (n_unique, n_responses, ratio) for a column, or None if empty.
+           For multichoice questions we should include the nan responses in the count of total responses
+           to ensure that our count is not artifically small
+        """
         if col_id not in responses_df.columns:
             return None
-        series = responses_df[col_id].dropna().astype(str)
+        series = responses_df[col_id]
+        if drop_na:
+            series = series.dropna().astype(str)
+        else:
+            series = series.astype(str)
+
         n_responses = len(series)
         if n_responses == 0:
             return None
@@ -437,7 +455,7 @@ def validate_data(
         col_role: str,
     ) -> None:
         """Warn if a closed column has a uniqueness ratio above the threshold."""
-        stats = _uniqueness_ratio(col_id)
+        stats = _uniqueness_ratio(col_id, drop_na=False)
         if stats is None:
             return
         n_unique, n_responses, ratio = stats
@@ -627,7 +645,7 @@ def load_and_number_question_sheets(
             for idx, val in enumerate(df["question_number"].astype(str)):
                 try:
                     int(val.strip())
-                except ValueError:
+                except (ValueError, AttributeError):
                     print(
                         f'      "{sheet_name}" row {idx + 1}: '
                         f"question_number = {val!r} (not a valid integer)"
