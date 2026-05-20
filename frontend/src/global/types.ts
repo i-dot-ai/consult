@@ -152,7 +152,7 @@ export interface QuestionResponseResponse {
   // searchVector: string;
 }
 
-export interface ResponseAnswer {
+export interface ResponseBody {
   id: string;
   identifier: number | string; // respondent themefinder id
   question_id: string;
@@ -223,7 +223,7 @@ export interface ResponsesBody {
   respondents_total: number;
   filtered_total: number;
   has_more_pages: boolean;
-  all_respondents: ResponseAnswer[];
+  all_respondents: ResponseBody[];
 }
 export interface RespondentsResponse {
   count: number;
@@ -279,8 +279,8 @@ export interface SelectedTheme {
 
 export enum OnboardingKeys {
   prefix = "onboardingComplete",
-  themeSignoff = "onboardingComplete-theme-sign-off",
-  themeSignoffArchive = "onboardingComplete-theme-sign-off-archive",
+  finaliseThemes = "onboardingComplete-finalising-themes",
+  finaliseThemesArchive = "onboardingComplete-finalising-themes-archive",
 }
 
 export type AstroGlobalRuntime = {

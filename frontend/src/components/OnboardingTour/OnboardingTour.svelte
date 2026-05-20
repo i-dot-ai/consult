@@ -72,7 +72,9 @@
         width: rect.width + overlayPadding * 2,
         height: rect.height + overlayPadding * 2,
       };
-      targetEl.scrollIntoView();
+      if (targetEl.scrollIntoView) {
+        targetEl.scrollIntoView();
+      }
     } else {
       targetRect = null;
     }

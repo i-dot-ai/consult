@@ -3,7 +3,7 @@
 
   import {
     getConsultationDetailUrl,
-    getThemeSignOffUrl,
+    getFinaliseThemesUrl,
     Routes,
   } from "../../../global/routes";
 
@@ -50,7 +50,7 @@
     },
     {
       text: "Finalise themes",
-      url: getThemeSignOffUrl(consultationId),
+      url: getFinaliseThemesUrl(consultationId),
     },
     {
       text: "Assign themes (AI)",

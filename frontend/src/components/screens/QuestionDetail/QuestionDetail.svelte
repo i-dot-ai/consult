@@ -36,8 +36,8 @@
     type DemoOptionsResponseItem,
     type FormattedTheme,
     type Question,
-    type ResponseAnswer,
     type ThemeInfoResponse,
+    type ResponseBody,
   } from "../../../global/types.ts";
   import {
     themeFilters,
@@ -68,7 +68,7 @@
 
   let currPage: number = $state(1);
   let hasMorePages: boolean = $state(true);
-  let answers: ResponseAnswer[] = $state([]);
+  let responses: ResponseBody[] = $state([]);
 
   let activeTab: TabNames = $state(TabNames.QuestionSummary);
 
@@ -79,7 +79,7 @@
   let sortAscending: boolean = $state(false);
   let flaggedOnly: boolean = $state(false);
   let dataRequested: boolean = $state(false);
-  let isAnswersLoading: boolean = $state(true);
+  let isResponsesLoading: boolean = $state(true);
 
   const consultationStore = createFetchStore<ConsultationResponse>();
   const questionStore = createFetchStore<Question>();
@@ -94,7 +94,7 @@
   });
 
   async function loadData() {
-    isAnswersLoading = true;
+    isResponsesLoading = true;
     const filters = {
       searchValue: searchValue,
       searchMode: searchMode,
@@ -127,10 +127,10 @@
     );
 
     if ($responsesStore.data?.all_respondents) {
-      const newAnswers = $responsesStore.data?.all_respondents;
-      answers = [...answers, ...newAnswers];
+      const newResponses = $responsesStore.data?.all_respondents;
+      responses = [...responses, ...newResponses];
     }
-    isAnswersLoading = false;
+    isResponsesLoading = false;
     hasMorePages = $responsesStore.data?.has_more_pages || false;
 
     currPage += 1;
@@ -174,10 +174,10 @@
   }
 
   function resetAnswers() {
-    answers = [];
+    responses = [];
     currPage = 1;
     hasMorePages = true;
-    isAnswersLoading = true;
+    isResponsesLoading = true;
   }
 
   const resetFilters = () => {
@@ -377,8 +377,8 @@
         consultationId={$consultationStore.data?.id}
         questionId={$questionStore.data?.id}
         pageSize={PAGE_SIZE}
-        {answers}
-        {isAnswersLoading}
+        {responses}
+        {isResponsesLoading}
         answersError={$responsesStore.error}
         filteredTotal={$responsesStore.data?.filtered_total}
         {hasMorePages}

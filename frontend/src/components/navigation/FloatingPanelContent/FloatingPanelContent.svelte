@@ -27,8 +27,8 @@
       title: "Walkthrough",
       subtitle: "Interactive tutorial for Finalising Themes",
       handleClick: () => {
-        localStorage.removeItem(OnboardingKeys.themeSignoff);
-        localStorage.removeItem(OnboardingKeys.themeSignoffArchive);
+        localStorage.removeItem(OnboardingKeys.finaliseThemes);
+        localStorage.removeItem(OnboardingKeys.finaliseThemesArchive);
         window.location.reload();
       },
     },

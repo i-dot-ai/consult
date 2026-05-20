@@ -7,7 +7,7 @@
     type SearchableSelectOption,
   } from "../../../global/types";
   import { createFetchStore, type MockFetch } from "../../../global/stores";
-  import { getApiAnswerUrl } from "../../../global/routes";
+  import { getApiResponseUrl } from "../../../global/routes";
 
   import Button from "../../inputs/Button/Button.svelte";
   import Popover from "../../inputs/Popover/Popover.svelte";
@@ -49,14 +49,14 @@
   }
 
   async function submit() {
-    let actualUpdateAnswer = updateAnswerMock || $answerUpdateStore.fetch;
+    let actualUpdateResponse = updateResponseMock || $responseUpdateStore.fetch;
 
     if (noChangesStaged()) {
       return;
     }
 
-    await actualUpdateAnswer(
-      getApiAnswerUrl(consultationId, answerId),
+    await actualUpdateResponse(
+      getApiResponseUrl(consultationId, answerId),
       "PATCH",
       {
         themes: stagedThemes.map((theme) => ({ id: theme.id })),
@@ -64,7 +64,7 @@
       },
     );
 
-    if (!$answerUpdateStore.error && !$answerUpdateStore.isLoading) {
+    if (!$responseUpdateStore.error && !$responseUpdateStore.isLoading) {
       resetData();
     }
   }
@@ -78,7 +78,7 @@
     evidenceRich: boolean;
     resetData: () => void;
     setEditing: (newValue: boolean) => void;
-    updateAnswerMock?: MockFetch;
+    updateResponseMock?: MockFetch;
   }
 
   let {
@@ -89,14 +89,14 @@
     evidenceRich = false,
     resetData = () => {},
     setEditing = () => {},
-    updateAnswerMock,
+    updateResponseMock,
   }: Props = $props();
 
   let stagedThemes: ResponseTheme[] = $state([]);
   let stagedEvidenceRich = $state(false);
   let panelOpen: boolean = $state(false);
 
-  const answerUpdateStore = createFetchStore();
+  const responseUpdateStore = createFetchStore();
 
   onMount(() => {
     resetStaged();
@@ -105,8 +105,8 @@
   function resetStaged() {
     stagedThemes = themes ? [...themes] : [];
     stagedEvidenceRich = evidenceRich;
-    $answerUpdateStore.isLoading = false;
-    $answerUpdateStore.error = null;
+    $responseUpdateStore.isLoading = false;
+    $responseUpdateStore.error = null;
   }
 </script>
 
@@ -202,9 +202,9 @@
 
     <hr class="my-4" />
 
-    {#if $answerUpdateStore.error}
+    {#if $responseUpdateStore.error}
       <small class="my-2 block text-red-500" transition:slide
-        >{$answerUpdateStore.error}</small
+        >{$responseUpdateStore.error}</small
       >
     {/if}
 
@@ -224,7 +224,7 @@
             </div>
 
             <span class="whitespace-nowrap">
-              {$answerUpdateStore.isLoading ? "Saving..." : "Save Changes"}
+              {$responseUpdateStore.isLoading ? "Saving..." : "Save Changes"}
             </span>
           </div>
         </Button>

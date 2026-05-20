@@ -17,6 +17,7 @@ describe("EditPanel", () => {
     evidenceRich: false,
     resetData: () => {},
     setEditing: () => {},
+    updateResponseMock: () => {},
   };
 
   it("should match snapshot", async () => {
@@ -64,14 +65,14 @@ describe("EditPanel", () => {
 
   it("should update correct data and call resetData callback", async () => {
     const resetDataMock = vi.fn();
-    const updateAnswerMock = vi.fn();
+    const updateResponseMock = vi.fn();
     const user = userEvent.setup();
 
     render(EditPanel, {
       ...testData,
       evidenceRich: true,
       resetData: resetDataMock,
-      updateAnswerMock: updateAnswerMock,
+      updateResponseMock: updateResponseMock,
     });
 
     // Click to reveal panel
@@ -87,7 +88,7 @@ describe("EditPanel", () => {
     await user.click(saveButton);
 
     // Correct endpoint is called with correct body
-    expect(updateAnswerMock).toHaveBeenCalledWith(
+    expect(updateResponseMock).toHaveBeenCalledWith(
       `/api/consultations/${testData.consultationId}/responses/${testData.answerId}/`,
       "PATCH",
       {

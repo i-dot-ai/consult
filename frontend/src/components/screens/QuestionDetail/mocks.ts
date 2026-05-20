@@ -1,14 +1,14 @@
 import {
   getApiAnswerFlagUrl,
-  getApiAnswerUrl,
   getApiConsultationUrl,
   getApiDemographicsUrl,
   getApiQuestionResponsesUrl,
   getApiQuestionThemesUrl,
   getApiQuestionUrl,
+  getApiResponseUrl,
   updateResponseReadStatus,
 } from "../../../global/routes";
-import type { ResponseAnswer } from "../../../global/types";
+import type { ResponseBody } from "../../../global/types";
 import { paginateArray } from "../../../global/utils";
 
 type QueryParams = {
@@ -23,7 +23,7 @@ type QueryParams = {
 export const CONSULTATION_ID = "test-consultation";
 export const QUESTION_ID = "test-question";
 
-export let answers: ResponseAnswer[] = [
+export const responses: ResponseBody[] = [
   {
     id: "f3f8f938-281b-4b74-ac80-6db7390e2171",
     identifier: "1",
@@ -182,11 +182,11 @@ const themes = [
   },
 ];
 
-const filterAnswers = (answers: ResponseAnswer[], params: QueryParams) => {
-  const pages = paginateArray(answers, Number.parseInt(params.page_size));
+const filterAnswers = (responses: ResponseBody[], params: QueryParams) => {
+  const pages = paginateArray(responses, Number.parseInt(params.page_size));
   const intendedPage = Number.parseInt(params.page);
 
-  let result: ResponseAnswer[] =
+  let result: ResponseBody[] =
     intendedPage > pages.length ? [] : pages[intendedPage - 1];
 
   if (params.evidenceRich) {
@@ -283,14 +283,14 @@ export const themesMock = {
   }),
 };
 
-export const answersMock = {
+export const responsesMock = {
   url: "path:" + getApiQuestionResponsesUrl(CONSULTATION_ID, QUESTION_ID),
   body: ({ url }: { url: string }) => {
     const queryParams = Object.fromEntries(
       new URLSearchParams(url.split("?")[1]),
     ) as unknown as QueryParams;
 
-    const filteredAnswers = filterAnswers(answers, queryParams);
+    const filteredAnswers = filterAnswers(responses, queryParams);
 
     return {
       respondents_total: filteredAnswers.length,
@@ -306,33 +306,37 @@ export const demoMock = {
   body: [],
 };
 
-export const answerUpdateMock = {
+export const responsesUpdateMock = {
   regexp: "*host" + updateResponseReadStatus(":consultationId", ":answerId"),
   method: "POST",
 };
 
-export const answerEditMock = {
-  regexp: "*host" + getApiAnswerUrl(":consultationId", ":answerId"),
+export const responsesEditMock = {
+  regexp: "*host" + getApiResponseUrl(":consultationId", ":answerId"),
   method: "PATCH",
   body: ({ body, params }: { body: string; params: { answerId: string } }) => {
     const parsedBody = JSON.parse(body);
 
-    const answer = answers.find((answer) => answer.id === params.answerId);
+    const consultationResponse = responses.find(
+      (response) => response.id === params.answerId,
+    );
 
-    if (!answer) {
+    if (!consultationResponse) {
       return;
     }
 
-    answer.evidenceRich = parsedBody.evidenceRich || null;
-    answer.themes = [];
+    consultationResponse.evidenceRich = parsedBody.evidenceRich || null;
+    consultationResponse.themes = [];
 
     parsedBody.themes.forEach((theme: { id: string }) => {
       const newTheme = themes.find((item) => item.id === theme.id);
 
-      const themeExists = answer.themes?.find((item) => item.id === theme.id);
+      const themeExists = consultationResponse.themes?.find(
+        (item) => item.id === theme.id,
+      );
       if (!themeExists) {
-        answer.themes = [
-          ...answer.themes!,
+        consultationResponse.themes = [
+          ...consultationResponse.themes!,
           {
             id: newTheme!.id,
             description: newTheme!.description,
@@ -348,18 +352,18 @@ export const flagMock = {
   regexp: "*host" + getApiAnswerFlagUrl(":consultationId", ":answerId"),
   method: "PATCH",
   body: ({ params }: { params: { answerId: string } }) => {
-    answers = answers.map((answer) =>
-      answer.id === params.answerId
-        ? { ...answer, is_flagged: !answer.is_flagged }
-        : answer,
+    responses.map((response) =>
+      response.id === params.answerId
+        ? { ...response, is_flagged: !response.is_flagged }
+        : response,
     );
   },
 };
 
 export const mocks = {
-  answerEditMock,
-  answersMock,
-  answerUpdateMock,
+  responsesEditMock,
+  responsesMock,
+  responsesUpdateMock,
   consultationMock,
   demoMock,
   flagMock,

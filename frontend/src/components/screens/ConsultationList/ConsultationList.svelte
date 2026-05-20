@@ -8,7 +8,7 @@
   import {
     getConsultationDetailUrl,
     getConsultationEvalUrl,
-    getThemeSignOffUrl,
+    getFinaliseThemesUrl,
   } from "../../../global/routes.ts";
   import { buildConsultationsGetQuery } from "../../../global/queries/consultations/queries.ts";
   import Alert from "../../Alert.svelte";
@@ -37,7 +37,7 @@
             <Link href={getConsultationEvalUrl(consultation.id)}>
               View Evaluation
             </Link>
-            <Link href={getThemeSignOffUrl(consultation.id)}>
+            <Link href={getFinaliseThemesUrl(consultation.id)}>
               Finalise Themes
             </Link>
             <Link href={getConsultationDetailUrl(consultation.id)}>
