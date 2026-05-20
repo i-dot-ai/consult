@@ -50,30 +50,38 @@ test.describe("Respondent Detail Page", () => {
     // We should be on a question detail page
     await expect(page).toHaveURL(/\/consultations\/.*\/questions\/.*/);
 
-    // Try to click on "Response Analysis" tab - it may not exist for all question types
-    const responseTab = page
-      .getByRole("tab", { name: /response/i })
-      .or(page.getByRole("button", { name: /response/i }))
-      .or(page.getByRole("tab", { name: /analysis/i }))
-      .or(page.getByText(/response.*analysis/i, { exact: false }));
-
-    const responseTabCount = await responseTab.count();
-    if (responseTabCount > 0) {
-      await responseTab.first().click();
-      await page.waitForLoadState("networkidle");
-    }
-
-    // Now find and click on a respondent ID button (looks for person icon or "ID:" text)
-    const respondentButton = page
+    // Look for respondent ID buttons - they might be visible without clicking a tab
+    // Try multiple selectors for robustness
+    let respondentButton = page
       .locator('button:has-text("ID:")')
+      .or(page.locator('a:has-text("ID:")'))
+      .or(page.locator('button[class*="respondent"]'))
       .or(page.locator('a[href*="/respondent/"]'))
       .first();
 
-    const respondentButtonCount = await respondentButton.count();
-    
-    // If no respondent button found, skip all tests
+    let respondentButtonCount = await respondentButton.count();
+
+    // If no respondent buttons visible, try clicking Response Analysis tab
     if (respondentButtonCount === 0) {
-      test.skip(true, "No respondent buttons found on question page");
+      const responseTab = page
+        .getByRole("tab", { name: /response/i })
+        .or(page.getByRole("button", { name: /response/i }))
+        .or(page.getByRole("tab", { name: /analysis/i }))
+        .or(page.getByText(/response.*analysis/i, { exact: false }));
+
+      const responseTabCount = await responseTab.count();
+      if (responseTabCount > 0) {
+        await responseTab.first().click();
+        await page.waitForLoadState("networkidle");
+        
+        // Re-check for respondent buttons after clicking tab
+        respondentButtonCount = await respondentButton.count();
+      }
+    }
+    
+    // If still no respondent button found, skip all tests
+    if (respondentButtonCount === 0) {
+      test.skip(true, "No respondent buttons found on question page - fixture may not have respondent data");
       return;
     }
 
