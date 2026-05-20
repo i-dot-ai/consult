@@ -1,15 +1,19 @@
+import json
 import random
-from typing import Literal, Optional
+from typing import Optional
 
-import yaml
 from django.conf import settings
 from django_rq import job
 
 from consultations.models import (
+    CandidateTheme,
+    CandidateThemeResponse,
     Consultation,
     MultiChoiceAnswer,
     Question,
+    Response,
     ResponseAnnotation,
+    SelectedTheme,
 )
 from factories import (
     CandidateThemeFactory,
@@ -24,37 +28,74 @@ from hosting_environment import HostingEnvironment
 
 logger = settings.LOGGER
 
-DATA_BY_STAGE = {
-    Consultation.Stage.ANALYSIS: {
-        "CONSULTATION_NAME": "Dummy Consultation at Analysis Stage",
-        "QUESTION_THEME_STATUS": Question.ThemeStatus.CONFIRMED,
-    },
-    Consultation.Stage.THEME_SIGN_OFF: {
-        "CONSULTATION_NAME": "Dummy Consultation at Finalising Themes Stage",
+DUMMY_CONSULTATIONS = [
+    {
+        "CONSULTATION_NAME": "Dummy Consultation - Data Setup",
+        "CONSULTATION_CODE": "dummy-setup",
+        "CONSULTATION_STAGE": Consultation.Stage.SETUP,
         "QUESTION_THEME_STATUS": Question.ThemeStatus.DRAFT,
     },
-}
+    {
+        "CONSULTATION_NAME": "Dummy Consultation - Starting finalising themes",
+        "CONSULTATION_CODE": "dummy-start-finalising-themes",
+        "CONSULTATION_STAGE": Consultation.Stage.THEME_SIGN_OFF,
+        "QUESTION_THEME_STATUS": Question.ThemeStatus.DRAFT,
+    },
+    {
+        "CONSULTATION_NAME": "Dummy Consultation - Finished finalising themes",
+        "CONSULTATION_CODE": "dummy-finished-finalising-themes",
+        "CONSULTATION_STAGE": Consultation.Stage.THEME_SIGN_OFF,
+        "QUESTION_THEME_STATUS": Question.ThemeStatus.CONFIRMED,
+    },
+    {
+        "CONSULTATION_NAME": "Dummy Consultation - Analysis",
+        "CONSULTATION_CODE": "dummy-analysis",
+        "CONSULTATION_STAGE": Consultation.Stage.ANALYSIS,
+        "QUESTION_THEME_STATUS": Question.ThemeStatus.CONFIRMED,
+    },
+]
+
+NUMBER_RESPONDENTS = 100
+REGIONS = ["North East", "North West", "South East", "South West", "Midlands", "London"]
+AGE_GROUPS = ["Under 18", "18-35", "36-50", "51-65", "66+"]
+RESPONDENT_TYPES = ["Individual", "Organisation"]
+SAMPLE_QUESTIONS_PATH = "./tests/examples/sample_questions.json"
 
 
-def create_consultation(stage):
-    """Create and return a Consultation."""
-    name = DATA_BY_STAGE[stage]["CONSULTATION_NAME"]
-    return ConsultationFactory(title=name, stage=stage)
+def create_consultation(config):
+    """Create and return a Consultation from a config dict."""
+    return ConsultationFactory(
+        title=config["CONSULTATION_NAME"],
+        code=config["CONSULTATION_CODE"],
+        stage=config["CONSULTATION_STAGE"],
+    )
+
+
+def _demographics_for(themefinder_id):
+    """Return deterministic demographics based on themefinder_id."""
+    return {
+        "region": REGIONS[themefinder_id % len(REGIONS)],
+        "age_group": AGE_GROUPS[themefinder_id % len(AGE_GROUPS)],
+        "respondent_type": RESPONDENT_TYPES[themefinder_id % len(RESPONDENT_TYPES)],
+    }
 
 
 def create_respondents(consultation, number_respondents):
     """Create and return a list of Respondents."""
     return [
-        RespondentFactory(consultation=consultation, themefinder_id=i)
+        RespondentFactory(
+            consultation=consultation,
+            themefinder_id=i,
+            demographics=_demographics_for(i),
+        )
         for i in range(1, number_respondents + 1)
     ]
 
 
-def create_question(consultation, question_data):
+def create_question(consultation, question_data, theme_status):
     """Create and return a Question."""
     has_free_text = question_data["has_free_text"]
     has_multiple_choice = question_data["has_multiple_choice"]
-    theme_status = DATA_BY_STAGE[consultation.stage]["QUESTION_THEME_STATUS"]
 
     return QuestionFactory(
         text=question_data["question_text"],
@@ -72,38 +113,54 @@ def create_multi_choice_answers(question, choices):
     MultiChoiceAnswer.objects.bulk_create(multi_choice_objects)
 
 
-def create_candidate_theme_recursive(
-    question, number_respondents, candidate_theme_data, parent=None
-):
-    """Create a CandidateTheme (and SelectedTheme if selected) recursively."""
-    name = candidate_theme_data.get("name")
-    description = candidate_theme_data.get("description", "")
-    key = candidate_theme_data.get("key")
-    approximate_frequency = round(
-        candidate_theme_data.get("approximate_frequency_pct", 0) * number_respondents
-    )
+def create_candidate_themes(question, candidate_themes_data):
+    """Create CandidateThemes (and SelectedThemes if selected) from flat theme list."""
+    key_to_candidate_theme = {}
 
-    candidate_theme = CandidateThemeFactory(
+    for theme_data in candidate_themes_data:
+        candidate_theme = CandidateThemeFactory(
+            question=question,
+            name=theme_data["name"],
+            description=theme_data.get("description", ""),
+            parent=None,
+            approximate_frequency=theme_data.get("approximate_frequency", 0),
+        )
+        key_to_candidate_theme[theme_data["key"]] = candidate_theme
+
+        if question.theme_status == Question.ThemeStatus.CONFIRMED and theme_data.get("selected"):
+            selected_theme = SelectedThemeFactory(
+                question=question,
+                name=theme_data["name"],
+                description=theme_data.get("description", ""),
+                key=theme_data["key"],
+            )
+            candidate_theme.selectedtheme = selected_theme
+            candidate_theme.save()
+
+    for theme_data in candidate_themes_data:
+        parent_key = theme_data.get("parent_key")
+        if parent_key and parent_key in key_to_candidate_theme:
+            candidate_theme = key_to_candidate_theme[theme_data["key"]]
+            candidate_theme.parent = key_to_candidate_theme[parent_key]
+            candidate_theme.save()
+
+
+def create_default_selected_themes(question):
+    """Create the 'Other' and 'No Reason Given' themes added at start of assign-themes."""
+    SelectedTheme.objects.get_or_create(
         question=question,
-        description=description,
-        name=name,
-        parent=parent,
-        approximate_frequency=approximate_frequency,
+        name="Other",
+        defaults={
+            "description": "The response discusses an issue not covered by the listed themes"
+        },
     )
-
-    if question.theme_status == Question.ThemeStatus.CONFIRMED and candidate_theme_data.get(
-        "selected"
-    ):
-        selected_theme = SelectedThemeFactory(
-            question=question, name=name, description=description, key=key
-        )
-        candidate_theme.selectedtheme = selected_theme
-        candidate_theme.save()
-
-    for child in candidate_theme_data.get("children", []):
-        create_candidate_theme_recursive(
-            question, number_respondents, child, parent=candidate_theme
-        )
+    SelectedTheme.objects.get_or_create(
+        question=question,
+        name="No Reason Given",
+        defaults={
+            "description": "The response does not provide a substantive answer to the question"
+        },
+    )
 
 
 def create_response(respondent, question, free_text_answers):
@@ -139,79 +196,137 @@ def create_response_chosen_options(response, multiple_choice_options):
     response.chosen_options.add(*answers)
 
 
-def create_dummy_consultation_from_yaml(
-    file_path: str = "./tests/examples/sample_questions.yml",
+def candidate_theme_keys_for_respondent(themefinder_id, theme_keys):
+    """Deterministically assign 1-2 theme keys to a respondent based on their ID."""
+    idx = themefinder_id % len(theme_keys)
+    if themefinder_id % 3 == 0 and len(theme_keys) > 1:
+        idx2 = (themefinder_id + 1) % len(theme_keys)
+        return [theme_keys[idx], theme_keys[idx2]]
+    return [theme_keys[idx]]
+
+
+def create_candidate_theme_responses(question):
+    """Assign responses to candidate themes at all levels for a question deterministically."""
+    all_themes = list(CandidateTheme.objects.filter(question=question))
+    responses = list(
+        Response.objects.filter(question=question, free_text__isnull=False)
+        .exclude(free_text="")
+        .select_related("respondent")
+    )
+    if not all_themes or not responses:
+        return
+
+    themes_by_parent = {}
+    for theme in all_themes:
+        themes_by_parent.setdefault(theme.parent_id, []).append(theme)
+
+    records = []
+    for sibling_themes in themes_by_parent.values():
+        for response in responses:
+            assigned = candidate_theme_keys_for_respondent(
+                response.respondent.themefinder_id,
+                sibling_themes,
+            )
+            for theme in assigned:
+                records.append(CandidateThemeResponse(candidate_theme=theme, response=response))
+
+    CandidateThemeResponse.objects.bulk_create(records, ignore_conflicts=True)
+
+
+def create_dummy_consultation(
+    file_path: str = SAMPLE_QUESTIONS_PATH,
     number_respondents: int = 10,
     consultation: Optional[Consultation] = None,
-    consultation_stage: Optional[Literal["theme_sign_off", "analysis"]] = None,
-) -> ConsultationFactory:
+    config: Optional[dict] = None,
+) -> Consultation:
     """
-    Create consultation with questions, responses and themes from yaml file.
-    Creates relevant objects: Consultation, Question, CandidateTheme, SelectedTheme,
-    Response, ResponseAnnotation, Respondent.
+    Create consultation with questions, responses and themes from JSON file.
+    Creates relevant objects depending on stage and theme status:
+    - SETUP: Consultation, Questions, Respondents, Responses (ready for finding themes)
+    - THEME_SIGN_OFF (DRAFT): + CandidateThemes + CandidateThemeResponses (finalising)
+    - THEME_SIGN_OFF (CONFIRMED): + CandidateThemes + SelectedThemes (ready for assignment)
+    - ANALYSIS: + SelectedThemes + ResponseAnnotations
     """
     if HostingEnvironment.is_production():
         raise RuntimeError("Dummy data generation should not be run in production")
 
-    consultation_stage = consultation_stage or "analysis"
+    if config is None:
+        config = DUMMY_CONSULTATIONS[-1]
+
+    consultation_stage = config["CONSULTATION_STAGE"]
+    theme_status = config["QUESTION_THEME_STATUS"]
+
     if consultation is None:
         logger.info("Creating consultation at stage: {stage}", stage=consultation_stage)
-        consultation = create_consultation(consultation_stage)
+        consultation = create_consultation(config)
 
     logger.info("Creating {number_respondents} respondents", number_respondents=number_respondents)
     respondents = create_respondents(consultation, number_respondents)
 
     with open(file_path, "r") as file:
-        questions_data = yaml.safe_load(file)
+        questions_data = json.load(file)
+
+    has_candidate_themes = consultation_stage in [
+        Consultation.Stage.THEME_SIGN_OFF,
+        Consultation.Stage.ANALYSIS,
+    ]
+    has_candidate_theme_responses = consultation_stage in [
+        Consultation.Stage.THEME_SIGN_OFF,
+        Consultation.Stage.ANALYSIS,
+    ]
+    has_default_selected_themes = consultation_stage == Consultation.Stage.ANALYSIS
+    has_response_annotations = consultation_stage == Consultation.Stage.ANALYSIS
 
     for question_data in questions_data:
         logger.info("Creating a new question...")
-        question = create_question(consultation, question_data)
+        question = create_question(consultation, question_data, theme_status)
         multiple_choice_options = question_data.get("multiple_choice_options", [])
         free_text_answers = question_data.get("free_text_answers", [])
 
         if question.has_multiple_choice:
-            logger.info("Multiple choice question - create multi choice answers")
             create_multi_choice_answers(question, multiple_choice_options)
 
-        if question.has_free_text:
-            logger.info("Free text question - create candidate themes")
+        if question.has_free_text and has_candidate_themes:
+            create_candidate_themes(question, question_data["candidate_themes"])
 
-            for candidate_theme_data in question_data["candidate_themes"]:
-                create_candidate_theme_recursive(question, len(respondents), candidate_theme_data)
+        if question.has_free_text and has_default_selected_themes:
+            create_default_selected_themes(question)
 
         for respondent in respondents:
-            logger.info("Creating a new response...")
             response = create_response(respondent, question, free_text_answers)
 
-            if question.has_free_text and consultation.stage == Consultation.Stage.ANALYSIS:
-                logger.info("Free text question - create response annotation")
+            if question.has_free_text and has_response_annotations:
                 create_response_annotation(response, question)
 
             if question.has_multiple_choice:
-                logger.info("Multiple choice question - create response chosen options")
                 create_response_chosen_options(response, multiple_choice_options)
+
+        if question.has_free_text and has_candidate_theme_responses:
+            create_candidate_theme_responses(question)
 
         logger.info(
             "Finished adding question and responses for question {question_number}",
             question_number=question.number,
         )
-        logger.info(
-            "Finished adding dummy data for consultation {consultation_code}",
-            consultation_code=consultation.code,
-        )
+
+    logger.info(
+        "Finished adding dummy data for consultation {consultation_code}",
+        consultation_code=consultation.code,
+    )
     return consultation
 
 
 # Will only be run occasionally to create dummy data - not in prod
 @job("default", timeout=2400)
-def create_dummy_consultation_from_yaml_job(
-    file_path: str = "./tests/examples/sample_questions.yml",
+def create_dummy_consultation_job(
+    file_path: str = SAMPLE_QUESTIONS_PATH,
     number_respondents: int = 10,
     consultation: Optional[Consultation] = None,
+    config: Optional[dict] = None,
 ):
-    create_dummy_consultation_from_yaml(
+    create_dummy_consultation(
         file_path=file_path,
         number_respondents=number_respondents,
         consultation=consultation,
+        config=config,
     )

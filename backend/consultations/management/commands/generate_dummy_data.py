@@ -1,20 +1,18 @@
 from django.core.management.base import BaseCommand
 
-from consultations.dummy_data import create_dummy_consultation_from_yaml
-from consultations.models import Consultation
+from consultations.dummy_data import (
+    DUMMY_CONSULTATIONS,
+    NUMBER_RESPONDENTS,
+    create_dummy_consultation,
+)
 
 
 class Command(BaseCommand):
-    help = (
-        "Generate two dummy consultations, one at finalising themes stage and one at analysis stage."
-    )
+    help = "Generate dummy consultations at each pipeline stage."
 
     def handle(self, *args, **options):
         self.stdout.write("Generating dummy data...")
-        create_dummy_consultation_from_yaml(
-            number_respondents=100, consultation_stage=Consultation.Stage.THEME_SIGN_OFF
-        )
-        create_dummy_consultation_from_yaml(
-            number_respondents=100, consultation_stage=Consultation.Stage.ANALYSIS
-        )
+        for config in DUMMY_CONSULTATIONS:
+            self.stdout.write(f"  Creating consultation: {config['CONSULTATION_NAME']}...")
+            create_dummy_consultation(number_respondents=NUMBER_RESPONDENTS, config=config)
         self.stdout.write("Done.")
