@@ -92,6 +92,7 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "release" || \
                 "${{ github.event_name }}" == "workflow_dispatch" || \
+                "${{ github.event_name }}" == "push" || \
                 "${{ steps.check-terraform.outputs.terraform-changed }}" == "true" || \
                 "${{ steps.check-terraform.outputs.lambda-changed }}" == "true" ]]; then
             echo "should-deploy=true" >> $GITHUB_OUTPUT
@@ -118,7 +119,7 @@ jobs:
   build-lambdas:
     needs:
       - set-vars
-    if: needs.set-vars.outputs.lambda-changed == 'true' || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    if: needs.set-vars.outputs.lambda-changed == 'true' || github.event_name == 'release' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     uses: ./.github/workflows/build-lambda-artifacts.yml
     with:
       upload_directory: ./lambda/build
