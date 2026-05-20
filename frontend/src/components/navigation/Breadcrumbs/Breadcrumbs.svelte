@@ -21,8 +21,8 @@
   const STAGES = [
     "data_setup",
     "theme_find",
-    "theme_sign_off",
-    "theme_mapping",
+    "finalising_themes",
+    "assigning_themes",
     "quality_check",
     "analysis",
   ];

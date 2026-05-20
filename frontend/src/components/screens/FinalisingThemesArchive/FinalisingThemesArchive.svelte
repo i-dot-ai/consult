@@ -119,7 +119,7 @@
             getApiConsultationUrl(consultationId),
             "PATCH",
             {
-              stage: "theme_mapping",
+              stage: "assigning_themes",
             },
           );
 

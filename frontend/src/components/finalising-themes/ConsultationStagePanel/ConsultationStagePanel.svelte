@@ -43,10 +43,20 @@
       step: { order: 1, label: "Consultation Overview", icon: CheckCircle },
       title: "Consultation Overview",
     },
+    finalising_themes: {
+      step: { order: 2, label: "Finalising Themes", icon: CheckCircle },
+      title: "Finalising Themes",
+    },
+    // Legacy alias - kept during data migration (Expand phase)
     theme_sign_off: {
       step: { order: 2, label: "Finalising Themes", icon: CheckCircle },
       title: "Finalising Themes",
     },
+    assigning_themes: {
+      step: { order: 3, label: "Assigning Themes (AI)", icon: WandStars },
+      title: "AI Assignment in Progress",
+    },
+    // Legacy alias - kept during data migration (Expand phase)
     theme_mapping: {
       step: { order: 3, label: "Assigning Themes (AI)", icon: WandStars },
       title: "AI Assignment in Progress",
@@ -60,18 +70,24 @@
   // Steps shown in the progress bar (always the same 4)
   const STEPS = [
     STAGE_CONFIGS.consultation_overview,
-    STAGE_CONFIGS.theme_sign_off,
-    STAGE_CONFIGS.theme_mapping,
+    STAGE_CONFIGS.finalising_themes,
+    STAGE_CONFIGS.assigning_themes,
     STAGE_CONFIGS.analysis,
   ];
 
   let currentStageConfig = $derived(
-    STAGE_CONFIGS[consultation.stage] ?? STAGE_CONFIGS.theme_sign_off,
+    STAGE_CONFIGS[consultation.stage] ?? STAGE_CONFIGS.finalising_themes,
   );
 
-  // Determine which content variant to show
-  let isFinalisingThemes = $derived(consultation.stage === "theme_sign_off");
-  let isAssigningThemes = $derived(consultation.stage === "theme_mapping");
+  // Determine which content variant to show - handles both old and new stage values
+  let isFinalisingThemes = $derived(
+    consultation.stage === "finalising_themes" ||
+      consultation.stage === "theme_sign_off",
+  );
+  let isAssigningThemes = $derived(
+    consultation.stage === "assigning_themes" ||
+      consultation.stage === "theme_mapping",
+  );
   let isAnalysis = $derived(consultation.stage === "analysis");
 
   // Title adapts to sub-state during finalising
