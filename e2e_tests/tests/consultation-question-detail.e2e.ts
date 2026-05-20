@@ -85,10 +85,10 @@ test.describe("Consultation Question Detail Page - Route & Navigation", () => {
       .or(page.getByRole("tab", { name: /analysis/i }));
 
     const responseTabCount = await responseTab.count();
-    if (responseTabCount > 0) {
-      await responseTab.first().click();
-      await page.waitForLoadState("networkidle");
-    }
+    test.skip(responseTabCount === 0, "Response tab not found");
+
+    await responseTab.first().click();
+    await page.waitForLoadState("networkidle");
 
     // Look for respondent ID buttons
     const respondentButtons = page
@@ -113,10 +113,10 @@ test.describe("Consultation Question Detail Page - Route & Navigation", () => {
       .or(page.getByRole("tab", { name: /analysis/i }));
 
     const responseTabCount = await responseTab.count();
-    if (responseTabCount > 0) {
-      await responseTab.first().click();
-      await page.waitForLoadState("networkidle");
-    }
+    test.skip(responseTabCount === 0, "Response tab not found");
+
+    await responseTab.first().click();
+    await page.waitForLoadState("networkidle");
 
     // Find respondent button
     const respondentButton = page
@@ -165,10 +165,12 @@ test.describe("Consultation Question Detail Page - Route & Navigation", () => {
   });
 
   test("page loads without errors on consultations route", async ({ page }) => {
-    // Verify page loaded successfully
+    // Verify page loaded successfully with fixture content
     const bodyContent = await page.textContent("body");
     expect(bodyContent).toBeTruthy();
-    expect(bodyContent!.length).toBeGreaterThan(100);
+
+    // Check for fixture-specific content (chocolate bar question text)
+    expect(bodyContent).toContain("chocolate");
 
     // No error messages
     const errorMessages = page
