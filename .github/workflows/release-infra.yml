@@ -22,6 +22,7 @@ jobs:
       infra-config-repo: ${{ steps.export.outputs.infra-config-repo }}
       environment: ${{ steps.env-var.outputs.environment }}
       terraform-changed: ${{ steps.check-terraform.outputs.terraform-changed }}
+      lambda-changed: ${{ steps.check-terraform.outputs.lambda-changed }}
 
     steps:
       - name: Checkout
@@ -56,9 +57,11 @@ jobs:
           filters: |
             terraform-changed:
               - 'terraform/**'
+            lambda-changed:
+              - 'lambda/**'
 
   start-runner:
-    if: needs.set-vars.outputs.terraform-changed == 'true'
+    if: needs.set-vars.outputs.terraform-changed == 'true' || needs.set-vars.outputs.lambda-changed == 'true'
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@main
     needs: set-vars
     permissions: write-all
@@ -77,7 +80,7 @@ jobs:
   build-lambdas:
     needs:
       - set-vars
-      - start-runner
+    if: needs.set-vars.outputs.lambda-changed == 'true'
     uses: ./.github/workflows/build-lambda-artifacts.yml
     with:
       upload_directory: ./lambda/build
@@ -110,7 +113,7 @@ jobs:
       - build-infra
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@main
     permissions: write-all
-    if: always() && needs.set-vars.outputs.terraform-changed == 'true' && needs.start-runner.outputs.use-persisted == 0
+    if: always() && (needs.set-vars.outputs.terraform-changed == 'true' || needs.set-vars.outputs.lambda-changed == 'true') && needs.start-runner.outputs.use-persisted == 0
     with:
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
       EC2_INSTANCE_ID: ${{ needs.start-runner.outputs.ec2-instance-id }}
