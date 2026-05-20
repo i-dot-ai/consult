@@ -89,6 +89,7 @@ export const createFetchStore = <T>({
   const doFetch = async (
     url: string,
     method: string = "GET",
+    // Narrowed from BodyInit — all callers pass plain objects that are JSON.stringify'd below
     body?: Record<string, unknown>,
     headers?: HeadersInit,
   ) => {
