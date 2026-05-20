@@ -145,7 +145,7 @@ jobs:
   determine-success:
     needs: [set-vars, start-runner, build-infra]
     runs-on: ${{ needs.start-runner.outputs.label }}
-    if: always() && needs.set-vars.outputs.should-deploy == 'true'
+    if: always() && needs.set-vars.outputs.should-deploy == 'true' && needs.set-vars.outputs.environment == 'prod'
     outputs:
       success: ${{ steps.success.outputs.success }}
     steps:
@@ -160,7 +160,7 @@ jobs:
   notify-slack:
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/slack-notify.yml@main
     needs: [set-vars, start-runner, build-infra, determine-success]
-    if: always() && needs.set-vars.outputs.should-deploy == 'true'
+    if: always() && needs.set-vars.outputs.should-deploy == 'true' && needs.set-vars.outputs.environment == 'prod'
     with:
       WORKFLOW_PASSED: ${{ needs.determine-success.outputs.success == 'true' }}
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
