@@ -30,42 +30,50 @@ test.describe("Respondent Detail Page", () => {
     expect(result).toBeTruthy();
     consultationId = result!.href.match(/\/consultations\/([^/]+)/)?.[1]!;
 
-    // Navigate to evaluation page to find questions
-    await page.goto(`/evaluations/${consultationId}/questions`);
+    // Navigate to consultation detail page
+    await page.goto(`/consultations/${consultationId}`);
     await page.waitForLoadState("networkidle");
 
-    // Click on "Show next" button to navigate to a response
-    const showNextButton = page
-      .getByRole("button", { name: /show next/i })
+    // Find and click on first question link
+    const questionLink = page.locator('a[href*="/questions/"]').first();
+    expect(await questionLink.count()).toBeGreaterThan(0);
+
+    await questionLink.click();
+    await page.waitForLoadState("networkidle");
+
+    // We should be on a question detail page
+    await expect(page).toHaveURL(/\/consultations\/.*\/questions\/.*/);
+
+    // Click on "Response Analysis" tab to see individual responses
+    const responseTab = page
+      .getByRole("tab", { name: /response/i })
+      .or(page.getByRole("button", { name: /response/i }))
+      .or(page.getByRole("tab", { name: /analysis/i }))
+      .or(page.getByText(/response.*analysis/i, { exact: false }));
+
+    if ((await responseTab.count()) > 0) {
+      await responseTab.first().click();
+      await page.waitForLoadState("networkidle");
+    }
+
+    // Now find and click on a respondent ID button (looks for person icon or "ID:" text)
+    const respondentButton = page
+      .locator('button:has-text("ID:")')
+      .or(page.locator('a[href*="/respondent/"]'))
       .first();
 
-    // Assert button exists
-    expect(await showNextButton.count()).toBeGreaterThan(0);
+    // Assert respondent button exists
+    expect(await respondentButton.count()).toBeGreaterThan(0);
 
-    await showNextButton.click();
-    await page.waitForLoadState("networkidle");
-
-    // We should now be on a question detail page with responses
-    // Wait for the page to be on the correct URL pattern
-    await page.waitForURL(/\/evaluations\/.*\/questions\/.*\/responses\/.*/);
-
-    // Now find and click on a respondent link
-    const respondentLink = page.locator('a[href*="/respondent/"]').first();
-
-    // Assert respondent link exists
-    expect(await respondentLink.count()).toBeGreaterThan(0);
-
-    const href = await respondentLink.getAttribute("href");
-    expect(href).toBeTruthy();
-
-    await respondentLink.click();
+    await respondentButton.click();
     await page.waitForLoadState("networkidle");
 
     // Verify we're on a respondent page
     await expect(page).toHaveURL(/\/consultations\/.*\/respondent\/.*/);
 
     // Extract IDs from URL
-    const urlMatch = href?.match(
+    const currentUrl = page.url();
+    const urlMatch = currentUrl.match(
       /\/consultations\/([^/]+)\/respondent\/([^?]+)/,
     );
     expect(urlMatch).toBeTruthy();
@@ -73,7 +81,7 @@ test.describe("Respondent Detail Page", () => {
     respondentId = urlMatch![2];
 
     // Extract query params
-    const url = new URL(page.url());
+    const url = new URL(currentUrl);
     themefinderId = url.searchParams.get("themefinder_id") || "";
     questionId = url.searchParams.get("question_id") || "";
   });
