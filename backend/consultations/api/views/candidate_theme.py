@@ -98,6 +98,8 @@ class CandidateThemeViewSet(ModelViewSet):
             models.CandidateThemeResponse.objects.filter(
                 candidate_theme=candidate_theme,
             )
+            .filter(response__free_text__isnull=False)
+            .exclude(response__free_text__in=models.EMPTY_FREE_TEXT_VALUES)
             .select_related("response")
             .annotate(
                 sort_key=MD5(
