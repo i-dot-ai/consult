@@ -8,8 +8,18 @@
     "editor.formatOnSave": true,
     "python-envs.defaultEnvManager": "ms-python.python:poetry",
     "python-envs.defaultPackageManager": "ms-python.python:poetry",
+    "python.analysis.typeCheckingMode": "basic",
+    "mypy-type-checker.args": [
+        "--ignore-missing-imports",
+        "--config-file=backend/pyproject.toml"
+    ],
+    "ruff.enable": true,
     "[python]": {
-        "editor.defaultFormatter": "charliermarsh.ruff"
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+        }
     },
     "eslint.validate": [
         "javascript",
