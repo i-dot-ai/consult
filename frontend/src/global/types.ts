@@ -314,5 +314,6 @@ export interface Mock {
   status?: number;
   method?: string;
   throws?: Error;
+  name?: string;
   callback?: (args: RequestInit | { url: string; params: unknown }) => void;
 }

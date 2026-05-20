@@ -20,6 +20,7 @@
   import stories from "./stories.ts";
   import { mockRoute, toTitleCase } from "../../global/utils.ts";
   import { queryClient } from "../../global/queryClient.ts";
+  import Textarea from "../inputs/Textarea/Textarea.svelte";
 
   const getSelectedUrlParam = () => {
     return Object.fromEntries(new URLSearchParams(window.location.search))
@@ -169,10 +170,14 @@
           {:else}
             <StoryComponent {...componentProps as object} />
 
-            {#each currStory.props as prop (prop.name)}
-              {@const inputId = `input-${prop.name.toLowerCase().replaceAll(" ", "-")}`}
+            <hr class="my-4" />
 
-              <div class="mt-4 pl-4">
+            <div class="mt-4 pl-4">
+              <h3 class="text-neutral-500">Props</h3>
+
+              {#each currStory.props as prop (prop.name)}
+                {@const inputId = `input-${prop.name.toLowerCase().replaceAll(" ", "-")}`}
+
                 {#if ["number", "text", "bool", "select", "json", "html", "func"].includes(prop.type)}
                   <div class="mb-1">
                     <Title level={4} text={prop.name} />
@@ -258,8 +263,57 @@
                     </span>
                   </Tag>
                 {/if}
-              </div>
-            {/each}
+              {/each}
+
+              {#if currStory.mocks}
+                <hr class="my-4" />
+
+                <h3 class="text-neutral-500">Mocks</h3>
+
+                {#each currStory.mocks as currMock, i (i)}
+                  <h4 class="text-sm text-neutral-700">
+                    {currMock.name || "Unnamed Mock"}
+                  </h4>
+
+                  {#key currMock}
+                    <div class="mocks mb-4 pl-4">
+                      <Select
+                        id={(currMock.name || "mock") + "-status"}
+                        label="Status:"
+                        hideLabel={false}
+                        value={(currMock.status || 200).toString()}
+                        items={[
+                          { value: "200", label: "Success" },
+                          { value: "400", label: "Bad Request" },
+                          { value: "500", label: "Server Error" },
+                        ]}
+                        onchange={(nextVal) => {
+                          if (!nextVal) {
+                            return;
+                          }
+                          currMock.status = parseInt(nextVal);
+                        }}
+                      />
+
+                      <hr class="mb-2 mt-4" />
+
+                      <Textarea
+                        id={(currMock.name || "mock") + "-body"}
+                        label="Body"
+                        value={JSON.stringify(currMock.body || "")}
+                        setValue={(newValue) => {
+                          try {
+                            currMock.body = JSON.parse(newValue);
+                          } catch {
+                            // JSON not valid, do nothing
+                          }
+                        }}
+                      />
+                    </div>
+                  {/key}
+                {/each}
+              {/if}
+            </div>
           {/if}
         </div>
       {:else}
@@ -274,5 +328,8 @@
 <style>
   :global(div[data-testid="panel-component"]) {
     overflow-y: auto;
+  }
+  :global(.mocks label) {
+    font-size: 0.9rem;
   }
 </style>
