@@ -43,25 +43,6 @@ test.describe("Consultation Question Detail Page - Route & Navigation", () => {
     await expect(page).toHaveURL(/\/consultations\/.*\/questions\/.*/);
   });
 
-  test("navigates to question detail page via consultations route", async ({
-    page,
-  }) => {
-    // Extract IDs from current URL
-    const currentUrl = page.url();
-    const urlMatch = currentUrl.match(
-      /\/consultations\/([a-f0-9-]+)\/questions\/([a-f0-9-]+)/,
-    );
-    expect(urlMatch).toBeTruthy();
-
-    const consultationId = urlMatch![1];
-    const questionId = urlMatch![2];
-
-    // Verify exact URL pattern
-    await expect(page).toHaveURL(
-      new RegExp(`/consultations/${consultationId}/questions/${questionId}`),
-    );
-  });
-
   test("displays question text from fixture data", async ({ page }) => {
     // Check for specific question text from analysisConsultation fixture
     const bodyContent = await page.textContent("body");
