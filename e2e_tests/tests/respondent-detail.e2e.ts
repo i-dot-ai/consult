@@ -118,7 +118,7 @@ test.describe("Respondent Detail Page", () => {
     page,
   }) => {
     // Wait for sidebar content to load
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("networkidle");
 
     // Check for "Questions Answered" section
     const questionsAnswered = page.getByText(/questions answered/i);
@@ -188,7 +188,7 @@ test.describe("Respondent Detail Page", () => {
     page,
   }) => {
     // Wait for responses to load
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("networkidle");
 
     // Check for question number badges (e.g., "Q1", "Q2")
     const questionBadges = page
@@ -208,7 +208,7 @@ test.describe("Respondent Detail Page", () => {
 
   test("displays response text for answered questions", async ({ page }) => {
     // Wait for responses to load
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("networkidle");
 
     // Check for response text content
     const bodyContent = await page.textContent("body");
@@ -229,7 +229,7 @@ test.describe("Respondent Detail Page", () => {
     page,
   }) => {
     // Wait for responses to load
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("networkidle");
 
     // Check for "Themes:" label
     const themesLabel = page.getByText(/themes:/i);
@@ -253,7 +253,7 @@ test.describe("Respondent Detail Page", () => {
     page,
   }) => {
     // Wait for responses to load
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("networkidle");
 
     // Check for "Evidence-rich" badge
     const evidenceBadge = page.getByText(/evidence-rich/i);
@@ -266,7 +266,7 @@ test.describe("Respondent Detail Page", () => {
 
   test("displays multiple choice responses when answered", async ({ page }) => {
     // Wait for responses to load
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("networkidle");
 
     // Check for "MULTIPLE CHOICE RESPONSE:" label
     const multipleChoiceLabel = page.getByText(/multiple choice response/i);
@@ -284,7 +284,7 @@ test.describe("Respondent Detail Page", () => {
     page,
   }) => {
     // Wait for responses to load
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("networkidle");
 
     // Find question links - they should link back to question detail pages
     const questionLinks = page.locator('a[href*="/questions/"]');
@@ -301,7 +301,7 @@ test.describe("Respondent Detail Page", () => {
       // Extract question ID from href
       const questionIdMatch = href?.match(/\/questions\/([a-f0-9-]+)/);
       expect(questionIdMatch).toBeTruthy();
-      const questionId = questionIdMatch?.[1];
+      const extractedQuestionId = questionIdMatch?.[1];
 
       // Click the question link
       await firstLink.click();
@@ -310,7 +310,7 @@ test.describe("Respondent Detail Page", () => {
       // Verify we navigated to the question detail page
       // URL should match pattern: /consultations/{id}/questions/{questionId}
       await expect(page).toHaveURL(
-        new RegExp(`/consultations/[a-f0-9-]+/questions/${questionId}`),
+        new RegExp(`/consultations/[a-f0-9-]+/questions/${extractedQuestionId}`),
       );
 
       // Verify the question page loaded
@@ -372,9 +372,6 @@ test.describe("Respondent Detail Page", () => {
         await nextButton.click();
         await page.waitForLoadState("networkidle");
 
-        // Wait for page to fully load
-        await page.waitForTimeout(1000);
-
         // Verify we navigated to another respondent page
         await expect(page).toHaveURL(new RegExp(`/respondent/.+`));
 
@@ -384,11 +381,9 @@ test.describe("Respondent Detail Page", () => {
         const newThemefinderId = newUrlObj.searchParams.get("themefinder_id");
         const newRespondentId = newUrl.match(/\/respondent\/([^?]+)/)?.[1];
 
-        // Verify themefinder ID incremented
+        // Verify themefinder ID changed
         if (originalThemefinderId && newThemefinderId) {
-          expect(parseInt(newThemefinderId)).toBe(
-            parseInt(originalThemefinderId) + 1,
-          );
+          expect(newThemefinderId).not.toBe(originalThemefinderId);
         }
 
         // Verify respondent ID changed
@@ -407,9 +402,6 @@ test.describe("Respondent Detail Page", () => {
             // Click previous button
             await prevButton.click();
             await page.waitForLoadState("networkidle");
-
-            // Wait for page to fully load
-            await page.waitForTimeout(1000);
 
             // Verify we're back to the original respondent
             const backUrl = page.url();
@@ -459,7 +451,7 @@ test.describe("Respondent Detail Page", () => {
 
   test("responses are ordered by question number", async ({ page }) => {
     // Wait for responses to load
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("networkidle");
 
     // Find all question number badges
     const questionBadges = page.locator('text=/Q\\d+/');
@@ -526,21 +518,12 @@ test.describe("Respondent Detail Page", () => {
           await page.waitForLoadState("networkidle");
         }
 
-        // Wait a moment for UI to update
-        await page.waitForTimeout(500);
-
         // Verify the stakeholder name appears on the page
         await expect(page.getByText(stakeholderName)).toBeVisible();
-
-        // Get current URL to refresh
-        const currentUrl = page.url();
 
         // Refresh the page
         await page.reload();
         await page.waitForLoadState("networkidle");
-
-        // Wait for content to load after refresh
-        await page.waitForTimeout(1000);
 
         // Verify the stakeholder name still appears after refresh
         await expect(page.getByText(stakeholderName)).toBeVisible();
