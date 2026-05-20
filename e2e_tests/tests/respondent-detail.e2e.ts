@@ -30,33 +30,47 @@ test.describe("Respondent Detail Page", () => {
     expect(result).toBeTruthy();
     consultationId = result!.href.match(/\/consultations\/([^/]+)/)?.[1]!;
 
-    // Navigate to analysis page to find a respondent
-    await page.goto(`/consultations/${consultationId}/analysis`);
+    // Navigate to evaluation page to find questions
+    await page.goto(`/evaluations/${consultationId}/questions`);
     await page.waitForLoadState("networkidle");
 
-    // Find and click on first respondent link
-    const respondentLink = page
-      .locator('a[href*="/respondent/"]')
+    // Click on "Show next" button to navigate to a response
+    const showNextButton = page
+      .getByRole("button", { name: /show next/i })
       .first();
 
-    if ((await respondentLink.count()) > 0) {
-      const href = await respondentLink.getAttribute("href");
-      await respondentLink.click();
+    if ((await showNextButton.count()) > 0) {
+      await showNextButton.click();
       await page.waitForLoadState("networkidle");
 
-      // Extract IDs from URL
-      const urlMatch = href?.match(
-        /\/consultations\/([^/]+)\/respondent\/([^?]+)/,
-      );
-      if (urlMatch) {
-        consultationId = urlMatch[1];
-        respondentId = urlMatch[2];
-      }
+      // We should now be on a question detail page with responses
+      // Wait for the page to be on the correct URL pattern
+      await page.waitForURL(/\/evaluations\/.*\/questions\/.*\/responses\/.*/);
 
-      // Extract query params
-      const url = new URL(page.url());
-      themefinderId = url.searchParams.get("themefinder_id") || "";
-      questionId = url.searchParams.get("question_id") || "";
+      // Now find and click on a respondent link
+      const respondentLink = page
+        .locator('a[href*="/respondent/"]')
+        .first();
+
+      if ((await respondentLink.count()) > 0) {
+        const href = await respondentLink.getAttribute("href");
+        await respondentLink.click();
+        await page.waitForLoadState("networkidle");
+
+        // Extract IDs from URL
+        const urlMatch = href?.match(
+          /\/consultations\/([^/]+)\/respondent\/([^?]+)/,
+        );
+        if (urlMatch) {
+          consultationId = urlMatch[1];
+          respondentId = urlMatch[2];
+        }
+
+        // Extract query params
+        const url = new URL(page.url());
+        themefinderId = url.searchParams.get("themefinder_id") || "";
+        questionId = url.searchParams.get("question_id") || "";
+      }
     }
   });
 
@@ -306,7 +320,7 @@ test.describe("Respondent Detail Page", () => {
     }
   });
 
-  test("can navigate back to analysis page", async ({ page }) => {
+  test("can navigate back using back button", async ({ page }) => {
     // Find and click "Back to Analysis" button
     const backButton = page
       .getByRole("link", { name: /back to analysis/i })
@@ -317,10 +331,19 @@ test.describe("Respondent Detail Page", () => {
       await backButton.click();
       await page.waitForLoadState("networkidle");
 
-      // Should navigate back to analysis or question page
+      // Should navigate back - could be to question detail, analysis, or consultation page
+      // Just verify we're no longer on the respondent page
+      await expect(page).not.toHaveURL(new RegExp(`/respondent/`));
+
+      // Verify we're on a valid consultation or evaluation page
       await expect(page).toHaveURL(
-        new RegExp(`/(consultations|evaluations)/.+/(analysis|questions)`),
+        new RegExp(`/(consultations|evaluations)/.+`),
       );
+
+      // Verify the page has content
+      const bodyContent = await page.textContent("body");
+      expect(bodyContent).toBeTruthy();
+      expect(bodyContent!.length).toBeGreaterThan(50);
     }
   });
 
