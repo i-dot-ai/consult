@@ -178,7 +178,8 @@ dummy_data: ## Generate dummy consultations. Only works in dev
 	cd backend && PYTHONPATH=.. uv run python manage.py generate_dummy_data
 
 .PHONY: dev_environment
-dev_environment: reset_db migrate dummy_data ## set up the database with dummy data
+dev_environment: setup_db ## set up the database with dummy data
+	cd backend && PYTHONPATH=.. uv run python manage.py prepare_environment
 
 # Docker
 AWS_REGION=eu-west-2
