@@ -274,7 +274,7 @@
                   <h4 class="text-neutral-700 text-sm">{currMock.name || "Unnamed Mock"}</h4>
 
                   {#key currMock}
-                    <div class="mocks pl-4">
+                    <div class="mocks pl-4 mb-4">
                       <Select
                         id={(currMock.name || "mock") + "-status"}
                         label={"Status:"}
