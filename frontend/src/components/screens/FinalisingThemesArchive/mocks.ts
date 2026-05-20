@@ -11,7 +11,7 @@ export const consultationMock = {
     id: "5ae41198-94ed-4770-9914-264b54f62f5e",
     title: "Demo Consultation",
     code: "demo_consultation",
-    stage: "theme_sign_off",
+    stage: "finalising_themes",
     users: [
       {
         id: 15,

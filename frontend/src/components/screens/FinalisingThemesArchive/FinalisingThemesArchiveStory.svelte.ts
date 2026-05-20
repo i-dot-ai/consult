@@ -37,7 +37,7 @@ export default {
           ...consultationMock,
           body: {
             ...consultationMock.body,
-            stage: "theme_mapping",
+            stage: "assigning_themes",
           },
         },
         questionsMock,

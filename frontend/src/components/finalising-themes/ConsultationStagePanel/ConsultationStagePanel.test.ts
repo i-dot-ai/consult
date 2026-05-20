@@ -9,7 +9,7 @@ describe("ConsultationStagePanel", () => {
 
   it("should show progress when finalising and not all questions signed off", () => {
     render(ConsultationStagePanel, {
-      consultation: { id, stage: "theme_sign_off" },
+      consultation: { id, stage: "finalising_themes" },
       questionsCount: 10,
       finalisedQuestionCount: 3,
       allQuestionsFinalised: false,
@@ -26,7 +26,7 @@ describe("ConsultationStagePanel", () => {
 
   it("should show confirm button when finalising and all questions signed off", () => {
     render(ConsultationStagePanel, {
-      consultation: { id, stage: "theme_sign_off" },
+      consultation: { id, stage: "finalising_themes" },
       questionsCount: 10,
       finalisedQuestionCount: 10,
       allQuestionsFinalised: true,
@@ -46,7 +46,7 @@ describe("ConsultationStagePanel", () => {
 
   it("should render correctly for assigning themes stage", () => {
     render(ConsultationStagePanel, {
-      consultation: { id, stage: "theme_mapping" },
+      consultation: { id, stage: "assigning_themes" },
       questionsCount: 10,
       finalisedQuestionCount: 10,
       allQuestionsFinalised: true,
@@ -59,6 +59,32 @@ describe("ConsultationStagePanel", () => {
         /You have completed finalising themes phase for all 10 consultation questions/i,
       ),
     ).toBeInTheDocument();
+  });
+
+  it("should treat legacy theme_sign_off stage as finalising_themes", () => {
+    render(ConsultationStagePanel, {
+      consultation: { id, stage: "theme_sign_off" },
+      questionsCount: 10,
+      finalisedQuestionCount: 3,
+      allQuestionsFinalised: false,
+      onConfirmClick: onConfirmClickMock,
+    });
+
+    expect(
+      screen.getByText(/3 of 10 questions signed off/i),
+    ).toBeInTheDocument();
+  });
+
+  it("should treat legacy theme_mapping stage as assigning_themes", () => {
+    render(ConsultationStagePanel, {
+      consultation: { id, stage: "theme_mapping" },
+      questionsCount: 10,
+      finalisedQuestionCount: 10,
+      allQuestionsFinalised: true,
+      onConfirmClick: onConfirmClickMock,
+    });
+
+    expect(screen.getByText("AI Assignment in Progress")).toBeInTheDocument();
   });
 
   it("should render correctly for analysis stage", () => {

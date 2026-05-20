@@ -12,7 +12,7 @@ describe("DeleteQuestionForm", () => {
     id: "consultation-123",
     title: "Test Consultation",
     code: "test-code",
-    stage: "theme_sign_off",
+    stage: "finalising_themes",
     users: [],
   };
 

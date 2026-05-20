@@ -1,4 +1,4 @@
-type ConsultationStage = "setup" | "analysis" | "theme_sign_off";
+type ConsultationStage = "setup" | "analysis" | "finalising_themes" | "theme_sign_off";
 
 export type Theme = {
   name: string;
@@ -300,8 +300,8 @@ export const analysisConsultation: Consultation = {
 };
 
 export const signOffConsultation: Consultation = {
-  title: "Dummy Consultation at Theme Sign Off Stage",
-  stage: "theme_sign_off",
+  title: "Dummy Consultation at Finalising Themes Stage",
+  stage: "finalising_themes",
   users: [defaultUser.email],
   questions: [hybridQuestion, multChoiceQuestion, openQuestion],
 };
