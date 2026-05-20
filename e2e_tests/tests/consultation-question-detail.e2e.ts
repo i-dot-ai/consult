@@ -65,14 +65,10 @@ test.describe("Consultation Question Detail Page - Route & Navigation", () => {
   test("displays question text from fixture data", async ({ page }) => {
     // Check for specific question text from analysisConsultation fixture
     const bodyContent = await page.textContent("body");
+    expect(bodyContent).toBeTruthy();
 
-    // analysisConsultation has questions with specific text
-    const hasFixtureQuestionText =
-      bodyContent?.includes("chocolate bar") ||
-      bodyContent?.includes("packaging") ||
-      bodyContent?.includes("regulation");
-
-    expect(hasFixtureQuestionText).toBeTruthy();
+    // analysisConsultation has questions about chocolate bars, packaging, or regulations
+    expect(bodyContent).toMatch(/chocolate bar|packaging|regulation/i);
   });
 
   test("displays respondent ID buttons for navigating to respondent details", async ({
@@ -146,13 +142,10 @@ test.describe("Consultation Question Detail Page - Route & Navigation", () => {
   test("displays themes from fixture data", async ({ page }) => {
     // analysisConsultation has specific themes
     const bodyContent = await page.textContent("body");
+    expect(bodyContent).toBeTruthy();
 
-    // Check for specific themes from fixture
-    const hasFixtureThemes =
-      bodyContent?.includes("Standardized framework") ||
-      bodyContent?.includes("Innovation");
-
-    expect(hasFixtureThemes).toBeTruthy();
+    // Check for specific themes from fixture (at least one should be present)
+    expect(bodyContent).toMatch(/Standardized framework|Innovation/i);
   });
 
   test("displays response count for question", async ({ page }) => {
