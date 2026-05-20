@@ -302,7 +302,11 @@
                         label="Body"
                         value={JSON.stringify(currMock.body || "")}
                         setValue={(newValue) => {
-                          currMock.body = JSON.parse(newValue);
+                          try {
+                            currMock.body = JSON.parse(newValue);
+                          } catch {
+                            // JSON not valid, do nothing
+                          }
                         }}
                       />
                     </div>
