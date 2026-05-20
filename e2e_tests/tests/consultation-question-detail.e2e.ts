@@ -151,10 +151,10 @@ test.describe("Consultation Question Detail Page - Route & Navigation", () => {
   test("displays response count for question", async ({ page }) => {
     // analysisConsultation has 5 responses per question
     const bodyContent = await page.textContent("body");
+    expect(bodyContent).toBeTruthy();
 
     // Look for response count indicator (e.g., "5 responses")
-    const responseCountMatch = bodyContent?.match(/5\s+(response|answer)/i);
-    expect(responseCountMatch).toBeTruthy();
+    expect(bodyContent).toMatch(/5\s+(response|answer)/i);
   });
 
   test("page loads without errors on consultations route", async ({ page }) => {
