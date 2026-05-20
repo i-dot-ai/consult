@@ -39,39 +39,43 @@ test.describe("Respondent Detail Page", () => {
       .getByRole("button", { name: /show next/i })
       .first();
 
-    if ((await showNextButton.count()) > 0) {
-      await showNextButton.click();
-      await page.waitForLoadState("networkidle");
+    // Assert button exists
+    expect(await showNextButton.count()).toBeGreaterThan(0);
 
-      // We should now be on a question detail page with responses
-      // Wait for the page to be on the correct URL pattern
-      await page.waitForURL(/\/evaluations\/.*\/questions\/.*\/responses\/.*/);
+    await showNextButton.click();
+    await page.waitForLoadState("networkidle");
 
-      // Now find and click on a respondent link
-      const respondentLink = page
-        .locator('a[href*="/respondent/"]')
-        .first();
+    // We should now be on a question detail page with responses
+    // Wait for the page to be on the correct URL pattern
+    await page.waitForURL(/\/evaluations\/.*\/questions\/.*\/responses\/.*/);
 
-      if ((await respondentLink.count()) > 0) {
-        const href = await respondentLink.getAttribute("href");
-        await respondentLink.click();
-        await page.waitForLoadState("networkidle");
+    // Now find and click on a respondent link
+    const respondentLink = page.locator('a[href*="/respondent/"]').first();
 
-        // Extract IDs from URL
-        const urlMatch = href?.match(
-          /\/consultations\/([^/]+)\/respondent\/([^?]+)/,
-        );
-        if (urlMatch) {
-          consultationId = urlMatch[1];
-          respondentId = urlMatch[2];
-        }
+    // Assert respondent link exists
+    expect(await respondentLink.count()).toBeGreaterThan(0);
 
-        // Extract query params
-        const url = new URL(page.url());
-        themefinderId = url.searchParams.get("themefinder_id") || "";
-        questionId = url.searchParams.get("question_id") || "";
-      }
-    }
+    const href = await respondentLink.getAttribute("href");
+    expect(href).toBeTruthy();
+
+    await respondentLink.click();
+    await page.waitForLoadState("networkidle");
+
+    // Verify we're on a respondent page
+    await expect(page).toHaveURL(/\/consultations\/.*\/respondent\/.*/);
+
+    // Extract IDs from URL
+    const urlMatch = href?.match(
+      /\/consultations\/([^/]+)\/respondent\/([^?]+)/,
+    );
+    expect(urlMatch).toBeTruthy();
+    consultationId = urlMatch![1];
+    respondentId = urlMatch![2];
+
+    // Extract query params
+    const url = new URL(page.url());
+    themefinderId = url.searchParams.get("themefinder_id") || "";
+    questionId = url.searchParams.get("question_id") || "";
   });
 
   test("displays respondent topbar with navigation", async ({ page }) => {
