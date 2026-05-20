@@ -178,91 +178,91 @@
               {#each currStory.props as prop (prop.name)}
                 {@const inputId = `input-${prop.name.toLowerCase().replaceAll(" ", "-")}`}
 
-                  {#if ["number", "text", "bool", "select", "json", "html", "func"].includes(prop.type)}
-                    <div class="mb-1">
-                      <Title level={4} text={prop.name} />
-                    </div>
-                  {/if}
+                {#if ["number", "text", "bool", "select", "json", "html", "func"].includes(prop.type)}
+                  <div class="mb-1">
+                    <Title level={4} text={prop.name} />
+                  </div>
+                {/if}
 
-                  {#if prop.type === "number"}
-                    <input
-                      id={inputId}
-                      class="rounded-lg border border-neutral-300 p-2"
-                      type="number"
-                      value={(prop.value as string).toString()}
-                      oninput={(e) => {
-                        prop.value = parseInt(
-                          (e?.target as unknown as { value: string })?.value,
-                        );
-                      }}
-                    />
-                  {:else if prop.type === "text"}
-                    <TextInput
-                      id={inputId}
-                      label={prop.name}
-                      hideLabel={true}
-                      value={prop.value! as string}
-                      setValue={(newVal) => (prop.value = newVal)}
-                    />
-                  {:else if prop.type === "bool"}
-                    <Switch
-                      id={inputId}
-                      label={prop.name}
-                      hideLabel={true}
-                      value={prop.value as boolean}
-                      handleChange={(newVal) => (prop.value = newVal)}
-                    />
-                  {:else if prop.type === "select"}
-                    <Select
-                      id={inputId}
-                      label={prop.name}
-                      hideLabel={true}
-                      value={prop.label}
-                      items={prop.options! as { value: string; label: string }[]}
-                      onchange={(nextVal) => {
-                        if (!nextVal) {
-                          return;
-                        }
-                        prop.value = prop.options?.find(
-                          (opt: { label: string }) => {
-                            return opt.label === nextVal;
-                          },
-                        )?.value;
-                      }}
-                    />
-                  {:else if prop.type === "json"}
-                    <CodeMirror
-                      value={JSON.stringify(prop.value)}
-                      lang={json()}
-                      onchange={(newVal) => {
-                        prop.value = JSON.parse(newVal);
-                      }}
-                    />
-                  {:else if prop.type === "html"}
-                    <CodeMirror
-                      value={prop.rawHtml}
-                      lang={json()}
-                      onchange={(newVal) => {
-                        // return if not valid html
-                        const doc = document.createElement("div");
-                        doc.innerHTML = newVal;
-                        if (!newVal || doc.innerHTML !== newVal) {
-                          return;
-                        }
+                {#if prop.type === "number"}
+                  <input
+                    id={inputId}
+                    class="rounded-lg border border-neutral-300 p-2"
+                    type="number"
+                    value={(prop.value as string).toString()}
+                    oninput={(e) => {
+                      prop.value = parseInt(
+                        (e?.target as unknown as { value: string })?.value,
+                      );
+                    }}
+                  />
+                {:else if prop.type === "text"}
+                  <TextInput
+                    id={inputId}
+                    label={prop.name}
+                    hideLabel={true}
+                    value={prop.value! as string}
+                    setValue={(newVal) => (prop.value = newVal)}
+                  />
+                {:else if prop.type === "bool"}
+                  <Switch
+                    id={inputId}
+                    label={prop.name}
+                    hideLabel={true}
+                    value={prop.value as boolean}
+                    handleChange={(newVal) => (prop.value = newVal)}
+                  />
+                {:else if prop.type === "select"}
+                  <Select
+                    id={inputId}
+                    label={prop.name}
+                    hideLabel={true}
+                    value={prop.label}
+                    items={prop.options! as { value: string; label: string }[]}
+                    onchange={(nextVal) => {
+                      if (!nextVal) {
+                        return;
+                      }
+                      prop.value = prop.options?.find(
+                        (opt: { label: string }) => {
+                          return opt.label === nextVal;
+                        },
+                      )?.value;
+                    }}
+                  />
+                {:else if prop.type === "json"}
+                  <CodeMirror
+                    value={JSON.stringify(prop.value)}
+                    lang={json()}
+                    onchange={(newVal) => {
+                      prop.value = JSON.parse(newVal);
+                    }}
+                  />
+                {:else if prop.type === "html"}
+                  <CodeMirror
+                    value={prop.rawHtml}
+                    lang={json()}
+                    onchange={(newVal) => {
+                      // return if not valid html
+                      const doc = document.createElement("div");
+                      doc.innerHTML = newVal;
+                      if (!newVal || doc.innerHTML !== newVal) {
+                        return;
+                      }
 
-                        prop.value = createRawSnippet(() => ({
-                          render: () => newVal,
-                        }));
-                        prop.rawHtml = newVal;
-                      }}
-                    />
-                  {:else if prop.type === "func"}
-                    <Tag>
-                      <span class="italic">
-                        Function: {prop.schema || "No schema provided"}
-                      </span>
-                    </Tag>
-                  {/if}
+                      prop.value = createRawSnippet(() => ({
+                        render: () => newVal,
+                      }));
+                      prop.rawHtml = newVal;
+                    }}
+                  />
+                {:else if prop.type === "func"}
+                  <Tag>
+                    <span class="italic">
+                      Function: {prop.schema || "No schema provided"}
+                    </span>
+                  </Tag>
+                {/if}
               {/each}
 
               {#if currStory.mocks}
@@ -270,20 +270,22 @@
 
                 <h3 class="text-neutral-500">Mocks</h3>
 
-                {#each currStory.mocks as currMock}
-                  <h4 class="text-neutral-700 text-sm">{currMock.name || "Unnamed Mock"}</h4>
+                {#each currStory.mocks as currMock, i (i)}
+                  <h4 class="text-sm text-neutral-700">
+                    {currMock.name || "Unnamed Mock"}
+                  </h4>
 
                   {#key currMock}
-                    <div class="mocks pl-4 mb-4">
+                    <div class="mocks mb-4 pl-4">
                       <Select
                         id={(currMock.name || "mock") + "-status"}
-                        label={"Status:"}
+                        label="Status:"
                         hideLabel={false}
                         value={(currMock.status || 200).toString()}
                         items={[
-                          {value:"200", label: "Success"},
-                          {value:"400", label: "Bad Request"},
-                          {value:"500", label: "Server Error"},
+                          { value: "200", label: "Success" },
+                          { value: "400", label: "Bad Request" },
+                          { value: "500", label: "Server Error" },
                         ]}
                         onchange={(nextVal) => {
                           if (!nextVal) {
@@ -293,7 +295,7 @@
                         }}
                       />
 
-                      <hr class="mt-4 mb-2" />
+                      <hr class="mb-2 mt-4" />
 
                       <Textarea
                         id={(currMock.name || "mock") + "-body"}
