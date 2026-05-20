@@ -127,7 +127,8 @@ dev_admin_user:
 	cd backend && PYTHONPATH=.. uv run python manage.py shell -c "from authentication.models import User; from consultations.models import Consultation; user = User.objects.create_user(email='email@example.com', password='admin', is_staff=True); user.save(); [c.users.add(user) for c in Consultation.objects.all()]" # pragma: allowlist secret
 
 .PHONY: dev_environment
-dev_environment: reset_db migrate dummy_data dev_admin_user ## set up the database with dummy data
+dev_environment: setup_db ## set up the database with dummy data
+	cd backend && PYTHONPATH=.. uv run python manage.py prepare_environment
 
 # Docker
 AWS_REGION=eu-west-2

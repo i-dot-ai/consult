@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from simple_history.admin import SimpleHistoryAdmin
 
-from consultations.dummy_data import create_dummy_consultation_from_yaml_job
+from consultations.dummy_data import create_dummy_consultation_job
 from consultations.models import (
     CandidateTheme,
     Consultation,
@@ -53,7 +53,7 @@ def create_dummy_consultation(modeladmin, request, queryset, size=10):
         )
         return
 
-    create_dummy_consultation_from_yaml_job.delay(
+    create_dummy_consultation_job.delay(
         number_respondents=size, consultation=consultation
     )
 
