@@ -213,22 +213,19 @@ test.describe("Respondent Detail Page", () => {
     // Wait for responses to load
     await page.waitForLoadState("networkidle");
 
-    // Check for "Themes:" label
+    // Check for "Themes:" label - fixture assigns themes to responses
     const themesLabel = page.getByText(/themes:/i);
+    expect(await themesLabel.count()).toBeGreaterThan(0);
+    await expect(themesLabel.first()).toBeVisible();
 
-    if ((await themesLabel.count()) > 0) {
-      await expect(themesLabel.first()).toBeVisible();
+    // Look for theme tags/badges - fixture has specific themes
+    const themeTags = page
+      .locator('[data-testid*="theme"]')
+      .or(page.locator('span:has-text("Standardized framework")'))
+      .or(page.locator('span:has-text("Innovation")'));
 
-      // Look for theme tags/badges
-      const themeTags = page
-        .locator('[data-testid*="theme"]')
-        .or(page.locator('span:has-text("Standardized framework")'))
-        .or(page.locator('span:has-text("Innovation")'));
-
-      if ((await themeTags.count()) > 0) {
-        await expect(themeTags.first()).toBeVisible();
-      }
-    }
+    expect(await themeTags.count()).toBeGreaterThan(0);
+    await expect(themeTags.first()).toBeVisible();
   });
 
   test("displays evidence-rich badge for qualifying responses", async ({
@@ -237,29 +234,28 @@ test.describe("Respondent Detail Page", () => {
     // Wait for responses to load
     await page.waitForLoadState("networkidle");
 
-    // Check for "Evidence-rich" badge
+    // Check for "Evidence-rich" badge - genuinely optional based on response quality
     const evidenceBadge = page.getByText(/evidence-rich/i);
+    const evidenceBadgeCount = await evidenceBadge.count();
+    
+    // Skip test if no evidence-rich badges (optional feature)
+    test.skip(evidenceBadgeCount === 0, "No evidence-rich badges present in fixture data");
 
-    // Evidence-rich badge may or may not be present depending on data
-    if ((await evidenceBadge.count()) > 0) {
-      await expect(evidenceBadge.first()).toBeVisible();
-    }
+    await expect(evidenceBadge.first()).toBeVisible();
   });
 
   test("displays multiple choice responses when answered", async ({ page }) => {
     // Wait for responses to load
     await page.waitForLoadState("networkidle");
 
-    // Check for "MULTIPLE CHOICE RESPONSE:" label
+    // Check for "MULTIPLE CHOICE RESPONSE:" label - fixture has MC questions
     const multipleChoiceLabel = page.getByText(/multiple choice response/i);
+    expect(await multipleChoiceLabel.count()).toBeGreaterThan(0);
+    await expect(multipleChoiceLabel.first()).toBeVisible();
 
-    if ((await multipleChoiceLabel.count()) > 0) {
-      await expect(multipleChoiceLabel.first()).toBeVisible();
-
-      // Should have selected options listed
-      const bodyContent = await page.textContent("body");
-      expect(bodyContent).toBeTruthy();
-    }
+    // Should have selected options listed
+    const bodyContent = await page.textContent("body");
+    expect(bodyContent).toBeTruthy();
   });
 
   test("clicking question title navigates to question detail page", async ({
@@ -339,73 +335,71 @@ test.describe("Respondent Detail Page", () => {
       originalUrlObj.searchParams.get("themefinder_id");
     const originalRespondentId = originalUrl.match(/\/respondent\/([^?]+)/)?.[1];
 
-    // Find next button
+    // Find next button - fixture has 5 respondents so next button should exist
     const nextButton = page
       .getByRole("button", { name: /next/i })
       .or(page.getByRole("link", { name: /next/i }))
       .first();
 
-    if ((await nextButton.count()) > 0) {
-      // Check if button is enabled
-      const isDisabled = await nextButton.getAttribute("disabled");
+    expect(await nextButton.count()).toBeGreaterThan(0);
+    
+    // Check if button is enabled
+    const isDisabled = await nextButton.getAttribute("disabled");
+    expect(isDisabled).toBeNull(); // Should not be disabled for first respondent
 
-      if (!isDisabled) {
-        // Click next button
-        await nextButton.click();
-        await page.waitForLoadState("networkidle");
+    // Click next button
+    await nextButton.click();
+    await page.waitForLoadState("networkidle");
 
-        // Verify we navigated to another respondent page
-        await expect(page).toHaveURL(new RegExp(`/respondent/.+`));
+    // Verify we navigated to another respondent page
+    await expect(page).toHaveURL(new RegExp(`/respondent/.+`));
 
-        // Get the new URL and themefinder ID
-        const newUrl = page.url();
-        const newUrlObj = new URL(newUrl);
-        const newThemefinderId = newUrlObj.searchParams.get("themefinder_id");
-        const newRespondentId = newUrl.match(/\/respondent\/([^?]+)/)?.[1];
+    // Get the new URL and themefinder ID
+    const newUrl = page.url();
+    const newUrlObj = new URL(newUrl);
+    const newThemefinderId = newUrlObj.searchParams.get("themefinder_id");
+    const newRespondentId = newUrl.match(/\/respondent\/([^?]+)/)?.[1];
 
-        // Verify themefinder ID changed
-        if (originalThemefinderId && newThemefinderId) {
-          expect(newThemefinderId).not.toBe(originalThemefinderId);
-        }
-
-        // Verify respondent ID changed
-        expect(newRespondentId).not.toBe(originalRespondentId);
-
-        // Now click previous button to go back
-        const prevButton = page
-          .getByRole("button", { name: /previous/i })
-          .or(page.getByRole("link", { name: /previous/i }))
-          .first();
-
-        if ((await prevButton.count()) > 0) {
-          const isPrevDisabled = await prevButton.getAttribute("disabled");
-
-          if (!isPrevDisabled) {
-            // Click previous button
-            await prevButton.click();
-            await page.waitForLoadState("networkidle");
-
-            // Verify we're back to the original respondent
-            const backUrl = page.url();
-            const backUrlObj = new URL(backUrl);
-            const backThemefinderId =
-              backUrlObj.searchParams.get("themefinder_id");
-            const backRespondentId = backUrl.match(/\/respondent\/([^?]+)/)?.[1];
-
-            // Verify we're back to the original themefinder ID
-            expect(backThemefinderId).toBe(originalThemefinderId);
-
-            // Verify we're back to the original respondent ID
-            expect(backRespondentId).toBe(originalRespondentId);
-
-            // Verify the page content loaded correctly
-            const bodyContent = await page.textContent("body");
-            expect(bodyContent).toBeTruthy();
-            expect(bodyContent!.length).toBeGreaterThan(100);
-          }
-        }
-      }
+    // Verify themefinder ID changed
+    if (originalThemefinderId && newThemefinderId) {
+      expect(newThemefinderId).not.toBe(originalThemefinderId);
     }
+
+    // Verify respondent ID changed
+    expect(newRespondentId).not.toBe(originalRespondentId);
+
+    // Now click previous button to go back - should exist after clicking next
+    const prevButton = page
+      .getByRole("button", { name: /previous/i })
+      .or(page.getByRole("link", { name: /previous/i }))
+      .first();
+
+    expect(await prevButton.count()).toBeGreaterThan(0);
+    
+    const isPrevDisabled = await prevButton.getAttribute("disabled");
+    expect(isPrevDisabled).toBeNull(); // Should not be disabled
+
+    // Click previous button
+    await prevButton.click();
+    await page.waitForLoadState("networkidle");
+
+    // Verify we're back to the original respondent
+    const backUrl = page.url();
+    const backUrlObj = new URL(backUrl);
+    const backThemefinderId =
+      backUrlObj.searchParams.get("themefinder_id");
+    const backRespondentId = backUrl.match(/\/respondent\/([^?]+)/)?.[1];
+
+    // Verify we're back to the original themefinder ID
+    expect(backThemefinderId).toBe(originalThemefinderId);
+
+    // Verify we're back to the original respondent ID
+    expect(backRespondentId).toBe(originalRespondentId);
+
+    // Verify the page content loaded correctly
+    const bodyContent = await page.textContent("body");
+    expect(bodyContent).toBeTruthy();
+    expect(bodyContent!.length).toBeGreaterThan(100);
   });
 
   test("displays stakeholder name field in sidebar", async ({ page }) => {
@@ -434,23 +428,25 @@ test.describe("Respondent Detail Page", () => {
     // Wait for responses to load
     await page.waitForLoadState("networkidle");
 
-    // Find all question number badges
-    const questionBadges = page.locator('text=/Q\\d+/');
+    // Find all question number badges - fixture has 3 questions
+    const questionBadges = page.locator('[data-testid="question-number"]');
     const count = await questionBadges.count();
 
-    if (count > 1) {
-      // Get first two question numbers
-      const firstText = await questionBadges.nth(0).textContent();
-      const secondText = await questionBadges.nth(1).textContent();
+    // Fixture creates 3 questions, so should have multiple badges
+    expect(count).toBeGreaterThan(1);
+    
+    // Get first two question numbers
+    const firstText = await questionBadges.nth(0).textContent();
+    const secondText = await questionBadges.nth(1).textContent();
 
-      if (firstText && secondText) {
-        const firstNum = parseInt(firstText.match(/\d+/)?.[0] || "0");
-        const secondNum = parseInt(secondText.match(/\d+/)?.[0] || "0");
+    expect(firstText).toBeTruthy();
+    expect(secondText).toBeTruthy();
+    
+    const firstNum = parseInt(firstText!.match(/\d+/)?.[0] || "0");
+    const secondNum = parseInt(secondText!.match(/\d+/)?.[0] || "0");
 
-        // Second question number should be greater than or equal to first
-        expect(secondNum).toBeGreaterThanOrEqual(firstNum);
-      }
-    }
+    // Second question number should be greater than or equal to first
+    expect(secondNum).toBeGreaterThanOrEqual(firstNum);
   });
 
   test("can add stakeholder name and persists after page refresh", async ({
