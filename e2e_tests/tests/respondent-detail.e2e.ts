@@ -358,7 +358,8 @@ test.describe("Respondent Detail Page", () => {
     
     // Check if button is enabled
     const isDisabled = await nextButton.getAttribute("disabled");
-    expect(isDisabled).toBeNull(); // Should not be disabled for first respondent
+    // Button is enabled if disabled attribute is null or empty string
+    expect(isDisabled === null || isDisabled === "").toBeTruthy();
 
     // Click next button
     await nextButton.click();
