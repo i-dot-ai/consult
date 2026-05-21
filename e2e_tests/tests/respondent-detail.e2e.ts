@@ -92,8 +92,6 @@ test.describe("Respondent Detail Page", () => {
     // CRITICAL: Wait for "Loading Responses..." message to disappear
     // The frontend shows this message while fetching data from API
     const loadingMessage = page.getByText("Loading Responses...");
-    // Wait for loading to start (optional - might already be visible)
-    await page.waitForTimeout(100);
     // Wait for loading to complete - message should disappear
     await expect(loadingMessage).toBeHidden({ timeout: 30000 });
     
@@ -414,10 +412,8 @@ test.describe("Respondent Detail Page", () => {
     const newThemefinderId = newUrlObj.searchParams.get("themefinder_id");
     const newRespondentId = newUrl.match(/\/respondent\/([^?]+)/)?.[1];
 
-    // Verify themefinder ID changed
-    if (originalThemefinderId && newThemefinderId) {
-      expect(newThemefinderId).not.toBe(originalThemefinderId);
-    }
+    // Verify themefinder ID changed - fixture guarantees themefinder_id params
+    expect(newThemefinderId).not.toBe(originalThemefinderId);
 
     // Verify respondent ID changed
     expect(newRespondentId).not.toBe(originalRespondentId);
