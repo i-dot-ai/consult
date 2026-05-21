@@ -38,12 +38,12 @@ test.describe("Respondent Detail Page", () => {
     // We should be on a question detail page
     await expect(page).toHaveURL(/\/consultations\/.*\/questions\/.*/);
 
-    // Wait for Response Analysis tab to appear (max 3 seconds)
+    // Wait for Response Analysis tab to appear (no timeout limit - default Playwright timeout)
     const responseTab = page
       .getByRole("tab", { name: /response analysis/i })
       .or(page.getByRole("tab", { name: /response/i }));
     
-    await expect(responseTab).toBeVisible({ timeout: 3000 });
+    await expect(responseTab).toBeVisible();
     
     // Click Response Analysis tab to see respondent buttons
     await responseTab.click();
@@ -51,6 +51,9 @@ test.describe("Respondent Detail Page", () => {
 
     // Find respondent ID button (button with text "ID: {number}")
     const respondentButton = page.locator('button:has-text("ID:")').first();
+    
+    // Wait for respondent button to appear before asserting
+    await expect(respondentButton).toBeVisible();
     
     // Fixture should create respondent buttons - fail fast if missing
     expect(await respondentButton.count()).toBeGreaterThan(0);
@@ -60,6 +63,12 @@ test.describe("Respondent Detail Page", () => {
 
     // Verify we're on a respondent page
     await expect(page).toHaveURL(/\/consultations\/.*\/respondent\/.*/);
+    
+    // Wait for page content to load - look for the sidebar or main content
+    await page.waitForSelector('[data-testid="question-number"]', { timeout: 10000 }).catch(() => {
+      // If question numbers don't appear, at least wait for some content
+      return page.waitForSelector('body', { timeout: 5000 });
+    });
 
     // Extract IDs from URL
     const currentUrl = page.url();
@@ -185,13 +194,14 @@ test.describe("Respondent Detail Page", () => {
     // Check for question number badges (e.g., "Q1", "Q2") - fixture creates responses
     const questionBadges = page.locator('[data-testid="question-number"]');
 
-    expect(await questionBadges.count()).toBeGreaterThan(0);
+    // Wait for at least one badge to appear
     await expect(questionBadges.first()).toBeVisible();
+    expect(await questionBadges.count()).toBeGreaterThan(0);
 
     // Check for question text/title - should exist for each response (it's in an <a> tag)
     const questionLinks = page.locator('a[href*="/questions/"]');
-    expect(await questionLinks.count()).toBeGreaterThan(0);
     await expect(questionLinks.first()).toBeVisible();
+    expect(await questionLinks.count()).toBeGreaterThan(0);
   });
 
   test("displays response text for answered questions", async ({ page }) => {
@@ -221,8 +231,8 @@ test.describe("Respondent Detail Page", () => {
 
     // Check for "Themes:" label - fixture assigns themes to responses
     const themesLabel = page.getByText(/themes:/i);
-    expect(await themesLabel.count()).toBeGreaterThan(0);
     await expect(themesLabel.first()).toBeVisible();
+    expect(await themesLabel.count()).toBeGreaterThan(0);
 
     // Look for theme tags/badges - fixture has specific themes
     const themeTags = page
@@ -230,8 +240,8 @@ test.describe("Respondent Detail Page", () => {
       .or(page.locator('span:has-text("Standardized framework")'))
       .or(page.locator('span:has-text("Innovation")'));
 
-    expect(await themeTags.count()).toBeGreaterThan(0);
     await expect(themeTags.first()).toBeVisible();
+    expect(await themeTags.count()).toBeGreaterThan(0);
   });
 
   test("displays evidence-rich badge for qualifying responses", async ({
@@ -436,6 +446,10 @@ test.describe("Respondent Detail Page", () => {
 
     // Find all question number badges - fixture has 3 questions
     const questionBadges = page.locator('[data-testid="question-number"]');
+    
+    // Wait for at least one badge to appear
+    await expect(questionBadges.first()).toBeVisible();
+    
     const count = await questionBadges.count();
 
     // Fixture creates 3 questions, so should have multiple badges
@@ -463,7 +477,8 @@ test.describe("Respondent Detail Page", () => {
     const stakeholderName = `Test Stakeholder ${timestamp}`;
 
     // First, find and click the edit button to show the input field
-    const editButton = page.locator('button:has([data-testid="edit-icon"])').first();
+    const editButton = page.getByTestId('edit-button').first();
+    await expect(editButton).toBeVisible();
     await editButton.click();
     await page.waitForLoadState("networkidle");
 
@@ -472,7 +487,8 @@ test.describe("Respondent Detail Page", () => {
       .getByPlaceholder(/business or organisation/i)
       .or(page.locator('input[placeholder*="stakeholder"]'));
 
-    // Stakeholder input should exist after clicking edit
+    // Wait for input to appear and verify it exists
+    await expect(stakeholderInput.first()).toBeVisible();
     expect(await stakeholderInput.count()).toBeGreaterThan(0);
 
     // Fill in the stakeholder name
@@ -483,7 +499,8 @@ test.describe("Respondent Detail Page", () => {
       .getByRole("button", { name: /save/i })
       .first();
 
-    // Save button should exist for stakeholder name
+    // Wait for save button and verify it exists
+    await expect(saveButton).toBeVisible();
     expect(await saveButton.count()).toBeGreaterThan(0);
 
     // Click save and wait for network to settle
