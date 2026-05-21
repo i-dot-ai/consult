@@ -64,11 +64,8 @@ test.describe("Respondent Detail Page", () => {
     // Verify we're on a respondent page
     await expect(page).toHaveURL(/\/consultations\/.*\/respondent\/.*/);
     
-    // Wait for page content to load - look for the sidebar or main content
-    await page.waitForSelector('[data-testid="question-number"]', { timeout: 10000 }).catch(() => {
-      // If question numbers don't appear, at least wait for some content
-      return page.waitForSelector('body', { timeout: 5000 });
-    });
+    // Wait for the main responses heading to ensure content has loaded
+    await expect(page.getByRole("heading", { name: /responses to consultation questions/i })).toBeVisible({ timeout: 10000 });
 
     // Extract IDs from URL
     const currentUrl = page.url();
@@ -393,7 +390,8 @@ test.describe("Respondent Detail Page", () => {
     expect(await prevButton.count()).toBeGreaterThan(0);
     
     const isPrevDisabled = await prevButton.getAttribute("disabled");
-    expect(isPrevDisabled).toBeNull(); // Should not be disabled
+    // Button is enabled if disabled attribute is null or empty string
+    expect(isPrevDisabled === null || isPrevDisabled === "").toBeTruthy();
 
     // Click previous button
     await prevButton.click();
