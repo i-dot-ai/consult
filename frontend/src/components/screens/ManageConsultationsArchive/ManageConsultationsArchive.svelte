@@ -125,6 +125,7 @@
 
 <div class="mt-2 w-full md:w-1/3">
   <TextInput
+    id={"search-consultations"}
     label="Search consultations"
     placeholder={"Find consultation..."}
     hideLabel={true}
@@ -167,13 +168,13 @@
       {/if}
 
       {#each displayConsultations as consultation, i (i)}
-        <tr transition:fade={{ duration: 200 }} class="border-t hover:bg-gray-50">
-          <td class="py-2 pr-2">
+        <tr transition:fade={{ duration: 200 }} class="border-t hover:bg-gray-50" data-testid="consultation-item">
+          <td data-testid="title" class="py-2 pr-2">
             <Link href={getSupportConsultationDetails(consultation.id)}>
               {consultation.title}
             </Link>
           </td>
-          <td class="py-2 pr-2">{formatDate(consultation.created_at)}</td>
+          <td data-testid="created-at" class="py-2 pr-2">{formatDate(consultation.created_at)}</td>
         </tr>
       {/each}
     </tbody>
