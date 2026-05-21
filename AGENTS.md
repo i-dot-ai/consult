@@ -1,4 +1,4 @@
-# AGENTS.md - Consult Repository Guide
+# Consult Repository Guide
 
 > **For AI coding assistants**: This document provides essential context about the Consult repository's architecture, intent, and organization.
 
@@ -245,18 +245,27 @@ make lint         # Run linters
 ### Key Commands
 ```bash
 # Backend
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py shell
+python manage.py migrate          # apply DB migrations
+python manage.py createsuperuser  # create admin user
+python manage.py shell            # Django shell
 
 # Frontend
-npm run dev
-npm run build
-npm run test
+npm run dev    # start dev server
+npm run build  # production build
+npm run test   # run vitest tests
 
 # Infrastructure
-cd terraform/ && terraform plan -var-file=dev.tfvars
+cd terraform/ && terraform plan -var-file=dev.tfvars  # preview infra changes
+
+# Linting & formatting (run before committing)
+make check-python-code   # ruff lint + import sort (backend)
+make format-python-code  # ruff fix + format auto-fix (backend)
+cd frontend && npm run lint          # eslint check
+cd frontend && npm run lint:fix      # eslint auto-fix
+cd frontend && npm run typecheck     # svelte-check TypeScript
 ```
+
+**Code quality tools**: Backend uses ruff (line length 100, Python 3.12). Frontend uses eslint + prettier + svelte-check. Avoid `any` in TypeScript — it bypasses type safety.
 
 ---
 
