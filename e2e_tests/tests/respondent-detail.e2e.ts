@@ -79,10 +79,10 @@ test.describe("Respondent Detail Page", () => {
       .or(page.getByRole("button", { name: /back/i }));
     await expect(backButton.first()).toBeVisible();
 
-    // Check for respondent title with themefinder ID
+    // Check for respondent title with themefinder ID in heading
     if (themefinderId) {
       await expect(
-        page.getByText(new RegExp(`respondent.*${themefinderId}`, "i")),
+        page.getByRole("heading", { name: new RegExp(`respondent.*${themefinderId}`, "i") }),
       ).toBeVisible();
     }
 
@@ -127,22 +127,19 @@ test.describe("Respondent Detail Page", () => {
 
     await expect(questionsAnswered.first()).toBeVisible();
 
-    // Get the full text content of the page
-    const bodyContent = await page.textContent("body");
+    // Get the text content specifically from the Questions Answered section area
+    const sidebarContent = await page.locator('[data-testid="panel-component"]').textContent();
 
-    // Look for percentage display (e.g., "100%", "75%")
-    const percentageMatch = bodyContent?.match(/(\d+)%/);
-
-    // Look for fraction display (e.g., "3/3", "2/4")
-    const fractionMatch = bodyContent?.match(/(\d+)\/(\d+)/);
+    // Look for percentage display followed by fraction (e.g., "100% (3/3)")
+    const progressMatch = sidebarContent?.match(/(\d+)%\s*\((\d+)\/(\d+)\)/);
 
     // Verify we have progress information
-    expect(percentageMatch || fractionMatch).toBeTruthy();
+    expect(progressMatch).toBeTruthy();
 
-    // If we have fraction, verify it's valid
-    if (fractionMatch) {
-      const answered = parseInt(fractionMatch[1]);
-      const total = parseInt(fractionMatch[2]);
+    if (progressMatch) {
+      const percentage = parseInt(progressMatch[1]);
+      const answered = parseInt(progressMatch[2]);
+      const total = parseInt(progressMatch[3]);
 
       // Answered should not exceed total
       expect(answered).toBeLessThanOrEqual(total);
@@ -152,19 +149,9 @@ test.describe("Respondent Detail Page", () => {
       // Each respondent in the fixture answers all questions
       expect(total).toBe(3);
 
-      // If we have both percentage and fraction, verify they match
-      if (percentageMatch) {
-        const percentage = parseInt(percentageMatch[1]);
-        const calculatedPercentage = Math.round((answered / total) * 100);
-        expect(percentage).toBe(calculatedPercentage);
-      }
-    }
-
-    // If we only have percentage, verify it's a valid percentage
-    if (percentageMatch && !fractionMatch) {
-      const percentage = parseInt(percentageMatch[1]);
-      expect(percentage).toBeGreaterThanOrEqual(0);
-      expect(percentage).toBeLessThanOrEqual(100);
+      // Verify percentage matches the fraction
+      const calculatedPercentage = Math.round((answered / total) * 100);
+      expect(percentage).toBe(calculatedPercentage);
     }
   });
 
@@ -190,17 +177,15 @@ test.describe("Respondent Detail Page", () => {
     await page.waitForLoadState("networkidle");
 
     // Check for question number badges (e.g., "Q1", "Q2") - fixture creates responses
-    const questionBadges = page
-      .locator('text=/Q\\d+/')
-      .or(page.locator('[data-testid*="question-number"]'));
+    const questionBadges = page.locator('[data-testid="question-number"]');
 
     expect(await questionBadges.count()).toBeGreaterThan(0);
     await expect(questionBadges.first()).toBeVisible();
 
-    // Check for question text/title - should exist for each response
-    const questionText = page.locator('[data-testid*="question"]');
-    expect(await questionText.count()).toBeGreaterThan(0);
-    await expect(questionText.first()).toBeVisible();
+    // Check for question text/title - should exist for each response (it's in an <a> tag)
+    const questionLinks = page.locator('a[href*="/questions/"]');
+    expect(await questionLinks.count()).toBeGreaterThan(0);
+    await expect(questionLinks.first()).toBeVisible();
   });
 
   test("displays response text for answered questions", async ({ page }) => {
@@ -475,25 +460,26 @@ test.describe("Respondent Detail Page", () => {
     const timestamp = Date.now();
     const stakeholderName = `Test Stakeholder ${timestamp}`;
 
-    // Find the stakeholder name input field
-    const stakeholderInput = page
-      .getByLabel(/stakeholder name/i)
-      .or(page.locator('input[name*="stakeholder"]'))
-      .or(page.locator('input[placeholder*="stakeholder"]'))
-      .or(page.locator('textarea[name*="stakeholder"]'));
+    // First, find and click the edit button to show the input field
+    const editButton = page.locator('button:has([data-testid="edit-icon"])').first();
+    await editButton.click();
+    await page.waitForLoadState("networkidle");
 
-    // Stakeholder input should exist on respondent page
+    // Now find the stakeholder name input field (visible after clicking edit)
+    const stakeholderInput = page
+      .getByPlaceholder(/business or organisation/i)
+      .or(page.locator('input[placeholder*="stakeholder"]'));
+
+    // Stakeholder input should exist after clicking edit
     expect(await stakeholderInput.count()).toBeGreaterThan(0);
 
     // Fill in the stakeholder name
     await stakeholderInput.first().fill(stakeholderName);
 
-    // Find and click the add/save button
+    // Find and click the save button (green with checkmark)
     const saveButton = page
-      .getByRole("button", { name: /add stakeholder/i })
-      .or(page.getByRole("button", { name: /save/i }))
-      .or(page.getByRole("button", { name: /update/i }))
-      .or(page.locator('button[type="submit"]'));
+      .getByRole("button", { name: /save/i })
+      .first();
 
     // Save button should exist for stakeholder name
     expect(await saveButton.count()).toBeGreaterThan(0);
