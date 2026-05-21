@@ -127,11 +127,12 @@ test.describe("Respondent Detail Page", () => {
 
     await expect(questionsAnswered.first()).toBeVisible();
 
-    // Get the text content specifically from the Questions Answered section area
-    const sidebarContent = await page.locator('[data-testid="panel-component"]').textContent();
+    // Get the text content from the parent element containing "Questions Answered"
+    const questionsAnsweredSection = questionsAnswered.first().locator('..');
+    const sectionText = await questionsAnsweredSection.textContent();
 
     // Look for percentage display followed by fraction (e.g., "100% (3/3)")
-    const progressMatch = sidebarContent?.match(/(\d+)%\s*\((\d+)\/(\d+)\)/);
+    const progressMatch = sectionText?.match(/(\d+)%\s*\((\d+)\/(\d+)\)/);
 
     // Verify we have progress information
     expect(progressMatch).toBeTruthy();
