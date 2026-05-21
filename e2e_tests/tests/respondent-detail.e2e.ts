@@ -27,11 +27,25 @@ test.describe("Respondent Detail Page", () => {
     await page.goto(`/consultations/${consultationId}`);
     await page.waitForLoadState("networkidle");
 
-    // Find and click on first question card (rendered as div with role=button)
-    const questionCard = page
-      .locator('[role="button"][aria-label*="Click to view question"]')
-      .or(page.locator('[data-testid="question-icon"]').locator('..').locator('..'))
-      .first();
+    // Wait for question cards to appear (they load via API)
+    const questionCards = page.locator('[role="button"][aria-label*="Click to view question"]');
+    await expect(questionCards.first()).toBeVisible({ timeout: 10000 });
+    
+    const questionCardCount = await questionCards.count();
+    
+    // Fixture should create 3 questions
+    expect(questionCardCount).toBeGreaterThanOrEqual(3);
+    
+    // analysisConsultation has 3 questions:
+    // Q1: hybridQuestionWithThemes (5 responses, has_free_text: true) <- Has Response Analysis tab
+    // Q3: multChoiceQuestion (10 responses, has_free_text: false) <- NO Response Analysis tab!
+    // Q4: openQuestionWithThemes (5 responses, has_free_text: true) <- Has Response Analysis tab
+    // IMPORTANT: Only questions with has_free_text: true have the Response Analysis tab
+    // Click on Q1 (first question) which has free text and Response Analysis tab
+    const questionCard = questionCards.first();
+    
+    const questionText = await questionCard.textContent();
+    
     await questionCard.click();
     await page.waitForLoadState("networkidle");
 
@@ -50,13 +64,21 @@ test.describe("Respondent Detail Page", () => {
     await page.waitForLoadState("networkidle");
 
     // Find respondent ID button (button with text "ID: {number}")
-    const respondentButton = page.locator('button:has-text("ID:")').first();
+    // Q1 (hybridQuestionWithThemes) has 5 responses, so we should see up to 5 respondent buttons
+    const allRespondentButtons = page.locator('button:has-text("ID:")');
     
-    // Wait for respondent button to appear before asserting
-    await expect(respondentButton).toBeVisible();
+    // Wait for at least one respondent button to appear
+    await expect(allRespondentButtons.first()).toBeVisible({ timeout: 10000 });
     
-    // Fixture should create respondent buttons - fail fast if missing
-    expect(await respondentButton.count()).toBeGreaterThan(0);
+    const respondentCount = await allRespondentButtons.count();
+    
+    expect(respondentCount).toBeGreaterThan(0);
+    
+    // Click on the first respondent button
+    // Since the fixture creates responses by index, respondent 1 should have a response
+    const respondentButton = allRespondentButtons.first();
+
+    const respondentText = await respondentButton.textContent();
 
     await respondentButton.click();
     await page.waitForLoadState("networkidle");
@@ -64,8 +86,23 @@ test.describe("Respondent Detail Page", () => {
     // Verify we're on a respondent page
     await expect(page).toHaveURL(/\/consultations\/.*\/respondent\/.*/);
     
-    // Wait for the main responses heading to ensure content has loaded
+    // Wait for the main responses heading to ensure page structure has loaded
     await expect(page.getByRole("heading", { name: /responses to consultation questions/i })).toBeVisible({ timeout: 10000 });
+    
+    // CRITICAL: Wait for "Loading Responses..." message to disappear
+    // The frontend shows this message while fetching data from API
+    const loadingMessage = page.getByText("Loading Responses...");
+    // Wait for loading to start (optional - might already be visible)
+    await page.waitForTimeout(100);
+    // Wait for loading to complete - message should disappear
+    await expect(loadingMessage).toBeHidden({ timeout: 30000 });
+    
+    // CRITICAL: Now wait for response cards to appear after loading completes
+    // The fixture guarantees this respondent has responses, so this must appear
+    // Use .question-number class since data-testid doesn't exist
+    await expect(page.locator('.question-number').first()).toBeVisible({ timeout: 10000 });
+    
+    const questionNumberCount = await page.locator('.question-number').count();
 
     // Extract IDs from URL
     const currentUrl = page.url();
@@ -189,7 +226,7 @@ test.describe("Respondent Detail Page", () => {
     await page.waitForLoadState("networkidle");
 
     // Check for question number badges (e.g., "Q1", "Q2") - fixture creates responses
-    const questionBadges = page.locator('[data-testid="question-number"]');
+    const questionBadges = page.locator('.question-number');
 
     // Wait for at least one badge to appear (longer timeout for dynamic content)
     await expect(questionBadges.first()).toBeVisible({ timeout: 15000 });
@@ -227,15 +264,14 @@ test.describe("Respondent Detail Page", () => {
     await page.waitForLoadState("networkidle");
 
     // Check for "Themes:" label - fixture assigns themes to responses
+    // Respondent 1 has themes on Q1 response (themes: ["A", "B"])
     const themesLabel = page.getByText(/themes:/i);
     await expect(themesLabel.first()).toBeVisible({ timeout: 15000 });
     expect(await themesLabel.count()).toBeGreaterThan(0);
 
-    // Look for theme tags/badges - fixture has specific themes
-    const themeTags = page
-      .locator('[data-testid*="theme"]')
-      .or(page.locator('span:has-text("Standardized framework")'))
-      .or(page.locator('span:has-text("Innovation")'));
+    // Look for theme tag content - fixture has "Standardized framework" and "Innovation" themes
+    // These are rendered in Tag components with variant="dark"
+    const themeTags = page.getByText("Standardized framework").or(page.getByText("Innovation"));
 
     await expect(themeTags.first()).toBeVisible({ timeout: 15000 });
     expect(await themeTags.count()).toBeGreaterThan(0);
@@ -444,7 +480,7 @@ test.describe("Respondent Detail Page", () => {
     await page.waitForLoadState("networkidle");
 
     // Find all question number badges - fixture has 3 questions
-    const questionBadges = page.locator('[data-testid="question-number"]');
+    const questionBadges = page.locator('.question-number');
     
     // Wait for at least one badge to appear (longer timeout for dynamic content)
     await expect(questionBadges.first()).toBeVisible({ timeout: 15000 });
