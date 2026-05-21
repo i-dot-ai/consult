@@ -26,46 +26,104 @@
   const SORT_DIRECTION = {
     ASC: "asc",
     DESC: "desc",
+    NONE: "none",
   } as const;
 
-  let sortDirection = $state<typeof SORT_DIRECTION.ASC | typeof SORT_DIRECTION.DESC>(SORT_DIRECTION.DESC);
+  type SortDirection = typeof SORT_DIRECTION.ASC | typeof SORT_DIRECTION.DESC | typeof SORT_DIRECTION.NONE;
+  let nameSortDirection = $state<SortDirection>(SORT_DIRECTION.NONE);
+  let dateSortDirection = $state<SortDirection>(SORT_DIRECTION.DESC);
 
-  let displayConsultations = $derived(consultations.toSorted((a, b) => {
-    const dateA = new Date(a.created_at);
-    const dateB = new Date(b.created_at);
+  let displayConsultations = $derived.by(() => {
+    let result = [...consultations];
 
-    const directionMultiplier = sortDirection === SORT_DIRECTION.ASC ? -1 : 1;
-    return dateA.getTime() + (dateB.getTime() * directionMultiplier);
-  }));
+    if (dateSortDirection !== SORT_DIRECTION.NONE) {
+      result.sort((a, b) => {
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+
+        const dateDirectionMultiplier = dateSortDirection === SORT_DIRECTION.ASC ? -1 : 1;
+        return dateA.getTime() + (dateB.getTime() * dateDirectionMultiplier);
+      })
+    }
+
+    if (nameSortDirection !== SORT_DIRECTION.NONE) {
+      result.sort((a, b) => {
+        const nameA = a.title;
+        const nameB = b.title;
+
+        const nameDirectionMultiplier = nameSortDirection === SORT_DIRECTION.ASC ? 1 : -1;
+
+        if (nameA > nameB) {
+          return -1 * nameDirectionMultiplier;
+        } else if (nameA < nameB) {
+          return 1 * nameDirectionMultiplier;
+        }
+        return 0;
+      })
+    }
+
+    return result;
+  });
 </script>
 
+{#snippet sortButton(
+  text: string,
+  direction: SortDirection,
+  setDirection: (newDirection: SortDirection) => void
+)}
+  <Button
+    variant="ghost"
+    handleClick={() => {
+      if (direction === SORT_DIRECTION.NONE) {
+        setDirection(SORT_DIRECTION.DESC);
+      } else if (direction === SORT_DIRECTION.DESC) {
+        setDirection(SORT_DIRECTION.ASC);
+      } else {
+        setDirection(SORT_DIRECTION.NONE);
+      }
+    }}
+    ariaLabel={`sort consultations by ${text}`}
+    ariaControls="consultations-list"
+  >
+    {text}
+    {#if direction !== SORT_DIRECTION.NONE}
+      <div class={clsx([
+        "transition-transform",
+        direction === SORT_DIRECTION.ASC
+          ? "rotate-90"
+          : "-rotate-90"
+      ])}>
+        <MaterialIcon color="fill-neutral-500">
+          <ArrowForward />
+        </MaterialIcon>
+      </div>
+    {/if}
+  </Button>
+{/snippet}
+
 <Title level={1} text="Consultations" />
+
 <div class="overflow-x-auto">
   <table class="w-full whitespace-nowrap text-left">
     <thead class="font-bold">
       <tr>
-        <th class="py-2 pr-2">name</th>
         <th class="py-2 pr-2">
-          <Button
-            variant="ghost"
-            handleClick={() => {
-              sortDirection = sortDirection === SORT_DIRECTION.ASC ? "desc" : "asc";
-            }}
-            ariaLabel="sort consultations by date"
-            ariaControls="consultations-list"
-          >
-            created at
-            <div class={clsx([
-              "transition-transform",
-              sortDirection === SORT_DIRECTION.ASC
-                ? "rotate-90"
-                : "-rotate-90"
-            ])}>
-              <MaterialIcon color="fill-neutral-500">
-                <ArrowForward />
-              </MaterialIcon>
-            </div>
-          </Button>
+          {@render sortButton(
+            "Name",
+            nameSortDirection,
+            (newSortDirection: SortDirection) => {
+              nameSortDirection = newSortDirection;
+            }
+          )}
+        </th>
+        <th class="py-2 pr-2">
+          {@render sortButton(
+            "Created At",
+            dateSortDirection,
+            (newSortDirection: SortDirection) => {
+              dateSortDirection = newSortDirection;
+            }
+          )}
         </th>
       </tr>
     </thead>
