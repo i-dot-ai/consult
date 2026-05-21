@@ -1,14 +1,17 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { fade } from "svelte/transition";
+
   import { getSupportConsultationDetails } from "../../../global/routes";
   import { formatDate } from "../../../global/utils";
 
-  import Button from "../../inputs/Button/Button.svelte";
   import Link from "../../Link.svelte";
+  import Title from "../../Title.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import ArrowForward from "../../svg/material/ArrowForward.svelte";
-  import Title from "../../Title.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
+  import TextInput from "../../inputs/TextInput/TextInput.svelte";
 
   interface Consultation {
     id: string;
@@ -31,8 +34,10 @@
     | typeof SORT_DIRECTION.ASC
     | typeof SORT_DIRECTION.DESC
     | typeof SORT_DIRECTION.NONE;
+
   let nameSortDirection = $state<SortDirection>(SORT_DIRECTION.NONE);
   let dateSortDirection = $state<SortDirection>(SORT_DIRECTION.DESC);
+  let searchValue = $state("");
 
   let displayConsultations = $derived.by(() => {
     let result = [...consultations];
@@ -67,6 +72,14 @@
         }
         return 0;
       });
+    }
+
+    if (searchValue) {
+      result = result.filter(consultation => {
+        const textA = consultation.title.toLocaleLowerCase();
+        const textB = searchValue.toLocaleLowerCase();
+        return textA.includes(textB);
+      })
     }
 
     return result;
@@ -110,6 +123,16 @@
 
 <Title level={1} text="Consultations" />
 
+<div class="mt-2 w-full md:w-1/3">
+  <TextInput
+    label="Search consultations"
+    placeholder={"Find consultation..."}
+    hideLabel={true}
+    value={searchValue}
+    setValue={(newValue) => searchValue = newValue.trim()}
+  />
+</div>
+
 <div class="overflow-x-auto">
   <table class="w-full whitespace-nowrap text-left">
     <thead class="font-bold">
@@ -135,8 +158,16 @@
       </tr>
     </thead>
     <tbody id="consultations-list">
+      {#if displayConsultations.length === 0}
+        <tr in:fade={{ duration: 200 }} class="border-t hover:bg-gray-50">
+          <td colspan="2" class="text-neutral-500">
+            No consultation found for the given query
+          </td>
+        </tr>
+      {/if}
+
       {#each displayConsultations as consultation, i (i)}
-        <tr class="border-t hover:bg-gray-50">
+        <tr transition:fade={{ duration: 200 }} class="border-t hover:bg-gray-50">
           <td class="py-2 pr-2">
             <Link href={getSupportConsultationDetails(consultation.id)}>
               {consultation.title}
