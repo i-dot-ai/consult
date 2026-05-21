@@ -294,7 +294,7 @@
     {@render onboardingBodyItem(
       1,
       "Choose a Question",
-      "Select any consultation question to start working with AI-generated themes",
+      "Select any consultation question to start working with themes AI has found",
       true,
     )}
     {@render onboardingBodyItem(

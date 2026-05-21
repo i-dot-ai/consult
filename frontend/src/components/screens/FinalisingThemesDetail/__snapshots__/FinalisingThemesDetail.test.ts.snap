@@ -217,8 +217,8 @@ exports[`EditUser > should match snapshot after loading 1`] = `
         <p
           class="text-sm text-neutral-500"
         >
-          Manage your 1 selected theme for the AI in assigning responses. Edit titles and descriptions, or
-            add new themes as needed.
+          Manage your 1 selected theme for AI to assign responses to. Edit titles or descriptions, or add
+            a new theme.
           <!---->
         </p>
         <!---->
