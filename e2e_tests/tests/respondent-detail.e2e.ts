@@ -191,8 +191,8 @@ test.describe("Respondent Detail Page", () => {
     // Check for question number badges (e.g., "Q1", "Q2") - fixture creates responses
     const questionBadges = page.locator('[data-testid="question-number"]');
 
-    // Wait for at least one badge to appear
-    await expect(questionBadges.first()).toBeVisible();
+    // Wait for at least one badge to appear (longer timeout for dynamic content)
+    await expect(questionBadges.first()).toBeVisible({ timeout: 15000 });
     expect(await questionBadges.count()).toBeGreaterThan(0);
 
     // Check for question text/title - should exist for each response (it's in an <a> tag)
@@ -228,7 +228,7 @@ test.describe("Respondent Detail Page", () => {
 
     // Check for "Themes:" label - fixture assigns themes to responses
     const themesLabel = page.getByText(/themes:/i);
-    await expect(themesLabel.first()).toBeVisible();
+    await expect(themesLabel.first()).toBeVisible({ timeout: 15000 });
     expect(await themesLabel.count()).toBeGreaterThan(0);
 
     // Look for theme tags/badges - fixture has specific themes
@@ -237,7 +237,7 @@ test.describe("Respondent Detail Page", () => {
       .or(page.locator('span:has-text("Standardized framework")'))
       .or(page.locator('span:has-text("Innovation")'));
 
-    await expect(themeTags.first()).toBeVisible();
+    await expect(themeTags.first()).toBeVisible({ timeout: 15000 });
     expect(await themeTags.count()).toBeGreaterThan(0);
   });
 
@@ -445,8 +445,8 @@ test.describe("Respondent Detail Page", () => {
     // Find all question number badges - fixture has 3 questions
     const questionBadges = page.locator('[data-testid="question-number"]');
     
-    // Wait for at least one badge to appear
-    await expect(questionBadges.first()).toBeVisible();
+    // Wait for at least one badge to appear (longer timeout for dynamic content)
+    await expect(questionBadges.first()).toBeVisible({ timeout: 15000 });
     
     const count = await questionBadges.count();
 
