@@ -38,11 +38,15 @@
 
     if (dateSortDirection !== SORT_DIRECTION.NONE) {
       result.sort((a, b) => {
-        const dateA = new Date(a.created_at);
-        const dateB = new Date(b.created_at);
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+
+        if (dateA === dateB) {
+          return 0;
+        }
 
         const dateDirectionMultiplier = dateSortDirection === SORT_DIRECTION.ASC ? -1 : 1;
-        return dateA.getTime() + (dateB.getTime() * dateDirectionMultiplier);
+        return dateA + (dateB * dateDirectionMultiplier);
       })
     }
 
