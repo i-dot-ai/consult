@@ -38,6 +38,9 @@ test.describe("Respondent Detail Page", () => {
     // We should be on a question detail page
     await expect(page).toHaveURL(/\/consultations\/.*\/questions\/.*/);
 
+    // Wait for the page to fully load before clicking the tab
+    await page.waitForTimeout(2000);
+
     // Click Response Analysis tab to see respondent buttons
     const responseTab = page
       .getByRole("tab", { name: /response analysis/i })
