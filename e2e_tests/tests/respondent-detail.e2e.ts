@@ -38,11 +38,8 @@ test.describe("Respondent Detail Page", () => {
     const questionLink = page.locator('a[href*="/questions/"]').first();
     const questionLinkCount = await questionLink.count();
     
-    // If no questions, skip all tests
-    if (questionLinkCount === 0) {
-      test.skip(true, "No questions found in consultation");
-      return;
-    }
+    // Fixture should create questions - fail if missing
+    expect(questionLinkCount).toBeGreaterThan(0);
 
     await questionLink.click();
     await page.waitForLoadState("networkidle");
@@ -79,11 +76,8 @@ test.describe("Respondent Detail Page", () => {
       }
     }
     
-    // If still no respondent button found, skip all tests
-    if (respondentButtonCount === 0) {
-      test.skip(true, "No respondent buttons found on question page - fixture may not have respondent data");
-      return;
-    }
+    // Fixture should create respondent buttons - fail if missing
+    expect(respondentButtonCount).toBeGreaterThan(0);
 
     await respondentButton.click();
     await page.waitForLoadState("networkidle");
@@ -523,49 +517,35 @@ test.describe("Respondent Detail Page", () => {
       .or(page.locator('input[placeholder*="stakeholder"]'))
       .or(page.locator('textarea[name*="stakeholder"]'));
 
-    if ((await stakeholderInput.count()) > 0) {
-      // Fill in the stakeholder name
-      await stakeholderInput.first().fill(stakeholderName);
+    // Stakeholder input should exist on respondent page
+    expect(await stakeholderInput.count()).toBeGreaterThan(0);
 
-      // Find and click the add/save button
-      const saveButton = page
-        .getByRole("button", { name: /add stakeholder/i })
-        .or(page.getByRole("button", { name: /save/i }))
-        .or(page.getByRole("button", { name: /update/i }))
-        .or(page.locator('button[type="submit"]'));
+    // Fill in the stakeholder name
+    await stakeholderInput.first().fill(stakeholderName);
 
-      if ((await saveButton.count()) > 0) {
-        // Wait for the API request to complete
-        const responsePromise = page.waitForResponse(
-          (response) =>
-            response.url().includes("/api/") &&
-            (response.url().includes("respondent") ||
-              response.url().includes("stakeholder")) &&
-            response.request().method() === "PATCH",
-          { timeout: 5000 },
-        );
+    // Find and click the add/save button
+    const saveButton = page
+      .getByRole("button", { name: /add stakeholder/i })
+      .or(page.getByRole("button", { name: /save/i }))
+      .or(page.getByRole("button", { name: /update/i }))
+      .or(page.locator('button[type="submit"]'));
 
-        await saveButton.first().click();
+    // Save button should exist for stakeholder name
+    expect(await saveButton.count()).toBeGreaterThan(0);
 
-        // Wait for the update to complete
-        try {
-          await responsePromise;
-        } catch (e) {
-          // If specific response not caught, wait for network to settle
-          await page.waitForLoadState("networkidle");
-        }
+    // Click save and wait for network to settle
+    await saveButton.first().click();
+    await page.waitForLoadState("networkidle");
 
-        // Verify the stakeholder name appears on the page
-        await expect(page.getByText(stakeholderName)).toBeVisible();
+    // Verify the stakeholder name appears on the page
+    await expect(page.getByText(stakeholderName)).toBeVisible();
 
-        // Refresh the page
-        await page.reload();
-        await page.waitForLoadState("networkidle");
+    // Refresh the page
+    await page.reload();
+    await page.waitForLoadState("networkidle");
 
-        // Verify the stakeholder name still appears after refresh
-        await expect(page.getByText(stakeholderName)).toBeVisible();
-      }
-    }
+    // Verify the stakeholder name still appears after refresh
+    await expect(page.getByText(stakeholderName)).toBeVisible();
   });
 
   test.afterAll(async () => {
