@@ -19,9 +19,7 @@
     consultations: Consultation[];
   }
 
-  let {
-    consultations = [],
-  }: Props = $props();
+  let { consultations = [] }: Props = $props();
 
   const SORT_DIRECTION = {
     ASC: "asc",
@@ -29,7 +27,10 @@
     NONE: "none",
   } as const;
 
-  type SortDirection = typeof SORT_DIRECTION.ASC | typeof SORT_DIRECTION.DESC | typeof SORT_DIRECTION.NONE;
+  type SortDirection =
+    | typeof SORT_DIRECTION.ASC
+    | typeof SORT_DIRECTION.DESC
+    | typeof SORT_DIRECTION.NONE;
   let nameSortDirection = $state<SortDirection>(SORT_DIRECTION.NONE);
   let dateSortDirection = $state<SortDirection>(SORT_DIRECTION.DESC);
 
@@ -45,9 +46,10 @@
           return 0;
         }
 
-        const dateDirectionMultiplier = dateSortDirection === SORT_DIRECTION.ASC ? -1 : 1;
-        return dateA + (dateB * dateDirectionMultiplier);
-      })
+        const dateDirectionMultiplier =
+          dateSortDirection === SORT_DIRECTION.ASC ? -1 : 1;
+        return dateA + dateB * dateDirectionMultiplier;
+      });
     }
 
     if (nameSortDirection !== SORT_DIRECTION.NONE) {
@@ -55,7 +57,8 @@
         const nameA = a.title;
         const nameB = b.title;
 
-        const nameDirectionMultiplier = nameSortDirection === SORT_DIRECTION.ASC ? 1 : -1;
+        const nameDirectionMultiplier =
+          nameSortDirection === SORT_DIRECTION.ASC ? 1 : -1;
 
         if (nameA > nameB) {
           return -1 * nameDirectionMultiplier;
@@ -63,7 +66,7 @@
           return 1 * nameDirectionMultiplier;
         }
         return 0;
-      })
+      });
     }
 
     return result;
@@ -73,7 +76,7 @@
 {#snippet sortButton(
   text: string,
   direction: SortDirection,
-  setDirection: (newDirection: SortDirection) => void
+  setDirection: (newDirection: SortDirection) => void,
 )}
   <Button
     variant="ghost"
@@ -91,12 +94,12 @@
   >
     {text}
     {#if direction !== SORT_DIRECTION.NONE}
-      <div class={clsx([
-        "transition-transform",
-        direction === SORT_DIRECTION.ASC
-          ? "rotate-90"
-          : "-rotate-90"
-      ])}>
+      <div
+        class={clsx([
+          "transition-transform",
+          direction === SORT_DIRECTION.ASC ? "rotate-90" : "-rotate-90",
+        ])}
+      >
         <MaterialIcon color="fill-neutral-500">
           <ArrowForward />
         </MaterialIcon>
@@ -117,7 +120,7 @@
             nameSortDirection,
             (newSortDirection: SortDirection) => {
               nameSortDirection = newSortDirection;
-            }
+            },
           )}
         </th>
         <th class="py-2 pr-2">
@@ -126,7 +129,7 @@
             dateSortDirection,
             (newSortDirection: SortDirection) => {
               dateSortDirection = newSortDirection;
-            }
+            },
           )}
         </th>
       </tr>
