@@ -142,9 +142,10 @@ test.describe("Respondent Detail Page", () => {
       .or(page.getByRole("link", { name: /next/i }));
 
     // At least one navigation button should be visible
-    const hasPrevButton = (await prevButton.count()) > 0;
-    const hasNextButton = (await nextButton.count()) > 0;
-    expect(hasPrevButton || hasNextButton).toBeTruthy();
+    // Use .or() to check for either prev or next button
+    const navigationButtons = prevButton.or(nextButton);
+    await expect(navigationButtons.first()).toBeVisible();
+    expect(await navigationButtons.count()).toBeGreaterThan(0);
   });
 
   test("displays respondent demographics in sidebar", async ({ page }) => {
@@ -215,8 +216,8 @@ test.describe("Respondent Detail Page", () => {
 
     // Check for subtitle or description - should always be present
     const subtitle = page.getByText(/all responses submitted/i);
-    expect(await subtitle.count()).toBeGreaterThan(0);
     await expect(subtitle.first()).toBeVisible();
+    expect(await subtitle.count()).toBeGreaterThan(0);
   });
 
   test("displays individual response cards with question numbers", async ({
@@ -299,8 +300,8 @@ test.describe("Respondent Detail Page", () => {
 
     // Check for "MULTIPLE CHOICE RESPONSE:" label - fixture has MC questions
     const multipleChoiceLabel = page.getByText(/multiple choice response/i);
-    expect(await multipleChoiceLabel.count()).toBeGreaterThan(0);
     await expect(multipleChoiceLabel.first()).toBeVisible();
+    expect(await multipleChoiceLabel.count()).toBeGreaterThan(0);
 
     // Should have selected options listed
     const bodyContent = await page.textContent("body");
@@ -316,11 +317,12 @@ test.describe("Respondent Detail Page", () => {
     // Find question links - they should link back to question detail pages
     const questionLinks = page.locator('a[href*="/questions/"]');
 
-    // Fixture creates responses, so question links should exist
-    expect(await questionLinks.count()).toBeGreaterThan(0);
-    
+    // Wait for at least one link to be visible
     const firstLink = questionLinks.first();
     await expect(firstLink).toBeVisible();
+    
+    // Fixture creates responses, so question links should exist
+    expect(await questionLinks.count()).toBeGreaterThan(0);
 
     // Get the href before clicking
     const href = await firstLink.getAttribute("href");
@@ -355,6 +357,7 @@ test.describe("Respondent Detail Page", () => {
       .or(page.getByRole("button", { name: /back/i }))
       .first();
 
+    await expect(backButton).toBeVisible();
     expect(await backButton.count()).toBeGreaterThan(0);
     await backButton.click();
     await page.waitForLoadState("networkidle");
@@ -390,6 +393,7 @@ test.describe("Respondent Detail Page", () => {
       .or(page.getByRole("link", { name: /next/i }))
       .first();
 
+    await expect(nextButton).toBeVisible();
     expect(await nextButton.count()).toBeGreaterThan(0);
     
     // Check if button is enabled
@@ -424,6 +428,7 @@ test.describe("Respondent Detail Page", () => {
       .or(page.getByRole("link", { name: /previous/i }))
       .first();
 
+    await expect(prevButton).toBeVisible();
     expect(await prevButton.count()).toBeGreaterThan(0);
     
     const isPrevDisabled = await prevButton.getAttribute("disabled");
@@ -457,8 +462,8 @@ test.describe("Respondent Detail Page", () => {
     // Check for "Stakeholder Name" field/section - should always be in sidebar
     const stakeholderLabel = page.getByText(/stakeholder name/i);
 
-    expect(await stakeholderLabel.count()).toBeGreaterThan(0);
     await expect(stakeholderLabel.first()).toBeVisible();
+    expect(await stakeholderLabel.count()).toBeGreaterThan(0);
   });
 
   test("page loads without errors", async ({ page }) => {
