@@ -27,45 +27,29 @@ test.describe("Respondent Detail Page", () => {
     await page.goto(`/consultations/${consultationId}`);
     await page.waitForLoadState("networkidle");
 
-    // Find and click on first question link
-    const questionLink = page.locator('a[href*="/questions/"]').first();
-    await questionLink.click();
+    // Find and click on first question card (rendered as div with role=button)
+    const questionCard = page
+      .locator('[role="button"][aria-label*="Click to view question"]')
+      .or(page.locator('[data-testid="question-icon"]').locator('..').locator('..'))
+      .first();
+    await questionCard.click();
     await page.waitForLoadState("networkidle");
 
     // We should be on a question detail page
     await expect(page).toHaveURL(/\/consultations\/.*\/questions\/.*/);
 
-    // Look for respondent ID buttons - they might be visible without clicking a tab
-    // Try multiple selectors for robustness
-    let respondentButton = page
-      .locator('button:has-text("ID:")')
-      .or(page.locator('a:has-text("ID:")'))
-      .or(page.locator('button[class*="respondent"]'))
-      .or(page.locator('a[href*="/respondent/"]'))
-      .first();
+    // Click Response Analysis tab to see respondent buttons
+    const responseTab = page
+      .getByRole("tab", { name: /response analysis/i })
+      .or(page.getByRole("tab", { name: /response/i }));
+    await responseTab.click();
+    await page.waitForLoadState("networkidle");
 
-    let respondentButtonCount = await respondentButton.count();
-
-    // If no respondent buttons visible, try clicking Response Analysis tab
-    if (respondentButtonCount === 0) {
-      const responseTab = page
-        .getByRole("tab", { name: /response/i })
-        .or(page.getByRole("button", { name: /response/i }))
-        .or(page.getByRole("tab", { name: /analysis/i }))
-        .or(page.getByText(/response.*analysis/i, { exact: false }));
-
-      const responseTabCount = await responseTab.count();
-      if (responseTabCount > 0) {
-        await responseTab.first().click();
-        await page.waitForLoadState("networkidle");
-        
-        // Re-check for respondent buttons after clicking tab
-        respondentButtonCount = await respondentButton.count();
-      }
-    }
-
+    // Find respondent ID button (button with text "ID: {number}")
+    const respondentButton = page.locator('button:has-text("ID:")').first();
+    
     // Fixture should create respondent buttons - fail fast if missing
-    expect(respondentButtonCount).toBeGreaterThan(0);
+    expect(await respondentButton.count()).toBeGreaterThan(0);
 
     await respondentButton.click();
     await page.waitForLoadState("networkidle");
@@ -193,11 +177,10 @@ test.describe("Respondent Detail Page", () => {
       .or(page.getByText(/responses to consultation/i));
     await expect(responsesHeading.first()).toBeVisible();
 
-    // Check for subtitle or description
+    // Check for subtitle or description - should always be present
     const subtitle = page.getByText(/all responses submitted/i);
-    if ((await subtitle.count()) > 0) {
-      await expect(subtitle.first()).toBeVisible();
-    }
+    expect(await subtitle.count()).toBeGreaterThan(0);
+    await expect(subtitle.first()).toBeVisible();
   });
 
   test("displays individual response cards with question numbers", async ({
@@ -206,20 +189,18 @@ test.describe("Respondent Detail Page", () => {
     // Wait for responses to load
     await page.waitForLoadState("networkidle");
 
-    // Check for question number badges (e.g., "Q1", "Q2")
+    // Check for question number badges (e.g., "Q1", "Q2") - fixture creates responses
     const questionBadges = page
       .locator('text=/Q\\d+/')
       .or(page.locator('[data-testid*="question-number"]'));
 
-    if ((await questionBadges.count()) > 0) {
-      await expect(questionBadges.first()).toBeVisible();
-    }
+    expect(await questionBadges.count()).toBeGreaterThan(0);
+    await expect(questionBadges.first()).toBeVisible();
 
-    // Check for question text/title
+    // Check for question text/title - should exist for each response
     const questionText = page.locator('[data-testid*="question"]');
-    if ((await questionText.count()) > 0) {
-      await expect(questionText.first()).toBeVisible();
-    }
+    expect(await questionText.count()).toBeGreaterThan(0);
+    await expect(questionText.first()).toBeVisible();
   });
 
   test("displays response text for answered questions", async ({ page }) => {
@@ -305,62 +286,62 @@ test.describe("Respondent Detail Page", () => {
     // Find question links - they should link back to question detail pages
     const questionLinks = page.locator('a[href*="/questions/"]');
 
-    if ((await questionLinks.count()) > 0) {
-      const firstLink = questionLinks.first();
-      await expect(firstLink).toBeVisible();
+    // Fixture creates responses, so question links should exist
+    expect(await questionLinks.count()).toBeGreaterThan(0);
+    
+    const firstLink = questionLinks.first();
+    await expect(firstLink).toBeVisible();
 
-      // Get the href before clicking
-      const href = await firstLink.getAttribute("href");
-      expect(href).toBeTruthy();
-      expect(href).toContain("/questions/");
+    // Get the href before clicking
+    const href = await firstLink.getAttribute("href");
+    expect(href).toBeTruthy();
+    expect(href).toContain("/questions/");
 
-      // Extract question ID from href
-      const questionIdMatch = href?.match(/\/questions\/([a-f0-9-]+)/);
-      expect(questionIdMatch).toBeTruthy();
-      const extractedQuestionId = questionIdMatch?.[1];
+    // Extract question ID from href
+    const questionIdMatch = href?.match(/\/questions\/([a-f0-9-]+)/);
+    expect(questionIdMatch).toBeTruthy();
+    const extractedQuestionId = questionIdMatch?.[1];
 
-      // Click the question link
-      await firstLink.click();
-      await page.waitForLoadState("networkidle");
+    // Click the question link
+    await firstLink.click();
+    await page.waitForLoadState("networkidle");
 
-      // Verify we navigated to the question detail page
-      // URL should match pattern: /consultations/{id}/questions/{questionId}
-      await expect(page).toHaveURL(
-        new RegExp(`/consultations/[a-f0-9-]+/questions/${extractedQuestionId}`),
-      );
+    // Verify we navigated to the question detail page
+    // URL should match pattern: /consultations/{id}/questions/{questionId}
+    await expect(page).toHaveURL(
+      new RegExp(`/consultations/[a-f0-9-]+/questions/${extractedQuestionId}`),
+    );
 
-      // Verify the question page loaded
-      const bodyContent = await page.textContent("body");
-      expect(bodyContent).toBeTruthy();
-      expect(bodyContent!.length).toBeGreaterThan(50);
-    }
+    // Verify the question page loaded
+    const bodyContent = await page.textContent("body");
+    expect(bodyContent).toBeTruthy();
+    expect(bodyContent!.length).toBeGreaterThan(50);
   });
 
   test("can navigate back using back button", async ({ page }) => {
-    // Find and click "Back to Analysis" button
+    // Find "Back to Analysis" button - should always be present on respondent page
     const backButton = page
       .getByRole("link", { name: /back to analysis/i })
       .or(page.getByRole("button", { name: /back/i }))
       .first();
 
-    if ((await backButton.count()) > 0) {
-      await backButton.click();
-      await page.waitForLoadState("networkidle");
+    expect(await backButton.count()).toBeGreaterThan(0);
+    await backButton.click();
+    await page.waitForLoadState("networkidle");
 
-      // Should navigate back - could be to question detail, analysis, or consultation page
-      // Just verify we're no longer on the respondent page
-      await expect(page).not.toHaveURL(new RegExp(`/respondent/`));
+    // Should navigate back - could be to question detail, analysis, or consultation page
+    // Just verify we're no longer on the respondent page
+    await expect(page).not.toHaveURL(new RegExp(`/respondent/`));
 
-      // Verify we're on a valid consultation or evaluation page
-      await expect(page).toHaveURL(
-        new RegExp(`/(consultations|evaluations)/.+`),
-      );
+    // Verify we're on a valid consultation or evaluation page
+    await expect(page).toHaveURL(
+      new RegExp(`/(consultations|evaluations)/.+`),
+    );
 
-      // Verify the page has content
-      const bodyContent = await page.textContent("body");
-      expect(bodyContent).toBeTruthy();
-      expect(bodyContent!.length).toBeGreaterThan(50);
-    }
+    // Verify the page has content
+    const bodyContent = await page.textContent("body");
+    expect(bodyContent).toBeTruthy();
+    expect(bodyContent!.length).toBeGreaterThan(50);
   });
 
   test("next button navigates to next respondent and previous returns to original", async ({
@@ -443,12 +424,11 @@ test.describe("Respondent Detail Page", () => {
   });
 
   test("displays stakeholder name field in sidebar", async ({ page }) => {
-    // Check for "Stakeholder Name" field/section
+    // Check for "Stakeholder Name" field/section - should always be in sidebar
     const stakeholderLabel = page.getByText(/stakeholder name/i);
 
-    if ((await stakeholderLabel.count()) > 0) {
-      await expect(stakeholderLabel.first()).toBeVisible();
-    }
+    expect(await stakeholderLabel.count()).toBeGreaterThan(0);
+    await expect(stakeholderLabel.first()).toBeVisible();
   });
 
   test("page loads without errors", async ({ page }) => {
