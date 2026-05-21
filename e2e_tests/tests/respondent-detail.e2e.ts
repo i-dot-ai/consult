@@ -38,13 +38,14 @@ test.describe("Respondent Detail Page", () => {
     // We should be on a question detail page
     await expect(page).toHaveURL(/\/consultations\/.*\/questions\/.*/);
 
-    // Wait for the page to fully load before clicking the tab
-    await page.waitForTimeout(2000);
-
-    // Click Response Analysis tab to see respondent buttons
+    // Wait for Response Analysis tab to appear (max 3 seconds)
     const responseTab = page
       .getByRole("tab", { name: /response analysis/i })
       .or(page.getByRole("tab", { name: /response/i }));
+    
+    await expect(responseTab).toBeVisible({ timeout: 3000 });
+    
+    // Click Response Analysis tab to see respondent buttons
     await responseTab.click();
     await page.waitForLoadState("networkidle");
 
