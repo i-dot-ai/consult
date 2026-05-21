@@ -64,6 +64,9 @@ test.describe("Respondent Detail Page", () => {
       }
     }
 
+    // Fixture should create respondent buttons - fail fast if missing
+    expect(respondentButtonCount).toBeGreaterThan(0);
+
     await respondentButton.click();
     await page.waitForLoadState("networkidle");
 
