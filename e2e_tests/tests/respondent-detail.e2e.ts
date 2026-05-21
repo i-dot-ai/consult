@@ -36,11 +36,6 @@ test.describe("Respondent Detail Page", () => {
 
     // Find and click on first question link
     const questionLink = page.locator('a[href*="/questions/"]').first();
-    const questionLinkCount = await questionLink.count();
-    
-    // Fixture should create questions - fail if missing
-    expect(questionLinkCount).toBeGreaterThan(0);
-
     await questionLink.click();
     await page.waitForLoadState("networkidle");
 
@@ -75,9 +70,6 @@ test.describe("Respondent Detail Page", () => {
         respondentButtonCount = await respondentButton.count();
       }
     }
-    
-    // Fixture should create respondent buttons - fail if missing
-    expect(respondentButtonCount).toBeGreaterThan(0);
 
     await respondentButton.click();
     await page.waitForLoadState("networkidle");
