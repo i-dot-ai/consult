@@ -2,7 +2,6 @@ import { test, expect } from "@playwright/test";
 import {
   createFixtureData,
   deleteFixtureData,
-  getFirstConsultationLink,
 } from "./helpers";
 import { analysisConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
@@ -21,14 +20,8 @@ test.describe("Respondent Detail Page", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    // Navigate to consultations list
-    await page.goto("/consultations");
-    await page.waitForLoadState("networkidle");
-
-    // Get first consultation
-    const result = await getFirstConsultationLink(page);
-    expect(result).toBeTruthy();
-    consultationId = result!.href.match(/\/consultations\/([^/]+)/)?.[1]!;
+    // Use consultation ID from fixture data directly
+    consultationId = testData.consultation_ids![0];
 
     // Navigate to consultation detail page
     await page.goto(`/consultations/${consultationId}`);
@@ -138,15 +131,12 @@ test.describe("Respondent Detail Page", () => {
     // Wait for sidebar content to load
     await page.waitForLoadState("networkidle");
 
-    // Check for "Questions Answered" section
+    // Check for "Questions Answered" section - fixture creates questions so this should exist
     const questionsAnswered = page.getByText(/questions answered/i);
     const questionsAnsweredCount = await questionsAnswered.count();
     
-    // Skip test if Questions Answered section doesn't exist
-    test.skip(
-      questionsAnsweredCount === 0,
-      "Questions Answered section not found",
-    );
+    // Fixture should create questions - fail if section is missing
+    expect(questionsAnsweredCount).toBeGreaterThan(0);
 
     await expect(questionsAnswered.first()).toBeVisible();
 
