@@ -127,12 +127,13 @@ test.describe("Respondent Detail Page", () => {
 
     await expect(questionsAnswered.first()).toBeVisible();
 
-    // Get the text content from the parent element containing "Questions Answered"
-    const questionsAnsweredSection = questionsAnswered.first().locator('..');
-    const sectionText = await questionsAnsweredSection.textContent();
-
+    // The subtitle with percentage/fraction is in a sibling <p> element after the title
+    // Get the body content and look for the pattern near "Questions Answered"
+    const bodyContent = await page.textContent("body");
+    
     // Look for percentage display followed by fraction (e.g., "100% (3/3)")
-    const progressMatch = sectionText?.match(/(\d+)%\s*\((\d+)\/(\d+)\)/);
+    // The format from RespondentSidebarItem subtitle is: "80% (8/10)"
+    const progressMatch = bodyContent?.match(/(\d+)%\s*\((\d+)\/(\d+)\)/);
 
     // Verify we have progress information
     expect(progressMatch).toBeTruthy();
