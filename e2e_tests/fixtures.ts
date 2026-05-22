@@ -1,4 +1,4 @@
-type ConsultationStage = "setup" | "analysis" | "finalising_themes" | "theme_sign_off";
+type ConsultationStage = "setup" | "analysis" | "finalising_themes";
 
 export type Theme = {
   name: string;

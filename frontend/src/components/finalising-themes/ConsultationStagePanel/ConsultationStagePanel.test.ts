@@ -61,32 +61,6 @@ describe("ConsultationStagePanel", () => {
     ).toBeInTheDocument();
   });
 
-  it("should treat legacy theme_sign_off stage as finalising_themes", () => {
-    render(ConsultationStagePanel, {
-      consultation: { id, stage: "theme_sign_off" },
-      questionsCount: 10,
-      finalisedQuestionCount: 3,
-      allQuestionsFinalised: false,
-      onConfirmClick: onConfirmClickMock,
-    });
-
-    expect(
-      screen.getByText(/3 of 10 questions signed off/i),
-    ).toBeInTheDocument();
-  });
-
-  it("should treat legacy theme_mapping stage as assigning_themes", () => {
-    render(ConsultationStagePanel, {
-      consultation: { id, stage: "theme_mapping" },
-      questionsCount: 10,
-      finalisedQuestionCount: 10,
-      allQuestionsFinalised: true,
-      onConfirmClick: onConfirmClickMock,
-    });
-
-    expect(screen.getByText("AI Assignment in Progress")).toBeInTheDocument();
-  });
-
   it("should render correctly for analysis stage", () => {
     render(ConsultationStagePanel, {
       consultation: { id, stage: "analysis" },
