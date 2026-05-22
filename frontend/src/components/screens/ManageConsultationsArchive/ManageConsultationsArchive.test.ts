@@ -66,7 +66,12 @@ describe("ManageConsultationsArchive", () => {
       return date.getTime();
     })
 
-    const sortedTimestamps = [...timestamps].sort((a,b) => b - a);
+    const sortedTimestamps = [...timestamps].sort((a,b) => {
+      if (a === b) {
+        return 0;
+      }
+      return a > b ? 1 : -1;
+    });
 
     expect(timestamps).toEqual(sortedTimestamps.reverse());
   });

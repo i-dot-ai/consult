@@ -53,7 +53,8 @@
 
         const dateDirectionMultiplier =
           dateSortDirection === SORT_DIRECTION.ASC ? -1 : 1;
-        return dateA + dateB * dateDirectionMultiplier;
+
+        return (dateA > dateB ? 1 : -1) * dateDirectionMultiplier;
       });
     }
 
