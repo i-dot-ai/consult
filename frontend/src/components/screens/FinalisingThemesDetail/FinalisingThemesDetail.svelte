@@ -383,8 +383,8 @@
           {#if (selectedThemes.query.data?.results?.length ?? 0) > 0}
             Manage your {numSelectedThemesText(
               selectedThemes.query.data?.results,
-            )} for the AI in assigning responses. Edit titles and descriptions, or
-            add new themes as needed.
+            )} for AI to assign responses to. Edit titles or descriptions, or add
+            a new theme.
           {:else}
             Finalise the themes for the AI to assign responses to. Choose from
             the AI found themes or add new.
