@@ -76,11 +76,11 @@
     }
 
     if (searchValue) {
-      result = result.filter(consultation => {
+      result = result.filter((consultation) => {
         const textA = consultation.title.toLocaleLowerCase();
         const textB = searchValue.toLocaleLowerCase();
         return textA.includes(textB);
-      })
+      });
     }
 
     return result;
@@ -129,12 +129,12 @@
 
 <div class="mt-2 w-full md:w-1/3">
   <TextInput
-    id={"search-consultations"}
+    id="search-consultations"
     label="Search consultations"
-    placeholder={"Find consultation..."}
+    placeholder="Find consultation..."
     hideLabel={true}
     value={searchValue}
-    setValue={(newValue) => searchValue = newValue.trim()}
+    setValue={(newValue) => (searchValue = newValue.trim())}
   />
 </div>
 
@@ -149,7 +149,7 @@
             (newSortDirection: SortDirection) => {
               nameSortDirection = newSortDirection;
             },
-            () => dateSortDirection = SORT_DIRECTION.NONE,
+            () => (dateSortDirection = SORT_DIRECTION.NONE),
           )}
         </th>
         <th class="py-2 pr-2">
@@ -159,7 +159,7 @@
             (newSortDirection: SortDirection) => {
               dateSortDirection = newSortDirection;
             },
-            () => nameSortDirection = SORT_DIRECTION.NONE,
+            () => (nameSortDirection = SORT_DIRECTION.NONE),
           )}
         </th>
       </tr>
@@ -174,13 +174,19 @@
       {/if}
 
       {#each displayConsultations as consultation, i (i)}
-        <tr transition:fade={{ duration: 200 }} class="border-t hover:bg-gray-50" data-testid="consultation-item">
+        <tr
+          transition:fade={{ duration: 200 }}
+          class="border-t hover:bg-gray-50"
+          data-testid="consultation-item"
+        >
           <td data-testid="title" class="py-2 pr-2">
             <Link href={getSupportConsultationDetails(consultation.id)}>
               {consultation.title}
             </Link>
           </td>
-          <td data-testid="created-at" class="py-2 pr-2">{formatDate(consultation.created_at)}</td>
+          <td data-testid="created-at" class="py-2 pr-2"
+            >{formatDate(consultation.created_at)}</td
+          >
         </tr>
       {/each}
     </tbody>

@@ -10,14 +10,21 @@ function parseCreatedAt(createdAtText: string) {
   const [dateStr, timeStr] = createdAtText.split(" at ");
   const [hourStr, minStr] = timeStr.split(":");
   const date = new Date(dateStr);
-  
-  date.setTime(date.getTime() + parseInt(hourStr)*60*60*1000 + parseInt(minStr)*60*1000);
+
+  const HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
+  const MIN_IN_MILLISECONDS = 60 * 1000;
+
+  date.setTime(
+    date.getTime() +
+      parseInt(hourStr) * HOUR_IN_MILLISECONDS +
+      parseInt(minStr) * MIN_IN_MILLISECONDS,
+  );
   return date;
 }
 
 function buildCreatedAt(date: Date) {
   const year = date.getFullYear();
-  const monthName = date.toLocaleString('default', { month: 'long' });
+  const monthName = date.toLocaleString("default", { month: "long" });
   const day = date.getDate();
   const hour = date.getHours();
   const minute = date.getMinutes();
@@ -29,9 +36,7 @@ describe("ManageConsultationsArchive", () => {
     render(ManageConsultationsArchive, { consultations: CONSULTATIONS });
 
     await waitFor(() => {
-      expect(
-        screen.getByText(consultation.title),
-      ).toBeInTheDocument();
+      expect(screen.getByText(consultation.title)).toBeInTheDocument();
     });
 
     const date = new Date(consultation.created_at);
@@ -39,7 +44,7 @@ describe("ManageConsultationsArchive", () => {
     expect(screen.getAllByText(createdAtText).length).toBeGreaterThan(0);
   });
 
-  it("should sort by descending if created at button is clicked", async () => {
+  it("should only show consultations matching search", async () => {
     render(ManageConsultationsArchive, { consultations: CONSULTATIONS });
 
     const user = userEvent.setup();
@@ -48,25 +53,27 @@ describe("ManageConsultationsArchive", () => {
     const visibleConsultations = screen.getAllByTestId("consultation-item");
     await waitFor(() => {
       expect(visibleConsultations).toHaveLength(1);
-    })
+    });
   });
 
   it("should sort by descending if created at button is clicked", async () => {
     render(ManageConsultationsArchive, { consultations: CONSULTATIONS });
 
-    const dateSortButton = screen.getByRole("button", { name: "sort consultations by Created At" });
+    const dateSortButton = screen.getByRole("button", {
+      name: "sort consultations by Created At",
+    });
 
     const user = userEvent.setup();
     await user.click(dateSortButton);
 
     const createdAtCells = screen.getAllByTestId("created-at");
 
-    const timestamps = createdAtCells.map(el => {
+    const timestamps = createdAtCells.map((el) => {
       const date = parseCreatedAt(el.textContent);
       return date.getTime();
-    })
+    });
 
-    const sortedTimestamps = [...timestamps].sort((a,b) => {
+    const sortedTimestamps = [...timestamps].sort((a, b) => {
       if (a === b) {
         return 0;
       }
@@ -79,16 +86,18 @@ describe("ManageConsultationsArchive", () => {
   it("should sort by ascending/descending if name button is clicked", async () => {
     render(ManageConsultationsArchive, { consultations: CONSULTATIONS });
 
-    const nameSortButton = screen.getByRole("button", { name: "sort consultations by Name" });
+    const nameSortButton = screen.getByRole("button", {
+      name: "sort consultations by Name",
+    });
 
     const user = userEvent.setup();
     await user.click(nameSortButton);
 
     const createdAtCells = screen.getAllByTestId("title");
 
-    const titles = createdAtCells.map(el => el.textContent)
+    const titles = createdAtCells.map((el) => el.textContent);
 
-    const sortedTimestamps = [...titles].sort((a,b) => {
+    const sortedTimestamps = [...titles].sort((a, b) => {
       if (a === b) {
         return 0;
       }
@@ -97,13 +106,13 @@ describe("ManageConsultationsArchive", () => {
 
     await waitFor(() => {
       expect(titles).toEqual(sortedTimestamps);
-    })
+    });
 
     await user.click(nameSortButton);
 
     await waitFor(() => {
       expect(titles).toEqual(sortedTimestamps.reverse());
-    })
+    });
   });
 
   it("should match snapshot initially", () => {
