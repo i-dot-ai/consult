@@ -43,6 +43,7 @@ import QuestionDetailStory from "../screens/QuestionDetail/QuestionDetailStory.s
 import FinalisingThemesArchiveStory from "../screens/FinalisingThemesArchive/FinalisingThemesArchiveStory.svelte";
 import ThemeSelectionFormStory from "../screens/ThemeSelectionForm/ThemeSelectionFormStory.svelte";
 import QuestionsReviewListStorySvelte from "../screens/QuestionsReviewList/QuestionsReviewListStory.svelte";
+import ManageConsultationsArchiveStory from "../screens/ManageConsultationsArchive/ManageConsultationsArchiveStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -112,4 +113,5 @@ export default [
   FinalisingThemesArchiveStory,
   ThemeSelectionFormStory,
   QuestionsReviewListStorySvelte,
+  ManageConsultationsArchiveStory,
 ] as Story[];
