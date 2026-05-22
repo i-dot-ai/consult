@@ -42,18 +42,12 @@ class TimeStampedModel(models.Model):
 
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     class Stage(models.TextChoices):
-        # New stages
         SETUP = "setup", "Data Setup"
         FINDING_THEMES = "finding_themes", "Finding Themes"
         FINALISING_THEMES = "finalising_themes", "Finalising Themes"
         ASSIGNING_THEMES = "assigning_themes", "Assigning Themes"
 
-        # Both old and new stages
         ANALYSIS = "analysis", "Analysis"
-
-        # Old stages
-        THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
-        THEME_MAPPING = "theme_mapping", "Theme Mapping"
 
     class ModelName(models.TextChoices):
         GPT_4O = "gpt-4o-sweden"
