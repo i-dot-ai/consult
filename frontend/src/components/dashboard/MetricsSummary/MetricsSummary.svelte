@@ -15,12 +15,11 @@
   let { questionCount = 0, responseCount = 0, demoCount = 0 }: Props = $props();
 </script>
 
-{#snippet row(text: string, count: number, icon: Component)}
+{#snippet row(text: string, count: number, Icon: Component)}
   <div class="my-2 flex w-full items-center justify-between gap-4">
     <div class="flex items-center">
       <MaterialIcon color="fill-neutral-500">
-        {@const Component = { icon }}
-        <Component.icon />
+        <Icon />
       </MaterialIcon>
 
       <span class="ml-2 text-sm text-neutral-700">

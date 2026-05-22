@@ -10,7 +10,7 @@ describe("RespondentSidebarItem", () => {
   const testData = {
     title: "Test Item",
     subtitle: "This is a test item",
-    icon: Star,
+    Icon: Star,
   };
 
   it("should render data", () => {
@@ -109,7 +109,7 @@ describe("RespondentSidebarItem", () => {
     expect(propsDefined).toEqual([
       "title",
       "subtitle",
-      "icon",
+      "Icon",
       "editable",
       "updateSubtitle",
     ]);

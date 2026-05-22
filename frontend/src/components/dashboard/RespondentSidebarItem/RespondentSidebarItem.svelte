@@ -14,7 +14,7 @@
   export interface Props {
     title: string;
     subtitle: string | null;
-    icon?: Component;
+    Icon?: Component;
     editable?: boolean;
     updateSubtitle?: (newSubtitle: string | null) => void;
   }
@@ -22,7 +22,7 @@
   let {
     title = "",
     subtitle = null,
-    icon,
+    Icon,
     editable = false,
     updateSubtitle = () => {},
   }: Props = $props();
@@ -40,11 +40,10 @@
 </script>
 
 <div in:slide class="mt-4 flex items-start gap-2 text-xs">
-  {#if icon}
+  {#if Icon}
     <div class="h-max rounded-lg bg-neutral-100 p-1">
       <MaterialIcon size="1.3rem" color="fill-neutral-700">
-        {@const Component = { icon }}
-        <Component.icon />
+        <Icon />
       </MaterialIcon>
     </div>
   {/if}

@@ -179,8 +179,8 @@
           {#if steps[currStep].icon}
             <div class="rounded-full bg-pink-100 p-1">
               <MaterialIcon color="fill-primary" size="1.2rem">
-                {@const Component = { icon: steps[currStep].icon }}
-                <Component.icon />
+                {@const Icon = steps[currStep].icon}
+                <Icon />
               </MaterialIcon>
             </div>
           {/if}

@@ -128,8 +128,8 @@
               {#if tab.icon}
                 <div class="shrink-0">
                   <MaterialIcon color="fill-neutral-500">
-                    {@const Component = { icon: tab.icon }}
-                    <Component.icon />
+                    {@const Icon = tab.icon}
+                    <Icon />
                   </MaterialIcon>
                 </div>
               {/if}

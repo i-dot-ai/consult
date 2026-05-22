@@ -16,7 +16,7 @@
     title: string;
     confirmText: string;
     canCancel?: boolean;
-    icon?: Component;
+    Icon?: Component;
     open?: boolean;
     setOpen: (newValue: boolean) => void;
     handleConfirm: MouseEventHandler<HTMLElement>;
@@ -29,7 +29,7 @@
     open = false,
     confirmText = "Confirm",
     canCancel = true,
-    icon,
+    Icon,
     setOpen = () => {},
     handleConfirm = () => {},
     children,
@@ -93,10 +93,9 @@
       }}
     >
       <div class="mb-2 flex items-center gap-2">
-        {#if icon}
+        {#if Icon}
           <MaterialIcon color={getIconColor()} size="1.3rem">
-            {@const Component = { icon }}
-            <Component.icon />
+            <Icon />
           </MaterialIcon>
         {/if}
         <h3

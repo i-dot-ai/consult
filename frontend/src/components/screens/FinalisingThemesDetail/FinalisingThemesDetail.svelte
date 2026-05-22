@@ -467,7 +467,7 @@
     <Modal
       variant="primary"
       title="Confirm Finalising Themes"
-      icon={CheckCircle}
+      Icon={CheckCircle}
       open={isConfirmFinalisingThemesModalOpen}
       setOpen={(newOpen: boolean) =>
         (isConfirmFinalisingThemesModalOpen = newOpen)}

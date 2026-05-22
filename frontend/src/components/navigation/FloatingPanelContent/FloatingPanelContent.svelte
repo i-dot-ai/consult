@@ -54,7 +54,7 @@
   ];
 </script>
 
-{#snippet renderItem({ icon, title, subtitle, url, handleClick }: Item)}
+{#snippet renderItem({ icon: Icon, title, subtitle, url, handleClick }: Item)}
   <li class="group">
     <Button
       variant="ghost"
@@ -75,8 +75,7 @@
           ])}
         >
           <MaterialIcon color="fill-neutral-500">
-            {@const Component = { icon }}
-            <Component.icon />
+            <Icon />
           </MaterialIcon>
         </div>
         <div>
