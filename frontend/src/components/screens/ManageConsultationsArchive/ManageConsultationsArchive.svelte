@@ -173,7 +173,7 @@
         </tr>
       {/if}
 
-      {#each displayConsultations as consultation, i (i)}
+      {#each displayConsultations as consultation (consultation.id)}
         <tr
           transition:fade={{ duration: 200 }}
           class="border-t hover:bg-gray-50"
