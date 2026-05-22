@@ -1,31 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { render, screen, waitFor } from "@testing-library/svelte";
 
-import ManageConsultationsArchive from "./ManageConsultationsArchive.svelte";
+import { render, screen, waitFor } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 
-const CONSULTATIONS = [
-  {
-    id: "c-one",
-    title: "Consultation 1",
-    created_at: "2026-05-17T12:49:45.157Z",
-  },
-  {
-    id: "c-two",
-    title: "Consultation 2",
-    created_at: "2026-05-15T12:49:45.157Z",
-  },
-  {
-    id: "c-three",
-    title: "Consultation 3",
-    created_at: "2026-05-17T12:49:45.157Z",
-  },
-  {
-    id: "c-four",
-    title: "Consultation 4",
-    created_at: "2026-05-19T12:49:45.157Z",
-  },
-];
+import ManageConsultationsArchive from "./ManageConsultationsArchive.svelte";
+import { CONSULTATIONS } from "./testData";
 
 function parseCreatedAt(createdAtText: string) {
   const [dateStr, timeStr] = createdAtText.split(" at ");

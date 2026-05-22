@@ -90,10 +90,13 @@
   text: string,
   direction: SortDirection,
   setDirection: (newDirection: SortDirection) => void,
+  resetDirections: () => void,
 )}
   <Button
     variant="ghost"
     handleClick={() => {
+      resetDirections();
+
       if (direction === SORT_DIRECTION.NONE) {
         setDirection(SORT_DIRECTION.DESC);
       } else if (direction === SORT_DIRECTION.DESC) {
@@ -145,6 +148,7 @@
             (newSortDirection: SortDirection) => {
               nameSortDirection = newSortDirection;
             },
+            () => dateSortDirection = SORT_DIRECTION.NONE,
           )}
         </th>
         <th class="py-2 pr-2">
@@ -154,6 +158,7 @@
             (newSortDirection: SortDirection) => {
               dateSortDirection = newSortDirection;
             },
+            () => nameSortDirection = SORT_DIRECTION.NONE,
           )}
         </th>
       </tr>
