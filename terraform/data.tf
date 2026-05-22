@@ -37,8 +37,8 @@ locals {
   host_backend             = terraform.workspace == "prod" ? "${var.project_name}-backend-external.ai.cabinetoffice.gov.uk" : "${var.project_name}-backend-external-${terraform.workspace}.ai.cabinetoffice.gov.uk"
   public_host              = terraform.workspace == "prod" ? "${var.project_name}.i.ai.gov.uk" : "${var.project_name}.${terraform.workspace}.i.ai.gov.uk"
   name                     = "${var.team_name}-${var.env}-${var.project_name}"
-  batch_mapping_image_url  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-pipeline-mapping:${data.aws_ssm_parameter.image_tags["pipeline-mapping"].value}"
-  batch_sign_off_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-pipeline-sign-off:${data.aws_ssm_parameter.image_tags["pipeline-sign-off"].value}"
+  batch_mapping_image_url  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/${var.project_name}-pipeline-mapping:${data.aws_ssm_parameter.image_tags["pipeline-mapping"].value}"
+  batch_sign_off_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/${var.project_name}-pipeline-sign-off:${data.aws_ssm_parameter.image_tags["pipeline-sign-off"].value}"
   llm_gateway_url          = "https://llm-gateway.i.ai.gov.uk/"
 }
 
@@ -73,7 +73,7 @@ data "aws_ssm_parameter" "image_tags" {
 }
 
 data "aws_ssm_parameter" "slack_webhook_url" {
-  name = "/i-dot-ai-${terraform.workspace}-consult/env_secrets/THEMEFINDER_SLACK_WEBHOOK_URL"
+  name = "/i-dot-ai-${terraform.workspace}-${var.project_name}/env_secrets/THEMEFINDER_SLACK_WEBHOOK_URL"
   depends_on = [
     aws_ssm_parameter.env_secrets
   ]
