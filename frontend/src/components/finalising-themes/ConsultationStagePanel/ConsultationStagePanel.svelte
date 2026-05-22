@@ -47,17 +47,7 @@
       step: { order: 2, label: "Finalising Themes", icon: CheckCircle },
       title: "Finalising Themes",
     },
-    // Legacy alias - kept during data migration (Expand phase)
-    theme_sign_off: {
-      step: { order: 2, label: "Finalising Themes", icon: CheckCircle },
-      title: "Finalising Themes",
-    },
     assigning_themes: {
-      step: { order: 3, label: "Assigning Themes (AI)", icon: WandStars },
-      title: "AI Assignment in Progress",
-    },
-    // Legacy alias - kept during data migration (Expand phase)
-    theme_mapping: {
       step: { order: 3, label: "Assigning Themes (AI)", icon: WandStars },
       title: "AI Assignment in Progress",
     },
@@ -79,15 +69,8 @@
     STAGE_CONFIGS[consultation.stage] ?? STAGE_CONFIGS.finalising_themes,
   );
 
-  // Determine which content variant to show - handles both old and new stage values
-  let isFinalisingThemes = $derived(
-    consultation.stage === "finalising_themes" ||
-      consultation.stage === "theme_sign_off",
-  );
-  let isAssigningThemes = $derived(
-    consultation.stage === "assigning_themes" ||
-      consultation.stage === "theme_mapping",
-  );
+  let isFinalisingThemes = $derived(consultation.stage === "finalising_themes");
+  let isAssigningThemes = $derived(consultation.stage === "assigning_themes");
   let isAnalysis = $derived(consultation.stage === "analysis");
 
   // Title adapts to sub-state during finalising
