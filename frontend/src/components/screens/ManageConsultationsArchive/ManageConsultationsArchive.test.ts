@@ -50,8 +50,8 @@ describe("ManageConsultationsArchive", () => {
     const user = userEvent.setup();
     await user.type(screen.getByLabelText("Search consultations"), "1");
 
-    const visibleConsultations = screen.getAllByTestId("consultation-item");
     await waitFor(() => {
+      const visibleConsultations = screen.getAllByTestId("consultation-item");
       expect(visibleConsultations).toHaveLength(1);
     });
   });
@@ -93,9 +93,8 @@ describe("ManageConsultationsArchive", () => {
     const user = userEvent.setup();
     await user.click(nameSortButton);
 
-    const createdAtCells = screen.getAllByTestId("title");
-
-    const titles = createdAtCells.map((el) => el.textContent);
+    let createdAtCells = screen.getAllByTestId("title");
+    let titles = createdAtCells.map((el) => el.textContent);
 
     const sortedTimestamps = [...titles].sort((a, b) => {
       if (a === b) {
@@ -111,6 +110,8 @@ describe("ManageConsultationsArchive", () => {
     await user.click(nameSortButton);
 
     await waitFor(() => {
+      createdAtCells = screen.getAllByTestId("title");
+      titles = createdAtCells.map((el) => el.textContent);
       expect(titles).toEqual(sortedTimestamps.reverse());
     });
   });
