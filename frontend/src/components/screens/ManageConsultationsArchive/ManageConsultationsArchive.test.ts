@@ -80,7 +80,7 @@ describe("ManageConsultationsArchive", () => {
       return a > b ? 1 : -1;
     });
 
-    expect(timestamps).toEqual(sortedTimestamps.reverse());
+    expect(timestamps).toEqual(sortedTimestamps.toReversed());
   });
 
   it("should sort by ascending/descending if name button is clicked", async () => {
@@ -112,7 +112,7 @@ describe("ManageConsultationsArchive", () => {
     await waitFor(() => {
       createdAtCells = screen.getAllByTestId("title");
       titles = createdAtCells.map((el) => el.textContent);
-      expect(titles).toEqual(sortedTimestamps.reverse());
+      expect(titles).toEqual(sortedTimestamps.toReversed());
     });
   });
 
