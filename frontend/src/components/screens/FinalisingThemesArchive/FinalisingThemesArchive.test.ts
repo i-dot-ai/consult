@@ -123,7 +123,7 @@ describe("FinalisingThemesArchive", () => {
     });
   });
 
-  it("should render correct panel for Assignment stage", async () => {
+  it("should render correct panel for Assignment stage (legacy theme_mapping)", async () => {
     mockRoute({
       ...consultationMock,
       body: {
@@ -142,12 +142,31 @@ describe("FinalisingThemesArchive", () => {
     });
   });
 
+  it("should render correct panel for Assignment stage (assigning_themes)", async () => {
+    mockRoute({
+      ...consultationMock,
+      body: {
+        ...consultationMock.body,
+        stage: "assigning_themes",
+      },
+    });
+    mockRoute(questionsAllSignedOffMock);
+
+    render(FinalisingThemesArchive, {
+      consultationId: CONSULTATION_ID,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("AI Assignment in Progress")).toBeInTheDocument();
+    });
+  });
+
   it("should render correct panel for finalising themes stage", async () => {
     mockRoute({
       ...consultationMock,
       body: {
         ...consultationMock.body,
-        stage: "theme_sign_off",
+        stage: "finalising_themes",
       },
     });
     mockRoute(questionsMock);
@@ -166,7 +185,7 @@ describe("FinalisingThemesArchive", () => {
       ...consultationMock,
       body: {
         ...consultationMock.body,
-        stage: "theme_sign_off",
+        stage: "finalising_themes",
       },
     });
     mockRoute(questionsAllSignedOffMock);

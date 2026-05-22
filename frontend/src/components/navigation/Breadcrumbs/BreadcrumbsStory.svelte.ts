@@ -8,11 +8,11 @@ export default {
   stories: [
     {
       name: "Stage Finalising Themes",
-      props: { consultationStage: "theme_sign_off" },
+      props: { consultationStage: "finalising_themes" },
     },
     {
       name: "Stage Assigning Themes (AI)",
-      props: { consultationStage: "theme_mapping" },
+      props: { consultationStage: "assigning_themes" },
     },
     {
       name: "Stage Analysis",

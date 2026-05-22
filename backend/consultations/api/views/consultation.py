@@ -285,7 +285,7 @@ class ConsultationViewSet(ModelViewSet):
         - FINALISING_THEMES / THEME_SIGN_OFF: exports candidate themes and assigns
           them to responses (CandidateThemeResponse), without changing stage.
         - Other stages: exports selected themes and assigns them to responses
-          (ResponseAnnotation), advancing stage to THEME_MAPPING.
+          (ResponseAnnotation), advancing stage to ASSIGNING_THEMES.
 
         URL: /api/consultations/{consultation_id}/assign-themes/
         """
@@ -335,7 +335,7 @@ class ConsultationViewSet(ModelViewSet):
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
 
-            # Stay in current stage - don't advance to THEME_MAPPING
+            # Stay in current stage - don't advance
             return Response(
                 {
                     "message": f"Assign Candidate Themes job started for consultation '{consultation.title}'",
@@ -397,7 +397,7 @@ class ConsultationViewSet(ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        consultation.stage = Consultation.Stage.THEME_MAPPING
+        consultation.stage = Consultation.Stage.ASSIGNING_THEMES
         consultation.save(update_fields=["stage"])
 
         return Response(

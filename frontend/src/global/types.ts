@@ -23,7 +23,13 @@ export interface Question {
   theme_status?: string;
 }
 
-export type ConsultationStage = "theme_sign_off" | "theme_mapping" | "analysis";
+export type ConsultationStage =
+  | "finalising_themes"
+  | "assigning_themes"
+  | "analysis"
+  // Legacy values for now removed stages - to be deleted once backend data is updated
+  | "theme_sign_off"
+  | "theme_mapping";
 export interface NextResponseInfo {
   id: string;
   consultation_id: string;
