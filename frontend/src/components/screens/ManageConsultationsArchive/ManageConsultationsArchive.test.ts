@@ -120,6 +120,12 @@ describe("ManageConsultationsArchive", () => {
     const { container } = render(ManageConsultationsArchive, {
       consultations: CONSULTATIONS,
     });
+
+    // Remove created at because pipeline timezone and local timezone
+    // won't always be the same, causing snapshot conflict
+    const allCreatedAtCells = container.querySelectorAll(`td[data-testid="created-at"]`);
+    allCreatedAtCells.forEach(cell => cell.textContent = "");
+
     expect(container).toMatchSnapshot();
   });
 });
