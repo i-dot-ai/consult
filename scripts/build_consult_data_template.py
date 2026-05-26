@@ -122,8 +122,8 @@ RESPONSE_LAST_LETTER = "ZZ"  # last column the audit covers
 # while editing Responses. Keeps the per-row uniqueness checks O(1) lookups
 # instead of O(n²) volatile re-computes.
 HELPER_SHEET = "_helpers"
-HELPER_RATIO_ROW = 1  # Excel row 1 of the helper sheet
-HELPER_COUNT_ROW = 2  # Excel row 2 of the helper sheet
+HELPER_RATIO_ROW = 1  # Excel row 1: ratio of unique non-empty values per column
+HELPER_COUNT_ROW = 2  # Excel row 2: count of non-empty values per column
 
 # Label-similarity helper layout: one BLOCK per (metadata sheet, letter-field),
 # each block is LABEL_SIM_FIELDS columns wide so every intermediate step
@@ -427,17 +427,12 @@ def write_dummy_responses(ws, fmts: dict, n_rows: int = 40, seed: int = 42) -> N
 def build_helpers_sheet(ws) -> None:
     """Hidden sheet with per-Responses-column uniqueness ratio (row 1) and count (row 2).
 
-    The expensive O(n²) SUMPRODUCT/COUNTIF runs once per Responses column instead
-    of once per metadata-sheet audit row, and depends only on Responses cells — so editing
-    metadata sheets doesn't trigger recompute. INDIRECT is dropped, so these aren't
-    volatile either. Lives on its own sheet so users can't overwrite it while
-    editing Responses.
+    Runs once per column rather than once per audit row. Non-volatile (no INDIRECT).
+    Hidden so users can't overwrite it.
     """
     for col_idx, letter in enumerate(RESPONSE_LETTERS):
         src = f"Responses!{letter}2:{letter}{RESPONSE_DATA_LAST_ROW}"
-        ratio = (
-            f'=IFERROR(SUMPRODUCT(({src}<>"")/COUNTIF({src},{src}&""))/COUNTA({src}),0)'
-        )
+        ratio = f'=IFERROR(ROWS(UNIQUE(FILTER({src},{src}<>"")))/COUNTA({src}),0)'
         count = f"=COUNTA({src})"
         ws.write_formula(HELPER_RATIO_ROW - 1, col_idx, ratio)
         ws.write_formula(HELPER_COUNT_ROW - 1, col_idx, count)
