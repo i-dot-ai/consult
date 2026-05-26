@@ -85,7 +85,7 @@ from build_consult_data_dummy_content import (
     DUMMY_EXPLANATIONS,
 )
 
-VERSION = "v003"
+VERSION = "v004"
 OUTPUT_PATH = (
     Path(__file__).resolve().parent / f"consult_data_template_{VERSION}.xlsx"
 )
@@ -250,7 +250,7 @@ def add_integer_check(ws, col_letter: str, fmts: dict) -> None:
             "criteria": (
                 f'=AND(${col_letter}2<>"",'
                 f"OR(NOT(ISNUMBER(${col_letter}2)),"
-                f"${col_letter}2<>INT(${col_letter}2),"
+                f"IFERROR(${col_letter}2<>INT(${col_letter}2),TRUE),"
                 f"${col_letter}2<1))"
             ),
             "format": fmts["issue_fill"],
@@ -576,7 +576,7 @@ def _violation_integer(sheet: str, _all_cols: list[str], col: str, r: int) -> st
     return (
         f'AND({target}<>"",'
         f"OR(NOT(ISNUMBER({target})),"
-        f"{target}<>INT({target}),"
+        f"IFERROR({target}<>INT({target}),TRUE),"
         f"{target}<1))"
     )
 
@@ -695,29 +695,29 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
                 "A",
                 "Missing column ID",
                 "required",
-                "This row has a label but no column letter, so Themefinder won't know which column on the Responses sheet to read.",
-                "Type the Excel column letter (e.g. B, AC) from the Responses sheet that holds this demographic.",
+                "This row is missing a column ID, so it is unclear which column on the Responses sheet should be used.",
+                "Type the Excel column letter (e.g. B or AC) from the Responses sheet that holds this demographic.",
             ),
             (
                 "B",
                 "Missing label",
                 "required",
-                "This row has a column letter but no label, so this demographic will be unnamed in your results.",
+                "This row has no label, so this demographic will be unnamed in your results.",
                 "Type a short, human-readable name for this demographic, e.g. 'Region' or 'Age group'.",
             ),
             (
                 "A",
                 "Invalid column ID format",
                 "column_id",
-                "'{value}' isn't a valid Excel column letter, so Themefinder can't find this column on the Responses sheet.",
+                "'{value}' isn't a valid Excel column letter, so we can't find this column on the Responses sheet.",
                 "Use 1-3 capital letters only — A, B, …, Z, AA, AB, …, ZZZ. No numbers or symbols.",
             ),
             (
                 "A",
                 "Column not in Responses",
                 "missing_response",
-                "Column '{value}' has no header on the Responses sheet, so there's nothing for Themefinder to read.",
-                "Check for a typo in the column letter, or add a header (and the answers) into that column on Responses.",
+                "Column '{value}' has no header on the Responses sheet, so there may be no responses to compare to in that column.",
+                "Check for a typo in the column letter, or add a header (and the responses) into that column on Responses.",
             ),
         ],
     },
@@ -726,45 +726,45 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
         "rules": [
             (
                 "A",
-                "Missing column_name",
+                "Missing column ID",
                 "required",
-                "This row has question details but no column letter, so Themefinder won't know where the free-text answers live.",
-                "Type the Excel column letter from the Responses sheet that holds the free-text answers for this question.",
+                "This row has no column ID, so it is unclear which column on the Responses sheet should be used.",
+                "Type the Excel column letter from the Responses sheet (e.g. B or AC) that holds the free-text responses for this question.",
             ),
             (
                 "B",
                 "Missing question_number",
                 "required",
-                "This row has no question number. Numbers identify each question in your results and are used as output folder names.",
-                "Enter a whole number 1 or higher. Each number must be unique across the Open, Closed, and Hybrid sheets.",
+                "This row has no question number. This number is used to order the questions as they appear in the Consult application.",
+                "Enter a whole number (e.g. 1 or higher) that has not been used by another question yet. Each number must be unique across the Open, Closed, and Hybrid sheets.",
             ),
             (
                 "C",
                 "Missing question_text",
                 "required",
-                "This row has no question wording, which will make the results hard to interpret.",
-                "Paste the question as it appeared to respondents, and it should have enough context to make sense on its own (e.g. 'How satisfied are you with X?').",
+                "This row has no question wording. The AI model will not have any context for interpreting the responses, which will lead to poor results.",
+                "Paste the question as it appeared to respondents, and it should have enough context to make sense on its own (e.g. 'How satisfied are you with X?', NOT 'Satisfaction').",
             ),
             (
                 "A",
                 "Invalid column ID format",
                 "column_id",
-                "'{value}' isn't a valid Excel column letter, so Themefinder can't find this column on the Responses sheet.",
+                "'{value}' isn't a valid Excel column letter.",
                 "Use 1-3 capital letters only (e.g. A, BF, AAC). No numbers or symbols.",
             ),
             (
                 "B",
                 "Question number must be a whole integer >= 1",
                 "integer",
-                "'{value}' isn't a whole number of 1 or more. Question numbers are used as output folder names, so they need to be plain whole numbers.",
+                "'{value}' isn't a whole number of 1 or more. Question numbers are used to order the questions as they appear in the Consult application, so they need to be plain whole numbers.",
                 "Replace it with a whole number such as 1, 2, 3. Decimals, text, and 0 aren't allowed.",
             ),
             (
                 "A",
                 "Column not in Responses",
                 "missing_response",
-                "Column '{value}' has no header on the Responses sheet, so there are no answers for Themefinder to analyse.",
-                "Double-check the column letter for typos, or paste the answers (with a header in row 1) into that column on Responses.",
+                "Column '{value}' has no header on the Responses sheet, which may mean there are no responses to analyse in this column.",
+                "Double-check the column letter for typos, or paste the responses (with a header in row 1) into that column on Responses sheet.",
             ),
             (
                 "A",
@@ -777,14 +777,14 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
                 "B",
                 "Duplicate question_number",
                 "duplicate_qnum",
-                "Question number '{value}' is already used by another row. Numbers must be unique because they're used as output folder names.",
+                "Question number '{value}' is already used by another row. Numbers must be unique because they're used to order the questions as they appear in the Consult application.",
                 "Renumber one of the rows so every question across Open, Closed, and Hybrid has its own unique number.",
             ),
             (
                 "A",
                 "Open column looks multichoice",
                 "open_uniqueness",
-                "Column '{value}' has very few different answers (≤20% are unique). That usually means it's a multiple-choice question rather than free text.",
+                "Column '{value}' has very few different responses (≤20% are unique). That usually means it's a multiple-choice question rather than free text.",
                 "If respondents picked from a list, move this row to the Multiple Choice Questions sheet. If it really is free text, you can ignore this warning.",
             ),
             (
@@ -801,24 +801,24 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
         "rules": [
             (
                 "A",
-                "Missing column_name",
+                "Missing column ID",
                 "required",
-                "This row has question details but no column letter, so Themefinder won't know where the multiple-choice answers live.",
-                "Type the Excel column letter from the Responses sheet that holds the multiple-choice answers for this question.",
+                "This row has no column ID, so it is unclear which column on the Responses sheet should be used.",
+                "Type the Excel column letter from the Responses sheet (e.g. B or AC) that holds the multiple-choice responses for this question.",
             ),
             (
                 "B",
                 "Missing question_number",
                 "required",
-                "This row has no question number. Numbers identify each question in your results and are used as output folder names.",
+                "This row has no question number. Numbers identify each question in your results and are used to order the questions as they appear in the Consult application.",
                 "Enter a whole number 1 or higher. Each number must be unique across the Open, Closed, and Hybrid sheets.",
             ),
             (
                 "C",
                 "Missing question_text",
                 "required",
-                "This row has no question wording, which will make the results hard to interpret.",
-                "Paste the question as it appeared to respondents, and it should have enough context to make sense on its own (e.g. 'How satisfied are you with X?').",
+                "This row has no question wording. The AI model will not have any context for interpreting the responses, which will lead to poor results.",
+                "Paste the question as it appeared to respondents, and it should have enough context to make sense on its own (e.g. 'How satisfied are you with X?', NOT 'Satisfaction').",
             ),
             (
                 "A",
@@ -831,15 +831,15 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
                 "B",
                 "Question number must be a whole integer >= 1",
                 "integer",
-                "'{value}' isn't a whole number of 1 or more. Question numbers are used as output folder names, so they need to be plain whole numbers.",
+                "'{value}' isn't a whole number of 1 or more. Question numbers are used to order the questions as they appear in the Consult application, so they need to be plain whole numbers.",
                 "Replace it with a whole number such as 1, 2, 3. Decimals, text, and 0 aren't allowed.",
             ),
             (
                 "A",
                 "Column not in Responses",
                 "missing_response",
-                "Column '{value}' has no header on the Responses sheet, so there are no answers for Themefinder to analyse.",
-                "Double-check the column letter for typos, or paste the answers (with a header in row 1) into that column on Responses.",
+                "Column '{value}' has no header on the Responses sheet, which may mean there are no responses to analyse in this column.",
+                "Double-check the column letter for typos, or paste the responses (with a header in row 1) into that column on Responses sheet.",
             ),
             (
                 "A",
@@ -852,15 +852,15 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
                 "B",
                 "Duplicate question_number",
                 "duplicate_qnum",
-                "Question number '{value}' is already used by another row. Numbers must be unique because they're used as output folder names.",
+                "Question number '{value}' is already used by another row. Numbers must be unique because they're used to order the questions as they appear in the Consult application.",
                 "Renumber one of the rows so every question across Open, Closed, and Hybrid has its own unique number.",
             ),
             (
                 "A",
                 "Closed column looks like free text",
                 "closed_uniqueness",
-                "Column '{value}' has lots of different answers (>20% are unique). That usually means it's a free-text question rather than multiple choice.",
-                "If respondents typed their own answers, move this row to the Open Questions sheet. If it really is multiple choice, you can ignore this warning.",
+                "Column '{value}' has lots of different responses (>20% are unique). That usually means it's a free-text question rather than multiple choice.",
+                "If respondents typed their own responses, move this row to the Open Questions sheet. If it really is multiple choice, you can ignore this warning.",
             ),
             (
                 "A",
@@ -878,21 +878,21 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
                 "A",
                 "Missing open_column",
                 "required",
-                "This row has question details but no column letter for the free-text part, so Themefinder won't know where those answers live.",
+                "This row has no open_column value, so it is unclear which column on the Responses sheet holds the free-text part of this hybrid question.",
                 "Type the Excel column letter from Responses that holds the free-text part of this hybrid question.",
             ),
             (
                 "B",
                 "Missing question_number",
                 "required",
-                "This row has no question number. Numbers identify each question in your results and are used as output folder names.",
+                "This row has no question number. Numbers identify each question in your results and are used to order the questions as they appear in the Consult app.",
                 "Enter a whole number 1 or higher. Each number must be unique across the Open, Closed, and Hybrid sheets.",
             ),
             (
                 "C",
                 "Missing question_text",
                 "required",
-                "This row has no question wording, which will make the results hard to interpret.",
+                "This row has no question wording, so the AI model will not have any context for interpreting the responses, which will lead to poor results.",
                 "Paste the question exactly as it appeared to respondents, including any indication that it's a hybrid question (e.g. 'What do you think of X, and why?')."
                 "It should have enough context to make sense on its own.",
             ),
@@ -900,43 +900,43 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
                 "D",
                 "Missing closed_column",
                 "required",
-                "This row has no column letter for the multiple-choice part, so Themefinder won't know where those answers live.",
-                "Type the Excel column letter from Responses that holds the multiple-choice part of this hybrid question.",
+                "This row has no column letter for the multiple-choice part, so it is unclear which column on the Responses sheet holds those responses.",
+                "Type the Excel column letter from Responses sheet (e.g. B, CF) that holds the multiple-choice part of this hybrid question.",
             ),
             (
                 "A",
                 "Invalid open_column format",
                 "column_id",
-                "'{value}' isn't a valid Excel column letter, so Themefinder can't find the free-text column on Responses.",
-                "Use 1-3 capital letters only (e.g. A, BF, AAC). No numbers or symbols.",
+                "'{value}' isn't a valid Excel column letter, so it can't be found on the Responses sheet.",
+                "Use 1-3 capital letters only (e.g. A, BF, AAC). No numbers or symbols. Enter the column letter for the free-text part of this hybrid question.",
             ),
             (
                 "D",
                 "Invalid closed_column format",
                 "column_id",
-                "'{value}' isn't a valid Excel column letter, so Themefinder can't find the multiple-choice column on Responses.",
-                "Use 1-3 capital letters only (e.g. A, BF, AAC). No numbers or symbols.",
+                "'{value}' isn't a valid Excel column letter, so it can't be found on the Responses sheet.",
+                "Use 1-3 capital letters only (e.g. A, BF, AAC). No numbers or symbols. Enter the column letter for the multiple-choice part of this hybrid question.",
             ),
             (
                 "B",
                 "Question number must be a whole integer >= 1",
                 "integer",
-                "'{value}' isn't a whole number of 1 or more. Question numbers are used as output folder names, so they need to be plain whole numbers.",
+                "'{value}' isn't a whole number of 1 or more. Question numbers are used to order the questions as they appear in the Consult application, so they need to be plain whole numbers.",
                 "Replace it with a whole number such as 1, 2, 3. Decimals, text, and 0 aren't allowed.",
             ),
             (
                 "A",
                 "open_column not in Responses",
                 "missing_response",
-                "Column '{value}' has no header on the Responses sheet, so there are no free-text answers to analyse.",
-                "Double-check the column letter for typos, or paste the answers (with a header in row 1) into that column on Responses.",
+                "Column '{value}' has no header on the Responses sheet, so there may be no free-text responses to compare to in that column.",
+                "Double-check the column letter for typos, or paste the responses (with a header in row 1) into that column on Responses.",
             ),
             (
                 "D",
                 "closed_column not in Responses",
                 "missing_response",
-                "Column '{value}' has no header on the Responses sheet, so there are no multiple-choice answers to analyse.",
-                "Double-check the column letter for typos, or paste the answers (with a header in row 1) into that column on Responses.",
+                "Column '{value}' has no header on the Responses sheet, so there may be no multiple-choice responses to analyse.",
+                "Double-check the column letter for typos, or paste the responses (with a header in row 1) into that column on Responses.",
             ),
             (
                 "A",
@@ -956,22 +956,22 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
                 "B",
                 "Duplicate question_number",
                 "duplicate_qnum",
-                "Question number '{value}' is already used by another row. Numbers must be unique because they're used as output folder names.",
+                "Question number '{value}' is already used by another row. Numbers must be unique because they're used to order the questions as they appear in the Consult app.",
                 "Renumber one of the rows so every question across Open, Closed, and Hybrid has its own unique number.",
             ),
             (
                 "A",
                 "Open column looks multichoice",
                 "open_uniqueness",
-                "Column '{value}' has very few different answers (≤20% are unique), which looks more like multiple choice than free text.",
+                "Column '{value}' on the Responses sheet has very few different responses (≤20% are unique), which looks more like multiple choice than free text.",
                 "If respondents picked from a list, this column belongs in the Multiple Choice Questions sheet (or as the closed_column of a hybrid). If it really is free text, you can ignore this warning.",
             ),
             (
                 "D",
                 "Closed column looks like free text",
                 "closed_uniqueness",
-                "Column '{value}' has lots of different answers (>20% are unique), which looks more like free text than multiple choice.",
-                "If respondents typed their own answers, this column belongs in the Open Questions sheet (or as the open_column of a hybrid). If it really is multiple choice, you can ignore this warning.",
+                "Column '{value}' on the Responses sheet has lots of different responses (>20% are unique), which looks more like free text than multiple choice.",
+                "If respondents typed their own responses, this column belongs in the Open Questions sheet (or as the open_column of a hybrid). If it really is multiple choice, you can ignore this warning.",
             ),
             (
                 "A",
@@ -1049,7 +1049,7 @@ def _workbook_level_rule_rows() -> list[dict]:
     fix_text = (
         "Either remove the questions / demographics that point to columns "
         "that aren't in Responses, or add the missing columns (with headers "
-        "and answers) to the Responses sheet."
+        "and responses) to the Responses sheet."
     )
     return [
         {
@@ -1071,7 +1071,7 @@ def _missing_header_rule_rows() -> list[dict]:
         data_range = f"Responses!${letter}$2:${letter}${RESPONSE_DATA_LAST_ROW}"
         violation = f'AND({header}="",COUNTA({data_range})>0)'
         msg = (
-            f'"Column {letter} on Responses has answers but no header in row 1, '
+            f'"Column {letter} on Responses has responses but no header in row 1, '
             f'so nobody (and Themefinder) knows what this column is."'
         )
         fix_text = (
@@ -1240,14 +1240,8 @@ def build_active_issues_sheet(ws, wb, source_last_row: int, fmts: dict) -> None:
 
     ws.merge_range("A1:G1", "Active issues", fmts["title"])
 
-    err_count = (
-        f'=SUMPRODUCT((Issues!E5:E{source_last_row}<>"")*'
-        f'(Issues!D5:D{source_last_row}="Error"))'
-    )
-    warn_count = (
-        f'=SUMPRODUCT((Issues!E5:E{source_last_row}<>"")*'
-        f'(Issues!D5:D{source_last_row}="{SEVERITY_TO_CHECK}"))'
-    )
+    err_count = f'=COUNTIF(D5:D{source_last_row},"Error")'
+    warn_count = f'=COUNTIF(D5:D{source_last_row},"{SEVERITY_TO_CHECK}")'
     ws.write("A2", "Errors:", fmts["bold_right"])
     ws.write_formula("B2", err_count, fmts["error_count"])
     ws.write("C2", "To check:", fmts["bold_right"])
@@ -1273,7 +1267,7 @@ def build_active_issues_sheet(ws, wb, source_last_row: int, fmts: dict) -> None:
         "Severity",
         "Issue",
         "How to fix",
-        "My Notes — provide a short description of what you checked here",
+        "My Notes — you can provide a short description of what you checked here",
     ]
     notes_header_fmt = wb.add_format(
         {"bold": True, "bg_color": "#FFE699", "text_wrap": True, "valign": "top"}
@@ -1285,7 +1279,7 @@ def build_active_issues_sheet(ws, wb, source_last_row: int, fmts: dict) -> None:
 
     formula = (
         f"=FILTER(Issues!A5:F{source_last_row},"
-        f'Issues!E5:E{source_last_row}<>"",'
+        f'IFERROR(Issues!E5:E{source_last_row}<>"",TRUE),'
         f'"No outstanding issues — fill in the Demographics, Open, Closed and Hybrid sheets to begin.")'
     )
     ws.write_dynamic_array_formula("A5", formula)
@@ -1467,13 +1461,13 @@ def build_guide_sheet(ws, wb, fmts: dict) -> None:
         0,
         row,
         2,
-        "The Responses sheet holds your raw answers. The Demographics, Open "
+        "The Responses sheet holds your raw responses. The Demographics, Open "
         "questions, Multiple Choice Questions and Hybrid Questions sheets sit "
         "alongside it and tell Consult how to interpret each column on "
         "Responses — which columns hold demographics, which hold free-text, "
         "which hold multiple-choice, and what each question was actually "
         "asking. Without these sheets, Consult sees an undifferentiated grid "
-        "of answers; with them, it can theme the right columns the right way.",
+        "of responses; with them, it can theme the right columns the right way.",
         body_fmt,
     )
     ws.set_row(row, 100)
@@ -1540,7 +1534,7 @@ def build_guide_sheet(ws, wb, fmts: dict) -> None:
         (
             "Responses",
             "Your raw survey export. Each "
-            "column holds the respondents' answers to one question or one demographic. Row 1 is the "
+            "column holds the respondents' responses to one question or one demographic. Row 1 is the "
             "header for each column.",
         ),
         (
@@ -1551,12 +1545,12 @@ def build_guide_sheet(ws, wb, fmts: dict) -> None:
         (
             "Open Questions",
             "One row per free-text question. Points at a Responses column whose "
-            "answers are free and open text.",
+            "responses are free and open text.",
         ),
         (
             "Multiple Choice Questions",
             "One row per multiple-choice question. Points at a Responses column "
-            "whose answers come from a fixed list (e.g. Yes/No, Agree/Disagree, …).",
+            "whose responses come from a fixed list (e.g. Yes/No, Agree/Disagree, …).",
         ),
         (
             "Hybrid Questions",
@@ -1578,7 +1572,7 @@ def build_guide_sheet(ws, wb, fmts: dict) -> None:
         "model behind it — sees when analysing each response. It is the "
         "model's main signal for what was actually asked. If the question "
         "text is vague, truncated, or missing the framing the respondent "
-        "saw, the model will misinterpret answers and the themes it generates "
+        "saw, the model will misinterpret responses and the themes it generates "
         "will be off. Treat this column as the prompt you're giving the AI: "
         "give it enough context to understand the question on its own, "
         "without you in the room to explain.",
@@ -1615,7 +1609,7 @@ def build_guide_sheet(ws, wb, fmts: dict) -> None:
         "the proposed outcomes?",
         why_good="Reads as a full, self-contained question. The AI knows it's "
         "asking about the respondent's role in delivering the proposal — so "
-        "it can correctly group answers like 'we'd run training' under a "
+        "it can correctly group responses like 'we'd run training' under a "
         "'role: training provider' theme.",
         bad="role played",
         why_bad="Two words with no context. The model has no idea what role, "
@@ -1773,14 +1767,14 @@ def main() -> None:
     ws_open.write_comment(
         "A1",
         "The Excel column letter on the Responses sheet that holds the "
-        "free-text answers for this question. E.g. if Responses!I1 contains "
+        "free-text responses for this question. E.g. if Responses!I1 contains "
         "the question header, type 'I' here.",
         {"width": 260, "height": 120},
     )
     ws_open.write_comment(
         "B1",
         "A whole number ≥ 1. Must be unique across all Open, Closed and Hybrid "
-        "questions. Used as the output folder name for this question's results.",
+        "questions. Used to order the questions as they appear in the Consult application.",
         {"width": 260, "height": 100},
     )
     ws_open.write_comment(
@@ -1813,13 +1807,13 @@ def main() -> None:
     ws_closed.write_comment(
         "A1",
         "The Excel column letter on the Responses sheet that holds the "
-        "multiple-choice answers for this question.",
+        "multiple-choice responses for this question.",
         {"width": 260, "height": 100},
     )
     ws_closed.write_comment(
         "B1",
         "A whole number ≥ 1. Must be unique across all Open, Closed and Hybrid "
-        "questions. Used as the output folder name for this question's results.",
+        "questions. Used to order the questions as they appear in the Consult application.",
         {"width": 260, "height": 100},
     )
     ws_closed.write_comment(
@@ -1857,7 +1851,7 @@ def main() -> None:
     ws_hyb.write_comment(
         "B1",
         "A whole number ≥ 1. Must be unique across all Open, Closed and Hybrid "
-        "questions. Used as the output folder name for this question's results.",
+        "questions. Used to order the questions as they appear in the Consult application.",
         {"width": 260, "height": 100},
     )
     ws_hyb.write_comment(
