@@ -122,3 +122,18 @@ resource "aws_ssm_parameter" "env_secrets" {
     ]
   }
 }
+
+resource "aws_ssm_parameter" "image_tag_placeholders" {
+  for_each = toset(["backend", "frontend", "pipeline-mapping", "pipeline-sign-off"])
+
+  type  = "String"
+  name  = "/${local.name}/env_secrets/${each.key}/IMAGE_TAG"
+  value = "latest"
+
+  lifecycle {
+    ignore_changes = [
+      value,
+      tags,
+    ]
+  }
+}
