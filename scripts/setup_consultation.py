@@ -159,9 +159,19 @@ def get_excel_column_name(n: int) -> str:
 
 
 def excel_column_to_number(col: str) -> int:
-    """Convert Excel column name to number for sorting (A=1, Z=26, AA=27)."""
+    """Convert Excel column name to number for sorting (A=1, Z=26, AA=27).
+
+    Raises TypeError if `col` is not a str, and ValueError if it is empty
+    or contains any character outside A-Z / a-z.
+    """
+    if not isinstance(col, str):
+        raise TypeError(f"col must be str, got {type(col).__name__}")
+    if not col:
+        raise ValueError(f"col must be a non-empty string, got {col!r}")
     result = 0
-    for c in col.strip().upper():
+    for c in col.upper():
+        if not ("A" <= c <= "Z"):
+            raise ValueError(f"invalid character {c!r} in column {col!r}")
         result = result * 26 + (ord(c) - ord("A") + 1)
     return result
 
@@ -387,12 +397,12 @@ def validate_data(
     if dupes:
         print("\n  ⚠ Columns referenced more than once across Q.U. sheets:")
         for col_id, refs in sorted(
-            dupes.items(), key=lambda x: excel_column_to_number(x[0])
+            dupes.items(), key=lambda x: excel_column_to_number(x[0].strip())
         ):
             ref_strs = [f"Q{q_num} ({sheet_key})" for sheet_key, q_num in refs]
             print(f"      Column {col_id}: {', '.join(ref_strs)}")
         issues.append(
-            f"Duplicate column references: {', '.join(sorted(dupes, key=excel_column_to_number))}"
+            f"Duplicate column references: {', '.join(sorted(dupes, key=lambda x: excel_column_to_number(x.strip())))}"
         )
 
     # ── Column existence check ────────────────────────────────────────
@@ -402,11 +412,11 @@ def validate_data(
         issues.append(msg)
 
     max_resp_col = (
-        max(original_headers, key=excel_column_to_number) if original_headers else "?"
+        max(original_headers, key=lambda x: excel_column_to_number(x.strip())) if original_headers else "?"
     )
     missing_cols = sorted(
         [c for c in all_qu_columns if c not in original_headers],
-        key=excel_column_to_number,
+        key=lambda x: excel_column_to_number(x.strip()),
     )
     if missing_cols:
         print(
@@ -558,7 +568,7 @@ def validate_data(
     referenced_cols = all_qu_columns | demographic_set
     unreferenced = [
         col
-        for col in sorted(all_resp_cols - referenced_cols, key=excel_column_to_number)
+        for col in sorted(all_resp_cols - referenced_cols, key= lambda x: excel_column_to_number(x.strip()))
         if "response id" not in str(original_headers.get(col, "")).lower()
     ]
     if unreferenced:
@@ -646,7 +656,7 @@ def load_and_number_question_sheets(
                 )
 
         # Sort by Excel column order and assign sequential numbers
-        all_entries.sort(key=lambda x: excel_column_to_number(x[0]))
+        all_entries.sort(key=lambda x: excel_column_to_number(x[0].strip()))
         number_map: dict[tuple[str, int], int] = {}
         for i, (_, key, idx) in enumerate(all_entries, 1):
             number_map[(key, idx)] = i

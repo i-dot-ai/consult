@@ -27,6 +27,7 @@ from setup_consultation import (
     load_responses,
     upload_inputs_to_s3,
     validate_data,
+    excel_column_to_number
 )
 
 FIXTURES = Path(__file__).parent / "fixtures" / "setup_consultation"
@@ -945,3 +946,65 @@ def test_upload_empty_dir_is_noop(tmp_path, capsys):
     """Empty dir prints a notice and returns without constructing a client."""
     upload_inputs_to_s3(tmp_path, "my-bucket", "prefix/")
     assert "No files found" in capsys.readouterr().out
+
+
+# -- test columns to numbers ---
+
+
+
+@pytest.mark.parametrize(
+    "col,expected",
+    [
+        # single letters
+        ("A", 1),
+        ("B", 2),
+        ("M", 13),
+        ("Y", 25),
+        ("Z", 26),
+        # two letters
+        ("AA", 27),
+        ("AB", 28),
+        ("AZ", 52),
+        ("BA", 53),
+        ("ZZ", 702),
+        # three letters
+        ("AAA", 703),
+        ("ABA", 729),
+        ("ZZZ", 18278),
+        # four letters
+        ("AAAA", 18279),
+        ("ZZZZ", 475254),
+        # Excel max real-world column
+        ("XFD", 16384),
+        # lowercase + mixed case
+        ("a", 1),
+        ("z", 26),
+        ("aa", 27),
+        ("xfd", 16384),
+        ("Aa", 27),
+        ("aZ", 52),
+        ("AbC", 731),
+    ],
+)
+def test_valid_columns(col, expected):
+    assert excel_column_to_number(col) == expected
+
+
+def test_sort_key_orders_excel_columns():
+    cols = ["AA", "B", "Z", "A", "AB", "BA"]
+    assert sorted(cols, key=excel_column_to_number) == ["A", "B", "Z", "AA", "AB", "BA"]
+
+
+@pytest.mark.parametrize(
+    "col",
+    ["", " ", " A ", "A ", " A", "A1", "1A", "!", "A-B", "A.B", "\t", "\n"],
+)
+def test_invalid_strings_raise_value_error(col):
+    with pytest.raises(ValueError):
+        excel_column_to_number(col)
+
+
+@pytest.mark.parametrize("col", [None, 123, 1.5, [], ["A"], ("A",), {"A": 1}, True])
+def test_non_string_raises_type_error(col):
+    with pytest.raises(TypeError):
+        excel_column_to_number(col)
