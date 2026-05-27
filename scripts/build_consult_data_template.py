@@ -142,7 +142,7 @@ SHEET_OPEN = "Open Questions"
 SHEET_CLOSED = "Multiple Choice Questions"
 SHEET_HYBRID = "Hybrid Questions"
 SHEET_ISSUES = "Issues"
-HELPER_SHEET = "_helpers"  # hidden; users shouldn't see or edit it
+SHEET_HELPER = "_helpers"  # hidden; users shouldn't see or edit it
 
 # --- Hidden helper sheet layout --------------------------------------------
 # Per-Responses-column uniqueness ratio + count live on their own sheet so
@@ -658,11 +658,11 @@ def _uniqueness_violation(target: str, *, op: str) -> str:
     """
     col_num = _letter_to_col_num(target)
     ratio = (
-        f"IFERROR(INDEX({HELPER_SHEET}!${HELPER_RATIO_ROW}:${HELPER_RATIO_ROW},"
+        f"IFERROR(INDEX({SHEET_HELPER}!${HELPER_RATIO_ROW}:${HELPER_RATIO_ROW},"
         f"1,{col_num}),0)"
     )
     count = (
-        f"IFERROR(INDEX({HELPER_SHEET}!${HELPER_COUNT_ROW}:${HELPER_COUNT_ROW},"
+        f"IFERROR(INDEX({SHEET_HELPER}!${HELPER_COUNT_ROW}:${HELPER_COUNT_ROW},"
         f"1,{col_num}),0)"
     )
     return f'AND({target}<>"",{count}>0,{ratio}{op}{UNIQUENESS_THRESHOLD})'
@@ -693,7 +693,7 @@ def _violation_label_similarity(
     """
     sim_col = _sim_block_col(sheet, col, "sim")
     helper_row = HELPER_SIM_START_ROW + (r - 2)
-    helper_cell = f"{HELPER_SHEET}!${sim_col}${helper_row}"
+    helper_cell = f"{SHEET_HELPER}!${sim_col}${helper_row}"
     return f"AND(ISNUMBER({helper_cell}),{helper_cell}<{LABEL_SIMILARITY_THRESHOLD})"
 
 
@@ -1981,7 +1981,7 @@ def main() -> None:
     ws_resp = wb.add_worksheet(SHEET_RESPONSES)
     meta_sheets = {m.name: wb.add_worksheet(m.name) for m in METADATA_SHEETS}
     ws_issues = wb.add_worksheet(SHEET_ISSUES)
-    ws_helpers = wb.add_worksheet(HELPER_SHEET)
+    ws_helpers = wb.add_worksheet(SHEET_HELPER)
 
     write_dummy_responses(ws_resp, fmts)
     build_helpers_sheet(ws_helpers)
