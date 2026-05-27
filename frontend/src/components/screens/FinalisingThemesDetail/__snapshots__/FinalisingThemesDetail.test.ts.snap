@@ -711,7 +711,7 @@ exports[`EditUser > should match snapshot initially 1`] = `
             <div
               class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
             >
-               selected
+              0 selected
               <!---->
             </div>
             <!---->

@@ -1,10 +1,6 @@
-import { buildQuery, type FetchError } from "../../queryClient";
-import type { SelectedTheme, SelectedThemesDeleteResponse } from "../../types";
-import type { SaveThemeError } from "../../../components/finalising-themes/ErrorModal/types";
+import type { SelectedTheme } from "../../types";
 import type {
-  errorData,
   SelectedThemeMutationError,
-  SelectedThemesGetResponse,
   UpdateSelectedThemeBody,
 } from "./types";
 import { selectedThemeQueryParts, selectedThemesQueryParts } from "./parts";
@@ -50,6 +46,26 @@ export const updateSelectedTheme = async (
   return response.json();
 };
 
+export const createSelectedTheme = async (
+  consultationId: string,
+  questionId: string,
+  name: string,
+  description: string,
+): Promise<void> => {
+  const response = await fetch(
+    selectedThemesQueryParts.url(consultationId, questionId),
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, description }),
+    },
+  );
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw { status: response.status, ...errData } as SelectedThemeMutationError;
+  }
+};
+
 export const deleteSelectedTheme = async (
   consultationId: string,
   questionId: string,
@@ -70,104 +86,4 @@ export const deleteSelectedTheme = async (
     const errData = await response.json().catch(() => ({}));
     throw { status: response.status, ...errData } as SelectedThemeMutationError;
   }
-};
-
-export function buildSelectedThemesGetQuery(
-  consultationId: string,
-  questionId: string,
-) {
-  return buildQuery<SelectedThemesGetResponse>(
-    selectedThemesQueryParts.url(consultationId, questionId),
-    {
-      key: selectedThemesQueryParts.key(consultationId, questionId),
-    },
-  );
-}
-
-export function buildSelectedThemeCreateQuery(
-  consultationId: string,
-  questionId: string,
-  onSuccess: () => Promise<void>,
-) {
-  return buildQuery<SelectedThemesGetResponse>(
-    selectedThemesQueryParts.url(consultationId, questionId),
-    {
-      key: selectedThemesQueryParts.key(consultationId, questionId),
-      method: "POST",
-      onSuccess: onSuccess,
-    },
-  );
-}
-
-export function buildSelectedThemeDeleteQuery(
-  consultationId: string,
-  questionId: string,
-  onSuccess: () => Promise<void>,
-  onError: (error: FetchError<errorData>) => Promise<void>,
-) {
-  return buildQuery<SelectedThemesDeleteResponse>(
-    selectedThemeQueryParts.url(consultationId, questionId, ":themeId"),
-    {
-      key: selectedThemesQueryParts.key(consultationId, questionId),
-      method: "DELETE",
-      onSuccess: onSuccess,
-      onError: onError,
-      getVariables: (themeId, version) => {
-        return {
-          headers: {
-            "Content-Type": "application/json",
-            "If-Match": version,
-          },
-          params: {
-            themeId: themeId,
-          },
-        };
-      },
-    },
-  );
-}
-
-export const getSelectedThemesDeleteQuery = (
-  consultationId: string,
-  questionId: string,
-  resetQueries: () => void,
-  showError: (args: SaveThemeError) => void,
-) => {
-  const query = buildQuery<SelectedThemesDeleteResponse>(
-    selectedThemeQueryParts.url(consultationId, questionId, ":themeId"),
-    {
-      method: "DELETE",
-      onSuccess: async () => {
-        resetQueries();
-      },
-      onError: async (error: FetchError<errorData>) => {
-        if (error.status === 404) {
-          // SelectedTheme has already been deleted, just refetch
-          resetQueries();
-        } else if (error.status === 412) {
-          showError({
-            type: "remove-conflict",
-            lastModifiedBy: error.data?.last_modified_by?.email || "",
-            latestVersion: error.data?.latest_version || "",
-          });
-        } else {
-          showError({ type: "unexpected" });
-          console.error(error);
-        }
-      },
-      getVariables: (themeId, version) => {
-        return {
-          headers: {
-            "Content-Type": "application/json",
-            "If-Match": version,
-          },
-          params: {
-            themeId: themeId,
-          },
-        };
-      },
-    },
-  );
-
-  return query;
 };
