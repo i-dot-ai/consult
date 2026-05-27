@@ -72,6 +72,44 @@ export async function deleteFixtureData(fixtureData: Fixture) {
 }
 
 /**
+ * Tears down user by email
+ */
+export async function deleteUser(email: string) {
+  const context = await apirequest.newContext();
+  const authData = await getToken(context);
+
+  // Retrieve user ID by email
+  const response = await context.fetch(`/api/users/?email=${email}`, {
+    method: "GET",
+    headers: {
+      Cookie: `sessionId=${authData.sessionId}; accessToken=${authData.accessToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok())
+    throw new Error(`Failed to retrieve user ID: ${response.status}`)
+
+  const data = await response.json();
+  if (!data?.results?.length || !data.results[0].id)
+    throw new Error(`No user found with email: ${email}`);
+
+  const id = data.results[0].id;
+
+  const fixture_response = await context.fetch(`/api/users/${id}/`, {
+    method: "DELETE",
+    headers: {
+      Cookie: `sessionId=${authData.sessionId}; accessToken=${authData.accessToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!fixture_response.ok())
+    throw new Error(`User deletion failed: ${fixture_response.status}
+    ${await fixture_response.text()}`);
+}
+
+/**
  * Finds the first consultation link that points to an actual consultation detail page
  * (not the consultations list page itself)
  */

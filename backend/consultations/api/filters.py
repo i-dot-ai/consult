@@ -1,5 +1,5 @@
 from django.db.models import Count
-from django_filters import UUIDFilter
+from django_filters import CharFilter, UUIDFilter
 from django_filters.rest_framework import BaseInFilter, BooleanFilter, FilterSet
 from pgvector.django import CosineDistance
 from rest_framework import serializers
@@ -75,6 +75,7 @@ def get_filtered_responses(query_params, consultation_id, question_id=None):
 
 
 class UserFilter(FilterSet):
+    email = CharFilter(field_name="email", lookup_expr="exact")
     is_in = BooleanFilter(method="filter_by_consultation")
     consultation_id = UUIDFilter(method="filter_by_consultation")
 

@@ -24,6 +24,12 @@ export default defineConfig({
       // svelte/elements is a types-only export, exclude from dependency scanning
       exclude: ["svelte/elements"],
     },
+    server: {
+      hmr: {
+        host: "0.0.0.0",
+        clientPort: 3000,
+      },
+    },
   },
 
   image: {
