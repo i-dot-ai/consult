@@ -2,6 +2,10 @@
 
 > **For AI coding assistants**: This document provides essential context about the Consult repository's architecture, intent, and organization.
 
+## Pull Requests
+
+Always use the PR template at `.github/PULL_REQUEST_TEMPLATE.md` when writing PR descriptions.
+
 ---
 
 ## Project Overview

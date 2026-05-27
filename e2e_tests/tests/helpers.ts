@@ -14,11 +14,28 @@ async function getToken(context: APIRequestContext) {
   });
 
   if (!token_response.ok())
-    throw new Error(`Authentication failed: ${token_response.status}
+    throw new Error(`Authentication failed: ${token_response.status()}
     ${await token_response.text()}`);
 
   const data = await token_response.json();
   return { sessionId: data.sessionId, accessToken: data.access };
+}
+
+async function fetchApi(
+  context: APIRequestContext,
+  authData: { sessionId: string; accessToken: string },
+  url: string,
+  method: string,
+  data?: unknown,
+) {
+  return context.fetch(url, {
+    method,
+    headers: {
+      Cookie: `sessionId=${authData.sessionId}; accessToken=${authData.accessToken}`,
+      "Content-Type": "application/json",
+    },
+    ...(data !== undefined ? { data: JSON.stringify(data) } : {}),
+  });
 }
 
 /**
@@ -29,20 +46,16 @@ export async function createFixtureData(
   fixtureData: Fixture,
 ) {
   const authData = await getToken(context);
-  const fixture_response = await context.fetch(
+  const fixture_response = await fetchApi(
+    context,
+    authData,
     "/api/consultations/create-test-data/",
-    {
-      method: "POST",
-      headers: {
-        Cookie: `sessionId=${authData.sessionId}; accessToken=${authData.accessToken}`,
-        "Content-Type": "application/json",
-      },
-      data: JSON.stringify({ fixtures: fixtureData }),
-    },
+    "POST",
+    { fixtures: fixtureData },
   );
 
   if (!fixture_response.ok())
-    throw new Error(`Fixture setup failed: ${fixture_response.status}
+    throw new Error(`Fixture setup failed: ${fixture_response.status()}
     ${await fixture_response.text()}`);
 
   return await fixture_response.json();
@@ -54,21 +67,48 @@ export async function createFixtureData(
 export async function deleteFixtureData(fixtureData: Fixture) {
   const context = await apirequest.newContext();
   const authData = await getToken(context);
-  const fixture_response = await context.fetch(
+  const fixture_response = await fetchApi(
+    context,
+    authData,
     "/api/consultations/delete-test-data/",
-    {
-      method: "POST",
-      headers: {
-        Cookie: `sessionId=${authData.sessionId}; accessToken=${authData.accessToken}`,
-        "Content-Type": "application/json",
-      },
-      data: JSON.stringify({ fixtures: fixtureData }),
-    },
+    "POST",
+    { fixtures: fixtureData },
   );
 
   if (!fixture_response.ok())
-    throw new Error(`Fixture deletion failed: ${fixture_response.status}
+    throw new Error(`Fixture deletion failed: ${fixture_response.status()}
     ${await fixture_response.text()}`);
+}
+
+/**
+ * Adds a new user by email and optionally adds them to a consultation, returns the new user's ID
+ */
+export async function addUser(email: string, consultationId?: string) {
+  const context = await apirequest.newContext();
+  const authData = await getToken(context);
+  const response = await fetchApi(context, authData, "/api/users/", "POST", { email });
+
+  if (!response.ok())
+    throw new Error(`User creation failed: ${response.status()}`)
+
+  const data = await response.json();
+  if (!data || !data.id)
+    throw new Error(`User creation response missing ID: ${JSON.stringify(data)}`);
+
+  if (consultationId) {
+    const add_response = await fetchApi(
+      context,
+      authData,
+      `/api/consultations/${consultationId}/add-users/`,
+      "POST",
+      { emails: [email] },
+    );
+
+    if (!add_response.ok())
+      throw new Error(`Adding user to consultation failed: ${add_response.status()}`);
+  }
+
+  return data.id;
 }
 
 /**
@@ -77,35 +117,22 @@ export async function deleteFixtureData(fixtureData: Fixture) {
 export async function deleteUser(email: string) {
   const context = await apirequest.newContext();
   const authData = await getToken(context);
-
-  // Retrieve user ID by email
-  const response = await context.fetch(`/api/users/?email=${email}`, {
-    method: "GET",
-    headers: {
-      Cookie: `sessionId=${authData.sessionId}; accessToken=${authData.accessToken}`,
-      "Content-Type": "application/json",
-    },
-  });
+  const response = await fetchApi(context, authData, `/api/users/?email=${email}`, "GET");
 
   if (!response.ok())
-    throw new Error(`Failed to retrieve user ID: ${response.status}`)
+    throw new Error(`Failed to retrieve user ID: ${response.status()}`)
 
   const data = await response.json();
+
   if (!data?.results?.length || !data.results[0].id)
-    throw new Error(`No user found with email: ${email}`);
+    return; // No user found, nothing to delete
 
   const id = data.results[0].id;
 
-  const fixture_response = await context.fetch(`/api/users/${id}/`, {
-    method: "DELETE",
-    headers: {
-      Cookie: `sessionId=${authData.sessionId}; accessToken=${authData.accessToken}`,
-      "Content-Type": "application/json",
-    },
-  });
+  const fixture_response = await fetchApi(context, authData, `/api/users/${id}/`, "DELETE");
 
   if (!fixture_response.ok())
-    throw new Error(`User deletion failed: ${fixture_response.status}
+    throw new Error(`User deletion failed: ${fixture_response.status()}
     ${await fixture_response.text()}`);
 }
 
