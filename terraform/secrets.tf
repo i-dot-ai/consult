@@ -123,6 +123,12 @@ resource "aws_ssm_parameter" "env_secrets" {
   }
 }
 
+import {
+  for_each = toset(["backend", "frontend", "pipeline-mapping", "pipeline-sign-off"])
+  to       = aws_ssm_parameter.image_tag_placeholders[each.key]
+  id       = "/${local.name}/env_secrets/${each.key}/IMAGE_TAG"
+}
+
 resource "aws_ssm_parameter" "image_tag_placeholders" {
   for_each = toset(["backend", "frontend", "pipeline-mapping", "pipeline-sign-off"])
 
