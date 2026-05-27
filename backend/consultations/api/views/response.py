@@ -97,12 +97,16 @@ class ResponseViewSet(ModelViewSet):
                 models.Response.objects.filter(read_by=self.request.user, pk=OuterRef("pk"))
             ),
             annotation_is_edited=Exists(
-                models.ResponseAnnotation.history.filter(id=OuterRef("annotation__id")).values(
-                    "id"
-                )[1:]
+                models.ResponseAnnotation.history.filter(
+                    id=OuterRef("annotation__id"),
+                    history_type="~",  # django-simple-history: '+' = created, '~' = updated, '-' = deleted see:https://django-simple-history.readthedocs.io/en/latest/quick_start.html#what-is-django-simple-history-doing-behind-the-scenes
+                )
             ),
+            # Safe to query live table: ResponseSerializer.update() always calls
+            # annotation.save() after any theme change, so annotation_is_edited will be
+            # True even if all human-assigned themes were subsequently removed.
             annotation_has_human_assigned_themes=Exists(
-                models.ResponseAnnotationTheme.history.filter(
+                models.ResponseAnnotationTheme.objects.filter(
                     response_annotation_id=OuterRef("annotation__id"),
                     assigned_by__isnull=False,
                 )
