@@ -55,10 +55,16 @@ see `label_similarity_debugging.md` for the full evidence.
 Functions that ARE safe to use here:
 - All pre-2020 Excel functions.
 - Four dynamic-array additions: `SEQUENCE`, `FILTER`, `UNIQUE`, `VSTACK`.
-  When using any of these, write the cell with
-  `worksheet.write_dynamic_array_formula` (not `write_formula`) so
-  xlsxwriter emits the array tag and the workbook's metadata part —
-  otherwise Excel flags the file as malformed.
+  When the cell actually SPILLS (i.e. the dynamic array is the formula's
+  final output), write it with `worksheet.write_dynamic_array_formula`
+  (not `write_formula`) so xlsxwriter emits the cm="1" array tag and the
+  workbook's metadata part — otherwise Excel flags the file as malformed.
+  When the dynamic-array result is collapsed to a scalar by an outer
+  function — e.g. `ROWS(UNIQUE(...))`, `SUMPRODUCT(--ISNUMBER(SEARCH(MID(
+  ...,SEQUENCE(n),k),...)))` — plain `write_formula` is fine; only the
+  spilling case needs the array tag. (See `build_helpers_sheet`'s ratio
+  formula and the inter-only branch of `build_label_similarity_helpers`
+  for the two patterns used here.)
 
 Default to scalar formulas. Reach for the four supported dynamic-array
 functions only when there's no clean scalar alternative.
@@ -69,6 +75,7 @@ Run:
 
 import random
 from pathlib import Path
+from typing import NamedTuple
 
 import xlsxwriter
 
@@ -85,43 +92,65 @@ from build_consult_data_dummy_content import (
     DUMMY_EXPLANATIONS,
 )
 
-VERSION = "v004"
+VERSION = "v005"
 OUTPUT_PATH = (
     Path(__file__).resolve().parent / f"consult_data_template_{VERSION}.xlsx"
 )
 
-DATA_ROWS = 100000  # rows pre-wired with checks on each metadata sheet
-# Upper bound on Responses rows the live audit covers (uniqueness ratio,
-# missing-header / unreferenced-column checks, header-empty CF rule).
-# Real consultations regularly have several thousand responses, so the audit
-# needs to cover enough rows for the uniqueness / free-text heuristics to
-# stabilise. The uniqueness formula is O(n²) per populated column — 8k keeps
-# recompute snappy on modern Excel while still well past the point where the
-# unique-vs-free-text signal stabilises.
+# --- Audit bounds -----------------------------------------------------------
+# Four independent "how far do we look" axes. Each governs a different layer
+# of the audit; bumping one doesn't imply bumping the others.
+#
+#   DATA_ROWS              — per-metadata-sheet:  # of rows pre-wired with
+#                            per-cell data validation + conditional formats.
+#                            Bounded purely by edit-time UX; cheap to inflate.
+#   AUDIT_WINDOW           — per-metadata-sheet:  # of source rows the Issues
+#                            sheet evaluates rules against. One Issues row
+#                            per (sheet, source row, rule), so the audit grid
+#                            grows linearly. Anything past this is silently
+#                            unchecked — bump if real consultations exceed it.
+#   QU_RANGE_LAST_ROW      — per-metadata-sheet:  upper bound on the ranges
+#                            used by cross-sheet COUNTIF lookups (duplicate
+#                            column / duplicate question_number checks).
+#                            COUNTIF cost is linear in range size.
+#   RESPONSE_DATA_LAST_ROW — Responses sheet:    upper bound on rows covered
+#                            by uniqueness ratio, missing-header, and
+#                            unreferenced-column checks. The uniqueness
+#                            formula is O(n²) per populated column, so 8k
+#                            keeps recompute snappy while staying well past
+#                            the point where the unique-vs-free-text signal
+#                            stabilises.
+#   RESPONSE_LAST_LETTER   — Responses sheet:    last column the audit covers
+#                            (A..ZZ → 702 columns). One header-empty and one
+#                            unreferenced-column rule row is emitted per
+#                            letter, so the audit grid widens linearly.
+DATA_ROWS = 100000
+AUDIT_WINDOW = 50
+QU_RANGE_LAST_ROW = 1001
 RESPONSE_DATA_LAST_ROW = 8000
-QU_RANGE_LAST_ROW = (
-    1001  # upper bound for cross-metadata-sheet COUNTIF ranges (duplicate checks)
-)
+RESPONSE_LAST_LETTER = "ZZ"
+
 UNIQUENESS_THRESHOLD = 0.2  # mirrors setup_consultation.UNIQUENESS_RATIO_THRESHOLD
 
+# --- Sheet names ------------------------------------------------------------
+# Single source of truth — sheet renames are one-line.
+SHEET_GUIDE = "Guide"
+SHEET_ACTIVE = "Active issues"
+SHEET_RESPONSES = "Responses"
+SHEET_DEMOGRAPHICS = "Demographics"
+SHEET_OPEN = "Open Questions"
+SHEET_CLOSED = "Multiple Choice Questions"
+SHEET_HYBRID = "Hybrid Questions"
+SHEET_ISSUES = "Issues"
+HELPER_SHEET = "_helpers"  # hidden; users shouldn't see or edit it
 
-def _column_letters_up_to(last: str) -> list[str]:
-    """All Excel column letters from A through `last`, inclusive (1-2 letters)."""
-    out = [chr(ord("A") + i) for i in range(26)]
-    if len(last) == 1:
-        return out[: ord(last) - ord("A") + 1]
-    out += [a + b for a in out[:26] for b in out[:26]]  # AA..ZZ
-    end_idx = 26 + (ord(last[0]) - ord("A")) * 26 + (ord(last[1]) - ord("A")) + 1
-    return out[:end_idx]
-
-
-RESPONSE_LETTERS = _column_letters_up_to("ZZ")  # A..ZZ audited as response cols
-RESPONSE_LAST_LETTER = "ZZ"  # last column the audit covers
-# Hidden helper sheet holding per-column uniqueness ratios and counts.
-# Lives on its own sheet so a user can't accidentally overwrite the formulas
-# while editing Responses. Keeps the per-row uniqueness checks O(1) lookups
-# instead of O(n²) volatile re-computes.
-HELPER_SHEET = "_helpers"
+# --- Hidden helper sheet layout --------------------------------------------
+# Per-Responses-column uniqueness ratio + count live on their own sheet so
+# users can't accidentally overwrite them. Per-row uniqueness checks become
+# O(1) INDEX lookups instead of O(n²) volatile recomputes.
+#
+# Row constants below are Excel 1-indexed (matching how they appear in
+# formulas). xlsxwriter calls subtract 1 at the write site.
 HELPER_RATIO_ROW = 1  # Excel row 1: ratio of unique non-empty values per column
 HELPER_COUNT_ROW = 2  # Excel row 2: count of non-empty values per column
 
@@ -132,11 +161,11 @@ HELPER_COUNT_ROW = 2  # Excel row 2: count of non-empty values per column
 # Per-row layout within a block:
 #   L      | column letter from the metadata sheet
 #   H      | Responses header at that column
-#   a      | LOWER(TRIM(LEFT(Q,150))) of the metadata-sheet question_text
-#   b      | LOWER(TRIM(LEFT(H,150))) of the Responses header
+#   a      | LOWER(TRIM(LEFT(Q,LABEL_MAX_LEN))) of the metadata-sheet question_text
+#   b      | LOWER(TRIM(LEFT(H,LABEL_MAX_LEN))) of the Responses header
 #   na     | LEN(a) - 3   (number of 4-grams in a)
 #   nb     | LEN(b) - 3   (number of 4-grams in b)
-#   inter  | size of trigram intersection (computed inline)
+#   inter  | size of 4-gram intersection (computed inline)
 #   sim    | Jaccard similarity = inter / (na + nb - inter), or "" if degenerate
 #
 # Blocks are laid out left-to-right starting at column A of the helper sheet.
@@ -147,10 +176,10 @@ HELPER_SIM_START_ROW = 5  # Excel row where per-row data begins (row 4 holds hea
 LABEL_SIM_FIELDS = ["L", "H", "a", "b", "na", "nb", "inter", "sim"]
 LABEL_SIM_BLOCK_WIDTH = len(LABEL_SIM_FIELDS)
 LABEL_SIM_BLOCKS = [
-    ("Open Questions", "A"),
-    ("Multiple Choice Questions", "A"),
-    ("Hybrid Questions", "A"),
-    ("Hybrid Questions", "D"),
+    (SHEET_OPEN, "A"),
+    (SHEET_CLOSED, "A"),
+    (SHEET_HYBRID, "A"),
+    (SHEET_HYBRID, "D"),
 ]
 
 
@@ -166,6 +195,18 @@ def _idx_to_letter(idx: int) -> str:
         n -= 1
 
 
+def _letter_to_idx(letter: str) -> int:
+    """A -> 0, Z -> 25, AA -> 26, ..."""
+    n = 0
+    for ch in letter:
+        n = n * 26 + (ord(ch) - ord("A") + 1)
+    return n - 1
+
+
+# A..ZZ — the column range the audit covers on the Responses sheet.
+RESPONSE_LETTERS = [_idx_to_letter(i) for i in range(_letter_to_idx(RESPONSE_LAST_LETTER) + 1)]
+
+
 def _sim_block_col(sheet: str, letter_field: str, field: str) -> str:
     """Excel column letter (e.g. 'C', 'AA') for a field within the block for (sheet, letter_field)."""
     block_idx = LABEL_SIM_BLOCKS.index((sheet, letter_field))
@@ -178,6 +219,9 @@ ERROR_BG = "#F4B6B6"  # error red
 HEADER_BG = "#D9E1F2"
 
 SEVERITY_TO_CHECK = "To check"  # heuristic flag — may be a real problem, may be fine
+# Severity per rule kind. Keys are vkinds (used by per-metadata-row rules and
+# their VIOLATION_FNS entries), plus workbook-level rule kinds whose names
+# don't map to a violation function but share the same severity vocabulary.
 SEVERITY_BY_VKIND = {
     "required": "Error",
     "column_id": "Error",
@@ -188,10 +232,11 @@ SEVERITY_BY_VKIND = {
     "closed_uniqueness": SEVERITY_TO_CHECK,
     "open_uniqueness": SEVERITY_TO_CHECK,
     "label_similarity": SEVERITY_TO_CHECK,
+    # Workbook-level rules (no entry in VIOLATION_FNS — emitted directly).
+    "workbook_count": "Error",
+    "missing_header": "Error",
+    "unreferenced": SEVERITY_TO_CHECK,
 }
-SEVERITY_WORKBOOK_COUNT = "Error"
-SEVERITY_MISSING_HEADER = "Error"
-SEVERITY_UNREFERENCED = SEVERITY_TO_CHECK
 
 
 def make_formats(wb) -> dict:
@@ -205,7 +250,6 @@ def make_formats(wb) -> dict:
         ),
         "italic": wb.add_format({"italic": True}),
         "issue_fill": wb.add_format({"bg_color": ISSUE_BG}),
-        "warning_fill": wb.add_format({"bg_color": ISSUE_BG}),
         "error_fill": wb.add_format({"bg_color": ERROR_BG}),
         "error_count": wb.add_format(
             {"bold": True, "font_size": 14, "font_color": "#C00000"}
@@ -227,7 +271,7 @@ def write_headers(ws, headers: list[str], widths: list[int], header_fmt) -> None
 def add_integer_check(ws, col_letter: str, fmts: dict) -> None:
     """Format a column as integer; reject and pink-fill non-whole values."""
     last = DATA_ROWS + 1
-    col_idx = _col_letter_to_idx(col_letter)
+    col_idx = _letter_to_idx(col_letter)
     # Apply integer number format to the data range via set_column.
     # Header (row 0) is written separately with header_fmt which overrides.
     ws.set_column(col_idx, col_idx, None, fmts["integer"])
@@ -256,13 +300,6 @@ def add_integer_check(ws, col_letter: str, fmts: dict) -> None:
             "format": fmts["issue_fill"],
         },
     )
-
-
-def _col_letter_to_idx(letter: str) -> int:
-    n = 0
-    for ch in letter:
-        n = n * 26 + (ord(ch) - ord("A") + 1)
-    return n - 1
 
 
 def _column_id_valid(cell_ref: str) -> str:
@@ -371,7 +408,7 @@ def _letter_to_col_num(target: str) -> str:
 def _missing_response_formula(target: str) -> str:
     """TRUE when `target` is non-blank and Responses!<target>1 is empty/out of range."""
     col_num = _letter_to_col_num(target)
-    return f'AND({target}<>"",IFERROR(INDEX(Responses!$A$1:$XFD$1,1,{col_num}),"")="")'
+    return f'AND({target}<>"",IFERROR(INDEX({SHEET_RESPONSES}!$A$1:$XFD$1,1,{col_num}),"")="")'
 
 
 def highlight_missing_response_column(ws, col_letter: str, fmts: dict) -> None:
@@ -431,7 +468,7 @@ def build_helpers_sheet(ws) -> None:
     Hidden so users can't overwrite it.
     """
     for col_idx, letter in enumerate(RESPONSE_LETTERS):
-        src = f"Responses!{letter}2:{letter}{RESPONSE_DATA_LAST_ROW}"
+        src = f"{SHEET_RESPONSES}!{letter}2:{letter}{RESPONSE_DATA_LAST_ROW}"
         ratio = f'=IFERROR(ROWS(UNIQUE(FILTER({src},{src}<>"")))/COUNTA({src}),0)'
         count = f"=COUNTA({src})"
         ws.write_formula(HELPER_RATIO_ROW - 1, col_idx, ratio)
@@ -467,7 +504,7 @@ def build_label_similarity_helpers(ws) -> None:
         for f in LABEL_SIM_FIELDS:
             ws.write(
                 HELPER_SIM_START_ROW - 2,
-                _col_idx(cols[f]),
+                _letter_to_idx(cols[f]),
                 f"{sheet[:6]} {letter_field} {f}",
             )
 
@@ -484,30 +521,30 @@ def build_label_similarity_helpers(ws) -> None:
             nb_cell = f"${cols['nb']}${helper_row}"
             inter_cell = f"${cols['inter']}${helper_row}"
 
-            ws.write_formula(helper_row - 1, _col_idx(cols["L"]), f"={qu_letter}")
+            ws.write_formula(helper_row - 1, _letter_to_idx(cols["L"]), f"={qu_letter}")
             ws.write_formula(
                 helper_row - 1,
-                _col_idx(cols["H"]),
-                f'=IFERROR(INDEX(Responses!$1:$1,1,{_letter_to_col_num(L_cell)}),"")',
+                _letter_to_idx(cols["H"]),
+                f'=IFERROR(INDEX({SHEET_RESPONSES}!$1:$1,1,{_letter_to_col_num(L_cell)}),"")',
             )
             ws.write_formula(
                 helper_row - 1,
-                _col_idx(cols["a"]),
+                _letter_to_idx(cols["a"]),
                 f"=LOWER(TRIM(LEFT({qu_qtext},{LABEL_MAX_LEN})))",
             )
             ws.write_formula(
                 helper_row - 1,
-                _col_idx(cols["b"]),
+                _letter_to_idx(cols["b"]),
                 f"=LOWER(TRIM(LEFT({H_cell},{LABEL_MAX_LEN})))",
             )
             ws.write_formula(
-                helper_row - 1, _col_idx(cols["na"]), f"=MAX(LEN({a_cell})-3,0)"
+                helper_row - 1, _letter_to_idx(cols["na"]), f"=MAX(LEN({a_cell})-3,0)"
             )
             ws.write_formula(
-                helper_row - 1, _col_idx(cols["nb"]), f"=MAX(LEN({b_cell})-3,0)"
+                helper_row - 1, _letter_to_idx(cols["nb"]), f"=MAX(LEN({b_cell})-3,0)"
             )
             inter_body = _inter_formula(a_cell, b_cell, na_cell)
-            inter_col = _col_idx(cols["inter"])
+            inter_col = _letter_to_idx(cols["inter"])
             # SEQUENCE inside `inter` is a dynamic-array function — needs the
             # cm="1" / metadata.xml markers that write_dynamic_array_formula
             # emits. Plain write_formula here ships an inconsistent file and
@@ -521,19 +558,11 @@ def build_label_similarity_helpers(ws) -> None:
             )
             ws.write_formula(
                 helper_row - 1,
-                _col_idx(cols["sim"]),
+                _letter_to_idx(cols["sim"]),
                 f'=IF(OR({L_cell}="",{a_cell}="",{b_cell}="",'
                 f'{na_cell}<=0,{nb_cell}<=0),"",'
                 f"{inter_cell}/({na_cell}+{nb_cell}-{inter_cell}))",
             )
-
-
-def _col_idx(letter: str) -> int:
-    """Excel column letter to 0-based index (A=0, Z=25, AA=26)."""
-    n = 0
-    for ch in letter:
-        n = n * 26 + (ord(ch) - ord("A") + 1)
-    return n - 1
 
 
 def write_data_rows(ws, rows: list[tuple]) -> None:
@@ -544,8 +573,6 @@ def write_data_rows(ws, rows: list[tuple]) -> None:
 
 
 # --- Issues sheet (live audit log) ---
-
-AUDIT_WINDOW = 50  # source rows audited per metadata sheet
 
 
 def _qu_cell(sheet: str, col: str, r: int) -> str:
@@ -576,12 +603,6 @@ def _violation_integer(sheet: str, _all_cols: list[str], col: str, r: int) -> st
     )
 
 
-def _violation_missing_response(
-    sheet: str, _all_cols: list[str], col: str, r: int
-) -> str:
-    return _missing_response_formula(_qu_cell(sheet, col, r))
-
-
 def _qu_col_ranges() -> list[str]:
     """Ranges holding column-letter references across Open/Closed/Hybrid sheets.
 
@@ -590,10 +611,10 @@ def _qu_col_ranges() -> list[str]:
     """
     last = QU_RANGE_LAST_ROW
     return [
-        f"'Open Questions'!$A$2:$A${last}",
-        f"'Multiple Choice Questions'!$A$2:$A${last}",
-        f"'Hybrid Questions'!$A$2:$A${last}",
-        f"'Hybrid Questions'!$D$2:$D${last}",
+        f"'{SHEET_OPEN}'!$A$2:$A${last}",
+        f"'{SHEET_CLOSED}'!$A$2:$A${last}",
+        f"'{SHEET_HYBRID}'!$A$2:$A${last}",
+        f"'{SHEET_HYBRID}'!$D$2:$D${last}",
     ]
 
 
@@ -601,16 +622,16 @@ def _qu_qnum_ranges() -> list[str]:
     """Ranges holding question_number values across Open/Closed/Hybrid sheets."""
     last = QU_RANGE_LAST_ROW
     return [
-        f"'Open Questions'!$B$2:$B${last}",
-        f"'Multiple Choice Questions'!$B$2:$B${last}",
-        f"'Hybrid Questions'!$B$2:$B${last}",
+        f"'{SHEET_OPEN}'!$B$2:$B${last}",
+        f"'{SHEET_CLOSED}'!$B$2:$B${last}",
+        f"'{SHEET_HYBRID}'!$B$2:$B${last}",
     ]
 
 
 def _all_referenced_col_ranges() -> list[str]:
     """Open/Closed/Hybrid column ranges plus Demographics — used by 'unreferenced response' check."""
     last = QU_RANGE_LAST_ROW
-    return _qu_col_ranges() + [f"'Demographics'!$A$2:$A${last}"]
+    return _qu_col_ranges() + [f"'{SHEET_DEMOGRAPHICS}'!$A$2:$A${last}"]
 
 
 def _violation_duplicate_column(
@@ -662,7 +683,14 @@ def _violation_open_uniqueness(
 def _violation_label_similarity(
     sheet: str, _all_cols: list[str], col: str, r: int
 ) -> str:
-    """Read the precomputed similarity from _helpers; fire when below threshold."""
+    """Read the precomputed similarity from _helpers; fire when below threshold.
+
+    Note: `col` here doubles as the letter_field key into LABEL_SIM_BLOCKS —
+    i.e. the metadata-sheet column whose cell contains the Responses column
+    letter to compare against ("A" for Open/Closed, "A" or "D" for Hybrid).
+    Other VIOLATION_FNS entries treat `col` as "the column being validated";
+    label_similarity is the only rule that also uses it as a block selector.
+    """
     sim_col = _sim_block_col(sheet, col, "sim")
     helper_row = HELPER_SIM_START_ROW + (r - 2)
     helper_cell = f"{HELPER_SHEET}!${sim_col}${helper_row}"
@@ -673,7 +701,9 @@ VIOLATION_FNS = {
     "required": _violation_required,
     "column_id": _violation_column_id,
     "integer": _violation_integer,
-    "missing_response": _violation_missing_response,
+    "missing_response": lambda sheet, _cols, col, r: _missing_response_formula(
+        _qu_cell(sheet, col, r)
+    ),
     "duplicate_column": _violation_duplicate_column,
     "duplicate_qnum": _violation_duplicate_qnum,
     "closed_uniqueness": _violation_closed_uniqueness,
@@ -682,32 +712,265 @@ VIOLATION_FNS = {
 }
 
 
+class MetaCol(NamedTuple):
+    """One column on a metadata sheet (Demographics / Open / Closed / Hybrid)."""
+
+    id: str  # Excel column letter on the metadata sheet ("A", "B", ...)
+    header: str
+    width: int
+    comment: str
+    comment_size: tuple[int, int]  # (width, height) of the cell comment box
+    checks: tuple[str, ...] = ()  # subset of {"column_id", "integer", "missing_response"}
+
+
+class MetaSheet(NamedTuple):
+    """A metadata sheet's full build spec — headers, comments, checks, sample rows."""
+
+    name: str
+    columns: tuple[MetaCol, ...]
+    samples: tuple[tuple, ...]
+
+
+# Comment text for fields that are identical across Open / Closed / Hybrid.
+_QNUM_COMMENT = (
+    "A whole number ≥ 1. Must be unique across all Open, Closed and Hybrid "
+    "questions. Used to order the questions as they appear in the Consult application."
+)
+_QNUM_CHECKS = ("integer",)
+_LETTER_CHECKS = ("column_id", "missing_response")
+
+METADATA_SHEETS: tuple[MetaSheet, ...] = (
+    MetaSheet(
+        name=SHEET_DEMOGRAPHICS,
+        columns=(
+            MetaCol(
+                id="A",
+                header="Column letter (in Responses sheet)",
+                width=32,
+                comment=(
+                    "The Excel column letter (A, B, ..., AA, ...) of the column on the "
+                    "Responses sheet that holds this demographic. Look at the Responses tab "
+                    "and find the column whose header matches what you want to track."
+                ),
+                comment_size=(260, 120),
+                checks=_LETTER_CHECKS,
+            ),
+            MetaCol(
+                id="B",
+                header="Demographics label",
+                width=36,
+                comment=(
+                    "Short, human-readable name for this demographic — e.g. 'Region', "
+                    "'Age band', 'Organisation type'. Shown to analysts in the dashboard."
+                ),
+                comment_size=(260, 100),
+            ),
+        ),
+        samples=(
+            ("B", "Region"),
+            ("C", "Age band"),
+            ("D", "Organisation type"),
+        ),
+    ),
+    MetaSheet(
+        name=SHEET_OPEN,
+        columns=(
+            MetaCol(
+                id="A",
+                header="Column letter (in Responses sheet)",
+                width=32,
+                comment=(
+                    "The Excel column letter on the Responses sheet that holds the "
+                    "free-text responses for this question. E.g. if Responses!I1 contains "
+                    "the question header, type 'I' here."
+                ),
+                comment_size=(260, 120),
+                checks=_LETTER_CHECKS,
+            ),
+            MetaCol(
+                id="B",
+                header="Question number",
+                width=18,
+                comment=_QNUM_COMMENT,
+                comment_size=(260, 100),
+                checks=_QNUM_CHECKS,
+            ),
+            MetaCol(
+                id="C",
+                header="Question text (full wording shown to respondent)",
+                width=70,
+                comment=(
+                    "Paste the question as it appeared to respondents, "
+                    "including any context required . The text should make sense on its own — an "
+                    "analyst reading just this row should understand what was asked."
+                ),
+                comment_size=(280, 130),
+            ),
+        ),
+        samples=(("I", 3, "Do you have any other suggestions or comments?"),),
+    ),
+    MetaSheet(
+        name=SHEET_CLOSED,
+        columns=(
+            MetaCol(
+                id="A",
+                header="Column letter (in Responses sheet)",
+                width=32,
+                comment=(
+                    "The Excel column letter on the Responses sheet that holds the "
+                    "multiple-choice responses for this question."
+                ),
+                comment_size=(260, 100),
+                checks=_LETTER_CHECKS,
+            ),
+            MetaCol(
+                id="B",
+                header="Question number",
+                width=18,
+                comment=_QNUM_COMMENT,
+                comment_size=(260, 100),
+                checks=_QNUM_CHECKS,
+            ),
+            MetaCol(
+                id="C",
+                header="Question text (full wording shown to respondent)",
+                width=70,
+                comment=(
+                    "Paste the question wording as it appeared to respondents. Make sure "
+                    "it makes sense and has enough context to be understood on its own."
+                ),
+                comment_size=(260, 80),
+            ),
+        ),
+        samples=(("J", 4, "Would you recommend this approach to others?"),),
+    ),
+    MetaSheet(
+        name=SHEET_HYBRID,
+        columns=(
+            MetaCol(
+                id="A",
+                header="Free-text column letter (in Responses)",
+                width=32,
+                comment=(
+                    "Excel column letter on the Responses sheet for the FREE-TEXT part of "
+                    "this hybrid question (the 'why?' / 'please explain')."
+                ),
+                comment_size=(280, 110),
+                checks=_LETTER_CHECKS,
+            ),
+            MetaCol(
+                id="B",
+                header="Question number",
+                width=18,
+                comment=_QNUM_COMMENT,
+                comment_size=(260, 100),
+                checks=_QNUM_CHECKS,
+            ),
+            MetaCol(
+                id="C",
+                header="Question text (full wording shown to respondent)",
+                width=70,
+                comment=(
+                    "Paste the question as it appeared to respondents, and it should have "
+                    "enough context to make sense on its own (e.g. 'How satisfied are you "
+                    "with X?')."
+                ),
+                comment_size=(260, 80),
+            ),
+            MetaCol(
+                id="D",
+                header="Multiple-choice column letter (in Responses)",
+                width=32,
+                comment=(
+                    "Excel column letter on the Responses sheet for the MULTIPLE-CHOICE part "
+                    "of this hybrid question (the agree/disagree / yes-no answer)."
+                ),
+                comment_size=(280, 110),
+                checks=_LETTER_CHECKS,
+            ),
+        ),
+        samples=(
+            ("F", 1, "What is your level of support for the proposal, and why?", "E"),
+            ("H", 2, "How important is this issue, and please explain.", "G"),
+        ),
+    ),
+)
+
+
+def build_metadata_sheet(ws, meta: MetaSheet, fmts: dict) -> None:
+    """Wire up one metadata sheet: headers, comments, per-column checks, samples.
+
+    Check order (column_id → integer → missing_response) and per-column iteration
+    order match the original hand-rolled main() blocks so the workbook output
+    stays content-identical.
+    """
+    write_headers(
+        ws,
+        [c.header for c in meta.columns],
+        [c.width for c in meta.columns],
+        fmts["header"],
+    )
+    for c in meta.columns:
+        cw, ch = c.comment_size
+        ws.write_comment(f"{c.id}1", c.comment, {"width": cw, "height": ch})
+
+    add_required_field_checks(ws, [c.id for c in meta.columns], fmts)
+    for c in meta.columns:
+        if "column_id" in c.checks:
+            add_column_id_check(ws, c.id, fmts)
+    for c in meta.columns:
+        if "integer" in c.checks:
+            add_integer_check(ws, c.id, fmts)
+    for c in meta.columns:
+        if "missing_response" in c.checks:
+            highlight_missing_response_column(ws, c.id, fmts)
+
+    first_offlimit = _idx_to_letter(_letter_to_idx(meta.columns[-1].id) + 1)
+    add_offlimit_columns_check(ws, first_offlimit, meta.name, fmts)
+    write_data_rows(ws, list(meta.samples))
+
+
+class Rule(NamedTuple):
+    """One audit rule on a metadata sheet.
+
+    `col` is the column letter being checked. `vkind` keys into VIOLATION_FNS.
+    `message` may contain `{value}` — substituted with the offending cell's
+    value at audit time. `fix` is the static "how to fix" text shown to users.
+    """
+
+    col: str
+    label: str
+    vkind: str
+    message: str
+    fix: str
+
+
 QU_AUDIT_SCHEMA: dict[str, dict] = {
-    "Demographics": {
+    SHEET_DEMOGRAPHICS: {
         "cols": ["A", "B"],
         "rules": [
-            (
+            Rule(
                 "A",
                 "Missing column ID",
                 "required",
                 "This row is missing a column ID, so it is unclear which column on the Responses sheet should be used.",
                 "Type the Excel column letter (e.g. B or AC) from the Responses sheet that holds this demographic.",
             ),
-            (
+            Rule(
                 "B",
                 "Missing label",
                 "required",
                 "This row has no label, so this demographic will be unnamed in your results.",
                 "Type a short, human-readable name for this demographic, e.g. 'Region' or 'Age group'.",
             ),
-            (
+            Rule(
                 "A",
                 "Invalid column ID format",
                 "column_id",
                 "'{value}' isn't a valid Excel column letter, so we can't find this column on the Responses sheet.",
                 "Use 1-3 capital letters only — A, B, …, Z, AA, AB, …, ZZZ. No numbers or symbols.",
             ),
-            (
+            Rule(
                 "A",
                 "Column not in Responses",
                 "missing_response",
@@ -716,73 +979,73 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
             ),
         ],
     },
-    "Open Questions": {
+    SHEET_OPEN: {
         "cols": ["A", "B", "C"],
         "rules": [
-            (
+            Rule(
                 "A",
                 "Missing column ID",
                 "required",
                 "This row has no column ID, so it is unclear which column on the Responses sheet should be used.",
                 "Type the Excel column letter from the Responses sheet (e.g. B or AC) that holds the free-text responses for this question.",
             ),
-            (
+            Rule(
                 "B",
                 "Missing question_number",
                 "required",
                 "This row has no question number. This number is used to order the questions as they appear in the Consult application.",
                 "Enter a whole number (e.g. 1 or higher) that has not been used by another question yet. Each number must be unique across the Open, Closed, and Hybrid sheets.",
             ),
-            (
+            Rule(
                 "C",
                 "Missing question_text",
                 "required",
                 "This row has no question wording. The AI model will not have any context for interpreting the responses, which will lead to poor results.",
                 "Paste the question as it appeared to respondents, and it should have enough context to make sense on its own (e.g. 'How satisfied are you with X?', NOT 'Satisfaction').",
             ),
-            (
+            Rule(
                 "A",
                 "Invalid column ID format",
                 "column_id",
                 "'{value}' isn't a valid Excel column letter.",
                 "Use 1-3 capital letters only (e.g. A, BF, AAC). No numbers or symbols.",
             ),
-            (
+            Rule(
                 "B",
                 "Question number must be a whole integer >= 1",
                 "integer",
                 "'{value}' isn't a whole number of 1 or more. Question numbers are used to order the questions as they appear in the Consult application, so they need to be plain whole numbers.",
                 "Replace it with a whole number such as 1, 2, 3. Decimals, text, and 0 aren't allowed.",
             ),
-            (
+            Rule(
                 "A",
                 "Column not in Responses",
                 "missing_response",
                 "Column '{value}' has no header on the Responses sheet, which may mean there are no responses to analyse in this column.",
                 "Double-check the column letter for typos, or paste the responses (with a header in row 1) into that column on Responses sheet.",
             ),
-            (
+            Rule(
                 "A",
                 "Duplicate column reference",
                 "duplicate_column",
                 "Column '{value}' is already used by another row. Each Excel column should feed only one question.",
                 "Pick a different column letter, or remove the duplicate row from the Open / Closed / Hybrid sheets.",
             ),
-            (
+            Rule(
                 "B",
                 "Duplicate question_number",
                 "duplicate_qnum",
                 "Question number '{value}' is already used by another row. Numbers must be unique because they're used to order the questions as they appear in the Consult application.",
                 "Renumber one of the rows so every question across Open, Closed, and Hybrid has its own unique number.",
             ),
-            (
+            Rule(
                 "A",
                 "Open column looks multichoice",
                 "open_uniqueness",
                 "Column '{value}' has very few different responses (≤20% are unique). That usually means it's a multiple-choice question rather than free text.",
                 "If respondents picked from a list, move this row to the Multiple Choice Questions sheet. If it really is free text, you can ignore this warning.",
             ),
-            (
+            Rule(
                 "A",
                 "question_text differs from Responses header",
                 "label_similarity",
@@ -791,73 +1054,73 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
             ),
         ],
     },
-    "Multiple Choice Questions": {
+    SHEET_CLOSED: {
         "cols": ["A", "B", "C"],
         "rules": [
-            (
+            Rule(
                 "A",
                 "Missing column ID",
                 "required",
                 "This row has no column ID, so it is unclear which column on the Responses sheet should be used.",
                 "Type the Excel column letter from the Responses sheet (e.g. B or AC) that holds the multiple-choice responses for this question.",
             ),
-            (
+            Rule(
                 "B",
                 "Missing question_number",
                 "required",
                 "This row has no question number. Numbers identify each question in your results and are used to order the questions as they appear in the Consult application.",
                 "Enter a whole number 1 or higher. Each number must be unique across the Open, Closed, and Hybrid sheets.",
             ),
-            (
+            Rule(
                 "C",
                 "Missing question_text",
                 "required",
                 "This row has no question wording. The AI model will not have any context for interpreting the responses, which will lead to poor results.",
                 "Paste the question as it appeared to respondents, and it should have enough context to make sense on its own (e.g. 'How satisfied are you with X?', NOT 'Satisfaction').",
             ),
-            (
+            Rule(
                 "A",
                 "Invalid column ID format",
                 "column_id",
                 "'{value}' isn't a valid Excel column letter, so Themefinder can't find this column on the Responses sheet.",
                 "Use 1-3 capital letters only (e.g. A, BF, AAC). No numbers or symbols.",
             ),
-            (
+            Rule(
                 "B",
                 "Question number must be a whole integer >= 1",
                 "integer",
                 "'{value}' isn't a whole number of 1 or more. Question numbers are used to order the questions as they appear in the Consult application, so they need to be plain whole numbers.",
                 "Replace it with a whole number such as 1, 2, 3. Decimals, text, and 0 aren't allowed.",
             ),
-            (
+            Rule(
                 "A",
                 "Column not in Responses",
                 "missing_response",
                 "Column '{value}' has no header on the Responses sheet, which may mean there are no responses to analyse in this column.",
                 "Double-check the column letter for typos, or paste the responses (with a header in row 1) into that column on Responses sheet.",
             ),
-            (
+            Rule(
                 "A",
                 "Duplicate column reference",
                 "duplicate_column",
                 "Column '{value}' is already used by another row. Each Excel column should feed only one question.",
                 "Pick a different column letter, or remove the duplicate row from the Open / Closed / Hybrid sheets.",
             ),
-            (
+            Rule(
                 "B",
                 "Duplicate question_number",
                 "duplicate_qnum",
                 "Question number '{value}' is already used by another row. Numbers must be unique because they're used to order the questions as they appear in the Consult application.",
                 "Renumber one of the rows so every question across Open, Closed, and Hybrid has its own unique number.",
             ),
-            (
+            Rule(
                 "A",
                 "Closed column looks like free text",
                 "closed_uniqueness",
                 "Column '{value}' has lots of different responses (>20% are unique). That usually means it's a free-text question rather than multiple choice.",
                 "If respondents typed their own responses, move this row to the Open Questions sheet. If it really is multiple choice, you can ignore this warning.",
             ),
-            (
+            Rule(
                 "A",
                 "question_text differs from Responses header",
                 "label_similarity",
@@ -866,24 +1129,24 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
             ),
         ],
     },
-    "Hybrid Questions": {
+    SHEET_HYBRID: {
         "cols": ["A", "B", "C", "D"],
         "rules": [
-            (
+            Rule(
                 "A",
                 "Missing open_column",
                 "required",
                 "This row has no open_column value, so it is unclear which column on the Responses sheet holds the free-text part of this hybrid question.",
                 "Type the Excel column letter from Responses that holds the free-text part of this hybrid question.",
             ),
-            (
+            Rule(
                 "B",
                 "Missing question_number",
                 "required",
                 "This row has no question number. Numbers identify each question in your results and are used to order the questions as they appear in the Consult app.",
                 "Enter a whole number 1 or higher. Each number must be unique across the Open, Closed, and Hybrid sheets.",
             ),
-            (
+            Rule(
                 "C",
                 "Missing question_text",
                 "required",
@@ -891,91 +1154,91 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
                 "Paste the question exactly as it appeared to respondents, including any indication that it's a hybrid question (e.g. 'What do you think of X, and why?')."
                 "It should have enough context to make sense on its own.",
             ),
-            (
+            Rule(
                 "D",
                 "Missing closed_column",
                 "required",
                 "This row has no column letter for the multiple-choice part, so it is unclear which column on the Responses sheet holds those responses.",
                 "Type the Excel column letter from Responses sheet (e.g. B, CF) that holds the multiple-choice part of this hybrid question.",
             ),
-            (
+            Rule(
                 "A",
                 "Invalid open_column format",
                 "column_id",
                 "'{value}' isn't a valid Excel column letter, so it can't be found on the Responses sheet.",
                 "Use 1-3 capital letters only (e.g. A, BF, AAC). No numbers or symbols. Enter the column letter for the free-text part of this hybrid question.",
             ),
-            (
+            Rule(
                 "D",
                 "Invalid closed_column format",
                 "column_id",
                 "'{value}' isn't a valid Excel column letter, so it can't be found on the Responses sheet.",
                 "Use 1-3 capital letters only (e.g. A, BF, AAC). No numbers or symbols. Enter the column letter for the multiple-choice part of this hybrid question.",
             ),
-            (
+            Rule(
                 "B",
                 "Question number must be a whole integer >= 1",
                 "integer",
                 "'{value}' isn't a whole number of 1 or more. Question numbers are used to order the questions as they appear in the Consult application, so they need to be plain whole numbers.",
                 "Replace it with a whole number such as 1, 2, 3. Decimals, text, and 0 aren't allowed.",
             ),
-            (
+            Rule(
                 "A",
                 "open_column not in Responses",
                 "missing_response",
                 "Column '{value}' has no header on the Responses sheet, so there may be no free-text responses to compare to in that column.",
                 "Double-check the column letter for typos, or paste the responses (with a header in row 1) into that column on Responses.",
             ),
-            (
+            Rule(
                 "D",
                 "closed_column not in Responses",
                 "missing_response",
                 "Column '{value}' has no header on the Responses sheet, so there may be no multiple-choice responses to analyse.",
                 "Double-check the column letter for typos, or paste the responses (with a header in row 1) into that column on Responses.",
             ),
-            (
+            Rule(
                 "A",
                 "Duplicate column reference",
                 "duplicate_column",
                 "Column '{value}' is already used by another row. Each Excel column should feed only one question.",
                 "Pick a different column letter, or remove the duplicate row from the Open / Closed / Hybrid sheets.",
             ),
-            (
+            Rule(
                 "D",
                 "Duplicate column reference",
                 "duplicate_column",
                 "Column '{value}' is already used by another row. Each Excel column should feed only one question.",
                 "Pick a different column letter, or remove the duplicate row from the Open / Closed / Hybrid sheets.",
             ),
-            (
+            Rule(
                 "B",
                 "Duplicate question_number",
                 "duplicate_qnum",
                 "Question number '{value}' is already used by another row. Numbers must be unique because they're used to order the questions as they appear in the Consult app.",
                 "Renumber one of the rows so every question across Open, Closed, and Hybrid has its own unique number.",
             ),
-            (
+            Rule(
                 "A",
                 "Open column looks multichoice",
                 "open_uniqueness",
                 "Column '{value}' on the Responses sheet has very few different responses (≤20% are unique), which looks more like multiple choice than free text.",
                 "If respondents picked from a list, this column belongs in the Multiple Choice Questions sheet (or as the closed_column of a hybrid). If it really is free text, you can ignore this warning.",
             ),
-            (
+            Rule(
                 "D",
                 "Closed column looks like free text",
                 "closed_uniqueness",
                 "Column '{value}' on the Responses sheet has lots of different responses (>20% are unique), which looks more like free text than multiple choice.",
                 "If respondents typed their own responses, this column belongs in the Open Questions sheet (or as the open_column of a hybrid). If it really is multiple choice, you can ignore this warning.",
             ),
-            (
+            Rule(
                 "A",
                 "question_text differs from open_column header",
                 "label_similarity",
                 "The question wording doesn't closely match the header for column '{value}' on Responses, so the wrong free-text column may have been chosen.",
                 "Check the open_column letter is correct, or update the question wording so it matches the Responses header.",
             ),
-            (
+            Rule(
                 "D",
                 "question_text differs from closed_column header",
                 "label_similarity",
@@ -987,15 +1250,20 @@ QU_AUDIT_SCHEMA: dict[str, dict] = {
 }
 
 
+def _xl_str(s: str) -> str:
+    """Wrap a Python string as an Excel string literal (double-quote escaping)."""
+    return '"' + s.replace('"', '""') + '"'
+
+
 def _issue_text_formula(target: str, msg_tmpl: str) -> str:
     """Build an Excel string expression for the issue message, substituting {value}."""
     if "{value}" not in msg_tmpl:
-        return '"' + msg_tmpl.replace('"', '""') + '"'
+        return _xl_str(msg_tmpl)
     parts = msg_tmpl.split("{value}")
     pieces: list[str] = []
     for i, part in enumerate(parts):
         if part:
-            pieces.append('"' + part.replace('"', '""') + '"')
+            pieces.append(_xl_str(part))
         if i < len(parts) - 1:
             pieces.append(target)
     return "&".join(pieces)
@@ -1009,23 +1277,30 @@ def _label_similarity_msg_formula(sheet: str, target: str, r: int) -> str:
     Issue column makes the linebreaks render as multiple lines.
     """
     qtext = _qu_cell(sheet, "C", r)
-    header = f'INDIRECT("Responses!"&{target}&"1")'
-    return (
-        f'"The question wording below doesn'
-        "'"
-        "t closely match the "
-        f'Responses header for column "&{target}&"."'
-        f"&CHAR(10)&CHAR(10)"
-        f'&"Question text:"&CHAR(10)&{qtext}'
-        f"&CHAR(10)&CHAR(10)"
-        f'&"Responses header for column "&{target}&":"&CHAR(10)&{header}'
-    )
+    header = f'INDIRECT("{SHEET_RESPONSES}!"&{target}&"1")'
+    blank_line = "CHAR(10)&CHAR(10)"
+    pieces = [
+        _xl_str("The question wording below doesn't closely match the "
+                "Responses header for column "),
+        target,
+        _xl_str("."),
+        blank_line,
+        _xl_str("Question text:"),
+        "CHAR(10)",
+        qtext,
+        blank_line,
+        _xl_str("Responses header for column "),
+        target,
+        _xl_str(":"),
+        "CHAR(10)",
+        header,
+    ]
+    return "&".join(pieces)
 
 
-def _workbook_level_rule_rows() -> list[dict]:
-    """Rules that aren't tied to a single metadata-sheet row.
+def _workbook_count_rule_row() -> dict:
+    """Total distinct metadata-sheet column count vs Responses column count.
 
-    Currently: total distinct metadata-sheet column count vs Responses column count.
     Uses VSTACK/UNIQUE/FILTER (Excel 365 / 2021+); pre-365 Excel will show a
     #NAME? in the Issue cell, which is harmless — the count check just won't fire.
     """
@@ -1034,7 +1309,7 @@ def _workbook_level_rule_rows() -> list[dict]:
         f"IFERROR(ROWS(UNIQUE(FILTER(VSTACK({vstack_args}),"
         f'VSTACK({vstack_args})<>""))),0)'
     )
-    resp_count = "COUNTA(Responses!$1:$1)-1"
+    resp_count = f"COUNTA({SHEET_RESPONSES}!$1:$1)-1"
     violation = f"({distinct_count})>({resp_count})"
     msg = (
         f'"Your question setup points at "&{distinct_count}&" different column(s), '
@@ -1046,24 +1321,22 @@ def _workbook_level_rule_rows() -> list[dict]:
         "that aren't in Responses, or add the missing columns (with headers "
         "and responses) to the Responses sheet."
     )
-    return [
-        {
-            "sheet": "(workbook)",
-            "cell": "-",
-            "rule": "Referenced column count exceeds Responses",
-            "severity": SEVERITY_WORKBOOK_COUNT,
-            "issue_formula": f'=IF({violation},{msg},"")',
-            "fix": fix_text,
-        }
-    ]
+    return {
+        "sheet": "(workbook)",
+        "cell": "-",
+        "rule": "Referenced column count exceeds Responses",
+        "severity": SEVERITY_BY_VKIND["workbook_count"],
+        "issue_formula": f'=IF({violation},{msg},"")',
+        "fix": fix_text,
+    }
 
 
 def _missing_header_rule_rows() -> list[dict]:
     """One row per A..Z that fires when a Responses column has data but no header."""
     rows: list[dict] = []
     for letter in RESPONSE_LETTERS:
-        header = f"Responses!${letter}$1"
-        data_range = f"Responses!${letter}$2:${letter}${RESPONSE_DATA_LAST_ROW}"
+        header = f"{SHEET_RESPONSES}!${letter}$1"
+        data_range = f"{SHEET_RESPONSES}!${letter}$2:${letter}${RESPONSE_DATA_LAST_ROW}"
         violation = f'AND({header}="",COUNTA({data_range})>0)'
         msg = (
             f'"Column {letter} on Responses has responses but no header in row 1, '
@@ -1076,10 +1349,10 @@ def _missing_header_rule_rows() -> list[dict]:
         )
         rows.append(
             {
-                "sheet": "Responses",
+                "sheet": SHEET_RESPONSES,
                 "cell": f"{letter}1",
                 "rule": "Missing header",
-                "severity": SEVERITY_MISSING_HEADER,
+                "severity": SEVERITY_BY_VKIND["missing_header"],
                 "issue_formula": f'=IF({violation},{msg},"")',
                 "fix": fix_text,
             }
@@ -1096,7 +1369,7 @@ def _unreferenced_response_rule_rows() -> list[dict]:
     ref_ranges = _all_referenced_col_ranges()
     rows: list[dict] = []
     for letter in RESPONSE_LETTERS:
-        header = f"Responses!${letter}$1"
+        header = f"{SHEET_RESPONSES}!${letter}$1"
         # COUNTIF with literal letter — note doubled "" for embedding in string.
         ref_count = "+".join(f'COUNTIF({rng},"{letter}")' for rng in ref_ranges)
         violation = (
@@ -1116,10 +1389,10 @@ def _unreferenced_response_rule_rows() -> list[dict]:
         )
         rows.append(
             {
-                "sheet": "Responses",
+                "sheet": SHEET_RESPONSES,
                 "cell": f"{letter}1",
                 "rule": "Unreferenced response column",
-                "severity": SEVERITY_UNREFERENCED,
+                "severity": SEVERITY_BY_VKIND["unreferenced"],
                 "issue_formula": f'=IF({violation},{msg},"")',
                 "fix": fix_text,
             }
@@ -1161,25 +1434,25 @@ def build_issues_sheet(ws, fmts: dict) -> int:
     for sheet_name, schema in QU_AUDIT_SCHEMA.items():
         cols = schema["cols"]
         for r in range(2, AUDIT_WINDOW + 2):
-            for target_col, label, vkind, msg_tmpl, fix_text in schema["rules"]:
-                target = _qu_cell(sheet_name, target_col, r)
-                violation = VIOLATION_FNS[vkind](sheet_name, cols, target_col, r)
-                if vkind == "label_similarity":
+            for rule in schema["rules"]:
+                target = _qu_cell(sheet_name, rule.col, r)
+                violation = VIOLATION_FNS[rule.vkind](sheet_name, cols, rule.col, r)
+                if rule.vkind == "label_similarity":
                     msg_expr = _label_similarity_msg_formula(sheet_name, target, r)
                 else:
-                    msg_expr = _issue_text_formula(target, msg_tmpl)
+                    msg_expr = _issue_text_formula(target, rule.message)
                 rows.append(
                     {
                         "sheet": sheet_name,
-                        "cell": f"{target_col}{r}",
-                        "rule": label,
-                        "severity": SEVERITY_BY_VKIND[vkind],
+                        "cell": f"{rule.col}{r}",
+                        "rule": rule.label,
+                        "severity": SEVERITY_BY_VKIND[rule.vkind],
                         "issue_formula": f'=IF({violation},{msg_expr},"")',
-                        "fix": fix_text,
+                        "fix": rule.fix,
                     }
                 )
 
-    rows.extend(_workbook_level_rule_rows())
+    rows.append(_workbook_count_rule_row())
     rows.extend(_missing_header_rule_rows())
     rows.extend(_unreferenced_response_rule_rows())
 
@@ -1233,7 +1506,7 @@ def build_active_issues_sheet(ws, wb, source_last_row: int, fmts: dict) -> None:
     )
     ws.set_column("G:G", 50, notes_fmt)
 
-    ws.merge_range("A1:G1", "Active issues", fmts["title"])
+    ws.merge_range("A1:G1", SHEET_ACTIVE, fmts["title"])
 
     err_count = f'=COUNTIF(D5:D{source_last_row},"Error")'
     warn_count = f'=COUNTIF(D5:D{source_last_row},"{SEVERITY_TO_CHECK}")'
@@ -1273,8 +1546,8 @@ def build_active_issues_sheet(ws, wb, source_last_row: int, fmts: dict) -> None:
     ws.set_row(3, 32)
 
     formula = (
-        f"=FILTER(Issues!A5:F{source_last_row},"
-        f'IFERROR(Issues!E5:E{source_last_row}<>"",TRUE),'
+        f"=FILTER({SHEET_ISSUES}!A5:F{source_last_row},"
+        f'IFERROR({SHEET_ISSUES}!E5:E{source_last_row}<>"",TRUE),'
         f'"No outstanding issues — fill in the Demographics, Open, Closed and Hybrid sheets to begin.")'
     )
     ws.write_dynamic_array_formula("A5", formula)
@@ -1299,7 +1572,7 @@ def build_active_issues_sheet(ws, wb, source_last_row: int, fmts: dict) -> None:
         {
             "type": "formula",
             "criteria": f'=$D5="{SEVERITY_TO_CHECK}"',
-            "format": fmts["warning_fill"],
+            "format": fmts["issue_fill"],
         },
     )
     ws.freeze_panes(4, 0)
@@ -1703,177 +1976,19 @@ def main() -> None:
     fmts = make_formats(wb)
 
     # Sheet creation order determines tab order.
-    ws_guide = wb.add_worksheet("Guide")
-    ws_active = wb.add_worksheet("Active issues")
-    ws_resp = wb.add_worksheet("Responses")
-    ws_demo = wb.add_worksheet("Demographics")
-    ws_open = wb.add_worksheet("Open Questions")
-    ws_closed = wb.add_worksheet("Multiple Choice Questions")
-    ws_hyb = wb.add_worksheet("Hybrid Questions")
-    ws_issues = wb.add_worksheet("Issues")
+    ws_guide = wb.add_worksheet(SHEET_GUIDE)
+    ws_active = wb.add_worksheet(SHEET_ACTIVE)
+    ws_resp = wb.add_worksheet(SHEET_RESPONSES)
+    meta_sheets = {m.name: wb.add_worksheet(m.name) for m in METADATA_SHEETS}
+    ws_issues = wb.add_worksheet(SHEET_ISSUES)
     ws_helpers = wb.add_worksheet(HELPER_SHEET)
 
     write_dummy_responses(ws_resp, fmts)
     build_helpers_sheet(ws_helpers)
     build_label_similarity_helpers(ws_helpers)
 
-    write_headers(
-        ws_demo,
-        ["Column letter (in Responses sheet)", "Demographics label"],
-        [32, 36],
-        fmts["header"],
-    )
-    ws_demo.write_comment(
-        "A1",
-        "The Excel column letter (A, B, ..., AA, ...) of the column on the "
-        "Responses sheet that holds this demographic. Look at the Responses tab "
-        "and find the column whose header matches what you want to track.",
-        {"width": 260, "height": 120},
-    )
-    ws_demo.write_comment(
-        "B1",
-        "Short, human-readable name for this demographic — e.g. 'Region', "
-        "'Age band', 'Organisation type'. Shown to analysts in the dashboard.",
-        {"width": 260, "height": 100},
-    )
-    add_required_field_checks(ws_demo, ["A", "B"], fmts)
-    add_column_id_check(ws_demo, "A", fmts)
-    highlight_missing_response_column(ws_demo, "A", fmts)
-    add_offlimit_columns_check(ws_demo, "C", "Demographics", fmts)
-    write_data_rows(
-        ws_demo,
-        [
-            ("B", "Region"),
-            ("C", "Age band"),
-            ("D", "Organisation type"),
-        ],
-    )
-
-    write_headers(
-        ws_open,
-        [
-            "Column letter (in Responses sheet)",
-            "Question number",
-            "Question text (full wording shown to respondent)",
-        ],
-        [32, 18, 70],
-        fmts["header"],
-    )
-    ws_open.write_comment(
-        "A1",
-        "The Excel column letter on the Responses sheet that holds the "
-        "free-text responses for this question. E.g. if Responses!I1 contains "
-        "the question header, type 'I' here.",
-        {"width": 260, "height": 120},
-    )
-    ws_open.write_comment(
-        "B1",
-        "A whole number ≥ 1. Must be unique across all Open, Closed and Hybrid "
-        "questions. Used to order the questions as they appear in the Consult application.",
-        {"width": 260, "height": 100},
-    )
-    ws_open.write_comment(
-        "C1",
-        "Paste the question as it appeared to respondents, "
-        "including any context required . The text should make sense on its own — an "
-        "analyst reading just this row should understand what was asked.",
-        {"width": 280, "height": 130},
-    )
-    add_required_field_checks(ws_open, ["A", "B", "C"], fmts)
-    add_column_id_check(ws_open, "A", fmts)
-    add_integer_check(ws_open, "B", fmts)
-    highlight_missing_response_column(ws_open, "A", fmts)
-    add_offlimit_columns_check(ws_open, "D", "Open Questions", fmts)
-    write_data_rows(
-        ws_open,
-        [("I", 3, "Do you have any other suggestions or comments?")],
-    )
-
-    write_headers(
-        ws_closed,
-        [
-            "Column letter (in Responses sheet)",
-            "Question number",
-            "Question text (full wording shown to respondent)",
-        ],
-        [32, 18, 70],
-        fmts["header"],
-    )
-    ws_closed.write_comment(
-        "A1",
-        "The Excel column letter on the Responses sheet that holds the "
-        "multiple-choice responses for this question.",
-        {"width": 260, "height": 100},
-    )
-    ws_closed.write_comment(
-        "B1",
-        "A whole number ≥ 1. Must be unique across all Open, Closed and Hybrid "
-        "questions. Used to order the questions as they appear in the Consult application.",
-        {"width": 260, "height": 100},
-    )
-    ws_closed.write_comment(
-        "C1",
-        "Paste the question wording as it appeared to respondents. Make sure it makes sense and has enough context to be understood on its own.",
-        {"width": 260, "height": 80},
-    )
-    add_required_field_checks(ws_closed, ["A", "B", "C"], fmts)
-    add_column_id_check(ws_closed, "A", fmts)
-    add_integer_check(ws_closed, "B", fmts)
-    highlight_missing_response_column(ws_closed, "A", fmts)
-    add_offlimit_columns_check(ws_closed, "D", "Multiple Choice Questions", fmts)
-    write_data_rows(
-        ws_closed,
-        [("J", 4, "Would you recommend this approach to others?")],
-    )
-
-    write_headers(
-        ws_hyb,
-        [
-            "Free-text column letter (in Responses)",
-            "Question number",
-            "Question text (full wording shown to respondent)",
-            "Multiple-choice column letter (in Responses)",
-        ],
-        [32, 18, 70, 32],
-        fmts["header"],
-    )
-    ws_hyb.write_comment(
-        "A1",
-        "Excel column letter on the Responses sheet for the FREE-TEXT part of "
-        "this hybrid question (the 'why?' / 'please explain').",
-        {"width": 280, "height": 110},
-    )
-    ws_hyb.write_comment(
-        "B1",
-        "A whole number ≥ 1. Must be unique across all Open, Closed and Hybrid "
-        "questions. Used to order the questions as they appear in the Consult application.",
-        {"width": 260, "height": 100},
-    )
-    ws_hyb.write_comment(
-        "C1",
-        "Paste the question as it appeared to respondents, and it should have enough context to make sense on its own (e.g. 'How satisfied are you with X?').",
-        {"width": 260, "height": 80},
-    )
-    ws_hyb.write_comment(
-        "D1",
-        "Excel column letter on the Responses sheet for the MULTIPLE-CHOICE part "
-        "of this hybrid question (the agree/disagree / yes-no answer).",
-        {"width": 280, "height": 110},
-    )
-    add_required_field_checks(ws_hyb, ["A", "B", "C", "D"], fmts)
-    add_column_id_check(ws_hyb, "A", fmts)
-    add_column_id_check(ws_hyb, "D", fmts)
-    add_integer_check(ws_hyb, "B", fmts)
-    highlight_missing_response_column(ws_hyb, "A", fmts)
-    highlight_missing_response_column(ws_hyb, "D", fmts)
-    add_offlimit_columns_check(ws_hyb, "E", "Hybrid Questions", fmts)
-    write_data_rows(
-        ws_hyb,
-        [
-            ("F", 1, "What is your level of support for the proposal, and why?", "E"),
-            ("H", 2, "How important is this issue, and please explain.", "G"),
-        ],
-    )
+    for meta in METADATA_SHEETS:
+        build_metadata_sheet(meta_sheets[meta.name], meta, fmts)
 
     last_audit_row = build_issues_sheet(ws_issues, fmts)
     build_active_issues_sheet(ws_active, wb, last_audit_row, fmts)
