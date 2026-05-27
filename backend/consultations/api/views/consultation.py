@@ -282,7 +282,7 @@ class ConsultationViewSet(ModelViewSet):
         Export themes to S3 and submit AWS batch job to assign themes to responses.
 
         Behaviour depends on consultation stage:
-        - FINALISING_THEMES / THEME_SIGN_OFF: exports candidate themes and assigns
+        - FINALISING_THEMES: exports candidate themes and assigns
           them to responses (CandidateThemeResponse), without changing stage.
         - Other stages: exports selected themes and assigns them to responses
           (ResponseAnnotation), advancing stage to ASSIGNING_THEMES.
@@ -292,10 +292,7 @@ class ConsultationViewSet(ModelViewSet):
 
         consultation = self.get_object()
 
-        is_finalising = consultation.stage in (
-            Consultation.Stage.FINALISING_THEMES,
-            Consultation.Stage.THEME_SIGN_OFF,
-        )
+        is_finalising = consultation.stage == Consultation.Stage.FINALISING_THEMES
 
         if is_finalising:
             # During finalising: assign candidate themes to responses

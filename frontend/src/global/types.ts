@@ -26,10 +26,7 @@ export interface Question {
 export type ConsultationStage =
   | "finalising_themes"
   | "assigning_themes"
-  | "analysis"
-  // Legacy values for now removed stages - to be deleted once backend data is updated
-  | "theme_sign_off"
-  | "theme_mapping";
+  | "analysis";
 export interface NextResponseInfo {
   id: string;
   consultation_id: string;
