@@ -9,11 +9,10 @@
 
   interface Props {
     id: string;
-    label?: string;
+    label?: string | Snippet;
     hideLabel?: boolean;
     value: boolean;
     handleChange: (newValue: boolean) => void;
-    children?: Snippet;
   }
 
   let {
@@ -22,7 +21,6 @@
     hideLabel = false,
     value = false,
     handleChange = () => {},
-    children,
   }: Props = $props();
 
   const {
@@ -53,8 +51,8 @@
       for={id}
       id={`${id}-label`}
     >
-      {#if children}
-        {@render children()}
+      {#if typeof label === "function"}
+        {@render label()}
       {:else}
         {label}
       {/if}

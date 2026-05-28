@@ -58,7 +58,7 @@ export interface Respondent {
   consultation?: string;
   themefinder_id: number;
   demographics: RespondentDemoItem[];
-  name?: string | null;
+  name?: string;
 }
 
 export interface RespondentDemoItem {

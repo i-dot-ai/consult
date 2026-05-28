@@ -13,28 +13,30 @@
 
   export interface Props {
     title: string;
-    subtitle: string | null;
+    subtitle: string;
     Icon?: Component;
     editable?: boolean;
-    updateSubtitle?: (newSubtitle: string | null) => void;
+    updateSubtitle?: (newSubtitle: string) => void;
   }
 
   let {
     title = "",
-    subtitle = null,
+    subtitle = "",
     Icon,
     editable = false,
     updateSubtitle = () => {},
   }: Props = $props();
 
-  let stagedSubtitle = $derived(subtitle);
+  let stagedSubtitle = $state("");
   let editing: boolean = $state(false);
 
-  const toggleEditing = () => {
-    // Reset staged subtitle if exiting edit mode
-    if (editing) {
-      stagedSubtitle = subtitle;
+  $effect(() => {
+    if (!editing) {
+      stagedSubtitle = subtitle || "";
     }
+  });
+
+  const toggleEditing = () => {
     editing = !editing;
   };
 </script>
@@ -116,7 +118,7 @@
       </div>
     {:else}
       <p class={clsx([!subtitle && "text-neutral-400"])}>
-        {subtitle ?? "Add a stakeholder's name"}
+        {subtitle || "Add a stakeholder's name"}
       </p>
     {/if}
   </div>

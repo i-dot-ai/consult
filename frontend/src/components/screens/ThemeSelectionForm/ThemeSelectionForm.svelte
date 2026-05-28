@@ -99,7 +99,7 @@
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            themes: selectedThemes,
+            themes: ownSelectedThemes,
             human_reviewed: true,
           }),
         },
@@ -152,7 +152,7 @@
           <Checkbox
             id={theme.id!}
             value={theme.id!}
-            checked={selectedThemes.some(
+            checked={ownSelectedThemes.some(
               (selectedTheme) => selectedTheme.id === theme.id,
             )}
             disabled={false}
