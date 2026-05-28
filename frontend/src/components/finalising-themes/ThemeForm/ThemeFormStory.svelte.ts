@@ -1,9 +1,7 @@
 import ThemeForm from "./ThemeForm.svelte";
 
-const variant = $state("add");
-const initialTitle = $state("Initial Title");
-const initialDescription = $state("Initial Description");
-const handleConfirm = () => alert("Confirm event triggered");
+const handleConfirm = (title: string, description: string) =>
+  alert(`Saved: "${title}" — ${description}`);
 const handleCancel = () => alert("Cancel event triggered");
 
 export default {
@@ -11,25 +9,6 @@ export default {
   component: ThemeForm,
   category: "Finalising Themes",
   props: [
-    {
-      name: "variant",
-      value: variant,
-      type: "select",
-      options: [
-        { value: "add", label: "Add" },
-        { value: "edit", label: "Edit" },
-      ],
-    },
-    {
-      name: "initialTitle",
-      value: initialTitle,
-      type: "text",
-    },
-    {
-      name: "initialDescription",
-      value: initialDescription,
-      type: "text",
-    },
     {
       name: "handleConfirm",
       value: handleConfirm,
@@ -48,16 +27,21 @@ export default {
       name: "Add Variant",
       props: {
         variant: "add",
-        handleConfirm: handleConfirm,
-        handleCancel: handleCancel,
+        initialTitle: "",
+        initialDescription: "",
+        handleConfirm,
+        handleCancel,
       },
     },
     {
       name: "Edit Variant",
       props: {
         variant: "edit",
-        handleConfirm: handleConfirm,
-        handleCancel: handleCancel,
+        initialTitle: "Data Privacy Concerns",
+        initialDescription:
+          "Responses discussing concerns about how personal data is collected, stored, or used.",
+        handleConfirm,
+        handleCancel,
       },
     },
   ],

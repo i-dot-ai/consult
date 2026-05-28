@@ -274,7 +274,7 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                     class="mb-4 block text-xs text-neutral-500"
                   >
                     Added
-              1 months ago by email@example.com
+              2 months ago by email@example.com
                   </small>
                    
                   <footer
