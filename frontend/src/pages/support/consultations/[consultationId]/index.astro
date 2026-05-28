@@ -17,6 +17,7 @@ import {
   getConsultationEvalUrl,
   getFinaliseThemesUrl,
   getSupportConsultationDeleteUrl,
+  getSupportConsultationImportThemesUrl,
   getApiConsultationUrl,
   getApiQuestionsUrl,
   Routes,
@@ -58,6 +59,11 @@ let questions = await fetchBackendApi<{ results: Question[] }>(
       <li>
         <Link href={getConsultationDetailUrl(consultationId)}
           >View on frontend (dashboard)</Link
+        >
+      </li>
+      <li>
+        <Link href={getSupportConsultationImportThemesUrl(consultationId)}
+          >Import finalised themes from another consultation</Link
         >
       </li>
       <li>
