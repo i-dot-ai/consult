@@ -46,7 +46,6 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         FINDING_THEMES = "finding_themes", "Finding Themes"
         FINALISING_THEMES = "finalising_themes", "Finalising Themes"
         ASSIGNING_THEMES = "assigning_themes", "Assigning Themes"
-
         ANALYSIS = "analysis", "Analysis"
 
     class ModelName(models.TextChoices):
