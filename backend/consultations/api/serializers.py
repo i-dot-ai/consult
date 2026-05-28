@@ -357,5 +357,9 @@ class ConsultationExportSerializer(serializers.Serializer):
     question_ids = serializers.ListSerializer(child=serializers.CharField())
 
 
+class ImportFinalisedThemesSerializer(serializers.Serializer):
+    source_consultation_id = serializers.UUIDField()
+
+
 class TokenSerializer(serializers.Serializer):
     internal_access_token = serializers.CharField()
