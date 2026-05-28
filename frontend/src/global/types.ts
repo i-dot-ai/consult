@@ -15,6 +15,7 @@ export interface Question {
   id?: string;
   number?: number;
   total_responses?: number;
+  multi_choice_respondent_count?: number;
   question_text?: string;
   has_free_text?: boolean;
   has_multiple_choice?: boolean;

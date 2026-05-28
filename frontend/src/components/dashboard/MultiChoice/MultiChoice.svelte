@@ -15,23 +15,25 @@
 
   interface Props {
     data: QuestionMultiAnswer[];
+    totalAnswers: number;
   }
 
-  let { data = [] }: Props = $props();
+  let { data = [], totalAnswers = 0 }: Props = $props();
 </script>
 
 <section class="my-4" transition:fade>
   <Panel border={true}>
-    <TitleRow level={2} title="Multiple Choice Answers">
+    <TitleRow
+      level={2}
+      title="Multiple Choice Answers"
+      subtitle="{totalAnswers} responses"
+    >
       <List slot="icon" />
     </TitleRow>
 
-    {@const total = data
-      .map((item) => item.response_count)
-      .reduce((acc, curr) => acc + curr, 0)}
     <Panel bg={true}>
       {#each data as item, i (i)}
-        {@const percentage = getPercentage(item.response_count, total)}
+        {@const percentage = getPercentage(item.response_count, totalAnswers)}
 
         <div class="mb-1 last:mb-0">
           <Button

@@ -45,8 +45,20 @@ class QuestionViewSet(ModelViewSet):
             .annotate(c=Count("*"))
             .values("c")
         )
+        # Count of distinct responses that selected at least one multi-choice option
+        multi_choice_respondent_count = Subquery(
+            models.Response.chosen_options.through.objects.filter(
+                response__question_id=OuterRef("pk")
+            )
+            .order_by()
+            .values("response__question_id")
+            .annotate(c=Count("response_id", distinct=True))
+            .values("c")
+        )
+
         queryset = queryset.annotate(
             prefetched_total_responses=Coalesce(question_response_count, Value(0)),
+            prefetched_multi_choice_respondent_count=Coalesce(multi_choice_respondent_count, Value(0)),
         )
 
         # Response count per multi-choice answer (correlated subquery to avoid full-table JOIN)
@@ -129,6 +141,11 @@ class QuestionViewSet(ModelViewSet):
 
             # Replace the prefetched multichoice answers
             question._prefetched_objects_cache["multichoiceanswer_set"] = list(multichoice_answers)
+
+            # Recalculate multi-choice respondent count with filters
+            question.prefetched_multi_choice_respondent_count = (
+                filtered_responses.filter(chosen_options__isnull=False).distinct().count()
+            )
 
         serializer = self.get_serializer(question)
         return Response(serializer.data)

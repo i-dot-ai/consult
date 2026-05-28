@@ -245,6 +245,7 @@ export const questionMock = {
     id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     number: 1,
     total_responses: 100,
+    multi_choice_respondent_count: 232,
     question_text:
       "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
     has_free_text: true,

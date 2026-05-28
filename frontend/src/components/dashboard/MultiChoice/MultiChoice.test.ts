@@ -31,7 +31,10 @@ describe("MultiChoice", () => {
   it("should render data", () => {
     const { container } = render(MultiChoice, {
       data: testData.data,
+      totalAnswers: testData.totalCounts,
     });
+
+    expect(screen.getByText("30 responses")).toBeInTheDocument();
 
     testData.data.forEach((item) => {
       expect(screen.getByText(item.text)).toBeInTheDocument();
@@ -49,7 +52,10 @@ describe("MultiChoice", () => {
   it("should toggle multi answer filters when items clicked", async () => {
     const user = userEvent.setup();
 
-    render(MultiChoice, { data: testData.data });
+    render(MultiChoice, {
+      data: testData.data,
+      totalAnswers: testData.totalCounts,
+    });
 
     // No filters applied yet
     expect(multiAnswerFilters.filters).toStrictEqual([]);
