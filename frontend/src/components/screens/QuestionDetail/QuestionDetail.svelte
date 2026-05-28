@@ -361,6 +361,8 @@
         themesLoading={!dataRequested || $themesStore.isLoading}
         filtersLoading={!dataRequested || $demographicsStore.isLoading}
         totalAnswers={$questionStore.data?.total_responses || 0}
+        multiChoiceRespondentCount={$questionStore.data
+          ?.multi_choice_respondent_count || 0}
         {demoData}
         demoOptions={formattedDemoOptions || {}}
         demoOptionsData={$demographicsStore.data || undefined}

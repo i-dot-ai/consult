@@ -518,7 +518,7 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                   class="flex items-center justify-center"
                 >
                   <div
-                    class="bg-pink-50 p-2 rounded-md mt-1.5"
+                    class="bg-pink-50 p-2 rounded-md"
                   >
                     <svg
                       class="fill-pink-700"
@@ -557,6 +557,11 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                   
                   <!---->
                    
+                  <p
+                    class="text-neutral-600 text-sm"
+                  >
+                    232 responses
+                  </p>
                   <!---->
                 </div>
                  

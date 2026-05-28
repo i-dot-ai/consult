@@ -35,6 +35,7 @@
     themesLoading?: boolean;
     filtersLoading?: boolean;
     totalAnswers: number;
+    multiChoiceRespondentCount: number;
     demoData: DemoData;
     demoOptions: DemoOption;
     demoOptionsData?: DemoOptionsResponse;
@@ -50,6 +51,7 @@
     themesLoading = true,
     filtersLoading = true,
     totalAnswers = 0,
+    multiChoiceRespondentCount = 0,
     demoData = {},
     demoOptions = {},
     demoOptionsData = [],
@@ -89,7 +91,10 @@
   <div class="col-span-4 md:col-span-3">
     <svelte:boundary>
       {#if multiChoice && multiChoice.length > 0}
-        <MultiChoice data={multiChoice} />
+        <MultiChoice
+          data={multiChoice}
+          totalAnswers={multiChoiceRespondentCount}
+        />
       {/if}
 
       {#snippet failed(error)}
