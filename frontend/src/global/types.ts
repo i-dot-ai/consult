@@ -209,7 +209,9 @@ export interface CandidateThemeResponsesResponse {
   results: CandidateThemeResponseItem[];
 }
 export interface ResponsesBody {
+  filtered_total: number | null;
   has_more_pages: boolean;
+  next_cursor: string | null;
   all_respondents: ResponseBody[];
   total_count?: number;
 }
