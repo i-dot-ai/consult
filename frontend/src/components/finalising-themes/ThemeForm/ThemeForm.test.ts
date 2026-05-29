@@ -38,6 +38,12 @@ describe("ThemeForm", () => {
     expect(ThemeFormStory).toHaveProperty("props");
 
     const propsDefined = ThemeFormStory.props.map((prop) => prop.name);
-    expect(propsDefined).toEqual(["handleConfirm", "handleCancel"]);
+    expect(propsDefined).toEqual([
+      "variant",
+      "initialTitle",
+      "initialDescription",
+      "handleConfirm",
+      "handleCancel",
+    ]);
   });
 });
