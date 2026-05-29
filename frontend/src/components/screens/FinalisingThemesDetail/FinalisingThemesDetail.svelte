@@ -20,7 +20,6 @@
     type Question,
     type GeneratedTheme,
     type SelectedTheme,
-    type SelectedThemesResponse,
   } from "../../../global/types";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
@@ -45,10 +44,10 @@
     type ErrorType,
   } from "../../finalising-themes/ErrorModal/ErrorModal.svelte";
   import {
-    createSelectedTheme,
-    deleteSelectedTheme,
+    buildSelectedThemeCreateQuery,
+    buildSelectedThemeDeleteQuery,
+    buildSelectedThemesGetQuery,
   } from "../../../global/queries/selectedThemes/queries";
-  import type { SelectedThemeMutationError } from "../../../global/queries/selectedThemes/types";
 
   interface Props {
     consultationId: string;
@@ -57,7 +56,36 @@
 
   let { consultationId = "", questionId = "" }: Props = $props();
 
-  const selectedThemesStore = createFetchStore<SelectedThemesResponse>();
+  let selectedThemes = $derived(
+    buildSelectedThemesGetQuery(consultationId, questionId),
+  );
+  let selectedThemesCreate = $derived(
+    buildSelectedThemeCreateQuery(consultationId, questionId, async () => {
+      refreshThemes();
+    }),
+  );
+  let selectedThemesDelete = $derived(
+    buildSelectedThemeDeleteQuery(
+      consultationId,
+      questionId,
+      async () => refreshThemes(),
+      async (error) => {
+        if (error.status === 404) {
+          // No action or error needed if status 404 (theme already deselected)
+          refreshThemes();
+        } else if (error.status === 412) {
+          errorData = {
+            type: "remove-conflict",
+            lastModifiedBy: error.data?.last_modified_by?.email || "",
+            latestVersion: error.data?.latest_version || "",
+          };
+        } else {
+          errorData = { type: "unexpected" };
+          console.error(error.message);
+        }
+      },
+    ),
+  );
   const generatedThemesStore = createFetchStore<GeneratedThemesResponse>();
   const generatedThemesSelectStore = createFetchStore();
   const questionStore = createFetchStore<Question>();
@@ -96,7 +124,7 @@
   let dataRequested: boolean = $state(false);
 
   const errorModalOnClose = () => {
-    $selectedThemesStore.fetch(
+    selectedThemes.fetch(
       getApiGetSelectedThemesUrl(consultationId, questionId),
     );
     $generatedThemesStore.fetch(
@@ -106,9 +134,6 @@
   };
 
   onMount(() => {
-    $selectedThemesStore.fetch(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
     $generatedThemesStore.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
@@ -117,18 +142,17 @@
   });
 
   const createTheme = async (title: string, description: string) => {
-    try {
-      await createSelectedTheme(consultationId, questionId, title, description);
-      refreshThemes();
-    } catch (error) {
-      console.error(error);
-      errorData = { type: "unexpected" };
-    }
+    selectedThemesCreate.fetch({
+      body: {
+        name: title,
+        description: description,
+      },
+    });
   };
 
   const removeTheme = async (themeId: string) => {
-    const selectedTheme = $selectedThemesStore.data?.results.find(
-      (theme) => theme.id === themeId,
+    const selectedTheme = selectedThemes.query.data?.results.find(
+      (theme: { id: string }) => theme.id === themeId,
     );
 
     if (!selectedTheme) {
@@ -136,29 +160,7 @@
       return;
     }
 
-    try {
-      await deleteSelectedTheme(
-        consultationId,
-        questionId,
-        themeId,
-        selectedTheme.version,
-      );
-      refreshThemes();
-    } catch (error) {
-      const err = error as SelectedThemeMutationError;
-      if (err.status === 404) {
-        refreshThemes();
-      } else if (err.status === 412) {
-        errorData = {
-          type: "remove-conflict",
-          lastModifiedBy: err.last_modified_by?.email || "",
-          latestVersion: err.latest_version || "",
-        };
-      } else {
-        errorData = { type: "unexpected" };
-        console.error(error);
-      }
-    }
+    selectedThemesDelete.fetch(themeId, selectedTheme.version);
   };
 
   const updateTheme = async (
@@ -166,8 +168,8 @@
     title: string,
     description: string,
   ) => {
-    const selectedTheme = $selectedThemesStore.data?.results.find(
-      (theme) => theme.id === themeId,
+    const selectedTheme = selectedThemes.query.data?.results.find(
+      (theme: { id: string }) => theme.id === themeId,
     );
 
     if (!selectedTheme) {
@@ -192,7 +194,7 @@
       );
 
       if (response.ok) {
-        $selectedThemesStore.fetch(
+        selectedThemes.fetch(
           getApiGetSelectedThemesUrl(consultationId, questionId),
         );
       } else if (response.status === 404) {
@@ -220,7 +222,7 @@
       "POST",
     );
 
-    await $selectedThemesStore.fetch(
+    await selectedThemes.fetch(
       getApiGetSelectedThemesUrl(consultationId, questionId),
     );
     await $generatedThemesStore.fetch(
@@ -245,9 +247,7 @@
   };
 
   const refreshThemes = () => {
-    $selectedThemesStore.fetch(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
+    selectedThemes.fetch();
     $generatedThemesStore.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
@@ -355,7 +355,7 @@
             <h3>Selected Themes</h3>
 
             <Tag variant="primary-light">
-              {$selectedThemesStore.data?.results?.length ?? 0} selected
+              {selectedThemes.query.data?.results?.length ?? 0} selected
             </Tag>
           </div>
 
@@ -379,9 +379,9 @@
         </div>
 
         <p class="text-sm text-neutral-500">
-          {#if ($selectedThemesStore.data?.results?.length ?? 0) > 0}
+          {#if (selectedThemes.query.data?.results?.length ?? 0) > 0}
             Manage your {numSelectedThemesText(
-              $selectedThemesStore.data?.results,
+              selectedThemes.query.data?.results,
             )} for AI to assign responses to. Edit titles or descriptions, or add
             a new theme.
           {:else}
@@ -406,7 +406,7 @@
       </div>
     {/if}
 
-    {#if $selectedThemesStore.data?.results?.length === 0}
+    {#if selectedThemes.query.data?.results.length === 0}
       <div in:fade class="my-8 flex flex-col items-center justify-center gap-2">
         <div class="mb-2">
           <MaterialIcon size="2rem" color="fill-neutral-500">
@@ -421,7 +421,7 @@
       </div>
     {:else}
       <div class="mt-4">
-        {#each $selectedThemesStore.data?.results ?? [] as selectedTheme (selectedTheme.id)}
+        {#each selectedThemes.query.data?.results ?? [] as selectedTheme (selectedTheme.id)}
           <div transition:slide={{ duration: 150 }} class="mb-4 last:mb-0">
             <SelectedThemeCard
               {consultationId}
@@ -440,8 +440,8 @@
         variant="primary"
         fullWidth={true}
         disabled={!dataRequested ||
-          $selectedThemesStore.isLoading ||
-          ($selectedThemesStore.data?.results?.length ?? 0) === 0}
+          selectedThemes.query.isPending ||
+          (selectedThemes.query.data?.results?.length ?? 0) === 0}
         handleClick={() =>
           (isConfirmFinalisingThemesModalOpen =
             !isConfirmFinalisingThemesModalOpen)}
@@ -452,10 +452,10 @@
           </MaterialIcon>
 
           <span>
-            {#if !dataRequested || $selectedThemesStore.isLoading}
+            {#if !dataRequested || selectedThemes.query.isPending}
               Loading Selected Themes
             {:else}
-              Sign Off Selected Themes ({$selectedThemesStore.data?.results
+              Sign Off Selected Themes ({selectedThemes.query.data?.results
                 ?.length ?? 0})
             {/if}
           </span>
@@ -475,14 +475,14 @@
     >
       <p class="text-sm text-neutral-500">
         Are you sure you want to sign off on these {numSelectedThemesText(
-          $selectedThemesStore.data?.results,
+          selectedThemes.query.data?.results,
         )} for Question {$questionStore.data?.number}?
       </p>
 
       <h4 class="my-4 text-xs font-bold">Selected themes:</h4>
 
       <div class="max-h-64 overflow-y-auto">
-        {#each $selectedThemesStore.data?.results ?? [] as selectedTheme (selectedTheme.id)}
+        {#each selectedThemes.query.data?.results ?? [] as selectedTheme (selectedTheme.id)}
           <Panel bg={true} border={false}>
             <h5 class="mb-1 text-xs font-bold">{selectedTheme.name}</h5>
             <p class="text-xs text-neutral-500">{selectedTheme.description}</p>
