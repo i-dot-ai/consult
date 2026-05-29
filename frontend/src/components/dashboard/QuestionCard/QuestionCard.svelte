@@ -32,7 +32,7 @@
   }
 
   let {
-    question = {},
+    question,
     url = "",
     highlightText = "",
     clickable = false,
@@ -142,7 +142,7 @@
                 disabled && "opacity-50",
               ])}
             >
-              {question.total_responses} responses
+              {question.total_response_count} responses
             </div>
 
             {#if subtext}

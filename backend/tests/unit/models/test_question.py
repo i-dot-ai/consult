@@ -94,7 +94,7 @@ class TestSampleResponses:
 
         question.refresh_from_db()
 
-        assert question.total_responses == 3
+        assert question.free_text_response_count == 3
 
     def test_raises_error_if_keep_count_less_than_one(self):
         consultation = ConsultationFactory()

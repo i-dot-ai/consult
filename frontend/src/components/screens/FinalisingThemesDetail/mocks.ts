@@ -195,7 +195,9 @@ export const questionMock = {
   body: {
     id: "b20f35ee-411b-4746-9029-1e9b02610dea",
     number: 4,
-    total_responses: 100,
+    total_response_count: 100,
+    free_text_response_count: 100,
+    multi_choice_response_count: 0,
     question_text:
       "What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?",
     has_free_text: true,

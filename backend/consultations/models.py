@@ -120,11 +120,17 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     # Question configuration
     has_free_text = models.BooleanField(default=True)
     has_multiple_choice = models.BooleanField(default=False)
-    total_responses = models.IntegerField(
+    total_response_count = models.IntegerField(
         default=0,
-        help_text="Number of free text responses for this question",
-        null=True,
-        blank=True,
+        help_text="Number of respondents who answered this question (either part for hybrid questions)",
+    )
+    free_text_response_count = models.IntegerField(
+        default=0,
+        help_text="Number of responses where free text was submitted",
+    )
+    multi_choice_response_count = models.IntegerField(
+        default=0,
+        help_text="Number of respondents that selected at least one multi-choice option",
     )
 
     @property
@@ -138,30 +144,45 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         if not self.has_free_text:
             return 0
 
-        # Count total responses with free text
-        total_responses = self.response_set.filter(
-            free_text__isnull=False, free_text__gt=""
-        ).count()
-
-        if total_responses == 0:
+        if not self.free_text_response_count:
             return 0
 
-        # Count human-reviewed responses
         reviewed_responses = self.response_set.filter(
             free_text__isnull=False, free_text__gt="", annotation__human_reviewed=True
         ).count()
 
-        return reviewed_responses / total_responses
+        return reviewed_responses / self.free_text_response_count
 
-    def update_total_responses(self):
-        """Update the total_responses count based on current free text responses"""
+    def calculate_response_counts(self, responses=None):
+        """Calculate response counts from a queryset. Defaults to all responses for this question."""
+        if responses is None:
+            responses = self.response_set.all()
+
+        self.total_response_count = responses.values("respondent_id").distinct().count()
+
         if self.has_free_text:
-            count = self.response_set.filter(free_text__isnull=False, free_text__gt="").count()
-            self.total_responses = count
-            self.save(update_fields=["total_responses"])
+            self.free_text_response_count = responses.filter(free_text__isnull=False).count()
         else:
-            self.total_responses = 0
-            self.save(update_fields=["total_responses"])
+            self.free_text_response_count = 0
+
+        if self.has_multiple_choice:
+            self.multi_choice_response_count = (
+                responses.filter(chosen_options__isnull=False).distinct().count()
+            )
+
+        else:
+            self.multi_choice_response_count = 0
+
+    def update_response_counts(self):
+        """Calculate and persist denormalised response counts."""
+        self.calculate_response_counts()
+        self.save(
+            update_fields=[
+                "total_response_count",
+                "free_text_response_count",
+                "multi_choice_response_count",
+            ]
+        )
 
     def get_non_empty_responses(self):
         """
@@ -192,7 +213,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
             Response.objects.filter(question=self).exclude(id__in=list(ids_to_keep)).delete()
         )
 
-        self.update_total_responses()
+        self.update_response_counts()
 
         return SampleResult(kept=keep_count, deleted=delete_count)
 
@@ -284,6 +305,15 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     field_name = models.CharField(max_length=128)
     field_value = models.JSONField()
+    response_count = models.IntegerField(default=0)
+
+    @classmethod
+    def update_response_counts(cls, consultation):
+        """Update response_count for all options belonging to a consultation."""
+        options = cls.objects.filter(consultation=consultation)
+        for option in options:
+            option.response_count = option.respondent_set.count()
+        cls.objects.bulk_update(options, ["response_count"], batch_size=1000)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -510,6 +540,15 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
 
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     text = models.TextField()
+    response_count = models.IntegerField(default=0)
+
+    @classmethod
+    def update_response_counts(cls, question):
+        """Update response_count for all answers belonging to a question."""
+        answers = cls.objects.filter(question=question)
+        for answer in answers:
+            answer.response_count = answer.response_set.count()
+        cls.objects.bulk_update(answers, ["response_count"])
 
     def __str__(self):
         return f"{self.question.number} = {self.text}"

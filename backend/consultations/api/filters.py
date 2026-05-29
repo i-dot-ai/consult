@@ -61,17 +61,40 @@ class ResponseFilter(FilterSet):
         fields = ["respondent_id", "chosen_options"]
 
 
+def apply_search_filter(queryset, query_params):
+    """Apply keyword/semantic search to a response queryset."""
+    search_value = query_params.get("searchValue")
+    search_mode = query_params.get("searchMode")
+
+    if not search_value:
+        return queryset
+
+    if search_mode == "keyword":
+        return queryset.filter(free_text__icontains=search_value)
+    elif search_mode == "semantic":
+        embedded_query = embed_text(search_value)
+        distance = CosineDistance("embedding", embedded_query)
+        return queryset.annotate(distance=distance).order_by("distance")
+
+    return queryset
+
+
 def get_filtered_responses(query_params, consultation_id, question_id=None):
     """
-    Used by aggregation endpoints (themes, demographics) to filter responses
-    by question if question_id is defined.
+    Single entry point for filtering responses. Used by all aggregation endpoints
+    (question counts, themes, demographics) and the responses list.
+    Applies filter params AND search.
     """
     queryset = Response.objects.filter(question__consultation_id=consultation_id)
     if question_id:
         queryset = queryset.filter(question_id=question_id)
 
     filterset = ResponseFilter(query_params, queryset=queryset)
-    return filterset.qs
+    queryset = filterset.qs
+
+    queryset = apply_search_filter(queryset, query_params)
+
+    return queryset
 
 
 class UserFilter(FilterSet):

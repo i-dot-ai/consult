@@ -21,14 +21,14 @@ describe("ThemesTable", () => {
         count: 20,
       },
     ],
-    totalAnswers: 30,
+    freeTextResponseCount: 30,
     skeleton: false,
   };
 
   it("should render data", () => {
     render(ThemesTable, {
       themes: testData.themes,
-      totalAnswers: testData.totalAnswers,
+      freeTextResponseCount: testData.freeTextResponseCount,
       skeleton: testData.skeleton,
     });
 
@@ -36,7 +36,10 @@ describe("ThemesTable", () => {
       expect(screen.getByText(theme.name)).toBeInTheDocument();
       expect(screen.getByText(theme.description)).toBeInTheDocument();
       expect(screen.getByText(theme.count)).toBeInTheDocument();
-      const percentage = getPercentage(theme.count, testData.totalAnswers);
+      const percentage = getPercentage(
+        theme.count,
+        testData.freeTextResponseCount,
+      );
       expect(
         screen.getByText(`${Math.round(percentage)}%`),
       ).toBeInTheDocument();
@@ -49,7 +52,7 @@ describe("ThemesTable", () => {
         ...theme,
         highlighted: index % 2 === 1, // alternate between highlighted
       })),
-      totalAnswers: testData.totalAnswers,
+      freeTextResponseCount: testData.freeTextResponseCount,
       skeleton: testData.skeleton,
     });
 
@@ -65,7 +68,7 @@ describe("ThemesTable", () => {
         ...theme,
         handleClick: handleClickMock,
       })),
-      totalAnswers: testData.totalAnswers,
+      freeTextResponseCount: testData.freeTextResponseCount,
       skeleton: testData.skeleton,
     });
 
@@ -80,7 +83,7 @@ describe("ThemesTable", () => {
   it("should not render data if skeleton", () => {
     render(ThemesTable, {
       themes: testData.themes,
-      totalAnswers: testData.totalAnswers,
+      freeTextResponseCount: testData.freeTextResponseCount,
       skeleton: true,
     });
 
@@ -88,7 +91,10 @@ describe("ThemesTable", () => {
       expect(screen.queryByText(theme.name)).toBeNull();
       expect(screen.queryByText(theme.description)).toBeNull();
       expect(screen.queryByText(theme.count)).toBeNull();
-      const percentage = getPercentage(theme.count, testData.totalAnswers);
+      const percentage = getPercentage(
+        theme.count,
+        testData.freeTextResponseCount,
+      );
       expect(screen.queryByText(`${percentage}%`)).toBeNull();
     });
   });
@@ -96,7 +102,7 @@ describe("ThemesTable", () => {
   it("should render special text when percentage is below 1 but not 0", () => {
     render(ThemesTable, {
       themes: testData.themes,
-      totalAnswers: 10000,
+      freeTextResponseCount: 10000,
       skeleton: false,
     });
 

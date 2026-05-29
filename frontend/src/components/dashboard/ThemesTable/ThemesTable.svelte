@@ -11,11 +11,15 @@
 
   interface Props {
     themes: FormattedTheme[];
-    totalAnswers: number;
+    freeTextResponseCount: number;
     skeleton?: boolean;
   }
 
-  let { themes = [], totalAnswers = 0, skeleton = false }: Props = $props();
+  let {
+    themes = [],
+    freeTextResponseCount = 0,
+    skeleton = false,
+  }: Props = $props();
 
   const TABLE_FLIP_SPEED = 10;
 </script>
@@ -81,7 +85,10 @@
     {:else}
       <tbody in:fade>
         {#each themes as theme (theme.id)}
-          {@const percentage = getPercentage(theme.count, totalAnswers)}
+          {@const percentage = getPercentage(
+            theme.count,
+            freeTextResponseCount,
+          )}
 
           <tr
             animate:flip={{ duration: 300 + themes.length * TABLE_FLIP_SPEED }}

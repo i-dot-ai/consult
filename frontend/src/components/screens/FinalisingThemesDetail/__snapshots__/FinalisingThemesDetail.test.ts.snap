@@ -94,54 +94,6 @@ exports[`EditUser > should match snapshot after loading 1`] = `
   <section
     class="my-8"
   >
-    <div
-      class="bg-white"
-    >
-      <!---->
-      <!---->
-      <div
-        class="h-full my-4 p-4 rounded-2xl border border-gray-200"
-        data-testid="panel-component"
-      >
-        <article
-          class="flex gap-2 items-start relative flex-col-reverse sm:flex-row"
-        >
-          <div
-            class="mt-0.5 hidden sm:block"
-          >
-            <!---->
-          </div>
-           
-          <div
-            class="grow"
-            data-testid="horizontal-container"
-          >
-            <p
-              class="text-md transition-colors duration-1000 select-none bg-neutral-100 text-neutral-100 blink"
-            >
-              SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON 
-            </p>
-             
-            <div
-              class="text-sm mt-2 transition-colors duration-1000 w-max select-none bg-neutral-100 text-neutral-100 blink"
-            >
-              000 responses
-            </div>
-            <!---->
-          </div>
-           
-          <div
-            class="-ml-2 sm:ml-0 -mt-1"
-          >
-            <!---->
-          </div>
-        </article>
-        <!---->
-      </div>
-      
-      
-      <!---->
-    </div>
     <!---->
   </section>
    
@@ -620,54 +572,6 @@ exports[`EditUser > should match snapshot initially 1`] = `
   <section
     class="my-8"
   >
-    <div
-      class="bg-white"
-    >
-      <!---->
-      <!---->
-      <div
-        class="h-full my-4 p-4 rounded-2xl border border-gray-200"
-        data-testid="panel-component"
-      >
-        <article
-          class="flex gap-2 items-start relative flex-col-reverse sm:flex-row"
-        >
-          <div
-            class="mt-0.5 hidden sm:block"
-          >
-            <!---->
-          </div>
-           
-          <div
-            class="grow"
-            data-testid="horizontal-container"
-          >
-            <p
-              class="text-md transition-colors duration-1000 select-none bg-neutral-100 text-neutral-100 blink"
-            >
-              SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON 
-            </p>
-             
-            <div
-              class="text-sm mt-2 transition-colors duration-1000 w-max select-none bg-neutral-100 text-neutral-100 blink"
-            >
-              000 responses
-            </div>
-            <!---->
-          </div>
-           
-          <div
-            class="-ml-2 sm:ml-0 -mt-1"
-          >
-            <!---->
-          </div>
-        </article>
-        <!---->
-      </div>
-      
-      
-      <!---->
-    </div>
     <!---->
   </section>
    

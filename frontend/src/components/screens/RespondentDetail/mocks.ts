@@ -22,7 +22,9 @@ export const consultationQuestionsMock = {
       {
         id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
         number: 1,
-        total_responses: 100,
+        total_response_count: 100,
+        free_text_response_count: 100,
+        multi_choice_response_count: 0,
         question_text:
           "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
         has_free_text: true,
@@ -55,7 +57,9 @@ export const consultationQuestionsMock = {
       {
         id: "ef855675-af2b-4cfe-871d-ad108360e57a",
         number: 2,
-        total_responses: 100,
+        total_response_count: 100,
+        free_text_response_count: 100,
+        multi_choice_response_count: 0,
         question_text:
           "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
         has_free_text: false,
@@ -88,7 +92,9 @@ export const consultationQuestionsMock = {
       {
         id: "92848794-2072-41c4-b3bf-78248a6995da",
         number: 3,
-        total_responses: 100,
+        total_response_count: 100,
+        free_text_response_count: 100,
+        multi_choice_response_count: 0,
         question_text:
           "Which of the following factors do you believe are important when considering the packaging of chocolate bars? Please select all that apply: a) Sustainability, b) Design, c) Cost-effectiveness, d) Durability, e) Brand recognition.",
         has_free_text: false,
@@ -126,7 +132,9 @@ export const consultationQuestionsMock = {
       {
         id: "b20f35ee-411b-4746-9029-1e9b02610dea",
         number: 4,
-        total_responses: 100,
+        total_response_count: 100,
+        free_text_response_count: 100,
+        multi_choice_response_count: 0,
         question_text:
           "What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?",
         has_free_text: true,
@@ -287,7 +295,9 @@ export const questionsMock = {
       {
         id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
         number: 1,
-        total_responses: 100,
+        total_response_count: 100,
+        free_text_response_count: 100,
+        multi_choice_response_count: 0,
         question_text:
           "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
         has_free_text: true,
@@ -320,7 +330,9 @@ export const questionsMock = {
       {
         id: "ef855675-af2b-4cfe-871d-ad108360e57a",
         number: 2,
-        total_responses: 100,
+        total_response_count: 100,
+        free_text_response_count: 100,
+        multi_choice_response_count: 0,
         question_text:
           "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
         has_free_text: false,
@@ -353,7 +365,9 @@ export const questionsMock = {
       {
         id: "92848794-2072-41c4-b3bf-78248a6995da",
         number: 3,
-        total_responses: 100,
+        total_response_count: 100,
+        free_text_response_count: 100,
+        multi_choice_response_count: 0,
         question_text:
           "Which of the following factors do you believe are important when considering the packaging of chocolate bars? Please select all that apply: a) Sustainability, b) Design, c) Cost-effectiveness, d) Durability, e) Brand recognition.",
         has_free_text: false,
@@ -391,7 +405,9 @@ export const questionsMock = {
       {
         id: "b20f35ee-411b-4746-9029-1e9b02610dea",
         number: 4,
-        total_responses: 100,
+        total_response_count: 100,
+        free_text_response_count: 100,
+        multi_choice_response_count: 0,
         question_text:
           "What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?",
         has_free_text: true,
