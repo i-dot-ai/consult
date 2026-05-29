@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('consultations', '0100_remove_legacy_stage_choices'),
+        ('consultations', '0102_responsereadby_alter_response_read_by'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

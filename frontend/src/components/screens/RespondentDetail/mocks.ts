@@ -184,7 +184,9 @@ export const respondentsMock = {
 export const responsesMock = {
   url: "path:" + getApiAnswersUrl(CONSULTATION_ID),
   body: {
+    total_count: 4,
     has_more_pages: false,
+    next_cursor: null,
     all_respondents: [
       {
         id: "a97ee5ee-f23e-4ff4-b9c8-a32982332501",
