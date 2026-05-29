@@ -72,10 +72,10 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     multi_choice_respondent_count = serializers.SerializerMethodField()
 
     def get_total_responses(self, obj) -> int:
-        return obj.prefetched_total_responses
+        return getattr(obj, "prefetched_total_responses", 0)
 
     def get_multi_choice_respondent_count(self, obj) -> int:
-        return obj.prefetched_multi_choice_respondent_count
+        return getattr(obj, "prefetched_multi_choice_respondent_count", 0)
 
     def get_proportion_of_audited_answers(self, obj) -> float:
         if not obj.has_free_text or not obj.total_responses:

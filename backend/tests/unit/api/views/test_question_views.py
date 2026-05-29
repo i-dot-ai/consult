@@ -1,4 +1,6 @@
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -9,6 +11,7 @@ from factories import (
     RespondentFactory,
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
+    ReviewedResponseAnnotationFactory,
 )
 
 
@@ -562,6 +565,74 @@ class TestQuestionViewSet:
 
         assert response.status_code == 200
         assert response.json()["theme_status"] == "confirmed"
+
+    def _build_counted_question(self, consultation, number, *, reviewed=0):
+        """Create a hybrid question with 3 free-text responses, an option chosen by
+        the first two responses, and ``reviewed`` human-reviewed annotations."""
+        question = QuestionFactory(
+            consultation=consultation,
+            has_free_text=True,
+            has_multiple_choice=True,
+            number=number,
+        )
+        option = MultiChoiceAnswerFactory.create(question=question, text="red")
+        responses = []
+        for i in range(3):
+            respondent = RespondentFactory(consultation=consultation)
+            responses.append(
+                ResponseFactory(question=question, respondent=respondent, free_text=f"r{i}")
+            )
+        responses[0].chosen_options.add(option)
+        responses[1].chosen_options.add(option)
+        for response in responses[:reviewed]:
+            ReviewedResponseAnnotationFactory(response=response)
+        question.update_total_responses()
+        return question
+
+    def test_question_list_returns_correct_counts(self, client, staff_user_token, consultation):
+        """List endpoint returns the same per-question counts the detail view does,
+        now computed in bulk."""
+        self._build_counted_question(consultation, number=1, reviewed=1)
+
+        url = reverse("question-list", kwargs={"consultation_pk": consultation.id})
+        response = client.get(
+            url,
+            {"include": "proportion_of_audited_answers"},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        [data] = response.json()["results"]
+        assert data["total_responses"] == 3
+        assert data["multi_choice_respondent_count"] == 2
+        option_counts = {o["text"]: o["response_count"] for o in data["multiple_choice_answer"]}
+        assert option_counts == {"red": 2}
+        # 1 of 3 free-text responses human-reviewed
+        assert data["proportion_of_audited_answers"] == pytest.approx(1 / 3)
+
+    def test_question_list_query_count_is_constant(self, client, staff_user_token, consultation):
+        """The list endpoint must not run per-question queries: adding more questions
+        (each with responses and options) must not increase the query count. This is
+        the guard against regressing to correlated-subquery-per-row behaviour."""
+        url = reverse("question-list", kwargs={"consultation_pk": consultation.id})
+        headers = {"Authorization": f"Bearer {staff_user_token}"}
+        query_params = {"include": "proportion_of_audited_answers"}
+
+        self._build_counted_question(consultation, number=1, reviewed=1)
+        with CaptureQueriesContext(connection) as small:
+            assert client.get(url, query_params, headers=headers).status_code == 200
+
+        for number in range(2, 7):
+            self._build_counted_question(consultation, number=number, reviewed=1)
+        with CaptureQueriesContext(connection) as large:
+            response = client.get(url, query_params, headers=headers)
+            assert response.status_code == 200
+
+        assert len(response.json()["results"]) == 6
+        assert len(large.captured_queries) == len(small.captured_queries), (
+            "Query count grew with the number of questions: "
+            f"{len(small.captured_queries)} -> {len(large.captured_queries)}"
+        )
 
 
 @pytest.mark.django_db
