@@ -1,7 +1,6 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { untrack } from "svelte";
   import { slide } from "svelte/transition";
 
   import {
@@ -33,7 +32,7 @@
     questionId,
   }: Props = $props();
 
-  let ownSelectedThemes = $state(untrack(() => [...selectedThemes]));
+  let ownSelectedThemes = $derived(selectedThemes);
   let sending: boolean = $state(false);
   let errors: Record<string, string> = $state({});
 
@@ -42,7 +41,10 @@
 
     if (checked) {
       const themeToAdd = allThemes.find((theme) => theme.id === value);
-      if (themeToAdd && !selectedThemes.some((theme) => theme.id === value)) {
+      if (
+        themeToAdd &&
+        !ownSelectedThemes.some((theme) => theme.id === value)
+      ) {
         ownSelectedThemes = [...ownSelectedThemes, themeToAdd];
       }
     } else {

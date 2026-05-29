@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { untrack } from "svelte";
   import Accordion from "../../Accordion/Accordion.svelte";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
@@ -26,8 +25,8 @@
     variant = "add",
   }: Props = $props();
 
-  let title = $state(untrack(() => initialTitle));
-  let description = $state(untrack(() => initialDescription));
+  let title = $derived(initialTitle);
+  let description = $derived(initialDescription);
 
   const isThemeValid = () => {
     return Boolean(title && description);

@@ -192,7 +192,7 @@
         <Button
           size="xs"
           handleClick={() => (stagedEvidenceRich = false)}
-          highlighted={stagedEvidenceRich !== true}
+          highlighted={stagedEvidenceRich === false}
           highlightVariant="approve"
         >
           Not evidence-rich
