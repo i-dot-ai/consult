@@ -57,7 +57,6 @@
 
 {#snippet filter_switch(
   id: string,
-  label: string,
   value: boolean,
   handle_change: (v: boolean) => void,
   bgColour: string,
@@ -65,23 +64,24 @@
   text: string,
   ToggleIcon: Component,
 )}
+  {#snippet filterLabel()}
+    <div class="flex items-center gap-1">
+      <div class="rounded-2xl {bgColour} p-0.5 text-xs">
+        <MaterialIcon size="1rem" color={iconColour}>
+          <ToggleIcon></ToggleIcon>
+        </MaterialIcon>
+      </div>
+
+      <span class="text-xs">{text}</span>
+    </div>
+  {/snippet}
   <Panel level={2} border={true} bg={true}>
     <Switch
       {id}
-      {label}
+      label={filterLabel}
       {value}
       handleChange={(value: boolean) => handle_change(value)}
-    >
-      <div slot="label" class="flex items-center gap-1">
-        <div class="rounded-2xl {bgColour} p-0.5 text-xs">
-          <MaterialIcon size="1rem" color={iconColour}>
-            <ToggleIcon></ToggleIcon>
-          </MaterialIcon>
-        </div>
-
-        <span class="text-xs">{text}</span>
-      </div>
-    </Switch>
+    />
   </Panel>
 {/snippet}
 
@@ -94,7 +94,6 @@
     {#if showEvidenceRich}
       {@render filter_switch(
         "evidence-rich-toggle",
-        "Evidence rich",
         evidenceRich,
         setEvidenceRich,
         "bg-yellow-100",
@@ -106,7 +105,6 @@
     {#if showUnseenResponse}
       {@render filter_switch(
         "unseen-responses-toggle",
-        "Show unseen responses",
         unseenResponses,
         setUnseenResponses,
         "bg-iaiteal-200",

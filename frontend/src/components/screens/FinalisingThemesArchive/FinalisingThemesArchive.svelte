@@ -111,7 +111,7 @@
         variant="secondary"
         title="Confirm AI Assignment"
         confirmText="Yes, Start AI Assignment"
-        icon={Warning}
+        Icon={Warning}
         open={isConfirmModalOpen}
         setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
         handleConfirm={async () => {

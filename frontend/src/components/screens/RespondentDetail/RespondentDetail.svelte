@@ -221,7 +221,7 @@
                   responseText={response.free_text_answer_text}
                   multiChoice={response.multiple_choice_answer}
                   themes={response.themes?.map((theme) => theme.name) || []}
-                  evidenceRich={response.evidenceRich}
+                  evidenceRich={response.evidenceRich ?? false}
                   delay={FLY_ANIMATION_DELAY * i}
                 />
               {/each}

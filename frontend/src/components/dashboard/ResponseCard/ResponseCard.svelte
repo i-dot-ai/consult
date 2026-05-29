@@ -23,7 +23,7 @@
     respondentId?: string;
     text?: string;
     demoData?: string[];
-    evidenceRich?: boolean;
+    evidenceRich?: boolean | null;
     multiAnswers?: string[];
     themes?: ResponseTheme[];
     themeOptions?: ResponseTheme[];

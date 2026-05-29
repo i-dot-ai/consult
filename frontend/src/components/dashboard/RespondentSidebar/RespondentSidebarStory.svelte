@@ -26,7 +26,7 @@
 <TextInput
   id="input-stakeholderName"
   label="Stakeholder Name"
-  value={stakeholderName}
+  value={stakeholderName || ""}
   setValue={(newValue) => (stakeholderName = newValue)}
 />
 

@@ -11,9 +11,10 @@
 </script>
 
 {#if labelSlot}
-  <Switch {id} {label} {value} {handleChange}>
-    <p slot="label">{labelSlot}</p>
-  </Switch>
+  {#snippet labelContent()}
+    <p>{labelSlot}</p>
+  {/snippet}
+  <Switch {id} label={labelContent} {value} {handleChange} />
 {:else}
   <Switch {id} {label} {value} {handleChange} />
 {/if}

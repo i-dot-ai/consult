@@ -55,6 +55,13 @@ export type MockFetch<T> = (config: {
   body?: string;
 }) => T;
 
+export type StoreFetch = (
+  url: string,
+  method?: string,
+  body?: Record<string, unknown>,
+  headers?: HeadersInit,
+) => Promise<void>;
+
 // Shared fetch logic
 export const createFetchStore = <T>({
   mockFetch,
@@ -65,12 +72,7 @@ export const createFetchStore = <T>({
     isLoading: boolean;
     error: string | null;
     status: number;
-    fetch: (
-      url: string,
-      method?: string,
-      body?: BodyInit,
-      headers?: HeadersInit,
-    ) => Promise<void>;
+    fetch: StoreFetch;
   }> = writable({
     data: null,
     isLoading: false,
@@ -87,7 +89,8 @@ export const createFetchStore = <T>({
   const doFetch = async (
     url: string,
     method: string = "GET",
-    body?: BodyInit,
+    // Narrowed from BodyInit — all callers pass plain objects that are JSON.stringify'd below
+    body?: Record<string, unknown>,
     headers?: HeadersInit,
   ) => {
     // immediate feedback to the UI that fetching has started

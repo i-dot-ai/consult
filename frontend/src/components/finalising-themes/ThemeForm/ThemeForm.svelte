@@ -25,8 +25,8 @@
     variant = "add",
   }: Props = $props();
 
-  let title = $state(initialTitle);
-  let description = $state(initialDescription);
+  let title = $derived(initialTitle);
+  let description = $derived(initialDescription);
 
   const isThemeValid = () => {
     return Boolean(title && description);

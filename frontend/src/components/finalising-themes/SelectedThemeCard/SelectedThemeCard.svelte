@@ -1,6 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { untrack } from "svelte";
   import { fade, fly } from "svelte/transition";
 
   import type {
@@ -42,7 +43,7 @@
   }: Props = $props();
 
   const responsesStore = createFetchStore<ResponsesBody>({
-    mockFetch: responsesMock,
+    mockFetch: untrack(() => responsesMock),
   });
 
   let showAnswers = $state(false);

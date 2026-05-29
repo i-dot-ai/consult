@@ -17,7 +17,7 @@ describe("EditPanel", () => {
     evidenceRich: false,
     resetData: () => {},
     setEditing: () => {},
-    updateResponseMock: () => {},
+    updateResponseMock: () => Promise.resolve(),
   };
 
   it("should match snapshot", async () => {
@@ -61,6 +61,25 @@ describe("EditPanel", () => {
     await user.click(button);
     expect(screen.queryByTestId("panel")).toBeNull();
     expect(setEditingMock).toHaveBeenCalledWith(false);
+  });
+
+  it("should not pre-select either button when evidenceRich is null", async () => {
+    const user = userEvent.setup();
+
+    render(EditPanel, { ...testData, evidenceRich: null });
+
+    const button = screen.getByRole("button");
+    await user.click(button);
+
+    const evidenceRichButton = screen.getByRole("button", {
+      name: "Evidence-rich",
+    });
+    const notEvidenceRichButton = screen.getByRole("button", {
+      name: "Not evidence-rich",
+    });
+
+    expect(evidenceRichButton).toHaveAttribute("aria-pressed", "false");
+    expect(notEvidenceRichButton).toHaveAttribute("aria-pressed", "false");
   });
 
   it("should update correct data and call resetData callback", async () => {

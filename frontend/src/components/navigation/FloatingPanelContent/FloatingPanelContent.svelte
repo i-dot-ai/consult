@@ -54,7 +54,7 @@
   ];
 </script>
 
-{#snippet renderItem({ icon, title, subtitle, url, handleClick }: Item)}
+{#snippet renderItem({ icon: Icon, title, subtitle, url, handleClick }: Item)}
   <li class="group">
     <Button
       variant="ghost"
@@ -75,7 +75,7 @@
           ])}
         >
           <MaterialIcon color="fill-neutral-500">
-            <svelte:component this={icon} />
+            <Icon />
           </MaterialIcon>
         </div>
         <div>

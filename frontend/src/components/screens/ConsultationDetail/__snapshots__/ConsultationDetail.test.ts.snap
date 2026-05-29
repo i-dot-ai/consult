@@ -688,7 +688,9 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       <div
                         data-testid="fav-button"
                       >
-                        <div>
+                        <div
+                          role="presentation"
+                        >
                           <!---->
                           <button
                             aria-pressed="false"
@@ -825,7 +827,9 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       <div
                         data-testid="fav-button"
                       >
-                        <div>
+                        <div
+                          role="presentation"
+                        >
                           <!---->
                           <button
                             aria-pressed="false"
@@ -962,7 +966,9 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       <div
                         data-testid="fav-button"
                       >
-                        <div>
+                        <div
+                          role="presentation"
+                        >
                           <!---->
                           <button
                             aria-pressed="false"
@@ -1098,7 +1104,9 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       <div
                         data-testid="fav-button"
                       >
-                        <div>
+                        <div
+                          role="presentation"
+                        >
                           <!---->
                           <button
                             aria-pressed="false"
