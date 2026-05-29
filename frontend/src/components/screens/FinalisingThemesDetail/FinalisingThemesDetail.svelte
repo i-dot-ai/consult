@@ -325,12 +325,14 @@
 </TitleRow>
 
 <section class="my-8">
-  <QuestionCard
-    skeleton={$questionStore.isLoading}
-    {consultationId}
-    question={$questionStore.data || {}}
-    clickable={false}
-  />
+  {#if $questionStore.data}
+    <QuestionCard
+      skeleton={$questionStore.isLoading}
+      {consultationId}
+      question={$questionStore.data}
+      clickable={false}
+    />
+  {/if}
 </section>
 
 <svelte:boundary>

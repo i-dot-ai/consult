@@ -1,4 +1,4 @@
-from django.db.models import Count, OuterRef, Prefetch, Q, Subquery, Value
+from django.db.models import Count, OuterRef, Q, Subquery, Value
 from django.db.models.functions import Coalesce
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -37,48 +37,7 @@ class QuestionViewSet(ModelViewSet):
         if not self.request.user.is_staff:
             queryset = queryset.filter(consultation__users=self.request.user)
 
-        # Total responses per question (correlated subquery to avoid full-table JOIN)
-        question_response_count = Subquery(
-            models.Response.objects.filter(question_id=OuterRef("pk"))
-            .order_by()
-            .values("question_id")
-            .annotate(c=Count("*"))
-            .values("c")
-        )
-        # Count of distinct responses that selected at least one multi-choice option
-        multi_choice_respondent_count = Subquery(
-            models.Response.chosen_options.through.objects.filter(
-                response__question_id=OuterRef("pk")
-            )
-            .order_by()
-            .values("response__question_id")
-            .annotate(c=Count("response_id", distinct=True))
-            .values("c")
-        )
-
-        queryset = queryset.annotate(
-            prefetched_total_responses=Coalesce(question_response_count, Value(0)),
-            prefetched_multi_choice_respondent_count=Coalesce(multi_choice_respondent_count, Value(0)),
-        )
-
-        # Response count per multi-choice answer (correlated subquery to avoid full-table JOIN)
-        multichoice_response_count = Subquery(
-            models.Response.chosen_options.through.objects.filter(
-                multichoiceanswer_id=OuterRef("pk")
-            )
-            .order_by()
-            .values("multichoiceanswer_id")
-            .annotate(c=Count("*"))
-            .values("c")
-        )
-        queryset = queryset.prefetch_related(
-            Prefetch(
-                "multichoiceanswer_set",
-                queryset=models.MultiChoiceAnswer.objects.annotate(
-                    prefetched_response_count=Coalesce(multichoice_response_count, Value(0))
-                ),
-            )
-        )
+        queryset = queryset.prefetch_related("multichoiceanswer_set")
 
         # Reviewed responses per question (only when explicitly requested)
         if "proportion_of_audited_answers" in self.request.query_params.get("include", ""):
@@ -86,7 +45,6 @@ class QuestionViewSet(ModelViewSet):
                 models.Response.objects.filter(
                     question_id=OuterRef("pk"),
                     free_text__isnull=False,
-                    free_text__gt="",
                     annotation__human_reviewed=True,
                 )
                 .order_by()
@@ -102,8 +60,8 @@ class QuestionViewSet(ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         """
-        Retrieve a single question with dynamically calculated multi-choice counts
-        when filters are applied.
+        Retrieve a single question with dynamically calculated response counts when
+        filters are applied.
         """
         question = self.get_object()
 
@@ -115,37 +73,33 @@ class QuestionViewSet(ModelViewSet):
             "unseenResponsesOnly",
             "is_flagged",
             "multiple_choice_answer",
+            "searchValue",
         ]
         has_filters = any(request.query_params.get(p) for p in filter_params)
 
-        # Recalculate multi-choice counts with filters if needed
-        if has_filters and question.has_multiple_choice:
+        if has_filters:
             consultation_pk = self.kwargs["consultation_pk"]
             pk = kwargs["pk"]
 
-            # Get filtered responses
             filtered_responses = get_filtered_responses(
                 request.query_params, consultation_pk, question_id=pk
             )
 
-            # Recalculate multi-choice counts with filters
-            multichoice_answers = models.MultiChoiceAnswer.objects.filter(
-                question=question
-            ).annotate(
-                prefetched_response_count=Count(
-                    "response",
-                    filter=Q(response__in=filtered_responses),
-                    distinct=True,
+            question.calculate_response_counts(filtered_responses)
+
+            if question.has_multiple_choice:
+                multichoice_answers = models.MultiChoiceAnswer.objects.filter(
+                    question=question
+                ).annotate(
+                    prefetched_response_count=Count(
+                        "response",
+                        filter=Q(response__in=filtered_responses),
+                        distinct=True,
+                    )
                 )
-            )
-
-            # Replace the prefetched multichoice answers
-            question._prefetched_objects_cache["multichoiceanswer_set"] = list(multichoice_answers)
-
-            # Recalculate multi-choice respondent count with filters
-            question.prefetched_multi_choice_respondent_count = (
-                filtered_responses.filter(chosen_options__isnull=False).distinct().count()
-            )
+                question._prefetched_objects_cache["multichoiceanswer_set"] = list(
+                    multichoice_answers
+                )
 
         serializer = self.get_serializer(question)
         return Response(serializer.data)
@@ -169,12 +123,9 @@ class QuestionViewSet(ModelViewSet):
             "unseenResponsesOnly",
             "is_flagged",
             "multiple_choice_answer",
+            "searchValue",
         ]
         has_filters = any(request.query_params.get(p) for p in filter_params)
-
-        non_empty_filter = ~Q(
-            responseannotation__response__free_text__in=models.EMPTY_FREE_TEXT_VALUES
-        )
 
         if has_filters:
             filtered_responses = get_filtered_responses(
@@ -183,14 +134,13 @@ class QuestionViewSet(ModelViewSet):
             themes = themes.annotate(
                 count=Count(
                     "responseannotation",
-                    filter=Q(responseannotation__response__in=filtered_responses)
-                    & non_empty_filter,
+                    filter=Q(responseannotation__response__in=filtered_responses),
                     distinct=True,
                 )
             )
         else:
             themes = themes.annotate(
-                count=Count("responseannotation", filter=non_empty_filter, distinct=True)
+                count=Count("responseannotation", distinct=True)
             )
 
         serializer = QuestionThemeSerializer(themes, many=True)
@@ -221,8 +171,7 @@ class QuestionViewSet(ModelViewSet):
         next_response = (
             models.Response.objects.filter(
                 question=question,
-                free_text__isnull=False,  # Only responses with free text
-                free_text__gt="",  # Non-empty free text
+                free_text__isnull=False,
             )
             .exclude(
                 annotation__human_reviewed=True  # Exclude already reviewed

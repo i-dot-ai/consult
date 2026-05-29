@@ -41,7 +41,7 @@
   export let answersError: string | null = "";
   export let responses: ResponseBody[] = [];
   export let hasMorePages: boolean = true;
-  export let filteredTotal: number = 0;
+  export let freeTextResponseCount: number = 0;
   export let handleLoadClick = () => {};
   export let resetData = () => {};
 
@@ -287,7 +287,7 @@
           <svelte:boundary>
             <TitleRow
               level={3}
-              title={`${filteredTotal} responses found`}
+              title={`${freeTextResponseCount} responses found`}
               subtitle="All responses to this question"
             >
               <div slot="aside" class="flex flex-wrap items-center gap-2">
@@ -405,7 +405,7 @@
 
                 {#if responses}
                   <p class="mt-2 text-center text-sm">
-                    {`Showing first ${responses.length} of ${filteredTotal} responses. Use filters to narrow results.`}
+                    {`Showing first ${responses.length} of ${freeTextResponseCount} responses. Use filters to narrow results.`}
                   </p>
                 {/if}
               </div>
