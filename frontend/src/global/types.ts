@@ -12,16 +12,17 @@ export interface QuestionMultiAnswer {
 }
 
 export interface Question {
-  id?: string;
-  number?: number;
-  total_responses?: number;
-  multi_choice_respondent_count?: number;
-  question_text?: string;
-  has_free_text?: boolean;
-  has_multiple_choice?: boolean;
-  multiple_choice_answer?: QuestionMultiAnswer[];
-  proportion_of_audited_answers?: number;
-  theme_status?: string;
+  id: string;
+  number: number;
+  total_response_count: number;
+  free_text_response_count: number;
+  multi_choice_response_count: number;
+  question_text: string;
+  has_free_text: boolean;
+  has_multiple_choice: boolean;
+  multiple_choice_answer: QuestionMultiAnswer[];
+  proportion_of_audited_answers: number;
+  theme_status: string;
 }
 
 export type ConsultationStage =
@@ -224,8 +225,6 @@ export interface CandidateThemeResponsesResponse {
   results: CandidateThemeResponseItem[];
 }
 export interface ResponsesBody {
-  respondents_total: number;
-  filtered_total: number;
   has_more_pages: boolean;
   all_respondents: ResponseBody[];
 }

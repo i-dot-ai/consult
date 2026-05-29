@@ -21,7 +21,7 @@ describe("MultiChoice", () => {
         response_count: 20,
       },
     ],
-    totalCounts: 30,
+    multiChoiceResponseCount: 30,
   };
 
   afterEach(() => {
@@ -31,7 +31,7 @@ describe("MultiChoice", () => {
   it("should render data", () => {
     const { container } = render(MultiChoice, {
       data: testData.data,
-      totalAnswers: testData.totalCounts,
+      multiChoiceResponseCount: testData.multiChoiceResponseCount,
     });
 
     expect(screen.getByText("30 responses")).toBeInTheDocument();
@@ -41,7 +41,7 @@ describe("MultiChoice", () => {
       expect(screen.getAllByText(item.response_count).length).toBe(2);
       expect(
         screen.getByText(
-          `${getPercentage(item.response_count, testData.totalCounts)}%`,
+          `${getPercentage(item.response_count, testData.multiChoiceResponseCount)}%`,
         ),
       ).toBeInTheDocument();
     });
@@ -54,7 +54,7 @@ describe("MultiChoice", () => {
 
     render(MultiChoice, {
       data: testData.data,
-      totalAnswers: testData.totalCounts,
+      multiChoiceResponseCount: testData.multiChoiceResponseCount,
     });
 
     // No filters applied yet

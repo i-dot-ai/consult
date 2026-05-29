@@ -51,11 +51,11 @@ class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
 
     response_count = serializers.SerializerMethodField()
 
-    def get_response_count(self, obj) -> int | None:
-        try:
+    def get_response_count(self, obj) -> int:
+        # When filters are applied, the view annotates a dynamic count
+        if hasattr(obj, "prefetched_response_count"):
             return obj.prefetched_response_count
-        except AttributeError:
-            return None
+        return obj.response_count
 
     class Meta:
         model = MultiChoiceAnswer
@@ -68,35 +68,32 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
         many=True, source="multichoiceanswer_set", read_only=True
     )
     proportion_of_audited_answers = serializers.SerializerMethodField()
-    total_responses = serializers.SerializerMethodField()
-    multi_choice_respondent_count = serializers.SerializerMethodField()
-
-    def get_total_responses(self, obj) -> int:
-        return obj.prefetched_total_responses
-
-    def get_multi_choice_respondent_count(self, obj) -> int:
-        return obj.prefetched_multi_choice_respondent_count
 
     def get_proportion_of_audited_answers(self, obj) -> float:
-        if not obj.has_free_text or not obj.total_responses:
+        if not obj.free_text_response_count:
             return 0
         reviewed = getattr(obj, "prefetched_reviewed_responses", 0) or 0
-        return reviewed / obj.total_responses
+        return reviewed / obj.free_text_response_count
 
     class Meta:
         model = Question
         fields = [
             "id",
             "number",
-            "total_responses",
-            "multi_choice_respondent_count",
+            "total_response_count",
+            "free_text_response_count",
+            "multi_choice_response_count",
             "question_text",
-            "number",
             "has_free_text",
             "has_multiple_choice",
             "multiple_choice_answer",
             "proportion_of_audited_answers",
             "theme_status",
+        ]
+        read_only_fields = [
+            "total_response_count",
+            "free_text_response_count",
+            "multi_choice_response_count",
         ]
 
 
