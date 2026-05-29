@@ -176,6 +176,42 @@ describe("QuestionDetail", () => {
     });
   });
 
+  it("hybrid question uses correct counts for each section", async () => {
+    setupMocks();
+
+    render(QuestionDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(mocks.questionMock.body.question_text, {
+          exact: false,
+        }),
+      ).toBeInTheDocument();
+    });
+
+    // Top header shows total_response_count (250)
+    expect(
+      screen.getByText(
+        `${mocks.questionMock.body.total_response_count} responses`,
+      ),
+    ).toBeInTheDocument();
+
+    // Multi-choice section uses multi_choice_response_count
+    expect(
+      screen.getByText(
+        `${mocks.questionMock.body.multi_choice_response_count} responses`,
+      ),
+    ).toBeInTheDocument();
+
+    // Theme percentages use free_text_response_count (100) as denominator (62/100 = 62%)
+    await waitFor(() => {
+      expect(screen.getByText("62%")).toBeInTheDocument();
+    });
+  });
+
   it("should match snapshot initially", () => {
     setupMocks();
 

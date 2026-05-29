@@ -1,7 +1,7 @@
 import pytest
 from django.conf import settings
 
-from consultations.api.filters import ResponseSearchFilter
+from consultations.api.filters import ResponseSearchFilter, get_filtered_responses
 from consultations.models import Response
 
 
@@ -54,3 +54,183 @@ def test_keyword_search_filter(respondent_1, free_text_question):
         FakeRequest("nonexistent"), Response.objects.all(), None
     )
     assert queryset.count() == 0
+
+
+@pytest.mark.django_db
+def test_get_filtered_responses_with_search(respondent_1, free_text_question):
+    """Test that get_filtered_responses applies keyword search alongside other filters."""
+    consultation_id = free_text_question.consultation.id
+
+    Response.objects.create(
+        respondent=respondent_1,
+        question=free_text_question,
+        free_text="This is about climate policy",
+    )
+    Response.objects.create(
+        respondent=respondent_1,
+        question=free_text_question,
+        free_text="This is about housing policy",
+    )
+    Response.objects.create(
+        respondent=respondent_1,
+        question=free_text_question,
+        free_text="This is about other topics",
+    )
+
+    # No filters — returns all
+    results = get_filtered_responses({}, consultation_id, question_id=free_text_question.id)
+    assert results.count() == 3
+
+    # Search only — filters by keyword
+    results = get_filtered_responses(
+        {"searchValue": "policy", "searchMode": "keyword"},
+        consultation_id,
+        question_id=free_text_question.id,
+    )
+    assert results.count() == 2
+
+    # More specific search
+    results = get_filtered_responses(
+        {"searchValue": "climate", "searchMode": "keyword"},
+        consultation_id,
+        question_id=free_text_question.id,
+    )
+    assert results.count() == 1
+
+    # No match
+    results = get_filtered_responses(
+        {"searchValue": "nonexistent", "searchMode": "keyword"},
+        consultation_id,
+        question_id=free_text_question.id,
+    )
+    assert results.count() == 0
+
+
+@pytest.mark.django_db
+def test_get_filtered_responses_search_with_demographic_filter(
+    free_text_question, northern_demographic, southern_demographic
+):
+    """Test that search and demographic filters combine correctly."""
+    from factories import RespondentFactory
+
+    consultation_id = free_text_question.consultation.id
+
+    respondent_north = RespondentFactory(consultation=free_text_question.consultation)
+    respondent_north.demographics.add(northern_demographic)
+    Response.objects.create(
+        respondent=respondent_north,
+        question=free_text_question,
+        free_text="Climate policy in the north",
+    )
+
+    respondent_south = RespondentFactory(consultation=free_text_question.consultation)
+    respondent_south.demographics.add(southern_demographic)
+    Response.objects.create(
+        respondent=respondent_south,
+        question=free_text_question,
+        free_text="Climate policy in the south",
+    )
+
+    respondent_north_2 = RespondentFactory(consultation=free_text_question.consultation)
+    respondent_north_2.demographics.add(northern_demographic)
+    Response.objects.create(
+        respondent=respondent_north_2,
+        question=free_text_question,
+        free_text="Housing policy in the north",
+    )
+
+    # Search only — 2 results with "climate"
+    results = get_filtered_responses(
+        {"searchValue": "climate", "searchMode": "keyword"},
+        consultation_id,
+        question_id=free_text_question.id,
+    )
+    assert results.count() == 2
+
+    # Search + demographic filter — only northern "climate" response
+    results = get_filtered_responses(
+        {
+            "searchValue": "climate",
+            "searchMode": "keyword",
+            "demographics": str(northern_demographic.id),
+        },
+        consultation_id,
+        question_id=free_text_question.id,
+    )
+    assert results.count() == 1
+
+
+@pytest.mark.django_db
+def test_demographics_filter_and_across_groups_or_within(free_text_question):
+    """Demographics: OR within a group (e.g. age), AND across groups (e.g. age + region)."""
+    from consultations.models import DemographicOption
+    from factories import RespondentFactory
+
+    consultation = free_text_question.consultation
+
+    age_young = DemographicOption.objects.create(
+        consultation=consultation, field_name="age", field_value="18-35"
+    )
+    age_old = DemographicOption.objects.create(
+        consultation=consultation, field_name="age", field_value="51-65"
+    )
+    region_north = DemographicOption.objects.create(
+        consultation=consultation, field_name="region", field_value="North"
+    )
+    region_south = DemographicOption.objects.create(
+        consultation=consultation, field_name="region", field_value="South"
+    )
+
+    # Respondent 1: young + north
+    r1 = RespondentFactory(consultation=consultation)
+    r1.demographics.add(age_young, region_north)
+    Response.objects.create(respondent=r1, question=free_text_question, free_text="R1")
+
+    # Respondent 2: old + north
+    r2 = RespondentFactory(consultation=consultation)
+    r2.demographics.add(age_old, region_north)
+    Response.objects.create(respondent=r2, question=free_text_question, free_text="R2")
+
+    # Respondent 3: young + south
+    r3 = RespondentFactory(consultation=consultation)
+    r3.demographics.add(age_young, region_south)
+    Response.objects.create(respondent=r3, question=free_text_question, free_text="R3")
+
+    # Respondent 4: old + south
+    r4 = RespondentFactory(consultation=consultation)
+    r4.demographics.add(age_old, region_south)
+    Response.objects.create(respondent=r4, question=free_text_question, free_text="R4")
+
+    consultation_id = consultation.id
+
+    # Single group filter (age: young OR old) — all 4
+    results = get_filtered_responses(
+        {"demographics": f"{age_young.id},{age_old.id}"},
+        consultation_id,
+        question_id=free_text_question.id,
+    )
+    assert results.count() == 4
+
+    # Single group filter (region: north) — 2
+    results = get_filtered_responses(
+        {"demographics": str(region_north.id)},
+        consultation_id,
+        question_id=free_text_question.id,
+    )
+    assert results.count() == 2
+
+    # Cross-group AND: age=old AND region=north — only R2
+    results = get_filtered_responses(
+        {"demographics": f"{age_old.id},{region_north.id}"},
+        consultation_id,
+        question_id=free_text_question.id,
+    )
+    assert results.count() == 1
+
+    # Cross-group AND with OR within: (age=young OR old) AND region=south — R3 + R4
+    results = get_filtered_responses(
+        {"demographics": f"{age_young.id},{age_old.id},{region_south.id}"},
+        consultation_id,
+        question_id=free_text_question.id,
+    )
+    assert results.count() == 2
