@@ -34,8 +34,8 @@
     showThemes: boolean;
     themesLoading?: boolean;
     filtersLoading?: boolean;
-    totalAnswers: number;
-    multiChoiceRespondentCount: number;
+    freeTextResponseCount: number;
+    multiChoiceResponseCount: number;
     demoData: DemoData;
     demoOptions: DemoOption;
     demoOptionsData?: DemoOptionsResponse;
@@ -50,8 +50,8 @@
     showThemes = true,
     themesLoading = true,
     filtersLoading = true,
-    totalAnswers = 0,
-    multiChoiceRespondentCount = 0,
+    freeTextResponseCount = 0,
+    multiChoiceResponseCount = 0,
     demoData = {},
     demoOptions = {},
     demoOptionsData = [],
@@ -91,10 +91,7 @@
   <div class="col-span-4 md:col-span-3">
     <svelte:boundary>
       {#if multiChoice && multiChoice.length > 0}
-        <MultiChoice
-          data={multiChoice}
-          totalAnswers={multiChoiceRespondentCount}
-        />
+        <MultiChoice data={multiChoice} {multiChoiceResponseCount} />
       {/if}
 
       {#snippet failed(error)}
@@ -127,7 +124,10 @@
                       "Theme Name": theme.name,
                       "Theme Description": theme.description,
                       Mentions: theme.count,
-                      Percentage: getPercentage(theme.count, totalAnswers),
+                      Percentage: getPercentage(
+                        theme.count,
+                        freeTextResponseCount,
+                      ),
                     }))}
                   />
 
@@ -217,7 +217,7 @@
                   themes={[...themes].sort((a, b) =>
                     sortAscending ? a.count - b.count : b.count - a.count,
                   )}
-                  {totalAnswers}
+                  {freeTextResponseCount}
                   skeleton={themesLoading}
                 />
               </Panel>

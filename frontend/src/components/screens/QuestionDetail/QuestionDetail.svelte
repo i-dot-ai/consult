@@ -106,7 +106,7 @@
       multiAnswerFilters: multiAnswerFilters.filters,
     };
     const filterQs = buildQueryString(filters);
-    const responseQs = buildQueryString(filters, { includeSearch: true });
+    const responseQs = buildQueryString(filters, { includePagination: true });
 
     // Only fetch aggregations on the first page (filters haven't changed for subsequent pages)
     if (currPage === 1) {
@@ -138,16 +138,13 @@
 
   function buildQueryString(
     filters: QueryFilters,
-    { includeSearch = false }: { includeSearch?: boolean } = {},
+    { includePagination = false }: { includePagination?: boolean } = {},
   ) {
-    const searchParams = {
-      searchValue: filters.searchValue,
-      searchMode: filters.searchMode,
-      page: currPage.toString(),
-      page_size: PAGE_SIZE.toString(),
-    };
-
     const params = new SvelteURLSearchParams({
+      ...(filters.searchValue && {
+        searchValue: filters.searchValue,
+        searchMode: filters.searchMode,
+      }),
       ...(filters.themeFilters.length > 0 && {
         themeFilters: filters.themeFilters.join(","),
       }),
@@ -166,7 +163,10 @@
       ...(filters.demoFilters.length > 0 && {
         demographics: filters.demoFilters.join(","),
       }),
-      ...(includeSearch && searchParams),
+      ...(includePagination && {
+        page: currPage.toString(),
+        page_size: PAGE_SIZE.toString(),
+      }),
     });
 
     const qs = params.toString();
@@ -302,14 +302,14 @@
           </span>
         </Alert>
       </div>
-    {:else}
+    {:else if $questionStore.data}
       <QuestionCard
         skeleton={!dataRequested ||
           $questionStore.isLoading ||
           $consultationStore.isLoading}
         clickable={false}
         consultationId={$consultationStore.data?.id || ""}
-        question={$questionStore.data || {}}
+        question={$questionStore.data}
         hideIcon={true}
         horizontal={true}
       />
@@ -360,9 +360,10 @@
         })) as FormattedTheme[]}
         themesLoading={!dataRequested || $themesStore.isLoading}
         filtersLoading={!dataRequested || $demographicsStore.isLoading}
-        totalAnswers={$questionStore.data?.total_responses || 0}
-        multiChoiceRespondentCount={$questionStore.data
-          ?.multi_choice_respondent_count || 0}
+        freeTextResponseCount={$questionStore.data?.free_text_response_count ||
+          0}
+        multiChoiceResponseCount={$questionStore.data
+          ?.multi_choice_response_count || 0}
         {demoData}
         demoOptions={formattedDemoOptions || {}}
         demoOptionsData={$demographicsStore.data || undefined}
@@ -382,7 +383,8 @@
         {responses}
         {isResponsesLoading}
         answersError={$responsesStore.error}
-        filteredTotal={$responsesStore.data?.filtered_total}
+        freeTextResponseCount={$questionStore.data?.free_text_response_count ||
+          0}
         {hasMorePages}
         handleLoadClick={() => loadData()}
         resetData={() => {
