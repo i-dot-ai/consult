@@ -34,7 +34,9 @@ export const questionsMock = {
       {
         id: "2d3bea3e-abd1-4231-80d9-41a974724731",
         number: 1,
-        total_responses: 125,
+        total_response_count: 125,
+        free_text_response_count: 125,
+        multi_choice_response_count: 0,
         question_text:
           "What measures should we consider to better support and increase rural affordable housing?",
         has_free_text: true,
@@ -57,7 +59,9 @@ export const questionsMock = {
       {
         id: "7b809f89-a7a0-4c31-b788-008eef73f396",
         number: 2,
-        total_responses: 125,
+        total_response_count: 125,
+        free_text_response_count: 125,
+        multi_choice_response_count: 0,
         question_text:
           "Are there other ways in which we can ensure that development supports and does not compromise food production?",
         has_free_text: true,
@@ -69,7 +73,9 @@ export const questionsMock = {
       {
         id: "021b9599-35c3-42d5-afba-45aa691dfe53",
         number: 3,
-        total_responses: 125,
+        total_response_count: 125,
+        free_text_response_count: 125,
+        multi_choice_response_count: 0,
         question_text:
           "What would be the most appropriate way to promote high percentage Social Rent/affordable housing developments?",
         has_free_text: true,

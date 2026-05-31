@@ -110,6 +110,7 @@ exports[`MultiChoice > should render data 1`] = `
                   >
                     10
                   </span>
+                  <!---->
                 </div>
                  
                 <div
@@ -140,6 +141,7 @@ exports[`MultiChoice > should render data 1`] = `
                 >
                   10
                 </span>
+                <!---->
               </div>
             </div>
             
@@ -186,6 +188,7 @@ exports[`MultiChoice > should render data 1`] = `
                   >
                     20
                   </span>
+                  <!---->
                 </div>
                  
                 <div
@@ -216,6 +219,7 @@ exports[`MultiChoice > should render data 1`] = `
                 >
                   20
                 </span>
+                <!---->
               </div>
             </div>
             
