@@ -33,7 +33,9 @@ export const questionsMock = {
       {
         id: "42d9ae23-caf6-494a-b3bd-1586c16feff1",
         number: 1,
-        total_responses: 100,
+        total_response_count: 100,
+        free_text_response_count: 100,
+        multi_choice_response_count: 0,
         question_text:
           "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
         has_free_text: true,
@@ -66,7 +68,9 @@ export const questionsMock = {
       {
         id: "e30009f9-21e2-4f08-b42b-86da2c556b4a",
         number: 2,
-        total_responses: 100,
+        total_response_count: 100,
+        free_text_response_count: 100,
+        multi_choice_response_count: 0,
         question_text:
           "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
         has_free_text: false,
@@ -99,7 +103,9 @@ export const questionsMock = {
       {
         id: "a97566ad-3b04-44ff-a195-875a44f0940b",
         number: 3,
-        total_responses: 100,
+        total_response_count: 100,
+        free_text_response_count: 100,
+        multi_choice_response_count: 0,
         question_text:
           "Which of the following factors do you believe are important when considering the packaging of chocolate bars? Please select all that apply: a) Sustainability, b) Design, c) Cost-effectiveness, d) Durability, e) Brand recognition.",
         has_free_text: false,
@@ -137,7 +143,9 @@ export const questionsMock = {
       {
         id: "5de28a81-0095-4863-b0a8-2234d88e483f",
         number: 4,
-        total_responses: 100,
+        total_response_count: 100,
+        free_text_response_count: 100,
+        multi_choice_response_count: 0,
         question_text:
           "What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?",
         has_free_text: true,

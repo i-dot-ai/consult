@@ -93,7 +93,7 @@
       {#if multiChoice && multiChoice.length > 0}
         <MultiChoice
           data={multiChoice}
-          totalAnswers={multiChoiceRespondentCount}
+          {multiChoiceResponseCount}
         />
       {/if}
 
@@ -127,7 +127,10 @@
                       "Theme Name": theme.name,
                       "Theme Description": theme.description,
                       Mentions: theme.count,
-                      Percentage: getPercentage(theme.count, totalAnswers),
+                      Percentage: getPercentage(
+                        theme.count,
+                        freeTextResponseCount,
+                      ),
                     }))}
                   />
 
@@ -217,7 +220,7 @@
                   themes={[...themes].sort((a, b) =>
                     sortAscending ? a.count - b.count : b.count - a.count,
                   )}
-                  {totalAnswers}
+                  {freeTextResponseCount}
                   skeleton={themesLoading}
                 />
               </Panel>

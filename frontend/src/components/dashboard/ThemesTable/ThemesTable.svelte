@@ -11,7 +11,7 @@
 
   interface Props {
     themes: FormattedTheme[];
-    totalAnswers: number;
+    freeTextResponseCount: number;
     skeleton?: boolean;
   }
 
@@ -81,7 +81,10 @@
     {:else}
       <tbody in:fade>
         {#each themes as theme (theme.id)}
-          {@const percentage = getPercentage(theme.count, totalAnswers)}
+          {@const percentage = getPercentage(
+            theme.count,
+            freeTextResponseCount,
+          )}
 
           <tr
             animate:flip={{ duration: 300 + themes.length * TABLE_FLIP_SPEED }}

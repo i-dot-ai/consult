@@ -11,9 +11,10 @@ describe("Metrics", () => {
       {
         id: "test-question-1-id",
         number: 1,
-        total_responses: 10,
+        total_response_count: 30,
+        free_text_response_count: 0,
+        multi_choice_response_count: 30,
         question_text: "Test question 1 text",
-        slug: "test-question-1-slug",
         has_free_text: false,
         has_multiple_choice: true,
         multiple_choice_answer: [
@@ -29,6 +30,7 @@ describe("Metrics", () => {
           },
         ],
         proportion_of_audited_answers: 0,
+        theme_status: "draft",
       },
     ],
     demoOptions: [
