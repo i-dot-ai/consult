@@ -4,13 +4,18 @@ import { render, screen } from "@testing-library/svelte";
 import QuestionSummary from "./QuestionSummary.svelte";
 
 describe("QuestionSummary", () => {
+  const demographics = [
+    { id: "1", name: "testCategory", value: "foo", count: 1 },
+  ];
+
   const testData = {
     themesLoading: false,
+    questionLoading: false,
+    demographicsLoading: false,
     showThemes: false,
-    demoData: { testCategory: { foo: 1 } },
-    totalAnswers: 100,
+    demographics,
+    freeTextResponseCount: 100,
     themes: [],
-    demoOptions: { testCategory: ["foo"] },
     anyFilterApplied: false,
     setActiveTab: () => {},
   };

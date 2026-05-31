@@ -7,7 +7,7 @@ import HeaderStory from "../Header/HeaderStory.svelte";
 import FooterStory from "../Footer/FooterStory.svelte";
 import AccordionStory from "../Accordion/AccordionStory.svelte";
 import PanelStory from "../dashboard/Panel/PanelStory.svelte";
-import DemoFilterStory from "../DemoFilter/DemoFilterStory.svelte";
+import DemographicGroupStory from "../DemographicGroup/DemographicGroupStory.svelte";
 import RespondentSidebarItemStory from "../dashboard/RespondentSidebarItem/RespondentSidebarItemStory.svelte";
 import ThemeFormStory from "../finalising-themes/ThemeForm/ThemeFormStory.svelte";
 import SelectedThemeCardStory from "../finalising-themes/SelectedThemeCard/SelectedThemeCardStory.svelte";
@@ -77,7 +77,7 @@ export default [
   FooterStory,
   AccordionStory,
   PanelStory,
-  DemoFilterStory,
+  DemographicGroupStory,
   RespondentSidebarItemStory,
   ThemeFormStory,
   SelectedThemeCardStory,
