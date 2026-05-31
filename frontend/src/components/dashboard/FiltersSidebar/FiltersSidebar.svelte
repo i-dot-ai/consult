@@ -3,24 +3,17 @@
 
   import TitleRow from "../TitleRow.svelte";
   import Panel from "../Panel/Panel.svelte";
-  import DemoFilter from "../../DemoFilter/DemoFilter.svelte";
+  import DemographicGroup from "../../DemographicGroup/DemographicGroup.svelte";
   import FilterAlt from "../../svg/material/FilterAlt.svelte";
   import Switch from "../../inputs/Switch/Switch.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Diamond from "../../svg/material/Diamond.svelte";
-  import type {
-    DemoData,
-    DemoOption,
-    DemoOptionsResponse,
-    DemoTotalCounts,
-  } from "../../../global/types";
+  import type { DemoOptionsResponseItem } from "../../../global/types";
   import Visibility from "../../svg/material/Visibility.svelte";
   import type { Component } from "svelte";
 
   interface Props {
-    demoOptions: DemoOption;
-    demoData: DemoData;
-    demoOptionsData?: DemoOptionsResponse;
+    demographics: DemoOptionsResponseItem[];
     loading: boolean;
     showEvidenceRich?: boolean;
     showUnseenResponse?: boolean;
@@ -30,9 +23,7 @@
     setUnseenResponses?: (newVal: boolean) => void;
   }
   let {
-    demoOptions = {},
-    demoData = {},
-    demoOptionsData = [],
+    demographics = [],
     loading = true,
     showEvidenceRich = true,
     evidenceRich = false,
@@ -42,16 +33,15 @@
     setUnseenResponses = () => {},
   }: Props = $props();
 
-  // Derive to avoid calculating on re-render
-  let totalCounts: DemoTotalCounts = $derived.by(() => {
-    let counts: Record<string, number> = {};
-    for (const category of Object.keys(demoData)) {
-      counts[category] = Object.values(demoData[category]).reduce(
-        (a, b) => (a as number) + (b as number),
-        0, //  initial value
-      );
+  let categories = $derived.by(() => {
+    const grouped: Record<string, DemoOptionsResponseItem[]> = {};
+    for (const item of demographics) {
+      if (!grouped[item.name]) {
+        grouped[item.name] = [];
+      }
+      grouped[item.name].push(item);
     }
-    return counts;
+    return grouped;
   });
 </script>
 
@@ -113,23 +103,47 @@
         Visibility,
       )}
     {/if}
-    {#if loading}
+    {#if loading && demographics.length === 0}
       <div in:fade>
         {#each "_".repeat(3) as _, i (i)}
-          <DemoFilter skeleton={true} />
+          <section>
+            <Panel level={2} border={true} bg={false}>
+              <h3
+                class="blink w-max select-none bg-neutral-100 text-neutral-100"
+              >
+                skeleton
+              </h3>
+              <div class="my-1">
+                <div class="demo-filter relative w-full pb-3">
+                  <div class="mb-1 grid grid-cols-3 gap-1">
+                    <span
+                      class="blink select-none bg-neutral-100 text-left text-neutral-100"
+                      >skeleton</span
+                    >
+                    <span
+                      class="blink select-none bg-neutral-100 text-right text-neutral-100"
+                      >000%</span
+                    >
+                    <span
+                      class="blink select-none bg-neutral-100 text-right text-neutral-100"
+                      >00000</span
+                    >
+                  </div>
+                  <div
+                    class="blink w-full select-none bg-neutral-100 text-neutral-100"
+                  >
+                    {"_".repeat(10)}
+                  </div>
+                </div>
+              </div>
+            </Panel>
+          </section>
         {/each}
       </div>
     {:else}
       <div in:fade>
-        {#each Object.keys(demoOptions) as category (category)}
-          <DemoFilter
-            {category}
-            {demoOptions}
-            {demoData}
-            {demoOptionsData}
-            {totalCounts}
-            skeleton={loading}
-          />
+        {#each Object.entries(categories) as [category, items] (category)}
+          <DemographicGroup {category} {items} countsLoading={loading} />
         {/each}
       </div>
     {/if}
