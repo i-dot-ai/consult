@@ -120,11 +120,17 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     # Question configuration
     has_free_text = models.BooleanField(default=True)
     has_multiple_choice = models.BooleanField(default=False)
-    total_responses = models.IntegerField(
+    total_response_count = models.IntegerField(
         default=0,
-        help_text="Number of free text responses for this question",
-        null=True,
-        blank=True,
+        help_text="Number of respondents who answered this question (either part for hybrid questions)",
+    )
+    free_text_response_count = models.IntegerField(
+        default=0,
+        help_text="Number of responses where free text was submitted",
+    )
+    multi_choice_response_count = models.IntegerField(
+        default=0,
+        help_text="Number of respondents that selected at least one multi-choice option",
     )
 
     @property
@@ -284,6 +290,8 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     field_name = models.CharField(max_length=128)
     field_value = models.JSONField()
+    response_count = models.IntegerField(default=0)
+
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -510,6 +518,8 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
 
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     text = models.TextField()
+    response_count = models.IntegerField(default=0)
+
 
     def __str__(self):
         return f"{self.question.number} = {self.text}"
