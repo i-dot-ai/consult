@@ -582,11 +582,11 @@ def _ingest_responses(
                 f"Saved final batch of {len(created_responses)} responses for question {question_number}"
             )
 
-        # Update question total_responses count
-        question.update_total_responses()
-        logger.info(
-            f"Updated total_responses count for question {question_number}: {question.total_responses}"
-        )
+        # Update denormalised response counts
+        MultiChoiceAnswer.update_response_counts(question)
+        question.update_response_counts()
+
+    DemographicOption.update_response_counts(consultation)
 
     logger.info("Completed response ingestion")
 
