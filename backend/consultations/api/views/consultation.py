@@ -4,7 +4,7 @@ from typing import Any
 import sentry_sdk
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Count, F
+from django.db.models import Count, Exists, F, OuterRef
 from django.http import Http404
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -15,7 +15,7 @@ from rest_framework.viewsets import ModelViewSet
 import data_pipeline.batch as batch
 import data_pipeline.s3 as s3
 from authentication.models import User
-from consultations.api.filters import get_filtered_response_ids
+from consultations.api.filters import get_filtered_responses
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
@@ -30,11 +30,7 @@ from consultations.models import (
     Consultation,
     DemographicOption,
     Question,
-    Respondent,
     SelectedTheme,
-)
-from consultations.models import (
-    Response as ConsultationResponse,
 )
 from consultations.test_support.load_test_fixtures import (
     create_data_from_fixtures,
@@ -136,33 +132,15 @@ class ConsultationViewSet(ModelViewSet):
         has_filters = question_id or any(request.query_params.get(p) for p in filter_params)
 
         if has_filters:
-            filtered_ids = get_filtered_response_ids(
+            filtered_responses = get_filtered_responses(
                 request.query_params, pk, question_id=question_id
             )
-            filtered_respondent_ids = list(
-                ConsultationResponse.objects.filter(id__in=filtered_ids)
-                .values_list("respondent_id", flat=True)
-                .distinct()
+            options = options.filter(
+                Exists(filtered_responses.filter(respondent=OuterRef("respondent")))
+            ).annotate(count=Count("respondent", distinct=True))
+            data = options.values("id", "field_name", "field_value", "count").order_by(
+                "field_name", "field_value"
             )
-
-            through_table = Respondent.demographics.through
-            counts = dict(
-                through_table.objects.filter(respondent_id__in=filtered_respondent_ids)
-                .values_list("demographicoption_id")
-                .annotate(c=Count("id"))
-                .values_list("demographicoption_id", "c")
-            )
-            data = [
-                {
-                    "id": opt["id"],
-                    "field_name": opt["field_name"],
-                    "field_value": opt["field_value"],
-                    "count": counts.get(opt["id"], 0),
-                }
-                for opt in options.values("id", "field_name", "field_value").order_by(
-                    "field_name", "field_value"
-                )
-            ]
         else:
             data = options.values(
                 "id", "field_name", "field_value", count=F("response_count")
