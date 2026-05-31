@@ -18,7 +18,7 @@ class ResponseFilter(FilterSet):
     themeFilters = BaseInFilter(method="filter_themes", lookup_expr="in")
     demographics = BaseInFilter(method="filter_demographics", lookup_expr="in")
     is_flagged = BooleanFilter()
-    multiple_choice_answer = BaseInFilter(field_name="chosen_options", lookup_expr="in")
+    multiple_choice_answer = BaseInFilter(method="filter_multiple_choice", lookup_expr="in")
     respondent_id = UUIDFilter()
     question_id = UUIDFilter()
 
@@ -74,6 +74,11 @@ class ResponseFilter(FilterSet):
             respondents = respondents.filter(demographics__in=group_ids)
 
         return queryset.filter(respondent_id__in=respondents.values("id"))
+
+    def filter_multiple_choice(self, queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.filter(chosen_options__in=value).distinct()
 
     class Meta:
         model = Response
