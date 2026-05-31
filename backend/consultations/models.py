@@ -7,6 +7,7 @@ from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from django.core.validators import BaseValidator
 from django.db import models
+from django.db.models import Count
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -306,9 +307,11 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
     @classmethod
     def update_response_counts(cls, consultation):
         """Update response_count for all options belonging to a consultation."""
-        options = cls.objects.filter(consultation=consultation)
+        options = list(
+            cls.objects.filter(consultation=consultation).annotate(_count=Count("respondent"))
+        )
         for option in options:
-            option.response_count = option.respondent_set.count()
+            option.response_count = option._count
         cls.objects.bulk_update(options, ["response_count"], batch_size=1000)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
@@ -541,9 +544,9 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
     @classmethod
     def update_response_counts(cls, question):
         """Update response_count for all answers belonging to a question."""
-        answers = cls.objects.filter(question=question)
+        answers = list(cls.objects.filter(question=question).annotate(_count=Count("response")))
         for answer in answers:
-            answer.response_count = answer.response_set.count()
+            answer.response_count = answer._count
         cls.objects.bulk_update(answers, ["response_count"])
 
     def __str__(self):
