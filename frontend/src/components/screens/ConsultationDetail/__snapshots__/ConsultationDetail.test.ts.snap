@@ -671,6 +671,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       class="text-sm leading-6 whitespace-nowrap"
                     >
                       100 responses
+                      <!---->
                     </div>
                      
                     <!---->
@@ -810,6 +811,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       class="text-sm leading-6 whitespace-nowrap"
                     >
                       100 responses
+                      <!---->
                     </div>
                      
                     <!---->
@@ -949,6 +951,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       class="text-sm leading-6 whitespace-nowrap"
                     >
                       100 responses
+                      <!---->
                     </div>
                      
                     <!---->
@@ -1087,6 +1090,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       class="text-sm leading-6 whitespace-nowrap"
                     >
                       100 responses
+                      <!---->
                     </div>
                      
                     <!---->
