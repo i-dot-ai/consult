@@ -3,9 +3,7 @@
 
   import {
     TabNames,
-    type DemoData,
-    type DemoOption,
-    type DemoOptionsResponse,
+    type DemoOptionsResponseItem,
     type FormattedTheme,
     type QuestionMultiAnswer,
   } from "../../../global/types.ts";
@@ -33,12 +31,11 @@
   interface Props {
     showThemes: boolean;
     themesLoading?: boolean;
-    filtersLoading?: boolean;
+    demographicsLoading?: boolean;
+    questionLoading?: boolean;
     freeTextResponseCount: number;
     multiChoiceResponseCount: number;
-    demoData: DemoData;
-    demoOptions: DemoOption;
-    demoOptionsData?: DemoOptionsResponse;
+    demographics: DemoOptionsResponseItem[];
     themes: FormattedTheme[];
     multiChoice: QuestionMultiAnswer[];
     consultationCode?: string;
@@ -49,12 +46,11 @@
   let {
     showThemes = true,
     themesLoading = true,
-    filtersLoading = true,
+    demographicsLoading = true,
+    questionLoading = true,
     freeTextResponseCount = 0,
     multiChoiceResponseCount = 0,
-    demoData = {},
-    demoOptions = {},
-    demoOptionsData = [],
+    demographics = [],
     themes = [],
     multiChoice = [],
     consultationCode = "",
@@ -70,10 +66,8 @@
       <FiltersSidebar
         showEvidenceRich={false}
         showUnseenResponse={false}
-        {demoOptions}
-        {demoData}
-        {demoOptionsData}
-        loading={filtersLoading}
+        {demographics}
+        loading={demographicsLoading}
       />
 
       {#snippet failed(error)}
@@ -91,7 +85,11 @@
   <div class="col-span-4 md:col-span-3">
     <svelte:boundary>
       {#if multiChoice && multiChoice.length > 0}
-        <MultiChoice data={multiChoice} {multiChoiceResponseCount} />
+        <MultiChoice
+          data={multiChoice}
+          {multiChoiceResponseCount}
+          countsLoading={questionLoading && multiChoice.length > 0}
+        />
       {/if}
 
       {#snippet failed(error)}
@@ -219,6 +217,7 @@
                   )}
                   {freeTextResponseCount}
                   skeleton={themesLoading}
+                  countsLoading={themesLoading && themes.length > 0}
                 />
               </Panel>
             {/if}

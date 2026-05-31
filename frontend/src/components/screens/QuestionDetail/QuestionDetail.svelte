@@ -30,10 +30,7 @@
     TabNames,
     type ResponsesBody,
     type ConsultationResponse,
-    type DemoData,
-    type DemoOption,
     type DemoOptionsResponse,
-    type DemoOptionsResponseItem,
     type FormattedTheme,
     type Question,
     type ThemeInfoResponse,
@@ -221,41 +218,7 @@
     untrack(() => loadData());
   });
 
-  let formattedDemoOptions = $derived.by(() => {
-    if (!$demographicsStore.data) {
-      return;
-    }
-
-    const formattedData: DemoOption = {};
-    const categories = [
-      ...new Set($demographicsStore.data.map((data) => data.name)),
-    ];
-
-    for (const category of categories) {
-      const categoryData: DemoOptionsResponseItem[] =
-        $demographicsStore.data.filter((opt) => opt.name === category);
-
-      formattedData[category] = categoryData
-        .map((opt) => opt.value)
-        .filter((value) => value !== null && value !== undefined);
-    }
-    return formattedData;
-  });
-
-  let demoData = $derived.by(() => {
-    if (!$demographicsStore.data) {
-      return {};
-    }
-
-    const result: DemoData = {};
-    for (const item of $demographicsStore.data) {
-      if (!result[item.name]) {
-        result[item.name] = {};
-      }
-      result[item.name][item.value] = item.count;
-    }
-    return result;
-  });
+  let demographics = $derived($demographicsStore.data || []);
 </script>
 
 <section
@@ -304,9 +267,8 @@
       </div>
     {:else if $questionStore.data}
       <QuestionCard
-        skeleton={!dataRequested ||
-          $questionStore.isLoading ||
-          $consultationStore.isLoading}
+        skeleton={!dataRequested || $consultationStore.isLoading}
+        countsLoading={$questionStore.isLoading}
         clickable={false}
         consultationId={$consultationStore.data?.id || ""}
         question={$questionStore.data}
@@ -359,14 +321,13 @@
           handleClick: () => themeFilters.update(theme.id),
         })) as FormattedTheme[]}
         themesLoading={!dataRequested || $themesStore.isLoading}
-        filtersLoading={!dataRequested || $demographicsStore.isLoading}
+        questionLoading={!dataRequested || $questionStore.isLoading}
+        demographicsLoading={!dataRequested || $demographicsStore.isLoading}
         freeTextResponseCount={$questionStore.data?.free_text_response_count ||
           0}
         multiChoiceResponseCount={$questionStore.data
           ?.multi_choice_response_count || 0}
-        {demoData}
-        demoOptions={formattedDemoOptions || {}}
-        demoOptionsData={$demographicsStore.data || undefined}
+        {demographics}
         multiChoice={$questionStore.data?.multiple_choice_answer?.filter(
           (item) => Boolean(item.text),
         ) || []}
@@ -393,9 +354,7 @@
         }}
         {searchValue}
         setSearchValue={(value: string) => (searchValue = value)}
-        {demoData}
-        demoOptions={formattedDemoOptions || {}}
-        demoOptionsData={$demographicsStore.data || undefined}
+        {demographics}
         themes={$themesStore.data?.themes}
         {evidenceRich}
         {setEvidenceRich}

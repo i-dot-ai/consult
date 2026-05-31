@@ -80,9 +80,9 @@ describe("ThemesTable", () => {
     expect(handleClickMock).toHaveBeenCalledOnce();
   });
 
-  it("should not render data if skeleton", () => {
+  it("should show full skeleton when no themes data exists", () => {
     render(ThemesTable, {
-      themes: testData.themes,
+      themes: [],
       freeTextResponseCount: testData.freeTextResponseCount,
       skeleton: true,
     });
@@ -90,12 +90,21 @@ describe("ThemesTable", () => {
     testData.themes.forEach((theme) => {
       expect(screen.queryByText(theme.name)).toBeNull();
       expect(screen.queryByText(theme.description)).toBeNull();
+    });
+  });
+
+  it("should show theme names but hide counts when reloading with existing data", () => {
+    render(ThemesTable, {
+      themes: testData.themes,
+      freeTextResponseCount: testData.freeTextResponseCount,
+      skeleton: true,
+      countsLoading: true,
+    });
+
+    testData.themes.forEach((theme) => {
+      expect(screen.getByText(theme.name)).toBeInTheDocument();
+      expect(screen.getByText(theme.description)).toBeInTheDocument();
       expect(screen.queryByText(theme.count)).toBeNull();
-      const percentage = getPercentage(
-        theme.count,
-        testData.freeTextResponseCount,
-      );
-      expect(screen.queryByText(`${percentage}%`)).toBeNull();
     });
   });
 

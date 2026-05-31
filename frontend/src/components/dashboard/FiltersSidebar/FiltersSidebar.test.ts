@@ -5,23 +5,18 @@ import { render, screen } from "@testing-library/svelte";
 import FiltersSidebar from "./FiltersSidebar.svelte";
 
 describe("FiltersSidebar", () => {
-  const testData = {
-    showEvidenceRich: true,
-    demoOptions: { country: ["england", "scotland"] },
-    demoData: { country: { england: 10, scotland: 20 } },
-    evidenceRich: false,
-    unseenResponses: false,
-    loading: false,
-  };
+  const demographics = [
+    { id: "1", name: "country", value: "england", count: 10 },
+    { id: "2", name: "country", value: "scotland", count: 20 },
+  ];
 
   it("should render data", () => {
     render(FiltersSidebar, {
-      showEvidenceRich: testData.showEvidenceRich,
-      demoOptions: testData.demoOptions,
-      demoData: testData.demoData,
-      evidenceRich: testData.evidenceRich,
-      unseenResponses: testData.unseenResponses,
-      loading: testData.loading,
+      showEvidenceRich: true,
+      demographics,
+      evidenceRich: false,
+      unseenResponses: false,
+      loading: false,
     });
 
     expect(screen.getByText("country")).toBeInTheDocument();
@@ -32,13 +27,12 @@ describe("FiltersSidebar", () => {
     expect(screen.getByText("Show evidence rich")).toBeInTheDocument();
   });
 
-  it("should not render data if loading", () => {
+  it("should show full skeleton when loading with no data", () => {
     render(FiltersSidebar, {
-      showEvidenceRich: testData.showEvidenceRich,
-      demoOptions: testData.demoOptions,
-      demoData: testData.demoData,
-      evidenceRich: testData.evidenceRich,
-      unseenResponses: testData.unseenResponses,
+      showEvidenceRich: true,
+      demographics: [],
+      evidenceRich: false,
+      unseenResponses: false,
       loading: true,
     });
 
@@ -46,12 +40,27 @@ describe("FiltersSidebar", () => {
     expect(screen.getByText("Show evidence rich")).toBeInTheDocument();
   });
 
+  it("should show counts loading when loading with existing data", () => {
+    render(FiltersSidebar, {
+      showEvidenceRich: true,
+      demographics,
+      evidenceRich: false,
+      unseenResponses: false,
+      loading: true,
+    });
+
+    expect(screen.getByText("country")).toBeInTheDocument();
+    expect(screen.getByText("england")).toBeInTheDocument();
+    expect(screen.getByText("scotland")).toBeInTheDocument();
+    expect(screen.queryByText("10")).not.toBeInTheDocument();
+    expect(screen.queryByText("20")).not.toBeInTheDocument();
+  });
+
   it("should not render evidence rich switch if not show evidence rich", () => {
     render(FiltersSidebar, {
       showEvidenceRich: false,
-      demoOptions: testData.demoOptions,
-      demoData: testData.demoData,
-      evidenceRich: testData.evidenceRich,
+      demographics,
+      evidenceRich: false,
       loading: false,
     });
 
@@ -64,11 +73,10 @@ describe("FiltersSidebar", () => {
     const setUnseenResponsesMock = vi.fn();
 
     render(FiltersSidebar, {
-      showEvidenceRich: testData.showEvidenceRich,
-      demoOptions: testData.demoOptions,
-      demoData: testData.demoData,
-      evidenceRich: testData.evidenceRich,
-      unseenResponses: testData.unseenResponses,
+      showEvidenceRich: true,
+      demographics,
+      evidenceRich: false,
+      unseenResponses: false,
       setEvidenceRich: setEvidenceRichMock,
       setUnseenResponses: setUnseenResponsesMock,
       loading: false,
@@ -91,12 +99,11 @@ describe("FiltersSidebar", () => {
     const setUnseenResponsesMock = vi.fn();
 
     render(FiltersSidebar, {
-      showEvidenceRich: testData.showEvidenceRich,
+      showEvidenceRich: true,
       showUnseenResponse: true,
-      demoOptions: testData.demoOptions,
-      demoData: testData.demoData,
-      evidenceRich: testData.evidenceRich,
-      unseenResponses: testData.unseenResponses,
+      demographics,
+      evidenceRich: false,
+      unseenResponses: false,
       setEvidenceRich: setEvidenceRichMock,
       setUnseenResponses: setUnseenResponsesMock,
       loading: false,
@@ -115,12 +122,11 @@ describe("FiltersSidebar", () => {
 
   it("should not render unseen responses switch if not show unseen response", () => {
     render(FiltersSidebar, {
-      showEvidenceRich: testData.showEvidenceRich,
+      showEvidenceRich: true,
       showUnseenResponse: false,
-      demoOptions: testData.demoOptions,
-      demoData: testData.demoData,
-      evidenceRich: testData.evidenceRich,
-      unseenResponses: testData.unseenResponses,
+      demographics,
+      evidenceRich: false,
+      unseenResponses: false,
       loading: false,
     });
 

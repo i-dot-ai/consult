@@ -13,13 +13,17 @@
     themes: FormattedTheme[];
     freeTextResponseCount: number;
     skeleton?: boolean;
+    countsLoading?: boolean;
   }
 
   let {
     themes = [],
     freeTextResponseCount = 0,
     skeleton = false,
+    countsLoading = false,
   }: Props = $props();
+
+  let showFullSkeleton = $derived(skeleton && themes.length === 0);
 
   const TABLE_FLIP_SPEED = 10;
 </script>
@@ -35,7 +39,7 @@
         {/each}
       </tr>
     </thead>
-    {#if skeleton}
+    {#if showFullSkeleton}
       <tbody in:fade>
         {#each "_".repeat(5) as _, i (i)}
           <tr
@@ -118,19 +122,35 @@
               </div>
             </td>
             <td class="pr-4">
-              {theme.count}
+              {#if countsLoading}
+                <span
+                  class="blink select-none rounded bg-neutral-200 text-neutral-200"
+                >
+                  00000
+                </span>
+              {:else}
+                {theme.count}
+              {/if}
             </td>
             <td class="pr-4">
               <div class="flex items-center gap-1">
-                <span class="w-[5ch]">
-                  {percentage > 0 && percentage < 1
-                    ? "<1"
-                    : Math.round(percentage)}%
-                </span>
+                {#if countsLoading}
+                  <span
+                    class="blink w-[5ch] select-none rounded bg-neutral-200 text-neutral-200"
+                  >
+                    000%
+                  </span>
+                {:else}
+                  <span class="w-[5ch]">
+                    {percentage > 0 && percentage < 1
+                      ? "<1"
+                      : Math.round(percentage)}%
+                  </span>
 
-                <div class="w-full max-w-[3rem]">
-                  <Progress value={percentage} />
-                </div>
+                  <div class="w-full max-w-[3rem]">
+                    <Progress value={percentage} />
+                  </div>
+                {/if}
               </div>
             </td>
           </tr>

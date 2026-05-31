@@ -10,9 +10,7 @@
   import FiltersSidebar from "../FiltersSidebar/FiltersSidebar.svelte";
 
   import {
-    type DemoData,
-    type DemoOption,
-    type DemoOptionsResponse,
+    type DemoOptionsResponseItem,
     type ResponseBody,
     type ResponseTheme,
     type SearchableSelectOption,
@@ -48,9 +46,7 @@
   export let searchValue: string = "";
   export let setSearchValue = (_value: string) => {};
 
-  export let demoOptions: DemoOption = {};
-  export let demoData: DemoData = {};
-  export let demoOptionsData: DemoOptionsResponse = [];
+  export let demographics: DemoOptionsResponseItem[] = [];
   export let themes: ResponseTheme[] = [];
 
   export let evidenceRich: boolean = false;
@@ -127,9 +123,7 @@
       <FiltersSidebar
         showEvidenceRich={true}
         showUnseenResponse={false}
-        {demoOptions}
-        {demoData}
-        {demoOptionsData}
+        {demographics}
         {evidenceRich}
         {setEvidenceRich}
         {unseenResponses}

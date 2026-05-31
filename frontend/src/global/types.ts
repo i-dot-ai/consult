@@ -175,17 +175,6 @@ export interface ResponseBody {
   is_read: boolean;
 }
 
-export interface DemoOption {
-  [category: string]: string[];
-}
-
-export interface DemoData {
-  [category: string]: { [rowKey: string]: number };
-}
-
-export interface DemoTotalCounts {
-  [category: string]: number;
-}
 export interface ConsultationResponse {
   id: string;
   title: string;
