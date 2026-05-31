@@ -4,8 +4,7 @@ from typing import Any
 import sentry_sdk
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Count, Exists, OuterRef, Subquery, Value
-from django.db.models.functions import Coalesce
+from django.db.models import Count, F
 from django.http import Http404
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -16,7 +15,7 @@ from rest_framework.viewsets import ModelViewSet
 import data_pipeline.batch as batch
 import data_pipeline.s3 as s3
 from authentication.models import User
-from consultations.api.filters import get_filtered_responses
+from consultations.api.filters import get_filtered_response_ids
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
@@ -31,6 +30,7 @@ from consultations.models import (
     Consultation,
     DemographicOption,
     Question,
+    Respondent,
     SelectedTheme,
 )
 from consultations.models import (
@@ -133,38 +133,40 @@ class ConsultationViewSet(ModelViewSet):
             "searchValue",
         ]
         question_id = request.query_params.get("question_id")
-        has_filters = any(request.query_params.get(p) for p in filter_params)
+        has_filters = question_id or any(request.query_params.get(p) for p in filter_params)
 
         if has_filters:
-            filtered_responses = get_filtered_responses(request.query_params, pk)
-            options = options.filter(
-                Exists(filtered_responses.filter(respondent=OuterRef("respondent")))
-            ).annotate(count=Count("respondent", distinct=True))
-        elif question_id:
-            # Scope counts to respondents who answered this question
-            respondent_demographics_table = DemographicOption.respondent_set.through
-            options = options.annotate(
-                count=Coalesce(
-                    Subquery(
-                        respondent_demographics_table.objects.filter(
-                            demographicoption_id=OuterRef("pk"),
-                            respondent_id__in=ConsultationResponse.objects.filter(
-                                question_id=question_id
-                            ).values("respondent_id"),
-                        )
-                        .values("demographicoption_id")
-                        .annotate(c=Count("respondent_id", distinct=True))
-                        .values("c")
-                    ),
-                    Value(0),
-                )
+            filtered_ids = get_filtered_response_ids(
+                request.query_params, pk, question_id=question_id
             )
-        else:
-            options = options.annotate(count=Count("respondent"))
+            filtered_respondent_ids = list(
+                ConsultationResponse.objects.filter(id__in=filtered_ids)
+                .values_list("respondent_id", flat=True)
+                .distinct()
+            )
 
-        data = options.values("id", "field_name", "field_value", "count").order_by(
-            "field_name", "field_value"
-        )
+            through_table = Respondent.demographics.through
+            counts = dict(
+                through_table.objects.filter(respondent_id__in=filtered_respondent_ids)
+                .values_list("demographicoption_id")
+                .annotate(c=Count("id"))
+                .values_list("demographicoption_id", "c")
+            )
+            data = [
+                {
+                    "id": opt["id"],
+                    "field_name": opt["field_name"],
+                    "field_value": opt["field_value"],
+                    "count": counts.get(opt["id"], 0),
+                }
+                for opt in options.values("id", "field_name", "field_value").order_by(
+                    "field_name", "field_value"
+                )
+            ]
+        else:
+            data = options.values(
+                "id", "field_name", "field_value", count=F("response_count")
+            ).order_by("field_name", "field_value")
 
         serializer = DemographicOptionSerializer(instance=data, many=True)
 

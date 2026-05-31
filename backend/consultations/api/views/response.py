@@ -112,18 +112,7 @@ class ResponseViewSet(ModelViewSet):
                 )
             ),
         )
-        # Apply additional FilterSet filtering (including themeFilters)
-        filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
-        qs = filterset.qs
-        # Only use .distinct() when filters that JOIN through M2M are active —
-        # these can produce duplicate rows.
-        if (
-            self.request.GET.get("themeFilters")
-            or self.request.GET.get("demographics")
-            or self.request.GET.get("multiple_choice_answer")
-        ):
-            qs = qs.distinct()
-        return qs
+        return queryset
 
     @action(
         detail=True,

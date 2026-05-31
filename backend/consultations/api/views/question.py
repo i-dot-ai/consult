@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultations import models
-from consultations.api.filters import get_filtered_responses
+from consultations.api.filters import get_filtered_response_ids
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
@@ -60,8 +60,8 @@ class QuestionViewSet(ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         """
-        Retrieve a single question with dynamically calculated multi-choice counts
-        when filters are applied.
+        Retrieve a single question with dynamically calculated response counts when
+        filters are applied.
         """
         question = self.get_object()
 
@@ -73,37 +73,34 @@ class QuestionViewSet(ModelViewSet):
             "unseenResponsesOnly",
             "is_flagged",
             "multiple_choice_answer",
+            "searchValue",
         ]
         has_filters = any(request.query_params.get(p) for p in filter_params)
 
-        # Recalculate multi-choice counts with filters if needed
-        if has_filters and question.has_multiple_choice:
+        if has_filters:
             consultation_pk = self.kwargs["consultation_pk"]
             pk = kwargs["pk"]
 
-            # Get filtered responses
-            filtered_responses = get_filtered_responses(
+            filtered_ids = get_filtered_response_ids(
                 request.query_params, consultation_pk, question_id=pk
             )
 
-            # Recalculate multi-choice counts with filters
-            multichoice_answers = models.MultiChoiceAnswer.objects.filter(
-                question=question
-            ).annotate(
-                prefetched_response_count=Count(
-                    "response",
-                    filter=Q(response__in=filtered_responses),
-                    distinct=True,
+            filtered_responses = models.Response.objects.filter(id__in=filtered_ids)
+            question.calculate_response_counts(filtered_responses)
+
+            if question.has_multiple_choice:
+                multichoice_answers = models.MultiChoiceAnswer.objects.filter(
+                    question=question
+                ).annotate(
+                    prefetched_response_count=Count(
+                        "response",
+                        filter=Q(response__id__in=filtered_ids),
+                        distinct=True,
+                    )
                 )
-            )
-
-            # Replace the prefetched multichoice answers
-            question._prefetched_objects_cache["multichoiceanswer_set"] = list(multichoice_answers)
-
-            # Recalculate multi-choice respondent count with filters
-            question.prefetched_multi_choice_respondent_count = (
-                filtered_responses.filter(chosen_options__isnull=False).distinct().count()
-            )
+                question._prefetched_objects_cache["multichoiceanswer_set"] = list(
+                    multichoice_answers
+                )
 
         serializer = self.get_serializer(question)
         return Response(serializer.data)
@@ -127,28 +124,24 @@ class QuestionViewSet(ModelViewSet):
             "unseenResponsesOnly",
             "is_flagged",
             "multiple_choice_answer",
+            "searchValue",
         ]
         has_filters = any(request.query_params.get(p) for p in filter_params)
 
-        non_empty_filter = ~Q(
-            responseannotation__response__free_text__in=models.EMPTY_FREE_TEXT_VALUES
-        )
-
         if has_filters:
-            filtered_responses = get_filtered_responses(
+            filtered_ids = get_filtered_response_ids(
                 request.query_params, consultation_pk, question_id=pk
             )
             themes = themes.annotate(
                 count=Count(
                     "responseannotation",
-                    filter=Q(responseannotation__response__in=filtered_responses)
-                    & non_empty_filter,
+                    filter=Q(responseannotation__response__id__in=filtered_ids),
                     distinct=True,
                 )
             )
         else:
             themes = themes.annotate(
-                count=Count("responseannotation", filter=non_empty_filter, distinct=True)
+                count=Count("responseannotation", distinct=True)
             )
 
         serializer = QuestionThemeSerializer(themes, many=True)
