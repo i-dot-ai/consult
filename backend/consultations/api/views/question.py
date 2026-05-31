@@ -45,7 +45,6 @@ class QuestionViewSet(ModelViewSet):
                 models.Response.objects.filter(
                     question_id=OuterRef("pk"),
                     free_text__isnull=False,
-                    free_text__gt="",
                     annotation__human_reviewed=True,
                 )
                 .order_by()
@@ -180,8 +179,7 @@ class QuestionViewSet(ModelViewSet):
         next_response = (
             models.Response.objects.filter(
                 question=question,
-                free_text__isnull=False,  # Only responses with free text
-                free_text__gt="",  # Non-empty free text
+                free_text__isnull=False,
             )
             .exclude(
                 annotation__human_reviewed=True  # Exclude already reviewed

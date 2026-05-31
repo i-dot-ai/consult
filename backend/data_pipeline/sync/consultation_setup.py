@@ -525,6 +525,8 @@ def _ingest_responses(
                 continue
 
             free_text = data["free_text"]
+            if free_text in ("", "Not Provided", "-"):
+                free_text = None
 
             # Calculate tokens for free text
             if free_text:
