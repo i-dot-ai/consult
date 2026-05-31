@@ -457,7 +457,9 @@ def respondent_4(consultation):
 
 @pytest.fixture
 def free_text_response(free_text_question, respondent_1):
-    response = Response.objects.create(question=free_text_question, respondent=respondent_1)
+    response = Response.objects.create(
+        question=free_text_question, respondent=respondent_1, free_text="test response"
+    )
     yield response
     response.delete()
 
