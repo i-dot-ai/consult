@@ -487,6 +487,63 @@ class TestResponseViewSet:
         assert response.json()["all_respondents"][0]["id"] == str(response_1.id)
         assert response.json()["all_respondents"][0]["respondent_id"] == str(respondent_1.id)
 
+    def test_question_responses_excludes_null_free_text(
+        self, client, staff_user_token, free_text_question
+    ):
+        """Responses listed under a question should exclude those with no free text."""
+        from consultations.models import Response
+
+        respondent_with_text = RespondentFactory(consultation=free_text_question.consultation)
+        respondent_no_text = RespondentFactory(consultation=free_text_question.consultation)
+        response_with_text = Response.objects.create(
+            question=free_text_question, respondent=respondent_with_text, free_text="some text"
+        )
+        Response.objects.create(
+            question=free_text_question, respondent=respondent_no_text, free_text=None
+        )
+
+        # Nested under question — should only return the response with free text
+        url = reverse(
+            "question-response-list",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "question_pk": free_text_question.id,
+            },
+        )
+        response = client.get(url, headers={"Authorization": f"Bearer {staff_user_token}"})
+
+        assert response.status_code == 200
+        data = response.json()["all_respondents"]
+        assert len(data) == 1
+        assert data[0]["id"] == str(response_with_text.id)
+
+    def test_consultation_responses_includes_null_free_text(
+        self, client, staff_user_token, free_text_question
+    ):
+        """Responses listed at consultation level (e.g. respondent detail) include all responses."""
+        from consultations.models import Response
+
+        respondent = RespondentFactory(consultation=free_text_question.consultation)
+        Response.objects.create(
+            question=free_text_question, respondent=respondent, free_text="some text"
+        )
+        Response.objects.create(
+            question=free_text_question, respondent=respondent, free_text=None
+        )
+
+        url = reverse(
+            "response-list",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+        response = client.get(
+            url,
+            query_params={"respondent_id": respondent.id},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        assert len(response.json()["all_respondents"]) == 2
+
     def test_patch_response_human_reviewed(
         self, client, staff_user, staff_user_token, free_text_annotation
     ):

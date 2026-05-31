@@ -68,6 +68,9 @@ class ResponseViewSet(ModelViewSet):
         question_pk = self.kwargs.get("question_pk")
         if question_pk:
             queryset = queryset.filter(question_id=question_pk)
+            # Only return responses with free text when listing under a question
+            if self.action == "list":
+                queryset = queryset.filter(free_text__isnull=False)
 
         # Optimize queryset with select_related and prefetch_related
         queryset = queryset.select_related(
