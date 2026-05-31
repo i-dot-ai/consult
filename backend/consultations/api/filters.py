@@ -18,7 +18,7 @@ class ResponseFilter(FilterSet):
     themeFilters = BaseInFilter(method="filter_themes", lookup_expr="in")
     demographics = BaseInFilter(method="filter_demographics", lookup_expr="in")
     is_flagged = BooleanFilter()
-    multiple_choice_answer = BaseInFilter(field_name="chosen_options", lookup_expr="in")
+    multiple_choice_answer = BaseInFilter(method="filter_multiple_choice", lookup_expr="in")
     respondent_id = UUIDFilter()
     question_id = UUIDFilter()
 
@@ -57,7 +57,7 @@ class ResponseFilter(FilterSet):
         return qs
 
     def filter_demographics(self, queryset, name, value):
-        """OR within each demographic group, AND across groups. Uses subquery to avoid JOINs."""
+        """OR within each demographic group, AND across groups. Uses nested subqueries to avoid cross-joins."""
         if not value:
             return queryset
 
@@ -68,12 +68,19 @@ class ResponseFilter(FilterSet):
         for option in options:
             groups.setdefault(option.field_name, []).append(option.id)
 
-        # Build a respondent queryset that satisfies all groups (AND across, OR within)
+        # Each group narrows via a subquery rather than chaining M2M JOINs
         respondents = Respondent.objects.all()
         for group_ids in groups.values():
-            respondents = respondents.filter(demographics__in=group_ids)
+            respondents = respondents.filter(
+                id__in=Respondent.objects.filter(demographics__in=group_ids).values("id")
+            )
 
         return queryset.filter(respondent_id__in=respondents.values("id"))
+
+    def filter_multiple_choice(self, queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.filter(chosen_options__in=value).distinct()
 
     class Meta:
         model = Response

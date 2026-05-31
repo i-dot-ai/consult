@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultations import models
-from consultations.api.filters import get_filtered_response_ids
+from consultations.api.filters import get_filtered_response_ids, get_filtered_responses
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
@@ -129,13 +129,13 @@ class QuestionViewSet(ModelViewSet):
         has_filters = any(request.query_params.get(p) for p in filter_params)
 
         if has_filters:
-            filtered_ids = get_filtered_response_ids(
+            filtered_responses = get_filtered_responses(
                 request.query_params, consultation_pk, question_id=pk
             )
             themes = themes.annotate(
                 count=Count(
                     "responseannotation",
-                    filter=Q(responseannotation__response__id__in=filtered_ids),
+                    filter=Q(responseannotation__response__in=filtered_responses),
                     distinct=True,
                 )
             )
