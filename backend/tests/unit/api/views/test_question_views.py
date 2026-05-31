@@ -287,6 +287,140 @@ class TestQuestionViewSet:
         assert data["total_response_count"] == 1
         assert data["multi_choice_response_count"] == 1
 
+    def test_get_free_text_question_with_demographic_filter(
+        self,
+        client,
+        staff_user_token,
+        free_text_question,
+        northern_demographic,
+        southern_demographic,
+    ):
+        """Test that demographic filters correctly update free text response counts"""
+        from consultations.models import Response
+
+        # Respondent 1: northern, has free text
+        respondent_1 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent_1.demographics.add(northern_demographic)
+        Response.objects.create(
+            respondent=respondent_1, question=free_text_question, free_text="Northern response 1"
+        )
+
+        # Respondent 2: northern, has free text
+        respondent_2 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent_2.demographics.add(northern_demographic)
+        Response.objects.create(
+            respondent=respondent_2, question=free_text_question, free_text="Northern response 2"
+        )
+
+        # Respondent 3: southern, has free text
+        respondent_3 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent_3.demographics.add(southern_demographic)
+        Response.objects.create(
+            respondent=respondent_3, question=free_text_question, free_text="Southern response"
+        )
+
+        free_text_question.update_response_counts()
+
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+
+        # No filter - should show all counts
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total_response_count"] == 3
+
+        # Filter by northern - should show filtered counts
+        response = client.get(
+            url + f"?demographics={northern_demographic.id}",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total_response_count"] == 2
+
+        # Filter by southern - should show filtered counts
+        response = client.get(
+            url + f"?demographics={southern_demographic.id}",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total_response_count"] == 1
+
+    def test_get_question_with_search_filter(
+        self,
+        client,
+        staff_user_token,
+        free_text_question,
+    ):
+        """Test that search filters update question counts consistently"""
+        from consultations.models import Response
+
+        respondent_1 = RespondentFactory(consultation=free_text_question.consultation)
+        Response.objects.create(
+            respondent=respondent_1,
+            question=free_text_question,
+            free_text="Climate policy is important",
+        )
+
+        respondent_2 = RespondentFactory(consultation=free_text_question.consultation)
+        Response.objects.create(
+            respondent=respondent_2,
+            question=free_text_question,
+            free_text="Housing policy needs reform",
+        )
+
+        respondent_3 = RespondentFactory(consultation=free_text_question.consultation)
+        Response.objects.create(
+            respondent=respondent_3,
+            question=free_text_question,
+            free_text="Other topics entirely",
+        )
+
+        free_text_question.update_response_counts()
+
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+
+        # No filter — all 3 responses
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        assert response.json()["total_response_count"] == 3
+
+        # Search for "policy" — 2 responses match
+        response = client.get(
+            url + "?searchValue=policy&searchMode=keyword",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        assert response.json()["total_response_count"] == 2
+        assert response.json()["free_text_response_count"] == 2
+
+        # Search for "climate" — 1 response matches
+        response = client.get(
+            url + "?searchValue=climate&searchMode=keyword",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        assert response.json()["total_response_count"] == 1
+        assert response.json()["free_text_response_count"] == 1
 
     def test_patch_question_theme_status(
         self, client, staff_user, free_text_question, staff_user_token
