@@ -15,8 +15,6 @@ from simple_history.models import HistoricalRecords
 
 from authentication.models import User
 
-EMPTY_FREE_TEXT_VALUES = ["", "Not Provided", "-"]
-
 
 # TODO: we don't use this anymore, remove it without manage.py makemigrations complaining
 class MultipleChoiceSchemaValidator(BaseValidator):
@@ -144,17 +142,11 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         if not self.has_free_text:
             return 0
 
-        # Count total responses with free text
-        total_responses = self.response_set.filter(
-            free_text__isnull=False, free_text__gt=""
-        ).count()
-
-        if total_responses == 0:
+        if not self.free_text_response_count:
             return 0
 
-        # Count human-reviewed responses
         reviewed_responses = self.response_set.filter(
-            free_text__isnull=False, free_text__gt="", annotation__human_reviewed=True
+            free_text__isnull=False, annotation__human_reviewed=True
         ).count()
 
         return reviewed_responses / self.free_text_response_count
@@ -194,9 +186,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         """
         Get queryset of non-empty responses for this question.
         """
-        return self.response_set.filter(free_text__isnull=False).exclude(
-            free_text__in=EMPTY_FREE_TEXT_VALUES
-        )
+        return self.response_set.filter(free_text__isnull=False)
 
     def sample_responses(self, keep_count: int) -> SampleResult:
         """
