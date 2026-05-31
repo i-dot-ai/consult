@@ -118,12 +118,11 @@ def get_filtered_responses(query_params, consultation_id, question_id=None):
 
 def get_filtered_response_ids(query_params, consultation_id, question_id=None):
     """
-    Like get_filtered_responses but materialises the IDs upfront.
-    Use this for aggregation queries (counts, themes, demographics) where the filtered
-    set is used as a subquery multiple times.
+    Returns a queryset of filtered response IDs suitable for use as a subquery.
+    PostgreSQL will execute this as a semi-join rather than materialising all IDs.
     """
     queryset = get_filtered_responses(query_params, consultation_id, question_id)
-    return list(queryset.values_list("id", flat=True))
+    return queryset.values_list("id", flat=True)
 
 
 class UserFilter(FilterSet):

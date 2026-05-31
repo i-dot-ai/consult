@@ -136,13 +136,11 @@ class ConsultationViewSet(ModelViewSet):
             filtered_ids = get_filtered_response_ids(
                 request.query_params, pk, question_id=question_id
             )
-            filtered_respondent_ids = list(
+            filtered_respondent_ids = (
                 ResponseModel.objects.filter(id__in=filtered_ids)
                 .values_list("respondent_id", flat=True)
                 .distinct()
             )
-            # Single query on the M2M through-table grouped by option — avoids
-            # per-option conditional aggregates with huge IN lists.
             from consultations.models import Respondent
 
             through_table = Respondent.demographics.through
