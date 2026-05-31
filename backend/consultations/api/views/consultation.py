@@ -136,7 +136,7 @@ class ConsultationViewSet(ModelViewSet):
             filtered_ids = get_filtered_response_ids(
                 request.query_params, pk, question_id=question_id
             )
-            filtered_respondent_ids = (
+            filtered_respondent_ids = list(
                 ResponseModel.objects.filter(id__in=filtered_ids)
                 .values_list("respondent_id", flat=True)
                 .distinct()
