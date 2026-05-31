@@ -106,6 +106,9 @@ class TestConsultationViewSet:
         respondent2.demographics.add(demo)
         ResponseFactory(question=question_2, respondent=respondent2)
 
+        # Update denormalised counts
+        DemographicOption.update_response_counts(consultation)
+
         url = reverse("consultations-demographics", kwargs={"pk": consultation.id})
 
         # Without question_id — should count both respondents

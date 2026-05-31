@@ -11,6 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from consultations.models import (
     Consultation,
     DemographicOption,
+    MultiChoiceAnswer,
     Respondent,
     Response,
     ResponseAnnotation,
@@ -270,6 +271,10 @@ def multi_choice_responses(multi_choice_question):
     response_2 = Response.objects.create(respondent=respondent_2, question=multi_choice_question)
     response_2.chosen_options.add(red)
     response_2.save()
+
+    # Update denormalised counts
+    MultiChoiceAnswer.update_response_counts(multi_choice_question)
+    multi_choice_question.update_response_counts()
 
     yield respondent_1
 
