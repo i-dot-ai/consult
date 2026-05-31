@@ -102,6 +102,9 @@ class RespondentFactory(DjangoModelFactory):
                 field_value=encode(v),
             )
             self.demographics.add(o)
+            DemographicOption.objects.filter(pk=o.pk).update(
+                response_count=F("response_count") + 1
+            )
         self.save()
 
 
@@ -115,6 +118,12 @@ class ResponseFactory(DjangoModelFactory):
     embedding = factory.LazyAttribute(
         lambda o: None if not o.free_text else embed_text(o.free_text)
     )
+
+    @factory.post_generation
+    def update_response_counts(self, create, extracted, **kwargs):
+        if not create:
+            return
+        self.question.update_response_counts()
 
 
 class ResponseWithMultipleChoiceFactory(ResponseFactory):
@@ -132,6 +141,13 @@ class ResponseWithMultipleChoiceFactory(ResponseFactory):
         )
         self.chosen_options.set(chosen_options)
         self.save()
+
+    @factory.post_generation
+    def update_response_counts(self, create, extracted, **kwargs):
+        if not create:
+            return
+        MultiChoiceAnswer.update_response_counts(self.question)
+        self.question.update_response_counts()
 
 
 class ResponseWithBothFactory(ResponseFactory):

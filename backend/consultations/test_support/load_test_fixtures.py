@@ -69,6 +69,9 @@ def create_question_from_fixtures(consultation_object, respondents, question_dat
         for i, response_data in enumerate(question_data["responses"]):
             create_response_from_fixtures(respondents, i, question_object, response_data)
 
+    question_object.update_response_counts()
+    MultiChoiceAnswer.update_response_counts(question_object)
+
 
 def create_respondents_from_fixtures(consultation_data, consultation_object):
     max_respondents = max(
