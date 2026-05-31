@@ -61,9 +61,9 @@
     ),
   );
 
-  let totalResponses = $derived(
+  let totalResponseCount = $derived(
     questions?.reduce(
-      (acc, question) => acc + (question?.total_responses || 0),
+      (acc, question) => acc + (question?.total_response_count || 0),
       0,
     ),
   );
@@ -97,7 +97,7 @@
         >
           <MetricsSummary
             questionCount={questions?.length}
-            responseCount={totalResponses}
+            responseCount={totalResponseCount}
             demoCount={demoOptionCategories.length}
           />
         </div>

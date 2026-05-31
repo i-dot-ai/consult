@@ -382,7 +382,8 @@
         {responses}
         {isResponsesLoading}
         answersError={$responsesStore.error}
-        filteredTotal={$responsesStore.data?.filtered_total}
+        freeTextResponseCount={$questionStore.data?.free_text_response_count ||
+          0}
         {hasMorePages}
         handleLoadClick={() => loadData()}
         resetData={() => {

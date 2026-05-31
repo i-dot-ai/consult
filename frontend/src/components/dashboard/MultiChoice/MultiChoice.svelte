@@ -15,10 +15,15 @@
 
   interface Props {
     data: QuestionMultiAnswer[];
-    totalAnswers: number;
+    multiChoiceResponseCount: number;
+    countsLoading?: boolean;
   }
 
-  let { data = [], totalAnswers = 0 }: Props = $props();
+  let {
+    data = [],
+    multiChoiceResponseCount = 0,
+    countsLoading = false,
+  }: Props = $props();
 </script>
 
 <section class="my-4" transition:fade>
@@ -26,14 +31,17 @@
     <TitleRow
       level={2}
       title="Multiple Choice Answers"
-      subtitle="{totalAnswers} responses"
+      subtitle={countsLoading ? "" : `${multiChoiceResponseCount} responses`}
     >
       <List slot="icon" />
     </TitleRow>
 
     <Panel bg={true}>
       {#each data as item, i (i)}
-        {@const percentage = getPercentage(item.response_count, totalAnswers)}
+        {@const percentage = getPercentage(
+          item.response_count,
+          multiChoiceResponseCount,
+        )}
 
         <div class="mb-1 last:mb-0">
           <Button

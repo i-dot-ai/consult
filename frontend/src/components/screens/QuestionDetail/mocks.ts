@@ -171,14 +171,14 @@ const themes = [
     name: "Standardized framework",
     description:
       "A standardized framework that benefits both consumers and manufacturers.",
-    count: 0,
+    count: 62,
   },
   {
     id: "test-theme",
     name: "Test Theme",
     description:
       "A test framework that benefits both consumers and manufacturers.",
-    count: 0,
+    count: 45,
   },
 ];
 
@@ -244,8 +244,9 @@ export const questionMock = {
   body: {
     id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     number: 1,
-    total_responses: 100,
-    multi_choice_respondent_count: 232,
+    total_response_count: 250,
+    free_text_response_count: 100,
+    multi_choice_response_count: 232,
     question_text:
       "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
     has_free_text: true,
@@ -294,8 +295,6 @@ export const responsesMock = {
     const filteredAnswers = filterAnswers(responses, queryParams);
 
     return {
-      respondents_total: filteredAnswers.length,
-      filtered_total: filteredAnswers.length,
       has_more_pages: true,
       all_respondents: filteredAnswers,
     };

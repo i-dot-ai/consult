@@ -35,7 +35,7 @@ describe("QuestionSummary", () => {
     render(QuestionSummary, {
       ...testData,
       multiChoice: multiChoice,
-      multiChoiceRespondentCount: 50,
+      multiChoiceResponseCount: 50,
     });
 
     expect(screen.getByText("Multiple Choice Answers")).toBeInTheDocument();
