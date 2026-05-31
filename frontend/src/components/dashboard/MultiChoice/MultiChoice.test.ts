@@ -49,6 +49,21 @@ describe("MultiChoice", () => {
     expect(container).toMatchSnapshot();
   });
 
+  it("should show labels but hide counts when countsLoading is true", () => {
+    render(MultiChoice, {
+      data: testData.data,
+      multiChoiceResponseCount: testData.multiChoiceResponseCount,
+      countsLoading: true,
+    });
+
+    expect(screen.getByText("Multiple Choice Answers")).toBeInTheDocument();
+    testData.data.forEach((item) => {
+      expect(screen.getByText(item.text)).toBeInTheDocument();
+      expect(screen.queryByText(item.response_count)).not.toBeInTheDocument();
+    });
+    expect(screen.queryByText("30 responses")).not.toBeInTheDocument();
+  });
+
   it("should toggle multi answer filters when items clicked", async () => {
     const user = userEvent.setup();
 
