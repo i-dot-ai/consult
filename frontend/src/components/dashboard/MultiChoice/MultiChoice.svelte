@@ -93,19 +93,35 @@
                     "sm:justify-end",
                   ])}
                 >
-                  <span>{percentage}%</span>
+                  {#if countsLoading}
+                    <span
+                      class="blink select-none rounded bg-neutral-200 text-neutral-200"
+                    >
+                      00%
+                    </span>
+                  {:else}
+                    <span>{percentage}%</span>
 
-                  <span class="sm:hidden">
-                    {item.response_count}
-                  </span>
+                    <span class="sm:hidden">
+                      {item.response_count}
+                    </span>
+                  {/if}
                 </div>
                 <div class="w-full">
-                  <Progress value={percentage} />
+                  <Progress value={countsLoading ? 0 : percentage} />
                 </div>
 
-                <span class="hidden min-w-[4ch] sm:block">
-                  {item.response_count}
-                </span>
+                {#if countsLoading}
+                  <span
+                    class="blink hidden min-w-[4ch] select-none rounded bg-neutral-200 text-neutral-200 sm:block"
+                  >
+                    0000
+                  </span>
+                {:else}
+                  <span class="hidden min-w-[4ch] sm:block">
+                    {item.response_count}
+                  </span>
+                {/if}
               </div>
             </div>
           </Button>
