@@ -136,7 +136,7 @@ test.describe('Consultation Details - Adding Users', () => {
     await expect(page.getByText(uniqueEmail)).not.toBeVisible();
   });
 
-  test.afterAll(async () => {
+   test.afterAll(async () => {
     await deleteFixtureData(testData);
   });
 
