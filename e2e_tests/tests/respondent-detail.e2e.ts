@@ -63,9 +63,9 @@ test.describe("Respondent Detail Page", () => {
     await responseTab.click();
     await page.waitForLoadState("networkidle");
 
-    // Find respondent ID button (button with text "ID: {number}")
+    // Find respondent ID button using test ID
     // Q1 (hybridQuestionWithThemes) has 5 responses, so we should see up to 5 respondent buttons
-    const allRespondentButtons = page.locator('button:has-text("ID:")');
+    const allRespondentButtons = page.getByTestId('respondent-button');
     
     // Wait for at least one respondent button to appear
     await expect(allRespondentButtons.first()).toBeVisible({ timeout: 10000 });
