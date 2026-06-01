@@ -94,8 +94,6 @@ test.describe("Respondent Detail Page", () => {
     // CRITICAL: Now wait for response cards to appear after loading completes
     // The fixture guarantees this respondent has responses, so this must appear
     await expect(page.getByTestId('question-number').first()).toBeVisible({ timeout: 10000 });
-    
-    const questionNumberCount = await page.getByTestId('question-number').count();
 
     // Extract IDs from URL - captures consultationId [1] and respondentId [2] from URL path
     const currentUrl = page.url();
@@ -138,7 +136,6 @@ test.describe("Respondent Detail Page", () => {
     // Use .or() to check for either prev or next button
     const navigationButtons = prevButton.or(nextButton);
     await expect(navigationButtons.first()).toBeVisible();
-    expect(await navigationButtons.count()).toBeGreaterThan(0);
   });
 
   test("displays respondent demographics in sidebar", async ({ page }) => {
@@ -208,7 +205,6 @@ test.describe("Respondent Detail Page", () => {
     // Check for subtitle or description - should always be present
     const subtitle = page.getByText(/all responses submitted/i);
     await expect(subtitle.first()).toBeVisible();
-    expect(await subtitle.count()).toBeGreaterThan(0);
   });
 
   test("displays individual response cards with question numbers", async ({
@@ -222,12 +218,10 @@ test.describe("Respondent Detail Page", () => {
 
     // Wait for at least one badge to appear (longer timeout for dynamic content)
     await expect(questionBadges.first()).toBeVisible({ timeout: 15000 });
-    expect(await questionBadges.count()).toBeGreaterThan(0);
 
     // Check for question text/title - should exist for each response (it's in an <a> tag)
     const questionLinks = page.locator('a[href*="/questions/"]');
     await expect(questionLinks.first()).toBeVisible();
-    expect(await questionLinks.count()).toBeGreaterThan(0);
   });
 
   test("displays response text for answered questions", async ({ page }) => {
@@ -259,14 +253,12 @@ test.describe("Respondent Detail Page", () => {
     // Respondent 1 has themes on Q1 response (themes: ["A", "B"])
     const themesLabel = page.getByText(/themes:/i);
     await expect(themesLabel.first()).toBeVisible({ timeout: 15000 });
-    expect(await themesLabel.count()).toBeGreaterThan(0);
 
     // Look for theme tag content - fixture has "Standardized framework" and "Innovation" themes
     // These are rendered in Tag components with variant="dark"
     const themeTags = page.getByText("Standardized framework").or(page.getByText("Innovation"));
 
     await expect(themeTags.first()).toBeVisible({ timeout: 15000 });
-    expect(await themeTags.count()).toBeGreaterThan(0);
   });
 
   test("displays evidence-rich badge for qualifying responses", async ({
@@ -289,7 +281,6 @@ test.describe("Respondent Detail Page", () => {
     // Check for "MULTIPLE CHOICE RESPONSE:" label - fixture has MC questions
     const multipleChoiceLabel = page.getByText(/multiple choice response/i);
     await expect(multipleChoiceLabel.first()).toBeVisible();
-    expect(await multipleChoiceLabel.count()).toBeGreaterThan(0);
 
     // Check that multiple choice options are displayed
     const multipleChoiceOptions = page.getByTestId('multiple-choice-options');
@@ -316,9 +307,6 @@ test.describe("Respondent Detail Page", () => {
     // Wait for at least one link to be visible
     const firstLink = questionLinks.first();
     await expect(firstLink).toBeVisible();
-    
-    // Fixture creates responses, so question links should exist
-    expect(await questionLinks.count()).toBeGreaterThan(0);
 
     // Get the href before clicking
     const href = await firstLink.getAttribute("href");
@@ -352,7 +340,6 @@ test.describe("Respondent Detail Page", () => {
       .first();
 
     await expect(backButton).toBeVisible();
-    expect(await backButton.count()).toBeGreaterThan(0);
     await backButton.click();
     await page.waitForLoadState("networkidle");
 
@@ -386,7 +373,6 @@ test.describe("Respondent Detail Page", () => {
       .first();
 
     await expect(nextButton).toBeVisible();
-    expect(await nextButton.count()).toBeGreaterThan(0);
     
     // Verify button is enabled (not disabled)
     await expect(nextButton).toBeEnabled();
@@ -417,7 +403,6 @@ test.describe("Respondent Detail Page", () => {
       .first();
 
     await expect(prevButton).toBeVisible();
-    expect(await prevButton.count()).toBeGreaterThan(0);
     
     // Verify button is enabled (not disabled)
     await expect(prevButton).toBeEnabled();
@@ -448,7 +433,6 @@ test.describe("Respondent Detail Page", () => {
     const stakeholderLabel = page.getByText(/stakeholder name/i);
 
     await expect(stakeholderLabel.first()).toBeVisible();
-    expect(await stakeholderLabel.count()).toBeGreaterThan(0);
   });
 
   test("page loads without errors", async ({ page }) => {
@@ -513,7 +497,6 @@ test.describe("Respondent Detail Page", () => {
 
     // Wait for input to appear and verify it exists
     await expect(stakeholderInput.first()).toBeVisible();
-    expect(await stakeholderInput.count()).toBeGreaterThan(0);
 
     // Fill in the stakeholder name
     await stakeholderInput.first().fill(stakeholderName);
@@ -525,7 +508,6 @@ test.describe("Respondent Detail Page", () => {
 
     // Wait for save button and verify it exists
     await expect(saveButton).toBeVisible();
-    expect(await saveButton.count()).toBeGreaterThan(0);
 
     // Click save and wait for network to settle
     await saveButton.first().click();
