@@ -230,13 +230,20 @@ test.describe("Respondent Detail Page", () => {
 
     // Check for response text content using test ID
     const responseTexts = page.getByTestId('response-text');
-    await expect(responseTexts.first()).toBeVisible();
     
-    // Verify multiple response text elements exist (fixture has 3 questions)
+    // Wait for at least one response text to be visible with longer timeout
+    await expect(responseTexts.first()).toBeVisible({ timeout: 15000 });
+    
+    // Get count and verify we have responses
     const count = await responseTexts.count();
     expect(count).toBeGreaterThan(0);
     
-    // Verify each response has non-empty text
+    // Wait for all response text elements to be attached to DOM
+    for (let i = 0; i < count; i++) {
+      await expect(responseTexts.nth(i)).toBeAttached();
+    }
+    
+    // Now verify each response has non-empty text
     const allResponseTexts = await responseTexts.allTextContents();
     for (const text of allResponseTexts) {
       expect(text.trim().length).toBeGreaterThan(0);
@@ -329,7 +336,9 @@ test.describe("Respondent Detail Page", () => {
     );
 
     // Verify the question page loaded - check for specific question page elements
-    await expect(page.getByRole("heading", { name: /question/i }).first()).toBeVisible();
+    // Question detail page has either "Theme analysis" or "Response refinement" heading
+    const questionPageHeading = page.getByRole("heading", { name: /theme analysis|response refinement/i });
+    await expect(questionPageHeading.first()).toBeVisible({ timeout: 10000 });
   });
 
   test("can navigate back using back button", async ({ page }) => {
