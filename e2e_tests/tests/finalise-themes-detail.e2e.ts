@@ -123,6 +123,34 @@ test.describe("Finalise Themes - Detail Page", () => {
     expect(page.getByText(TEST_TITLE, { exact: true })).not.toBeVisible();
   })
 
+  test("Clicking cancel while editing a theme does not update it", async ({ page }) => {
+    expect(page.getByText("0 selected")).toBeVisible();
+
+    const TEST_TITLE = "Test Theme";
+    const TEST_TITLE_UPDATED = "Updated Test Theme";
+    const TEST_DESCRIPTION = "Test description";
+    const TEST_DESCRIPTION_UPDATED = "Updated test description";
+
+    createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
+
+    expect(page.getByText("1 selected", { exact: true })).toBeVisible();
+    expect(page.getByText(TEST_TITLE)).toBeVisible();
+
+    const editThemeButton = page.getByRole("button", { name: "Edit" });
+    await editThemeButton.click();
+
+    const titleInput = page.getByLabel("Theme Title");
+    const descriptionInput = page.getByLabel("Theme Description");
+
+    await titleInput.fill(TEST_TITLE_UPDATED);
+    await descriptionInput.fill(TEST_DESCRIPTION_UPDATED);
+
+    await page.getByRole("button", { name: "Cancel" }).click();
+
+    expect(page.getByText(TEST_TITLE_UPDATED)).not.toBeVisible();
+    expect(page.getByText(TEST_TITLE, { exact: true })).toBeVisible();
+  })
+
   test("Create theme panel shown/hidden accordingly", async ({ page }) => {
     // Create theme panel initially hidden
     expect(page.getByRole("heading", { name: "Add Custom Theme" })).not.toBeVisible();
