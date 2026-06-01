@@ -90,6 +90,7 @@
   let currPage: number = $state(1);
   let hasMorePages: boolean = $state(true);
   let responses: ResponseBody[] = $state([]);
+  let responseTotalCount: number | null = $state(null);
   let lastAggregationQs: string | null = $state(null);
 
   let searchValue: string = $state("");
@@ -157,6 +158,9 @@
       const newResponses = $responsesStore.data?.all_respondents;
       responses = [...responses, ...newResponses];
     }
+    if ($responsesStore.data?.total_count !== undefined) {
+      responseTotalCount = $responsesStore.data.total_count;
+    }
     isResponsesLoading = false;
     hasMorePages = $responsesStore.data?.has_more_pages || false;
 
@@ -205,6 +209,7 @@
     currPage = 1;
     hasMorePages = true;
     isResponsesLoading = true;
+    responseTotalCount = null;
   }
 
   const resetFilters = () => {
@@ -575,8 +580,14 @@
               </div>
 
               {#if responses.length > 0}
-                <p class="mt-2 text-center text-sm">
-                  {`Showing first ${responses.length} of ${$questionStore.data?.free_text_response_count || 0} responses. Use filters to narrow results.`}
+                <p class="mt-2 text-center text-sm text-neutral-500">
+                  {#if !hasMorePages}
+                    Showing all {responses.length} responses.
+                  {:else if responseTotalCount !== null}
+                    Showing {responses.length} of {responseTotalCount} responses.
+                  {:else}
+                    Showing {responses.length} responses.
+                  {/if}
                 </p>
               {/if}
             </div>
