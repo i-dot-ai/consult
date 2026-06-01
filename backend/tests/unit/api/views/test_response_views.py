@@ -43,11 +43,12 @@ class TestResponseViewSet:
         Test for no N+1 queries. Regardless of the number of responses, we expect:
         - 1 query to get authentication user for permission checking
         - 1 query to get authentication user for is_flagged annotation
+        - 1 query to count total responses (page 1 only)
         - 1 query to get responses with related data (includes is_read annotation)
         - 1 query to prefetch multiple choice answers
         - 1 query to prefetch demographic data
         """
-        with django_assert_num_queries(5):
+        with django_assert_num_queries(6):
             response = client.get(
                 url,
                 query_params={"question_id": free_text_question.id},

@@ -138,7 +138,7 @@ def delete_consultation_job(consultation_id: UUID):
         delete_response_related_table("consultations_candidatethemeresponse", consultation_id)
         delete_response_related_table("consultations_responseannotation", consultation_id)
         delete_response_related_table("consultations_response_chosen_options", consultation_id)
-        delete_response_related_table("consultations_response_read_by", consultation_id)
+        delete_response_related_table("consultations_responsereadby", consultation_id)
 
         logger.info("Deleting responses...")
         delete_responses_in_batches(consultation_id)

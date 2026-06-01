@@ -23,6 +23,7 @@
     getApiQuestionThemesUrl,
     getApiQuestionUrl,
     getConsultationDetailUrl,
+    updateResponseReadStatus,
   } from "../../../global/routes.ts";
 
   import { createFetchStore } from "../../../global/stores.ts";
@@ -89,6 +90,7 @@
   let currPage: number = $state(1);
   let hasMorePages: boolean = $state(true);
   let responses: ResponseBody[] = $state([]);
+  let lastAggregationQs: string | null = $state(null);
 
   let searchValue: string = $state("");
   let searchMode: SearchModeValues = $state(SearchModeValues.KEYWORD);
@@ -133,7 +135,8 @@
       includePagination: true,
     });
 
-    if (currPage === 1) {
+    if (aggregationQs !== lastAggregationQs) {
+      lastAggregationQs = aggregationQs;
       $questionStore.fetch(
         `${getApiQuestionUrl(consultationId, questionId)}${aggregationQs}`,
       );
@@ -238,6 +241,17 @@
     // do not track deep dependencies
     untrack(() => loadData());
   });
+
+  async function markResponsesAsRead() {
+    if (responses.length === 0) return;
+    await Promise.all(
+      responses.map((response) =>
+        fetch(updateResponseReadStatus(consultationId, response.id), {
+          method: "POST",
+        }),
+      ),
+    );
+  }
 
   let demographics = $derived($demographicsStore.data || []);
   let hasFreeText = $derived($questionStore.data?.has_free_text ?? true);
@@ -502,6 +516,15 @@
                           resetAnswers();
                           loadData();
                         }}
+                        onInteract={() => {
+                          fetch(
+                            updateResponseReadStatus(
+                              consultationId,
+                              response.id,
+                            ),
+                            { method: "POST" },
+                          );
+                        }}
                       />
                     </div>
                   </li>
@@ -537,7 +560,10 @@
                   >
                     <Button
                       fullWidth={true}
-                      handleClick={() => loadData()}
+                      handleClick={() => {
+                        markResponsesAsRead();
+                        loadData();
+                      }}
                       size="sm"
                     >
                       <span class="w-full whitespace-nowrap text-center">
