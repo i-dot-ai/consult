@@ -49,6 +49,9 @@
   import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
   import ResponseCard from "../../dashboard/ResponseCard/ResponseCard.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
+  import Switch from "../../inputs/Switch/Switch.svelte";
+  import Diamond from "../../svg/material/Diamond.svelte";
+  import Visibility from "../../svg/material/Visibility.svelte";
   import { getPercentage } from "../../../global/utils.ts";
 
   const PINNED_BOTTOM_THEMES = ["no reason given", "other"];
@@ -68,8 +71,8 @@
     themeFilters: string[];
     searchMode: SearchModeValues;
     evidenceRich: boolean;
-    unseenResponsesOnly: boolean;
-    flaggedOnly: boolean;
+    unread: boolean;
+    flagged: boolean;
     demoFilters: string[];
     multiAnswerFilters: string[];
   }
@@ -90,8 +93,8 @@
   let searchValue: string = $state("");
   let searchMode: SearchModeValues = $state(SearchModeValues.KEYWORD);
   let evidenceRich: boolean = $state(false);
-  let unseenResponsesOnly: boolean = $state(false);
-  let flaggedOnly: boolean = $state(false);
+  let unread: boolean = $state(false);
+  let flagged: boolean = $state(false);
   let dataRequested: boolean = $state(false);
   let isResponsesLoading: boolean = $state(true);
 
@@ -109,28 +112,36 @@
 
   async function loadData() {
     isResponsesLoading = true;
-    const filters = {
+    const baseFilters = {
       searchValue: searchValue,
       searchMode: searchMode,
       themeFilters: themeFilters.filters,
-      evidenceRich: evidenceRich,
-      unseenResponsesOnly: unseenResponsesOnly,
+      evidenceRich: false,
+      unread: false,
       demoFilters: demoFilters.filters,
-      flaggedOnly: flaggedOnly,
+      flagged: false,
       multiAnswerFilters: multiAnswerFilters.filters,
     };
-    const filterQs = buildQueryString(filters);
-    const responseQs = buildQueryString(filters, { includePagination: true });
+    const responseFilters = {
+      ...baseFilters,
+      evidenceRich: evidenceRich,
+      unread: unread,
+      flagged: flagged,
+    };
+    const aggregationQs = buildQueryString(baseFilters);
+    const responseQs = buildQueryString(responseFilters, {
+      includePagination: true,
+    });
 
     if (currPage === 1) {
       $questionStore.fetch(
-        `${getApiQuestionUrl(consultationId, questionId)}${filterQs}`,
+        `${getApiQuestionUrl(consultationId, questionId)}${aggregationQs}`,
       );
       $themesStore.fetch(
-        `${getApiQuestionThemesUrl(consultationId, questionId)}${filterQs}`,
+        `${getApiQuestionThemesUrl(consultationId, questionId)}${aggregationQs}`,
       );
       $demographicsStore.fetch(
-        `${getApiDemographicsUrl(consultationId)}${filterQs}${filterQs ? "&" : "?"}question_id=${questionId}`,
+        `${getApiDemographicsUrl(consultationId)}${aggregationQs}${aggregationQs ? "&" : "?"}question_id=${questionId}`,
       );
     }
 
@@ -164,11 +175,11 @@
       ...(filters.evidenceRich && {
         evidenceRich: JSON.stringify(filters.evidenceRich),
       }),
-      ...(filters.unseenResponsesOnly && {
-        unseenResponsesOnly: JSON.stringify(filters.unseenResponsesOnly),
+      ...(filters.unread && {
+        unseenResponsesOnly: JSON.stringify(filters.unread),
       }),
-      ...(filters.flaggedOnly && {
-        is_flagged: JSON.stringify(filters.flaggedOnly),
+      ...(filters.flagged && {
+        is_flagged: JSON.stringify(filters.flagged),
       }),
       ...(filters.multiAnswerFilters.length > 0 && {
         multiple_choice_answer: filters.multiAnswerFilters.join(","),
@@ -198,9 +209,9 @@
     demoFilters.reset();
     multiAnswerFilters.reset();
     evidenceRich = false;
-    unseenResponsesOnly = false;
+    unread = false;
     searchValue = "";
-    flaggedOnly = false;
+    flagged = false;
   };
 
   const anyFilterApplied = () => {
@@ -208,25 +219,19 @@
       themeFilters.applied() ||
         demoFilters.applied() ||
         multiAnswerFilters.applied() ||
-        evidenceRich ||
-        unseenResponsesOnly ||
-        searchValue ||
-        flaggedOnly,
+        searchValue,
     );
   };
-
-  const setEvidenceRich = (value: boolean) => (evidenceRich = value);
-  const setUnseenResponses = (value: boolean) => (unseenResponsesOnly = value);
 
   $effect(() => {
     void searchValue;
     void searchMode;
     void themeFilters.filters;
     void evidenceRich;
-    void unseenResponsesOnly;
+    void unread;
     void demoFilters.filters;
     void multiAnswerFilters.filters;
-    void flaggedOnly;
+    void flagged;
 
     resetAnswers();
 
@@ -304,13 +309,7 @@
 <div class="grid grid-cols-4 gap-4">
   <div class="col-span-4 md:col-span-1">
     <FiltersSidebar
-      showEvidenceRich={hasFreeText}
-      showUnseenResponse={false}
       {demographics}
-      {evidenceRich}
-      {setEvidenceRich}
-      unseenResponses={unseenResponsesOnly}
-      {setUnseenResponses}
       loading={!dataRequested || $demographicsStore.isLoading}
     />
   </div>
@@ -402,25 +401,10 @@
                   </Button>
                 </div>
               {/if}
-
-              <Button
-                size="sm"
-                highlightVariant="primary"
-                highlighted={flaggedOnly}
-                handleClick={() => (flaggedOnly = !flaggedOnly)}
-              >
-                <MaterialIcon
-                  color={flaggedOnly ? "fill-white" : "fill-neutral-700"}
-                >
-                  <Flag2 />
-                </MaterialIcon>
-
-                Flagged only
-              </Button>
             </div>
           </TitleRow>
 
-          <div class="mt-4">
+          <div class="mt-6">
             <TextInput
               variant="search"
               id="search-input"
@@ -430,6 +414,53 @@
               value={searchValue}
               setValue={(value: string) => (searchValue = value.trim())}
             />
+          </div>
+
+          <div class="my-6 flex flex-wrap items-center gap-8">
+            <Switch
+              id="evidence-rich-toggle"
+              value={evidenceRich}
+              handleChange={(value) => (evidenceRich = value)}
+            >
+              {#snippet label()}
+                <div class="flex items-center gap-2">
+                  <MaterialIcon size="1.1rem" color="fill-yellow-600">
+                    <Diamond />
+                  </MaterialIcon>
+                  <span class="text-sm">Evidence rich</span>
+                </div>
+              {/snippet}
+            </Switch>
+
+            <Switch
+              id="unseen-responses-toggle"
+              value={unread}
+              handleChange={(value) => (unread = value)}
+            >
+              {#snippet label()}
+                <div class="flex items-center gap-2">
+                  <MaterialIcon size="1.1rem" color="fill-teal-600">
+                    <Visibility />
+                  </MaterialIcon>
+                  <span class="text-sm">Unread</span>
+                </div>
+              {/snippet}
+            </Switch>
+
+            <Switch
+              id="flagged-only-toggle"
+              value={flagged}
+              handleChange={(value) => (flagged = value)}
+            >
+              {#snippet label()}
+                <div class="flex items-center gap-2">
+                  <MaterialIcon size="1.1rem" color="fill-primary">
+                    <Flag2 />
+                  </MaterialIcon>
+                  <span class="text-sm">Flagged</span>
+                </div>
+              {/snippet}
+            </Switch>
           </div>
 
           {#if isResponsesLoading && responses.length === 0}
