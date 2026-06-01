@@ -51,6 +51,18 @@
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
   import { getPercentage } from "../../../global/utils.ts";
 
+  const PINNED_BOTTOM_THEMES = ["no reason given", "other"];
+
+  const sortThemes = (
+    a: { name: string; count: number },
+    b: { name: string; count: number },
+  ) => {
+    const aIsPinned = PINNED_BOTTOM_THEMES.includes(a.name.toLowerCase());
+    const bIsPinned = PINNED_BOTTOM_THEMES.includes(b.name.toLowerCase());
+    if (aIsPinned !== bIsPinned) return aIsPinned ? 1 : -1;
+    return b.count - a.count;
+  };
+
   interface QueryFilters {
     searchValue: string;
     themeFilters: string[];
@@ -225,11 +237,13 @@
   let demographics = $derived($demographicsStore.data || []);
   let hasFreeText = $derived($questionStore.data?.has_free_text ?? true);
   let themes: FormattedTheme[] = $derived(
-    ($themesStore.data?.themes || []).map((theme) => ({
-      ...theme,
-      highlighted: themeFilters.filters.includes(theme.id),
-      handleClick: () => themeFilters.update(theme.id),
-    })) as FormattedTheme[],
+    ($themesStore.data?.themes || [])
+      .map((theme) => ({
+        ...theme,
+        highlighted: themeFilters.filters.includes(theme.id),
+        handleClick: () => themeFilters.update(theme.id),
+      }))
+      .sort(sortThemes) as FormattedTheme[],
   );
 
   const BASE_FLY_DELAY = 100;
