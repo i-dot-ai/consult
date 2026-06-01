@@ -3,16 +3,17 @@
 
   import { onMount, untrack } from "svelte";
   import { SvelteURLSearchParams } from "svelte/reactivity";
+  import { slide, fly, fade } from "svelte/transition";
 
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Button from "../../inputs/Button/Button.svelte";
   import QuestionCard from "../../dashboard/QuestionCard/QuestionCard.svelte";
-  import TabView from "../../TabView/TabView.svelte";
-  import QuestionSummary from "../../dashboard/QuestionSummary/QuestionSummary.svelte";
-  import ResponseAnalysis from "../../dashboard/ResponseAnalysis/ResponseAnalysis.svelte";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
   import Alert from "../../Alert.svelte";
   import KeyboardArrowDown from "../../svg/material/KeyboardArrowDown.svelte";
   import Lan from "../../svg/material/Lan.svelte";
+  import FilterAlt from "../../svg/material/FilterAlt.svelte";
+  import Flag2 from "../../svg/material/Flag2.svelte";
   import Finance from "../../svg/material/Finance.svelte";
 
   import {
@@ -27,7 +28,6 @@
   import { createFetchStore } from "../../../global/stores.ts";
   import {
     SearchModeValues,
-    TabNames,
     type ResponsesBody,
     type ConsultationResponse,
     type DemoOptionsResponse,
@@ -41,7 +41,15 @@
     demoFilters,
     multiAnswerFilters,
   } from "../../../global/state.svelte.ts";
-  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import FiltersSidebar from "../../dashboard/FiltersSidebar/FiltersSidebar.svelte";
+  import MultiChoice from "../../dashboard/MultiChoice/MultiChoice.svelte";
+  import ThemesTable from "../../dashboard/ThemesTable/ThemesTable.svelte";
+  import TitleRow from "../../dashboard/TitleRow.svelte";
+  import CsvDownload from "../../CsvDownload/CsvDownload.svelte";
+  import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
+  import ResponseCard from "../../dashboard/ResponseCard/ResponseCard.svelte";
+  import TextInput from "../../inputs/TextInput/TextInput.svelte";
+  import { getPercentage } from "../../../global/utils.ts";
 
   interface QueryFilters {
     searchValue: string;
@@ -67,13 +75,10 @@
   let hasMorePages: boolean = $state(true);
   let responses: ResponseBody[] = $state([]);
 
-  let activeTab: TabNames = $state(TabNames.QuestionSummary);
-
   let searchValue: string = $state("");
   let searchMode: SearchModeValues = $state(SearchModeValues.KEYWORD);
   let evidenceRich: boolean = $state(false);
   let unseenResponsesOnly: boolean = $state(false);
-  let sortAscending: boolean = $state(false);
   let flaggedOnly: boolean = $state(false);
   let dataRequested: boolean = $state(false);
   let isResponsesLoading: boolean = $state(true);
@@ -105,7 +110,6 @@
     const filterQs = buildQueryString(filters);
     const responseQs = buildQueryString(filters, { includePagination: true });
 
-    // Only fetch aggregations on the first page (filters haven't changed for subsequent pages)
     if (currPage === 1) {
       $questionStore.fetch(
         `${getApiQuestionUrl(consultationId, questionId)}${filterQs}`,
@@ -219,6 +223,19 @@
   });
 
   let demographics = $derived($demographicsStore.data || []);
+  let hasFreeText = $derived($questionStore.data?.has_free_text ?? true);
+  let themes: FormattedTheme[] = $derived(
+    ($themesStore.data?.themes || []).map((theme) => ({
+      ...theme,
+      highlighted: themeFilters.filters.includes(theme.id),
+      handleClick: () => themeFilters.update(theme.id),
+    })) as FormattedTheme[],
+  );
+
+  const BASE_FLY_DELAY = 100;
+  function getDelay(index: number): number {
+    return BASE_FLY_DELAY * (index % PAGE_SIZE);
+  }
 </script>
 
 <section
@@ -245,137 +262,256 @@
       <span class="text-sm">Back to all questions</span>
     </div>
   </Button>
-
-  <!-- Text disabled temporarily, div kept to maintain layout -->
-  <div>
-    <!-- <small>
-            Choose a different question to analyse
-        </small> -->
-  </div>
 </section>
 
-<svelte:boundary>
-  <section class="my-4">
-    {#if $consultationStore.error || $questionStore.error}
-      <div class="my-2">
-        <Alert>
-          <span class="text-sm">
-            Question Details Error: {$consultationStore.error ||
-              $questionStore.error}
-          </span>
-        </Alert>
-      </div>
-    {:else if $questionStore.data}
-      <QuestionCard
-        skeleton={!dataRequested || $consultationStore.isLoading}
-        countsLoading={$questionStore.isLoading}
-        clickable={false}
-        consultationId={$consultationStore.data?.id || ""}
-        question={$questionStore.data}
-        hideIcon={true}
-        horizontal={true}
-      />
-    {/if}
-  </section>
-
-  {#snippet failed(error)}
-    <div>
-      {console.error(error)}
-
-      <Panel>
-        <Alert>Unexpected question error</Alert>
-      </Panel>
+<section class="my-4">
+  {#if $consultationStore.error || $questionStore.error}
+    <div class="my-2">
+      <Alert>
+        <span class="text-sm">
+          Question Details Error: {$consultationStore.error ||
+            $questionStore.error}
+        </span>
+      </Alert>
     </div>
-  {/snippet}
-</svelte:boundary>
+  {:else if $questionStore.data}
+    <QuestionCard
+      skeleton={!dataRequested || $consultationStore.isLoading}
+      countsLoading={$questionStore.isLoading}
+      clickable={false}
+      consultationId={$consultationStore.data?.id || ""}
+      question={$questionStore.data}
+      hideIcon={true}
+      horizontal={true}
+    />
+  {/if}
+</section>
 
-<svelte:boundary>
-  <TabView
-    value={activeTab}
-    handleChange={(next: string) => (activeTab = next as TabNames)}
-    tabs={[
-      { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
+<div class="grid grid-cols-4 gap-4">
+  <div class="col-span-4 md:col-span-1">
+    <FiltersSidebar
+      showEvidenceRich={hasFreeText}
+      showUnseenResponse={false}
+      {demographics}
+      {evidenceRich}
+      {setEvidenceRich}
+      unseenResponses={unseenResponsesOnly}
+      {setUnseenResponses}
+      loading={!dataRequested || $demographicsStore.isLoading}
+    />
+  </div>
 
-      //  No second tab without free text
-      ...($questionStore.data?.has_free_text
-        ? [
-            {
-              id: TabNames.ResponseAnalysis,
-              title: "Response Analysis",
-              icon: Finance,
-            },
-          ]
-        : []),
-    ]}
-  >
-    {#if activeTab === TabNames.QuestionSummary}
-      <QuestionSummary
-        showThemes={Boolean(
-          !dataRequested ||
-            $questionStore.isLoading ||
-            $questionStore.data?.has_free_text,
+  <div class="col-span-4 md:col-span-3">
+    {#if $questionStore.data?.multiple_choice_answer?.filter( (item) => Boolean(item.text), ).length}
+      <MultiChoice
+        data={$questionStore.data.multiple_choice_answer.filter((item) =>
+          Boolean(item.text),
         )}
-        themes={($themesStore.data?.themes || []).map((theme) => ({
-          ...theme,
-          highlighted: themeFilters.filters.includes(theme.id),
-          handleClick: () => themeFilters.update(theme.id),
-        })) as FormattedTheme[]}
-        themesLoading={!dataRequested || $themesStore.isLoading}
-        questionLoading={!dataRequested || $questionStore.isLoading}
-        demographicsLoading={!dataRequested || $demographicsStore.isLoading}
-        freeTextResponseCount={$questionStore.data?.free_text_response_count ||
-          0}
         multiChoiceResponseCount={$questionStore.data
           ?.multi_choice_response_count || 0}
-        {demographics}
-        multiChoice={$questionStore.data?.multiple_choice_answer?.filter(
-          (item) => Boolean(item.text),
-        ) || []}
-        consultationCode={$consultationStore.data?.code}
-        {sortAscending}
-        setActiveTab={(newTab) => (activeTab = newTab)}
-        anyFilterApplied={anyFilterApplied()}
-      />
-    {:else if activeTab === TabNames.ResponseAnalysis}
-      <ResponseAnalysis
-        consultationId={$consultationStore.data?.id}
-        questionId={$questionStore.data?.id}
-        pageSize={PAGE_SIZE}
-        {responses}
-        {isResponsesLoading}
-        answersError={$responsesStore.error}
-        freeTextResponseCount={$questionStore.data?.free_text_response_count ||
-          0}
-        {hasMorePages}
-        handleLoadClick={() => loadData()}
-        resetData={() => {
-          resetAnswers();
-          loadData();
-        }}
-        {searchValue}
-        setSearchValue={(value: string) => (searchValue = value)}
-        {demographics}
-        themes={$themesStore.data?.themes}
-        {evidenceRich}
-        {setEvidenceRich}
-        unseenResponses={unseenResponsesOnly}
-        {setUnseenResponses}
-        isFiltersLoading={!dataRequested || $demographicsStore.isLoading}
-        {flaggedOnly}
-        setFlaggedOnly={(newValue: boolean) => (flaggedOnly = newValue)}
-        anyFilterApplied={anyFilterApplied()}
-        {resetFilters}
+        countsLoading={$questionStore.isLoading &&
+          ($questionStore.data?.multiple_choice_answer?.length ?? 0) > 0}
       />
     {/if}
-  </TabView>
 
-  {#snippet failed(error)}
-    <div>
-      {console.error(error)}
+    {#if hasFreeText}
+      <section class="my-4">
+        <Panel>
+          <TitleRow
+            level={2}
+            title="Theme analysis"
+            subtitle="Analysis of key themes mentioned in responses to this question."
+          >
+            <Lan slot="icon" />
 
-      <Panel>
-        <Alert>Unexpected tab error</Alert>
-      </Panel>
-    </div>
-  {/snippet}
-</svelte:boundary>
+            <div slot="aside">
+              <CsvDownload
+                fileName={`theme_mentions_for_${$consultationStore.data?.code || ""}.csv`}
+                data={themes.map((theme) => ({
+                  "Theme Name": theme.name,
+                  "Theme Description": theme.description,
+                  Mentions: theme.count,
+                  Percentage: getPercentage(
+                    theme.count,
+                    $questionStore.data?.free_text_response_count || 0,
+                  ),
+                }))}
+              />
+            </div>
+          </TitleRow>
+
+          {#if themes.length === 0 && !$themesStore.isLoading}
+            <NotFoundMessage
+              title="No themes found"
+              body="Try adjusting your search terms or filters."
+            />
+          {:else}
+            <Panel>
+              <ThemesTable
+                {themes}
+                freeTextResponseCount={$questionStore.data
+                  ?.free_text_response_count || 0}
+                skeleton={!dataRequested || $themesStore.isLoading}
+                countsLoading={$themesStore.isLoading && themes.length > 0}
+              />
+            </Panel>
+          {/if}
+        </Panel>
+      </section>
+
+      <section class="my-4">
+        <Panel>
+          <TitleRow
+            level={2}
+            title="Free Text Responses"
+            subtitle="{$questionStore.data?.free_text_response_count ||
+              0} responses"
+          >
+            <Finance slot="icon" />
+
+            <div slot="aside" class="flex flex-wrap items-center gap-2">
+              {#if anyFilterApplied()}
+                <div
+                  class="flex items-center gap-2 rounded-md bg-neutral-100 px-3 py-1"
+                >
+                  <MaterialIcon size="1rem" color="fill-neutral-500">
+                    <FilterAlt />
+                  </MaterialIcon>
+                  <span class="text-sm text-neutral-600">Filtered</span>
+                  <Button
+                    size="xs"
+                    handleClick={() => {
+                      resetFilters();
+                    }}
+                  >
+                    Clear
+                  </Button>
+                </div>
+              {/if}
+
+              <Button
+                size="sm"
+                highlightVariant="primary"
+                highlighted={flaggedOnly}
+                handleClick={() => (flaggedOnly = !flaggedOnly)}
+              >
+                <MaterialIcon
+                  color={flaggedOnly ? "fill-white" : "fill-neutral-700"}
+                >
+                  <Flag2 />
+                </MaterialIcon>
+
+                Flagged only
+              </Button>
+            </div>
+          </TitleRow>
+
+          <div class="mt-4">
+            <TextInput
+              variant="search"
+              id="search-input"
+              label="Search"
+              placeholder="Search responses..."
+              hideLabel={true}
+              value={searchValue}
+              setValue={(value: string) => (searchValue = value.trim())}
+            />
+          </div>
+
+          {#if isResponsesLoading && responses.length === 0}
+            <div transition:fade>
+              {#each "_".repeat(5) as _, i (i)}
+                <ResponseCard skeleton={true} />
+              {/each}
+            </div>
+          {:else if $responsesStore.error}
+            <div transition:slide class="my-2">
+              <Alert>
+                <span class="text-sm">
+                  Responses Error: {$responsesStore.error}
+                </span>
+              </Alert>
+            </div>
+          {:else}
+            <div>
+              <ul>
+                {#each responses as response, i (response.id)}
+                  <li>
+                    <div in:fly={{ x: 300, delay: getDelay(i) }}>
+                      <ResponseCard
+                        {consultationId}
+                        {questionId}
+                        answerId={response.id}
+                        respondentId={response.respondent_id}
+                        respondentDisplayId={response.identifier.toString()}
+                        demoData={Object.values(response.demographic_data)}
+                        multiAnswers={response.multiple_choice_answer}
+                        evidenceRich={response.evidenceRich}
+                        text={response.free_text_answer_text}
+                        themes={response.themes || []}
+                        themeOptions={$themesStore.data?.themes || []}
+                        highlightText={searchValue}
+                        isFlagged={response.is_flagged}
+                        isEdited={response.is_edited}
+                        resetData={() => {
+                          resetAnswers();
+                          loadData();
+                        }}
+                      />
+                    </div>
+                  </li>
+                {/each}
+              </ul>
+
+              {#if responses.length === 0}
+                <div transition:fade>
+                  <NotFoundMessage
+                    title="No responses found"
+                    body="Try adjusting your search terms or filters."
+                  />
+                </div>
+              {/if}
+
+              {#if isResponsesLoading}
+                <div transition:fade>
+                  {#each "_".repeat(5) as _, i (i)}
+                    <ResponseCard skeleton={true} />
+                  {/each}
+                </div>
+              {/if}
+
+              <div class="m-auto w-max">
+                {#if hasMorePages}
+                  <div
+                    class={clsx([
+                      "transition-all",
+                      "duration-300",
+                      "overflow-hidden",
+                      isResponsesLoading ? "w-[14ch]" : "w-[10ch]",
+                    ])}
+                  >
+                    <Button
+                      fullWidth={true}
+                      handleClick={() => loadData()}
+                      size="sm"
+                    >
+                      <span class="w-full whitespace-nowrap text-center">
+                        {isResponsesLoading ? "Loading responses" : "Load more"}
+                      </span>
+                    </Button>
+                  </div>
+                {/if}
+              </div>
+
+              {#if responses.length > 0}
+                <p class="mt-2 text-center text-sm">
+                  {`Showing first ${responses.length} of ${$questionStore.data?.free_text_response_count || 0} responses. Use filters to narrow results.`}
+                </p>
+              {/if}
+            </div>
+          {/if}
+        </Panel>
+      </section>
+    {/if}
+  </div>
+</div>
