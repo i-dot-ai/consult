@@ -239,19 +239,16 @@ test.describe("Respondent Detail Page", () => {
     // Wait for responses to load
     await page.waitForLoadState("networkidle");
 
-    // Check for response text content
-    const bodyContent = await page.textContent("body");
-    expect(bodyContent).toBeTruthy();
-    expect(bodyContent!.length).toBeGreaterThan(100);
-
-    // Check for "Additional Comments" or response text labels
-    const responseLabel = page
-      .getByText(/additional comments/i)
-      .or(page.getByText(/response/i));
-
-    // At least some response content should be visible
-    const hasResponseContent = (await responseLabel.count()) > 0;
-    expect(hasResponseContent || bodyContent!.length > 200).toBeTruthy();
+    // Check for response text content using test ID
+    const responseTexts = page.getByTestId('response-text');
+    await expect(responseTexts.first()).toBeVisible();
+    
+    // Get combined text from all response text elements
+    const allResponseTexts = await responseTexts.allTextContents();
+    const combinedText = allResponseTexts.join(' ');
+    
+    expect(combinedText).toBeTruthy();
+    expect(combinedText.length).toBeGreaterThan(50);
   });
 
   test("displays themes for responses with assigned themes", async ({

@@ -106,7 +106,7 @@
             Additional Comments:
           </h4>
         {/if}
-        <p class="text-sm">
+        <p class="text-sm" data-testid="response-text">
           {responseText}
         </p>
       </div>
