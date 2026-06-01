@@ -185,4 +185,33 @@ describe("QuestionDetail", () => {
       expect(screen.getByText("62%")).toBeInTheDocument();
     });
   });
+
+  it("sorts themes by count descending with generic themes pinned to bottom", async () => {
+    setupMocks();
+
+    render(QuestionDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Standardized framework")).toBeInTheDocument();
+    });
+
+    const expectedOrder = [
+      "Standardized framework",
+      "Test Theme",
+      "No Reason Given",
+      "Other",
+    ];
+
+    const themeElements = expectedOrder.map((name) => screen.getByText(name));
+
+    for (let i = 0; i < themeElements.length - 1; i++) {
+      expect(
+        themeElements[i].compareDocumentPosition(themeElements[i + 1]) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
+  });
 });

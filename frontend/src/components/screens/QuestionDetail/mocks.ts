@@ -174,6 +174,19 @@ const themes = [
     count: 62,
   },
   {
+    id: "no-reason-theme",
+    name: "No Reason Given",
+    description: "The response does not provide a substantive answer.",
+    count: 80,
+  },
+  {
+    id: "other-theme",
+    name: "Other",
+    description:
+      "The response discusses an issue not covered by listed themes.",
+    count: 70,
+  },
+  {
     id: "test-theme",
     name: "Test Theme",
     description:
