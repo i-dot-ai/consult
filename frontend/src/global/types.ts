@@ -114,11 +114,6 @@ export enum TitleLevels {
   Six = 6,
 }
 
-export enum TabNames {
-  QuestionSummary = "tab-question-summary",
-  ResponseAnalysis = "tab-response-analysis",
-}
-
 export enum TabDirections {
   Forward = "forward",
   Backward = "backward",
