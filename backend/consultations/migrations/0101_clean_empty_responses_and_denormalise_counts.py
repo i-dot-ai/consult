@@ -1,4 +1,7 @@
-from django.db import migrations, models
+from django.conf import settings
+from django.db import connection, migrations, models
+
+logger = settings.LOGGER
 
 
 def clean_empty_free_text(apps, schema_editor):
@@ -6,22 +9,46 @@ def clean_empty_free_text(apps, schema_editor):
     Response = apps.get_model("consultations", "Response")
     ResponseAnnotationTheme = apps.get_model("consultations", "ResponseAnnotationTheme")
 
-    # Normalise all empty/placeholder free text to NULL
-    Response.objects.filter(free_text__in=["", "Not Provided", "-"]).update(free_text=None)
+    # Normalise all empty/placeholder free text to NULL (server-side, no memory issue)
+    updated = Response.objects.filter(free_text__in=["", "Not Provided", "-"]).update(
+        free_text=None
+    )
+    logger.info(f"Normalised {updated} empty free text values to NULL")
 
-    # Delete responses with no free text AND no multi-choice options.
-    # Cascades to annotations and theme assignments.
-    Response.objects.filter(free_text__isnull=True, chosen_options__isnull=True).delete()
+    # Delete responses with no free text AND no multi-choice options, in batches.
+    BATCH_SIZE = 5000
+    total_deleted = 0
+    while True:
+        batch_ids = list(
+            Response.objects.filter(
+                free_text__isnull=True, chosen_options__isnull=True
+            ).values_list("id", flat=True)[:BATCH_SIZE]
+        )
+        if not batch_ids:
+            break
+        Response.objects.filter(id__in=batch_ids).delete()
+        total_deleted += len(batch_ids)
+        logger.info(f"Deleted {total_deleted} empty responses so far...")
+    logger.info(f"Finished deleting {total_deleted} empty responses")
 
-    # Remove theme assignments from remaining responses with no free text
-    ResponseAnnotationTheme.objects.filter(
-        response_annotation__response__free_text__isnull=True
-    ).delete()
+    # Remove orphaned theme assignments in batches
+    total_deleted = 0
+    while True:
+        batch_ids = list(
+            ResponseAnnotationTheme.objects.filter(
+                response_annotation__response__free_text__isnull=True
+            ).values_list("id", flat=True)[:BATCH_SIZE]
+        )
+        if not batch_ids:
+            break
+        ResponseAnnotationTheme.objects.filter(id__in=batch_ids).delete()
+        total_deleted += len(batch_ids)
+        logger.info(f"Deleted {total_deleted} orphaned theme assignments so far...")
+    logger.info(f"Finished deleting {total_deleted} orphaned theme assignments")
 
 
 def backfill_response_counts(apps, schema_editor):
     """Backfill all denormalised response count fields from existing data."""
-    from django.db import connection
 
     with connection.cursor() as cursor:
         # 1. Question.total_response_count (distinct respondents per question)
