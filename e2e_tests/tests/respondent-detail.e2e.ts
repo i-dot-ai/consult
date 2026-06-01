@@ -296,9 +296,14 @@ test.describe("Respondent Detail Page", () => {
     await expect(multipleChoiceLabel.first()).toBeVisible();
     expect(await multipleChoiceLabel.count()).toBeGreaterThan(0);
 
-    // Should have selected options listed
-    const bodyContent = await page.textContent("body");
-    expect(bodyContent).toBeTruthy();
+    // Check that multiple choice options are displayed
+    const multipleChoiceOptions = page.getByTestId('multiple-choice-options');
+    await expect(multipleChoiceOptions.first()).toBeVisible();
+    
+    // Get text content of options to verify they're populated
+    const optionsText = await multipleChoiceOptions.first().textContent();
+    expect(optionsText).toBeTruthy();
+    expect(optionsText!.length).toBeGreaterThan(0);
   });
 
   test("clicking question title navigates to question detail page", async ({

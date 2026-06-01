@@ -90,7 +90,7 @@
             Multiple Choice Response:
           </h4>
 
-          <ul class="flex flex-wrap items-center gap-1">
+          <ul class="flex flex-wrap items-center gap-1" data-testid="multiple-choice-options">
             {#each multiChoice as multiChoiceAnswer, i (i)}
               <li class="text-xs">
                 {multiChoiceAnswer}
