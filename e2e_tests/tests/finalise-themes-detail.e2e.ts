@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 import {
   createFixtureData,
   deleteFixtureData,
@@ -7,6 +7,18 @@ import {
 import { signOffConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
 
+async function createTheme(page: Page, title: string, description: string) {
+  const createThemeButton = page.getByRole("button", { name: "Add Custom Theme" });
+  await createThemeButton.click();
+
+  const titleInput = page.getByLabel("Theme Title");
+  const descriptionInput = page.getByLabel("Theme Description");
+
+  await titleInput.fill(title);
+  await descriptionInput.fill(description);
+
+  await page.getByRole("button", { name: "Add Theme" }).click();
+}
 test.describe("Finalise Themes - Detail Page", () => {
   let testData: FixtureReference = {};
 
@@ -58,16 +70,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     expect(page.getByText("No themes selected yet")).toBeVisible();
     expect(page.getByText("0 selected")).toBeVisible();
 
-    const createThemeButton = page.getByRole("button", { name: "Add Custom Theme" });
-    await createThemeButton.click();
-
-    const titleInput = page.getByLabel("Theme Title");
-    const descriptionInput = page.getByLabel("Theme Description");
-
-    await titleInput.fill(TEST_TITLE);
-    await descriptionInput.fill(TEST_DESCRIPTION);
-
-    await page.getByRole("button", { name: "Add Theme" }).click();
+    createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
 
     expect(page.getByText("1 selected", { exact: true })).toBeVisible();
     expect(page.getByRole("heading", { name: TEST_TITLE })).toBeVisible();
@@ -77,15 +80,19 @@ test.describe("Finalise Themes - Detail Page", () => {
   test("Removing a theme removes it from the selected themes list", async ({ page }) => {
     expect(page.getByText("0 selected")).toBeVisible();
 
-    const selectButtons = page.getByRole("button", { name: "Select" });
-    const firstSelectButton = selectButtons.first();
-    await firstSelectButton.click();
+    const TEST_TITLE = "Test Theme";
+    const TEST_DESCRIPTION = "Test description";
+
+    createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
+
     expect(page.getByText("1 selected", { exact: true })).toBeVisible();
+    expect(page.getByText(TEST_TITLE)).toBeVisible();
 
     const removeThemeButton = page.getByRole("button", { name: "Remove" });
     await removeThemeButton.click();
 
     expect(page.getByText("0 selected", { exact: true })).toBeVisible();
+    expect(page.getByText(TEST_TITLE)).not.toBeVisible();
   })
 
   test("Create theme panel shown/hidden accordingly", async ({ page }) => {
