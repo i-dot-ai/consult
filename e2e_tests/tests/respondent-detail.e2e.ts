@@ -97,10 +97,9 @@ test.describe("Respondent Detail Page", () => {
     
     // CRITICAL: Now wait for response cards to appear after loading completes
     // The fixture guarantees this respondent has responses, so this must appear
-    // Use .question-number class since data-testid doesn't exist
-    await expect(page.locator('.question-number').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('question-number').first()).toBeVisible({ timeout: 10000 });
     
-    const questionNumberCount = await page.locator('.question-number').count();
+    const questionNumberCount = await page.getByTestId('question-number').count();
 
     // Extract IDs from URL
     const currentUrl = page.url();
@@ -225,7 +224,7 @@ test.describe("Respondent Detail Page", () => {
     await page.waitForLoadState("networkidle");
 
     // Check for question number badges (e.g., "Q1", "Q2") - fixture creates responses
-    const questionBadges = page.locator('.question-number');
+    const questionBadges = page.getByTestId('question-number');
 
     // Wait for at least one badge to appear (longer timeout for dynamic content)
     await expect(questionBadges.first()).toBeVisible({ timeout: 15000 });
@@ -481,7 +480,7 @@ test.describe("Respondent Detail Page", () => {
     await page.waitForLoadState("networkidle");
 
     // Find all question number badges - fixture has 3 questions
-    const questionBadges = page.locator('.question-number');
+    const questionBadges = page.getByTestId('question-number');
     
     // Wait for at least one badge to appear (longer timeout for dynamic content)
     await expect(questionBadges.first()).toBeVisible({ timeout: 15000 });

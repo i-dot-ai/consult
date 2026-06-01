@@ -43,6 +43,7 @@
         <a href={getQuestionDetailUrl(consultationId, questionId)}>
           <div class="flex items-start gap-2">
             <div
+              data-testid="question-number"
               class={clsx([
                 "question-number",
                 "p-1",
