@@ -1,7 +1,6 @@
 import {
-  answerEditMock,
-  answersMock,
-  answerUpdateMock,
+  responsesEditMock,
+  responsesUpdateMock,
   CONSULTATION_ID,
   consultationMock,
   demoMock,
@@ -9,6 +8,7 @@ import {
   QUESTION_ID,
   questionMock,
   themesMock,
+  responsesMock,
 } from "./mocks";
 import QuestionDetail from "./QuestionDetail.svelte";
 
@@ -24,10 +24,10 @@ export default {
     questionMock,
     themesMock,
     flagMock,
-    answersMock,
+    responsesMock,
     demoMock,
-    answerUpdateMock,
-    answerEditMock,
+    responsesUpdateMock,
+    responsesEditMock,
   ],
   props: [
     { name: "consultationId", value: consultationId, type: "text" },

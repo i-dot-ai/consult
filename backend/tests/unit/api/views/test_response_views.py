@@ -43,13 +43,11 @@ class TestResponseViewSet:
         Test for no N+1 queries. Regardless of the number of responses, we expect:
         - 1 query to get authentication user for permission checking
         - 1 query to get authentication user for is_flagged annotation
-        - 1 query to count respondents
-        - 1 query to count filtered responses
         - 1 query to get responses with related data (includes is_read annotation)
         - 1 query to prefetch multiple choice answers
         - 1 query to prefetch demographic data
         """
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(5):
             response = client.get(
                 url,
                 query_params={"question_id": free_text_question.id},
@@ -62,8 +60,6 @@ class TestResponseViewSet:
         data = orjson.loads(response.content)
 
         assert len(data["all_respondents"]) == 2
-        assert data["respondents_total"] == 2
-        assert data["filtered_total"] == 2
 
         # Verify respondent data structure
         respondents = sorted(data["all_respondents"], key=lambda x: x["identifier"])
@@ -103,7 +99,6 @@ class TestResponseViewSet:
 
         assert len(data["all_respondents"]) == 2
         assert data["has_more_pages"]
-        assert data["filtered_total"] == 5
 
     def test_get_filtered_responses_with_demographic_filters(
         self,
@@ -148,8 +143,6 @@ class TestResponseViewSet:
 
         data = orjson.loads(response.content)
 
-        assert data["respondents_total"] == 2  # Total respondents
-        assert data["filtered_total"] == 1  # Filtered to individuals only
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
@@ -203,8 +196,6 @@ class TestResponseViewSet:
 
         data = orjson.loads(response.content)
 
-        # assert data["respondents_total"] == 3  # Total respondents
-        assert data["filtered_total"] == 1  # Only response1 has both themes
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
@@ -246,8 +237,6 @@ class TestResponseViewSet:
 
         data = response.json()
 
-        assert data["respondents_total"] == 2  # Total respondents
-        assert data["filtered_total"] == 1  # Only response1
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
 
@@ -294,8 +283,6 @@ class TestResponseViewSet:
 
         data = response.json()
 
-        assert data["respondents_total"] == 2  # Total respondents
-        assert data["filtered_total"] == count  # Only response1
         assert len(data["all_respondents"]) == 2 if evidence_rich is None else 2
         if isinstance(evidence_rich, bool):
             assert data["all_respondents"][0]["evidenceRich"] == evidence_rich
@@ -355,8 +342,6 @@ class TestResponseViewSet:
 
         data = response.json()
 
-        assert data["respondents_total"] == 2  # Total respondents
-        assert data["filtered_total"] == count  # Only response1
         assert len(data["all_respondents"]) == 2 if sentiments is None else 2
 
         assert sorted(x["sentiment"] for x in data["all_respondents"]) == expected
@@ -390,8 +375,6 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200
-        assert response.json()["respondents_total"] == 2
-        assert response.json()["filtered_total"] == expected_responses
         if expected_responses == 1:
             assert response.json()["all_respondents"][0]["is_flagged"] == is_flagged
 
@@ -436,8 +419,6 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200
-        assert response.json()["respondents_total"] == 2
-        assert response.json()["filtered_total"] == expected_responses
 
     @pytest.mark.parametrize(("is_flagged", "is_edited"), [(True, True), (False, False)])
     def test_get_responses_with_is_flagged(
@@ -503,10 +484,65 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200, response.json()
-        assert response.json()["respondents_total"] == 2
-        assert response.json()["filtered_total"] == 1
         assert response.json()["all_respondents"][0]["id"] == str(response_1.id)
         assert response.json()["all_respondents"][0]["respondent_id"] == str(respondent_1.id)
+
+    def test_question_responses_excludes_null_free_text(
+        self, client, staff_user_token, free_text_question
+    ):
+        """Responses listed under a question should exclude those with no free text."""
+        from consultations.models import Response
+
+        respondent_with_text = RespondentFactory(consultation=free_text_question.consultation)
+        respondent_no_text = RespondentFactory(consultation=free_text_question.consultation)
+        response_with_text = Response.objects.create(
+            question=free_text_question, respondent=respondent_with_text, free_text="some text"
+        )
+        Response.objects.create(
+            question=free_text_question, respondent=respondent_no_text, free_text=None
+        )
+
+        # Nested under question — should only return the response with free text
+        url = reverse(
+            "question-response-list",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "question_pk": free_text_question.id,
+            },
+        )
+        response = client.get(url, headers={"Authorization": f"Bearer {staff_user_token}"})
+
+        assert response.status_code == 200
+        data = response.json()["all_respondents"]
+        assert len(data) == 1
+        assert data[0]["id"] == str(response_with_text.id)
+
+    def test_consultation_responses_includes_null_free_text(
+        self, client, staff_user_token, free_text_question
+    ):
+        """Responses listed at consultation level (e.g. respondent detail) include all responses."""
+        from consultations.models import Response
+
+        respondent = RespondentFactory(consultation=free_text_question.consultation)
+        Response.objects.create(
+            question=free_text_question, respondent=respondent, free_text="some text"
+        )
+        Response.objects.create(
+            question=free_text_question, respondent=respondent, free_text=None
+        )
+
+        url = reverse(
+            "response-list",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+        response = client.get(
+            url,
+            query_params={"respondent_id": respondent.id},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        assert len(response.json()["all_respondents"]) == 2
 
     def test_patch_response_human_reviewed(
         self, client, staff_user, staff_user_token, free_text_annotation
@@ -766,8 +802,6 @@ class TestResponseViewSet:
         data = orjson.loads(response.content)
 
         assert len(data["all_respondents"]) == 1
-        assert data["respondents_total"] == 2
-        assert data["filtered_total"] == 1
 
         # Verify respondent data structure
         respondent = data["all_respondents"][0]

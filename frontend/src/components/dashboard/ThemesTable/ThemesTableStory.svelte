@@ -31,7 +31,7 @@
       handleClick: () => (highlightedId = "theme-3"),
     },
   ]);
-  let totalAnswers = $state(60);
+  let freeTextResponseCount = $state(60);
   let skeleton = $state(false);
 </script>
 
@@ -40,7 +40,7 @@
     ...theme,
     highlighted: theme.id === highlightedId,
   }))}
-  {totalAnswers}
+  {freeTextResponseCount}
   {skeleton}
 />
 
@@ -58,8 +58,8 @@
 <TextInput
   id="input-total-answerws"
   label="Total Answers"
-  value={totalAnswers.toString()}
-  setValue={(newValue) => (totalAnswers = parseInt(newValue))}
+  value={freeTextResponseCount.toString()}
+  setValue={(newValue) => (freeTextResponseCount = parseInt(newValue))}
 />
 
 <div class="w-max">

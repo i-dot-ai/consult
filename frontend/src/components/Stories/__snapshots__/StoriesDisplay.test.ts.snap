@@ -71,9 +71,9 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           <li>
             <a
               class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
-              href="/stories?selected=DemoFilter"
+              href="/stories?selected=DemographicGroup"
             >
-              DemoFilter
+              DemographicGroup
             </a>
           </li>
           <!---->
@@ -140,9 +140,9 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           <li>
             <a
               class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
-              href="/stories?selected=ThemeSignOffDetail"
+              href="/stories?selected=FinalisingThemesDetail"
             >
-              ThemeSignOffDetail
+              FinalisingThemesDetail
             </a>
           </li>
           <li>
@@ -172,9 +172,9 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           <li>
             <a
               class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
-              href="/stories?selected=ThemeSignOffDetailCompleted"
+              href="/stories?selected=FinalisingThemesDetailCompleted"
             >
-              ThemeSignOffDetailCompleted
+              FinalisingThemesDetailCompleted
             </a>
           </li>
           <li>
@@ -196,9 +196,9 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           <li>
             <a
               class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
-              href="/stories?selected=ThemeSignOffArchive"
+              href="/stories?selected=FinalisingThemesArchive"
             >
-              ThemeSignOffArchive
+              FinalisingThemesArchive
             </a>
           </li>
           <!---->
@@ -403,6 +403,14 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
               href="/stories?selected=QuestionsReviewList"
             >
               QuestionsReviewList
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=ManageConsultationsArchive"
+            >
+              ManageConsultationsArchive
             </a>
           </li>
           <!---->

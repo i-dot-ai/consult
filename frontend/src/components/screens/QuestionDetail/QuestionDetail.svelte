@@ -30,14 +30,11 @@
     TabNames,
     type ResponsesBody,
     type ConsultationResponse,
-    type DemoData,
-    type DemoOption,
     type DemoOptionsResponse,
-    type DemoOptionsResponseItem,
     type FormattedTheme,
     type Question,
-    type ResponseAnswer,
     type ThemeInfoResponse,
+    type ResponseBody,
   } from "../../../global/types.ts";
   import {
     themeFilters,
@@ -68,7 +65,7 @@
 
   let currPage: number = $state(1);
   let hasMorePages: boolean = $state(true);
-  let answers: ResponseAnswer[] = $state([]);
+  let responses: ResponseBody[] = $state([]);
 
   let activeTab: TabNames = $state(TabNames.QuestionSummary);
 
@@ -79,7 +76,7 @@
   let sortAscending: boolean = $state(false);
   let flaggedOnly: boolean = $state(false);
   let dataRequested: boolean = $state(false);
-  let isAnswersLoading: boolean = $state(true);
+  let isResponsesLoading: boolean = $state(true);
 
   const consultationStore = createFetchStore<ConsultationResponse>();
   const questionStore = createFetchStore<Question>();
@@ -94,7 +91,7 @@
   });
 
   async function loadData() {
-    isAnswersLoading = true;
+    isResponsesLoading = true;
     const filters = {
       searchValue: searchValue,
       searchMode: searchMode,
@@ -106,7 +103,7 @@
       multiAnswerFilters: multiAnswerFilters.filters,
     };
     const filterQs = buildQueryString(filters);
-    const responseQs = buildQueryString(filters, { includeSearch: true });
+    const responseQs = buildQueryString(filters, { includePagination: true });
 
     // Only fetch aggregations on the first page (filters haven't changed for subsequent pages)
     if (currPage === 1) {
@@ -127,10 +124,10 @@
     );
 
     if ($responsesStore.data?.all_respondents) {
-      const newAnswers = $responsesStore.data?.all_respondents;
-      answers = [...answers, ...newAnswers];
+      const newResponses = $responsesStore.data?.all_respondents;
+      responses = [...responses, ...newResponses];
     }
-    isAnswersLoading = false;
+    isResponsesLoading = false;
     hasMorePages = $responsesStore.data?.has_more_pages || false;
 
     currPage += 1;
@@ -138,16 +135,13 @@
 
   function buildQueryString(
     filters: QueryFilters,
-    { includeSearch = false }: { includeSearch?: boolean } = {},
+    { includePagination = false }: { includePagination?: boolean } = {},
   ) {
-    const searchParams = {
-      searchValue: filters.searchValue,
-      searchMode: filters.searchMode,
-      page: currPage.toString(),
-      page_size: PAGE_SIZE.toString(),
-    };
-
     const params = new SvelteURLSearchParams({
+      ...(filters.searchValue && {
+        searchValue: filters.searchValue,
+        searchMode: filters.searchMode,
+      }),
       ...(filters.themeFilters.length > 0 && {
         themeFilters: filters.themeFilters.join(","),
       }),
@@ -166,7 +160,10 @@
       ...(filters.demoFilters.length > 0 && {
         demographics: filters.demoFilters.join(","),
       }),
-      ...(includeSearch && searchParams),
+      ...(includePagination && {
+        page: currPage.toString(),
+        page_size: PAGE_SIZE.toString(),
+      }),
     });
 
     const qs = params.toString();
@@ -174,10 +171,10 @@
   }
 
   function resetAnswers() {
-    answers = [];
+    responses = [];
     currPage = 1;
     hasMorePages = true;
-    isAnswersLoading = true;
+    isResponsesLoading = true;
   }
 
   const resetFilters = () => {
@@ -221,41 +218,7 @@
     untrack(() => loadData());
   });
 
-  let formattedDemoOptions = $derived.by(() => {
-    if (!$demographicsStore.data) {
-      return;
-    }
-
-    const formattedData: DemoOption = {};
-    const categories = [
-      ...new Set($demographicsStore.data.map((data) => data.name)),
-    ];
-
-    for (const category of categories) {
-      const categoryData: DemoOptionsResponseItem[] =
-        $demographicsStore.data.filter((opt) => opt.name === category);
-
-      formattedData[category] = categoryData
-        .map((opt) => opt.value)
-        .filter((value) => value !== null && value !== undefined);
-    }
-    return formattedData;
-  });
-
-  let demoData = $derived.by(() => {
-    if (!$demographicsStore.data) {
-      return {};
-    }
-
-    const result: DemoData = {};
-    for (const item of $demographicsStore.data) {
-      if (!result[item.name]) {
-        result[item.name] = {};
-      }
-      result[item.name][item.value] = item.count;
-    }
-    return result;
-  });
+  let demographics = $derived($demographicsStore.data || []);
 </script>
 
 <section
@@ -302,14 +265,13 @@
           </span>
         </Alert>
       </div>
-    {:else}
+    {:else if $questionStore.data}
       <QuestionCard
-        skeleton={!dataRequested ||
-          $questionStore.isLoading ||
-          $consultationStore.isLoading}
+        skeleton={!dataRequested || $consultationStore.isLoading}
+        countsLoading={$questionStore.isLoading}
         clickable={false}
         consultationId={$consultationStore.data?.id || ""}
-        question={$questionStore.data || {}}
+        question={$questionStore.data}
         hideIcon={true}
         horizontal={true}
       />
@@ -359,11 +321,13 @@
           handleClick: () => themeFilters.update(theme.id),
         })) as FormattedTheme[]}
         themesLoading={!dataRequested || $themesStore.isLoading}
-        filtersLoading={!dataRequested || $demographicsStore.isLoading}
-        totalAnswers={$questionStore.data?.total_responses || 0}
-        {demoData}
-        demoOptions={formattedDemoOptions || {}}
-        demoOptionsData={$demographicsStore.data || undefined}
+        questionLoading={!dataRequested || $questionStore.isLoading}
+        demographicsLoading={!dataRequested || $demographicsStore.isLoading}
+        freeTextResponseCount={$questionStore.data?.free_text_response_count ||
+          0}
+        multiChoiceResponseCount={$questionStore.data
+          ?.multi_choice_response_count || 0}
+        {demographics}
         multiChoice={$questionStore.data?.multiple_choice_answer?.filter(
           (item) => Boolean(item.text),
         ) || []}
@@ -377,10 +341,11 @@
         consultationId={$consultationStore.data?.id}
         questionId={$questionStore.data?.id}
         pageSize={PAGE_SIZE}
-        {answers}
-        {isAnswersLoading}
+        {responses}
+        {isResponsesLoading}
         answersError={$responsesStore.error}
-        filteredTotal={$responsesStore.data?.filtered_total}
+        freeTextResponseCount={$questionStore.data?.free_text_response_count ||
+          0}
         {hasMorePages}
         handleLoadClick={() => loadData()}
         resetData={() => {
@@ -389,9 +354,7 @@
         }}
         {searchValue}
         setSearchValue={(value: string) => (searchValue = value)}
-        {demoData}
-        demoOptions={formattedDemoOptions || {}}
-        demoOptionsData={$demographicsStore.data || undefined}
+        {demographics}
         themes={$themesStore.data?.themes}
         {evidenceRich}
         {setEvidenceRich}

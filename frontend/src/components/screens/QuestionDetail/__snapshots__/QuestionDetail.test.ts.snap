@@ -92,7 +92,8 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
             <div
               class="text-sm leading-6 whitespace-nowrap"
             >
-              100 responses
+              250 responses
+              <!---->
             </div>
              
             <!---->
@@ -110,7 +111,9 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
               <div
                 data-testid="fav-button"
               >
-                <div>
+                <div
+                  role="presentation"
+                >
                   <!---->
                   <button
                     aria-pressed="false"
@@ -203,12 +206,10 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
               width="1rem"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <!---->
               <path
                 d="M120-80v-280h120v-160h200v-80H320v-280h320v280H520v80h200v160h120v280H520v-280h120v-80H320v80h120v280H120Zm280-600h160v-120H400v120ZM200-160h160v-120H200v120Zm400 0h160v-120H600v120ZM480-680ZM360-280Zm240 0Z"
                 xmlns="http://www.w3.org/2000/svg"
               />
-              
               <!---->
             </svg>
             <!---->
@@ -239,12 +240,10 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
               width="1rem"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <!---->
               <path
                 d="M200-120q-33 0-56.5-23.5T120-200v-640h80v640h640v80H200Zm40-120v-360h160v360H240Zm200 0v-560h160v560H440Zm200 0v-200h160v200H640Z"
                 xmlns="http://www.w3.org/2000/svg"
               />
-              
               <!---->
             </svg>
             <!---->
@@ -335,13 +334,11 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                     class="h-full my-4 p-2 rounded-2xl border border-gray-200"
                     data-testid="panel-component"
                   >
-                    <!---->
                     <h3
                       class="blink w-max select-none bg-neutral-100 text-neutral-100"
                     >
                       skeleton
                     </h3>
-                    <!---->
                      
                     <div
                       class="my-1"
@@ -378,7 +375,6 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                         </div>
                       </div>
                     </div>
-                    <!---->
                     <!---->
                   </div>
                   <!---->
@@ -388,13 +384,11 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                     class="h-full my-4 p-2 rounded-2xl border border-gray-200"
                     data-testid="panel-component"
                   >
-                    <!---->
                     <h3
                       class="blink w-max select-none bg-neutral-100 text-neutral-100"
                     >
                       skeleton
                     </h3>
-                    <!---->
                      
                     <div
                       class="my-1"
@@ -431,7 +425,6 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                         </div>
                       </div>
                     </div>
-                    <!---->
                     <!---->
                   </div>
                   <!---->
@@ -441,13 +434,11 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                     class="h-full my-4 p-2 rounded-2xl border border-gray-200"
                     data-testid="panel-component"
                   >
-                    <!---->
                     <h3
                       class="blink w-max select-none bg-neutral-100 text-neutral-100"
                     >
                       skeleton
                     </h3>
-                    <!---->
                      
                     <div
                       class="my-1"
@@ -484,7 +475,6 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                         </div>
                       </div>
                     </div>
-                    <!---->
                     <!---->
                   </div>
                   <!---->
@@ -518,7 +508,7 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                   class="flex items-center justify-center"
                 >
                   <div
-                    class="bg-pink-50 p-2 rounded-md mt-1.5"
+                    class="bg-pink-50 p-2 rounded-md"
                   >
                     <svg
                       class="fill-pink-700"
@@ -557,6 +547,11 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                   
                   <!---->
                    
+                  <p
+                    class="text-neutral-600 text-sm"
+                  >
+                    232 responses
+                  </p>
                   <!---->
                 </div>
                  
@@ -606,6 +601,7 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                           >
                             99
                           </span>
+                          <!---->
                         </div>
                          
                         <div
@@ -636,6 +632,7 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                         >
                           99
                         </span>
+                        <!---->
                       </div>
                     </div>
                     
@@ -682,6 +679,7 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                           >
                             18
                           </span>
+                          <!---->
                         </div>
                          
                         <div
@@ -712,6 +710,7 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                         >
                           18
                         </span>
+                        <!---->
                       </div>
                     </div>
                     
@@ -758,6 +757,7 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                           >
                             98
                           </span>
+                          <!---->
                         </div>
                          
                         <div
@@ -788,6 +788,7 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                         >
                           98
                         </span>
+                        <!---->
                       </div>
                     </div>
                     
@@ -834,6 +835,7 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                           >
                             17
                           </span>
+                          <!---->
                         </div>
                          
                         <div
@@ -864,6 +866,7 @@ exports[`QuestionDetail > should match snapshot after loading 1`] = `
                         >
                           17
                         </span>
+                        <!---->
                       </div>
                     </div>
                     
@@ -1420,54 +1423,6 @@ exports[`QuestionDetail > should match snapshot initially 1`] = `
   <section
     class="my-4"
   >
-    <div
-      class="bg-white"
-    >
-      <!---->
-      <!---->
-      <div
-        class="h-full my-4 p-4 rounded-2xl border border-gray-200"
-        data-testid="panel-component"
-      >
-        <article
-          class="flex gap-2 items-start relative flex-col-reverse sm:flex-row"
-        >
-          <div
-            class="mt-0.5 hidden sm:block"
-          >
-            <!---->
-          </div>
-           
-          <div
-            class="grow sm:flex justify-between items-start gap-4"
-            data-testid="horizontal-container"
-          >
-            <p
-              class="text-md transition-colors duration-1000 select-none bg-neutral-100 text-neutral-100 blink"
-            >
-              SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON 
-            </p>
-             
-            <div
-              class="text-sm mt-2 transition-colors duration-1000 w-max select-none bg-neutral-100 text-neutral-100 blink"
-            >
-              000 responses
-            </div>
-            <!---->
-          </div>
-           
-          <div
-            class="-ml-2 sm:ml-0 -mt-0.5"
-          >
-            <!---->
-          </div>
-        </article>
-        <!---->
-      </div>
-      
-      
-      <!---->
-    </div>
     <!---->
   </section>
   <!---->
@@ -1517,12 +1472,10 @@ exports[`QuestionDetail > should match snapshot initially 1`] = `
               width="1rem"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <!---->
               <path
                 d="M120-80v-280h120v-160h200v-80H320v-280h320v280H520v80h200v160h120v280H520v-280h120v-80H320v80h120v280H120Zm280-600h160v-120H400v120ZM200-160h160v-120H200v120Zm400 0h160v-120H600v120ZM480-680ZM360-280Zm240 0Z"
                 xmlns="http://www.w3.org/2000/svg"
               />
-              
               <!---->
             </svg>
             <!---->
@@ -1613,13 +1566,11 @@ exports[`QuestionDetail > should match snapshot initially 1`] = `
                     class="h-full my-4 p-2 rounded-2xl border border-gray-200"
                     data-testid="panel-component"
                   >
-                    <!---->
                     <h3
                       class="blink w-max select-none bg-neutral-100 text-neutral-100"
                     >
                       skeleton
                     </h3>
-                    <!---->
                      
                     <div
                       class="my-1"
@@ -1656,7 +1607,6 @@ exports[`QuestionDetail > should match snapshot initially 1`] = `
                         </div>
                       </div>
                     </div>
-                    <!---->
                     <!---->
                   </div>
                   <!---->
@@ -1666,13 +1616,11 @@ exports[`QuestionDetail > should match snapshot initially 1`] = `
                     class="h-full my-4 p-2 rounded-2xl border border-gray-200"
                     data-testid="panel-component"
                   >
-                    <!---->
                     <h3
                       class="blink w-max select-none bg-neutral-100 text-neutral-100"
                     >
                       skeleton
                     </h3>
-                    <!---->
                      
                     <div
                       class="my-1"
@@ -1709,7 +1657,6 @@ exports[`QuestionDetail > should match snapshot initially 1`] = `
                         </div>
                       </div>
                     </div>
-                    <!---->
                     <!---->
                   </div>
                   <!---->
@@ -1719,13 +1666,11 @@ exports[`QuestionDetail > should match snapshot initially 1`] = `
                     class="h-full my-4 p-2 rounded-2xl border border-gray-200"
                     data-testid="panel-component"
                   >
-                    <!---->
                     <h3
                       class="blink w-max select-none bg-neutral-100 text-neutral-100"
                     >
                       skeleton
                     </h3>
-                    <!---->
                      
                     <div
                       class="my-1"
@@ -1762,7 +1707,6 @@ exports[`QuestionDetail > should match snapshot initially 1`] = `
                         </div>
                       </div>
                     </div>
-                    <!---->
                     <!---->
                   </div>
                   <!---->

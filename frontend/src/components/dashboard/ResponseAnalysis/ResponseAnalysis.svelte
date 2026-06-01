@@ -5,15 +5,13 @@
   import Button from "../../inputs/Button/Button.svelte";
   import TitleRow from "../TitleRow.svelte";
   import Panel from "../Panel/Panel.svelte";
-  import AnswerCard from "../AnswerCard/AnswerCard.svelte";
+  import ResponseCard from "../ResponseCard/ResponseCard.svelte";
   import Finance from "../../svg/material/Finance.svelte";
   import FiltersSidebar from "../FiltersSidebar/FiltersSidebar.svelte";
 
   import {
-    type DemoData,
-    type DemoOption,
-    type DemoOptionsResponse,
-    type ResponseAnswer,
+    type DemoOptionsResponseItem,
+    type ResponseBody,
     type ResponseTheme,
     type SearchableSelectOption,
   } from "../../../global/types";
@@ -36,21 +34,19 @@
   export let consultationId: string = "";
   export let questionId: string = "";
   export let pageSize: number = 5;
-  export let isAnswersLoading: boolean = true;
+  export let isResponsesLoading: boolean = true;
   export let isFiltersLoading: boolean = true;
   export let answersError: string | null = "";
-  export let answers: ResponseAnswer[] = [];
+  export let responses: ResponseBody[] = [];
   export let hasMorePages: boolean = true;
-  export let filteredTotal: number = 0;
+  export let freeTextResponseCount: number = 0;
   export let handleLoadClick = () => {};
   export let resetData = () => {};
 
   export let searchValue: string = "";
   export let setSearchValue = (_value: string) => {};
 
-  export let demoOptions: DemoOption = {};
-  export let demoData: DemoData = {};
-  export let demoOptionsData: DemoOptionsResponse = [];
+  export let demographics: DemoOptionsResponseItem[] = [];
   export let themes: ResponseTheme[] = [];
 
   export let evidenceRich: boolean = false;
@@ -83,9 +79,9 @@
     const READ_TIMEOUT = 10000; // 10 seconds
 
     markAsReadTimer = setTimeout(async () => {
-      if (answers.length > 0) {
-        const markPromises = answers.map((answer) =>
-          fetch(updateResponseReadStatus(consultationId, answer.id), {
+      if (responses.length > 0) {
+        const markPromises = responses.map((response) =>
+          fetch(updateResponseReadStatus(consultationId, response.id), {
             method: "POST",
           }),
         );
@@ -105,7 +101,7 @@
     resetMarkAsReadTimer();
   });
 
-  $: if (answers.length > 0 && !isAnswersLoading && !answersError) {
+  $: if (responses.length > 0 && !isResponsesLoading && !answersError) {
     startMarkAsReadTimer();
   }
 
@@ -127,9 +123,7 @@
       <FiltersSidebar
         showEvidenceRich={true}
         showUnseenResponse={false}
-        {demoOptions}
-        {demoData}
-        {demoOptionsData}
+        {demographics}
         {evidenceRich}
         {setEvidenceRich}
         {unseenResponses}
@@ -287,7 +281,7 @@
           <svelte:boundary>
             <TitleRow
               level={3}
-              title={`${filteredTotal} responses found`}
+              title={`${freeTextResponseCount} responses found`}
               subtitle="All responses to this question"
             >
               <div slot="aside" class="flex flex-wrap items-center gap-2">
@@ -319,10 +313,10 @@
               </div>
             </TitleRow>
 
-            {#if isAnswersLoading && answers.length === 0}
+            {#if isResponsesLoading && responses.length === 0}
               <div transition:fade>
                 {#each "_".repeat(5) as _, i (i)}
-                  <AnswerCard skeleton={true} />
+                  <ResponseCard skeleton={true} />
                 {/each}
               </div>
             {:else if answersError}
@@ -336,24 +330,24 @@
             {:else}
               <div>
                 <ul>
-                  {#each answers as answer, i (answer.id)}
+                  {#each responses as response, i (response.id)}
                     <li>
                       <div in:fly={{ x: 300, delay: getDelay(i) }}>
-                        <AnswerCard
+                        <ResponseCard
                           {consultationId}
                           {questionId}
-                          answerId={answer.id}
-                          respondentId={answer.respondent_id}
-                          respondentDisplayId={answer.identifier.toString()}
-                          demoData={Object.values(answer.demographic_data)}
-                          multiAnswers={answer.multiple_choice_answer}
-                          evidenceRich={answer.evidenceRich}
-                          text={answer.free_text_answer_text}
-                          themes={answer.themes || []}
+                          answerId={response.id}
+                          respondentId={response.respondent_id}
+                          respondentDisplayId={response.identifier.toString()}
+                          demoData={Object.values(response.demographic_data)}
+                          multiAnswers={response.multiple_choice_answer}
+                          evidenceRich={response.evidenceRich}
+                          text={response.free_text_answer_text}
+                          themes={response.themes || []}
                           themeOptions={themes}
                           highlightText={searchValue}
-                          isFlagged={answer.is_flagged}
-                          isEdited={answer.is_edited}
+                          isFlagged={response.is_flagged}
+                          isEdited={response.is_edited}
                           {resetData}
                         />
                       </div>
@@ -361,7 +355,7 @@
                   {/each}
                 </ul>
 
-                {#if answers.length === 0}
+                {#if responses.length === 0}
                   <div transition:fade>
                     <NotFoundMessage
                       title="No responses found"
@@ -370,10 +364,10 @@
                   </div>
                 {/if}
 
-                {#if isAnswersLoading}
+                {#if isResponsesLoading}
                   <div transition:fade>
                     {#each "_".repeat(5) as _, i (i)}
-                      <AnswerCard skeleton={true} />
+                      <ResponseCard skeleton={true} />
                     {/each}
                   </div>
                 {/if}
@@ -385,7 +379,7 @@
                         "transition-all",
                         "duration-300",
                         "overflow-hidden",
-                        isAnswersLoading ? "w-[14ch]" : "w-[10ch]",
+                        isResponsesLoading ? "w-[14ch]" : "w-[10ch]",
                       ])}
                     >
                       <Button
@@ -394,16 +388,18 @@
                         size="sm"
                       >
                         <span class="w-full whitespace-nowrap text-center">
-                          {isAnswersLoading ? "Loading answers" : "Load more"}
+                          {isResponsesLoading
+                            ? "Loading responses"
+                            : "Load more"}
                         </span>
                       </Button>
                     </div>
                   {/if}
                 </div>
 
-                {#if answers}
+                {#if responses}
                   <p class="mt-2 text-center text-sm">
-                    {`Showing first ${answers.length} of ${filteredTotal} responses. Use filters to narrow results.`}
+                    {`Showing first ${responses.length} of ${freeTextResponseCount} responses. Use filters to narrow results.`}
                   </p>
                 {/if}
               </div>

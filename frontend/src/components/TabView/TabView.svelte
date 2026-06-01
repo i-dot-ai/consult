@@ -16,7 +16,6 @@
   export let tabs: Tab[] = [];
   export let value: string = "";
   export let handleChange: (newValue: string) => void = () => {};
-  export let title: string = "";
   export let variant: "default" | "dots" = "default";
 
   let prevTabIndex: number = tabs.findIndex((tab) => tab.id === value);
@@ -129,7 +128,8 @@
               {#if tab.icon}
                 <div class="shrink-0">
                   <MaterialIcon color="fill-neutral-500">
-                    <svelte:component this={tab.icon} />
+                    {@const Icon = tab.icon}
+                    <Icon />
                   </MaterialIcon>
                 </div>
               {/if}

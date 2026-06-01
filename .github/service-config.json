@@ -1,0 +1,6 @@
+{
+  "backend":           ["module.backend", "module.worker"],
+  "frontend":          ["module.frontend"],
+  "pipeline-mapping":  ["module.batch_job_mapping"],
+  "pipeline-sign-off": ["module.batch_job_sign_off"]
+}

@@ -12,7 +12,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Generating dummy data...")
         create_dummy_consultation_from_yaml(
-            number_respondents=100, consultation_stage=Consultation.Stage.THEME_SIGN_OFF
+            number_respondents=100, consultation_stage=Consultation.Stage.FINALISING_THEMES
         )
         create_dummy_consultation_from_yaml(
             number_respondents=100, consultation_stage=Consultation.Stage.ANALYSIS

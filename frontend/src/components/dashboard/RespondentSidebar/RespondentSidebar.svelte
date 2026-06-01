@@ -54,7 +54,7 @@
     <RespondentSidebarItem
       title="Questions Answered"
       subtitle={`${getPercentage(questionsAnswered, totalQuestions)}% (${questionsAnswered}/${totalQuestions})`}
-      icon={Calendar}
+      Icon={Calendar}
       testId="questions-answered-progress"
     />
   </div>

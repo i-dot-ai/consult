@@ -27,12 +27,12 @@ describe("FloatingPanelContent", () => {
 
   // TODO: Refactor to mock setItem
   it.todo("clears onboardingKeys in localStorage", async () => {
-    localStorage.setItem(OnboardingKeys.themeSignoff, "true");
-    localStorage.setItem(OnboardingKeys.themeSignoffArchive, "true");
+    localStorage.setItem(OnboardingKeys.finaliseThemes, "true");
+    localStorage.setItem(OnboardingKeys.finaliseThemesArchive, "true");
 
-    expect(localStorage.getItem(OnboardingKeys.themeSignoff)).toBeTruthy();
+    expect(localStorage.getItem(OnboardingKeys.finaliseThemes)).toBeTruthy();
     expect(
-      localStorage.getItem(OnboardingKeys.themeSignoffArchive),
+      localStorage.getItem(OnboardingKeys.finaliseThemesArchive),
     ).toBeTruthy();
 
     render(FloatingPanelContent);
@@ -43,9 +43,9 @@ describe("FloatingPanelContent", () => {
     const user = userEvent.setup();
     await user.click(walkthroughButton!);
 
-    expect(localStorage.getItem(OnboardingKeys.themeSignoff)).toBeFalsy();
+    expect(localStorage.getItem(OnboardingKeys.finaliseThemes)).toBeFalsy();
     expect(
-      localStorage.getItem(OnboardingKeys.themeSignoffArchive),
+      localStorage.getItem(OnboardingKeys.finaliseThemesArchive),
     ).toBeFalsy();
   });
 

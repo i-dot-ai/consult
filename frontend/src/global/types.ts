@@ -12,18 +12,23 @@ export interface QuestionMultiAnswer {
 }
 
 export interface Question {
-  id?: string;
-  number?: number;
-  total_responses?: number;
-  question_text?: string;
-  has_free_text?: boolean;
-  has_multiple_choice?: boolean;
-  multiple_choice_answer?: QuestionMultiAnswer[];
-  proportion_of_audited_answers?: number;
-  theme_status?: string;
+  id: string;
+  number: number;
+  total_response_count: number;
+  free_text_response_count: number;
+  multi_choice_response_count: number;
+  question_text: string;
+  has_free_text: boolean;
+  has_multiple_choice: boolean;
+  multiple_choice_answer: QuestionMultiAnswer[];
+  proportion_of_audited_answers: number;
+  theme_status: string;
 }
 
-export type ConsultationStage = "theme_sign_off" | "theme_mapping" | "analysis";
+export type ConsultationStage =
+  | "finalising_themes"
+  | "assigning_themes"
+  | "analysis";
 export interface NextResponseInfo {
   id: string;
   consultation_id: string;
@@ -55,7 +60,7 @@ export interface Respondent {
   consultation?: string;
   themefinder_id: number;
   demographics: RespondentDemoItem[];
-  name?: string | null;
+  name?: string;
 }
 
 export interface RespondentDemoItem {
@@ -152,7 +157,7 @@ export interface QuestionResponseResponse {
   // searchVector: string;
 }
 
-export interface ResponseAnswer {
+export interface ResponseBody {
   id: string;
   identifier: number | string; // respondent themefinder id
   question_id: string;
@@ -170,17 +175,6 @@ export interface ResponseAnswer {
   is_read: boolean;
 }
 
-export interface DemoOption {
-  [category: string]: string[];
-}
-
-export interface DemoData {
-  [category: string]: { [rowKey: string]: number };
-}
-
-export interface DemoTotalCounts {
-  [category: string]: number;
-}
 export interface ConsultationResponse {
   id: string;
   title: string;
@@ -220,10 +214,8 @@ export interface CandidateThemeResponsesResponse {
   results: CandidateThemeResponseItem[];
 }
 export interface ResponsesBody {
-  respondents_total: number;
-  filtered_total: number;
   has_more_pages: boolean;
-  all_respondents: ResponseAnswer[];
+  all_respondents: ResponseBody[];
 }
 export interface RespondentsResponse {
   count: number;
@@ -279,8 +271,8 @@ export interface SelectedTheme {
 
 export enum OnboardingKeys {
   prefix = "onboardingComplete",
-  themeSignoff = "onboardingComplete-theme-sign-off",
-  themeSignoffArchive = "onboardingComplete-theme-sign-off-archive",
+  finaliseThemes = "onboardingComplete-finalising-themes",
+  finaliseThemesArchive = "onboardingComplete-finalising-themes-archive",
 }
 
 export type AstroGlobalRuntime = {
@@ -307,12 +299,15 @@ export type HttpMethod =
   | "HEAD"
   | "OPTIONS";
 
+export type MockCallbackArgs = RequestInit & { url: string; params: unknown };
+
 export interface Mock {
+  name?: string;
   url?: string | RegExp;
   regexp?: string;
   body?: unknown;
   status?: number;
   method?: string;
   throws?: Error;
-  callback?: (args: RequestInit | { url: string; params: unknown }) => void;
+  callback?: (args: MockCallbackArgs) => void;
 }

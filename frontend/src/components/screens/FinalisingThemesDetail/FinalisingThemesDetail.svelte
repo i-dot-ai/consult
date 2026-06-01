@@ -1,0 +1,676 @@
+<script lang="ts">
+  import clsx from "clsx";
+
+  import { onMount } from "svelte";
+  import { fade, slide } from "svelte/transition";
+
+  import { createFetchStore } from "../../../global/stores";
+  import {
+    getApiConfirmFinalisingThemesUrl,
+    getApiGetGeneratedThemesUrl,
+    getApiGetSelectedThemesUrl,
+    getApiQuestionUrl,
+    getApiSelectGeneratedThemeUrl,
+    getApiUpdateSelectedThemeUrl,
+    getFinaliseThemesUrl,
+  } from "../../../global/routes";
+
+  import {
+    type GeneratedThemesResponse,
+    type Question,
+    type GeneratedTheme,
+    type SelectedTheme,
+  } from "../../../global/types";
+
+  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import TitleRow from "../../dashboard/TitleRow.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import Price from "../../svg/material/Price.svelte";
+  import ThemeForm from "../../finalising-themes/ThemeForm/ThemeForm.svelte";
+  import QuestionCard from "../../dashboard/QuestionCard/QuestionCard.svelte";
+  import SelectedThemeCard from "../../finalising-themes/SelectedThemeCard/SelectedThemeCard.svelte";
+  import GeneratedThemeCard from "../../finalising-themes/GeneratedThemeCard/GeneratedThemeCard.svelte";
+  import CheckCircle from "../../svg/material/CheckCircle.svelte";
+  import OnboardingTour from "../../OnboardingTour/OnboardingTour.svelte";
+  import SmartToy from "../../svg/material/SmartToy.svelte";
+  import Stacks from "../../svg/material/Stacks.svelte";
+  import Tag from "../../Tag/Tag.svelte";
+  import Modal from "../../Modal/Modal.svelte";
+  import Alert from "../../Alert.svelte";
+  import Target from "../../svg/material/Target.svelte";
+  import EditSquare from "../../svg/material/EditSquare.svelte";
+  import ErrorModal, {
+    type ErrorType,
+  } from "../../finalising-themes/ErrorModal/ErrorModal.svelte";
+  import {
+    buildSelectedThemeCreateQuery,
+    buildSelectedThemeDeleteQuery,
+    buildSelectedThemesGetQuery,
+  } from "../../../global/queries/selectedThemes/queries";
+
+  interface Props {
+    consultationId: string;
+    questionId: string;
+  }
+
+  let { consultationId = "", questionId = "" }: Props = $props();
+
+  let selectedThemes = $derived(
+    buildSelectedThemesGetQuery(consultationId, questionId),
+  );
+  let selectedThemesCreate = $derived(
+    buildSelectedThemeCreateQuery(consultationId, questionId, async () => {
+      refreshThemes();
+    }),
+  );
+  let selectedThemesDelete = $derived(
+    buildSelectedThemeDeleteQuery(
+      consultationId,
+      questionId,
+      async () => refreshThemes(),
+      async (error) => {
+        if (error.status === 404) {
+          // No action or error needed if status 404 (theme already deselected)
+          refreshThemes();
+        } else if (error.status === 412) {
+          errorData = {
+            type: "remove-conflict",
+            lastModifiedBy: error.data?.last_modified_by?.email || "",
+            latestVersion: error.data?.latest_version || "",
+          };
+        } else {
+          errorData = { type: "unexpected" };
+          console.error(error.message);
+        }
+      },
+    ),
+  );
+  const generatedThemesStore = createFetchStore<GeneratedThemesResponse>();
+  const generatedThemesSelectStore = createFetchStore();
+  const questionStore = createFetchStore<Question>();
+  const confirmFinalisingThemesStore = createFetchStore();
+
+  let isConfirmFinalisingThemesModalOpen: boolean = $state(false);
+  let addingCustomTheme: boolean = $state(false);
+
+  const flattenGeneratedThemes = (
+    items?: GeneratedTheme[],
+  ): GeneratedTheme[] => {
+    if (!items) {
+      return [];
+    }
+    const result = [];
+    for (const item of items) {
+      const { children, ...attrs } = item;
+      result.push(attrs);
+      if (children?.length) {
+        result.push(...flattenGeneratedThemes(children));
+      }
+    }
+    return result;
+  };
+
+  let flatGeneratedThemes = $derived(
+    flattenGeneratedThemes($generatedThemesStore.data?.results),
+  );
+
+  let expandedThemes: string[] = $derived(
+    flatGeneratedThemes.map((theme) => theme.id),
+  );
+
+  let errorData: ErrorType | null = $state(null);
+  let themesBeingSelected: string[] = $state([]); // array of ids
+  let dataRequested: boolean = $state(false);
+
+  const errorModalOnClose = () => {
+    selectedThemes.fetch(
+      getApiGetSelectedThemesUrl(consultationId, questionId),
+    );
+    $generatedThemesStore.fetch(
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
+    );
+    errorData = null;
+  };
+
+  onMount(() => {
+    $generatedThemesStore.fetch(
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
+    );
+    $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
+    dataRequested = true;
+  });
+
+  const createTheme = async (title: string, description: string) => {
+    selectedThemesCreate.fetch({
+      body: {
+        name: title,
+        description: description,
+      },
+    });
+  };
+
+  const removeTheme = async (themeId: string) => {
+    const selectedTheme = selectedThemes.query.data?.results.find(
+      (theme: { id: string }) => theme.id === themeId,
+    );
+
+    if (!selectedTheme) {
+      console.error(`Selected theme ${themeId} not found`);
+      return;
+    }
+
+    selectedThemesDelete.fetch(themeId, selectedTheme.version);
+  };
+
+  const updateTheme = async (
+    themeId: string,
+    title: string,
+    description: string,
+  ) => {
+    const selectedTheme = selectedThemes.query.data?.results.find(
+      (theme: { id: string }) => theme.id === themeId,
+    );
+
+    if (!selectedTheme) {
+      console.error(`Selected theme ${themeId} not found`);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        getApiUpdateSelectedThemeUrl(consultationId, questionId, themeId),
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "If-Match": String(selectedTheme.version),
+          },
+          body: JSON.stringify({
+            name: title,
+            description: description,
+          }),
+        },
+      );
+
+      if (response.ok) {
+        selectedThemes.fetch(
+          getApiGetSelectedThemesUrl(consultationId, questionId),
+        );
+      } else if (response.status === 404) {
+        errorData = { type: "theme-does-not-exist" };
+      } else if (response.status === 412) {
+        const { last_modified_by, latest_version } = await response.json();
+        errorData = {
+          type: "edit-conflict",
+          lastModifiedBy: last_modified_by.email,
+          latestVersion: latest_version,
+        };
+      } else {
+        throw new Error(`Edit theme failed: ${response.statusText}`);
+      }
+    } catch {
+      errorData = { type: "unexpected" };
+    }
+  };
+
+  const handleSelectGeneratedTheme = async (newTheme: GeneratedTheme) => {
+    themesBeingSelected = [...themesBeingSelected, newTheme.id];
+
+    await $generatedThemesSelectStore.fetch(
+      getApiSelectGeneratedThemeUrl(consultationId, questionId, newTheme.id),
+      "POST",
+    );
+
+    await selectedThemes.fetch(
+      getApiGetSelectedThemesUrl(consultationId, questionId),
+    );
+    await $generatedThemesStore.fetch(
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
+    );
+
+    themesBeingSelected = themesBeingSelected.filter(
+      (themeId) => themeId !== newTheme.id,
+    );
+
+    // get selectedtheme_id created after back end select action is complete
+    const updatedTheme = flattenGeneratedThemes(
+      $generatedThemesStore.data?.results || [],
+    ).find((generatedTheme) => generatedTheme.id === newTheme.id);
+
+    // scroll up to equivalent in selected themes list
+    document
+      .querySelector(
+        `article[data-themeid="${updatedTheme?.selectedtheme_id}"]`,
+      )
+      ?.scrollIntoView();
+  };
+
+  const refreshThemes = () => {
+    selectedThemes.fetch();
+    $generatedThemesStore.fetch(
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
+    );
+  };
+
+  const confirmFinalisingThemes = async () => {
+    await $confirmFinalisingThemesStore.fetch(
+      getApiConfirmFinalisingThemesUrl(consultationId, questionId),
+      "PATCH",
+      {
+        theme_status: "confirmed",
+      },
+    );
+
+    if ($confirmFinalisingThemesStore.error) {
+      isConfirmFinalisingThemesModalOpen = false;
+      errorData = { type: "unexpected" };
+    } else {
+      location.replace(getFinaliseThemesUrl(consultationId));
+    }
+  };
+  const numSelectedThemesText = (themes?: Array<SelectedTheme>): string => {
+    if (!themes?.length) {
+      return "";
+    }
+    return `${themes.length} selected theme${themes.length > 1 ? "s" : ""}`;
+  };
+
+  const isThemeExpanded = (themeId: string): boolean => {
+    return expandedThemes?.includes(themeId);
+  };
+  const isAllThemesExpanded = (): boolean => {
+    return expandedThemes.length === flatGeneratedThemes.length;
+  };
+  const expandAllThemes = () => {
+    expandedThemes = flatGeneratedThemes.map((theme) => theme.id);
+  };
+  const collapseAllThemes = () => {
+    expandedThemes = [];
+  };
+  const expandTheme = (themeId: string) => {
+    expandedThemes = [...expandedThemes, themeId];
+  };
+  const collapseTheme = (themeId: string) => {
+    expandedThemes = expandedThemes.filter((theme) => theme !== themeId);
+  };
+
+  let hasNestedThemes = $derived(
+    $generatedThemesStore.data?.results?.some((theme: GeneratedTheme) =>
+      Boolean(theme.children && theme.children.length > 0),
+    ),
+  );
+</script>
+
+{#if errorData}
+  <ErrorModal {...errorData} onClose={errorModalOnClose} />
+{/if}
+
+<TitleRow
+  level={1}
+  title="Finalise Themes"
+  subtitle="Finalise themes to use for AI to assign responses to"
+>
+  <Price slot="icon" />
+
+  <div slot="aside">
+    <Button
+      size="xs"
+      handleClick={() => (location.href = getFinaliseThemesUrl(consultationId))}
+    >
+      <span class="p-1"> Choose another question </span>
+    </Button>
+  </div>
+</TitleRow>
+
+<section class="my-8">
+  {#if $questionStore.data}
+    <QuestionCard
+      skeleton={$questionStore.isLoading}
+      {consultationId}
+      question={$questionStore.data}
+      clickable={false}
+    />
+  {/if}
+</section>
+
+<svelte:boundary>
+  <section
+    class={clsx([
+      "selected-section",
+      "my-4",
+      "p-4",
+      "bg-pink-50/25",
+      "rounded-xl",
+      "border",
+      "border-pink-100",
+    ])}
+  >
+    <div id="onboarding-steps-2-and-3" class="mb-4">
+      <Panel variant="primary" bg={true} border={true}>
+        <div class="mb-2 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <MaterialIcon color="fill-primary">
+              <CheckCircle />
+            </MaterialIcon>
+
+            <h3>Selected Themes</h3>
+
+            <Tag variant="primary-light">
+              {selectedThemes.query.data?.results?.length ?? 0} selected
+            </Tag>
+          </div>
+
+          <Button
+            size="sm"
+            handleClick={() => (addingCustomTheme = !addingCustomTheme)}
+            highlighted={addingCustomTheme}
+            highlightVariant="none"
+          >
+            <span
+              class={clsx([
+                "flex",
+                "items-center",
+                "justify-between",
+                "text-primary",
+              ])}
+            >
+              + Add Custom Theme
+            </span>
+          </Button>
+        </div>
+
+        <p class="text-sm text-neutral-500">
+          {#if (selectedThemes.query.data?.results?.length ?? 0) > 0}
+            Manage your {numSelectedThemesText(
+              selectedThemes.query.data?.results,
+            )} for AI to assign responses to. Edit titles or descriptions, or add
+            a new theme.
+          {:else}
+            Finalise the themes for the AI to assign responses to. Choose from
+            the AI found themes or add new.
+          {/if}
+        </p>
+      </Panel>
+    </div>
+
+    {#if addingCustomTheme}
+      <div transition:slide>
+        <ThemeForm
+          handleConfirm={async (title: string, description: string) => {
+            await createTheme(title, description);
+            addingCustomTheme = false;
+          }}
+          handleCancel={() => (addingCustomTheme = false)}
+          initialTitle=""
+          initialDescription=""
+        />
+      </div>
+    {/if}
+
+    {#if selectedThemes.query.data?.results.length === 0}
+      <div in:fade class="my-8 flex flex-col items-center justify-center gap-2">
+        <div class="mb-2">
+          <MaterialIcon size="2rem" color="fill-neutral-500">
+            <Price />
+          </MaterialIcon>
+        </div>
+
+        <h3 class="text-md text-neutral-500">No themes selected yet</h3>
+        <p class="text-xs text-neutral-500">
+          Select themes from the AI-found suggestions below
+        </p>
+      </div>
+    {:else}
+      <div class="mt-4">
+        {#each selectedThemes.query.data?.results ?? [] as selectedTheme (selectedTheme.id)}
+          <div transition:slide={{ duration: 150 }} class="mb-4 last:mb-0">
+            <SelectedThemeCard
+              {consultationId}
+              {questionId}
+              theme={selectedTheme}
+              {removeTheme}
+              {updateTheme}
+            />
+          </div>
+        {/each}
+      </div>
+
+      <hr class="my-4" />
+
+      <Button
+        variant="primary"
+        fullWidth={true}
+        disabled={!dataRequested ||
+          selectedThemes.query.isPending ||
+          (selectedThemes.query.data?.results?.length ?? 0) === 0}
+        handleClick={() =>
+          (isConfirmFinalisingThemesModalOpen =
+            !isConfirmFinalisingThemesModalOpen)}
+      >
+        <div class="flex w-full items-center justify-center gap-2">
+          <MaterialIcon color="fill-white">
+            <CheckCircle />
+          </MaterialIcon>
+
+          <span>
+            {#if !dataRequested || selectedThemes.query.isPending}
+              Loading Selected Themes
+            {:else}
+              Sign Off Selected Themes ({selectedThemes.query.data?.results
+                ?.length ?? 0})
+            {/if}
+          </span>
+        </div>
+      </Button>
+    {/if}
+
+    <Modal
+      variant="primary"
+      title="Confirm Finalising Themes"
+      Icon={CheckCircle}
+      open={isConfirmFinalisingThemesModalOpen}
+      setOpen={(newOpen: boolean) =>
+        (isConfirmFinalisingThemesModalOpen = newOpen)}
+      confirmText="Confirm Finalisation"
+      handleConfirm={confirmFinalisingThemes}
+    >
+      <p class="text-sm text-neutral-500">
+        Are you sure you want to sign off on these {numSelectedThemesText(
+          selectedThemes.query.data?.results,
+        )} for Question {$questionStore.data?.number}?
+      </p>
+
+      <h4 class="my-4 text-xs font-bold">Selected themes:</h4>
+
+      <div class="max-h-64 overflow-y-auto">
+        {#each selectedThemes.query.data?.results ?? [] as selectedTheme (selectedTheme.id)}
+          <Panel bg={true} border={false}>
+            <h5 class="mb-1 text-xs font-bold">{selectedTheme.name}</h5>
+            <p class="text-xs text-neutral-500">{selectedTheme.description}</p>
+          </Panel>
+        {/each}
+      </div>
+    </Modal>
+  </section>
+
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
+
+      <Panel>
+        <Alert>Unexpected selected themes error</Alert>
+      </Panel>
+    </div>
+  {/snippet}
+</svelte:boundary>
+
+<div
+  class={clsx([
+    "relative",
+    "w-full",
+    "my-8",
+    "after:w-full",
+    "after:border-b",
+    "after:absolute",
+    "after:left-0",
+    "after:right-0",
+    "after:bottom-1/2",
+    "after:-z-10",
+  ])}
+>
+  <p
+    class={clsx([
+      "m-auto",
+      "w-max",
+      "bg-white",
+      "px-4",
+      "text-sm",
+      "text-neutral-500",
+    ])}
+  >
+    Browse AI Generated Themes
+  </p>
+</div>
+
+<svelte:boundary>
+  <section>
+    <Panel>
+      <div id="onboarding-step-1">
+        <Panel variant="approve" bg={true} border={true}>
+          <div class="mb-2 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <MaterialIcon color="fill-secondary">
+                <SmartToy />
+              </MaterialIcon>
+
+              <h3>AI Generated Themes</h3>
+
+              <Tag variant="success">
+                {flattenGeneratedThemes(
+                  $generatedThemesStore.data?.results || [],
+                ).length} available
+              </Tag>
+            </div>
+
+            <div class="flex items-center gap-4">
+              {#if hasNestedThemes}
+                <div class="flex items-center gap-1 text-xs text-neutral-500">
+                  <MaterialIcon color="fill-neutral-500">
+                    <Stacks />
+                  </MaterialIcon>
+                  Multi-level themes
+                </div>
+
+                <Button
+                  size="sm"
+                  disabled={!hasNestedThemes}
+                  handleClick={() => {
+                    if (isAllThemesExpanded()) {
+                      collapseAllThemes();
+                    } else {
+                      expandAllThemes();
+                    }
+                  }}
+                >
+                  <span
+                    class={clsx([
+                      "flex items-center justify-between gap-1 text-secondary",
+                      addingCustomTheme && "text-white",
+                    ])}
+                  >
+                    <MaterialIcon color="fill-secondary">
+                      <Stacks />
+                    </MaterialIcon>
+                    {isAllThemesExpanded() ? "Collapse All" : "Expand All"}
+                  </span>
+                </Button>
+              {/if}
+            </div>
+          </div>
+
+          <p class="text-sm text-neutral-500">
+            Browse themes found by the AI and click "Select" to add a theme to
+            your list of selected themes for analysis.
+          </p>
+        </Panel>
+      </div>
+
+      {#each $generatedThemesStore.data?.results as theme (theme.id)}
+        <GeneratedThemeCard
+          {consultationId}
+          {questionId}
+          {hasNestedThemes}
+          {theme}
+          {expandedThemes}
+          setExpandedThemes={(id) => {
+            if (isThemeExpanded(id)) {
+              collapseTheme(id);
+            } else {
+              expandTheme(id);
+            }
+          }}
+          handleSelect={handleSelectGeneratedTheme}
+          {themesBeingSelected}
+        />
+      {/each}
+    </Panel>
+  </section>
+
+  {#if errorData}
+    <ErrorModal {...errorData} onClose={errorModalOnClose} />
+  {/if}
+
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
+
+      <Panel>
+        <Alert>Unexpected generated themes error</Alert>
+      </Panel>
+    </div>
+  {/snippet}
+</svelte:boundary>
+
+<svelte:boundary>
+  <OnboardingTour
+    key="finalising-themes"
+    steps={[
+      {
+        id: "onboarding-step-1",
+        title: "Select Themes",
+        body: `Browse the AI-found themes and click "Select Theme" to move them to your selected themes list. You can view example responses for each theme to understand what types of consultation responses it represents.`,
+        icon: Target,
+      },
+      {
+        id: "onboarding-steps-2-and-3",
+        title: "Edit & Manage",
+        body: "Once themes are selected, you can edit their titles and descriptions by clicking the edit button, or add completely new themes to better organize your analysis.",
+        icon: EditSquare,
+      },
+      {
+        id: "onboarding-steps-2-and-3",
+        title: "Sign Off & Proceed",
+        body: `When you're satisfied with your theme selection and edits, click "Sign Off Selected Themes" to proceed with mapping consultation responses against your finalised themes.`,
+        icon: CheckCircle,
+      },
+    ]}
+    resizeObserverTarget={document.querySelector("main")}
+  />
+
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
+
+      <Panel>
+        <Alert>Unexpected onboarding tour error</Alert>
+      </Panel>
+    </div>
+  {/snippet}
+</svelte:boundary>
+
+<style>
+  .selected-section :global(div[data-testid="panel-component"]) {
+    margin: 0;
+  }
+</style>

@@ -24,6 +24,7 @@
     highlightText?: string;
     clickable?: boolean;
     skeleton?: boolean;
+    countsLoading?: boolean;
     hideIcon?: boolean;
     horizontal?: boolean;
     disabled?: boolean;
@@ -32,11 +33,12 @@
   }
 
   let {
-    question = {},
+    question,
     url = "",
     highlightText = "",
     clickable = false,
     skeleton = false,
+    countsLoading = false,
     hideIcon = false,
     horizontal = false,
     disabled = false,
@@ -142,7 +144,15 @@
                 disabled && "opacity-50",
               ])}
             >
-              {question.total_responses} responses
+              {#if countsLoading}
+                <span
+                  class="blink select-none rounded bg-neutral-200 text-neutral-200"
+                >
+                  00000 responses
+                </span>
+              {:else}
+                {question.total_response_count} responses
+              {/if}
             </div>
 
             {#if subtext}
@@ -178,6 +188,7 @@
                 class={clsx([disabled && "grayscale"])}
               >
                 <div
+                  role="presentation"
                   onkeypress={(e) => e.stopPropagation()}
                   onclick={(e) => e.stopPropagation()}
                 >

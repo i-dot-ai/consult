@@ -27,8 +27,8 @@
       title: "Walkthrough",
       subtitle: "Interactive tutorial for Finalising Themes",
       handleClick: () => {
-        localStorage.removeItem(OnboardingKeys.themeSignoff);
-        localStorage.removeItem(OnboardingKeys.themeSignoffArchive);
+        localStorage.removeItem(OnboardingKeys.finaliseThemes);
+        localStorage.removeItem(OnboardingKeys.finaliseThemesArchive);
         window.location.reload();
       },
     },
@@ -54,7 +54,7 @@
   ];
 </script>
 
-{#snippet renderItem({ icon, title, subtitle, url, handleClick }: Item)}
+{#snippet renderItem({ icon: Icon, title, subtitle, url, handleClick }: Item)}
   <li class="group">
     <Button
       variant="ghost"
@@ -75,7 +75,7 @@
           ])}
         >
           <MaterialIcon color="fill-neutral-500">
-            <svelte:component this={icon} />
+            <Icon />
           </MaterialIcon>
         </div>
         <div>

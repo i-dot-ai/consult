@@ -1,4 +1,4 @@
-import type { Consultation } from "../../types";
+import type { Consultation, ConsultationStage } from "../../types";
 
 export type ConsultationsGetResponse = {
   count: number;
@@ -7,5 +7,5 @@ export type ConsultationsGetResponse = {
   results: Consultation[];
 };
 export type UpdateConsultationBody = {
-  stage?: "theme_sign_off" | "theme_mapping" | "analysis";
+  stage?: ConsultationStage;
 };

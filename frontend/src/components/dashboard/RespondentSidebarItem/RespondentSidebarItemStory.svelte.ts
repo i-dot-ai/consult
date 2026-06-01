@@ -26,7 +26,7 @@ export default {
       type: "text",
     },
     {
-      name: "icon",
+      name: "Icon",
       value: icon,
       type: "select",
       options: [

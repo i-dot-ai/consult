@@ -31,11 +31,6 @@ variable "github_org" {
   description = "The default I.AI GitHub Org URL"
 }
 
-variable "image_tag" {
-  description = "The tag of the image to use"
-  type        = string
-  default     = "latest"
-}
 
 variable "project_name" {
   type        = string

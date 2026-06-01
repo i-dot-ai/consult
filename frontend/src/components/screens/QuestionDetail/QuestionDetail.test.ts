@@ -5,7 +5,7 @@ import QuestionDetail from "./QuestionDetail.svelte";
 import fetchMock from "fetch-mock";
 import { queryClient } from "../../../global/queryClient";
 import { mockRoute } from "../../../global/utils";
-import { answers, CONSULTATION_ID, mocks, QUESTION_ID } from "./mocks";
+import { responses, CONSULTATION_ID, mocks, QUESTION_ID } from "./mocks";
 import userEvent from "@testing-library/user-event";
 
 const setupMocks = () => {
@@ -57,7 +57,7 @@ describe("QuestionDetail", () => {
 
   it.each([
     ...new Set(
-      answers.reduce(
+      responses.reduce(
         (acc, curr) => [...acc, ...(curr.multiple_choice_answer || [])],
         [] as Array<string>,
       ),
@@ -103,39 +103,38 @@ describe("QuestionDetail", () => {
     });
   });
 
-  it.each(answers.filter((answer) => Boolean(answer.free_text_answer_text)))(
-    "renders all answers",
-    async (answer) => {
-      setupMocks();
+  it.each(
+    responses.filter((response) => Boolean(response.free_text_answer_text)),
+  )("renders all responses", async (response) => {
+    setupMocks();
 
-      render(QuestionDetail, {
-        consultationId: CONSULTATION_ID,
-        questionId: QUESTION_ID,
-      });
+    render(QuestionDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+    });
 
-      // page loaded
-      await waitFor(() => {
-        expect(
-          screen.getByText(mocks.questionMock.body.question_text, {
-            exact: false,
-          }),
-        ).toBeInTheDocument();
-      });
+    // page loaded
+    await waitFor(() => {
+      expect(
+        screen.getByText(mocks.questionMock.body.question_text, {
+          exact: false,
+        }),
+      ).toBeInTheDocument();
+    });
 
-      const responseAnalysisButton = screen.getByRole("tab", {
-        name: "Response Analysis",
-      });
-      const user = userEvent.setup();
+    const responseAnalysisButton = screen.getByRole("tab", {
+      name: "Response Analysis",
+    });
+    const user = userEvent.setup();
 
-      await user.click(responseAnalysisButton);
+    await user.click(responseAnalysisButton);
 
-      await waitFor(() => {
-        expect(
-          screen.getByText(answer.free_text_answer_text),
-        ).toBeInTheDocument();
-      });
-    },
-  );
+    await waitFor(() => {
+      expect(
+        screen.getByText(response.free_text_answer_text),
+      ).toBeInTheDocument();
+    });
+  });
 
   it("adds/removes theme filter when buttons are clicked", async () => {
     setupMocks();
@@ -174,6 +173,42 @@ describe("QuestionDetail", () => {
       expect(
         screen.queryByText("Results are filtered"),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  it("hybrid question uses correct counts for each section", async () => {
+    setupMocks();
+
+    render(QuestionDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(mocks.questionMock.body.question_text, {
+          exact: false,
+        }),
+      ).toBeInTheDocument();
+    });
+
+    // Top header shows total_response_count (250)
+    expect(
+      screen.getByText(
+        `${mocks.questionMock.body.total_response_count} responses`,
+      ),
+    ).toBeInTheDocument();
+
+    // Multi-choice section uses multi_choice_response_count
+    expect(
+      screen.getByText(
+        `${mocks.questionMock.body.multi_choice_response_count} responses`,
+      ),
+    ).toBeInTheDocument();
+
+    // Theme percentages use free_text_response_count (100) as denominator (62/100 = 62%)
+    await waitFor(() => {
+      expect(screen.getByText("62%")).toBeInTheDocument();
     });
   });
 

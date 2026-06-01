@@ -2,16 +2,20 @@ import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
 import QuestionSummary from "./QuestionSummary.svelte";
-import { getPercentage } from "../../../global/utils";
 
 describe("QuestionSummary", () => {
+  const demographics = [
+    { id: "1", name: "testCategory", value: "foo", count: 1 },
+  ];
+
   const testData = {
     themesLoading: false,
+    questionLoading: false,
+    demographicsLoading: false,
     showThemes: false,
-    demoData: { testCategory: { foo: 1 } },
-    totalAnswers: 100,
+    demographics,
+    freeTextResponseCount: 100,
     themes: [],
-    demoOptions: { testCategory: ["foo"] },
     anyFilterApplied: false,
     setActiveTab: () => {},
   };
@@ -36,6 +40,7 @@ describe("QuestionSummary", () => {
     render(QuestionSummary, {
       ...testData,
       multiChoice: multiChoice,
+      multiChoiceResponseCount: 50,
     });
 
     expect(screen.getByText("Multiple Choice Answers")).toBeInTheDocument();
@@ -43,9 +48,8 @@ describe("QuestionSummary", () => {
     multiChoice.forEach((item) => {
       expect(screen.getByText(item.text)).toBeInTheDocument();
       expect(screen.getAllByText(item.response_count)).toHaveLength(2);
-      expect(
-        screen.getByText(getPercentage(item.response_count, 30) + "%"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("20%")).toBeInTheDocument();
+      expect(screen.getByText("40%")).toBeInTheDocument();
     });
   });
 });
