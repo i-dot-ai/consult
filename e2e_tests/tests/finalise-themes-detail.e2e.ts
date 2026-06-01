@@ -75,6 +75,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     expect(page.getByText("1 selected", { exact: true })).toBeVisible();
     expect(page.getByRole("heading", { name: TEST_TITLE })).toBeVisible();
     expect(page.getByText(TEST_DESCRIPTION)).toBeVisible();
+    expect(page.getByText(`Added a moment ago by ${signOffConsultation.users[0]}`)).toBeVisible();
   })
 
   test("Removing a theme removes it from the selected themes list", async ({ page }) => {
