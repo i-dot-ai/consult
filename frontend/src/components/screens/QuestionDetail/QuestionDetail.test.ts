@@ -214,4 +214,25 @@ describe("QuestionDetail", () => {
       ).toBeTruthy();
     }
   });
+
+  it("displays toggles specific to filtering free text responses", async () => {
+    setupMocks();
+
+    render(QuestionDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("switch", { name: /evidence rich/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("switch", { name: /unread/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("switch", { name: /flagged/i }),
+      ).toBeInTheDocument();
+    });
+  });
 });
