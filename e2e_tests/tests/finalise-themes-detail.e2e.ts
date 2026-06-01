@@ -74,6 +74,20 @@ test.describe("Finalise Themes - Detail Page", () => {
     expect(page.getByText(TEST_DESCRIPTION)).toBeVisible();
   })
 
+  test("Removing a theme removes it from the selected themes list", async ({ page }) => {
+    expect(page.getByText("0 selected")).toBeVisible();
+
+    const selectButtons = page.getByRole("button", { name: "Select" });
+    const firstSelectButton = selectButtons.first();
+    await firstSelectButton.click();
+    expect(page.getByText("1 selected", { exact: true })).toBeVisible();
+
+    const removeThemeButton = page.getByRole("button", { name: "Remove" });
+    await removeThemeButton.click();
+
+    expect(page.getByText("0 selected", { exact: true })).toBeVisible();
+  })
+
   test("Create theme panel shown/hidden accordingly", async ({ page }) => {
     // Create theme panel initially hidden
     expect(page.getByRole("heading", { name: "Add Custom Theme" })).not.toBeVisible();
