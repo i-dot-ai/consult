@@ -88,7 +88,7 @@ module "backend" {
   }
   entrypoint = ["./start.sh"]
 
-  memory = 4096
+  memory = 8192
   cpu    = 1024
 }
 
