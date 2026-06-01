@@ -101,6 +101,38 @@ class TestResponseViewSet:
         assert len(data["all_respondents"]) == 2
         assert data["has_more_pages"]
 
+    def test_total_count_returned_on_first_page_only(
+        self, client, staff_user_token, free_text_question
+    ):
+        """total_count is included on page 1 for accurate pagination display, omitted on subsequent pages."""
+        for i in range(5):
+            respondent = RespondentFactory(consultation=free_text_question.consultation)
+            ResponseFactory(question=free_text_question, respondent=respondent)
+
+        url = reverse(
+            "response-list",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        # Page 1 includes total_count
+        response = client.get(
+            url,
+            query_params={"page_size": 2, "page": 1, "question_id": free_text_question.id},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        data = orjson.loads(response.content)
+        assert data["total_count"] == 5
+        assert data["has_more_pages"]
+
+        # Page 2 omits total_count
+        response = client.get(
+            url,
+            query_params={"page_size": 2, "page": 2, "question_id": free_text_question.id},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        data = orjson.loads(response.content)
+        assert "total_count" not in data
+
     def test_get_filtered_responses_with_demographic_filters(
         self,
         client,

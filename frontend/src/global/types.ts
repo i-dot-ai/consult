@@ -211,6 +211,7 @@ export interface CandidateThemeResponsesResponse {
 export interface ResponsesBody {
   has_more_pages: boolean;
   all_respondents: ResponseBody[];
+  total_count?: number;
 }
 export interface RespondentsResponse {
   count: number;
