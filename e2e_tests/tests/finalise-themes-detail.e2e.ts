@@ -53,6 +53,13 @@ test.describe("Finalise Themes - Detail Page", () => {
     await page.waitForLoadState("networkidle");
   });
 
+  test("Displays question details", async ({ page }) => {
+    const question = signOffConsultation.questions![0];
+    const questionText = `Q${question.number}: ${question.text}`;
+    expect(page.getByText(questionText, { exact: true })).toBeVisible();
+    expect(page.getByText(`${question.responses?.length} responses`)).toBeVisible();
+  })
+
   test("Selecting a theme adds it to selected themes list", async ({ page }) => {
     expect(page.getByText("No themes selected yet")).toBeVisible();
     expect(page.getByText("0 selected")).toBeVisible();
