@@ -44,8 +44,6 @@ test.describe("Respondent Detail Page", () => {
     // Click on Q1 (first question) which has free text and Response Analysis tab
     const questionCard = questionCards.first();
     
-    const questionText = await questionCard.textContent();
-    
     await questionCard.click();
     await page.waitForLoadState("networkidle");
 
@@ -77,8 +75,6 @@ test.describe("Respondent Detail Page", () => {
     // Click on the first respondent button
     // Since the fixture creates responses by index, respondent 1 should have a response
     const respondentButton = allRespondentButtons.first();
-
-    const respondentText = await respondentButton.textContent();
 
     await respondentButton.click();
     await page.waitForLoadState("networkidle");
@@ -305,14 +301,7 @@ test.describe("Respondent Detail Page", () => {
     const combinedOptionsText = allOptionsTexts.join(' ');
     
     // Assert at least one of the fixture-defined options is present
-    const hasExpectedOption = 
-      combinedOptionsText.includes("Sustainability") ||
-      combinedOptionsText.includes("Design") ||
-      combinedOptionsText.includes("Cost-effectiveness") ||
-      combinedOptionsText.includes("Durability") ||
-      combinedOptionsText.includes("Brand recognition");
-    
-    expect(hasExpectedOption).toBeTruthy();
+    expect(combinedOptionsText).toMatch(/Sustainability|Design|Cost-effectiveness|Durability|Brand recognition/);
   });
 
   test("clicking question title navigates to question detail page", async ({
@@ -399,10 +388,8 @@ test.describe("Respondent Detail Page", () => {
     await expect(nextButton).toBeVisible();
     expect(await nextButton.count()).toBeGreaterThan(0);
     
-    // Check if button is enabled
-    const isDisabled = await nextButton.getAttribute("disabled");
-    // Button is enabled if disabled attribute is null or empty string
-    expect(isDisabled === null || isDisabled === "").toBeTruthy();
+    // Verify button is enabled (not disabled)
+    await expect(nextButton).toBeEnabled();
 
     // Click next button
     await nextButton.click();
@@ -432,9 +419,8 @@ test.describe("Respondent Detail Page", () => {
     await expect(prevButton).toBeVisible();
     expect(await prevButton.count()).toBeGreaterThan(0);
     
-    const isPrevDisabled = await prevButton.getAttribute("disabled");
-    // Button is enabled if disabled attribute is null or empty string
-    expect(isPrevDisabled === null || isPrevDisabled === "").toBeTruthy();
+    // Verify button is enabled (not disabled)
+    await expect(prevButton).toBeEnabled();
 
     // Click previous button
     await prevButton.click();
