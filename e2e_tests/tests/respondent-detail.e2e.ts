@@ -101,7 +101,7 @@ test.describe("Respondent Detail Page", () => {
     
     const questionNumberCount = await page.getByTestId('question-number').count();
 
-    // Extract IDs from URL
+    // Extract IDs from URL - captures consultationId [1] and respondentId [2] from URL path
     const currentUrl = page.url();
     const urlMatch = currentUrl.match(
       /\/consultations\/([^/]+)\/respondent\/([^?]+)/,
@@ -152,9 +152,10 @@ test.describe("Respondent Detail Page", () => {
       .or(page.getByText(/demographics/i));
     await expect(sidebarHeading.first()).toBeVisible();
 
-    // Check for demographics data - should have some demographic information
-    const bodyContent = await page.textContent("body");
-    expect(bodyContent).toBeTruthy();
+    // Check for demographics data - the sidebar uses RespondentSidebarItem components
+    // Verify at least one demographic item is rendered (e.g., Stakeholder Name)
+    const stakeholderLabel = page.getByText(/stakeholder name/i);
+    await expect(stakeholderLabel.first()).toBeVisible();
   });
 
   test("displays questions answered progress with correct values", async ({
@@ -182,23 +183,21 @@ test.describe("Respondent Detail Page", () => {
     // Verify we have progress information
     expect(progressMatch).toBeTruthy();
 
-    if (progressMatch) {
-      const percentage = parseInt(progressMatch[1]);
-      const answered = parseInt(progressMatch[2]);
-      const total = parseInt(progressMatch[3]);
+    const percentage = parseInt(progressMatch[1]);
+    const answered = parseInt(progressMatch[2]);
+    const total = parseInt(progressMatch[3]);
 
-      // Answered should not exceed total
-      expect(answered).toBeLessThanOrEqual(total);
-      expect(total).toBeGreaterThan(0);
+    // Answered should not exceed total
+    expect(answered).toBeLessThanOrEqual(total);
+    expect(total).toBeGreaterThan(0);
 
-      // The analysisConsultation fixture has 3 questions
-      // Each respondent in the fixture answers all questions
-      expect(total).toBe(3);
+    // The analysisConsultation fixture has 3 questions
+    // Each respondent in the fixture answers all questions
+    expect(total).toBe(3);
 
-      // Verify percentage matches the fraction
-      const calculatedPercentage = Math.round((answered / total) * 100);
-      expect(percentage).toBe(calculatedPercentage);
-    }
+    // Verify percentage matches the fraction
+    const calculatedPercentage = Math.round((answered / total) * 100);
+    expect(percentage).toBe(calculatedPercentage);
   });
 
   test("displays responses section with heading", async ({ page }) => {
@@ -243,12 +242,15 @@ test.describe("Respondent Detail Page", () => {
     const responseTexts = page.getByTestId('response-text');
     await expect(responseTexts.first()).toBeVisible();
     
-    // Get combined text from all response text elements
-    const allResponseTexts = await responseTexts.allTextContents();
-    const combinedText = allResponseTexts.join(' ');
+    // Verify multiple response text elements exist (fixture has 3 questions)
+    const count = await responseTexts.count();
+    expect(count).toBeGreaterThan(0);
     
-    expect(combinedText).toBeTruthy();
-    expect(combinedText.length).toBeGreaterThan(50);
+    // Verify each response has non-empty text
+    const allResponseTexts = await responseTexts.allTextContents();
+    for (const text of allResponseTexts) {
+      expect(text.trim().length).toBeGreaterThan(0);
+    }
   });
 
   test("displays themes for responses with assigned themes", async ({
@@ -277,13 +279,10 @@ test.describe("Respondent Detail Page", () => {
     // Wait for responses to load
     await page.waitForLoadState("networkidle");
 
-    // Check for "Evidence-rich" badge - genuinely optional based on response quality
+    // Check for "Evidence-rich" badge - fixture has evidence_rich: true for first response
     const evidenceBadge = page.getByText(/evidence-rich/i);
-    const evidenceBadgeCount = await evidenceBadge.count();
     
-    // Skip test if no evidence-rich badges (optional feature)
-    test.skip(evidenceBadgeCount === 0, "No evidence-rich badges present in fixture data");
-
+    // Fixture guarantees at least one evidence-rich badge (first response with themes)
     await expect(evidenceBadge.first()).toBeVisible();
   });
 
@@ -300,10 +299,20 @@ test.describe("Respondent Detail Page", () => {
     const multipleChoiceOptions = page.getByTestId('multiple-choice-options');
     await expect(multipleChoiceOptions.first()).toBeVisible();
     
-    // Get text content of options to verify they're populated
-    const optionsText = await multipleChoiceOptions.first().textContent();
-    expect(optionsText).toBeTruthy();
-    expect(optionsText!.length).toBeGreaterThan(0);
+    // Get text content of options to verify they contain expected values from fixture
+    // Q3 (multChoiceQuestion) has options: "Sustainability", "Design", "Cost-effectiveness", "Durability", "Brand recognition"
+    const allOptionsTexts = await multipleChoiceOptions.allTextContents();
+    const combinedOptionsText = allOptionsTexts.join(' ');
+    
+    // Assert at least one of the fixture-defined options is present
+    const hasExpectedOption = 
+      combinedOptionsText.includes("Sustainability") ||
+      combinedOptionsText.includes("Design") ||
+      combinedOptionsText.includes("Cost-effectiveness") ||
+      combinedOptionsText.includes("Durability") ||
+      combinedOptionsText.includes("Brand recognition");
+    
+    expect(hasExpectedOption).toBeTruthy();
   });
 
   test("clicking question title navigates to question detail page", async ({
@@ -342,10 +351,8 @@ test.describe("Respondent Detail Page", () => {
       new RegExp(`/consultations/[a-f0-9-]+/questions/${extractedQuestionId}`),
     );
 
-    // Verify the question page loaded
-    const bodyContent = await page.textContent("body");
-    expect(bodyContent).toBeTruthy();
-    expect(bodyContent!.length).toBeGreaterThan(50);
+    // Verify the question page loaded - check for specific question page elements
+    await expect(page.getByRole("heading", { name: /question/i }).first()).toBeVisible();
   });
 
   test("can navigate back using back button", async ({ page }) => {
@@ -369,10 +376,8 @@ test.describe("Respondent Detail Page", () => {
       new RegExp(`/(consultations|evaluations)/.+`),
     );
 
-    // Verify the page has content
-    const bodyContent = await page.textContent("body");
-    expect(bodyContent).toBeTruthy();
-    expect(bodyContent!.length).toBeGreaterThan(50);
+    // Verify the page has loaded - check for specific navigation elements
+    await expect(page.getByRole("heading").first()).toBeVisible();
   });
 
   test("next button navigates to next respondent and previous returns to original", async ({
@@ -448,10 +453,8 @@ test.describe("Respondent Detail Page", () => {
     // Verify we're back to the original respondent ID
     expect(backRespondentId).toBe(originalRespondentId);
 
-    // Verify the page content loaded correctly
-    const bodyContent = await page.textContent("body");
-    expect(bodyContent).toBeTruthy();
-    expect(bodyContent!.length).toBeGreaterThan(100);
+    // Verify the page content loaded correctly - check for response cards
+    await expect(page.getByTestId('question-number').first()).toBeVisible();
   });
 
   test("displays stakeholder name field in sidebar", async ({ page }) => {
@@ -463,10 +466,9 @@ test.describe("Respondent Detail Page", () => {
   });
 
   test("page loads without errors", async ({ page }) => {
-    // Verify page has loaded with content
-    const bodyContent = await page.textContent("body");
-    expect(bodyContent).toBeTruthy();
-    expect(bodyContent!.length).toBeGreaterThan(50);
+    // Verify page has loaded with content - check for specific elements
+    await expect(page.getByRole("heading", { name: /responses to consultation questions/i })).toBeVisible();
+    await expect(page.getByTestId('question-number').first()).toBeVisible();
 
     // Should not show generic error messages
     const errorMessages = page

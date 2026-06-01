@@ -31,7 +31,10 @@ def create_response_from_fixtures(respondents, index, question_object, response_
         )
 
     if "themes" in response_data:
-        annotation = ResponseAnnotation.objects.create(response=response)
+        annotation = ResponseAnnotation.objects.create(
+            response=response,
+            evidence_rich=response_data.get("evidence_rich", False)
+        )
         annotation.add_original_ai_themes(
             SelectedTheme.objects.filter(question=question_object, key__in=response_data["themes"])
         )

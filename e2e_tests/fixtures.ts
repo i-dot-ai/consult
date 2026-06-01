@@ -10,6 +10,7 @@ export type Response = {
   free_text?: string;
   chosen_options?: string[];
   themes?: Theme["key"][];
+  evidence_rich?: boolean;
 };
 
 export type Question = {
@@ -100,6 +101,7 @@ const hybridQuestionResponsesWithThemes: Response[] = [
     free_text: "",
     chosen_options: [hybridQuestionOptions[0]],
     themes: ["A", "B"],
+    evidence_rich: true,
   },
   {
     free_text:
