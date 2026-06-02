@@ -98,15 +98,13 @@
             animate:flip={{ duration: 300 + themes.length * TABLE_FLIP_SPEED }}
             class={clsx([
               "text-xs",
-              "border-y",
-              "border-neutral-300",
+              !theme.highlighted && "border-y border-neutral-300",
               "py-2",
               "cursor-pointer",
               "transition-colors",
               "duration-300",
               "hover:bg-neutral-100",
-              theme.highlighted &&
-                clsx(["bg-neutral-100", "border-l-4", "border-l-primary"]),
+              theme.highlighted && "bg-pink-100",
             ])}
             onclick={theme.handleClick}
             tabindex="0"

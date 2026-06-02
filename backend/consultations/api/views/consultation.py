@@ -4,7 +4,7 @@ from typing import Any
 import sentry_sdk
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Count, Exists, F, OuterRef
+from django.db.models import Count, F
 from django.http import Http404
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -30,6 +30,7 @@ from consultations.models import (
     Consultation,
     DemographicOption,
     Question,
+    Respondent,
     SelectedTheme,
 )
 from consultations.test_support.load_test_fixtures import (
@@ -135,12 +136,25 @@ class ConsultationViewSet(ModelViewSet):
             filtered_responses = get_filtered_responses(
                 request.query_params, pk, question_id=question_id
             )
-            options = options.filter(
-                Exists(filtered_responses.filter(respondent=OuterRef("respondent")))
-            ).annotate(count=Count("respondent", distinct=True))
-            data = options.values("id", "field_name", "field_value", "count").order_by(
-                "field_name", "field_value"
+            filtered_respondent_ids = filtered_responses.values("respondent_id").distinct()
+            through_table = Respondent.demographics.through
+            counts = dict(
+                through_table.objects.filter(respondent_id__in=filtered_respondent_ids)
+                .values_list("demographicoption_id")
+                .annotate(c=Count("id"))
+                .values_list("demographicoption_id", "c")
             )
+            data = [
+                {
+                    "id": opt["id"],
+                    "field_name": opt["field_name"],
+                    "field_value": opt["field_value"],
+                    "count": counts.get(opt["id"], 0),
+                }
+                for opt in options.values("id", "field_name", "field_value").order_by(
+                    "field_name", "field_value"
+                )
+            ]
         else:
             data = options.values(
                 "id", "field_name", "field_value", count=F("response_count")
