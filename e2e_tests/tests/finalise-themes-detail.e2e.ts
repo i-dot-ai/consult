@@ -21,6 +21,17 @@ async function createTheme(page: Page, title: string, description: string) {
 
   await page.getByRole("button", { name: "Add Theme" }).click();
 }
+
+function getConsultationId(page: Page) {
+  const urlParts = page.url().split("/");
+  return urlParts.at(-3);
+}
+
+function getQuestionId(page: Page) {
+  const urlParts = page.url().split("/");
+  return urlParts.at(-1);
+}
+
 test.describe("Finalise Themes - Detail Page", () => {
   let testData: FixtureReference = {};
 
@@ -59,6 +70,21 @@ test.describe("Finalise Themes - Detail Page", () => {
       await removeButton.click();
     });
     await page.waitForLoadState("networkidle");
+
+    // Mock confirm sign off route so it can be tested multiple times
+    const questionId = getQuestionId(page);
+    const consultationId = getConsultationId(page);
+    const confirmRoute = `/api/consultations/${consultationId}/questions/${questionId}/`;
+
+    await page.route(confirmRoute, async (route, request)=> {
+      if (request.method() === "PATCH") {
+        await route.fulfill({
+          status: 200,
+        })
+      } else {
+        await route.continue();
+      }
+    })
   });
 
   test("Displays question details", async ({ page }) => {
@@ -77,11 +103,18 @@ test.describe("Finalise Themes - Detail Page", () => {
     const confirmButton = page.getByRole("button", { name: "Sign Off Selected Themes (1)"});
     confirmButton.click();
 
-    const confirmModalThemes = page.getByTestId("confirm-modal-theme");
-
+    // Selected theme is listed in confirm modal
     await expect(page.getByText("Confirm Finalising Themes")).toBeVisible();
+    const confirmModalThemes = page.getByTestId("confirm-modal-theme");
     await expect(confirmModalThemes).toBeVisible();
     expect(await confirmModalThemes.first().textContent()).toContain(THEME_TITLE);
+
+    // Clicking confirm redirects to finalising themes archive page
+    await page.getByRole("button", { name: "Confirm Finalisation" }).click();
+    const consultationId = getConsultationId(page);
+    const urlToExpect = `/consultations/${consultationId}/finalising-themes`;
+    await page.waitForURL(urlToExpect);
+    await expect(page).toHaveURL(urlToExpect);
   })
 
   test.skip("Selecting a theme adds it to selected themes list", async ({ page }) => {
