@@ -484,7 +484,7 @@
 
       <div class="max-h-64 overflow-y-auto">
         {#each selectedThemes.query.data?.results as selectedTheme (selectedTheme.id)}
-          <Panel bg={true} border={false}>
+          <Panel bg={true} border={false} testId="confirm-modal-theme">
             <h5 class="mb-1 text-xs font-bold">{selectedTheme.name}</h5>
             <p class="text-xs text-neutral-500">{selectedTheme.description}</p>
           </Panel>

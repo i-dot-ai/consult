@@ -96,6 +96,7 @@ exports[`EditUser > should match snapshot after loading 1`] = `
   >
     <div
       class="bg-white"
+      data-testid="question-card"
     >
       <!---->
       <!---->
@@ -628,6 +629,7 @@ exports[`EditUser > should match snapshot initially 1`] = `
   >
     <div
       class="bg-white"
+      data-testid="question-card"
     >
       <!---->
       <!---->
