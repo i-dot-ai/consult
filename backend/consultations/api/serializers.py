@@ -249,15 +249,13 @@ class ResponseSerializer(serializers.ModelSerializer):
     respondent = RespondentSerializer(read_only=True)
     free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
     demographic_data = serializers.SerializerMethodField(read_only=True)
-    themes = ResponseAnnotationThemeSerializer(
-        source="annotation.responseannotationtheme_set", many=True
-    )
+    themes = serializers.SerializerMethodField()
     multiple_choice_answer = serializers.SlugRelatedField(
         source="chosen_options", slug_field="text", many=True, read_only=True
     )
-    evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
-    sentiment = serializers.CharField(source="annotation.sentiment")
-    human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
+    evidenceRich = serializers.SerializerMethodField()
+    sentiment = serializers.SerializerMethodField()
+    human_reviewed = serializers.SerializerMethodField()
     is_flagged = serializers.BooleanField(read_only=True)
     is_edited = serializers.SerializerMethodField()
     is_read = serializers.SerializerMethodField()
@@ -279,6 +277,56 @@ class ResponseSerializer(serializers.ModelSerializer):
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
+
+    def get_themes(self, obj):
+        """
+        Returns themes for the response, safely handling responses without annotations.
+        """
+        try:
+            annotation = getattr(obj, 'annotation', None)
+            if annotation:
+                return ResponseAnnotationThemeSerializer(
+                    annotation.responseannotationtheme_set.all(), many=True
+                ).data
+        except (ResponseAnnotation.DoesNotExist, AttributeError):
+            pass
+        return []
+
+    def get_evidenceRich(self, obj):
+        """
+        Returns evidence_rich status, safely handling responses without annotations.
+        """
+        try:
+            annotation = getattr(obj, 'annotation', None)
+            if annotation:
+                return annotation.evidence_rich if annotation.evidence_rich is not None else False
+        except (ResponseAnnotation.DoesNotExist, AttributeError):
+            pass
+        return False
+
+    def get_sentiment(self, obj):
+        """
+        Returns sentiment, safely handling responses without annotations.
+        """
+        try:
+            annotation = getattr(obj, 'annotation', None)
+            if annotation:
+                return annotation.sentiment
+        except (ResponseAnnotation.DoesNotExist, AttributeError):
+            pass
+        return None
+
+    def get_human_reviewed(self, obj):
+        """
+        Returns human_reviewed status, safely handling responses without annotations.
+        """
+        try:
+            annotation = getattr(obj, 'annotation', None)
+            if annotation:
+                return annotation.human_reviewed if annotation.human_reviewed is not None else False
+        except (ResponseAnnotation.DoesNotExist, AttributeError):
+            pass
+        return False
 
     def update(self, instance: Response, validated_data):
         if annotation := validated_data.get("annotation"):

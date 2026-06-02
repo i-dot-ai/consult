@@ -99,7 +99,8 @@ const hybridQuestionResponses: Response[] = [
 
 const hybridQuestionResponsesWithThemes: Response[] = [
   {
-    free_text: "",
+    free_text:
+      "Yes, I strongly support this proposal as it provides a clear standardized framework while also encouraging innovation in the chocolate industry.",
     chosen_options: [hybridQuestionOptions[0]],
     themes: ["A", "B"],
     evidence_rich: true,
@@ -243,7 +244,8 @@ const openQuestionResponses: Response[] = [
 
 const openQuestionResponsesWithThemes: Response[] = [
   {
-    free_text: "",
+    free_text:
+      "The regulations should focus on innovative approaches to packaging, exploring new flavor combinations while maintaining ethical sourcing standards.",
     themes: ["A", "B", "C"],
   },
   {
