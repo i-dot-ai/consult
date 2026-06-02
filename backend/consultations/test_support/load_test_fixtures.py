@@ -3,7 +3,9 @@ from django.db import transaction
 
 from authentication.models import User
 from consultations.models import (
+    CandidateTheme,
     Consultation,
+    DemographicOption,
     MultiChoiceAnswer,
     Question,
     Respondent,
@@ -36,6 +38,15 @@ def create_response_from_fixtures(respondents, index, question_object, response_
             SelectedTheme.objects.filter(question=question_object, key__in=response_data["themes"])
         )
 
+    if "demographics" in response_data:
+        for key, value in response_data["demographics"].items():
+            option, _ = DemographicOption.objects.get_or_create(
+                    consultation=question_object.consultation,
+                    field_name=key,
+                    field_value=value,
+                )
+            respondents[index].demographics.add(option)
+
 
 def create_question_from_fixtures(consultation_object, respondents, question_data):
     question_object = Question.objects.create(
@@ -62,6 +73,18 @@ def create_question_from_fixtures(consultation_object, respondents, question_dat
                     key=t["key"],
                 )
                 for t in question_data["themes"]
+            ]
+        )
+
+    if "candidate_themes" in question_data:
+        CandidateTheme.objects.bulk_create(
+            [
+                CandidateTheme(
+                    question=question_object,
+                    name=t["name"],
+                    description=t["description"]
+                )
+                for t in question_data["candidate_themes"]
             ]
         )
 
@@ -115,6 +138,9 @@ def create_data_from_fixtures(fixtures):
 
             for question_data in consultation_data.get("questions", []):
                 create_question_from_fixtures(consultation_object, respondents, question_data)
+
+            # Make sure that demographic response counts are updated after all responses have been created
+            DemographicOption.update_response_counts(consultation_object)
 
     return {
         "consultation_ids": consultations,
