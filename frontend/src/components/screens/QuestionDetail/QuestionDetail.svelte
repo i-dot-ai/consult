@@ -396,8 +396,9 @@
           <TitleRow
             level={2}
             title="Free Text Responses"
-            subtitle="{$questionStore.data?.free_text_response_count ||
-              0} responses"
+            subtitle={$questionStore.isLoading
+              ? ""
+              : `${$questionStore.data?.free_text_response_count || 0} responses`}
           >
             <Finance slot="icon" />
 
