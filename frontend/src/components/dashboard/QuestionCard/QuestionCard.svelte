@@ -55,6 +55,7 @@
     href={url}
     title={`Q${question.number}: ${question.question_text}`}
     ariaLabel={`Click to view question: ${question.question_text}`}
+    testId={`question-link-${question.id}`}
   >
     <Panel bg={disabled}>
       <article

@@ -42,6 +42,7 @@ export type Fixture = {
 export type FixtureReference = {
   users?: User[];
   consultation_ids?: string[];
+  question_ids?: string[];
 };
 
 export const defaultUser: User = {
