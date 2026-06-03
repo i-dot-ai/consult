@@ -1,5 +1,6 @@
 import type { SvelteURLSearchParams } from "svelte/reactivity";
 
+// Keep in sync with AuthReason in i-dot-ai-utilities (i_dot_ai_utilities/auth/auth_reason.py)
 export const AuthReasons = {
   UNKNOWN: "UNKNOWN",
   TOKEN_EXPIRED: "TOKEN_EXPIRED",
