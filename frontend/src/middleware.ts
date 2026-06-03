@@ -2,6 +2,7 @@ import type { APIContext, MiddlewareHandler, MiddlewareNext } from "astro";
 import { Routes } from "./global/routes";
 import { fetchBackendApi } from "./global/api";
 import { getBackendUrl, getEnv } from "./global/utils";
+import { AuthReasons } from "./global/types";
 
 const getCspValue = (): string => {
   return `
@@ -122,7 +123,7 @@ async function validateUserToken(
     headers: { "Content-Type": "application/json" },
   });
   const data = await response.json();
-  if (response.status === 403 && data.detail === "TOKEN_EXPIRED") {
+  if (response.status === 403 && data.detail === AuthReasons.TOKEN_EXPIRED) {
     throw new TokenExpiredError("SSO token has expired");
   }
 

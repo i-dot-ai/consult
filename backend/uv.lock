@@ -3,8 +3,11 @@ revision = 3
 requires-python = "==3.12.*"
 
 [options]
-exclude-newer = "2026-04-01T06:24:06.967684Z"
+exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for backwards compatibility when using relative exclude-newer values.
 exclude-newer-span = "P14D"
+
+[options.exclude-newer-package]
+i-dot-ai-utilities = "2026-06-04T23:00:00Z"
 
 [[package]]
 name = "annotated-types"
@@ -684,7 +687,7 @@ wheels = [
 
 [[package]]
 name = "i-dot-ai-utilities"
-version = "0.4.4"
+version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
@@ -692,9 +695,9 @@ dependencies = [
     { name = "structlog" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0e/75/c9607008b9172f1b211e8dcdb222f989ef089ccba9c35e58eced4e57eae4/i_dot_ai_utilities-0.4.4.tar.gz", hash = "sha256:03fb7cf8bcda5b61ce3224d9a10a4834b095f355ae78a172d43fea9a8147aaa0", size = 219005, upload-time = "2025-11-10T09:05:36.58Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ad/0f/99ebbb3c571563badf8b7205af730a29face73fa9344e06d3e805779fca4/i_dot_ai_utilities-0.6.0.tar.gz", hash = "sha256:c8e3dbbcea715cab146cab1054b68ffca92ed9ef0c035f0250c53087771c1f14", size = 219387, upload-time = "2026-06-03T09:44:45.892Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e1/30/f84a0fd857abcf1daa89841b9e6144f71ce456f92c979f0de605ae6fc994/i_dot_ai_utilities-0.4.4-py3-none-any.whl", hash = "sha256:2034c96673836399873b00b76c689dd19d663f8e610f167da39070b229076006", size = 51014, upload-time = "2025-11-10T09:05:35.07Z" },
+    { url = "https://files.pythonhosted.org/packages/38/0c/49a020be275c7705d6c6539fb69a51e4ce3a0655399b2d2bb69a0b2c22c7/i_dot_ai_utilities-0.6.0-py3-none-any.whl", hash = "sha256:2cf1df3ae078d931cd54e3f4697ae4e6e0dadbdb9444762dbbdc583c6d884877", size = 51599, upload-time = "2026-06-03T09:44:44.475Z" },
 ]
 
 [package.optional-dependencies]
