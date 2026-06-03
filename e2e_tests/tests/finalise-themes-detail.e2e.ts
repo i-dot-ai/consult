@@ -2,7 +2,6 @@ import { test, expect, Page } from "@playwright/test";
 import {
   createFixtureData,
   deleteFixtureData,
-  getFirstConsultationLink,
 } from "./helpers";
 import { signOffConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
