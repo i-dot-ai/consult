@@ -16,6 +16,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
           <button
             aria-pressed="false"
             class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-testid="back-to-analysis-button"
             data-variant="ghost"
             role="button"
             tabindex="0"
@@ -325,7 +326,9 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                   <!---->
                 </div>
                  
-                <p>
+                <p
+                  data-testid="questions-answered-progress"
+                >
                   100% (4/4)
                 </p>
                 <!---->
@@ -380,6 +383,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                         >
                           <div
                             class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-16nw8z4"
+                            data-testid="question-number"
                           >
                             Q1
                           </div>
@@ -408,6 +412,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                        
                       <ul
                         class="flex flex-wrap items-center gap-1"
+                        data-testid="multiple-choice-options"
                       >
                         <li
                           class="text-xs"
@@ -419,20 +424,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                     </div>
                     <!---->
                      
-                    <div>
-                      <h4
-                        class="mb-1 mt-4 text-xs uppercase text-neutral-500"
-                      >
-                        Additional Comments:
-                      </h4>
-                      <!---->
-                       
-                      <p
-                        class="text-sm"
-                      >
-                        
-                      </p>
-                    </div>
+                    <!---->
                      
                     <!---->
                   </article>
@@ -458,6 +450,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                         >
                           <div
                             class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-16nw8z4"
+                            data-testid="question-number"
                           >
                             Q2
                           </div>
@@ -486,6 +479,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                        
                       <ul
                         class="flex flex-wrap items-center gap-1"
+                        data-testid="multiple-choice-options"
                       >
                         <li
                           class="text-xs"
@@ -497,20 +491,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                     </div>
                     <!---->
                      
-                    <div>
-                      <h4
-                        class="mb-1 mt-4 text-xs uppercase text-neutral-500"
-                      >
-                        Additional Comments:
-                      </h4>
-                      <!---->
-                       
-                      <p
-                        class="text-sm"
-                      >
-                        
-                      </p>
-                    </div>
+                    <!---->
                      
                     <!---->
                   </article>
@@ -536,6 +517,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                         >
                           <div
                             class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-16nw8z4"
+                            data-testid="question-number"
                           >
                             Q3
                           </div>
@@ -564,6 +546,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                        
                       <ul
                         class="flex flex-wrap items-center gap-1"
+                        data-testid="multiple-choice-options"
                       >
                         <li
                           class="text-xs"
@@ -585,20 +568,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                     </div>
                     <!---->
                      
-                    <div>
-                      <h4
-                        class="mb-1 mt-4 text-xs uppercase text-neutral-500"
-                      >
-                        Additional Comments:
-                      </h4>
-                      <!---->
-                       
-                      <p
-                        class="text-sm"
-                      >
-                        
-                      </p>
-                    </div>
+                    <!---->
                      
                     <!---->
                   </article>
@@ -624,6 +594,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                         >
                           <div
                             class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-16nw8z4"
+                            data-testid="question-number"
                           >
                             Q4
                           </div>
@@ -650,10 +621,12 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                        
                       <p
                         class="text-sm"
+                        data-testid="response-text"
                       >
                         It would be beneficial to include mandatory allergen warnings on all packaging to enhance consumer safety.
                       </p>
                     </div>
+                    <!---->
                      
                     <!---->
                   </article>
@@ -690,6 +663,7 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
           <button
             aria-pressed="false"
             class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-testid="back-to-analysis-button"
             data-variant="ghost"
             role="button"
             tabindex="0"
@@ -976,7 +950,9 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
                   <!---->
                 </div>
                  
-                <p>
+                <p
+                  data-testid="questions-answered-progress"
+                >
                   0% (0/0)
                 </p>
                 <!---->
