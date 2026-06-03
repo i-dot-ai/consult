@@ -360,12 +360,10 @@ def validate_data(
             if missing:
                 q_text = str(row.get("question_text", "")).strip()
                 label = q_text[:50] + "..." if len(q_text) > 50 else q_text
-                incomplete_rows.append(
-                    f'      "{sheet_name}" row {idx + 1}: missing {", ".join(missing)}'
-                    f"  ({label!r})"
-                    if label
-                    else ""
-                )
+                msg = f'      "{sheet_name}" row {idx + 1}: missing {", ".join(missing)}'
+                if label:
+                    msg += f"  ({label!r})"
+                incomplete_rows.append(msg)
     if incomplete_rows:
         print("\n  ⚠ Q.U. rows with missing fields:")
         for line in incomplete_rows:
