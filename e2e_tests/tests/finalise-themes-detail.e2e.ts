@@ -252,6 +252,19 @@ test.describe("Finalise Themes - Detail Page", () => {
     await expect(page.getByRole("heading", { name: "Add Custom Theme" })).not.toBeVisible();
   })
 
+  test("Select button disables/enables accordingly", async ({ page }) => {
+    const selectButton = page.getByRole("button", { name: "Select" }).first();
+    await expect(selectButton).not.toBeDisabled();
+
+    await selectButton.click();
+
+    await expect(page.getByRole("button", { name: "Select" }).first()).toBeDisabled();
+
+    await page.getByRole("button", { name: "Remove" }).click();
+
+    await expect(page.getByRole("button", { name: "Select" }).first()).not.toBeDisabled();
+  })
+
   test.afterAll(async () => {
     await deleteFixtureData(testData);
   });
