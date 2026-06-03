@@ -216,6 +216,22 @@ test.describe("Finalise Themes - Detail Page", () => {
     await expect(page.getByText(TEST_TITLE, { exact: true })).toBeVisible();
   })
 
+  test("Representative responses button toggles responses", async ({ page }) => {
+    // initially hidden
+    expect(page.getByRole("heading", { name: "Representative Responses" })).not.toBeVisible();
+    expect(page.getByText("There are no responses")).not.toBeVisible();
+
+    // revealed upon click
+    await page.getByRole("button", { name: "Representative Responses" }).first().click();
+    await expect(page.getByRole("heading", { name: "Representative Responses" })).toBeVisible();
+    await expect(page.getByText("There are no responses")).toBeVisible();
+
+    // hidden upon re-click
+    await page.getByRole("button", { name: "Hide Responses" }).first().click();
+    await expect(page.getByRole("heading", { name: "Representative Responses" })).not.toBeVisible();
+    await expect(page.getByText("There are no responses")).not.toBeVisible();
+  })
+
   test("Create theme panel shown/hidden accordingly", async ({ page }) => {
     // Create theme panel initially hidden
     await expect(page.getByRole("heading", { name: "Add Custom Theme" })).not.toBeVisible();
