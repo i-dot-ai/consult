@@ -16,6 +16,7 @@ export type Response = {
   chosen_options?: string[];
   themes?: Theme["key"][];
   demographics?: DemographicInfo;
+  evidence_rich?: boolean;
 };
 
 export type Question = {
@@ -48,6 +49,7 @@ export type Fixture = {
 export type FixtureReference = {
   users?: User[];
   consultation_ids?: string[];
+  question_ids?: string[];
 };
 
 export const defaultUser: User = {
@@ -109,9 +111,11 @@ const hybridQuestionResponses: Response[] = [
 
 const hybridQuestionResponsesWithThemes: Response[] = [
   {
-    free_text: "",
+    free_text:
+      "Yes, I strongly support this proposal as it provides a clear standardized framework while also encouraging innovation in the chocolate industry.",
     chosen_options: [hybridQuestionOptions[0]],
     themes: ["A", "B"],
+    evidence_rich: true,
     demographics: { age_group: "18-35", nation: "England" },
   },
   {
@@ -262,7 +266,8 @@ const openQuestionResponses: Response[] = [
 
 const openQuestionResponsesWithThemes: Response[] = [
   {
-    free_text: "",
+    free_text:
+      "The regulations should focus on innovative approaches to packaging, exploring new flavor combinations while maintaining ethical sourcing standards.",
     themes: ["A", "B", "C"],
     demographics: { age_group: "18-35", nation: "England" },
   },

@@ -2,9 +2,10 @@
   interface Props {
     text: string;
     highlight: string;
+    testId?: string;
   }
 
-  let { text, highlight }: Props = $props();
+  let { text, highlight, testId }: Props = $props();
 
   const parts = $derived<string[]>(
     text && highlight ? text.split(new RegExp(`(${highlight})`, "gi")) : [text],
@@ -13,6 +14,9 @@
 
 {#each parts as part, i (i)}
   {#if highlight.toLowerCase() === part.toLowerCase()}
-    <span class="bg-yellow-300" data-testid="highlighted-text">{part}</span>
+    <span
+      class="bg-yellow-300"
+      data-testid={testId ? testId : "highlighted-text"}>{part}</span
+    >
   {:else}{part}{/if}
 {/each}

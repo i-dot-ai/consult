@@ -33,7 +33,10 @@ def create_response_from_fixtures(respondents, index, question_object, response_
         )
 
     if "themes" in response_data:
-        annotation = ResponseAnnotation.objects.create(response=response)
+        annotation = ResponseAnnotation.objects.create(
+            response=response,
+            evidence_rich=response_data.get("evidence_rich", False)
+        )
         annotation.add_original_ai_themes(
             SelectedTheme.objects.filter(question=question_object, key__in=response_data["themes"])
         )
@@ -94,6 +97,8 @@ def create_question_from_fixtures(consultation_object, respondents, question_dat
 
     question_object.update_response_counts()
     MultiChoiceAnswer.update_response_counts(question_object)
+    
+    return question_object
 
 
 def create_respondents_from_fixtures(consultation_data, consultation_object):
@@ -118,6 +123,7 @@ def create_data_from_fixtures(fixtures):
         raise RuntimeError("Fixture data should only be ingested for tests")
 
     consultations = []
+    questions = []
 
     for consultation_data in fixtures.get("consultations", []):
         with transaction.atomic():
@@ -137,13 +143,15 @@ def create_data_from_fixtures(fixtures):
             respondents = create_respondents_from_fixtures(consultation_data, consultation_object)
 
             for question_data in consultation_data.get("questions", []):
-                create_question_from_fixtures(consultation_object, respondents, question_data)
+                question_object = create_question_from_fixtures(consultation_object, respondents, question_data)
+                questions.append(question_object.id)
 
             # Make sure that demographic response counts are updated after all responses have been created
             DemographicOption.update_response_counts(consultation_object)
 
     return {
         "consultation_ids": consultations,
+        "question_ids": questions,
     }
 
 

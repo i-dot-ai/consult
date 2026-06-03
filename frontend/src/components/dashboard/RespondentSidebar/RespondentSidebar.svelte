@@ -55,6 +55,7 @@
       title="Questions Answered"
       subtitle={`${getPercentage(questionsAnswered, totalQuestions)}% (${questionsAnswered}/${totalQuestions})`}
       Icon={Calendar}
+      testId="questions-answered-progress"
     />
   </div>
 </Panel>

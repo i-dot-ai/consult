@@ -55,6 +55,7 @@
     href={url}
     title={`Q${question.number}: ${question.question_text}`}
     ariaLabel={`Click to view question: ${question.question_text}`}
+    testId={`question-link-${question.id}`}
   >
     <Panel bg={disabled}>
       <article
@@ -132,6 +133,7 @@
               <HighlightedText
                 text={`Q${question.number}: ${question.question_text}`}
                 highlight={highlightText}
+                testId={question.question_text}
               />
             </p>
 

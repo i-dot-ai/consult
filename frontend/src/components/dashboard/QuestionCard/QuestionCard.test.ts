@@ -47,7 +47,7 @@ describe("QuestionCard", () => {
       highlightText: HIGHLIGHT_TEXT,
     });
 
-    const highlightedText = screen.getByTestId("highlighted-text");
+    const highlightedText = screen.getByTestId(testData.question.question_text);
     expect(highlightedText).toBeInTheDocument();
     expect(highlightedText.textContent).toEqual(HIGHLIGHT_TEXT);
   });
@@ -60,7 +60,7 @@ describe("QuestionCard", () => {
     });
 
     const questionButton = screen.getByTestId(
-      `Click to view question: ${testData.question.question_text}`,
+      `question-link-${testData.question.id}`,
     );
 
     expect(questionButton.getAttribute("aria-label")).toEqual(
@@ -80,7 +80,7 @@ describe("QuestionCard", () => {
     });
 
     const questionButton = screen.queryByTestId(
-      `Click to view question: ${testData.question.question_text}`,
+      `question-link-${testData.question.id}`,
     );
     expect(questionButton).toBeNull();
   });

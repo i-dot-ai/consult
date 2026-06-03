@@ -17,6 +17,7 @@
     Icon?: Component;
     editable?: boolean;
     updateSubtitle?: (newSubtitle: string) => void;
+    testId?: string;
   }
 
   let {
@@ -25,6 +26,7 @@
     Icon,
     editable = false,
     updateSubtitle = () => {},
+    testId,
   }: Props = $props();
 
   let stagedSubtitle = $state("");
@@ -117,7 +119,7 @@
         </div>
       </div>
     {:else}
-      <p class={clsx([!subtitle && "text-neutral-400"])}>
+      <p class={clsx([!subtitle && "text-neutral-400"])} data-testid={testId}>
         {subtitle || "Add a stakeholder's name"}
       </p>
     {/if}
