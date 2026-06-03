@@ -94,55 +94,6 @@ exports[`EditUser > should match snapshot after loading 1`] = `
   <section
     class="my-8"
   >
-    <div
-      class="bg-white"
-      data-testid="question-card"
-    >
-      <!---->
-      <!---->
-      <div
-        class="h-full my-4 p-4 rounded-2xl border border-gray-200"
-        data-testid="panel-component"
-      >
-        <article
-          class="flex gap-2 items-start relative flex-col-reverse sm:flex-row"
-        >
-          <div
-            class="mt-0.5 hidden sm:block"
-          >
-            <!---->
-          </div>
-           
-          <div
-            class="grow"
-            data-testid="horizontal-container"
-          >
-            <p
-              class="text-md transition-colors duration-1000 select-none bg-neutral-100 text-neutral-100 blink"
-            >
-              SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON 
-            </p>
-             
-            <div
-              class="text-sm mt-2 transition-colors duration-1000 w-max select-none bg-neutral-100 text-neutral-100 blink"
-            >
-              000 responses
-            </div>
-            <!---->
-          </div>
-           
-          <div
-            class="-ml-2 sm:ml-0 -mt-1"
-          >
-            <!---->
-          </div>
-        </article>
-        <!---->
-      </div>
-      
-      
-      <!---->
-    </div>
     <!---->
   </section>
    
@@ -255,22 +206,16 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                     class="flex items-center gap-2"
                   >
                     <h2>
-                      Innovative packagingtest title
+                      Innovative packaging
                     </h2>
                      
-                    <div
-                      class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
-                    >
-                      Edited
-                      <!---->
-                    </div>
                     <!---->
                   </header>
                    
                   <p
                     class="my-4 text-sm text-neutral-700"
                   >
-                    Ideas for innovative packaging solutions.test description
+                    Ideas for innovative packaging solutions.
                   </p>
                    
                   <hr
@@ -280,8 +225,8 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                   <small
                     class="mb-4 block text-xs text-neutral-500"
                   >
-                    Edited
-              a moment ago by email@example.com
+                    Added
+              2 months ago by email@example.com
                   </small>
                    
                   <footer
@@ -627,55 +572,6 @@ exports[`EditUser > should match snapshot initially 1`] = `
   <section
     class="my-8"
   >
-    <div
-      class="bg-white"
-      data-testid="question-card"
-    >
-      <!---->
-      <!---->
-      <div
-        class="h-full my-4 p-4 rounded-2xl border border-gray-200"
-        data-testid="panel-component"
-      >
-        <article
-          class="flex gap-2 items-start relative flex-col-reverse sm:flex-row"
-        >
-          <div
-            class="mt-0.5 hidden sm:block"
-          >
-            <!---->
-          </div>
-           
-          <div
-            class="grow"
-            data-testid="horizontal-container"
-          >
-            <p
-              class="text-md transition-colors duration-1000 select-none bg-neutral-100 text-neutral-100 blink"
-            >
-              SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON 
-            </p>
-             
-            <div
-              class="text-sm mt-2 transition-colors duration-1000 w-max select-none bg-neutral-100 text-neutral-100 blink"
-            >
-              000 responses
-            </div>
-            <!---->
-          </div>
-           
-          <div
-            class="-ml-2 sm:ml-0 -mt-1"
-          >
-            <!---->
-          </div>
-        </article>
-        <!---->
-      </div>
-      
-      
-      <!---->
-    </div>
     <!---->
   </section>
    
@@ -719,7 +615,7 @@ exports[`EditUser > should match snapshot initially 1`] = `
             <div
               class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
             >
-               selected
+              0 selected
               <!---->
             </div>
             <!---->

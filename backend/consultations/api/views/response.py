@@ -19,7 +19,6 @@ from consultations.api.serializers import (
 
 
 class BespokeResultsSetPagination(PageNumberPagination):
-    # TODO: remove this, and adapt .js to match standard PageNumberPagination
     page_size = 100
     page_size_query_param = "page_size"
     max_page_size = 1000
@@ -33,28 +32,28 @@ class BespokeResultsSetPagination(PageNumberPagination):
         else:
             return super().get_page_size(request)
 
+    def paginate_queryset(self, queryset, request, view=None):
+        """Fetch page_size + 1 to detect if more pages exist, avoiding COUNT(*)."""
+        self.request = request
+        page_size = self.get_page_size(request)
+        page_number = int(request.query_params.get(self.page_query_param, 1))
+        offset = (page_number - 1) * page_size
+
+        # Only count on the first page
+        self._total_count = queryset.count() if page_number == 1 else None
+
+        results = list(queryset[offset : offset + page_size + 1])
+        self._has_more_pages = len(results) > page_size
+        return results[:page_size]
+
     def get_paginated_response(self, data):
-        original = super().get_paginated_response(data).data
-
-        if hasattr(self, "_question_respondents_total"):
-            respondents_total = self._question_respondents_total
-        elif question_id := (
-            self.request._request.resolver_match.kwargs.get("question_pk")
-            or self.request._request.GET.get("question_id")
-        ):
-            respondents_total = models.Response.objects.filter(question_id=question_id).count()
-            self._question_respondents_total = respondents_total
-        else:
-            respondents_total = None
-
-        return Response(
-            {
-                "respondents_total": respondents_total,
-                "filtered_total": original["count"],
-                "has_more_pages": bool(original["next"]),
-                "all_respondents": original["results"],
-            }
-        )
+        response_data = {
+            "has_more_pages": self._has_more_pages,
+            "all_respondents": data,
+        }
+        if self._total_count is not None:
+            response_data["total_count"] = self._total_count
+        return Response(response_data)
 
 
 class ResponseViewSet(ModelViewSet):
@@ -73,6 +72,9 @@ class ResponseViewSet(ModelViewSet):
         question_pk = self.kwargs.get("question_pk")
         if question_pk:
             queryset = queryset.filter(question_id=question_pk)
+            # Only return responses with free text when listing under a question
+            if self.action == "list":
+                queryset = queryset.filter(free_text__isnull=False)
 
         # Optimize queryset with select_related and prefetch_related
         queryset = queryset.select_related(
@@ -112,18 +114,7 @@ class ResponseViewSet(ModelViewSet):
                 )
             ),
         )
-        # Apply additional FilterSet filtering (including themeFilters)
-        filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
-        qs = filterset.qs
-        # Only use .distinct() when filters that JOIN through M2M are active —
-        # these can produce duplicate rows.
-        if (
-            self.request.GET.get("themeFilters")
-            or self.request.GET.get("demographics")
-            or self.request.GET.get("multiple_choice_answer")
-        ):
-            qs = qs.distinct()
-        return qs
+        return queryset
 
     @action(
         detail=True,

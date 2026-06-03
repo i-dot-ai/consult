@@ -184,7 +184,7 @@
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            "If-Match": selectedTheme.version,
+            "If-Match": String(selectedTheme.version),
           },
           body: JSON.stringify({
             name: title,
@@ -303,7 +303,6 @@
 </script>
 
 {#if errorData}
-  <p>TRUE</p>
   <ErrorModal {...errorData} onClose={errorModalOnClose} />
 {/if}
 
@@ -325,12 +324,14 @@
 </TitleRow>
 
 <section class="my-8">
-  <QuestionCard
-    skeleton={$questionStore.isLoading}
-    {consultationId}
-    question={$questionStore.data || {}}
-    clickable={false}
-  />
+  {#if $questionStore.data}
+    <QuestionCard
+      skeleton={$questionStore.isLoading}
+      {consultationId}
+      question={$questionStore.data}
+      clickable={false}
+    />
+  {/if}
 </section>
 
 <svelte:boundary>
@@ -356,7 +357,7 @@
             <h3>Selected Themes</h3>
 
             <Tag variant="primary-light">
-              {selectedThemes.query.data?.results.length} selected
+              {selectedThemes.query.data?.results?.length ?? 0} selected
             </Tag>
           </div>
 
@@ -422,7 +423,7 @@
       </div>
     {:else}
       <div class="mt-4">
-        {#each selectedThemes.query.data?.results as selectedTheme (selectedTheme.id)}
+        {#each selectedThemes.query.data?.results ?? [] as selectedTheme (selectedTheme.id)}
           <div transition:slide={{ duration: 150 }} class="mb-4 last:mb-0">
             <SelectedThemeCard
               {consultationId}
@@ -442,7 +443,7 @@
         fullWidth={true}
         disabled={!dataRequested ||
           selectedThemes.query.isPending ||
-          selectedThemes.query.data?.results.length === 0}
+          (selectedThemes.query.data?.results?.length ?? 0) === 0}
         handleClick={() =>
           (isConfirmFinalisingThemesModalOpen =
             !isConfirmFinalisingThemesModalOpen)}
@@ -457,7 +458,7 @@
               Loading Selected Themes
             {:else}
               Sign Off Selected Themes ({selectedThemes.query.data?.results
-                .length})
+                ?.length ?? 0})
             {/if}
           </span>
         </div>
@@ -467,7 +468,7 @@
     <Modal
       variant="primary"
       title="Confirm Finalising Themes"
-      icon={CheckCircle}
+      Icon={CheckCircle}
       open={isConfirmFinalisingThemesModalOpen}
       setOpen={(newOpen: boolean) =>
         (isConfirmFinalisingThemesModalOpen = newOpen)}
@@ -483,7 +484,8 @@
       <h4 class="my-4 text-xs font-bold">Selected themes:</h4>
 
       <div class="max-h-64 overflow-y-auto">
-        {#each selectedThemes.query.data?.results as selectedTheme (selectedTheme.id)}
+
+        {#each selectedThemes.query.data?.results ?? [] as selectedTheme (selectedTheme.id)}
           <Panel bg={true} border={false} testId="confirm-modal-theme">
             <h5 class="mb-1 text-xs font-bold">{selectedTheme.name}</h5>
             <p class="text-xs text-neutral-500">{selectedTheme.description}</p>

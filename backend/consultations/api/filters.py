@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.filters import SearchFilter
 
 from authentication.models import User
-from consultations.models import Response
+from consultations.models import DemographicOption, Response
 from embeddings import embed_text
 
 
@@ -16,9 +16,9 @@ class ResponseFilter(FilterSet):
     evidenceRich = BooleanFilter(field_name="annotation__evidence_rich")
     unseenResponsesOnly = BaseInFilter(method="filter_seen", lookup_expr="in")
     themeFilters = BaseInFilter(method="filter_themes", lookup_expr="in")
-    demographics = BaseInFilter(field_name="respondent__demographics", lookup_expr="in")
+    demographics = BaseInFilter(method="filter_demographics", lookup_expr="in")
     is_flagged = BooleanFilter()
-    multiple_choice_answer = BaseInFilter(field_name="chosen_options", lookup_expr="in")
+    multiple_choice_answer = BaseInFilter(method="filter_multiple_choice", lookup_expr="in")
     respondent_id = UUIDFilter()
     question_id = UUIDFilter()
 
@@ -56,22 +56,81 @@ class ResponseFilter(FilterSet):
         )
         return qs
 
+    def filter_demographics(self, queryset, name, value):
+        """OR within each demographic group, AND across groups. Uses nested subqueries to avoid cross-joins."""
+        if not value:
+            return queryset
+
+        from consultations.models import Respondent
+
+        options = DemographicOption.objects.filter(id__in=value)
+        groups = {}
+        for option in options:
+            groups.setdefault(option.field_name, []).append(option.id)
+
+        # Each group narrows via a subquery rather than chaining M2M JOINs
+        respondents = Respondent.objects.all()
+        for group_ids in groups.values():
+            respondents = respondents.filter(
+                id__in=Respondent.objects.filter(demographics__in=group_ids).values("id")
+            )
+
+        return queryset.filter(respondent_id__in=respondents.values("id"))
+
+    def filter_multiple_choice(self, queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.filter(chosen_options__in=value).distinct()
+
     class Meta:
         model = Response
         fields = ["respondent_id", "chosen_options"]
 
 
+def apply_search_filter(queryset, query_params):
+    """Apply keyword/semantic search to a response queryset."""
+    search_value = query_params.get("searchValue")
+    search_mode = query_params.get("searchMode")
+
+    if not search_value:
+        return queryset
+
+    if search_mode == "keyword":
+        return queryset.filter(free_text__icontains=search_value)
+    elif search_mode == "semantic":
+        embedded_query = embed_text(search_value)
+        distance = CosineDistance("embedding", embedded_query)
+        return queryset.annotate(distance=distance).order_by("distance")
+
+    return queryset
+
+
 def get_filtered_responses(query_params, consultation_id, question_id=None):
     """
-    Used by aggregation endpoints (themes, demographics) to filter responses
-    by question if question_id is defined.
+    Single entry point for filtering responses. Used by all aggregation endpoints
+    (question counts, themes, demographics) and the responses list.
+    Applies filter params AND search.
     """
     queryset = Response.objects.filter(question__consultation_id=consultation_id)
     if question_id:
         queryset = queryset.filter(question_id=question_id)
 
     filterset = ResponseFilter(query_params, queryset=queryset)
-    return filterset.qs
+    queryset = filterset.qs
+
+    queryset = apply_search_filter(queryset, query_params)
+
+    return queryset
+
+
+def get_filtered_response_ids(query_params, consultation_id, question_id=None):
+    """
+    Like get_filtered_responses but materialises the IDs upfront.
+    Use this for aggregation queries (counts, themes, demographics) where the filtered
+    set is used as a subquery multiple times.
+    """
+    queryset = get_filtered_responses(query_params, consultation_id, question_id)
+    return list(queryset.values_list("id", flat=True))
 
 
 class UserFilter(FilterSet):

@@ -51,14 +51,6 @@ locals {
       value = "postgres://${module.rds.rds_instance_username}:${module.rds.rds_instance_db_password}@${module.rds.db_instance_address}/${module.rds.db_instance_name}"
     },
     {
-      name  = "GUNICORN_WORKERS"
-      value = "placeholder"
-    },
-    {
-      name  = "GUNICORN_TIMEOUT"
-      value = "placeholder"
-    },
-    {
       name  = "ADMIN_USERS"
       value = "placeholder"
     },

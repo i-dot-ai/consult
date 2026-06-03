@@ -74,7 +74,7 @@ describe("QuestionDetail", () => {
     });
   });
 
-  it("switches to response analysis tab when button is clicked", async () => {
+  it("renders responses section after loading", async () => {
     setupMocks();
 
     render(QuestionDetail, {
@@ -91,15 +91,8 @@ describe("QuestionDetail", () => {
       ).toBeInTheDocument();
     });
 
-    const responseAnalysisButton = screen.getByRole("tab", {
-      name: "Response Analysis",
-    });
-    const user = userEvent.setup();
-
-    await user.click(responseAnalysisButton);
-
     await waitFor(() => {
-      expect(screen.getByText("Response refinement")).toBeInTheDocument();
+      expect(screen.getByText("Free Text Responses")).toBeInTheDocument();
     });
   });
 
@@ -112,22 +105,6 @@ describe("QuestionDetail", () => {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });
-
-    // page loaded
-    await waitFor(() => {
-      expect(
-        screen.getByText(mocks.questionMock.body.question_text, {
-          exact: false,
-        }),
-      ).toBeInTheDocument();
-    });
-
-    const responseAnalysisButton = screen.getByRole("tab", {
-      name: "Response Analysis",
-    });
-    const user = userEvent.setup();
-
-    await user.click(responseAnalysisButton);
 
     await waitFor(() => {
       expect(
@@ -157,39 +134,26 @@ describe("QuestionDetail", () => {
     await user.click(themeButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Selected Themes (1)")).toBeInTheDocument();
-      expect(screen.getByText("Results are filtered")).toBeInTheDocument();
+      expect(screen.getByText("Filtered")).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /Standardized framework/ }),
+      ).toHaveAttribute("aria-pressed", "true");
     });
 
-    const removeButton = screen.getByRole("button", {
-      name: "Remove theme filter for Standardized framework",
-    });
-    await user.click(removeButton);
+    await user.click(themeButton);
 
     await waitFor(() => {
+      expect(screen.queryByText("Filtered")).not.toBeInTheDocument();
       expect(
-        screen.queryByText("Selected Themes", { exact: false }),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByText("Results are filtered"),
-      ).not.toBeInTheDocument();
+        screen.getByRole("button", { name: /Standardized framework/ }),
+      ).toHaveAttribute("aria-pressed", "false");
     });
   });
 
-  it("should match snapshot initially", () => {
+  it("hybrid question uses correct counts for each section", async () => {
     setupMocks();
 
-    const { container } = render(QuestionDetail, {
-      consultationId: CONSULTATION_ID,
-      questionId: QUESTION_ID,
-    });
-    expect(container).toMatchSnapshot();
-  });
-
-  it("should match snapshot after loading", async () => {
-    setupMocks();
-
-    const { container } = render(QuestionDetail, {
+    render(QuestionDetail, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
     });
@@ -201,6 +165,74 @@ describe("QuestionDetail", () => {
         }),
       ).toBeInTheDocument();
     });
-    expect(container).toMatchSnapshot();
+
+    // Top header shows total_response_count (250)
+    expect(
+      screen.getByText(
+        `${mocks.questionMock.body.total_response_count} responses`,
+      ),
+    ).toBeInTheDocument();
+
+    // Multi-choice section uses multi_choice_response_count
+    expect(
+      screen.getByText(
+        `${mocks.questionMock.body.multi_choice_response_count} responses`,
+      ),
+    ).toBeInTheDocument();
+
+    // Theme percentages use free_text_response_count (100) as denominator (62/100 = 62%)
+    await waitFor(() => {
+      expect(screen.getByText("62%")).toBeInTheDocument();
+    });
+  });
+
+  it("sorts themes by count descending with generic themes pinned to bottom", async () => {
+    setupMocks();
+
+    render(QuestionDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Standardized framework")).toBeInTheDocument();
+    });
+
+    const expectedOrder = [
+      "Standardized framework",
+      "Test Theme",
+      "No Reason Given",
+      "Other",
+    ];
+
+    const themeElements = expectedOrder.map((name) => screen.getByText(name));
+
+    for (let i = 0; i < themeElements.length - 1; i++) {
+      expect(
+        themeElements[i].compareDocumentPosition(themeElements[i + 1]) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
+  });
+
+  it("displays toggles specific to filtering free text responses", async () => {
+    setupMocks();
+
+    render(QuestionDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("switch", { name: /evidence rich/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("switch", { name: /unread/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("switch", { name: /flagged/i }),
+      ).toBeInTheDocument();
+    });
   });
 });

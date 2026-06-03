@@ -646,8 +646,8 @@ def create_responses_for_question(
             batch = m2m_to_create[i : i + M2M_BATCH_SIZE]
             Response.chosen_options.through.objects.bulk_create(batch)
 
-    # Update question's total_responses count
-    question.update_total_responses()
+    # Update question's response counts
+    question.update_response_counts()
 
     return len(all_created)
 

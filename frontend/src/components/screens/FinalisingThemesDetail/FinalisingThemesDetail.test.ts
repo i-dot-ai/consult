@@ -17,6 +17,7 @@ import {
   selectedThemesDeleteMock,
   flatten,
   responsesGetMock,
+  resetMocks,
 } from "./mocks";
 import userEvent from "@testing-library/user-event";
 
@@ -38,6 +39,7 @@ function clearMocks() {
   fetchMock.unmockGlobal();
   fetchMock.removeRoutes();
   queryClient.resetQueries();
+  resetMocks();
 }
 
 describe("EditUser", () => {

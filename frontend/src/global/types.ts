@@ -12,15 +12,17 @@ export interface QuestionMultiAnswer {
 }
 
 export interface Question {
-  id?: string;
-  number?: number;
-  total_responses?: number;
-  question_text?: string;
-  has_free_text?: boolean;
-  has_multiple_choice?: boolean;
-  multiple_choice_answer?: QuestionMultiAnswer[];
-  proportion_of_audited_answers?: number;
-  theme_status?: string;
+  id: string;
+  number: number;
+  total_response_count: number;
+  free_text_response_count: number;
+  multi_choice_response_count: number;
+  question_text: string;
+  has_free_text: boolean;
+  has_multiple_choice: boolean;
+  multiple_choice_answer: QuestionMultiAnswer[];
+  proportion_of_audited_answers: number;
+  theme_status: string;
 }
 
 export type ConsultationStage =
@@ -58,7 +60,7 @@ export interface Respondent {
   consultation?: string;
   themefinder_id: number;
   demographics: RespondentDemoItem[];
-  name?: string | null;
+  name?: string;
 }
 
 export interface RespondentDemoItem {
@@ -110,11 +112,6 @@ export enum TitleLevels {
   Four = 4,
   Five = 5,
   Six = 6,
-}
-
-export enum TabNames {
-  QuestionSummary = "tab-question-summary",
-  ResponseAnalysis = "tab-response-analysis",
 }
 
 export enum TabDirections {
@@ -173,17 +170,6 @@ export interface ResponseBody {
   is_read: boolean;
 }
 
-export interface DemoOption {
-  [category: string]: string[];
-}
-
-export interface DemoData {
-  [category: string]: { [rowKey: string]: number };
-}
-
-export interface DemoTotalCounts {
-  [category: string]: number;
-}
 export interface ConsultationResponse {
   id: string;
   title: string;
@@ -223,10 +209,9 @@ export interface CandidateThemeResponsesResponse {
   results: CandidateThemeResponseItem[];
 }
 export interface ResponsesBody {
-  respondents_total: number;
-  filtered_total: number;
   has_more_pages: boolean;
   all_respondents: ResponseBody[];
+  total_count?: number;
 }
 export interface RespondentsResponse {
   count: number;
@@ -310,13 +295,15 @@ export type HttpMethod =
   | "HEAD"
   | "OPTIONS";
 
+export type MockCallbackArgs = RequestInit & { url: string; params: unknown };
+
 export interface Mock {
+  name?: string;
   url?: string | RegExp;
   regexp?: string;
   body?: unknown;
   status?: number;
   method?: string;
   throws?: Error;
-  name?: string;
-  callback?: (args: RequestInit | { url: string; params: unknown }) => void;
+  callback?: (args: MockCallbackArgs) => void;
 }

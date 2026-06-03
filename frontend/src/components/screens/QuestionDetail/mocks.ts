@@ -32,7 +32,7 @@ export const responses: ResponseBody[] = [
       id: "ab299432-7f39-4360-bf85-f0f374dd1f34",
       themefinder_id: 1,
       demographics: [],
-      name: null,
+      name: "",
     },
     question_id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     free_text_answer_text:
@@ -55,7 +55,7 @@ export const responses: ResponseBody[] = [
       id: "d34547db-21b8-4586-905a-f71f6090e466",
       themefinder_id: 2,
       demographics: [],
-      name: null,
+      name: "",
     },
     question_id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     free_text_answer_text: "",
@@ -77,7 +77,7 @@ export const responses: ResponseBody[] = [
       id: "7a2d12a8-9b51-4b06-9d72-4b225a335764",
       themefinder_id: 3,
       demographics: [],
-      name: null,
+      name: "",
     },
     question_id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     free_text_answer_text:
@@ -109,7 +109,7 @@ export const responses: ResponseBody[] = [
       id: "4f9253bf-cd6a-4e1e-8620-825045125cdc",
       themefinder_id: 4,
       demographics: [],
-      name: null,
+      name: "",
     },
     question_id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     free_text_answer_text:
@@ -132,7 +132,7 @@ export const responses: ResponseBody[] = [
       id: "c737bce1-3f30-4be7-aacc-391169300e03",
       themefinder_id: 5,
       demographics: [],
-      name: null,
+      name: "",
     },
     question_id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     free_text_answer_text: "",
@@ -171,14 +171,27 @@ const themes = [
     name: "Standardized framework",
     description:
       "A standardized framework that benefits both consumers and manufacturers.",
-    count: 0,
+    count: 62,
+  },
+  {
+    id: "no-reason-theme",
+    name: "No Reason Given",
+    description: "The response does not provide a substantive answer.",
+    count: 80,
+  },
+  {
+    id: "other-theme",
+    name: "Other",
+    description:
+      "The response discusses an issue not covered by listed themes.",
+    count: 70,
   },
   {
     id: "test-theme",
     name: "Test Theme",
     description:
       "A test framework that benefits both consumers and manufacturers.",
-    count: 0,
+    count: 45,
   },
 ];
 
@@ -244,7 +257,9 @@ export const questionMock = {
   body: {
     id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     number: 1,
-    total_responses: 100,
+    total_response_count: 250,
+    free_text_response_count: 100,
+    multi_choice_response_count: 232,
     question_text:
       "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
     has_free_text: true,
@@ -293,8 +308,6 @@ export const responsesMock = {
     const filteredAnswers = filterAnswers(responses, queryParams);
 
     return {
-      respondents_total: filteredAnswers.length,
-      filtered_total: filteredAnswers.length,
       has_more_pages: true,
       all_respondents: filteredAnswers,
     };

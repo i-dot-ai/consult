@@ -10,8 +10,8 @@ module "rds" {
   engine_version                        = "16.11"
   family                                = null
   engine_mode                           = "provisioned"
-  aurora_min_scaling                    = 2
-  aurora_max_scaling                    = 8
+  aurora_min_scaling                    = 4
+  aurora_max_scaling                    = 16
   aurora_instance_count                 = 2
   deletion_protection                   = var.env == "dev" ? false : true
   env                                   = var.env
@@ -40,13 +40,13 @@ module "rds_alarms" {
   }
 
   alarms_config = {
-    # ~10% of Aurora Serverless v2 min_capacity floor (2 ACU = 4 GiB).
+    # ~10% of Aurora Serverless v2 min_capacity floor (4 ACU = 8 GiB).
     freeable_memory_low = {
-      threshold = 429496729
+      threshold = 858993459
     }
-    # ~80% of Postgres default max_connections at 4 GiB (~450).
+    # ~80% of Postgres default max_connections at 8 GiB (~900).
     database_connections_high = {
-      threshold = 360
+      threshold = 720
     }
   }
 }

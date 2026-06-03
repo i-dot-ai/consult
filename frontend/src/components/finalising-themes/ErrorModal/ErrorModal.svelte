@@ -70,7 +70,7 @@
   open={isOpen}
   setOpen={(newOpen: boolean) => (isOpen = newOpen)}
   title={content.title}
-  icon={Warning}
+  Icon={Warning}
   canCancel={content.canCancel}
   confirmText={content.confirmText}
   {handleConfirm}

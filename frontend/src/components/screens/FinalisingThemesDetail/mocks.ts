@@ -5,6 +5,7 @@ import {
   getApiGetSelectedThemeUrl,
   getApiQuestionUrl,
 } from "../../../global/routes";
+import type { MockCallbackArgs } from "../../../global/types";
 
 interface Theme {
   id: string;
@@ -17,7 +18,7 @@ interface Theme {
   selectedtheme_id?: string | null;
 }
 
-let selectedThemes: Theme[] = [
+const INITIAL_SELECTED_THEMES: Theme[] = [
   {
     id: "dc1c0652-1042-4b99-b832-89a8f80c3f57",
     name: "Innovative packaging",
@@ -28,7 +29,9 @@ let selectedThemes: Theme[] = [
   },
 ];
 
-let candidateThemes: Theme[] = [
+let selectedThemes: Theme[] = structuredClone(INITIAL_SELECTED_THEMES);
+
+const INITIAL_CANDIDATE_THEMES: Theme[] = [
   {
     id: "5021fc03-2772-442e-b860-de11ccf4631f",
     name: "More innovative",
@@ -103,6 +106,13 @@ let candidateThemes: Theme[] = [
   },
 ];
 
+let candidateThemes: Theme[] = structuredClone(INITIAL_CANDIDATE_THEMES);
+
+export function resetMocks() {
+  selectedThemes = structuredClone(INITIAL_SELECTED_THEMES);
+  candidateThemes = structuredClone(INITIAL_CANDIDATE_THEMES);
+}
+
 export function flatten(themes: Theme[]) {
   return themes.reduce((acc: Theme[], curr: Theme) => {
     acc.push(curr);
@@ -174,8 +184,9 @@ export const candidateThemeSelectMock = {
   regexp:
     "*host/api/consultations/:consultationId/questions/:questionId/candidate-themes/:themeId/select/",
   method: "POST",
-  callback: (body: { params: { themeId: string } }) => {
-    selectTheme(body.params.themeId);
+  callback: (body: MockCallbackArgs) => {
+    const { themeId } = body.params as { themeId: string };
+    selectTheme(themeId);
   },
 };
 
@@ -184,7 +195,9 @@ export const questionMock = {
   body: {
     id: "b20f35ee-411b-4746-9029-1e9b02610dea",
     number: 4,
-    total_responses: 100,
+    total_response_count: 100,
+    free_text_response_count: 100,
+    multi_choice_response_count: 0,
     question_text:
       "What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?",
     has_free_text: true,

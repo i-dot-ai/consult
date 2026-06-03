@@ -6,7 +6,7 @@
     type ResponseTheme,
     type SearchableSelectOption,
   } from "../../../global/types";
-  import { createFetchStore, type MockFetch } from "../../../global/stores";
+  import { createFetchStore, type StoreFetch } from "../../../global/stores";
   import { getApiResponseUrl } from "../../../global/routes";
 
   import Button from "../../inputs/Button/Button.svelte";
@@ -75,10 +75,10 @@
     answerId: string;
     themes: ResponseTheme[];
     themeOptions: ResponseTheme[];
-    evidenceRich: boolean;
+    evidenceRich: boolean | null;
     resetData: () => void;
     setEditing: (newValue: boolean) => void;
-    updateResponseMock?: MockFetch;
+    updateResponseMock?: StoreFetch;
   }
 
   let {
@@ -93,7 +93,7 @@
   }: Props = $props();
 
   let stagedThemes: ResponseTheme[] = $state([]);
-  let stagedEvidenceRich = $state(false);
+  let stagedEvidenceRich: boolean | null = $state(false);
   let panelOpen: boolean = $state(false);
 
   const responseUpdateStore = createFetchStore();
@@ -183,7 +183,7 @@
         <Button
           size="xs"
           handleClick={() => (stagedEvidenceRich = true)}
-          highlighted={stagedEvidenceRich}
+          highlighted={stagedEvidenceRich === true}
           highlightVariant="approve"
         >
           Evidence-rich
@@ -192,7 +192,7 @@
         <Button
           size="xs"
           handleClick={() => (stagedEvidenceRich = false)}
-          highlighted={!stagedEvidenceRich}
+          highlighted={stagedEvidenceRich === false}
           highlightVariant="approve"
         >
           Not evidence-rich

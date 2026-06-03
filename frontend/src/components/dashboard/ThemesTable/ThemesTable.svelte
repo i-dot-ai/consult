@@ -11,11 +11,19 @@
 
   interface Props {
     themes: FormattedTheme[];
-    totalAnswers: number;
+    freeTextResponseCount: number;
     skeleton?: boolean;
+    countsLoading?: boolean;
   }
 
-  let { themes = [], totalAnswers = 0, skeleton = false }: Props = $props();
+  let {
+    themes = [],
+    freeTextResponseCount = 0,
+    skeleton = false,
+    countsLoading = false,
+  }: Props = $props();
+
+  let showFullSkeleton = $derived(skeleton && themes.length === 0);
 
   const TABLE_FLIP_SPEED = 10;
 </script>
@@ -31,7 +39,7 @@
         {/each}
       </tr>
     </thead>
-    {#if skeleton}
+    {#if showFullSkeleton}
       <tbody in:fade>
         {#each "_".repeat(5) as _, i (i)}
           <tr
@@ -81,21 +89,22 @@
     {:else}
       <tbody in:fade>
         {#each themes as theme (theme.id)}
-          {@const percentage = getPercentage(theme.count, totalAnswers)}
+          {@const percentage = getPercentage(
+            theme.count,
+            freeTextResponseCount,
+          )}
 
           <tr
             animate:flip={{ duration: 300 + themes.length * TABLE_FLIP_SPEED }}
             class={clsx([
               "text-xs",
-              "border-y",
-              "border-neutral-300",
+              !theme.highlighted && "border-y border-neutral-300",
               "py-2",
               "cursor-pointer",
               "transition-colors",
               "duration-300",
               "hover:bg-neutral-100",
-              theme.highlighted &&
-                clsx(["bg-neutral-100", "border-l-4", "border-l-primary"]),
+              theme.highlighted && "bg-pink-100",
             ])}
             onclick={theme.handleClick}
             tabindex="0"
@@ -111,19 +120,35 @@
               </div>
             </td>
             <td class="pr-4">
-              {theme.count}
+              {#if countsLoading}
+                <span
+                  class="blink select-none rounded bg-neutral-200 text-neutral-200"
+                >
+                  00000
+                </span>
+              {:else}
+                {theme.count}
+              {/if}
             </td>
             <td class="pr-4">
               <div class="flex items-center gap-1">
-                <span class="w-[5ch]">
-                  {percentage > 0 && percentage < 1
-                    ? "<1"
-                    : Math.round(percentage)}%
-                </span>
+                {#if countsLoading}
+                  <span
+                    class="blink w-[5ch] select-none rounded bg-neutral-200 text-neutral-200"
+                  >
+                    000%
+                  </span>
+                {:else}
+                  <span class="w-[5ch]">
+                    {percentage > 0 && percentage < 1
+                      ? "<1"
+                      : Math.round(percentage)}%
+                  </span>
 
-                <div class="w-full max-w-[3rem]">
-                  <Progress value={percentage} />
-                </div>
+                  <div class="w-full max-w-[3rem]">
+                    <Progress value={percentage} />
+                  </div>
+                {/if}
               </div>
             </td>
           </tr>

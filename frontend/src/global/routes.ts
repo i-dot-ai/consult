@@ -60,6 +60,19 @@ export const getConsultationAnalysisUrl = (consultationId: string) => {
 export const getSupportConsultationDeleteUrl = (consultationId: string) => {
   return urlJoin(Routes.SupportConsultations, consultationId, Suffixes.Delete);
 };
+export const getSupportConsultationImportThemesUrl = (
+  consultationId: string,
+) => {
+  return urlJoin(Routes.SupportConsultations, consultationId, "import-themes");
+};
+export const getApiImportFinalisedThemesUrl = (consultationId: string) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    "import-finalised-themes",
+    "/",
+  );
+};
 export const getFinaliseThemesUrl = (consultationId: string) => {
   return urlJoin(Routes.Consultations, consultationId, Suffixes.FinaliseThemes);
 };

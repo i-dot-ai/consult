@@ -43,6 +43,7 @@
         <a href={getQuestionDetailUrl(consultationId, questionId)}>
           <div class="flex items-start gap-2">
             <div
+              data-testid="question-number"
               class={clsx([
                 "question-number",
                 "p-1",
@@ -77,7 +78,9 @@
                 <Diamond />
               </MaterialIcon>
 
-              <span class="text-xs">Evidence-rich</span>
+              <span data-testid="evidence-rich-badge" class="text-xs">
+                Evidence-rich
+              </span>
             </Tag>
           {/if}
         </div>
@@ -89,7 +92,10 @@
             Multiple Choice Response:
           </h4>
 
-          <ul class="flex flex-wrap items-center gap-1">
+          <ul
+            class="flex flex-wrap items-center gap-1"
+            data-testid="multiple-choice-options"
+          >
             {#each multiChoice as multiChoiceAnswer, i (i)}
               <li class="text-xs">
                 {multiChoiceAnswer}
@@ -99,16 +105,18 @@
         </div>
       {/if}
 
-      <div>
-        {#if multiChoice?.length > 0}
-          <h4 class="mb-1 mt-4 text-xs uppercase text-neutral-500">
-            Additional Comments:
-          </h4>
-        {/if}
-        <p class="text-sm">
-          {responseText}
-        </p>
-      </div>
+      {#if responseText && responseText.trim().length > 0}
+        <div>
+          {#if multiChoice?.length > 0}
+            <h4 class="mb-1 mt-4 text-xs uppercase text-neutral-500">
+              Additional Comments:
+            </h4>
+          {/if}
+          <p class="text-sm" data-testid="response-text">
+            {responseText}
+          </p>
+        </div>
+      {/if}
 
       {#if themes?.length > 0}
         <footer class="mt-4 flex flex-wrap items-center gap-2">

@@ -23,7 +23,7 @@
     respondentId?: string;
     text?: string;
     demoData?: string[];
-    evidenceRich?: boolean;
+    evidenceRich?: boolean | null;
     multiAnswers?: string[];
     themes?: ResponseTheme[];
     themeOptions?: ResponseTheme[];
@@ -32,6 +32,7 @@
     isFlagged?: boolean;
     isEdited?: boolean;
     resetData?: () => void;
+    onInteract?: () => void;
   }
 
   let {
@@ -48,10 +49,14 @@
     themeOptions = [],
     skeleton = false,
     highlightText = "",
-    isFlagged = false,
-    isEdited = false,
-    resetData = () => {},
+    isFlagged: isFlaggedProp = false,
+    isEdited: isEditedProp = false,
+    onInteract = () => {},
   }: Props = $props();
+
+  let isFlagged = $state(isFlaggedProp);
+
+  let isEdited = $state(isEditedProp);
 
   let editing: boolean = $state(false);
 </script>
@@ -135,7 +140,10 @@
             {consultationId}
             {questionId}
             {answerId}
-            {resetData}
+            resetData={() => {
+              isFlagged = !isFlagged;
+              onInteract();
+            }}
             {isFlagged}
           />
 
@@ -145,7 +153,10 @@
             {answerId}
             {themeOptions}
             {evidenceRich}
-            {resetData}
+            resetData={() => {
+              isEdited = true;
+              onInteract();
+            }}
             themes={themes || []}
             setEditing={(val: boolean) => (editing = val)}
           />
@@ -164,6 +175,7 @@
             <div class="m-auto">
               <Button
                 size="xs"
+                testId="respondent-button"
                 handleClick={() => {
                   location.href =
                     getRespondentDetailUrl(consultationId, respondentId) +

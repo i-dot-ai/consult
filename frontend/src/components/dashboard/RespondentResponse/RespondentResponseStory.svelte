@@ -22,6 +22,7 @@
   {questionTitle}
   {questionNumber}
   {responseText}
+  multiChoice={[]}
   {themes}
   {evidenceRich}
 />
