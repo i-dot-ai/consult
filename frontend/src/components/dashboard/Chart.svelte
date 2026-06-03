@@ -89,6 +89,10 @@
 
       items.forEach((item) => {
         const li = document.createElement("li");
+        li.setAttribute(
+          "data-testid",
+          `chart-legend-item-clickable-${item.text}`,
+        );
         li.className = clsx([
           "flex",
           "flex-row",
@@ -128,6 +132,10 @@
         ]);
 
         const containerEl = document.createElement("div");
+        containerEl.setAttribute(
+          "data-testid",
+          `chart-legend-item-container-${item.text}`,
+        );
         containerEl.className = clsx([
           "flex",
           "justify-between",

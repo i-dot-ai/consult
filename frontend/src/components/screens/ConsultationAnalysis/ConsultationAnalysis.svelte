@@ -125,6 +125,7 @@
               title={category}
               items={demographicsData[category]}
               hideThreshold={Infinity}
+              testId="metrics-summary-{category}"
             />
           </div>
         {/each}
