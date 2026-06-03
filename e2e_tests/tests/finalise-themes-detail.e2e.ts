@@ -117,7 +117,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     await expect(page).toHaveURL(urlToExpect);
   })
 
-  test.skip("Selecting a theme adds it to selected themes list", async ({ page }) => {
+  test("Selecting a theme adds it to selected themes list", async ({ page }) => {
     await expect(page.getByText("No themes selected yet")).toBeVisible();
     await expect(page.getByText("0 selected")).toBeVisible();
 

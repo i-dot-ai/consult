@@ -352,5 +352,12 @@ export const signOffConsultation: Consultation = {
   title: "Test Consultation at Finalising Themes Stage",
   stage: "finalising_themes",
   users: [defaultUser.email],
-  questions: [hybridQuestion, multChoiceQuestion, openQuestion],
+  questions: [
+    {
+      ...hybridQuestion,
+      candidate_themes: openQuestionThemes,
+    },
+    multChoiceQuestion,
+    openQuestion,
+  ],
 };
