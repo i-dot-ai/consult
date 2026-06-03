@@ -54,10 +54,10 @@
     onInteract = () => {},
   }: Props = $props();
 
-  let isFlagged = $state(isFlaggedProp);
-  let isEdited = $state(isEditedProp);
-  let themes = $state(themesProp);
-  let evidenceRich = $state(evidenceRichProp);
+  let isFlagged = $derived(isFlaggedProp);
+  let isEdited = $derived(isEditedProp);
+  let themes = $derived(themesProp);
+  let evidenceRich = $derived(evidenceRichProp);
 
   let editing: boolean = $state(false);
 </script>
