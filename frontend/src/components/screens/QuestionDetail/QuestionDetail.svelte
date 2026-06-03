@@ -231,6 +231,7 @@
   ])}
 >
   <Button
+    testId="back-to-all-questions-button"
     handleClick={() => {
       window.location.href = getConsultationDetailUrl(consultationId);
     }}

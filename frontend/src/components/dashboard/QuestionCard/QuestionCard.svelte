@@ -133,6 +133,7 @@
               <HighlightedText
                 text={`Q${question.number}: ${question.question_text}`}
                 highlight={highlightText}
+                testId={question.question_text}
               />
             </p>
 
