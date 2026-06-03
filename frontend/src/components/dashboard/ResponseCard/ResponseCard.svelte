@@ -43,9 +43,9 @@
     respondentId = "",
     text = "",
     demoData = [],
-    evidenceRich = false,
+    evidenceRich: evidenceRichProp = false,
     multiAnswers = [],
-    themes = [],
+    themes: themesProp = [],
     themeOptions = [],
     skeleton = false,
     highlightText = "",
@@ -55,8 +55,9 @@
   }: Props = $props();
 
   let isFlagged = $state(isFlaggedProp);
-
   let isEdited = $state(isEditedProp);
+  let themes = $state(themesProp);
+  let evidenceRich = $state(evidenceRichProp);
 
   let editing: boolean = $state(false);
 </script>
@@ -153,11 +154,13 @@
             {answerId}
             {themeOptions}
             {evidenceRich}
-            resetData={() => {
+            {themes}
+            resetData={(updatedThemes, updatedEvidenceRich) => {
+              themes = updatedThemes;
+              evidenceRich = updatedEvidenceRich ?? false;
               isEdited = true;
               onInteract();
             }}
-            themes={themes || []}
             setEditing={(val: boolean) => (editing = val)}
           />
         {/if}
