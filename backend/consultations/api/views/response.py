@@ -39,17 +39,21 @@ class BespokeResultsSetPagination(PageNumberPagination):
         page_number = int(request.query_params.get(self.page_query_param, 1))
         offset = (page_number - 1) * page_size
 
+        # Only count on the first page
+        self._total_count = queryset.count() if page_number == 1 else None
+
         results = list(queryset[offset : offset + page_size + 1])
         self._has_more_pages = len(results) > page_size
         return results[:page_size]
 
     def get_paginated_response(self, data):
-        return Response(
-            {
-                "has_more_pages": self._has_more_pages,
-                "all_respondents": data,
-            }
-        )
+        response_data = {
+            "has_more_pages": self._has_more_pages,
+            "all_respondents": data,
+        }
+        if self._total_count is not None:
+            response_data["total_count"] = self._total_count
+        return Response(response_data)
 
 
 class ResponseViewSet(ModelViewSet):

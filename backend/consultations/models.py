@@ -259,7 +259,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     chosen_options = models.ManyToManyField("MultiChoiceAnswer", blank=True)
     embedding = VectorField(dimensions=settings.EMBEDDING_DIMENSION, null=True, blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
-    read_by = models.ManyToManyField(User, blank=True)
+    read_by = models.ManyToManyField(User, through="ResponseReadBy", blank=True)
 
     class Meta:
         indexes = [
@@ -273,7 +273,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def mark_as_read_by(self, user):
         """Mark this response as read by the given user"""
-        self.read_by.add(user)
+        ResponseReadBy.objects.get_or_create(response=self, user=user)
 
     def is_read_by(self, user):
         """Check if this response has been read by the given user"""
@@ -282,6 +282,15 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     def get_readers(self):
         """Get all users who have read this response"""
         return self.read_by.all()
+
+
+class ResponseReadBy(models.Model):
+    response = models.ForeignKey(Response, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [("response", "user")]
 
 
 @receiver(post_save, sender=Response)

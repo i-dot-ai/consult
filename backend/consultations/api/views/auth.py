@@ -18,6 +18,13 @@ client = AuthApiClient(
 )
 jwt_verifier = get_jwt_verifier()
 
+TOKEN_EXPIRED = "TOKEN_EXPIRED"
+
+
+def handle_authentication_error(logger, auth_reason, error_message, status_code=403):
+    logger.warning(error_message)
+    return JsonResponse(data={"detail": auth_reason}, status=status_code)
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -34,7 +41,6 @@ def validate_token(request):
             try:
                 payload = jwt_verifier.verify_token(internal_access_token)
                 email = payload.get("email")
-
                 if not email:
                     logger.error("JWT token missing email claim")
                     return JsonResponse(data={"detail": "authentication failed"}, status=401)
@@ -49,12 +55,29 @@ def validate_token(request):
 
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
+                if user_authorisation_info.auth_reason == TOKEN_EXPIRED:
+                    return handle_authentication_error(
+                        logger,
+                        user_authorisation_info.auth_reason,
+                        "User token expired because {reason}".format(
+                            reason=user_authorisation_info.auth_reason
+                        ),
+                    )
+
                 logger.warning("User not authorized")
                 return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
         elif HostingEnvironment.is_deployed():
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
             if not user_authorisation_info.is_authorised:
+                if user_authorisation_info.auth_reason == TOKEN_EXPIRED:
+                    return handle_authentication_error(
+                        logger,
+                        user_authorisation_info.auth_reason,
+                        "User token expired because {reason}".format(
+                            reason=user_authorisation_info.auth_reason
+                        ),
+                    )
                 logger.warning("User not authenticated")
                 return JsonResponse(data={"detail": "authentication failed"}, status=403)
             email = user_authorisation_info.email
@@ -68,7 +91,7 @@ def validate_token(request):
         logger.warning("User does not exist")
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
     except Exception:
-        logger.error("Error authenticating request")
+        logger.exception("Error authenticating request")
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
     login(request, user)
