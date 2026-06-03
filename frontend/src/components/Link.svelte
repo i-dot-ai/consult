@@ -28,7 +28,7 @@
   target={openNewTab ? "_blank" : undefined}
   href={variant === "inline" ? href : null}
   aria-label={ariaLabel}
-  data-testId={testId ? testId : ariaLabel}
+  data-testId={testId || ariaLabel}
   {title}
   tabindex="0"
   role="button"
