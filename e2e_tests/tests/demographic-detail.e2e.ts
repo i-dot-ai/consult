@@ -6,7 +6,7 @@ import {
 import { analysisConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
 
-test.describe("Respondent Detail Page", () => {
+test.describe("Demographic Detail Page", () => {
   let testData: FixtureReference = {};
   let consultationId: string;
 
@@ -23,15 +23,15 @@ test.describe("Respondent Detail Page", () => {
     await page.waitForLoadState("networkidle");
 
     const demographicSummaries = page.getByTestId("demographics-metrics-summary");
-    expect (demographicSummaries).toHaveCount(2);
+    await expect (demographicSummaries).toHaveCount(2);
 
     // assertion here is based on a snapshot of what is displayed
     // it will need updating if we change the fixture data
     const ageGroup = page.getByText("age_group 18-35 2 40% 36-50 2");
-    expect (ageGroup).toHaveCount(1);
+    await expect (ageGroup).toHaveCount(1);
 
     const country = page.getByText("nation England 2 40% Northern");
-    expect (country).toHaveCount(1);
+    await expect (country).toHaveCount(1);
 
     const demographicButton = page.getByRole("button", { name: "View All" })
 
@@ -55,13 +55,13 @@ test.describe("Respondent Detail Page", () => {
     await expect(ageGroup).toBeVisible();
 
     const ageGroupText = ageGroup.getByTestId('panel-component');
-    expect (ageGroupText).toHaveText("age_group 18-35 2 40% 36-50 2 40% 51-65 1 20%  ");
+    await expect (ageGroupText).toHaveText("age_group 18-35 2 40% 36-50 2 40% 51-65 1 20%  ");
 
     const nation = page.getByTestId('metrics-summary-nation');
     await expect(nation).toBeVisible();
 
     const nationText = nation.getByTestId('panel-component');
-    expect (nationText).toHaveText("nation England 2 40% Northern Ireland 1 20% Scotland 1 20% Wales 1 20%  ");
+    await expect (nationText).toHaveText("nation England 2 40% Northern Ireland 1 20% Scotland 1 20% Wales 1 20%  ");
   });
 
   test("demographic chart item should strikethrough on click", async ({ page }) => {
