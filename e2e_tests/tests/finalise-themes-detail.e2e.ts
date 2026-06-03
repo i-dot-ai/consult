@@ -20,6 +20,8 @@ async function createTheme(page: Page, title: string, description: string) {
   await descriptionInput.fill(description);
 
   await page.getByRole("button", { name: "Add Theme" }).click();
+
+  await page.waitForLoadState("networkidle");
 }
 
 function getConsultationId(page: Page) {
@@ -263,6 +265,24 @@ test.describe("Finalise Themes - Detail Page", () => {
     await page.getByRole("button", { name: "Remove" }).click();
 
     await expect(page.getByRole("button", { name: "Select" }).first()).not.toBeDisabled();
+  })
+
+  test("Displays correct counts", async ({ page }) => {
+    // ensure at least 1 selected theme
+    await createTheme(page, "test title", "test description");
+    await page.getByTestId("selected-theme-card").waitFor();
+
+    // number of select buttons correlate to number of candidate themes
+    const selectButtons = page.getByRole("button", { name: "Select", exact: true });
+    await expect(page.getByText(`${await selectButtons.count()} available`)).toBeVisible();
+
+    // check selected theme counts
+    const selectedThemeCards = page.getByTestId("selected-theme-card");
+    const selectedThemeCount = await selectedThemeCards.count();
+    const descriptionText = `Manage your ${selectedThemeCount} selected theme${selectedThemeCount > 1 ? "s" : ""} for AI to assign responses to. Edit titles or descriptions, or add a new theme.`;
+    await expect(page.getByText(`${selectedThemeCount} selected`, { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: `Sign Off Selected Themes (${selectedThemeCount})` })).toBeVisible();
+    await expect(page.getByText(descriptionText)).toBeVisible();
   })
 
   test.afterAll(async () => {
