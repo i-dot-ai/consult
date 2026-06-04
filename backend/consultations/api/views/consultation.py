@@ -906,13 +906,21 @@ class ConsultationViewSet(ModelViewSet):
             edited_response_ids = set()
 
             for resonse_annotation in read_response_annotations:
-                original_themes = set(
-                    ResponseAnnotationTheme.history.filter(
-                        response_annotation=resonse_annotation,
-                        history_type="+",
+                # Original AI themes = those still present with assigned_by=NULL
+                # plus those deleted from history with assigned_by=NULL
+                surviving_ai_themes = set(
+                    resonse_annotation.responseannotationtheme_set.filter(
                         assigned_by__isnull=True,
                     ).values_list("theme_id", flat=True)
                 )
+                deleted_ai_themes = set(
+                    ResponseAnnotationTheme.history.filter(
+                        response_annotation=resonse_annotation,
+                        history_type="-",
+                        assigned_by__isnull=True,
+                    ).values_list("theme_id", flat=True)
+                )
+                original_themes = surviving_ai_themes | deleted_ai_themes
 
                 current_themes = set(
                     resonse_annotation.responseannotationtheme_set.values_list(
