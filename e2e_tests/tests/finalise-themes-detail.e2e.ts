@@ -60,16 +60,17 @@ test.describe("Finalise Themes - Detail Page", () => {
     await expect(page.getByTestId("question-card")).toHaveCount(3);
     const firstQuestionButton = page.getByTestId("question-card").first();
 
-    expect(firstQuestionButton).toBeTruthy();
+    await expect(firstQuestionButton).toBeVisible();
 
     // Navigate to question page to find themes to finalise
     await firstQuestionButton.click();
     await page.waitForLoadState("networkidle");
 
     // Remove existing selected themes in case some are left
-    (await page.getByRole("button", { name: "Remove" }).all()).forEach(async removeButton => {
+    const allRemoveButtons = await page.getByRole("button", { name: "Remove" }).all();
+    for (const removeButton of allRemoveButtons) {
       await removeButton.click();
-    });
+    }
     await page.waitForLoadState("networkidle");
 
     // Mock confirm sign off route so it can be tested multiple times
