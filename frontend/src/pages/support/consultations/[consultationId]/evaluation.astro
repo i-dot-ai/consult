@@ -1,0 +1,392 @@
+---
+import { fetchBackendApi } from "../../../../global/api";
+import type { AstroGlobalRuntime } from "../../../../global/types";
+
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section/Section.svelte";
+import Link from "../../../../components/Link.svelte";
+import Title from "../../../../components/Title.svelte";
+import {
+  getApiConsultationEvaluationUrl,
+  getQuestionDetailUrl,
+  getSupportConsultationDetails,
+} from "../../../../global/routes";
+
+const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
+
+if (!consultationId) {
+  return (Astro as unknown as AstroGlobalRuntime).redirect(
+    "/support/consultations",
+  );
+}
+
+type F1Stats = {
+  mean: number;
+  ci_lower: number | null;
+  ci_upper: number | null;
+  sample_size: number;
+};
+
+type QuestionEval = {
+  id: string;
+  number: number;
+  text: string;
+  responses: number;
+  responses_read: number;
+  responses_edited: number;
+  f1: F1Stats | null;
+  f1_excl_generic: F1Stats | null;
+};
+
+type ConsultationEval = {
+  id: string;
+  title: string;
+  summary: {
+    responses: number;
+    responses_read: number;
+    responses_edited: number;
+    f1: F1Stats | null;
+    f1_excl_generic: F1Stats | null;
+  };
+  questions: QuestionEval[];
+};
+
+const data = await fetchBackendApi<ConsultationEval>(
+  Astro,
+  getApiConsultationEvaluationUrl(consultationId),
+);
+
+const HUMAN_BASELINE_F1 = 0.75;
+const MIN_RESPONSES_FOR_RELIABILITY = 30;
+
+type EvalState =
+  | "too_few_read"
+  | "too_few_sample"
+  | "below_benchmark"
+  | "above_benchmark";
+
+const getEvalState = (
+  responsesRead: number,
+  f1: F1Stats | null,
+): EvalState | null => {
+  if (!f1) return null;
+  if (responsesRead < MIN_RESPONSES_FOR_RELIABILITY) return "too_few_read";
+  if (f1.sample_size < MIN_RESPONSES_FOR_RELIABILITY) return "too_few_sample";
+  if (f1.mean < HUMAN_BASELINE_F1) return "below_benchmark";
+  return "above_benchmark";
+};
+
+const getSummaryContent = (
+  responsesRead: number,
+  f1: F1Stats | null,
+): { isSuccess: boolean; title: string; description: string } | undefined => {
+  const state = getEvalState(data.summary.responses_read, data.summary.f1);
+
+  switch (state) {
+    case "too_few_read":
+      return {
+        isSuccess: false,
+        title: "Not enough data for reliable scores",
+        description:
+          "Fewer than 30 responses have been read across the consultation. At least 30 are needed for reliable F1 scores.",
+      };
+    case "too_few_sample":
+      return {
+        isSuccess: false,
+        title: "Not enough data for reliable scores",
+        description: `While ${responsesRead} responses have been read, only ${f1!.sample_size} had themes to compare. At least 30 are needed for reliable F1 scores.`,
+      };
+    case "below_benchmark":
+      return {
+        isSuccess: false,
+        title: `Consult's performance is below human-level alignment (F1 = ${f1!.mean})`,
+        description:
+          "Our meta-analysis across 6 consultations found that human-to-human alignment averages an F1 of 0.75. This consultation's score is below that benchmark — consider reviewing the per-question breakdown below to identify where Consult's assignments diverge most from reviewers.",
+      };
+    case "above_benchmark":
+      return {
+        isSuccess: true,
+        title: `Consult's performance is at or above human-level alignment (F1 = ${f1!.mean})`,
+        description:
+          "Our meta-analysis across 6 consultations found that human-to-human alignment averages an F1 of 0.75. This consultation's score meets or exceeds that benchmark.",
+      };
+  }
+};
+
+const getQuestionWarning = (q: QuestionEval): string | null => {
+  const state = getEvalState(q.responses_read, q.f1);
+  const f1ExclState = getEvalState(q.responses_read, q.f1_excl_generic);
+
+  if (state === "too_few_read") {
+    return `Only ${q.responses_read} responses read — at least 30 needed for a reliable score.`;
+  }
+
+  if (state === "too_few_sample") {
+    return `Only ${q.f1!.sample_size} of ${q.responses_read} read responses had themes to compare — at least 30 needed for a reliable score.`;
+  }
+
+  if (f1ExclState === "too_few_sample") {
+    return `When 'Other' and 'No Reason Given' are excluded, only ${q.f1_excl_generic!.sample_size} responses have themes to compare — this score may be unreliable.`;
+  }
+
+  if (state === "below_benchmark") {
+    return "Below human-level benchmark (0.75) — consider reviewing theme assignments for this question.";
+  }
+
+  if (q.f1 && !q.f1.ci_lower) {
+    return "All F1 scores are identical — no confidence interval can be calculated.";
+  }
+
+  if (q.f1_excl_generic && !q.f1_excl_generic.ci_lower) {
+    return "All F1 scores (excl. generic) are identical — no confidence interval can be calculated.";
+  }
+
+  return null;
+};
+
+const formatPercent = (numerator: number, denominator: number): string => {
+  if (denominator === 0) return "0%";
+  return `${Math.round((numerator / denominator) * 100)}%`;
+};
+
+const formatCount = (count: number, total: number): string => {
+  return `${count} (${formatPercent(count, total)})`;
+};
+
+const formatF1 = (f1: F1Stats | null): string => {
+  if (!f1) return "—";
+  const ci =
+    f1.ci_lower !== null && f1.ci_upper !== null
+      ? ` (${f1.ci_lower}–${f1.ci_upper})`
+      : "";
+  return `${f1.mean}${ci}`;
+};
+
+const summaryContent = getSummaryContent(
+  data.summary.responses_read,
+  data.summary.f1,
+);
+---
+
+<Layout>
+  <Section>
+    <div class="mb-4">
+      <Link href={getSupportConsultationDetails(consultationId)}>
+        ← Back to consultation
+      </Link>
+    </div>
+
+    <Title level={1} text={`Evaluation: ${data.title}`} />
+
+    {
+      summaryContent && (
+        <div
+          class:list={[
+            "my-4 rounded border p-4",
+            {
+              "border-green-300 bg-green-50 text-green-800":
+                summaryContent.isSuccess,
+              "border-amber-300 bg-amber-50 text-amber-800":
+                !summaryContent.isSuccess,
+            },
+          ]}
+        >
+          <p class="font-semibold">{summaryContent.title}</p>
+          <p class="mt-1 text-sm">{summaryContent.description}</p>
+        </div>
+      )
+    }
+
+    <h2 class="mb-4 mt-8 text-xl font-semibold">Summary</h2>
+
+    <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div class="rounded-lg border p-4">
+        <div class="text-2xl font-bold">{data.summary.responses_read}</div>
+        <div class="text-sm text-neutral-500">
+          of {data.summary.responses} responses read ({
+            formatPercent(data.summary.responses_read, data.summary.responses)
+          })
+        </div>
+      </div>
+      <div class="rounded-lg border p-4">
+        <div class="text-2xl font-bold">{data.summary.responses_edited}</div>
+        <div class="text-sm text-neutral-500">
+          of {data.summary.responses_read} read were edited ({
+            formatPercent(
+              data.summary.responses_edited,
+              data.summary.responses_read,
+            )
+          })
+        </div>
+      </div>
+      <div class="rounded-lg border p-4">
+        <div class="text-2xl font-bold">{formatF1(data.summary.f1)}</div>
+        <div class="text-sm text-neutral-500">F1 score (all themes)</div>
+      </div>
+      <div class="rounded-lg border p-4">
+        <div class="text-2xl font-bold">
+          {formatF1(data.summary.f1_excl_generic)}
+        </div>
+        <div class="text-sm text-neutral-500">F1 score (excl. generic)</div>
+      </div>
+    </div>
+
+    <h2 class="mb-4 mt-10 text-xl font-semibold">Per Question</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="border-b font-medium">
+          <tr>
+            <th class="py-2 pr-4">Q</th>
+            <th class="py-2 pr-4">Question</th>
+            <th class="py-2 pr-4">Responses</th>
+            <th class="py-2 pr-4">Read</th>
+            <th class="py-2 pr-4">Edited</th>
+            <th class="py-2 pr-4">F1</th>
+            <th class="py-2 pr-4">F1 (excl. generic)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            data.questions.map((question) => {
+              const warning = getQuestionWarning(question);
+
+              return (
+                <tr class:list={["border-b", { "bg-amber-50": warning }]}>
+                  <td class="py-2 pr-4">{question.number}</td>
+                  <td class="max-w-md py-2 pr-4">
+                    <a
+                      href={getQuestionDetailUrl(consultationId!, question.id)}
+                      class="text-primary hover:underline"
+                    >
+                      {question.text}
+                    </a>
+                    {warning && (
+                      <p class="mt-1 text-sm text-neutral-600">{warning}</p>
+                    )}
+                  </td>
+                  <td class="py-2 pr-4">{question.responses}</td>
+                  <td class="py-2 pr-4">
+                    {formatCount(question.responses_read, question.responses)}
+                  </td>
+                  <td class="py-2 pr-4">
+                    {formatCount(
+                      question.responses_edited,
+                      question.responses_read,
+                    )}
+                  </td>
+                  <td class="py-2 pr-4">{formatF1(question.f1)}</td>
+                  <td class="py-2 pr-4">
+                    {formatF1(question.f1_excl_generic)}
+                  </td>
+                </tr>
+              );
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="mb-4 mt-10 text-xl font-semibold">Methodology</h2>
+    <div class="grid grid-cols-1 gap-10 text-neutral-700 md:grid-cols-2">
+      <div class="space-y-6">
+        <div class="space-y-3">
+          <h3 class="text-base font-medium">Responses read</h3>
+          <p>
+            A response is counted as "read" when a reviewer clicks "Load More"
+            on the question detail page (marking the displayed batch as read),
+            or when they interact with a response by flagging or editing it.
+            Staff and admin activity is excluded. A response read multiple times
+            or by multiple reviewers still counts as one response read.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <h3 class="text-base font-medium">Responses edited</h3>
+          <p>
+            A response is counted as "edited" if its current theme assignments
+            differ from Consult's original assignment. This includes themes
+            added, removed, or replaced by the reviewer. If multiple edits are
+            made by multiple users across sessions, this still counts as one
+            response edited. Except in the scenario where there have been
+            multiple edits to take the theme assignments back to its original
+            form.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <h3 class="text-base font-medium">Alignment (F1 score)</h3>
+          <p>
+            To measure how well Consult's theme assignments align with human
+            reviewers, we calculate an F1 score. This balances how often Consult
+            correctly identifies a theme (precision) against how often it finds
+            all the correct themes (recall). We use a multi-label F1 score that
+            credits partial matches — where some themes are correct but others
+            are not.
+          </p>
+          <p>
+            F1 is calculated per-response, then averaged across all read
+            responses (sample-average). This ensures each response contributes
+            equally regardless of how many themes it has. Responses that were
+            read but not edited are treated as implicit agreement (F1 = 1.0) —
+            the reviewer saw Consult's themes and chose not to change them.
+          </p>
+          <p>
+            Confidence intervals (shown in parentheses) represent the 95% range
+            within which the true F1 score is likely to fall. These are only
+            shown when at least 30 responses have applicable themes to compare —
+            below that threshold, the mean F1 is shown but confidence intervals
+            are suppressed as they would be unreliable.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <h3 class="text-base font-medium">Excluding generic themes</h3>
+          <p>
+            "F1 (excl. generic)" removes "Other" and "No Reason Given" before
+            comparing, since agreement on these catch-all categories is less
+            meaningful as a measure of Consult's performance. Responses with
+            only generic themes are excluded from this calculation.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <h3 class="text-base font-medium">What is a good F1 score?</h3>
+          <p>
+            We previously conducted a meta-analysis of Consult's theme
+            assignment performance across six consultations or calls for
+            evidence with 5 departments. Across the evaluations, over 115,000
+            individual free text responses to 81 questions were reviewed by over
+            150 people. Our meta-analysis found that when you compare alignment
+            between humans, the F1 score came out to 0.75. So, any F1 score
+            equal to or above 0.75 is strong evidence to suggest that Consult is
+            at least as good as human reviewers at theme assignment.
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <figure>
+          <img
+            src="/images/load-more-free-text-responses-screenshot.png"
+            alt="Load More button marking responses as read"
+            class="rounded border"
+          />
+          <figcaption class="mt-2 text-sm text-neutral-500">
+            Figure 1: Clicking "Load More" marks the displayed responses as
+            read.
+          </figcaption>
+        </figure>
+        <figure>
+          <img
+            src="/images/edit-response-labels-screenshot.png"
+            alt="Editing theme assignments on a response"
+            class="mt-12 rounded border"
+          />
+          <figcaption class="mt-2 text-sm text-neutral-500">
+            Figure 2: Editing theme assignments via the edit panel.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </Section>
+</Layout>
