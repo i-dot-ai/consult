@@ -34,13 +34,22 @@
           <Title level={2} text={consultation.title} />
 
           <div class="flex flex-wrap gap-4">
-            <Link href={getConsultationEvalUrl(consultation.id)} ariaLabel={`View Evaluation for ${consultation.title}`}>
+            <Link
+              href={getConsultationEvalUrl(consultation.id)}
+              ariaLabel={`View Evaluation for ${consultation.title}`}
+            >
               View Evaluation
             </Link>
-            <Link href={getFinaliseThemesUrl(consultation.id)} ariaLabel={`Finalise Themes for ${consultation.title}`}>
+            <Link
+              href={getFinaliseThemesUrl(consultation.id)}
+              ariaLabel={`Finalise Themes for ${consultation.title}`}
+            >
               Finalise Themes
             </Link>
-            <Link href={getConsultationDetailUrl(consultation.id)} ariaLabel={`View Dashboard for ${consultation.title}`}>
+            <Link
+              href={getConsultationDetailUrl(consultation.id)}
+              ariaLabel={`View Dashboard for ${consultation.title}`}
+            >
               View Dashboard
             </Link>
           </div>

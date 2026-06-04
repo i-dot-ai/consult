@@ -47,7 +47,11 @@
   }: Props = $props();
 </script>
 
-<div class={clsx(["bg-white"])} transition:fade={{ duration: 200 }} data-testid="question-card">
+<div
+  class={clsx(["bg-white"])}
+  transition:fade={{ duration: 200 }}
+  data-testid="question-card"
+>
   <ConditionalWrapper
     element={Link}
     condition={clickable && !skeleton}

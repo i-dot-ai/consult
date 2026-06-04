@@ -484,7 +484,6 @@
       <h4 class="my-4 text-xs font-bold">Selected themes:</h4>
 
       <div class="max-h-64 overflow-y-auto">
-
         {#each selectedThemes.query.data?.results ?? [] as selectedTheme (selectedTheme.id)}
           <Panel bg={true} border={false} testId="confirm-modal-theme">
             <h5 class="mb-1 text-xs font-bold">{selectedTheme.name}</h5>
