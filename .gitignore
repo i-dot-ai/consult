@@ -122,3 +122,5 @@ lambda/**/__pycache__/
 lambda/**/code/package/
 
 .claude/
+/consultations/*
+scripts/consultations/*
