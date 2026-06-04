@@ -360,12 +360,10 @@ def validate_data(
             if missing:
                 q_text = str(row.get("question_text", "")).strip()
                 label = q_text[:50] + "..." if len(q_text) > 50 else q_text
-                incomplete_rows.append(
-                    f'      "{sheet_name}" row {idx + 1}: missing {", ".join(missing)}'
-                    f"  ({label!r})"
-                    if label
-                    else ""
-                )
+                msg = f'      "{sheet_name}" row {idx + 1}: missing {", ".join(missing)}'
+                if label:
+                    msg += f"  ({label!r})"
+                incomplete_rows.append(msg)
     if incomplete_rows:
         print("\n  ⚠ Q.U. rows with missing fields:")
         for line in incomplete_rows:
@@ -797,15 +795,17 @@ def create_question_inputs(
             open_col = question["open_column"]
             closed_col = question["closed_column"]
             data_cols = [closed_col, open_col]
-            answers = df[["themefinder_id"] + data_cols].dropna(
-                subset=data_cols, how="all"
+            answers = (
+                df[["themefinder_id"] + data_cols]
+                .dropna(subset=data_cols, how="all")
+                .copy()
             )
             answers[closed_col] = answers[closed_col].fillna("Not Provided")
             answers[open_col] = answers[open_col].fillna("Not Provided")
         else:
             col = question["column_name"]
             data_cols = [col]
-            answers = df[["themefinder_id"] + data_cols].dropna()
+            answers = df[["themefinder_id"] + data_cols].dropna().copy()
 
         # Skip questions with no responses — the loader discovers questions by
         # folder existence, so omitting the folder drops the question cleanly
