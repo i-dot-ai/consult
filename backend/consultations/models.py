@@ -514,15 +514,25 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
             )
 
     def get_original_ai_themes(self):
-        """Get themes assigned by AI
-        Note that this implementation makes an implicit assumption that the AI only assigns the themes once
+        """Get themes originally assigned by AI.
+
+        Combines themes still present with assigned_by=NULL and those
+        deleted (found in history) with assigned_by=NULL. This works
+        even when bulk_create was used without history signals.
         """
-        theme_ids = ResponseAnnotationTheme.history.filter(
-            response_annotation=self,
-            history_type="+",
-            assigned_by__isnull=True,
-        ).values_list("theme_id", flat=True)
-        return SelectedTheme.objects.filter(id__in=theme_ids)
+        surviving = set(
+            self.responseannotationtheme_set.filter(
+                assigned_by__isnull=True,
+            ).values_list("theme_id", flat=True)
+        )
+        deleted = set(
+            ResponseAnnotationTheme.history.filter(
+                response_annotation=self,
+                history_type="-",
+                assigned_by__isnull=True,
+            ).values_list("theme_id", flat=True)
+        )
+        return SelectedTheme.objects.filter(id__in=surviving | deleted)
 
     def get_current_themes(self):
         """Get latest themes assigned by any human or AI"""
