@@ -155,16 +155,7 @@
     );
 
     if ($responsesStore.data?.all_respondents) {
-      const newResponses = $responsesStore.data?.all_respondents;
-      const existingResponseIds = new Set(
-        responses.map((response) => response.id),
-      );
-      responses = [
-        ...responses,
-        ...newResponses.filter(
-          (response) => !existingResponseIds.has(response.id),
-        ),
-      ];
+      responses = [...responses, ...$responsesStore.data.all_respondents];
     }
     if ($responsesStore.data?.total_count !== undefined) {
       responseTotalCount = $responsesStore.data.total_count;
@@ -506,7 +497,7 @@
           {:else}
             <div>
               <ul>
-                {#each responses as response, i (response.id)}
+                {#each responses as response, i (i)}
                   <li>
                     <div in:fly={{ x: 300, delay: getDelay(i) }}>
                       <ResponseCard
