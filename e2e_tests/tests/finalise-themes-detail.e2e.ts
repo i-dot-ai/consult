@@ -23,26 +23,25 @@ async function createTheme(page: Page, title: string, description: string) {
   await page.waitForLoadState("networkidle");
 }
 
-function getConsultationId(page: Page) {
+function getIdFromUrl(page: Page, variant: "consultation" | "question") {
   const urlParts = page.url().split("/");
-  return urlParts.at(-3);
-}
+  const CONSULTATION_ID_INDEX = -3;
+  const QUESTION_ID_INDEX = -1;
 
-function getQuestionId(page: Page) {
-  const urlParts = page.url().split("/");
-  return urlParts.at(-1);
+  return urlParts.at(variant === "consultation"
+    ? CONSULTATION_ID_INDEX
+    : QUESTION_ID_INDEX
+  );
 }
 
 test.describe("Finalise Themes - Detail Page", () => {
   let testData: FixtureReference = {};
 
-  test.beforeAll(async ({ request }) => {
+  test.beforeEach(async ({ page, request }) => {
     testData = await createFixtureData(request, {
       consultations: [signOffConsultation],
     });
-  });
 
-  test.beforeEach(async ({ page }) => {
     // Navigate to consultations to find a consultation
     await page.goto("/consultations");
     await page.waitForLoadState("networkidle");
@@ -72,21 +71,6 @@ test.describe("Finalise Themes - Detail Page", () => {
       await removeButton.click();
     }
     await page.waitForLoadState("networkidle");
-
-    // Mock confirm sign off route so it can be tested multiple times
-    const questionId = getQuestionId(page);
-    const consultationId = getConsultationId(page);
-    const confirmRoute = `/api/consultations/${consultationId}/questions/${questionId}/`;
-
-    await page.route(confirmRoute, async (route, request)=> {
-      if (request.method() === "PATCH") {
-        await route.fulfill({
-          status: 200,
-        })
-      } else {
-        await route.continue();
-      }
-    })
   });
 
   test("Displays question details", async ({ page }) => {
@@ -113,7 +97,7 @@ test.describe("Finalise Themes - Detail Page", () => {
 
     // Clicking confirm redirects to finalising themes archive page
     await page.getByRole("button", { name: "Confirm Finalisation" }).click();
-    const consultationId = getConsultationId(page);
+    const consultationId = getIdFromUrl(page, "consultation");
     const urlToExpect = `/consultations/${consultationId}/finalising-themes`;
     await page.waitForURL(urlToExpect);
     await expect(page).toHaveURL(urlToExpect);
@@ -125,7 +109,10 @@ test.describe("Finalise Themes - Detail Page", () => {
 
     const selectButtons = page.getByRole("button", { name: "Select" });
     const firstSelectButton = selectButtons.first();
-    await firstSelectButton.click(); 
+    await firstSelectButton.click();
+
+    await page.waitForLoadState("networkidle");
+
     await expect(page.getByText("1 selected", { exact: true })).toBeVisible();
   })
 
@@ -285,7 +272,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     await expect(page.getByText(descriptionText)).toBeVisible();
   })
 
-  test.afterAll(async () => {
+  test.afterEach(async () => {
     await deleteFixtureData(testData);
   });
 });
