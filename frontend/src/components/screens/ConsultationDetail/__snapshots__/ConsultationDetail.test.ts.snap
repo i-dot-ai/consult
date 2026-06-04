@@ -604,6 +604,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
           <!---->
           <div
             class="bg-white"
+            data-testid="question-card"
           >
             <!---->
             <!---->
@@ -743,6 +744,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
           </div>
           <div
             class="bg-white"
+            data-testid="question-card"
           >
             <!---->
             <!---->
@@ -883,6 +885,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
           </div>
           <div
             class="bg-white"
+            data-testid="question-card"
           >
             <!---->
             <!---->
@@ -1023,6 +1026,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
           </div>
           <div
             class="bg-white"
+            data-testid="question-card"
           >
             <!---->
             <!---->

@@ -8,6 +8,7 @@
     border?: boolean;
     bg?: boolean;
     level?: number;
+    testId?: string;
     children: Snippet;
   }
 
@@ -16,12 +17,13 @@
     border = true,
     bg = false,
     level = 1,
+    testId = "panel-component",
     children,
   }: Props = $props();
 </script>
 
 <div
-  data-testid="panel-component"
+  data-testid={testId}
   class={clsx([
     "h-full",
     "my-4",
