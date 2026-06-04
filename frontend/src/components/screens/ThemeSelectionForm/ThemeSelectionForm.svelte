@@ -32,7 +32,7 @@
     questionId,
   }: Props = $props();
 
-  let ownSelectedThemes = $state(selectedThemes);
+  let ownSelectedThemes = $derived(selectedThemes);
   let sending: boolean = $state(false);
   let errors: Record<string, string> = $state({});
 
@@ -41,7 +41,10 @@
 
     if (checked) {
       const themeToAdd = allThemes.find((theme) => theme.id === value);
-      if (themeToAdd && !selectedThemes.some((theme) => theme.id === value)) {
+      if (
+        themeToAdd &&
+        !ownSelectedThemes.some((theme) => theme.id === value)
+      ) {
         ownSelectedThemes = [...ownSelectedThemes, themeToAdd];
       }
     } else {
@@ -98,7 +101,7 @@
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            themes: selectedThemes,
+            themes: ownSelectedThemes,
             human_reviewed: true,
           }),
         },
@@ -151,7 +154,7 @@
           <Checkbox
             id={theme.id!}
             value={theme.id!}
-            checked={selectedThemes.some(
+            checked={ownSelectedThemes.some(
               (selectedTheme) => selectedTheme.id === theme.id,
             )}
             disabled={false}

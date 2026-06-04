@@ -8,6 +8,7 @@
   export let ariaLabel: string = "";
   export let variant: "inline" | "block" = "inline";
   export let openNewTab: boolean = false;
+  export let testId: string = "";
 </script>
 
 <svelte:element
@@ -27,7 +28,7 @@
   target={openNewTab ? "_blank" : undefined}
   href={variant === "inline" ? href : null}
   aria-label={ariaLabel}
-  data-testId={ariaLabel}
+  data-testId={testId || ariaLabel}
   {title}
   tabindex="0"
   role="button"

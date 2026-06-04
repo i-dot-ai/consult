@@ -50,6 +50,7 @@ dev = [
 
 [tool.uv]
 exclude-newer = "P14D"
+exclude-newer-package = {"i-dot-ai-utilities" = "2026-06-04"}
 
 [tool.ruff]
 line-length = 100

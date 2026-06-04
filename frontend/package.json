@@ -16,9 +16,7 @@
     "test:update-snapshots": "vitest --update",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck": "svelte-check",
-    "typecheck:check-baseline": "bash scripts/check-type-errors.sh",
-    "typecheck:update-baseline": "bash scripts/update-type-errors.sh"
+    "typecheck": "svelte-check"
   },
   "//": "WARNING: Do not upgrade astro beyond 5.16.6 or @astrojs/node beyond 9.3.3 - versions 5.17+ and 9.5+ break CSRF token forwarding for Django admin",
   "dependencies": {

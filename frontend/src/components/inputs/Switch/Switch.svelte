@@ -2,13 +2,14 @@
   // Using melt-ui switch
   // Docs: https://www.melt-ui.com/docs/builders/switch
 
+  import type { Snippet } from "svelte";
   import clsx from "clsx";
 
   import { createSwitch, melt } from "@melt-ui/svelte";
 
   interface Props {
     id: string;
-    label: string;
+    label?: string | Snippet;
     hideLabel?: boolean;
     value: boolean;
     handleChange: (newValue: boolean) => void;
@@ -50,8 +51,8 @@
       for={id}
       id={`${id}-label`}
     >
-      {#if $$slots.label}
-        <slot name="label" />
+      {#if typeof label === "function"}
+        {@render label()}
       {:else}
         {label}
       {/if}

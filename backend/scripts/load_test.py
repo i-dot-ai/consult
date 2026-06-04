@@ -401,9 +401,9 @@ def create_consultation(
         SystemExit: If the user does not exist in the database
     """
     stage_mapping = {
-        Stage.NO_THEMES: Consultation.Stage.THEME_SIGN_OFF,
-        Stage.CANDIDATE_THEMES: Consultation.Stage.THEME_SIGN_OFF,
-        Stage.THEMES_APPROVED: Consultation.Stage.THEME_MAPPING,  # After "Confirm and Proceed" clicked
+        Stage.NO_THEMES: Consultation.Stage.FINALISING_THEMES,
+        Stage.CANDIDATE_THEMES: Consultation.Stage.FINALISING_THEMES,
+        Stage.THEMES_APPROVED: Consultation.Stage.ASSIGNING_THEMES,  # After "Confirm and Proceed" clicked
         Stage.ANALYSIS: Consultation.Stage.ANALYSIS,  # After response annotations imported
     }
 
@@ -423,7 +423,7 @@ def create_consultation(
     consultation = Consultation.objects.create(
         title=name,
         code=name.lower().replace(" ", "-"),
-        stage=stage_mapping.get(stage, Consultation.Stage.THEME_SIGN_OFF),
+        stage=stage_mapping.get(stage, Consultation.Stage.FINALISING_THEMES),
         display_ai_selected_themes=True,
         model_name=Consultation.ModelName.GPT_41,
     )
@@ -646,8 +646,8 @@ def create_responses_for_question(
             batch = m2m_to_create[i : i + M2M_BATCH_SIZE]
             Response.chosen_options.through.objects.bulk_create(batch)
 
-    # Update question's total_responses count
-    question.update_total_responses()
+    # Update question's response counts
+    question.update_response_counts()
 
     return len(all_created)
 
@@ -862,10 +862,10 @@ def resume_load_test(
             print(f"✓ Marked {updated_count} questions as signed off (theme_status=CONFIRMED)")
 
             # Update consultation stage if needed
-            if consultation.stage != Consultation.Stage.THEME_MAPPING:
-                consultation.stage = Consultation.Stage.THEME_MAPPING
+            if consultation.stage != Consultation.Stage.ASSIGNING_THEMES:
+                consultation.stage = Consultation.Stage.ASSIGNING_THEMES
                 consultation.save(update_fields=["stage"])
-                print("✓ Updated consultation stage to THEME_MAPPING")
+                print("✓ Updated consultation stage to ASSIGNING_THEMES")
         else:
             # Load existing selected themes
             all_selected_themes = {}

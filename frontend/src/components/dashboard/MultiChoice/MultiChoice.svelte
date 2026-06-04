@@ -15,23 +15,33 @@
 
   interface Props {
     data: QuestionMultiAnswer[];
+    multiChoiceResponseCount: number;
+    countsLoading?: boolean;
   }
 
-  let { data = [] }: Props = $props();
+  let {
+    data = [],
+    multiChoiceResponseCount = 0,
+    countsLoading = false,
+  }: Props = $props();
 </script>
 
 <section class="my-4" transition:fade>
   <Panel border={true}>
-    <TitleRow level={2} title="Multiple Choice Answers">
+    <TitleRow
+      level={2}
+      title="Multiple Choice Answers"
+      subtitle={countsLoading ? "" : `${multiChoiceResponseCount} responses`}
+    >
       <List slot="icon" />
     </TitleRow>
 
-    {@const total = data
-      .map((item) => item.response_count)
-      .reduce((acc, curr) => acc + curr, 0)}
     <Panel bg={true}>
       {#each data as item, i (i)}
-        {@const percentage = getPercentage(item.response_count, total)}
+        {@const percentage = getPercentage(
+          item.response_count,
+          multiChoiceResponseCount,
+        )}
 
         <div class="mb-1 last:mb-0">
           <Button
@@ -83,19 +93,35 @@
                     "sm:justify-end",
                   ])}
                 >
-                  <span>{percentage}%</span>
+                  {#if countsLoading}
+                    <span
+                      class="blink select-none rounded bg-neutral-200 text-neutral-200"
+                    >
+                      00%
+                    </span>
+                  {:else}
+                    <span>{percentage}%</span>
 
-                  <span class="sm:hidden">
-                    {item.response_count}
-                  </span>
+                    <span class="sm:hidden">
+                      {item.response_count}
+                    </span>
+                  {/if}
                 </div>
                 <div class="w-full">
-                  <Progress value={percentage} />
+                  <Progress value={countsLoading ? 0 : percentage} />
                 </div>
 
-                <span class="hidden min-w-[4ch] sm:block">
-                  {item.response_count}
-                </span>
+                {#if countsLoading}
+                  <span
+                    class="blink hidden min-w-[4ch] select-none rounded bg-neutral-200 text-neutral-200 sm:block"
+                  >
+                    0000
+                  </span>
+                {:else}
+                  <span class="hidden min-w-[4ch] sm:block">
+                    {item.response_count}
+                  </span>
+                {/if}
               </div>
             </div>
           </Button>

@@ -1,7 +1,7 @@
 import urlJoin from "url-join";
 
 export enum Suffixes {
-  ThemeSignOff = "theme-sign-off",
+  FinaliseThemes = "finalising-themes",
   Analysis = "analysis",
   Consultations = "consultations",
   Questions = "questions",
@@ -60,17 +60,30 @@ export const getConsultationAnalysisUrl = (consultationId: string) => {
 export const getSupportConsultationDeleteUrl = (consultationId: string) => {
   return urlJoin(Routes.SupportConsultations, consultationId, Suffixes.Delete);
 };
-export const getThemeSignOffUrl = (consultationId: string) => {
-  return urlJoin(Routes.Consultations, consultationId, Suffixes.ThemeSignOff);
+export const getSupportConsultationImportThemesUrl = (
+  consultationId: string,
+) => {
+  return urlJoin(Routes.SupportConsultations, consultationId, "import-themes");
 };
-export const getThemeSignOffDetailUrl = (
+export const getApiImportFinalisedThemesUrl = (consultationId: string) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    "import-finalised-themes",
+    "/",
+  );
+};
+export const getFinaliseThemesUrl = (consultationId: string) => {
+  return urlJoin(Routes.Consultations, consultationId, Suffixes.FinaliseThemes);
+};
+export const getFinaliseThemesDetailUrl = (
   consultationId: string,
   questionId: string,
 ) => {
   return urlJoin(
     Routes.Consultations,
     consultationId,
-    Suffixes.ThemeSignOff,
+    Suffixes.FinaliseThemes,
     questionId,
   );
 };
@@ -188,7 +201,7 @@ export const getApiQuestionUrl = (
     "/",
   );
 };
-export const getApiAnswerUrl = (consultationId: string, answerId: string) => {
+export const getApiResponseUrl = (consultationId: string, answerId: string) => {
   return urlJoin(
     Routes.ApiConsultations,
     consultationId,
@@ -358,7 +371,7 @@ export const getApiCandidateThemeResponsesUrl = (
     "/",
   );
 };
-export const getApiConfirmSignOffUrl = (
+export const getApiConfirmFinalisingThemesUrl = (
   consultationId: string,
   questionId: string,
 ) => {

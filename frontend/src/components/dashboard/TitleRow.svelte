@@ -8,7 +8,8 @@
   export let title: string = "";
   export let subtitle: string = "";
   export let level: TitleLevels = 2;
-  export let context: "dashboard" | "public" | "theme-sign-off" = "dashboard";
+  export let context: "dashboard" | "public" | "finalising-themes" =
+    "dashboard";
 </script>
 
 <div class="flex gap-4">
@@ -18,7 +19,7 @@
         class={clsx(["bg-pink-50", "p-2", "rounded-md", !subtitle && "mt-1.5"])}
       >
         <MaterialIcon
-          size={level === 1 && context === "theme-sign-off"
+          size={level === 1 && context === "finalising-themes"
             ? "1.8rem"
             : "1.3rem"}
           color="fill-pink-700"

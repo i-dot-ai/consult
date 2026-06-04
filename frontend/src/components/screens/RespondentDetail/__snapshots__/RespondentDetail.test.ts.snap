@@ -16,6 +16,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
           <button
             aria-pressed="false"
             class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-testid="back-to-analysis-button"
             data-variant="ghost"
             role="button"
             tabindex="0"
@@ -325,7 +326,9 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                   <!---->
                 </div>
                  
-                <p>
+                <p
+                  data-testid="questions-answered-progress"
+                >
                   100% (4/4)
                 </p>
                 <!---->
@@ -372,20 +375,21 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                       class="mb-4 flex flex-col-reverse items-start justify-between gap-2 gap-y-4 md:flex-row"
                     >
                       <a
-                        class="svelte-blsmte"
+                        class="svelte-16nw8z4"
                         href="/consultations/test-consultation/questions/5e8176da-fdcd-4f55-ab7b-b2ca8a12a467"
                       >
                         <div
                           class="flex items-start gap-2"
                         >
                           <div
-                            class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-blsmte"
+                            class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-16nw8z4"
+                            data-testid="question-number"
                           >
                             Q1
                           </div>
                            
                           <h3
-                            class="text-xs text-neutral-500 transition-colors mt-0.5 svelte-blsmte"
+                            class="text-xs text-neutral-500 transition-colors mt-0.5 svelte-16nw8z4"
                           >
                             Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?
                           </h3>
@@ -408,6 +412,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                        
                       <ul
                         class="flex flex-wrap items-center gap-1"
+                        data-testid="multiple-choice-options"
                       >
                         <li
                           class="text-xs"
@@ -419,20 +424,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                     </div>
                     <!---->
                      
-                    <div>
-                      <h4
-                        class="mb-1 mt-4 text-xs uppercase text-neutral-500"
-                      >
-                        Additional Comments:
-                      </h4>
-                      <!---->
-                       
-                      <p
-                        class="text-sm"
-                      >
-                        
-                      </p>
-                    </div>
+                    <!---->
                      
                     <!---->
                   </article>
@@ -450,20 +442,21 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                       class="mb-4 flex flex-col-reverse items-start justify-between gap-2 gap-y-4 md:flex-row"
                     >
                       <a
-                        class="svelte-blsmte"
+                        class="svelte-16nw8z4"
                         href="/consultations/test-consultation/questions/ef855675-af2b-4cfe-871d-ad108360e57a"
                       >
                         <div
                           class="flex items-start gap-2"
                         >
                           <div
-                            class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-blsmte"
+                            class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-16nw8z4"
+                            data-testid="question-number"
                           >
                             Q2
                           </div>
                            
                           <h3
-                            class="text-xs text-neutral-500 transition-colors mt-0.5 svelte-blsmte"
+                            class="text-xs text-neutral-500 transition-colors mt-0.5 svelte-16nw8z4"
                           >
                             Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?
                           </h3>
@@ -486,6 +479,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                        
                       <ul
                         class="flex flex-wrap items-center gap-1"
+                        data-testid="multiple-choice-options"
                       >
                         <li
                           class="text-xs"
@@ -497,20 +491,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                     </div>
                     <!---->
                      
-                    <div>
-                      <h4
-                        class="mb-1 mt-4 text-xs uppercase text-neutral-500"
-                      >
-                        Additional Comments:
-                      </h4>
-                      <!---->
-                       
-                      <p
-                        class="text-sm"
-                      >
-                        
-                      </p>
-                    </div>
+                    <!---->
                      
                     <!---->
                   </article>
@@ -528,20 +509,21 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                       class="mb-4 flex flex-col-reverse items-start justify-between gap-2 gap-y-4 md:flex-row"
                     >
                       <a
-                        class="svelte-blsmte"
+                        class="svelte-16nw8z4"
                         href="/consultations/test-consultation/questions/92848794-2072-41c4-b3bf-78248a6995da"
                       >
                         <div
                           class="flex items-start gap-2"
                         >
                           <div
-                            class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-blsmte"
+                            class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-16nw8z4"
+                            data-testid="question-number"
                           >
                             Q3
                           </div>
                            
                           <h3
-                            class="text-xs text-neutral-500 transition-colors mt-0.5 svelte-blsmte"
+                            class="text-xs text-neutral-500 transition-colors mt-0.5 svelte-16nw8z4"
                           >
                             Which of the following factors do you believe are important when considering the packaging of chocolate bars? Please select all that apply: a) Sustainability, b) Design, c) Cost-effectiveness, d) Durability, e) Brand recognition.
                           </h3>
@@ -564,6 +546,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                        
                       <ul
                         class="flex flex-wrap items-center gap-1"
+                        data-testid="multiple-choice-options"
                       >
                         <li
                           class="text-xs"
@@ -585,20 +568,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                     </div>
                     <!---->
                      
-                    <div>
-                      <h4
-                        class="mb-1 mt-4 text-xs uppercase text-neutral-500"
-                      >
-                        Additional Comments:
-                      </h4>
-                      <!---->
-                       
-                      <p
-                        class="text-sm"
-                      >
-                        
-                      </p>
-                    </div>
+                    <!---->
                      
                     <!---->
                   </article>
@@ -616,20 +586,21 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                       class="mb-4 flex flex-col-reverse items-start justify-between gap-2 gap-y-4 md:flex-row"
                     >
                       <a
-                        class="svelte-blsmte"
+                        class="svelte-16nw8z4"
                         href="/consultations/test-consultation/questions/b20f35ee-411b-4746-9029-1e9b02610dea"
                       >
                         <div
                           class="flex items-start gap-2"
                         >
                           <div
-                            class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-blsmte"
+                            class="question-number p-1 rounded-lg border border-neutral-200 text-xs bg-neutral-100 transition-colors svelte-16nw8z4"
+                            data-testid="question-number"
                           >
                             Q4
                           </div>
                            
                           <h3
-                            class="text-xs text-neutral-500 transition-colors mt-0.5 svelte-blsmte"
+                            class="text-xs text-neutral-500 transition-colors mt-0.5 svelte-16nw8z4"
                           >
                             What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?
                           </h3>
@@ -650,10 +621,12 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                        
                       <p
                         class="text-sm"
+                        data-testid="response-text"
                       >
                         It would be beneficial to include mandatory allergen warnings on all packaging to enhance consumer safety.
                       </p>
                     </div>
+                    <!---->
                      
                     <!---->
                   </article>
@@ -690,6 +663,7 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
           <button
             aria-pressed="false"
             class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-testid="back-to-analysis-button"
             data-variant="ghost"
             role="button"
             tabindex="0"
@@ -924,7 +898,7 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
                 <p
                   class="text-neutral-400"
                 >
-                  
+                  Add a stakeholder's name
                 </p>
                 <!---->
               </div>
@@ -976,7 +950,9 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
                   <!---->
                 </div>
                  
-                <p>
+                <p
+                  data-testid="questions-answered-progress"
+                >
                   0% (0/0)
                 </p>
                 <!---->

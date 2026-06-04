@@ -24,6 +24,7 @@
     highlightText?: string;
     clickable?: boolean;
     skeleton?: boolean;
+    countsLoading?: boolean;
     hideIcon?: boolean;
     horizontal?: boolean;
     disabled?: boolean;
@@ -32,11 +33,12 @@
   }
 
   let {
-    question = {},
+    question,
     url = "",
     highlightText = "",
     clickable = false,
     skeleton = false,
+    countsLoading = false,
     hideIcon = false,
     horizontal = false,
     disabled = false,
@@ -45,7 +47,11 @@
   }: Props = $props();
 </script>
 
-<div class={clsx(["bg-white"])} transition:fade={{ duration: 200 }}>
+<div
+  class={clsx(["bg-white"])}
+  transition:fade={{ duration: 200 }}
+  data-testid="question-card"
+>
   <ConditionalWrapper
     element={Link}
     condition={clickable && !skeleton}
@@ -53,6 +59,7 @@
     href={url}
     title={`Q${question.number}: ${question.question_text}`}
     ariaLabel={`Click to view question: ${question.question_text}`}
+    testId={`question-link-${question.id}`}
   >
     <Panel bg={disabled}>
       <article
@@ -130,6 +137,7 @@
               <HighlightedText
                 text={`Q${question.number}: ${question.question_text}`}
                 highlight={highlightText}
+                testId={question.question_text}
               />
             </p>
 
@@ -142,7 +150,15 @@
                 disabled && "opacity-50",
               ])}
             >
-              {question.total_responses} responses
+              {#if countsLoading}
+                <span
+                  class="blink select-none rounded bg-neutral-200 text-neutral-200"
+                >
+                  00000 responses
+                </span>
+              {:else}
+                {question.total_response_count} responses
+              {/if}
             </div>
 
             {#if subtext}
@@ -178,6 +194,7 @@
                 class={clsx([disabled && "grayscale"])}
               >
                 <div
+                  role="presentation"
                   onkeypress={(e) => e.stopPropagation()}
                   onclick={(e) => e.stopPropagation()}
                 >

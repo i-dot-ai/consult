@@ -20,6 +20,16 @@ Installation instructions assume using a Mac with Homebrew.
 - pre-commit (`brew install pre-commit`)
 - Postegres(optional) (`brew install postgresql`) if you are getting `psycopg2` error during `make setup`
 
+### Prerequisites for running end-to-end tests
+
+Make sure that you have `coreutils` installed:
+`brew install coreutils`
+
+Also note that you will need to add a personal access token on github with `read:packages` access and then use this to log in on the command line before running the end-to-end tests:
+```
+echo $PASSWORD | docker login ghcr.io -u <username> --password-stdin
+```
+
 ### Clone and install
 
 ```
@@ -78,6 +88,7 @@ make test-frontend
 Run end-to-end tests:
 
 ```
+docker compose up -d postgres # postgres must be running already
 make test-end-to-end
 ```
 If you are getting error while running e2e that the frontend is failing to start during the docker spin up its likely because of the timeout module that is missing and you will need to run

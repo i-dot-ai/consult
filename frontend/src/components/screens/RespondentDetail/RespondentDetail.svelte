@@ -19,9 +19,8 @@
     QuestionsResponse,
     Respondent,
     RespondentsResponse,
-    ResponseAnswer,
+    ResponseBody,
   } from "../../../global/types.ts";
-
   import Alert from "../../Alert.svelte";
   import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
@@ -30,7 +29,7 @@
   import Button from "../../inputs/Button/Button.svelte";
   import RespondentSidebar from "../../dashboard/RespondentSidebar/RespondentSidebar.svelte";
   import RespondentTopbar from "../../dashboard/RespondentTopbar/RespondentTopbar.svelte";
-  import RespondentAnswer from "../../dashboard/RespondentAnswer/RespondentAnswer.svelte";
+  import RespondentAnswer from "../../dashboard/RespondentResponse/RespondentResponse.svelte";
 
   const FLY_ANIMATION_DELAY = 100;
 
@@ -98,7 +97,7 @@
 
   let responsesToDisplay = $derived(
     ($responsesStore.data?.all_respondents || []).map(
-      (response: ResponseAnswer) => {
+      (response: ResponseBody) => {
         const question = $questionsStore.data?.results?.find(
           (question) => question.id === response.question_id,
         );
@@ -222,7 +221,7 @@
                   responseText={response.free_text_answer_text}
                   multiChoice={response.multiple_choice_answer}
                   themes={response.themes?.map((theme) => theme.name) || []}
-                  evidenceRich={response.evidenceRich}
+                  evidenceRich={response.evidenceRich ?? false}
                   delay={FLY_ANIMATION_DELAY * i}
                 />
               {/each}

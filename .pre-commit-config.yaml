@@ -46,3 +46,17 @@ repos:
     rev: 0.7.1
     hooks:
       - id: nbstripout
+  - repo: local
+    hooks:
+      - id: frontend-lint
+        name: Frontend ESLint
+        entry: bash -c 'cd frontend && npm run lint'
+        language: system
+        pass_filenames: false
+        files: '^frontend/.*\.(ts|svelte|astro|js|cjs|mjs)$'
+      - id: frontend-typecheck
+        name: Frontend TypeCheck
+        entry: bash -c 'cd frontend && npm run typecheck'
+        language: system
+        pass_filenames: false
+        files: '^frontend/.*\.(ts|svelte|astro)$'

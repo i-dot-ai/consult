@@ -1,9 +1,10 @@
+from collections import Counter
 from typing import Any
 
 import sentry_sdk
 from django.conf import settings
-from django.db.models import Count, Exists, OuterRef, Subquery, Value
-from django.db.models.functions import Coalesce
+from django.db import transaction
+from django.db.models import Count, F
 from django.http import Http404
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -23,14 +24,14 @@ from consultations.api.serializers import (
     ConsultationSerializer,
     ConsultationSetupSerializer,
     DemographicOptionSerializer,
+    ImportFinalisedThemesSerializer,
 )
 from consultations.models import (
     Consultation,
     DemographicOption,
+    Question,
+    Respondent,
     SelectedTheme,
-)
-from consultations.models import (
-    Response as ConsultationResponse,
 )
 from consultations.test_support.load_test_fixtures import (
     create_data_from_fixtures,
@@ -129,38 +130,35 @@ class ConsultationViewSet(ModelViewSet):
             "searchValue",
         ]
         question_id = request.query_params.get("question_id")
-        has_filters = any(request.query_params.get(p) for p in filter_params)
+        has_filters = question_id or any(request.query_params.get(p) for p in filter_params)
 
         if has_filters:
-            filtered_responses = get_filtered_responses(request.query_params, pk)
-            options = options.filter(
-                Exists(filtered_responses.filter(respondent=OuterRef("respondent")))
-            ).annotate(count=Count("respondent", distinct=True))
-        elif question_id:
-            # Scope counts to respondents who answered this question
-            respondent_demographics_table = DemographicOption.respondent_set.through
-            options = options.annotate(
-                count=Coalesce(
-                    Subquery(
-                        respondent_demographics_table.objects.filter(
-                            demographicoption_id=OuterRef("pk"),
-                            respondent_id__in=ConsultationResponse.objects.filter(
-                                question_id=question_id
-                            ).values("respondent_id"),
-                        )
-                        .values("demographicoption_id")
-                        .annotate(c=Count("respondent_id", distinct=True))
-                        .values("c")
-                    ),
-                    Value(0),
-                )
+            filtered_responses = get_filtered_responses(
+                request.query_params, pk, question_id=question_id
             )
+            filtered_respondent_ids = filtered_responses.values("respondent_id").distinct()
+            through_table = Respondent.demographics.through
+            counts = dict(
+                through_table.objects.filter(respondent_id__in=filtered_respondent_ids)
+                .values_list("demographicoption_id")
+                .annotate(c=Count("id"))
+                .values_list("demographicoption_id", "c")
+            )
+            data = [
+                {
+                    "id": opt["id"],
+                    "field_name": opt["field_name"],
+                    "field_value": opt["field_value"],
+                    "count": counts.get(opt["id"], 0),
+                }
+                for opt in options.values("id", "field_name", "field_value").order_by(
+                    "field_name", "field_value"
+                )
+            ]
         else:
-            options = options.annotate(count=Count("respondent"))
-
-        data = options.values("id", "field_name", "field_value", "count").order_by(
-            "field_name", "field_value"
-        )
+            data = options.values(
+                "id", "field_name", "field_value", count=F("response_count")
+            ).order_by("field_name", "field_value")
 
         serializer = DemographicOptionSerializer(instance=data, many=True)
 
@@ -282,20 +280,17 @@ class ConsultationViewSet(ModelViewSet):
         Export themes to S3 and submit AWS batch job to assign themes to responses.
 
         Behaviour depends on consultation stage:
-        - FINALISING_THEMES / THEME_SIGN_OFF: exports candidate themes and assigns
+        - FINALISING_THEMES: exports candidate themes and assigns
           them to responses (CandidateThemeResponse), without changing stage.
         - Other stages: exports selected themes and assigns them to responses
-          (ResponseAnnotation), advancing stage to THEME_MAPPING.
+          (ResponseAnnotation), advancing stage to ASSIGNING_THEMES.
 
         URL: /api/consultations/{consultation_id}/assign-themes/
         """
 
         consultation = self.get_object()
 
-        is_finalising = consultation.stage in (
-            Consultation.Stage.FINALISING_THEMES,
-            Consultation.Stage.THEME_SIGN_OFF,
-        )
+        is_finalising = consultation.stage == Consultation.Stage.FINALISING_THEMES
 
         if is_finalising:
             # During finalising: assign candidate themes to responses
@@ -335,7 +330,7 @@ class ConsultationViewSet(ModelViewSet):
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
 
-            # Stay in current stage - don't advance to THEME_MAPPING
+            # Stay in current stage - don't advance
             return Response(
                 {
                     "message": f"Assign Candidate Themes job started for consultation '{consultation.title}'",
@@ -397,7 +392,7 @@ class ConsultationViewSet(ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        consultation.stage = Consultation.Stage.THEME_MAPPING
+        consultation.stage = Consultation.Stage.ASSIGNING_THEMES
         consultation.save(update_fields=["stage"])
 
         return Response(
@@ -585,6 +580,205 @@ class ConsultationViewSet(ModelViewSet):
         return Response(
             {"error": "No fixture data provided"},
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="import-finalised-themes",
+        permission_classes=[IsAuthenticated, IsAdminUser],
+    )
+    def import_finalised_themes(self, request, pk=None) -> Response:
+        """
+        Import finalised themes from a source consultation into this (target) consultation.
+
+        Matches questions by text between source and target. Preserves the
+        original user attribution and timestamps.
+
+        URL: POST /api/consultations/{target_consultation_id}/import-finalised-themes/
+        Body: { "source_consultation_id": "<uuid>" }
+        Query: ?dry_run=true to preview without making changes
+        """
+
+        input_serializer = ImportFinalisedThemesSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+
+        target = self.get_object()
+        dry_run = request.query_params.get("dry_run", "").lower() == "true"
+        source_consultation_id = input_serializer.validated_data["source_consultation_id"]
+
+        try:
+            source = Consultation.objects.get(id=source_consultation_id)
+        except Consultation.DoesNotExist:
+            return Response(
+                {"error": f"Source consultation '{source_consultation_id}' not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if source.id == target.id:
+            return Response(
+                {"error": "Source and target consultation cannot be the same"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        finalised_stages = {Consultation.Stage.ASSIGNING_THEMES, Consultation.Stage.ANALYSIS}
+        if source.stage not in finalised_stages:
+            return Response(
+                {"error": "Source consultation must have finalised themes"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if target.stage in finalised_stages:
+            return Response(
+                {"error": "Target consultation has already finalised themes"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        source_questions = source.question_set.filter(has_free_text=True)
+        target_questions = target.question_set.filter(has_free_text=True)
+
+        # Detect duplicate question texts within each consultation
+        source_text_counts = Counter(q.text for q in source_questions)
+        target_text_counts = Counter(q.text for q in target_questions)
+        duplicate_source_texts = {t for t, c in source_text_counts.items() if c > 1}
+        duplicate_target_texts = {t for t, c in target_text_counts.items() if c > 1}
+
+        source_by_text = {q.text: q for q in source_questions}
+        target_by_text = {q.text: q for q in target_questions}
+
+        source_themes_by_question: dict = {}
+        for theme in SelectedTheme.objects.filter(question__in=source_questions).select_related(
+            "last_modified_by"
+        ):
+            source_themes_by_question.setdefault(theme.question_id, []).append(theme)
+
+        target_questions_with_themes = set(
+            SelectedTheme.objects.filter(question__in=target_questions)
+            .values_list("question_id", flat=True)
+            .distinct()
+        )
+
+        questions = []
+
+        for target_q in target_questions.order_by("number"):
+            question_info = {
+                "question_number": target_q.number,
+                "question_text": target_q.text,
+            }
+
+            if target_q.text in duplicate_target_texts:
+                question_info["status"] = "duplicate_in_target"
+                questions.append(question_info)
+                continue
+
+            if target_q.text in duplicate_source_texts:
+                question_info["status"] = "duplicate_in_source"
+                questions.append(question_info)
+                continue
+
+            if target_q.text not in source_by_text:
+                question_info["status"] = "no_match_in_source"
+                questions.append(question_info)
+                continue
+
+            if target_q.id in target_questions_with_themes:
+                question_info["status"] = "has_existing_themes"
+                questions.append(question_info)
+                continue
+
+            source_q = source_by_text[target_q.text]
+            themes = source_themes_by_question.get(source_q.id, [])
+
+            if not themes:
+                question_info["status"] = "no_themes_in_source"
+                questions.append(question_info)
+                continue
+
+            question_info["status"] = "will_import"
+            question_info["source_themes"] = [t.name for t in themes]
+            questions.append(question_info)
+
+        unmatched_source = sorted(set(source_by_text.keys()) - {q.text for q in target_questions})
+        warnings = {"unmatched_source_questions": unmatched_source}
+
+        if dry_run:
+            return Response(
+                {
+                    "dry_run": True,
+                    "source_consultation": {"id": str(source.id), "title": source.title},
+                    "target_consultation": {"id": str(target.id), "title": target.title},
+                    "questions": questions,
+                    "warnings": warnings,
+                }
+            )
+
+        # Execute the import
+        imported_themes = 0
+        with transaction.atomic():
+            for q_info in questions:
+                if q_info["status"] != "will_import":
+                    continue
+
+                target_q = target_by_text[q_info["question_text"]]
+                source_q = source_by_text[q_info["question_text"]]
+                themes = source_themes_by_question.get(source_q.id, [])
+
+                for theme in themes:
+                    new_theme = SelectedTheme.objects.create(
+                        question=target_q,
+                        name=theme.name,
+                        description=theme.description,
+                        key=theme.key,
+                        last_modified_by=theme.last_modified_by,
+                    )
+                    # Preserve original timestamps from the source to maintain audit trail.
+                    # QuerySet.update() is required because auto_now/auto_now_add bypass save().
+                    SelectedTheme.objects.filter(pk=new_theme.pk).update(
+                        created_at=theme.created_at,
+                        modified_at=theme.modified_at,
+                    )
+                    imported_themes += 1
+
+                target_q.theme_status = Question.ThemeStatus.CONFIRMED
+                target_q.save(update_fields=["theme_status"])
+
+            # Advance stage to FINALISING_THEMES if currently earlier in the pipeline
+            earlier_stages = {Consultation.Stage.SETUP, Consultation.Stage.FINDING_THEMES}
+            if target.stage in earlier_stages:
+                target.stage = Consultation.Stage.FINALISING_THEMES
+                target.save(update_fields=["stage"])
+
+        # Export to S3
+        try:
+            export_selected_themes_to_s3(target)
+        except Exception as e:
+            logger.error("S3 export failed after theme import: {error}", error=str(e))
+            return Response(
+                {
+                    "error": f"Themes were saved to the database ({imported_themes} imported) but S3 export failed: {e}",
+                    "total_themes_imported": imported_themes,
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        logger.info(
+            "Imported {count} selected themes from '{source}' to '{target}' by user {user}",
+            count=imported_themes,
+            source=source.title,
+            target=target.title,
+            user=request.user.email,
+        )
+
+        return Response(
+            {
+                "dry_run": False,
+                "source_consultation": {"id": str(source.id), "title": source.title},
+                "target_consultation": {"id": str(target.id), "title": target.title},
+                "total_themes_imported": imported_themes,
+                "questions": questions,
+                "warnings": warnings,
+                "performed_by": request.user.email,
+            }
         )
 
     @action(

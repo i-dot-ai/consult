@@ -604,6 +604,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
           <!---->
           <div
             class="bg-white"
+            data-testid="question-card"
           >
             <!---->
             <!---->
@@ -612,7 +613,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
             <div
               aria-label="Click to view question: Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?"
               class="transition-colors duration-300 block rounded-xl cursor-pointer hover:bg-gray-200"
-              data-testid="Click to view question: Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?"
+              data-testid="question-link-5e8176da-fdcd-4f55-ab7b-b2ca8a12a467"
               role="button"
               tabindex="0"
               title="Q1: Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?"
@@ -671,6 +672,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       class="text-sm leading-6 whitespace-nowrap"
                     >
                       100 responses
+                      <!---->
                     </div>
                      
                     <!---->
@@ -688,7 +690,9 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       <div
                         data-testid="fav-button"
                       >
-                        <div>
+                        <div
+                          role="presentation"
+                        >
                           <!---->
                           <button
                             aria-pressed="false"
@@ -740,6 +744,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
           </div>
           <div
             class="bg-white"
+            data-testid="question-card"
           >
             <!---->
             <!---->
@@ -748,7 +753,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
             <div
               aria-label="Click to view question: Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?"
               class="transition-colors duration-300 block rounded-xl cursor-pointer hover:bg-gray-200"
-              data-testid="Click to view question: Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?"
+              data-testid="question-link-ef855675-af2b-4cfe-871d-ad108360e57a"
               role="button"
               tabindex="0"
               title="Q2: Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?"
@@ -808,6 +813,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       class="text-sm leading-6 whitespace-nowrap"
                     >
                       100 responses
+                      <!---->
                     </div>
                      
                     <!---->
@@ -825,7 +831,9 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       <div
                         data-testid="fav-button"
                       >
-                        <div>
+                        <div
+                          role="presentation"
+                        >
                           <!---->
                           <button
                             aria-pressed="false"
@@ -877,6 +885,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
           </div>
           <div
             class="bg-white"
+            data-testid="question-card"
           >
             <!---->
             <!---->
@@ -885,7 +894,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
             <div
               aria-label="Click to view question: Which of the following factors do you believe are important when considering the packaging of chocolate bars? Please select all that apply: a) Sustainability, b) Design, c) Cost-effectiveness, d) Durability, e) Brand recognition."
               class="transition-colors duration-300 block rounded-xl cursor-pointer hover:bg-gray-200"
-              data-testid="Click to view question: Which of the following factors do you believe are important when considering the packaging of chocolate bars? Please select all that apply: a) Sustainability, b) Design, c) Cost-effectiveness, d) Durability, e) Brand recognition."
+              data-testid="question-link-92848794-2072-41c4-b3bf-78248a6995da"
               role="button"
               tabindex="0"
               title="Q3: Which of the following factors do you believe are important when considering the packaging of chocolate bars? Please select all that apply: a) Sustainability, b) Design, c) Cost-effectiveness, d) Durability, e) Brand recognition."
@@ -945,6 +954,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       class="text-sm leading-6 whitespace-nowrap"
                     >
                       100 responses
+                      <!---->
                     </div>
                      
                     <!---->
@@ -962,7 +972,9 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       <div
                         data-testid="fav-button"
                       >
-                        <div>
+                        <div
+                          role="presentation"
+                        >
                           <!---->
                           <button
                             aria-pressed="false"
@@ -1014,6 +1026,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
           </div>
           <div
             class="bg-white"
+            data-testid="question-card"
           >
             <!---->
             <!---->
@@ -1022,7 +1035,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
             <div
               aria-label="Click to view question: What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?"
               class="transition-colors duration-300 block rounded-xl cursor-pointer hover:bg-gray-200"
-              data-testid="Click to view question: What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?"
+              data-testid="question-link-b20f35ee-411b-4746-9029-1e9b02610dea"
               role="button"
               tabindex="0"
               title="Q4: What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?"
@@ -1081,6 +1094,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       class="text-sm leading-6 whitespace-nowrap"
                     >
                       100 responses
+                      <!---->
                     </div>
                      
                     <!---->
@@ -1098,7 +1112,9 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       <div
                         data-testid="fav-button"
                       >
-                        <div>
+                        <div
+                          role="presentation"
+                        >
                           <!---->
                           <button
                             aria-pressed="false"

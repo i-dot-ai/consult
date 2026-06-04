@@ -1,4 +1,4 @@
-type ConsultationStage = "setup" | "analysis" | "theme_sign_off";
+type ConsultationStage = "setup" | "analysis" | "finalising_themes";
 
 export type Theme = {
   name: string;
@@ -6,10 +6,17 @@ export type Theme = {
   key: string;
 };
 
+export type DemographicInfo = {
+  age_group: string;
+  nation: string;
+}
+
 export type Response = {
   free_text?: string;
   chosen_options?: string[];
   themes?: Theme["key"][];
+  demographics?: DemographicInfo;
+  evidence_rich?: boolean;
 };
 
 export type Question = {
@@ -19,6 +26,7 @@ export type Question = {
   has_multiple_choice: boolean;
   multiple_choice_options?: string[];
   responses?: Response[];
+  candidate_themes?: Theme[];
   themes?: Theme[];
 };
 
@@ -41,6 +49,7 @@ export type Fixture = {
 export type FixtureReference = {
   users?: User[];
   consultation_ids?: string[];
+  question_ids?: string[];
 };
 
 export const defaultUser: User = {
@@ -72,58 +81,70 @@ const hybridQuestionResponses: Response[] = [
   {
     free_text: "",
     chosen_options: [hybridQuestionOptions[0]],
+    demographics: { age_group: "18-35", nation: "England" },
   },
   {
     free_text:
       "Yes, I agree with the proposal as it will create a standardized framework that benefits both consumers and manufacturers.",
     chosen_options: [hybridQuestionOptions[0]],
+    demographics: { age_group: "36-50", nation: "Wales" },
   },
   {
     free_text:
       "No, I do not agree because I feel the proposed categories are too restrictive and may stifle innovation in flavour development.",
     chosen_options: [hybridQuestionOptions[1]],
+    demographics: { age_group: "51-65", nation: "Scotland" },
   },
   {
     free_text:
       "I agree with the proposal, but I think there should be room for additional categories to accommodate future trends.",
     chosen_options: [hybridQuestionOptions[0], hybridQuestionOptions[2]],
+    demographics: { age_group: "18-35", nation: "Northern Ireland" },
   },
   {
     free_text:
       "I disagree with the proposal as it does not sufficiently account for regional flavour preferences across the UK.",
     chosen_options: [hybridQuestionOptions[1]],
+    demographics: { age_group: "36-50", nation: "England" },
   },
 ];
 
 const hybridQuestionResponsesWithThemes: Response[] = [
   {
-    free_text: "",
+    free_text:
+      "Yes, I strongly support this proposal as it provides a clear standardized framework while also encouraging innovation in the chocolate industry.",
     chosen_options: [hybridQuestionOptions[0]],
     themes: ["A", "B"],
+    evidence_rich: true,
+    demographics: { age_group: "18-35", nation: "England" },
   },
   {
     free_text:
       "Yes, I agree with the proposal as it will create a standardized framework that benefits both consumers and manufacturers.",
     chosen_options: [hybridQuestionOptions[0]],
     themes: ["A"],
+    demographics: { age_group: "36-50", nation: "Wales" },
   },
   {
     free_text:
       "No, I do not agree because I feel the proposed categories are too restrictive and may stifle innovation in flavour development.",
     chosen_options: [hybridQuestionOptions[1]],
     themes: ["B"],
+    demographics: { age_group: "51-65", nation: "Scotland" },
   },
   {
     free_text:
       "I agree with the proposal, but I think there should be room for additional categories to accommodate future trends.",
     chosen_options: [hybridQuestionOptions[0], hybridQuestionOptions[2]],
     themes: [],
+    demographics: { age_group: "18-35", nation: "Northern Ireland" },
   },
   {
     free_text:
       "I disagree with the proposal as it does not sufficiently account for regional flavour preferences across the UK.",
     chosen_options: [hybridQuestionOptions[1]],
     themes: ["A"],
+    demographics: { age_group: "36-50", nation: "England" },
   },
 ];
 
@@ -219,49 +240,60 @@ export const openQuestionThemes: Theme[] = [
 const openQuestionResponses: Response[] = [
   {
     free_text: "",
+    demographics: { age_group: "18-35", nation: "England" },
   },
   {
     free_text:
       "I believe the current regulations should include clearer guidelines on the sourcing of ingredients to ensure ethical practices and sustainability.",
+    demographics: { age_group: "36-50", nation: "Wales" },
   },
   {
     free_text:
       "The regulations could be improved by setting specific limits on sugar content to promote healthier options for consumers.",
+    demographics: { age_group: "51-65", nation: "Scotland" },
   },
   {
     free_text:
       "Consideration should be given to standardizing portion sizes to help consumers make informed choices and manage their calorie intake.",
+    demographics: { age_group: "18-35", nation: "Northern Ireland" },
   },
   {
     free_text:
       "It would be beneficial to include mandatory allergen warnings on all packaging to enhance consumer safety.",
+    demographics: { age_group: "36-50", nation: "England" },
   },
 ];
 
 const openQuestionResponsesWithThemes: Response[] = [
   {
-    free_text: "",
+    free_text:
+      "The regulations should focus on innovative approaches to packaging, exploring new flavor combinations while maintaining ethical sourcing standards.",
     themes: ["A", "B", "C"],
+    demographics: { age_group: "18-35", nation: "England" },
   },
   {
     free_text:
       "I believe the current regulations should include clearer guidelines on the sourcing of ingredients to ensure ethical practices and sustainability.",
     themes: ["A", "C"],
+    demographics: { age_group: "36-50", nation: "Wales" },
   },
   {
     free_text:
       "The regulations could be improved by setting specific limits on sugar content to promote healthier options for consumers.",
     themes: ["B", "C"],
+    demographics: { age_group: "51-65", nation: "Scotland" },
   },
   {
     free_text:
       "Consideration should be given to standardizing portion sizes to help consumers make informed choices and manage their calorie intake.",
     themes: ["C"],
+    demographics: { age_group: "18-35", nation: "Northern Ireland" },
   },
   {
     free_text:
       "It would be beneficial to include mandatory allergen warnings on all packaging to enhance consumer safety.",
     themes: [],
+    demographics: { age_group: "36-50", nation: "England" },
   },
 ];
 
@@ -282,14 +314,31 @@ export const openQuestionWithThemes: Question = {
 };
 
 export const setupConsultation: Consultation = {
-  title: "Dummy Consultation at Setup Stage",
+  title: "Test Consultation at Setup Stage",
   stage: "setup",
   users: [defaultUser.email],
   questions: [hybridQuestion, multChoiceQuestion, openQuestion],
 };
 
+export const finalisingThemesConsultation: Consultation = {
+  title: "Dummy Consultation at Finalising Themes Stage (with Candidate Themes)",
+  stage: "finalising_themes",
+  users: [defaultUser.email],
+  questions: [
+    {
+      ...hybridQuestion,
+      candidate_themes: hybridQuestionThemes,
+    },
+    multChoiceQuestion,
+    {
+      ...openQuestion,
+      candidate_themes: openQuestionThemes,
+    },
+  ],
+};
+
 export const analysisConsultation: Consultation = {
-  title: "Dummy Consultation at Analysis Stage",
+  title: "Test Consultation at Analysis Stage",
   stage: "analysis",
   users: [defaultUser.email],
   questions: [
@@ -300,8 +349,15 @@ export const analysisConsultation: Consultation = {
 };
 
 export const signOffConsultation: Consultation = {
-  title: "Dummy Consultation at Theme Sign Off Stage",
-  stage: "theme_sign_off",
+  title: "Test Consultation at Finalising Themes Stage",
+  stage: "finalising_themes",
   users: [defaultUser.email],
-  questions: [hybridQuestion, multChoiceQuestion, openQuestion],
+  questions: [
+    {
+      ...hybridQuestion,
+      candidate_themes: openQuestionThemes,
+    },
+    multChoiceQuestion,
+    openQuestion,
+  ],
 };

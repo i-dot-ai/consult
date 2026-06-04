@@ -3,7 +3,9 @@ from django.db import transaction
 
 from authentication.models import User
 from consultations.models import (
+    CandidateTheme,
     Consultation,
+    DemographicOption,
     MultiChoiceAnswer,
     Question,
     Respondent,
@@ -31,10 +33,22 @@ def create_response_from_fixtures(respondents, index, question_object, response_
         )
 
     if "themes" in response_data:
-        annotation = ResponseAnnotation.objects.create(response=response)
+        annotation = ResponseAnnotation.objects.create(
+            response=response,
+            evidence_rich=response_data.get("evidence_rich", False)
+        )
         annotation.add_original_ai_themes(
             SelectedTheme.objects.filter(question=question_object, key__in=response_data["themes"])
         )
+
+    if "demographics" in response_data:
+        for key, value in response_data["demographics"].items():
+            option, _ = DemographicOption.objects.get_or_create(
+                    consultation=question_object.consultation,
+                    field_name=key,
+                    field_value=value,
+                )
+            respondents[index].demographics.add(option)
 
 
 def create_question_from_fixtures(consultation_object, respondents, question_data):
@@ -65,9 +79,26 @@ def create_question_from_fixtures(consultation_object, respondents, question_dat
             ]
         )
 
+    if "candidate_themes" in question_data:
+        CandidateTheme.objects.bulk_create(
+            [
+                CandidateTheme(
+                    question=question_object,
+                    name=t["name"],
+                    description=t["description"]
+                )
+                for t in question_data["candidate_themes"]
+            ]
+        )
+
     if "responses" in question_data:
         for i, response_data in enumerate(question_data["responses"]):
             create_response_from_fixtures(respondents, i, question_object, response_data)
+
+    question_object.update_response_counts()
+    MultiChoiceAnswer.update_response_counts(question_object)
+    
+    return question_object
 
 
 def create_respondents_from_fixtures(consultation_data, consultation_object):
@@ -92,6 +123,7 @@ def create_data_from_fixtures(fixtures):
         raise RuntimeError("Fixture data should only be ingested for tests")
 
     consultations = []
+    questions = []
 
     for consultation_data in fixtures.get("consultations", []):
         with transaction.atomic():
@@ -111,10 +143,15 @@ def create_data_from_fixtures(fixtures):
             respondents = create_respondents_from_fixtures(consultation_data, consultation_object)
 
             for question_data in consultation_data.get("questions", []):
-                create_question_from_fixtures(consultation_object, respondents, question_data)
+                question_object = create_question_from_fixtures(consultation_object, respondents, question_data)
+                questions.append(question_object.id)
+
+            # Make sure that demographic response counts are updated after all responses have been created
+            DemographicOption.update_response_counts(consultation_object)
 
     return {
         "consultation_ids": consultations,
+        "question_ids": questions,
     }
 
 

@@ -1,14 +1,14 @@
 import {
   getApiAnswerFlagUrl,
-  getApiAnswerUrl,
   getApiConsultationUrl,
   getApiDemographicsUrl,
   getApiQuestionResponsesUrl,
   getApiQuestionThemesUrl,
   getApiQuestionUrl,
+  getApiResponseUrl,
   updateResponseReadStatus,
 } from "../../../global/routes";
-import type { ResponseAnswer } from "../../../global/types";
+import type { ResponseBody } from "../../../global/types";
 import { paginateArray } from "../../../global/utils";
 
 type QueryParams = {
@@ -23,7 +23,7 @@ type QueryParams = {
 export const CONSULTATION_ID = "test-consultation";
 export const QUESTION_ID = "test-question";
 
-export let answers: ResponseAnswer[] = [
+export const responses: ResponseBody[] = [
   {
     id: "f3f8f938-281b-4b74-ac80-6db7390e2171",
     identifier: "1",
@@ -32,7 +32,7 @@ export let answers: ResponseAnswer[] = [
       id: "ab299432-7f39-4360-bf85-f0f374dd1f34",
       themefinder_id: 1,
       demographics: [],
-      name: null,
+      name: "",
     },
     question_id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     free_text_answer_text:
@@ -55,7 +55,7 @@ export let answers: ResponseAnswer[] = [
       id: "d34547db-21b8-4586-905a-f71f6090e466",
       themefinder_id: 2,
       demographics: [],
-      name: null,
+      name: "",
     },
     question_id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     free_text_answer_text: "",
@@ -77,7 +77,7 @@ export let answers: ResponseAnswer[] = [
       id: "7a2d12a8-9b51-4b06-9d72-4b225a335764",
       themefinder_id: 3,
       demographics: [],
-      name: null,
+      name: "",
     },
     question_id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     free_text_answer_text:
@@ -109,7 +109,7 @@ export let answers: ResponseAnswer[] = [
       id: "4f9253bf-cd6a-4e1e-8620-825045125cdc",
       themefinder_id: 4,
       demographics: [],
-      name: null,
+      name: "",
     },
     question_id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     free_text_answer_text:
@@ -132,7 +132,7 @@ export let answers: ResponseAnswer[] = [
       id: "c737bce1-3f30-4be7-aacc-391169300e03",
       themefinder_id: 5,
       demographics: [],
-      name: null,
+      name: "",
     },
     question_id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     free_text_answer_text: "",
@@ -171,22 +171,35 @@ const themes = [
     name: "Standardized framework",
     description:
       "A standardized framework that benefits both consumers and manufacturers.",
-    count: 0,
+    count: 62,
+  },
+  {
+    id: "no-reason-theme",
+    name: "No Reason Given",
+    description: "The response does not provide a substantive answer.",
+    count: 80,
+  },
+  {
+    id: "other-theme",
+    name: "Other",
+    description:
+      "The response discusses an issue not covered by listed themes.",
+    count: 70,
   },
   {
     id: "test-theme",
     name: "Test Theme",
     description:
       "A test framework that benefits both consumers and manufacturers.",
-    count: 0,
+    count: 45,
   },
 ];
 
-const filterAnswers = (answers: ResponseAnswer[], params: QueryParams) => {
-  const pages = paginateArray(answers, Number.parseInt(params.page_size));
+const filterAnswers = (responses: ResponseBody[], params: QueryParams) => {
+  const pages = paginateArray(responses, Number.parseInt(params.page_size));
   const intendedPage = Number.parseInt(params.page);
 
-  let result: ResponseAnswer[] =
+  let result: ResponseBody[] =
     intendedPage > pages.length ? [] : pages[intendedPage - 1];
 
   if (params.evidenceRich) {
@@ -224,9 +237,9 @@ export const consultationMock = {
   url: getApiConsultationUrl(CONSULTATION_ID),
   body: {
     id: "4d1414d5-9300-447b-b788-50d0bef7e807",
-    title: "Dummy Consultation at Theme Sign Off Stage",
+    title: "Dummy Consultation at Finalising Themes Stage",
     code: "",
-    stage: "theme_sign_off",
+    stage: "finalising_themes",
     users: [
       {
         id: 1,
@@ -244,7 +257,9 @@ export const questionMock = {
   body: {
     id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
     number: 1,
-    total_responses: 100,
+    total_response_count: 250,
+    free_text_response_count: 100,
+    multi_choice_response_count: 232,
     question_text:
       "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
     has_free_text: true,
@@ -283,18 +298,16 @@ export const themesMock = {
   }),
 };
 
-export const answersMock = {
+export const responsesMock = {
   url: "path:" + getApiQuestionResponsesUrl(CONSULTATION_ID, QUESTION_ID),
   body: ({ url }: { url: string }) => {
     const queryParams = Object.fromEntries(
       new URLSearchParams(url.split("?")[1]),
     ) as unknown as QueryParams;
 
-    const filteredAnswers = filterAnswers(answers, queryParams);
+    const filteredAnswers = filterAnswers(responses, queryParams);
 
     return {
-      respondents_total: filteredAnswers.length,
-      filtered_total: filteredAnswers.length,
       has_more_pages: true,
       all_respondents: filteredAnswers,
     };
@@ -306,33 +319,37 @@ export const demoMock = {
   body: [],
 };
 
-export const answerUpdateMock = {
+export const responsesUpdateMock = {
   regexp: "*host" + updateResponseReadStatus(":consultationId", ":answerId"),
   method: "POST",
 };
 
-export const answerEditMock = {
-  regexp: "*host" + getApiAnswerUrl(":consultationId", ":answerId"),
+export const responsesEditMock = {
+  regexp: "*host" + getApiResponseUrl(":consultationId", ":answerId"),
   method: "PATCH",
   body: ({ body, params }: { body: string; params: { answerId: string } }) => {
     const parsedBody = JSON.parse(body);
 
-    const answer = answers.find((answer) => answer.id === params.answerId);
+    const consultationResponse = responses.find(
+      (response) => response.id === params.answerId,
+    );
 
-    if (!answer) {
+    if (!consultationResponse) {
       return;
     }
 
-    answer.evidenceRich = parsedBody.evidenceRich || null;
-    answer.themes = [];
+    consultationResponse.evidenceRich = parsedBody.evidenceRich || null;
+    consultationResponse.themes = [];
 
     parsedBody.themes.forEach((theme: { id: string }) => {
       const newTheme = themes.find((item) => item.id === theme.id);
 
-      const themeExists = answer.themes?.find((item) => item.id === theme.id);
+      const themeExists = consultationResponse.themes?.find(
+        (item) => item.id === theme.id,
+      );
       if (!themeExists) {
-        answer.themes = [
-          ...answer.themes!,
+        consultationResponse.themes = [
+          ...consultationResponse.themes!,
           {
             id: newTheme!.id,
             description: newTheme!.description,
@@ -348,18 +365,18 @@ export const flagMock = {
   regexp: "*host" + getApiAnswerFlagUrl(":consultationId", ":answerId"),
   method: "PATCH",
   body: ({ params }: { params: { answerId: string } }) => {
-    answers = answers.map((answer) =>
-      answer.id === params.answerId
-        ? { ...answer, is_flagged: !answer.is_flagged }
-        : answer,
+    responses.map((response) =>
+      response.id === params.answerId
+        ? { ...response, is_flagged: !response.is_flagged }
+        : response,
     );
   },
 };
 
 export const mocks = {
-  answerEditMock,
-  answersMock,
-  answerUpdateMock,
+  responsesEditMock,
+  responsesMock,
+  responsesUpdateMock,
   consultationMock,
   demoMock,
   flagMock,

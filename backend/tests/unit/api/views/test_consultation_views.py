@@ -18,6 +18,7 @@ from factories import (
     QuestionFactory,
     RespondentFactory,
     ResponseFactory,
+    SelectedThemeFactory,
     UserFactory,
 )
 
@@ -104,6 +105,9 @@ class TestConsultationViewSet:
         respondent2 = RespondentFactory(consultation=consultation)
         respondent2.demographics.add(demo)
         ResponseFactory(question=question_2, respondent=respondent2)
+
+        # Update denormalised counts
+        DemographicOption.update_response_counts(consultation)
 
         url = reverse("consultations-demographics", kwargs={"pk": consultation.id})
 
@@ -915,3 +919,272 @@ class TestAssignThemesEndpoint:
             )
 
             assert response.status_code == 400
+
+
+@pytest.mark.django_db
+class TestImportFinalisedThemesEndpoint:
+    def test_dry_run_returns_preview(self, client, staff_user_token):
+        source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
+        target = ConsultationFactory(title="Target", stage=Consultation.Stage.FINALISING_THEMES)
+        question_text = "Do you agree with the proposal?"
+        source_q = QuestionFactory(
+            consultation=source, has_free_text=True, number=1, text=question_text
+        )
+        QuestionFactory(consultation=target, has_free_text=True, number=1, text=question_text)
+        SelectedThemeFactory(question=source_q, name="Theme A", description="Desc A")
+        SelectedThemeFactory(question=source_q, name="Theme B", description="Desc B")
+
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
+        response = client.post(
+            url + "?dry_run=true",
+            {"source_consultation_id": str(source.id)},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["dry_run"] is True
+        assert data["questions"][0]["status"] == "will_import"
+        assert data["questions"][0]["source_themes"] == ["Theme A", "Theme B"]
+        assert SelectedTheme.objects.filter(question__consultation=target).count() == 0
+
+    def test_import_creates_themes_and_updates_question_status(self, client, staff_user_token):
+        source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
+        target = ConsultationFactory(title="Target", stage=Consultation.Stage.FINALISING_THEMES)
+        question_text = "Do you agree with the proposal?"
+        source_q = QuestionFactory(
+            consultation=source, has_free_text=True, number=1, text=question_text
+        )
+        target_q = QuestionFactory(
+            consultation=target, has_free_text=True, number=1, text=question_text
+        )
+        SelectedThemeFactory(question=source_q, name="Theme A", description="Desc A")
+        SelectedThemeFactory(question=source_q, name="Theme B", description="Desc B")
+
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
+
+        with patch("consultations.api.views.consultation.export_selected_themes_to_s3"):
+            response = client.post(
+                url,
+                {"source_consultation_id": str(source.id)},
+                content_type="application/json",
+                headers={"Authorization": f"Bearer {staff_user_token}"},
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["dry_run"] is False
+        assert data["total_themes_imported"] == 2
+        assert SelectedTheme.objects.filter(question__consultation=target).count() == 2
+        target_q.refresh_from_db()
+        assert target_q.theme_status == Question.ThemeStatus.CONFIRMED
+
+    def test_import_advances_stage_to_finalising_themes(self, client, staff_user_token):
+        source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
+        target = ConsultationFactory(title="Target", stage=Consultation.Stage.SETUP)
+        question_text = "Do you agree with the proposal?"
+        source_q = QuestionFactory(
+            consultation=source, has_free_text=True, number=1, text=question_text
+        )
+        QuestionFactory(consultation=target, has_free_text=True, number=1, text=question_text)
+        SelectedThemeFactory(question=source_q, name="Theme A", description="Desc A")
+
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
+
+        with patch("consultations.api.views.consultation.export_selected_themes_to_s3"):
+            response = client.post(
+                url,
+                {"source_consultation_id": str(source.id)},
+                content_type="application/json",
+                headers={"Authorization": f"Bearer {staff_user_token}"},
+            )
+
+        assert response.status_code == 200
+        target.refresh_from_db()
+        assert target.stage == Consultation.Stage.FINALISING_THEMES
+
+    def test_skips_questions_with_existing_themes(self, client, staff_user_token):
+        source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
+        target = ConsultationFactory(title="Target", stage=Consultation.Stage.FINALISING_THEMES)
+        question_text = "Do you agree with the proposal?"
+        source_q = QuestionFactory(
+            consultation=source, has_free_text=True, number=1, text=question_text
+        )
+        target_q = QuestionFactory(
+            consultation=target, has_free_text=True, number=1, text=question_text
+        )
+        SelectedThemeFactory(question=source_q, name="Theme A", description="Desc A")
+        SelectedThemeFactory(question=target_q, name="Existing", description="Already here")
+
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
+
+        with patch("consultations.api.views.consultation.export_selected_themes_to_s3"):
+            response = client.post(
+                url,
+                {"source_consultation_id": str(source.id)},
+                content_type="application/json",
+                headers={"Authorization": f"Bearer {staff_user_token}"},
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["questions"][0]["status"] == "has_existing_themes"
+        assert SelectedTheme.objects.filter(question=target_q).count() == 1
+        assert SelectedTheme.objects.get(question=target_q).name == "Existing"
+        assert "source_themes" not in data["questions"][0]
+
+    def test_duplicate_target_questions_skipped(self, client, staff_user_token):
+        source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
+        target = ConsultationFactory(title="Target", stage=Consultation.Stage.FINALISING_THEMES)
+        question_text = "Do you agree?"
+        source_q = QuestionFactory(
+            consultation=source, has_free_text=True, number=1, text=question_text
+        )
+        QuestionFactory(consultation=target, has_free_text=True, number=1, text=question_text)
+        QuestionFactory(consultation=target, has_free_text=True, number=2, text=question_text)
+        SelectedThemeFactory(question=source_q, name="Theme A", description="Desc A")
+
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
+
+        with patch("consultations.api.views.consultation.export_selected_themes_to_s3"):
+            response = client.post(
+                url,
+                {"source_consultation_id": str(source.id)},
+                content_type="application/json",
+                headers={"Authorization": f"Bearer {staff_user_token}"},
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert all(q["status"] == "duplicate_in_target" for q in data["questions"])
+        assert SelectedTheme.objects.filter(question__consultation=target).count() == 0
+
+    def test_duplicate_source_questions_skipped(self, client, staff_user_token):
+        source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
+        target = ConsultationFactory(title="Target", stage=Consultation.Stage.FINALISING_THEMES)
+        question_text = "Do you agree?"
+        source_q1 = QuestionFactory(
+            consultation=source, has_free_text=True, number=1, text=question_text
+        )
+        QuestionFactory(consultation=source, has_free_text=True, number=2, text=question_text)
+        QuestionFactory(consultation=target, has_free_text=True, number=1, text=question_text)
+        SelectedThemeFactory(question=source_q1, name="Theme A", description="Desc A")
+
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
+
+        with patch("consultations.api.views.consultation.export_selected_themes_to_s3"):
+            response = client.post(
+                url,
+                {"source_consultation_id": str(source.id)},
+                content_type="application/json",
+                headers={"Authorization": f"Bearer {staff_user_token}"},
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["questions"][0]["status"] == "duplicate_in_source"
+        assert SelectedTheme.objects.filter(question__consultation=target).count() == 0
+
+    def test_no_match_in_source(self, client, staff_user_token):
+        source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
+        target = ConsultationFactory(title="Target", stage=Consultation.Stage.FINALISING_THEMES)
+        source_q = QuestionFactory(
+            consultation=source, has_free_text=True, number=1, text="Source question"
+        )
+        QuestionFactory(consultation=target, has_free_text=True, number=1, text="Target question")
+        SelectedThemeFactory(question=source_q, name="Theme A", description="Desc A")
+
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
+
+        with patch("consultations.api.views.consultation.export_selected_themes_to_s3"):
+            response = client.post(
+                url,
+                {"source_consultation_id": str(source.id)},
+                content_type="application/json",
+                headers={"Authorization": f"Bearer {staff_user_token}"},
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["questions"][0]["status"] == "no_match_in_source"
+        assert SelectedTheme.objects.filter(question__consultation=target).count() == 0
+
+    def test_unmatched_source_questions_in_warnings(self, client, staff_user_token):
+        source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
+        target = ConsultationFactory(title="Target", stage=Consultation.Stage.FINALISING_THEMES)
+        shared_text = "Shared question"
+        source_only_text = "Only in source"
+        source_q = QuestionFactory(
+            consultation=source, has_free_text=True, number=1, text=shared_text
+        )
+        QuestionFactory(consultation=source, has_free_text=True, number=2, text=source_only_text)
+        QuestionFactory(consultation=target, has_free_text=True, number=1, text=shared_text)
+        SelectedThemeFactory(question=source_q, name="Theme A", description="Desc A")
+
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
+        response = client.post(
+            url + "?dry_run=true",
+            {"source_consultation_id": str(source.id)},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert source_only_text in data["warnings"]["unmatched_source_questions"]
+
+    def test_rejects_same_consultation(self, client, staff_user_token):
+        consultation = ConsultationFactory(title="Same", stage=Consultation.Stage.ANALYSIS)
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": consultation.id})
+
+        response = client.post(
+            url,
+            {"source_consultation_id": str(consultation.id)},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 400
+
+    def test_rejects_source_has_not_finalised_themes(self, client, staff_user_token):
+        source = ConsultationFactory(title="Source", stage=Consultation.Stage.FINALISING_THEMES)
+        target = ConsultationFactory(title="Target", stage=Consultation.Stage.SETUP)
+
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
+        response = client.post(
+            url,
+            {"source_consultation_id": str(source.id)},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 400
+        assert response.json()["error"] == "Source consultation must have finalised themes"
+
+    def test_rejects_target_has_already_finalised_themes(self, client, staff_user_token):
+        source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
+        target = ConsultationFactory(title="Target", stage=Consultation.Stage.ASSIGNING_THEMES)
+
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
+        response = client.post(
+            url,
+            {"source_consultation_id": str(source.id)},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 400
+        assert response.json()["error"] == "Target consultation has already finalised themes"
+
+    def test_requires_admin(self, client):
+        target = ConsultationFactory(title="Target")
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
+
+        response = client.post(
+            url,
+            {"source_consultation_id": str(uuid4())},
+            content_type="application/json",
+        )
+
+        assert response.status_code == 401
