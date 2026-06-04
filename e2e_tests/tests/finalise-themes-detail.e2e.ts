@@ -103,7 +103,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     await createTheme(page, THEME_TITLE, THEME_DESCRIPTION);
 
     const confirmButton = page.getByRole("button", { name: "Sign Off Selected Themes (1)"});
-    confirmButton.click();
+    await confirmButton.click();
 
     // Selected theme is listed in confirm modal
     await expect(page.getByText("Confirm Finalising Themes")).toBeVisible();
@@ -170,7 +170,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     const TEST_DESCRIPTION = "Test description";
     const TEST_DESCRIPTION_UPDATED = "Updated test description";
 
-    await await createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
+    await createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
 
     await expect(page.getByText("1 selected", { exact: true })).toBeVisible();
     await expect(page.getByText(TEST_TITLE)).toBeVisible();
@@ -220,8 +220,8 @@ test.describe("Finalise Themes - Detail Page", () => {
 
   test("Representative responses button toggles responses", async ({ page }) => {
     // initially hidden
-    expect(page.getByRole("heading", { name: "Representative Responses" })).not.toBeVisible();
-    expect(page.getByText("There are no responses")).not.toBeVisible();
+    await expect(page.getByRole("heading", { name: "Representative Responses" })).not.toBeVisible();
+    await expect(page.getByText("There are no responses")).not.toBeVisible();
 
     // revealed upon click
     await page.getByRole("button", { name: "Representative Responses" }).first().click();
