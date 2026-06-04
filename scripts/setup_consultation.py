@@ -438,18 +438,18 @@ def validate_data(
     # well below it and free-text columns well above.
     UNIQUENESS_RATIO_THRESHOLD = 0.2
 
-    def _uniqueness_ratio(col_id: str, drop_na: bool = True) -> tuple[int, int, float] | None:
+    def _uniqueness_ratio(col_id: str) -> tuple[int, int, float] | None:
         """Return (n_unique, n_responses, ratio) for a column, or None if empty.
-           For multichoice questions we should include the nan responses in the count of total responses
-           to ensure that our count is not artifically small
+
+        Empty/NaN cells are always dropped before the ratio is computed, so
+        the denominator is the count of non-empty responses. This mirrors the
+        generated spreadsheet's helper formula
+        (``ROWS(UNIQUE(FILTER(src,src<>""))) / COUNTA(src)``) — see
+        build_consult_data_template.build_helpers_sheet.
         """
         if col_id not in responses_df.columns:
             return None
-        series = responses_df[col_id]
-        if drop_na:
-            series = series.dropna().astype(str)
-        else:
-            series = series.astype(str)
+        series = responses_df[col_id].dropna().astype(str)
 
         n_responses = len(series)
         if n_responses == 0:
@@ -464,7 +464,7 @@ def validate_data(
         col_role: str,
     ) -> None:
         """Warn if a closed column has a uniqueness ratio above the threshold."""
-        stats = _uniqueness_ratio(col_id, drop_na=False)
+        stats = _uniqueness_ratio(col_id)
         if stats is None:
             return
         n_unique, n_responses, ratio = stats
