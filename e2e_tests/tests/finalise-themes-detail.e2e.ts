@@ -99,7 +99,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     const THEME_TITLE = "Test Theme";
     const THEME_DESCRIPTION = "Test description";
 
-    createTheme(page, THEME_TITLE, THEME_DESCRIPTION);
+    await createTheme(page, THEME_TITLE, THEME_DESCRIPTION);
 
     const confirmButton = page.getByRole("button", { name: "Sign Off Selected Themes (1)"});
     confirmButton.click();
@@ -135,7 +135,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     await expect(page.getByText("No themes selected yet")).toBeVisible();
     await expect(page.getByText("0 selected")).toBeVisible();
 
-    createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
+    await createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
 
     await expect(page.getByText("1 selected", { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: TEST_TITLE })).toBeVisible();
@@ -149,7 +149,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     const TEST_TITLE = "Test Theme";
     const TEST_DESCRIPTION = "Test description";
 
-    createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
+    await createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
 
     await expect(page.getByText("1 selected", { exact: true })).toBeVisible();
     await expect(page.getByText(TEST_TITLE)).toBeVisible();
@@ -169,7 +169,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     const TEST_DESCRIPTION = "Test description";
     const TEST_DESCRIPTION_UPDATED = "Updated test description";
 
-    createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
+    await await createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
 
     await expect(page.getByText("1 selected", { exact: true })).toBeVisible();
     await expect(page.getByText(TEST_TITLE)).toBeVisible();
@@ -197,7 +197,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     const TEST_DESCRIPTION = "Test description";
     const TEST_DESCRIPTION_UPDATED = "Updated test description";
 
-    createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
+    await createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
 
     await expect(page.getByText("1 selected", { exact: true })).toBeVisible();
     await expect(page.getByText(TEST_TITLE)).toBeVisible();
