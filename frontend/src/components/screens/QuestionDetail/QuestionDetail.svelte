@@ -87,7 +87,7 @@
 
   const PAGE_SIZE: number = 5;
 
-  let currPage: number = $state(1);
+  let nextCursor: string | null = $state(null);
   let hasMorePages: boolean = $state(true);
   let responses: ResponseBody[] = $state([]);
   let responseTotalCount: number | null = $state(null);
@@ -155,16 +155,14 @@
     );
 
     if ($responsesStore.data?.all_respondents) {
-      const newResponses = $responsesStore.data?.all_respondents;
-      responses = [...responses, ...newResponses];
+      responses = [...responses, ...$responsesStore.data.all_respondents];
     }
     if ($responsesStore.data?.total_count !== undefined) {
       responseTotalCount = $responsesStore.data.total_count;
     }
     isResponsesLoading = false;
     hasMorePages = $responsesStore.data?.has_more_pages || false;
-
-    currPage += 1;
+    nextCursor = $responsesStore.data?.next_cursor ?? null;
   }
 
   function buildQueryString(
@@ -195,7 +193,7 @@
         demographics: filters.demoFilters.join(","),
       }),
       ...(includePagination && {
-        page: currPage.toString(),
+        ...(nextCursor ? { cursor: nextCursor } : {}),
         page_size: PAGE_SIZE.toString(),
       }),
     });
@@ -206,7 +204,7 @@
 
   function resetAnswers() {
     responses = [];
-    currPage = 1;
+    nextCursor = null;
     hasMorePages = true;
     isResponsesLoading = true;
     responseTotalCount = null;
@@ -501,7 +499,7 @@
           {:else}
             <div>
               <ul>
-                {#each responses as response, i (response.id)}
+                {#each responses as response, i (i)}
                   <li>
                     <div in:fly={{ x: 300, delay: getDelay(i) }}>
                       <ResponseCard

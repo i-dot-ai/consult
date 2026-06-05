@@ -1,5 +1,6 @@
+import uuid
+
 from django.db.models import Exists, OuterRef
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -33,35 +34,67 @@ class BespokeResultsSetPagination(PageNumberPagination):
             return super().get_page_size(request)
 
     def paginate_queryset(self, queryset, request, view=None):
-        """Fetch page_size + 1 to detect if more pages exist, avoiding COUNT(*)."""
         self.request = request
         page_size = self.get_page_size(request)
-        page_number = int(request.query_params.get(self.page_query_param, 1))
-        offset = (page_number - 1) * page_size
+        cursor = request.query_params.get("cursor")
+        self._is_semantic = request.query_params.get("searchMode") == "semantic"
 
-        # Only count on the first page
-        self._total_count = queryset.count() if page_number == 1 else None
+        # COUNT only on first page — skipped on every subsequent load-more click.
+        # On large consultations this avoids a repeated full-table count.
+        self._filtered_count = queryset.count() if not cursor else None
 
-        results = list(queryset[offset : offset + page_size + 1])
-        self._has_more_pages = len(results) > page_size
-        return results[:page_size]
+        if cursor:
+            if self._is_semantic:
+                # Semantic search is ordered by distance with no stable row key,
+                # so keyset pagination does not apply. Use an integer offset encoded
+                # in the cursor instead.
+                try:
+                    semantic_offset = int(cursor)
+                except ValueError:
+                    semantic_offset = 0  # Malformed cursor — treat as first page
+                self._semantic_offset = semantic_offset
+                items = list(queryset[semantic_offset : semantic_offset + page_size + 1])
+            else:
+                # Keyset pagination: seek directly to the position after the last-seen id.
+                self._semantic_offset = 0
+                try:
+                    uuid.UUID(cursor)  # validate before passing to the ORM
+                    queryset = queryset.filter(id__gt=cursor)
+                except ValueError:
+                    pass  # Malformed cursor — treat as first page
+                items = list(queryset[: page_size + 1])
+        else:
+            self._semantic_offset = 0
+            items = list(queryset[: page_size + 1])
+
+        self._has_next = len(items) > page_size
+        self._page = items[:page_size] if self._has_next else items
+        return self._page
 
     def get_paginated_response(self, data):
-        response_data = {
-            "has_more_pages": self._has_more_pages,
+        if self._has_next and self._page:
+            if self._is_semantic:
+                next_cursor = str(self._semantic_offset + len(self._page))
+            else:
+                next_cursor = str(self._page[-1].id)
+        else:
+            next_cursor = None
+
+        result = {
+            "has_more_pages": self._has_next,
+            "next_cursor": next_cursor,
             "all_respondents": data,
         }
-        if self._total_count is not None:
-            response_data["total_count"] = self._total_count
-        return Response(response_data)
+        if self._filtered_count is not None:
+            result["total_count"] = self._filtered_count
+        return Response(result)
 
 
 class ResponseViewSet(ModelViewSet):
     serializer_class = ResponseSerializer
     permission_classes = [IsAuthenticated, CanSeeConsultation]
     pagination_class = BespokeResultsSetPagination
-    filter_backends = [ResponseSearchFilter, DjangoFilterBackend]
-    filterset_class = ResponseFilter
+    filter_backends = [ResponseSearchFilter]
     http_method_names = ["get", "patch", "post"]
 
     def get_queryset(self):
@@ -114,7 +147,22 @@ class ResponseViewSet(ModelViewSet):
                 )
             ),
         )
-        return queryset
+        # Apply additional FilterSet filtering (including themeFilters)
+        filterset = ResponseFilter(self.request.GET, queryset=queryset, request=self.request)
+        filtered_queryset = filterset.qs
+        # Only use .distinct() when filters that JOIN through M2M are active —
+        # these can produce duplicate rows.
+        if (
+            self.request.GET.get("themeFilters")
+            or self.request.GET.get("demographics")
+            or self.request.GET.get("multiple_choice_answer")
+        ):
+            filtered_queryset = filtered_queryset.distinct()
+        # Stable ordering is required for cursor-based pagination to be consistent
+        # across pages. Without it PostgreSQL may return the same row on multiple
+        # pages as the query plan shifts. The semantic-search filter overrides
+        # this with .order_by("distance") when applied.
+        return filtered_queryset.order_by("id")
 
     @action(
         detail=True,

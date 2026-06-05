@@ -264,6 +264,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta:
         indexes = [
             GinIndex(fields=["search_vector"]),
+            models.Index(fields=["question", "id"]),
         ]
 
     def __str__(self):

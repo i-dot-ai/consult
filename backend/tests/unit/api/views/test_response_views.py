@@ -43,7 +43,7 @@ class TestResponseViewSet:
         Test for no N+1 queries. Regardless of the number of responses, we expect:
         - 1 query to get authentication user for permission checking
         - 1 query to get authentication user for is_flagged annotation
-        - 1 query to count total responses (page 1 only)
+        - 1 query to count filtered responses
         - 1 query to get responses with related data (includes is_read annotation)
         - 1 query to prefetch multiple choice answers
         - 1 query to prefetch demographic data
@@ -61,6 +61,7 @@ class TestResponseViewSet:
         data = orjson.loads(response.content)
 
         assert len(data["all_respondents"]) == 2
+        assert data["total_count"] == 2
 
         # Verify respondent data structure
         respondents = sorted(data["all_respondents"], key=lambda x: x["identifier"])
@@ -74,9 +75,8 @@ class TestResponseViewSet:
     def test_get_filtered_responses_with_pagination(
         self, client, staff_user_token, free_text_question
     ):
-        """Test API endpoint pagination"""
-        # Create multiple respondents
-        for i in range(5):
+        """Test cursor-based pagination returns the correct page and a usable next cursor"""
+        for _ in range(5):
             respondent = RespondentFactory(consultation=free_text_question.consultation)
             ResponseFactory(question=free_text_question, respondent=respondent)
 
@@ -84,22 +84,41 @@ class TestResponseViewSet:
             "response-list",
             kwargs={"consultation_pk": free_text_question.consultation.id},
         )
-        response = client.get(
+        auth = {"Authorization": f"Bearer {staff_user_token}"}
+
+        # First page — no cursor
+        page1 = client.get(
+            url,
+            query_params={"page_size": 2, "question_id": free_text_question.id},
+            headers=auth,
+        )
+        assert page1.status_code == 200
+        data1 = orjson.loads(page1.content)
+        assert len(data1["all_respondents"]) == 2
+        assert data1["has_more_pages"] is True
+        assert data1["total_count"] == 5
+        assert data1["next_cursor"] is not None
+
+        # Second page — use the cursor from page 1
+        page2 = client.get(
             url,
             query_params={
                 "page_size": 2,
-                "page": 1,
                 "question_id": free_text_question.id,
+                "cursor": data1["next_cursor"],
             },
-            headers={"Authorization": f"Bearer {staff_user_token}"},
+            headers=auth,
         )
-
-        assert response.status_code == 200
-
-        data = orjson.loads(response.content)
-
-        assert len(data["all_respondents"]) == 2
-        assert data["has_more_pages"]
+        assert page2.status_code == 200
+        data2 = orjson.loads(page2.content)
+        assert len(data2["all_respondents"]) == 2
+        assert data2["has_more_pages"] is True
+        # total_count is omitted on subsequent pages to avoid an extra COUNT query
+        assert "total_count" not in data2
+        # No overlap between pages
+        page1_ids = {response["id"] for response in data1["all_respondents"]}
+        page2_ids = {response["id"] for response in data2["all_respondents"]}
+        assert page1_ids.isdisjoint(page2_ids)
 
     def test_total_count_returned_on_first_page_only(
         self, client, staff_user_token, free_text_question
@@ -114,20 +133,25 @@ class TestResponseViewSet:
             kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
-        # Page 1 includes total_count
+        # First load (no cursor) includes total_count
         response = client.get(
             url,
-            query_params={"page_size": 2, "page": 1, "question_id": free_text_question.id},
+            query_params={"page_size": 2, "question_id": free_text_question.id},
             headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         data = orjson.loads(response.content)
         assert data["total_count"] == 5
         assert data["has_more_pages"]
+        assert data["next_cursor"] is not None
 
-        # Page 2 omits total_count
+        # Subsequent load (with cursor) omits total_count
         response = client.get(
             url,
-            query_params={"page_size": 2, "page": 2, "question_id": free_text_question.id},
+            query_params={
+                "page_size": 2,
+                "cursor": data["next_cursor"],
+                "question_id": free_text_question.id,
+            },
             headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         data = orjson.loads(response.content)
@@ -176,6 +200,7 @@ class TestResponseViewSet:
 
         data = orjson.loads(response.content)
 
+        assert data["total_count"] == 1  # Filtered to individuals only
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
@@ -229,6 +254,7 @@ class TestResponseViewSet:
 
         data = orjson.loads(response.content)
 
+        assert data["total_count"] == 1  # Only response1 has both themes
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
@@ -270,6 +296,7 @@ class TestResponseViewSet:
 
         data = response.json()
 
+        assert data["total_count"] == 1  # Only response1
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
 
@@ -316,6 +343,7 @@ class TestResponseViewSet:
 
         data = response.json()
 
+        assert data["total_count"] == count  # Only response1
         assert len(data["all_respondents"]) == 2 if evidence_rich is None else 2
         if isinstance(evidence_rich, bool):
             assert data["all_respondents"][0]["evidenceRich"] == evidence_rich
@@ -375,6 +403,7 @@ class TestResponseViewSet:
 
         data = response.json()
 
+        assert data["total_count"] == count  # Only response1
         assert len(data["all_respondents"]) == 2 if sentiments is None else 2
 
         assert sorted(x["sentiment"] for x in data["all_respondents"]) == expected
@@ -408,6 +437,7 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200
+        assert response.json()["total_count"] == expected_responses
         if expected_responses == 1:
             assert response.json()["all_respondents"][0]["is_flagged"] == is_flagged
 
@@ -452,6 +482,7 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200
+        assert response.json()["total_count"] == expected_responses
 
     @pytest.mark.parametrize(("is_flagged", "is_edited"), [(True, True), (False, False)])
     def test_get_responses_with_is_flagged(
@@ -517,6 +548,7 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200, response.json()
+        assert response.json()["total_count"] == 1
         assert response.json()["all_respondents"][0]["id"] == str(response_1.id)
         assert response.json()["all_respondents"][0]["respondent_id"] == str(respondent_1.id)
 
@@ -835,6 +867,7 @@ class TestResponseViewSet:
         data = orjson.loads(response.content)
 
         assert len(data["all_respondents"]) == 1
+        assert data["total_count"] == 1
 
         # Verify respondent data structure
         respondent = data["all_respondents"][0]

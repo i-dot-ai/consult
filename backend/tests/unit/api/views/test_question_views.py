@@ -735,10 +735,11 @@ class TestQuestionResponseViewSet:
 
         assert response.status_code == 200
         data = response.json()
+        assert data["total_count"] == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
     def test_question_responses_pagination(self, client, staff_user_token, free_text_question):
-        """Test nested route supports pagination"""
+        """Test nested route supports cursor-based pagination"""
         for _ in range(5):
             respondent = RespondentFactory(consultation=free_text_question.consultation)
             ResponseFactory(question=free_text_question, respondent=respondent)
@@ -750,16 +751,28 @@ class TestQuestionResponseViewSet:
                 "question_pk": free_text_question.id,
             },
         )
-        response = client.get(
-            url,
-            query_params={"page_size": 2, "page": 1},
-            headers={"Authorization": f"Bearer {staff_user_token}"},
-        )
+        auth = {"Authorization": f"Bearer {staff_user_token}"}
 
-        assert response.status_code == 200
-        data = response.json()
-        assert len(data["all_respondents"]) == 2
-        assert data["has_more_pages"] is True
+        page1 = client.get(url, query_params={"page_size": 2}, headers=auth)
+        assert page1.status_code == 200
+        data1 = page1.json()
+        assert len(data1["all_respondents"]) == 2
+        assert data1["has_more_pages"] is True
+        assert data1["total_count"] == 5
+        assert data1["next_cursor"] is not None
+
+        page2 = client.get(
+            url,
+            query_params={"page_size": 2, "cursor": data1["next_cursor"]},
+            headers=auth,
+        )
+        assert page2.status_code == 200
+        data2 = page2.json()
+        assert len(data2["all_respondents"]) == 2
+        assert "total_count" not in data2
+        page1_ids = {response["id"] for response in data1["all_respondents"]}
+        page2_ids = {response["id"] for response in data2["all_respondents"]}
+        assert page1_ids.isdisjoint(page2_ids)
 
     def test_question_responses_with_theme_filter(
         self, client, staff_user_token, free_text_question, theme_a
