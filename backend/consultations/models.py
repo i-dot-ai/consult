@@ -514,20 +514,30 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
                 assigned_by=user,
             )
 
-    def get_original_ai_themes(self):
-        """Get themes assigned by AI
-        Note that this implementation makes an implicit assumption that the AI only assigns the themes once
-        """
-        theme_ids = ResponseAnnotationTheme.history.filter(
-            response_annotation=self,
-            history_type="+",
-            assigned_by__isnull=True,
-        ).values_list("theme_id", flat=True)
-        return SelectedTheme.objects.filter(id__in=theme_ids)
+    def get_original_ai_theme_ids(self):
+        """Get IDs of themes originally assigned by AI.
 
-    def get_current_themes(self):
-        """Get latest themes assigned by any human or AI"""
-        return self.themes.distinct()
+        Combines themes still present with assigned_by=NULL and those
+        deleted (found in history) with assigned_by=NULL. This works
+        even when bulk_create was used without history signals.
+        """
+        surviving = set(
+            self.responseannotationtheme_set.filter(
+                assigned_by__isnull=True,
+            ).values_list("theme_id", flat=True)
+        )
+        deleted = set(
+            ResponseAnnotationTheme.history.filter(
+                response_annotation=self,
+                history_type="-",
+                assigned_by__isnull=True,
+            ).values_list("theme_id", flat=True)
+        )
+        return surviving | deleted
+
+    def get_current_theme_ids(self):
+        """Get IDs of latest themes assigned by any human or AI"""
+        return set(self.themes.values_list("id", flat=True))
 
     def save(self, *args, **kwargs) -> None:
         """

@@ -1,3 +1,4 @@
+import statistics
 from collections import Counter
 from typing import Any
 
@@ -31,6 +32,7 @@ from consultations.models import (
     DemographicOption,
     Question,
     Respondent,
+    ResponseAnnotation,
     SelectedTheme,
 )
 from consultations.test_support.load_test_fixtures import (
@@ -808,4 +810,164 @@ class ConsultationViewSet(ModelViewSet):
         return Response(
             {"error": "No fixture data provided"},
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="evaluation",
+        permission_classes=[IsAuthenticated, IsAdminUser],
+    )
+    def evaluation(self, request, pk=None):
+        """
+        Evaluation stats for a consultation: responses read, edited, and F1 score.
+        Admin only.
+
+        F1 is computed as a sample-average (per-response F1, then mean) with 95%
+        confidence intervals via normal approximation. Two variants are returned:
+        one including all themes, one excluding generic themes ("No Reason Given", "Other").
+        """
+
+        BENCHMARK_F1 = 0.75
+        MIN_SAMPLE_SIZE = 30
+
+        consultation = self.get_object()
+        free_text_questions = Question.objects.filter(consultation=consultation, has_free_text=True)
+
+        # Get IDs of generic themes for this consultation
+        GENERIC_THEME_NAMES = {"no reason given", "other"}
+        generic_themes = set(
+            SelectedTheme.objects.filter(
+                question__consultation=consultation,
+                name__in=[n.title() for n in GENERIC_THEME_NAMES],
+            ).values_list("id", flat=True)
+        )
+
+        def compute_response_f1(ai_themes, current_themes):
+            """Compute F1 for a single response."""
+            true_positives = len(ai_themes & current_themes)
+            false_positives = len(ai_themes - current_themes)
+            false_negatives = len(current_themes - ai_themes)
+            precision = (
+                true_positives / (true_positives + false_positives)
+                if (true_positives + false_positives) > 0
+                else 0.0
+            )
+            recall = (
+                true_positives / (true_positives + false_negatives)
+                if (true_positives + false_negatives) > 0
+                else 0.0
+            )
+            if (precision + recall) == 0:
+                return 0.0
+            return 2 * (precision * recall) / (precision + recall)
+
+        def compute_f1_stats(f1_scores):
+            """Compute mean F1 with 95% confidence interval from per-response scores."""
+            if not f1_scores:
+                return None
+            n = len(f1_scores)
+            mean = statistics.mean(f1_scores)
+            if n < MIN_SAMPLE_SIZE:
+                return {"mean": round(mean, 2), "ci_lower": None, "ci_upper": None, "approximate": True}
+            std = statistics.stdev(f1_scores)
+            if std == 0:
+                return {"mean": round(mean, 2), "ci_lower": None, "ci_upper": None, "approximate": False}
+            margin = 1.96 * (std / (n**0.5))
+            return {
+                "mean": round(mean, 2),
+                "ci_lower": round(max(0, mean - margin), 2),
+                "ci_upper": round(min(1, mean + margin), 2),
+                "approximate": False,
+            }
+
+        def get_status(f1_scores_count, f1_excl_generic):
+            """Determine evaluation status for consultation and for each question."""
+            if f1_excl_generic is None or f1_scores_count < MIN_SAMPLE_SIZE:
+                return "insufficient_data"
+            if f1_excl_generic["mean"] < BENCHMARK_F1:
+                return "below_benchmark"
+            return "meets_benchmark"
+
+        all_f1_scores = []
+        all_f1_scores_excl_generic = []
+        questions = []
+
+        for question in free_text_questions:
+            read_response_annotations = list(
+                ResponseAnnotation.objects.filter(
+                    response__question=question,
+                    response__responsereadby__user__is_staff=False,
+                ).distinct()
+            )
+
+            question_f1_scores = []
+            question_f1_scores_excl_generic = []
+            edited_response_ids = set()
+
+            for response_annotation in read_response_annotations:
+                original_themes = response_annotation.get_original_ai_theme_ids()
+                current_themes = response_annotation.get_current_theme_ids()
+
+                if original_themes != current_themes:
+                    edited_response_ids.add(response_annotation.response_id)
+
+                if original_themes or current_themes:
+                    f1 = compute_response_f1(original_themes, current_themes)
+                    question_f1_scores.append(f1)
+
+                original_excl = original_themes - generic_themes
+                current_excl = current_themes - generic_themes
+                if original_excl or current_excl:
+                    f1_excl = compute_response_f1(original_excl, current_excl)
+                    question_f1_scores_excl_generic.append(f1_excl)
+
+            all_f1_scores.extend(question_f1_scores)
+            all_f1_scores_excl_generic.extend(question_f1_scores_excl_generic)
+
+            responses_read = len(read_response_annotations)
+            f1_stats = compute_f1_stats(question_f1_scores)
+            f1_excl_generic_stats = compute_f1_stats(question_f1_scores_excl_generic)
+
+            questions.append(
+                {
+                    "id": str(question.id),
+                    "number": question.number,
+                    "text": question.text,
+                    "status": get_status(
+                        len(question_f1_scores_excl_generic), f1_excl_generic_stats
+                    ),
+                    "responses": question.free_text_response_count,
+                    "responses_read": responses_read,
+                    "responses_edited": len(edited_response_ids),
+                    "f1": f1_stats,
+                    "f1_excl_generic": f1_excl_generic_stats,
+                }
+            )
+
+        total_response_count = sum(q["responses"] for q in questions)
+        total_responses_read = sum(q["responses_read"] for q in questions)
+        total_responses_edited = sum(q["responses_edited"] for q in questions)
+
+        summary_f1 = compute_f1_stats(all_f1_scores)
+        summary_f1_excl_generic = compute_f1_stats(all_f1_scores_excl_generic)
+
+        return Response(
+            {
+                "id": str(consultation.id),
+                "title": consultation.title,
+                "config": {
+                    "benchmark_f1": BENCHMARK_F1,
+                    "min_sample_size": MIN_SAMPLE_SIZE,
+                },
+                "summary": {
+                    "status": get_status(len(all_f1_scores_excl_generic), summary_f1_excl_generic),
+                    "responses": total_response_count,
+                    "responses_read": total_responses_read,
+                    "responses_edited": total_responses_edited,
+                    "f1": summary_f1,
+                    "f1_excl_generic": summary_f1_excl_generic,
+                },
+                "questions": questions,
+            }
         )
