@@ -27,7 +27,10 @@
       </span>
     </div>
 
-    <span class="text-xl font-bold">
+    <span
+      class="text-xl font-bold"
+      data-testid="metric-count-{text.toLowerCase()}"
+    >
       {count.toLocaleString()}
     </span>
   </div>

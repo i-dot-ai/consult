@@ -484,6 +484,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
                           <button
                             aria-pressed="false"
                             class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                            data-testid="favourite-button-2d3bea3e-abd1-4231-80d9-41a974724731"
                             data-variant="ghost"
                             role="button"
                             tabindex="0"
@@ -632,6 +633,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
                           <button
                             aria-pressed="false"
                             class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                            data-testid="favourite-button-7b809f89-a7a0-4c31-b788-008eef73f396"
                             data-variant="ghost"
                             role="button"
                             tabindex="0"
@@ -780,6 +782,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
                           <button
                             aria-pressed="false"
                             class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                            data-testid="favourite-button-021b9599-35c3-42d5-afba-45aa691dfe53"
                             data-variant="ghost"
                             role="button"
                             tabindex="0"
