@@ -778,7 +778,7 @@ class TestResponseViewSet:
         assert history[3].theme.key == "Human assigned theme C"
         assert history[3].assigned_by == staff_user
 
-        assert list(free_text_annotation.get_original_ai_themes()) == [ai_assigned_theme]
+        assert free_text_annotation.get_original_ai_theme_ids() == {ai_assigned_theme.id}
 
     def test_patch_response_themes_invalid(self, client, staff_user_token, free_text_annotation):
         url = reverse(

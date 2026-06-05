@@ -11,6 +11,7 @@ from consultations.models import (
     Question,
     ResponseAnnotation,
     ResponseAnnotationTheme,
+    ResponseReadBy,
     SelectedTheme,
 )
 from factories import (
@@ -1188,3 +1189,374 @@ class TestImportFinalisedThemesEndpoint:
         )
 
         assert response.status_code == 401
+
+
+@pytest.mark.django_db
+class TestEvaluationEndpoint:
+    def test_returns_evaluation_stats(self, client, staff_user, staff_user_token):
+        """Returns per-question and summary evaluation stats."""
+        consultation = ConsultationFactory()
+        question = QuestionFactory(
+            consultation=consultation, has_free_text=True, free_text_response_count=5
+        )
+
+        respondents = [RespondentFactory(consultation=consultation) for _ in range(5)]
+        responses = [
+            ResponseFactory(question=question, respondent=r, free_text="text") for r in respondents
+        ]
+
+        policy_user = UserFactory(is_staff=False)
+        ResponseReadBy.objects.create(response=responses[0], user=policy_user)
+        ResponseReadBy.objects.create(response=responses[1], user=policy_user)
+
+        theme_a = SelectedThemeFactory(question=question)
+        theme_b = SelectedThemeFactory(question=question)
+
+        # responses[0]: read and edited (AI assigned theme_a, human changed to theme_b)
+        annotation = ResponseAnnotation.objects.create(response=responses[0])
+        annotation.add_original_ai_themes([theme_a])
+        annotation.set_human_reviewed_themes([theme_b], policy_user)
+
+        # responses[1]: read but not edited (AI assigned theme_a, human kept it)
+        annotation_unedited = ResponseAnnotation.objects.create(response=responses[1])
+        annotation_unedited.add_original_ai_themes([theme_a])
+        annotation_unedited.set_human_reviewed_themes([theme_a], policy_user)
+
+        url = reverse("consultations-evaluation", kwargs={"pk": consultation.id})
+        response = client.get(url, headers={"Authorization": f"Bearer {staff_user_token}"})
+
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["config"] == {"benchmark_f1": 0.75, "min_sample_size": 30}
+        assert data["title"] == consultation.title
+        assert data["summary"]["status"] == "insufficient_data"
+        assert data["summary"]["responses"] == 5
+        assert data["summary"]["responses_read"] == 2
+        assert data["summary"]["responses_edited"] == 1
+
+        assert len(data["questions"]) == 1
+        q_data = data["questions"][0]
+        assert q_data["status"] == "insufficient_data"
+        assert q_data["responses"] == 5
+        assert q_data["responses_read"] == 2
+        assert q_data["responses_edited"] == 1
+        assert q_data["f1"]["mean"] == 0.5
+
+    def test_f1_score_perfect_agreement(self, client, staff_user, staff_user_token):
+        """F1 is 1.0 when themes are edited back to match the original AI assignment."""
+        consultation = ConsultationFactory()
+        question = QuestionFactory(
+            consultation=consultation, has_free_text=True, free_text_response_count=1
+        )
+        respondent = RespondentFactory(consultation=consultation)
+        response_obj = ResponseFactory(question=question, respondent=respondent, free_text="text")
+
+        user_a = UserFactory(is_staff=False)
+        user_b = UserFactory(is_staff=False)
+        ResponseReadBy.objects.create(response=response_obj, user=user_a)
+        theme_a = SelectedThemeFactory(question=question)
+        theme_b = SelectedThemeFactory(question=question)
+        annotation = ResponseAnnotation.objects.create(response=response_obj)
+        annotation.add_original_ai_themes([theme_a])
+        annotation.set_human_reviewed_themes([theme_b], user_a)
+        annotation.set_human_reviewed_themes([theme_a], user_b)
+
+        url = reverse("consultations-evaluation", kwargs={"pk": consultation.id})
+        resp = client.get(url, headers={"Authorization": f"Bearer {staff_user_token}"})
+
+        assert resp.status_code == 200
+        assert resp.json()["questions"][0]["f1"]["mean"] == 1.0
+
+    def test_f1_score_no_agreement(self, client, staff_user, staff_user_token):
+        """F1 is 0 when human reads, removes all AI themes and adds different ones."""
+        consultation = ConsultationFactory()
+        question = QuestionFactory(
+            consultation=consultation, has_free_text=True, free_text_response_count=1
+        )
+        respondent = RespondentFactory(consultation=consultation)
+        response_obj = ResponseFactory(question=question, respondent=respondent, free_text="text")
+
+        policy_user = UserFactory(is_staff=False)
+        ResponseReadBy.objects.create(response=response_obj, user=policy_user)
+        ai_theme = SelectedThemeFactory(question=question)
+        human_theme = SelectedThemeFactory(question=question)
+        annotation = ResponseAnnotation.objects.create(response=response_obj)
+        annotation.add_original_ai_themes([ai_theme])
+        annotation.set_human_reviewed_themes([human_theme], policy_user)
+
+        url = reverse("consultations-evaluation", kwargs={"pk": consultation.id})
+        resp = client.get(url, headers={"Authorization": f"Bearer {staff_user_token}"})
+
+        assert resp.status_code == 200
+        assert resp.json()["questions"][0]["f1"]["mean"] == 0.0
+
+    def test_f1_confidence_intervals(self, client, staff_user, staff_user_token):
+        """Returns confidence intervals with realistic sample size (30+ read)."""
+        consultation = ConsultationFactory()
+        policy_user = UserFactory(is_staff=False)
+
+        # Question 1: below benchmark (20 agree, 10 disagree → F1 = 0.67)
+        question = QuestionFactory(
+            consultation=consultation, has_free_text=True, free_text_response_count=35
+        )
+        theme = SelectedThemeFactory(question=question)
+        other_theme = SelectedThemeFactory(question=question)
+
+        for _ in range(20):
+            respondent = RespondentFactory(consultation=consultation)
+            resp_obj = ResponseFactory(question=question, respondent=respondent, free_text="text")
+            ResponseReadBy.objects.create(response=resp_obj, user=policy_user)
+            annotation = ResponseAnnotation.objects.create(response=resp_obj)
+            annotation.add_original_ai_themes([theme])
+            annotation.set_human_reviewed_themes([theme], policy_user)
+            annotation.mark_human_reviewed(policy_user)
+
+        for _ in range(10):
+            respondent = RespondentFactory(consultation=consultation)
+            resp_obj = ResponseFactory(question=question, respondent=respondent, free_text="text")
+            ResponseReadBy.objects.create(response=resp_obj, user=policy_user)
+            annotation = ResponseAnnotation.objects.create(response=resp_obj)
+            annotation.add_original_ai_themes([theme])
+            annotation.set_human_reviewed_themes([other_theme], policy_user)
+
+        # Question 2: meets benchmark (28 agree, 2 disagree → F1 = 0.93)
+        question_2 = QuestionFactory(
+            consultation=consultation, has_free_text=True, free_text_response_count=35
+        )
+        theme_2 = SelectedThemeFactory(question=question_2)
+        other_theme_2 = SelectedThemeFactory(question=question_2)
+
+        for _ in range(28):
+            respondent = RespondentFactory(consultation=consultation)
+            resp_obj = ResponseFactory(question=question_2, respondent=respondent, free_text="text")
+            ResponseReadBy.objects.create(response=resp_obj, user=policy_user)
+            annotation = ResponseAnnotation.objects.create(response=resp_obj)
+            annotation.add_original_ai_themes([theme_2])
+            annotation.set_human_reviewed_themes([theme_2], policy_user)
+            annotation.mark_human_reviewed(policy_user)
+
+        for _ in range(2):
+            respondent = RespondentFactory(consultation=consultation)
+            resp_obj = ResponseFactory(question=question_2, respondent=respondent, free_text="text")
+            ResponseReadBy.objects.create(response=resp_obj, user=policy_user)
+            annotation = ResponseAnnotation.objects.create(response=resp_obj)
+            annotation.add_original_ai_themes([theme_2])
+            annotation.set_human_reviewed_themes([other_theme_2], policy_user)
+
+        url = reverse("consultations-evaluation", kwargs={"pk": consultation.id})
+        resp = client.get(url, headers={"Authorization": f"Bearer {staff_user_token}"})
+
+        assert resp.status_code == 200
+        data = resp.json()
+
+        # Question 1: below benchmark
+        q1_data = data["questions"][0]
+        assert q1_data["status"] == "below_benchmark"
+        assert q1_data["f1"]["mean"] == 0.67
+        assert q1_data["f1"]["ci_lower"] == 0.5
+        assert q1_data["f1"]["ci_upper"] == 0.84
+        assert q1_data["f1"]["approximate"] is False
+
+        # Question 2: meets benchmark
+        q2_data = data["questions"][1]
+        assert q2_data["status"] == "meets_benchmark"
+        assert q2_data["f1"]["mean"] == 0.93
+        assert q2_data["f1"]["ci_lower"] == 0.84
+        assert q2_data["f1"]["ci_upper"] == 1.0
+        assert q2_data["f1"]["approximate"] is False
+
+    def test_f1_suppresses_ci_below_30_responses(self, client, staff_user, staff_user_token):
+        """Returns null confidence internals when fewer than 30 responses read."""
+        consultation = ConsultationFactory()
+        question = QuestionFactory(
+            consultation=consultation, has_free_text=True, free_text_response_count=10
+        )
+        policy_user = UserFactory(is_staff=False)
+        theme = SelectedThemeFactory(question=question)
+        other_theme = SelectedThemeFactory(question=question)
+
+        for _ in range(5):
+            respondent = RespondentFactory(consultation=consultation)
+            resp_obj = ResponseFactory(question=question, respondent=respondent, free_text="text")
+            ResponseReadBy.objects.create(response=resp_obj, user=policy_user)
+            annotation = ResponseAnnotation.objects.create(response=resp_obj)
+            annotation.add_original_ai_themes([theme])
+            annotation.set_human_reviewed_themes([theme], policy_user)
+
+        for _ in range(3):
+            respondent = RespondentFactory(consultation=consultation)
+            resp_obj = ResponseFactory(question=question, respondent=respondent, free_text="text")
+            ResponseReadBy.objects.create(response=resp_obj, user=policy_user)
+            annotation = ResponseAnnotation.objects.create(response=resp_obj)
+            annotation.add_original_ai_themes([theme])
+            annotation.set_human_reviewed_themes([other_theme], policy_user)
+
+        url = reverse("consultations-evaluation", kwargs={"pk": consultation.id})
+        resp = client.get(url, headers={"Authorization": f"Bearer {staff_user_token}"})
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["questions"][0]["status"] == "insufficient_data"
+        f1_data = data["questions"][0]["f1"]
+        assert f1_data["mean"] == 0.62
+        assert f1_data["ci_lower"] is None
+        assert f1_data["ci_upper"] is None
+        assert f1_data["approximate"] is True
+
+    def test_sample_average_f1_with_varying_theme_counts(
+        self, client, staff_user, staff_user_token
+    ):
+        """
+        Returns sample-average F1 which weights each response equally
+        regardless of theme count. Also verifies that removing themes
+        (without adding new ones) counts as an edit.
+        """
+        consultation = ConsultationFactory()
+        policy_user = UserFactory(is_staff=False)
+        question = QuestionFactory(
+            consultation=consultation, has_free_text=True, free_text_response_count=10
+        )
+        theme_a = SelectedThemeFactory(question=question)
+        theme_b = SelectedThemeFactory(question=question)
+        theme_c = SelectedThemeFactory(question=question)
+
+        # Response 1: AI assigns 3 themes, human keeps 2 (removes theme_c)
+        # TP=2, FP=1, FN=0 → P=2/3, R=1.0, F1=0.8
+        r1 = RespondentFactory(consultation=consultation)
+        resp1 = ResponseFactory(question=question, respondent=r1, free_text="text")
+        ResponseReadBy.objects.create(response=resp1, user=policy_user)
+        ann1 = ResponseAnnotation.objects.create(response=resp1)
+        ann1.add_original_ai_themes([theme_a, theme_b, theme_c])
+        ann1.set_human_reviewed_themes([theme_a, theme_b], policy_user)
+        ann1.mark_human_reviewed(policy_user)
+
+        # Response 2: AI assigns 1 theme, human replaces it
+        # TP=0, FP=1, FN=1 → F1=0.0
+        r2 = RespondentFactory(consultation=consultation)
+        resp2 = ResponseFactory(question=question, respondent=r2, free_text="text")
+        ResponseReadBy.objects.create(response=resp2, user=policy_user)
+        ann2 = ResponseAnnotation.objects.create(response=resp2)
+        ann2.add_original_ai_themes([theme_a])
+        ann2.set_human_reviewed_themes([theme_b], policy_user)
+        ann2.mark_human_reviewed(policy_user)
+
+        # Response 3: AI assigns 2 themes, human keeps both
+        # TP=2, FP=0, FN=0 → F1=1.0
+        r3 = RespondentFactory(consultation=consultation)
+        resp3 = ResponseFactory(question=question, respondent=r3, free_text="text")
+        ResponseReadBy.objects.create(response=resp3, user=policy_user)
+        ann3 = ResponseAnnotation.objects.create(response=resp3)
+        ann3.add_original_ai_themes([theme_a, theme_b])
+        ann3.set_human_reviewed_themes([theme_a, theme_b], policy_user)
+        ann3.mark_human_reviewed(policy_user)
+
+        # Response 4: AI assigns 1 theme, human removes all
+        # TP=0, FP=0, FN=1 → F1=0.0
+        r4 = RespondentFactory(consultation=consultation)
+        resp4 = ResponseFactory(question=question, respondent=r4, free_text="text")
+        ResponseReadBy.objects.create(response=resp4, user=policy_user)
+        ann4 = ResponseAnnotation.objects.create(response=resp4)
+        ann4.add_original_ai_themes([theme_a])
+        ann4.set_human_reviewed_themes([], policy_user)
+        ann4.mark_human_reviewed(policy_user)
+
+        url = reverse("consultations-evaluation", kwargs={"pk": consultation.id})
+        resp = client.get(url, headers={"Authorization": f"Bearer {staff_user_token}"})
+
+        assert resp.status_code == 200
+        q_data = resp.json()["questions"][0]
+        f1_data = q_data["f1"]
+        assert f1_data["mean"] == 0.45  # (0.8 + 0.0 + 1.0 + 0.0) / 4 = 0.45
+        assert q_data["responses_edited"] == 3
+
+    def test_excludes_generic_themes(self, client, staff_user, staff_user_token):
+        """f1_excl_generic excludes 'Other' and 'No Reason Given' themes."""
+        consultation = ConsultationFactory()
+        question = QuestionFactory(
+            consultation=consultation, has_free_text=True, free_text_response_count=1
+        )
+        respondent = RespondentFactory(consultation=consultation)
+        response_obj = ResponseFactory(question=question, respondent=respondent, free_text="text")
+
+        policy_user = UserFactory(is_staff=False)
+        ResponseReadBy.objects.create(response=response_obj, user=policy_user)
+        real_theme = SelectedThemeFactory(question=question, name="Real Theme")
+        other_theme = SelectedThemeFactory(question=question, name="Other")
+
+        annotation = ResponseAnnotation.objects.create(response=response_obj)
+        annotation.add_original_ai_themes([real_theme, other_theme])
+        annotation.set_human_reviewed_themes([real_theme], policy_user)
+        annotation.mark_human_reviewed(policy_user)
+
+        url = reverse("consultations-evaluation", kwargs={"pk": consultation.id})
+        resp = client.get(url, headers={"Authorization": f"Bearer {staff_user_token}"})
+
+        assert resp.status_code == 200
+        q_data = resp.json()["questions"][0]
+        # Excluding generic: AI had {real}, human has {real} → perfect agreement
+        assert q_data["f1"]["mean"] == 1.0
+        # With all themes: AI had {real, other}, human has {real} → TP=1, FP=1, FN=0 → F1=0.67
+        assert q_data["f1_all_themes"]["mean"] == 0.67
+
+    def test_excludes_staff_from_read_and_edit_counts(self, client, staff_user, staff_user_token):
+        """Staff reads and edits are not counted in evaluation stats."""
+        consultation = ConsultationFactory()
+        question = QuestionFactory(
+            consultation=consultation, has_free_text=True, free_text_response_count=1
+        )
+        respondent = RespondentFactory(consultation=consultation)
+        response_obj = ResponseFactory(question=question, respondent=respondent, free_text="text")
+
+        ResponseReadBy.objects.create(response=response_obj, user=staff_user)
+        theme = SelectedThemeFactory(question=question)
+        annotation = ResponseAnnotation.objects.create(response=response_obj)
+        annotation.add_original_ai_themes([theme])
+        annotation.set_human_reviewed_themes([theme], staff_user)
+
+        url = reverse("consultations-evaluation", kwargs={"pk": consultation.id})
+        resp = client.get(url, headers={"Authorization": f"Bearer {staff_user_token}"})
+
+        assert resp.status_code == 200
+        assert resp.json()["summary"]["responses_read"] == 0
+        assert resp.json()["summary"]["responses_edited"] == 0
+
+    def test_std_zero_returns_no_ci(self, client, staff_user, staff_user_token):
+        """When all F1 scores are identical (std=0), returns null confidence intervals."""
+        consultation = ConsultationFactory()
+        question = QuestionFactory(
+            consultation=consultation, has_free_text=True, free_text_response_count=35
+        )
+        policy_user = UserFactory(is_staff=False)
+        theme = SelectedThemeFactory(question=question)
+
+        for _ in range(30):
+            respondent = RespondentFactory(consultation=consultation)
+            resp_obj = ResponseFactory(question=question, respondent=respondent, free_text="text")
+            ResponseReadBy.objects.create(response=resp_obj, user=policy_user)
+            annotation = ResponseAnnotation.objects.create(response=resp_obj)
+            annotation.add_original_ai_themes([theme])
+            annotation.set_human_reviewed_themes([theme], policy_user)
+
+        url = reverse("consultations-evaluation", kwargs={"pk": consultation.id})
+        resp = client.get(url, headers={"Authorization": f"Bearer {staff_user_token}"})
+
+        assert resp.status_code == 200
+        f1_data = resp.json()["questions"][0]["f1"]
+        assert f1_data["mean"] == 1.0
+        assert f1_data["ci_lower"] is None
+        assert f1_data["ci_upper"] is None
+        assert f1_data["approximate"] is False
+
+    def test_requires_admin(self, client):
+        """Non-admin users added to the consultation cannot access evaluation endpoint."""
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        consultation = ConsultationFactory()
+        policy_user = UserFactory(is_staff=False)
+        consultation.users.add(policy_user)
+        token = str(RefreshToken.for_user(policy_user).access_token)
+
+        url = reverse("consultations-evaluation", kwargs={"pk": consultation.id})
+        resp = client.get(url, headers={"Authorization": f"Bearer {token}"})
+        assert resp.status_code == 403
