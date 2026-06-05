@@ -1,12 +1,14 @@
 import { test, expect, Page } from "@playwright/test";
 import {
+  CleanupManager,
   createFixtureData,
-  deleteFixtureData,
 } from "./helpers";
 import { signOffConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
 
 test.describe.configure({ mode: "serial" });
+
+const cleanupManager = new CleanupManager();
 
 async function createTheme(page: Page, title: string, description: string) {
   const createThemeButton = page.getByRole("button", { name: "Add Custom Theme" });
@@ -41,6 +43,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     testData = await createFixtureData(request, {
       consultations: [signOffConsultation],
     });
+    cleanupManager.add(testData);
 
     // Navigate to consultations to find a consultation
     await page.goto("/consultations");
@@ -273,6 +276,6 @@ test.describe("Finalise Themes - Detail Page", () => {
   })
 
   test.afterEach(async () => {
-    await deleteFixtureData(testData);
+    await cleanupManager.cleanup();
   });
 });

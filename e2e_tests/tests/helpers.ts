@@ -153,3 +153,52 @@ export async function getFirstConsultationLink(page: Page) {
   }
   return null;
 }
+
+interface CleanupManagerOptions {
+  maxAttempts?: number;
+  attemptFrequency?: number;
+}
+
+export class CleanupManager {
+  private fixtures: Fixture[] = [];
+  public maxAttempts: number;
+  public attemptFrequency: number;
+
+  constructor({ maxAttempts, attemptFrequency }: CleanupManagerOptions = {}) {
+    this.maxAttempts = maxAttempts || 5;
+    this.attemptFrequency = attemptFrequency || 1000;
+  }
+
+  async _attemptCleanup(maxAttempts: number, attemptFrequency: number, fixture: Fixture) {
+    let success = false;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await deleteFixtureData(fixture);
+        success = true;
+        break;
+      } catch {
+        await new Promise(resolve => setTimeout(resolve, attemptFrequency));
+      }
+    }
+
+    if (!success) {
+      console.error("Test fixture cleanup failed");
+    }
+  }
+
+  add(fixture: Fixture) {
+    this.fixtures.push(fixture);
+  }
+
+  reset() {
+    this.fixtures = [];
+  }
+
+  async cleanup() {
+    for (const fixture of this.fixtures) {
+      await this._attemptCleanup(this.maxAttempts, this.attemptFrequency, fixture);
+    }
+    this.reset();
+  }
+}
