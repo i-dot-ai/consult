@@ -6,7 +6,7 @@ import {
 import { analysisConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
 
-test.describe("Respondent Detail Page", () => {
+test.describe("Dashboard Page", () => {
   let testData: FixtureReference = {};
   let consultationId: string;
   let questionIds: string[];
