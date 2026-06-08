@@ -1193,7 +1193,7 @@ class TestImportFinalisedThemesEndpoint:
 
 @pytest.mark.django_db
 class TestEvaluationEndpoint:
-    def test_returns_evaluation_stats(self, client, staff_user, staff_user_token):
+    def test_returns_evaluation_stats(self, client, staff_user_token):
         """Returns per-question and summary evaluation stats."""
         consultation = ConsultationFactory()
         question = QuestionFactory(
@@ -1243,7 +1243,7 @@ class TestEvaluationEndpoint:
         assert q_data["responses_edited"] == 1
         assert q_data["f1"]["mean"] == 0.5
 
-    def test_f1_score_perfect_agreement(self, client, staff_user, staff_user_token):
+    def test_f1_score_perfect_agreement(self, client, staff_user_token):
         """F1 is 1.0 when themes are edited back to match the original AI assignment."""
         consultation = ConsultationFactory()
         question = QuestionFactory(
@@ -1268,7 +1268,7 @@ class TestEvaluationEndpoint:
         assert resp.status_code == 200
         assert resp.json()["questions"][0]["f1"]["mean"] == 1.0
 
-    def test_f1_score_no_agreement(self, client, staff_user, staff_user_token):
+    def test_f1_score_no_agreement(self, client, staff_user_token):
         """F1 is 0 when human reads, removes all AI themes and adds different ones."""
         consultation = ConsultationFactory()
         question = QuestionFactory(
@@ -1291,7 +1291,7 @@ class TestEvaluationEndpoint:
         assert resp.status_code == 200
         assert resp.json()["questions"][0]["f1"]["mean"] == 0.0
 
-    def test_f1_confidence_intervals(self, client, staff_user, staff_user_token):
+    def test_f1_confidence_intervals(self, client, staff_user_token):
         """Returns confidence intervals with realistic sample size (30+ read)."""
         consultation = ConsultationFactory()
         policy_user = UserFactory(is_staff=False)
@@ -1366,7 +1366,7 @@ class TestEvaluationEndpoint:
         assert q2_data["f1"]["ci_upper"] == 1.0
         assert q2_data["f1"]["approximate"] is False
 
-    def test_f1_suppresses_ci_below_30_responses(self, client, staff_user, staff_user_token):
+    def test_f1_suppresses_ci_below_30_responses(self, client, staff_user_token):
         """Returns null confidence internals when fewer than 30 responses read."""
         consultation = ConsultationFactory()
         question = QuestionFactory(
@@ -1404,13 +1404,10 @@ class TestEvaluationEndpoint:
         assert f1_data["ci_upper"] is None
         assert f1_data["approximate"] is True
 
-    def test_sample_average_f1_with_varying_theme_counts(
-        self, client, staff_user, staff_user_token
-    ):
+    def test_sample_average_f1_with_varying_theme_counts(self, client, staff_user_token):
         """
         Returns sample-average F1 which weights each response equally
-        regardless of theme count. Also verifies that removing themes
-        (without adding new ones) counts as an edit.
+        regardless of theme count.
         """
         consultation = ConsultationFactory()
         policy_user = UserFactory(is_staff=False)
@@ -1470,7 +1467,7 @@ class TestEvaluationEndpoint:
         assert f1_data["mean"] == 0.45  # (0.8 + 0.0 + 1.0 + 0.0) / 4 = 0.45
         assert q_data["responses_edited"] == 3
 
-    def test_excludes_generic_themes(self, client, staff_user, staff_user_token):
+    def test_excludes_generic_themes(self, client, staff_user_token):
         """f1_excl_generic excludes 'Other' and 'No Reason Given' themes."""
         consultation = ConsultationFactory()
         question = QuestionFactory(
@@ -1521,7 +1518,7 @@ class TestEvaluationEndpoint:
         assert resp.json()["summary"]["responses_read"] == 0
         assert resp.json()["summary"]["responses_edited"] == 0
 
-    def test_std_zero_returns_no_ci(self, client, staff_user, staff_user_token):
+    def test_std_zero_returns_no_ci(self, client, staff_user_token):
         """When all F1 scores are identical (std=0), returns null confidence intervals."""
         consultation = ConsultationFactory()
         question = QuestionFactory(

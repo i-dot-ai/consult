@@ -54,6 +54,65 @@ EVALUATION_BENCHMARK_F1 = 0.75
 EVALUATION_MIN_SAMPLE_SIZE = 30
 
 
+def compute_response_f1(ai_themes, current_themes):
+    """Compute F1 for a single response."""
+    true_positives = len(ai_themes & current_themes)
+    false_positives = len(ai_themes - current_themes)
+    false_negatives = len(current_themes - ai_themes)
+    precision = (
+        true_positives / (true_positives + false_positives)
+        if (true_positives + false_positives) > 0
+        else 0.0
+    )
+    recall = (
+        true_positives / (true_positives + false_negatives)
+        if (true_positives + false_negatives) > 0
+        else 0.0
+    )
+    if (precision + recall) == 0:
+        return 0.0
+    return 2 * (precision * recall) / (precision + recall)
+
+
+def compute_f1_stats(f1_scores):
+    """Compute mean F1 with 95% confidence interval from per-response scores."""
+    if not f1_scores:
+        return None
+    n = len(f1_scores)
+    mean = statistics.mean(f1_scores)
+    if n < EVALUATION_MIN_SAMPLE_SIZE:
+        return {
+            "mean": round(mean, 2),
+            "ci_lower": None,
+            "ci_upper": None,
+            "approximate": True,
+        }
+    std = statistics.stdev(f1_scores)
+    if std == 0:
+        return {
+            "mean": round(mean, 2),
+            "ci_lower": None,
+            "ci_upper": None,
+            "approximate": False,
+        }
+    margin = 1.96 * (std / (n**0.5))
+    return {
+        "mean": round(mean, 2),
+        "ci_lower": round(max(0, mean - margin), 2),
+        "ci_upper": round(min(1, mean + margin), 2),
+        "approximate": False,
+    }
+
+
+def get_evaluation_status(sample_size, f1):
+    """Determine evaluation status based on sample size and F1 score."""
+    if f1 is None or sample_size < EVALUATION_MIN_SAMPLE_SIZE:
+        return "insufficient_data"
+    if f1["mean"] < EVALUATION_BENCHMARK_F1:
+        return "below_benchmark"
+    return "meets_benchmark"
+
+
 class ConsultationViewSet(ModelViewSet):
     serializer_class = ConsultationSerializer
     permission_classes = [IsAuthenticated, CanSeeConsultation | IsAdminUser]
@@ -843,62 +902,6 @@ class ConsultationViewSet(ModelViewSet):
             .values_list("id", flat=True)
         )
 
-        def compute_response_f1(ai_themes, current_themes):
-            """Compute F1 for a single response."""
-            true_positives = len(ai_themes & current_themes)
-            false_positives = len(ai_themes - current_themes)
-            false_negatives = len(current_themes - ai_themes)
-            precision = (
-                true_positives / (true_positives + false_positives)
-                if (true_positives + false_positives) > 0
-                else 0.0
-            )
-            recall = (
-                true_positives / (true_positives + false_negatives)
-                if (true_positives + false_negatives) > 0
-                else 0.0
-            )
-            if (precision + recall) == 0:
-                return 0.0
-            return 2 * (precision * recall) / (precision + recall)
-
-        def compute_f1_stats(f1_scores):
-            """Compute mean F1 with 95% confidence interval from per-response scores."""
-            if not f1_scores:
-                return None
-            n = len(f1_scores)
-            mean = statistics.mean(f1_scores)
-            if n < EVALUATION_MIN_SAMPLE_SIZE:
-                return {
-                    "mean": round(mean, 2),
-                    "ci_lower": None,
-                    "ci_upper": None,
-                    "approximate": True,
-                }
-            std = statistics.stdev(f1_scores)
-            if std == 0:
-                return {
-                    "mean": round(mean, 2),
-                    "ci_lower": None,
-                    "ci_upper": None,
-                    "approximate": False,
-                }
-            margin = 1.96 * (std / (n**0.5))
-            return {
-                "mean": round(mean, 2),
-                "ci_lower": round(max(0, mean - margin), 2),
-                "ci_upper": round(min(1, mean + margin), 2),
-                "approximate": False,
-            }
-
-        def get_status(sample_size, f1):
-            """Determine evaluation status based on sample size and F1 score."""
-            if f1 is None or sample_size < EVALUATION_MIN_SAMPLE_SIZE:
-                return "insufficient_data"
-            if f1["mean"] < EVALUATION_BENCHMARK_F1:
-                return "below_benchmark"
-            return "meets_benchmark"
-
         all_read_annotations = list(
             ResponseAnnotation.objects.filter(
                 response__question__in=free_text_questions,
@@ -970,7 +973,7 @@ class ConsultationViewSet(ModelViewSet):
                     "id": str(question.id),
                     "number": question.number,
                     "text": question.text,
-                    "status": get_status(len(question_f1_scores), f1_stats),
+                    "status": get_evaluation_status(len(question_f1_scores), f1_stats),
                     "responses": question.free_text_response_count,
                     "responses_read": responses_read,
                     "responses_edited": len(edited_response_ids),
@@ -995,7 +998,7 @@ class ConsultationViewSet(ModelViewSet):
                     "min_sample_size": EVALUATION_MIN_SAMPLE_SIZE,
                 },
                 "summary": {
-                    "status": get_status(len(all_f1_scores), summary_f1),
+                    "status": get_evaluation_status(len(all_f1_scores), summary_f1),
                     "responses": total_response_count,
                     "responses_read": total_responses_read,
                     "responses_edited": total_responses_edited,
