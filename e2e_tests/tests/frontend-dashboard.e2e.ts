@@ -66,7 +66,7 @@ test.describe("Dashboard Page", () => {
       .getByTestId("favourite-questions-section")
       .filter({ has: page.getByTestId(`favourite-button-${questionId}`)})
 
-      expect (questionSection).toHaveCount(1);
+      await expect (questionSection).toHaveCount(1);
     }
   });
 
