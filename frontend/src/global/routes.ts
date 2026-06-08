@@ -428,6 +428,16 @@ export const updateResponseReadStatus = (
   );
 };
 
+export const updateResponsesReadStatusBulk = (consultationId: string) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    Suffixes.Responses,
+    "mark-read-bulk",
+    "/",
+  );
+};
+
 export const getApiQuestionResponse = (
   consultationId: string,
   questionId: string,

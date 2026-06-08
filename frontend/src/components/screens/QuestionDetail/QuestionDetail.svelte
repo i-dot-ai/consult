@@ -2,7 +2,7 @@
   import clsx from "clsx";
 
   import { onMount, untrack } from "svelte";
-  import { SvelteURLSearchParams } from "svelte/reactivity";
+  import { SvelteSet, SvelteURLSearchParams } from "svelte/reactivity";
   import { slide, fly, fade } from "svelte/transition";
 
   import MaterialIcon from "../../MaterialIcon.svelte";
@@ -24,6 +24,7 @@
     getApiQuestionUrl,
     getConsultationDetailUrl,
     updateResponseReadStatus,
+    updateResponsesReadStatusBulk,
   } from "../../../global/routes.ts";
 
   import { createFetchStore } from "../../../global/stores.ts";
@@ -90,6 +91,7 @@
   let nextCursor: string | null = $state(null);
   let hasMorePages: boolean = $state(true);
   let responses: ResponseBody[] = $state([]);
+  let markedAsReadIds: SvelteSet<string> = new SvelteSet();
   let responseTotalCount: number | null = $state(null);
   let lastAggregationQs: string | null = $state(null);
 
@@ -208,6 +210,7 @@
     hasMorePages = true;
     isResponsesLoading = true;
     responseTotalCount = null;
+    markedAsReadIds = new SvelteSet();
   }
 
   const resetFilters = () => {
@@ -245,15 +248,41 @@
     untrack(() => loadData());
   });
 
-  async function markResponsesAsRead() {
-    if (responses.length === 0) return;
-    await Promise.all(
-      responses.map((response) =>
-        fetch(updateResponseReadStatus(consultationId, response.id), {
-          method: "POST",
-        }),
+  function markResponsesAsRead() {
+    // Only send responses the server has not already recorded as read and that we
+    // have not already sent in a previous "load more" click this session. The Set
+    // also drops any duplicate entries that can appear in the accumulated list.
+    const unreadResponseIds = [
+      ...new Set(
+        responses
+          .filter(
+            (response) =>
+              !response.is_read && !markedAsReadIds.has(response.id),
+          )
+          .map((response) => response.id),
       ),
-    );
+    ];
+
+    if (unreadResponseIds.length === 0) return;
+
+    // Optimistically record these as sent so rapid repeat clicks do not resend them.
+    unreadResponseIds.forEach((responseId) => markedAsReadIds.add(responseId));
+
+    fetch(updateResponsesReadStatusBulk(consultationId), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ response_ids: unreadResponseIds }),
+    })
+      .then((response) => {
+        // fetch only rejects on network failure, so surface error statuses too.
+        if (!response.ok) throw new Error();
+      })
+      .catch(() => {
+        // The request failed — roll back so a later click retries.
+        unreadResponseIds.forEach((responseId) =>
+          markedAsReadIds.delete(responseId),
+        );
+      });
   }
 
   let demographics = $derived($demographicsStore.data || []);
@@ -529,6 +558,7 @@
                             ),
                             { method: "POST" },
                           );
+                          response.is_read = true;
                         }}
                       />
                     </div>
@@ -565,9 +595,9 @@
                   >
                     <Button
                       fullWidth={true}
-                      handleClick={() => {
+                      handleClick={async () => {
+                        await loadData();
                         markResponsesAsRead();
-                        loadData();
                       }}
                       size="sm"
                     >

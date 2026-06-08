@@ -215,6 +215,76 @@ describe("QuestionDetail", () => {
     }
   });
 
+  it("marks loaded responses as read in a single bulk request when loading more", async () => {
+    setupMocks();
+
+    render(QuestionDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+    });
+
+    const loadMoreButton = await screen.findByRole("button", {
+      name: /load more/i,
+    });
+
+    const user = userEvent.setup();
+    await user.click(loadMoreButton);
+
+    await waitFor(() => {
+      const bulkCalls = fetchMock.callHistory
+        .calls()
+        .filter((call) => call.url.includes("mark-read-bulk"));
+      expect(bulkCalls).toHaveLength(1);
+    });
+
+    const [bulkCall] = fetchMock.callHistory
+      .calls()
+      .filter((call) => call.url.includes("mark-read-bulk"));
+    const sentResponseIds = JSON.parse(
+      bulkCall.options.body as string,
+    ).response_ids;
+
+    // Every sent ID is unique (no response is marked twice in one request)...
+    expect(new Set(sentResponseIds).size).toBe(sentResponseIds.length);
+    // ...and the first loaded response is among them.
+    expect(sentResponseIds).toContain(responses[0].id);
+  });
+
+  it("does not resend responses already marked as read on a later load more", async () => {
+    setupMocks();
+
+    render(QuestionDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+    });
+
+    const loadMoreButton = await screen.findByRole("button", {
+      name: /load more/i,
+    });
+
+    const user = userEvent.setup();
+
+    // First click marks the currently loaded responses.
+    await user.click(loadMoreButton);
+    await waitFor(() => {
+      const bulkCalls = fetchMock.callHistory
+        .calls()
+        .filter((call) => call.url.includes("mark-read-bulk"));
+      expect(bulkCalls).toHaveLength(1);
+    });
+
+    // Second click loads the same (already-marked) responses, so nothing new is sent.
+    await user.click(loadMoreButton);
+    await waitFor(() => {
+      expect(screen.getByText("Free Text Responses")).toBeInTheDocument();
+    });
+
+    const bulkCalls = fetchMock.callHistory
+      .calls()
+      .filter((call) => call.url.includes("mark-read-bulk"));
+    expect(bulkCalls).toHaveLength(1);
+  });
+
   it("displays toggles specific to filtering free text responses", async () => {
     setupMocks();
 

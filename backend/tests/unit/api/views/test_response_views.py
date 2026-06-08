@@ -5,8 +5,11 @@ import orjson
 import pytest
 from django.urls import reverse
 
-from consultations.models import ResponseAnnotation, ResponseAnnotationTheme
+from consultations.api.views.response import MAX_BULK_MARK_READ
+from consultations.models import ResponseAnnotation, ResponseAnnotationTheme, ResponseReadBy
 from factories import (
+    ConsultationFactory,
+    QuestionFactory,
     RespondentFactory,
     ResponseAnnotationFactory,
     ResponseAnnotationFactoryNoThemes,
@@ -592,9 +595,7 @@ class TestResponseViewSet:
         Response.objects.create(
             question=free_text_question, respondent=respondent, free_text="some text"
         )
-        Response.objects.create(
-            question=free_text_question, respondent=respondent, free_text=None
-        )
+        Response.objects.create(question=free_text_question, respondent=respondent, free_text=None)
 
         url = reverse(
             "response-list",
@@ -1053,3 +1054,165 @@ class TestResponseViewSet:
 
         assert response.status_code == 200
         assert response.json()["all_respondents"][0]["themes"] == []
+
+    def test_mark_read_bulk_marks_all_responses(
+        self, client, staff_user, staff_user_token, free_text_question
+    ):
+        """Bulk endpoint marks every supplied response as read in a single request."""
+        responses = [ResponseFactory(question=free_text_question) for _ in range(3)]
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": [str(response.id) for response in responses]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        for response in responses:
+            assert response.is_read_by(staff_user)
+
+    def test_mark_read_bulk_is_idempotent(
+        self, client, staff_user, staff_user_token, free_text_question
+    ):
+        """Re-sending already-read responses does not error or create duplicate records."""
+        response = ResponseFactory(question=free_text_question)
+        response.mark_as_read_by(staff_user)
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": [str(response.id)]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        assert ResponseReadBy.objects.filter(response=response, user=staff_user).count() == 1
+
+    def test_mark_read_bulk_ignores_responses_outside_consultation(
+        self, client, staff_user, staff_user_token, free_text_question
+    ):
+        """Responses belonging to another consultation are not marked, even if their ID is sent."""
+        in_scope = ResponseFactory(question=free_text_question)
+
+        other_consultation = ConsultationFactory(title="Other", code="other-consultation")
+        other_question = QuestionFactory(consultation=other_consultation)
+        out_of_scope = ResponseFactory(question=other_question)
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": [str(in_scope.id), str(out_of_scope.id)]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        assert in_scope.is_read_by(staff_user)
+        assert not out_of_scope.is_read_by(staff_user)
+
+    def test_mark_read_bulk_rejects_empty_payload(
+        self, client, staff_user_token, free_text_question
+    ):
+        """An empty or missing response_ids list is rejected with a 400."""
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        empty_response = client.post(
+            url,
+            data={"response_ids": []},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert empty_response.status_code == 400
+
+    def test_mark_read_bulk_skips_invalid_uuids(
+        self, client, staff_user, staff_user_token, free_text_question
+    ):
+        """Non-UUID values are skipped without erroring; valid IDs are still marked."""
+        valid_response = ResponseFactory(question=free_text_question)
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": ["not-a-uuid", str(valid_response.id)]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        assert valid_response.is_read_by(staff_user)
+
+    def test_mark_read_bulk_rejects_payload_over_limit(
+        self, client, staff_user_token, free_text_question
+    ):
+        """A payload exceeding the per-request cap is rejected with a 400."""
+        too_many_ids = [str(uuid4()) for _ in range(MAX_BULK_MARK_READ + 1)]
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": too_many_ids},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 400
+
+    def test_mark_read_bulk_nested_under_question_scopes_to_that_question(
+        self, client, staff_user, staff_user_token, consultation
+    ):
+        """When nested under a question, only that question's responses are marked."""
+        question_in_scope = QuestionFactory(consultation=consultation, number=1)
+        question_other = QuestionFactory(consultation=consultation, number=2)
+
+        response_in_scope = ResponseFactory(question=question_in_scope)
+        response_other_question = ResponseFactory(question=question_other)
+
+        url = reverse(
+            "question-response-mark-read-bulk",
+            kwargs={
+                "consultation_pk": consultation.id,
+                "question_pk": question_in_scope.id,
+            },
+        )
+
+        api_response = client.post(
+            url,
+            data={
+                "response_ids": [
+                    str(response_in_scope.id),
+                    str(response_other_question.id),
+                ]
+            },
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        assert response_in_scope.is_read_by(staff_user)
+        assert not response_other_question.is_read_by(staff_user)
