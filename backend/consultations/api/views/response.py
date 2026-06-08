@@ -18,6 +18,11 @@ from consultations.api.serializers import (
     ThemeSerializer,
 )
 
+# Upper bound on how many responses a single bulk mark-read request may carry.
+# This matches the maximum page size so a full page can always be marked at once,
+# while still capping the work done per request.
+MAX_BULK_MARK_READ = 1000
+
 
 class BespokeResultsSetPagination(PageNumberPagination):
     page_size = 100
@@ -228,3 +233,58 @@ class ResponseViewSet(ModelViewSet):
                 "was_already_read": was_already_read,
             }
         )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="mark-read-bulk",
+        permission_classes=[IsAuthenticated, CanSeeConsultation],
+    )
+    def mark_read_bulk(self, request, consultation_pk=None, **kwargs):
+        """Mark multiple responses as read by the current user in a single request"""
+        requested_response_ids = request.data.get("response_ids", [])
+        if not requested_response_ids:
+            return Response({"message": "No response IDs provided"}, status=400)
+
+        if len(requested_response_ids) > self.MAX_BULK_MARK_READ:
+            return Response(
+                {
+                    "message": (
+                        f"Too many response IDs provided. Maximum is {self.MAX_BULK_MARK_READ}."
+                    )
+                },
+                status=400,
+            )
+
+        valid_response_ids = []
+        for requested_id in requested_response_ids:
+            try:
+                valid_response_ids.append(uuid.UUID(str(requested_id)))
+            except (ValueError, AttributeError):
+                # Skip malformed IDs rather than failing the whole batch.
+                continue
+
+        # Restrict to responses that actually belong to this consultation (and, when
+        # nested under a question, that question) so a user cannot mark responses
+        # outside their access by passing arbitrary IDs.
+        accessible_response_filter = {
+            "id__in": valid_response_ids,
+            "question__consultation_id": consultation_pk,
+        }
+        question_pk = self.kwargs.get("question_pk")
+        if question_pk:
+            accessible_response_filter["question_id"] = question_pk
+
+        accessible_response_ids = models.Response.objects.filter(
+            **accessible_response_filter
+        ).values_list("id", flat=True)
+
+        read_by_records = [
+            models.ResponseReadBy(response_id=response_id, user=request.user)
+            for response_id in accessible_response_ids
+        ]
+        created_records = models.ResponseReadBy.objects.bulk_create(
+            read_by_records, ignore_conflicts=True
+        )
+
+        return Response({"message": f"{len(created_records)} responses marked as read"})
