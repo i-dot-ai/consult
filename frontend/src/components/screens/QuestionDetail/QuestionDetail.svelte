@@ -272,12 +272,17 @@
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ response_ids: unreadResponseIds }),
-    }).catch(() => {
-      // The request never reached the server — roll back so a later click retries.
-      unreadResponseIds.forEach((responseId) =>
-        markedAsReadIds.delete(responseId),
-      );
-    });
+    })
+      .then((response) => {
+        // fetch only rejects on network failure, so surface error statuses too.
+        if (!response.ok) throw new Error();
+      })
+      .catch(() => {
+        // The request failed — roll back so a later click retries.
+        unreadResponseIds.forEach((responseId) =>
+          markedAsReadIds.delete(responseId),
+        );
+      });
   }
 
   let demographics = $derived($demographicsStore.data || []);
