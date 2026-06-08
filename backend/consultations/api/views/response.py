@@ -1,6 +1,7 @@
 import uuid
 
 from django.db.models import Exists, OuterRef
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -244,16 +245,19 @@ class ResponseViewSet(ModelViewSet):
         """Mark multiple responses as read by the current user in a single request"""
         requested_response_ids = request.data.get("response_ids", [])
         if not requested_response_ids:
-            return Response({"message": "No response IDs provided"}, status=400)
+            return Response(
+                {"message": "No response IDs provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        if len(requested_response_ids) > self.MAX_BULK_MARK_READ:
+        if len(requested_response_ids) > MAX_BULK_MARK_READ:
             return Response(
                 {
                     "message": (
-                        f"Too many response IDs provided. Maximum is {self.MAX_BULK_MARK_READ}."
+                        f"Too many response IDs provided. Maximum is {MAX_BULK_MARK_READ}."
                     )
                 },
-                status=400,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         valid_response_ids = []
@@ -283,8 +287,9 @@ class ResponseViewSet(ModelViewSet):
             models.ResponseReadBy(response_id=response_id, user=request.user)
             for response_id in accessible_response_ids
         ]
-        created_records = models.ResponseReadBy.objects.bulk_create(
-            read_by_records, ignore_conflicts=True
-        )
+        # ignore_conflicts skips responses this user had already read. We don't report a
+        # count: with ignore_conflicts=True, bulk_create returns every object passed in
+        # (conflicting rows just have pk=None), so its length would overstate inserts.
+        models.ResponseReadBy.objects.bulk_create(read_by_records, ignore_conflicts=True)
 
-        return Response({"message": f"{len(created_records)} responses marked as read"})
+        return Response({"message": "Responses marked as read"})

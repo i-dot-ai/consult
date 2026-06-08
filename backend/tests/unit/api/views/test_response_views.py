@@ -5,7 +5,7 @@ import orjson
 import pytest
 from django.urls import reverse
 
-from consultations.api.views.response import ResponseViewSet
+from consultations.api.views.response import MAX_BULK_MARK_READ
 from consultations.models import ResponseAnnotation, ResponseAnnotationTheme, ResponseReadBy
 from factories import (
     ConsultationFactory,
@@ -1167,7 +1167,7 @@ class TestResponseViewSet:
         self, client, staff_user_token, free_text_question
     ):
         """A payload exceeding the per-request cap is rejected with a 400."""
-        too_many_ids = [str(uuid4()) for _ in range(ResponseViewSet.MAX_BULK_MARK_READ + 1)]
+        too_many_ids = [str(uuid4()) for _ in range(MAX_BULK_MARK_READ + 1)]
 
         url = reverse(
             "response-mark-read-bulk",
