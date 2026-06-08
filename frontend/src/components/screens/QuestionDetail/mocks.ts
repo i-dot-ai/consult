@@ -7,6 +7,7 @@ import {
   getApiQuestionUrl,
   getApiResponseUrl,
   updateResponseReadStatus,
+  updateResponsesReadStatusBulk,
 } from "../../../global/routes";
 import type { ResponseBody } from "../../../global/types";
 
@@ -330,6 +331,11 @@ export const responsesUpdateMock = {
   method: "POST",
 };
 
+export const responsesBulkUpdateMock = {
+  regexp: "*host" + updateResponsesReadStatusBulk(":consultationId"),
+  method: "POST",
+};
+
 export const responsesEditMock = {
   regexp: "*host" + getApiResponseUrl(":consultationId", ":answerId"),
   method: "PATCH",
@@ -383,6 +389,7 @@ export const mocks = {
   responsesEditMock,
   responsesMock,
   responsesUpdateMock,
+  responsesBulkUpdateMock,
   consultationMock,
   demoMock,
   flagMock,
