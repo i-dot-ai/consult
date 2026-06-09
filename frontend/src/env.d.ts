@@ -6,7 +6,6 @@ interface ImportMetaEnv {
   readonly PUBLIC_LANGFUSE_URL?: string;
   readonly PUBLIC_HOMEPAGE_URL?: string;
   readonly ENVIRONMENT?: string;
-  readonly TEST_INTERNAL_ACCESS_TOKEN?: string;
 }
 
 interface ImportMeta {

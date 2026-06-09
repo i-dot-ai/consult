@@ -25,7 +25,7 @@ const INITIAL_SELECTED_THEMES: Theme[] = [
     description: "Ideas for innovative packaging solutions.",
     version: 1,
     modified_at: "2026-03-26T15:26:11.485448Z",
-    last_modified_by: "email@example.com",
+    last_modified_by: "admin@example.com",
   },
 ];
 
@@ -140,7 +140,7 @@ function selectTheme(themeId: string) {
     description: candidateTheme!.description,
     version: 1,
     modified_at: new Date().toISOString(),
-    last_modified_by: "email@example.com",
+    last_modified_by: "admin@example.com",
   };
 
   selectedThemes = [...selectedThemes, newSelectedTheme!];
@@ -230,7 +230,7 @@ export const selectedThemesCreateMock = {
       description: data.description,
       version: 1,
       modified_at: new Date().toISOString(),
-      last_modified_by: "email@example.com",
+      last_modified_by: "admin@example.com",
     };
 
     selectedThemes = [...selectedThemes, newSelectedTheme];
