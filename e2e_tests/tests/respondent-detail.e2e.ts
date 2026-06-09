@@ -61,7 +61,7 @@ test.describe("Respondent Detail Page", () => {
   });
 
   test("page navigation and title should display correctly", async ({ page }) => {
-    const backButton = page.getByTestId("back-to-analysis-button");
+    const backButton = page.getByTestId("back-button");
     await expect(backButton).toBeVisible();
 
     const prevButton = page

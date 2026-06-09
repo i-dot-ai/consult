@@ -125,6 +125,7 @@
               title={category}
               items={demographicsData[category]}
               hideThreshold={Infinity}
+              testId="metrics-summary-{category}"
             />
           </div>
         {/each}
@@ -178,19 +179,21 @@
                     <div class="h-[6rem]">
                       <Chart
                         legendId={"legend-id" + question.number}
-                        labels={question?.multiple_choice_answer?.map(
-                          (multiChoiceAnswer: QuestionMultiAnswer) => {
+                        labels={question?.multiple_choice_answer
+                          ?.slice()
+                          .sort((a, b) => a.text.localeCompare(b.text))
+                          .map((multiChoiceAnswer: QuestionMultiAnswer) => {
                             return {
                               count: multiChoiceAnswer.response_count,
                               text: multiChoiceAnswer.text,
                             };
-                          },
-                        ) || []}
-                        data={question?.multiple_choice_answer?.map(
-                          (multiChoiceAnswer: QuestionMultiAnswer) => {
+                          }) || []}
+                        data={question?.multiple_choice_answer
+                          ?.slice()
+                          .sort((a, b) => a.text.localeCompare(b.text))
+                          .map((multiChoiceAnswer: QuestionMultiAnswer) => {
                             return multiChoiceAnswer.response_count;
-                          },
-                        ) || []}
+                          }) || []}
                       />
                     </div>
                   </div>

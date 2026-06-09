@@ -195,6 +195,7 @@
             )}
 
             <MetricsDemoCard
+              testId="demographics-metrics-summary"
               {consultationId}
               title={category}
               items={[...demoOptions]
