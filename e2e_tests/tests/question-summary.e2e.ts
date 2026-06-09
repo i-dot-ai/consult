@@ -1,15 +1,32 @@
 import { test, expect } from "@playwright/test";
 import type { Locator, Page } from "@playwright/test";
-import { createFixtureData, deleteFixtureData } from "./helpers";
+import { CleanupManager, createFixtureData } from "./helpers";
 import { analysisConsultation, hybridQuestionWithThemes } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
 
 // Covers the question summary page (`/consultations/{id}/questions/{qid}`).
 // Uses the first question of `analysisConsultation` (the hybrid question) which
 // has free text, multiple choice options and assigned themes, so every section
-// of the page is exercised. Its fixture data is fixed, so the response counts
-// asserted below are deterministic (justified inline at each assertion).
+// of the page is exercised. The response counts asserted below are derived from
+// the fixture rather than hardcoded, so they stay correct if the fixture changes.
+const responses = hybridQuestionWithThemes.responses ?? [];
+const TOTAL_RESPONSES = responses.length;
+
+const responsesWithTheme = (themeKey: string) =>
+  responses.filter((response) => response.themes?.includes(themeKey)).length;
+const responsesWithNation = (nation: string) =>
+  responses.filter((response) => response.demographics?.nation === nation)
+    .length;
+const responsesWithChoice = (option: string) =>
+  responses.filter((response) => response.chosen_options?.includes(option))
+    .length;
+const responsesMatchingText = (substring: string) =>
+  responses.filter((response) =>
+    response.free_text?.toLowerCase().includes(substring.toLowerCase()),
+  ).length;
+
 test.describe("Question Summary Page", () => {
+  const cleanupManager = new CleanupManager();
   let testData: FixtureReference = {};
   let consultationId: string;
   let questionId: string;
@@ -27,6 +44,7 @@ test.describe("Question Summary Page", () => {
     testData = await createFixtureData(request, {
       consultations: [analysisConsultation],
     });
+    cleanupManager.add(testData);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -142,9 +160,13 @@ test.describe("Question Summary Page", () => {
       page.getByRole("heading", { name: /free text responses/i }),
     ).toBeVisible({ timeout: 15000 });
 
-    // All 5 free-text responses fit on one page, so all cards render.
-    await expect(responseCards(page)).toHaveCount(5, { timeout: 15000 });
-    await expect(page.getByText(/showing all 5 responses/i)).toBeVisible();
+    // All free-text responses fit on one page, so every card renders.
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
+      timeout: 15000,
+    });
+    await expect(
+      page.getByText(new RegExp(`showing all ${TOTAL_RESPONSES} responses`, "i")),
+    ).toBeVisible();
 
     // The free-text filter toggles should be available.
     await expect(page.getByText("Evidence rich", { exact: true })).toBeVisible();
@@ -155,9 +177,11 @@ test.describe("Question Summary Page", () => {
   test("filtering by a theme narrows the responses and can be cleared", async ({
     page,
   }) => {
-    await expect(responseCards(page)).toHaveCount(5, { timeout: 15000 });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
+      timeout: 15000,
+    });
 
-    // Click the first theme row ("Standardized framework", assigned to 3 responses).
+    // Filter by the top theme; the fixture assigns it to a known subset.
     const topTheme = hybridQuestionWithThemes.themes![0];
     await page
       .locator('tr[role="button"]')
@@ -166,63 +190,89 @@ test.describe("Question Summary Page", () => {
       .click();
 
     await expect(filteredBadge(page)).toBeVisible({ timeout: 15000 });
-    await expect(responseCards(page)).toHaveCount(3, { timeout: 15000 });
+    await expect(responseCards(page)).toHaveCount(
+      responsesWithTheme(topTheme.key),
+      { timeout: 15000 },
+    );
 
     // Clearing the filter restores the full list.
     await clearButton(page).click();
     await expect(filteredBadge(page)).toBeHidden({ timeout: 15000 });
-    await expect(responseCards(page)).toHaveCount(5, { timeout: 15000 });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
+      timeout: 15000,
+    });
   });
 
   test("filtering by a demographic narrows the responses and can be cleared", async ({
     page,
   }) => {
-    await expect(responseCards(page)).toHaveCount(5, { timeout: 15000 });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
+      timeout: 15000,
+    });
 
-    // "England" is the nation of 2 respondents for this question.
+    // Filter by a nation present in the fixture's respondent demographics.
+    const nation = "England";
     const sidebar = page.getByTestId("filters-sidebar");
-    await sidebar.getByText("England", { exact: true }).first().click();
+    await sidebar.getByText(nation, { exact: true }).first().click();
 
     await expect(filteredBadge(page)).toBeVisible({ timeout: 15000 });
-    await expect(responseCards(page)).toHaveCount(2, { timeout: 15000 });
+    await expect(responseCards(page)).toHaveCount(responsesWithNation(nation), {
+      timeout: 15000,
+    });
 
     await clearButton(page).click();
     await expect(filteredBadge(page)).toBeHidden({ timeout: 15000 });
-    await expect(responseCards(page)).toHaveCount(5, { timeout: 15000 });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
+      timeout: 15000,
+    });
   });
 
   test("filtering by a multiple choice answer narrows the responses and can be cleared", async ({
     page,
   }) => {
-    await expect(responseCards(page)).toHaveCount(5, { timeout: 15000 });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
+      timeout: 15000,
+    });
 
     // Each multiple choice option label is rendered as a heading, which is
-    // unique on the page (response card answer tags are plain spans). "No" was
-    // chosen by 2 respondents for this question.
-    await page.getByRole("heading", { name: "No", exact: true }).click();
+    // unique on the page (response card answer tags are plain spans).
+    const choice = "No";
+    await page.getByRole("heading", { name: choice, exact: true }).click();
 
     await expect(filteredBadge(page)).toBeVisible({ timeout: 15000 });
-    await expect(responseCards(page)).toHaveCount(2, { timeout: 15000 });
+    await expect(responseCards(page)).toHaveCount(responsesWithChoice(choice), {
+      timeout: 15000,
+    });
 
     await clearButton(page).click();
     await expect(filteredBadge(page)).toBeHidden({ timeout: 15000 });
-    await expect(responseCards(page)).toHaveCount(5, { timeout: 15000 });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
+      timeout: 15000,
+    });
   });
 
   test("searching responses narrows the list and can be cleared", async ({
     page,
   }) => {
-    await expect(responseCards(page)).toHaveCount(5, { timeout: 15000 });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
+      timeout: 15000,
+    });
 
     // "disagree" appears in exactly one response's free text.
-    await page.locator("#search-input").fill("disagree");
+    const searchTerm = "disagree";
+    await page.getByTestId("responses-search-input").fill(searchTerm);
 
     await expect(filteredBadge(page)).toBeVisible({ timeout: 15000 });
-    await expect(responseCards(page)).toHaveCount(1, { timeout: 15000 });
+    await expect(responseCards(page)).toHaveCount(
+      responsesMatchingText(searchTerm),
+      { timeout: 15000 },
+    );
 
     await clearButton(page).click();
     await expect(filteredBadge(page)).toBeHidden({ timeout: 15000 });
-    await expect(responseCards(page)).toHaveCount(5, { timeout: 15000 });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
+      timeout: 15000,
+    });
   });
 
   test("back button returns to the consultation detail page", async ({
@@ -240,6 +290,6 @@ test.describe("Question Summary Page", () => {
   });
 
   test.afterAll(async () => {
-    await deleteFixtureData(testData);
+    await cleanupManager.cleanup();
   });
 });
