@@ -894,6 +894,13 @@ class ConsultationViewSet(ModelViewSet):
         consultation = self.get_object()
         free_text_questions = Question.objects.filter(consultation=consultation, has_free_text=True)
 
+        user_ids_param = request.query_params.get("user_ids")
+        if user_ids_param:
+            user_ids = [uid.strip() for uid in user_ids_param.split(",") if uid.strip()]
+            read_by_filter = Q(response__responsereadby__user_id__in=user_ids)
+        else:
+            read_by_filter = Q(response__responsereadby__user__is_staff=False)
+
         generic_themes = set(
             SelectedTheme.objects.filter(
                 question__consultation=consultation,
@@ -905,8 +912,8 @@ class ConsultationViewSet(ModelViewSet):
         all_read_annotations = list(
             ResponseAnnotation.objects.filter(
                 response__question__in=free_text_questions,
-                response__responsereadby__user__is_staff=False,
             )
+            .filter(read_by_filter)
             .distinct()
             .prefetch_related("responseannotationtheme_set")
             .select_related("response")
@@ -989,6 +996,15 @@ class ConsultationViewSet(ModelViewSet):
         summary_f1 = compute_f1_stats(all_f1_scores)
         summary_f1_all_themes = compute_f1_stats(all_f1_scores_all_themes)
 
+        available_users = (
+            User.objects.filter(
+                responsereadby__response__question__consultation=consultation,
+                is_staff=False,
+            )
+            .distinct()
+            .values_list("id", "email")
+        )
+
         return Response(
             {
                 "id": str(consultation.id),
@@ -997,6 +1013,7 @@ class ConsultationViewSet(ModelViewSet):
                     "benchmark_f1": EVALUATION_BENCHMARK_F1,
                     "min_sample_size": EVALUATION_MIN_SAMPLE_SIZE,
                 },
+                "users": [{"id": str(uid), "email": email} for uid, email in available_users],
                 "summary": {
                     "status": get_evaluation_status(len(all_f1_scores), summary_f1),
                     "responses": total_response_count,
