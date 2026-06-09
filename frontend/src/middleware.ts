@@ -1,6 +1,7 @@
 import type { APIContext, MiddlewareHandler, MiddlewareNext } from "astro";
 import { Routes } from "./global/routes";
 import { fetchBackendApi } from "./global/api";
+import { LOCAL_USERS } from "./global/localUsers";
 import { getBackendUrl, getEnv } from "./global/utils";
 import { AuthReasons } from "./global/types";
 
@@ -50,9 +51,12 @@ export const onRequest: MiddlewareHandler = async (
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
   if (env === "local" || env === "test") {
-    internalAccessToken =
-      process.env.TEST_INTERNAL_ACCESS_TOKEN ||
-      import.meta.env?.TEST_INTERNAL_ACCESS_TOKEN;
+    const devEmail = context.cookies.get("dev_email")?.value;
+    if (devEmail === LOCAL_USERS.POLICY.EMAIL) {
+      internalAccessToken = LOCAL_USERS.POLICY.INTERNAL_ACCESS_TOKEN;
+    } else {
+      internalAccessToken = LOCAL_USERS.ADMIN.INTERNAL_ACCESS_TOKEN;
+    }
   } else {
     internalAccessToken = context.request.headers.get("x-amzn-oidc-data");
   }
