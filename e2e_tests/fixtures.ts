@@ -53,7 +53,7 @@ export type FixtureReference = {
 };
 
 export const defaultUser: User = {
-  email: "email@example.com",
+  email: "admin@example.com",
 };
 
 const hybridQuestionOptions: string[] = [

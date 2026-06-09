@@ -53,10 +53,10 @@ test-end-to-end: ## Run end-to-end tests with Playwright
 	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "CREATE DATABASE consult_e2e_test;"
 	@echo "Initializing test data..."
 	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py migrate
-	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) -e ADMIN_USERS=email@example.com backend venv/bin/python manage.py createadminusers
+	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) -e ADMIN_USERS=admin@example.com backend venv/bin/python manage.py createadminusers
 	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py shell -c \
 		"from authentication.models import User; from consultations.models import Consultation; \
-		user = User.objects.get(email='email@example.com'); \
+		user = User.objects.get(email='admin@example.com'); \
 		[c.users.add(user) for c in Consultation.objects.all()]"
 	@echo "Starting services..."
 	@echo "services:" > docker-compose.override.yml
@@ -138,12 +138,8 @@ check_db: ## Make sure the db is addressable
 dummy_data: ## Generate dummy consultations. Only works in dev
 	cd backend && PYTHONPATH=.. uv run python manage.py generate_dummy_data
 
-.PHONY: dev_admin_user
-dev_admin_user:
-	cd backend && PYTHONPATH=.. uv run python manage.py shell -c "from authentication.models import User; from consultations.models import Consultation; user = User.objects.create_user(email='email@example.com', password='admin', is_staff=True); user.save(); [c.users.add(user) for c in Consultation.objects.all()]" # pragma: allowlist secret
-
 .PHONY: dev_environment
-dev_environment: reset_db migrate dummy_data dev_admin_user ## set up the database with dummy data
+dev_environment: reset_db migrate dummy_data ## set up the database with dummy data
 
 # Docker
 AWS_REGION=eu-west-2
