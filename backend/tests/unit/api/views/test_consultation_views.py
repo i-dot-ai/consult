@@ -1545,6 +1545,95 @@ class TestEvaluationEndpoint:
         assert f1_data["ci_upper"] is None
         assert f1_data["approximate"] is False
 
+    def test_filter_by_user_ids(self, client, staff_user_token):
+        """Filters evaluation stats to only responses read by specified users."""
+        consultation = ConsultationFactory()
+        question = QuestionFactory(
+            consultation=consultation, has_free_text=True, free_text_response_count=4
+        )
+
+        user_a = UserFactory(is_staff=False)
+        user_b = UserFactory(is_staff=False)
+        theme = SelectedThemeFactory(question=question)
+        other_theme = SelectedThemeFactory(question=question)
+
+        # user_a reads 2 responses — perfect agreement
+        for _ in range(2):
+            respondent = RespondentFactory(consultation=consultation)
+            resp_obj = ResponseFactory(question=question, respondent=respondent, free_text="text")
+            ResponseReadBy.objects.create(response=resp_obj, user=user_a)
+            annotation = ResponseAnnotation.objects.create(response=resp_obj)
+            annotation.add_original_ai_themes([theme])
+            annotation.set_human_reviewed_themes([theme], user_a)
+
+        # user_b reads 2 responses — no agreement
+        for _ in range(2):
+            respondent = RespondentFactory(consultation=consultation)
+            resp_obj = ResponseFactory(question=question, respondent=respondent, free_text="text")
+            ResponseReadBy.objects.create(response=resp_obj, user=user_b)
+            annotation = ResponseAnnotation.objects.create(response=resp_obj)
+            annotation.add_original_ai_themes([theme])
+            annotation.set_human_reviewed_themes([other_theme], user_b)
+
+        url = reverse("consultations-evaluation", kwargs={"pk": consultation.id})
+
+        # Filter to user_a only — should show F1=1.0
+        resp = client.get(
+            url,
+            query_params={"user_ids": str(user_a.id)},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["summary"]["responses_read"] == 2
+        assert data["questions"][0]["f1"]["mean"] == 1.0
+
+        # Filter to user_b only — should show F1=0.0
+        resp = client.get(
+            url,
+            query_params={"user_ids": str(user_b.id)},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["summary"]["responses_read"] == 2
+        assert data["questions"][0]["f1"]["mean"] == 0.0
+
+        # No filter — should show all 4 reads, blended F1
+        resp = client.get(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["summary"]["responses_read"] == 4
+        assert data["questions"][0]["f1"]["mean"] == 0.5
+
+    def test_returns_available_users(self, client, staff_user_token):
+        """Response includes list of non-staff users who have read responses."""
+        consultation = ConsultationFactory()
+        question = QuestionFactory(consultation=consultation, has_free_text=True)
+
+        user_a = UserFactory(is_staff=False, email="alice@example.com")
+        user_b = UserFactory(is_staff=False, email="bob@example.com")
+        user_c = UserFactory(is_staff=True, email="staff@example.com")
+
+        respondent = RespondentFactory(consultation=consultation)
+        resp_obj = ResponseFactory(question=question, respondent=respondent, free_text="text")
+        ResponseReadBy.objects.create(response=resp_obj, user=user_a)
+        ResponseReadBy.objects.create(response=resp_obj, user=user_b)
+        ResponseReadBy.objects.create(response=resp_obj, user=user_c)
+
+        url = reverse("consultations-evaluation", kwargs={"pk": consultation.id})
+        resp = client.get(url, headers={"Authorization": f"Bearer {staff_user_token}"})
+
+        assert resp.status_code == 200
+        users = resp.json()["users"]
+        user_emails = {u["email"] for u in users}
+        assert "alice@example.com" in user_emails
+        assert "bob@example.com" in user_emails
+        assert "staff@example.com" not in user_emails
+
     def test_requires_admin(self, client):
         """Non-admin users added to the consultation cannot access evaluation endpoint."""
         from rest_framework_simplejwt.tokens import RefreshToken
