@@ -29,11 +29,14 @@ test.describe("Demographic Detail Page", () => {
   });
 
   test("page navigation and title should display correctly", async ({ page }) => {
-    const backButton = page.getByTestId("back-button");
-    await expect(backButton).toBeVisible();
-
     const titleText = page.getByRole("heading", { name: "Detailed Consultation Analysis" });
     await expect(titleText).toBeVisible();
+
+    const backButton = page.getByTestId("back-button");
+    await expect(backButton).toBeVisible();
+    await backButton.click()
+
+    await expect(page).toHaveURL(/\/consultations\/.*/);
   });
 
   test("demographics summaries should have expected text", async ({ page }) => {
@@ -61,6 +64,14 @@ test.describe("Demographic Detail Page", () => {
     await yesItemClickable.click();
     
     await expect(yesItemText).toContainClass("line-through");
+  });
+
+  test("demographic chart has expected labels", async ({ page }) => {
+    const q1Text = page.locator("#legend-id1");
+    await expect(q1Text).toHaveText("Don't know16.7%(1)No33.3%(2)No answer0%(0)Yes50%(3)");
+
+    const q3Text = page.locator("#legend-id3");
+    await expect(q3Text).toHaveText("Brand recognition0%(0)Cost-effectiveness20%(2)Design30%(3)Durability30%(3)Sustainability20%(2)");
   });
 
   test.afterAll(async () => {
