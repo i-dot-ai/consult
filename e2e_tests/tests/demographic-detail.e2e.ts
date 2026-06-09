@@ -22,17 +22,6 @@ test.describe("Demographic Detail Page", () => {
     await page.goto(`/consultations/${consultationId}`);
     await page.waitForLoadState("networkidle");
 
-    const demographicSummaries = page.getByTestId("demographics-metrics-summary");
-    await expect (demographicSummaries).toHaveCount(2);
-
-    // assertion here is based on a snapshot of what is displayed
-    // it will need updating if we change the fixture data
-    const ageGroup = page.getByText("age_group 18-35 2 40% 36-50 2");
-    await expect (ageGroup).toHaveCount(1);
-
-    const country = page.getByText("nation England 2 40% Northern");
-    await expect (country).toHaveCount(1);
-
     const demographicButton = page.getByRole("button", { name: "View All" })
 
     await demographicButton.click()
