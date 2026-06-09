@@ -1,5 +1,21 @@
 import type { SvelteURLSearchParams } from "svelte/reactivity";
 
+// Keep in sync with AuthReason in i-dot-ai-utilities (i_dot_ai_utilities/auth/auth_reason.py)
+export const AuthReasons = {
+  UNKNOWN: "UNKNOWN",
+  TOKEN_EXPIRED: "TOKEN_EXPIRED",
+  NO_SUCH_APPLICATION: "NO_SUCH_APPLICATION",
+  NO_MATCHING_RULE: "NO_MATCHING_RULE",
+  JWT_GLOBAL_ACCESS_CLAIM: "JWT_GLOBAL_ACCESS_CLAIM",
+  JWT_CLAIM_MATCHES_APP: "JWT_CLAIM_MATCHES_APP",
+  ACL_MATCHING_EMAIL: "ACL_MATCHING_EMAIL",
+  ACL_MATCHING_DOMAIN: "ACL_MATCHING_DOMAIN",
+  ACL_GLOBAL_ACCESS_EMAIL: "ACL_GLOBAL_ACCESS_EMAIL",
+  ACL_GLOBAL_ACCESS_DOMAIN: "ACL_GLOBAL_ACCESS_DOMAIN",
+} as const;
+
+export type AuthReason = (typeof AuthReasons)[keyof typeof AuthReasons];
+
 export interface NavItem {
   text: string;
   url: string;
@@ -210,6 +226,7 @@ export interface CandidateThemeResponsesResponse {
 }
 export interface ResponsesBody {
   has_more_pages: boolean;
+  next_cursor: string | null;
   all_respondents: ResponseBody[];
   total_count?: number;
 }

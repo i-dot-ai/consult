@@ -314,7 +314,7 @@ export const openQuestionWithThemes: Question = {
 };
 
 export const setupConsultation: Consultation = {
-  title: "Dummy Consultation at Setup Stage",
+  title: "Test Consultation at Setup Stage",
   stage: "setup",
   users: [defaultUser.email],
   questions: [hybridQuestion, multChoiceQuestion, openQuestion],
@@ -338,7 +338,7 @@ export const finalisingThemesConsultation: Consultation = {
 };
 
 export const analysisConsultation: Consultation = {
-  title: "Dummy Consultation at Analysis Stage",
+  title: "Test Consultation at Analysis Stage",
   stage: "analysis",
   users: [defaultUser.email],
   questions: [
@@ -349,8 +349,15 @@ export const analysisConsultation: Consultation = {
 };
 
 export const signOffConsultation: Consultation = {
-  title: "Dummy Consultation at Finalising Themes Stage",
+  title: "Test Consultation at Finalising Themes Stage",
   stage: "finalising_themes",
   users: [defaultUser.email],
-  questions: [hybridQuestion, multChoiceQuestion, openQuestion],
+  questions: [
+    {
+      ...hybridQuestion,
+      candidate_themes: openQuestionThemes,
+    },
+    multChoiceQuestion,
+    openQuestion,
+  ],
 };

@@ -65,7 +65,7 @@
     );
 
     if (!$responseUpdateStore.error && !$responseUpdateStore.isLoading) {
-      resetData();
+      resetData(stagedThemes, stagedEvidenceRich);
     }
   }
 
@@ -76,7 +76,10 @@
     themes: ResponseTheme[];
     themeOptions: ResponseTheme[];
     evidenceRich: boolean | null;
-    resetData: () => void;
+    resetData: (
+      updatedThemes: ResponseTheme[],
+      updatedEvidenceRich: boolean | null,
+    ) => void;
     setEditing: (newValue: boolean) => void;
     updateResponseMock?: StoreFetch;
   }

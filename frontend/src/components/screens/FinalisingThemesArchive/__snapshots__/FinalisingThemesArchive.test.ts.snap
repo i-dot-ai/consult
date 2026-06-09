@@ -383,6 +383,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
           <!---->
           <div
             class="bg-white"
+            data-testid="question-card"
           >
             <!---->
             <!---->
@@ -530,6 +531,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
           </div>
           <div
             class="bg-white"
+            data-testid="question-card"
           >
             <!---->
             <!---->
@@ -677,6 +679,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
           </div>
           <div
             class="bg-white"
+            data-testid="question-card"
           >
             <!---->
             <!---->

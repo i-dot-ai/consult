@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.http import JsonResponse
 from i_dot_ai_utilities.auth.auth_api import AuthApiClient
+from i_dot_ai_utilities.auth.auth_reason import AuthReason
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import AccessToken
@@ -18,12 +19,26 @@ client = AuthApiClient(
 )
 jwt_verifier = get_jwt_verifier()
 
-TOKEN_EXPIRED = "TOKEN_EXPIRED"
-
 
 def handle_authentication_error(logger, auth_reason, error_message, status_code=403):
     logger.warning(error_message)
-    return JsonResponse(data={"detail": auth_reason}, status=status_code)
+    return JsonResponse(data={"detail": auth_reason.value}, status=status_code)
+
+
+def _check_authorisation(token: str, unauthorised_log_message: str):
+    user_authorisation_info = client.get_user_authorisation_info(token)
+    if not user_authorisation_info.is_authorised:
+        if user_authorisation_info.auth_reason == AuthReason.TOKEN_EXPIRED:
+            return user_authorisation_info, handle_authentication_error(
+                logger,
+                user_authorisation_info.auth_reason,
+                f"User token expired because {user_authorisation_info.auth_reason}",
+            )
+        logger.warning(unauthorised_log_message)
+        return user_authorisation_info, JsonResponse(
+            data={"detail": "authentication failed"}, status=403
+        )
+    return user_authorisation_info, None
 
 
 @api_view(["POST"])
@@ -53,33 +68,16 @@ def validate_token(request):
                 logger.warning("JWT token verification failed")
                 return JsonResponse(data={"detail": "invalid token"}, status=401)
 
-            user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
-            if not user_authorisation_info.is_authorised:
-                if user_authorisation_info.auth_reason == TOKEN_EXPIRED:
-                    return handle_authentication_error(
-                        logger,
-                        user_authorisation_info.auth_reason,
-                        "User token expired because {reason}".format(
-                            reason=user_authorisation_info.auth_reason
-                        ),
-                    )
-
-                logger.warning("User not authorized")
-                return JsonResponse(data={"detail": "authentication failed"}, status=403)
+            _, error = _check_authorisation(internal_access_token, "User not authorized")
+            if error:
+                return error
 
         elif HostingEnvironment.is_deployed():
-            user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
-            if not user_authorisation_info.is_authorised:
-                if user_authorisation_info.auth_reason == TOKEN_EXPIRED:
-                    return handle_authentication_error(
-                        logger,
-                        user_authorisation_info.auth_reason,
-                        "User token expired because {reason}".format(
-                            reason=user_authorisation_info.auth_reason
-                        ),
-                    )
-                logger.warning("User not authenticated")
-                return JsonResponse(data={"detail": "authentication failed"}, status=403)
+            user_authorisation_info, error = _check_authorisation(
+                internal_access_token, "User not authenticated"
+            )
+            if error:
+                return error
             email = user_authorisation_info.email
 
         else:
@@ -102,12 +100,7 @@ def validate_token(request):
 
     logger.info("User authenticated successfully")
 
-    return JsonResponse(
-        {
-            "access": str(access_token),
-            "sessionId": request.session.session_key,
-        }
-    )
+    return JsonResponse({"access": str(access_token), "sessionId": request.session.session_key})
 
 
 @api_view(["POST"])

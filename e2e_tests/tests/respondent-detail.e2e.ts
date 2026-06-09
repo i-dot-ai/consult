@@ -37,7 +37,7 @@ test.describe("Respondent Detail Page", () => {
 
     await expect(page).toHaveURL(/\/consultations\/.*\/questions\/.*/);
 
-    const allRespondentButtons = page.getByTestId('respondent-button');
+    const allRespondentButtons = page.getByTestId('respondent-button-1');
 
     await expect(allRespondentButtons.first()).toBeVisible({ timeout: 10000 });
 

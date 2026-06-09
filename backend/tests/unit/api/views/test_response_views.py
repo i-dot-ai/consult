@@ -5,8 +5,11 @@ import orjson
 import pytest
 from django.urls import reverse
 
-from consultations.models import ResponseAnnotation, ResponseAnnotationTheme
+from consultations.api.views.response import MAX_BULK_MARK_READ
+from consultations.models import ResponseAnnotation, ResponseAnnotationTheme, ResponseReadBy
 from factories import (
+    ConsultationFactory,
+    QuestionFactory,
     RespondentFactory,
     ResponseAnnotationFactory,
     ResponseAnnotationFactoryNoThemes,
@@ -43,7 +46,7 @@ class TestResponseViewSet:
         Test for no N+1 queries. Regardless of the number of responses, we expect:
         - 1 query to get authentication user for permission checking
         - 1 query to get authentication user for is_flagged annotation
-        - 1 query to count total responses (page 1 only)
+        - 1 query to count filtered responses
         - 1 query to get responses with related data (includes is_read annotation)
         - 1 query to prefetch multiple choice answers
         - 1 query to prefetch demographic data
@@ -61,6 +64,7 @@ class TestResponseViewSet:
         data = orjson.loads(response.content)
 
         assert len(data["all_respondents"]) == 2
+        assert data["total_count"] == 2
 
         # Verify respondent data structure
         respondents = sorted(data["all_respondents"], key=lambda x: x["identifier"])
@@ -74,9 +78,8 @@ class TestResponseViewSet:
     def test_get_filtered_responses_with_pagination(
         self, client, staff_user_token, free_text_question
     ):
-        """Test API endpoint pagination"""
-        # Create multiple respondents
-        for i in range(5):
+        """Test cursor-based pagination returns the correct page and a usable next cursor"""
+        for _ in range(5):
             respondent = RespondentFactory(consultation=free_text_question.consultation)
             ResponseFactory(question=free_text_question, respondent=respondent)
 
@@ -84,22 +87,41 @@ class TestResponseViewSet:
             "response-list",
             kwargs={"consultation_pk": free_text_question.consultation.id},
         )
-        response = client.get(
+        auth = {"Authorization": f"Bearer {staff_user_token}"}
+
+        # First page — no cursor
+        page1 = client.get(
+            url,
+            query_params={"page_size": 2, "question_id": free_text_question.id},
+            headers=auth,
+        )
+        assert page1.status_code == 200
+        data1 = orjson.loads(page1.content)
+        assert len(data1["all_respondents"]) == 2
+        assert data1["has_more_pages"] is True
+        assert data1["total_count"] == 5
+        assert data1["next_cursor"] is not None
+
+        # Second page — use the cursor from page 1
+        page2 = client.get(
             url,
             query_params={
                 "page_size": 2,
-                "page": 1,
                 "question_id": free_text_question.id,
+                "cursor": data1["next_cursor"],
             },
-            headers={"Authorization": f"Bearer {staff_user_token}"},
+            headers=auth,
         )
-
-        assert response.status_code == 200
-
-        data = orjson.loads(response.content)
-
-        assert len(data["all_respondents"]) == 2
-        assert data["has_more_pages"]
+        assert page2.status_code == 200
+        data2 = orjson.loads(page2.content)
+        assert len(data2["all_respondents"]) == 2
+        assert data2["has_more_pages"] is True
+        # total_count is omitted on subsequent pages to avoid an extra COUNT query
+        assert "total_count" not in data2
+        # No overlap between pages
+        page1_ids = {response["id"] for response in data1["all_respondents"]}
+        page2_ids = {response["id"] for response in data2["all_respondents"]}
+        assert page1_ids.isdisjoint(page2_ids)
 
     def test_total_count_returned_on_first_page_only(
         self, client, staff_user_token, free_text_question
@@ -114,20 +136,25 @@ class TestResponseViewSet:
             kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
-        # Page 1 includes total_count
+        # First load (no cursor) includes total_count
         response = client.get(
             url,
-            query_params={"page_size": 2, "page": 1, "question_id": free_text_question.id},
+            query_params={"page_size": 2, "question_id": free_text_question.id},
             headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         data = orjson.loads(response.content)
         assert data["total_count"] == 5
         assert data["has_more_pages"]
+        assert data["next_cursor"] is not None
 
-        # Page 2 omits total_count
+        # Subsequent load (with cursor) omits total_count
         response = client.get(
             url,
-            query_params={"page_size": 2, "page": 2, "question_id": free_text_question.id},
+            query_params={
+                "page_size": 2,
+                "cursor": data["next_cursor"],
+                "question_id": free_text_question.id,
+            },
             headers={"Authorization": f"Bearer {staff_user_token}"},
         )
         data = orjson.loads(response.content)
@@ -176,6 +203,7 @@ class TestResponseViewSet:
 
         data = orjson.loads(response.content)
 
+        assert data["total_count"] == 1  # Filtered to individuals only
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
@@ -229,6 +257,7 @@ class TestResponseViewSet:
 
         data = orjson.loads(response.content)
 
+        assert data["total_count"] == 1  # Only response1 has both themes
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
@@ -270,6 +299,7 @@ class TestResponseViewSet:
 
         data = response.json()
 
+        assert data["total_count"] == 1  # Only response1
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
 
@@ -316,6 +346,7 @@ class TestResponseViewSet:
 
         data = response.json()
 
+        assert data["total_count"] == count  # Only response1
         assert len(data["all_respondents"]) == 2 if evidence_rich is None else 2
         if isinstance(evidence_rich, bool):
             assert data["all_respondents"][0]["evidenceRich"] == evidence_rich
@@ -375,6 +406,7 @@ class TestResponseViewSet:
 
         data = response.json()
 
+        assert data["total_count"] == count  # Only response1
         assert len(data["all_respondents"]) == 2 if sentiments is None else 2
 
         assert sorted(x["sentiment"] for x in data["all_respondents"]) == expected
@@ -408,6 +440,7 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200
+        assert response.json()["total_count"] == expected_responses
         if expected_responses == 1:
             assert response.json()["all_respondents"][0]["is_flagged"] == is_flagged
 
@@ -452,6 +485,7 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200
+        assert response.json()["total_count"] == expected_responses
 
     @pytest.mark.parametrize(("is_flagged", "is_edited"), [(True, True), (False, False)])
     def test_get_responses_with_is_flagged(
@@ -517,6 +551,7 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200, response.json()
+        assert response.json()["total_count"] == 1
         assert response.json()["all_respondents"][0]["id"] == str(response_1.id)
         assert response.json()["all_respondents"][0]["respondent_id"] == str(respondent_1.id)
 
@@ -560,9 +595,7 @@ class TestResponseViewSet:
         Response.objects.create(
             question=free_text_question, respondent=respondent, free_text="some text"
         )
-        Response.objects.create(
-            question=free_text_question, respondent=respondent, free_text=None
-        )
+        Response.objects.create(question=free_text_question, respondent=respondent, free_text=None)
 
         url = reverse(
             "response-list",
@@ -745,7 +778,7 @@ class TestResponseViewSet:
         assert history[3].theme.key == "Human assigned theme C"
         assert history[3].assigned_by == staff_user
 
-        assert list(free_text_annotation.get_original_ai_themes()) == [ai_assigned_theme]
+        assert free_text_annotation.get_original_ai_theme_ids() == {ai_assigned_theme.id}
 
     def test_patch_response_themes_invalid(self, client, staff_user_token, free_text_annotation):
         url = reverse(
@@ -835,6 +868,7 @@ class TestResponseViewSet:
         data = orjson.loads(response.content)
 
         assert len(data["all_respondents"]) == 1
+        assert data["total_count"] == 1
 
         # Verify respondent data structure
         respondent = data["all_respondents"][0]
@@ -1020,3 +1054,165 @@ class TestResponseViewSet:
 
         assert response.status_code == 200
         assert response.json()["all_respondents"][0]["themes"] == []
+
+    def test_mark_read_bulk_marks_all_responses(
+        self, client, staff_user, staff_user_token, free_text_question
+    ):
+        """Bulk endpoint marks every supplied response as read in a single request."""
+        responses = [ResponseFactory(question=free_text_question) for _ in range(3)]
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": [str(response.id) for response in responses]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        for response in responses:
+            assert response.is_read_by(staff_user)
+
+    def test_mark_read_bulk_is_idempotent(
+        self, client, staff_user, staff_user_token, free_text_question
+    ):
+        """Re-sending already-read responses does not error or create duplicate records."""
+        response = ResponseFactory(question=free_text_question)
+        response.mark_as_read_by(staff_user)
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": [str(response.id)]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        assert ResponseReadBy.objects.filter(response=response, user=staff_user).count() == 1
+
+    def test_mark_read_bulk_ignores_responses_outside_consultation(
+        self, client, staff_user, staff_user_token, free_text_question
+    ):
+        """Responses belonging to another consultation are not marked, even if their ID is sent."""
+        in_scope = ResponseFactory(question=free_text_question)
+
+        other_consultation = ConsultationFactory(title="Other", code="other-consultation")
+        other_question = QuestionFactory(consultation=other_consultation)
+        out_of_scope = ResponseFactory(question=other_question)
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": [str(in_scope.id), str(out_of_scope.id)]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        assert in_scope.is_read_by(staff_user)
+        assert not out_of_scope.is_read_by(staff_user)
+
+    def test_mark_read_bulk_rejects_empty_payload(
+        self, client, staff_user_token, free_text_question
+    ):
+        """An empty or missing response_ids list is rejected with a 400."""
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        empty_response = client.post(
+            url,
+            data={"response_ids": []},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert empty_response.status_code == 400
+
+    def test_mark_read_bulk_skips_invalid_uuids(
+        self, client, staff_user, staff_user_token, free_text_question
+    ):
+        """Non-UUID values are skipped without erroring; valid IDs are still marked."""
+        valid_response = ResponseFactory(question=free_text_question)
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": ["not-a-uuid", str(valid_response.id)]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        assert valid_response.is_read_by(staff_user)
+
+    def test_mark_read_bulk_rejects_payload_over_limit(
+        self, client, staff_user_token, free_text_question
+    ):
+        """A payload exceeding the per-request cap is rejected with a 400."""
+        too_many_ids = [str(uuid4()) for _ in range(MAX_BULK_MARK_READ + 1)]
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": too_many_ids},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 400
+
+    def test_mark_read_bulk_nested_under_question_scopes_to_that_question(
+        self, client, staff_user, staff_user_token, consultation
+    ):
+        """When nested under a question, only that question's responses are marked."""
+        question_in_scope = QuestionFactory(consultation=consultation, number=1)
+        question_other = QuestionFactory(consultation=consultation, number=2)
+
+        response_in_scope = ResponseFactory(question=question_in_scope)
+        response_other_question = ResponseFactory(question=question_other)
+
+        url = reverse(
+            "question-response-mark-read-bulk",
+            kwargs={
+                "consultation_pk": consultation.id,
+                "question_pk": question_in_scope.id,
+            },
+        )
+
+        api_response = client.post(
+            url,
+            data={
+                "response_ids": [
+                    str(response_in_scope.id),
+                    str(response_other_question.id),
+                ]
+            },
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        assert response_in_scope.is_read_by(staff_user)
+        assert not response_other_question.is_read_by(staff_user)

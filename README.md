@@ -91,6 +91,29 @@ Run end-to-end tests:
 docker compose up -d postgres # postgres must be running already
 make test-end-to-end
 ```
+If you are getting error while running e2e that the frontend is failing to start during the docker spin up its likely because of the timeout module that is missing and you will need to run
+
+```shell
+brew install coreutils
+```
+
+### Setting up a new consultation
+
+The `scripts/` directory contains CLI tools for preparing a consultation's
+data for the ThemeFinder pipeline:
+
+```bash
+# Generate an opinionated Q.U. workbook template with live in-sheet validation:
+make build-consultation-template
+
+# Validate a Q.U. workbook against response data, build the ThemeFinder
+# input layout, and upload it to S3:
+make setup-consultation name=my_consultation
+```
+
+See [`scripts/README.md`](scripts/README.md) for the full pipeline
+walkthrough and [`scripts/setup_consultation_checks.md`](scripts/setup_consultation_checks.md)
+for the list of validation rules.
 
 ### VSCode setup (recommended)
 

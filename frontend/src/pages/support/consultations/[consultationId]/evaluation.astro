@@ -1,0 +1,459 @@
+---
+import { fetchBackendApi } from "../../../../global/api";
+import type { AstroGlobalRuntime } from "../../../../global/types";
+
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section/Section.svelte";
+import Link from "../../../../components/Link.svelte";
+import Title from "../../../../components/Title.svelte";
+import {
+  getApiConsultationEvaluationUrl,
+  getQuestionDetailUrl,
+  getSupportConsultationDetails,
+} from "../../../../global/routes";
+
+const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
+
+if (!consultationId) {
+  return (Astro as unknown as AstroGlobalRuntime).redirect(
+    "/support/consultations",
+  );
+}
+
+type EvalStatus = "insufficient_data" | "below_benchmark" | "meets_benchmark";
+
+type F1Stats = {
+  mean: number;
+  ci_lower: number | null;
+  ci_upper: number | null;
+  approximate: boolean;
+};
+
+type QuestionEval = {
+  id: string;
+  number: number;
+  text: string;
+  status: EvalStatus;
+  responses: number;
+  responses_read: number;
+  responses_edited: number;
+  f1: F1Stats | null;
+  f1_all_themes: F1Stats | null;
+};
+
+type ConsultationEval = {
+  id: string;
+  title: string;
+  config: {
+    benchmark_f1: number;
+    min_sample_size: number;
+  };
+  summary: {
+    status: EvalStatus;
+    responses: number;
+    responses_read: number;
+    responses_edited: number;
+    f1: F1Stats | null;
+    f1_all_themes: F1Stats | null;
+  };
+  questions: QuestionEval[];
+};
+
+const data = await fetchBackendApi<ConsultationEval>(
+  Astro,
+  getApiConsultationEvaluationUrl(consultationId),
+);
+
+const { config } = data;
+
+const getBannerTitle = (): string => {
+  const { status, f1 } = data.summary;
+
+  switch (status) {
+    case "insufficient_data":
+      return "More responses need to be read";
+    case "below_benchmark":
+      return `Consult's theme assignment is below human-level alignment (F1 = ${f1!.mean})`;
+    case "meets_benchmark":
+      return `Consult's theme assignment is at or above human-level alignment (F1 = ${f1!.mean})`;
+  }
+};
+
+const getBannerDetail = (): string => {
+  const { status, responses_read } = data.summary;
+
+  switch (status) {
+    case "insufficient_data":
+      if (responses_read < config.min_sample_size) {
+        return `Only ${responses_read} responses have been read so far. At least ${config.min_sample_size} are needed for reliable scores.`;
+      }
+      return `While ${responses_read} responses have been read, not enough had non-generic themes to compare. At least ${config.min_sample_size} are needed for reliable scores.`;
+    case "below_benchmark":
+      return `Our meta-analysis found that when two humans independently assign themes to the same responses, they agree at an F1 of ${config.benchmark_f1}. This consultation is below that benchmark. Review the per-question breakdown below to identify which questions need more attention.`;
+    case "meets_benchmark":
+      return `Our meta-analysis found that when two humans independently assign themes to the same responses, they agree at an F1 of ${config.benchmark_f1}. This consultation meets or exceeds that benchmark.`;
+  }
+};
+
+const getQuestionWarning = (q: QuestionEval): string | null => {
+  switch (q.status) {
+    case "insufficient_data":
+      if (q.responses_read < config.min_sample_size) {
+        return `Only ${q.responses_read} responses read — at least ${config.min_sample_size} needed for reliable scores.`;
+      }
+      return `More responses need to be read — not enough had non-generic themes to compare (at least ${config.min_sample_size} needed).`;
+    case "below_benchmark":
+      return `F1 score is below human-level benchmark (${config.benchmark_f1}).`;
+    default:
+      return null;
+  }
+};
+
+const formatPercent = (numerator: number, denominator: number): string => {
+  if (denominator === 0) return "0%";
+  return `${Math.round((numerator / denominator) * 100)}%`;
+};
+
+const formatCount = (count: number, total: number): string => {
+  return `${count} (${formatPercent(count, total)})`;
+};
+
+const formatF1 = (f1: F1Stats | null): string => {
+  if (!f1) return "—";
+  const prefix = f1.approximate ? "~" : "";
+  const ci =
+    f1.ci_lower !== null && f1.ci_upper !== null
+      ? ` (${f1.ci_lower}–${f1.ci_upper})`
+      : "";
+  return `${prefix}${f1.mean}${ci}`;
+};
+
+const bannerTitle = getBannerTitle();
+const bannerDetail = getBannerDetail();
+
+const questionsNeedingMoreReads = data.questions.filter(
+  (q) => q.status === "insufficient_data",
+).length;
+const questionsBelowBenchmark = data.questions.filter(
+  (q) => q.status === "below_benchmark",
+).length;
+const questionsAboveBenchmark = data.questions.filter(
+  (q) => q.status === "meets_benchmark",
+).length;
+---
+
+<Layout>
+  <Section>
+    <div class="mb-4">
+      <Link href={getSupportConsultationDetails(consultationId)}>
+        ← Back to consultation
+      </Link>
+    </div>
+
+    <Title level={1} text={`Evaluation: ${data.title}`} />
+
+    <div
+      class:list={[
+        "my-6 rounded-lg border-l-4 p-5",
+        {
+          "border-amber-500 bg-amber-50":
+            data.summary.status === "insufficient_data",
+          "border-red-600 bg-red-50": data.summary.status === "below_benchmark",
+          "border-green-600 bg-green-50":
+            data.summary.status === "meets_benchmark",
+        },
+      ]}
+    >
+      <p
+        class:list={[
+          "text-lg font-bold",
+          {
+            "text-amber-900": data.summary.status === "insufficient_data",
+            "text-red-900": data.summary.status === "below_benchmark",
+            "text-green-900": data.summary.status === "meets_benchmark",
+          },
+        ]}
+      >
+        {bannerTitle}
+      </p>
+      <ul
+        class:list={[
+          "mt-3 list-disc space-y-1 pl-5 text-sm",
+          {
+            "text-amber-800": data.summary.status === "insufficient_data",
+            "text-red-800": data.summary.status === "below_benchmark",
+            "text-green-800": data.summary.status === "meets_benchmark",
+          },
+        ]}
+      >
+        <li>
+          Theme assignment is the step where Consult classifies each response
+          against the finalised themes. Accurate assignments are essential for
+          understanding theme prevalence, comparing themes across groups, and
+          finding relevant responses to read when exploring a particular theme.
+        </li>
+        <li>
+          Performance is measured by how often human reviewers agreed with
+          Consult's theme assignments. When a reviewer reads a response, they
+          can edit the assigned themes if they disagree. The fewer edits, the
+          higher the alignment score.
+        </li>
+        <li>{bannerDetail}</li>
+      </ul>
+    </div>
+
+    <h2 class="mb-4 mt-8 text-xl font-semibold">Summary</h2>
+
+    <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div class="rounded-lg border p-4">
+        <div class="text-2xl font-bold">{data.summary.responses_read}</div>
+        <div class="text-sm text-neutral-500">
+          of {data.summary.responses} responses read ({
+            formatPercent(data.summary.responses_read, data.summary.responses)
+          })
+        </div>
+      </div>
+      <div class="rounded-lg border p-4">
+        <div class="text-2xl font-bold">{data.summary.responses_edited}</div>
+        <div class="text-sm text-neutral-500">
+          of {data.summary.responses_read} read were edited ({
+            formatPercent(
+              data.summary.responses_edited,
+              data.summary.responses_read,
+            )
+          })
+        </div>
+      </div>
+      <div class="rounded-lg border p-4">
+        <div class="text-2xl font-bold">
+          {formatF1(data.summary.f1)}
+        </div>
+        <div class="text-sm text-neutral-500">F1 score</div>
+      </div>
+      <div class="rounded-lg border p-4">
+        <div class="text-2xl font-bold">
+          {formatF1(data.summary.f1_all_themes)}
+        </div>
+        <div class="text-sm text-neutral-500">F1 score (all themes)</div>
+      </div>
+    </div>
+
+    <h2 class="mt-10 text-xl font-semibold">Per Question</h2>
+
+    <div class="mt-3 flex flex-wrap items-center gap-4 text-sm">
+      {
+        questionsAboveBenchmark > 0 && (
+          <span class="rounded-full bg-green-100 px-3 py-1 text-green-800">
+            {questionsAboveBenchmark} questions performing well
+          </span>
+        )
+      }
+      {
+        questionsBelowBenchmark > 0 && (
+          <span class="rounded-full bg-red-100 px-3 py-1 text-red-800">
+            {questionsBelowBenchmark} questions need attention (F1 &lt;
+            {config.benchmark_f1})
+          </span>
+        )
+      }
+      {
+        questionsNeedingMoreReads > 0 && (
+          <span class="rounded-full bg-neutral-100 px-3 py-1 text-neutral-600">
+            {questionsNeedingMoreReads} questions need more responses read
+          </span>
+        )
+      }
+      <a
+        href="#methodology"
+        class="ml-auto text-base text-primary hover:underline"
+      >
+        How are these scores calculated? ↓
+      </a>
+    </div>
+
+    <div class="mt-4 overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="border-b font-medium">
+          <tr>
+            <th class="py-2 pl-2 pr-4">Q</th>
+            <th class="py-2 pr-4">Question</th>
+            <th class="py-2 pr-4">Responses</th>
+            <th class="py-2 pr-4">Read</th>
+            <th class="py-2 pr-4">Edited</th>
+            <th class="py-2 pr-4">F1</th>
+            <th class="py-2 pr-4">F1 (all themes)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            data.questions.map((question) => {
+              const warning = getQuestionWarning(question);
+
+              return (
+                <tr
+                  class:list={[
+                    "border-b",
+                    {
+                      "border-l-4 border-l-red-500":
+                        question.status === "below_benchmark",
+                    },
+                  ]}
+                >
+                  <td class="py-2 pl-2 pr-4">{question.number}</td>
+                  <td class="max-w-md py-2 pr-4">
+                    <a
+                      href={getQuestionDetailUrl(consultationId!, question.id)}
+                      class="text-primary hover:underline"
+                    >
+                      {question.text}
+                    </a>
+                    {warning && (
+                      <p class="mt-1 text-sm italic text-neutral-500">
+                        {warning}
+                      </p>
+                    )}
+                  </td>
+                  <td class="py-2 pr-4">{question.responses}</td>
+                  <td class="py-2 pr-4">
+                    {formatCount(question.responses_read, question.responses)}
+                  </td>
+                  <td class="py-2 pr-4">
+                    {formatCount(
+                      question.responses_edited,
+                      question.responses_read,
+                    )}
+                  </td>
+                  <td class="py-2 pr-4">{formatF1(question.f1)}</td>
+                  <td class="py-2 pr-4">{formatF1(question.f1_all_themes)}</td>
+                </tr>
+              );
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="methodology" class="mb-4 mt-10 scroll-mt-8 text-xl font-semibold">
+      Methodology
+    </h2>
+    <div class="grid grid-cols-1 gap-10 text-neutral-700 md:grid-cols-2">
+      <div class="space-y-6">
+        <div class="space-y-3">
+          <h3 class="text-base font-medium">Responses read</h3>
+          <p>
+            A response is counted as "read" when a reviewer clicks "Load More"
+            on the question detail page (marking the displayed batch as read),
+            or when they interact with a response by flagging or editing it.
+            Staff and admin activity is excluded. A response read multiple times
+            or by multiple reviewers still counts as one response read.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <h3 class="text-base font-medium">Responses edited</h3>
+          <p>
+            A response is counted as "edited" if its current theme assignments
+            differ from Consult's original assignment. This includes themes
+            added, removed, or replaced by the reviewer. If multiple edits are
+            made by multiple users across sessions, this still counts as one
+            response edited. Except in the scenario where there have been
+            multiple edits to take the theme assignments back to its original
+            form.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <h3 class="text-base font-medium">Alignment (F1 score)</h3>
+          <p>
+            To measure how well Consult's theme assignments align with human
+            reviewers, we calculate an F1 score. This balances how often Consult
+            correctly identifies a theme (precision) against how often it finds
+            all the correct themes (recall). We use a multi-label F1 score that
+            credits partial matches, where some themes are correct but others
+            are not.
+          </p>
+          <p>
+            F1 is calculated per-response, then averaged across all read
+            responses (sample-average). This ensures each response contributes
+            equally regardless of how many themes it has. Responses that were
+            read but not edited are treated as implicit agreement (F1 = 1.0),
+            meaning the reviewer saw Consult's themes and chose not to change
+            them.
+          </p>
+          <p>
+            The headline F1 score excludes the generic themes "Other" and "No
+            Reason Given" before comparing. Agreement on these catch-all
+            categories tells us little about whether Consult understood the
+            substance of a response. A reviewer and Consult might both assign
+            "Other" for entirely different reasons. Excluding them gives a
+            cleaner signal of genuine alignment on substantive content. A
+            secondary "F1 (all themes)" column is also shown for reference.
+          </p>
+          <p>
+            Confidence intervals (shown in parentheses) represent the 95% range
+            within which the true F1 score is likely to fall. These are only
+            shown when at least 30 responses read have applicable themes to
+            compare. Below that threshold, the mean F1 is shown but confidence
+            intervals are suppressed as they would be unreliable.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <h3 class="text-base font-medium">What is a good F1 score?</h3>
+          <p>
+            We conducted a meta-analysis of theme assignment alignment across
+            six consultations and calls for evidence with 5 departments. Over
+            115,000 free text responses to 81 questions were reviewed by more
+            than 150 people. The meta-analysis found that when two humans
+            independently assign themes to the same responses, they agree at an
+            F1 of 0.75 (excluding generic themes). There is no universal
+            definition of a "good" F1 score: some
+            <a
+              href="https://encord.com/blog/f1-score-in-machine-learning/"
+              class="text-primary hover:underline"
+              target="_blank"
+              rel="noopener noreferrer">sources</a
+            >
+            suggest 0.8–0.9, while
+            <a
+              href="https://spotintelligence.com/2023/05/08/f1-score/#What_is_a_good_F1_score"
+              class="text-primary hover:underline"
+              target="_blank"
+              rel="noopener noreferrer">others</a
+            >
+            consider scores above 0.7 acceptable depending on context. We use the
+            human-to-human baseline as our benchmark because it represents the practical
+            ceiling: if Consult matches or exceeds how well humans agree with each
+            other, its performance is at minimum equivalent to a human process.
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <figure>
+          <img
+            src="/images/load-more-free-text-responses-screenshot.png"
+            alt="Load More button marking responses as read"
+            class="rounded border"
+          />
+          <figcaption class="mt-2 text-sm text-neutral-500">
+            Figure 1: Clicking "Load More" marks the displayed responses as
+            read.
+          </figcaption>
+        </figure>
+        <figure>
+          <img
+            src="/images/edit-response-labels-screenshot.png"
+            alt="Editing theme assignments on a response"
+            class="mt-12 rounded border"
+          />
+          <figcaption class="mt-2 text-sm text-neutral-500">
+            Figure 2: Editing theme assignments via the edit panel.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="pb-16"></div>
+  </Section>
+</Layout>
