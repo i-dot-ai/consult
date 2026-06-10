@@ -43,7 +43,7 @@ class UserViewSet(ModelViewSet):
         return super().create(request, *args, **kwargs)
 
     def get_queryset(self):
-        queryset = models.User.objects.all()
+        queryset = models.User.objects.all().order_by("-created_at")
         filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
         return filterset.qs.distinct()
 
