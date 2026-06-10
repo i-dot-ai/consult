@@ -169,7 +169,7 @@ export class CleanupManager {
     this.attemptFrequency = attemptFrequency || 1000;
   }
 
-  async _attemptCleanup(maxAttempts: number, attemptFrequency: number, fixture: Fixture) {
+  private async _attemptCleanup(maxAttempts: number, attemptFrequency: number, fixture: Fixture) {
     let success = false;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
