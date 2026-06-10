@@ -15,12 +15,11 @@ test.describe("Dashboard Page", () => {
     testData = await createFixtureData(request, {
       consultations: [analysisConsultation],
     });
+    consultationId = testData.consultation_ids![0];
+    questionIds = testData.question_ids!;
   });
 
   test.beforeEach(async ({ page }) => {
-    consultationId = testData.consultation_ids![0];
-    questionIds = testData.question_ids!;
-
     await page.goto(`/consultations/${consultationId}`);
     await page.waitForLoadState("networkidle");
   });
