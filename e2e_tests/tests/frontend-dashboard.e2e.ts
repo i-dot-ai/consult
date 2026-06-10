@@ -48,6 +48,7 @@ test.describe("Dashboard Page", () => {
     await expect (responsesOnPage).toBeVisible({ timeout: 10000 });
     await expect (responsesOnPage).toHaveText(numberOfResponses);
 
+    // demographic info is more complicated to work out, and is fixed to a size of 2 in fixture setup
     const demographicsOnPage = page.getByTestId("metric-count-demographics");
     await expect (demographicsOnPage).toBeVisible({ timeout: 10000 });
     await expect (demographicsOnPage).toHaveText("2");
