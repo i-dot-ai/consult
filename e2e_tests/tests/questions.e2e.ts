@@ -2,7 +2,6 @@ import { test, expect } from "@playwright/test";
 import {
   CleanupManager,
   createFixtureData,
-  deleteFixtureData,
   getFirstConsultationLink,
 } from "./helpers";
 import { analysisConsultation } from "../fixtures";
