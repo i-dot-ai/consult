@@ -8,7 +8,6 @@ import type { FixtureReference } from "../fixtures";
 
 // Shared fixture data is created once in beforeAll; serial mode prevents
 // fullyParallel from running tests across workers and racing over it
-// (matches finalise-themes-detail.e2e.ts).
 test.describe.configure({ mode: "serial" });
 
 const ONBOARDING_KEY = "onboardingComplete-finalising-themes-archive";
@@ -118,7 +117,6 @@ test.describe("Finalise Themes - List Page", () => {
 
     // "consumer needs" is unique to the open question (Q4).
     await page.locator("#search-input").fill("consumer needs");
-    await page.waitForLoadState("networkidle");
 
     await expect(page.getByTestId("question-card")).toHaveCount(1);
     await expect(
@@ -159,21 +157,28 @@ test.describe("Finalise Themes - List Page", () => {
     const testId = await favButton.getAttribute("data-testid");
     expect(testId).toBeTruthy();
 
-    // The filled star (fill-yellow-500) is the favourited indicator.
-    await expect(favButton.locator("svg.fill-yellow-500")).toHaveCount(0);
+    // The button's aria-label reflects favourite state.
+    await expect(favButton).toHaveAttribute(
+      "aria-label",
+      "Add question to favourites",
+    );
 
     await favButton.click();
-    await expect(favButton.locator("svg.fill-yellow-500")).toBeVisible();
+    await expect(favButton).toHaveAttribute(
+      "aria-label",
+      "Remove question from favourites",
+    );
 
     await page.reload();
     await page.waitForLoadState("networkidle");
-    // Cards re-render client-side after reload; wait before checking the star.
+    // Cards re-render client-side after reload; wait before checking state.
     await expect(page.getByTestId("question-card").first()).toBeVisible();
 
     const favButtonAfterReload = page.locator(`[data-testid="${testId}"]`);
-    await expect(
-      favButtonAfterReload.locator("svg.fill-yellow-500"),
-    ).toBeVisible();
+    await expect(favButtonAfterReload).toHaveAttribute(
+      "aria-label",
+      "Remove question from favourites",
+    );
   });
 
   test("Clicking a question navigates to its detail page", async ({ page }) => {

@@ -45,6 +45,8 @@
     subtext = "",
     tag,
   }: Props = $props();
+
+  let favourited = $derived($favStore.includes(question.id));
 </script>
 
 <div
@@ -201,12 +203,14 @@
                   <Button
                     testId="favourite-button-{question.id}"
                     variant="ghost"
+                    ariaLabel={favourited
+                      ? "Remove question from favourites"
+                      : "Add question to favourites"}
                     handleClick={(e: MouseEvent) => {
                       e.stopPropagation();
                       favStore.toggleFav(question.id || "");
                     }}
                   >
-                    {@const favourited = $favStore.includes(question.id)}
                     <MaterialIcon
                       size="1.3rem"
                       color={favourited ? "fill-yellow-500" : "fill-gray-500"}
