@@ -17,6 +17,7 @@ import {
   getConsultationEvalUrl,
   getFinaliseThemesUrl,
   getSupportConsultationDeleteUrl,
+  getSupportConsultationEvaluationUrl,
   getSupportConsultationImportThemesUrl,
   getApiConsultationUrl,
   getApiQuestionsUrl,
@@ -66,6 +67,15 @@ let questions = await fetchBackendApi<{ results: Question[] }>(
           >Import finalised themes from another consultation</Link
         >
       </li>
+      {
+        consultation.stage === "analysis" && (
+          <li>
+            <Link href={getSupportConsultationEvaluationUrl(consultationId)}>
+              View evaluation metrics
+            </Link>
+          </li>
+        )
+      }
       <li>
         <Link href={getSupportConsultationDeleteUrl(consultationId)}
           >Delete this consultation</Link

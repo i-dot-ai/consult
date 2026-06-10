@@ -178,7 +178,7 @@
             <div class="m-auto">
               <Button
                 size="xs"
-                testId="respondent-button"
+                testId="respondent-button-{respondentDisplayId}"
                 handleClick={() => {
                   location.href =
                     getRespondentDetailUrl(consultationId, respondentId) +

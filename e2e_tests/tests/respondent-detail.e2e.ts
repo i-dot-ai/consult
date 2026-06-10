@@ -37,7 +37,7 @@ test.describe("Respondent Detail Page", () => {
 
     await expect(page).toHaveURL(/\/consultations\/.*\/questions\/.*/);
 
-    const allRespondentButtons = page.getByTestId('respondent-button');
+    const allRespondentButtons = page.getByTestId('respondent-button-1');
 
     await expect(allRespondentButtons.first()).toBeVisible({ timeout: 10000 });
 
@@ -61,7 +61,7 @@ test.describe("Respondent Detail Page", () => {
   });
 
   test("page navigation and title should display correctly", async ({ page }) => {
-    const backButton = page.getByTestId("back-to-analysis-button");
+    const backButton = page.getByTestId("back-button");
     await expect(backButton).toBeVisible();
 
     const prevButton = page

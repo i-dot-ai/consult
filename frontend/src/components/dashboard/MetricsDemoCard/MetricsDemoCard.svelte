@@ -23,6 +23,7 @@
     items?: MetricsDemoItem[];
     hideThreshold?: number;
     consultationId?: string;
+    testId?: string;
   }
 
   let {
@@ -30,6 +31,7 @@
     items = [],
     hideThreshold = 3,
     consultationId = "",
+    testId = "metrics-demo-card",
   }: Props = $props();
 
   let displayAll: boolean = $state(false);
@@ -66,6 +68,7 @@
     "lg:col-span-4",
     "h-full",
   ])}
+  data-testid={testId}
 >
   <Panel bg={true} border={true}>
     <Title level={4} text={title} />

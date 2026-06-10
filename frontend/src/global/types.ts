@@ -226,6 +226,7 @@ export interface CandidateThemeResponsesResponse {
 }
 export interface ResponsesBody {
   has_more_pages: boolean;
+  next_cursor: string | null;
   all_respondents: ResponseBody[];
   total_count?: number;
 }

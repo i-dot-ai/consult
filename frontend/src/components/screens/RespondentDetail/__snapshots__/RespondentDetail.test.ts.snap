@@ -16,7 +16,7 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
           <button
             aria-pressed="false"
             class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-            data-testid="back-to-analysis-button"
+            data-testid="back-button"
             data-variant="ghost"
             role="button"
             tabindex="0"
@@ -663,7 +663,7 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
           <button
             aria-pressed="false"
             class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-            data-testid="back-to-analysis-button"
+            data-testid="back-button"
             data-variant="ghost"
             role="button"
             tabindex="0"

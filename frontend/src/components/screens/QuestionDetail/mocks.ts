@@ -7,13 +7,13 @@ import {
   getApiQuestionUrl,
   getApiResponseUrl,
   updateResponseReadStatus,
+  updateResponsesReadStatusBulk,
 } from "../../../global/routes";
 import type { ResponseBody } from "../../../global/types";
-import { paginateArray } from "../../../global/utils";
 
 type QueryParams = {
   page_size: string;
-  page: string;
+  cursor?: string;
   evidenceRich: boolean;
   themeFilters: string;
   searchValue: string;
@@ -196,11 +196,16 @@ const themes = [
 ];
 
 const filterAnswers = (responses: ResponseBody[], params: QueryParams) => {
-  const pages = paginateArray(responses, Number.parseInt(params.page_size));
-  const intendedPage = Number.parseInt(params.page);
+  const pageSize = Number.parseInt(params.page_size);
+  const cursorIndex = params.cursor
+    ? responses.findIndex((response) => response.id === params.cursor)
+    : -1;
+  const startIndex = cursorIndex === -1 ? 0 : cursorIndex + 1;
 
-  let result: ResponseBody[] =
-    intendedPage > pages.length ? [] : pages[intendedPage - 1];
+  let result: ResponseBody[] = responses.slice(
+    startIndex,
+    startIndex + pageSize,
+  );
 
   if (params.evidenceRich) {
     result = result.filter((item) => item.evidenceRich);
@@ -308,7 +313,9 @@ export const responsesMock = {
     const filteredAnswers = filterAnswers(responses, queryParams);
 
     return {
+      total_count: filteredAnswers.length,
       has_more_pages: true,
+      next_cursor: null,
       all_respondents: filteredAnswers,
     };
   },
@@ -321,6 +328,11 @@ export const demoMock = {
 
 export const responsesUpdateMock = {
   regexp: "*host" + updateResponseReadStatus(":consultationId", ":answerId"),
+  method: "POST",
+};
+
+export const responsesBulkUpdateMock = {
+  regexp: "*host" + updateResponsesReadStatusBulk(":consultationId"),
   method: "POST",
 };
 
@@ -377,6 +389,7 @@ export const mocks = {
   responsesEditMock,
   responsesMock,
   responsesUpdateMock,
+  responsesBulkUpdateMock,
   consultationMock,
   demoMock,
   flagMock,

@@ -1,10 +1,11 @@
-from collections import Counter
+import statistics
+from collections import Counter, defaultdict
 from typing import Any
 
 import sentry_sdk
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Count, F
+from django.db.models import Count, F, Q
 from django.http import Http404
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -31,6 +32,8 @@ from consultations.models import (
     DemographicOption,
     Question,
     Respondent,
+    ResponseAnnotation,
+    ResponseAnnotationTheme,
     SelectedTheme,
 )
 from consultations.test_support.load_test_fixtures import (
@@ -46,6 +49,68 @@ from ingest.jobs import (
 )
 
 logger = settings.LOGGER
+
+EVALUATION_BENCHMARK_F1 = 0.75
+EVALUATION_MIN_SAMPLE_SIZE = 30
+
+
+def compute_response_f1(ai_themes, current_themes):
+    """Compute F1 for a single response."""
+    true_positives = len(ai_themes & current_themes)
+    false_positives = len(ai_themes - current_themes)
+    false_negatives = len(current_themes - ai_themes)
+    precision = (
+        true_positives / (true_positives + false_positives)
+        if (true_positives + false_positives) > 0
+        else 0.0
+    )
+    recall = (
+        true_positives / (true_positives + false_negatives)
+        if (true_positives + false_negatives) > 0
+        else 0.0
+    )
+    if (precision + recall) == 0:
+        return 0.0
+    return 2 * (precision * recall) / (precision + recall)
+
+
+def compute_f1_stats(f1_scores):
+    """Compute mean F1 with 95% confidence interval from per-response scores."""
+    if not f1_scores:
+        return None
+    n = len(f1_scores)
+    mean = statistics.mean(f1_scores)
+    if n < EVALUATION_MIN_SAMPLE_SIZE:
+        return {
+            "mean": round(mean, 2),
+            "ci_lower": None,
+            "ci_upper": None,
+            "approximate": True,
+        }
+    std = statistics.stdev(f1_scores)
+    if std == 0:
+        return {
+            "mean": round(mean, 2),
+            "ci_lower": None,
+            "ci_upper": None,
+            "approximate": False,
+        }
+    margin = 1.96 * (std / (n**0.5))
+    return {
+        "mean": round(mean, 2),
+        "ci_lower": round(max(0, mean - margin), 2),
+        "ci_upper": round(min(1, mean + margin), 2),
+        "approximate": False,
+    }
+
+
+def get_evaluation_status(sample_size, f1):
+    """Determine evaluation status based on sample size and F1 score."""
+    if f1 is None or sample_size < EVALUATION_MIN_SAMPLE_SIZE:
+        return "insufficient_data"
+    if f1["mean"] < EVALUATION_BENCHMARK_F1:
+        return "below_benchmark"
+    return "meets_benchmark"
 
 
 class ConsultationViewSet(ModelViewSet):
@@ -808,4 +873,155 @@ class ConsultationViewSet(ModelViewSet):
         return Response(
             {"error": "No fixture data provided"},
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="evaluation",
+        permission_classes=[IsAuthenticated, IsAdminUser],
+    )
+    def evaluation(self, request, pk=None):
+        """
+        Evaluation stats for a consultation: responses read, edited, and F1 score.
+        Admin only.
+
+        F1 is computed as a sample-average (per-response F1, then mean) with 95%
+        confidence intervals via normal approximation. Two variants are returned:
+        one including all themes, one excluding generic themes ("No Reason Given", "Other").
+        """
+
+        consultation = self.get_object()
+        free_text_questions = Question.objects.filter(consultation=consultation, has_free_text=True)
+
+        user_ids_param = request.query_params.get("user_ids")
+        if user_ids_param:
+            user_ids = [uid.strip() for uid in user_ids_param.split(",") if uid.strip()]
+            read_by_filter = Q(response__responsereadby__user_id__in=user_ids)
+        else:
+            read_by_filter = Q(response__responsereadby__user__is_staff=False)
+
+        generic_themes = set(
+            SelectedTheme.objects.filter(
+                question__consultation=consultation,
+            )
+            .filter(Q(name__iexact="no reason given") | Q(name__iexact="other"))
+            .values_list("id", flat=True)
+        )
+
+        all_read_annotations = list(
+            ResponseAnnotation.objects.filter(
+                response__question__in=free_text_questions,
+            )
+            .filter(read_by_filter)
+            .distinct()
+            .prefetch_related("responseannotationtheme_set")
+            .select_related("response")
+        )
+
+        deleted_themes_by_annotation = defaultdict(set)
+        for h in ResponseAnnotationTheme.history.filter(
+            response_annotation__in=all_read_annotations,
+            history_type="-",
+            assigned_by__isnull=True,
+        ).values("response_annotation_id", "theme_id"):
+            deleted_themes_by_annotation[h["response_annotation_id"]].add(h["theme_id"])
+
+        annotations_by_question = defaultdict(list)
+        for annotation in all_read_annotations:
+            annotations_by_question[annotation.response.question_id].append(annotation)
+
+        all_f1_scores = []
+        all_f1_scores_all_themes = []
+        questions = []
+
+        for question in free_text_questions:
+            read_response_annotations = annotations_by_question.get(question.id, [])
+
+            question_f1_scores = []
+            question_f1_scores_all_themes = []
+            edited_response_ids = set()
+
+            for response_annotation in read_response_annotations:
+                surviving_ai_themes = set(
+                    rat.theme_id
+                    for rat in response_annotation.responseannotationtheme_set.all()
+                    if rat.assigned_by_id is None
+                )
+                deleted_ai_themes = deleted_themes_by_annotation.get(response_annotation.id, set())
+                original_themes = surviving_ai_themes | deleted_ai_themes
+
+                current_themes = set(
+                    rat.theme_id for rat in response_annotation.responseannotationtheme_set.all()
+                )
+
+                if original_themes != current_themes:
+                    edited_response_ids.add(response_annotation.response_id)
+
+                if original_themes or current_themes:
+                    f1_all_themes = compute_response_f1(original_themes, current_themes)
+                    question_f1_scores_all_themes.append(f1_all_themes)
+
+                original_excl = original_themes - generic_themes
+                current_excl = current_themes - generic_themes
+                if original_excl or current_excl:
+                    f1 = compute_response_f1(original_excl, current_excl)
+                    question_f1_scores.append(f1)
+
+            all_f1_scores.extend(question_f1_scores)
+            all_f1_scores_all_themes.extend(question_f1_scores_all_themes)
+
+            responses_read = len({ra.response_id for ra in read_response_annotations})
+            f1_stats = compute_f1_stats(question_f1_scores)
+            f1_all_themes_stats = compute_f1_stats(question_f1_scores_all_themes)
+
+            questions.append(
+                {
+                    "id": str(question.id),
+                    "number": question.number,
+                    "text": question.text,
+                    "status": get_evaluation_status(len(question_f1_scores), f1_stats),
+                    "responses": question.free_text_response_count,
+                    "responses_read": responses_read,
+                    "responses_edited": len(edited_response_ids),
+                    "f1": f1_stats,
+                    "f1_all_themes": f1_all_themes_stats,
+                }
+            )
+
+        total_response_count = sum(q["responses"] for q in questions)
+        total_responses_read = sum(q["responses_read"] for q in questions)
+        total_responses_edited = sum(q["responses_edited"] for q in questions)
+
+        summary_f1 = compute_f1_stats(all_f1_scores)
+        summary_f1_all_themes = compute_f1_stats(all_f1_scores_all_themes)
+
+        available_users = (
+            User.objects.filter(
+                responsereadby__response__question__consultation=consultation,
+                is_staff=False,
+            )
+            .distinct()
+            .values_list("id", "email")
+        )
+
+        return Response(
+            {
+                "id": str(consultation.id),
+                "title": consultation.title,
+                "config": {
+                    "benchmark_f1": EVALUATION_BENCHMARK_F1,
+                    "min_sample_size": EVALUATION_MIN_SAMPLE_SIZE,
+                },
+                "users": [{"id": str(uid), "email": email} for uid, email in available_users],
+                "summary": {
+                    "status": get_evaluation_status(len(all_f1_scores), summary_f1),
+                    "responses": total_response_count,
+                    "responses_read": total_responses_read,
+                    "responses_edited": total_responses_edited,
+                    "f1": summary_f1,
+                    "f1_all_themes": summary_f1_all_themes,
+                },
+                "questions": questions,
+            }
         )

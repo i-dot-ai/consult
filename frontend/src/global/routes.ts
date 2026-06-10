@@ -65,6 +65,9 @@ export const getSupportConsultationImportThemesUrl = (
 ) => {
   return urlJoin(Routes.SupportConsultations, consultationId, "import-themes");
 };
+export const getSupportConsultationEvaluationUrl = (consultationId: string) => {
+  return urlJoin(Routes.SupportConsultations, consultationId, "evaluation");
+};
 export const getApiImportFinalisedThemesUrl = (consultationId: string) => {
   return urlJoin(
     Routes.ApiConsultations,
@@ -123,6 +126,9 @@ export const getRespondentDetailUrl = (
 };
 export const getApiConsultationUrl = (consultationId: string) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "/");
+};
+export const getApiConsultationEvaluationUrl = (consultationId: string) => {
+  return urlJoin(Routes.ApiConsultations, consultationId, "evaluation", "/");
 };
 export const getApiConsultationFoldersUrl = (
   stage: "setup" | "find-themes" | "assign-themes",
@@ -424,6 +430,16 @@ export const updateResponseReadStatus = (
     Suffixes.Responses,
     responseId,
     Suffixes.MarkRead,
+    "/",
+  );
+};
+
+export const updateResponsesReadStatusBulk = (consultationId: string) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    Suffixes.Responses,
+    "mark-read-bulk",
     "/",
   );
 };

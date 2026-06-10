@@ -34,7 +34,7 @@
         size="xs"
         variant="ghost"
         handleClick={onClickBack ? onClickBack : () => history.back()}
-        testId="back-to-analysis-button"
+        testId="back-button"
       >
         <div class="rotate-180">
           <MaterialIcon color="fill-neutral-700">
