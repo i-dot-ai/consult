@@ -67,7 +67,11 @@
   />
 </section>
 
-<section transition:slide class="my-8">
+<section
+  data-testid="favourite-questions-section"
+  transition:slide
+  class="my-8"
+>
   <div class="my-2">
     <TitleRow title="Favourited questions">
       <Star slot="icon" />

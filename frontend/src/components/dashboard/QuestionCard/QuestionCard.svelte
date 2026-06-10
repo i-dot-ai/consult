@@ -199,6 +199,7 @@
                   onclick={(e) => e.stopPropagation()}
                 >
                   <Button
+                    testId="favourite-button-{question.id}"
                     variant="ghost"
                     handleClick={(e: MouseEvent) => {
                       e.stopPropagation();

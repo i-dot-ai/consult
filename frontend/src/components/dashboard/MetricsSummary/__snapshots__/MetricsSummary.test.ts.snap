@@ -35,6 +35,7 @@ exports[`MetricsSummary > should render data 1`] = `
      
     <span
       class="text-xl font-bold"
+      data-testid="metric-count-questions"
     >
       10
     </span>
@@ -74,6 +75,7 @@ exports[`MetricsSummary > should render data 1`] = `
      
     <span
       class="text-xl font-bold"
+      data-testid="metric-count-responses"
     >
       20
     </span>
@@ -113,6 +115,7 @@ exports[`MetricsSummary > should render data 1`] = `
      
     <span
       class="text-xl font-bold"
+      data-testid="metric-count-demographics"
     >
       30
     </span>
