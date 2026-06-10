@@ -12,9 +12,8 @@ import {
 } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
 
-const cleanupManager = new CleanupManager();
-
 test.describe("Consultations - List Page", () => {
+  const cleanupManager = new CleanupManager();
   let testData: FixtureReference = {};
 
   test.beforeAll(async ({ request }) => {
@@ -73,6 +72,7 @@ test.describe("Consultations - List Page", () => {
 });
 
 test.describe("Consultations - Detail/Dashboard Page", () => {
+  const cleanupManager = new CleanupManager();
   let testData: FixtureReference = {};
   let consultationId: string;
 
@@ -150,6 +150,7 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
 });
 
 test.describe("Consultations - Evaluation Page", () => {
+  const cleanupManager = new CleanupManager();
   let consultationId: string;
   let testData: FixtureReference = {};
 
