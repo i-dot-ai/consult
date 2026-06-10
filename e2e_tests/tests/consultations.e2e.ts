@@ -145,7 +145,7 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
   });
 
   test.afterAll(async () => {
-    cleanupManager.cleanup();
+    await cleanupManager.cleanup();
   });
 });
 
