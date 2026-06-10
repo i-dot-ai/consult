@@ -68,7 +68,7 @@ test.describe("Consultations - List Page", () => {
   });
 
   test.afterAll(async () => {
-    await deleteFixtureData(testData);
+    await cleanupManager.cleanup();
   });
 });
 
@@ -80,6 +80,7 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
     testData = await createFixtureData(request, {
       consultations: [setupConsultation],
     });
+    cleanupManager.add(testData);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -144,7 +145,7 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
   });
 
   test.afterAll(async () => {
-    await deleteFixtureData(testData);
+    cleanupManager.cleanup();
   });
 });
 
@@ -156,6 +157,7 @@ test.describe("Consultations - Evaluation Page", () => {
     testData = await createFixtureData(request, {
       consultations: [setupConsultation],
     });
+    cleanupManager.add(testData);
   });
 
   test.beforeEach(async ({ page }) => {

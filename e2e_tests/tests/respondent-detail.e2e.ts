@@ -2,7 +2,6 @@ import { test, expect } from "@playwright/test";
 import {
   CleanupManager,
   createFixtureData,
-  deleteFixtureData,
 } from "./helpers";
 import { analysisConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
@@ -257,8 +256,6 @@ test.describe("Respondent Detail Page", () => {
   });
 
   test.afterAll(async () => {
-    await deleteFixtureData(testData);
     await cleanupManager.cleanup();
   });
-
 });
