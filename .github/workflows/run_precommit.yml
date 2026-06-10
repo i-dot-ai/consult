@@ -16,7 +16,7 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version-file: 'backend/pyproject.toml'
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version-file: 'frontend/package.json'
         cache: 'npm'
