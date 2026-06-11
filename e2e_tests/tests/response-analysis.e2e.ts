@@ -2,7 +2,11 @@ import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { setTimeout } from 'timers/promises';
 
-import { createFixtureData, deleteFixtureData } from './helpers';
+import {
+  createFixtureData,
+  deleteFixtureData,
+  goToQuestion,
+} from './helpers';
 import { analysisConsultation } from '../fixtures';
 import type { FixtureReference } from '../fixtures';
 
@@ -48,7 +52,7 @@ async function testFilter(
     labelSelector?: string;
   } = {},
 ) {
-  let expectedCounts = [];
+  const expectedCounts = [];
 
   // AND option only allowed for max two filters (one in each group)
   if (operator === 'AND' && filterNames.length != 2) {
@@ -124,11 +128,7 @@ test.describe('Response Analysis Page', () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`/consultations/${testData.consultation_ids![0]}`);
-    await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"][title^="Q"]').first().click();
-    await page.waitForURL(/\/questions\//);
-    await page.waitForLoadState('networkidle');
+    await goToQuestion(page, testData.consultation_ids![0], testData.question_ids![0]);
   });
 
   test('demographic filters show correct response counts', async ({ page }) => {
