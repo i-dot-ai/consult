@@ -2,7 +2,7 @@ import { request as apirequest } from "@playwright/test";
 import type { Page, APIRequestContext } from "@playwright/test";
 
 import { testAccessToken } from "../constants";
-import type { Fixture } from "../fixtures";
+import type { Fixture, FixtureReference } from "../fixtures";
 
 async function getToken(context: APIRequestContext) {
   const token_response = await context.fetch("/api/validate-token/", {
@@ -160,7 +160,7 @@ interface CleanupManagerOptions {
 }
 
 export class CleanupManager {
-  private fixtures: Fixture[] = [];
+  private fixtures: FixtureReference[] = [];
   public maxAttempts: number;
   public attemptFrequency: number;
 
@@ -169,7 +169,7 @@ export class CleanupManager {
     this.attemptFrequency = attemptFrequency || 1000;
   }
 
-  private async _attemptCleanup(maxAttempts: number, attemptFrequency: number, fixture: Fixture) {
+  private async _attemptCleanup(maxAttempts: number, attemptFrequency: number, fixture: FixtureReference) {
     let success = false;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -183,11 +183,14 @@ export class CleanupManager {
     }
 
     if (!success) {
-      console.error("Test fixture cleanup failed");
+      console.error(
+        "Test fixture cleanup failed for these consultations: ",
+        fixture.consultation_ids?.join(", "),
+      );
     }
   }
 
-  add(fixture: Fixture) {
+  add(fixture: FixtureReference) {
     this.fixtures.push(fixture);
   }
 
