@@ -211,7 +211,7 @@ test.describe('Response Analysis Page', () => {
     await firstResponse.getByTestId(/^respondent-button/).click();
 
     // Should navigate to the respondent detail page
-    await page.waitForURL(/\/respondent\/\d+/);
+    await page.waitForURL(/\/respondent\/[0-9a-f-]+/);
     await expect(page.getByText(new RegExp(`Respondent\\s*\\d+`))).toBeVisible();
   });
 
