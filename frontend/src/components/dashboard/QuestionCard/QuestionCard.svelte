@@ -200,9 +200,13 @@
                   onkeypress={(e) => e.stopPropagation()}
                   onclick={(e) => e.stopPropagation()}
                 >
+                  <!-- highlighted -> aria-pressed for the favourite toggle;
+                       "none" keeps that wiring from changing the star's look. -->
                   <Button
                     testId="favourite-button-{question.id}"
                     variant="ghost"
+                    highlighted={favourited}
+                    highlightVariant="none"
                     ariaLabel={favourited
                       ? "Remove question from favourites"
                       : "Add question to favourites"}
