@@ -31,7 +31,7 @@ test.describe("Question Detail Page", () => {
     await expect(backButton).toBeVisible();
     await backButton.click();
 
-    await expect(page).toHaveURL(/\/consultations\/.*\/finalising-themes\/.*/);
+    await expect(page).toHaveURL(/\/consultations\/.*\/finalising-themes/);
   });
 
   test("select another question should work correctly", async ({ page }) => {
