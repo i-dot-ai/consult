@@ -32,42 +32,30 @@ test.describe("Signed Off Themes", () => {
     await expect(page.getByTestId("question-card")).toHaveCount(3);
   });
 
-  test.describe("individual question themes", () => {
-    test.beforeEach(async ({ page }, testInfo) => {
-      const questionIndex = testInfo.title.includes("first") ? 0 
-        : testInfo.title.includes("second") ? 1 
-        : 2;
-      
+  for (const [index, expectedThemes] of [
+    [0, { count: 2, names: ["Quality Standards", "Consumer Protection"] }],
+    [1, { count: 2, names: ["Industry Impact", "Market Competition"] }],
+    [2, { count: 3, names: ["Implementation Timeline", "Compliance Costs", "Regional Variations"] }],
+  ] as const) {
+    test(`should display signed off pill for question ${index + 1}`, async ({ page }) => {
       await page.goto(
-        `/consultations/${consultationId}/finalising-themes/${questionIds[questionIndex]}`
+        `/consultations/${consultationId}/finalising-themes/${questionIds[index]}`
       );
       await page.waitForLoadState("networkidle");
-    });
 
-    test("should display signed off pill for first question", async ({ page }) => {
       await expect(page.getByText("Signed Off").first()).toBeVisible();
-      expect(await page.getByText("Signed Off").count()).toBeGreaterThanOrEqual(2);
-      await expect(page.getByText("Themes finalised")).toBeVisible();
-      await expect(page.getByRole("heading", { name: "Selected Themes" })).toBeVisible();
-      await expect(page.locator('text=/Quality Standards/i').first()).toBeVisible();
-      await expect(page.locator('text=/Consumer Protection/i').first()).toBeVisible();
-    });
+      expect(await page.getByText("Signed Off").count()).toBeGreaterThanOrEqual(expectedThemes.count);
 
-    test("should display signed off pill for second question", async ({ page }) => {
-      await expect(page.getByText("Signed Off").first()).toBeVisible();
-      expect(await page.getByText("Signed Off").count()).toBeGreaterThanOrEqual(2);
-      await expect(page.getByText("Industry Impact")).toBeVisible();
-      await expect(page.getByText("Market Competition")).toBeVisible();
-    });
+      if (index === 0) {
+        await expect(page.getByText("Themes finalised")).toBeVisible();
+        await expect(page.getByRole("heading", { name: "Selected Themes" })).toBeVisible();
+      }
 
-    test("should display signed off pill for third question", async ({ page }) => {
-      await expect(page.getByText("Signed Off").first()).toBeVisible();
-      expect(await page.getByText("Signed Off").count()).toBeGreaterThanOrEqual(3);
-      await expect(page.getByText("Implementation Timeline")).toBeVisible();
-      await expect(page.getByText("Compliance Costs")).toBeVisible();
-      await expect(page.getByText("Regional Variations")).toBeVisible();
+      for (const themeName of expectedThemes.names) {
+        await expect(page.getByText(themeName).first()).toBeVisible();
+      }
     });
-  });
+  }
 
   test("consultation should be in analysis stage", async ({ page }) => {
     await page.goto(`/consultations/${consultationId}`);

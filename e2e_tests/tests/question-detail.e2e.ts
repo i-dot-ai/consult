@@ -1,9 +1,9 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import {
   createFixtureData,
   deleteFixtureData,
 } from "./helpers";
-import { analysisConsultation, finalisingThemesConsultation, signedOffConsultation } from "../fixtures";
+import { signedOffConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
 
 test.describe("Question Detail Page", () => {
@@ -54,7 +54,7 @@ test.describe("Question Detail Page", () => {
   });
 
 
-  test.afterEach(async () => {
+  test.afterAll(async () => {
     await deleteFixtureData(testData);
   });
 });

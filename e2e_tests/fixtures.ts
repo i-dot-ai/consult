@@ -349,6 +349,9 @@ export const analysisConsultation: Consultation = {
   ],
 };
 
+// NOTE: signOffConsultation is nearly identical to finalisingThemesConsultation
+// The only difference is the title - both are used by different test suites
+// that were created at different times. Consider consolidating in the future.
 export const signOffConsultation: Consultation = {
   title: "Test Consultation at Finalising Themes Stage",
   stage: "finalising_themes",
@@ -366,8 +369,9 @@ export const signOffConsultation: Consultation = {
   ],
 };
 
-// Signed Off Consultation Fixture
-// This represents a consultation in the analysis stage with themes that have been signed off
+// signedOffConsultation represents a consultation in the analysis stage
+// with themes that have been finalized (theme_status="confirmed")
+// Use this fixture to test the completed/signed-off themes view
 
 const signedOffTheme1: Theme[] = [
   {
