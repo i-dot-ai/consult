@@ -9,27 +9,20 @@ import type { FixtureReference } from "../fixtures";
 test.describe("Question Detail Page", () => {
   let testData: FixtureReference = {};
   let consultationId: string;
+  let questionIds: string[];
 
   test.beforeAll(async ({ request }) => {
     testData = await createFixtureData(request, {
       consultations: [signedOffConsultation],
     });
     consultationId = testData.consultation_ids![0];
+    questionIds = testData.question_ids!;
   });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`/support/consultations/${consultationId}`);
-    await page.waitForLoadState("networkidle");
-
-    const finaliseThemesLink = page.getByRole("button", { name: "View finalise themes"})
-    await finaliseThemesLink.first().click({timeout: 15000});
-    await page.waitForLoadState("networkidle");
-
-    await expect(page.getByTestId("question-card")).toHaveCount(3);
-    const firstQuestionButton = page.getByTestId("question-card").first();
-
-    await expect(firstQuestionButton).toBeVisible();
-    await firstQuestionButton.click();
+    await page.goto(
+      `/consultations/${consultationId}/finalising-themes/${questionIds[0]}`
+    );
     await page.waitForLoadState("networkidle");
   });
 

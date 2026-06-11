@@ -370,9 +370,11 @@ export const signOffConsultation: Consultation = {
 };
 
 // signedOffConsultation represents a consultation in the analysis stage
-// with themes that have been finalized (theme_status="confirmed")
-// Use this fixture to test the completed/signed-off themes view
-
+// with themes that have been finalized (theme_status="confirmed").
+// Note: /finalising-themes/ routes remain accessible in analysis stage to view
+// confirmed themes in read-only mode. The page renders FinalisingThemesDetailCompleted
+// (with "Signed Off" pills) based on question.theme_status, not consultation.stage.
+// Use this fixture to test the completed/signed-off themes view.
 const signedOffTheme1: Theme[] = [
   {
     name: "Quality Standards",
