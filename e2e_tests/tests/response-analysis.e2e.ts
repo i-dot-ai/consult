@@ -208,7 +208,7 @@ test.describe('Response Analysis Page', () => {
   test('click respondent goes to respondent details page', async ({ page }) => {
     // Click the respondent button on the first response
     const firstResponse = freeTextResponses(page).first();
-    await firstResponse.getByTestId('respondent-button').click();
+    await firstResponse.getByTestId(/^respondent-button/).click();
 
     // Should navigate to the respondent detail page
     await page.waitForURL(/\/respondent\/\d+/);
