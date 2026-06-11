@@ -29,6 +29,7 @@ test.describe("Question Detail Page", () => {
   test("page navigation should work correctly", async ({ page }) => {
     const backButton = page.getByTestId("back-button");
     await expect(backButton).toBeVisible();
+    await backButton.click();
 
     await expect(page).toHaveURL(/\/consultations\/.*\/finalising-themes\/.*/);
   });
