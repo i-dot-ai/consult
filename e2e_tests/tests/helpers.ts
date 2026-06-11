@@ -2,7 +2,7 @@ import { request as apirequest } from "@playwright/test";
 import type { Page, APIRequestContext } from "@playwright/test";
 
 import { testAccessToken } from "../constants";
-import type { Fixture } from "../fixtures";
+import type { Fixture, FixtureReference } from "../fixtures";
 
 async function getToken(context: APIRequestContext) {
   const token_response = await context.fetch("/api/validate-token/", {
@@ -152,4 +152,56 @@ export async function getFirstConsultationLink(page: Page) {
     }
   }
   return null;
+}
+
+interface CleanupManagerOptions {
+  maxAttempts?: number;
+  attemptFrequency?: number;
+}
+
+export class CleanupManager {
+  private fixtures: FixtureReference[] = [];
+  public maxAttempts: number;
+  public attemptFrequency: number;
+
+  constructor({ maxAttempts, attemptFrequency }: CleanupManagerOptions = {}) {
+    this.maxAttempts = maxAttempts || 5;
+    this.attemptFrequency = attemptFrequency || 1000;
+  }
+
+  private async _attemptCleanup(maxAttempts: number, attemptFrequency: number, fixture: FixtureReference) {
+    let success = false;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await deleteFixtureData(fixture);
+        success = true;
+        break;
+      } catch {
+        await new Promise(resolve => setTimeout(resolve, attemptFrequency));
+      }
+    }
+
+    if (!success) {
+      console.error(
+        "Test fixture cleanup failed for these consultations: ",
+        fixture.consultation_ids?.join(", "),
+      );
+    }
+  }
+
+  add(fixture: FixtureReference) {
+    this.fixtures.push(fixture);
+  }
+
+  reset() {
+    this.fixtures = [];
+  }
+
+  async cleanup() {
+    for (const fixture of this.fixtures) {
+      await this._attemptCleanup(this.maxAttempts, this.attemptFrequency, fixture);
+    }
+    this.reset();
+  }
 }

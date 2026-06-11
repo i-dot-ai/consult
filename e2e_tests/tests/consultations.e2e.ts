@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import {
+  CleanupManager,
   createFixtureData,
   deleteFixtureData,
   getFirstConsultationLink,
@@ -12,12 +13,14 @@ import {
 import type { FixtureReference } from "../fixtures";
 
 test.describe("Consultations - List Page", () => {
+  const cleanupManager = new CleanupManager();
   let testData: FixtureReference = {};
 
   test.beforeAll(async ({ request }) => {
     testData = await createFixtureData(request, {
       consultations: [setupConsultation, signOffConsultation],
     });
+    cleanupManager.add(testData);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -64,11 +67,12 @@ test.describe("Consultations - List Page", () => {
   });
 
   test.afterAll(async () => {
-    await deleteFixtureData(testData);
+    await cleanupManager.cleanup();
   });
 });
 
 test.describe("Consultations - Detail/Dashboard Page", () => {
+  const cleanupManager = new CleanupManager();
   let testData: FixtureReference = {};
   let consultationId: string;
 
@@ -76,6 +80,7 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
     testData = await createFixtureData(request, {
       consultations: [setupConsultation],
     });
+    cleanupManager.add(testData);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -140,11 +145,12 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
   });
 
   test.afterAll(async () => {
-    await deleteFixtureData(testData);
+    await cleanupManager.cleanup();
   });
 });
 
 test.describe("Consultations - Evaluation Page", () => {
+  const cleanupManager = new CleanupManager();
   let consultationId: string;
   let testData: FixtureReference = {};
 
@@ -152,6 +158,7 @@ test.describe("Consultations - Evaluation Page", () => {
     testData = await createFixtureData(request, {
       consultations: [setupConsultation],
     });
+    cleanupManager.add(testData);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -212,6 +219,6 @@ test.describe("Consultations - Evaluation Page", () => {
   });
 
   test.afterAll(async () => {
-    await deleteFixtureData(testData);
+    await cleanupManager.cleanup();
   });
 });

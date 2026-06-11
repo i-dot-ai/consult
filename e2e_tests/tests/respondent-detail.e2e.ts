@@ -1,10 +1,12 @@
 import { test, expect } from "@playwright/test";
 import {
+  CleanupManager,
   createFixtureData,
-  deleteFixtureData,
 } from "./helpers";
 import { analysisConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
+
+const cleanupManager = new CleanupManager();
 
 test.describe("Respondent Detail Page", () => {
   let testData: FixtureReference = {};
@@ -15,6 +17,7 @@ test.describe("Respondent Detail Page", () => {
     testData = await createFixtureData(request, {
       consultations: [analysisConsultation],
     });
+    cleanupManager.add(testData);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -253,7 +256,6 @@ test.describe("Respondent Detail Page", () => {
   });
 
   test.afterAll(async () => {
-    await deleteFixtureData(testData);
+    await cleanupManager.cleanup();
   });
-
 });
