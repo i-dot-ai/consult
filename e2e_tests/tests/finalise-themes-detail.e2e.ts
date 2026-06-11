@@ -272,7 +272,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     await expect(page.getByText(descriptionText)).toBeVisible();
   })
 
-  test.afterAll(async () => {
+  test.afterEach(async () => {
     await deleteFixtureData(testData);
   });
 });

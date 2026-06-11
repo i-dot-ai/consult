@@ -10,15 +10,15 @@ test.describe("Question Detail Page", () => {
   let testData: FixtureReference = {};
   let consultationId: string;
 
- test.beforeAll(async ({ request }) => {
-     testData = await createFixtureData(request, {
-       consultations: [signedOffConsultation],
-     });
-     consultationId = testData.consultation_ids![0];
-   });
+  test.beforeAll(async ({ request }) => {
+    testData = await createFixtureData(request, {
+      consultations: [signedOffConsultation],
+    });
+    consultationId = testData.consultation_ids![0];
+  });
 
-  test.beforeEach(async ({ page, request }) => {
-     await page.goto(`/support/consultations/${consultationId}`);
+  test.beforeEach(async ({ page }) => {
+    await page.goto(`/support/consultations/${consultationId}`);
     await page.waitForLoadState("networkidle");
 
     const finaliseThemesLink = page.getByRole("button", { name: "View finalise themes"})
