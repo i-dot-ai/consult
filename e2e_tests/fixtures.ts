@@ -28,6 +28,7 @@ export type Question = {
   responses?: Response[];
   candidate_themes?: Theme[];
   themes?: Theme[];
+  theme_status?: "draft" | "configured" | "finalising_themes" | "confirmed";
 };
 
 export type User = {
@@ -355,10 +356,13 @@ export const signOffConsultation: Consultation = {
   questions: [
     {
       ...hybridQuestion,
-      candidate_themes: openQuestionThemes,
+      candidate_themes: hybridQuestionThemes,
     },
     multChoiceQuestion,
-    openQuestion,
+    {
+      ...openQuestion,
+      candidate_themes: openQuestionThemes,
+    },
   ],
 };
 
@@ -408,6 +412,7 @@ const signedOffQuestion1: Question = {
   multiple_choice_options: ["Yes", "No", "Don't know"],
   responses: signedOffResponses1,
   themes: signedOffTheme1,
+  theme_status: "confirmed",
 };
 
 const signedOffTheme2: Theme[] = [
@@ -453,6 +458,7 @@ const signedOffQuestion2: Question = {
   multiple_choice_options: ["Positive impact", "Negative impact", "Neutral", "Don't know"],
   responses: signedOffResponses2,
   themes: signedOffTheme2,
+  theme_status: "confirmed",
 };
 
 const signedOffTheme3: Theme[] = [
@@ -510,6 +516,7 @@ const signedOffQuestion3: Question = {
   multiple_choice_options: ["Strongly agree", "Agree", "Disagree", "Strongly disagree"],
   responses: signedOffResponses3,
   themes: signedOffTheme3,
+  theme_status: "confirmed",
 };
 
 export const signedOffConsultation: Consultation = {
