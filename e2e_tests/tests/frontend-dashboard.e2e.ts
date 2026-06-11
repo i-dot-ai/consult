@@ -73,9 +73,11 @@ test.describe("Dashboard Page", () => {
 
       await questionFavouriteButton.click();
 
+      await page.waitForLoadState("networkidle");
+
       const questionSection = page
       .getByTestId("favourite-questions-section")
-      .filter({ has: page.getByTestId(`favourite-button-${questionId}`)})
+      .filter({ has: page.getByTestId(`favourite-button-${questionId}`)});
 
       await expect (questionSection).toHaveCount(1);
     }

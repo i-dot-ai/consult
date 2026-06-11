@@ -52,12 +52,18 @@ def create_response_from_fixtures(respondents, index, question_object, response_
 
 
 def create_question_from_fixtures(consultation_object, respondents, question_data):
+    # Set theme_status to CONFIRMED if consultation is in analysis stage and has themes
+    theme_status = Question.ThemeStatus.DRAFT
+    if "themes" in question_data and consultation_object.stage == Consultation.Stage.ANALYSIS:
+        theme_status = Question.ThemeStatus.CONFIRMED
+
     question_object = Question.objects.create(
         consultation=consultation_object,
         text=question_data["text"],
         number=question_data["number"],
         has_free_text=question_data["has_free_text"],
         has_multiple_choice=question_data["has_multiple_choice"],
+        theme_status=theme_status,
     )
 
     if "multiple_choice_options" in question_data:
