@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional
 from uuid import UUID
 
-import boto3
 import tiktoken
 from django.conf import settings
 from django.db import transaction
@@ -9,6 +8,7 @@ from django_rq import get_queue
 
 import data_pipeline.s3 as s3
 from authentication.models import User
+from boto3_client import get_s3_client
 from consultations.models import (
     Consultation,
     DemographicOption,
@@ -207,7 +207,7 @@ def load_consultation_data_batch(
         consultation_code=consultation_code,
     )
 
-    s3_client = boto3.client("s3")
+    s3_client = get_s3_client()
 
     # Load respondents
     respondents = load_respondents_from_s3(consultation_code, bucket_name, s3_client)
