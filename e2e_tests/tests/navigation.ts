@@ -1,6 +1,32 @@
 import { expect } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
+/**
+ * Finds the first consultation link that points to an actual consultation detail
+ * page (not the consultations list page itself).
+ */
+export async function getFirstConsultationLink(page: Page) {
+  const allLinks = page.locator('a[href*="/consultations/"]');
+  const count = await allLinks.count();
+
+  for (let i = 0; i < count; i++) {
+    const link = allLinks.nth(i);
+    const href = await link.getAttribute("href");
+    if (href && href !== "/consultations" && !href.endsWith("/consultations")) {
+      return { link, href };
+    }
+  }
+  return null;
+}
+
+/**
+ * Extracts the consultation ID from a consultation URL (either the current page
+ * URL or an href), e.g. "/consultations/abc-123/..." -> "abc-123".
+ */
+export function getConsultationId(url: string): string | undefined {
+  return url.match(/\/consultations\/([^/]+)/)?.[1];
+}
+
 // Onboarding tours overlay the page until dismissed. The list page uses the
 // "-archive" key; the detail page additionally uses the "-finalising-themes"
 // key. Dismissing both is harmless on either page.

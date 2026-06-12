@@ -1,5 +1,5 @@
 import { request as apirequest } from "@playwright/test";
-import type { Page, APIRequestContext } from "@playwright/test";
+import type { APIRequestContext } from "@playwright/test";
 
 import { testAccessToken } from "../constants";
 import type { Fixture, FixtureReference } from "../fixtures";
@@ -134,24 +134,6 @@ export async function deleteUser(email: string) {
   if (!fixture_response.ok())
     throw new Error(`User deletion failed: ${fixture_response.status()}
     ${await fixture_response.text()}`);
-}
-
-/**
- * Finds the first consultation link that points to an actual consultation detail page
- * (not the consultations list page itself)
- */
-export async function getFirstConsultationLink(page: Page) {
-  const allLinks = page.locator('a[href*="/consultations/"]');
-  const count = await allLinks.count();
-
-  for (let i = 0; i < count; i++) {
-    const link = allLinks.nth(i);
-    const href = await link.getAttribute("href");
-    if (href && href !== "/consultations" && !href.endsWith("/consultations")) {
-      return { link, href };
-    }
-  }
-  return null;
 }
 
 interface CleanupManagerOptions {
