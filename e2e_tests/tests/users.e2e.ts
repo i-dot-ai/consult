@@ -5,8 +5,8 @@ import {
   deleteFixtureData,
   addUser,
   deleteUser,
-  getFirstConsultationLink
 } from './helpers';
+import { getFirstConsultationLink } from './navigation';
 import { defaultUser, setupConsultation } from '../fixtures';
 import type { FixtureReference } from "../fixtures";
 
