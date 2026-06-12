@@ -4,8 +4,8 @@ from data_pipeline.s3 import get_consultation_folders, get_question_folders
 
 
 class TestGetQuestionFolders:
-    @patch("data_pipeline.s3.boto3")
-    def test_get_question_folders(self, mock_boto3):
+    @patch("data_pipeline.s3._get_s3_resource")
+    def test_get_question_folders(self, mock_get_s3_resource):
         # Mock S3 objects
         mock_objects = [
             Mock(key="app_data/consultations/test/inputs/question_part_1/question.json"),
@@ -17,7 +17,7 @@ class TestGetQuestionFolders:
 
         mock_bucket = Mock()
         mock_bucket.objects.filter.return_value = mock_objects
-        mock_boto3.resource.return_value.Bucket.return_value = mock_bucket
+        mock_get_s3_resource.return_value.Bucket.return_value = mock_bucket
 
         result = get_question_folders("app_data/consultations/test/inputs/", "test-bucket")
 
@@ -29,9 +29,9 @@ class TestGetQuestionFolders:
 
 
 class TestGetConsultationFolders:
-    @patch("data_pipeline.s3.boto3")
+    @patch("data_pipeline.s3._get_s3_resource")
     @patch("data_pipeline.s3.settings")
-    def test_get_consultation_folders(self, mock_settings, mock_boto3):
+    def test_get_consultation_folders(self, mock_settings, mock_get_s3_resource):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 
         # Mock S3 objects with various paths
@@ -52,7 +52,7 @@ class TestGetConsultationFolders:
 
         mock_bucket = Mock()
         mock_bucket.objects.filter.return_value = mock_objects
-        mock_boto3.resource.return_value.Bucket.return_value = mock_bucket
+        mock_get_s3_resource.return_value.Bucket.return_value = mock_bucket
 
         result = get_consultation_folders()
 

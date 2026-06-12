@@ -4,9 +4,9 @@ from data_pipeline.batch import submit_job
 
 
 class TestSubmitBatchJob:
-    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.get_batch_client")
     @patch("data_pipeline.batch.settings")
-    def test_submit_find_themes_job(self, mock_settings, mock_boto3):
+    def test_submit_find_themes_job(self, mock_settings, mock_get_batch_client):
         """Test submitting a FIND_THEMES batch job"""
         # Mock settings
         mock_settings.FIND_THEMES_BATCH_JOB_NAME = "find-themes-job"
@@ -16,7 +16,7 @@ class TestSubmitBatchJob:
         # Mock boto3 batch client
         mock_batch_client = Mock()
         mock_batch_client.submit_job.return_value = {"jobId": "test-job-id-123"}
-        mock_boto3.client.return_value = mock_batch_client
+        mock_get_batch_client.return_value = mock_batch_client
 
         # Submit job
         response = submit_job(
@@ -28,7 +28,7 @@ class TestSubmitBatchJob:
         )
 
         # Verify batch client was called correctly
-        mock_boto3.client.assert_called_once_with("batch")
+        mock_get_batch_client.assert_called_once()
         mock_batch_client.submit_job.assert_called_once()
 
         call_args = mock_batch_client.submit_job.call_args.kwargs
@@ -52,9 +52,9 @@ class TestSubmitBatchJob:
         # Verify response
         assert response["jobId"] == "test-job-id-123"
 
-    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.get_batch_client")
     @patch("data_pipeline.batch.settings")
-    def test_submit_assign_themes_job(self, mock_settings, mock_boto3):
+    def test_submit_assign_themes_job(self, mock_settings, mock_get_batch_client):
         """Test submitting an ASSIGN_THEMES batch job"""
         # Mock settings
         mock_settings.ASSIGN_THEMES_BATCH_JOB_NAME = "assign-themes-job"
@@ -64,7 +64,7 @@ class TestSubmitBatchJob:
         # Mock boto3 batch client
         mock_batch_client = Mock()
         mock_batch_client.submit_job.return_value = {"jobId": "test-job-id-456"}
-        mock_boto3.client.return_value = mock_batch_client
+        mock_get_batch_client.return_value = mock_batch_client
 
         # Submit job
         response = submit_job(
