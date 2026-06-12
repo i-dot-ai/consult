@@ -25,7 +25,7 @@
   });
 </script>
 
-<aside>
+<aside data-testid="filters-sidebar">
   <Panel>
     <TitleRow level={2} title="Filters" subtitle="">
       <FilterAlt slot="icon" />
