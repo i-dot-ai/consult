@@ -6,6 +6,7 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
 from django.conf import settings
+from i_dot_ai_utilities.file_store.settings import Settings as FileStoreSettings
 
 from boto3_client import get_s3_client
 
@@ -16,16 +17,17 @@ account_id = settings.AWS_ACCOUNT_ID
 def _get_s3_resource():
     """
     Create and return a boto3 S3 resource configured for the current environment.
-    Similar to get_s3_client() but returns a resource instead of a client.
+    Uses i_dot_ai_utilities settings to maintain consistency with get_s3_client().
     """
-    environment = getattr(settings, "ENVIRONMENT", "").lower()
+    file_store_settings = FileStoreSettings()
+    environment = file_store_settings.environment.lower()
 
     if environment in ["local", "test"]:
         return boto3.resource(
             "s3",
-            endpoint_url=settings.MINIO_ENDPOINT_URL,
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            endpoint_url=file_store_settings.minio_address,
+            aws_access_key_id=file_store_settings.aws_access_key_id,
+            aws_secret_access_key=file_store_settings.aws_secret_access_key,
             config=Config(signature_version="s3v4"),
         )
     else:
