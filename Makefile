@@ -52,9 +52,9 @@ test-end-to-end: ## Run end-to-end tests with Playwright
 	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;" || true
 	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "CREATE DATABASE consult_e2e_test;"
 	@echo "Initializing test data..."
-	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py migrate
-	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) -e ADMIN_USERS=admin@example.com backend venv/bin/python manage.py createadminusers
-	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py shell -c \
+	@docker compose run --rm -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py migrate
+	@docker compose run --rm -e DATABASE_URL=$(E2E_DB_URL) -e ADMIN_USERS=admin@example.com backend venv/bin/python manage.py createadminusers
+	@docker compose run --rm -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py shell -c \
 		"from authentication.models import User; from consultations.models import Consultation; \
 		user = User.objects.get(email='admin@example.com'); \
 		[c.users.add(user) for c in Consultation.objects.all()]"
@@ -162,6 +162,14 @@ IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 ifndef cache
 	override cache = ./.build-cache
 endif
+
+.PHONY: docker_clean
+docker_clean: ## Reclaim local Docker space (stopped containers, dangling images, build cache, unused volumes)
+	docker compose down --remove-orphans
+	docker container prune -f
+	docker image prune -f
+	docker builder prune -f
+	docker volume prune -f
 
 .PHONY: docker_build
 docker_build: ## Build the docker container for the specified service when running in CI/CD
