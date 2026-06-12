@@ -6,7 +6,7 @@ import {
   addUser,
   deleteUser,
 } from './helpers';
-import { getFirstConsultationLink } from './navigation';
+import { getConsultationId, getFirstConsultationLink } from './navigation';
 import { defaultUser, setupConsultation } from '../fixtures';
 import type { FixtureReference } from "../fixtures";
 
@@ -103,7 +103,7 @@ test.describe('Consultation Details - Adding Users', () => {
     // Navigate to the consultation details page
     const result = await getFirstConsultationLink(page);
     expect(result).toBeTruthy();
-    const consultationId = result!.href.match(/\/consultations\/([^/]+)/)?.[1];
+    const consultationId = getConsultationId(result!.href);
     await page.goto(`/support/consultations/${consultationId}/users/new`);
     await page.waitForLoadState('networkidle');
     // Fill in the form with valid details
@@ -121,7 +121,7 @@ test.describe('Consultation Details - Adding Users', () => {
   test('Ensure that deleted user is removed from consultation details', async ({ page }) => {
     const result = await getFirstConsultationLink(page);
     expect(result).toBeTruthy();
-    const consultationId = result!.href.match(/\/consultations\/([^/]+)/)?.[1];
+    const consultationId = getConsultationId(result!.href);
     // First create a user and add to the consultation
     uniqueEmail = `testuser${Date.now()}@example.com`;
     await addUser(uniqueEmail, consultationId!);

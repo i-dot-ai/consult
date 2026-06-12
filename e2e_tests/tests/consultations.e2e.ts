@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { CleanupManager, createFixtureData } from "./helpers";
-import { getFirstConsultationLink } from "./navigation";
+import { getConsultationId, getFirstConsultationLink } from "./navigation";
 import {
   openQuestion,
   setupConsultation,
@@ -88,7 +88,7 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
     const result = await getFirstConsultationLink(page);
     expect(result).toBeTruthy();
 
-    consultationId = result!.href.match(/\/consultations\/([^/]+)/)?.[1]!;
+    consultationId = getConsultationId(result!.href)!;
     await result!.link.click();
     await page.waitForLoadState("networkidle");
   });
@@ -165,7 +165,7 @@ test.describe("Consultations - Evaluation Page", () => {
     // Get first consultation
     const result = await getFirstConsultationLink(page);
     expect(result).toBeTruthy();
-    consultationId = result!.href.match(/\/consultations\/([^/]+)/)?.[1]!;
+    consultationId = getConsultationId(result!.href)!;
 
     // Navigate directly to evaluation page
     await page.goto(`/evaluations/${consultationId}/questions`);
