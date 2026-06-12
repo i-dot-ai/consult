@@ -140,7 +140,7 @@ test.describe('Consultation Details - Adding Users', () => {
     await deleteFixtureData(testData);
   });
 
-  test.afterEach(async () => {
+  test.afterAll(async () => {
     if (uniqueEmail) {
       await deleteUser(uniqueEmail);
     }

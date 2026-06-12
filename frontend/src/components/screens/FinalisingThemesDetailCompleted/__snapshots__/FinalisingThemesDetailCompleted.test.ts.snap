@@ -3,6 +3,53 @@
 exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1`] = `
 <div>
   <!---->
+  <section
+    class="my-6"
+  >
+    <!---->
+    <button
+      aria-pressed="false"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+      data-testid="back-button"
+      data-variant="ghost"
+      role="button"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      <div
+        class="flex items-center gap-2 text-neutral-700"
+      >
+        <div
+          class="rotate-180"
+        >
+          <svg
+            class="fill-neutral-500"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         Back to questions
+      </div>
+      
+      
+      
+    </button>
+    
+    <!---->
+  </section>
+  <!---->
+   
   <div
     class="flex gap-4"
   >
@@ -62,52 +109,6 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
   <!---->
    
   <section
-    class="my-6"
-  >
-    <!---->
-    <button
-      aria-pressed="false"
-      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-      data-variant="ghost"
-      role="button"
-      tabindex="0"
-    >
-      <!---->
-      <!---->
-      <div
-        class="flex items-center gap-2 text-neutral-700"
-      >
-        <div
-          class="rotate-180"
-        >
-          <svg
-            class="fill-neutral-500"
-            height="1rem"
-            role="img"
-            viewBox="0 -960 960 960"
-            width="1rem"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
-              xmlns="http://www.w3.org/2000/svg"
-            />
-            <!---->
-          </svg>
-          <!---->
-        </div>
-         Back to questions
-      </div>
-      
-      
-      
-    </button>
-    
-    <!---->
-  </section>
-  <!---->
-   
-  <section
     class="mb-8"
   >
     <div
@@ -150,6 +151,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
            
           <div
             class="mb-4 mt-2"
+            data-testid="themes-finalised-pill"
           >
             <div
               class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
@@ -346,6 +348,53 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
 exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] = `
 <div>
   <!---->
+  <section
+    class="my-6"
+  >
+    <!---->
+    <button
+      aria-pressed="false"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+      data-testid="back-button"
+      data-variant="ghost"
+      role="button"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      <div
+        class="flex items-center gap-2 text-neutral-700"
+      >
+        <div
+          class="rotate-180"
+        >
+          <svg
+            class="fill-neutral-500"
+            height="1rem"
+            role="img"
+            viewBox="0 -960 960 960"
+            width="1rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         Back to questions
+      </div>
+      
+      
+      
+    </button>
+    
+    <!---->
+  </section>
+  <!---->
+   
   <div
     class="flex gap-4"
   >
@@ -405,52 +454,6 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
   <!---->
    
   <section
-    class="my-6"
-  >
-    <!---->
-    <button
-      aria-pressed="false"
-      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-      data-variant="ghost"
-      role="button"
-      tabindex="0"
-    >
-      <!---->
-      <!---->
-      <div
-        class="flex items-center gap-2 text-neutral-700"
-      >
-        <div
-          class="rotate-180"
-        >
-          <svg
-            class="fill-neutral-500"
-            height="1rem"
-            role="img"
-            viewBox="0 -960 960 960"
-            width="1rem"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
-              xmlns="http://www.w3.org/2000/svg"
-            />
-            <!---->
-          </svg>
-          <!---->
-        </div>
-         Back to questions
-      </div>
-      
-      
-      
-    </button>
-    
-    <!---->
-  </section>
-  <!---->
-   
-  <section
     class="mb-8"
   >
     <div
@@ -493,6 +496,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
            
           <div
             class="mb-4 mt-2"
+            data-testid="themes-finalised-pill"
           >
             <div
               class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
