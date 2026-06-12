@@ -699,6 +699,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                         >
                           <!---->
                           <button
+                            aria-label="Add question to favourites"
                             aria-pressed="false"
                             class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                             data-testid="favourite-button-5e8176da-fdcd-4f55-ab7b-b2ca8a12a467"
@@ -841,6 +842,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                         >
                           <!---->
                           <button
+                            aria-label="Add question to favourites"
                             aria-pressed="false"
                             class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                             data-testid="favourite-button-ef855675-af2b-4cfe-871d-ad108360e57a"
@@ -983,6 +985,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                         >
                           <!---->
                           <button
+                            aria-label="Add question to favourites"
                             aria-pressed="false"
                             class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                             data-testid="favourite-button-92848794-2072-41c4-b3bf-78248a6995da"
@@ -1124,6 +1127,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                         >
                           <!---->
                           <button
+                            aria-label="Add question to favourites"
                             aria-pressed="false"
                             class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                             data-testid="favourite-button-b20f35ee-411b-4746-9029-1e9b02610dea"
