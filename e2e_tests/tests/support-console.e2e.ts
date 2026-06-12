@@ -113,6 +113,13 @@ test.describe("Support Console - Consultations", () => {
     ).toBeVisible();
   });
 
+  test("search filters consultations", async ({ page }) => {
+    const searchBox = page.getByRole("textbox");
+    await searchBox.fill("setup");
+    await expect(page.getByRole("button", { name: "Test Consultation at Setup Stage" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Test Consultation at Finalising Themes Stage" }).first()).not.toBeVisible();
+  });
+
   test("consultations list shows creation dates", async ({ page }) => {
     // Check for created date column/field
     const createdHeader = page
