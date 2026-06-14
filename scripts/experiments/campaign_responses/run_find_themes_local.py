@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+"""Run find_themes locally on a consultation directory, skipping S3 and Slack."""
+
+import asyncio
+import logging
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "pipeline-sign-off"))
+
+from find_themes_script import process_consultation  # noqa: E402
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+DEFAULT_MODEL = "gpt-4o"
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} <consultation_dir> [model_name]")
+        print(f"  model_name defaults to {DEFAULT_MODEL}")
+        sys.exit(1)
+
+    consultation_dir = sys.argv[1]
+    model_name = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_MODEL
+
+    output_dir = asyncio.run(process_consultation(consultation_dir, model_name))
+    print(f"Output written to: {output_dir}")
