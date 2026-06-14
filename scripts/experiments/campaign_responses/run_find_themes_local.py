@@ -6,7 +6,9 @@ import logging
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "pipeline-sign-off"))
+repo_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(repo_root / "pipeline-sign-off"))
+sys.path.insert(0, str(repo_root.parent / "themefinder" / "src"))
 
 from find_themes_script import process_consultation  # noqa: E402
 
