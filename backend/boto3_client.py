@@ -10,7 +10,6 @@ from django.conf import settings
 from i_dot_ai_utilities.file_store.aws_s3.main import S3FileStore
 from i_dot_ai_utilities.file_store.settings import Settings as FileStoreSettings
 
-# Lazy-initialize the file store client
 _file_store_client = None
 
 
@@ -37,7 +36,6 @@ def _get_file_store():
             settings=file_store_settings,
         )
         
-        # Ensure bucket exists (especially important for local/test with MinIO)
         bucket_name = settings.AWS_BUCKET_NAME
         try:
             buckets = _file_store_client.list_buckets()

@@ -38,8 +38,7 @@ def request_factory():
 def s3_bucket():
     """
     Provide access to the MinIO bucket for testing.
-    The bucket is automatically created on startup by boto3_client._get_file_store().
-    This fixture only handles cleanup after tests.
+    Bucket is automatically created on startup. This fixture handles cleanup after tests.
     """
     from django.conf import settings
     
@@ -48,9 +47,7 @@ def s3_bucket():
     
     yield bucket_name
     
-    # Cleanup: Delete all objects in the bucket after tests
     try:
-        # List and delete all objects
         paginator = s3_client.get_paginator('list_objects_v2')
         for page in paginator.paginate(Bucket=bucket_name):
             if 'Contents' in page:
