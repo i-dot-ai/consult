@@ -37,19 +37,14 @@ def request_factory():
 @pytest.fixture
 def s3_bucket():
     """
-    Create a real MinIO bucket for testing.
-    Uses the actual MinIO instance configured via environment variables.
+    Provide access to the MinIO bucket for testing.
+    The bucket is automatically created on startup by boto3_client._get_file_store().
+    This fixture only handles cleanup after tests.
     """
     from django.conf import settings
     
     s3_client = get_s3_client()
     bucket_name = settings.AWS_BUCKET_NAME
-    
-    # Create bucket if it doesn't exist
-    try:
-        s3_client.head_bucket(Bucket=bucket_name)
-    except:
-        s3_client.create_bucket(Bucket=bucket_name)
     
     yield bucket_name
     
