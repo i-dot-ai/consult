@@ -21,6 +21,8 @@ def _get_file_store():
     - ENVIRONMENT=local or test → connects to MinIO
     - ENVIRONMENT=dev/preprod/prod → connects to AWS S3
     
+    In local/test environments, ensures the bucket exists.
+    
     Returns:
         S3FileStore: Configured file store instance
     """
@@ -33,6 +35,25 @@ def _get_file_store():
             logger=logger,
             settings=file_store_settings,
         )
+        
+        # Ensure bucket exists in local/test environments
+        environment = file_store_settings.environment.lower()
+        if environment in ["local", "test"]:
+            bucket_name = settings.AWS_BUCKET_NAME
+            try:
+                buckets = _file_store_client.list_buckets()
+                if not any(bucket["Name"] == bucket_name for bucket in buckets):
+                    logger.info(
+                        "Creating bucket for local/test environment: {bucket_name}",
+                        bucket_name=bucket_name,
+                    )
+                    _file_store_client.create_bucket(name=bucket_name)
+            except Exception as e:
+                logger.warning(
+                    "Failed to check/create bucket - {bucket_name}: {error}",
+                    bucket_name=bucket_name,
+                    error=str(e),
+                )
     
     return _file_store_client
 
