@@ -36,7 +36,7 @@ def _get_s3_resource():
         bucket_name = settings.AWS_BUCKET_NAME
         try:
             resource.meta.client.head_bucket(Bucket=bucket_name)
-        except:
+        except ClientError:
             logger.info("Creating bucket for local/test environment: {bucket_name}", bucket_name=bucket_name)
             resource.create_bucket(Bucket=bucket_name)
         
