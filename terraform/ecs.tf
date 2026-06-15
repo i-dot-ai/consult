@@ -14,9 +14,9 @@ locals {
     "DOMAIN_NAME"                        = local.host,
     "REDIS_HOST"                         = module.elasticache.redis_address
     "REDIS_PORT"                         = module.elasticache.redis_port
-    "AWS_BUCKET_NAME"                    = aws_s3_bucket.data_bucket.id
+    "AWS_BUCKET_NAME"                    = module.app_bucket.id
     "AWS_REGION"                         = data.aws_region.current.name
-    "IAI_FS_BUCKET_NAME"                 = aws_s3_bucket.data_bucket.id
+    "IAI_FS_BUCKET_NAME"                 = module.app_bucket.id
     "IAI_FS_AWS_REGION"                  = data.aws_region.current.name
     "ASSIGN_THEMES_BATCH_JOB_NAME"       = "${local.name}-assign-themes-job"
     "ASSIGN_THEMES_BATCH_JOB_QUEUE"      = module.batch_job_mapping.job_queue_name
