@@ -1,0 +1,20 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section/Section.svelte";
+
+import QuestionDetail from "../../../../components/screens/QuestionDetail/QuestionDetail.svelte";
+import type { AstroGlobalRuntime } from "../../../../global/types";
+
+const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
+  .params;
+---
+
+<Layout>
+  <Section>
+    <QuestionDetail
+      client:load
+      consultationId={consultationId || ""}
+      questionId={questionId || ""}
+    />
+  </Section>
+</Layout>

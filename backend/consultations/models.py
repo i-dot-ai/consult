@@ -7,6 +7,7 @@ from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from django.core.validators import BaseValidator
 from django.db import models
+from django.db.models import Count
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -40,18 +41,11 @@ class TimeStampedModel(models.Model):
 
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     class Stage(models.TextChoices):
-        # New stages
         SETUP = "setup", "Data Setup"
         FINDING_THEMES = "finding_themes", "Finding Themes"
         FINALISING_THEMES = "finalising_themes", "Finalising Themes"
         ASSIGNING_THEMES = "assigning_themes", "Assigning Themes"
-
-        # Both old and new stages
         ANALYSIS = "analysis", "Analysis"
-
-        # Old stages
-        THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
-        THEME_MAPPING = "theme_mapping", "Theme Mapping"
 
     class ModelName(models.TextChoices):
         GPT_4O = "gpt-4o-sweden"
@@ -62,7 +56,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     stage = models.CharField(
         max_length=32,
         choices=Stage.choices,
-        default=Stage.THEME_SIGN_OFF,
+        default=Stage.FINALISING_THEMES,
     )
     code = models.SlugField(max_length=256)
     timestamp = models.SlugField(max_length=256, null=True, blank=True)
@@ -125,11 +119,17 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     # Question configuration
     has_free_text = models.BooleanField(default=True)
     has_multiple_choice = models.BooleanField(default=False)
-    total_responses = models.IntegerField(
+    total_response_count = models.IntegerField(
         default=0,
-        help_text="Number of free text responses for this question",
-        null=True,
-        blank=True,
+        help_text="Number of respondents who answered this question (either part for hybrid questions)",
+    )
+    free_text_response_count = models.IntegerField(
+        default=0,
+        help_text="Number of responses where free text was submitted",
+    )
+    multi_choice_response_count = models.IntegerField(
+        default=0,
+        help_text="Number of respondents that selected at least one multi-choice option",
     )
 
     @property
@@ -143,38 +143,51 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         if not self.has_free_text:
             return 0
 
-        # Count total responses with free text
-        total_responses = self.response_set.filter(
-            free_text__isnull=False, free_text__gt=""
-        ).count()
-
-        if total_responses == 0:
+        if not self.free_text_response_count:
             return 0
 
-        # Count human-reviewed responses
         reviewed_responses = self.response_set.filter(
-            free_text__isnull=False, free_text__gt="", annotation__human_reviewed=True
+            free_text__isnull=False, annotation__human_reviewed=True
         ).count()
 
-        return reviewed_responses / total_responses
+        return reviewed_responses / self.free_text_response_count
 
-    def update_total_responses(self):
-        """Update the total_responses count based on current free text responses"""
+    def calculate_response_counts(self, responses=None):
+        """Calculate response counts from a queryset. Defaults to all responses for this question."""
+        if responses is None:
+            responses = self.response_set.all()
+
+        self.total_response_count = responses.values("respondent_id").distinct().count()
+
         if self.has_free_text:
-            count = self.response_set.filter(free_text__isnull=False, free_text__gt="").count()
-            self.total_responses = count
-            self.save(update_fields=["total_responses"])
+            self.free_text_response_count = responses.filter(free_text__isnull=False).count()
         else:
-            self.total_responses = 0
-            self.save(update_fields=["total_responses"])
+            self.free_text_response_count = 0
+
+        if self.has_multiple_choice:
+            self.multi_choice_response_count = (
+                responses.filter(chosen_options__isnull=False).values("id").distinct().count()
+            )
+
+        else:
+            self.multi_choice_response_count = 0
+
+    def update_response_counts(self):
+        """Calculate and persist denormalised response counts."""
+        self.calculate_response_counts()
+        self.save(
+            update_fields=[
+                "total_response_count",
+                "free_text_response_count",
+                "multi_choice_response_count",
+            ]
+        )
 
     def get_non_empty_responses(self):
         """
         Get queryset of non-empty responses for this question.
         """
-        return self.response_set.filter(free_text__isnull=False).exclude(
-            free_text__in=["", "Not Provided"]
-        )
+        return self.response_set.filter(free_text__isnull=False)
 
     def sample_responses(self, keep_count: int) -> SampleResult:
         """
@@ -197,7 +210,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
             Response.objects.filter(question=self).exclude(id__in=list(ids_to_keep)).delete()
         )
 
-        self.update_total_responses()
+        self.update_response_counts()
 
         return SampleResult(kept=keep_count, deleted=delete_count)
 
@@ -246,11 +259,12 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     chosen_options = models.ManyToManyField("MultiChoiceAnswer", blank=True)
     embedding = VectorField(dimensions=settings.EMBEDDING_DIMENSION, null=True, blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
-    read_by = models.ManyToManyField(User, blank=True)
+    read_by = models.ManyToManyField(User, through="ResponseReadBy", blank=True)
 
     class Meta:
         indexes = [
             GinIndex(fields=["search_vector"]),
+            models.Index(fields=["question", "id"]),
         ]
 
     def __str__(self):
@@ -260,7 +274,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def mark_as_read_by(self, user):
         """Mark this response as read by the given user"""
-        self.read_by.add(user)
+        ResponseReadBy.objects.get_or_create(response=self, user=user)
 
     def is_read_by(self, user):
         """Check if this response has been read by the given user"""
@@ -269,6 +283,15 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     def get_readers(self):
         """Get all users who have read this response"""
         return self.read_by.all()
+
+
+class ResponseReadBy(models.Model):
+    response = models.ForeignKey(Response, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [("response", "user")]
 
 
 @receiver(post_save, sender=Response)
@@ -289,6 +312,17 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     field_name = models.CharField(max_length=128)
     field_value = models.JSONField()
+    response_count = models.IntegerField(default=0)
+
+    @classmethod
+    def update_response_counts(cls, consultation):
+        """Update response_count for all options belonging to a consultation."""
+        options = list(
+            cls.objects.filter(consultation=consultation).annotate(_count=Count("respondent"))
+        )
+        for option in options:
+            option.response_count = option._count
+        cls.objects.bulk_update(options, ["response_count"], batch_size=1000)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -306,7 +340,7 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class SelectedTheme(UUIDPrimaryKeyModel, TimeStampedModel):
-    """Themes that have been selected during / after theme sign-off"""
+    """Themes that have been selected during / after finalising themes"""
 
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     name = models.TextField()
@@ -350,6 +384,31 @@ class CandidateTheme(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def __str__(self):
         return self.name
+
+
+class CandidateThemeResponse(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Responses assigned to candidate themes.
+
+    Populated by the assign-themes batch job when run before assigning themes phase,
+    so users can see which responses each candidate theme covers when finalising themes.
+    """
+
+    candidate_theme = models.ForeignKey(CandidateTheme, on_delete=models.CASCADE)
+    response = models.ForeignKey(Response, on_delete=models.CASCADE)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                fields=["candidate_theme", "response"],
+                name="unique_candidate_theme_response",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["candidate_theme"]),
+        ]
+
+    def __str__(self):
+        return f"{self.candidate_theme.name} -> {self.response_id}"
 
 
 class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -455,20 +514,30 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
                 assigned_by=user,
             )
 
-    def get_original_ai_themes(self):
-        """Get themes assigned by AI
-        Note that this implementation makes an implicit assumption that the AI only assigns the themes once
-        """
-        theme_ids = ResponseAnnotationTheme.history.filter(
-            response_annotation=self,
-            history_type="+",
-            assigned_by__isnull=True,
-        ).values_list("theme_id", flat=True)
-        return SelectedTheme.objects.filter(id__in=theme_ids)
+    def get_original_ai_theme_ids(self):
+        """Get IDs of themes originally assigned by AI.
 
-    def get_current_themes(self):
-        """Get latest themes assigned by any human or AI"""
-        return self.themes.distinct()
+        Combines themes still present with assigned_by=NULL and those
+        deleted (found in history) with assigned_by=NULL. This works
+        even when bulk_create was used without history signals.
+        """
+        surviving = set(
+            self.responseannotationtheme_set.filter(
+                assigned_by__isnull=True,
+            ).values_list("theme_id", flat=True)
+        )
+        deleted = set(
+            ResponseAnnotationTheme.history.filter(
+                response_annotation=self,
+                history_type="-",
+                assigned_by__isnull=True,
+            ).values_list("theme_id", flat=True)
+        )
+        return surviving | deleted
+
+    def get_current_theme_ids(self):
+        """Get IDs of latest themes assigned by any human or AI"""
+        return set(self.themes.values_list("id", flat=True))
 
     def save(self, *args, **kwargs) -> None:
         """
@@ -490,6 +559,15 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
 
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     text = models.TextField()
+    response_count = models.IntegerField(default=0)
+
+    @classmethod
+    def update_response_counts(cls, question):
+        """Update response_count for all answers belonging to a question."""
+        answers = list(cls.objects.filter(question=question).annotate(_count=Count("response")))
+        for answer in answers:
+            answer.response_count = answer._count
+        cls.objects.bulk_update(answers, ["response_count"])
 
     def __str__(self):
         return f"{self.question.number} = {self.text}"

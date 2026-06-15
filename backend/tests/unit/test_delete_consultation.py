@@ -4,6 +4,8 @@ import pytest
 
 from authentication.models import User
 from consultations.models import (
+    CandidateTheme,
+    CandidateThemeResponse,
     Consultation,
     DemographicOption,
     MultiChoiceAnswer,
@@ -89,6 +91,15 @@ def test_delete_consultation_cascading():
     )
     annotation2.themes.add(theme2)
 
+    # Create candidate themes and candidate theme responses
+    candidate_theme = CandidateTheme.objects.create(
+        question=question,
+        name="Candidate Theme",
+        description="A candidate theme",
+    )
+    CandidateThemeResponse.objects.create(candidate_theme=candidate_theme, response=response1)
+    CandidateThemeResponse.objects.create(candidate_theme=candidate_theme, response=response2)
+
     # Create multiple choice question
     multiple_choice_question = Question.objects.create(
         consultation=consultation,
@@ -112,10 +123,12 @@ def test_delete_consultation_cascading():
     assert Response.objects.count() == 4
     assert SelectedTheme.objects.count() == 2
     assert ResponseAnnotation.objects.count() == 2
+    assert CandidateTheme.objects.count() == 1
+    assert CandidateThemeResponse.objects.count() == 2
     assert MultiChoiceAnswer.objects.count() == 3
 
     # Delete the consultation
-    delete_consultation_job(consultation)
+    delete_consultation_job(consultation.id)
 
     # Verify cascading deletion
     assert Consultation.objects.count() == 0
@@ -124,6 +137,8 @@ def test_delete_consultation_cascading():
     assert Response.objects.count() == 0
     assert SelectedTheme.objects.count() == 0
     assert ResponseAnnotation.objects.count() == 0
+    assert CandidateTheme.objects.count() == 0
+    assert CandidateThemeResponse.objects.count() == 0
     assert MultiChoiceAnswer.objects.count() == 0
 
 
@@ -171,7 +186,7 @@ def test_delete_consultation_job_success(mock_connection):
     ).exists()
 
     # Run the delete job
-    delete_consultation_job(consultation)
+    delete_consultation_job(consultation.id)
 
     # Verify all objects are deleted
     assert not Consultation.objects.filter(id=consultation_id).exists()
@@ -191,7 +206,7 @@ def test_delete_consultation_job_handles_database_connection(mock_connection):
     consultation = Consultation.objects.create(title="Test Consultation")
 
     # Run the delete job
-    delete_consultation_job(consultation)
+    delete_consultation_job(consultation.id)
 
 
 @pytest.mark.django_db
@@ -210,7 +225,7 @@ def test_delete_consultation_job_handles_exceptions(mock_logger, mock_connection
         side_effect=Exception("Database error"),
     ):
         with pytest.raises(Exception) as exc_info:
-            delete_consultation_job(consultation)
+            delete_consultation_job(consultation.id)
 
         assert "Database error" in str(exc_info.value)
 

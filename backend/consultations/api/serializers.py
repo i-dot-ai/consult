@@ -7,6 +7,7 @@ from rest_framework.exceptions import ValidationError
 from authentication.models import User
 from consultations.models import (
     CandidateTheme,
+    CandidateThemeResponse,
     Consultation,
     MultiChoiceAnswer,
     Question,
@@ -50,11 +51,11 @@ class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
 
     response_count = serializers.SerializerMethodField()
 
-    def get_response_count(self, obj) -> int | None:
-        try:
+    def get_response_count(self, obj) -> int:
+        # When filters are applied, the view annotates a dynamic count
+        if hasattr(obj, "prefetched_response_count"):
             return obj.prefetched_response_count
-        except AttributeError:
-            return None
+        return obj.response_count
 
     class Meta:
         model = MultiChoiceAnswer
@@ -66,25 +67,33 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     multiple_choice_answer = MultiChoiceAnswerSerializer(
         many=True, source="multichoiceanswer_set", read_only=True
     )
-    proportion_of_audited_answers = serializers.ReadOnlyField()
-    total_responses = serializers.SerializerMethodField()
+    proportion_of_audited_answers = serializers.SerializerMethodField()
 
-    def get_total_responses(self, obj) -> int:
-        return obj.prefetched_total_responses
+    def get_proportion_of_audited_answers(self, obj) -> float:
+        if not obj.free_text_response_count:
+            return 0
+        reviewed = getattr(obj, "prefetched_reviewed_responses", 0) or 0
+        return reviewed / obj.free_text_response_count
 
     class Meta:
         model = Question
         fields = [
             "id",
             "number",
-            "total_responses",
+            "total_response_count",
+            "free_text_response_count",
+            "multi_choice_response_count",
             "question_text",
-            "number",
             "has_free_text",
             "has_multiple_choice",
             "multiple_choice_answer",
             "proportion_of_audited_answers",
             "theme_status",
+        ]
+        read_only_fields = [
+            "total_response_count",
+            "free_text_response_count",
+            "multi_choice_response_count",
         ]
 
 
@@ -120,6 +129,17 @@ class ThemeInformationSerializer(serializers.Serializer):
 class ResponseThemeInformationSerializer(serializers.Serializer):
     selected_themes = ThemeSerializer(many=True)
     all_themes = ThemeSerializer(many=True)
+
+
+class QuestionThemeSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField()
+    name = serializers.CharField()
+    description = serializers.CharField()
+    count = serializers.IntegerField()
+
+    class Meta:
+        model = SelectedTheme
+        fields = ["id", "name", "description", "count"]
 
 
 class ThemeAggregationsSerializer(serializers.Serializer):
@@ -172,6 +192,15 @@ class CandidateThemeSerializer(serializers.ModelSerializer):
         # Fallback for single object serialization (e.g., retrieve action)
         children = CandidateTheme.objects.filter(parent=obj)
         return CandidateThemeSerializer(children, many=True).data
+
+
+class CandidateThemeResponseSerializer(serializers.ModelSerializer):
+    free_text = serializers.CharField(source="response.free_text", read_only=True)
+    response_id = serializers.UUIDField(source="response.id", read_only=True)
+
+    class Meta:
+        model = CandidateThemeResponse
+        fields = ["response_id", "free_text"]
 
 
 class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
@@ -323,6 +352,10 @@ class ConsultationSetupSerializer(serializers.Serializer):
 class ConsultationExportSerializer(serializers.Serializer):
     s3_key = serializers.CharField(max_length=255, default="", allow_null=True)
     question_ids = serializers.ListSerializer(child=serializers.CharField())
+
+
+class ImportFinalisedThemesSerializer(serializers.Serializer):
+    source_consultation_id = serializers.UUIDField()
 
 
 class TokenSerializer(serializers.Serializer):

@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "engines": {
-    "node": "20.18"
+    "node": "24.14.1"
   },
   "scripts": {
     "dev": "astro dev --host",
@@ -16,14 +16,13 @@
     "test:update-snapshots": "vitest --update",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck": "svelte-check",
-    "typecheck:check-baseline": "bash scripts/check-type-errors.sh",
-    "typecheck:update-baseline": "bash scripts/update-type-errors.sh"
+    "typecheck": "svelte-check"
   },
+  "//": "WARNING: Do not upgrade astro beyond 5.16.6 or @astrojs/node beyond 9.3.3 - versions 5.17+ and 9.5+ break CSRF token forwarding for Django admin",
   "dependencies": {
     "@astrojs/node": "9.3.3",
-    "@astrojs/svelte": "^7.1.0",
-    "@astrojs/tailwind": "^5.1.2",
+    "@astrojs/svelte": "^7.2.5",
+    "@astrojs/tailwind": "^6.0.2",
     "@codemirror/lang-json": "^6.0.2",
     "@melt-ui/pp": "^0.3.2",
     "@melt-ui/svelte": "^0.86.6",
@@ -36,8 +35,10 @@
     "chart.js": "^4.5.0",
     "clsx": "^2.1.1",
     "express": "^5.1.0",
+    "fetch-mock": "^12.6.0",
     "http-proxy-middleware": "^3.0.5",
     "jsdom": "^26.1.0",
+    "path-to-regexp": "^8.4.2",
     "prettier-plugin-svelte": "^3.4.0",
     "svelte-codemirror-editor": "^2.0.0",
     "tailwindcss": "^3.4.0",
@@ -68,6 +69,8 @@
   "overrides": {
     "h3@<=1.15.5": "1.15.5",
     "devalue@<=5.6.2": "5.6.2",
-    "send": "1.2.0"
+    "send": "1.2.0",
+    "picomatch@<=4.0.4": "4.0.4",
+    "@astrojs/markdown-remark@<=7.1.1": "7.1.1"
   }
 }

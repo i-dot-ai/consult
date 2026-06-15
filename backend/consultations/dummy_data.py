@@ -29,8 +29,8 @@ DATA_BY_STAGE = {
         "CONSULTATION_NAME": "Dummy Consultation at Analysis Stage",
         "QUESTION_THEME_STATUS": Question.ThemeStatus.CONFIRMED,
     },
-    Consultation.Stage.THEME_SIGN_OFF: {
-        "CONSULTATION_NAME": "Dummy Consultation at Theme Sign Off Stage",
+    Consultation.Stage.FINALISING_THEMES: {
+        "CONSULTATION_NAME": "Dummy Consultation at Finalising Themes Stage",
         "QUESTION_THEME_STATUS": Question.ThemeStatus.DRAFT,
     },
 }
@@ -143,7 +143,7 @@ def create_dummy_consultation_from_yaml(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
     consultation: Optional[Consultation] = None,
-    consultation_stage: Optional[Literal["theme_sign_off", "analysis"]] = None,
+    consultation_stage: Optional[Literal["finalising_themes", "analysis"]] = None,
 ) -> ConsultationFactory:
     """
     Create consultation with questions, responses and themes from yaml file.

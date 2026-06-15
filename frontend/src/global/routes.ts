@@ -1,7 +1,7 @@
 import urlJoin from "url-join";
 
 export enum Suffixes {
-  ThemeSignOff = "theme-sign-off",
+  FinaliseThemes = "finalising-themes",
   Analysis = "analysis",
   Consultations = "consultations",
   Questions = "questions",
@@ -60,17 +60,33 @@ export const getConsultationAnalysisUrl = (consultationId: string) => {
 export const getSupportConsultationDeleteUrl = (consultationId: string) => {
   return urlJoin(Routes.SupportConsultations, consultationId, Suffixes.Delete);
 };
-export const getThemeSignOffUrl = (consultationId: string) => {
-  return urlJoin(Routes.Consultations, consultationId, Suffixes.ThemeSignOff);
+export const getSupportConsultationImportThemesUrl = (
+  consultationId: string,
+) => {
+  return urlJoin(Routes.SupportConsultations, consultationId, "import-themes");
 };
-export const getThemeSignOffDetailUrl = (
+export const getSupportConsultationEvaluationUrl = (consultationId: string) => {
+  return urlJoin(Routes.SupportConsultations, consultationId, "evaluation");
+};
+export const getApiImportFinalisedThemesUrl = (consultationId: string) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    "import-finalised-themes",
+    "/",
+  );
+};
+export const getFinaliseThemesUrl = (consultationId: string) => {
+  return urlJoin(Routes.Consultations, consultationId, Suffixes.FinaliseThemes);
+};
+export const getFinaliseThemesDetailUrl = (
   consultationId: string,
   questionId: string,
 ) => {
   return urlJoin(
     Routes.Consultations,
     consultationId,
-    Suffixes.ThemeSignOff,
+    Suffixes.FinaliseThemes,
     questionId,
   );
 };
@@ -89,7 +105,7 @@ export const getQuestionDetailUrl = (
   return urlJoin(
     Routes.Consultations,
     consultationId,
-    Suffixes.Responses,
+    Suffixes.Questions,
     questionId,
   );
 };
@@ -111,6 +127,9 @@ export const getRespondentDetailUrl = (
 export const getApiConsultationUrl = (consultationId: string) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "/");
 };
+export const getApiConsultationEvaluationUrl = (consultationId: string) => {
+  return urlJoin(Routes.ApiConsultations, consultationId, "evaluation", "/");
+};
 export const getApiConsultationFoldersUrl = (
   stage: "setup" | "find-themes" | "assign-themes",
 ) => {
@@ -131,13 +150,50 @@ export const getApiAnswersUrl = (consultationId: string) => {
     "/",
   );
 };
-export const getApiQuestionsUrl = (consultationId: string) => {
+export const getApiQuestionThemesUrl = (
+  consultationId: string,
+  questionId: string,
+) => {
   return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.Themes,
+    "/",
+  );
+};
+export const getApiDemographicsUrl = (consultationId: string) => {
+  return urlJoin(Routes.ApiConsultations, consultationId, "demographics", "/");
+};
+export const getApiQuestionResponsesUrl = (
+  consultationId: string,
+  questionId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.Responses,
+    "/",
+  );
+};
+export const getApiQuestionsUrl = (
+  consultationId: string,
+  options?: { include?: string },
+) => {
+  const base = urlJoin(
     Routes.ApiConsultations,
     consultationId,
     Suffixes.Questions,
     "/",
   );
+  if (options?.include) {
+    const params = new URLSearchParams({ include: options.include });
+    return `${base}?${params.toString()}`;
+  }
+  return base;
 };
 export const getApiQuestionUrl = (
   consultationId: string,
@@ -151,7 +207,7 @@ export const getApiQuestionUrl = (
     "/",
   );
 };
-export const getApiAnswerUrl = (consultationId: string, answerId: string) => {
+export const getApiResponseUrl = (consultationId: string, answerId: string) => {
   return urlJoin(
     Routes.ApiConsultations,
     consultationId,
@@ -305,7 +361,23 @@ export const getApiSelectGeneratedThemeUrl = (
     "/",
   );
 };
-export const getApiConfirmSignOffUrl = (
+export const getApiCandidateThemeResponsesUrl = (
+  consultationId: string,
+  questionId: string,
+  themeId: string,
+) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.CandidateThemes,
+    themeId,
+    Suffixes.Responses,
+    "/",
+  );
+};
+export const getApiConfirmFinalisingThemesUrl = (
   consultationId: string,
   questionId: string,
 ) => {
@@ -358,6 +430,16 @@ export const updateResponseReadStatus = (
     Suffixes.Responses,
     responseId,
     Suffixes.MarkRead,
+    "/",
+  );
+};
+
+export const updateResponsesReadStatusBulk = (consultationId: string) => {
+  return urlJoin(
+    Routes.ApiConsultations,
+    consultationId,
+    Suffixes.Responses,
+    "mark-read-bulk",
     "/",
   );
 };

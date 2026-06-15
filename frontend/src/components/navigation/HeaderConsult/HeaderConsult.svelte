@@ -9,6 +9,7 @@
   import Header from "../Header/Header.svelte";
   import ConsultIcon from "../../svg/ConsultIcon.svelte";
   import ProfileButton from "../ProfileButton/ProfileButton.svelte";
+  import LocalUserSwitcher from "../LocalUserSwitcher/LocalUserSwitcher.svelte";
 
   export interface Props {
     subtitle?: string;
@@ -19,6 +20,7 @@
     consultationId?: string;
     consultationStage?: ConsultationStage;
     langfuseUrl?: string;
+    env?: string;
   }
 
   let {
@@ -30,10 +32,15 @@
     consultationId,
     consultationStage,
     langfuseUrl = "/",
+    env = "",
   }: Props = $props();
 
   let showBreadcrumbs = $state(false);
 </script>
+
+{#if env === "local"}
+  <LocalUserSwitcher />
+{/if}
 
 <Header
   title="Consult"

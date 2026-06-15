@@ -280,7 +280,7 @@ def load_consultation_data_batch(
 
 @transaction.atomic
 def import_consultation_data(
-    batch: ConsultationDataBatch, user_id: UUID, batch_size: int = 2048
+    batch: ConsultationDataBatch, user_id: UUID, batch_size: int = 512
 ) -> UUID:
     """
     Import base consultation data (consultation, respondents, questions, responses) into database.
@@ -458,7 +458,7 @@ def _ingest_responses(
     consultation: Consultation,
     responses_by_question: Dict[int, List[ResponseInput]],
     multi_choice_by_question: Dict[int, List[MultiChoiceInput]],
-    batch_size: int = 2048,
+    batch_size: int = 512,
 ) -> None:
     """
     Create responses with careful indexing to link correct respondent + question.
@@ -509,6 +509,10 @@ def _ingest_responses(
                     "multi_choice": mc.options,
                 }
 
+        mc_options_lookup = {
+            opt.text: opt for opt in MultiChoiceAnswer.objects.filter(question=question)
+        }
+
         # Create Response objects with batching based on token count
         responses_to_create: List = []
         response_theme_associations_to_create = []  # type: ignore
@@ -520,11 +524,9 @@ def _ingest_responses(
                 logger.warning("No respondent found for themefinder_id {tf_id}", tf_id=tf_id)
                 continue
 
-            mc_options_lookup = {
-                opt.text: opt for opt in MultiChoiceAnswer.objects.filter(question=question)
-            }
-
             free_text = data["free_text"]
+            if free_text in ("", "Not Provided", "-"):
+                free_text = None
 
             # Calculate tokens for free text
             if free_text:
@@ -582,11 +584,11 @@ def _ingest_responses(
                 f"Saved final batch of {len(created_responses)} responses for question {question_number}"
             )
 
-        # Update question total_responses count
-        question.update_total_responses()
-        logger.info(
-            f"Updated total_responses count for question {question_number}: {question.total_responses}"
-        )
+        # Update denormalised response counts
+        MultiChoiceAnswer.update_response_counts(question)
+        question.update_response_counts()
+
+    DemographicOption.update_response_counts(consultation)
 
     logger.info("Completed response ingestion")
 
@@ -651,8 +653,8 @@ def import_consultation_from_s3(
     consultation_code: str,
     consultation_title: str,
     user_id: UUID,
-    enqueue_embeddings: bool = True,
-    batch_size: int = 2048,
+    enqueue_embeddings: bool = False,  # Whether to enqueue embedding jobs after import (default False for consultation setup for now)
+    batch_size: int = 512,
 ) -> UUID:
     """
     Import consultation base data from S3.

@@ -61,9 +61,9 @@
     ),
   );
 
-  let totalResponses = $derived(
+  let totalResponseCount = $derived(
     questions?.reduce(
-      (acc, question) => acc + (question?.total_responses || 0),
+      (acc, question) => acc + (question?.total_response_count || 0),
       0,
     ),
   );
@@ -97,7 +97,7 @@
         >
           <MetricsSummary
             questionCount={questions?.length}
-            responseCount={totalResponses}
+            responseCount={totalResponseCount}
             demoCount={demoOptionCategories.length}
           />
         </div>
@@ -168,7 +168,6 @@
     <div transition:slide class="mt-8">
       <TabView
         variant="dots"
-        title="Demographics Breakdown"
         tabs={paginatedCategories.map((_: string[], index: number) => ({
           title: `Demo option category page ${index + 1}`,
           id: `tab-${index}`,
@@ -196,6 +195,7 @@
             )}
 
             <MetricsDemoCard
+              testId="demographics-metrics-summary"
               {consultationId}
               title={category}
               items={[...demoOptions]
@@ -211,6 +211,7 @@
                   },
                 )
                 .map((demoOption: DemoOptionsResponseItem) => ({
+                  id: demoOption.id,
                   title: demoOption.value,
                   count: demoOption.count,
                   percentage: getPercentage(demoOption.count, total),

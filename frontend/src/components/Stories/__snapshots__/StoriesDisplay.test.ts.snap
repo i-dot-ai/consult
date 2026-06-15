@@ -1,0 +1,445 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`StoriesDisplay > should match snapshot 1`] = `
+<div>
+  <div
+    class="grid grid-cols-4 gap-8"
+  >
+    <aside
+      class="sticky top-4 col-span-1 h-[80vh]"
+    >
+      <div
+        class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+        data-testid="panel-component"
+      >
+        <ul
+          class="flex flex-col gap-2"
+        >
+          <h2
+            class="font-[500]"
+          >
+            General
+          </h2>
+           
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=Progress"
+            >
+              Progress
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=Header"
+            >
+              Header
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=Footer"
+            >
+              Footer
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=Accordion"
+            >
+              Accordion
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=Panel"
+            >
+              Panel
+            </a>
+          </li>
+          <!---->
+          <h2
+            class="font-[500]"
+          >
+            Dashboard
+          </h2>
+           
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=DemographicGroup"
+            >
+              DemographicGroup
+            </a>
+          </li>
+          <!---->
+          <h2
+            class="font-[500]"
+          >
+            Respondent Detail
+          </h2>
+           
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=RespondentSidebarItem"
+            >
+              RespondentSidebarItem
+            </a>
+          </li>
+          <!---->
+          <h2
+            class="font-[500]"
+          >
+            Finalising Themes
+          </h2>
+           
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=ThemeForm"
+            >
+              ThemeForm
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=SelectedThemeCard"
+            >
+              SelectedThemeCard
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=ResponsesList"
+            >
+              ResponsesList
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=GeneratedThemeCard"
+            >
+              GeneratedThemeCard
+            </a>
+          </li>
+          <!---->
+          <h2
+            class="font-[500]"
+          >
+            Screens
+          </h2>
+           
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=FinalisingThemesDetail"
+            >
+              FinalisingThemesDetail
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=ConsultationList"
+            >
+              ConsultationList
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=ConsultationDetail"
+            >
+              ConsultationDetail
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=ConsultationAnalysis"
+            >
+              ConsultationAnalysis
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=FinalisingThemesDetailCompleted"
+            >
+              FinalisingThemesDetailCompleted
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=RespondentDetail"
+            >
+              RespondentDetail
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=QuestionDetail"
+            >
+              QuestionDetail
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=FinalisingThemesArchive"
+            >
+              FinalisingThemesArchive
+            </a>
+          </li>
+          <!---->
+          <h2
+            class="font-[500]"
+          >
+            Navigation
+          </h2>
+           
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=NavigationHeader"
+            >
+              NavigationHeader
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=HeaderConsult"
+            >
+              HeaderConsult
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=Breadcrumbs"
+            >
+              Breadcrumbs
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=ProfileButton"
+            >
+              ProfileButton
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=FloatingPanel"
+            >
+              FloatingPanel
+            </a>
+          </li>
+          <!---->
+          <h2
+            class="font-[500]"
+          >
+            Data
+          </h2>
+           
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=Checklist"
+            >
+              Checklist
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=IntroCard"
+            >
+              IntroCard
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=Learnings"
+            >
+              Learnings
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=IntroPage"
+            >
+              IntroPage
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=StepOneAPage"
+            >
+              StepOneAPage
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=StepOneBPage"
+            >
+              StepOneBPage
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=FileVerified"
+            >
+              FileVerified
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=StepsTitle"
+            >
+              StepsTitle
+            </a>
+          </li>
+          <!---->
+          <h2
+            class="font-[500]"
+          >
+            Inputs
+          </h2>
+           
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=FileInput"
+            >
+              FileInput
+            </a>
+          </li>
+          <!---->
+          <h2
+            class="font-[500]"
+          >
+            Screens / Support
+          </h2>
+           
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=CreateConsultationForm"
+            >
+              CreateConsultationForm
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=EditUser"
+            >
+              EditUser
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=AddUserForm"
+            >
+              AddUserForm
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=DeleteUserForm"
+            >
+              DeleteUserForm
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=FindThemesForm"
+            >
+              FindThemesForm
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=AssignThemesForm"
+            >
+              AssignThemesForm
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=ThemeSelectionForm"
+            >
+              ThemeSelectionForm
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=QuestionsReviewList"
+            >
+              QuestionsReviewList
+            </a>
+          </li>
+          <li>
+            <a
+              class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+              href="/stories?selected=ManageConsultationsArchive"
+            >
+              ManageConsultationsArchive
+            </a>
+          </li>
+          <!---->
+          
+        </ul>
+        <!---->
+      </div>
+      <!---->
+    </aside>
+     
+    <div
+      class="col-span-3 bg-white"
+    >
+      <div
+        class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+        data-testid="panel-component"
+      >
+        <!---->
+        <p
+          class="my-8 text-center text-neutral-600"
+        >
+          Please select a component to view
+        </p>
+        
+        <!---->
+      </div>
+      <!---->
+    </div>
+  </div>
+  
+</div>
+`;

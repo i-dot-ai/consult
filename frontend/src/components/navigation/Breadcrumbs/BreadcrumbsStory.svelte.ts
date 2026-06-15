@@ -7,12 +7,12 @@ export default {
   props: [{ name: "consultationStage", value: "analysis", type: "text" }],
   stories: [
     {
-      name: "Stage Theme Sign Off",
-      props: { consultationStage: "theme_sign_off" },
+      name: "Stage Finalising Themes",
+      props: { consultationStage: "finalising_themes" },
     },
     {
-      name: "Stage Theme Mapping",
-      props: { consultationStage: "theme_mapping" },
+      name: "Stage Assigning Themes (AI)",
+      props: { consultationStage: "assigning_themes" },
     },
     {
       name: "Stage Analysis",

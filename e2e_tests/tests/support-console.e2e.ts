@@ -1,4 +1,13 @@
 import { test, expect } from "@playwright/test";
+import { createFixtureData, deleteFixtureData } from "./helpers";
+
+import {
+  defaultUser,
+  setupConsultation,
+  signOffConsultation,
+} from "../fixtures";
+
+import type { FixtureReference } from "../fixtures";
 
 test.describe("Support Console - Users", () => {
   test.beforeEach(async ({ page }) => {
@@ -8,20 +17,18 @@ test.describe("Support Console - Users", () => {
 
   test("displays all users on /support/users", async ({ page }) => {
     // Check the page heading
-    await expect(
-      page.getByRole("heading", { name: "Users" }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
 
     // Check that the users table/list is visible
-    const usersList = page.locator('[data-testid="users-list"]').or(
-      page.locator("table"),
-    );
+    const usersList = page
+      .locator('[data-testid="users-list"]')
+      .or(page.locator("table"));
     await expect(usersList.first()).toBeVisible();
 
     // Verify that user entries are displayed
-    const userItems = page.locator("tbody tr").or(
-      page.locator('[data-testid="user-item"]'),
-    );
+    const userItems = page
+      .locator("tbody tr")
+      .or(page.locator('[data-testid="user-item"]'));
 
     // Verify at least one user exists
     const userCount = await userItems.count();
@@ -29,7 +36,7 @@ test.describe("Support Console - Users", () => {
     await expect(userItems.first()).toBeVisible();
 
     // Check for the admin user created by createadminusers
-    await expect(page.getByText("email@example.com")).toBeVisible();
+    await expect(page.getByText(defaultUser.email)).toBeVisible();
   });
 
   test("users list shows created date and staff access status", async ({
@@ -62,6 +69,14 @@ test.describe("Support Console - Users", () => {
 });
 
 test.describe("Support Console - Consultations", () => {
+  let testData: FixtureReference = {};
+
+  test.beforeAll(async ({ request }) => {
+    testData = await createFixtureData(request, {
+      consultations: [setupConsultation, signOffConsultation],
+    });
+  });
+
   test.beforeEach(async ({ page }) => {
     await page.goto("/support/consultations");
     await page.waitForLoadState("networkidle");
@@ -82,9 +97,9 @@ test.describe("Support Console - Consultations", () => {
     await expect(consultationsList.first()).toBeVisible();
 
     // Verify that consultation entries are displayed
-    const consultationItems = page.locator("tbody tr").or(
-      page.locator('[data-testid="consultation-item"]'),
-    );
+    const consultationItems = page
+      .locator("tbody tr")
+      .or(page.locator('[data-testid="consultation-item"]'));
 
     // Verify at least 2 consultations exist (from dummy data)
     const consultationCount = await consultationItems.count();
@@ -92,11 +107,9 @@ test.describe("Support Console - Consultations", () => {
     await expect(consultationItems.first()).toBeVisible();
 
     // Check for specific dummy consultation titles (may have multiple matches)
+    await expect(page.getByText(setupConsultation.title).first()).toBeVisible();
     await expect(
-      page.getByText(/Dummy Consultation at Analysis Stage/i).first(),
-    ).toBeVisible();
-    await expect(
-      page.getByText(/Dummy Consultation at Theme Sign Off/i).first(),
+      page.getByText(signOffConsultation.title).first(),
     ).toBeVisible();
   });
 
@@ -138,5 +151,9 @@ test.describe("Support Console - Consultations", () => {
     // Check for key action links
     const pageContent = await page.textContent("body");
     expect(pageContent).toBeTruthy();
+  });
+
+  test.afterAll(async () => {
+    await deleteFixtureData(testData);
   });
 });

@@ -1,4 +1,5 @@
-from django.db.models import Count, Prefetch
+from django.db.models import Count, OuterRef, Q, Subquery, Value
+from django.db.models.functions import Coalesce
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -6,12 +7,13 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultations import models
+from consultations.api.filters import get_filtered_response_ids, get_filtered_responses
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
 from consultations.api.serializers import (
     QuestionSerializer,
-    ThemeInformationSerializer,
+    QuestionThemeSerializer,
 )
 
 
@@ -35,38 +37,115 @@ class QuestionViewSet(ModelViewSet):
         if not self.request.user.is_staff:
             queryset = queryset.filter(consultation__users=self.request.user)
 
-        # Prefetch multi-choice answers with response counts and annotate total_responses
-        queryset = queryset.prefetch_related(
-            Prefetch(
-                "multichoiceanswer_set",
-                queryset=models.MultiChoiceAnswer.objects.annotate(
-                    prefetched_response_count=Count("response")
-                ),
+        queryset = queryset.prefetch_related("multichoiceanswer_set")
+
+        # Reviewed responses per question (only when explicitly requested)
+        if "proportion_of_audited_answers" in self.request.query_params.get("include", ""):
+            reviewed_response_count = Subquery(
+                models.Response.objects.filter(
+                    question_id=OuterRef("pk"),
+                    free_text__isnull=False,
+                    annotation__human_reviewed=True,
+                )
+                .order_by()
+                .values("question_id")
+                .annotate(c=Count("*"))
+                .values("c")
             )
-        ).annotate(prefetched_total_responses=Count("response"))
+            queryset = queryset.annotate(
+                prefetched_reviewed_responses=Coalesce(reviewed_response_count, Value(0)),
+            )
 
         return queryset.order_by("number")
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Retrieve a single question with dynamically calculated response counts when
+        filters are applied.
+        """
+        question = self.get_object()
+
+        # Check if any filters are applied
+        filter_params = [
+            "themeFilters",
+            "demographics",
+            "evidenceRich",
+            "unseenResponsesOnly",
+            "is_flagged",
+            "multiple_choice_answer",
+            "searchValue",
+        ]
+        has_filters = any(request.query_params.get(p) for p in filter_params)
+
+        if has_filters:
+            consultation_pk = self.kwargs["consultation_pk"]
+            pk = kwargs["pk"]
+
+            filtered_ids = get_filtered_response_ids(
+                request.query_params, consultation_pk, question_id=pk
+            )
+
+            filtered_responses = models.Response.objects.filter(id__in=filtered_ids)
+            question.calculate_response_counts(filtered_responses)
+
+            if question.has_multiple_choice:
+                multichoice_answers = models.MultiChoiceAnswer.objects.filter(
+                    question=question
+                ).annotate(
+                    prefetched_response_count=Count(
+                        "response",
+                        filter=Q(response__id__in=filtered_ids),
+                        distinct=True,
+                    )
+                )
+                question._prefetched_objects_cache["multichoiceanswer_set"] = list(
+                    multichoice_answers
+                )
+
+        serializer = self.get_serializer(question)
+        return Response(serializer.data)
 
     @action(
         detail=True,
         methods=["get"],
-        url_path="theme-information",
+        url_path="themes",
         permission_classes=[IsAuthenticated, CanSeeConsultation],
     )
-    def theme_information(self, request, pk=None, consultation_pk=None):
-        """Get all theme information for a question"""
-        # Get the question object with consultation in one query
+    def themes(self, request, pk=None, consultation_pk=None):
+        """Get themes for a question with response counts."""
         question = self.get_object()
 
-        # Get all themes for this question
-        themes = models.SelectedTheme.objects.filter(question=question).values(
-            "id", "name", "description"
-        )
+        themes = models.SelectedTheme.objects.filter(question=question)
 
-        serializer = ThemeInformationSerializer(data={"themes": list(themes)})
-        serializer.is_valid()
+        filter_params = [
+            "themeFilters",
+            "demographics",
+            "evidenceRich",
+            "unseenResponsesOnly",
+            "is_flagged",
+            "multiple_choice_answer",
+            "searchValue",
+        ]
+        has_filters = any(request.query_params.get(p) for p in filter_params)
 
-        return Response(serializer.data)
+        if has_filters:
+            filtered_responses = get_filtered_responses(
+                request.query_params, consultation_pk, question_id=pk
+            )
+            themes = themes.annotate(
+                count=Count(
+                    "responseannotation",
+                    filter=Q(responseannotation__response__in=filtered_responses),
+                    distinct=True,
+                )
+            )
+        else:
+            themes = themes.annotate(
+                count=Count("responseannotation", distinct=True)
+            )
+
+        serializer = QuestionThemeSerializer(themes, many=True)
+        return Response({"themes": serializer.data})
 
     @action(
         detail=True,
@@ -93,8 +172,7 @@ class QuestionViewSet(ModelViewSet):
         next_response = (
             models.Response.objects.filter(
                 question=question,
-                free_text__isnull=False,  # Only responses with free text
-                free_text__gt="",  # Non-empty free text
+                free_text__isnull=False,
             )
             .exclude(
                 annotation__human_reviewed=True  # Exclude already reviewed

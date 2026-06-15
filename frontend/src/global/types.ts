@@ -1,5 +1,21 @@
 import type { SvelteURLSearchParams } from "svelte/reactivity";
 
+// Keep in sync with AuthReason in i-dot-ai-utilities (i_dot_ai_utilities/auth/auth_reason.py)
+export const AuthReasons = {
+  UNKNOWN: "UNKNOWN",
+  TOKEN_EXPIRED: "TOKEN_EXPIRED",
+  NO_SUCH_APPLICATION: "NO_SUCH_APPLICATION",
+  NO_MATCHING_RULE: "NO_MATCHING_RULE",
+  JWT_GLOBAL_ACCESS_CLAIM: "JWT_GLOBAL_ACCESS_CLAIM",
+  JWT_CLAIM_MATCHES_APP: "JWT_CLAIM_MATCHES_APP",
+  ACL_MATCHING_EMAIL: "ACL_MATCHING_EMAIL",
+  ACL_MATCHING_DOMAIN: "ACL_MATCHING_DOMAIN",
+  ACL_GLOBAL_ACCESS_EMAIL: "ACL_GLOBAL_ACCESS_EMAIL",
+  ACL_GLOBAL_ACCESS_DOMAIN: "ACL_GLOBAL_ACCESS_DOMAIN",
+} as const;
+
+export type AuthReason = (typeof AuthReasons)[keyof typeof AuthReasons];
+
 export interface NavItem {
   text: string;
   url: string;
@@ -12,18 +28,23 @@ export interface QuestionMultiAnswer {
 }
 
 export interface Question {
-  id?: string;
-  number?: number;
-  total_responses?: number;
-  question_text?: string;
-  has_free_text?: boolean;
-  has_multiple_choice?: boolean;
-  multiple_choice_answer?: QuestionMultiAnswer[];
-  proportion_of_audited_answers?: number;
-  theme_status?: string;
+  id: string;
+  number: number;
+  total_response_count: number;
+  free_text_response_count: number;
+  multi_choice_response_count: number;
+  question_text: string;
+  has_free_text: boolean;
+  has_multiple_choice: boolean;
+  multiple_choice_answer: QuestionMultiAnswer[];
+  proportion_of_audited_answers: number;
+  theme_status: string;
 }
 
-export type ConsultationStage = "theme_sign_off" | "theme_mapping" | "analysis";
+export type ConsultationStage =
+  | "finalising_themes"
+  | "assigning_themes"
+  | "analysis";
 export interface NextResponseInfo {
   id: string;
   consultation_id: string;
@@ -40,7 +61,7 @@ export interface Consultation {
   id: string;
   title: string;
   code: string;
-  stage: "theme_sign_off" | "theme_mapping" | "analysis";
+  stage: ConsultationStage;
   created_at: string;
 }
 
@@ -52,7 +73,7 @@ export interface ConsultationFolder {
 
 export interface Respondent {
   id: string;
-  consultation: string;
+  consultation?: string;
   themefinder_id: number;
   demographics: RespondentDemoItem[];
   name?: string;
@@ -109,11 +130,6 @@ export enum TitleLevels {
   Six = 6,
 }
 
-export enum TabNames {
-  QuestionSummary = "tab-question-summary",
-  ResponseAnalysis = "tab-response-analysis",
-}
-
 export enum TabDirections {
   Forward = "forward",
   Backward = "backward",
@@ -129,6 +145,7 @@ export interface SearchableSelectOption<T> {
 export interface ResponseTheme {
   id: string;
   name: string;
+  assigned_by?: string;
   description: string;
   key?: string;
 }
@@ -151,36 +168,22 @@ export interface QuestionResponseResponse {
   // searchVector: string;
 }
 
-export interface ResponseAnswer {
+export interface ResponseBody {
   id: string;
-  identifier: number; // respondent themefinder id
+  identifier: number | string; // respondent themefinder id
   question_id: string;
   respondent_id: string;
+  respondent?: Respondent;
   free_text_answer_text: string;
   demographic_data: { [category: string]: string };
   themes: ResponseTheme[] | null;
   multiple_choice_answer: string[];
-  evidenceRich: boolean;
+  evidenceRich: boolean | null;
   sentiment: string | null;
-  human_reviewed: boolean;
+  human_reviewed: boolean | null;
   is_flagged: boolean;
   is_edited?: boolean;
   is_read: boolean;
-}
-
-export interface DemoOption {
-  [category: string]: string[];
-}
-
-export interface DemoData {
-  [category: string]: { [rowKey: string]: number };
-}
-
-export interface DemoTotalCounts {
-  [category: string]: number;
-}
-export interface ThemeAggr {
-  [id: string]: number;
 }
 
 export interface ConsultationResponse {
@@ -188,7 +191,7 @@ export interface ConsultationResponse {
   title: string;
   code: string;
   users: User[];
-  stage: "theme_sign_off" | "theme_mapping" | "analysis";
+  stage: ConsultationStage;
 }
 export interface QuestionsResponse {
   count: number;
@@ -212,11 +215,20 @@ export interface GeneratedThemesResponse {
   previous: string | null;
   results: GeneratedTheme[];
 }
-export interface AnswersResponse {
-  respondents_total: number;
-  filtered_total: number;
+export interface CandidateThemeResponseItem {
+  response_id: string;
+  free_text: string;
+}
+export interface CandidateThemeResponsesResponse {
+  count: number;
+  total_count: number;
+  results: CandidateThemeResponseItem[];
+}
+export interface ResponsesBody {
   has_more_pages: boolean;
-  all_respondents: ResponseAnswer[];
+  next_cursor: string | null;
+  all_respondents: ResponseBody[];
+  total_count?: number;
 }
 export interface RespondentsResponse {
   count: number;
@@ -225,16 +237,12 @@ export interface RespondentsResponse {
   results: Respondent[];
 }
 
+export interface ThemeWithCount extends ResponseTheme {
+  count: number;
+}
+
 export interface ThemeInfoResponse {
-  themes: ResponseTheme[];
-}
-
-export interface DemoAggrResponse {
-  demographic_aggregations: DemoData;
-}
-
-export interface ThemeAggrResponse {
-  theme_aggregations: ThemeAggr;
+  themes: ThemeWithCount[];
 }
 
 export interface MultiChoiceResponseItem {
@@ -276,8 +284,8 @@ export interface SelectedTheme {
 
 export enum OnboardingKeys {
   prefix = "onboardingComplete",
-  themeSignoff = "onboardingComplete-theme-sign-off",
-  themeSignoffArchive = "onboardingComplete-theme-sign-off-archive",
+  finaliseThemes = "onboardingComplete-finalising-themes",
+  finaliseThemesArchive = "onboardingComplete-finalising-themes-archive",
 }
 
 export type AstroGlobalRuntime = {
@@ -303,3 +311,16 @@ export type HttpMethod =
   | "DELETE"
   | "HEAD"
   | "OPTIONS";
+
+export type MockCallbackArgs = RequestInit & { url: string; params: unknown };
+
+export interface Mock {
+  name?: string;
+  url?: string | RegExp;
+  regexp?: string;
+  body?: unknown;
+  status?: number;
+  method?: string;
+  throws?: Error;
+  callback?: (args: MockCallbackArgs) => void;
+}

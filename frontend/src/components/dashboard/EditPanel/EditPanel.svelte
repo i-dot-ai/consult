@@ -6,8 +6,8 @@
     type ResponseTheme,
     type SearchableSelectOption,
   } from "../../../global/types";
-  import { createFetchStore, type MockFetch } from "../../../global/stores";
-  import { getApiAnswerUrl } from "../../../global/routes";
+  import { createFetchStore, type StoreFetch } from "../../../global/stores";
+  import { getApiResponseUrl } from "../../../global/routes";
 
   import Button from "../../inputs/Button/Button.svelte";
   import Popover from "../../inputs/Popover/Popover.svelte";
@@ -49,14 +49,14 @@
   }
 
   async function submit() {
-    let actualUpdateAnswer = updateAnswerMock || $answerUpdateStore.fetch;
+    let actualUpdateResponse = updateResponseMock || $responseUpdateStore.fetch;
 
     if (noChangesStaged()) {
       return;
     }
 
-    await actualUpdateAnswer(
-      getApiAnswerUrl(consultationId, answerId),
+    await actualUpdateResponse(
+      getApiResponseUrl(consultationId, answerId),
       "PATCH",
       {
         themes: stagedThemes.map((theme) => ({ id: theme.id })),
@@ -64,8 +64,8 @@
       },
     );
 
-    if (!$answerUpdateStore.error && !$answerUpdateStore.isLoading) {
-      resetData();
+    if (!$responseUpdateStore.error && !$responseUpdateStore.isLoading) {
+      resetData(stagedThemes, stagedEvidenceRich);
     }
   }
 
@@ -75,10 +75,13 @@
     answerId: string;
     themes: ResponseTheme[];
     themeOptions: ResponseTheme[];
-    evidenceRich: boolean;
-    resetData: () => void;
+    evidenceRich: boolean | null;
+    resetData: (
+      updatedThemes: ResponseTheme[],
+      updatedEvidenceRich: boolean | null,
+    ) => void;
     setEditing: (newValue: boolean) => void;
-    updateAnswerMock?: MockFetch;
+    updateResponseMock?: StoreFetch;
   }
 
   let {
@@ -89,14 +92,14 @@
     evidenceRich = false,
     resetData = () => {},
     setEditing = () => {},
-    updateAnswerMock,
+    updateResponseMock,
   }: Props = $props();
 
   let stagedThemes: ResponseTheme[] = $state([]);
-  let stagedEvidenceRich = $state(false);
+  let stagedEvidenceRich: boolean | null = $state(false);
   let panelOpen: boolean = $state(false);
 
-  const answerUpdateStore = createFetchStore();
+  const responseUpdateStore = createFetchStore();
 
   onMount(() => {
     resetStaged();
@@ -105,8 +108,8 @@
   function resetStaged() {
     stagedThemes = themes ? [...themes] : [];
     stagedEvidenceRich = evidenceRich;
-    $answerUpdateStore.isLoading = false;
-    $answerUpdateStore.error = null;
+    $responseUpdateStore.isLoading = false;
+    $responseUpdateStore.error = null;
   }
 </script>
 
@@ -183,7 +186,7 @@
         <Button
           size="xs"
           handleClick={() => (stagedEvidenceRich = true)}
-          highlighted={stagedEvidenceRich}
+          highlighted={stagedEvidenceRich === true}
           highlightVariant="approve"
         >
           Evidence-rich
@@ -192,7 +195,7 @@
         <Button
           size="xs"
           handleClick={() => (stagedEvidenceRich = false)}
-          highlighted={!stagedEvidenceRich}
+          highlighted={stagedEvidenceRich === false}
           highlightVariant="approve"
         >
           Not evidence-rich
@@ -202,9 +205,9 @@
 
     <hr class="my-4" />
 
-    {#if $answerUpdateStore.error}
+    {#if $responseUpdateStore.error}
       <small class="my-2 block text-red-500" transition:slide
-        >{$answerUpdateStore.error}</small
+        >{$responseUpdateStore.error}</small
       >
     {/if}
 
@@ -224,7 +227,7 @@
             </div>
 
             <span class="whitespace-nowrap">
-              {$answerUpdateStore.isLoading ? "Saving..." : "Save Changes"}
+              {$responseUpdateStore.isLoading ? "Saving..." : "Save Changes"}
             </span>
           </div>
         </Button>

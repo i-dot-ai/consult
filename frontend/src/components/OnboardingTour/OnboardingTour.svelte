@@ -72,7 +72,9 @@
         width: rect.width + overlayPadding * 2,
         height: rect.height + overlayPadding * 2,
       };
-      targetEl.scrollIntoView();
+      if (targetEl.scrollIntoView) {
+        targetEl.scrollIntoView();
+      }
     } else {
       targetRect = null;
     }
@@ -177,7 +179,8 @@
           {#if steps[currStep].icon}
             <div class="rounded-full bg-pink-100 p-1">
               <MaterialIcon color="fill-primary" size="1.2rem">
-                <svelte:component this={steps[currStep].icon} />
+                {@const Icon = steps[currStep].icon}
+                <Icon />
               </MaterialIcon>
             </div>
           {/if}

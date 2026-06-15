@@ -1,7 +1,9 @@
 import type { APIContext, MiddlewareHandler, MiddlewareNext } from "astro";
 import { Routes } from "./global/routes";
 import { fetchBackendApi } from "./global/api";
+import { LOCAL_USERS } from "./global/localUsers";
 import { getBackendUrl, getEnv } from "./global/utils";
+import { AuthReasons } from "./global/types";
 
 const getCspValue = (): string => {
   return `
@@ -15,6 +17,8 @@ const getCspValue = (): string => {
     .replace(/\n/g, " ")
     .trim();
 };
+
+class TokenExpiredError extends Error {}
 
 export const onRequest: MiddlewareHandler = async (
   context: APIContext,
@@ -47,9 +51,12 @@ export const onRequest: MiddlewareHandler = async (
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
   if (env === "local" || env === "test") {
-    internalAccessToken =
-      process.env.TEST_INTERNAL_ACCESS_TOKEN ||
-      import.meta.env?.TEST_INTERNAL_ACCESS_TOKEN;
+    const devEmail = context.cookies.get("dev_email")?.value;
+    if (devEmail === LOCAL_USERS.POLICY.EMAIL) {
+      internalAccessToken = LOCAL_USERS.POLICY.INTERNAL_ACCESS_TOKEN;
+    } else {
+      internalAccessToken = LOCAL_USERS.ADMIN.INTERNAL_ACCESS_TOKEN;
+    }
   } else {
     internalAccessToken = context.request.headers.get("x-amzn-oidc-data");
   }
@@ -58,7 +65,11 @@ export const onRequest: MiddlewareHandler = async (
     try {
       await validateUserToken(backendUrl, internalAccessToken, context);
     } catch (e: unknown) {
-      console.error("Unknown error signing in", e);
+      if (e instanceof TokenExpiredError) {
+        console.warn("[auth] SSO token expired, redirecting to logout");
+        return context.redirect(Routes.SignOut);
+      }
+      console.error("Unknown error signing in", JSON.stringify(e, null, 2));
       return context.redirect(Routes.SignInError);
     }
   } else {
@@ -73,7 +84,7 @@ export const onRequest: MiddlewareHandler = async (
     );
     userIsStaff = Boolean(resp.is_staff);
   } catch (e) {
-    console.error("Error accessing user info", e);
+    console.error("Error accessing user info", JSON.stringify(e, null, 2));
   }
 
   for (const protectedStaffRoute of protectedStaffRoutes) {
@@ -116,15 +127,26 @@ async function validateUserToken(
     headers: { "Content-Type": "application/json" },
   });
   const data = await response.json();
+  if (response.status === 403 && data.detail === AuthReasons.TOKEN_EXPIRED) {
+    throw new TokenExpiredError("SSO token has expired");
+  }
 
-  context.cookies.set("sessionId", data.sessionId, {
-    path: "/",
-    sameSite: "strict",
-  });
-  context.cookies.set("accessToken", data.access, {
-    path: "/",
-    sameSite: "strict",
-  });
+  if (!response.ok) {
+    throw new Error(
+      `Token validation failed with status ${response.status}: ${data.detail}`,
+    );
+  }
+
+  if (data?.sessionId && data?.access) {
+    context.cookies.set("sessionId", data?.sessionId, {
+      path: "/",
+      sameSite: "strict",
+    });
+    context.cookies.set("accessToken", data?.access, {
+      path: "/",
+      sameSite: "strict",
+    });
+  }
 }
 
 async function proxyToDjango(context: APIContext, backendUrl: string) {

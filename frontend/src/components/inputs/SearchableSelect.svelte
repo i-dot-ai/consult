@@ -24,6 +24,7 @@
   export let options: SearchableSelectOption<unknown>[] = [];
   export let selectedValues: unknown[] = [];
   export let hideArrow: boolean = false;
+  export let placeholder: string = "Select themes...";
   export let notFoundMessage: string = "No results found";
 
   const toOption = (
@@ -96,7 +97,7 @@
         "border-neutral-300",
         "pl-8",
       ])}
-      placeholder="Select themes..."
+      {placeholder}
     />
     {#if !hideArrow}
       <div

@@ -11,6 +11,20 @@ on:
     types: [completed]
     branches: [main]
 
+  release:
+    types: [published]
+
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git ref to deploy (tag or SHA)'
+        required: true
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options: [dev, preprod, prod]
+
 jobs:
   set-vars:
     runs-on: ubuntu-latest
@@ -21,10 +35,30 @@ jobs:
       repo: ${{ steps.export.outputs.repo }}
       infra-config-repo: ${{ steps.export.outputs.infra-config-repo }}
       environment: ${{ steps.env-var.outputs.environment }}
+      commit-hash: ${{ steps.export.outputs.commit-hash }}
+      sha-short: ${{ steps.export.outputs.sha-short }}
 
     steps:
+      - name: Validate prod deployment uses a release tag
+        if: github.event_name == 'workflow_dispatch' && inputs.environment == 'prod'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_TAG: ${{ inputs.tag }}
+          GH_REPOSITORY: ${{ github.repository }}
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/${GH_REPOSITORY}/releases/tags/${INPUT_TAG}")
+          if [[ "$HTTP_STATUS" != "200" ]]; then
+            echo "::error::Production deployments must reference a published release tag. Got: '${INPUT_TAG}'"
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag || '' }}
+          fetch-depth: 0
 
       - id: export
         run: |
@@ -37,18 +71,25 @@ jobs:
           echo "repo=${REPO}" >> $GITHUB_OUTPUT
           echo "infra-config-repo=${INFRA_CONFIG_REPO}" >> $GITHUB_OUTPUT
           echo "::add-mask::${AWS_REGION}"
+          echo "sha-short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "commit-hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - id: env-var
+        env:
+          INPUTS_ENVIRONMENT: ${{ inputs.environment }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
-          # prod env from main branch
-          if [[ "${{ github.ref_name }}" == main ]]; then
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            export ENVIRONMENT=prod
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            export ENVIRONMENT=$INPUTS_ENVIRONMENT
+          elif [[ "$GITHUB_REF_NAME" == main ]]; then
             export ENVIRONMENT=preprod
           else
-            export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $2 }')
+            export ENVIRONMENT=$(echo "$GITHUB_REF_NAME" | awk -F- '{ print $2 }')
           fi
           echo "environment=${ENVIRONMENT}"
           echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
-
 
   start-runner:
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@main
@@ -65,11 +106,20 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
+  build-lambdas:
+    needs:
+      - set-vars
+    if: always()
+    uses: ./.github/workflows/build-lambda-artifacts.yml
+    with:
+      upload_directory: ./lambda/build
+      commit_hash: ${{ needs.set-vars.outputs.commit-hash }}
 
   build-infra:
     needs:
       - set-vars
       - start-runner
+      - build-lambdas
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/apply-terraform.yml@main
     permissions: write-all
     with:
@@ -78,7 +128,7 @@ jobs:
       ENVIRONMENT: ${{ needs.set-vars.outputs.environment }}
       PUBLIC_INFRA_DEPLOYMENT: true
       INFRA_CONFIG_REPO: ${{ needs.set-vars.outputs.infra-config-repo }}
-      IMAGE_TAG: ${{ github.sha }}
+      ARTIFACTS_PATH: ${{ needs.build-lambdas.outputs.target_directory }}
       USE_OIDC: true
     secrets:
       AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT }}
@@ -86,14 +136,47 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
+  determine-success:
+    needs: [set-vars, start-runner, build-infra]
+    runs-on: ${{ needs.start-runner.outputs.label }}
+    if: always() && needs.set-vars.outputs.environment == 'prod'
+    outputs:
+      success: ${{ steps.success.outputs.success }}
+    steps:
+      - id: success
+        run: |
+          if [[ "${{ needs.build-infra.result }}" == "success" ]]; then
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
+
+  notify-slack:
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/slack-notify.yml@main
+    needs: [set-vars, start-runner, build-infra, determine-success]
+    if: always() && needs.set-vars.outputs.environment == 'prod'
+    with:
+      WORKFLOW_PASSED: ${{ needs.determine-success.outputs.success == 'true' }}
+      RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
+      SUCCESS_PAYLOAD: >-
+        {"blocks":[{"type":"section","text":{"type":"mrkdwn","text":
+        ":large_green_circle: `${{ needs.set-vars.outputs.environment }}` *infra deployment succeeded*\n\nDeployed SHA: `${{ needs.set-vars.outputs.sha-short }}`"}}]}
+      FAILURE_PAYLOAD: >-
+        {"blocks":[{"type":"section","text":{"type":"mrkdwn","text":
+        ":x: `${{ needs.set-vars.outputs.environment }}` *infra deployment failed*\n\nAttempted SHA: `${{ needs.set-vars.outputs.sha-short }}`\nLogs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}}]}
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   stop-runner:
     needs:
       - set-vars
       - start-runner
       - build-infra
+      - determine-success
+      - notify-slack
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@main
     permissions: write-all
-    if: needs.start-runner.outputs.use-persisted == 0 && always()
+    if: always() && needs.start-runner.outputs.use-persisted == 0
     with:
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
       EC2_INSTANCE_ID: ${{ needs.start-runner.outputs.ec2-instance-id }}

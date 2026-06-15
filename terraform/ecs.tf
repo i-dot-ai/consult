@@ -3,10 +3,10 @@ locals {
   frontend_port = 3000
 
   base_env_vars = {
-    "ENVIRONMENT" = terraform.workspace
-    "DEBUG"       = var.env == "prod" ? false : true
-    "REPO"        = var.project_name
-    "AWS_ACCOUNT_ID"  = data.aws_caller_identity.current.account_id
+    "ENVIRONMENT"    = terraform.workspace
+    "DEBUG"          = var.env == "prod" ? false : true
+    "REPO"           = var.project_name
+    "AWS_ACCOUNT_ID" = data.aws_caller_identity.current.account_id
   }
 
   django_env_vars = {
@@ -30,9 +30,9 @@ module "backend" {
   # checkov:skip=CKV_SECRET_4:Skip secret check as these have to be used within the Github Action
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
-  source                        = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v6.0.0-ecs"
-  image_tag                     = var.image_tag
-  ecr_repository_uri            = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-backend"
+  source                        = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v7.0.1-ecs"
+  image_tag                     = data.aws_ssm_parameter.image_tags["backend"].value
+  ecr_repository_uri            = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/${var.project_name}-backend"
   vpc_id                        = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets               = data.terraform_remote_state.vpc.outputs.private_subnets
   host                          = local.host_backend
@@ -42,8 +42,8 @@ module "backend" {
   ecs_cluster_name              = data.terraform_remote_state.platform.outputs.ecs_cluster_name
   task_additional_iam_policies  = local.additional_policy_arns
   certificate_arn               = module.acm_certificate.arn
-  target_group_name_override    = "consult-backend-${var.env}-tg"
-  permissions_boundary_name     = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
+  target_group_name_override    = "${var.project_name}-backend-${var.env}-tg"
+  permissions_boundary_name     = "infra/i-dot-ai-${var.env}-${var.project_name}-perms-boundary-app"
   https_listener_arn            = module.frontend.https_listener_arn
   service_discovery_service_arn = aws_service_discovery_service.service_discovery_service.arn
   create_networking             = false
@@ -88,7 +88,7 @@ module "backend" {
   }
   entrypoint = ["./start.sh"]
 
-  memory = 4096
+  memory = 8192
   cpu    = 1024
 }
 
@@ -97,9 +97,9 @@ module "frontend" {
   # checkov:skip=CKV_SECRET_4:Skip secret check as these have to be used within the Github Action
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
-  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v6.0.0-ecs"
-  image_tag                    = var.image_tag
-  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-frontend"
+  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v7.0.1-ecs"
+  image_tag                    = data.aws_ssm_parameter.image_tags["frontend"].value
+  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/${var.project_name}-frontend"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   host                         = local.host
@@ -110,8 +110,8 @@ module "frontend" {
   ecs_cluster_name             = data.terraform_remote_state.platform.outputs.ecs_cluster_name
   create_listener              = true
   certificate_arn              = data.terraform_remote_state.universal.outputs.certificate_arn
-  target_group_name_override   = "consult-frontend-${var.env}-tg"
-  permissions_boundary_name    = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
+  target_group_name_override   = "${var.project_name}-frontend-${var.env}-tg"
+  permissions_boundary_name    = "infra/i-dot-ai-${var.env}-${var.project_name}-perms-boundary-app"
 
   environment_variables = merge(local.base_env_vars, {
     "PUBLIC_ENVIRONMENT"       = var.env
@@ -158,9 +158,9 @@ module "worker" {
   # checkov:skip=CKV_SECRET_4:Skip secret check as these have to be used within the Github Action
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
-  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v6.0.0-ecs"
-  image_tag                    = var.image_tag
-  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/consult-backend"
+  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v7.0.1-ecs"
+  image_tag                    = data.aws_ssm_parameter.image_tags["backend"].value
+  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/${var.project_name}-backend"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   host                         = local.host_backend
@@ -198,15 +198,16 @@ module "worker" {
     port                = 8000
   }
 
-  autoscaling_maximum_target = 4
+  autoscaling_minimum_target = 3
+  autoscaling_maximum_target = 3
 
   additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
   }
   entrypoint = ["./start-worker.sh"]
 
-  memory = 4096
-  cpu    = 1024
+  memory = 8192
+  cpu    = 4096
 }
 
 resource "aws_service_discovery_private_dns_namespace" "private_dns_namespace" {
@@ -241,27 +242,91 @@ module "sns_topic" {
   name          = local.name
   slack_webhook = data.aws_secretsmanager_secret_version.platform_slack_webhook.secret_string
 
-  permissions_boundary_name = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
+  permissions_boundary_name = "infra/i-dot-ai-${var.env}-${var.project_name}-perms-boundary-app"
 }
 
 module "backend-ecs-alarm" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
-  # source                       = "../../i-dot-ai-core-terraform-modules/modules/observability/ecs-alarms"
-  source           = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/ecs-alarms?ref=v1.0.1-ecs-alarms"
-  name             = "${local.name}-backend"
-  ecs_service_name = module.backend.ecs_service_name
-  ecs_cluster_name = data.terraform_remote_state.platform.outputs.ecs_cluster_name
-  sns_topic_arn    = [module.sns_topic.sns_topic_arn]
+  # source         = "../../i-dot-ai-core-terraform-modules/modules/observability/ecs-alarms"
+  source         = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/ecs-alarms?ref=v2.0.0-ecs-alarms"
+  name           = "${local.name}-backend"
+  sns_topic_arns = [module.sns_topic.sns_topic_arn]
+
+  ecs_metadata = {
+    container_insights_enabled = data.terraform_remote_state.platform.outputs.container_insights_enabled
+    cluster_name               = data.terraform_remote_state.platform.outputs.ecs_cluster_name
+    service_name               = module.backend.ecs_service_name
+    is_fargate                 = module.backend.is_fargate
+    task_cpu                   = module.backend.task_cpu
+    task_memory_mib            = module.backend.task_memory_mib
+    ephemeral_storage_gib      = module.backend.ephemeral_storage_gib
+  }
+
+  alarms_config = {
+    ephemeral_storage_high = {
+      threshold = 90
+    }
+  }
 }
 
 module "frontend-ecs-alarm" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
-  # source                       = "../../i-dot-ai-core-terraform-modules/modules/observability/ecs-alarms"
-  source           = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/ecs-alarms?ref=v1.0.1-ecs-alarms"
-  name             = "${local.name}-frontend"
-  ecs_service_name = module.frontend.ecs_service_name
-  ecs_cluster_name = data.terraform_remote_state.platform.outputs.ecs_cluster_name
-  sns_topic_arn    = [module.sns_topic.sns_topic_arn]
+  # source         = "../../i-dot-ai-core-terraform-modules/modules/observability/ecs-alarms"
+  source         = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/ecs-alarms?ref=v2.0.0-ecs-alarms"
+  name           = "${local.name}-frontend"
+  sns_topic_arns = [module.sns_topic.sns_topic_arn]
+
+  ecs_metadata = {
+    container_insights_enabled = data.terraform_remote_state.platform.outputs.container_insights_enabled
+    cluster_name               = data.terraform_remote_state.platform.outputs.ecs_cluster_name
+    service_name               = module.frontend.ecs_service_name
+    is_fargate                 = module.frontend.is_fargate
+    task_cpu                   = module.frontend.task_cpu
+    task_memory_mib            = module.frontend.task_memory_mib
+    ephemeral_storage_gib      = module.frontend.ephemeral_storage_gib
+  }
+
+  alarms_config = {
+    ephemeral_storage_high = {
+      threshold = 90
+    }
+  }
+}
+
+# Worker is an RQ queue processor: bursty CPU by design (long-running jobs
+# can pin a single task's CPU), pinned at 3 tasks with no autoscaling.
+# Overrides raise the CPU alarms to tolerate legitimate job runs while
+# keeping memory, availability, and placement alarms at their defaults.
+module "worker-ecs-alarm" {
+  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
+  # source         = "../../i-dot-ai-core-terraform-modules/modules/observability/ecs-alarms"
+  source         = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/ecs-alarms?ref=v2.0.0-ecs-alarms"
+  name           = "${local.name}-worker"
+  sns_topic_arns = [module.sns_topic.sns_topic_arn]
+
+  ecs_metadata = {
+    container_insights_enabled = data.terraform_remote_state.platform.outputs.container_insights_enabled
+    cluster_name               = data.terraform_remote_state.platform.outputs.ecs_cluster_name
+    service_name               = module.worker.ecs_service_name
+    is_fargate                 = module.worker.is_fargate
+    task_cpu                   = module.worker.task_cpu
+    task_memory_mib            = module.worker.task_memory_mib
+    ephemeral_storage_gib      = module.worker.ephemeral_storage_gib
+  }
+
+  alarms_config = {
+    cpu_high = {
+      threshold = 95
+    }
+
+    task_cpu_high = {
+      threshold = 95
+    }
+
+    ephemeral_storage_high = {
+      threshold = 90
+    }
+  }
 }
 
 module "backend-alb-alarm" {

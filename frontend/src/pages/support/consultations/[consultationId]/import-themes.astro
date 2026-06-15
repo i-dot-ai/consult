@@ -1,0 +1,37 @@
+---
+import { fetchBackendApi } from "../../../../global/api";
+import type {
+  AstroGlobalRuntime,
+  ConsultationResponse,
+} from "../../../../global/types";
+
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section/Section.svelte";
+import Title from "../../../../components/Title.svelte";
+import ImportThemesForm from "../../../../components/screens/ImportThemesForm.svelte";
+import { getApiConsultationUrl, Routes } from "../../../../global/routes";
+
+const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
+
+if (!consultationId) {
+  return (Astro as unknown as AstroGlobalRuntime).redirect(
+    Routes.SupportConsultations,
+  );
+}
+
+let consultation = await fetchBackendApi<ConsultationResponse>(
+  Astro,
+  getApiConsultationUrl(consultationId),
+);
+---
+
+<Layout>
+  <Section>
+    <Title level={1} text="Import finalised themes" />
+    <ImportThemesForm
+      targetConsultationId={consultationId}
+      targetConsultationTitle={consultation.title}
+      client:load
+    />
+  </Section>
+</Layout>

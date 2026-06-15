@@ -1,7 +1,24 @@
 import { test, expect } from "@playwright/test";
-import { getFirstConsultationLink } from "./helpers";
+import { CleanupManager, createFixtureData } from "./helpers";
+import { getConsultationId, getFirstConsultationLink } from "./navigation";
+import {
+  openQuestion,
+  setupConsultation,
+  signOffConsultation,
+} from "../fixtures";
+import type { FixtureReference } from "../fixtures";
 
 test.describe("Consultations - List Page", () => {
+  const cleanupManager = new CleanupManager();
+  let testData: FixtureReference = {};
+
+  test.beforeAll(async ({ request }) => {
+    testData = await createFixtureData(request, {
+      consultations: [setupConsultation, signOffConsultation],
+    });
+    cleanupManager.add(testData);
+  });
+
   test.beforeEach(async ({ page }) => {
     await page.goto("/consultations");
     await page.waitForLoadState("networkidle");
@@ -14,9 +31,7 @@ test.describe("Consultations - List Page", () => {
     ).toBeVisible();
 
     // Check for the description text
-    await expect(
-      page.getByText(/review themes/i),
-    ).toBeVisible();
+    await expect(page.getByText(/review themes/i)).toBeVisible();
 
     // Check that at least one consultation is displayed
     const consultationItems = page
@@ -30,11 +45,9 @@ test.describe("Consultations - List Page", () => {
     await expect(consultationItems.first()).toBeVisible();
 
     // Check for the specific dummy consultations (may have multiple matches)
+    await expect(page.getByText(setupConsultation.title).first()).toBeVisible();
     await expect(
-      page.getByText(/Dummy Consultation at Analysis Stage/i).first(),
-    ).toBeVisible();
-    await expect(
-      page.getByText(/Dummy Consultation at Theme Sign Off/i).first(),
+      page.getByText(signOffConsultation.title).first(),
     ).toBeVisible();
   });
 
@@ -48,10 +61,23 @@ test.describe("Consultations - List Page", () => {
     // Verify we navigated to a consultation detail page (could be root or a subpage)
     await expect(page).toHaveURL(new RegExp(`/consultations/[^/]+`));
   });
+
+  test.afterAll(async () => {
+    await cleanupManager.cleanup();
+  });
 });
 
 test.describe("Consultations - Detail/Dashboard Page", () => {
+  const cleanupManager = new CleanupManager();
+  let testData: FixtureReference = {};
   let consultationId: string;
+
+  test.beforeAll(async ({ request }) => {
+    testData = await createFixtureData(request, {
+      consultations: [setupConsultation],
+    });
+    cleanupManager.add(testData);
+  });
 
   test.beforeEach(async ({ page }) => {
     // Navigate to consultations list
@@ -62,7 +88,7 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
     const result = await getFirstConsultationLink(page);
     expect(result).toBeTruthy();
 
-    consultationId = result!.href.match(/\/consultations\/([^/]+)/)?.[1]!;
+    consultationId = getConsultationId(result!.href)!;
     await result!.link.click();
     await page.waitForLoadState("networkidle");
   });
@@ -80,22 +106,20 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
       page.getByRole("heading", { name: /All consultation questions/i }),
     ).toBeVisible();
 
-    // 3. Question cards should be displayed - dummy data has 4 questions per consultation
+    // 3. Question cards should be displayed - dummy data has 3 questions per consultation
     const questionCards = page.locator('[data-testid="question-icon"]');
     const questionCount = await questionCards.count();
-    expect(questionCount).toBeGreaterThanOrEqual(4);
+    expect(questionCount).toBeGreaterThanOrEqual(3);
 
     // 4. Check for metrics section showing questions
     const metricsText = await page.textContent("body");
     expect(metricsText).toMatch(/\d+ questions?/);
 
     // 5. Check for specific question text from dummy data
-    await expect(
-      page.getByText(/chocolate bar regulations/i),
-    ).toBeVisible();
+    await expect(page.getByText(openQuestion.text)).toBeVisible();
 
-    // 6. Check for response counts (each question has 100 responses)
-    await expect(page.getByText(/100 responses/i).first()).toBeVisible();
+    // 6. Check for response counts (the longest question has 10 responses)
+    await expect(page.getByText(/10 responses/i).first()).toBeVisible();
   });
 
   test("can navigate to evaluation page from consultation", async ({
@@ -115,10 +139,23 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
       );
     }
   });
+
+  test.afterAll(async () => {
+    await cleanupManager.cleanup();
+  });
 });
 
 test.describe("Consultations - Evaluation Page", () => {
+  const cleanupManager = new CleanupManager();
   let consultationId: string;
+  let testData: FixtureReference = {};
+
+  test.beforeAll(async ({ request }) => {
+    testData = await createFixtureData(request, {
+      consultations: [setupConsultation],
+    });
+    cleanupManager.add(testData);
+  });
 
   test.beforeEach(async ({ page }) => {
     // First navigate to consultations list
@@ -128,7 +165,7 @@ test.describe("Consultations - Evaluation Page", () => {
     // Get first consultation
     const result = await getFirstConsultationLink(page);
     expect(result).toBeTruthy();
-    consultationId = result!.href.match(/\/consultations\/([^/]+)/)?.[1]!;
+    consultationId = getConsultationId(result!.href)!;
 
     // Navigate directly to evaluation page
     await page.goto(`/evaluations/${consultationId}/questions`);
@@ -154,9 +191,7 @@ test.describe("Consultations - Evaluation Page", () => {
     expect(buttonCount).toBeGreaterThanOrEqual(2);
 
     // Check for specific question text
-    await expect(
-      page.getByText(/chocolate bar regulations/i).first(),
-    ).toBeVisible();
+    await expect(page.getByText(openQuestion.text).first()).toBeVisible();
 
     // Check for percentage reviewed text
     await expect(page.getByText(/reviewed/i).first()).toBeVisible();
@@ -177,5 +212,9 @@ test.describe("Consultations - Evaluation Page", () => {
         new RegExp(`/(consultations|evaluations)/.+/(responses|questions)/.+`),
       );
     }
+  });
+
+  test.afterAll(async () => {
+    await cleanupManager.cleanup();
   });
 });

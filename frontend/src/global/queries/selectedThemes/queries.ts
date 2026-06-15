@@ -1,6 +1,6 @@
 import { buildQuery, type FetchError } from "../../queryClient";
 import type { SelectedTheme, SelectedThemesDeleteResponse } from "../../types";
-import type { SaveThemeError } from "../../../components/theme-sign-off/ErrorModal/types";
+import type { SaveThemeError } from "../../../components/finalising-themes/ErrorModal/types";
 import type {
   errorData,
   SelectedThemeMutationError,
