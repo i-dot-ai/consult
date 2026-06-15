@@ -18,18 +18,29 @@ def _get_s3_resource():
     """
     Create and return a boto3 S3 resource configured for the current environment.
     Uses i_dot_ai_utilities settings to maintain consistency with get_s3_client().
+    
+    In local/test environments, ensures the bucket exists before returning the resource.
     """
     file_store_settings = FileStoreSettings()
     environment = file_store_settings.environment.lower()
 
     if environment in ["local", "test"]:
-        return boto3.resource(
+        resource = boto3.resource(
             "s3",
             endpoint_url=file_store_settings.minio_address,
             aws_access_key_id=file_store_settings.aws_access_key_id,
             aws_secret_access_key=file_store_settings.aws_secret_access_key,
             config=Config(signature_version="s3v4"),
         )
+        
+        bucket_name = settings.AWS_BUCKET_NAME
+        try:
+            resource.meta.client.head_bucket(Bucket=bucket_name)
+        except:
+            logger.info("Creating bucket for local/test environment: {bucket_name}", bucket_name=bucket_name)
+            resource.create_bucket(Bucket=bucket_name)
+        
+        return resource
     else:
         return boto3.resource("s3")
 
@@ -120,8 +131,6 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
     Returns:
         Sorted list of question folder paths ending with /
     """
-    get_s3_client()
-    
     s3 = _get_s3_resource()
     filter_params = {"Prefix": inputs_path}
     if account_id:
@@ -153,8 +162,6 @@ def get_consultation_folders() -> list[str]:
         List of folder codes (e.g., ['healthcare-consultation', 'transport-consultation'])
     """
     try:
-        get_s3_client()
-        
         s3 = _get_s3_resource()
         filter_params = {"Prefix": "app_data/consultations/"}
         if account_id:
