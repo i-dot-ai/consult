@@ -9,6 +9,7 @@ dependencies = [
     "urllib3>=2.0.0",
     "openai>=2.14.0",
     "pydantic>=2.12.5",
+    "sentry-sdk>=2.61.1",
 ]
 
 [tool.uv]
