@@ -14,7 +14,6 @@ locals {
     "DOMAIN_NAME"                        = local.host,
     "REDIS_HOST"                         = module.elasticache.redis_address
     "REDIS_PORT"                         = module.elasticache.redis_port
-    "AWS_BUCKET_NAME"                    = "${var.team_name}-${var.env}-${var.project_name}-data"
     "AWS_REGION"                         = data.aws_region.current.name
     "IAI_FS_BUCKET_NAME"                 = "${var.team_name}-${var.env}-${var.project_name}-data"
     "IAI_FS_AWS_REGION"                  = data.aws_region.current.name
