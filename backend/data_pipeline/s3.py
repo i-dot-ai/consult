@@ -56,7 +56,11 @@ def read_jsonl(
         s3_client = get_s3_client()
 
     try:
-        response = s3_client.get_object(Bucket=bucket_name, Key=key, ExpectedBucketOwner=account_id)
+        # Only include ExpectedBucketOwner if account_id is set (production environments)
+        get_params = {"Bucket": bucket_name, "Key": key}
+        if account_id:
+            get_params["ExpectedBucketOwner"] = account_id
+        response = s3_client.get_object(**get_params)
     except ClientError as e:
         if not raise_if_missing and e.response["Error"]["Code"] == "NoSuchKey":
             logger.info("File not found (skipping): {key}", key=key)
@@ -93,7 +97,11 @@ def read_json(
         s3_client = get_s3_client()
 
     try:
-        response = s3_client.get_object(Bucket=bucket_name, Key=key, ExpectedBucketOwner=account_id)
+        # Only include ExpectedBucketOwner if account_id is set (production environments)
+        get_params = {"Bucket": bucket_name, "Key": key}
+        if account_id:
+            get_params["ExpectedBucketOwner"] = account_id
+        response = s3_client.get_object(**get_params)
         data = json.loads(response["Body"].read())
         return data
     except ClientError as e:
@@ -115,9 +123,11 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
         Sorted list of question folder paths ending with /
     """
     s3 = _get_s3_resource()
-    objects = s3.Bucket(bucket_name).objects.filter(
-        Prefix=inputs_path, ExpectedBucketOwner=account_id
-    )
+    # Only include ExpectedBucketOwner if account_id is set (production environments)
+    filter_params = {"Prefix": inputs_path}
+    if account_id:
+        filter_params["ExpectedBucketOwner"] = account_id
+    objects = s3.Bucket(bucket_name).objects.filter(**filter_params)
     object_names_set = {obj.key for obj in objects}
 
     # Get set of all subfolders
@@ -144,11 +154,12 @@ def get_consultation_folders() -> list[str]:
         List of folder codes (e.g., ['healthcare-consultation', 'transport-consultation'])
     """
     try:
-        s3 = boto3.resource("s3")
-        objects = s3.Bucket(settings.AWS_BUCKET_NAME).objects.filter(
-            Prefix="app_data/consultations/",
-            ExpectedBucketOwner=account_id,
-        )
+        s3 = _get_s3_resource()
+        # Only include ExpectedBucketOwner if account_id is set (production environments)
+        filter_params = {"Prefix": "app_data/consultations/"}
+        if account_id:
+            filter_params["ExpectedBucketOwner"] = account_id
+        objects = s3.Bucket(settings.AWS_BUCKET_NAME).objects.filter(**filter_params)
 
         # Get unique consultation folders
         s3_codes = set()
