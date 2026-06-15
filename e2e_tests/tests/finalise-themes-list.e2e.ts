@@ -3,7 +3,7 @@ import {
   CleanupManager,
   createFixtureData,
 } from "./helpers";
-import { gotoFinaliseThemesList } from "./navigation";
+import { getConsultationId, gotoFinaliseThemesList } from "./navigation";
 import { signOffConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
 
@@ -152,9 +152,7 @@ test.describe("Finalise Themes - List Page", () => {
   test("Clicking a question navigates to its detail page", async ({ page }) => {
     await gotoFinaliseThemesList(page, signOffConsultation.title);
 
-    const consultationId = page
-      .url()
-      .match(/\/consultations\/([^/]+)\/finalising-themes/)?.[1];
+    const consultationId = getConsultationId(page.url());
     expect(consultationId).toBeTruthy();
 
     // Only free-text questions have a detail page to navigate to.
