@@ -8,11 +8,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for backwards compatibility when using relative exclude-newer values.
-exclude-newer-span = "P14D"
-
-[options.exclude-newer-package]
-i-dot-ai-utilities = "2026-06-04T23:00:00Z"
+exclude-newer = "2026-06-04T23:00:00Z"
 
 [manifest]
 members = [
@@ -316,7 +312,7 @@ requires-dist = [
     { name = "drf-spectacular", specifier = "==0.29.0" },
     { name = "factory-boy", specifier = ">=3.3.1" },
     { name = "gunicorn", specifier = ">=23.0.0" },
-    { name = "i-dot-ai-utilities", extras = ["auth"], specifier = ">=0.4.4" },
+    { name = "i-dot-ai-utilities", extras = ["auth"], specifier = ">=0.6.0" },
     { name = "openai", specifier = ">=2.14.0" },
     { name = "pgvector", specifier = ">=0.4.2" },
     { name = "psycopg", specifier = ">=3.3.2" },
@@ -904,7 +900,7 @@ wheels = [
 
 [[package]]
 name = "i-dot-ai-utilities"
-version = "0.5.0"
+version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
@@ -912,9 +908,9 @@ dependencies = [
     { name = "structlog" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8e/ef/ac9bf1364cc746aad3de7430223cbccf12789692546202cf4252e5389852/i_dot_ai_utilities-0.5.0.tar.gz", hash = "sha256:6b7ea4375780d280f609ac7dde8979390dd29ae4c264e2b9035769ec72851cea", size = 219010, upload-time = "2026-03-24T16:17:34.041Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ad/0f/99ebbb3c571563badf8b7205af730a29face73fa9344e06d3e805779fca4/i_dot_ai_utilities-0.6.0.tar.gz", hash = "sha256:c8e3dbbcea715cab146cab1054b68ffca92ed9ef0c035f0250c53087771c1f14", size = 219387, upload-time = "2026-06-03T09:44:45.892Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/53/63/91d963c64c398c74506e1a264d82395a0bb2a322863a0a577614b04ec4c2/i_dot_ai_utilities-0.5.0-py3-none-any.whl", hash = "sha256:678a453ecfc97ff4e7f7d18139b4274fc183f41a2bfce4a910bf1e59191caea4", size = 51019, upload-time = "2026-03-24T16:17:32.734Z" },
+    { url = "https://files.pythonhosted.org/packages/38/0c/49a020be275c7705d6c6539fb69a51e4ce3a0655399b2d2bb69a0b2c22c7/i_dot_ai_utilities-0.6.0-py3-none-any.whl", hash = "sha256:2cf1df3ae078d931cd54e3f4697ae4e6e0dadbdb9444762dbbdc583c6d884877", size = 51599, upload-time = "2026-06-03T09:44:44.475Z" },
 ]
 
 [package.optional-dependencies]

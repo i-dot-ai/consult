@@ -1,9 +1,14 @@
 # Resolver settings must live at the workspace root — uv ignores [tool.uv]
-# resolver config in member pyproject.toml files. Carried over from
-# backend/pyproject.toml (main) so the i-dot-ai-utilities pin is honored.
+# resolver config in member pyproject.toml files.
+#
+# Fixed cutoff (not a rolling "P14D") so `uv lock` is reproducible regardless of
+# the day it runs. The date is the one main used for its i-dot-ai-utilities
+# exception (the day after 0.6.0 shipped); a per-package exclude-newer-package
+# override cannot LOOSEN past the global cutoff in uv, so the date is promoted to
+# the global cutoff to admit i-dot-ai-utilities 0.6.0 (which the backend imports).
+# Bump this date deliberately when newer dependencies are wanted.
 [tool.uv]
-exclude-newer = "P14D"
-exclude-newer-package = { "i-dot-ai-utilities" = "2026-06-04" }
+exclude-newer = "2026-06-04"
 
 [tool.uv.workspace]
 members = ["backend", "themefinder", "pipeline-sign-off", "pipeline-mapping"]

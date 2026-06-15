@@ -23,8 +23,12 @@ WORKDIR /src/backend
 ENV UV_PROJECT_ENVIRONMENT=/src/backend/venv
 
 # Install dependencies (workspace-aware) - creates /src/backend/venv with an editable
-# install pointing at /src/themefinder/src
-RUN uv sync --frozen --no-install-project --no-dev --package consult
+# install pointing at /src/themefinder/src.
+# Prod builds default to --no-dev for a slim image; docker-compose (local dev + e2e)
+# overrides UV_SYNC_DEV_FLAG to "" so the dev group (e.g. django-extensions, required
+# by settings.local) is installed.
+ARG UV_SYNC_DEV_FLAG=--no-dev
+RUN uv sync --frozen --no-install-project $UV_SYNC_DEV_FLAG --package consult
 
 
 # app
