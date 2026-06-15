@@ -1,13 +1,12 @@
 import json
 
-import boto3
 import pytest
 import yaml
 from django.contrib.postgres.search import SearchVector
 from django.test import RequestFactory
-from moto import mock_aws
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from boto3_client import get_s3_client
 from consultations.models import (
     Consultation,
     DemographicOption,
@@ -36,17 +35,35 @@ def request_factory():
 
 
 @pytest.fixture
-def mock_s3_bucket():
-    with mock_aws():
-        conn = boto3.resource("s3", region_name="us-east-1")
-        bucket_name = "test-bucket"
-        conn.create_bucket(Bucket=bucket_name)
-        yield bucket_name
+def s3_bucket():
+    """
+    Provide access to the MinIO bucket for testing.
+    The bucket is automatically created on startup by boto3_client._get_file_store().
+    This fixture only handles cleanup after tests.
+    """
+    from django.conf import settings
+    
+    s3_client = get_s3_client()
+    bucket_name = settings.AWS_BUCKET_NAME
+    
+    yield bucket_name
+    
+    # Cleanup: Delete all objects in the bucket after tests
+    try:
+        # List and delete all objects
+        paginator = s3_client.get_paginator('list_objects_v2')
+        for page in paginator.paginate(Bucket=bucket_name):
+            if 'Contents' in page:
+                objects = [{'Key': obj['Key']} for obj in page['Contents']]
+                if objects:
+                    s3_client.delete_objects(Bucket=bucket_name, Delete={'Objects': objects})
+    except Exception as e:
+        print(f"Warning: Failed to cleanup S3 bucket: {e}")
 
 
 @pytest.fixture
-def mock_consultation_input_objects(mock_s3_bucket):
-    conn = boto3.resource("s3", region_name="us-east-1")
+def mock_consultation_input_objects(s3_bucket):
+    s3_client = get_s3_client()
     question_part_1 = {
         "question_text": "Do you agree?",
         "question_part_text": "Please give more details.",
@@ -145,53 +162,72 @@ def mock_consultation_input_objects(mock_s3_bucket):
         [json.dumps(evidence_rich_mapping) for evidence_rich_mapping in evidence_rich_mappings_2]
     )
 
-    conn.Object(mock_s3_bucket, "app_data/consultations/con1/inputs/respondents.jsonl").put(
+    # Upload all test data to MinIO
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="app_data/consultations/con1/inputs/respondents.jsonl",
         Body=respondents_jsonl
     )
-    conn.Object(
-        mock_s3_bucket, "app_data/consultations/con1/inputs/question_part_1/question.json"
-    ).put(Body=json.dumps(question_part_1))
-    conn.Object(
-        mock_s3_bucket, "app_data/consultations/con1/inputs/question_part_1/responses.jsonl"
-    ).put(Body=responses_jsonl_1)
-    conn.Object(
-        mock_s3_bucket, "app_data/consultations/con1/inputs/question_part_2/question.json"
-    ).put(Body=json.dumps(question_part_2))
-    conn.Object(
-        mock_s3_bucket, "app_data/consultations/con1/inputs/question_part_2/responses.jsonl"
-    ).put(Body=responses_jsonl_2)
-    conn.Object(
-        mock_s3_bucket,
-        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_1/themes.json",
-    ).put(Body=json.dumps(themes))
-    conn.Object(
-        mock_s3_bucket,
-        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/themes.json",
-    ).put(Body=json.dumps(themes))
-    conn.Object(
-        mock_s3_bucket,
-        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_1/mapping.jsonl",
-    ).put(Body=theme_mappings_jsonl)
-    conn.Object(
-        mock_s3_bucket,
-        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/mapping.jsonl",
-    ).put(Body=theme_mappings_2_jsonl)
-    conn.Object(
-        mock_s3_bucket,
-        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_1/sentiment.jsonl",
-    ).put(Body=sentiment_mappings_jsonl)
-    conn.Object(
-        mock_s3_bucket,
-        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/sentiment.jsonl",
-    ).put(Body=sentiment_mappings_2_jsonl)
-    conn.Object(
-        mock_s3_bucket,
-        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_1/detail_detection.jsonl",
-    ).put(Body=evidence_rich_mappings_jsonl)
-    conn.Object(
-        mock_s3_bucket,
-        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/detail_detection.jsonl",
-    ).put(Body=evidence_rich_mappings_2_jsonl)
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="app_data/consultations/con1/inputs/question_part_1/question.json",
+        Body=json.dumps(question_part_1)
+    )
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="app_data/consultations/con1/inputs/question_part_1/responses.jsonl",
+        Body=responses_jsonl_1
+    )
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="app_data/consultations/con1/inputs/question_part_2/question.json",
+        Body=json.dumps(question_part_2)
+    )
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="app_data/consultations/con1/inputs/question_part_2/responses.jsonl",
+        Body=responses_jsonl_2
+    )
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_1/themes.json",
+        Body=json.dumps(themes)
+    )
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/themes.json",
+        Body=json.dumps(themes)
+    )
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_1/mapping.jsonl",
+        Body=theme_mappings_jsonl
+    )
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/mapping.jsonl",
+        Body=theme_mappings_2_jsonl
+    )
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_1/sentiment.jsonl",
+        Body=sentiment_mappings_jsonl
+    )
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/sentiment.jsonl",
+        Body=sentiment_mappings_2_jsonl
+    )
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_1/detail_detection.jsonl",
+        Body=evidence_rich_mappings_jsonl
+    )
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/detail_detection.jsonl",
+        Body=evidence_rich_mappings_2_jsonl
+    )
 
 
 @pytest.fixture()

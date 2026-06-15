@@ -2,12 +2,12 @@ import csv
 import io
 from typing import Dict, List, Optional
 
-import boto3
 from django.conf import settings
 from django.db import transaction
 from themefinder.models import ThemeNode
 
 import data_pipeline.s3 as s3
+from boto3_client import get_s3_client
 from consultations.models import (
     CandidateTheme,
     CandidateThemeResponse,
@@ -391,7 +391,7 @@ def export_candidate_themes_to_s3(consultation: Consultation) -> int:
     Raises:
         ValueError: If no questions have candidate themes
     """
-    s3_client = boto3.client("s3")
+    s3_client = get_s3_client()
     questions_exported = 0
 
     questions = consultation.question_set.filter(has_free_text=True)

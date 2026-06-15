@@ -1,9 +1,9 @@
 import csv
 import io
 
-import boto3
 from django.conf import settings
 
+from boto3_client import get_s3_client
 from consultations.models import (
     Consultation,
     SelectedTheme,
@@ -29,7 +29,7 @@ def export_selected_themes_to_s3(consultation: Consultation) -> int:
         ValueError: If no questions have selected themes
     """
 
-    s3_client = boto3.client("s3")
+    s3_client = get_s3_client()
     questions_exported = 0
 
     questions = consultation.question_set.filter(has_free_text=True)

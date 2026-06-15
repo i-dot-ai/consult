@@ -1,7 +1,6 @@
-from unittest.mock import Mock, patch
-
 import pytest
 
+from boto3_client import get_s3_client
 from consultations.models import SelectedTheme
 from data_pipeline.sync.selected_themes import export_selected_themes_to_s3
 from factories import ConsultationFactory, QuestionFactory
@@ -9,13 +8,10 @@ from factories import ConsultationFactory, QuestionFactory
 
 @pytest.mark.django_db
 class TestExportSelectedThemesToS3:
-    @patch("data_pipeline.sync.selected_themes.boto3")
-    @patch("data_pipeline.sync.selected_themes.settings")
-    def test_export_selected_themes_to_s3(self, mock_settings, mock_boto3):
-        mock_settings.AWS_BUCKET_NAME = "test-bucket"
-        mock_s3_client = Mock()
-        mock_boto3.client.return_value = mock_s3_client
-
+    def test_export_selected_themes_to_s3(self, s3_bucket):
+        """Test exporting selected themes to real MinIO"""
+        s3_client = get_s3_client()
+        
         # Create consultation, questions and selected themes
         consultation = ConsultationFactory(code="test-code")
 
@@ -37,22 +33,27 @@ class TestExportSelectedThemesToS3:
 
         # Verify export was called for two questions (only free text questions)
         assert questions_exported == 2
-        assert mock_s3_client.put_object.call_count == 2
-
-        # Verify correct S3 paths were used
-        calls = mock_s3_client.put_object.call_args_list
-        assert any("question_part_1/themes.csv" in call.kwargs["Key"] for call in calls)
-        assert any("question_part_3/themes.csv" in call.kwargs["Key"] for call in calls)
-
+        
+        # Verify files were actually uploaded to MinIO
+        response = s3_client.list_objects_v2(Bucket=s3_bucket, Prefix="app_data/consultations/test-code/inputs/")
+        assert 'Contents' in response
+        keys = [obj['Key'] for obj in response['Contents']]
+        
+        # Check both question files exist
+        assert any("question_part_1/themes.csv" in key for key in keys)
+        assert any("question_part_3/themes.csv" in key for key in keys)
+        
         # Verify uploaded themes.csv content for question 1
-        q1_call = next(c for c in calls if "question_part_1/themes.csv" in c.kwargs["Key"])
-        q1_csv_content = q1_call.kwargs["Body"]
+        q1_key = next(k for k in keys if "question_part_1/themes.csv" in k)
+        q1_obj = s3_client.get_object(Bucket=s3_bucket, Key=q1_key)
+        q1_csv_content = q1_obj['Body'].read().decode('utf-8')
         assert "Theme Name,Theme Description" in q1_csv_content
         assert "Theme 1A,Description 1A" in q1_csv_content
         assert "Theme 1B,Description 1B" in q1_csv_content
 
         # Verify uploaded themes.csv content for question 3
-        q3_call = next(c for c in calls if "question_part_3/themes.csv" in c.kwargs["Key"])
-        q3_csv_content = q3_call.kwargs["Body"]
+        q3_key = next(k for k in keys if "question_part_3/themes.csv" in k)
+        q3_obj = s3_client.get_object(Bucket=s3_bucket, Key=q3_key)
+        q3_csv_content = q3_obj['Body'].read().decode('utf-8')
         assert "Theme Name,Theme Description" in q3_csv_content
         assert "Theme 3A,Description 3A" in q3_csv_content

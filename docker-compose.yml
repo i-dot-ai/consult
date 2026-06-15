@@ -34,6 +34,27 @@ services:
     networks:
       - consult
 
+  # MinIO S3-compatible Object Storage
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    ports:
+      - "9000:9000"  # S3 API
+      - "9001:9001"  # Web Console
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin  # pragma: allowlist secret
+    command: server --console-address ":9001" /data
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    networks:
+      - consult
+
   # Django Backend
   backend:
     build:
@@ -54,6 +75,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     networks:
       - consult
@@ -80,6 +103,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  minio_data:
   frontend_node_modules:
 
 networks:

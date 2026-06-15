@@ -18,12 +18,12 @@ from factories import UserFactory
 @pytest.mark.django_db
 class TestImportConsultationFromS3:
     @patch("data_pipeline.sync.consultation_setup.get_queue")
-    @patch("data_pipeline.sync.consultation_setup.boto3")
+    @patch("data_pipeline.sync.consultation_setup.get_s3_client")
     @patch("data_pipeline.sync.consultation_setup.s3")
     @patch("data_pipeline.sync.consultation_setup.settings")
-    def test_import_consultation_from_s3(self, mock_settings, mock_s3, mock_boto3, mock_get_queue):
+    def test_import_consultation_from_s3(self, mock_settings, mock_s3, mock_get_s3_client, mock_get_queue):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
-        mock_boto3.client.return_value = Mock()
+        mock_get_s3_client.return_value = Mock()
         mock_queue = Mock()
         mock_get_queue.return_value = mock_queue
 
