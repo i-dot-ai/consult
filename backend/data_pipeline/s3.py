@@ -142,8 +142,6 @@ def get_consultation_folders() -> list[str]:
         if settings.ENVIRONMENT.upper() not in ["LOCAL", "TEST"]:
             params["ExpectedBucketOwner"] = settings.AWS_ACCOUNT_ID
 
-        logger.info("Params for s3 search are {params}", params=params)
-
         response = s3.list_objects_v2(
             **params,
         )
@@ -152,9 +150,6 @@ def get_consultation_folders() -> list[str]:
             return []
 
         s3_keys = [s3_object["Key"] for s3_object in response["Contents"]]
-
-        logger.info("S3 keys are {s3_keys}", s3_keys=s3_keys)
-
         s3_codes = set()
         pattern = r'app_data/consultations/([^/]+)/.+'
         for obj in s3_keys:
@@ -163,8 +158,6 @@ def get_consultation_folders() -> list[str]:
                 obj,
             ):
                 s3_codes.add(match.groups()[0])
-
-        logger.info("Stripped dirs are {s3_codes}", s3_codes=s3_codes)
         return list(s3_codes)
     except Exception:
         logger.exception("Failed to get S3 folders")
