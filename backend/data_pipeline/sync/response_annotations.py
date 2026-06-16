@@ -31,7 +31,6 @@ def load_selected_themes_from_s3(
     question_number: int,
     timestamp: str,
     bucket_name: Optional[str] = None,
-    s3_client=None,
 ) -> List[SelectedThemeInput]:
     """
     Load and validate selected themes for a single question from S3.
@@ -41,7 +40,6 @@ def load_selected_themes_from_s3(
         question_number: The question number (e.g., 1 for question_part_1)
         timestamp: The timestamp folder identifying the mapping run
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
-        s3_client: Optional boto3 S3 client (for testing)
 
     Returns:
         List of validated SelectedThemeInput objects
@@ -58,7 +56,7 @@ def load_selected_themes_from_s3(
 
     # Read and parse JSON file
     theme_data = s3.read_json(
-        bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
+        bucket_name=bucket_name_str, key=key, raise_if_missing=True
     )
 
     # Validate each theme using Pydantic
@@ -80,7 +78,6 @@ def load_sentiments_from_s3(
     question_number: int,
     timestamp: str,
     bucket_name: Optional[str] = None,
-    s3_client=None,
 ) -> List[SentimentInput]:
     """
     Load and validate sentiments for a single question from S3.
@@ -92,7 +89,6 @@ def load_sentiments_from_s3(
         question_number: The question number
         timestamp: The timestamp folder identifying the mapping run
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
-        s3_client: Optional boto3 S3 client (for testing)
 
     Returns:
         List of validated SentimentInput objects (empty if file doesn't exist)
@@ -105,7 +101,7 @@ def load_sentiments_from_s3(
 
     # Read JSONL file (raise_if_missing=False because sentiment is optional)
     sentiment_data = s3.read_jsonl(
-        bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=False
+        bucket_name=bucket_name_str, key=key, raise_if_missing=False
     )
 
     if not sentiment_data:
@@ -129,7 +125,6 @@ def load_detail_detections_from_s3(
     question_number: int,
     timestamp: str,
     bucket_name: Optional[str] = None,
-    s3_client=None,
 ) -> List[DetailDetectionInput]:
     """
     Load and validate detail detection data for a single question from S3.
@@ -139,7 +134,6 @@ def load_detail_detections_from_s3(
         question_number: The question number
         timestamp: The timestamp folder identifying the mapping run
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
-        s3_client: Optional boto3 S3 client (for testing)
 
     Returns:
         List of validated DetailDetectionInput objects
@@ -155,7 +149,7 @@ def load_detail_detections_from_s3(
 
     # Read JSONL file
     detail_data = s3.read_jsonl(
-        bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
+        bucket_name=bucket_name_str, key=key, raise_if_missing=True
     )
 
     # Validate each item using Pydantic
@@ -175,7 +169,6 @@ def load_theme_mappings_from_s3(
     question_number: int,
     timestamp: str,
     bucket_name: Optional[str] = None,
-    s3_client=None,
 ) -> List[ThemeMappingInput]:
     """
     Load and validate theme mappings for a single question from S3.
@@ -185,7 +178,6 @@ def load_theme_mappings_from_s3(
         question_number: The question number
         timestamp: The timestamp folder identifying the mapping run
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
-        s3_client: Optional boto3 S3 client (for testing)
 
     Returns:
         List of validated ThemeMappingInput objects
@@ -201,7 +193,7 @@ def load_theme_mappings_from_s3(
 
     # Read JSONL file
     mapping_data = s3.read_jsonl(
-        bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
+        bucket_name=bucket_name_str, key=key, raise_if_missing=True
     )
 
     # Validate each mapping using Pydantic
@@ -221,7 +213,6 @@ def load_annotation_batch(
     timestamp: str,
     question_numbers: Optional[List[int]] = None,
     bucket_name: Optional[str] = None,
-    s3_client=None,
 ) -> AnnotationBatch:
     """
     Load all response annotations for a consultation, organized by question.
@@ -231,7 +222,6 @@ def load_annotation_batch(
         timestamp: The timestamp folder identifying the mapping run
         question_numbers: Optional list of question numbers to load (defaults to all questions in consultation)
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
-        s3_client: Optional boto3 S3 client (for testing)
 
     Returns:
         AnnotationBatch with all annotations organized by question number
@@ -278,26 +268,26 @@ def load_annotation_batch(
     for question_number in question_numbers:
         # Load selected themes (required)
         themes = load_selected_themes_from_s3(
-            consultation_code, question_number, timestamp, bucket_name_str, s3_client
+            consultation_code, question_number, timestamp, bucket_name_str
         )
         selected_themes_by_question[question_number] = themes
 
         # Load sentiments (optional)
         sentiments = load_sentiments_from_s3(
-            consultation_code, question_number, timestamp, bucket_name_str, s3_client
+            consultation_code, question_number, timestamp, bucket_name_str
         )
         if sentiments:
             sentiments_by_question[question_number] = sentiments
 
         # Load detail detections (required)
         details = load_detail_detections_from_s3(
-            consultation_code, question_number, timestamp, bucket_name_str, s3_client
+            consultation_code, question_number, timestamp, bucket_name_str
         )
         details_by_question[question_number] = details
 
         # Load theme mappings (required)
         mappings = load_theme_mappings_from_s3(
-            consultation_code, question_number, timestamp, bucket_name_str, s3_client
+            consultation_code, question_number, timestamp, bucket_name_str
         )
         mappings_by_question[question_number] = mappings
 
