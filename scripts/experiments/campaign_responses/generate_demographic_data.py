@@ -6,10 +6,10 @@ import sys
 from pathlib import Path
 
 DEMOGRAPHIC_DATA = {
-    "In what capacity are you responding to this consultation": "As a member of the public",
-    "Do you consider yourself to have a health condition or a disability?": "Yes",
-    "response_source": "MS Forms",
-    "Where do you live?": "England",
+    "In what capacity are you responding to this consultation": ["As a member of the public"],
+    "Do you consider yourself to have a health condition or a disability?": ["Yes"],
+    "response_source": ["MS Forms"],
+    "Where do you live?": ["England"],
 }
 
 
