@@ -39,7 +39,13 @@ frontend: ## Run the frontend
 
 .PHONY: test-backend
 test-backend: ## Run the backend tests
+	@echo "Starting MinIO container..."
+	@docker compose up -d minio
+	@echo "Waiting for MinIO to be healthy..."
+	@timeout 60 bash -c 'until docker compose ps minio | grep -q "healthy"; do echo -n "."; sleep 2; done' || (echo "\nMinIO failed to start" && exit 1)
+	@echo "\nMinIO ready! Running tests..."
 	cd backend && PYTHONPATH=.. uv run pytest tests/ --random-order
+	@echo "Tests complete!"
 
 .PHONY: test-frontend
 test-frontend: ## Run the frontend tests
