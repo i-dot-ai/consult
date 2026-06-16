@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 
 import boto3
+import httpx
 import pandas as pd
 import sentry_sdk
 import urllib3
@@ -27,13 +28,18 @@ from themefinder.models import (
 
 http = urllib3.PoolManager()
 
+# The LLM gateway needs TLS verification disabled when reached from outside the
+# deployed AWS environment (e.g. a local run via run_find_themes_local.py).
+VERIFY_SSL = os.environ.get("ENVIRONMENT") == "deployed"
+
 client = OpenAI(
     base_url=os.environ["LLM_GATEWAY_URL"],
     api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+    http_client=httpx.Client(verify=VERIFY_SSL),
 )
 
 
-SLACK_WEBHOOK_URL = os.environ["SLACK_WEBHOOK_URL"]
+SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
 
 
 class ThemeNodeList(BaseModel):
@@ -240,28 +246,34 @@ async def agentic_theme_clustering(
     return all_themes_df
 
 
-async def process_consultation(consultation_dir: str, model_name: str) -> str:
+async def process_consultation(
+    consultation_dir: str, model_name: str, output_dir: str | None = None
+) -> str:
     """
     Process all questions in a consultation directory, generating theme analyses.
 
-    Creates a new directory structure for outputs:
-    - consultation_dir/
-      - outputs/
-        - YYYY-MM-DD_HH-MM-SS/
-          - question_dir_files
+    Writes one subdirectory per question under output_dir:
+    - output_dir/
+      - question_dir/
+        - clustered_themes.json
 
     Args:
         consultation_dir: Directory containing question subdirectories
         model_name: Language model instance for processing
+        output_dir: Directory to write per-question output subdirectories into.
+            Defaults to consultation_dir/outputs/sign_off/<YYYY-MM-DD>.
     """
     llm = OpenAILLM(
         model=model_name,
         request_kwargs={"temperature": 0},
         base_url=os.environ["LLM_GATEWAY_URL"],
         api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+        http_client=httpx.AsyncClient(verify=VERIFY_SSL),
     )
 
-    date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
+    if output_dir is None:
+        date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
+        output_dir = str(Path(consultation_dir) / "outputs" / "sign_off" / date)
 
     skipped_questions = []
     for question_dir in os.listdir(Path(consultation_dir) / "inputs"):
@@ -281,7 +293,7 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
             try:
                 # Create question-specific directory in the datestamped folder
                 question_output_dir = (
-                    Path(consultation_dir) / "outputs" / "sign_off" / date / question_dir
+                    Path(output_dir) / question_dir
                 )
                 if not question_output_dir.exists():
                     question_output_dir.mkdir(parents=True, exist_ok=True)
@@ -321,43 +333,44 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                         refined_themes_to_theme_node(row) for _, row in refined_themes_df.iterrows()
                     ]
 
-                rule_1_messages, rule_1_failed = rule_1_total_theme_number_less_than_70_slack(
-                    all_themes_list
-                )
+                if SLACK_WEBHOOK_URL:
+                    rule_1_messages, rule_1_failed = rule_1_total_theme_number_less_than_70_slack(
+                        all_themes_list
+                    )
 
-                rule_3_messages, rule_3_failed = (
-                    rule_3_semantic_similarity_must_be_less_than_90pc_slack(all_themes_list, client)
-                )
+                    rule_3_messages, rule_3_failed = (
+                        rule_3_semantic_similarity_must_be_less_than_90pc_slack(all_themes_list, client)
+                    )
 
-                msg = "failed ❌" if (rule_1_failed or rule_3_failed) else "passed ✅"
+                    msg = "failed ❌" if (rule_1_failed or rule_3_failed) else "passed ✅"
 
-                message_title_block = {
-                    "type": "header",
-                    "text": {
-                        "type": "plain_text",
+                    message_title_block = {
+                        "type": "header",
+                        "text": {
+                            "type": "plain_text",
+                            "text": f"theme set discovery rules {msg} for {consultation_dir}/{question_dir}",
+                        },
+                    }
+                    message = {
                         "text": f"theme set discovery rules {msg} for {consultation_dir}/{question_dir}",
-                    },
-                }
-                message = {
-                    "text": f"theme set discovery rules {msg} for {consultation_dir}/{question_dir}",
-                    "blocks": [message_title_block] + rule_1_messages + rule_3_messages,
-                }
-                response = http.request(
-                    "POST",
-                    SLACK_WEBHOOK_URL,
-                    body=json.dumps(message),
-                    headers={"Content-Type": "application/json"},
-                )
-                if response.status != 200:
-                    response_data = (
-                        response.data.decode("utf-8") if response.data else "No response data"
+                        "blocks": [message_title_block] + rule_1_messages + rule_3_messages,
+                    }
+                    response = http.request(
+                        "POST",
+                        SLACK_WEBHOOK_URL,
+                        body=json.dumps(message),
+                        headers={"Content-Type": "application/json"},
                     )
-                    error_message = (
-                        f"Slack webhook failed with status {response.status}: {response_data}"
-                    )
-                    logger.error(error_message)
-                else:
-                    logger.info(message)
+                    if response.status != 200:
+                        response_data = (
+                            response.data.decode("utf-8") if response.data else "No response data"
+                        )
+                        error_message = (
+                            f"Slack webhook failed with status {response.status}: {response_data}"
+                        )
+                        logger.error(error_message)
+                    else:
+                        logger.info(message)
 
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
                     f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
@@ -370,7 +383,7 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                 skipped_questions.append(question_dir)
     if skipped_questions:
         logger.warning("Skipped questions: %s", skipped_questions)
-    return str(Path(consultation_dir) / "outputs" / "sign_off" / date)
+    return output_dir
 
 
 if __name__ == "__main__":

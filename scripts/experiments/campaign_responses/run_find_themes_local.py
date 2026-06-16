@@ -6,7 +6,10 @@ import logging
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 repo_root = Path(__file__).parent.parent.parent.parent
+load_dotenv(repo_root / ".env")
 sys.path.insert(0, str(repo_root / "pipeline-sign-off"))
 sys.path.insert(0, str(repo_root.parent / "themefinder" / "src"))
 
@@ -18,16 +21,19 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-DEFAULT_MODEL = "gpt-4o"
+DEFAULT_MODEL = "gpt-4o-sweden"
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <consultation_dir> [model_name]")
-        print(f"  model_name defaults to {DEFAULT_MODEL}")
-        sys.exit(1)
+    import argparse
 
-    consultation_dir = sys.argv[1]
-    model_name = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_MODEL
+    parser = argparse.ArgumentParser(description="Run find_themes locally on a consultation directory.")
+    parser.add_argument("consultation_dir", help="Path to the consultation directory")
+    parser.add_argument("output_dir", help="Path to the output directory")
+    parser.add_argument("--model", default=DEFAULT_MODEL, help=f"Model name to use (default: {DEFAULT_MODEL})")
+    args = parser.parse_args()
 
-    output_dir = asyncio.run(process_consultation(consultation_dir, model_name))
+    consultation_dir = args.consultation_dir
+    model_name = args.model
+
+    output_dir = asyncio.run(process_consultation(consultation_dir, model_name, output_dir=args.output_dir))
     print(f"Output written to: {output_dir}")
