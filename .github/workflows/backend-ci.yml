@@ -1,13 +1,6 @@
 name: Backend CI
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "backend/**"
-      - "Makefile"
-      - ".github/workflows/backend-ci.yml"
   pull_request:
     branches:
       - main
@@ -16,6 +9,9 @@ on:
       - "Makefile"
       - ".github/workflows/backend-ci.yml"
   workflow_dispatch:
+  # Called by deploy-main as a gate before deploying. When called this way the
+  # path filters above do not apply, so the suite always runs in full.
+  workflow_call:
 
 jobs:
   test:

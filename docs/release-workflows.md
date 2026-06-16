@@ -1,19 +1,37 @@
 # Release Workflows
 
-There are two release workflows: `release-app` and `release-infra`. They are independent — application and infrastructure can be deployed separately.
+There are two release workflows: `release-app` and `release-infra`. They are independent — application and infrastructure can be deployed separately. On merges to `main` they are orchestrated by `deploy-main` (see [Auto-deploy on merge to main](#auto-deploy-on-merge-to-main)).
 
 ## Triggers
 
 | Event | Environment | Notes |
 |---|---|---|
 | Push to `release-ENV-**` tag | dev or preprod | e.g. `release-dev-1.0.0` |
-| Merge to `main` (via `workflow_run` on build) | preprod | Only runs if the build workflow succeeded; Filters for changes to relevant code ** |
-| GitHub Release published | prod | The standard prod release route |
+| Merge to `main` (via `deploy-main`) | preprod → prod | Runs the full CI suite, then deploys preprod, then prod only if preprod succeeds ** |
+| GitHub Release published | prod | Still available; deploys a specific tagged release to prod |
 | `workflow_dispatch` | dev / preprod / prod | Manual trigger; prod requires the tag to be a published GitHub Release |
 
-**Merges to main trigger both workflows, but each filters internally:
-* `release-app` always runs, but skips individual services whose git SHA matches what is already deployed — only services with code changes are built and redeployed.
+On merge to main, `deploy-main` calls each release workflow with an explicit `environment`. Each still filters internally:
+* `release-app` skips individual services whose git SHA matches what is already deployed, so only services with code changes are built and redeployed.
 * `release-infra` skips the entire deployment if neither `terraform/` nor `lambda/` has changed.
+
+## Auto-deploy on merge to main
+
+`deploy-main` (`.github/workflows/deploy-main.yml`) is the entrypoint for every push to `main`. It enforces that nothing reaches an environment until the full test suite passes, and that prod is only reached after preprod deploys cleanly:
+
+```
+push to main
+  ├─ backend-ci ─┐
+  ├─ frontend-ci ┼─ (all must pass)
+  └─ e2e-tests ──┘
+        └─ preprod: release-infra → release-app
+              └─ (success) prod: release-infra → release-app
+```
+
+* **Test gate**: `backend-ci`, `frontend-ci` and `e2e-tests` are invoked via `workflow_call`. When called this way their path filters do not apply, so each suite runs in full regardless of which files changed. If any fails, no deploy runs.
+* **Infra before app**: within each environment, `release-infra` runs before `release-app` so infrastructure prerequisites (new env vars, IAM permissions, Terraform-run migrations) are in place before the new images roll out.
+* **preprod gates prod**: `prod-infra` depends on `preprod-app` succeeding. A failed preprod deploy stops the pipeline before prod is touched.
+* **No overlapping prod deploys**: a `concurrency` group serialises runs so rapid successive merges don't race each other to prod.
 
 ## release-app
 
@@ -94,3 +112,29 @@ For automated triggers (GitHub Release, merge to main) both workflows start at t
 The standard route is to publish a GitHub Release on GitHub — this triggers both `release-app` and `release-infra` automatically.
 
 Manual (`workflow_dispatch`) deployment to prod is available as an emergency fallback but requires the tag input to reference a published GitHub Release. Arbitrary SHAs or branch names are rejected.
+
+## Rollback
+
+Because every merge to `main` auto-deploys to prod, rolling back means getting `main` back to a known-good state and letting the pipeline redeploy it. The per-service SHA filtering means only the services that actually changed are rebuilt and rolled back.
+
+### Preferred: revert the offending change
+
+Revert the bad commit on `main` and let it flow through the normal pipeline:
+
+1. Open a revert PR (`git revert <sha>`, or the "Revert" button on the merged PR).
+2. Merge it to `main`. `deploy-main` runs the full CI gate, then deploys preprod and prod just like any other merge.
+3. Confirm the Slack notification reports the expected SHA, and check `/api/health/`.
+
+This is the cleanest path because it keeps `main` and prod in sync. Any other rollback that does not also revert `main` is temporary: the next merge re-deploys the broken code, and the SHA-based filter treats the reverted-to state as "already deployed", so it will not redeploy on its own.
+
+### Emergency fast path: ECS task-definition rollback (no rebuild)
+
+When prod is actively broken and you cannot wait for CI plus a deploy, point the ECS service back at the previous task-definition revision. The previous image is almost always still in ECR (images are tagged by commit SHA):
+
+- In the AWS console: ECS, then the service, then **Update service**, select the prior task-definition revision, and force a new deployment.
+
+This is out of band: the image tag in SSM/Terraform still references the bad version, so follow up immediately with the revert above or the next merge will reintroduce it.
+
+### Database migrations
+
+Code rollbacks do **not** roll back database migrations. If the bad release applied a migration, check whether it is backwards-compatible with the version you are rolling back to. If it is not, you must also reverse the migration (or roll forward with a fix), because redeploying older app code against a newer schema can fail. Prefer backwards-compatible migrations to keep rollback safe.

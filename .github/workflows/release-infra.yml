@@ -6,11 +6,6 @@ on:
       - release-dev-**
       - release-preprod-**
 
-  workflow_run:
-    workflows: [build]
-    types: [completed]
-    branches: [main]
-
   release:
     types: [published]
 
@@ -24,6 +19,15 @@ on:
         required: true
         type: choice
         options: [dev, preprod, prod]
+
+  # Called by deploy-main to deploy a specific environment as part of the
+  # merge-to-main pipeline (preprod, then prod once preprod succeeds).
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: string
 
 jobs:
   set-vars:
@@ -79,10 +83,13 @@ jobs:
           INPUTS_ENVIRONMENT: ${{ inputs.environment }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
-          if [[ "${{ github.event_name }}" == "release" ]]; then
-            export ENVIRONMENT=prod
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          # An explicit environment input (from workflow_call or workflow_dispatch)
+          # always wins. A called workflow reports the caller's event_name/ref_name,
+          # so this must be checked before the branch-based rules below.
+          if [[ -n "$INPUTS_ENVIRONMENT" ]]; then
             export ENVIRONMENT=$INPUTS_ENVIRONMENT
+          elif [[ "${{ github.event_name }}" == "release" ]]; then
+            export ENVIRONMENT=prod
           elif [[ "$GITHUB_REF_NAME" == main ]]; then
             export ENVIRONMENT=preprod
           else
