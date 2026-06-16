@@ -11,6 +11,7 @@ from pathlib import Path
 
 
 MIN_TEXT_LENGTH = 20
+CHUNK_SIZE = 150
 
 
 def hash_text(text: str) -> str:
@@ -34,12 +35,46 @@ def normalise(text: str) -> str:
     return "\n".join(line.strip() for line in text.splitlines())
 
 
+def chunk_text(text: str) -> list[str]:
+    norm = normalise(text)
+    return [
+        norm[i : i + CHUNK_SIZE]
+        for i in range(0, len(norm), CHUNK_SIZE)
+        if len(norm[i : i + CHUNK_SIZE]) >= MIN_TEXT_LENGTH
+    ]
+
+
 def find_clusters(entries: list[dict]) -> list[list[dict]]:
-    groups: dict[str, list[dict]] = defaultdict(list)
+    # Union-Find: merge any two responses that share a 150-char chunk
+    entry_map = {str(e["themefinder_id"]): e for e in entries}
+    parent = {eid: eid for eid in entry_map}
+
+    def find(x: str) -> str:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(x: str, y: str) -> None:
+        px, py = find(x), find(y)
+        if px != py:
+            parent[px] = py
+
+    chunk_to_ids: dict[str, list[str]] = defaultdict(list)
     for entry in entries:
-        groups[hash_text(normalise(entry["text"]))].append(entry)
+        for chunk in chunk_text(entry["text"]):
+            chunk_to_ids[hash_text(chunk)].append(str(entry["themefinder_id"]))
+
+    for ids in chunk_to_ids.values():
+        for i in range(1, len(ids)):
+            union(ids[0], ids[i])
+
+    components: dict[str, list[dict]] = defaultdict(list)
+    for entry in entries:
+        components[find(str(entry["themefinder_id"]))].append(entry)
+
     return sorted(
-        [g for g in groups.values() if len(g) > 2],
+        [c for c in components.values() if len(c) > 2],
         key=len,
         reverse=True,
     )
@@ -87,7 +122,7 @@ def process_question(question_dir: Path, output_dir: Path) -> None:
 
     include_non_cluster = input("  Include non-cluster responses in output? [y/n]: ").strip().lower() == "y"
 
-    target = prompt_int("  How many cluster responses do you want in the output? ")
+    target = prompt_int("  How many cluster responses do you want in the output? ", min_val=0)
 
     # Cycle through the unique cluster responses to fill the target count
     expanded = [dict(chosen[i % len(chosen)]) for i in range(target)]
