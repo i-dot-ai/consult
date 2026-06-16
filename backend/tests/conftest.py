@@ -432,7 +432,7 @@ def minio_test_bucket(minio_client):
 
     bucket_name = settings.AWS_BUCKET_NAME
 
-    # Bucket is already created by get_s3_client() for TEST environment
+    # Bucket is already created by app startup in config.py for TEST environment
     # Just yield the name for tests to use
     yield bucket_name
 
