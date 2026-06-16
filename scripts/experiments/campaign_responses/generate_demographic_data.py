@@ -42,8 +42,11 @@ def generate_demographic_data(search_dir: Path, output_path: Path) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python generate_demographic_data.py <search_dir> <output.jsonl>")
-        sys.exit(1)
+    import argparse
 
-    generate_demographic_data(Path(sys.argv[1]), Path(sys.argv[2]))
+    parser = argparse.ArgumentParser(description="Generate demographic data JSONL from responses.jsonl files.")
+    parser.add_argument("search_dir", type=Path, help="Directory to search recursively for responses.jsonl files")
+    parser.add_argument("output", type=Path, help="Output JSONL file path")
+    args = parser.parse_args()
+
+    generate_demographic_data(args.search_dir, args.output)

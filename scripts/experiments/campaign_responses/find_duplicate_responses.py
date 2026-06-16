@@ -184,13 +184,15 @@ def prompt_question_selection(summaries: list[tuple[Path, list[list[dict]], int]
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print(f"Usage: {sys.argv[0]} <consultation_inputs_dir> <output_dir>")
-        print("  consultation_inputs_dir: path containing question_* subdirectories")
-        sys.exit(1)
+    import argparse
 
-    inputs_dir = Path(sys.argv[1])
-    output_dir = Path(sys.argv[2])
+    parser = argparse.ArgumentParser(description="Find duplicate response clusters and produce balanced output datasets.")
+    parser.add_argument("inputs_dir", type=Path, help="Directory containing question_* subdirectories")
+    parser.add_argument("output_dir", type=Path, help="Directory to write output datasets")
+    args = parser.parse_args()
+
+    inputs_dir = args.inputs_dir
+    output_dir = args.output_dir
 
     if not inputs_dir.exists():
         print(f"Error: {inputs_dir} does not exist.")
