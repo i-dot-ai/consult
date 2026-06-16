@@ -114,13 +114,16 @@ def get_consultation_folders() -> list[str]:
     """
     try:
         s3 = s3_utils.get_s3_client()
-        objects = s3.list_objects_v2(
+        response = s3.list_objects_v2(
             Bucket=settings.AWS_BUCKET_NAME,
             MaxKeys=200,
             Prefix='app_data/consultations/',
         )
 
-        s3_keys = [s3_object["Key"] for s3_object in objects["Contents"]]
+        if 'Contents' not in response:
+            return []
+
+        s3_keys = [s3_object["Key"] for s3_object in response["Contents"]]
 
         # Get unique consultation folders
         s3_codes = set()
