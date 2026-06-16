@@ -1,16 +1,16 @@
 import boto3
 from botocore.config import Config
 
-from settings.base import ENVIRONMENT, MINIO_ADDRESS, AWS_ACCESS_KEY, AWS_SECRET_KEY
+from django.conf import settings
 
 
 def get_s3_client():
-    if ENVIRONMENT.upper() in ["LOCAL"]:
+    if settings.ENVIRONMENT.upper() in ["LOCAL"]:
         s3_client = boto3.client(
             "s3",
-            endpoint_url=MINIO_ADDRESS,
-            aws_access_key_id=AWS_ACCESS_KEY,
-            aws_secret_access_key=AWS_SECRET_KEY,  # pragma: allowlist secret
+            endpoint_url=settings.MINIO_ADDRESS,
+            aws_access_key_id=settings.AWS_ACCESS_KEY,
+            aws_secret_access_key=settings.AWS_SECRET_KEY,  # pragma: allowlist secret
             config=Config(signature_version="s3v4")
         )
     else:
