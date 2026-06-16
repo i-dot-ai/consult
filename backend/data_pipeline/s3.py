@@ -2,7 +2,6 @@ import json
 import re
 from typing import Dict, List, Optional
 
-import boto3
 from botocore.exceptions import ClientError
 from django.conf import settings
 
@@ -28,7 +27,15 @@ def read_jsonl(
     """
     s3_client = s3_utils.get_s3_client()
     try:
-        response = s3_client.get_object(Bucket=bucket_name, Key=key)
+        params = {
+            "Bucket": bucket_name,
+            "Key": key,
+        }
+
+        if settings.ENVIRONMENT.upper() not in ["LOCAL", "TEST"]:
+            params["ExpectedBucketOwner"] = settings.AWS_ACCOUNT_ID
+
+        response = s3_client.get_object(**params)
     except ClientError as e:
         if not raise_if_missing and e.response["Error"]["Code"] == "NoSuchKey":
             logger.info("File not found (skipping): {key}", key=key)
@@ -57,7 +64,14 @@ def read_json(
     """
     s3_client = s3_utils.get_s3_client()
     try:
-        response = s3_client.get_object(Bucket=bucket_name, Key=key)
+        params = {
+            "Bucket": bucket_name,
+            "Key": key,
+        }
+        if settings.ENVIRONMENT.upper() not in ["LOCAL", "TEST"]:
+            params["ExpectedBucketOwner"] = settings.AWS_ACCOUNT_ID
+
+        response = s3_client.get_object(**params)
         data = json.loads(response["Body"].read())
         return data
     except ClientError as e:
@@ -78,24 +92,29 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
     """
     s3 = s3_utils.get_s3_client()
 
-    # Use list_objects_v2 with the client
+    params = {
+        "Bucket": bucket_name,
+        "Prefix": inputs_path,
+        "MaxKeys": 1000
+    }
+
+    if settings.ENVIRONMENT.upper() not in ["LOCAL", "TEST"]:
+        params["ExpectedBucketOwner"] = settings.AWS_ACCOUNT_ID
+
     response = s3.list_objects_v2(
-        Bucket=bucket_name,
-        Prefix=inputs_path,
-        MaxKeys=1000  # Adjust if needed
+        **params,
     )
 
-    # Extract keys from response, handle case where no objects exist
     if 'Contents' not in response:
         return []
 
     object_names_set = {s3_object["Key"] for s3_object in response["Contents"]}
-    # Get set of all subfolders
     subfolders = set()
+
     for path in object_names_set:
         folder = "/".join(path.split("/")[:-1]) + "/"
         subfolders.add(folder)
-    # Only the ones that are question_folders
+
     question_folders = [
         "/".join(name.split("/")[:-1]) + "/"
         for name in subfolders
@@ -114,10 +133,17 @@ def get_consultation_folders() -> list[str]:
     """
     try:
         s3 = s3_utils.get_s3_client()
+        params = {
+            "Bucket":settings.AWS_BUCKET_NAME,
+            "MaxKeys":200,
+            "Prefix":'app_data/consultations/',
+        }
+
+        if settings.ENVIRONMENT.upper() not in ["LOCAL", "TEST"]:
+            params["ExpectedBucketOwner"] = settings.AWS_ACCOUNT_ID
+
         response = s3.list_objects_v2(
-            Bucket=settings.AWS_BUCKET_NAME,
-            MaxKeys=200,
-            Prefix='app_data/consultations/',
+            **params,
         )
 
         if 'Contents' not in response:
@@ -125,7 +151,6 @@ def get_consultation_folders() -> list[str]:
 
         s3_keys = [s3_object["Key"] for s3_object in response["Contents"]]
 
-        # Get unique consultation folders
         s3_codes = set()
         pattern = r'app_data/consultations/([^/]+)/.+'
         for obj in s3_keys:
