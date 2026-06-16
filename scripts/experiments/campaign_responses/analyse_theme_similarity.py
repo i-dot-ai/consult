@@ -1,22 +1,27 @@
 """Analyse theme similarity between comparison datasets and two ground truth datasets.
 
-For each question, embeds themes from run_1 (or a specified run) using a text
-embedding model, then assigns each comparison theme to whichever ground truth
-group it is closest to via cosine similarity.
+For each question, embeds themes using a text embedding model, then assigns each
+comparison theme to whichever ground truth group it is closest to via cosine similarity.
 
 Expected directory structure:
-  <search_dir>/<dataset_name>/outputs/run_<n>/.../question_part_<N>/clustered_themes.json
+  <search_dir>/
+    <gt1_name>/.../question_part_<N>/clustered_themes.json
+    <gt2_name>/.../question_part_<N>/clustered_themes.json
+    <test_name>/<dataset_name>/.../question_part_<N>/clustered_themes.json
 """
 
 import argparse
 import json
-import math
 import os
 from collections import defaultdict
 from pathlib import Path
 
+import httpx
 import numpy as np
+from dotenv import load_dotenv
 from openai import OpenAI
+
+load_dotenv(Path.home() / "Code" / "consult" / ".env")
 
 EMBEDDING_MODEL = "text-embedding-3-large"
 CACHE_FILENAME = ".embeddings_cache.json"
@@ -25,7 +30,8 @@ CACHE_FILENAME = ".embeddings_cache.json"
 def make_client() -> OpenAI:
     return OpenAI(
         base_url=os.environ["LLM_GATEWAY_URL"],
-        api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+        api_key=os.environ["LITELLM_API_KEY"],
+        http_client=httpx.Client(verify=False),
     )
 
 
@@ -54,44 +60,58 @@ def max_similarity(embedding: list[float], group_embeddings: list[list[float]]) 
     return max(cosine_similarity(embedding, g) for g in group_embeddings)
 
 
-def analyse(search_dir: Path, gt1_name: str, gt2_name: str, run: int) -> None:
-    files = sorted(search_dir.glob(f"*/outputs/run_{run}/**/clustered_themes.json"))
-    if not files:
-        print(f"No clustered_themes.json files found for run_{run} under {search_dir}")
+def load_themes_by_question(root: Path, run: int) -> dict[str, list[dict]]:
+    """Return {question_name: [themes]} for all clustered_themes.json under root matching run_<n>."""
+    result: dict[str, list[dict]] = {}
+    for path in sorted(root.rglob("clustered_themes.json")):
+        if f"run_{run}" not in path.parts:
+            continue
+        result[path.parent.name] = load_themes(path)
+    return result
+
+
+def analyse(search_dir: Path, gt1_name: str, gt2_name: str, test_name: str, run: int) -> None:
+    gt1_by_question = load_themes_by_question(search_dir / gt1_name, run)
+    gt2_by_question = load_themes_by_question(search_dir / gt2_name, run)
+
+    test_dir = search_dir / test_name
+    comparison_datasets = {
+        d.name: load_themes_by_question(d, run)
+        for d in sorted(test_dir.iterdir())
+        if d.is_dir()
+    }
+
+    if not comparison_datasets:
+        print(f"No comparison datasets found under {test_dir}")
         return
 
-    # question -> dataset_name -> [theme dicts]
-    by_question: dict[str, dict[str, list[dict]]] = defaultdict(dict)
-    for path in files:
-        dataset = path.relative_to(search_dir).parts[0]
-        question = path.parent.name
-        by_question[question][dataset] = load_themes(path)
+    questions = sorted(gt1_by_question.keys() | gt2_by_question.keys())
 
     client = make_client()
     cache_path = search_dir / CACHE_FILENAME
     cache: dict[str, list[float]] = json.loads(cache_path.read_text()) if cache_path.exists() else {}
 
     try:
-        for question, datasets in sorted(by_question.items()):
-            if gt1_name not in datasets or gt2_name not in datasets:
-                print(f"\n{question}: ground truth dataset(s) missing, skipping.")
-                continue
-
-            comparison = {k: v for k, v in datasets.items() if k not in (gt1_name, gt2_name)}
-            if not comparison:
-                print(f"\n{question}: no comparison datasets found.")
+        for question in questions:
+            if question not in gt1_by_question or question not in gt2_by_question:
+                print(f"\n{question}: missing from one or both ground truth datasets, skipping.")
                 continue
 
             print(f"\n{'='*60}\n{question}\n{'='*60}")
 
             gt1_embeddings = fetch_embeddings(
-                [t["topic_description"] for t in datasets[gt1_name]], client, cache
+                [t["topic_description"] for t in gt1_by_question[question]], client, cache
             )
             gt2_embeddings = fetch_embeddings(
-                [t["topic_description"] for t in datasets[gt2_name]], client, cache
+                [t["topic_description"] for t in gt2_by_question[question]], client, cache
             )
 
-            for dataset_name, themes in sorted(comparison.items()):
+            for dataset_name, themes_by_question in sorted(comparison_datasets.items()):
+                if question not in themes_by_question:
+                    print(f"\n  {dataset_name}: question not found, skipping.")
+                    continue
+
+                themes = themes_by_question[question]
                 print(f"\n  {dataset_name}")
                 theme_texts = [t["topic_description"] for t in themes]
                 theme_embeddings = fetch_embeddings(theme_texts, client, cache)
@@ -116,10 +136,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Assign comparison themes to ground truth groups via embedding similarity."
     )
-    parser.add_argument("directory", type=Path, help="Directory containing dataset subdirectories")
-    parser.add_argument("ground_truth_1", help="Name of the first ground truth dataset")
-    parser.add_argument("ground_truth_2", help="Name of the second ground truth dataset")
+    parser.add_argument("directory", type=Path, help="Root directory containing gt and test subdirectories")
+    parser.add_argument("ground_truth_1", help="Name of the first ground truth directory")
+    parser.add_argument("ground_truth_2", help="Name of the second ground truth directory")
+    parser.add_argument("test_dir", help="Name of the directory containing comparison datasets")
     parser.add_argument("--run", type=int, default=1, help="Run number to use (default: 1)")
     args = parser.parse_args()
 
-    analyse(args.directory, args.ground_truth_1, args.ground_truth_2, args.run)
+    analyse(args.directory, args.ground_truth_1, args.ground_truth_2, args.test_dir, args.run)
