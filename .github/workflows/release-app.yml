@@ -103,7 +103,17 @@ jobs:
         run: |
           result=$(
             for service in $(echo $SERVICE | tr ',' ' '); do
-              tag=$(git log -1 --format="%H" -- ${service}/)
+              # backend and the pipelines embed themefinder + the root workspace
+              # lockfile, so their image content also changes when those change.
+              # Include them in the tag so a themefinder-only change still yields
+              # a new image tag and triggers a redeploy.
+              case "$service" in
+                backend|pipeline-mapping|pipeline-sign-off)
+                  paths="${service}/ themefinder/ pyproject.toml uv.lock" ;;
+                *)
+                  paths="${service}/" ;;
+              esac
+              tag=$(git log -1 --format="%H" -- $paths)
               printf '{"service":"%s","tag":"%s"}\n' "$service" "$tag"
             done | jq -sc '.'
           )
