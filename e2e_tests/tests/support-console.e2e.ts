@@ -145,6 +145,26 @@ test.describe("Support Console - Consultations", () => {
     assertAlphabeticalOrder(rows, true);
   });
 
+  test("initially sorted by date", async ({ page }) => {
+    const sortByDateButton = page.getByRole("button", { name: "Created At" });
+    await expect(sortByDateButton).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("date-column")).toHaveAttribute("aria-sort", "descending");
+  });
+
+  test("toggles date sort state when sort button is clicked", async ({ page }) => {
+    const sortByDateButton = page.getByRole("button", { name: "Created At" });
+
+    // Click once to reverse order
+    await sortByDateButton.click();
+    await expect(sortByDateButton).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("date-column")).toHaveAttribute("aria-sort", "ascending");
+
+    // Click once more to unset sorting
+    await sortByDateButton.click();
+    await expect(sortByDateButton).toHaveAttribute("aria-pressed", "false");
+    await expect(page.getByTestId("date-column")).toHaveAttribute("aria-sort", "none");
+  });
+
   test("consultations list shows creation dates", async ({ page }) => {
     // Check for created date column/field
     const createdHeader = page
