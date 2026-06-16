@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Locator } from "@playwright/test";
 import { createFixtureData, deleteFixtureData } from "./helpers";
 
 import {
@@ -118,6 +118,31 @@ test.describe("Support Console - Consultations", () => {
     await searchBox.fill("setup");
     await expect(page.getByRole("button", { name: "Test Consultation at Setup Stage" }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Test Consultation at Finalising Themes Stage" }).first()).not.toBeVisible();
+  });
+
+  test("sort by name button sorts by name alphabetically", async ({ page }) => {
+    const assertAlphabeticalOrder = async (rows: Locator[], reversed?: boolean) => {
+      for (let i=0; i<rows.length-1; i++) {
+        const currRowText = await rows.at(i)?.innerText();
+        const nextRowText = await rows.at(i+1)?.innerText();
+        expect(reversed
+          ? currRowText! > nextRowText!
+          : currRowText! < nextRowText!
+        ).toBeTruthy();
+      }
+    }
+
+    const sortByNameButton = page.getByRole("button", { name: "Name" });
+    await sortByNameButton.click();
+
+    // Rows ordered alphabetically now
+    let rows = await page.getByTestId("title").all();
+    assertAlphabeticalOrder(rows)
+
+    // Clicking again reverses order
+    await sortByNameButton.click();
+    rows = await page.getByTestId("title").all();
+    assertAlphabeticalOrder(rows, true);
   });
 
   test("consultations list shows creation dates", async ({ page }) => {
