@@ -1,6 +1,9 @@
-from unittest.mock import Mock, patch
+import json
+import warnings
+from unittest.mock import patch
 
 import pytest
+from django.conf import settings
 from django.db.models import Count
 
 from consultations.models import (
@@ -14,198 +17,235 @@ from data_pipeline.sync.consultation_setup import (
 )
 from factories import UserFactory
 
+logger = settings.LOGGER
+
 
 @pytest.mark.django_db
 class TestImportConsultationFromS3:
     @patch("data_pipeline.sync.consultation_setup.get_queue")
-    @patch("data_pipeline.sync.consultation_setup.boto3")
-    @patch("data_pipeline.sync.consultation_setup.s3")
-    @patch("data_pipeline.sync.consultation_setup.settings")
-    def test_import_consultation_from_s3(self, mock_settings, mock_s3, mock_boto3, mock_get_queue):
-        mock_settings.AWS_BUCKET_NAME = "test-bucket"
-        mock_boto3.client.return_value = Mock()
-        mock_queue = Mock()
-        mock_get_queue.return_value = mock_queue
+    def test_import_consultation_from_s3(self, mock_get_queue, minio_test_bucket, minio_client):
+        """
+        Test importing a complete consultation from S3 with multiple question types.
 
-        # Create test user
-        user = UserFactory()
+        Creates real S3 objects representing:
+        - Respondents with demographics
+        - Question 1: Free text only
+        - Question 2: Multi choice only
+        - Question 3: Hybrid (both free text and multi choice)
+        """
+        # Setup: Mock the RQ queue (out of scope for S3 testing)
+        mock_queue = mock_get_queue.return_value
 
-        # Mock respondents data
-        mock_respondents = [
-            {"themefinder_id": 1, "demographic_data": {"age": ["25-34"]}},
-            {"themefinder_id": 2, "demographic_data": {"region": ["North"]}},
-            {"themefinder_id": 3, "demographic_data": {}},
-            {"themefinder_id": 4, "demographic_data": {}},
-            {"themefinder_id": 5, "demographic_data": {}},
-            {"themefinder_id": 6, "demographic_data": {}},
-            {"themefinder_id": 7, "demographic_data": {}},
-            {"themefinder_id": 8, "demographic_data": {}},
-            {"themefinder_id": 9, "demographic_data": {}},
-            {"themefinder_id": 10, "demographic_data": {}},
-        ]
+        # Track objects we create for cleanup
+        created_keys = []
 
-        # Mock question folders
-        mock_question_folders = [
-            "app_data/consultations/test-code/inputs/question_part_1/",
-            "app_data/consultations/test-code/inputs/question_part_2/",
-            "app_data/consultations/test-code/inputs/question_part_3/",
-        ]
+        try:
+            # Create test user
+            user = UserFactory()
 
-        # Question 1: Free text only
-        mock_question_1 = {
-            "question_text": "What are your thoughts on this proposal?",
-            "has_free_text": True,
-            "multi_choice_options": [],
-        }
+            # Setup: Prepare test data
 
-        # Question 2: Multi choice only
-        mock_question_2 = {
-            "question_text": "Which option do you prefer?",
-            "has_free_text": False,
-            "multi_choice_options": ["Option A", "Option B", "Option C"],
-        }
+            # Respondents data
+            respondents = [
+                {"themefinder_id": 1, "demographic_data": {"age": ["25-34"]}},
+                {"themefinder_id": 2, "demographic_data": {"region": ["North"]}},
+                {"themefinder_id": 3, "demographic_data": {}},
+                {"themefinder_id": 4, "demographic_data": {}},
+                {"themefinder_id": 5, "demographic_data": {}},
+                {"themefinder_id": 6, "demographic_data": {}},
+                {"themefinder_id": 7, "demographic_data": {}},
+                {"themefinder_id": 8, "demographic_data": {}},
+                {"themefinder_id": 9, "demographic_data": {}},
+                {"themefinder_id": 10, "demographic_data": {}},
+            ]
 
-        # Question 3: Hybrid (both free text and multi choice)
-        mock_question_3 = {
-            "question_text": "Do you agree? Please explain.",
-            "has_free_text": True,
-            "multi_choice_options": ["Yes", "No", "Not sure"],
-        }
+            # Question 1: Free text only
+            question_1 = {
+                "question_text": "What are your thoughts on this proposal?",
+                "has_free_text": True,
+                "multi_choice_options": [],
+            }
 
-        # Mock responses for free text questions
-        mock_responses_q1 = [
-            {"themefinder_id": 1, "text": "I strongly support this proposal"},
-            {"themefinder_id": 2, "text": "I have some concerns about implementation"},
-        ]
+            # Question 2: Multi choice only
+            question_2 = {
+                "question_text": "Which option do you prefer?",
+                "has_free_text": False,
+                "multi_choice_options": ["Option A", "Option B", "Option C"],
+            }
 
-        mock_responses_q3 = [
-            {"themefinder_id": 1, "text": "Yes, I agree because it helps everyone"},
-            {"themefinder_id": 3, "text": "Not sure, need more information"},
-        ]
+            # Question 3: Hybrid (both free text and multi choice)
+            question_3 = {
+                "question_text": "Do you agree? Please explain.",
+                "has_free_text": True,
+                "multi_choice_options": ["Yes", "No", "Not sure"],
+            }
 
-        # Mock multi choice responses
-        mock_multi_choice_q2 = [
-            {"themefinder_id": 1, "options": ["Option A"]},
-            {"themefinder_id": 2, "options": ["Option B", "Option C"]},
-            {"themefinder_id": 3, "options": ["Option C"]},
-            {"themefinder_id": 4, "options": ["Option A"]},
-            {"themefinder_id": 5, "options": ["Option B"]},
-            {"themefinder_id": 6, "options": ["Option C"]},
-            {"themefinder_id": 7, "options": ["Option A"]},
-            {"themefinder_id": 8, "options": ["Option B"]},
-            {"themefinder_id": 9, "options": ["Option C"]},
-            {"themefinder_id": 10, "options": ["Option A"]},
-        ]
+            # Responses for free text questions
+            responses_q1 = [
+                {"themefinder_id": 1, "text": "I strongly support this proposal"},
+                {"themefinder_id": 2, "text": "I have some concerns about implementation"},
+            ]
 
-        mock_multi_choice_q3 = [
-            {"themefinder_id": 1, "options": ["Yes"]},
-            {"themefinder_id": 3, "options": ["Not sure"]},
-        ]
+            responses_q3 = [
+                {"themefinder_id": 1, "text": "Yes, I agree because it helps everyone"},
+                {"themefinder_id": 3, "text": "Not sure, need more information"},
+            ]
 
-        def mock_read_jsonl(bucket_name, key, s3_client=None, raise_if_missing=True):
-            if "respondents.jsonl" in key:
-                return mock_respondents
-            elif "question_part_1/responses.jsonl" in key:
-                return mock_responses_q1
-            elif "question_part_2/responses.jsonl" in key:
-                return []  # No free text responses for multi-choice only
-            elif "question_part_3/responses.jsonl" in key:
-                return mock_responses_q3
-            elif "question_part_1/multi_choice.jsonl" in key:
-                return []  # No multi choice for free text only
-            elif "question_part_2/multi_choice.jsonl" in key:
-                return mock_multi_choice_q2
-            elif "question_part_3/multi_choice.jsonl" in key:
-                return mock_multi_choice_q3
-            return []
+            # Multi choice responses
+            multi_choice_q2 = [
+                {"themefinder_id": 1, "options": ["Option A"]},
+                {"themefinder_id": 2, "options": ["Option B", "Option C"]},
+                {"themefinder_id": 3, "options": ["Option C"]},
+                {"themefinder_id": 4, "options": ["Option A"]},
+                {"themefinder_id": 5, "options": ["Option B"]},
+                {"themefinder_id": 6, "options": ["Option C"]},
+                {"themefinder_id": 7, "options": ["Option A"]},
+                {"themefinder_id": 8, "options": ["Option B"]},
+                {"themefinder_id": 9, "options": ["Option C"]},
+                {"themefinder_id": 10, "options": ["Option A"]},
+            ]
 
-        def mock_read_json(bucket_name, key, s3_client=None, raise_if_missing=True):
-            if "question_part_1/question.json" in key:
-                return mock_question_1
-            elif "question_part_2/question.json" in key:
-                return mock_question_2
-            elif "question_part_3/question.json" in key:
-                return mock_question_3
-            return None
+            multi_choice_q3 = [
+                {"themefinder_id": 1, "options": ["Yes"]},
+                {"themefinder_id": 3, "options": ["Not sure"]},
+            ]
 
-        mock_s3.read_jsonl.side_effect = mock_read_jsonl
-        mock_s3.read_json.side_effect = mock_read_json
-        mock_s3.get_question_folders.return_value = mock_question_folders
+            # Setup: Create S3 objects in MinIO
 
-        # Run the import with embeddings enabled
-        consultation_id = import_consultation_from_s3(
-            consultation_code="test-code",
-            consultation_title="Test Consultation",
-            user_id=user.id,
-            enqueue_embeddings=True,
-            batch_size=2,
-        )
+            # Create respondents.jsonl
+            key = "app_data/consultations/test-code/inputs/respondents.jsonl"
+            body = "\n".join([json.dumps(r) for r in respondents])
+            minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=body.encode())
+            created_keys.append(key)
 
-        # Verify consultation was created
-        consultation = Consultation.objects.get(id=consultation_id)
-        assert consultation.code == "test-code"
-        assert consultation.title == "Test Consultation"
-        assert user in consultation.users.all()
+            # Create question 1 files (free text only)
+            key = "app_data/consultations/test-code/inputs/question_part_1/question.json"
+            minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=json.dumps(question_1).encode())
+            created_keys.append(key)
 
-        # verify that the number of responses is much larger than the batch size=2
-        assert Respondent.objects.filter(consultation=consultation).count() == 10
+            key = "app_data/consultations/test-code/inputs/question_part_1/responses.jsonl"
+            body = "\n".join([json.dumps(r) for r in responses_q1])
+            minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=body.encode())
+            created_keys.append(key)
 
-        # Verify respondents were created with correct themefinder_ids
-        respondent_1 = Respondent.objects.get(consultation=consultation, themefinder_id=1)
-        respondent_2 = Respondent.objects.get(consultation=consultation, themefinder_id=2)
-        respondent_3 = Respondent.objects.get(consultation=consultation, themefinder_id=3)
+            key = "app_data/consultations/test-code/inputs/question_part_1/multi_choice.jsonl"
+            minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=b"")  # Empty file
+            created_keys.append(key)
 
-        # Verify questions were created with correct types
-        question_1 = Question.objects.get(consultation=consultation, number=1)
-        assert question_1.text == "What are your thoughts on this proposal?"
-        assert question_1.has_free_text is True
-        assert question_1.has_multiple_choice is False
+            # Create question 2 files (multi choice only)
+            key = "app_data/consultations/test-code/inputs/question_part_2/question.json"
+            minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=json.dumps(question_2).encode())
+            created_keys.append(key)
 
-        question_2 = Question.objects.get(consultation=consultation, number=2)
-        assert question_2.text == "Which option do you prefer?"
-        assert question_2.has_free_text is False
-        assert question_2.has_multiple_choice is True
+            key = "app_data/consultations/test-code/inputs/question_part_2/responses.jsonl"
+            minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=b"")  # Empty file
+            created_keys.append(key)
 
-        question_3 = Question.objects.get(consultation=consultation, number=3)
-        assert question_3.text == "Do you agree? Please explain."
-        assert question_3.has_free_text is True
-        assert question_3.has_multiple_choice is True
+            key = "app_data/consultations/test-code/inputs/question_part_2/multi_choice.jsonl"
+            body = "\n".join([json.dumps(r) for r in multi_choice_q2])
+            minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=body.encode())
+            created_keys.append(key)
 
-        # Verify responses for free text question
-        q1_response_1 = Response.objects.get(question=question_1, respondent=respondent_1)
-        assert q1_response_1.free_text == "I strongly support this proposal"
+            # Create question 3 files (hybrid)
+            key = "app_data/consultations/test-code/inputs/question_part_3/question.json"
+            minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=json.dumps(question_3).encode())
+            created_keys.append(key)
 
-        q1_response_2 = Response.objects.get(question=question_1, respondent=respondent_2)
-        assert q1_response_2.free_text == "I have some concerns about implementation"
+            key = "app_data/consultations/test-code/inputs/question_part_3/responses.jsonl"
+            body = "\n".join([json.dumps(r) for r in responses_q3])
+            minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=body.encode())
+            created_keys.append(key)
 
-        # verify that q2_response_1 has 10 responses
-        assert Response.objects.filter(question=question_2).count() == 10
+            key = "app_data/consultations/test-code/inputs/question_part_3/multi_choice.jsonl"
+            body = "\n".join([json.dumps(r) for r in multi_choice_q3])
+            minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=body.encode())
+            created_keys.append(key)
 
-        # verify that all 10 response to q2_response_1 have at least one multi choice answer
-        assert (
-            Response.objects.filter(question=question_2)
-            .values("respondent")
-            .annotate(count=Count("chosen_options"))
-            .filter(count__gt=0)
-            .count()
-            == 10
-        )
+            # Execute: Run the import with embeddings enabled
+            consultation_id = import_consultation_from_s3(
+                consultation_code="test-code",
+                consultation_title="Test Consultation",
+                user_id=user.id,
+                enqueue_embeddings=True,
+                batch_size=2,
+            )
 
-        # Verify responses for multiple choice question
-        q2_response_1 = Response.objects.get(question=question_2, respondent=respondent_1)
-        assert [opt.text for opt in q2_response_1.chosen_options.all()] == ["Option A"]
+            # Verify: Check consultation was created correctly
+            consultation = Consultation.objects.get(id=consultation_id)
+            assert consultation.code == "test-code"
+            assert consultation.title == "Test Consultation"
+            assert user in consultation.users.all()
 
-        q2_response_2 = Response.objects.get(question=question_2, respondent=respondent_2)
-        assert {opt.text for opt in q2_response_2.chosen_options.all()} == {"Option B", "Option C"}
+            # Verify that the number of responses is much larger than the batch size=2
+            assert Respondent.objects.filter(consultation=consultation).count() == 10
 
-        # Verify responses for hybrid question
-        q3_response_1 = Response.objects.get(question=question_3, respondent=respondent_1)
-        assert q3_response_1.free_text == "Yes, I agree because it helps everyone"
-        assert [opt.text for opt in q3_response_1.chosen_options.all()] == ["Yes"]
+            # Verify respondents were created with correct themefinder_ids
+            respondent_1 = Respondent.objects.get(consultation=consultation, themefinder_id=1)
+            respondent_2 = Respondent.objects.get(consultation=consultation, themefinder_id=2)
+            respondent_3 = Respondent.objects.get(consultation=consultation, themefinder_id=3)
 
-        q3_response_2 = Response.objects.get(question=question_3, respondent=respondent_3)
-        assert q3_response_2.free_text == "Not sure, need more information"
-        assert [opt.text for opt in q3_response_2.chosen_options.all()] == ["Not sure"]
+            # Verify questions were created with correct types
+            question_1_db = Question.objects.get(consultation=consultation, number=1)
+            assert question_1_db.text == "What are your thoughts on this proposal?"
+            assert question_1_db.has_free_text is True
+            assert question_1_db.has_multiple_choice is False
 
-        # Verify embedding jobs were enqueued for free text questions only
-        assert mock_queue.enqueue.call_count == 2
+            question_2_db = Question.objects.get(consultation=consultation, number=2)
+            assert question_2_db.text == "Which option do you prefer?"
+            assert question_2_db.has_free_text is False
+            assert question_2_db.has_multiple_choice is True
+
+            question_3_db = Question.objects.get(consultation=consultation, number=3)
+            assert question_3_db.text == "Do you agree? Please explain."
+            assert question_3_db.has_free_text is True
+            assert question_3_db.has_multiple_choice is True
+
+            # Verify responses for free text question
+            q1_response_1 = Response.objects.get(question=question_1_db, respondent=respondent_1)
+            assert q1_response_1.free_text == "I strongly support this proposal"
+
+            q1_response_2 = Response.objects.get(question=question_1_db, respondent=respondent_2)
+            assert q1_response_2.free_text == "I have some concerns about implementation"
+
+            # Verify that q2 has 10 responses
+            assert Response.objects.filter(question=question_2_db).count() == 10
+
+            # Verify that all 10 responses to q2 have at least one multi choice answer
+            assert (
+                Response.objects.filter(question=question_2_db)
+                .values("respondent")
+                .annotate(count=Count("chosen_options"))
+                .filter(count__gt=0)
+                .count()
+                == 10
+            )
+
+            # Verify responses for multiple choice question
+            q2_response_1 = Response.objects.get(question=question_2_db, respondent=respondent_1)
+            assert [opt.text for opt in q2_response_1.chosen_options.all()] == ["Option A"]
+
+            q2_response_2 = Response.objects.get(question=question_2_db, respondent=respondent_2)
+            assert {opt.text for opt in q2_response_2.chosen_options.all()} == {"Option B", "Option C"}
+
+            # Verify responses for hybrid question
+            q3_response_1 = Response.objects.get(question=question_3_db, respondent=respondent_1)
+            assert q3_response_1.free_text == "Yes, I agree because it helps everyone"
+            assert [opt.text for opt in q3_response_1.chosen_options.all()] == ["Yes"]
+
+            q3_response_2 = Response.objects.get(question=question_3_db, respondent=respondent_3)
+            assert q3_response_2.free_text == "Not sure, need more information"
+            assert [opt.text for opt in q3_response_2.chosen_options.all()] == ["Not sure"]
+
+            # Verify embedding jobs were enqueued for free text questions only
+            assert mock_queue.enqueue.call_count == 2
+
+        finally:
+            # Cleanup: Delete all objects we created
+            for key in created_keys:
+                try:
+                    minio_client.delete_object(
+                        Bucket=minio_test_bucket,
+                        Key=key
+                    )
+                except Exception as e:
+                    logger.warning("Failed to cleanup object {key}: {e}", key=key, e=e)
