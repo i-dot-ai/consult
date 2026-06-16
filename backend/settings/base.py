@@ -15,7 +15,9 @@ import sys
 from datetime import timedelta
 from pathlib import Path
 
+import boto3
 import environ
+from botocore.config import Config
 from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
 from i_dot_ai_utilities.logging.types.enrichment_types import ExecutionEnvironmentType
 from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
@@ -32,6 +34,9 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
 ENVIRONMENT = env("ENVIRONMENT")
 AWS_ACCOUNT_ID = env("AWS_ACCOUNT_ID", default=None)
+MINIO_ADDRESS = env.str("MINIO_ENDPOINT", default=None)
+AWS_ACCESS_KEY = env.str("MINIO_ACCESS_KEY", default=None)
+AWS_SECRET_KEY = env.str("MINIO_SECRET_KEY", default=None)
 
 DOMAIN_NAME = env("DOMAIN_NAME", default="0.0.0.0")  # nosec
 
