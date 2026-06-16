@@ -420,7 +420,7 @@ def minio_test_bucket(minio_client):
     Function-scoped fixture that ensures the test bucket exists.
 
     The bucket name comes from settings.AWS_BUCKET_NAME (loaded from .env.test).
-    The bucket is automatically created by get_s3_client() if it doesn't exist,
+    The bucket is automatically created by app startup in config.py if it doesn't exist,
     so this fixture just yields the bucket name.
 
     Note: Individual tests are responsible for creating and cleaning up their

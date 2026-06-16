@@ -1,5 +1,3 @@
-import warnings
-
 import pytest
 from django.conf import settings
 
