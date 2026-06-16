@@ -3,6 +3,7 @@ import json
 import boto3
 import pytest
 import yaml
+from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django.test import RequestFactory
 from moto import mock_aws
@@ -564,10 +565,10 @@ def embedded_responses():
 def minio_client():
     """
     Session-scoped MinIO S3 client for tests.
-    
+
     Provides a boto3 S3 client configured to connect to MinIO (via get_s3_client).
     The client is created once per test session and reused across all tests.
-    
+
     Returns:
         boto3.client: S3 client configured for MinIO endpoint
     """
@@ -580,23 +581,22 @@ def minio_client():
 def minio_test_bucket(minio_client):
     """
     Function-scoped fixture that ensures the test bucket exists.
-    
+
     The bucket name comes from settings.AWS_BUCKET_NAME (loaded from .env.test).
     The bucket is automatically created by get_s3_client() if it doesn't exist,
     so this fixture just yields the bucket name.
-    
+
     Note: Individual tests are responsible for creating and cleaning up their
     own S3 objects. This fixture only ensures the bucket exists.
-    
+
     Yields:
         str: The name of the test bucket (from settings.AWS_BUCKET_NAME)
     """
-    from django.conf import settings
-    
+
     bucket_name = settings.AWS_BUCKET_NAME
-    
+
     # Bucket is already created by get_s3_client() for TEST environment
     # Just yield the name for tests to use
     yield bucket_name
-    
+
     # Note: No cleanup here - tests handle their own object cleanup
