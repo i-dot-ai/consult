@@ -34,13 +34,14 @@ services:
     networks:
       - consult
     volumes:
-      - minio_data:/var/lib/minio/data:Z
+      - minio_data:/data
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "mc", "ready", "local" ]
-      retries: 12
-      start_period: 60s
+      test: ["CMD", "curl", "-f", "http://localhost:9100/minio/health/live"]
       interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
 
   # Redis Cache
   redis:
