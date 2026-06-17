@@ -21,13 +21,13 @@ We will move themefinder into consult as a [uv workspace](https://docs.astral.sh
 1. **Single workspace, four packages.** `consult/` becomes a uv workspace whose members are `backend/`, `themefinder/`, `pipeline-sign-off/`, and `pipeline-mapping/`. A single root `pyproject.toml` declares the workspace; a single root `uv.lock` resolves dependencies for all four members together.
 2. **ThemeFinder stays publishable.** Its `pyproject.toml` is preserved unchanged so `pip install themefinder` continues to work for external users. Internal consumers reference it through `[tool.uv.sources] themefinder = { workspace = true }`, which uv installs editable.
 3. **Pipelines become workspace members.** Today both pipelines pull their dependency set transitively through `themefinder>=0.8.2`. After migration, each pipeline's `pyproject.toml` lists its dependencies explicitly, and its Dockerfile is rewritten as a multi-stage uv build mirroring `backend/Dockerfile`.
-4. **Public mirror via subtree sync.** The public `i-dot-ai/themefinder` repo is preserved as a published mirror. A GitHub Actions workflow in consult runs `git subtree split --prefix=themefinder` and force-pushes to the public repo on every change to `themefinder/**`. The public repo retains `deploy-pypi.yml` and `deploy-docs.yml`; its tests, evals, and pre-commit are deleted because those checks now run inside consult.
+4. **PyPI publishing moves into consult; the public repo is archived.** ThemeFinder continues to be published to PyPI, but from consult: a release workflow here builds and publishes the `themefinder/` package on a version bump. The public `i-dot-ai/themefinder` repo is archived (made read-only) with a redirect notice in its README pointing users to consult for source, issues, and releases. Existing PyPI release tags on the public repo remain valid; new releases are cut from consult.
 
 ### Alternatives considered
 
 - **Keep the pipelines on `pip install -r requirements.txt`.** Rejected: leaves two dependency-management tools coexisting in one monorepo and pipeline dependencies unlocked.
-- **Git subtree import (preserving themefinder history inside consult).** Rejected: the histories don't share roots, the import would balloon consult's history, and PyPI release tags can stay attached to the public-repo commits regardless. Subtree is used only for the outbound sync.
-- **Archive the public themefinder repo entirely.** Rejected: external users install from PyPI and may want to read source or file issues. Keeping a synced mirror is cheap.
+- **Git subtree import (preserving themefinder history inside consult).** Rejected: the histories don't share roots, the import would balloon consult's history, and PyPI release tags can stay attached to the public-repo commits regardless.
+- **Keep the public repo as a live mirror via subtree-split sync.** Rejected: it requires a force-push workflow and a perpetually-rewritten public history to maintain, for little benefit once consult is the source of truth and PyPI serves external users directly. Archiving with a redirect notice is simpler and the source remains readable.
 
 ## Consequences
 
@@ -42,9 +42,9 @@ We will move themefinder into consult as a [uv workspace](https://docs.astral.sh
 
 - **The migration PR is unavoidably large and atomic.** `build-gh.yml` builds four Docker images from repo-root context on every push, so the workspace wiring, all four Dockerfiles, the Makefile, and the CI workflows must land together.
 - **Editable installs require runtime source.** uv writes a `.pth` file pointing at `themefinder/src/`, so all three Python images must copy `themefinder/src/` and `themefinder/pyproject.toml` into their **runtime** stage, not just the build stage.
-- **Public repo history is rewritten on every sync.** `git subtree split` followed by `git push --force` produces a new linear history each time. Existing PyPI release tags remain attached to their commits, but new releases land on the rewritten history.
-- **PyPI release gains a step.** A version bump must merge to consult main, propagate via the sync workflow, and then a release tag is cut on the public repo to fire `deploy-pypi.yml`.
+- **External contributions reroute to consult.** The public repo becomes archived/read-only, so issues and PRs can no longer be filed against the familiar `themefinder` repo and must go to consult instead.
+- **PyPI release moves to consult.** A version bump to `themefinder/` merges to consult main, and a release workflow here publishes to PyPI directly — no separate release in the public repo.
 
 ### Neutral
 
-- **External users are unaffected.** PyPI installs, README links, and existing release tags continue to work. Issues and PRs against the public repo are redirected to consult.
+- **External users are largely unaffected.** PyPI installs and existing release tags continue to work. The archived public repo stays readable with a redirect notice; new issues and PRs go to consult.
