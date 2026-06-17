@@ -4,10 +4,10 @@ import os
 from dataclasses import dataclass
 from typing import Any, Optional
 
-import openai
 import pandas as pd
 import tiktoken
 from pydantic import BaseModel, ValidationError
+from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 from tenacity import (
     before,
     before_sleep_log,
@@ -255,10 +255,12 @@ async def call_llm(
                     if isinstance(all_results, dict)
                     else all_results.responses
                 )
-            except (openai.BadRequestError, ValueError) as e:
-                logger.warning(e)
-                return [], batch_prompt.response_ids
-            except ValidationError as e:
+            except (
+                ModelHTTPError,
+                UnexpectedModelBehavior,
+                ValueError,
+                ValidationError,
+            ) as e:
                 logger.warning(e)
                 return [], batch_prompt.response_ids
 
@@ -342,7 +344,12 @@ def calculate_string_token_length(input_text: str, model: str = None) -> int:
     """
     # Use the MODEL_NAME env var if no model is provided; otherwise default to "gpt-4o"
     model = model or os.environ.get("MODEL_NAME", "gpt-4o")
-    tokenizer_encoding = tiktoken.encoding_for_model(model)
+    try:
+        tokenizer_encoding = tiktoken.encoding_for_model(model)
+    except KeyError:
+        # Non-OpenAI model names are unknown to tiktoken. Token counting here is
+        # only an approximate batching heuristic, so a default encoding is fine.
+        tokenizer_encoding = tiktoken.get_encoding("o200k_base")
     number_of_tokens = len(tokenizer_encoding.encode(input_text))
     return number_of_tokens
 

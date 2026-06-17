@@ -32,6 +32,7 @@ dependencies = [
     "cryptography>=46.0.7",
     "tenacity>=8.0.0",
     "tiktoken>=0.5.0",
+    "pydantic-ai-slim[openai,anthropic,google]>=1.0.0",
 ]
 
 [project.optional-dependencies]
