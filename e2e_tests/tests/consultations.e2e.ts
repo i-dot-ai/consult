@@ -1,9 +1,6 @@
 import { test, expect } from "@playwright/test";
-import {
-  createFixtureData,
-  deleteFixtureData,
-  getFirstConsultationLink,
-} from "./helpers";
+import { CleanupManager, createFixtureData } from "./helpers";
+import { getConsultationId, getFirstConsultationLink } from "./navigation";
 import {
   openQuestion,
   setupConsultation,
@@ -12,12 +9,14 @@ import {
 import type { FixtureReference } from "../fixtures";
 
 test.describe("Consultations - List Page", () => {
+  const cleanupManager = new CleanupManager();
   let testData: FixtureReference = {};
 
   test.beforeAll(async ({ request }) => {
     testData = await createFixtureData(request, {
       consultations: [setupConsultation, signOffConsultation],
     });
+    cleanupManager.add(testData);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -64,11 +63,12 @@ test.describe("Consultations - List Page", () => {
   });
 
   test.afterAll(async () => {
-    await deleteFixtureData(testData);
+    await cleanupManager.cleanup();
   });
 });
 
 test.describe("Consultations - Detail/Dashboard Page", () => {
+  const cleanupManager = new CleanupManager();
   let testData: FixtureReference = {};
   let consultationId: string;
 
@@ -76,6 +76,7 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
     testData = await createFixtureData(request, {
       consultations: [setupConsultation],
     });
+    cleanupManager.add(testData);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -87,7 +88,7 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
     const result = await getFirstConsultationLink(page);
     expect(result).toBeTruthy();
 
-    consultationId = result!.href.match(/\/consultations\/([^/]+)/)?.[1]!;
+    consultationId = getConsultationId(result!.href)!;
     await result!.link.click();
     await page.waitForLoadState("networkidle");
   });
@@ -140,11 +141,12 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
   });
 
   test.afterAll(async () => {
-    await deleteFixtureData(testData);
+    await cleanupManager.cleanup();
   });
 });
 
 test.describe("Consultations - Evaluation Page", () => {
+  const cleanupManager = new CleanupManager();
   let consultationId: string;
   let testData: FixtureReference = {};
 
@@ -152,6 +154,7 @@ test.describe("Consultations - Evaluation Page", () => {
     testData = await createFixtureData(request, {
       consultations: [setupConsultation],
     });
+    cleanupManager.add(testData);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -162,7 +165,7 @@ test.describe("Consultations - Evaluation Page", () => {
     // Get first consultation
     const result = await getFirstConsultationLink(page);
     expect(result).toBeTruthy();
-    consultationId = result!.href.match(/\/consultations\/([^/]+)/)?.[1]!;
+    consultationId = getConsultationId(result!.href)!;
 
     // Navigate directly to evaluation page
     await page.goto(`/evaluations/${consultationId}/questions`);
@@ -212,6 +215,6 @@ test.describe("Consultations - Evaluation Page", () => {
   });
 
   test.afterAll(async () => {
-    await deleteFixtureData(testData);
+    await cleanupManager.cleanup();
   });
 });

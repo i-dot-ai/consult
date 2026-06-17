@@ -456,6 +456,7 @@
             <TextInput
               variant="search"
               id="search-input"
+              testId="responses-search-input"
               label="Search"
               placeholder="Search responses..."
               hideLabel={true}

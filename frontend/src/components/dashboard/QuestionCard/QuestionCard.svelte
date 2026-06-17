@@ -45,6 +45,8 @@
     subtext = "",
     tag,
   }: Props = $props();
+
+  let favourited = $derived($favStore.includes(question.id));
 </script>
 
 <div
@@ -198,15 +200,21 @@
                   onkeypress={(e) => e.stopPropagation()}
                   onclick={(e) => e.stopPropagation()}
                 >
+                  <!-- highlighted -> aria-pressed for the favourite toggle;
+                       "none" keeps that wiring from changing the star's look. -->
                   <Button
                     testId="favourite-button-{question.id}"
                     variant="ghost"
+                    highlighted={favourited}
+                    highlightVariant="none"
+                    ariaLabel={favourited
+                      ? "Remove question from favourites"
+                      : "Add question to favourites"}
                     handleClick={(e: MouseEvent) => {
                       e.stopPropagation();
                       favStore.toggleFav(question.id || "");
                     }}
                   >
-                    {@const favourited = $favStore.includes(question.id)}
                     <MaterialIcon
                       size="1.3rem"
                       color={favourited ? "fill-yellow-500" : "fill-gray-500"}

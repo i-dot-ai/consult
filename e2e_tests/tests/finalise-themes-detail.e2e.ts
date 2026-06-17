@@ -1,12 +1,15 @@
 import { test, expect, Page } from "@playwright/test";
 import {
+  CleanupManager,
   createFixtureData,
-  deleteFixtureData,
 } from "./helpers";
+import { gotoFinaliseThemesList } from "./navigation";
 import { signOffConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
 
 test.describe.configure({ mode: "serial" });
+
+const cleanupManager = new CleanupManager();
 
 async function createTheme(page: Page, title: string, description: string) {
   const createThemeButton = page.getByRole("button", { name: "Add Custom Theme" });
@@ -41,28 +44,24 @@ test.describe("Finalise Themes - Detail Page", () => {
     testData = await createFixtureData(request, {
       consultations: [signOffConsultation],
     });
+    cleanupManager.add(testData);
 
-    // Navigate to consultations to find a consultation
-    await page.goto("/consultations");
-    await page.waitForLoadState("networkidle");
- 
-    await page.evaluate(() => localStorage.setItem("onboardingComplete-finalising-themes-archive", "true"));
-    await page.evaluate(() => localStorage.setItem("onboardingComplete-finalising-themes", "true"));
+    // Navigate from the consultations list into the finalise themes list page.
+    await gotoFinaliseThemesList(page, signOffConsultation.title);
 
-    // Get the test consultation at sign off stage
-    // Navigate to finalise themes page to find questions
-    const finaliseThemesLink = page.getByTestId(`Finalise Themes for ${signOffConsultation.title}`);
-    await finaliseThemesLink.first().click();
-    await page.waitForLoadState("networkidle");
+    // Only free-text questions have a detail page; target that card by its text
+    // rather than relying on fixture order.
+    const freeTextQuestion = signOffConsultation.questions!.find(
+      (question) => question.has_free_text,
+    )!;
+    const questionCard = page
+      .getByTestId("question-card")
+      .filter({ hasText: freeTextQuestion.text });
 
-    // Get the first question and navigate to finalise themes detail
-    await expect(page.getByTestId("question-card")).toHaveCount(3);
-    const firstQuestionButton = page.getByTestId("question-card").first();
-
-    await expect(firstQuestionButton).toBeVisible();
+    await expect(questionCard).toBeVisible();
 
     // Navigate to question page to find themes to finalise
-    await firstQuestionButton.click();
+    await questionCard.click();
     await page.waitForLoadState("networkidle");
 
     // Remove existing selected themes in case some are left
@@ -273,6 +272,6 @@ test.describe("Finalise Themes - Detail Page", () => {
   })
 
   test.afterEach(async () => {
-    await deleteFixtureData(testData);
+    await cleanupManager.cleanup();
   });
 });
