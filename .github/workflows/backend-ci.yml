@@ -34,7 +34,7 @@ jobs:
 
       - name: Start services with docker compose
         run: |
-          docker compose up -d postgres redis
+          docker compose up -d postgres redis minio
           docker compose exec -T postgres pg_isready -U postgres || (sleep 5 && docker compose exec -T postgres pg_isready -U postgres) || (sleep 10 && docker compose exec -T postgres pg_isready -U postgres)
 
       - name: install uv
