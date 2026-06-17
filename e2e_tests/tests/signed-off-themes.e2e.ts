@@ -32,11 +32,11 @@ test.describe("Signed Off Themes", () => {
     await expect(page.getByTestId("question-card")).toHaveCount(3);
   });
 
-  for (const [index, expectedThemes] of [
+  [
     [0, { count: 2, names: ["Quality Standards", "Consumer Protection"] }],
     [1, { count: 2, names: ["Industry Impact", "Market Competition"] }],
     [2, { count: 3, names: ["Implementation Timeline", "Compliance Costs", "Regional Variations"] }],
-  ] as const) {
+  ].forEach(([index, expectedThemes]) => {
     test(`should display signed off pill for question ${index + 1}`, async ({ page }) => {
       await page.goto(
         `/consultations/${consultationId}/finalising-themes/${questionIds[index]}`
@@ -55,7 +55,7 @@ test.describe("Signed Off Themes", () => {
         await expect(page.getByText(themeName).first()).toBeVisible();
       }
     });
-  }
+  });
 
   test("consultation should be in analysis stage", async ({ page }) => {
     await page.goto(`/consultations/${consultationId}`);
