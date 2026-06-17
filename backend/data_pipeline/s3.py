@@ -105,7 +105,7 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
         **params,
     )
 
-    if 'Contents' not in response:
+    if "Contents" not in response:
         return []
 
     object_names_set = {s3_object["Key"] for s3_object in response["Contents"]}
@@ -134,9 +134,9 @@ def get_consultation_folders() -> list[str]:
     try:
         s3 = s3_utils.get_s3_client()
         params = {
-            "Bucket":settings.AWS_BUCKET_NAME,
-            "MaxKeys":200,
-            "Prefix":'app_data/consultations/',
+            "Bucket": settings.AWS_BUCKET_NAME,
+            "MaxKeys": 200,
+            "Prefix": "app_data/consultations/",
         }
 
         if settings.ENVIRONMENT.upper() not in ["LOCAL", "TEST"]:
@@ -146,12 +146,12 @@ def get_consultation_folders() -> list[str]:
             **params,
         )
 
-        if 'Contents' not in response:
+        if "Contents" not in response:
             return []
 
         s3_keys = [s3_object["Key"] for s3_object in response["Contents"]]
         s3_codes = set()
-        pattern = r'app_data/consultations/([^/]+)/.+'
+        pattern = r"app_data/consultations/([^/]+)/.+"
         for obj in s3_keys:
             if match := re.search(
                 pattern,
