@@ -33,10 +33,10 @@ test.describe("Signed Off Themes", () => {
   });
 
   [
-    [0, { count: 2, names: ["Quality Standards", "Consumer Protection"] }],
-    [1, { count: 2, names: ["Industry Impact", "Market Competition"] }],
-    [2, { count: 3, names: ["Implementation Timeline", "Compliance Costs", "Regional Variations"] }],
-  ].forEach(([index, expectedThemes]) => {
+    { count: 2, names: ["Quality Standards", "Consumer Protection"] },
+    { count: 2, names: ["Industry Impact", "Market Competition"] },
+    { count: 3, names: ["Implementation Timeline", "Compliance Costs", "Regional Variations"] },
+  ].forEach((expectedThemes, index) => {
     test(`should display signed off pill for question ${index + 1}`, async ({ page }) => {
       await page.goto(
         `/consultations/${consultationId}/finalising-themes/${questionIds[index]}`
