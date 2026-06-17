@@ -3,7 +3,7 @@ FROM python:3.12.3-slim AS uv-packages
 
 RUN apt-get update && apt-get install --yes build-essential > /dev/null
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.11.21 /uv /uvx /bin/
 
 # Set up workspace at /src so the layout matches the repo: pyproject + uv.lock at root,
 # with backend/ and themefinder/ as workspace members. Only the manifests required by

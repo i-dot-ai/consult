@@ -1,6 +1,6 @@
 FROM public.ecr.aws/docker/library/python:3.12-slim AS uv-packages
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.11.21 /uv /uvx /bin/
 
 # Only the manifests required by the target package are copied; uv tolerates missing
 # non-target workspace members.
