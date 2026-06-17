@@ -1,15 +1,17 @@
 # Release Workflows
 
-There are two release workflows: `release-app` and `release-infra`. They are independent — application and infrastructure can be deployed separately. On merges to `main` they are orchestrated by `deploy-main` (see [Auto-deploy on merge to main](#auto-deploy-on-merge-to-main)).
+There are two release workflows: `release-app` and `release-infra`. They are independent: application and infrastructure can be deployed separately. On merges to `main` they are orchestrated by `deploy-main` (see [Auto-deploy on merge to main](#auto-deploy-on-merge-to-main)).
 
 ## Triggers
 
 | Event | Environment | Notes |
 |---|---|---|
 | Push to `release-ENV-**` tag | dev or preprod | e.g. `release-dev-1.0.0` |
-| Merge to `main` (via `deploy-main`) | preprod → prod | Runs the full CI suite, then deploys preprod, then prod only if preprod succeeds ** |
+| Merge to `main` (via `deploy-main`) | preprod → prod | Runs the full CI suite, then deploys preprod, then prod only if preprod succeeds |
 | GitHub Release published | prod | Still available; deploys a specific tagged release to prod |
 | `workflow_dispatch` | dev / preprod / prod | Manual trigger; prod requires the tag to be a published GitHub Release |
+
+The release-tag guard in `release-app`/`release-infra` only applies to manual dispatches; the `workflow_call` path from `deploy-main` bypasses it, with the full CI suite acting as the gate instead.
 
 On merge to main, `deploy-main` calls each release workflow with an explicit `environment`. Each still filters internally:
 * `release-app` skips individual services whose git SHA matches what is already deployed, so only services with code changes are built and redeployed.
@@ -105,7 +107,9 @@ For changes that only affect infrastructure (no application code change), `relea
 
 `release-infra` and `release-app` are independent and can run in parallel. However, if an infrastructure change is a prerequisite for a new version of the application (e.g. a new environment variable, IAM permission, or database migration run via Terraform), `release-infra` must complete successfully before `release-app` is triggered.
 
-For automated triggers (GitHub Release, merge to main) both workflows start at the same time, so in these cases it is safest to trigger `release-infra` first and wait for it to complete before triggering `release-app` manually via `workflow_dispatch`.
+On **merge to main**, `deploy-main` already enforces this: within each environment it runs `release-infra` before `release-app`, so no manual sequencing is needed.
+
+The **GitHub Release** trigger, by contrast, starts both workflows at the same time. When an infrastructure change is a prerequisite for the app, it is safest to trigger `release-infra` first via `workflow_dispatch` and wait for it to complete before triggering `release-app`.
 
 ## Deploying to prod
 
@@ -127,14 +131,72 @@ Revert the bad commit on `main` and let it flow through the normal pipeline:
 
 This is the cleanest path because it keeps `main` and prod in sync. Any other rollback that does not also revert `main` is temporary: the next merge re-deploys the broken code, and the SHA-based filter treats the reverted-to state as "already deployed", so it will not redeploy on its own.
 
-### Emergency fast path: ECS task-definition rollback (no rebuild)
+### Emergency fast path: roll back the deployed artifact (no rebuild)
 
-When prod is actively broken and you cannot wait for CI plus a deploy, point the ECS service back at the previous task-definition revision. The previous image is almost always still in ECR (images are tagged by commit SHA):
+When prod is actively broken and you cannot wait for CI plus a deploy, point the broken service back at its previous artifact. The previous image is almost always still in ECR (images are tagged by commit SHA), so no rebuild is needed.
 
-- In the AWS console: ECS, then the service, then **Update service**, select the prior task-definition revision, and force a new deployment.
+#### 1. Identify which service broke
 
-This is out of band: the image tag in SSM/Terraform still references the bad version, so follow up immediately with the revert above or the next merge will reintroduce it.
+A single "deploy" is actually several independent services, each built and rolled out separately. Work out which one is at fault before touching anything; the others are fine and should be left alone.
+
+Names derive from `var.name = ${local.name}-<service>`, where `local.name = i-dot-ai-<env>-consult` (`terraform/ecs.tf`, `terraform/data.tf:39`). The shared modules then suffix it:
+
+- ECS module: **service** `${var.name}-ecs-service`, **task definition** `${var.name}-task`
+- Batch module: **job definition** `${var.name}-<platform>-batch-job-definition`
+
+(The `i-dot-ai-prod-consult-task` / `…-consultations-*` entries you may also see are legacy/other stacks, not part of this pipeline.)
+
+The ECS services run on the shared platform cluster `i-dot-ai-<env>-ecs-cluster` (e.g. `i-dot-ai-prod-ecs-cluster` for prod). Consult does not have its own cluster; it pulls it from platform remote state (`terraform/ecs.tf:42`). Other projects' services are listed alongside consult's in the same cluster.
+
+| Service (in `service-config.json`) | Deployed as | AWS resource name | What it runs |
+|---|---|---|---|
+| `backend` | ECS service | `i-dot-ai-prod-consult-backend-ecs-service` (task def `…-backend-task`) | Django REST API |
+| `backend` | ECS service | `i-dot-ai-prod-consult-worker-ecs-service` (task def `…-worker-task`) | RQ worker (shares the backend image + SSM tag) |
+| `frontend` | ECS service | `i-dot-ai-prod-consult-frontend-ecs-service` (task def `…-frontend-task`) | Astro/Svelte web app |
+| `pipeline-mapping` | AWS Batch job definition | `i-dot-ai-prod-consult-mapping-FARGATE-batch-job-definition` | Theme assignment batch job |
+| `pipeline-sign-off` | AWS Batch job definition | `i-dot-ai-prod-consult-sign-off-FARGATE-batch-job-definition` | Theme discovery batch job |
+
+How to narrow it down:
+
+- **Check what actually deployed.** `release-app`'s `filter-services` step logs which services it built and redeployed; only those changed. If only `frontend` was redeployed, only `frontend` can be the regression.
+- **Match the symptom to the service:**
+  - Web UI / page errors → `frontend`
+  - API 5xx, `/api/health/` failures, auth/data errors → `backend`
+  - Stuck/failed RQ jobs (imports, embeddings) → `worker`
+  - Theme discovery failures → `pipeline-sign-off`
+  - Theme assignment failures → `pipeline-mapping`
+- **Note `backend` ⇒ two ECS services.** `backend` and `worker` are built from the same image and share one SSM image-tag, so a bad backend image affects both. Roll back **both** the `-backend` and `-worker` services together.
+
+#### 2. Roll back that service
+
+**ECS services (`backend`, `worker`, `frontend`):** point the service back at the previous task-definition revision:
+
+In the AWS console:
+
+1. Go to **ECS → Clusters → `i-dot-ai-<env>-ecs-cluster`** (e.g. `i-dot-ai-prod-ecs-cluster` for prod; the shared platform cluster, see above).
+2. Open the **Services** tab and select the affected service (e.g. `i-dot-ai-prod-consult-frontend-ecs-service`, listed alongside other projects' services).
+3. Click **Update service**, select the prior task-definition revision, and tick **Force new deployment**.
+4. Click **Update**.
+
+If `backend` is at fault, repeat for **both** `…-backend` and `…-worker`.
+
+**Batch jobs (`pipeline-mapping`, `pipeline-sign-off`):** there is no long-running service to revert; the job definition is read when the next batch job is submitted. Either:
+
+- register/select the previous job-definition revision (which points at the previous image), or
+- simply hold off triggering new find/assign-themes runs until the revert lands.
+
+In-flight batch jobs are unaffected by a code revert.
+
+This is out of band: the image tag in SSM/Terraform still references the bad version for every rolled-back service, so follow up immediately with the revert above or the next merge will reintroduce it.
 
 ### Database migrations
 
 Code rollbacks do **not** roll back database migrations. If the bad release applied a migration, check whether it is backwards-compatible with the version you are rolling back to. If it is not, you must also reverse the migration (or roll forward with a fix), because redeploying older app code against a newer schema can fail. Prefer backwards-compatible migrations to keep rollback safe.
+
+## Deployment status
+
+The GitHub **Environment** badge (`dev` / `preprod` / `prod`) can show green before the application is actually serving the new code (the infra deploy greens the shared Environment while app containers are still rolling out). To confirm a deploy has actually completed, treat the `deploy-containers` job (not the Environment badge) as the signal:
+
+- Watch the `deploy-containers` job finish in the run, and/or
+- Check the running image tag in ECS/SSM matches the deployed commit SHA, then
+- Hit `/api/health/`.
