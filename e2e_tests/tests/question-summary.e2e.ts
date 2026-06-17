@@ -192,7 +192,6 @@ test.describe("Question Summary Page", () => {
     await expect(filteredBadge(page)).toBeVisible();
     await expect(responseCards(page)).toHaveCount(
       responsesWithTheme(topTheme.key),
-      ,
     );
 
     // Clearing the filter restores the full list.
@@ -265,7 +264,6 @@ test.describe("Question Summary Page", () => {
     await expect(filteredBadge(page)).toBeVisible();
     await expect(responseCards(page)).toHaveCount(
       responsesMatchingText(searchTerm),
-      ,
     );
 
     await clearButton(page).click();
