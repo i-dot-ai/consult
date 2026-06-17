@@ -48,14 +48,23 @@ test-frontend: ## Run the frontend tests
 
 .PHONY: test-end-to-end
 test-end-to-end: ## Run end-to-end tests with Playwright
+	# Run the tests, then ALWAYS clean up, then re-raise the tests' exit status so CI
+	# still fails on failure. Without this wrapper a failure mid-run (e.g. a service
+	# health-check timeout or a failing test) would skip cleanup and leave
+	# docker-compose.override.yml behind, silently repointing every later
+	# `docker compose` command at the E2E database.
+	@$(MAKE) _run-e2e-tests; status=$$?; $(MAKE) _clean-e2e; exit $$status
+
+.PHONY: _run-e2e-tests
+_run-e2e-tests:
 	$(eval E2E_DB_URL := postgresql://postgres:postgres@postgres:5432/consult_e2e_test)  # pragma: allowlist secret
 	@echo "Setting up test database..."
 	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;" || true
 	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "CREATE DATABASE consult_e2e_test;"
 	@echo "Initializing test data..."
-	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py migrate
-	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) -e ADMIN_USERS=admin@example.com backend venv/bin/python manage.py createadminusers
-	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py shell -c \
+	@docker compose run --rm -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py migrate
+	@docker compose run --rm -e DATABASE_URL=$(E2E_DB_URL) -e ADMIN_USERS=admin@example.com backend venv/bin/python manage.py createadminusers
+	@docker compose run --rm -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py shell -c \
 		"from authentication.models import User; from consultations.models import Consultation; \
 		user = User.objects.get(email='admin@example.com'); \
 		[c.users.add(user) for c in Consultation.objects.all()]"
@@ -75,8 +84,11 @@ test-end-to-end: ## Run end-to-end tests with Playwright
 	@cd e2e_tests && npm install
 	@if [ -z "$$CI" ]; then cd e2e_tests && npx playwright install --with-deps; fi
 	@cd e2e_tests && npm run e2e
+
+.PHONY: _clean-e2e
+_clean-e2e: ## Internal: always-run cleanup for test-end-to-end (drop test DB, remove generated override)
 	@echo "Cleaning up..."
-	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;"
+	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;" 2>/dev/null || true
 	@rm -f docker-compose.override.yml
 
 
@@ -163,6 +175,21 @@ IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 ifndef cache
 	override cache = ./.build-cache
 endif
+
+.PHONY: docker_clean
+docker_clean: ## Reclaim local Docker space (stopped containers, dangling images, build cache)
+	docker compose down --remove-orphans
+	docker container prune -f
+	docker image prune -f
+	docker builder prune -f
+	@echo "Skipping volume prune to preserve local data (postgres_data, redis_data)."
+	@echo "To also remove unused volumes, run: make docker_clean_volumes"
+
+.PHONY: docker_clean_volumes
+docker_clean_volumes: ## DESTRUCTIVE: prune unused Docker volumes (wipes local postgres_data/redis_data when containers are down)
+	@echo "WARNING: this prunes ALL unused volumes, including local DB/Redis data."
+	@read -p "Continue? [y/N] " ans && [ "$$ans" = "y" ] || [ "$$ans" = "Y" ] || (echo "Aborted." && exit 1)
+	docker volume prune -f
 
 .PHONY: docker_build
 docker_build: ## Build the docker container for the specified service when running in CI/CD

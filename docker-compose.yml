@@ -71,9 +71,6 @@ services:
       - DJANGO_SETTINGS_MODULE=backend.settings.local
       - DOMAIN_NAME=localhost:3000
       - MINIO_ENDPOINT=http://minio:9100
-    volumes:
-      - .:/app
-      - /app/node_modules
     depends_on:
       postgres:
         condition: service_healthy
@@ -87,7 +84,7 @@ services:
 
   # Frontend
   frontend:
-    image: node:18
+    image: node:24-slim
     working_dir: /app
     ports:
       - "3000:3000"
@@ -106,7 +103,6 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  frontend_node_modules:
   minio_data:
 
 networks:

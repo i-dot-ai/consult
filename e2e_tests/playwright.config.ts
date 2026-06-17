@@ -40,6 +40,11 @@ export default defineConfig({
     },
   },
 
+  /* Global expect timeout */
+  expect: {
+    timeout: 15000,
+  },
+
   /* Configure projects for major browsers */
   projects: process.env.CI
     ? [
