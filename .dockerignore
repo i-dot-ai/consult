@@ -34,10 +34,22 @@ themefinder/.ruff_cache
 themefinder/**/__pycache__
 themefinder/*.egg-info
 
-# Local dev artifacts (sql.log may contain sensitive query data)
-**/sql.log
+# Local virtualenvs, dependencies and build output
+**/.venv
+**/venv
+**/node_modules
+frontend/dist
+frontend/.astro
+
+# Python caches
 **/__pycache__
 **/.pytest_cache
 **/.mypy_cache
 **/.ruff_cache
-**/.venv
+
+# Local dev artifacts (sql.log may contain sensitive query data)
+**/sql.log
+
+# Local env files
+.env
+.env.test
