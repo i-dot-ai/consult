@@ -27,12 +27,9 @@ RUN groupadd --system nonroot && useradd --system --gid nonroot nonroot
 
 WORKDIR /src
 
-COPY ./backend ./backend
+COPY --chown=nonroot:nonroot ./backend ./backend
 
-COPY --from=uv-packages /src/backend/venv ./backend/venv
-
-# Change ownership of application directory
-RUN chown -R nonroot:nonroot /src
+COPY --from=uv-packages --chown=nonroot:nonroot /src/backend/venv ./backend/venv
 
 ENV DJANGO_SETTINGS_MODULE='backend.settings.production'
 ENV PYTHONPATH="${PYTHONPATH}:/src/"
