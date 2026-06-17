@@ -49,7 +49,6 @@ test-frontend: ## Run the frontend tests
 .PHONY: test-end-to-end
 test-end-to-end: ## Run end-to-end tests with Playwright
 	$(eval E2E_DB_URL := postgresql://postgres:postgres@postgres:5432/consult_e2e_test)  # pragma: allowlist secret
-	@docker compose up -d minio
 	@echo "Setting up test database..."
 	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;" || true
 	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "CREATE DATABASE consult_e2e_test;"

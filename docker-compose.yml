@@ -70,6 +70,7 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
       - DJANGO_SETTINGS_MODULE=backend.settings.local
       - DOMAIN_NAME=localhost:3000
+      - MINIO_ENDPOINT=http://minio:9000
     volumes:
       - .:/app
       - /app/node_modules
