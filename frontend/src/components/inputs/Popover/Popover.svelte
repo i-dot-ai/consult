@@ -71,6 +71,8 @@
 {/if}
 
 <style lang="postcss">
+  @reference "../../../styles/global.css";
+
   .input {
     @apply flex h-8 w-full rounded-md border border-neutral-800 bg-transparent px-2.5 text-sm;
     @apply ring-offset-neutral-300 focus-visible:ring;

@@ -195,6 +195,8 @@
 {/if}
 
 <style lang="postcss">
+  @reference "../../styles/global.css";
+
   .check {
     @apply absolute left-2 top-1/2 text-neutral-500;
     translate: 0 calc(-50% + 1px);

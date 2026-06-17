@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: #c40678;
+  --color-secondary: oklch(0.6429 0.103 186.61);
+}
+
 @font-face {
   font-family: "Inter";
   src: url(/fonts/inter/Inter-Regular.ttf) format("truetype");
