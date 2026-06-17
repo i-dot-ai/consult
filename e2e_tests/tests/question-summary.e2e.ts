@@ -70,7 +70,7 @@ test.describe("Question Summary Page", () => {
 
   test("filter sidebar shows expected demographics", async ({ page }) => {
     await expect(page.getByRole("heading", { name: /filters/i })).toBeVisible({
-      timeout: 15000,
+      
     });
 
     const sidebar = page.getByTestId("filters-sidebar");
@@ -79,7 +79,7 @@ test.describe("Question Summary Page", () => {
     // The sidebar shows skeletons until the demographics request resolves, so
     // give this first assertion the longer timeout to wait for the real data.
     await expect(sidebar.getByText("age_group", { exact: true })).toBeVisible({
-      timeout: 15000,
+      
     });
     await expect(sidebar.getByText("nation", { exact: true })).toBeVisible();
 
@@ -99,7 +99,7 @@ test.describe("Question Summary Page", () => {
   test("displays multiple choice answers", async ({ page }) => {
     await expect(
       page.getByRole("heading", { name: /multiple choice answers/i }),
-    ).toBeVisible({ timeout: 15000 });
+    ).toBeVisible();
 
     // Each option label is rendered as a heading within the section.
     for (const option of hybridQuestionWithThemes.multiple_choice_options ?? []) {
@@ -112,12 +112,12 @@ test.describe("Question Summary Page", () => {
   test("displays themes in the theme analysis section", async ({ page }) => {
     await expect(
       page.getByRole("heading", { name: /theme analysis/i }),
-    ).toBeVisible({ timeout: 15000 });
+    ).toBeVisible();
 
     // Theme names also appear on response cards, so scope assertions to the
     // theme analysis table rows (rendered as role="button").
     const themeRows = page.locator('tr[role="button"]');
-    await expect(themeRows.first()).toBeVisible({ timeout: 15000 });
+    await expect(themeRows.first()).toBeVisible();
 
     for (const theme of hybridQuestionWithThemes.themes ?? []) {
       await expect(
@@ -132,10 +132,10 @@ test.describe("Question Summary Page", () => {
   test("orders themes by number of mentions (descending)", async ({ page }) => {
     await expect(
       page.getByRole("heading", { name: /theme analysis/i }),
-    ).toBeVisible({ timeout: 15000 });
+    ).toBeVisible();
 
     const themeRows = page.locator('tr[role="button"]');
-    await expect(themeRows.first()).toBeVisible({ timeout: 15000 });
+    await expect(themeRows.first()).toBeVisible();
 
     const rowTexts = await themeRows.allTextContents();
 
@@ -158,11 +158,11 @@ test.describe("Question Summary Page", () => {
   test("renders all free text response cards", async ({ page }) => {
     await expect(
       page.getByRole("heading", { name: /free text responses/i }),
-    ).toBeVisible({ timeout: 15000 });
+    ).toBeVisible();
 
     // All free-text responses fit on one page, so every card renders.
     await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      timeout: 15000,
+      
     });
     await expect(
       page.getByText(new RegExp(`showing all ${TOTAL_RESPONSES} responses`, "i")),
@@ -178,7 +178,7 @@ test.describe("Question Summary Page", () => {
     page,
   }) => {
     await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      timeout: 15000,
+      
     });
 
     // Filter by the top theme; the fixture assigns it to a known subset.
@@ -189,17 +189,17 @@ test.describe("Question Summary Page", () => {
       .first()
       .click();
 
-    await expect(filteredBadge(page)).toBeVisible({ timeout: 15000 });
+    await expect(filteredBadge(page)).toBeVisible();
     await expect(responseCards(page)).toHaveCount(
       responsesWithTheme(topTheme.key),
-      { timeout: 15000 },
+      ,
     );
 
     // Clearing the filter restores the full list.
     await clearButton(page).click();
-    await expect(filteredBadge(page)).toBeHidden({ timeout: 15000 });
+    await expect(filteredBadge(page)).toBeHidden();
     await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      timeout: 15000,
+      
     });
   });
 
@@ -207,7 +207,7 @@ test.describe("Question Summary Page", () => {
     page,
   }) => {
     await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      timeout: 15000,
+      
     });
 
     // Filter by a nation present in the fixture's respondent demographics.
@@ -215,15 +215,15 @@ test.describe("Question Summary Page", () => {
     const sidebar = page.getByTestId("filters-sidebar");
     await sidebar.getByText(nation, { exact: true }).first().click();
 
-    await expect(filteredBadge(page)).toBeVisible({ timeout: 15000 });
+    await expect(filteredBadge(page)).toBeVisible();
     await expect(responseCards(page)).toHaveCount(responsesWithNation(nation), {
-      timeout: 15000,
+      
     });
 
     await clearButton(page).click();
-    await expect(filteredBadge(page)).toBeHidden({ timeout: 15000 });
+    await expect(filteredBadge(page)).toBeHidden();
     await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      timeout: 15000,
+      
     });
   });
 
@@ -231,7 +231,7 @@ test.describe("Question Summary Page", () => {
     page,
   }) => {
     await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      timeout: 15000,
+      
     });
 
     // Each multiple choice option label is rendered as a heading, which is
@@ -239,15 +239,15 @@ test.describe("Question Summary Page", () => {
     const choice = "No";
     await page.getByRole("heading", { name: choice, exact: true }).click();
 
-    await expect(filteredBadge(page)).toBeVisible({ timeout: 15000 });
+    await expect(filteredBadge(page)).toBeVisible();
     await expect(responseCards(page)).toHaveCount(responsesWithChoice(choice), {
-      timeout: 15000,
+      
     });
 
     await clearButton(page).click();
-    await expect(filteredBadge(page)).toBeHidden({ timeout: 15000 });
+    await expect(filteredBadge(page)).toBeHidden();
     await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      timeout: 15000,
+      
     });
   });
 
@@ -255,23 +255,23 @@ test.describe("Question Summary Page", () => {
     page,
   }) => {
     await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      timeout: 15000,
+      
     });
 
     // "disagree" appears in exactly one response's free text.
     const searchTerm = "disagree";
     await page.getByTestId("responses-search-input").fill(searchTerm);
 
-    await expect(filteredBadge(page)).toBeVisible({ timeout: 15000 });
+    await expect(filteredBadge(page)).toBeVisible();
     await expect(responseCards(page)).toHaveCount(
       responsesMatchingText(searchTerm),
-      { timeout: 15000 },
+      ,
     );
 
     await clearButton(page).click();
-    await expect(filteredBadge(page)).toBeHidden({ timeout: 15000 });
+    await expect(filteredBadge(page)).toBeHidden();
     await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      timeout: 15000,
+      
     });
   });
 

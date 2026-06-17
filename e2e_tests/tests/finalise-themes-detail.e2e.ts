@@ -139,17 +139,17 @@ test.describe("Finalise Themes - Detail Page", () => {
     await createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
 
     await expect(page.getByText("1 selected", { exact: true })).toBeVisible();
-    await expect(page.getByText(TEST_TITLE)).toBeVisible({timeout: 15000});
+    await expect(page.getByText(TEST_TITLE)).toBeVisible();
 
     const removeThemeButton = page.getByRole("button", { name: "Remove" });
     await removeThemeButton.click();
 
     await expect(page.getByText("0 selected", { exact: true })).toBeVisible();
-    await expect(page.getByText(TEST_TITLE)).not.toBeVisible({timeout: 15000});
+    await expect(page.getByText(TEST_TITLE)).not.toBeVisible();
   })
 
   test("Editing a theme updates it in the selected themes list", async ({ page }) => {
-    await expect(page.getByText("0 selected")).toBeVisible({timeout: 15000});
+    await expect(page.getByText("0 selected")).toBeVisible();
 
     const TEST_TITLE = "Test Theme";
     const TEST_TITLE_UPDATED = "Updated Test Theme";
@@ -159,7 +159,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     await createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
 
     await expect(page.getByText("1 selected", { exact: true })).toBeVisible();
-    await expect(page.getByText(TEST_TITLE)).toBeVisible({timeout: 15000});
+    await expect(page.getByText(TEST_TITLE)).toBeVisible();
 
     const editThemeButton = page.getByRole("button", { name: "Edit" });
     await editThemeButton.click();
@@ -172,12 +172,12 @@ test.describe("Finalise Themes - Detail Page", () => {
 
     await page.getByRole("button", { name: "Save Changes" }).click();
 
-    await expect(page.getByText(TEST_TITLE_UPDATED)).toBeVisible({timeout: 15000});
-    await expect(page.getByText(TEST_TITLE, { exact: true })).not.toBeVisible({timeout: 15000});
+    await expect(page.getByText(TEST_TITLE_UPDATED)).toBeVisible();
+    await expect(page.getByText(TEST_TITLE, { exact: true })).not.toBeVisible();
   })
 
   test("Clicking cancel while editing a theme does not update it", async ({ page }) => {
-    await expect(page.getByText("0 selected")).toBeVisible({timeout: 15000});
+    await expect(page.getByText("0 selected")).toBeVisible();
 
     const TEST_TITLE = "Test Theme";
     const TEST_TITLE_UPDATED = "Updated Test Theme";
@@ -186,8 +186,8 @@ test.describe("Finalise Themes - Detail Page", () => {
 
     await createTheme(page, TEST_TITLE, TEST_DESCRIPTION);
 
-    await expect(page.getByText("1 selected", { exact: true })).toBeVisible({timeout: 15000});
-    await expect(page.getByText(TEST_TITLE)).toBeVisible({timeout: 15000});
+    await expect(page.getByText("1 selected", { exact: true })).toBeVisible();
+    await expect(page.getByText(TEST_TITLE)).toBeVisible();
 
     const editThemeButton = page.getByRole("button", { name: "Edit" });
     await editThemeButton.click();
@@ -200,8 +200,8 @@ test.describe("Finalise Themes - Detail Page", () => {
 
     await page.getByRole("button", { name: "Cancel" }).click();
 
-    await expect(page.getByText(TEST_TITLE_UPDATED)).not.toBeVisible({timeout: 15000});
-    await expect(page.getByText(TEST_TITLE, { exact: true })).toBeVisible({timeout: 15000});
+    await expect(page.getByText(TEST_TITLE_UPDATED)).not.toBeVisible();
+    await expect(page.getByText(TEST_TITLE, { exact: true })).toBeVisible();
   })
 
   test("Representative responses button toggles responses", async ({ page }) => {

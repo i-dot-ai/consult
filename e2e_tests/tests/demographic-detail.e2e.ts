@@ -44,13 +44,13 @@ test.describe("Demographic Detail Page", () => {
     // it will need updating if we change the fixture data
 
     const ageGroup = page.getByTestId('metrics-summary-age_group');
-    await expect(ageGroup).toBeVisible({timeout: 15000});
+    await expect(ageGroup).toBeVisible();
 
     const ageGroupText = ageGroup.getByTestId('panel-component');
-    await expect (ageGroupText).toHaveText("age_group 18-35 2 40% 36-50 2 40% 51-65 1 20%  ", {timeout: 15000});
+    await expect (ageGroupText).toHaveText("age_group 18-35 2 40% 36-50 2 40% 51-65 1 20%  ", );
 
     const nation = page.getByTestId('metrics-summary-nation');
-    await expect(nation).toBeVisible({timeout: 15000});
+    await expect(nation).toBeVisible();
 
     const nationText = nation.getByTestId('panel-component');
     await expect (nationText).toHaveText("nation England 2 40% Northern Ireland 1 20% Scotland 1 20% Wales 1 20%  ");
