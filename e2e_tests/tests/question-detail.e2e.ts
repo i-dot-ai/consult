@@ -38,7 +38,10 @@ test.describe("Question Detail Page", () => {
     const selectAnotherQuestion = page.getByRole("button", { name: "Select Another Question" })
     await expect(selectAnotherQuestion).toBeVisible();
 
-    await expect(page).toHaveURL(/\/consultations\/.*\/finalising-themes\/.*/);
+    await selectAnotherQuestion.click();
+
+    // Should navigate back to the question list (without the questionId)
+    await expect(page).toHaveURL(/\/consultations\/.*\/finalising-themes$/);
   });
 
   test("question status is signed off", async ({ page }) => {
