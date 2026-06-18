@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import { CleanupManager, createFixtureData } from "./helpers";
 
 import {
+  defaultUser,
   setupConsultation,
   signOffConsultation,
 } from "../fixtures";
@@ -46,6 +47,21 @@ test.describe("Support Console - Consultations Detail", () => {
       await link.click();
       expect(page).toHaveURL(url);
     })
+  })
+
+  test(`displays user email`, async ({ page }) => {
+    const userButton = page.getByRole("button", { name: defaultUser.email });
+    await expect(userButton).toBeVisible();
+    await userButton.click();
+    await expect(page).toHaveURL(new RegExp("/support/users/.*"));
+  })
+
+  test(`displays remove user link`, async ({ page }) => {
+    const removeUserButton = page.getByRole("button", { name: "remove" });
+    await expect(removeUserButton).toBeVisible();
+
+    await removeUserButton.click();
+    await expect(page).toHaveURL(new RegExp("/support/consultations/.*/users/.*/remove"));
   })
 
   test.afterAll(async () => {
