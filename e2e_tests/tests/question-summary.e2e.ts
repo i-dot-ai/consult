@@ -59,7 +59,7 @@ test.describe("Question Summary Page", () => {
     // generous timeout to absorb load spikes when the suite runs in parallel.
     await expect(
       page.getByText(`Q${hybridQuestionWithThemes.number}:`, { exact: false }),
-    ).toBeVisible({ timeout: 30000 });
+    ).toBeVisible();
   });
 
   test("displays the question text in the summary header", async ({ page }) => {
@@ -69,18 +69,14 @@ test.describe("Question Summary Page", () => {
   });
 
   test("filter sidebar shows expected demographics", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: /filters/i })).toBeVisible({
-      
-    });
+    await expect(page.getByRole("heading", { name: /filters/i })).toBeVisible();
 
     const sidebar = page.getByTestId("filters-sidebar");
 
     // Demographic categories from the fixture: "age_group" and "nation".
     // The sidebar shows skeletons until the demographics request resolves, so
     // give this first assertion the longer timeout to wait for the real data.
-    await expect(sidebar.getByText("age_group", { exact: true })).toBeVisible({
-      
-    });
+    await expect(sidebar.getByText("age_group", { exact: true })).toBeVisible();
     await expect(sidebar.getByText("nation", { exact: true })).toBeVisible();
 
     // Demographic values from the fixture should be listed.
@@ -161,9 +157,7 @@ test.describe("Question Summary Page", () => {
     ).toBeVisible();
 
     // All free-text responses fit on one page, so every card renders.
-    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      
-    });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES);
     await expect(
       page.getByText(new RegExp(`showing all ${TOTAL_RESPONSES} responses`, "i")),
     ).toBeVisible();
@@ -177,9 +171,7 @@ test.describe("Question Summary Page", () => {
   test("filtering by a theme narrows the responses and can be cleared", async ({
     page,
   }) => {
-    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      
-    });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES);
 
     // Filter by the top theme; the fixture assigns it to a known subset.
     const topTheme = hybridQuestionWithThemes.themes![0];
@@ -197,17 +189,13 @@ test.describe("Question Summary Page", () => {
     // Clearing the filter restores the full list.
     await clearButton(page).click();
     await expect(filteredBadge(page)).toBeHidden();
-    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      
-    });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES);
   });
 
   test("filtering by a demographic narrows the responses and can be cleared", async ({
     page,
   }) => {
-    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      
-    });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES);
 
     // Filter by a nation present in the fixture's respondent demographics.
     const nation = "England";
@@ -215,23 +203,17 @@ test.describe("Question Summary Page", () => {
     await sidebar.getByText(nation, { exact: true }).first().click();
 
     await expect(filteredBadge(page)).toBeVisible();
-    await expect(responseCards(page)).toHaveCount(responsesWithNation(nation), {
-      
-    });
+    await expect(responseCards(page)).toHaveCount(responsesWithNation(nation));
 
     await clearButton(page).click();
     await expect(filteredBadge(page)).toBeHidden();
-    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      
-    });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES);
   });
 
   test("filtering by a multiple choice answer narrows the responses and can be cleared", async ({
     page,
   }) => {
-    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      
-    });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES);
 
     // Each multiple choice option label is rendered as a heading, which is
     // unique on the page (response card answer tags are plain spans).
@@ -239,38 +221,28 @@ test.describe("Question Summary Page", () => {
     await page.getByRole("heading", { name: choice, exact: true }).click();
 
     await expect(filteredBadge(page)).toBeVisible();
-    await expect(responseCards(page)).toHaveCount(responsesWithChoice(choice), {
-      
-    });
+    await expect(responseCards(page)).toHaveCount(responsesWithChoice(choice));
 
     await clearButton(page).click();
     await expect(filteredBadge(page)).toBeHidden();
-    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      
-    });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES);
   });
 
   test("searching responses narrows the list and can be cleared", async ({
     page,
   }) => {
-    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      
-    });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES);
 
     // "disagree" appears in exactly one response's free text.
     const searchTerm = "disagree";
     await page.getByTestId("responses-search-input").fill(searchTerm);
 
     await expect(filteredBadge(page)).toBeVisible();
-    await expect(responseCards(page)).toHaveCount(
-      responsesMatchingText(searchTerm),
-    );
+    await expect(responseCards(page)).toHaveCount(responsesMatchingText(searchTerm));
 
     await clearButton(page).click();
     await expect(filteredBadge(page)).toBeHidden();
-    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES, {
-      
-    });
+    await expect(responseCards(page)).toHaveCount(TOTAL_RESPONSES);
   });
 
   test("back button returns to the consultation detail page", async ({

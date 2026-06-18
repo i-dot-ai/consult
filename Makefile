@@ -82,7 +82,7 @@ _run-e2e-tests:
 	@echo "Running tests..."
 	@cd e2e_tests && npm install
 	@if [ -z "$$CI" ]; then cd e2e_tests && npx playwright install --with-deps; fi
-	@cd e2e_tests && npm run e2e
+	@cd e2e_tests && npm run e2e-chrome
 
 .PHONY: _clean-e2e
 _clean-e2e: ## Internal: always-run cleanup for test-end-to-end (drop test DB, remove generated override)
