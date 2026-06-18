@@ -84,6 +84,10 @@ def read_json(
 def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
     """
     Get all question_part_N folders from the inputs path.
+    
+    Uses list_objects_v2 with Delimiter to efficiently list only subdirectories
+    without iterating through individual files. Paginates through all results.
+    
     Args:
         inputs_path: S3 path to inputs folder (e.g., "app_data/consultations/CODE/inputs/")
         bucket_name: S3 bucket name
@@ -95,72 +99,172 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
     params = {
         "Bucket": bucket_name,
         "Prefix": inputs_path,
-        "MaxKeys": 100000
+        "Delimiter": "/",  # Group by directory to get only subdirectories
+        "MaxKeys": 1000,   # Max allowed per page by AWS
     }
 
     if settings.ENVIRONMENT.upper() not in ["LOCAL", "TEST"]:
         params["ExpectedBucketOwner"] = settings.AWS_ACCOUNT_ID
 
-    response = s3.list_objects_v2(
-        **params,
+    question_folders = []
+    continuation_token = None
+    page_count = 0
+
+    logger.info(
+        "Starting S3 listing for question folders: bucket={bucket}, prefix={prefix}",
+        bucket=bucket_name,
+        prefix=inputs_path,
     )
 
-    if "Contents" not in response:
-        return []
+    # Paginate through all results
+    while True:
+        page_count += 1
+        if continuation_token:
+            params["ContinuationToken"] = continuation_token
 
-    object_names_set = {s3_object["Key"] for s3_object in response["Contents"]}
-    subfolders = set()
+        response = s3.list_objects_v2(**params)
 
-    for path in object_names_set:
-        folder = "/".join(path.split("/")[:-1]) + "/"
-        subfolders.add(folder)
+        # Process directory prefixes (CommonPrefixes contains directories)
+        if "CommonPrefixes" in response:
+            prefixes_in_page = [p["Prefix"] for p in response["CommonPrefixes"]]
+            logger.info(
+                "Page {page}: Found {count} directories: {prefixes}",
+                page=page_count,
+                count=len(prefixes_in_page),
+                prefixes=prefixes_in_page,
+            )
 
-    question_folders = [
-        "/".join(name.split("/")[:-1]) + "/"
-        for name in subfolders
-        if name.split("/")[-2].startswith("question_part_")
-    ]
+            for prefix_info in response["CommonPrefixes"]:
+                prefix = prefix_info["Prefix"]
+                # Check if this is a question_part_N folder
+                folder_name = prefix.rstrip("/").split("/")[-1]
+                if folder_name.startswith("question_part_"):
+                    question_folders.append(prefix)
+        else:
+            logger.info("Page {page}: No CommonPrefixes found", page=page_count)
+
+        # Check if more pages exist
+        if response.get("IsTruncated", False):
+            continuation_token = response.get("NextContinuationToken")
+            logger.info("More pages available, continuing pagination...")
+        else:
+            logger.info("Pagination complete after {pages} page(s)", pages=page_count)
+            break
+
     question_folders.sort()
+    logger.info(
+        "Found {count} question folders total: {folders}",
+        count=len(question_folders),
+        folders=question_folders,
+    )
     return question_folders
 
 
 def get_consultation_folders() -> list[str]:
     """
     Get all consultation folder codes from S3.
+    
+    Uses list_objects_v2 with Delimiter to efficiently list only directory-level
+    prefixes without iterating through individual files. Paginates through all results.
 
     Returns:
-        List of folder codes (e.g., ['healthcare-consultation', 'transport-consultation'])
+        Sorted list of consultation codes (e.g., ['co_digital_id', 'healthcare-consultation'])
     """
     try:
         s3 = s3_utils.get_s3_client()
         params = {
             "Bucket": settings.AWS_BUCKET_NAME,
-            "MaxKeys": 200000000,
             "Prefix": "app_data/consultations/",
+            "Delimiter": "/",  # Group by directory to get only top-level consultation folders
+            "MaxKeys": 1000,   # Max allowed per page by AWS
         }
 
         if settings.ENVIRONMENT.upper() not in ["LOCAL", "TEST"]:
             params["ExpectedBucketOwner"] = settings.AWS_ACCOUNT_ID
 
-        response = s3.list_objects_v2(
-            **params,
+        s3_codes = set()
+        continuation_token = None
+        page_count = 0
+        total_prefixes_processed = 0
+
+        logger.info(
+            "Starting S3 listing for consultation folders: bucket={bucket}, prefix={prefix}",
+            bucket=settings.AWS_BUCKET_NAME,
+            prefix="app_data/consultations/",
         )
 
-        if "Contents" not in response:
-            return []
+        # Paginate through all results
+        while True:
+            page_count += 1
+            if continuation_token:
+                params["ContinuationToken"] = continuation_token
 
-        s3_keys = [s3_object["Key"] for s3_object in response["Contents"]]
-        logger.info("All s3 keys: {keys}", keys=s3_keys)
-        s3_codes = set()
-        pattern = r"^app_data\/consultations\/([\w-]+)"
-        for obj in s3_keys:
-            if match := re.search(
-                pattern,
-                obj,
-            ):
-                s3_codes.add(match.groups()[0])
-        logger.info("All s3 codes: {codes}", codes=s3_codes)
-        return list(s3_codes)
+            response = s3.list_objects_v2(**params)
+
+            # Process directory prefixes (CommonPrefixes contains directories)
+            if "CommonPrefixes" in response:
+                prefixes_in_page = []
+                codes_in_page = []
+                
+                for prefix_info in response["CommonPrefixes"]:
+                    prefix = prefix_info["Prefix"]
+                    prefixes_in_page.append(prefix)
+                    # Extract consultation code: app_data/consultations/CODE/ -> CODE
+                    code = prefix.rstrip("/").split("/")[-1]
+                    s3_codes.add(code)
+                    codes_in_page.append(code)
+                    total_prefixes_processed += 1
+
+                logger.info(
+                    "Page {page}: Found {count} consultation directories",
+                    page=page_count,
+                    count=len(prefixes_in_page),
+                )
+                logger.info(
+                    "Page {page} prefixes: {prefixes}",
+                    page=page_count,
+                    prefixes=prefixes_in_page,
+                )
+                logger.info(
+                    "Page {page} codes extracted: {codes}",
+                    page=page_count,
+                    codes=codes_in_page,
+                )
+            else:
+                logger.info("Page {page}: No CommonPrefixes found", page=page_count)
+
+            # Log files if any (shouldn't be any at this level, but good to know)
+            if "Contents" in response:
+                file_count = len(response["Contents"])
+                logger.info(
+                    "Page {page}: Also found {count} files at consultation root level",
+                    page=page_count,
+                    count=file_count,
+                )
+
+            # Check if more pages exist
+            if response.get("IsTruncated", False):
+                continuation_token = response.get("NextContinuationToken")
+                logger.info(
+                    "Page {page}: More results available, continuing pagination (processed {total} prefixes so far)...",
+                    page=page_count,
+                    total=total_prefixes_processed,
+                )
+            else:
+                logger.info(
+                    "Pagination complete after {pages} page(s), processed {total} total prefixes",
+                    pages=page_count,
+                    total=total_prefixes_processed,
+                )
+                break
+
+        sorted_codes = sorted(list(s3_codes))
+        logger.info(
+            "Final result: Found {count} unique consultation codes: {codes}",
+            count=len(sorted_codes),
+            codes=sorted_codes,
+        )
+        return sorted_codes
     except Exception:
-        logger.exception("Failed to get S3 folders")
+        logger.exception("Failed to get S3 consultation folders")
         return []
