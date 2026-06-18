@@ -150,6 +150,7 @@ def get_consultation_folders() -> list[str]:
             return []
 
         s3_keys = [s3_object["Key"] for s3_object in response["Contents"]]
+        logger.info("All s3 keys: {keys}", keys=s3_keys)
         s3_codes = set()
         pattern = r"app_data/consultations/([^/]+)/.+"
         for obj in s3_keys:
@@ -158,6 +159,7 @@ def get_consultation_folders() -> list[str]:
                 obj,
             ):
                 s3_codes.add(match.groups()[0])
+        logger.info("All s3 codes: {codes}", codes=s3_codes)
         return list(s3_codes)
     except Exception:
         logger.exception("Failed to get S3 folders")
