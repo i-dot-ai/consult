@@ -152,7 +152,7 @@ def get_consultation_folders() -> list[str]:
         s3_keys = [s3_object["Key"] for s3_object in response["Contents"]]
         logger.info("All s3 keys: {keys}", keys=s3_keys)
         s3_codes = set()
-        pattern = r"app_data/consultations/([^/]+)/.+"
+        pattern = r"^app_data\/consultations\/([\w-]+)"
         for obj in s3_keys:
             if match := re.search(
                 pattern,
