@@ -14,14 +14,14 @@ import pandas as pd
 from datasets import DatasetConfig, load_local_data
 from evaluators import create_refinement_quality_evaluator
 from themefinder import theme_refinement
-from themefinder.llm import OpenAILLM
+from themefinder.llm import LLM
 
 
 async def evaluate_refinement(
     dataset: str = "gambling_XS",
-    llm: OpenAILLM | None = None,
+    llm: LLM | None = None,
     langfuse_ctx: langfuse_utils.LangfuseContext | None = None,
-    judge_llm: OpenAILLM | None = None,
+    judge_llm: LLM | None = None,
 ) -> dict:
     """Run refinement evaluation.
 
@@ -50,11 +50,11 @@ async def evaluate_refinement(
 
     # Use provided LLM or create new one
     if llm is None:
-        llm = OpenAILLM(
-            model=os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT"),
-            request_kwargs={"temperature": 0},
+        llm = LLM(
+            os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT"),
             base_url=os.getenv("LLM_GATEWAY_URL"),
             api_key=os.getenv("CONSULT_EVAL_LITELLM_API_KEY"),
+            temperature=0,
         )
 
     # Select judge LLM (falls back to task LLM if not provided)
