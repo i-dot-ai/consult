@@ -95,7 +95,7 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
     params = {
         "Bucket": bucket_name,
         "Prefix": inputs_path,
-        "MaxKeys": 1000
+        "MaxKeys": 100000
     }
 
     if settings.ENVIRONMENT.upper() not in ["LOCAL", "TEST"]:
@@ -135,7 +135,7 @@ def get_consultation_folders() -> list[str]:
         s3 = s3_utils.get_s3_client()
         params = {
             "Bucket": settings.AWS_BUCKET_NAME,
-            "MaxKeys": 2000000,
+            "MaxKeys": 200000000,
             "Prefix": "app_data/consultations/",
         }
 
