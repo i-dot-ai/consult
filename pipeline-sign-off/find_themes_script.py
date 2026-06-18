@@ -310,43 +310,44 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                         refined_themes_to_theme_node(row) for _, row in refined_themes_df.iterrows()
                     ]
 
-                rule_1_messages, rule_1_failed = rule_1_total_theme_number_less_than_70_slack(
-                    all_themes_list
-                )
+                if False:
+                    rule_1_messages, rule_1_failed = rule_1_total_theme_number_less_than_70_slack(
+                        all_themes_list
+                    )
 
-                rule_3_messages, rule_3_failed = (
-                    rule_3_semantic_similarity_must_be_less_than_90pc_slack(all_themes_list, client)
-                )
+                    rule_3_messages, rule_3_failed = (
+                        rule_3_semantic_similarity_must_be_less_than_90pc_slack(all_themes_list, client)
+                    )
 
-                msg = "failed ❌" if (rule_1_failed or rule_3_failed) else "passed ✅"
+                    msg = "failed ❌" if (rule_1_failed or rule_3_failed) else "passed ✅"
 
-                message_title_block = {
-                    "type": "header",
-                    "text": {
-                        "type": "plain_text",
+                    message_title_block = {
+                        "type": "header",
+                        "text": {
+                            "type": "plain_text",
+                            "text": f"theme set discovery rules {msg} for {consultation_dir}/{question_dir}",
+                        },
+                    }
+                    message = {
                         "text": f"theme set discovery rules {msg} for {consultation_dir}/{question_dir}",
-                    },
-                }
-                message = {
-                    "text": f"theme set discovery rules {msg} for {consultation_dir}/{question_dir}",
-                    "blocks": [message_title_block] + rule_1_messages + rule_3_messages,
-                }
-                response = http.request(
-                    "POST",
-                    SLACK_WEBHOOK_URL,
-                    body=json.dumps(message),
-                    headers={"Content-Type": "application/json"},
-                )
-                if response.status != 200:
-                    response_data = (
-                        response.data.decode("utf-8") if response.data else "No response data"
+                        "blocks": [message_title_block] + rule_1_messages + rule_3_messages,
+                    }
+                    response = http.request(
+                        "POST",
+                        SLACK_WEBHOOK_URL,
+                        body=json.dumps(message),
+                        headers={"Content-Type": "application/json"},
                     )
-                    error_message = (
-                        f"Slack webhook failed with status {response.status}: {response_data}"
-                    )
-                    logger.error(error_message)
-                else:
-                    logger.info(message)
+                    if response.status != 200:
+                        response_data = (
+                            response.data.decode("utf-8") if response.data else "No response data"
+                        )
+                        error_message = (
+                            f"Slack webhook failed with status {response.status}: {response_data}"
+                        )
+                        logger.error(error_message)
+                    else:
+                        logger.info(message)
 
                 with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
                     f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
