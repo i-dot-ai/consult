@@ -84,17 +84,10 @@
   </Panel>
 {/snippet}
 
-<TitleRow
-  level={1}
-  title="Finalise Themes"
-  subtitle="Finalise themes to use for AI to assign responses to"
->
-  <Price slot="icon" />
-</TitleRow>
-
 <svelte:boundary>
   <section class="my-6">
     <Button
+      testId="back-button"
       variant="ghost"
       size="sm"
       handleClick={() => (location.href = getFinaliseThemesUrl(consultationId))}
@@ -121,6 +114,14 @@
     </div>
   {/snippet}
 </svelte:boundary>
+
+<TitleRow
+  level={1}
+  title="Finalise Themes"
+  subtitle="Finalise themes to use for AI to assign responses to"
+>
+  <Price slot="icon" />
+</TitleRow>
 
 <svelte:boundary>
   <section class="mb-8">
@@ -151,7 +152,7 @@
             {/if}
           </h2>
 
-          <div class="mb-4 mt-2">
+          <div class="mb-4 mt-2" data-testid="themes-finalised-pill">
             <Tag variant="primary-light">
               <MaterialIcon color="fill-primary">
                 <CheckCircle />
