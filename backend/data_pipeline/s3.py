@@ -135,7 +135,7 @@ def get_consultation_folders() -> list[str]:
         s3 = s3_utils.get_s3_client()
         params = {
             "Bucket": settings.AWS_BUCKET_NAME,
-            "MaxKeys": 20000,
+            "MaxKeys": 2000000,
             "Prefix": "app_data/consultations/",
         }
 
