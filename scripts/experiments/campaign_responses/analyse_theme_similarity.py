@@ -4,7 +4,9 @@ For each question:
   1. Embeds all themes via a text embedding model.
   2. Computes a centroid and mean distance from centroid for each GT group.
   3. For each test theme, computes a normalised distance to each GT cluster and
-     performs k-NN (k=3) across both groups.
+     performs k-NN (default k=5) across both groups.
+     Themes where distances are within 10% of each other, or kNN votes differ by at most 1,
+     are classified as 'both' (overlapping themes present in both groups).
   4. Writes detailed per-dataset output to log files; prints a summary table to stdout.
 
 Expected directory structure:
@@ -31,8 +33,9 @@ from openai import OpenAI
 
 load_dotenv(Path.home() / "Code" / "consult" / ".env")
 
-EMBEDDING_MODEL = "text-embedding-3-large"
-K = 3
+EMBEDDING_MODEL = "text-embedding-3-large-sweden"
+DEFAULT_K = 5
+NORM_BOTH_THRESHOLD = 0.9  # min(d1,d2)/max(d1,d2) above this → 'both'
 
 
 def make_client() -> OpenAI:
@@ -69,15 +72,23 @@ def normalised_distance(embedding: np.ndarray, centroid: np.ndarray, mean_dist: 
     return dist / mean_dist if mean_dist > 0 else dist
 
 
-def knn_group(embedding: np.ndarray, gt1_embeddings: list[np.ndarray], gt2_embeddings: list[np.ndarray]) -> tuple[str, int, int]:
+def knn_group(embedding: np.ndarray, gt1_embeddings: list[np.ndarray], gt2_embeddings: list[np.ndarray], k: int) -> tuple[str, int, int]:
     neighbours = (
         [(float(np.linalg.norm(embedding - e)), "1") for e in gt1_embeddings]
         + [(float(np.linalg.norm(embedding - e)), "2") for e in gt2_embeddings]
     )
-    top_k = sorted(neighbours, key=lambda x: x[0])[:K]
+    top_k = sorted(neighbours, key=lambda x: x[0])[:k]
     gt1_votes = sum(1 for _, g in top_k if g == "1")
-    gt2_votes = K - gt1_votes
+    gt2_votes = k - gt1_votes
+    if min(gt1_votes, gt2_votes) >= k // 2:
+        return "both", gt1_votes, gt2_votes
     return ("1" if gt1_votes >= gt2_votes else "2"), gt1_votes, gt2_votes
+
+
+def norm_group_assign(d1: float, d2: float) -> str:
+    if max(d1, d2) > 0 and min(d1, d2) / max(d1, d2) > NORM_BOTH_THRESHOLD:
+        return "both"
+    return "1" if d1 <= d2 else "2"
 
 
 def load_themes_by_question(root: Path, run: int) -> dict[str, list[dict]]:
@@ -95,16 +106,19 @@ def analyse_dataset(
     questions: list[str],
     gt1_name: str,
     gt2_name: str,
-    gt1_by_question: dict[str, list[dict]],
-    gt2_by_question: dict[str, list[dict]],
+    gt1_embs_by_q: dict[str, list[np.ndarray]],
+    gt2_embs_by_q: dict[str, list[np.ndarray]],
+    gt1_stats_by_q: dict[str, tuple[np.ndarray, float]],
+    gt2_stats_by_q: dict[str, tuple[np.ndarray, float]],
     client: OpenAI,
     cache: dict[str, list[float]],
     log_path: Path,
-) -> dict[str, tuple[int, int, int, int]]:
+    k: int = DEFAULT_K,
+) -> dict[str, tuple[int, int, int, int, int, int]]:
     """Run analysis for one dataset. Writes detail to log_path.
-    Returns {question: (norm_gt1, norm_gt2, knn_gt1, knn_gt2)}."""
+    Returns {question: (norm_gt1, norm_gt2, norm_both, knn_gt1, knn_gt2, knn_both)}."""
 
-    results: dict[str, tuple[int, int, int, int]] = {}
+    results: dict[str, tuple[int, int, int, int, int, int]] = {}
 
     with log_path.open("w") as log:
         def out(line: str = "") -> None:
@@ -118,14 +132,10 @@ def analyse_dataset(
                 out(f"\n{question}: not found in this dataset, skipping.")
                 continue
 
-            gt1_embeddings = fetch_embeddings(
-                [t["topic_description"] for t in gt1_by_question[question]], client, cache
-            )
-            gt2_embeddings = fetch_embeddings(
-                [t["topic_description"] for t in gt2_by_question[question]], client, cache
-            )
-            gt1_centroid, gt1_mean = cluster_stats(gt1_embeddings)
-            gt2_centroid, gt2_mean = cluster_stats(gt2_embeddings)
+            gt1_embeddings = gt1_embs_by_q[question]
+            gt2_embeddings = gt2_embs_by_q[question]
+            gt1_centroid, gt1_mean = gt1_stats_by_q[question]
+            gt2_centroid, gt2_mean = gt2_stats_by_q[question]
 
             out(f"\n{question}")
             out("-" * 40)
@@ -139,33 +149,35 @@ def analyse_dataset(
 
             g1_label = f"Norm({gt1_name[:8]})"
             g2_label = f"Norm({gt2_name[:8]})"
-            header = f"  Theme | Norm Grp | {g1_label} | {g2_label} | kNN Grp | Votes"
+            header = f"  Theme | {g1_label} | {g2_label} | Norm Grp | Votes | kNN Grp"
             out(f"\n{header}")
             out("  " + "-" * (len(header) - 2))
 
-            norm_gt1 = norm_gt2 = knn_gt1 = knn_gt2 = 0
+            norm_gt1 = norm_gt2 = norm_both = knn_gt1 = knn_gt2 = knn_both = 0
             for label, theme, emb in zip(labels, themes, theme_embeddings):
                 d1 = normalised_distance(emb, gt1_centroid, gt1_mean)
                 d2 = normalised_distance(emb, gt2_centroid, gt2_mean)
-                norm_group = "1" if d1 <= d2 else "2"
-                knn_winner, v1, v2 = knn_group(emb, gt1_embeddings, gt2_embeddings)
-                out(f"  {label:<5} |    {norm_group}    | {d1:.3f}      | {d2:.3f}      |    {knn_winner}    | {v1}-{v2}")
+                norm_group = norm_group_assign(d1, d2)
+                knn_winner, v1, v2 = knn_group(emb, gt1_embeddings, gt2_embeddings, k)
+                out(f"  {label:<5} | {d1:.3f}      | {d2:.3f}      | {norm_group:^8} | {v1}-{v2:<4} | {knn_winner:^8}")
                 if norm_group == "1": norm_gt1 += 1
-                else: norm_gt2 += 1
+                elif norm_group == "2": norm_gt2 += 1
+                else: norm_both += 1
                 if knn_winner == "1": knn_gt1 += 1
-                else: knn_gt2 += 1
+                elif knn_winner == "2": knn_gt2 += 1
+                else: knn_both += 1
 
             out()
             for label, text in zip(labels, theme_texts):
                 out(f"  {label}: {text}")
 
-            results[question] = (norm_gt1, norm_gt2, knn_gt1, knn_gt2)
+            results[question] = (norm_gt1, norm_gt2, norm_both, knn_gt1, knn_gt2, knn_both)
 
     return results
 
 
 def print_summary(
-    summary: dict[str, dict[str, tuple[int, int, int, int]]],
+    summary: dict[str, dict[str, tuple[int, int, int, int, int, int]]],
     gt1_name: str,
     gt2_name: str,
 ) -> None:
@@ -174,11 +186,25 @@ def print_summary(
         name_w = max(len(n) for n in datasets)
         g1 = gt1_name[:10]
         g2 = gt2_name[:10]
-        header = f"  {'Dataset':<{name_w}} | Norm→{g1} | Norm→{g2} | kNN→{g1} | kNN→{g2}"
+        cw = max(len(g1), len(g2), 4) + 5  # column width for gt1/gt2 cols
+        header = (
+            f"  {'Dataset':<{name_w}} | #themes"
+            f" | {'Norm→'+g1:^{cw}} | {'Norm→both':^9} | {'Norm→'+g2:^{cw}}"
+            f" | {'Norm→'+g1+'+both':^{cw+5}} | {'Norm→'+g2+'+both':^{cw+5}}"
+            f" | {'kNN→'+g1:^{cw}} | {'kNN→both':^8} | {'kNN→'+g2:^{cw}}"
+            f" | {'kNN→'+g1+'+both':^{cw+5}} | {'kNN→'+g2+'+both':^{cw+5}}"
+        )
         print(header)
         print("  " + "-" * (len(header) - 2))
-        for dataset_name, (n1, n2, k1, k2) in sorted(datasets.items()):
-            print(f"  {dataset_name:<{name_w}} | {n1:^{5+len(g1)}} | {n2:^{5+len(g2)}} | {k1:^{4+len(g1)}} | {k2:^{4+len(g2)}}")
+        for dataset_name, (n1, n2, nb, k1, k2, kb) in sorted(datasets.items()):
+            total = n1 + n2 + nb
+            print(
+                f"  {dataset_name:<{name_w}} | {total:^7}"
+                f" | {n1:^{cw}} | {nb:^9} | {n2:^{cw}}"
+                f" | {n1+nb:^{cw+5}} | {n2+nb:^{cw+5}}"
+                f" | {k1:^{cw}} | {kb:^8} | {k2:^{cw}}"
+                f" | {k1+kb:^{cw+5}} | {k2+kb:^{cw+5}}"
+            )
 
 
 def analyse(
@@ -187,6 +213,7 @@ def analyse(
     gt2_name: str,
     test_name: str | None,
     run: int,
+    k: int = DEFAULT_K,
 ) -> None:
     gt1_by_question = load_themes_by_question(search_dir / gt1_name, run)
     gt2_by_question = load_themes_by_question(search_dir / gt2_name, run)
@@ -209,14 +236,33 @@ def analyse(
     log_dir.mkdir(exist_ok=True)
 
     cache_key = test_name or "all"
-    cache_path = search_dir / f".embeddings_cache_{cache_key}.json"
+    cache_path = search_dir / f".embeddings_cache_{cache_key}_{EMBEDDING_MODEL}.json"
     cache: dict[str, list[float]] = json.loads(cache_path.read_text()) if cache_path.exists() else {}
     client = make_client()
 
-    # question -> dataset_name -> (norm_gt1, norm_gt2, knn_gt1, knn_gt2)
-    summary: dict[str, dict[str, tuple[int, int, int, int]]] = defaultdict(dict)
+    # question -> dataset_name -> (norm_gt1, norm_gt2, norm_both, knn_gt1, knn_gt2, knn_both)
+    summary: dict[str, dict[str, tuple[int, int, int, int, int, int]]] = defaultdict(dict)
+
+    gt1_embs_by_q: dict[str, list[np.ndarray]] = {}
+    gt2_embs_by_q: dict[str, list[np.ndarray]] = {}
+    gt1_stats_by_q: dict[str, tuple[np.ndarray, float]] = {}
+    gt2_stats_by_q: dict[str, tuple[np.ndarray, float]] = {}
 
     try:
+        print(f"Loading ground truth embeddings (k={k})...", file=sys.stderr)
+        for question in questions:
+            gt1_embs = fetch_embeddings(
+                [t["topic_description"] for t in gt1_by_question[question]], client, cache
+            )
+            gt2_embs = fetch_embeddings(
+                [t["topic_description"] for t in gt2_by_question[question]], client, cache
+            )
+            gt1_embs_by_q[question] = gt1_embs
+            gt2_embs_by_q[question] = gt2_embs
+            gt1_stats_by_q[question] = cluster_stats(gt1_embs)
+            gt2_stats_by_q[question] = cluster_stats(gt2_embs)
+            print(f"  {question}: {gt1_name}={len(gt1_embs)} themes, {gt2_name}={len(gt2_embs)} themes")
+
         for dataset_dir in dataset_dirs:
             themes_by_question = load_themes_by_question(dataset_dir, run)
             log_path = log_dir / f"{dataset_dir.name}.log"
@@ -224,8 +270,9 @@ def analyse(
 
             results = analyse_dataset(
                 dataset_dir.name, themes_by_question, questions,
-                gt1_name, gt2_name, gt1_by_question, gt2_by_question,
-                client, cache, log_path,
+                gt1_name, gt2_name,
+                gt1_embs_by_q, gt2_embs_by_q, gt1_stats_by_q, gt2_stats_by_q,
+                client, cache, log_path, k=k,
             )
             for question, counts in results.items():
                 summary[question][dataset_dir.name] = counts
@@ -245,6 +292,7 @@ if __name__ == "__main__":
     parser.add_argument("ground_truth_2", help="Name of the second ground truth directory")
     parser.add_argument("test_dir", nargs="?", default=None, help="Directory containing comparison datasets (optional)")
     parser.add_argument("--run", type=int, default=1, help="Run number to use (default: 1)")
+    parser.add_argument("--knn-num-neighbours", type=int, default=DEFAULT_K, help=f"Number of neighbours for k-NN classification; themes with minority votes >= k//2 are classified as 'both' (default: {DEFAULT_K})")
     args = parser.parse_args()
 
-    analyse(args.directory, args.ground_truth_1, args.ground_truth_2, args.test_dir, args.run)
+    analyse(args.directory, args.ground_truth_1, args.ground_truth_2, args.test_dir, args.run, k=args.knn_num_neighbours)
