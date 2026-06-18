@@ -1,5 +1,4 @@
 import json
-import re
 from typing import Dict, List, Optional
 
 from botocore.exceptions import ClientError
@@ -84,10 +83,10 @@ def read_json(
 def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
     """
     Get all question_part_N folders from the inputs path.
-    
+
     Uses list_objects_v2 with Delimiter to efficiently list only subdirectories
     without iterating through individual files. Paginates through all results.
-    
+
     Args:
         inputs_path: S3 path to inputs folder (e.g., "app_data/consultations/CODE/inputs/")
         bucket_name: S3 bucket name
@@ -163,7 +162,7 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
 def get_consultation_folders() -> list[str]:
     """
     Get all consultation folder codes from S3.
-    
+
     Uses list_objects_v2 with Delimiter to efficiently list only directory-level
     prefixes without iterating through individual files. Paginates through all results.
 
@@ -205,7 +204,7 @@ def get_consultation_folders() -> list[str]:
             if "CommonPrefixes" in response:
                 prefixes_in_page = []
                 codes_in_page = []
-                
+
                 for prefix_info in response["CommonPrefixes"]:
                     prefix = prefix_info["Prefix"]
                     prefixes_in_page.append(prefix)
