@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional
 from uuid import UUID
 
-import boto3
 import tiktoken
 from django.conf import settings
 from django.db import transaction
@@ -37,7 +36,7 @@ ResponseThemeThroughModel = Response.chosen_options.through
 
 
 def load_respondents_from_s3(
-    consultation_code: str, bucket_name: str, s3_client=None
+    consultation_code: str, bucket_name: str
 ) -> List[RespondentInput]:
     """
     Load and validate respondents from S3.
@@ -54,7 +53,7 @@ def load_respondents_from_s3(
 
     logger.info("Loading respondents from {key}", key=key)
 
-    raw_data = s3.read_jsonl(bucket_name, key, s3_client)
+    raw_data = s3.read_jsonl(bucket_name, key)
 
     respondents = [RespondentInput(**data) for data in raw_data]
 
@@ -65,7 +64,7 @@ def load_respondents_from_s3(
 
 
 def load_question_from_s3(
-    consultation_code: str, question_number: int, bucket_name: str, s3_client=None
+    consultation_code: str, question_number: int, bucket_name: str
 ) -> QuestionInput:
     """
     Load and validate a single question from S3.
@@ -74,7 +73,6 @@ def load_question_from_s3(
         consultation_code: Consultation code
         question_number: Question number
         bucket_name: S3 bucket name
-        s3_client: Optional boto3 S3 client
 
     Returns:
         Validated QuestionInput object
@@ -85,7 +83,7 @@ def load_question_from_s3(
         "Loading question {question_number} from {key}", question_number=question_number, key=key
     )
 
-    data = s3.read_json(bucket_name, key, s3_client)
+    data = s3.read_json(bucket_name, key)
 
     if data is None:
         raise ValueError(f"Question file not found or empty: {key}")
@@ -100,7 +98,7 @@ def load_question_from_s3(
 
 
 def load_responses_from_s3(
-    consultation_code: str, question_number: int, bucket_name: str, s3_client=None
+    consultation_code: str, question_number: int, bucket_name: str
 ) -> List[ResponseInput]:
     """
     Load and validate free text responses for a question from S3.
@@ -109,7 +107,6 @@ def load_responses_from_s3(
         consultation_code: Consultation code
         question_number: Question number
         bucket_name: S3 bucket name
-        s3_client: Optional boto3 S3 client
 
     Returns:
         List of validated ResponseInput objects
@@ -122,7 +119,7 @@ def load_responses_from_s3(
         key=key,
     )
 
-    raw_data = s3.read_jsonl(bucket_name, key, s3_client, raise_if_missing=False)
+    raw_data = s3.read_jsonl(bucket_name, key, raise_if_missing=False)
 
     responses = []
     for data in raw_data:
@@ -139,7 +136,7 @@ def load_responses_from_s3(
 
 
 def load_multi_choice_from_s3(
-    consultation_code: str, question_number: int, bucket_name: str, s3_client=None
+    consultation_code: str, question_number: int, bucket_name: str
 ) -> List[MultiChoiceInput]:
     """
     Load and validate multi-choice selections for a question from S3.
@@ -148,7 +145,6 @@ def load_multi_choice_from_s3(
         consultation_code: Consultation code
         question_number: Question number
         bucket_name: S3 bucket name
-        s3_client: Optional boto3 S3 client
 
     Returns:
         List of validated MultiChoiceInput objects
@@ -161,7 +157,7 @@ def load_multi_choice_from_s3(
         key=key,
     )
 
-    raw_data = s3.read_jsonl(bucket_name, key, s3_client, raise_if_missing=False)
+    raw_data = s3.read_jsonl(bucket_name, key, raise_if_missing=False)
 
     multi_choices = []
     for data in raw_data:
@@ -207,10 +203,8 @@ def load_consultation_data_batch(
         consultation_code=consultation_code,
     )
 
-    s3_client = boto3.client("s3")
-
     # Load respondents
-    respondents = load_respondents_from_s3(consultation_code, bucket_name, s3_client)
+    respondents = load_respondents_from_s3(consultation_code, bucket_name)
 
     # Discover question folders
     inputs_path = f"app_data/consultations/{consultation_code}/inputs/"
@@ -231,7 +225,7 @@ def load_consultation_data_batch(
     # Load questions
     questions = []
     for question_number in question_numbers:
-        question = load_question_from_s3(consultation_code, question_number, bucket_name, s3_client)
+        question = load_question_from_s3(consultation_code, question_number, bucket_name)
         questions.append(question)
 
     # Load responses and multi-choice data
@@ -241,14 +235,14 @@ def load_consultation_data_batch(
     for question_number in question_numbers:
         # Load free text responses
         responses = load_responses_from_s3(
-            consultation_code, question_number, bucket_name, s3_client
+            consultation_code, question_number, bucket_name
         )
         if responses:
             responses_by_question[question_number] = responses
 
         # Load multi-choice data
         multi_choices = load_multi_choice_from_s3(
-            consultation_code, question_number, bucket_name, s3_client
+            consultation_code, question_number, bucket_name
         )
         if multi_choices:
             multi_choice_by_question[question_number] = multi_choices

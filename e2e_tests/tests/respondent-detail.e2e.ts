@@ -29,7 +29,7 @@ test.describe("Respondent Detail Page", () => {
     await page.waitForLoadState("networkidle");
 
     const questionCard = page.getByTestId(`question-link-${questionId}`);
-    await expect(questionCard.first()).toBeVisible({ timeout: 10000 });
+    await expect(questionCard.first()).toBeVisible();
 
     const questionCardCount = await questionCard.count();
     
@@ -42,7 +42,7 @@ test.describe("Respondent Detail Page", () => {
 
     const allRespondentButtons = page.getByTestId('respondent-button-1');
 
-    await expect(allRespondentButtons.first()).toBeVisible({ timeout: 10000 });
+    await expect(allRespondentButtons.first()).toBeVisible();
 
     const respondentCount = await allRespondentButtons.count();
     
@@ -55,12 +55,12 @@ test.describe("Respondent Detail Page", () => {
 
     await expect(page).toHaveURL(/\/consultations\/.*\/respondent\/.*/);
     
-    await expect(page.getByRole("heading", { name: /responses to consultation questions/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("heading", { name: /responses to consultation questions/i })).toBeVisible();
     
     const loadingMessage = page.getByText("Loading Responses...");
-    await expect(loadingMessage).toBeHidden({ timeout: 30000 });
+    await expect(loadingMessage).toBeHidden();
 
-    await expect(page.getByTestId('question-number').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('question-number').first()).toBeVisible();
   });
 
   test("page navigation and title should display correctly", async ({ page }) => {

@@ -156,15 +156,15 @@ test.describe("Support Console - Consultations", () => {
   test("toggles date sort state when date sort button is clicked", async ({ page }) => {
     const sortByDateButton = page.getByRole("button", { name: "Created At" });
 
-    // Click once to reverse order
-    await sortByDateButton.click();
-    await expect(sortByDateButton).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByTestId("date-column")).toHaveAttribute("aria-sort", "ascending");
-
-    // Click once more to unset sorting
+    // Click once to unset sorting
     await sortByDateButton.click();
     await expect(sortByDateButton).toHaveAttribute("aria-pressed", "false");
     await expect(page.getByTestId("date-column")).toHaveAttribute("aria-sort", "none");
+
+    // Click once more to apply ascending sorting
+    await sortByDateButton.click();
+    await expect(sortByDateButton).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("date-column")).toHaveAttribute("aria-sort", "ascending");
   });
 
   test("initially does not sort by name", async ({ page }) => {
@@ -176,15 +176,15 @@ test.describe("Support Console - Consultations", () => {
   test("toggles name sort state when name sort button is clicked", async ({ page }) => {
     const sortByNameButton = page.getByRole("button", { name: "Name" });
 
-    // Click once to reverse order
-    await sortByNameButton.click();
-    await expect(sortByNameButton).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByTestId("name-column")).toHaveAttribute("aria-sort", "descending");
-
-    // Click once more to unset sorting
+    // Click once to apply sorting
     await sortByNameButton.click();
     await expect(sortByNameButton).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByTestId("name-column")).toHaveAttribute("aria-sort", "ascending");
+
+    // Click once more to reverse sorting
+    await sortByNameButton.click();
+    await expect(sortByNameButton).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("name-column")).toHaveAttribute("aria-sort", "descending");
   });
 
   test("consultations list shows creation dates", async ({ page }) => {

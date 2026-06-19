@@ -54,7 +54,7 @@
         const dateDirectionMultiplier =
           dateSortDirection === SORT_DIRECTION.ASC ? -1 : 1;
 
-        return (dateA > dateB ? 1 : -1) * dateDirectionMultiplier;
+        return (dateA < dateB ? 1 : -1) * dateDirectionMultiplier;
       });
     }
 
@@ -66,9 +66,9 @@
         const nameDirectionMultiplier =
           nameSortDirection === SORT_DIRECTION.ASC ? 1 : -1;
 
-        if (nameA > nameB) {
+        if (nameA < nameB) {
           return -1 * nameDirectionMultiplier;
-        } else if (nameA < nameB) {
+        } else if (nameA > nameB) {
           return 1 * nameDirectionMultiplier;
         }
         return 0;
@@ -99,9 +99,9 @@
       resetDirections();
 
       if (direction === SORT_DIRECTION.NONE) {
-        setDirection(SORT_DIRECTION.DESC);
-      } else if (direction === SORT_DIRECTION.DESC) {
         setDirection(SORT_DIRECTION.ASC);
+      } else if (direction === SORT_DIRECTION.ASC) {
+        setDirection(SORT_DIRECTION.DESC);
       } else {
         setDirection(SORT_DIRECTION.NONE);
       }
@@ -109,7 +109,7 @@
     ariaLabel={`sort consultations by ${text}`}
     ariaControls="consultations-list"
     highlighted={direction !== SORT_DIRECTION.NONE}
-    highlightVariant={"none"}
+    highlightVariant="none"
   >
     {text}
     {#if direction !== SORT_DIRECTION.NONE}
@@ -144,7 +144,11 @@
   <table class="w-full whitespace-nowrap text-left">
     <thead class="font-bold">
       <tr>
-        <th class="py-2 pr-2" aria-sort={nameSortDirection || "none"} data-testid="name-column">
+        <th
+          class="py-2 pr-2"
+          aria-sort={nameSortDirection || "none"}
+          data-testid="name-column"
+        >
           {@render sortButton(
             "Name",
             nameSortDirection,
@@ -154,7 +158,11 @@
             () => (dateSortDirection = SORT_DIRECTION.NONE),
           )}
         </th>
-        <th class="py-2 pr-2" aria-sort={dateSortDirection || "none"} data-testid="date-column">
+        <th
+          class="py-2 pr-2"
+          aria-sort={dateSortDirection || "none"}
+          data-testid="date-column"
+        >
           {@render sortButton(
             "Created At",
             dateSortDirection,

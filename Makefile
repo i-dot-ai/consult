@@ -24,13 +24,13 @@ setup: ## Set up env files and database with dummy data
 
 .PHONY: serve
 serve: ## Run the backend and frontend together
-	docker compose up -d postgres redis
+	docker compose up -d postgres redis minio
 	> backend/sql.log
 	uv tool run honcho start -f Procfile.dev
 
 .PHONY: backend
 backend: ## Run the backend and the worker
-	docker compose up -d postgres redis
+	docker compose up -d postgres redis minio
 	uv tool run honcho start -f Procfile.dev web worker worker2
 
 .PHONY: frontend
@@ -40,6 +40,7 @@ frontend: ## Run the frontend
 .PHONY: test-backend
 test-backend: ## Run the backend tests
 	cd backend && PYTHONPATH=.. uv run pytest tests/ --random-order
+	@echo "Tests complete!"
 
 .PHONY: test-frontend
 test-frontend: ## Run the frontend tests
@@ -82,7 +83,7 @@ _run-e2e-tests:
 	@echo "Running tests..."
 	@cd e2e_tests && npm install
 	@if [ -z "$$CI" ]; then cd e2e_tests && npx playwright install --with-deps; fi
-	@cd e2e_tests && npm run e2e
+	@cd e2e_tests && npm run e2e-chrome
 
 .PHONY: _clean-e2e
 _clean-e2e: ## Internal: always-run cleanup for test-end-to-end (drop test DB, remove generated override)
@@ -134,11 +135,11 @@ migrate: ## Apply migrations
 
 .PHONY: setup_db
 setup_db: ## Set up the development db on docker
-	docker compose up -d postgres
+	docker compose up -d postgres minio
 
 .PHONY: reset_db
 reset_db: ## Reset the dev db
-	docker compose down postgres
+	docker compose down postgres minio
 	docker volume rm -f consult_postgres_data
 	$(MAKE) setup_db
 
