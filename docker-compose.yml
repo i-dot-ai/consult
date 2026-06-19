@@ -19,6 +19,30 @@ services:
     networks:
       - consult
 
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    expose:
+      - "9100"
+      - "9001"
+    ports:
+      - "9100:9100"
+      - "9001:9001"
+    environment:
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+    command: server --address ":9100" --console-address ":9001" /data
+    networks:
+      - consult
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9100/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
   # Redis Cache
   redis:
     image: redis:7-alpine
@@ -47,13 +71,13 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
       - DJANGO_SETTINGS_MODULE=backend.settings.local
       - DOMAIN_NAME=localhost:3000
-    volumes:
-      - .:/app
-      - /app/node_modules
+      - MINIO_ENDPOINT=http://minio:9100
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     networks:
       - consult
@@ -61,7 +85,7 @@ services:
 
   # Frontend
   frontend:
-    image: node:18
+    image: node:24-slim
     working_dir: /app
     ports:
       - "3000:3000"
@@ -80,7 +104,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  frontend_node_modules:
+  minio_data:
 
 networks:
   consult:

@@ -2,11 +2,11 @@ import csv
 import io
 from typing import Dict, List, Optional
 
-import boto3
 from django.conf import settings
 from django.db import transaction
 from themefinder.models import ThemeNode
 
+import consultations.utils.s3 as s3_utils
 import data_pipeline.s3 as s3
 from consultations.models import (
     CandidateTheme,
@@ -29,7 +29,6 @@ def load_candidate_themes_from_s3(
     question_number: int,
     timestamp: str,
     bucket_name: Optional[str] = None,
-    s3_client=None,
 ) -> List[ThemeNode]:
     """
     Load and validate candidate themes for a single question from S3.
@@ -39,7 +38,6 @@ def load_candidate_themes_from_s3(
         question_number: The question number (e.g., 1 for question_part_1)
         timestamp: The timestamp folder identifying the themefinder run
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
-        s3_client: Optional boto3 S3 client (for testing)
 
     Returns:
         List of validated CandidateThemeInput objects
@@ -57,7 +55,7 @@ def load_candidate_themes_from_s3(
 
     # Read and parse JSON file
     theme_data = s3.read_json(
-        bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=False
+        bucket_name=bucket_name_str, key=key, raise_if_missing=False
     )
 
     if theme_data is None:
@@ -80,7 +78,6 @@ def load_candidate_themes_batch(
     timestamp: str,
     question_numbers: Optional[List[int]] = None,
     bucket_name: Optional[str] = None,
-    s3_client=None,
 ) -> CandidateThemeBatch:
     """
     Load all candidate themes for a consultation, organized by question.
@@ -90,7 +87,6 @@ def load_candidate_themes_batch(
         timestamp: The timestamp folder identifying the themefinder run
         question_numbers: Optional list of question numbers to load (defaults to all questions in consultation)
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
-        s3_client: Optional boto3 S3 client (for testing)
 
     Returns:
         CandidateThemeBatch with all themes organized by question number
@@ -130,7 +126,6 @@ def load_candidate_themes_batch(
             question_number=question_number,
             timestamp=timestamp,
             bucket_name=bucket_name_str,
-            s3_client=s3_client,
         )
         if themes:  # Only add if themes exist for this question
             themes_by_question[question_number] = themes
@@ -391,7 +386,6 @@ def export_candidate_themes_to_s3(consultation: Consultation) -> int:
     Raises:
         ValueError: If no questions have candidate themes
     """
-    s3_client = boto3.client("s3")
     questions_exported = 0
 
     questions = consultation.question_set.filter(has_free_text=True)
@@ -419,6 +413,9 @@ def export_candidate_themes_to_s3(consultation: Consultation) -> int:
             f"app_data/consultations/{consultation.code}/inputs/"
             f"question_part_{question.number}/themes.csv"
         )
+
+        s3_client = s3_utils.get_s3_client()
+
         s3_client.put_object(
             Bucket=settings.AWS_BUCKET_NAME, Key=s3_path, Body=csv_buffer.getvalue()
         )

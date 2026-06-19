@@ -52,12 +52,25 @@ def create_response_from_fixtures(respondents, index, question_object, response_
 
 
 def create_question_from_fixtures(consultation_object, respondents, question_data):
+    # Use explicit theme_status if provided, otherwise default to DRAFT
+    theme_status = Question.ThemeStatus.DRAFT
+    if "theme_status" in question_data:
+        # Map string values to enum
+        status_map = {
+            "draft": Question.ThemeStatus.DRAFT,
+            "configured": Question.ThemeStatus.CONFIGURED,
+            "finalising_themes": Question.ThemeStatus.FINALISING_THEMES,
+            "confirmed": Question.ThemeStatus.CONFIRMED,
+        }
+        theme_status = status_map.get(question_data["theme_status"], Question.ThemeStatus.DRAFT)
+
     question_object = Question.objects.create(
         consultation=consultation_object,
         text=question_data["text"],
         number=question_data["number"],
         has_free_text=question_data["has_free_text"],
         has_multiple_choice=question_data["has_multiple_choice"],
+        theme_status=theme_status,
     )
 
     if "multiple_choice_options" in question_data:

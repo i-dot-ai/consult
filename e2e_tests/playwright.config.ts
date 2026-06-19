@@ -22,8 +22,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Opt out of parallel tests. */
+  workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [["list"], ["html", { open: "never" }]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -38,6 +38,11 @@ export default defineConfig({
     extraHTTPHeaders: {
       "x-amzn-oidc-data": testAccessToken,
     },
+  },
+
+  /* Global expect timeout */
+  expect: {
+    timeout: 30000,
   },
 
   /* Configure projects for major browsers */

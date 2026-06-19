@@ -27,7 +27,7 @@ test.describe("Dashboard Page", () => {
   test("all question cards should show as links", async ({ page }) => {
     for (let questionId of questionIds) {
       const questionCard = page.getByTestId(`question-link-${questionId}`);
-      await expect(questionCard.first()).toBeVisible({ timeout: 10000 });
+      await expect(questionCard.first()).toBeVisible();
 
       const questionCardCount = await questionCard.count();
       
@@ -40,16 +40,16 @@ test.describe("Dashboard Page", () => {
     const numberOfResponses = analysisConsultation.questions!.reduce((sum, question) => sum + (question.responses ? question.responses.length : 0), 0).toString();
 
     const questionOnPage = page.getByTestId("metric-count-questions");
-    await expect (questionOnPage).toBeVisible({ timeout: 10000 });
+    await expect (questionOnPage).toBeVisible();
     await expect (questionOnPage).toHaveText(numberOfQuestions);
 
     const responsesOnPage = page.getByTestId("metric-count-responses");
-    await expect (responsesOnPage).toBeVisible({ timeout: 10000 });
+    await expect (responsesOnPage).toBeVisible();
     await expect (responsesOnPage).toHaveText(numberOfResponses);
 
     // demographic info is more complicated to work out, and is fixed to a size of 2 in fixture setup
     const demographicsOnPage = page.getByTestId("metric-count-demographics");
-    await expect (demographicsOnPage).toBeVisible({ timeout: 10000 });
+    await expect (demographicsOnPage).toBeVisible();
     await expect (demographicsOnPage).toHaveText("2");
 
     const demographicSummaries = page.getByTestId("demographics-metrics-summary");
@@ -67,15 +67,17 @@ test.describe("Dashboard Page", () => {
   test("favourited questions should appear in favourites section", async ({ page }) => {
     for (let questionId of questionIds) {
       const questionFavouriteButton = page.getByTestId(`favourite-button-${questionId}`);
-      await expect(questionFavouriteButton.first()).toBeVisible({ timeout: 10000 });
+      await expect(questionFavouriteButton.first()).toBeVisible();
       const favouriteButtonCount = await questionFavouriteButton.count();
       expect(favouriteButtonCount).toBe(1);
 
       await questionFavouriteButton.click();
 
+      await page.waitForLoadState("networkidle");
+
       const questionSection = page
       .getByTestId("favourite-questions-section")
-      .filter({ has: page.getByTestId(`favourite-button-${questionId}`)})
+      .filter({ has: page.getByTestId(`favourite-button-${questionId}`)});
 
       await expect (questionSection).toHaveCount(1);
     }

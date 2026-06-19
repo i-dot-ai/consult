@@ -47,7 +47,7 @@ test.describe("Demographic Detail Page", () => {
     await expect(ageGroup).toBeVisible();
 
     const ageGroupText = ageGroup.getByTestId('panel-component');
-    await expect (ageGroupText).toHaveText("age_group 18-35 2 40% 36-50 2 40% 51-65 1 20%  ");
+    await expect (ageGroupText).toHaveText("age_group 18-35 2 40% 36-50 2 40% 51-65 1 20%  ", );
 
     const nation = page.getByTestId('metrics-summary-nation');
     await expect(nation).toBeVisible();
