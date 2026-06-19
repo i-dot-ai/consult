@@ -64,6 +64,16 @@ test.describe("Support Console - Consultations Detail", () => {
     await expect(page).toHaveURL(new RegExp("/support/consultations/.*/users/.*/remove"));
   })
 
+  setupConsultation.questions?.forEach((question) => {
+    test(`displays question ${question.number}`, async ({ page }) => {
+      await expect(page.getByRole("cell", { name: question.text })).toBeVisible();
+      const removeQuestionButton = page.getByLabel(`delete question ${question.number}`);
+
+      await removeQuestionButton.click();
+      await expect(page).toHaveURL(new RegExp(`/support/consultations/.*/questions/.*/delete`));
+    })
+  })
+
   test.afterAll(async () => {
     await cleanupManager.cleanup();
   });
