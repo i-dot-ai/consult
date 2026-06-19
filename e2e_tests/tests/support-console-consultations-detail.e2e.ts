@@ -33,7 +33,7 @@ test.describe("Support Console - Consultations Detail", () => {
 
   const NAV_LINKS = [
     { text: "View on frontend (question review)", url: new RegExp("/evaluations/.*/questions/") },
-    { text: "View finalise theme", url: new RegExp("/consultations/.*/finalising-themes") },
+    { text: "View finalise themes", url: new RegExp("/consultations/.*/finalising-themes") },
     { text: "View on frontend (dashboard)", url: new RegExp("/consultations/.*") },
     { text: "Import finalised themes from another consultation", url: new RegExp("/support/consultations/.*/import-themes") },
     { text: "Delete this consultation", url: new RegExp("/support/consultations/.*/delete") },
