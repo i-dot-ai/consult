@@ -54,7 +54,7 @@
         const dateDirectionMultiplier =
           dateSortDirection === SORT_DIRECTION.ASC ? -1 : 1;
 
-        return (dateA > dateB ? 1 : -1) * dateDirectionMultiplier;
+        return (dateA < dateB ? 1 : -1) * dateDirectionMultiplier;
       });
     }
 
@@ -66,9 +66,9 @@
         const nameDirectionMultiplier =
           nameSortDirection === SORT_DIRECTION.ASC ? 1 : -1;
 
-        if (nameA > nameB) {
+        if (nameA < nameB) {
           return -1 * nameDirectionMultiplier;
-        } else if (nameA < nameB) {
+        } else if (nameA > nameB) {
           return 1 * nameDirectionMultiplier;
         }
         return 0;
@@ -99,9 +99,9 @@
       resetDirections();
 
       if (direction === SORT_DIRECTION.NONE) {
-        setDirection(SORT_DIRECTION.DESC);
-      } else if (direction === SORT_DIRECTION.DESC) {
         setDirection(SORT_DIRECTION.ASC);
+      } else if (direction === SORT_DIRECTION.ASC) {
+        setDirection(SORT_DIRECTION.DESC);
       } else {
         setDirection(SORT_DIRECTION.NONE);
       }

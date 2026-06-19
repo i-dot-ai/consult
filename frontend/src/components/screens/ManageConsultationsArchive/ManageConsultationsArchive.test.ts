@@ -56,7 +56,7 @@ describe("ManageConsultationsArchive", () => {
     });
   });
 
-  it("should sort by descending if created at button is clicked", async () => {
+  it("should sort by ascending if created at button is clicked twice", async () => {
     render(ManageConsultationsArchive, { consultations: CONSULTATIONS });
 
     const dateSortButton = screen.getByRole("button", {
@@ -64,6 +64,9 @@ describe("ManageConsultationsArchive", () => {
     });
 
     const user = userEvent.setup();
+    // click to unset sort
+    await user.click(dateSortButton);
+    // click to apply ascending
     await user.click(dateSortButton);
 
     const createdAtCells = screen.getAllByTestId("created-at");
@@ -77,7 +80,7 @@ describe("ManageConsultationsArchive", () => {
       if (a === b) {
         return 0;
       }
-      return a > b ? 1 : -1;
+      return a < b ? 1 : -1;
     });
 
     expect(timestamps).toEqual(sortedTimestamps.toReversed());
