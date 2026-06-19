@@ -28,7 +28,6 @@ test.describe("Support Console - Consultations Detail", () => {
   });
 
   test("displays consultation title", async ({ page }) => {
-    // Check the page heading
     await expect(page.getByRole("heading", { name: setupConsultation.title })).toBeVisible();
   })
 
@@ -42,10 +41,9 @@ test.describe("Support Console - Consultations Detail", () => {
   
   NAV_LINKS.forEach(({ text, url }) => {
     test(`displays nav link: ${text}`, async ({ page }) => {
-      // Check the page heading
       const link = page.getByRole("button", { name: text });
       await link.click();
-      expect(page).toHaveURL(url);
+      await expect(page).toHaveURL(url);
     })
   })
 

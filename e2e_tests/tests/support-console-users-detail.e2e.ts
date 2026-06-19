@@ -42,21 +42,26 @@ test.describe("Support Console - Users Detail", () => {
   })
 
   test("sends request if admin access toggle is switched", async ({ page }) => {
+    let requestCalled = false;
+
+    await page.route(new RegExp("/api/users/.*"), async route => {
+      const request = route.request();
+
+      if (request.method() === "PATCH") {
+        requestCalled = true;
+
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+        })
+        return;
+      }
+      await route.continue();
+    })
+
     const adminAccessToggle = page.getByRole("switch");
-
-    const requestPromise = page.waitForRequest(request => (
-      request.method() === "PATCH" &&
-      request.url().includes("/api/users/")
-    ))
-
     await adminAccessToggle.click();
-    const request = await requestPromise;
-
-    expect(request).toBeTruthy();
-
-    // Restore admin access
-    await adminAccessToggle.click();
-    await requestPromise;
+    await expect.poll(() => requestCalled).toBe(true);
   })
 
   test(`displays associated consultations`, async ({ page }) => {
