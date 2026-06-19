@@ -54,7 +54,9 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
       >
         <tr>
           <th
+            aria-sort="none"
             class="py-2 pr-2"
+            data-testid="name-column"
           >
             <!---->
             <button
@@ -78,13 +80,15 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
             <!---->
           </th>
           <th
+            aria-sort="descending"
             class="py-2 pr-2"
+            data-testid="date-column"
           >
             <!---->
             <button
               aria-controls="consultations-list"
               aria-label="sort consultations by Created At"
-              aria-pressed="false"
+              aria-pressed="true"
               class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
               data-variant="ghost"
               role="button"
@@ -139,13 +143,13 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
               aria-label=""
               class="transition-colors duration-300 text-primary hover:underline"
               data-testid=""
-              href="/support/consultations/c-two"
+              href="/support/consultations/c-four"
               role="button"
               tabindex="0"
               title=""
             >
               <!---->
-              Consultation 2
+              Consultation 4
               
               
             </a>
@@ -232,13 +236,13 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
               aria-label=""
               class="transition-colors duration-300 text-primary hover:underline"
               data-testid=""
-              href="/support/consultations/c-four"
+              href="/support/consultations/c-two"
               role="button"
               tabindex="0"
               title=""
             >
               <!---->
-              Consultation 4
+              Consultation 2
               
               
             </a>
