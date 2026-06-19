@@ -18,9 +18,12 @@ install: ## Install all dependencies
 
 .PHONY: setup
 setup: ## Set up env files and database with dummy data
-	test -f .env || cp .env.test .env
-	test -f frontend/.env || cp frontend/.env.example frontend/.env
+	$(MAKE) sync
 	$(MAKE) dev_environment
+
+.PHONY: sync
+sync: ## Add new env vars from the templates into local .env files (prompts before writing; preserves existing values)
+	@./scripts/sync_env.sh .env.test .env frontend/.env.example frontend/.env
 
 .PHONY: serve
 serve: ## Run the backend and frontend together
