@@ -176,12 +176,12 @@ test.describe("Support Console - Consultations", () => {
   test("toggles name sort state when name sort button is clicked", async ({ page }) => {
     const sortByNameButton = page.getByRole("button", { name: "Name" });
 
-    // Click once to reverse order
+    // Click once to apply sorting
     await sortByNameButton.click();
     await expect(sortByNameButton).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByTestId("name-column")).toHaveAttribute("aria-sort", "descending");
 
-    // Click once more to unset sorting
+    // Click once more to reverse sorting
     await sortByNameButton.click();
     await expect(sortByNameButton).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByTestId("name-column")).toHaveAttribute("aria-sort", "ascending");
