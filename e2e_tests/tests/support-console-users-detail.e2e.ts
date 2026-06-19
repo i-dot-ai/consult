@@ -29,17 +29,33 @@ test.describe("Support Console - Users Detail", () => {
   });
 
   test("displays user email as heading", async ({ page }) => {
-    // Check the page heading
     await expect(page.getByRole("heading", { name: defaultUser.email })).toBeVisible();
   })
 
   test("displays created at", async ({ page }) => {
-    // Check the page heading
     const createdAtCell = page.getByTestId("created-at-value");
     await expect(createdAtCell).toBeVisible();
     // regex matches single or double digit days or months and
     // double or quadruple years
     await expect(createdAtCell).toHaveText(/^\d?\d\/\d?\d\/\d?\d?\d\d$/);
+  })
+
+  test("sends request if admin access toggle is switched", async ({ page }) => {
+    const adminAccessToggle = page.getByRole("switch");
+
+    const requestPromise = page.waitForRequest(request => (
+      request.method() === "PATCH" &&
+      request.url().includes("/api/users/")
+    ))
+
+    await adminAccessToggle.click();
+    const request = await requestPromise;
+
+    expect(request).toBeTruthy();
+
+    // Restore admin access
+    await adminAccessToggle.click();
+    await requestPromise;
   })
 
   test.afterAll(async () => {
