@@ -1,16 +1,15 @@
 name: Frontend CI
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "frontend/**"
   pull_request:
     branches:
       - main
     paths:
       - "frontend/**"
+  workflow_dispatch:
+  # Called by deploy-main as a gate before deploying. When called this way the
+  # path filters above do not apply, so the suite always runs in full.
+  workflow_call:
 
 env:
   NODE_VERSION: "24.14.1" # Match exact version specified in .nvmrc and frontend/Dockerfile

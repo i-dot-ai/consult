@@ -6,11 +6,6 @@ on:
       - release-dev-**
       - release-preprod-**
 
-  workflow_run:
-    workflows: [build]
-    types: [completed]
-    branches: [main]
-
   release:
     types: [published]
 
@@ -25,6 +20,15 @@ on:
         type: choice
         options: [dev, preprod, prod]
 
+  # Called by deploy-main to deploy a specific environment as part of the
+  # merge-to-main pipeline (preprod, then prod once preprod succeeds).
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: string
+
 jobs:
   set-vars:
     runs-on: ubuntu-latest
@@ -35,6 +39,9 @@ jobs:
       repo: ${{ steps.export.outputs.repo }}
       infra-config-repo: ${{ steps.export.outputs.infra-config-repo }}
       environment: ${{ steps.env-var.outputs.environment }}
+      terraform-changed: ${{ steps.check-terraform.outputs.terraform-changed }}
+      lambda-changed: ${{ steps.check-terraform.outputs.lambda-changed }}
+      should-deploy: ${{ steps.should-deploy.outputs.should-deploy }}
       commit-hash: ${{ steps.export.outputs.commit-hash }}
       sha-short: ${{ steps.export.outputs.sha-short }}
 
@@ -79,10 +86,13 @@ jobs:
           INPUTS_ENVIRONMENT: ${{ inputs.environment }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
-          if [[ "${{ github.event_name }}" == "release" ]]; then
-            export ENVIRONMENT=prod
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          # An explicit environment input (from workflow_call or workflow_dispatch)
+          # always wins. A called workflow reports the caller's event_name/ref_name,
+          # so this must be checked before the branch-based rules below.
+          if [[ -n "$INPUTS_ENVIRONMENT" ]]; then
             export ENVIRONMENT=$INPUTS_ENVIRONMENT
+          elif [[ "${{ github.event_name }}" == "release" ]]; then
+            export ENVIRONMENT=prod
           elif [[ "$GITHUB_REF_NAME" == main ]]; then
             export ENVIRONMENT=preprod
           else
@@ -91,7 +101,38 @@ jobs:
           echo "environment=${ENVIRONMENT}"
           echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
 
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3.0.3
+        id: check-terraform
+        with:
+          filters: |
+            terraform-changed:
+              - 'terraform/**'
+            lambda-changed:
+              - 'lambda/**'
+
+      - id: should-deploy
+        env:
+          ENVIRONMENT: ${{ steps.env-var.outputs.environment }}
+        run: |
+          # Path filtering applies to prod only. dev/preprod always deploy the
+          # full infra: moving from a feature branch to main can require an infra
+          # redeploy that isn't visible in the changed paths, so we never skip
+          # there. For prod, an automatic deploy from a main merge is skipped
+          # when neither terraform/ nor lambda/ changed; explicit release or
+          # workflow_dispatch deploys always run.
+          if [[ "$ENVIRONMENT" != "prod" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "release" || \
+                  "${{ github.event_name }}" == "workflow_dispatch" || \
+                  "${{ steps.check-terraform.outputs.terraform-changed }}" == "true" || \
+                  "${{ steps.check-terraform.outputs.lambda-changed }}" == "true" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+          fi
+
   start-runner:
+    if: needs.set-vars.outputs.should-deploy == 'true'
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@main
     needs: set-vars
     permissions: write-all
@@ -109,7 +150,7 @@ jobs:
   build-lambdas:
     needs:
       - set-vars
-    if: always()
+    if: needs.set-vars.outputs.should-deploy == 'true'
     uses: ./.github/workflows/build-lambda-artifacts.yml
     with:
       upload_directory: ./lambda/build
@@ -139,7 +180,7 @@ jobs:
   determine-success:
     needs: [set-vars, start-runner, build-infra]
     runs-on: ${{ needs.start-runner.outputs.label }}
-    if: always() && needs.set-vars.outputs.environment == 'prod'
+    if: always() && needs.set-vars.outputs.should-deploy == 'true' && needs.set-vars.outputs.environment == 'prod'
     outputs:
       success: ${{ steps.success.outputs.success }}
     steps:
@@ -154,7 +195,7 @@ jobs:
   notify-slack:
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/slack-notify.yml@main
     needs: [set-vars, start-runner, build-infra, determine-success]
-    if: always() && needs.set-vars.outputs.environment == 'prod'
+    if: always() && needs.set-vars.outputs.should-deploy == 'true' && needs.set-vars.outputs.environment == 'prod'
     with:
       WORKFLOW_PASSED: ${{ needs.determine-success.outputs.success == 'true' }}
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
@@ -176,7 +217,10 @@ jobs:
       - notify-slack
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@main
     permissions: write-all
-    if: always() && needs.start-runner.outputs.use-persisted == 0
+    if: >-
+      always() &&
+      needs.set-vars.outputs.should-deploy == 'true' &&
+      needs.start-runner.outputs.use-persisted == 0
     with:
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
       EC2_INSTANCE_ID: ${{ needs.start-runner.outputs.ec2-instance-id }}

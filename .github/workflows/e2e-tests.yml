@@ -1,13 +1,12 @@
 name: Playwright E2E Tests
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
   workflow_dispatch:
+  # Called by deploy-main as a gate before deploying.
+  workflow_call:
 
 jobs:
   test:
