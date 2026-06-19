@@ -10,8 +10,8 @@ import boto3
 import pandas as pd
 import sentry_sdk
 import urllib3
-from themefinder.llm import OpenAILLM
 from themefinder import (
+    LLM,
     detail_detection,
     rule_2_themes_must_have_a_non_negligible_number_of_responses_slack,
     rule_4_themes_should_not_overlap_slack,
@@ -153,11 +153,11 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
     Returns:
         str: Path to the output directory
     """
-    llm = OpenAILLM(
-        model=model_name,
-        request_kwargs={"temperature": 0},
+    llm = LLM(
+        model_name,
         base_url=os.environ["LLM_GATEWAY_URL"],
         api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+        temperature=0,
     )
 
     date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")

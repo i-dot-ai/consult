@@ -1,4 +1,4 @@
-from .llm import LLM, LLMResponse, OpenAILLM
+from .llm import LLM, LLMResponse
 from .tasks import (
     detail_detection,
     find_themes,
@@ -18,7 +18,6 @@ from .themeset_rules import (
 __all__ = [
     "LLM",
     "LLMResponse",
-    "OpenAILLM",
     "find_themes",
     "theme_clustering",
     "theme_condensation",

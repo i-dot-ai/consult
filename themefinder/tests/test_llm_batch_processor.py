@@ -1,10 +1,9 @@
 from unittest.mock import MagicMock, patch
 
-import httpx
-import openai
 import pandas as pd
 import pytest
 import tiktoken
+from pydantic_ai.exceptions import ModelHTTPError
 
 from themefinder import detail_detection
 from themefinder.models import (
@@ -524,20 +523,9 @@ def test_generate_prompts_with_partition(monkeypatch):
 async def test_call_llm_bad_request(monkeypatch, mock_llm):
     batch_prompts = [BatchPrompt(prompt_string="dummy prompt", response_ids=[1, 2])]
 
-    class DummyBadRequestError(openai.BadRequestError):
-        def __init__(self, *args, **kwargs):
-            dummy_request = httpx.Request("GET", "http://dummy.url")
-            dummy_response = httpx.Response(
-                status_code=400,
-                content=b'{"error": "dummy"}',
-                headers={"Content-Type": "application/json"},
-                request=dummy_request,
-            )
-            super().__init__(
-                "dummy message", response=dummy_response, body="dummy body"
-            )
-
-    mock_llm.ainvoke.side_effect = DummyBadRequestError()
+    mock_llm.ainvoke.side_effect = ModelHTTPError(
+        status_code=400, model_name="test-model", body={"error": "dummy"}
+    )
     results, failed_ids = await call_llm(
         batch_prompts, mock_llm, output_model=DetailDetectionResponses
     )

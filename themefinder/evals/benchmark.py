@@ -43,15 +43,16 @@ from typing import Any
 import dotenv
 import nest_asyncio
 import pandas as pd
+from pydantic_ai.settings import ModelSettings
 from rich.console import Console
 from rich.table import Table
-from themefinder.llm import OpenAILLM
+from themefinder.llm import LLM
 
 # Allow nested asyncio.run() calls (needed by eval modules)
 nest_asyncio.apply()
 
 # Monkey-patch openai with langfuse-openai for automatic LLM call tracing.
-# Must happen before any OpenAILLM instances are created.
+# Must happen before any LLM instances are created.
 try:
     from langfuse.openai import openai as _langfuse_openai
 
@@ -185,21 +186,20 @@ class ModelConfig:
     temperature: float = 0.0
     timeout: int = 600  # 10 min default
 
-    def create_llm(self) -> OpenAILLM:
-        """Create an OpenAILLM instance via the LLM gateway."""
+    def create_llm(self) -> LLM:
+        """Create an LLM instance via the LLM gateway."""
         if self.provider in (LLMProvider.VERTEX_GEMINI, LLMProvider.VERTEX_CLAUDE):
             raise NotImplementedError(
-                f"TODO: implement OpenAILLM adapter for {self.provider.value}"
+                f"TODO: implement LLM adapter for {self.provider.value}"
             )
-        request_kwargs: dict[str, Any] = {}
+        model_settings = ModelSettings(timeout=self.timeout)
         if not self.reasoning_effort:
-            request_kwargs["temperature"] = self.temperature
-        return OpenAILLM(
-            model=self.deployment,
-            request_kwargs=request_kwargs,
+            model_settings["temperature"] = self.temperature
+        return LLM(
+            self.deployment,
             base_url=os.getenv("LLM_GATEWAY_URL"),
             api_key=os.getenv("CONSULT_EVAL_LITELLM_API_KEY"),
-            timeout=self.timeout,
+            model_settings=model_settings,
         )
 
     @property
@@ -583,12 +583,11 @@ class BenchmarkRunner:
         # Create dedicated judge LLM if configured (separates judge from task model)
         judge_llm = None
         if self.config.judge_model:
-            judge_llm = OpenAILLM(
-                model=self.config.judge_model,
-                request_kwargs={"temperature": 0},
+            judge_llm = LLM(
+                self.config.judge_model,
                 base_url=os.getenv("LLM_GATEWAY_URL"),
                 api_key=os.getenv("CONSULT_EVAL_LITELLM_API_KEY"),
-                timeout=600,
+                model_settings=ModelSettings(temperature=0, timeout=600),
             )
 
         # Run the evaluation with timing, wrapped in trace_context for v3 API
