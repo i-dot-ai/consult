@@ -50,7 +50,7 @@
         <tbody>
           <tr class="border-b">
             <th class="py-3 pr-4 text-left font-semibold">Created at</th>
-            <td class="py-3"
+            <td class="py-3" data-testid="created-at-value"
               >{new Date($userStore.data.created_at).toLocaleDateString()}</td
             >
           </tr>
