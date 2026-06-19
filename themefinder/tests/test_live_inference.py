@@ -158,10 +158,11 @@ async def test_theme_mapping_live(llm, responses_df):
     # Integrity check is on: every input response should be mapped.
     assert unprocessable.empty
     assert set(mapped_df["response_id"]) == set(responses_df["response_id"])
-    # Every assigned label is one of the known theme ids.
-    known = set(refined_themes_df["topic_id"])
+    # Every assigned label is a known theme id or one of the prompt's documented
+    # fallbacks ("Other" / "No Reason Given") used when no theme fits.
+    allowed = set(refined_themes_df["topic_id"]) | {"Other", "No Reason Given"}
     for labels in mapped_df["labels"]:
-        assert set(labels).issubset(known)
+        assert set(labels).issubset(allowed)
 
 
 async def test_detail_detection_live(llm, responses_df):
