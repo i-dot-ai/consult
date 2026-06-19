@@ -26,6 +26,7 @@ test.describe("Support Console - Users Detail", () => {
     await page.waitForLoadState("networkidle");
 
     await page.getByRole("button", { name: defaultUser.email }).first().click();
+    await page.waitForLoadState("networkidle");
   });
 
   test("displays user email as heading", async ({ page }) => {
@@ -56,6 +57,13 @@ test.describe("Support Console - Users Detail", () => {
     // Restore admin access
     await adminAccessToggle.click();
     await requestPromise;
+  })
+
+  test(`displays associated consultations`, async ({ page }) => {
+    await expect(page.getByRole("heading", { name: defaultUser.email })).toBeVisible();
+
+    await expect(page.getByRole("cell", { name: setupConsultation.title }).first()).toBeVisible();
+    await expect(page.getByRole("cell", { name: signOffConsultation.title }).first()).toBeVisible();
   })
 
   test.afterAll(async () => {
