@@ -68,7 +68,7 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
       const questions = setupConsultation.questions!;
 
       await expect(
-        page.getByRole("button", { name: "delete this question" }),
+        page.getByRole("button", { name: /delete question .*/ }),
       ).toHaveCount(questions.length);
 
       // Check each question's text, not just the row count, so a mislabelled
@@ -80,7 +80,7 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
 
     test("shows delete link for each question", async ({ page }) => {
       await expect(
-        page.getByRole("button", { name: "delete this question" }).first()
+        page.getByRole("button", { name: /delete question .*/ }).first()
       ).toBeVisible();
     });
   });
@@ -109,7 +109,7 @@ test.describe("Admin Dashboard - Remove Question", () => {
   });
 
   test("navigates to delete question confirmation page", async ({ page }) => {
-    await page.getByRole("button", { name: "delete this question" }).first().click();
+    await page.getByRole("button", { name: /delete question .*/ }).first().click();
     await page.waitForLoadState("networkidle");
 
     await expect(page).toHaveURL(
@@ -124,7 +124,7 @@ test.describe("Admin Dashboard - Remove Question", () => {
   });
 
   test("deletes question and redirects to consultation dashboard", async ({ page }) => {
-    const deleteButtons = page.getByRole("button", { name: "delete this question" });
+    const deleteButtons = page.getByRole("button", { name: /delete question .*/ });
     const questionCountBefore = await deleteButtons.count();
 
     await deleteButtons.first().click();
@@ -139,7 +139,7 @@ test.describe("Admin Dashboard - Remove Question", () => {
 
     // The dashboard now lists one fewer question, confirming the delete applied.
     await expect(
-      page.getByRole("button", { name: "delete this question" })
+      page.getByRole("button", { name: /delete question .*/ })
     ).toHaveCount(questionCountBefore - 1);
   });
 
