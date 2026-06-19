@@ -109,7 +109,7 @@
     ariaLabel={`sort consultations by ${text}`}
     ariaControls="consultations-list"
     highlighted={direction !== SORT_DIRECTION.NONE}
-    highlightVariant={"none"}
+    highlightVariant="none"
   >
     {text}
     {#if direction !== SORT_DIRECTION.NONE}
@@ -144,7 +144,11 @@
   <table class="w-full whitespace-nowrap text-left">
     <thead class="font-bold">
       <tr>
-        <th class="py-2 pr-2" aria-sort={nameSortDirection || "none"} data-testid="name-column">
+        <th
+          class="py-2 pr-2"
+          aria-sort={nameSortDirection || "none"}
+          data-testid="name-column"
+        >
           {@render sortButton(
             "Name",
             nameSortDirection,
@@ -154,7 +158,11 @@
             () => (dateSortDirection = SORT_DIRECTION.NONE),
           )}
         </th>
-        <th class="py-2 pr-2" aria-sort={dateSortDirection || "none"} data-testid="date-column">
+        <th
+          class="py-2 pr-2"
+          aria-sort={dateSortDirection || "none"}
+          data-testid="date-column"
+        >
           {@render sortButton(
             "Created At",
             dateSortDirection,
