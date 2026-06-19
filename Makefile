@@ -18,9 +18,37 @@ install: ## Install all dependencies
 
 .PHONY: setup
 setup: ## Set up env files and database with dummy data
+	$(MAKE) sync
+	$(MAKE) dev_environment
+
+.PHONY: sync
+sync: ## Add new env vars from the templates into local .env files, preserving existing values
 	test -f .env || cp .env.test .env
 	test -f frontend/.env || cp frontend/.env.example frontend/.env
-	$(MAKE) dev_environment
+	@$(call sync_env,.env.test,.env)
+	@$(call sync_env,frontend/.env.example,frontend/.env)
+
+# sync_env <template> <target>: append any KEY= line present in <template> but
+# whose key is missing from <target>, preserving the target's existing values.
+define sync_env
+	added=0; \
+	while IFS= read -r line || [ -n "$$line" ]; do \
+		case "$$line" in \
+			''|\#*) continue ;; \
+			*=*) ;; \
+			*) continue ;; \
+		esac; \
+		key=$${line%%=*}; \
+		key=$${key#export }; \
+		if ! grep -qE "^(export )?$$key=" "$(2)"; then \
+			[ -s "$(2)" ] && [ -n "$$(tail -c 1 "$(2)")" ] && echo "" >> "$(2)"; \
+			echo "$$line" >> "$(2)"; \
+			echo "  + $$key -> $(2)"; \
+			added=$$((added+1)); \
+		fi; \
+	done < "$(1)"; \
+	[ "$$added" -eq 0 ] && echo "  $(2) already up to date with $(1)" || true
+endef
 
 .PHONY: serve
 serve: ## Run the backend and frontend together
