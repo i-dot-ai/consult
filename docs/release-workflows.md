@@ -13,9 +13,9 @@ There are two release workflows: `release-app` and `release-infra`. They are ind
 
 The release-tag guard in `release-app`/`release-infra` only applies to manual dispatches; the `workflow_call` path from `deploy-main` bypasses it, with the full CI suite acting as the gate instead.
 
-On merge to main, `deploy-main` calls each release workflow with an explicit `environment`. Each still filters internally:
+On merge to main, `deploy-main` calls each release workflow with an explicit `environment`. They filter differently:
 * `release-app` skips individual services whose git SHA matches what is already deployed, so only services with code changes are built and redeployed.
-* `release-infra` skips the entire deployment if neither `terraform/` nor `lambda/` has changed.
+* `release-infra` filters by changed paths for **prod only**. A prod deploy from a main merge is skipped when neither `terraform/` nor `lambda/` changed; explicit `release` or `workflow_dispatch` deploys always run. For **dev and preprod the full Terraform deploy always runs** — moving from a feature branch to `main` can require an infra redeploy that isn't visible in the changed paths, so skipping there would wrongly miss it. (Terraform performs a no-op when nothing has actually changed, so an unnecessary run is cheap; the prod filter mainly avoids spinning up a runner for a guaranteed no-op.)
 
 ## Auto-deploy on merge to main
 
