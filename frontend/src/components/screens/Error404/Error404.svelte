@@ -6,16 +6,14 @@
 </script>
 
 <div class="mt-16">
-  <div class="flex justify-center items-center my-8">
+  <div class="my-8 flex items-center justify-center">
     <MaterialIcon size="5rem" color="fill-neutral-500">
       <QuickReferenceAll />
     </MaterialIcon>
   </div>
 
   <Title level={1} context="public">
-    <span class="block text-primary text-center">
-      404 Not Found
-    </span>
+    <span class="block text-center text-primary"> 404 Not Found </span>
   </Title>
   <Text>
     <span class="block text-center">
