@@ -115,9 +115,8 @@ python "$SCRIPTS_DIR/compare_theme_counts.py" "$DATA_DIR"
 # Skip this step and pass --run <n> to analyse_theme_similarity.py instead
 # if you prefer to analyse run-by-run.
 
-python "$SCRIPTS_DIR/build_consensus_gt.py" \
-    "$DATA_DIR" \
-    "$GT1_NAME" "$GT2_NAME"
+python "$SCRIPTS_DIR/build_consensus_gt.py" "$DATA_DIR/$GT1_NAME"
+python "$SCRIPTS_DIR/build_consensus_gt.py" "$DATA_DIR/$GT2_NAME"
 
 # ─── STEP 6: ANALYSE ─────────────────────────────────────────────────────────
 # Compares each test dataset's themes against the two GT clusters.
