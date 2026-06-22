@@ -313,6 +313,38 @@ release: ## Deploy app
 
 	chmod +x ./terraform/scripts/release.sh && ./terraform/scripts/release.sh $(env)
 
+# LocalStack — Lambda + EventBridge emulation (Hobby tier; no Batch until Ultimate licence)
+
+LOCALSTACK_ENDPOINT ?= http://localhost:4566
+LOCALSTACK_REGION   ?= eu-west-2
+
+.PHONY: localstack
+localstack: ## Start LocalStack (Lambda + EventBridge). Runs init script automatically on first start.
+	docker compose up -d localstack
+
+.PHONY: localstack-reset
+localstack-reset: ## Destroy and restart LocalStack, re-running the init script from scratch
+	docker compose rm -sf localstack
+	docker volume rm -f consult_localstack_volume 2>/dev/null || true
+	rm -rf ./volume
+	docker compose up -d localstack
+
+.PHONY: invoke-find-themes-lambda
+invoke-find-themes-lambda: ## Fire a synthetic find-themes SUCCEEDED event. Args: consultation_code=X run_date=YYYY-MM-DD user_id=1 model_name=gpt-4o
+	@if [ -z "$(consultation_code)" ]; then echo "Usage: make invoke-find-themes-lambda consultation_code=<code> run_date=<YYYY-MM-DD>"; exit 1; fi
+	@aws --endpoint-url=$(LOCALSTACK_ENDPOINT) events put-events \
+		--region $(LOCALSTACK_REGION) \
+		--entries "[{\"Source\":\"aws.batch\",\"DetailType\":\"Batch Job State Change\",\"Detail\":\"{\\\"jobName\\\":\\\"$(FIND_THEMES_BATCH_JOB_NAME)\\\",\\\"status\\\":\\\"SUCCEEDED\\\",\\\"parameters\\\":{\\\"consultation_code\\\":\\\"$(consultation_code)\\\",\\\"run_date\\\":\\\"$(or $(run_date),$(shell date +%Y-%m-%d))\\\",\\\"user_id\\\":\\\"$(or $(user_id),1)\\\",\\\"model_name\\\":\\\"$(or $(model_name),gpt-4o)\\\"}}\"}]"
+	@echo "Synthetic find-themes event fired for consultation: $(consultation_code)"
+
+.PHONY: invoke-assign-themes-lambda
+invoke-assign-themes-lambda: ## Fire a synthetic assign-themes SUCCEEDED event. Args: consultation_code=X run_date=YYYY-MM-DD assignment_target=selected_themes
+	@if [ -z "$(consultation_code)" ]; then echo "Usage: make invoke-assign-themes-lambda consultation_code=<code> run_date=<YYYY-MM-DD>"; exit 1; fi
+	@aws --endpoint-url=$(LOCALSTACK_ENDPOINT) events put-events \
+		--region $(LOCALSTACK_REGION) \
+		--entries "[{\"Source\":\"aws.batch\",\"DetailType\":\"Batch Job State Change\",\"Detail\":\"{\\\"jobName\\\":\\\"$(ASSIGN_THEMES_BATCH_JOB_NAME)\\\",\\\"status\\\":\\\"SUCCEEDED\\\",\\\"parameters\\\":{\\\"consultation_code\\\":\\\"$(consultation_code)\\\",\\\"run_date\\\":\\\"$(or $(run_date),$(shell date +%Y-%m-%d))\\\",\\\"assignment_target\\\":\\\"$(or $(assignment_target),selected_themes)\\\"}}\"}]"
+	@echo "Synthetic assign-themes event fired for consultation: $(consultation_code)"
+
 # Lambda build
 .PHONY: build_lambda_artifacts/ci
 build_lambda_artifacts/ci: ## Build all Lambda artifacts for CI

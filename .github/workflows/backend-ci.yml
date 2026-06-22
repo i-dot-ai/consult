@@ -33,6 +33,14 @@ jobs:
           docker compose up -d postgres redis minio
           docker compose exec -T postgres pg_isready -U postgres || (sleep 5 && docker compose exec -T postgres pg_isready -U postgres) || (sleep 10 && docker compose exec -T postgres pg_isready -U postgres)
 
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@v0.2.3
+        with:
+          image-tag: 'latest'
+          install-awslocal: 'true'
+        # No LOCALSTACK_AUTH_TOKEN — Hobby tier supports Lambda + EventBridge for free.
+        # Add the secret and use-pro: 'true' here once an Ultimate licence is in place (for Batch).
+
       - name: install uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
