@@ -93,13 +93,7 @@ awslocal lambda create-function \
   --environment "Variables={REDIS_HOST=redis,REDIS_PORT=6379,ENVIRONMENT=local}" \
   --timeout 300 \
   --memory-size 512 \
-  --region "$REGION" || echo "(function already exists, updating code)"
-
-# If the function already exists from a previous run, update its code
-awslocal lambda update-function-code \
-  --function-name import-candidate-themes \
-  --zip-file "fileb://$ICT_ZIP" \
-  --region "$REGION" 2>/dev/null || true
+  --region "$REGION"
 
 echo "  Waiting for import-candidate-themes to become Active..."
 awslocal lambda wait function-active \
@@ -126,12 +120,7 @@ awslocal lambda create-function \
   --environment "Variables={REDIS_HOST=redis,REDIS_PORT=6379,ENVIRONMENT=local}" \
   --timeout 300 \
   --memory-size 512 \
-  --region "$REGION" || echo "(function already exists, updating code)"
-
-awslocal lambda update-function-code \
-  --function-name import-response-annotations \
-  --zip-file "fileb://$IRA_ZIP" \
-  --region "$REGION" 2>/dev/null || true
+  --region "$REGION"
 
 echo "  Waiting for import-response-annotations to become Active..."
 awslocal lambda wait function-active \
