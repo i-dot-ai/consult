@@ -102,12 +102,12 @@ services:
     command: sh -c "npm install && npm run dev"
 
   localstack:
-    # Pin to the major version tag to ensure the community (free) image is used.
-    # localstack/localstack:latest may resolve to the Pro image if it has been
-    # previously pulled, which refuses to start without a valid licence.
-    # Switch to localstack/localstack-pro:latest and set LOCALSTACK_AUTH_TOKEN
-    # when an Ultimate licence is available (required for AWS Batch emulation).
-    image: localstack/localstack:3
+    # Use the ECR Public mirror to avoid Docker Hub rate limits on CI runners.
+    # public.ecr.aws/localstack/localstack is the official LocalStack mirror —
+    # identical image, no authentication required.
+    # Switch to localstack/localstack-pro:latest (Docker Hub) and set
+    # LOCALSTACK_AUTH_TOKEN when an Ultimate licence is available (for Batch).
+    image: public.ecr.aws/localstack/localstack:3
     ports:
       - '127.0.0.1:4566:4566' # LocalStack Gateway
       - '127.0.0.1:4510-4559:4510-4559' # external services port range
