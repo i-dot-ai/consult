@@ -1,4 +1,4 @@
-name: Playwright E2E Tests
+name: e2e-tests
 
 on:
   pull_request:
