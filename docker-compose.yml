@@ -101,6 +101,40 @@ services:
       - consult
     command: sh -c "npm install && npm run dev"
 
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - '127.0.0.1:4566:4566' # LocalStack Gateway
+      - '127.0.0.1:4510-4559:4510-4559' # external services port range
+    env_file:
+      - .env
+    environment:
+      - SKIP_SSL_CERT_DOWNLOAD=1
+      - DEBUG=${DEBUG:-0}
+      - PERSISTENCE=${PERSISTENCE:-0}
+      # Scope startup to only the services we use (faster startup, less noise).
+      # Add 'batch' here once an Ultimate licence is in place.
+      - SERVICES=lambda,events,iam,logs
+      # Lambda containers spawned by LocalStack must join the consult network
+      # so they can reach redis:6379 by hostname.
+      - LAMBDA_DOCKER_NETWORK=consult
+    volumes:
+      - '${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      # Init scripts — run automatically when LocalStack reaches ready state
+      - './localstack/init/ready.d:/etc/localstack/init/ready.d'
+      # Lambda source code — read by the init script to build deployment zips
+      - './lambda/import_candidate_themes/code:/etc/localstack/init/lambda/import_candidate_themes'
+      - './lambda/import_response_annotations/code:/etc/localstack/init/lambda/import_response_annotations'
+    healthcheck:
+      test: ["CMD", "awslocal", "lambda", "list-functions", "--region", "eu-west-2"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - consult
+
 volumes:
   postgres_data:
   redis_data:
