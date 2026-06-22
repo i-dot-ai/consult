@@ -1,5 +1,5 @@
 import { request as apirequest } from "@playwright/test";
-import type { APIRequestContext } from "@playwright/test";
+import type { APIRequestContext, Page } from "@playwright/test";
 
 import { testAccessToken } from "../constants";
 import type { Fixture, FixtureReference } from "../fixtures";
@@ -186,4 +186,14 @@ export class CleanupManager {
     }
     this.reset();
   }
+}
+
+/**
+  * Goes to a specific question in a consultation
+ */
+export async function goToConsultationQuestion(page: Page, consultationId: string, questionID: string) {
+    await page.goto(`/consultations/${consultationId}`);
+    await page.waitForLoadState('networkidle');
+    await page.goto(`consultations/${consultationId}/questions/${questionID}`);
+    await page.waitForLoadState('networkidle');
 }

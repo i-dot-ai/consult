@@ -1,13 +1,6 @@
 name: Backend CI
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "backend/**"
-      - "Makefile"
-      - ".github/workflows/backend-ci.yml"
   pull_request:
     branches:
       - main
@@ -16,6 +9,9 @@ on:
       - "Makefile"
       - ".github/workflows/backend-ci.yml"
   workflow_dispatch:
+  # Called by deploy-main as a gate before deploying. When called this way the
+  # path filters above do not apply, so the suite always runs in full.
+  workflow_call:
 
 jobs:
   test:
@@ -34,7 +30,7 @@ jobs:
 
       - name: Start services with docker compose
         run: |
-          docker compose up -d postgres redis
+          docker compose up -d postgres redis minio
           docker compose exec -T postgres pg_isready -U postgres || (sleep 5 && docker compose exec -T postgres pg_isready -U postgres) || (sleep 10 && docker compose exec -T postgres pg_isready -U postgres)
 
       - name: install uv

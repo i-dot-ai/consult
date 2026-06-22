@@ -29,7 +29,7 @@ test.describe("Respondent Detail Page", () => {
     await page.waitForLoadState("networkidle");
 
     const questionCard = page.getByTestId(`question-link-${questionId}`);
-    await expect(questionCard.first()).toBeVisible({ timeout: 10000 });
+    await expect(questionCard.first()).toBeVisible();
 
     const questionCardCount = await questionCard.count();
     
@@ -42,7 +42,7 @@ test.describe("Respondent Detail Page", () => {
 
     const allRespondentButtons = page.getByTestId('respondent-button-1');
 
-    await expect(allRespondentButtons.first()).toBeVisible({ timeout: 10000 });
+    await expect(allRespondentButtons.first()).toBeVisible();
 
     const respondentCount = await allRespondentButtons.count();
     
@@ -55,12 +55,12 @@ test.describe("Respondent Detail Page", () => {
 
     await expect(page).toHaveURL(/\/consultations\/.*\/respondent\/.*/);
     
-    await expect(page.getByRole("heading", { name: /responses to consultation questions/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("heading", { name: /responses to consultation questions/i })).toBeVisible();
     
     const loadingMessage = page.getByText("Loading Responses...");
-    await expect(loadingMessage).toBeHidden({ timeout: 30000 });
+    await expect(loadingMessage).toBeHidden();
 
-    await expect(page.getByTestId('question-number').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('question-number').first()).toBeVisible();
   });
 
   test("page navigation and title should display correctly", async ({ page }) => {
@@ -135,7 +135,7 @@ test.describe("Respondent Detail Page", () => {
   }) => {
     await page.waitForLoadState("networkidle");
     const questionBadges = page.getByTestId('question-number');
-    await expect(questionBadges.first()).toBeVisible({ timeout: 15000 });
+    await expect(questionBadges.first()).toBeVisible();
     const questionLinks = page.locator('a[href*="/questions/"]');
     await expect(questionLinks.first()).toBeVisible();
   });
@@ -145,7 +145,7 @@ test.describe("Respondent Detail Page", () => {
 
     const responseTexts = page.getByTestId('response-text');
     
-    await expect(responseTexts.filter({visible: true}).first()).toBeVisible({ timeout: 15000 });
+    await expect(responseTexts.filter({visible: true}).first()).toBeVisible();
     
     const count = await responseTexts.count();
     expect(count).toBeGreaterThan(0);
@@ -166,11 +166,11 @@ test.describe("Respondent Detail Page", () => {
     await page.waitForLoadState("networkidle");
 
     const themesLabel = page.getByText(/themes:/i);
-    await expect(themesLabel.first()).toBeVisible({ timeout: 15000 });
+    await expect(themesLabel.first()).toBeVisible();
 
     const themeTags = page.getByText("Standardized framework").or(page.getByText("Innovation"));
 
-    await expect(themeTags.first()).toBeVisible({ timeout: 15000 });
+    await expect(themeTags.first()).toBeVisible();
   });
 
   test("displays evidence-rich badge for qualifying responses", async ({
@@ -178,7 +178,7 @@ test.describe("Respondent Detail Page", () => {
   }) => {
     await page.waitForLoadState("networkidle");
     const evidenceBadge = page.getByTestId("evidence-rich-badge");
-    await expect(evidenceBadge.first()).toBeVisible({timeout: 15000});
+    await expect(evidenceBadge.first()).toBeVisible();
   });
 
   test("displays multiple choice responses when answered", async ({ page }) => {
@@ -201,7 +201,7 @@ test.describe("Respondent Detail Page", () => {
 
     const questionBadges = page.getByTestId('question-number');
     
-    await expect(questionBadges.first()).toBeVisible({ timeout: 15000 });
+    await expect(questionBadges.first()).toBeVisible();
     
     const count = await questionBadges.count();
 

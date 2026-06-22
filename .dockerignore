@@ -20,3 +20,20 @@ frontend/CACHE
 frontend/govuk-assets
 frontend/admin
 frontend/django_extensions
+
+# Local virtualenvs, dependencies and build output
+**/.venv
+**/venv
+**/node_modules
+frontend/dist
+frontend/.astro
+
+# Python caches
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+.mypy_cache
+
+# Local env files
+.env
+.env.test

@@ -48,6 +48,7 @@
     buildSelectedThemeDeleteQuery,
     buildSelectedThemesGetQuery,
   } from "../../../global/queries/selectedThemes/queries";
+  import ArrowForward from "../../svg/material/ArrowForward.svelte";
 
   interface Props {
     consultationId: string;
@@ -305,6 +306,27 @@
 {#if errorData}
   <ErrorModal {...errorData} onClose={errorModalOnClose} />
 {/if}
+
+<svelte:boundary>
+  <section class="my-6">
+    <Button
+      testId="back-button"
+      variant="ghost"
+      size="sm"
+      handleClick={() => (location.href = getFinaliseThemesUrl(consultationId))}
+    >
+      <div class="flex items-center gap-2 text-neutral-700">
+        <div class="rotate-180">
+          <MaterialIcon color="fill-neutral-500">
+            <ArrowForward />
+          </MaterialIcon>
+        </div>
+
+        Back to questions
+      </div>
+    </Button>
+  </section>
+</svelte:boundary>
 
 <TitleRow
   level={1}

@@ -156,6 +156,7 @@ let questions = await fetchBackendApi<{ results: Question[] }>(
                 <td class="py-2 pr-2">
                   <Link
                     href={`/support/consultations/${consultationId}/questions/${question.id}/delete`}
+                    ariaLabel={`delete question ${question.number}`}
                   >
                     delete this question
                   </Link>

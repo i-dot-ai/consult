@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
-import { createFixtureData, deleteFixtureData } from "./helpers";
+import { test, expect, Locator } from "@playwright/test";
+import { CleanupManager, createFixtureData } from "./helpers";
 
 import {
   defaultUser,
@@ -70,11 +70,13 @@ test.describe("Support Console - Users", () => {
 
 test.describe("Support Console - Consultations", () => {
   let testData: FixtureReference = {};
+  const cleanupManager = new CleanupManager();
 
   test.beforeAll(async ({ request }) => {
     testData = await createFixtureData(request, {
       consultations: [setupConsultation, signOffConsultation],
     });
+    cleanupManager.add(testData);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -111,6 +113,78 @@ test.describe("Support Console - Consultations", () => {
     await expect(
       page.getByText(signOffConsultation.title).first(),
     ).toBeVisible();
+  });
+
+  test("search filters consultations", async ({ page }) => {
+    const searchBox = page.getByRole("textbox");
+    await searchBox.fill("setup");
+    await expect(page.getByRole("button", { name: "Test Consultation at Setup Stage" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Test Consultation at Finalising Themes Stage" }).first()).not.toBeVisible();
+  });
+
+  test("sort by name button sorts by name alphabetically", async ({ page }) => {
+    const assertAlphabeticalOrder = async (rows: Locator[], reversed?: boolean) => {
+      for (let i=0; i<rows.length-1; i++) {
+        const currRowText = await rows.at(i)?.innerText()!;
+        const nextRowText = await rows.at(i+1)?.innerText()!;
+        expect(reversed
+          ? currRowText > nextRowText || currRowText === nextRowText
+          : currRowText < nextRowText || currRowText === nextRowText
+        ).toBeTruthy();
+      }
+    }
+
+    const sortByNameButton = page.getByRole("button", { name: "Name" });
+    await sortByNameButton.click();
+
+    // Rows ordered alphabetically now
+    let rows = await page.getByTestId("title").all();
+    await assertAlphabeticalOrder(rows)
+
+    // Clicking again reverses order
+    await sortByNameButton.click();
+    rows = await page.getByTestId("title").all();
+    await assertAlphabeticalOrder(rows, true);
+  });
+
+  test("initially sorted by date", async ({ page }) => {
+    const sortByDateButton = page.getByRole("button", { name: "Created At" });
+    await expect(sortByDateButton).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("date-column")).toHaveAttribute("aria-sort", "descending");
+  });
+
+  test("toggles date sort state when date sort button is clicked", async ({ page }) => {
+    const sortByDateButton = page.getByRole("button", { name: "Created At" });
+
+    // Click once to unset sorting
+    await sortByDateButton.click();
+    await expect(sortByDateButton).toHaveAttribute("aria-pressed", "false");
+    await expect(page.getByTestId("date-column")).toHaveAttribute("aria-sort", "none");
+
+    // Click once more to apply ascending sorting
+    await sortByDateButton.click();
+    await expect(sortByDateButton).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("date-column")).toHaveAttribute("aria-sort", "ascending");
+  });
+
+  test("initially does not sort by name", async ({ page }) => {
+    const sortByNameButton = page.getByRole("button", { name: "Name" });
+    await expect(sortByNameButton).toHaveAttribute("aria-pressed", "false");
+    await expect(page.getByTestId("name-column")).toHaveAttribute("aria-sort", "none");
+  });
+
+  test("toggles name sort state when name sort button is clicked", async ({ page }) => {
+    const sortByNameButton = page.getByRole("button", { name: "Name" });
+
+    // Click once to apply sorting
+    await sortByNameButton.click();
+    await expect(sortByNameButton).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("name-column")).toHaveAttribute("aria-sort", "ascending");
+
+    // Click once more to reverse sorting
+    await sortByNameButton.click();
+    await expect(sortByNameButton).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("name-column")).toHaveAttribute("aria-sort", "descending");
   });
 
   test("consultations list shows creation dates", async ({ page }) => {
@@ -154,6 +228,6 @@ test.describe("Support Console - Consultations", () => {
   });
 
   test.afterAll(async () => {
-    await deleteFixtureData(testData);
+    await cleanupManager.cleanup();
   });
 });
