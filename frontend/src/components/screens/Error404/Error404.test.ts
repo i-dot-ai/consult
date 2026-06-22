@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/svelte";
 
 import Error404 from "./Error404.svelte";
 
-describe("EditError404User", () => {
+describe("Error404", () => {
   it("should display heading and text", async () => {
     render(Error404);
 
