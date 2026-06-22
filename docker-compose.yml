@@ -102,7 +102,12 @@ services:
     command: sh -c "npm install && npm run dev"
 
   localstack:
-    image: localstack/localstack:latest
+    # Pin to the major version tag to ensure the community (free) image is used.
+    # localstack/localstack:latest may resolve to the Pro image if it has been
+    # previously pulled, which refuses to start without a valid licence.
+    # Switch to localstack/localstack-pro:latest and set LOCALSTACK_AUTH_TOKEN
+    # when an Ultimate licence is available (required for AWS Batch emulation).
+    image: localstack/localstack:3
     ports:
       - '127.0.0.1:4566:4566' # LocalStack Gateway
       - '127.0.0.1:4510-4559:4510-4559' # external services port range
@@ -110,11 +115,6 @@ services:
       - SKIP_SSL_CERT_DOWNLOAD=1
       - DEBUG=${DEBUG:-0}
       - PERSISTENCE=${PERSISTENCE:-0}
-      # Explicitly use the free Hobby tier — prevents LocalStack from trying to
-      # activate Pro if LOCALSTACK_AUTH_TOKEN happens to be set in the shell
-      # environment. Remove this line and set LOCALSTACK_AUTH_TOKEN when an
-      # Ultimate licence is in place (required for AWS Batch emulation).
-      - ACTIVATE_PRO=0
       # Scope startup to only the services we use (faster startup, less noise).
       # Add 'batch' here once an Ultimate licence is in place.
       - SERVICES=lambda,events,iam,logs
