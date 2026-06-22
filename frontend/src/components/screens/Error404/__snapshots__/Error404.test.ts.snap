@@ -6,7 +6,7 @@ exports[`EditUser > matches snapshot 1`] = `
     class="mt-16"
   >
     <div
-      class="flex justify-center items-center my-8"
+      class="my-8 flex items-center justify-center"
     >
       <svg
         class="fill-neutral-500"
@@ -33,7 +33,7 @@ exports[`EditUser > matches snapshot 1`] = `
       <!---->
       <!---->
       <span
-        class="block text-primary text-center"
+        class="block text-center text-primary"
       >
         404 Not Found
       </span>
