@@ -88,7 +88,7 @@ def prompt_int(prompt: str, min_val: int = 1) -> int:
         print(f"  Please enter an integer >= {min_val}.")
 
 
-def process_question(question_dir: Path, output_dir: Path) -> None:
+def process_question(question_dir: Path, output_dir: Path, include_non_cluster: bool, multiplier: int) -> None:
     responses_path = question_dir / "responses.jsonl"
     if not responses_path.exists():
         print("  No responses.jsonl found, skipping.")
@@ -120,9 +120,8 @@ def process_question(question_dir: Path, output_dir: Path) -> None:
     non_cluster = [e for e in all_entries if str(e["themefinder_id"]) not in cluster_ids]
     print(f"\n  {len(non_cluster)} responses outside the chosen cluster.")
 
-    include_non_cluster = input("  Include non-cluster responses in output? [y/n]: ").strip().lower() == "y"
-
-    target = prompt_int("  How many cluster responses do you want in the output? ", min_val=0)
+    target = multiplier * len(non_cluster)
+    print(f"  Cluster responses to include: {multiplier} × {len(non_cluster)} = {target}")
 
     # Cycle through the unique cluster responses to fill the target count
     expanded = [dict(chosen[i % len(chosen)]) for i in range(target)]
@@ -215,12 +214,17 @@ if __name__ == "__main__":
         sys.exit(1)
 
     selected_dirs = prompt_question_selection(summaries)
+
+    print()
+    include_non_cluster = input("Include non-cluster responses in output? [y/n]: ").strip().lower() == "y"
+    multiplier = prompt_int("Cluster response multiplier (e.g. 2 = 2× number of non-cluster responses): ")
+
     output_dir.mkdir(parents=True, exist_ok=True)
 
     for question_dir in selected_dirs:
         print(f"\n{'='*60}")
         print(f"  {question_dir.name}")
         print(f"{'='*60}")
-        process_question(question_dir, output_dir)
+        process_question(question_dir, output_dir, include_non_cluster, multiplier)
 
     print("\nDone.")
