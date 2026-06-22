@@ -114,6 +114,9 @@ tmp
 *storybook.log
 *.zip
 
+# LocalStack persistence volume (generated at runtime)
+/volume/
+
 lambda/build/
 lambda/out/
 lambda/**/*.zip
