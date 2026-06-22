@@ -259,33 +259,28 @@ def write_consensus(gt_root: Path, question: str, themes: list[dict]) -> Path:
 
 
 def build(
-    search_dir: Path,
-    gt_names: list[str],
+    gt_dir: Path,
     model: str,
     distance_threshold: float,
     min_coverage: float,
 ) -> None:
+    if not gt_dir.is_dir():
+        logger.error(f"Directory not found: {gt_dir}")
+        sys.exit(1)
+
     client = make_client()
-    cache_path = search_dir / f".embeddings_cache_consensus_{EMBEDDING_MODEL}.json"
+    cache_path = gt_dir / f".embeddings_cache_consensus_{EMBEDDING_MODEL}.json"
     cache: dict[str, list[float]] = json.loads(cache_path.read_text()) if cache_path.exists() else {}
 
     try:
-        for gt_name in gt_names:
-            gt_root = search_dir / gt_name
-            if not gt_root.is_dir():
-                logger.error(f"GT directory not found: {gt_root}")
-                sys.exit(1)
-
-            logger.info(f"\n{gt_name}")
-            by_question = load_all_runs(gt_root)
-
-            for question, themes_with_runs in sorted(by_question.items()):
-                themes = build_consensus_for_question(
-                    question, themes_with_runs, client, cache, model,
-                    distance_threshold, min_coverage,
-                )
-                out_path = write_consensus(gt_root, question, themes)
-                logger.info(f"    {len(themes)} consensus themes → {out_path}")
+        by_question = load_all_runs(gt_dir)
+        for question, themes_with_runs in sorted(by_question.items()):
+            themes = build_consensus_for_question(
+                question, themes_with_runs, client, cache, model,
+                distance_threshold, min_coverage,
+            )
+            out_path = write_consensus(gt_dir, question, themes)
+            logger.info(f"  {len(themes)} consensus themes → {out_path}")
     finally:
         cache_path.write_text(json.dumps(cache))
         logger.info(f"\nEmbedding cache saved to {cache_path}")
@@ -295,8 +290,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Build consensus GT from multiple runs via clustering + LLM synthesis."
     )
-    parser.add_argument("directory", type=Path, help="Root directory containing GT subdirectories")
-    parser.add_argument("ground_truths", nargs="+", help="Names of the GT directories to process")
+    parser.add_argument("gt_dir", type=Path, help="Path to the GT directory containing run_* subdirectories")
     parser.add_argument("--model", default=DEFAULT_MODEL, help=f"LLM model for label synthesis (default: {DEFAULT_MODEL})")
     parser.add_argument("--distance-threshold", type=float, default=DEFAULT_DISTANCE_THRESHOLD,
                         help=f"Cosine distance threshold for clustering (default: {DEFAULT_DISTANCE_THRESHOLD}; lower = stricter)")
@@ -304,4 +298,4 @@ if __name__ == "__main__":
                         help=f"Min fraction of runs a cluster must span to survive (default: {DEFAULT_MIN_COVERAGE})")
     args = parser.parse_args()
 
-    build(args.directory, args.ground_truths, args.model, args.distance_threshold, args.min_coverage)
+    build(args.gt_dir, args.model, args.distance_threshold, args.min_coverage)
