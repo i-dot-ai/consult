@@ -30,8 +30,11 @@ jobs:
 
       - name: Start services with docker compose
         run: |
-          docker compose up -d postgres redis minio
+          docker compose up -d postgres redis minio localstack
           docker compose exec -T postgres pg_isready -U postgres || (sleep 5 && docker compose exec -T postgres pg_isready -U postgres) || (sleep 10 && docker compose exec -T postgres pg_isready -U postgres)
+          docker compose exec -T localstack awslocal lambda list-functions --region eu-west-2 > /dev/null 2>&1 || \
+            (sleep 15 && docker compose exec -T localstack awslocal lambda list-functions --region eu-west-2 > /dev/null 2>&1) || \
+            (sleep 30 && docker compose exec -T localstack awslocal lambda list-functions --region eu-west-2)
 
       - name: install uv
         run: |

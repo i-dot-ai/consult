@@ -4,14 +4,18 @@ from data_pipeline.batch import submit_job
 
 
 class TestSubmitBatchJob:
-    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.aws_clients.boto3")
+    @patch("data_pipeline.aws_clients.settings")
     @patch("data_pipeline.batch.settings")
-    def test_submit_find_themes_job(self, mock_settings, mock_boto3):
+    def test_submit_find_themes_job(self, mock_batch_settings, mock_client_settings, mock_boto3):
         """Test submitting a FIND_THEMES batch job"""
-        # Mock settings
-        mock_settings.FIND_THEMES_BATCH_JOB_NAME = "find-themes-job"
-        mock_settings.FIND_THEMES_BATCH_JOB_QUEUE = "find-themes-queue"
-        mock_settings.FIND_THEMES_BATCH_JOB_DEFINITION = "find-themes-def"
+        # Mock settings for batch.py
+        mock_batch_settings.FIND_THEMES_BATCH_JOB_NAME = "find-themes-job"
+        mock_batch_settings.FIND_THEMES_BATCH_JOB_QUEUE = "find-themes-queue"
+        mock_batch_settings.FIND_THEMES_BATCH_JOB_DEFINITION = "find-themes-def"
+        mock_batch_settings.LOGGER = mock_batch_settings.LOGGER
+        # No endpoint override — exercises the real AWS path
+        mock_client_settings.BATCH_ENDPOINT_URL = None
 
         # Mock boto3 batch client
         mock_batch_client = Mock()
@@ -27,7 +31,7 @@ class TestSubmitBatchJob:
             model_name="my-model",
         )
 
-        # Verify batch client was called correctly
+        # Verify batch client was called without an endpoint (real AWS path)
         mock_boto3.client.assert_called_once_with("batch")
         mock_batch_client.submit_job.assert_called_once()
 
@@ -52,14 +56,42 @@ class TestSubmitBatchJob:
         # Verify response
         assert response["jobId"] == "test-job-id-123"
 
-    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.aws_clients.boto3")
+    @patch("data_pipeline.aws_clients.settings")
     @patch("data_pipeline.batch.settings")
-    def test_submit_assign_themes_job(self, mock_settings, mock_boto3):
+    def test_submit_find_themes_job_with_localstack_endpoint(
+        self, mock_batch_settings, mock_client_settings, mock_boto3
+    ):
+        """Test that BATCH_ENDPOINT_URL is forwarded to the boto3 client (LocalStack path)"""
+        mock_batch_settings.FIND_THEMES_BATCH_JOB_NAME = "find-themes-job"
+        mock_batch_settings.FIND_THEMES_BATCH_JOB_QUEUE = "find-themes-queue"
+        mock_batch_settings.FIND_THEMES_BATCH_JOB_DEFINITION = "find-themes-def"
+        mock_client_settings.BATCH_ENDPOINT_URL = "http://localhost:4566"
+
+        mock_batch_client = Mock()
+        mock_batch_client.submit_job.return_value = {"jobId": "localstack-job-id"}
+        mock_boto3.client.return_value = mock_batch_client
+
+        submit_job(
+            job_type="FIND_THEMES",
+            consultation_code="test-code",
+            consultation_name="Test Consultation",
+            user_id=1,
+            model_name="my-model",
+        )
+
+        mock_boto3.client.assert_called_once_with("batch", endpoint_url="http://localhost:4566")
+
+    @patch("data_pipeline.aws_clients.boto3")
+    @patch("data_pipeline.aws_clients.settings")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_assign_themes_job(self, mock_batch_settings, mock_client_settings, mock_boto3):
         """Test submitting an ASSIGN_THEMES batch job"""
         # Mock settings
-        mock_settings.ASSIGN_THEMES_BATCH_JOB_NAME = "assign-themes-job"
-        mock_settings.ASSIGN_THEMES_BATCH_JOB_QUEUE = "assign-themes-queue"
-        mock_settings.ASSIGN_THEMES_BATCH_JOB_DEFINITION = "assign-themes-def"
+        mock_batch_settings.ASSIGN_THEMES_BATCH_JOB_NAME = "assign-themes-job"
+        mock_batch_settings.ASSIGN_THEMES_BATCH_JOB_QUEUE = "assign-themes-queue"
+        mock_batch_settings.ASSIGN_THEMES_BATCH_JOB_DEFINITION = "assign-themes-def"
+        mock_client_settings.BATCH_ENDPOINT_URL = None
 
         # Mock boto3 batch client
         mock_batch_client = Mock()

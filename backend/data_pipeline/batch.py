@@ -1,8 +1,9 @@
 import datetime
 from typing import Literal
 
-import boto3
 from django.conf import settings
+
+from data_pipeline.aws_clients import get_batch_client
 
 logger = settings.LOGGER
 
@@ -42,7 +43,7 @@ def submit_job(
         "assignment_target": assignment_target,
     }
 
-    batch = boto3.client("batch")
+    batch = get_batch_client()
 
     logger.info(
         "Submitting {job_type} job to AWS Batch for consultation: {consultation_name}",

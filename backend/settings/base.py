@@ -253,6 +253,13 @@ FIND_THEMES_BATCH_JOB_NAME = env("FIND_THEMES_BATCH_JOB_NAME")
 FIND_THEMES_BATCH_JOB_QUEUE = env("FIND_THEMES_BATCH_JOB_QUEUE")
 FIND_THEMES_BATCH_JOB_DEFINITION = env("FIND_THEMES_BATCH_JOB_DEFINITION")
 
+# Optional endpoint overrides for LocalStack emulation.
+# When set, boto3 clients for Batch and EventBridge point to LocalStack instead
+# of real AWS. Leave unset (None) in deployed environments.
+# Note: S3 is intentionally excluded — it uses MINIO_ENDPOINT via django-storages.
+BATCH_ENDPOINT_URL = env.str("BATCH_ENDPOINT_URL", default=None)
+EVENTS_ENDPOINT_URL = env.str("EVENTS_ENDPOINT_URL", default=None)
+
 # redis
 redis_host = env.str("REDIS_HOST", "localhost")
 redis_port = env.str("REDIS_PORT", "6379")
