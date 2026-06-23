@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 
 import boto3
+import httpx
 import pandas as pd
 import sentry_sdk
 import urllib3
@@ -27,13 +28,18 @@ from themefinder.models import (
 
 http = urllib3.PoolManager()
 
+# The LLM gateway needs TLS verification disabled when reached from outside the
+# deployed AWS environment (e.g. a local run via run_find_themes_local.py).
+VERIFY_SSL = os.environ.get("ENVIRONMENT") == "deployed"
+
 client = OpenAI(
     base_url=os.environ["LLM_GATEWAY_URL"],
     api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+    http_client=httpx.Client(verify=VERIFY_SSL),
 )
 
 
-SLACK_WEBHOOK_URL = os.environ["SLACK_WEBHOOK_URL"]
+SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
 
 
 class ThemeNodeList(BaseModel):
@@ -259,6 +265,7 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
         request_kwargs={"temperature": 0},
         base_url=os.environ["LLM_GATEWAY_URL"],
         api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+        http_client=httpx.AsyncClient(verify=VERIFY_SSL),
     )
 
     date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
