@@ -6,7 +6,10 @@ import logging
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 repo_root = Path(__file__).parent.parent.parent.parent
+load_dotenv(repo_root / ".env")
 sys.path.insert(0, str(repo_root / "pipeline-sign-off"))
 sys.path.insert(0, str(repo_root.parent / "themefinder" / "src"))
 
@@ -18,7 +21,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-DEFAULT_MODEL = "gpt-4o"
+DEFAULT_MODEL = "gpt-4o-sweden"
 
 if __name__ == "__main__":
     import argparse
