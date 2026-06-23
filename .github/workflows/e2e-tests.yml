@@ -73,4 +73,3 @@ jobs:
           name: playwright-report
           path: e2e_tests/playwright-report/
           retention-days: 30
-
