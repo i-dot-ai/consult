@@ -230,10 +230,11 @@ def build_consensus_for_question(
     clusters = cluster_themes(themes_with_runs, embeddings, total_runs, distance_threshold, min_coverage)
 
     dropped = len(themes_with_runs) - sum(len(m) for m, _ in clusters)
+    kept = sum(len(m) for m, _ in clusters)
     logger.info(
         f"  {question}: {len(themes_with_runs)} themes → "
         f"{len(clusters)} clusters surviving (coverage>={min_coverage:.0%}), "
-        f"{dropped} themes below threshold"
+        f"including {kept} themes kept, {dropped} dropped as higher than threshold"
     )
 
     representatives = synthesise_labels(clusters, question, client, model)
