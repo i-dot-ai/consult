@@ -1,0 +1,62 @@
+name: Aikido auto-merge
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  aikido-auto-merge:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.pull_request.user.login == 'aikido-autofix' &&
+      github.repository == 'i-dot-ai/consult'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Classify version bumps from lockfiles
+        id: classify
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 .github/scripts/classify_aikido_bumps.py
+
+      # ── TODO: remove this env var to enable auto-merge actions ──────────────
+      - name: Check auto-merge is enabled
+        id: enabled
+        run: echo "auto_merge_enabled=false" >> "$GITHUB_OUTPUT"
+
+      # ── Minor/patch: approve and enable auto-merge ────────────────────────
+      - name: Approve PR
+        if: steps.enabled.outputs.auto_merge_enabled == 'true' && steps.classify.outputs.has_major == 'false' && steps.classify.outputs.bump_count != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr review --approve "$PR_URL" --body "Auto-approved: all dependency bumps are minor or patch only."
+
+      - name: Enable auto-merge
+        if: steps.enabled.outputs.auto_merge_enabled == 'true' && steps.classify.outputs.has_major == 'false' && steps.classify.outputs.bump_count != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --rebase "$PR_URL"
+
+      # ── Major bump: label and leave for manual review ─────────────────────
+      - name: Create label if missing
+        if: steps.enabled.outputs.auto_merge_enabled == 'true' && steps.classify.outputs.has_major == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh label create "major-version-bump" --color "e11d48" --description "Contains a major version upgrade, requires manual review" || true
+
+      - name: Label PR for manual review
+        if: steps.enabled.outputs.auto_merge_enabled == 'true' && steps.classify.outputs.has_major == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr edit "$PR_URL" --add-label "major-version-bump"
