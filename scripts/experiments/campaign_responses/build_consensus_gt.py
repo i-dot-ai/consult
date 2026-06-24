@@ -202,7 +202,7 @@ Write one representative label and description for each of the {len(clusters)} c
     raise last_error  # type: ignore[misc]
 
 
-def _generate_topic_ids(n: int) -> list[str]:
+def generate_topic_ids(n: int) -> list[str]:
     ids = []
     for i in range(n):
         if i < 26:
@@ -210,6 +210,23 @@ def _generate_topic_ids(n: int) -> list[str]:
         else:
             ids.append(chr(65 + ((i - 26) // 26)) + chr(65 + ((i - 26) % 26)))
     return ids
+
+
+def assemble_consensus_themes(
+    clusters: list[tuple[list[tuple[dict, int]], float]],
+    representatives: list[ClusterRepresentative],
+) -> list[dict]:
+    """Combine clusters + their synthesised labels into the final theme_nodes format."""
+    topic_ids = generate_topic_ids(len(clusters))
+    return [
+        {
+            "topic_id": topic_ids[i],
+            "topic_label": rep.topic_label,
+            "topic_description": rep.topic_description,
+            "run_coverage": round(coverage, 3),
+        }
+        for i, (rep, (_, coverage)) in enumerate(zip(representatives, clusters))
+    ]
 
 
 def build_consensus_for_question(
@@ -238,17 +255,7 @@ def build_consensus_for_question(
     )
 
     representatives = synthesise_labels(clusters, question, client, model)
-
-    topic_ids = _generate_topic_ids(len(clusters))
-    return [
-        {
-            "topic_id": topic_ids[i],
-            "topic_label": rep.topic_label,
-            "topic_description": rep.topic_description,
-            "run_coverage": round(coverage, 3),
-        }
-        for i, (rep, (_, coverage)) in enumerate(zip(representatives, clusters))
-    ]
+    return assemble_consensus_themes(clusters, representatives)
 
 
 def write_consensus(gt_root: Path, question: str, themes: list[dict]) -> Path:
