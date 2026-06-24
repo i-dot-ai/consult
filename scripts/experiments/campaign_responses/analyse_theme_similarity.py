@@ -33,6 +33,7 @@ from pathlib import Path
 
 import httpx
 import numpy as np
+import plotly.graph_objects as go
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -46,6 +47,17 @@ NORM_BOTH_THRESHOLD = 0.9  # min(d1,d2)/max(d1,d2) above this → 'both'
 def natural_sort_key(name: str) -> list:
     """Sort key that orders embedded numbers numerically, e.g. dwp_9 before dwp_10."""
     return [int(part) if part.isdigit() else part for part in re.split(r"(\d+)", name)]
+
+
+def dataset_sort_key(name: str, order: list[int] | None) -> tuple:
+    """Sort key placing datasets in an explicit numeric order (matched against the first integer
+    found in the dataset name), falling back to natural sort for anything not in `order`."""
+    if order:
+        match = re.search(r"\d+", name)
+        number = int(match.group()) if match else None
+        if number in order:
+            return (0, order.index(number))
+    return (1, natural_sort_key(name))
 
 
 @dataclass
@@ -264,11 +276,14 @@ def analyse_dataset(
     return results
 
 
-def fmt_count(pct_mean: float, pct_std: float, themes_mean: float, width: int) -> str:
+def pct_to_count(pct_mean: float, pct_std: float, themes_mean: float) -> tuple[float, float]:
     """Convert an aggregated percentage (mean±std, 0-100) back to a theme count, scaled by the
     dataset's mean number of themes per run, so it's directly comparable to consensus group sizes."""
-    count_mean = pct_mean / 100 * themes_mean
-    count_std = pct_std / 100 * themes_mean
+    return pct_mean / 100 * themes_mean, pct_std / 100 * themes_mean
+
+
+def fmt_count(pct_mean: float, pct_std: float, themes_mean: float, width: int) -> str:
+    count_mean, count_std = pct_to_count(pct_mean, pct_std, themes_mean)
     s = f"{count_mean:.1f}±{count_std:.1f}"
     return f"{s:^{width}}"
 
@@ -337,6 +352,66 @@ def print_summary(
         )
 
 
+def plot_summary(
+    summary: dict[str, dict[str, AggStats]],
+    gt1_name: str,
+    gt2_name: str,
+    gt1_counts_by_question: dict[str, int],
+    gt2_counts_by_question: dict[str, int],
+    output_dir: Path,
+    dataset_order: list[int] | None,
+) -> None:
+    """For each question, chart the inclusive kNN theme counts (kNN→GT1(+both), kNN→GT2(+both),
+    kNN overlap) per dataset against horizontal reference lines for each GT's consensus size."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    for question, datasets in sorted(summary.items()):
+        names = sorted(datasets.keys(), key=lambda n: dataset_sort_key(n, dataset_order))
+
+        def series(field: str) -> tuple[list[float], list[float]]:
+            means, stds = [], []
+            for name in names:
+                s = datasets[name]
+                mean, std = pct_to_count(getattr(s, f"{field}_mean"), getattr(s, f"{field}_std"), s.themes_mean)
+                means.append(mean)
+                stds.append(std)
+            return means, stds
+
+        g1_means, g1_stds = series("knn_g1_inc_both")
+        g2_means, g2_stds = series("knn_g2_inc_both")
+        overlap_means, overlap_stds = series("knn_both")
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=names, y=g1_means, error_y=dict(type="data", array=g1_stds),
+            mode="lines+markers", name=f"kNN→{gt1_name} (+both)",
+        ))
+        fig.add_trace(go.Scatter(
+            x=names, y=g2_means, error_y=dict(type="data", array=g2_stds),
+            mode="lines+markers", name=f"kNN→{gt2_name} (+both)",
+        ))
+        fig.add_trace(go.Scatter(
+            x=names, y=overlap_means, error_y=dict(type="data", array=overlap_stds),
+            mode="lines+markers", name="kNN overlap",
+        ))
+
+        gt1_count = gt1_counts_by_question.get(question, 0)
+        gt2_count = gt2_counts_by_question.get(question, 0)
+        fig.add_hline(y=gt1_count, line_dash="dash", annotation_text=f"{gt1_name} consensus ({gt1_count})")
+        fig.add_hline(y=gt2_count, line_dash="dot", annotation_text=f"{gt2_name} consensus ({gt2_count})")
+
+        fig.update_layout(
+            title=f"{question}: kNN theme counts (inclusive) vs consensus ground truth size",
+            xaxis_title="Dataset",
+            yaxis_title="Theme count",
+            xaxis=dict(type="category", categoryorder="array", categoryarray=names),
+        )
+
+        out_path = output_dir / f"{question}.html"
+        fig.write_html(out_path)
+        print(f"  Chart written to {out_path}", file=sys.stderr)
+
+
 def analyse(
     search_dir: Path,
     gt1_name: str,
@@ -344,6 +419,7 @@ def analyse(
     test_name: str | None,
     k: int = DEFAULT_K,
     norm_both_threshold: float = NORM_BOTH_THRESHOLD,
+    dataset_order: list[int] | None = None,
 ) -> None:
     gt2_by_question = load_themes_by_question(search_dir / gt2_name, "consensus")
     gt1_by_question = load_themes_by_question(search_dir / gt1_name, "consensus")
@@ -429,6 +505,10 @@ def analyse(
     gt1_counts_by_question = {q: len(themes) for q, themes in gt1_by_question.items()}
     gt2_counts_by_question = {q: len(themes) for q, themes in gt2_by_question.items()}
     print_summary(summary, gt1_name, gt2_name, gt1_counts_by_question, gt2_counts_by_question)
+    plot_summary(
+        summary, gt1_name, gt2_name, gt1_counts_by_question, gt2_counts_by_question,
+        search_dir / "charts", dataset_order,
+    )
 
 
 if __name__ == "__main__":
@@ -446,9 +526,16 @@ if __name__ == "__main__":
         help="min(d1,d2)/max(d1,d2) ratio above which a theme's normalised-distance classification "
              f"is treated as ambiguous ('both') rather than assigned to one GT group (default: {NORM_BOTH_THRESHOLD})",
     )
+    parser.add_argument(
+        "--dataset-order", type=lambda s: [int(x) for x in s.split(",")], default=None,
+        help="Comma-separated dataset numbers (matched against the first integer in each dataset "
+             "directory name) giving the left-to-right order for chart x-axes, e.g. "
+             "4,10,8,9,3,5,6,7. Datasets not listed fall back to natural sort order, after any listed.",
+    )
     args = parser.parse_args()
 
     analyse(
         args.directory, args.ground_truth_1, args.ground_truth_2, args.test_dir,
         k=args.knn_num_neighbours, norm_both_threshold=args.norm_both_threshold,
+        dataset_order=args.dataset_order,
     )
