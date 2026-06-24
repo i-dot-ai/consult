@@ -83,7 +83,12 @@ def main() -> None:
         }
     """)
 
-    team = team_resp["data"]["teams"]["nodes"][0]
+    teams = team_resp["data"]["teams"]["nodes"]
+    if not teams:
+        print("ERROR: could not find a Linear team with key 'PRO'")
+        sys.exit(1)
+
+    team = teams[0]
     team_id = team["id"]
 
     in_review_state = next(
