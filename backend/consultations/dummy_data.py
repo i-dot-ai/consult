@@ -28,10 +28,12 @@ DATA_BY_STAGE = {
     Consultation.Stage.ANALYSIS: {
         "CONSULTATION_NAME": "Dummy Consultation at Analysis Stage",
         "QUESTION_THEME_STATUS": Question.ThemeStatus.CONFIRMED,
+        "CONSULTATION_CODE": "dummy-consultation-analysis",
     },
     Consultation.Stage.FINALISING_THEMES: {
         "CONSULTATION_NAME": "Dummy Consultation at Finalising Themes Stage",
         "QUESTION_THEME_STATUS": Question.ThemeStatus.DRAFT,
+        "CONSULTATION_CODE": "dummy-consultation-finalising",
     },
 }
 
@@ -39,7 +41,8 @@ DATA_BY_STAGE = {
 def create_consultation(stage):
     """Create and return a Consultation."""
     name = DATA_BY_STAGE[stage]["CONSULTATION_NAME"]
-    return ConsultationFactory(title=name, stage=stage)
+    code = DATA_BY_STAGE[stage]["CONSULTATION_CODE"]
+    return ConsultationFactory(title=name, stage=stage, code=code)
 
 
 def create_respondents(consultation, number_respondents):
