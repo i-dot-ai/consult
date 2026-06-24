@@ -2,6 +2,7 @@
   export let color = "fill-white";
   export let hoverColor = null;
   export let size = "1rem";
+  export let hidden = false;
 
   let hovering = false;
 </script>
@@ -14,7 +15,8 @@
   class={hoverColor && hovering ? hoverColor : color}
   on:mouseenter={() => (hovering = true)}
   on:mouseleave={() => (hovering = false)}
-  role="img"
+  role={hidden ? undefined : "img"}
+  aria-hidden={hidden ? "true" : undefined}
 >
   <slot />
 </svg>
