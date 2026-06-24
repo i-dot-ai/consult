@@ -35,5 +35,5 @@ if __name__ == "__main__":
     consultation_dir = args.consultation_dir
     model_name = args.model
 
-    output_dir = asyncio.run(process_consultation(consultation_dir, args.output_dir, model_name))
+    output_dir = asyncio.run(process_consultation(consultation_dir, model_name, output_dir=args.output_dir))
     print(f"Output written to: {output_dir}")
