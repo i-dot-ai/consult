@@ -49,6 +49,7 @@ exports[`Learnings > should match snapshot 1`] = `
             width="1rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <path
               d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
             />
@@ -75,13 +76,14 @@ exports[`Learnings > should match snapshot 1`] = `
         >
           <!---->
           <svg
+            aria-hidden="true"
             class="fill-neutral-700"
             height="1.5rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="1.5rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <!---->
             <path
               d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"
@@ -157,13 +159,14 @@ exports[`Learnings > should match snapshot 1`] = `
             <!---->
             <!---->
             <svg
+              aria-hidden="true"
               class="neutral-500"
               height="1rem"
-              role="img"
               viewBox="0 -960 960 960"
               width="1rem"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <!---->
               <path
                 d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                 xmlns="http://www.w3.org/2000/svg"
@@ -251,13 +254,14 @@ exports[`Learnings > should match snapshot 1`] = `
             <!---->
             <!---->
             <svg
+              aria-hidden="true"
               class="neutral-500"
               height="1rem"
-              role="img"
               viewBox="0 -960 960 960"
               width="1rem"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <!---->
               <path
                 d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                 xmlns="http://www.w3.org/2000/svg"

@@ -127,7 +127,7 @@
             >
               {#if tab.icon}
                 <div class="shrink-0">
-                  <MaterialIcon color="fill-neutral-500">
+                  <MaterialIcon color="fill-neutral-500" title={tab.title}>
                     {@const Icon = tab.icon}
                     <Icon />
                   </MaterialIcon>

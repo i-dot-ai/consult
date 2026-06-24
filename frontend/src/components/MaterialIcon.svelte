@@ -2,7 +2,7 @@
   export let color = "fill-white";
   export let hoverColor = null;
   export let size = "1rem";
-  export let hidden = false;
+  export let title = "";
 
   let hovering = false;
 </script>
@@ -15,8 +15,12 @@
   class={hoverColor && hovering ? hoverColor : color}
   on:mouseenter={() => (hovering = true)}
   on:mouseleave={() => (hovering = false)}
-  role={hidden ? undefined : "img"}
-  aria-hidden={hidden ? "true" : undefined}
+  role={title ? "img" : undefined}
+  aria-hidden={title ? undefined : "true"}
 >
+  {#if title}
+    <title>{title}</title>
+  {/if}
+
   <slot />
 </svg>

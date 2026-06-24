@@ -20,8 +20,8 @@ describe("TabView", () => {
       handleChange: handleChangeMock,
     });
 
-    expect(screen.getByText("Star Tab")).toBeInTheDocument();
-    expect(screen.getByText("Finance Tab")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Star Tab" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Finance Tab"})).toBeInTheDocument();
     expect(screen.getAllByRole("img").length).toBe(2);
 
     const tabButtons = await screen.findAllByRole("tab");
