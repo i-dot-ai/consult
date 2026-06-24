@@ -25,6 +25,7 @@ If test_dir is omitted, all directories in search_dir other than the two GT dirs
 import argparse
 import json
 import os
+import re
 import sys
 from collections import defaultdict
 from dataclasses import dataclass
@@ -40,6 +41,11 @@ load_dotenv(Path.home() / "Code" / "consult" / ".env")
 EMBEDDING_MODEL = "text-embedding-3-large-sweden"
 DEFAULT_K = 5
 NORM_BOTH_THRESHOLD = 0.9  # min(d1,d2)/max(d1,d2) above this → 'both'
+
+
+def natural_sort_key(name: str) -> list:
+    """Sort key that orders embedded numbers numerically, e.g. dwp_9 before dwp_10."""
+    return [int(part) if part.isdigit() else part for part in re.split(r"(\d+)", name)]
 
 
 @dataclass
@@ -246,8 +252,12 @@ def analyse_dataset(
     return results
 
 
-def fmt(mean: float, std: float, width: int) -> str:
-    s = f"{mean:.0f}±{std:.0f}%"
+def fmt_count(pct_mean: float, pct_std: float, themes_mean: float, width: int) -> str:
+    """Convert an aggregated percentage (mean±std, 0-100) back to a theme count, scaled by the
+    dataset's mean number of themes per run, so it's directly comparable to consensus group sizes."""
+    count_mean = pct_mean / 100 * themes_mean
+    count_std = pct_std / 100 * themes_mean
+    s = f"{count_mean:.1f}±{count_std:.1f}"
     return f"{s:^{width}}"
 
 
@@ -255,13 +265,19 @@ def print_summary(
     summary: dict[str, dict[str, AggStats]],
     gt1_name: str,
     gt2_name: str,
+    gt1_counts_by_question: dict[str, int],
+    gt2_counts_by_question: dict[str, int],
 ) -> None:
     g1 = gt1_name[:10]
     g2 = gt2_name[:10]
-    cw = max(len(g1), len(g2), 4) + 9  # wide enough for "mean±std%"
+    cw = max(len(g1), len(g2), 4) + 9  # wide enough for "mean±std"
 
     for question, datasets in sorted(summary.items()):
         print(f"\n{question}")
+        print(
+            f"  Consensus ground truth themes: {gt1_name}={gt1_counts_by_question.get(question, 0)}, "
+            f"{gt2_name}={gt2_counts_by_question.get(question, 0)}"
+        )
         name_w = max(len(n) for n in datasets)
         header = (
             f"  {'Dataset':<{name_w}} | runs | themes"
@@ -270,16 +286,16 @@ def print_summary(
         )
         print(header)
         print("  " + "-" * (len(header) - 2))
-        for dataset_name, s in sorted(datasets.items()):
+        for dataset_name, s in sorted(datasets.items(), key=lambda kv: natural_sort_key(kv[0])):
             themes_str = f"{s.themes_mean:.0f}±{s.themes_std:.0f}"
             print(
                 f"  {dataset_name:<{name_w}} | {s.n_runs:^4} | {themes_str:^6}"
-                f" | {fmt(s.norm_gt1_mean, s.norm_gt1_std, cw)}"
-                f" | {fmt(s.norm_both_mean, s.norm_both_std, cw)}"
-                f" | {fmt(s.norm_gt2_mean, s.norm_gt2_std, cw)}"
-                f" | {fmt(s.knn_gt1_mean, s.knn_gt1_std, cw)}"
-                f" | {fmt(s.knn_both_mean, s.knn_both_std, cw)}"
-                f" | {fmt(s.knn_gt2_mean, s.knn_gt2_std, cw)}"
+                f" | {fmt_count(s.norm_gt1_mean, s.norm_gt1_std, s.themes_mean, cw)}"
+                f" | {fmt_count(s.norm_both_mean, s.norm_both_std, s.themes_mean, cw)}"
+                f" | {fmt_count(s.norm_gt2_mean, s.norm_gt2_std, s.themes_mean, cw)}"
+                f" | {fmt_count(s.knn_gt1_mean, s.knn_gt1_std, s.themes_mean, cw)}"
+                f" | {fmt_count(s.knn_both_mean, s.knn_both_std, s.themes_mean, cw)}"
+                f" | {fmt_count(s.knn_gt2_mean, s.knn_gt2_std, s.themes_mean, cw)}"
             )
 
 
@@ -300,11 +316,11 @@ def analyse(
 
     if test_name:
         test_root = search_dir / test_name
-        dataset_dirs = sorted(d for d in test_root.iterdir() if d.is_dir())
+        dataset_dirs = sorted((d for d in test_root.iterdir() if d.is_dir()), key=lambda d: natural_sort_key(d.name))
     else:
         dataset_dirs = sorted(
-            d for d in search_dir.iterdir()
-            if d.is_dir() and d.name not in (gt1_name, gt2_name)
+            (d for d in search_dir.iterdir() if d.is_dir() and d.name not in (gt1_name, gt2_name)),
+            key=lambda d: natural_sort_key(d.name),
         )
 
     if not dataset_dirs:
@@ -371,7 +387,9 @@ def analyse(
         cache_path.write_text(json.dumps(cache))
         print(f"Embedding cache saved to {cache_path}", file=sys.stderr)
 
-    print_summary(summary, gt1_name, gt2_name)
+    gt1_counts_by_question = {q: len(themes) for q, themes in gt1_by_question.items()}
+    gt2_counts_by_question = {q: len(themes) for q, themes in gt2_by_question.items()}
+    print_summary(summary, gt1_name, gt2_name, gt1_counts_by_question, gt2_counts_by_question)
 
 
 if __name__ == "__main__":

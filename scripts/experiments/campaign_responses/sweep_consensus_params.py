@@ -219,24 +219,31 @@ def select_best_distance_threshold(
     model: str,
 ) -> tuple[float, list[tuple[list[tuple[dict, int]], float]]]:
     """Try each distance_threshold, use the LLM to prune outliers from the resulting clusters,
-    recheck min_coverage, and return the threshold with the most surviving clusters (ties favour
-    the smallest/strictest threshold, since later thresholds only replace the best on a strict
-    improvement)."""
+    recheck min_coverage, and return the threshold with the most surviving clusters. Ties on
+    cluster count are broken by whichever keeps the most themes; any remaining tie favours the
+    smallest/strictest threshold, since later thresholds only replace the best on a strict
+    improvement."""
     best_dt = distance_thresholds[0]
     best_clusters: list[tuple[list[tuple[dict, int]], float]] = []
     best_count = -1
+    best_kept = -1
+    total_themes = len(themes_with_runs)
 
     for dt in distance_thresholds:
         raw_clusters = cluster_themes(themes_with_runs, embeddings, total_runs, dt, min_coverage)
         pruned_members = judge_cluster_outliers(raw_clusters, question, client, model)
         surviving = apply_min_coverage(pruned_members, total_runs, min_coverage)
         outliers_removed = sum(len(m) for m, _ in raw_clusters) - sum(len(m) for m in pruned_members)
+        kept = sum(len(m) for m, _ in surviving)
+        dropped = total_themes - kept
         print(
             f"  distance_threshold={dt:.2f} → {len(raw_clusters)} cluster(s) before review, "
-            f"{outliers_removed} outlier theme(s) removed, {len(surviving)} cluster(s) survive min_coverage"
+            f"{outliers_removed} outlier theme(s) removed, {len(surviving)} cluster(s) survive "
+            f"min_coverage ({kept} theme(s) kept, {dropped} theme(s) dropped)"
         )
-        if len(surviving) > best_count:
+        if (len(surviving), kept) > (best_count, best_kept):
             best_count = len(surviving)
+            best_kept = kept
             best_dt = dt
             best_clusters = surviving
 
@@ -275,7 +282,12 @@ def run_llm_as_judge(
             question, themes_with_runs, embeddings, total_runs,
             distance_thresholds, min_coverage, client, model,
         )
-        print(f"  selected distance_threshold={best_dt:.2f} → {len(best_clusters)} consensus cluster(s)")
+        kept = sum(len(m) for m, _ in best_clusters)
+        dropped = len(themes_with_runs) - kept
+        print(
+            f"  selected distance_threshold={best_dt:.2f} → {len(best_clusters)} consensus cluster(s), "
+            f"{kept} theme(s) kept, {dropped} theme(s) dropped"
+        )
 
         representatives = synthesise_labels(best_clusters, question, client, model)
         consensus_themes = assemble_consensus_themes(best_clusters, representatives)

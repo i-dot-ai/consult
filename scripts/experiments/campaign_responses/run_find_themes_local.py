@@ -28,11 +28,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Run find_themes locally on a consultation directory.")
     parser.add_argument("consultation_dir", help="Path to the consultation directory")
+    parser.add_argument("output_dir", help="Path to the output directory")
     parser.add_argument("--model", default=DEFAULT_MODEL, help=f"Model name to use (default: {DEFAULT_MODEL})")
     args = parser.parse_args()
 
     consultation_dir = args.consultation_dir
     model_name = args.model
 
-    output_dir = asyncio.run(process_consultation(consultation_dir, model_name))
+    output_dir = asyncio.run(process_consultation(consultation_dir, args.output_dir, model_name))
     print(f"Output written to: {output_dir}")

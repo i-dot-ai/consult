@@ -122,6 +122,18 @@ python build_consensus_gt.py "$DATA_DIR/$GT2_NAME"
 
 Writes to `<gt_dir>/consensus/question_part_*/clustered_themes.json`.
 
+If you're unsure what `--distance-threshold` to use, run
+`sweep_consensus_params.py --llm-as-judge` instead: it sweeps every
+candidate distance threshold, uses an LLM to strip outlier themes out of
+each resulting cluster, rechecks `min_coverage` on what's left, then picks
+the threshold with the most surviving clusters and writes the consensus
+itself (same output path as above), e.g.:
+
+```bash
+python sweep_consensus_params.py "$DATA_DIR/$GT1_NAME" --llm-as-judge \
+    --distance-thresholds 0.05,0.10,0.15,0.20,0.25 --min-coverages 0.5
+```
+
 ## Step 7 — Analyse
 
 Compares each test dataset's themes against the two GT clusters. Each theme
