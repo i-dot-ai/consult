@@ -64,9 +64,12 @@ def make_client() -> OpenAI:
 
 
 def load_themes(path: Path) -> list[dict]:
-    with path.open() as f:
-        return json.load(f)["theme_nodes"]
-
+    try:
+        with path.open() as f:
+            return json.load(f)["theme_nodes"]
+    except json.decoder.JSONDecodeError as e:
+        print(f'Problem loading {path}')
+        raise e
 
 def fetch_embeddings(texts: list[str], client: OpenAI, cache: dict[str, list[float]]) -> list[np.ndarray]:
     missing = [t for t in texts if t not in cache]
@@ -110,6 +113,9 @@ def norm_group_assign(d1: float, d2: float) -> str:
 
 def load_themes_by_question(root: Path, run: str) -> dict[str, list[dict]]:
     """Load themes for a given run subdirectory name (e.g. 'consensus', 'run_1')."""
+    if not root.is_dir():
+        raise FileNotFoundError(f'{root} does not exist, themes cannot be loaded')
+
     result: dict[str, list[dict]] = {}
     for path in sorted(root.rglob("clustered_themes.json")):
         if run not in path.parts:
@@ -121,7 +127,7 @@ def load_themes_by_question(root: Path, run: str) -> dict[str, list[dict]]:
 def load_runs(dataset_dir: Path) -> dict[int, dict[str, list[dict]]]:
     """Return {run_num: {question: themes}} for all run_* subdirs of dataset_dir."""
     runs: dict[int, dict[str, list[dict]]] = {}
-    for run_dir in sorted(dataset_dir.iterdir()):
+    for run_dir in sorted(dataset_dir.rglob("run_*")):
         if not run_dir.is_dir() or not run_dir.name.startswith("run_"):
             continue
         try:
@@ -284,8 +290,8 @@ def analyse(
     test_name: str | None,
     k: int = DEFAULT_K,
 ) -> None:
-    gt1_by_question = load_themes_by_question(search_dir / gt1_name, "consensus")
     gt2_by_question = load_themes_by_question(search_dir / gt2_name, "consensus")
+    gt1_by_question = load_themes_by_question(search_dir / gt1_name, "consensus")
     questions = sorted(gt1_by_question.keys() & gt2_by_question.keys())
 
     if not questions:
