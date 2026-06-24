@@ -42,9 +42,9 @@ exports[`Learnings > should match snapshot 1`] = `
           <!---->
           <!---->
           <svg
+            aria-hidden="true"
             class="fill-neutral-500"
             height="1rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="1rem"
             xmlns="http://www.w3.org/2000/svg"

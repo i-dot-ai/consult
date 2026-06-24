@@ -59,7 +59,7 @@
         handleClick={onClose}
         ariaLabel="close-learnings-panel"
       >
-        <MaterialIcon color="fill-neutral-500">
+        <MaterialIcon color="fill-neutral-500" hidden={true}>
           <Close />
         </MaterialIcon>
       </Button>
