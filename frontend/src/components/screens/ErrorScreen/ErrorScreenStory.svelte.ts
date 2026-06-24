@@ -1,20 +1,22 @@
 import ErrorScreen from "./ErrorScreen.svelte";
 
-let status = $state(404);
+const status = $state(404);
 
 export default {
   name: "ErrorScreen",
   component: ErrorScreen,
   category: "Screens",
-  props: [{
-    name: "status",
-    value: status,
-    type: "select",
-    options: [
-      { value: 404, label: "404" },
-      { value: 500, label: "500" },
-    ],
-  }],
+  props: [
+    {
+      name: "status",
+      value: status,
+      type: "select",
+      options: [
+        { value: 404, label: "404" },
+        { value: 500, label: "500" },
+      ],
+    },
+  ],
   stories: [
     {
       name: "Status 404",

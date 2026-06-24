@@ -9,9 +9,7 @@
     status: 404 | 500;
   }
 
-  let {
-    status = 404,
-  }: Props = $props();
+  let { status = 404 }: Props = $props();
 
   function getTitle() {
     if (status === 404) {
