@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Find duplicate response clusters across questions and produce balanced output datasets."""
+"""Find duplicate response clusters across questions, produce balanced output datasets, and
+generate the demographic data Consult needs alongside them."""
 
 import hashlib
 import json
@@ -8,6 +9,8 @@ import shutil
 import sys
 from collections import defaultdict
 from pathlib import Path
+
+from generate_demographic_data import generate_demographic_data
 
 
 MIN_TEXT_LENGTH = 20
@@ -88,7 +91,13 @@ def prompt_int(prompt: str, min_val: int = 1) -> int:
         print(f"  Please enter an integer >= {min_val}.")
 
 
-def process_question(question_dir: Path, output_dir: Path, include_non_cluster: bool, multiplier: int) -> None:
+def process_question(
+    question_dir: Path,
+    output_dir: Path,
+    include_non_cluster: bool,
+    multiplier: int,
+    fixed_cluster_count: int | None,
+) -> None:
     responses_path = question_dir / "responses.jsonl"
     if not responses_path.exists():
         print("  No responses.jsonl found, skipping.")
@@ -120,8 +129,12 @@ def process_question(question_dir: Path, output_dir: Path, include_non_cluster: 
     non_cluster = [e for e in all_entries if str(e["themefinder_id"]) not in cluster_ids]
     print(f"\n  {len(non_cluster)} responses outside the chosen cluster.")
 
-    target = multiplier * len(non_cluster)
-    print(f"  Cluster responses to include: {multiplier} × {len(non_cluster)} = {target}")
+    if fixed_cluster_count is not None:
+        target = fixed_cluster_count
+        print(f"  Cluster responses to include (fixed): {target}")
+    else:
+        target = multiplier * len(non_cluster)
+        print(f"  Cluster responses to include: {multiplier} × {len(non_cluster)} = {target}")
 
     # Cycle through the unique cluster responses to fill the target count
     expanded = [dict(chosen[i % len(chosen)]) for i in range(target)]
@@ -185,9 +198,17 @@ def prompt_question_selection(summaries: list[tuple[Path, list[list[dict]], int]
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Find duplicate response clusters and produce balanced output datasets.")
+    parser = argparse.ArgumentParser(
+        description="Find duplicate response clusters, produce balanced output datasets, and "
+                    "generate the demographic data Consult needs alongside them."
+    )
     parser.add_argument("inputs_dir", type=Path, help="Directory containing question_* subdirectories")
     parser.add_argument("output_dir", type=Path, help="Directory to write output datasets")
+    parser.add_argument(
+        "--use-fixed-number-of-cluster-responses", action="store_true",
+        help="Prompt for a fixed number of cluster (campaign) responses to include, instead of "
+             "a multiplier applied to the non-cluster count.",
+    )
     args = parser.parse_args()
 
     inputs_dir = args.inputs_dir
@@ -217,7 +238,13 @@ if __name__ == "__main__":
 
     print()
     include_non_cluster = input("Include non-cluster responses in output? [y/n]: ").strip().lower() == "y"
-    multiplier = prompt_int("Cluster response multiplier (e.g. 2 = 2× number of non-cluster responses): ")
+    fixed_cluster_count: int | None
+    if args.use_fixed_number_of_cluster_responses:
+        multiplier = 1
+        fixed_cluster_count = prompt_int("Fixed number of cluster (campaign) responses to include: ", min_val=0)
+    else:
+        multiplier = prompt_int("Cluster response multiplier (e.g. 2 = 2× number of non-cluster responses): ")
+        fixed_cluster_count = None
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -225,6 +252,9 @@ if __name__ == "__main__":
         print(f"\n{'='*60}")
         print(f"  {question_dir.name}")
         print(f"{'='*60}")
-        process_question(question_dir, output_dir, include_non_cluster, multiplier)
+        process_question(question_dir, output_dir, include_non_cluster, multiplier, fixed_cluster_count)
+
+    print("\nGenerating demographic data...")
+    generate_demographic_data(output_dir / "inputs", output_dir / "demographics.jsonl")
 
     print("\nDone.")
