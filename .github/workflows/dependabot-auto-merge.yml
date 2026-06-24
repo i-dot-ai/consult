@@ -38,7 +38,7 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: gh pr merge --auto --rebase "$PR_URL"
 
-      # ── Major bump: label and leave for manual review ─────────────────────
+      # ── Major bump: label, leave for manual review, and create Linear issue ──
       - name: Create label if missing
         if: steps.metadata.outputs.update-type == 'version-update:semver-major'
         env:
@@ -51,3 +51,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: gh pr edit "$PR_URL" --add-label "major-version-bump"
+
+      - name: Create Linear issue for major bump
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        env:
+          LINEAR_API_KEY: ${{ secrets.DEPENDABOT_LINEAR_KEY }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
+          PREVIOUS_VERSION: ${{ steps.metadata.outputs.previous-version }}
+          NEW_VERSION: ${{ steps.metadata.outputs.new-version }}
+        run: python3 .github/scripts/create_linear_issue.py
