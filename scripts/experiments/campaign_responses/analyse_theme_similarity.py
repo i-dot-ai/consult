@@ -57,6 +57,11 @@ class AggStats:
     knn_gt1_mean: float;  knn_gt1_std: float
     knn_gt2_mean: float;  knn_gt2_std: float
     knn_both_mean: float; knn_both_std: float
+    # Inclusive variants: themes counted as "both" are folded into each overlapping group.
+    norm_g1_inc_both_mean: float; norm_g1_inc_both_std: float
+    norm_g2_inc_both_mean: float; norm_g2_inc_both_std: float
+    knn_g1_inc_both_mean: float;  knn_g1_inc_both_std: float
+    knn_g2_inc_both_mean: float;  knn_g2_inc_both_std: float
     themes_mean: float;   themes_std: float
     n_runs: int
 
@@ -111,8 +116,8 @@ def knn_group(embedding: np.ndarray, gt1_embeddings: list[np.ndarray], gt2_embed
     return ("1" if gt1_votes >= gt2_votes else "2"), gt1_votes, gt2_votes
 
 
-def norm_group_assign(d1: float, d2: float) -> str:
-    if max(d1, d2) > 0 and min(d1, d2) / max(d1, d2) > NORM_BOTH_THRESHOLD:
+def norm_group_assign(d1: float, d2: float, both_threshold: float = NORM_BOTH_THRESHOLD) -> str:
+    if max(d1, d2) > 0 and min(d1, d2) / max(d1, d2) > both_threshold:
         return "both"
     return "1" if d1 <= d2 else "2"
 
@@ -159,6 +164,8 @@ def aggregate(run_counts: list[tuple[int, int, int, int, int, int]]) -> AggStats
         rows.append([
             100 * n1 / total_n, 100 * n2 / total_n, 100 * nb / total_n,
             100 * k1 / total_k, 100 * k2 / total_k, 100 * kb / total_k,
+            100 * (n1 + nb) / total_n, 100 * (n2 + nb) / total_n,
+            100 * (k1 + kb) / total_k, 100 * (k2 + kb) / total_k,
             total_n,
         ])
     arr = np.array(rows)
@@ -171,7 +178,11 @@ def aggregate(run_counts: list[tuple[int, int, int, int, int, int]]) -> AggStats
         knn_gt1_mean=m[3],  knn_gt1_std=s[3],
         knn_gt2_mean=m[4],  knn_gt2_std=s[4],
         knn_both_mean=m[5], knn_both_std=s[5],
-        themes_mean=m[6],   themes_std=s[6],
+        norm_g1_inc_both_mean=m[6], norm_g1_inc_both_std=s[6],
+        norm_g2_inc_both_mean=m[7], norm_g2_inc_both_std=s[7],
+        knn_g1_inc_both_mean=m[8],  knn_g1_inc_both_std=s[8],
+        knn_g2_inc_both_mean=m[9],  knn_g2_inc_both_std=s[9],
+        themes_mean=m[10],   themes_std=s[10],
         n_runs=len(rows),
     )
 
@@ -190,6 +201,7 @@ def analyse_dataset(
     cache: dict[str, list[float]],
     log_path: Path,
     k: int = DEFAULT_K,
+    norm_both_threshold: float = NORM_BOTH_THRESHOLD,
 ) -> dict[str, tuple[int, int, int, int, int, int]]:
     """Run analysis for one dataset/run. Writes detail to log_path.
     Returns {question: (norm_gt1, norm_gt2, norm_both, knn_gt1, knn_gt2, knn_both)}."""
@@ -233,7 +245,7 @@ def analyse_dataset(
             for label, theme, emb in zip(labels, themes, theme_embeddings):
                 d1 = normalised_distance(emb, gt1_centroid, gt1_mean)
                 d2 = normalised_distance(emb, gt2_centroid, gt2_mean)
-                norm_group = norm_group_assign(d1, d2)
+                norm_group = norm_group_assign(d1, d2, norm_both_threshold)
                 knn_winner, v1, v2 = knn_group(emb, gt1_embeddings, gt2_embeddings, k)
                 out(f"  {label:<5} | {d1:.3f}      | {d2:.3f}      | {norm_group:^8} | {v1}-{v2:<4} | {knn_winner:^8}")
                 if norm_group == "1": norm_gt1 += 1
@@ -261,6 +273,31 @@ def fmt_count(pct_mean: float, pct_std: float, themes_mean: float, width: int) -
     return f"{s:^{width}}"
 
 
+def print_group_table(
+    datasets: dict[str, AggStats],
+    name_w: int,
+    cw: int,
+    headers: tuple[str, str, str, str, str, str],
+    fields: tuple[str, str, str, str, str, str],
+) -> None:
+    """Print one Dataset/runs/themes table with 6 mean±std columns (3 Norm, 3 kNN), where each
+    `fields` entry is an AggStats field prefix (combined with `_mean`/`_std` to read its value)."""
+    header = (
+        f"  {'Dataset':<{name_w}} | runs | themes"
+        f" | {headers[0]:^{cw}} | {headers[1]:^{cw}} | {headers[2]:^{cw}}"
+        f" | {headers[3]:^{cw}} | {headers[4]:^{cw}} | {headers[5]:^{cw}}"
+    )
+    print(header)
+    print("  " + "-" * (len(header) - 2))
+    for dataset_name, s in sorted(datasets.items(), key=lambda kv: natural_sort_key(kv[0])):
+        themes_str = f"{s.themes_mean:.0f}±{s.themes_std:.0f}"
+        cells = " | ".join(
+            fmt_count(getattr(s, f"{field}_mean"), getattr(s, f"{field}_std"), s.themes_mean, cw)
+            for field in fields
+        )
+        print(f"  {dataset_name:<{name_w}} | {s.n_runs:^4} | {themes_str:^6} | {cells}")
+
+
 def print_summary(
     summary: dict[str, dict[str, AggStats]],
     gt1_name: str,
@@ -279,24 +316,25 @@ def print_summary(
             f"{gt2_name}={gt2_counts_by_question.get(question, 0)}"
         )
         name_w = max(len(n) for n in datasets)
-        header = (
-            f"  {'Dataset':<{name_w}} | runs | themes"
-            f" | {'Norm→'+g1:^{cw}} | {'Norm→both':^{cw}} | {'Norm→'+g2:^{cw}}"
-            f" | {'kNN→'+g1:^{cw}} | {'kNN→both':^{cw}} | {'kNN→'+g2:^{cw}}"
+
+        print_group_table(
+            datasets, name_w, cw,
+            headers=("Norm→" + g1, "Norm→both", "Norm→" + g2, "kNN→" + g1, "kNN→both", "kNN→" + g2),
+            fields=("norm_gt1", "norm_both", "norm_gt2", "knn_gt1", "knn_both", "knn_gt2"),
         )
-        print(header)
-        print("  " + "-" * (len(header) - 2))
-        for dataset_name, s in sorted(datasets.items(), key=lambda kv: natural_sort_key(kv[0])):
-            themes_str = f"{s.themes_mean:.0f}±{s.themes_std:.0f}"
-            print(
-                f"  {dataset_name:<{name_w}} | {s.n_runs:^4} | {themes_str:^6}"
-                f" | {fmt_count(s.norm_gt1_mean, s.norm_gt1_std, s.themes_mean, cw)}"
-                f" | {fmt_count(s.norm_both_mean, s.norm_both_std, s.themes_mean, cw)}"
-                f" | {fmt_count(s.norm_gt2_mean, s.norm_gt2_std, s.themes_mean, cw)}"
-                f" | {fmt_count(s.knn_gt1_mean, s.knn_gt1_std, s.themes_mean, cw)}"
-                f" | {fmt_count(s.knn_both_mean, s.knn_both_std, s.themes_mean, cw)}"
-                f" | {fmt_count(s.knn_gt2_mean, s.knn_gt2_std, s.themes_mean, cw)}"
-            )
+
+        print(f"\n  {question} (inclusive — themes in 'both' counted in each overlapping group)")
+        print_group_table(
+            datasets, name_w, cw,
+            headers=(
+                f"Norm→{g1}(+both)", f"Norm→{g2}(+both)", "Norm overlap",
+                f"kNN→{g1}(+both)", f"kNN→{g2}(+both)", "kNN overlap",
+            ),
+            fields=(
+                "norm_g1_inc_both", "norm_g2_inc_both", "norm_both",
+                "knn_g1_inc_both", "knn_g2_inc_both", "knn_both",
+            ),
+        )
 
 
 def analyse(
@@ -305,6 +343,7 @@ def analyse(
     gt2_name: str,
     test_name: str | None,
     k: int = DEFAULT_K,
+    norm_both_threshold: float = NORM_BOTH_THRESHOLD,
 ) -> None:
     gt2_by_question = load_themes_by_question(search_dir / gt2_name, "consensus")
     gt1_by_question = load_themes_by_question(search_dir / gt1_name, "consensus")
@@ -375,7 +414,7 @@ def analyse(
                     dataset_dir.name, themes_by_question, questions,
                     gt1_name, gt2_name,
                     gt1_embs_by_q, gt2_embs_by_q, gt1_stats_by_q, gt2_stats_by_q,
-                    client, cache, log_path, k=k,
+                    client, cache, log_path, k=k, norm_both_threshold=norm_both_threshold,
                 )
                 for question, counts in results.items():
                     counts_by_question[question].append(counts)
@@ -402,6 +441,14 @@ if __name__ == "__main__":
     parser.add_argument("ground_truth_2", help="Name of the second ground truth directory")
     parser.add_argument("test_dir", nargs="?", default=None, help="Subdirectory containing comparison datasets (optional; defaults to all non-GT dirs)")
     parser.add_argument("--knn-num-neighbours", type=int, default=DEFAULT_K, help=f"k for k-NN classification (default: {DEFAULT_K})")
+    parser.add_argument(
+        "--norm-both-threshold", type=float, default=NORM_BOTH_THRESHOLD,
+        help="min(d1,d2)/max(d1,d2) ratio above which a theme's normalised-distance classification "
+             f"is treated as ambiguous ('both') rather than assigned to one GT group (default: {NORM_BOTH_THRESHOLD})",
+    )
     args = parser.parse_args()
 
-    analyse(args.directory, args.ground_truth_1, args.ground_truth_2, args.test_dir, k=args.knn_num_neighbours)
+    analyse(
+        args.directory, args.ground_truth_1, args.ground_truth_2, args.test_dir,
+        k=args.knn_num_neighbours, norm_both_threshold=args.norm_both_threshold,
+    )
