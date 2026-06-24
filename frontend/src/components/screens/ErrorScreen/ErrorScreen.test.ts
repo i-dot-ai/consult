@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/svelte";
 import ErrorScreen from "./ErrorScreen.svelte";
 
 describe("ErrorScreen", () => {
-  it("should display heading and text", async () => {
+  it("should display heading and text for status 404", async () => {
     render(ErrorScreen);
 
     expect(
@@ -15,15 +15,13 @@ describe("ErrorScreen", () => {
     ).toBeInTheDocument();
   });
 
-  it("should display heading and text", async () => {
+  it("should display heading and text for status 500", async () => {
     render(ErrorScreen, { status: 500 });
 
     expect(
       screen.getByRole("heading", { name: "500 Internal Server Error" }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText("Something went wrong"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Something went wrong")).toBeInTheDocument();
   });
 
   it("matches snapshot 404", () => {
