@@ -138,12 +138,13 @@ python sweep_consensus_params.py "$DATA_DIR/$GT1_NAME" --llm-as-judge \
 
 Compares each test dataset's themes against the two GT clusters. Each theme
 is assigned to GT1, GT2, or 'both' via normalised centroid distance and
-k-NN. A summary table is printed to stdout; per-dataset detail is written to
-`$DATA_DIR/analysis_logs/`.
+k-NN. Per-dataset detail is written to `$DATA_DIR/analysis_logs/`.
 
 GTs are always loaded from their `consensus/` subdirectory. Test datasets
-are run across all `run_*` subdirectories; results are mean±std
-proportions:
+are run across all `run_*` subdirectories; results are aggregated as
+mean±std **theme counts** (converted back from proportions using each
+dataset's mean theme count per run), so they're directly comparable to the
+number of themes in each GT's consensus:
 
 ```bash
 python analyse_theme_similarity.py "$DATA_DIR" "$GT1_NAME" "$GT2_NAME"
@@ -154,3 +155,30 @@ Optionally restrict to a specific test subdirectory:
 ```bash
 python analyse_theme_similarity.py "$DATA_DIR" "$GT1_NAME" "$GT2_NAME" <test_subdir>
 ```
+
+For each question, the number of themes in each GT's consensus is printed
+first, followed by two tables:
+- the exclusive table (`Norm/kNN→GT1`, `Norm/kNN→both`, `Norm/kNN→GT2`) —
+  each theme counted in exactly one column
+- an inclusive table (`Norm/kNN→GT1(+both)`, `Norm/kNN→GT2(+both)`,
+  `Norm/kNN overlap`) — themes classed as 'both' are folded into each
+  overlapping group, so the two group columns compare directly against the
+  GT1/GT2 consensus counts printed above
+
+Useful flags:
+- `--knn-num-neighbours` (default 5): k for k-NN classification
+- `--norm-both-threshold` (default 0.9): how close (as a ratio of the two
+  normalised centroid distances) a theme's distances to GT1/GT2 must be
+  before it's classed as ambiguous ('both') rather than assigned to one
+  group
+- `--dataset-order`: comma-separated dataset numbers (matched against the
+  first integer in each dataset directory name) giving the left-to-right
+  order for chart x-axes, e.g. `--dataset-order 4,10,8,9,3,5,6,7`. Datasets
+  not listed fall back to natural sort order (`dwp_9` before `dwp_10`),
+  after any listed ones
+
+A Plotly chart is also written per question to
+`$DATA_DIR/charts/question_part_<N>.html`, plotting the inclusive kNN theme
+counts per dataset (mean±std) against horizontal reference lines for each
+GT's consensus size — a quick visual check of which dataset ratios pull
+closest to each ground truth.
