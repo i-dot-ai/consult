@@ -4,6 +4,8 @@ version: 2
 updates:
   - package-ecosystem: "uv"
     directory: "/backend"
+    cooldown:
+      default-days: 14
     schedule:
       interval: "weekly"
     groups:
@@ -14,6 +16,8 @@ updates:
 
   - package-ecosystem: "npm"
     directory: "/frontend"
+    cooldown:
+      default-days: 14
     schedule:
       interval: "weekly"
     groups:
@@ -24,6 +28,8 @@ updates:
 
   - package-ecosystem: "npm"
     directory: "/e2e_tests"
+    cooldown:
+      default-days: 14
     schedule:
       interval: "weekly"
     groups:
@@ -34,6 +40,8 @@ updates:
 
   - package-ecosystem: "github-actions"
     directory: "/"
+    cooldown:
+      default-days: 14
     schedule:
       interval: "weekly"
     groups:
