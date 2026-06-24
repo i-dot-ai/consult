@@ -260,7 +260,7 @@ test.describe("Finalise Themes - Detail Page", () => {
 
     // number of select buttons correlate to number of candidate themes
     const selectButtons = page.getByRole("button", { name: "Select", exact: true });
-    await expect(page.getByText(`${await selectButtons.count()} available`)).toBeVisible();
+    await expect(page.getByText(`${await selectButtons.count()} available`, { exact: true })).toBeVisible();
 
     // check selected theme counts
     const selectedThemeCards = page.getByTestId("selected-theme-card");
