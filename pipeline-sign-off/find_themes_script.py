@@ -246,19 +246,22 @@ async def agentic_theme_clustering(
     return all_themes_df
 
 
-async def process_consultation(consultation_dir: str, model_name: str) -> str:
+async def process_consultation(
+    consultation_dir: str, model_name: str, output_dir: str | None = None
+) -> str:
     """
     Process all questions in a consultation directory, generating theme analyses.
 
-    Creates a new directory structure for outputs:
-    - consultation_dir/
-      - outputs/
-        - YYYY-MM-DD_HH-MM-SS/
-          - question_dir_files
+    Writes one subdirectory per question under output_dir:
+    - output_dir/
+      - question_dir/
+        - clustered_themes.json
 
     Args:
         consultation_dir: Directory containing question subdirectories
         model_name: Language model instance for processing
+        output_dir: Directory to write per-question output subdirectories into.
+            Defaults to consultation_dir/outputs/sign_off/<YYYY-MM-DD>.
     """
     llm = OpenAILLM(
         model=model_name,
@@ -268,7 +271,9 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
         http_client=httpx.AsyncClient(verify=VERIFY_SSL),
     )
 
-    date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
+    if output_dir is None:
+        date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
+        output_dir = str(Path(consultation_dir) / "outputs" / "sign_off" / date)
 
     skipped_questions = []
     for question_dir in os.listdir(Path(consultation_dir) / "inputs"):
@@ -277,7 +282,7 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
             try:
                 # Create question-specific directory in the datestamped folder
                 question_output_dir = (
-                    Path(consultation_dir) / "outputs" / "sign_off" / date / question_dir
+                    Path(output_dir) / question_dir
                 )
                 if not question_output_dir.exists():
                     question_output_dir.mkdir(parents=True, exist_ok=True)
@@ -317,7 +322,7 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                         refined_themes_to_theme_node(row) for _, row in refined_themes_df.iterrows()
                     ]
 
-                if False:
+                if SLACK_WEBHOOK_URL:
                     rule_1_messages, rule_1_failed = rule_1_total_theme_number_less_than_70_slack(
                         all_themes_list
                     )
@@ -367,7 +372,7 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                 skipped_questions.append(question_dir)
     if skipped_questions:
         logger.warning("Skipped questions: %s", skipped_questions)
-    return str(Path(consultation_dir) / "outputs" / "sign_off" / date)
+    return output_dir
 
 
 if __name__ == "__main__":
