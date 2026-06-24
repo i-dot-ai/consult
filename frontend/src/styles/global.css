@@ -64,6 +64,7 @@
 :root {
   --color-primary: #c40678;
   --color-secondary: oklch(0.6429 0.103 186.61);
+  --color-secondary-dark: oklch(0.4275 0.0746 187.12);
 }
 
 .blink {
