@@ -427,7 +427,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondary hover:underline"
+                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
                     >
                       Show me an example
                     </span>
@@ -509,7 +509,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondary hover:underline"
+                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
                     >
                       Show me an example
                     </span>
@@ -591,7 +591,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondary hover:underline"
+                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
                     >
                       Show me an example
                     </span>
@@ -673,7 +673,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondary hover:underline"
+                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
                     >
                       Show me an example
                     </span>
@@ -755,7 +755,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondary hover:underline"
+                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
                     >
                       Show me an example
                     </span>
@@ -837,7 +837,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondary hover:underline"
+                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
                     >
                       Show me an example
                     </span>
@@ -919,7 +919,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondary hover:underline"
+                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
                     >
                       Show me an example
                     </span>
@@ -1035,7 +1035,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondary hover:underline"
+                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
                     >
                       Show me an example
                     </span>
@@ -1117,7 +1117,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondary hover:underline"
+                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
                     >
                       Show me an example
                     </span>
@@ -1199,7 +1199,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondary hover:underline"
+                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
                     >
                       Show me an example
                     </span>
