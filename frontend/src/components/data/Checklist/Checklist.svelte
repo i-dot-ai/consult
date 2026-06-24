@@ -46,7 +46,8 @@
     {#each items as item (item.id)}
       <div
         class={clsx(
-          "bg-neutral-100",
+          "bg-neutral-50",
+          "shadow-sm",
           "text-xs",
           "p-2",
           "rounded-lg",
