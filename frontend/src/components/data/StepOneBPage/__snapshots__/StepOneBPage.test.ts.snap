@@ -176,7 +176,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                 <!---->
                 <svg
                   aria-hidden="true"
-                  class="neutral-500"
+                  class="fill-neutral-500"
                   height="1rem"
                   viewBox="0 -960 960 960"
                   width="1rem"
@@ -271,7 +271,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                 <!---->
                 <svg
                   aria-hidden="true"
-                  class="neutral-500"
+                  class="fill-neutral-500"
                   height="1rem"
                   viewBox="0 -960 960 960"
                   width="1rem"

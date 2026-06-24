@@ -168,7 +168,7 @@
             }
           }}
         >
-          <MaterialIcon color="neutral-500">
+          <MaterialIcon color="fill-neutral-500">
             <ChevronRight />
           </MaterialIcon>
         </Button>
@@ -204,7 +204,7 @@
             }
           }}
         >
-          <MaterialIcon color="neutral-500">
+          <MaterialIcon color="fill-neutral-500">
             <ChevronRight />
           </MaterialIcon>
         </Button>
