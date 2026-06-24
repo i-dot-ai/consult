@@ -1,6 +1,6 @@
 """Sweep distance_threshold / min_coverage for build_consensus_gt.py's clustering step.
 
-Three modes:
+Four modes:
   - Multiple values for either param (default): prints a grid of surviving
     cluster counts per combination, so you can spot where the count
     stabilises.
@@ -11,6 +11,11 @@ Three modes:
     membership and dropped themes, pausing between each so you can eyeball
     whether genuine paraphrases are merging without distinct themes being
     lumped together.
+  - --llm-as-judge: for a fixed min_coverage, sweeps every distance_threshold,
+    uses an LLM to review each resulting cluster and remove outlier themes
+    that don't belong, rechecks min_coverage on what's left, then picks the
+    distance_threshold with the most surviving clusters and writes it as the
+    final consensus (same output path as build_consensus_gt.py).
 
 Reuses (and populates) the same embeddings cache as build_consensus_gt.py,
 so running this before/after build_consensus_gt.py avoids re-fetching
@@ -31,6 +36,11 @@ Usage:
   python sweep_consensus_params.py <gt_dir> --interactive \\
       --distance-thresholds 0.05,0.10,0.15,0.20,0.25 \\
       --min-coverages 0.4,0.5,0.6,0.8
+
+  # Let an LLM prune outliers and pick the best distance_threshold, then write the consensus
+  python sweep_consensus_params.py <gt_dir> --llm-as-judge \\
+      --distance-thresholds 0.05,0.10,0.15,0.20,0.25 \\
+      --min-coverages 0.5
 """
 
 import argparse
@@ -38,13 +48,39 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
+from openai import OpenAI
+from pydantic import BaseModel, Field
+
 from build_consensus_gt import (
+    DEFAULT_MODEL,
     EMBEDDING_MODEL,
+    assemble_consensus_themes,
     cluster_themes,
     fetch_embeddings,
     load_all_runs,
     make_client,
+    synthesise_labels,
+    write_consensus,
 )
+
+JUDGE_SYSTEM_PROMPT = """You are reviewing clusters of consultation themes that were grouped automatically by embedding similarity. Similarity-based clustering sometimes lumps together themes that use similar wording but make a different substantive point.
+
+For each cluster below, identify any member theme(s) that are outliers -- i.e. they do not share the same substantive point as the majority of the cluster -- and should be removed. Most clusters will have zero outliers; only flag a member when you are confident it doesn't belong.
+
+Return one entry per cluster (using the cluster_index shown in its heading), with the 1-based indices of any outlier members. Use an empty list when no outliers are found."""
+
+
+class ClusterOutlierReview(BaseModel):
+    cluster_index: int = Field(description="1-based cluster number, matching the heading in the prompt")
+    outlier_member_indices: list[int] = Field(
+        description="1-based indices of themes within this cluster that do not share the same "
+        "substantive point as the rest and should be removed. Empty list if every member belongs."
+    )
+
+
+class OutlierReviewResponse(BaseModel):
+    clusters: list[ClusterOutlierReview]
 
 
 def parse_float_list(raw: str) -> list[float]:
@@ -109,6 +145,144 @@ def print_detail(
     print()
 
 
+def judge_cluster_outliers(
+    clusters: list[tuple[list[tuple[dict, int]], float]],
+    question: str,
+    client: OpenAI,
+    model: str,
+) -> list[list[tuple[dict, int]]]:
+    """Ask the LLM to flag outlier members within each cluster. Returns pruned member lists
+    in the same order as `clusters`; single-member clusters pass through unreviewed."""
+    reviewable = [(i, members) for i, (members, _) in enumerate(clusters) if len(members) > 1]
+    if not reviewable:
+        return [members for members, _ in clusters]
+
+    cluster_blocks = []
+    for i, members in reviewable:
+        theme_lines = "\n".join(
+            f"  {j}. {t['topic_label']}: {t['topic_description']}" for j, (t, _) in enumerate(members, 1)
+        )
+        cluster_blocks.append(f"## Cluster {i + 1}\n{theme_lines}")
+
+    human_prompt = (
+        f"Question: {question}\n\n"
+        + "\n\n".join(cluster_blocks)
+        + f"\n\nReview each of the {len(reviewable)} cluster(s) above for outlier members."
+    )
+
+    result = (
+        client.beta.chat.completions.parse(
+            model=model,
+            messages=[
+                {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
+                {"role": "user", "content": human_prompt},
+            ],
+            response_format=OutlierReviewResponse,
+        )
+        .choices[0]
+        .message.parsed
+    )
+    outliers_by_cluster = {
+        review.cluster_index - 1: set(review.outlier_member_indices) for review in result.clusters
+    }
+
+    return [
+        [m for j, m in enumerate(members, 1) if j not in outliers_by_cluster.get(i, set())]
+        for i, (members, _) in enumerate(clusters)
+    ]
+
+
+def apply_min_coverage(
+    pruned_members: list[list[tuple[dict, int]]],
+    total_runs: int,
+    min_coverage: float,
+) -> list[tuple[list[tuple[dict, int]], float]]:
+    """Recompute coverage after pruning and drop clusters that fall below min_coverage."""
+    surviving = []
+    for members in pruned_members:
+        if not members:
+            continue
+        coverage = len({run_num for _, run_num in members}) / total_runs
+        if coverage >= min_coverage:
+            surviving.append((members, coverage))
+    return sorted(surviving, key=lambda x: -x[1])
+
+
+def select_best_distance_threshold(
+    question: str,
+    themes_with_runs: list[tuple[dict, int]],
+    embeddings: np.ndarray,
+    total_runs: int,
+    distance_thresholds: list[float],
+    min_coverage: float,
+    client: OpenAI,
+    model: str,
+) -> tuple[float, list[tuple[list[tuple[dict, int]], float]]]:
+    """Try each distance_threshold, use the LLM to prune outliers from the resulting clusters,
+    recheck min_coverage, and return the threshold with the most surviving clusters (ties favour
+    the smallest/strictest threshold, since later thresholds only replace the best on a strict
+    improvement)."""
+    best_dt = distance_thresholds[0]
+    best_clusters: list[tuple[list[tuple[dict, int]], float]] = []
+    best_count = -1
+
+    for dt in distance_thresholds:
+        raw_clusters = cluster_themes(themes_with_runs, embeddings, total_runs, dt, min_coverage)
+        pruned_members = judge_cluster_outliers(raw_clusters, question, client, model)
+        surviving = apply_min_coverage(pruned_members, total_runs, min_coverage)
+        outliers_removed = sum(len(m) for m, _ in raw_clusters) - sum(len(m) for m in pruned_members)
+        print(
+            f"  distance_threshold={dt:.2f} → {len(raw_clusters)} cluster(s) before review, "
+            f"{outliers_removed} outlier theme(s) removed, {len(surviving)} cluster(s) survive min_coverage"
+        )
+        if len(surviving) > best_count:
+            best_count = len(surviving)
+            best_dt = dt
+            best_clusters = surviving
+
+    return best_dt, best_clusters
+
+
+def run_llm_as_judge(
+    gt_dir: Path,
+    distance_thresholds: list[float],
+    min_coverage: float,
+    question_filter: str | None,
+    model: str,
+    client: OpenAI,
+    cache: dict[str, list[float]],
+) -> None:
+    """For each question: sweep distance_thresholds, LLM-prune outliers from each clustering,
+    recheck min_coverage, pick the distance_threshold yielding the most surviving clusters, then
+    synthesise labels and write the final consensus (same output path as build_consensus_gt.py)."""
+    by_question = load_all_runs(gt_dir)
+    if question_filter:
+        by_question = {q: v for q, v in by_question.items() if q == question_filter}
+        if not by_question:
+            print(f"Question '{question_filter}' not found.", file=sys.stderr)
+            sys.exit(1)
+
+    for question, themes_with_runs in sorted(by_question.items()):
+        total_runs = len({run_num for _, run_num in themes_with_runs})
+        texts = [t["topic_description"] for t, _ in themes_with_runs]
+        embeddings = fetch_embeddings(texts, client, cache)
+
+        print(
+            f"\n{question} ({len(themes_with_runs)} themes across {total_runs} runs, "
+            f"min_coverage={min_coverage:.2f}): sweeping distance thresholds with LLM-as-judge review"
+        )
+        best_dt, best_clusters = select_best_distance_threshold(
+            question, themes_with_runs, embeddings, total_runs,
+            distance_thresholds, min_coverage, client, model,
+        )
+        print(f"  selected distance_threshold={best_dt:.2f} → {len(best_clusters)} consensus cluster(s)")
+
+        representatives = synthesise_labels(best_clusters, question, client, model)
+        consensus_themes = assemble_consensus_themes(best_clusters, representatives)
+        out_path = write_consensus(gt_dir, question, consensus_themes)
+        print(f"  {len(consensus_themes)} consensus theme(s) → {out_path}")
+
+
 def interactive_walkthrough(
     by_question: dict[str, list[tuple[dict, int]]],
     client,
@@ -142,9 +316,23 @@ def sweep(
     min_coverages: list[float],
     question_filter: str | None,
     interactive: bool,
+    llm_as_judge: bool,
+    model: str,
 ) -> None:
     if not gt_dir.is_dir():
         print(f"Directory not found: {gt_dir}", file=sys.stderr)
+        sys.exit(1)
+
+    if llm_as_judge and interactive:
+        print("--llm-as-judge and --interactive are mutually exclusive.", file=sys.stderr)
+        sys.exit(1)
+
+    if llm_as_judge and len(min_coverages) != 1:
+        print(
+            "--llm-as-judge picks a single distance_threshold for a target min_coverage, "
+            "so pass exactly one --min-coverages value.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     client = make_client()
@@ -154,6 +342,10 @@ def sweep(
     show_detail = len(distance_thresholds) == 1 and len(min_coverages) == 1
 
     try:
+        if llm_as_judge:
+            run_llm_as_judge(gt_dir, distance_thresholds, min_coverages[0], question_filter, model, client, cache)
+            return
+
         by_question = load_all_runs(gt_dir)
         if question_filter:
             by_question = {q: v for q, v in by_question.items() if q == question_filter}
@@ -204,6 +396,21 @@ if __name__ == "__main__":
         help="Step through every (question, distance_threshold, min_coverage) combination, "
              "pausing after each to show full cluster membership and dropped themes",
     )
+    parser.add_argument(
+        "--llm-as-judge", action="store_true",
+        help="For each distance_threshold, use an LLM to review every cluster and remove "
+             "outlier themes that don't belong, then recheck min_coverage. Picks the "
+             "distance_threshold with the most surviving clusters and writes it as the final "
+             "consensus (same output path as build_consensus_gt.py). Requires exactly one "
+             "--min-coverages value; mutually exclusive with --interactive.",
+    )
+    parser.add_argument(
+        "--model", default=DEFAULT_MODEL,
+        help=f"LLM model used for outlier review and label synthesis with --llm-as-judge (default: {DEFAULT_MODEL})",
+    )
     args = parser.parse_args()
 
-    sweep(args.gt_dir, args.distance_thresholds, args.min_coverages, args.question, args.interactive)
+    sweep(
+        args.gt_dir, args.distance_thresholds, args.min_coverages, args.question,
+        args.interactive, args.llm_as_judge, args.model,
+    )
