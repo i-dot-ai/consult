@@ -2,8 +2,8 @@
 
 version: 2
 updates:
-  - package-ecosystem: "pip"
-    directory: "/"
+  - package-ecosystem: "uv"
+    directory: "/backend"
     schedule:
       interval: "weekly"
     groups:
@@ -13,7 +13,7 @@ updates:
           - "patch"
 
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "/frontend"
     schedule:
       interval: "weekly"
     groups:
@@ -23,11 +23,11 @@ updates:
           - "patch"
 
   - package-ecosystem: "npm"
-    directory: "/prototype"
+    directory: "/e2e_tests"
     schedule:
       interval: "weekly"
     groups:
-      prototype-updates:
+      e2e-updates:
         update-types:
           - "minor"
           - "patch"
