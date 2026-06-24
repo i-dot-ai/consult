@@ -28,7 +28,7 @@ jobs:
       run: echo "$INPUTS"
 
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         ref: ${{ inputs.commit_hash }}
         fetch-depth: 0
