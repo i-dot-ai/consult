@@ -61,7 +61,7 @@ jobs:
           fi
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.release.tag_name || inputs.tag || '' }}
           fetch-depth: 0
@@ -145,7 +145,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: AWS Authentication
         uses: i-dot-ai/i-dot-ai-core-github-actions/.github/actions/authenticate-aws@main
