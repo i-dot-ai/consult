@@ -11,23 +11,15 @@
 
   let { status = 404 }: Props = $props();
 
-  function getTitle() {
-    if (status === 404) {
-      return "404 Not Found";
-    }
-    if (status === 500) {
-      return "500 Internal Server Error";
-    }
-  }
+  const TITLES: Record<404 | 500, string> = {
+    404: "404 Not Found",
+    500: "500 Internal Server Error",
+  };
 
-  function getBody() {
-    if (status === 404) {
-      return "The page you requested could not be found";
-    }
-    if (status === 500) {
-      return "Something went wrong";
-    }
-  }
+  const BODIES: Record<404 | 500, string> = {
+    404: "The page you requested could not be found",
+    500: "Something went wrong",
+  };
 </script>
 
 {#snippet icon()}
@@ -47,12 +39,12 @@
 
   <Title level={1} context="public">
     <span class="block text-center text-primary">
-      {getTitle()}
+      {TITLES[status]}
     </span>
   </Title>
   <Text>
     <span class="block text-center">
-      {getBody()}
+      {BODIES[status]}
     </span>
   </Text>
 </div>
