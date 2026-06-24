@@ -6,7 +6,7 @@
   import Title from "../../Title.svelte";
 
   interface Props {
-    status: 404 | 500;
+    status?: 404 | 500;
   }
 
   let { status = 404 }: Props = $props();
