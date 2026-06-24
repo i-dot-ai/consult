@@ -88,7 +88,9 @@
               ariaControls={`${item.id}-details`}
               ariaLabel={`Show/Hide ${item.id}-details`}
             >
-              <span class="-ml-2 text-nowrap text-secondarydark hover:underline">
+              <span
+                class="-ml-2 text-nowrap text-secondarydark hover:underline"
+              >
                 {expanded.includes(item.id)
                   ? "Hide example"
                   : "Show me an example"}
