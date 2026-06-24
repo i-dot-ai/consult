@@ -75,6 +75,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                 width="1rem"
                 xmlns="http://www.w3.org/2000/svg"
               >
+                <!---->
                 <path
                   d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
                 />
@@ -174,13 +175,14 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                 <!---->
                 <!---->
                 <svg
+                  aria-hidden="true"
                   class="neutral-500"
                   height="1rem"
-                  role="img"
                   viewBox="0 -960 960 960"
                   width="1rem"
                   xmlns="http://www.w3.org/2000/svg"
                 >
+                  <!---->
                   <path
                     d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                     xmlns="http://www.w3.org/2000/svg"
@@ -268,13 +270,14 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                 <!---->
                 <!---->
                 <svg
+                  aria-hidden="true"
                   class="neutral-500"
                   height="1rem"
-                  role="img"
                   viewBox="0 -960 960 960"
                   width="1rem"
                   xmlns="http://www.w3.org/2000/svg"
                 >
+                  <!---->
                   <path
                     d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                     xmlns="http://www.w3.org/2000/svg"
@@ -1247,13 +1250,14 @@ exports[`StepOneBPage > should match snapshot 1`] = `
           class="rotate-180"
         >
           <svg
+            aria-hidden="true"
             class="fill-neutral-500"
             height="0.9rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="0.9rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <path
               d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
               xmlns="http://www.w3.org/2000/svg"
@@ -1293,13 +1297,14 @@ exports[`StepOneBPage > should match snapshot 1`] = `
         </span>
          
         <svg
+          aria-hidden="true"
           class="fill-white"
           height="0.9rem"
-          role="img"
           viewBox="0 -960 960 960"
           width="0.9rem"
           xmlns="http://www.w3.org/2000/svg"
         >
+          <!---->
           <path
             d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
             xmlns="http://www.w3.org/2000/svg"

@@ -118,13 +118,14 @@ exports[`HeaderConsult > matches snapshot 1`] = `
           data-testid="mobile-menu-button"
         >
           <svg
+            aria-hidden="true"
             class="fill-neutral-500"
             height="1.5rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="1.5rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <path
               d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"
             />
@@ -161,13 +162,14 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                     class="rotate-90"
                   >
                     <svg
+                      aria-hidden="true"
                       class="fill-neutral-500"
                       height="0.9rem"
-                      role="img"
                       viewBox="0 -960 960 960"
                       width="0.9rem"
                       xmlns="http://www.w3.org/2000/svg"
                     >
+                      <!---->
                       <path
                         d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                         xmlns="http://www.w3.org/2000/svg"
@@ -244,13 +246,14 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                     class="rotate-90"
                   >
                     <svg
+                      aria-hidden="true"
                       class="fill-neutral-500"
                       height="0.9rem"
-                      role="img"
                       viewBox="0 -960 960 960"
                       width="0.9rem"
                       xmlns="http://www.w3.org/2000/svg"
                     >
+                      <!---->
                       <path
                         d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                         xmlns="http://www.w3.org/2000/svg"
@@ -385,13 +388,14 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                       >
                         Langfuse 
                         <svg
+                          aria-hidden="true"
                           class="fill-current"
                           height="0.8rem"
-                          role="img"
                           viewBox="0 -960 960 960"
                           width="0.8rem"
                           xmlns="http://www.w3.org/2000/svg"
                         >
+                          <!---->
                           <path
                             d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"
                             xmlns="http://www.w3.org/2000/svg"
@@ -463,13 +467,14 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                   title="Profile links"
                 >
                   <svg
+                    aria-hidden="true"
                     class="fill-white"
                     height="1.5rem"
-                    role="img"
                     viewBox="0 -960 960 960"
                     width="1.5rem"
                     xmlns="http://www.w3.org/2000/svg"
                   >
+                    <!---->
                     <path
                       d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z"
                       xmlns="http://www.w3.org/2000/svg"
