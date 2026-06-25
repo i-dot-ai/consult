@@ -23,6 +23,7 @@ If test_dir is omitted, all directories in search_dir other than the two GT dirs
 """
 
 import argparse
+import csv
 import json
 import os
 import re
@@ -47,6 +48,13 @@ NORM_BOTH_THRESHOLD = 0.9  # min(d1,d2)/max(d1,d2) above this → 'both'
 def natural_sort_key(name: str) -> list:
     """Sort key that orders embedded numbers numerically, e.g. dwp_9 before dwp_10."""
     return [int(part) if part.isdigit() else part for part in re.split(r"(\d+)", name)]
+
+
+def format_dataset_label(name: str) -> str:
+    """Strip a leading word_number_ prefix (e.g. dwp_7_) and uppercase the remainder, for
+    chart x-axis labels. The leading word excludes underscores so this only strips the first
+    segment, not greedily through every later _<digits>_ run in the name."""
+    return re.sub(r"^[^_]+_\d+_", "", name).upper()
 
 
 def dataset_sort_key(name: str, order: list[int] | None) -> tuple:
@@ -364,9 +372,12 @@ def plot_summary(
     """For each question, chart the inclusive kNN theme counts (kNN→GT1(+both), kNN→GT2(+both),
     kNN overlap) per dataset against horizontal reference lines for each GT's consensus size."""
     output_dir.mkdir(parents=True, exist_ok=True)
+    gt1_label = format_dataset_label(gt1_name)
+    gt2_label = format_dataset_label(gt2_name)
 
     for question, datasets in sorted(summary.items()):
         names = sorted(datasets.keys(), key=lambda n: dataset_sort_key(n, dataset_order))
+        display_names = [format_dataset_label(n) for n in names]
 
         def series(field: str) -> tuple[list[float], list[float]]:
             means, stds = [], []
@@ -383,33 +394,90 @@ def plot_summary(
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(
-            x=names, y=g1_means, error_y=dict(type="data", array=g1_stds),
-            mode="lines+markers", name=f"kNN→{gt1_name} (+both)",
+            x=display_names, y=g1_means, error_y=dict(type="data", array=g1_stds),
+            mode="lines+markers", name=f"kNN→{gt1_label} (+both)",
         ))
         fig.add_trace(go.Scatter(
-            x=names, y=g2_means, error_y=dict(type="data", array=g2_stds),
-            mode="lines+markers", name=f"kNN→{gt2_name} (+both)",
+            x=display_names, y=g2_means, error_y=dict(type="data", array=g2_stds),
+            mode="lines+markers", name=f"kNN→{gt2_label} (+both)",
         ))
         fig.add_trace(go.Scatter(
-            x=names, y=overlap_means, error_y=dict(type="data", array=overlap_stds),
+            x=display_names, y=overlap_means, error_y=dict(type="data", array=overlap_stds),
             mode="lines+markers", name="kNN overlap",
         ))
 
         gt1_count = gt1_counts_by_question.get(question, 0)
         gt2_count = gt2_counts_by_question.get(question, 0)
-        fig.add_hline(y=gt1_count, line_dash="dash", annotation_text=f"{gt1_name} consensus ({gt1_count})")
-        fig.add_hline(y=gt2_count, line_dash="dot", annotation_text=f"{gt2_name} consensus ({gt2_count})")
+        fig.add_hline(
+            y=gt1_count, line_dash="dash", annotation_text=f"{gt1_label} consensus ({gt1_count})",
+            annotation_font_size=9,
+        )
+        fig.add_hline(
+            y=gt2_count, line_dash="dot", annotation_text=f"{gt2_label} consensus ({gt2_count})",
+            annotation_font_size=9,
+        )
 
         fig.update_layout(
             title=f"{question}: kNN theme counts (inclusive) vs consensus ground truth size",
             xaxis_title="Dataset",
             yaxis_title="Theme count",
-            xaxis=dict(type="category", categoryorder="array", categoryarray=names),
+            xaxis=dict(type="category", categoryorder="array", categoryarray=display_names),
+            font=dict(size=10),
+            title_font=dict(size=13),
+            legend=dict(font=dict(size=9)),
+            width=1600,
+            height=900,
         )
 
         out_path = output_dir / f"{question}.html"
         fig.write_html(out_path)
-        print(f"  Chart written to {out_path}", file=sys.stderr)
+        png_path = output_dir / f"{question}.png"
+        fig.write_image(png_path, scale=2)
+        print(f"  Chart written to {out_path} and {png_path}", file=sys.stderr)
+
+
+CSV_METRIC_FIELDS = (
+    "norm_gt1", "norm_both", "norm_gt2",
+    "knn_gt1", "knn_both", "knn_gt2",
+    "norm_g1_inc_both", "norm_g2_inc_both",
+    "knn_g1_inc_both", "knn_g2_inc_both",
+)
+
+
+def write_csv_results(
+    summary: dict[str, dict[str, AggStats]],
+    gt1_name: str,
+    gt2_name: str,
+    gt1_counts_by_question: dict[str, int],
+    gt2_counts_by_question: dict[str, int],
+    output_dir: Path,
+) -> None:
+    """Write one CSV per question with every metric as a theme count (mean/std), mirroring the
+    exclusive/inclusive tables printed to stdout — for spreadsheet use or further analysis."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    for question, datasets in sorted(summary.items()):
+        out_path = output_dir / f"{question}.csv"
+        with out_path.open("w", newline="") as f:
+            writer = csv.writer(f)
+            header = [
+                "dataset", "runs", "themes_mean", "themes_std",
+                f"{gt1_name}_consensus_themes", f"{gt2_name}_consensus_themes",
+            ]
+            for field in CSV_METRIC_FIELDS:
+                header += [f"{field}_count_mean", f"{field}_count_std"]
+            writer.writerow(header)
+
+            gt1_count = gt1_counts_by_question.get(question, 0)
+            gt2_count = gt2_counts_by_question.get(question, 0)
+            for dataset_name, s in sorted(datasets.items(), key=lambda kv: natural_sort_key(kv[0])):
+                row = [dataset_name, s.n_runs, round(s.themes_mean, 2), round(s.themes_std, 2), gt1_count, gt2_count]
+                for field in CSV_METRIC_FIELDS:
+                    mean, std = pct_to_count(getattr(s, f"{field}_mean"), getattr(s, f"{field}_std"), s.themes_mean)
+                    row += [round(mean, 2), round(std, 2)]
+                writer.writerow(row)
+
+        print(f"  CSV written to {out_path}", file=sys.stderr)
 
 
 def analyse(
@@ -505,6 +573,10 @@ def analyse(
     gt1_counts_by_question = {q: len(themes) for q, themes in gt1_by_question.items()}
     gt2_counts_by_question = {q: len(themes) for q, themes in gt2_by_question.items()}
     print_summary(summary, gt1_name, gt2_name, gt1_counts_by_question, gt2_counts_by_question)
+    write_csv_results(
+        summary, gt1_name, gt2_name, gt1_counts_by_question, gt2_counts_by_question,
+        search_dir / "results",
+    )
     plot_summary(
         summary, gt1_name, gt2_name, gt1_counts_by_question, gt2_counts_by_question,
         search_dir / "charts", dataset_order,
