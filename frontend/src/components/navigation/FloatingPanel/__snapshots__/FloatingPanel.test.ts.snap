@@ -3,13 +3,13 @@
 exports[`FloatingPanel > renders correct direction 1`] = `
 <div>
   <div
-    class="relative m-auto max-w-[10rem]"
+    class="relative m-auto max-w-40"
   >
     <div
       aria-controls="direction-test"
       aria-expanded="false"
       aria-haspopup="dialog"
-      class="floating-panel w-max overflow-hidden rounded-full transition-transform translate-x-0 has-[button[aria-pressed=true]]:-translate-x-[8rem]"
+      class="floating-panel w-max overflow-hidden rounded-full transition-transform translate-x-0 has-[button[aria-pressed=true]]:-translate-x-32"
       data-melt-popover-trigger=""
       data-state="closed"
       id="direction-test"
@@ -112,13 +112,13 @@ exports[`FloatingPanel > renders correct direction 1`] = `
 exports[`FloatingPanel > renders correct direction 2`] = `
 <div>
   <div
-    class="relative m-auto max-w-[10rem]"
+    class="relative m-auto max-w-40"
   >
     <div
       aria-controls="direction-test"
       aria-expanded="false"
       aria-haspopup="dialog"
-      class="floating-panel w-max overflow-hidden rounded-full transition-transform translate-x-0 has-[button[aria-pressed=true]]:translate-x-[8rem]"
+      class="floating-panel w-max overflow-hidden rounded-full transition-transform translate-x-0 has-[button[aria-pressed=true]]:translate-x-32"
       data-melt-popover-trigger=""
       data-state="closed"
       id="direction-test"

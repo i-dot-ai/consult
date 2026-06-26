@@ -61,11 +61,11 @@ exports[`IntroPage > should match snapshot 1`] = `
     </p>
      
     <div
-      class="flex gap-2 my-4 min-w-[50rem]"
+      class="flex gap-2 my-4 min-w-200"
     >
       <div
         aria-current="true"
-        class="relative flex flex-col gap-1 items-center w-[15rem] transition-opacity duration-500"
+        class="relative flex flex-col gap-1 items-center w-60 transition-opacity duration-500"
         data-testid="intro-card"
       >
         <div
@@ -135,7 +135,7 @@ exports[`IntroPage > should match snapshot 1`] = `
         <!---->
       </div>
       <div
-        class="relative flex flex-col gap-1 items-center w-[15rem] opacity-50 transition-opacity duration-500"
+        class="relative flex flex-col gap-1 items-center w-60 opacity-50 transition-opacity duration-500"
         data-testid="intro-card"
       >
         <div
@@ -203,7 +203,7 @@ exports[`IntroPage > should match snapshot 1`] = `
         <!---->
       </div>
       <div
-        class="relative flex flex-col gap-1 items-center w-[15rem] opacity-50 transition-opacity duration-500"
+        class="relative flex flex-col gap-1 items-center w-60 opacity-50 transition-opacity duration-500"
         data-testid="intro-card"
       >
         <div

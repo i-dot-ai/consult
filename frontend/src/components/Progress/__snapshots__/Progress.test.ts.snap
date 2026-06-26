@@ -15,7 +15,7 @@ exports[`Progress > should render correct thickness 1`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 0ms;"
     />
   </div>
@@ -38,7 +38,7 @@ exports[`Progress > should render correct thickness 2`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 0ms;"
     />
   </div>
@@ -61,7 +61,7 @@ exports[`Progress > should render correct thickness 3`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 0ms;"
     />
   </div>
@@ -84,7 +84,7 @@ exports[`Progress > should render correct transition delay 1`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 1ms; transition-duration: 0ms;"
     />
   </div>
@@ -107,7 +107,7 @@ exports[`Progress > should render correct transition delay 2`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 2ms; transition-duration: 0ms;"
     />
   </div>
@@ -130,7 +130,7 @@ exports[`Progress > should render correct transition delay 3`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 20ms; transition-duration: 0ms;"
     />
   </div>
@@ -153,7 +153,7 @@ exports[`Progress > should render correct transition delay 4`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 20.5ms; transition-duration: 0ms;"
     />
   </div>
@@ -176,7 +176,7 @@ exports[`Progress > should render correct transition delay 5`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: -10ms; transition-duration: 0ms;"
     />
   </div>
@@ -199,7 +199,7 @@ exports[`Progress > should render correct transition delay 6`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 0ms;"
     />
   </div>
@@ -222,7 +222,7 @@ exports[`Progress > should render correct transition duration 1`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 1ms;"
     />
   </div>
@@ -245,7 +245,7 @@ exports[`Progress > should render correct transition duration 2`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 2ms;"
     />
   </div>
@@ -268,7 +268,7 @@ exports[`Progress > should render correct transition duration 3`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 20ms;"
     />
   </div>
@@ -291,7 +291,7 @@ exports[`Progress > should render correct transition duration 4`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 20.5ms;"
     />
   </div>
@@ -314,7 +314,7 @@ exports[`Progress > should render correct transition duration 5`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: -10ms;"
     />
   </div>
@@ -337,7 +337,7 @@ exports[`Progress > should render correct transition duration 6`] = `
     role="meter"
   >
     <div
-      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
       style="transform: translateX(-50%); transition-delay: 0ms; transition-duration: 0ms;"
     />
   </div>
