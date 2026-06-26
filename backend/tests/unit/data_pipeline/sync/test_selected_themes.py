@@ -9,12 +9,12 @@ from factories import ConsultationFactory, QuestionFactory
 
 @pytest.mark.django_db
 class TestExportSelectedThemesToS3:
-    @patch("data_pipeline.sync.selected_themes.boto3")
+    @patch("data_pipeline.sync.selected_themes.get_s3_client")
     @patch("data_pipeline.sync.selected_themes.settings")
-    def test_export_selected_themes_to_s3(self, mock_settings, mock_boto3):
+    def test_export_selected_themes_to_s3(self, mock_settings, mock_get_s3_client):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
         mock_s3_client = Mock()
-        mock_boto3.client.return_value = mock_s3_client
+        mock_get_s3_client.return_value = mock_s3_client
 
         # Create consultation, questions and selected themes
         consultation = ConsultationFactory(code="test-code")

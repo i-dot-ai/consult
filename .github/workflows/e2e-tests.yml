@@ -48,6 +48,12 @@ jobs:
 
       - name: run tests
         run: make test-end-to-end
+        env:
+          ENVIRONMENT: test
+          AWS_BUCKET_NAME: i-dot-ai-test-consult-data
+          MINIO_ENDPOINT: http://localhost:9100
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin
 
       - name: Show docker logs on failure
         if: failure()
