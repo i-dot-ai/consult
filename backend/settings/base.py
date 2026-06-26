@@ -20,6 +20,8 @@ from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
 from i_dot_ai_utilities.logging.types.enrichment_types import ExecutionEnvironmentType
 from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 
+from hosting_environment import HostingEnvironment
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -252,6 +254,11 @@ ASSIGN_THEMES_BATCH_JOB_DEFINITION = env("ASSIGN_THEMES_BATCH_JOB_DEFINITION")
 FIND_THEMES_BATCH_JOB_NAME = env("FIND_THEMES_BATCH_JOB_NAME")
 FIND_THEMES_BATCH_JOB_QUEUE = env("FIND_THEMES_BATCH_JOB_QUEUE")
 FIND_THEMES_BATCH_JOB_DEFINITION = env("FIND_THEMES_BATCH_JOB_DEFINITION")
+
+# Only submit real AWS Batch jobs in deployed environments. In local/test/e2e the
+# AWS Batch call is stubbed (see data_pipeline.batch.submit_job), which keeps a
+# single source of truth (is_deployed) while staying easy to mock in tests.
+SUBMIT_BATCH_JOBS = HostingEnvironment.is_deployed()
 
 # redis
 redis_host = env.str("REDIS_HOST", "localhost")
