@@ -44,10 +44,8 @@
       "rounded-full",
       "transition-transform",
       "translate-x-0",
-      direction === "left" &&
-        "has-[button[aria-pressed=true]]:-translate-x-32",
-      direction === "right" &&
-        "has-[button[aria-pressed=true]]:translate-x-32",
+      direction === "left" && "has-[button[aria-pressed=true]]:-translate-x-32",
+      direction === "right" && "has-[button[aria-pressed=true]]:translate-x-32",
     ])}
   >
     <Button
