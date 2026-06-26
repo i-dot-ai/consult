@@ -122,7 +122,7 @@
             <td class="pr-4">
               {#if countsLoading}
                 <span
-                  class="blink select-none rounded bg-neutral-200 text-neutral-200"
+                  class="blink select-none rounded-sm bg-neutral-200 text-neutral-200"
                 >
                   00000
                 </span>
@@ -134,7 +134,7 @@
               <div class="flex items-center gap-1">
                 {#if countsLoading}
                   <span
-                    class="blink w-[5ch] select-none rounded bg-neutral-200 text-neutral-200"
+                    class="blink w-[5ch] select-none rounded-sm bg-neutral-200 text-neutral-200"
                   >
                     000%
                   </span>
@@ -145,7 +145,7 @@
                       : Math.round(percentage)}%
                   </span>
 
-                  <div class="w-full max-w-[3rem]">
+                  <div class="w-full max-w-12">
                     <Progress value={percentage} />
                   </div>
                 {/if}

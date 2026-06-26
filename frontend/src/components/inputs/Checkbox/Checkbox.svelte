@@ -85,8 +85,8 @@
     <input
       type="checkbox"
       class={clsx([
-        "mt-0.5 rounded border border-neutral-300 bg-white text-neutral-900",
-        "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400",
+        "mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900",
+        "focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400",
         "shrink-0 disabled:cursor-not-allowed disabled:opacity-50",
         "checked:border-primary checked:bg-primary",
         size === "xs" && "h-3 w-3",

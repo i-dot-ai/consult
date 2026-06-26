@@ -79,7 +79,7 @@
     You'll complete 5 individual steps, organised into 3 phases:
   </p>
 
-  <div class={clsx(["flex", "gap-2", "my-4", "min-w-[50rem]"])}>
+  <div class={clsx(["flex", "gap-2", "my-4", "min-w-200"])}>
     {#each CARDS as card, i (i)}
       <IntroCard
         steps={card.steps}

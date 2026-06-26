@@ -86,7 +86,7 @@
   {/if}
 
   <Title level={2}>
-    <span class={clsx(["text-sm", "font-[500]"])}>
+    <span class={clsx(["text-sm", "font-medium"])}>
       Which tool are you using?
     </span>
   </Title>
@@ -102,7 +102,7 @@
       handleClick={() => handleTabClick(SelectedValues.Qualtrics)}
       ariaLabel="Qualtrics tab"
     >
-      <div class={clsx(["px-8", "py-4", "w-[12rem]"])}>
+      <div class={clsx(["px-8", "py-4", "w-48"])}>
         <img
           class={clsx(["w-full"])}
           src="images/qualtrics.png"
@@ -117,7 +117,7 @@
       handleClick={() => handleTabClick(SelectedValues.SmartSurvey)}
       ariaLabel="Smart Survey tab"
     >
-      <div class={clsx(["px-8", "py-4", "w-[23rem]"])}>
+      <div class={clsx(["px-8", "py-4", "w-92"])}>
         <img
           class={clsx(["w-full"])}
           src="images/smartsurvey.png"
@@ -132,7 +132,7 @@
       handleClick={() => handleTabClick(SelectedValues.CitizenSpace)}
       ariaLabel="Citizen Space tab"
     >
-      <div class={clsx(["px-8", "py-4", "w-[21rem]"])}>
+      <div class={clsx(["px-8", "py-4", "w-84"])}>
         <img
           class={clsx(["w-full"])}
           src="images/citizenspace.png"
@@ -195,7 +195,7 @@
 )}
   <div in:fade>
     <Title>
-      <span class={clsx(["text-md", "font-[500]"])}>
+      <span class={clsx(["text-md", "font-medium"])}>
         {title}
       </span>
     </Title>
@@ -294,7 +294,7 @@
     {#snippet content()}
       <div class="text-sm">
         <Title level={3}>
-          <span class="mb-4 block font-[500]">Preparing your file</span>
+          <span class="mb-4 block font-medium">Preparing your file</span>
         </Title>
 
         <p class="text-neutral-500">

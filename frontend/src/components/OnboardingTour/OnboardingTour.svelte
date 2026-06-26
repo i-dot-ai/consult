@@ -145,8 +145,8 @@
       ])}
       class={clsx([
         "absolute",
-        "w-[5rem]",
-        "h-[5rem]",
+        "w-20",
+        "h-20",
         "p-4",
         "border",
         "border-2",

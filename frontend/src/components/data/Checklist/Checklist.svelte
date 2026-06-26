@@ -31,7 +31,7 @@
 
 <div>
   <Title level={3}>
-    <span class={clsx(["block", "text-sm", "font-[500]", "mb-2"])}>
+    <span class={clsx(["block", "text-sm", "font-medium", "mb-2"])}>
       {title}
     </span>
   </Title>

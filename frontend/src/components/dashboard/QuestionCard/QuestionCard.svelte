@@ -154,7 +154,7 @@
             >
               {#if countsLoading}
                 <span
-                  class="blink select-none rounded bg-neutral-200 text-neutral-200"
+                  class="blink select-none rounded-sm bg-neutral-200 text-neutral-200"
                 >
                   00000 responses
                 </span>
