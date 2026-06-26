@@ -208,7 +208,7 @@
                       "shadow-lg",
                       "transition-opacity",
                       !expanded && "pointer-events-none",
-                      expanded ? "opacity-1" : "opacity-0",
+                      expanded ? "opacity-100" : "opacity-0",
                     ]),
                 ])}
               >
