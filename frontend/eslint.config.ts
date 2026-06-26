@@ -9,7 +9,12 @@ import vitest from "@vitest/eslint-plugin";
 import testingLibrary from "eslint-plugin-testing-library";
 
 export default defineConfig([
-  globalIgnores([".astro/", "coverage/", "dist/", "node_modules/"]),
+  globalIgnores([
+    ".astro/",
+    "coverage/",
+    "dist/",
+    "node_modules/"
+  ]),
   {
     files: ["**/*.{js,ts,svelte,astro}"],
     extends: [
