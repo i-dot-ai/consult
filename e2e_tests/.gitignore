@@ -1,7 +1,3 @@
-# Playwright test results and report
-playwright-report/
-test-results/
-
 # npm dependencies
 node_modules/
 
