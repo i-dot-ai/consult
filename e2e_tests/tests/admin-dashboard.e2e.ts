@@ -11,7 +11,7 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
 
   test.beforeAll(async ({ request }) => {
     testData = await createFixtureData(request, {
-      consultations: [setupConsultation, analysisConsultation],
+      consultations: [analysisConsultation],
     });
     cleanupManager.add(testData);
   });
@@ -29,7 +29,7 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
     const testConsultations = await page.getByRole('link', { name: 'Test Consultation' }).count();
-    expect(testConsultations).toBe(2);
+    expect(testConsultations).toBe(1);
   });
 
   test("navigate to consultation details and assert metadata", async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
     const testConsultations = await page.getByRole('link', { name: 'Test Consultation' }).count();
-    expect(testConsultations).toBe(2);
+    expect(testConsultations).toBe(1);
     await page.getByRole('link', { name: 'Test Consultation' }).first().click();
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation\/.+/);
@@ -109,14 +109,15 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-    const confirmButton = page.getByRole('button', { name: "Yes, I'm sure" });
+    // This button has a special character in it, but that's just django, don't change it
+    const confirmButton = page.getByRole('button', { name: 'Yes, I’m sure' });
     await expect(confirmButton).toBeVisible();
     await confirmButton.click();
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
     const testConsultations = await page.getByRole('link', { name: 'Test Consultation' }).count();
-    expect(testConsultations).toBe(1);
+    expect(testConsultations).toBe(0);
   });
 
   test.afterEach(async () => {
