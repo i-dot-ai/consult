@@ -346,7 +346,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
           </label>
            
           <input
-            class="h-9 w-full p-1 border border-gray-300 rounded-sm focus:outline-2 focus:outline-yellow-300 pl-8 pr-4 svelte-1auzwdn"
+            class="h-9 w-full p-1 border border-gray-300 rounded-xs focus:outline-2 focus:outline-yellow-300 pl-8 pr-4 svelte-1auzwdn"
             id="search-input"
             placeholder="Search..."
             type="text"

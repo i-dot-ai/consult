@@ -13,7 +13,7 @@ exports[`Learnings > should match snapshot 1`] = `
       <!---->
       <!---->
       <span
-        class="block text-sm font-[500] mt-2 mb-4"
+        class="block text-sm font-medium mt-2 mb-4"
       >
         What other departments have found:
       </span>
@@ -68,7 +68,7 @@ exports[`Learnings > should match snapshot 1`] = `
             <!---->
             <!---->
             <span
-              class="font-[500] text-xs"
+              class="font-medium text-xs"
             >
               Senior Policy Analyst
             </span>

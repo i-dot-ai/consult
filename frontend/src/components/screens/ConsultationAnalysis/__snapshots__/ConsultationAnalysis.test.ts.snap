@@ -248,7 +248,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
                   />
                    
                   <div
-                    class="h-[6rem]"
+                    class="h-24"
                   >
                     <div
                       class="h-full w-full"
@@ -303,7 +303,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
                   />
                    
                   <div
-                    class="h-[6rem]"
+                    class="h-24"
                   >
                     <div
                       class="h-full w-full"
@@ -358,7 +358,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
                   />
                    
                   <div
-                    class="h-[6rem]"
+                    class="h-24"
                   >
                     <div
                       class="h-full w-full"

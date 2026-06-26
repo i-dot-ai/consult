@@ -44,7 +44,7 @@ exports[`ResponsesList > should render 1`] = `
   </p>
    
   <ol
-    class="mt-2 max-h-[20rem] overflow-y-auto"
+    class="mt-2 max-h-80 overflow-y-auto"
   >
     <li
       class="flex items-start gap-2 mb-2 last:mb-0 p-2 rounded-lg text-neutral-600 bg-neutral-50"
