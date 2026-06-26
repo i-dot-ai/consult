@@ -1,4 +1,5 @@
 import {
+  getApiAssignThemesUrl,
   getApiConsultationUrl,
   getApiQuestionsUrl,
 } from "../../../global/routes";
@@ -100,6 +101,6 @@ export const questionsAllSignedOffMock = {
 };
 
 export const consultationUpdateMock = {
-  url: getApiConsultationUrl(CONSULTATION_ID),
-  method: "PATCH",
+  url: getApiAssignThemesUrl(CONSULTATION_ID),
+  method: "POST",
 };

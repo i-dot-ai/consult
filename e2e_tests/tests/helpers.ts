@@ -1,7 +1,13 @@
 import { request as apirequest } from "@playwright/test";
 import type { APIRequestContext, Page } from "@playwright/test";
+import { S3Client } from "@aws-sdk/client-s3";
 
-import { testAccessToken } from "../constants";
+import {
+  testAccessToken,
+  MINIO_ENDPOINT,
+  MINIO_ACCESS_KEY,
+  MINIO_SECRET_KEY,
+} from "../constants";
 import type { Fixture, FixtureReference } from "../fixtures";
 
 async function getToken(context: APIRequestContext) {
@@ -186,6 +192,23 @@ export class CleanupManager {
     }
     this.reset();
   }
+}
+
+/**
+ * Builds an S3 client pointed at the local minio instance. Playwright runs on
+ * the host, so this uses the host-reachable endpoint (localhost:9100), with
+ * path-style addressing as minio requires.
+ */
+export function makeMinioClient(): S3Client {
+  return new S3Client({
+    endpoint: MINIO_ENDPOINT,
+    region: "us-east-1",
+    forcePathStyle: true,
+    credentials: {
+      accessKeyId: MINIO_ACCESS_KEY,
+      secretAccessKey: MINIO_SECRET_KEY,
+    },
+  });
 }
 
 /**

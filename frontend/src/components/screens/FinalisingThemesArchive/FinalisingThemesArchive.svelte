@@ -5,6 +5,7 @@
   import { slide } from "svelte/transition";
 
   import {
+    getApiAssignThemesUrl,
     getApiConsultationUrl,
     getApiQuestionsUrl,
     getFinaliseThemesDetailUrl,
@@ -43,6 +44,7 @@
 
   let searchValue: string = $state("");
   let isConfirmModalOpen: boolean = $state(false);
+  let isSubmitting: boolean = $state(false);
   let dataRequested: boolean = $state(false);
 
   const questionsStore = createFetchStore<QuestionsResponse>();
@@ -110,22 +112,28 @@
       <Modal
         variant="secondary"
         title="Confirm AI Assignment"
-        confirmText="Yes, Start AI Assignment"
+        confirmText={isSubmitting
+          ? "Submitting consultation themes"
+          : "Yes, Start AI Assignment"}
+        confirmDisabled={isSubmitting}
         Icon={Warning}
         open={isConfirmModalOpen}
         setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
         handleConfirm={async () => {
-          await $consultationUpdateStore.fetch(
-            getApiConsultationUrl(consultationId),
-            "PATCH",
-            {
-              stage: "assigning_themes",
-            },
-          );
+          if (isSubmitting) return;
+          isSubmitting = true;
+          try {
+            await $consultationUpdateStore.fetch(
+              getApiAssignThemesUrl(consultationId as string),
+              "POST",
+            );
 
-          if (!$consultationUpdateStore.error) {
-            isConfirmModalOpen = false;
-            location.href = location.href;
+            if (!$consultationUpdateStore.error) {
+              isConfirmModalOpen = false;
+              location.href = location.href;
+            }
+          } finally {
+            isSubmitting = false;
           }
         }}
       >

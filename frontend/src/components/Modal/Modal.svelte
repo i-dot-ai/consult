@@ -15,6 +15,7 @@
     variant?: "primary" | "secondary" | "warning";
     title?: string;
     confirmText?: string;
+    confirmDisabled?: boolean;
     canCancel?: boolean;
     canConfirm?: boolean;
     Icon?: Component;
@@ -29,6 +30,7 @@
     title = "",
     open = false,
     confirmText = "Confirm",
+    confirmDisabled = false,
     canCancel = true,
     canConfirm = true,
     Icon,
@@ -128,6 +130,7 @@
             size="sm"
             variant={variant === "secondary" ? "approve" : "primary"}
             handleClick={handleConfirm as () => void}
+            disabled={confirmDisabled}
           >
             {confirmText}
           </Button>
