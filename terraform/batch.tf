@@ -24,7 +24,7 @@ module "batch_job_mapping" {
   use_fargate              = true
   iam_role_name            = "${local.name}-mapping-role"
   platform_capabilities    = ["FARGATE"]
-  task_memory_requirements = "2048"
+  task_memory_requirements = "4096"
   env_vars = merge(local.base_env_vars, {
     "SLACK_WEBHOOK_URL"        = data.aws_ssm_parameter.slack_webhook_url.value,
     "EXECUTION_CONTEXT"        = "batch"
@@ -54,7 +54,7 @@ module "batch_job_sign_off" {
   use_fargate              = true
   iam_role_name            = "${local.name}-sign-off-role"
   platform_capabilities    = ["FARGATE"]
-  task_memory_requirements = "2048"
+  task_memory_requirements = "4096"
   env_vars = merge(local.base_env_vars, {
     "SLACK_WEBHOOK_URL"        = data.aws_ssm_parameter.slack_webhook_url.value,
     "EXECUTION_CONTEXT"        = "batch"
