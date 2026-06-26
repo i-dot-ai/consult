@@ -85,7 +85,7 @@
     <Panel border={true} bg={false}>
       <ul class="flex flex-col gap-2">
         {#each categories as category (category)}
-          <h2 class="font-[500]">{category || "General"}</h2>
+          <h2 class="font-medium">{category || "General"}</h2>
           {#each stories.filter((story) => story.category === category) as story (category + story.name)}
             <li>
               <a
@@ -128,7 +128,7 @@
 
         <div>
           <div class="mb-4 flex items-center justify-between">
-            <div class="font-[500]">
+            <div class="font-medium">
               <Title level={2} text={currStory.name} />
             </div>
 

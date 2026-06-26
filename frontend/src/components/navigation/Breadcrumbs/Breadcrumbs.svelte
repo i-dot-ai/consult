@@ -102,7 +102,7 @@
                   ? "past-stage"
                   : "current-stage"}
               class={clsx([
-                "flex h-8 w-8 items-center justify-center rounded-full ring",
+                "flex h-8 w-8 items-center justify-center rounded-full ring-3",
                 // future stages
                 i > currStage && "bg-pink-300 ring-pink-100",
                 // past stages

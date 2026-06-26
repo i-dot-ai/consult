@@ -56,7 +56,7 @@
       id: "af",
       title: "Remove any Excel formulas — cells should contain raw text only",
       text: makeSnippet(`
-        <p>If a cell contains a formula like <code class="bg-neutral-100 px-1 rounded">=CONCATENATE(A1,B1)</code>, copy the cell and paste as values only.</p>
+        <p>If a cell contains a formula like <code class="bg-neutral-100 px-1 rounded-sm">=CONCATENATE(A1,B1)</code>, copy the cell and paste as values only.</p>
         <p>In Excel: Copy → Paste Special → Values</p>
       `),
       checked: isItemChecked("af"),

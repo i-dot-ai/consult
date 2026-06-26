@@ -140,7 +140,7 @@
       type="text"
       bind:value={sourceConsultationId}
       placeholder="e.g. 4d1414d5-9300-447b-b788-50d0bef7e807"
-      class="rounded border border-gray-300 px-3 py-2 text-sm"
+      class="rounded-sm border border-gray-300 px-3 py-2 text-sm"
       required
     />
   </label>
@@ -169,7 +169,7 @@
     </Text>
 
     {#if themesToImport.length > 0}
-      <div class="rounded border border-green-200 bg-green-50 p-3">
+      <div class="rounded-sm border border-green-200 bg-green-50 p-3">
         <p class="text-sm font-medium text-green-800">
           {themesToImport.reduce(
             (sum, q) => sum + (q.source_themes?.length || 0),
@@ -178,7 +178,7 @@
         </p>
       </div>
     {:else}
-      <div class="rounded border border-amber-200 bg-amber-50 p-3">
+      <div class="rounded-sm border border-amber-200 bg-amber-50 p-3">
         <p class="text-sm font-medium text-amber-800">
           No finalised themes will be imported.
         </p>
@@ -199,13 +199,13 @@
           {#each preview.questions as question (question.question_number)}
             <tr class="border-t hover:bg-gray-50">
               <td class="py-2 pr-2">{question.question_number}</td>
-              <td class="max-w-xs break-words py-2 pr-2"
+              <td class="max-w-xs wrap-break-word py-2 pr-2"
                 >{question.question_text}</td
               >
               <td class="py-2 pr-2">
                 <span
                   class={clsx([
-                    "rounded px-2 py-0.5 text-xs",
+                    "rounded-sm px-2 py-0.5 text-xs",
                     question.status === "will_import" &&
                       "bg-green-100 text-green-800",
                     question.status !== "will_import" &&
@@ -233,7 +233,7 @@
     </div>
 
     {#if preview.warnings.unmatched_source_questions.length > 0}
-      <div class="rounded border border-amber-200 bg-amber-50 p-3">
+      <div class="rounded-sm border border-amber-200 bg-amber-50 p-3">
         <p class="text-sm font-medium text-amber-800">
           {preview.warnings.unmatched_source_questions.length} source question(s)
           have no match in target:
@@ -269,7 +269,7 @@
 
 {#if result}
   <div class="mt-6 flex flex-col gap-4">
-    <div class="rounded border border-green-200 bg-green-50 p-3">
+    <div class="rounded-sm border border-green-200 bg-green-50 p-3">
       <p class="text-sm font-medium text-green-800">
         Successfully imported {result.total_themes_imported} finalised theme(s) from
         <strong>{result.source_consultation.title}</strong>.
@@ -289,13 +289,13 @@
           {#each result.questions as question (question.question_number)}
             <tr class="border-t hover:bg-gray-50">
               <td class="py-2 pr-2">{question.question_number}</td>
-              <td class="max-w-xs break-words py-2 pr-2"
+              <td class="max-w-xs wrap-break-word py-2 pr-2"
                 >{question.question_text}</td
               >
               <td class="py-2 pr-2">
                 <span
                   class={clsx([
-                    "rounded px-2 py-0.5 text-xs",
+                    "rounded-sm px-2 py-0.5 text-xs",
                     question.status === "will_import" &&
                       "bg-green-100 text-green-800",
                     question.status !== "will_import" &&

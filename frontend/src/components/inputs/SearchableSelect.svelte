@@ -88,7 +88,7 @@
         "flex",
         "items-center",
         "justify-between",
-        "rounded",
+        "rounded-sm",
         "bg-white",
         "px-3",
         "pr-12",
@@ -129,8 +129,8 @@
       "max-h-[300px]",
       "flex-col",
       "overflow-hidden",
-      "rounded",
-      "shadow",
+      "rounded-sm",
+      "shadow-sm",
     ])}
     use:melt={$menu}
     transition:fly={{ duration: 150, y: -5 }}
@@ -162,9 +162,9 @@
             "pl-4",
             "pr-4",
             "hover:bg-neutral-100",
-            "data-[highlighted]:bg-neutral-200",
-            "data-[highlighted]:text-neutral-900",
-            "data-[disabled]:opacity-50",
+            "data-highlighted:bg-neutral-200",
+            "data-highlighted:text-neutral-900",
+            "data-disabled:opacity-50",
           ])}
         >
           {#if selectedValues.includes(option.value)}
@@ -195,6 +195,8 @@
 {/if}
 
 <style lang="postcss">
+  @reference "../../styles/global.css";
+
   .check {
     @apply absolute left-2 top-1/2 text-neutral-500;
     translate: 0 calc(-50% + 1px);

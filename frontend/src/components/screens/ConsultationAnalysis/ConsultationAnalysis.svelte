@@ -176,7 +176,7 @@
                     <!-- Container for custom HTML legend -->
                     <div id={"legend-id" + question.number}></div>
 
-                    <div class="h-[6rem]">
+                    <div class="h-24">
                       <Chart
                         legendId={"legend-id" + question.number}
                         labels={question?.multiple_choice_answer

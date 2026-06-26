@@ -70,10 +70,10 @@
       "gap-2",
       "w-full",
       "rounded-xl",
-      "leading-[1.5rem]",
+      "leading-6",
       "transition-all",
       "duration-300",
-      editing && clsx(["outline", "outline-4", "outline-secondary", "p-2"]),
+      editing && clsx(["outline-solid", "outline-4", "outline-secondary", "p-2"]),
     ])}
   >
     <header

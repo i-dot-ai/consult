@@ -1,7 +1,7 @@
 import { defineConfig } from "astro/config";
 import svelte from "@astrojs/svelte";
 
-import tailwind from "@astrojs/tailwind";
+import tailwindcss from "@tailwindcss/vite";
 import node from "@astrojs/node";
 
 import sentry from "@sentry/astro";
@@ -11,7 +11,6 @@ export default defineConfig({
   output: "server",
   integrations: [
     svelte(),
-    tailwind({ applyBaseStyles: false }),
     sentry({
       project: "consult-frontend",
       org: "incubator-for-ai",
@@ -30,6 +29,7 @@ export default defineConfig({
         clientPort: 3000,
       },
     },
+    plugins: [tailwindcss()],
   },
 
   image: {

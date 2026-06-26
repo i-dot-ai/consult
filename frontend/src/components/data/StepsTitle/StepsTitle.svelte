@@ -54,7 +54,7 @@
 
   <div>
     <Title level={1}>
-      <span class="font-[500]">
+      <span class="font-medium">
         Step {currentStep} of {totalSteps}: {text}
       </span>
     </Title>

@@ -88,7 +88,7 @@
           class={clsx([
             "flex",
             "justify-between",
-            "max-w-[40rem]",
+            "max-w-160",
             "flex-wrap",
             !loading &&
               !chartQuestions.length &&
@@ -138,7 +138,7 @@
                 >
                   <div id="legend-container"></div>
 
-                  <div class="max-h-[10rem]" data-testid="metrics-chart">
+                  <div class="max-h-40" data-testid="metrics-chart">
                     <Chart
                       labels={selectedChartQuestion?.multiple_choice_answer?.map(
                         (multiChoiceAnswer: QuestionMultiAnswer) => {

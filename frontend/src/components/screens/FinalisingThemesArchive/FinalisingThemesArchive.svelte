@@ -336,7 +336,7 @@
       {number}
     </div>
     <div>
-      <h4 class="font-[500]">{title}</h4>
+      <h4 class="font-medium">{title}</h4>
       <p>{body}</p>
     </div>
   </li>

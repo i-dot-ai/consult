@@ -86,7 +86,7 @@
   <textarea
     id="emailsInput"
     rows="3"
-    class="rounded border border-gray-300 px-3 py-2"
+    class="rounded-sm border border-gray-300 px-3 py-2"
     placeholder="Enter one or more email addresses, separated by comma, space, or newline."
     bind:value={emailsInput}
     disabled={sending}
@@ -101,7 +101,7 @@
   {/if}
 
   {#if nonExistentEmails.length > 0}
-    <div class="mt-4 rounded border border-yellow-300 bg-yellow-50 p-4">
+    <div class="mt-4 rounded-sm border border-yellow-300 bg-yellow-50 p-4">
       <h3 class="mb-2 font-semibold text-yellow-800">Users not found</h3>
       <p class="mb-3 text-sm text-yellow-700">
         The following email addresses do not exist in the system:

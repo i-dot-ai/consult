@@ -38,7 +38,7 @@
     "flex-col",
     "gap-1",
     "items-center",
-    "w-[15rem]",
+    "w-60",
     !isActive && "opacity-50",
     "transition-opacity",
     "duration-500",

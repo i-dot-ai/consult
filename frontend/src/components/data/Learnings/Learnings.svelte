@@ -39,7 +39,7 @@
 
 <div class={clsx(["border", "border-secondary", "p-4", "rounded-lg"])}>
   <Title level={3}>
-    <span class={clsx(["block", "text-sm", "font-[500]", "mt-2", "mb-4"])}>
+    <span class={clsx(["block", "text-sm", "font-medium", "mt-2", "mb-4"])}>
       {title}
     </span>
   </Title>
@@ -84,7 +84,7 @@
           </p>
 
           <Title level={4}>
-            <span class={clsx(["font-[500]", "text-xs"])}>
+            <span class={clsx(["font-medium", "text-xs"])}>
               {currItem.author}
             </span>
           </Title>

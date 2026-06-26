@@ -123,7 +123,7 @@
                       "group",
                       "w-full",
                       "hover:bg-neutral-100",
-                      "hover:!text-primary",
+                      "hover:text-primary!",
                     ]),
                 ])}
                 aria-expanded={expanded ? "true" : "false"}
@@ -203,7 +203,7 @@
                       "z-10",
                       "border",
                       "border-neutral-100",
-                      "rounded",
+                      "rounded-sm",
                       "bg-white",
                       "shadow-lg",
                       "transition-opacity",
@@ -255,7 +255,7 @@
           <IconComponent />
         </div>
 
-        <h1 class="font-[500]">
+        <h1 class="font-medium">
           {title}
         </h1>
       </a>
@@ -306,7 +306,7 @@
           "block",
           "md:hidden",
           "p-1",
-          "rounded",
+          "rounded-sm",
           "border",
           "border-neutral-200",
           "transition-colors",

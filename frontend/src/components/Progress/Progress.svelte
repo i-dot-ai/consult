@@ -43,7 +43,7 @@
       "w-full",
       "bg-primary",
       "transition-transform",
-      "duration-[660ms]",
+      "duration-660",
       "ease-[cubic-bezier(0.65,0,0.35,1)]",
     ])}
     style={`
