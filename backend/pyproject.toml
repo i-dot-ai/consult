@@ -46,6 +46,7 @@ dev = [
   "ruff>=0.15.16",
   "pytest-django>=4.11.1",
   "django-webtest>=1.9.14",
+  "djangorestframework-stubs>=3.17.0",
 ]
 
 [tool.uv]
