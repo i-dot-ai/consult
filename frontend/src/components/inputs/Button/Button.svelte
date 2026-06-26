@@ -9,7 +9,7 @@
     | "primary"
     | "ghost"
     | "approve"
-    | "outline-solid"
+    | "outline"
     | "warning"
     | "dot" = "default";
   export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
@@ -61,7 +61,7 @@
     variant === "warning" && "border-yellow-300 bg-yellow-50",
     variant === "ghost" && "border-transparent",
     variant === "dot" && "border-transparent text-neutral-400",
-    variant === "outline-solid" &&
+    variant === "outline" &&
       clsx(["bg-transparent", "border border-primary", "text-primary"]),
     "transition-colors",
     "duration-300",
