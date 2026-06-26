@@ -41,7 +41,6 @@ from consultations.test_support.load_test_fixtures import (
     delete_data_from_fixtures,
 )
 from data_pipeline import jobs
-from data_pipeline.sync.candidate_themes import export_candidate_themes_to_s3
 from data_pipeline.sync.selected_themes import export_selected_themes_to_s3
 from hosting_environment import HostingEnvironment
 from ingest.jobs import (
@@ -338,74 +337,43 @@ class ConsultationViewSet(ModelViewSet):
         detail=True,
         methods=["post"],
         url_path="assign-themes",
-        permission_classes=[IsAuthenticated, IsAdminUser],
+        permission_classes=[IsAuthenticated, CanSeeConsultation | IsAdminUser],
     )
     def assign_themes(self, request, pk=None) -> Response:
         """
-        Export themes to S3 and submit AWS batch job to assign themes to responses.
+        Export selected themes to S3 and submit AWS batch job to assign them to responses.
 
-        Behaviour depends on consultation stage:
-        - FINALISING_THEMES: exports candidate themes and assigns
-          them to responses (CandidateThemeResponse), without changing stage.
-        - Other stages: exports selected themes and assigns them to responses
-          (ResponseAnnotation), advancing stage to ASSIGNING_THEMES.
+        Adds the default "Other" and "No Reason Given" themes, exports all selected
+        themes to S3, submits the ASSIGN_THEMES batch job (which assigns themes to
+        responses as ResponseAnnotation records), and advances the consultation to
+        the ASSIGNING_THEMES stage.
 
         URL: /api/consultations/{consultation_id}/assign-themes/
         """
 
         consultation = self.get_object()
 
-        is_finalising = consultation.stage == Consultation.Stage.FINALISING_THEMES
-
-        if is_finalising:
-            # During finalising: assign candidate themes to responses
-            try:
-                export_candidate_themes_to_s3(consultation)
-            except ValueError as e:
-                return Response(
-                    {"error": "No candidate themes found", "detail": str(e)},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            except Exception as e:
-                sentry_sdk.capture_exception(e)
-                return Response(
-                    {
-                        "error": "Failed to export candidate themes to S3",
-                        "detail": str(e) if settings.DEBUG else "Export failed",
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
-
-            try:
-                batch.submit_job(
-                    job_type="ASSIGN_THEMES",
-                    consultation_code=consultation.code,
-                    consultation_name=consultation.title,
-                    user_id=request.user.id,
-                    model_name=consultation.model_name,
-                    assignment_target="candidate_themes",
-                )
-            except Exception as e:
-                sentry_sdk.capture_exception(e)
-                return Response(
-                    {
-                        "error": "Failed to submit job to assign candidate themes",
-                        "detail": str(e) if settings.DEBUG else "Job submission failed",
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
-
-            # Stay in current stage - don't advance
+        if not request.user.is_staff and consultation.stage != Consultation.Stage.FINALISING_THEMES:
             return Response(
-                {
-                    "message": f"Assign Candidate Themes job started for consultation '{consultation.title}'",
-                    "consultation_id": str(consultation.id),
-                    "consultation_code": consultation.code,
-                },
-                status=status.HTTP_202_ACCEPTED,
+                {"error": "Consultation must be in the Finalising Themes stage before assigning themes"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Normal flow: assign selected themes to responses
+        user_themes_exist = (
+            SelectedTheme.objects.filter(
+                question__consultation=consultation,
+                question__has_free_text=True,
+            )
+            .exclude(name__iexact="Other")
+            .exclude(name__iexact="No Reason Given")
+            .exists()
+        )
+        if not user_themes_exist:
+            return Response(
+                {"error": "No themes found. Please create at least one theme before assigning."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         for question in consultation.question_set.filter(has_free_text=True):
             SelectedTheme.objects.get_or_create(
                 question=question,
@@ -424,11 +392,6 @@ class ConsultationViewSet(ModelViewSet):
 
         try:
             export_selected_themes_to_s3(consultation)
-        except ValueError as e:
-            return Response(
-                {"error": "No selected themes found", "detail": str(e)},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
         except Exception as e:
             sentry_sdk.capture_exception(e)
             return Response(

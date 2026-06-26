@@ -143,6 +143,7 @@ def create_data_from_fixtures(fixtures):
             consultation_object = Consultation.objects.create(
                 title=consultation_data["title"],
                 stage=consultation_data["stage"],
+                code=consultation_data.get("code", ""),
             )
 
             consultations.append(consultation_object.id)
