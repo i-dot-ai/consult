@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { CleanupManager, createFixtureData } from "./helpers";
-import { defaultUser, setupConsultation } from "../fixtures";
+import { defaultUser, setupConsultation, analysisConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
 
 // The User List and Question List groups only read the consultation dashboard,
@@ -11,7 +11,7 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
 
   test.beforeAll(async ({ request }) => {
     testData = await createFixtureData(request, {
-      consultations: [setupConsultation],
+      consultations: [setupConsultation, analysisConsultation],
     });
     cleanupManager.add(testData);
   });
@@ -88,49 +88,35 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
   });
 
-  test.describe("Consultations - Detail/Dashboard Page", () => {
+  test("navigate to consultation list and attempt to delete", async ({ page }) => {
+    await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-    test.beforeAll(async ({ request }) => {
-      testData = await createFixtureData(request, {
-        consultations: [setupConsultation],
-      });
-      cleanupManager.add(testData);
-    });
+    const checkbox = page.getByRole('checkbox', { name: 'Select this object for an action - Test Consultation at Analysis Stage' });
+    await expect(checkbox).toBeVisible();
+    await checkbox.check();
+    await expect(checkbox).toBeChecked();
 
-    test("navigate to consultation list and attempt to delete", async ({ page }) => {
-      await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
-      await page.waitForLoadState("networkidle");
-      await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
+    const actionSelect = page.getByLabel('Action: --------- Delete');
+    await expect(actionSelect).toBeVisible();
+    await actionSelect.selectOption('delete_selected');
+    await expect(actionSelect).toHaveValue('delete_selected');
 
-      const checkbox = page.getByRole('checkbox', { name: 'Select this object for an action - Test Consultation at Analysis Stage' });
-      await expect(checkbox).toBeVisible();
-      await checkbox.check();
-      await expect(checkbox).toBeChecked();
+    const goButton = page.getByRole('button', { name: 'Run' });
+    await expect(goButton).toBeVisible();
+    await goButton.click();
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-      const actionSelect = page.getByLabel('Action: --------- Delete');
-      await expect(actionSelect).toBeVisible();
-      await actionSelect.selectOption('delete_selected');
-      await expect(actionSelect).toHaveValue('delete_selected');
+    const confirmButton = page.getByRole('button', { name: "Yes, I'm sure" });
+    await expect(confirmButton).toBeVisible();
+    await confirmButton.click();
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-      const goButton = page.getByRole('button', { name: 'Run' });
-      await expect(goButton).toBeVisible();
-      await goButton.click();
-      await page.waitForLoadState("networkidle");
-      await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
-
-      const confirmButton = page.getByRole('button', { name: "Yes, I'm sure" });
-      await expect(confirmButton).toBeVisible();
-      await confirmButton.click();
-      await page.waitForLoadState("networkidle");
-      await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
-
-      const testConsultations = await page.getByRole('link', { name: 'Test Consultation' }).count();
-      expect(testConsultations).toBe(1);
-    });
-
-    test.afterEach(async () => {
-      await cleanupManager.cleanup();
-    });
+    const testConsultations = await page.getByRole('link', { name: 'Test Consultation' }).count();
+    expect(testConsultations).toBe(1);
   });
 
   test.afterEach(async () => {
