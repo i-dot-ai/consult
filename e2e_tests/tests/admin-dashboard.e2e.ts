@@ -21,36 +21,33 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     await page.waitForLoadState("networkidle");
   });
 
-  test("navigate to consultation list and assert count", async ({ page }) => {
-    await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
-    await page.waitForLoadState("networkidle");
-    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
-    const testConsultations = await page.getByRole('link', { name: analysisConsultation.title, exact: true }).count();
-    expect(testConsultations).toBe(1);
-  });
+  test.describe("Consultation List", () => {
+    test.beforeEach(async ({ page }) => {
+      await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
+      await page.waitForLoadState("networkidle");
+      await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
+      const consultationCount = await page.getByRole('link', { name: analysisConsultation.title, exact: true }).count();
+      expect(consultationCount).toBe(1);
+    });
 
-  test("navigate to consultation details and assert metadata", async ({ page }) => {
-    await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
-    await page.waitForLoadState("networkidle");
-    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
+    test("navigate to consultation details and assert metadata", async ({ page }) => {
+      await page.getByRole('link', { name: analysisConsultation.title, exact: true }).first().click();
+      await page.waitForLoadState("networkidle");
+      await expect(page).toHaveURL(/\/admin\/consultations\/consultation\/.+/);
 
-    const testConsultations = await page.getByRole('link', { name: analysisConsultation.title, exact: true }).count();
-    expect(testConsultations).toBe(1);
-    await page.getByRole('link', { name: analysisConsultation.title, exact: true }).first().click();
-    await page.waitForLoadState("networkidle");
-    await expect(page).toHaveURL(/\/admin\/consultations\/consultation\/.+/);
+      await expect(page.getByRole('heading', { name: analysisConsultation.title })).toBeVisible();
+      const title = await page.getByRole('heading', { name: analysisConsultation.title }).textContent();
+      const titleInput = await page.getByRole('textbox', { name: 'Title:' }).inputValue();
+      expect(title).toBe(titleInput);
 
-    await expect(page.getByRole('heading', { name: analysisConsultation.title })).toBeVisible();
-    const title = await page.getByRole('heading', { name: analysisConsultation.title }).textContent();
-    const titleInput = await page.getByRole('textbox', { name: 'Title:' }).inputValue();
-    expect(title).toBe(titleInput);
+      const userList = page.getByLabel('Users:');
+      await expect(userList).toBeVisible();
+      const userListItems = await userList.locator('option').count();
+      const numberOfTestUsers = 2;
+      expect(userListItems).toBeGreaterThanOrEqual(numberOfTestUsers);
 
-    const userList = page.getByLabel('Users:');
-    await expect(userList).toBeVisible();
-    const userListItems = await userList.locator('option').count();
-    expect(userListItems).toBeGreaterThanOrEqual(2);
-
-    await expect(userList.locator('option', { hasText: defaultUser.email })).toBeVisible();
+      await expect(userList.locator('option', { hasText: defaultUser.email })).toBeVisible();
+    });
   });
 
   test("navigate to consultation list and attempt to clone", async ({ page }) => {
