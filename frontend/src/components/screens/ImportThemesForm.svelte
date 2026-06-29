@@ -130,8 +130,8 @@
   on:submit|preventDefault={handlePreview}
 >
   <Text>
-    Import finalised themes into <strong>{targetConsultationTitle}</strong> from
-    another consultation.
+    Import finalised themes into <strong>{targetConsultationTitle}</strong> from another
+    consultation.
   </Text>
 
   <label class="flex flex-col gap-1">
