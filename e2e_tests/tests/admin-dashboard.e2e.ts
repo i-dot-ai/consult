@@ -36,9 +36,7 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
       await expect(page).toHaveURL(/\/admin\/consultations\/consultation\/.+/);
 
       await expect(page.getByRole('heading', { name: analysisConsultation.title })).toBeVisible();
-      const title = await page.getByRole('heading', { name: analysisConsultation.title }).textContent();
-      const titleInput = await page.getByRole('textbox', { name: 'Title:' }).inputValue();
-      expect(title).toBe(titleInput);
+      await expect(page.getByRole('textbox', { name: 'Title:' })).toHaveValue(analysisConsultation.title);
 
       const userList = page.getByLabel('Users:');
       await expect(userList).toBeVisible();
