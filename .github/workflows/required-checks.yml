@@ -1,0 +1,54 @@
+name: Required checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'Makefile'
+              - '.github/workflows/backend-ci.yml'
+            frontend:
+              - 'frontend/**'
+              - '.github/workflows/frontend-ci.yml'
+
+  pre-commit:
+    uses: ./.github/workflows/run_precommit.yml
+
+  backend-ci:
+    needs: [changes, pre-commit]
+    if: needs.changes.outputs.backend == 'true'
+    uses: ./.github/workflows/backend-ci.yml
+
+  frontend-ci:
+    needs: [changes, pre-commit]
+    if: needs.changes.outputs.frontend == 'true'
+    uses: ./.github/workflows/frontend-ci.yml
+
+  e2e-tests:
+    needs: pre-commit
+    uses: ./.github/workflows/e2e-tests.yml
+
+  all-checks-passed:
+    needs: [backend-ci, frontend-ci, e2e-tests, pre-commit]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: All required checks passed
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            exit 1
+          fi
