@@ -1,10 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { CleanupManager, createFixtureData } from "./helpers";
-import { defaultUser, setupConsultation, analysisConsultation } from "../fixtures";
+import { defaultUser, analysisConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
 
-// The User List and Question List groups only read the consultation dashboard,
-// so they share a single fixture created once for the whole block.
 test.describe("Admin Dashboard - Dashboard Page", () => {
   const cleanupManager = new CleanupManager();
   let testData: FixtureReference = {};
@@ -22,7 +20,6 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     await page.goto("/admin");
     await page.waitForLoadState("networkidle");
   });
-
 
   test("navigate to consultation list and assert count", async ({ page }) => {
     await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
@@ -51,7 +48,7 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     const userList = page.getByLabel('Users:');
     await expect(userList).toBeVisible();
     const userListItems = await userList.locator('option').count();
-    expect(userListItems).toBeGreaterThanOrEqual(2)
+    expect(userListItems).toBeGreaterThanOrEqual(2);
 
     let adminUserExists = false;
     for (let i = 0; i < userListItems; i++) {
@@ -88,57 +85,59 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
   });
 
-  test("Delete test", async ({ page }) => {
+  test.afterAll(async () => {
+    await cleanupManager.cleanup();
+  });
+});
 
-    test.beforeAll(async ({ request }) => {
-      testData = await createFixtureData(request, {
-        consultations: [analysisConsultation],
-      });
-      cleanupManager.add(testData);
+// The delete test is destructive so it gets its own fixture created and
+// cleaned up per test, preventing it from affecting the read-only suite above.
+test.describe("Admin Dashboard - Delete Consultation", () => {
+  const cleanupManager = new CleanupManager();
+  let testData: FixtureReference = {};
+
+  test.beforeEach(async ({ request, page }) => {
+    testData = await createFixtureData(request, {
+      consultations: [analysisConsultation],
     });
+    cleanupManager.add(testData);
 
-    test.beforeEach(async ({ page }) => {
-      await page.goto("/");
-      await page.waitForLoadState("networkidle");
-      await page.goto("/admin");
-      await page.waitForLoadState("networkidle");
-    });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    await page.goto("/admin");
+    await page.waitForLoadState("networkidle");
+  });
 
-    test("navigate to consultation list and attempt to delete", async ({ page }) => {
-      await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
-      await page.waitForLoadState("networkidle");
-      await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
+  test("navigate to consultation list and attempt to delete", async ({ page }) => {
+    await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-      const checkbox = page.getByRole('checkbox', { name: 'Select this object for an action - Test Consultation at Analysis Stage' });
-      await expect(checkbox).toBeVisible();
-      await checkbox.check();
-      await expect(checkbox).toBeChecked();
+    const checkbox = page.getByRole('checkbox', { name: 'Select this object for an action - Test Consultation at Analysis Stage' });
+    await expect(checkbox).toBeVisible();
+    await checkbox.check();
+    await expect(checkbox).toBeChecked();
 
-      const actionSelect = page.getByLabel('Action: --------- Delete');
-      await expect(actionSelect).toBeVisible();
-      await actionSelect.selectOption('delete_selected');
-      await expect(actionSelect).toHaveValue('delete_selected');
+    const actionSelect = page.getByLabel('Action: --------- Delete');
+    await expect(actionSelect).toBeVisible();
+    await actionSelect.selectOption('delete_selected');
+    await expect(actionSelect).toHaveValue('delete_selected');
 
-      const goButton = page.getByRole('button', { name: 'Run' });
-      await expect(goButton).toBeVisible();
-      await goButton.click();
-      await page.waitForLoadState("networkidle");
-      await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
+    const goButton = page.getByRole('button', { name: 'Run' });
+    await expect(goButton).toBeVisible();
+    await goButton.click();
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-      // This button has a special character in it, but that's just django, don't change it
-      const confirmButton = page.getByRole('button', { name: 'Yes, I’m sure' });
-      await expect(confirmButton).toBeVisible();
-      await confirmButton.click();
-      await page.waitForLoadState("networkidle");
-      await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
+    // This button has a special character in it, but that's just django, don't change it
+    const confirmButton = page.getByRole('button', { name: 'Yes, I\u2019m sure' });
+    await expect(confirmButton).toBeVisible();
+    await confirmButton.click();
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-      const testConsultations = await page.getByRole('link', { name: 'Test Consultation' }).count();
-      expect(testConsultations).toBe(0);
-    });
-
-    test.afterEach(async () => {
-      await cleanupManager.cleanup();
-    });
+    const testConsultations = await page.getByRole('link', { name: 'Test Consultation' }).count();
+    expect(testConsultations).toBe(0);
   });
 
   test.afterEach(async () => {
