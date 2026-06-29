@@ -5,7 +5,7 @@ import type { FixtureReference } from "../fixtures";
 
 // The User List and Question List groups only read the consultation dashboard,
 // so they share a single fixture created once for the whole block.
-test.describe("Admin Dashboard - Dashboard Page", () => {
+test.describe("Support Console Dashboard - Dashboard Page", () => {
   const cleanupManager = new CleanupManager();
   let testData: FixtureReference = {};
   let consultationId: string;
@@ -90,7 +90,7 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
   });
 });
 
-test.describe("Admin Dashboard - Remove Question", () => {
+test.describe("Support Console Dashboard - Remove Question", () => {
   const cleanupManager = new CleanupManager();
   let testData: FixtureReference = {};
   let consultationId: string;
