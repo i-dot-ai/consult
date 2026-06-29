@@ -25,7 +25,7 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
-    const testConsultations = await page.getByRole('link', { name: 'Test Consultation' }).count();
+    const testConsultations = await page.getByRole('link', { name: analysisConsultation.title, exact: true }).count();
     expect(testConsultations).toBe(1);
   });
 
@@ -34,14 +34,14 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-    const testConsultations = await page.getByRole('link', { name: 'Test Consultation' }).count();
+    const testConsultations = await page.getByRole('link', { name: analysisConsultation.title, exact: true }).count();
     expect(testConsultations).toBe(1);
-    await page.getByRole('link', { name: 'Test Consultation' }).first().click();
+    await page.getByRole('link', { name: analysisConsultation.title, exact: true }).first().click();
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation\/.+/);
 
-    await expect(page.getByRole('heading', { name: 'Test Consultation' })).toBeVisible();
-    const title = await page.getByRole('heading', { name: 'Test Consultation' }).textContent();
+    await expect(page.getByRole('heading', { name: analysisConsultation.title })).toBeVisible();
+    const title = await page.getByRole('heading', { name: analysisConsultation.title }).textContent();
     const titleInput = await page.getByRole('textbox', { name: 'Title:' }).inputValue();
     expect(title).toBe(titleInput);
 
@@ -50,17 +50,7 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     const userListItems = await userList.locator('option').count();
     expect(userListItems).toBeGreaterThanOrEqual(2);
 
-    let adminUserExists = false;
-    for (let i = 0; i < userListItems; i++) {
-      const userItem = userList.locator('option').nth(i);
-      await expect(userItem).toBeVisible();
-      const userEmail = await userItem.textContent();
-      if (userEmail === defaultUser.email) {
-        adminUserExists = true;
-        break;
-      }
-    }
-    expect(adminUserExists).toBe(true);
+    await expect(userList.locator('option', { hasText: defaultUser.email })).toBeVisible();
   });
 
   test("navigate to consultation list and attempt to clone", async ({ page }) => {
@@ -113,7 +103,7 @@ test.describe("Admin Dashboard - Delete Consultation", () => {
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-    const checkbox = page.getByRole('checkbox', { name: 'Select this object for an action - Test Consultation at Analysis Stage' });
+    const checkbox = page.getByRole('checkbox', { name: `Select this object for an action - ${analysisConsultation.title}` });
     await expect(checkbox).toBeVisible();
     await checkbox.check();
     await expect(checkbox).toBeChecked();
@@ -136,7 +126,7 @@ test.describe("Admin Dashboard - Delete Consultation", () => {
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-    const testConsultations = await page.getByRole('link', { name: 'Test Consultation' }).count();
+    const testConsultations = await page.getByRole('link', { name: analysisConsultation.title, exact: true }).count();
     expect(testConsultations).toBe(0);
   });
 
