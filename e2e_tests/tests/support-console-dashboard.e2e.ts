@@ -90,7 +90,7 @@ test.describe("Support Console - Dashboard Page", () => {
   });
 });
 
-test.describe("Admin Dashboard - Remove Question", () => {
+test.describe("Support Console Dashboard - Remove Question", () => {
   const cleanupManager = new CleanupManager();
   let testData: FixtureReference = {};
   let consultationId: string;
