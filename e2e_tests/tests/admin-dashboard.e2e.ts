@@ -88,36 +88,57 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
   });
 
-  test("navigate to consultation list and attempt to delete", async ({ page }) => {
-    await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
-    await page.waitForLoadState("networkidle");
-    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
+  test("Delete test", async ({ page }) => {
 
-    const checkbox = page.getByRole('checkbox', { name: 'Select this object for an action - Test Consultation at Analysis Stage' });
-    await expect(checkbox).toBeVisible();
-    await checkbox.check();
-    await expect(checkbox).toBeChecked();
+    test.beforeAll(async ({ request }) => {
+      testData = await createFixtureData(request, {
+        consultations: [analysisConsultation],
+      });
+      cleanupManager.add(testData);
+    });
 
-    const actionSelect = page.getByLabel('Action: --------- Delete');
-    await expect(actionSelect).toBeVisible();
-    await actionSelect.selectOption('delete_selected');
-    await expect(actionSelect).toHaveValue('delete_selected');
+    test.beforeEach(async ({ page }) => {
+      await page.goto("/");
+      await page.waitForLoadState("networkidle");
+      await page.goto("/admin");
+      await page.waitForLoadState("networkidle");
+    });
 
-    const goButton = page.getByRole('button', { name: 'Run' });
-    await expect(goButton).toBeVisible();
-    await goButton.click();
-    await page.waitForLoadState("networkidle");
-    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
+    test("navigate to consultation list and attempt to delete", async ({ page }) => {
+      await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
+      await page.waitForLoadState("networkidle");
+      await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-    // This button has a special character in it, but that's just django, don't change it
-    const confirmButton = page.getByRole('button', { name: 'Yes, I’m sure' });
-    await expect(confirmButton).toBeVisible();
-    await confirmButton.click();
-    await page.waitForLoadState("networkidle");
-    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
+      const checkbox = page.getByRole('checkbox', { name: 'Select this object for an action - Test Consultation at Analysis Stage' });
+      await expect(checkbox).toBeVisible();
+      await checkbox.check();
+      await expect(checkbox).toBeChecked();
 
-    const testConsultations = await page.getByRole('link', { name: 'Test Consultation' }).count();
-    expect(testConsultations).toBe(0);
+      const actionSelect = page.getByLabel('Action: --------- Delete');
+      await expect(actionSelect).toBeVisible();
+      await actionSelect.selectOption('delete_selected');
+      await expect(actionSelect).toHaveValue('delete_selected');
+
+      const goButton = page.getByRole('button', { name: 'Run' });
+      await expect(goButton).toBeVisible();
+      await goButton.click();
+      await page.waitForLoadState("networkidle");
+      await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
+
+      // This button has a special character in it, but that's just django, don't change it
+      const confirmButton = page.getByRole('button', { name: 'Yes, I’m sure' });
+      await expect(confirmButton).toBeVisible();
+      await confirmButton.click();
+      await page.waitForLoadState("networkidle");
+      await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
+
+      const testConsultations = await page.getByRole('link', { name: 'Test Consultation' }).count();
+      expect(testConsultations).toBe(0);
+    });
+
+    test.afterEach(async () => {
+      await cleanupManager.cleanup();
+    });
   });
 
   test.afterEach(async () => {
