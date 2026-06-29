@@ -906,7 +906,7 @@ class TestAssignThemesEndpoint:
     def test_assign_themes_no_selected_themes(self, client, staff_user_token, free_text_question):
         """Test assign themes fails when no user-created themes exist"""
         consultation = free_text_question.consultation
-        consultation.stage = Consultation.Stage.ASSIGNING_THEMES
+        consultation.stage = Consultation.Stage.FINALISING_THEMES
         consultation.save(update_fields=["stage"])
 
         url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
@@ -917,7 +917,31 @@ class TestAssignThemesEndpoint:
         )
 
         assert response.status_code == 400
-        assert response.json()["error"] == "No themes found. Please create at least one theme before assigning."
+        assert (
+            response.json()["error"]
+            == "No themes found. Please create at least one theme before assigning."
+        )
+
+    def test_assign_themes_no_selected_themes_non_admin(
+        self, client, non_staff_user_token, free_text_question
+    ):
+        """Non-admin with correct stage but no themes gets the empty-themes error"""
+        consultation = free_text_question.consultation
+        consultation.stage = Consultation.Stage.FINALISING_THEMES
+        consultation.save(update_fields=["stage"])
+
+        url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
+
+        response = client.post(
+            url,
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+        assert response.status_code == 400
+        assert (
+            response.json()["error"]
+            == "No themes found. Please create at least one theme before assigning."
+        )
 
     def test_assign_themes_wrong_stage_blocked_for_non_admin(
         self, client, non_staff_user_token, free_text_question

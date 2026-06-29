@@ -8,7 +8,7 @@ import {
 } from "./helpers";
 import { gotoFinaliseThemesList } from "./navigation";
 import { finalisingThemesConfirmedConsultation } from "../fixtures";
-import { S3_BUCKET } from "../constants";
+import { S3_BUCKET, testAccessToken } from "../constants";
 
 test.describe.configure({ mode: "serial" });
 const cleanupManager = new CleanupManager();
@@ -70,6 +70,20 @@ test.describe("Finalise Themes - Confirm and Proceed to Assignment", () => {
         { timeout: 15000 },
       )
       .toBe(true);
+
+    // Consultation stage advances to assigning_themes
+    await expect
+      .poll(
+        async () => {
+          const response = await page.request.get(`/api/consultations/${consultationId}/`, {
+            headers: { Authorization: `Bearer ${testAccessToken}` },
+          });
+          const data = await response.json();
+          return data.stage;
+        },
+        { timeout: 10000 },
+      )
+      .toBe("assigning_themes");
 
     // After success
     await expect(

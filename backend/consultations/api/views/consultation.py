@@ -353,9 +353,12 @@ class ConsultationViewSet(ModelViewSet):
 
         consultation = self.get_object()
 
+        # Only checking non-staff, as staff members might need to revert Consultation stage changes
         if not request.user.is_staff and consultation.stage != Consultation.Stage.FINALISING_THEMES:
             return Response(
-                {"error": "Consultation must be in the Finalising Themes stage before assigning themes"},
+                {
+                    "error": "Consultation must be in the Finalising Themes stage before assigning themes"
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -392,6 +395,11 @@ class ConsultationViewSet(ModelViewSet):
 
         try:
             export_selected_themes_to_s3(consultation)
+        except ValueError as e:
+            return Response(
+                {"error": "No selected themes found", "detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception as e:
             sentry_sdk.capture_exception(e)
             return Response(
