@@ -1,14 +1,9 @@
 name: Frontend CI
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "frontend/**"
   workflow_dispatch:
-  # Called by deploy-main as a gate before deploying. When called this way the
-  # path filters above do not apply, so the suite always runs in full.
+  # Called by required-checks.yml (PR gate, after path filtering) and deploy-main
+  # (no path filtering — always runs in full before a deploy).
   workflow_call:
 
 env:
