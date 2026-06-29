@@ -58,12 +58,12 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-const checkbox = page.getByRole('checkbox', { name: `Select this object for an action - ${analysisConsultation.title}` });
+    const checkbox = page.getByRole('checkbox', { name: `Select this object for an action - ${analysisConsultation.title}` });
     await expect(checkbox).toBeVisible();
     await checkbox.check();
     await expect(checkbox).toBeChecked();
 
-    const actionSelect = page.getByLabel('Action: --------- Delete');
+    const actionSelect = page.locator('select[name="action"]');
     await expect(actionSelect).toBeVisible();
     await actionSelect.selectOption('create_cloned_consultation');
     await expect(actionSelect).toHaveValue('create_cloned_consultation');
@@ -108,7 +108,7 @@ test.describe("Admin Dashboard - Delete Consultation", () => {
     await checkbox.check();
     await expect(checkbox).toBeChecked();
 
-    const actionSelect = page.getByLabel('Action: --------- Delete');
+    const actionSelect = page.locator('select[name="action"]');
     await expect(actionSelect).toBeVisible();
     await actionSelect.selectOption('delete_selected');
     await expect(actionSelect).toHaveValue('delete_selected');
