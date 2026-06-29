@@ -285,14 +285,16 @@ cd frontend && npm run typecheck     # svelte-check TypeScript
 **Frontend** (`.env`):
 - `PUBLIC_API_URL` - Backend API URL
 
-### Feature Flags
+### Batch Job Submission
+
+Batch jobs are only submitted in deployed environments. This is derived automatically — no environment variable needed:
+
 ```python
 # settings/base.py
-FEATURE_FLAGS = {
-    'ENABLE_EMBEDDINGS': env.bool('ENABLE_EMBEDDINGS', default=True),
-    'ENABLE_BATCH_JOBS': env.bool('ENABLE_BATCH_JOBS', default=True),
-}
+SUBMIT_BATCH_JOBS = HostingEnvironment.is_deployed()
 ```
+
+Set `ENVIRONMENT=deployed` locally to enable real Batch job submission (not recommended — use the stub in tests instead).
 
 ---
 
