@@ -127,8 +127,8 @@ const assignThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
       Once the consultation is set up, and you have reviewed the data and are
       happy with it, we can run <Link href={Routes.ThemeFinderRepository}
         >ThemeFinder</Link
-      > to find themes for each free text question. This is a long-running batch
-      process and can take up to a few hours depending on the size of the consultation.
+      > to find themes for each free text question. This is a long-running batch process
+      and can take up to a few hours depending on the size of the consultation.
     </Text>
 
     <FindThemesForm client:load consultations={findThemesFolders} />
@@ -149,8 +149,8 @@ const assignThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
   │           └── clustered_themes.json
 
 </code></pre>
-        Then, everything which was just saved to S3 is read from S3 and saved to
-        the database as candidate themes.</Text
+        Then, everything which was just saved to S3 is read from S3 and saved to the
+        database as candidate themes.</Text
       >
       <Text
         >Once candidate themes have been imported, an assign-themes job is

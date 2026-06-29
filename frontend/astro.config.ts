@@ -29,7 +29,7 @@ export default defineConfig({
         clientPort: 3000,
       },
     },
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss() as never],
   },
 
   image: {
