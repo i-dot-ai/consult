@@ -58,7 +58,7 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-    const checkbox = page.getByRole('checkbox', { name: 'Select this object for an action - Test Consultation at Analysis Stage' });
+const checkbox = page.getByRole('checkbox', { name: `Select this object for an action - ${analysisConsultation.title}` });
     await expect(checkbox).toBeVisible();
     await checkbox.check();
     await expect(checkbox).toBeChecked();
