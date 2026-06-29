@@ -38,7 +38,6 @@ import AddUserFormStory from "../screens/AddUserForm/AddUserFormStory.svelte";
 import RespondentDetailStory from "../screens/RespondentDetail/RespondentDetailStory.svelte";
 import DeleteUserStory from "../screens/DeleteUserForm/DeleteUserStory.svelte";
 import FindThemesFormStory from "../screens/FindThemesForm/FindThemesFormStory.svelte";
-import AssignThemesFormStory from "../screens/AssignThemesForm/AssignThemesFormStory.svelte";
 import QuestionDetailStory from "../screens/QuestionDetail/QuestionDetailStory.svelte";
 import FinalisingThemesArchiveStory from "../screens/FinalisingThemesArchive/FinalisingThemesArchiveStory.svelte";
 import ThemeSelectionFormStory from "../screens/ThemeSelectionForm/ThemeSelectionFormStory.svelte";
@@ -109,7 +108,6 @@ export default [
   RespondentDetailStory,
   DeleteUserStory,
   FindThemesFormStory,
-  AssignThemesFormStory,
   QuestionDetailStory,
   FinalisingThemesArchiveStory,
   ThemeSelectionFormStory,

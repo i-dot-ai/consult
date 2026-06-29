@@ -5,7 +5,6 @@ import Section from "../../components/Section/Section.svelte";
 import Text from "../../components/Text/Text.svelte";
 import CreateConsultationForm from "../../components/screens/CreateConsultationForm/CreateConsultationForm.svelte";
 import FindThemesForm from "../../components/screens/FindThemesForm/FindThemesForm.svelte";
-import AssignThemesForm from "../../components/screens/AssignThemesForm/AssignThemesForm.svelte";
 import Link from "../../components/Link.svelte";
 import { getApiConsultationFoldersUrl, Routes } from "../../global/routes";
 import Details from "../../components/Details/Details.svelte";
@@ -24,10 +23,6 @@ const setupFolders = await fetchBackendApi<string[]>(
 const findThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
   Astro,
   getApiConsultationFoldersUrl("find-themes"),
-);
-const assignThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
-  Astro,
-  getApiConsultationFoldersUrl("assign-themes"),
 );
 ---
 
@@ -201,13 +196,17 @@ const assignThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
     <h2 class="mb-4 text-2xl">4. Assign Themes</h2>
 
     <Text>
-      Once users have finalised their themes, we can run <Link
+      When users confirm finalising their themes, <Link
         href={Routes.ThemeFinderRepository}>ThemeFinder</Link
-      > to assign responses to selected themes. This is a long-running batch process
-      and can take up to a few hours depending on the size of the consultation.
+      > automatically runs to assign responses to selected themes. This is a long-running
+      batch process and can take up to a few hours depending on the size of the consultation.
     </Text>
 
-    <AssignThemesForm client:load consultations={assignThemesFolders} />
+    <img
+      src="/images/all-questions-signed-off.png"
+      alt="Screenshot of finalising themes in the Consult app"
+      class="my-8 rounded-md border border-gray-300 shadow-xs"
+    />
 
     <div class="my-8"></div>
 
