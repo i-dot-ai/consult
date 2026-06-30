@@ -47,7 +47,7 @@ test.describe("Signed Off Themes", () => {
         await expect(page.getByText(themeName).first()).toBeVisible();
       }
 
-      await expect(page.getByText("Signed Off")).toHaveCount(expectedThemes.count);
+      await expect(page.getByText("Signed Off", { exact: true })).toHaveCount(expectedThemes.count);
 
       if (index === 0) {
         await expect(page.getByText("Themes finalised")).toBeVisible();
