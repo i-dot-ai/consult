@@ -16,9 +16,7 @@ exports[`ThemeSelectionForm > should match snapshot initially 1`] = `
         <div
           class="rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
         >
-          <div
-            class="mb-5"
-          >
+          <div>
             <!---->
              
             <!---->
@@ -55,9 +53,7 @@ exports[`ThemeSelectionForm > should match snapshot initially 1`] = `
         <div
           class="rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
         >
-          <div
-            class="mb-5"
-          >
+          <div>
             <!---->
              
             <!---->
@@ -94,9 +90,7 @@ exports[`ThemeSelectionForm > should match snapshot initially 1`] = `
         <div
           class="rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
         >
-          <div
-            class="mb-5"
-          >
+          <div>
             <!---->
              
             <!---->
