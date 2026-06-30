@@ -1,14 +1,18 @@
 import type { GeneratedTheme } from "../../../global/types";
 import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
 
-const theme = $state({
+let consultationId = $state("test-consultation");
+let questionId = $state("test-question");
+let theme = $state({
   id: "theme-id",
   name: "Theme Name",
   description: "Theme description",
   selectedtheme_id: null,
 });
-const level = $state(0);
-const leftPadding = $state(1);
+let expandedThemes: string[] = $state([]);
+let hasNestedThemes = $state(false);
+let level = $state(0);
+let leftPadding = $state(1);
 
 const handleSelect = (theme: GeneratedTheme) =>
   alert(`Select theme event triggered with: ${theme.name}`);
@@ -20,15 +24,43 @@ const responsesMock = () => ({
   ],
 });
 
+const setExpandedThemes = (themeId: string) => {
+  if (expandedThemes.includes(themeId)) {
+    expandedThemes = expandedThemes.filter(id => id !== themeId);
+  } else {
+    expandedThemes = [...expandedThemes, themeId];
+  }
+}
+
 export default {
   name: "GeneratedThemeCard",
   component: GeneratedThemeCard,
   category: "Finalising Themes",
   props: [
     {
+      name: "consultationId",
+      value: consultationId,
+      type: "text",
+    },
+    {
+      name: "questionId",
+      value: questionId,
+      type: "text",
+    },
+    {
       name: "theme",
       value: theme,
       type: "json",
+    },
+    {
+      name: "expandedThemes",
+      value: expandedThemes,
+      type: "json",
+    },
+    {
+      name: "hasNestedThemes",
+      value: hasNestedThemes,
+      type: "bool",
     },
     {
       name: "level",
@@ -50,24 +82,36 @@ export default {
       name: "responsesMock",
       value: responsesMock,
     },
+    {
+      name: "setExpandedThemes",
+      value: setExpandedThemes,
+      type: "func",
+      schema: `(themeId: string) => void`,
+    },
   ],
   stories: [
     {
       name: "Nested Levels",
       props: {
+        consultationId: consultationId,
+        questionId: questionId,
         selectedThemes: [],
+        hasNestedThemes: true,
+        level: 0,
+        expandedThemes: ["theme-1", "theme-2"],
+        setExpandedThemes: setExpandedThemes,
         theme: {
-          id: "theme-id",
+          id: "theme-1",
           name: "Top Level Theme",
           description: "Theme level 1",
           children: [
             {
-              id: "theme-id",
+              id: "theme-2",
               name: "Mid Level Theme",
               description: "Theme level 2",
               children: [
                 {
-                  id: "theme-id",
+                  id: "theme-3",
                   name: "Child Theme",
                   description: "Theme level 3",
                 },
@@ -82,6 +126,8 @@ export default {
     {
       name: "No Answers",
       props: {
+        consultationId: consultationId,
+        questionId: questionId,
         selectedThemes: [],
         theme: {
           id: "theme-id",
@@ -95,6 +141,8 @@ export default {
     {
       name: "Disabled",
       props: {
+        consultationId: consultationId,
+        questionId: questionId,
         selectedThemes: [],
         theme: {
           id: "theme-id",
