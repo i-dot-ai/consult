@@ -120,13 +120,14 @@ exports[`Header > matches snapshot 1`] = `
           data-testid="mobile-menu-button"
         >
           <svg
+            aria-hidden="true"
             class="fill-neutral-500"
             height="1.5rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="1.5rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <path
               d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"
             />
@@ -198,13 +199,14 @@ exports[`Header > matches snapshot 1`] = `
                     class="rotate-90"
                   >
                     <svg
+                      aria-hidden="true"
                       class="fill-neutral-500"
                       height="0.9rem"
-                      role="img"
                       viewBox="0 -960 960 960"
                       width="0.9rem"
                       xmlns="http://www.w3.org/2000/svg"
                     >
+                      <!---->
                       <path
                         d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                         xmlns="http://www.w3.org/2000/svg"
@@ -374,13 +376,14 @@ exports[`Header > matches snapshot 1`] = `
                     class="rotate-90"
                   >
                     <svg
+                      aria-hidden="true"
                       class="fill-neutral-500"
                       height="0.9rem"
-                      role="img"
                       viewBox="0 -960 960 960"
                       width="0.9rem"
                       xmlns="http://www.w3.org/2000/svg"
                     >
+                      <!---->
                       <path
                         d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                         xmlns="http://www.w3.org/2000/svg"

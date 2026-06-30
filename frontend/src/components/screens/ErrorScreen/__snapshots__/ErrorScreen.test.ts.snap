@@ -9,13 +9,14 @@ exports[`ErrorScreen > matches snapshot 404 1`] = `
       class="my-8 flex items-center justify-center"
     >
       <svg
+        aria-hidden="true"
         class="fill-neutral-500"
         height="5rem"
-        role="img"
         viewBox="0 -960 960 960"
         width="5rem"
         xmlns="http://www.w3.org/2000/svg"
       >
+        <!---->
         <!---->
         <path
           d="M200-800v241-1 400-640 200-200Zm80 400h140q9-23 22-43t30-37H280v80Zm0 160h127q-5-20-6.5-40t.5-40H280v80ZM200-80q-33 0-56.5-23.5T120-160v-640q0-33 23.5-56.5T200-880h320l240 240v100q-19-8-39-12.5t-41-6.5v-41H480v-200H200v640h241q16 24 36 44.5T521-80H200Zm531-149q29-29 29-71t-29-71q-29-29-71-29t-71 29q-29 29-29 71t29 71q29 29 71 29t71-29ZM864-40 756-148q-21 14-45.5 21t-50.5 7q-75 0-127.5-52.5T480-300q0-75 52.5-127.5T660-480q75 0 127.5 52.5T840-300q0 26-7 50.5T812-204L920-96l-56 56Z"
@@ -71,13 +72,14 @@ exports[`ErrorScreen > matches snapshot 500 1`] = `
       class="my-8 flex items-center justify-center"
     >
       <svg
+        aria-hidden="true"
         class="fill-neutral-500"
         height="5rem"
-        role="img"
         viewBox="0 -960 960 960"
         width="5rem"
         xmlns="http://www.w3.org/2000/svg"
       >
+        <!---->
         <!---->
         <path
           d="M508.5-291.5Q520-303 520-320t-11.5-28.5Q497-360 480-360t-28.5 11.5Q440-337 440-320t11.5 28.5Q463-280 480-280t28.5-11.5ZM440-440h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
