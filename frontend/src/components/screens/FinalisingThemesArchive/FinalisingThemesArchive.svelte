@@ -72,9 +72,9 @@
   let allQuestionsFinalised: boolean = $derived(
     Boolean(
       questionsForSignOff?.length &&
-        questionsForSignOff.every(
-          (question: Question) => question.theme_status === "confirmed",
-        ),
+      questionsForSignOff.every(
+        (question: Question) => question.theme_status === "confirmed",
+      ),
     ),
   );
 

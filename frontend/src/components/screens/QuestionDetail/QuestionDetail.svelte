@@ -226,9 +226,9 @@
   const anyFilterApplied = () => {
     return Boolean(
       themeFilters.applied() ||
-        demoFilters.applied() ||
-        multiAnswerFilters.applied() ||
-        searchValue,
+      demoFilters.applied() ||
+      multiAnswerFilters.applied() ||
+      searchValue,
     );
   };
 
