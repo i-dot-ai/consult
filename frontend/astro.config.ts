@@ -10,6 +10,8 @@ import sentry from "@sentry/astro";
 export default defineConfig({
   output: "server",
   security: {
+    // Disable origin check from astro v6+ due to issues with django admin passthrough
+    // Django itself contains CSRF which should make this moot when combined with our infra setup
     checkOrigin: false,
   },
   integrations: [
