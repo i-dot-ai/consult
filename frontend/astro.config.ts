@@ -9,6 +9,9 @@ import sentry from "@sentry/astro";
 // https://astro.build/config
 export default defineConfig({
   output: "server",
+  security: {
+    checkOrigin: false,
+  },
   integrations: [
     svelte(),
     sentry({
