@@ -43,16 +43,15 @@ test.describe("Signed Off Themes", () => {
       );
       await page.waitForLoadState("networkidle");
 
-      await expect(page.getByText("Signed Off").first()).toBeVisible();
-      expect(await page.getByText("Signed Off").count()).toBeGreaterThanOrEqual(expectedThemes.count);
+      for (const themeName of expectedThemes.names) {
+        await expect(page.getByText(themeName).first()).toBeVisible();
+      }
+
+      await expect(page.getByText("Signed Off")).toHaveCount(expectedThemes.count);
 
       if (index === 0) {
         await expect(page.getByText("Themes finalised")).toBeVisible();
         await expect(page.getByRole("heading", { name: "Selected Themes" })).toBeVisible();
-      }
-
-      for (const themeName of expectedThemes.names) {
-        await expect(page.getByText(themeName).first()).toBeVisible();
       }
     });
   });
