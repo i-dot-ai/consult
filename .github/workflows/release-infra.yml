@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - release-dev-**
-      - release-preprod-**
 
   release:
     types: [published]
@@ -46,8 +45,8 @@ jobs:
       sha-short: ${{ steps.export.outputs.sha-short }}
 
     steps:
-      - name: Validate prod deployment uses a release tag
-        if: github.event_name == 'workflow_dispatch' && inputs.environment == 'prod'
+      - name: Validate preprod/prod deployment uses a release tag
+        if: github.event_name == 'workflow_dispatch' && (inputs.environment == 'preprod' || inputs.environment == 'prod')
         env:
           GH_TOKEN: ${{ github.token }}
           INPUT_TAG: ${{ inputs.tag }}
@@ -57,7 +56,7 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN" \
             "https://api.github.com/repos/${GH_REPOSITORY}/releases/tags/${INPUT_TAG}")
           if [[ "$HTTP_STATUS" != "200" ]]; then
-            echo "::error::Production deployments must reference a published release tag. Got: '${INPUT_TAG}'"
+            echo "::error::Preprod and production deployments must reference a published release tag. Got: '${INPUT_TAG}'"
             exit 1
           fi
 
