@@ -353,27 +353,11 @@ class ConsultationViewSet(ModelViewSet):
 
         consultation = self.get_object()
 
-        # Only checking non-staff, as staff members might need to revert Consultation stage changes
-        if not request.user.is_staff and consultation.stage != Consultation.Stage.FINALISING_THEMES:
+        if consultation.stage != Consultation.Stage.FINALISING_THEMES:
             return Response(
                 {
                     "error": "Consultation must be in the Finalising Themes stage before assigning themes"
                 },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        user_themes_exist = (
-            SelectedTheme.objects.filter(
-                question__consultation=consultation,
-                question__has_free_text=True,
-            )
-            .exclude(name__iexact="Other")
-            .exclude(name__iexact="No Reason Given")
-            .exists()
-        )
-        if not user_themes_exist:
-            return Response(
-                {"error": "No themes found. Please create at least one theme before assigning."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -397,7 +381,7 @@ class ConsultationViewSet(ModelViewSet):
             export_selected_themes_to_s3(consultation)
         except ValueError as e:
             return Response(
-                {"error": "No selected themes found", "detail": str(e)},
+                {"error": "No selected themes found for at least one question.", "detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
@@ -735,7 +719,15 @@ class ConsultationViewSet(ModelViewSet):
             questions.append(question_info)
 
         unmatched_source = sorted(set(source_by_text.keys()) - {q.text for q in target_questions})
-        warnings = {"unmatched_source_questions": unmatched_source}
+        questions_without_themes = sorted(
+            q["question_number"]
+            for q in questions
+            if q["status"] not in ("will_import", "has_existing_themes")
+        )
+        warnings = {
+            "unmatched_source_questions": unmatched_source,
+            "questions_without_themes": questions_without_themes,
+        }
 
         if dry_run:
             return Response(
@@ -746,6 +738,19 @@ class ConsultationViewSet(ModelViewSet):
                     "questions": questions,
                     "warnings": warnings,
                 }
+            )
+
+        if questions_without_themes:
+            return Response(
+                {
+                    "error": (
+                        "Cannot import: target questions "
+                        f"{questions_without_themes} would have no selected themes"
+                    ),
+                    "questions": questions,
+                    "warnings": warnings,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Execute the import

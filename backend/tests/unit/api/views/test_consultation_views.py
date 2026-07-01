@@ -917,10 +917,7 @@ class TestAssignThemesEndpoint:
         )
 
         assert response.status_code == 400
-        assert (
-            response.json()["error"]
-            == "No themes found. Please create at least one theme before assigning."
-        )
+        assert response.json()["error"] == "No selected themes found for at least one question."
 
     def test_assign_themes_no_selected_themes_non_admin(
         self, client, non_staff_user_token, free_text_question
@@ -938,10 +935,7 @@ class TestAssignThemesEndpoint:
         )
 
         assert response.status_code == 400
-        assert (
-            response.json()["error"]
-            == "No themes found. Please create at least one theme before assigning."
-        )
+        assert response.json()["error"] == "No selected themes found for at least one question."
 
     def test_assign_themes_wrong_stage_blocked_for_non_admin(
         self, client, non_staff_user_token, free_text_question
@@ -1089,7 +1083,7 @@ class TestImportFinalisedThemesEndpoint:
 
         url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
 
-        with patch("consultations.api.views.consultation.export_selected_themes_to_s3"):
+        with patch("consultations.api.views.consultation.export_selected_themes_to_s3") as mock_export:
             response = client.post(
                 url,
                 {"source_consultation_id": str(source.id)},
@@ -1097,10 +1091,11 @@ class TestImportFinalisedThemesEndpoint:
                 headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
-        assert response.status_code == 200
+        assert response.status_code == 400
         data = response.json()
         assert all(q["status"] == "duplicate_in_target" for q in data["questions"])
         assert SelectedTheme.objects.filter(question__consultation=target).count() == 0
+        mock_export.assert_not_called()
 
     def test_duplicate_source_questions_skipped(self, client, staff_user_token):
         source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
@@ -1115,7 +1110,7 @@ class TestImportFinalisedThemesEndpoint:
 
         url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
 
-        with patch("consultations.api.views.consultation.export_selected_themes_to_s3"):
+        with patch("consultations.api.views.consultation.export_selected_themes_to_s3") as mock_export:
             response = client.post(
                 url,
                 {"source_consultation_id": str(source.id)},
@@ -1123,10 +1118,11 @@ class TestImportFinalisedThemesEndpoint:
                 headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
-        assert response.status_code == 200
+        assert response.status_code == 400
         data = response.json()
         assert data["questions"][0]["status"] == "duplicate_in_source"
         assert SelectedTheme.objects.filter(question__consultation=target).count() == 0
+        mock_export.assert_not_called()
 
     def test_no_match_in_source(self, client, staff_user_token):
         source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
@@ -1139,7 +1135,7 @@ class TestImportFinalisedThemesEndpoint:
 
         url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
 
-        with patch("consultations.api.views.consultation.export_selected_themes_to_s3"):
+        with patch("consultations.api.views.consultation.export_selected_themes_to_s3") as mock_export:
             response = client.post(
                 url,
                 {"source_consultation_id": str(source.id)},
@@ -1147,10 +1143,44 @@ class TestImportFinalisedThemesEndpoint:
                 headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
-        assert response.status_code == 200
+        assert response.status_code == 400
         data = response.json()
         assert data["questions"][0]["status"] == "no_match_in_source"
         assert SelectedTheme.objects.filter(question__consultation=target).count() == 0
+        mock_export.assert_not_called()
+
+    def test_blocks_import_when_any_question_would_be_left_without_themes(
+        self, client, staff_user_token
+    ):
+        """A mix of importable and unmatched questions blocks the whole import."""
+        source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
+        target = ConsultationFactory(title="Target", stage=Consultation.Stage.FINALISING_THEMES)
+        importable_text = "Do you agree?"
+        source_q = QuestionFactory(
+            consultation=source, has_free_text=True, number=1, text=importable_text
+        )
+        QuestionFactory(consultation=target, has_free_text=True, number=1, text=importable_text)
+        QuestionFactory(
+            consultation=target, has_free_text=True, number=2, text="No match in source"
+        )
+        SelectedThemeFactory(question=source_q, name="Theme A", description="Desc A")
+
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
+
+        with patch("consultations.api.views.consultation.export_selected_themes_to_s3") as mock_export:
+            response = client.post(
+                url,
+                {"source_consultation_id": str(source.id)},
+                content_type="application/json",
+                headers={"Authorization": f"Bearer {staff_user_token}"},
+            )
+
+        assert response.status_code == 400
+        data = response.json()
+        assert data["warnings"]["questions_without_themes"] == [2]
+        # No partial import happened - not even the importable question was written
+        assert SelectedTheme.objects.filter(question__consultation=target).count() == 0
+        mock_export.assert_not_called()
 
     def test_unmatched_source_questions_in_warnings(self, client, staff_user_token):
         source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
