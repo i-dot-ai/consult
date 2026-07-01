@@ -339,7 +339,7 @@ class ConsultationFolderQuerySerializer(serializers.Serializer):
     """Validates query parameters for consultation folders endpoint."""
 
     stage = serializers.ChoiceField(
-        choices=["setup", "find-themes", "assign-themes"],
+        choices=["setup", "find-themes"],
         required=True,
     )
 

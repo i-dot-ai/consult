@@ -14,7 +14,7 @@ def submit_job(
     user_id: int,
     model_name: str,
     assignment_target: Literal["selected_themes", "candidate_themes"] = "selected_themes",
-) -> dict:
+) -> dict | None:
     """
     Submit a job to AWS Batch for ThemeFinder processing.
     This will be either to find themes or assign themes.
