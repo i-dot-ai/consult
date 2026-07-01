@@ -6,12 +6,12 @@ There are two release workflows: `release-app` and `release-infra`. They are ind
 
 | Event | Environment | Notes |
 |---|---|---|
-| Push to `release-ENV-**` tag | dev or preprod | e.g. `release-dev-1.0.0` |
+| Push to `release-ENV-**` tag | dev | e.g. `release-dev-1.0.0`; preprod is no longer reachable via tag push |
 | Merge to `main` (via `deploy-main`) | preprod → prod | Runs the full CI suite, then deploys preprod, then prod only if preprod succeeds |
 | GitHub Release published | prod | Still available; deploys a specific tagged release to prod |
-| `workflow_dispatch` | dev / preprod / prod | Manual trigger; prod requires the tag to be a published GitHub Release |
+| `workflow_dispatch` | dev / preprod / prod | Manual trigger; preprod and prod both require the tag to be a published GitHub Release |
 
-The release-tag guard in `release-app`/`release-infra` only applies to manual dispatches; the `workflow_call` path from `deploy-main` bypasses it, with the full CI suite acting as the gate instead.
+The release-tag guard in `release-app`/`release-infra` applies to manual dispatches targeting preprod or prod; the `workflow_call` path from `deploy-main` bypasses it, with the full CI suite acting as the gate instead.
 
 On merge to main, `deploy-main` calls each release workflow with an explicit `environment`. They filter differently:
 * `release-app` skips individual services whose git SHA matches what is already deployed, so only services with code changes are built and redeployed.
@@ -116,6 +116,12 @@ The **GitHub Release** trigger, by contrast, starts both workflows at the same t
 The standard route is to publish a GitHub Release on GitHub — this triggers both `release-app` and `release-infra` automatically.
 
 Manual (`workflow_dispatch`) deployment to prod is available as an emergency fallback but requires the tag input to reference a published GitHub Release. Arbitrary SHAs or branch names are rejected.
+
+## Deploying to preprod
+
+The standard route is a merge to `main`, which `deploy-main` deploys automatically once CI passes. Ad hoc preprod deploys via tag push are not supported.
+
+Manual (`workflow_dispatch`) deployment to preprod is available as a fallback but, like prod, requires the tag input to reference a published GitHub Release. Arbitrary SHAs or branch names are rejected.
 
 ## Rollback
 
