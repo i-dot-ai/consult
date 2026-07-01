@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - "backend/**"
       - "pipeline-mapping/**"
       - "pipeline-sign-off/**"
       - "themefinder/**"
@@ -12,6 +13,7 @@ on:
       - ".github/workflows/pipeline-smoke.yml"
   pull_request:
     paths:
+      - "backend/**"
       - "pipeline-mapping/**"
       - "pipeline-sign-off/**"
       - "themefinder/**"
@@ -25,19 +27,38 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pipeline: [pipeline-mapping, pipeline-sign-off]
+        # Every service here embeds the themefinder workspace member + the root
+        # lockfile, so building and running each one catches workspace-resolution
+        # breakage (missing/editable deps, broken .pth) before deploy.
+        include:
+          # --help exits 0 only if all top-level imports + module-level env reads
+          # in the script succeeded. The env values themselves are not used.
+          - service: pipeline-mapping
+            smoke_run: >-
+              docker run --rm
+              -e LLM_GATEWAY_URL=x
+              -e LITELLM_CONSULT_OPENAI_API_KEY=x
+              -e SLACK_WEBHOOK_URL=x
+              pipeline-mapping:smoke --help
+          - service: pipeline-sign-off
+            smoke_run: >-
+              docker run --rm
+              -e LLM_GATEWAY_URL=x
+              -e LITELLM_CONSULT_OPENAI_API_KEY=x
+              -e SLACK_WEBHOOK_URL=x
+              pipeline-sign-off:smoke --help
+          # backend has no --help entrypoint; importing the editable themefinder
+          # member from the installed venv exercises the workspace resolution and
+          # the runtime .pth pointing at /src/themefinder/src.
+          - service: backend
+            smoke_run: >-
+              docker run --rm backend:smoke
+              venv/bin/python -c "import themefinder"
     steps:
       - uses: actions/checkout@v6
 
       - name: Build image
-        run: docker build -f ${{ matrix.pipeline }}/Dockerfile -t ${{ matrix.pipeline }}:smoke .
+        run: docker build -f ${{ matrix.service }}/Dockerfile -t ${{ matrix.service }}:smoke .
 
-      # --help exits 0 only if all top-level imports + module-level env reads
-      # in the script succeeded. The env values themselves are not used.
-      - name: Run --help
-        run: |
-          docker run --rm \
-            -e LLM_GATEWAY_URL=x \
-            -e LITELLM_CONSULT_OPENAI_API_KEY=x \
-            -e SLACK_WEBHOOK_URL=x \
-            ${{ matrix.pipeline }}:smoke --help
+      - name: Smoke run
+        run: ${{ matrix.smoke_run }}
