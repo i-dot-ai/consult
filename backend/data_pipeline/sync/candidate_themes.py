@@ -2,6 +2,7 @@ import csv
 import io
 from typing import Dict, List, Optional
 
+from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
 from themefinder.models import ThemeNode
@@ -416,9 +417,19 @@ def export_candidate_themes_to_s3(consultation: Consultation) -> int:
 
         s3_client = s3_utils.get_s3_client()
 
-        s3_client.put_object(
-            Bucket=settings.AWS_BUCKET_NAME, Key=s3_path, Body=csv_buffer.getvalue()
-        )
+        try:
+            s3_client.put_object(
+                Bucket=settings.AWS_BUCKET_NAME, Key=s3_path, Body=csv_buffer.getvalue()
+            )
+        except (ClientError, BotoCoreError):
+            logger.exception(
+                "put_object failed for question {question_number} at {s3_path} "
+                "({exported_so_far} question(s) already exported)",
+                question_number=question.number,
+                s3_path=s3_path,
+                exported_so_far=questions_exported,
+            )
+            raise
 
         logger.info(
             "Exported {themes_count} candidate themes for question {question_number} to {s3_path}",

@@ -2,6 +2,7 @@ import datetime
 from typing import Literal
 
 import boto3
+from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 
 logger = settings.LOGGER
@@ -57,22 +58,33 @@ def submit_job(
         consultation_name=consultation_name,
     )
 
-    response = batch.submit_job(
-        jobName=job_name,
-        jobQueue=job_queue,
-        jobDefinition=job_definition,
-        containerOverrides={
-            "command": [
-                "--subdir",
-                consultation_code,
-                "--job-type",
-                job_type,
-                "--model-name",
-                model_name,
-            ]
-        },
-        parameters=parameters,
-    )
+    try:
+        response = batch.submit_job(
+            jobName=job_name,
+            jobQueue=job_queue,
+            jobDefinition=job_definition,
+            containerOverrides={
+                "command": [
+                    "--subdir",
+                    consultation_code,
+                    "--job-type",
+                    job_type,
+                    "--model-name",
+                    model_name,
+                ]
+            },
+            parameters=parameters,
+        )
+    except (ClientError, BotoCoreError):
+        logger.exception(
+            "Failed to submit {job_type} batch job for consultation_code={consultation_code} "
+            "(job_queue={job_queue}, job_definition={job_definition})",
+            job_type=job_type,
+            consultation_code=consultation_code,
+            job_queue=job_queue,
+            job_definition=job_definition,
+        )
+        raise
 
     job_id = response["jobId"]
     logger.info("Batch job submitted: {job_id}", job_id=job_id)
