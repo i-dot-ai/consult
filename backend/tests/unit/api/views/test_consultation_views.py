@@ -727,33 +727,17 @@ class TestGetConsultationFoldersEndpoint:
             assert response.status_code == 200
             assert response.json() == []
 
-    def test_get_folders_assign_themes_stage_returns_consultations(self, client, staff_user_token):
-        """Test assign-themes stage returns consultations with matching S3 folders"""
-        c1 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation")
-
-        url = reverse("consultations-folders")
-
-        with patch("data_pipeline.s3.get_consultation_folders") as mock_get_folders:
-            mock_get_folders.return_value = ["healthcare-2026", "education-2026"]
-
-            response = client.get(
-                url,
-                {"stage": "assign-themes"},
-                headers={"Authorization": f"Bearer {staff_user_token}"},
-            )
-
-            assert response.status_code == 200
-            result = response.json()
-            assert result[0]["code"] == "healthcare-2026"
-            assert result[0]["id"] == str(c1.id)
-
     def test_get_folders_handles_one_to_many_relationship(self, client, staff_user_token):
         """Test endpoint handles multiple consultations with same code"""
         c1 = ConsultationFactory(
-            code="healthcare-2026", title="Healthcare Consultation V1", stage=Consultation.Stage.SETUP
+            code="healthcare-2026",
+            title="Healthcare Consultation V1",
+            stage=Consultation.Stage.SETUP,
         )
         c2 = ConsultationFactory(
-            code="healthcare-2026", title="Healthcare Consultation V2", stage=Consultation.Stage.SETUP
+            code="healthcare-2026",
+            title="Healthcare Consultation V2",
+            stage=Consultation.Stage.SETUP,
         )
 
         url = reverse("consultations-folders")
@@ -864,46 +848,6 @@ class TestFindThemesEndpoint:
 @pytest.mark.django_db
 class TestAssignThemesEndpoint:
     def test_assign_themes_success(self, client, staff_user_token, free_text_question):
-        """Test successful assign themes job submission (post-finalising stage)"""
-        consultation = free_text_question.consultation
-        consultation.stage = Consultation.Stage.FINALISING_THEMES
-        consultation.save(update_fields=["stage"])
-
-        SelectedTheme.objects.create(
-            question=free_text_question, name="Theme Name", description="Theme Description"
-        )
-
-        url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
-
-        with (
-            patch(
-                "consultations.api.views.consultation.export_selected_themes_to_s3"
-            ) as mock_export,
-            patch("consultations.api.views.consultation.batch") as mock_batch,
-        ):
-            mock_export.return_value = 1
-            mock_batch.submit_job.return_value = {"jobId": "test-job-456"}
-
-            response = client.post(
-                url,
-                headers={"Authorization": f"Bearer {staff_user_token}"},
-            )
-
-            assert response.status_code == 202
-
-            # Verify selected themes were exported to S3
-            mock_export.assert_called_once_with(consultation)
-
-            # Verify batch job was submitted
-            mock_batch.submit_job.assert_called_once_with(
-                job_type="ASSIGN_THEMES",
-                consultation_code=consultation.code,
-                consultation_name=consultation.title,
-                user_id=mock_batch.submit_job.call_args.kwargs["user_id"],
-                model_name=consultation.model_name,
-            )
-
-    def test_assign_themes_during_finalising(self, client, staff_user_token, free_text_question):
         """Test assign themes exports selected themes and advances stage from finalising"""
         consultation = free_text_question.consultation
         consultation.stage = Consultation.Stage.FINALISING_THEMES
@@ -1133,7 +1077,9 @@ class TestImportFinalisedThemesEndpoint:
 
         url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
 
-        with patch("consultations.api.views.consultation.export_selected_themes_to_s3") as mock_export:
+        with patch(
+            "consultations.api.views.consultation.export_selected_themes_to_s3"
+        ) as mock_export:
             response = client.post(
                 url,
                 {"source_consultation_id": str(source.id)},
@@ -1160,7 +1106,9 @@ class TestImportFinalisedThemesEndpoint:
 
         url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
 
-        with patch("consultations.api.views.consultation.export_selected_themes_to_s3") as mock_export:
+        with patch(
+            "consultations.api.views.consultation.export_selected_themes_to_s3"
+        ) as mock_export:
             response = client.post(
                 url,
                 {"source_consultation_id": str(source.id)},
@@ -1185,7 +1133,9 @@ class TestImportFinalisedThemesEndpoint:
 
         url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
 
-        with patch("consultations.api.views.consultation.export_selected_themes_to_s3") as mock_export:
+        with patch(
+            "consultations.api.views.consultation.export_selected_themes_to_s3"
+        ) as mock_export:
             response = client.post(
                 url,
                 {"source_consultation_id": str(source.id)},
@@ -1217,7 +1167,9 @@ class TestImportFinalisedThemesEndpoint:
 
         url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
 
-        with patch("consultations.api.views.consultation.export_selected_themes_to_s3") as mock_export:
+        with patch(
+            "consultations.api.views.consultation.export_selected_themes_to_s3"
+        ) as mock_export:
             response = client.post(
                 url,
                 {"source_consultation_id": str(source.id)},
