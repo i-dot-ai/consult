@@ -44,7 +44,6 @@
 
   let searchValue: string = $state("");
   let isConfirmModalOpen: boolean = $state(false);
-  let isSubmitting: boolean = $state(false);
   let dataRequested: boolean = $state(false);
 
   const questionsStore = createFetchStore<QuestionsResponse>();
@@ -112,28 +111,23 @@
       <Modal
         variant="secondary"
         title="Confirm AI Assignment"
-        confirmText={isSubmitting
+        confirmText={$consultationUpdateStore.isLoading
           ? "Submitting consultation themes"
           : "Yes, Start AI Assignment"}
-        confirmDisabled={isSubmitting}
+        confirmDisabled={$consultationUpdateStore.isLoading}
         Icon={Warning}
         open={isConfirmModalOpen}
         setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
         handleConfirm={async () => {
-          if (isSubmitting) return;
-          isSubmitting = true;
-          try {
-            await $consultationUpdateStore.fetch(
-              getApiAssignThemesUrl(consultationId as string),
-              "POST",
-            );
+          if ($consultationUpdateStore.isLoading) return;
+          await $consultationUpdateStore.fetch(
+            getApiAssignThemesUrl(consultationId as string),
+            "POST",
+          );
 
-            if (!$consultationUpdateStore.error) {
-              isConfirmModalOpen = false;
-              location.href = location.href;
-            }
-          } finally {
-            isSubmitting = false;
+          if (!$consultationUpdateStore.error) {
+            isConfirmModalOpen = false;
+            location.href = location.href;
           }
         }}
       >

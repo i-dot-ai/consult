@@ -29,21 +29,25 @@ def export_selected_themes_to_s3(consultation: Consultation) -> int:
         ValueError: If no questions have selected themes
     """
 
+    questions = consultation.question_set.filter(has_free_text=True)
+
+    themes_by_question = {
+        question: SelectedTheme.objects.filter(question=question)
+        .exclude(name__iexact="Other")
+        .exclude(name__iexact="No Reason Given")
+        for question in questions
+    }
+
+    missing = [q.number for q, themes in themes_by_question.items() if not themes.exists()]
+    if missing:
+        raise ValueError(
+            f"Questions {missing} have no selected themes for consultation '{consultation.title}'"
+        )
+
     s3_client = get_s3_client()
     questions_exported = 0
 
-    questions = consultation.question_set.filter(has_free_text=True)
-
-    for question in questions:
-        themes = SelectedTheme.objects.filter(question=question)
-
-        if not themes.exists():
-            logger.warning(
-                f"No selected themes found for question {question.number} "
-                f"in consultation {consultation.title}"
-            )
-            continue
-
+    for question, themes in themes_by_question.items():
         csv_buffer = io.StringIO()
         writer = csv.writer(csv_buffer)
         writer.writerow(["Theme Name", "Theme Description"])
@@ -66,11 +70,6 @@ def export_selected_themes_to_s3(consultation: Consultation) -> int:
             s3_path=s3_path,
         )
         questions_exported += 1
-
-    if questions_exported == 0:
-        raise ValueError(
-            f"No questions with selected themes found for consultation '{consultation.title}'"
-        )
 
     logger.info(
         f"Exported themes for {questions_exported} questions in consultation '{consultation.title}'"
