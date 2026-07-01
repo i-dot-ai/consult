@@ -59,9 +59,7 @@
   }
 </script>
 
-<div
-  class={clsx(["mb-5", errorMessage && "mr-4 border-l-4 border-red-600 pl-3"])}
->
+<div class={clsx([errorMessage && "mr-4 border-l-4 border-red-600 pl-3"])}>
   {#if hint}
     <div
       id="{id}-hint"
@@ -85,8 +83,8 @@
     <input
       type="checkbox"
       class={clsx([
-        "mt-0.5 rounded border border-neutral-300 bg-white text-neutral-900",
-        "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400",
+        "mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900",
+        "focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400",
         "shrink-0 disabled:cursor-not-allowed disabled:opacity-50",
         "checked:border-primary checked:bg-primary",
         size === "xs" && "h-3 w-3",

@@ -27,13 +27,14 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
               class="rotate-180"
             >
               <svg
+                aria-hidden="true"
                 class="fill-neutral-700"
                 height="1rem"
-                role="img"
                 viewBox="0 -960 960 960"
                 width="1rem"
                 xmlns="http://www.w3.org/2000/svg"
               >
+                <!---->
                 <path
                   d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
                   xmlns="http://www.w3.org/2000/svg"
@@ -81,13 +82,14 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
             class="rotate-180"
           >
             <svg
+              aria-hidden="true"
               class="fill-neutral-700"
               height="1rem"
-              role="img"
               viewBox="0 -960 960 960"
               width="1rem"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <!---->
               <path
                 d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                 xmlns="http://www.w3.org/2000/svg"
@@ -126,13 +128,14 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
           </span>
            
           <svg
+            aria-hidden="true"
             class="fill-neutral-700"
             height="1rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="1rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <path
               d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
               xmlns="http://www.w3.org/2000/svg"
@@ -166,13 +169,14 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
             class="mb-6 flex items-center gap-2"
           >
             <svg
+              aria-hidden="true"
               class="fill-neutral-700"
               height="1.5rem"
-              role="img"
               viewBox="0 -960 960 960"
               width="1.5rem"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <!---->
               <path
                 d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z"
                 xmlns="http://www.w3.org/2000/svg"
@@ -251,13 +255,14 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                       <!---->
                       <!---->
                       <svg
+                        aria-hidden="true"
                         class="fill-neutral-700"
                         height="1rem"
-                        role="img"
                         viewBox="0 -960 960 960"
                         width="1rem"
                         xmlns="http://www.w3.org/2000/svg"
                       >
+                        <!---->
                         <path
                           d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"
                         />
@@ -292,13 +297,14 @@ exports[`RespondentDetail > should match snapshot after loading 1`] = `
                 class="h-max rounded-lg bg-neutral-100 p-1"
               >
                 <svg
+                  aria-hidden="true"
                   class="fill-neutral-700"
                   height="1.3rem"
-                  role="img"
                   viewBox="0 -960 960 960"
                   width="1.3rem"
                   xmlns="http://www.w3.org/2000/svg"
                 >
+                  <!---->
                   <!---->
                   <path
                     d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z"
@@ -674,13 +680,14 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
               class="rotate-180"
             >
               <svg
+                aria-hidden="true"
                 class="fill-neutral-700"
                 height="1rem"
-                role="img"
                 viewBox="0 -960 960 960"
                 width="1rem"
                 xmlns="http://www.w3.org/2000/svg"
               >
+                <!---->
                 <path
                   d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
                   xmlns="http://www.w3.org/2000/svg"
@@ -728,13 +735,14 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
             class="rotate-180"
           >
             <svg
+              aria-hidden="true"
               class="fill-neutral-700"
               height="1rem"
-              role="img"
               viewBox="0 -960 960 960"
               width="1rem"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <!---->
               <path
                 d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                 xmlns="http://www.w3.org/2000/svg"
@@ -774,13 +782,14 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
           </span>
            
           <svg
+            aria-hidden="true"
             class="fill-neutral-700"
             height="1rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="1rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <path
               d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
               xmlns="http://www.w3.org/2000/svg"
@@ -814,13 +823,14 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
             class="mb-6 flex items-center gap-2"
           >
             <svg
+              aria-hidden="true"
               class="fill-neutral-700"
               height="1.5rem"
-              role="img"
               viewBox="0 -960 960 960"
               width="1.5rem"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <!---->
               <path
                 d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z"
                 xmlns="http://www.w3.org/2000/svg"
@@ -873,13 +883,14 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
                       <!---->
                       <!---->
                       <svg
+                        aria-hidden="true"
                         class="fill-neutral-700"
                         height="1rem"
-                        role="img"
                         viewBox="0 -960 960 960"
                         width="1rem"
                         xmlns="http://www.w3.org/2000/svg"
                       >
+                        <!---->
                         <path
                           d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"
                         />
@@ -916,13 +927,14 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
                 class="h-max rounded-lg bg-neutral-100 p-1"
               >
                 <svg
+                  aria-hidden="true"
                   class="fill-neutral-700"
                   height="1.3rem"
-                  role="img"
                   viewBox="0 -960 960 960"
                   width="1.3rem"
                   xmlns="http://www.w3.org/2000/svg"
                 >
+                  <!---->
                   <!---->
                   <path
                     d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z"
@@ -994,13 +1006,14 @@ exports[`RespondentDetail > should match snapshot initially 1`] = `
                 style="animation-timing-function: ease-in-out;"
               >
                 <svg
+                  aria-hidden="true"
                   class="fill-neutral-300"
                   height="5rem"
-                  role="img"
                   viewBox="0 -960 960 960"
                   width="5rem"
                   xmlns="http://www.w3.org/2000/svg"
                 >
+                  <!---->
                   <path
                     d="M480-80q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-83 31.5-155.5t86-127Q252-817 325-848.5T480-880q17 0 28.5 11.5T520-840q0 17-11.5 28.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-17 11.5-28.5T840-520q17 0 28.5 11.5T880-480q0 82-31.5 155t-86 127.5q-54.5 54.5-127 86T480-80Z"
                     xmlns="http://www.w3.org/2000/svg"

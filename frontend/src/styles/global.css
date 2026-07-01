@@ -1,6 +1,40 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+
+  --color-iaiteal-50: oklch(0.96 0.02 175);
+  --color-iaiteal-100: oklch(0.91 0.05 175);
+  --color-iaiteal-200: oklch(0.84 0.08 175);
+  --color-iaiteal-300: oklch(0.75 0.12 175);
+  --color-iaiteal-400: oklch(0.64 0.16 175);
+  --color-iaiteal-500: oklch(0.49 0.14 175);
+  --color-iaiteal-600: oklch(0.42 0.12 175);
+  --color-iaiteal-700: oklch(0.35 0.1 175);
+  --color-iaiteal-800: oklch(0.26 0.08 175);
+  --color-iaiteal-900: oklch(0.18 0.06 175);
+
+  --breakpoint-3xl: 1920px;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
 @font-face {
   font-family: "Inter";
@@ -30,6 +64,7 @@
 :root {
   --color-primary: #c40678;
   --color-secondary: oklch(0.6429 0.103 186.61);
+  --color-secondary-dark: oklch(0.4275 0.0746 187.12);
 }
 
 .blink {

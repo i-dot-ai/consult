@@ -86,11 +86,16 @@ describe("GeneratedThemeCard", () => {
 
     const propsDefined = GeneratedThemeCardStory.props.map((prop) => prop.name);
     expect(propsDefined).toEqual([
+      "consultationId",
+      "questionId",
       "theme",
+      "expandedThemes",
+      "hasNestedThemes",
       "level",
       "leftPadding",
       "handleSelect",
       "responsesMock",
+      "setExpandedThemes",
     ]);
   });
 

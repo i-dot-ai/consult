@@ -44,13 +44,14 @@ exports[`StepOneAPage > should match snapshot 1`] = `
               class="self-start shrink-0 my-2.5 mx-1"
             >
               <svg
+                aria-hidden="true"
                 class="fill-yellow-600"
                 height="1.2rem"
-                role="img"
                 viewBox="0 -960 960 960"
                 width="1.2rem"
                 xmlns="http://www.w3.org/2000/svg"
               >
+                <!---->
                 <!---->
                 <path
                   d="M400-240q-33 0-56.5-23.5T320-320v-50q-57-39-88.5-100T200-600q0-117 81.5-198.5T480-880q117 0 198.5 81.5T760-600q0 69-31.5 129.5T640-370v50q0 33-23.5 56.5T560-240H400Zm0-80h160v-92l34-24q41-28 63.5-71.5T680-600q0-83-58.5-141.5T480-800q-83 0-141.5 58.5T280-600q0 49 22.5 92.5T366-436l34 24v92Zm0 240q-17 0-28.5-11.5T360-120v-40h240v40q0 17-11.5 28.5T560-80H400Zm80-520Z"
@@ -90,13 +91,14 @@ exports[`StepOneAPage > should match snapshot 1`] = `
               class="transition-transform"
             >
               <svg
+                aria-hidden="true"
                 class="fill-yellow-500"
                 height="1rem"
-                role="img"
                 viewBox="0 -960 960 960"
                 width="1rem"
                 xmlns="http://www.w3.org/2000/svg"
               >
+                <!---->
                 <path
                   d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                   xmlns="http://www.w3.org/2000/svg"
@@ -118,13 +120,14 @@ exports[`StepOneAPage > should match snapshot 1`] = `
               <!---->
               <!---->
               <svg
+                aria-hidden="true"
                 class="fill-yellow-500"
                 height="1rem"
-                role="img"
                 viewBox="0 -960 960 960"
                 width="1rem"
                 xmlns="http://www.w3.org/2000/svg"
               >
+                <!---->
                 <path
                   d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
                 />
@@ -158,7 +161,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
       <!---->
       <!---->
       <span
-        class="text-sm font-[500]"
+        class="text-sm font-medium"
       >
         Which tool are you using?
       </span>
@@ -190,7 +193,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
         <!---->
         <!---->
         <div
-          class="px-8 py-4 w-[12rem]"
+          class="px-8 py-4 w-48"
         >
           <img
             alt="Qualtrics logo"
@@ -217,7 +220,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
         <!---->
         <!---->
         <div
-          class="px-8 py-4 w-[23rem]"
+          class="px-8 py-4 w-92"
         >
           <img
             alt="Smart Survey logo"
@@ -244,7 +247,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
         <!---->
         <!---->
         <div
-          class="px-8 py-4 w-[21rem]"
+          class="px-8 py-4 w-84"
         >
           <img
             alt="Citizen Space logo"
@@ -275,7 +278,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
         <!---->
         <!---->
         <span
-          class="text-md font-[500]"
+          class="text-md font-medium"
         >
           Qualtrics export instructions
         </span>
@@ -439,13 +442,14 @@ exports[`StepOneAPage > should match snapshot 1`] = `
           class="shrink-0 self-start"
         >
           <svg
+            aria-hidden="true"
             class="fill-red-500"
             height="1rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="1rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <path
               d="M400-240q-33 0-56.5-23.5T320-320v-50q-57-39-88.5-100T200-600q0-117 81.5-198.5T480-880q117 0 198.5 81.5T760-600q0 69-31.5 129.5T640-370v50q0 33-23.5 56.5T560-240H400Zm0-80h160v-92l34-24q41-28 63.5-71.5T680-600q0-83-58.5-141.5T480-800q-83 0-141.5 58.5T280-600q0 49 22.5 92.5T366-436l34 24v92Zm0 240q-17 0-28.5-11.5T360-120v-40h240v40q0 17-11.5 28.5T560-80H400Zm80-520Z"
               xmlns="http://www.w3.org/2000/svg"
@@ -516,13 +520,14 @@ exports[`StepOneAPage > should match snapshot 1`] = `
             class="transition-transform"
           >
             <svg
+              aria-hidden="true"
               class="fill-neutral-500"
               height="1rem"
-              role="img"
               viewBox="0 -960 960 960"
               width="1rem"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <!---->
               <path
                 d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                 xmlns="http://www.w3.org/2000/svg"
@@ -564,13 +569,14 @@ exports[`StepOneAPage > should match snapshot 1`] = `
           class="rotate-180"
         >
           <svg
+            aria-hidden="true"
             class="fill-neutral-500"
             height="0.9rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="0.9rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <path
               d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
               xmlns="http://www.w3.org/2000/svg"
@@ -609,13 +615,14 @@ exports[`StepOneAPage > should match snapshot 1`] = `
         </span>
          
         <svg
+          aria-hidden="true"
           class="fill-white"
           height="0.9rem"
-          role="img"
           viewBox="0 -960 960 960"
           width="0.9rem"
           xmlns="http://www.w3.org/2000/svg"
         >
+          <!---->
           <path
             d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
             xmlns="http://www.w3.org/2000/svg"

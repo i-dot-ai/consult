@@ -1,11 +1,8 @@
 name: e2e-tests
 
 on:
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
-  # Called by deploy-main as a gate before deploying.
+  # Called by required-checks.yml (PR gate) and deploy-main.
   workflow_call:
 
 jobs:
@@ -38,7 +35,7 @@ jobs:
         run: npm ci
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright

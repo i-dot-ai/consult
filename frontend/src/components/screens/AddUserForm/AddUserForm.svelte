@@ -69,7 +69,7 @@
   <textarea
     id="emailsInput"
     rows="3"
-    class="rounded border border-gray-300 px-3 py-2"
+    class="rounded-sm border border-gray-300 px-3 py-2"
     placeholder="Enter one or more email addresses, separated by comma, space, or newline."
     bind:value={emailsInput}
     disabled={loading}

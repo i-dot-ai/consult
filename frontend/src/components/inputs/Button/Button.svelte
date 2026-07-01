@@ -97,11 +97,11 @@
       variant !== "dot" &&
       clsx([
         highlightVariant === "dark" &&
-          "!bg-neutral-800 text-white hover:bg-neutral-700",
+          "bg-neutral-800! text-white hover:bg-neutral-700",
         highlightVariant === "light" &&
-          "border border-pink-200 !bg-pink-100 text-neutral-800 hover:bg-pink-200",
+          "border border-pink-200 bg-pink-100! text-neutral-800 hover:bg-pink-200",
         highlightVariant === "primary" &&
-          "!bg-primary text-white hover:bg-pink-500",
+          "bg-primary! text-white hover:bg-pink-500",
         highlightVariant === "approve" &&
           "border-secondary text-secondary hover:bg-teal-500",
       ]),

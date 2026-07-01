@@ -16,7 +16,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           class="flex flex-col gap-2"
         >
           <h2
-            class="font-[500]"
+            class="font-medium"
           >
             General
           </h2>
@@ -63,7 +63,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           </li>
           <!---->
           <h2
-            class="font-[500]"
+            class="font-medium"
           >
             Dashboard
           </h2>
@@ -78,7 +78,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           </li>
           <!---->
           <h2
-            class="font-[500]"
+            class="font-medium"
           >
             Respondent Detail
           </h2>
@@ -93,7 +93,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           </li>
           <!---->
           <h2
-            class="font-[500]"
+            class="font-medium"
           >
             Finalising Themes
           </h2>
@@ -132,7 +132,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           </li>
           <!---->
           <h2
-            class="font-[500]"
+            class="font-medium"
           >
             Screens
           </h2>
@@ -204,14 +204,14 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           <li>
             <a
               class="block w-full h-full px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
-              href="/stories?selected=Error404"
+              href="/stories?selected=ErrorScreen"
             >
-              Error404
+              ErrorScreen
             </a>
           </li>
           <!---->
           <h2
-            class="font-[500]"
+            class="font-medium"
           >
             Navigation
           </h2>
@@ -258,7 +258,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           </li>
           <!---->
           <h2
-            class="font-[500]"
+            class="font-medium"
           >
             Data
           </h2>
@@ -329,7 +329,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           </li>
           <!---->
           <h2
-            class="font-[500]"
+            class="font-medium"
           >
             Inputs
           </h2>
@@ -344,7 +344,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
           </li>
           <!---->
           <h2
-            class="font-[500]"
+            class="font-medium"
           >
             Screens / Support
           </h2>

@@ -30,7 +30,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
       </label>
        
       <input
-        class="h-9 w-full p-1 border border-gray-300 rounded-sm focus:outline-2 focus:outline-yellow-300 svelte-1auzwdn"
+        class="h-9 w-full p-1 border border-gray-300 rounded-xs focus:outline-2 focus:outline-yellow-300 svelte-1auzwdn"
         id="search-consultations"
         placeholder="Find consultation..."
         type="text"
@@ -101,13 +101,14 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
                 class="transition-transform -rotate-90"
               >
                 <svg
+                  aria-hidden="true"
                   class="fill-neutral-500"
                   height="1rem"
-                  role="img"
                   viewBox="0 -960 960 960"
                   width="1rem"
                   xmlns="http://www.w3.org/2000/svg"
                 >
+                  <!---->
                   <path
                     d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
                     xmlns="http://www.w3.org/2000/svg"

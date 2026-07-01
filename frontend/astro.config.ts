@@ -1,7 +1,7 @@
 import { defineConfig } from "astro/config";
 import svelte from "@astrojs/svelte";
 
-import tailwind from "@astrojs/tailwind";
+import tailwindcss from "@tailwindcss/vite";
 import node from "@astrojs/node";
 
 import sentry from "@sentry/astro";
@@ -9,9 +9,13 @@ import sentry from "@sentry/astro";
 // https://astro.build/config
 export default defineConfig({
   output: "server",
+  security: {
+    // Disable origin check from astro v6+ due to issues with django admin passthrough
+    // Django itself contains CSRF which should make this moot when combined with our infra setup
+    checkOrigin: false,
+  },
   integrations: [
     svelte(),
-    tailwind({ applyBaseStyles: false }),
     sentry({
       project: "consult-frontend",
       org: "incubator-for-ai",
@@ -30,6 +34,7 @@ export default defineConfig({
         clientPort: 3000,
       },
     },
+    plugins: [tailwindcss() as never],
   },
 
   image: {

@@ -40,7 +40,7 @@
     "p-2",
     "bg-white",
     border && clsx(["border", "border-neutral-100"]),
-    "rounded",
+    "rounded-sm",
   ])}
   title={label || undefined}
   aria-label={label}
@@ -71,6 +71,8 @@
 {/if}
 
 <style lang="postcss">
+  @reference "../../../styles/global.css";
+
   .input {
     @apply flex h-8 w-full rounded-md border border-neutral-800 bg-transparent px-2.5 text-sm;
     @apply ring-offset-neutral-300 focus-visible:ring;
@@ -82,13 +84,13 @@
   .trigger {
     /* @apply inline-flex items-center justify-center; */
     @apply text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-200;
-    @apply focus-visible:ring focus-visible:ring-neutral-400 focus-visible:ring-offset-2;
+    @apply focus-visible:ring-3 focus-visible:ring-neutral-400 focus-visible:ring-offset-2;
   }
 
   .close {
     @apply absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full;
     @apply text-neutral-900 transition-colors hover:bg-neutral-500/10;
-    @apply focus-visible:ring focus-visible:ring-neutral-400 focus-visible:ring-offset-2;
+    @apply focus-visible:ring-3 focus-visible:ring-neutral-400 focus-visible:ring-offset-2;
     @apply bg-white p-0 text-sm font-medium;
   }
 

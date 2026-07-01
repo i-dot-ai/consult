@@ -34,7 +34,7 @@
       "p-1",
       "border",
       "border-gray-300",
-      "rounded-sm",
+      "rounded-xs",
       "focus:outline-2",
       "focus:outline-yellow-300",
       variant === "search" && "pl-8 pr-4",

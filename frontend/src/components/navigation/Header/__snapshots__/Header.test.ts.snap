@@ -85,7 +85,7 @@ exports[`Header > matches snapshot 1`] = `
           </div>
            
           <h1
-            class="font-[500]"
+            class="font-medium"
           >
             Consult
           </h1>
@@ -116,17 +116,18 @@ exports[`Header > matches snapshot 1`] = `
         class="ml-4 flex items-center"
       >
         <button
-          class="block md:hidden p-1 rounded border border-neutral-200 transition-colors hover:bg-neutral-100"
+          class="block md:hidden p-1 rounded-sm border border-neutral-200 transition-colors hover:bg-neutral-100"
           data-testid="mobile-menu-button"
         >
           <svg
+            aria-hidden="true"
             class="fill-neutral-500"
             height="1.5rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="1.5rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <path
               d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"
             />
@@ -198,13 +199,14 @@ exports[`Header > matches snapshot 1`] = `
                     class="rotate-90"
                   >
                     <svg
+                      aria-hidden="true"
                       class="fill-neutral-500"
                       height="0.9rem"
-                      role="img"
                       viewBox="0 -960 960 960"
                       width="0.9rem"
                       xmlns="http://www.w3.org/2000/svg"
                     >
+                      <!---->
                       <path
                         d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                         xmlns="http://www.w3.org/2000/svg"
@@ -220,7 +222,7 @@ exports[`Header > matches snapshot 1`] = `
               <!---->
                
               <ol
-                class="absolute top-6 right-0 z-10 border border-neutral-100 rounded bg-white shadow-lg transition-opacity pointer-events-none opacity-0"
+                class="absolute top-6 right-0 z-10 border border-neutral-100 rounded-sm bg-white shadow-lg transition-opacity pointer-events-none opacity-0"
                 id="link-support"
               >
                 <li>
@@ -374,13 +376,14 @@ exports[`Header > matches snapshot 1`] = `
                     class="rotate-90"
                   >
                     <svg
+                      aria-hidden="true"
                       class="fill-neutral-500"
                       height="0.9rem"
-                      role="img"
                       viewBox="0 -960 960 960"
                       width="0.9rem"
                       xmlns="http://www.w3.org/2000/svg"
                     >
+                      <!---->
                       <path
                         d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
                         xmlns="http://www.w3.org/2000/svg"
@@ -396,7 +399,7 @@ exports[`Header > matches snapshot 1`] = `
               <!---->
                
               <ol
-                class="absolute top-6 right-0 z-10 border border-neutral-100 rounded bg-white shadow-lg transition-opacity pointer-events-none opacity-0"
+                class="absolute top-6 right-0 z-10 border border-neutral-100 rounded-sm bg-white shadow-lg transition-opacity pointer-events-none opacity-0"
                 id="link-manage"
               >
                 <li>

@@ -61,11 +61,11 @@ exports[`IntroPage > should match snapshot 1`] = `
     </p>
      
     <div
-      class="flex gap-2 my-4 min-w-[50rem]"
+      class="flex gap-2 my-4 min-w-200"
     >
       <div
         aria-current="true"
-        class="relative flex flex-col gap-1 items-center w-[15rem] transition-opacity duration-500"
+        class="relative flex flex-col gap-1 items-center w-60 transition-opacity duration-500"
         data-testid="intro-card"
       >
         <div
@@ -75,13 +75,14 @@ exports[`IntroPage > should match snapshot 1`] = `
             class="growshrink"
           >
             <svg
+              aria-hidden="true"
               class="fill-white"
               height="2rem"
-              role="img"
               viewBox="0 -960 960 960"
               width="2rem"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <!---->
               <!---->
               <path
                 d="M440-200h80v-167l64 64 56-57-160-160-160 160 57 56 63-63v167ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"
@@ -117,13 +118,14 @@ exports[`IntroPage > should match snapshot 1`] = `
           data-testid="intro-card-arrow"
         >
           <svg
+            aria-hidden="true"
             class="fill-secondary"
             height="1.5rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="1.5rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <path
               d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
               xmlns="http://www.w3.org/2000/svg"
@@ -135,7 +137,7 @@ exports[`IntroPage > should match snapshot 1`] = `
         <!---->
       </div>
       <div
-        class="relative flex flex-col gap-1 items-center w-[15rem] opacity-50 transition-opacity duration-500"
+        class="relative flex flex-col gap-1 items-center w-60 opacity-50 transition-opacity duration-500"
         data-testid="intro-card"
       >
         <div
@@ -143,13 +145,14 @@ exports[`IntroPage > should match snapshot 1`] = `
         >
           <div>
             <svg
+              aria-hidden="true"
               class="fill-secondary"
               height="2rem"
-              role="img"
               viewBox="0 -960 960 960"
               width="2rem"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <!---->
               <!---->
               <path
                 d="m438-240 226-226-58-58-169 169-84-84-57 57 142 142ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"
@@ -185,13 +188,14 @@ exports[`IntroPage > should match snapshot 1`] = `
           data-testid="intro-card-arrow"
         >
           <svg
+            aria-hidden="true"
             class="fill-neutral-400"
             height="1.5rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="1.5rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <path
               d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
               xmlns="http://www.w3.org/2000/svg"
@@ -203,7 +207,7 @@ exports[`IntroPage > should match snapshot 1`] = `
         <!---->
       </div>
       <div
-        class="relative flex flex-col gap-1 items-center w-[15rem] opacity-50 transition-opacity duration-500"
+        class="relative flex flex-col gap-1 items-center w-60 opacity-50 transition-opacity duration-500"
         data-testid="intro-card"
       >
         <div
@@ -211,13 +215,14 @@ exports[`IntroPage > should match snapshot 1`] = `
         >
           <div>
             <svg
+              aria-hidden="true"
               class="fill-secondary"
               height="2rem"
-              role="img"
               viewBox="0 -960 960 960"
               width="2rem"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <!---->
               <!---->
               <path
                 d="M222-200 80-342l56-56 85 85 170-170 56 57-225 226Zm0-320L80-662l56-56 85 85 170-170 56 57-225 226Zm298 240v-80h360v80H520Zm0-320v-80h360v80H520Z"
@@ -272,13 +277,14 @@ exports[`IntroPage > should match snapshot 1`] = `
       >
         Start data preparation 
         <svg
+          aria-hidden="true"
           class="fill-white"
           height="1rem"
-          role="img"
           viewBox="0 -960 960 960"
           width="1rem"
           xmlns="http://www.w3.org/2000/svg"
         >
+          <!---->
           <path
             d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
             xmlns="http://www.w3.org/2000/svg"

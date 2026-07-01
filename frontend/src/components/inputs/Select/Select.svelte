@@ -88,7 +88,7 @@
 
   <select
     class={clsx([
-      "h-9 w-full rounded-sm border border-gray-300 bg-white p-1 text-neutral-700",
+      "h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700",
       "focus:outline-2 focus:outline-yellow-300",
       "disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50",
       errorMessage && "border-red-600",

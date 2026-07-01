@@ -72,9 +72,9 @@
   let allQuestionsFinalised: boolean = $derived(
     Boolean(
       questionsForSignOff?.length &&
-        questionsForSignOff.every(
-          (question: Question) => question.theme_status === "confirmed",
-        ),
+      questionsForSignOff.every(
+        (question: Question) => question.theme_status === "confirmed",
+      ),
     ),
   );
 
@@ -336,7 +336,7 @@
       {number}
     </div>
     <div>
-      <h4 class="font-[500]">{title}</h4>
+      <h4 class="font-medium">{title}</h4>
       <p>{body}</p>
     </div>
   </li>

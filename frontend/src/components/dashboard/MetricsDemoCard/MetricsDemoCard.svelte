@@ -51,7 +51,7 @@
       <div class="flex items-center justify-end gap-2">
         <span class="text-sm">{count.toLocaleString()}</span>
         <span class="text-xs text-primary">{percentage}%</span>
-        <div class="w-[2rem]">
+        <div class="w-8">
           <Progress value={percentage} />
         </div>
       </div>

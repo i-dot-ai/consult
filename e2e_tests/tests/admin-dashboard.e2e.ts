@@ -1,88 +1,73 @@
 import { test, expect } from "@playwright/test";
 import { CleanupManager, createFixtureData } from "./helpers";
-import { defaultUser, setupConsultation } from "../fixtures";
+import { defaultUser, analysisConsultation } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
 
-// The User List and Question List groups only read the consultation dashboard,
-// so they share a single fixture created once for the whole block.
 test.describe("Admin Dashboard - Dashboard Page", () => {
   const cleanupManager = new CleanupManager();
   let testData: FixtureReference = {};
-  let consultationId: string;
 
   test.beforeAll(async ({ request }) => {
     testData = await createFixtureData(request, {
-      consultations: [setupConsultation],
+      consultations: [analysisConsultation],
     });
     cleanupManager.add(testData);
-    consultationId = testData.consultation_ids![0];
   });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`/support/consultations/${consultationId}`);
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    await page.goto("/admin");
     await page.waitForLoadState("networkidle");
   });
 
-  test.describe("User List", () => {
-    test("displays users table with correct column headers", async ({ page }) => {
-      await expect(page.getByRole("heading", { name: "users" })).toBeVisible();
-      await expect(page.getByText("email", { exact: true })).toBeVisible();
-      await expect(page.getByText("created at", { exact: true })).toBeVisible();
-      await expect(
-        page.getByText("can access support console & dashboards", { exact: true })
-      ).toBeVisible();
-      await expect(page.getByText("actions", { exact: true }).first()).toBeVisible();
-    });
-
-    test("lists users assigned to the consultation", async ({ page }) => {
-      await expect(page.getByText(defaultUser.email)).toBeVisible();
-    });
-
-    test("shows add users button linking to add user page", async ({ page }) => {
-      const addUsersLink = page.locator(
-        `a[href="/support/consultations/${consultationId}/users/new/"]`
-      );
-      await expect(addUsersLink).toBeVisible();
-    });
-
-    test("can navigate to user details page via email link", async ({ page }) => {
-      const userLink = page.getByRole("button", { name: defaultUser.email });
-      // The fixture assigns one user, so a count > 1 means a duplicate regression.
-      await expect(userLink).toHaveCount(1);
-      await userLink.click();
+  test.describe("Consultation List", () => {
+    test.beforeEach(async ({ page }) => {
+      await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
       await page.waitForLoadState("networkidle");
-      await expect(page).toHaveURL(/\/support\/users\/.+/);
+      await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
+      const consultationCount = await page.getByRole('link', { name: analysisConsultation.title, exact: true }).count();
+      expect(consultationCount).toBe(1);
+    });
+
+    test("navigate to consultation details and assert metadata", async ({ page }) => {
+      await page.getByRole('link', { name: analysisConsultation.title, exact: true }).first().click();
+      await page.waitForLoadState("networkidle");
+      await expect(page).toHaveURL(/\/admin\/consultations\/consultation\/.+/);
+
+      await expect(page.getByRole('heading', { name: analysisConsultation.title })).toBeVisible();
+      await expect(page.getByRole('textbox', { name: 'Title:' })).toHaveValue(analysisConsultation.title);
+
+      const userList = page.getByLabel('Users:');
+      await expect(userList).toBeVisible();
+      const userListItems = await userList.locator('option').count();
+      const numberOfTestUsers = 2;
+      expect(userListItems).toBeGreaterThanOrEqual(numberOfTestUsers);
+
+      await expect(userList.locator('option', { hasText: defaultUser.email })).toBeVisible();
     });
   });
 
-  test.describe("Question List", () => {
-    test("displays questions table with correct column headers", async ({ page }) => {
-      await expect(page.getByRole("heading", { name: "questions" })).toBeVisible();
-      await expect(page.getByText("number", { exact: true })).toBeVisible();
-      await expect(page.getByText("text", { exact: true })).toBeVisible();
-      await expect(page.getByText("free text", { exact: true })).toBeVisible();
-      await expect(page.getByText("multiple choice", { exact: true })).toBeVisible();
-    });
+  test("navigate to consultation list and attempt to clone", async ({ page }) => {
+    await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-    test("displays all questions for the consultation", async ({ page }) => {
-      const questions = setupConsultation.questions!;
+    const checkbox = page.getByRole('checkbox', { name: `Select this object for an action - ${analysisConsultation.title}` });
+    await expect(checkbox).toBeVisible();
+    await checkbox.check();
+    await expect(checkbox).toBeChecked();
 
-      await expect(
-        page.getByRole("button", { name: /delete question .*/ }),
-      ).toHaveCount(questions.length);
+    const actionSelect = page.locator('select[name="action"]');
+    await expect(actionSelect).toBeVisible();
+    await actionSelect.selectOption('create_cloned_consultation');
+    await expect(actionSelect).toHaveValue('create_cloned_consultation');
 
-      // Check each question's text, not just the row count, so a mislabelled
-      // or missing row is caught.
-      for (const question of questions) {
-        await expect(page.getByText(question.text).first()).toBeVisible();
-      }
-    });
-
-    test("shows delete link for each question", async ({ page }) => {
-      await expect(
-        page.getByRole("button", { name: /delete question .*/ }).first()
-      ).toBeVisible();
-    });
+    const goButton = page.getByRole('button', { name: 'Run' });
+    await expect(goButton).toBeVisible();
+    await goButton.click();
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
   });
 
   test.afterAll(async () => {
@@ -90,57 +75,54 @@ test.describe("Admin Dashboard - Dashboard Page", () => {
   });
 });
 
-test.describe("Admin Dashboard - Remove Question", () => {
+// The delete test is destructive so it gets its own fixture created and
+// cleaned up per test, preventing it from affecting the read-only suite above.
+test.describe("Admin Dashboard - Delete Consultation", () => {
   const cleanupManager = new CleanupManager();
   let testData: FixtureReference = {};
-  let consultationId: string;
 
-  // Each test gets its own fixture so the destructive delete in one test cannot
-  // affect the others, regardless of execution order or parallelism.
   test.beforeEach(async ({ request, page }) => {
     testData = await createFixtureData(request, {
-      consultations: [setupConsultation],
+      consultations: [analysisConsultation],
     });
     cleanupManager.add(testData);
-    consultationId = testData.consultation_ids![0];
 
-    await page.goto(`/support/consultations/${consultationId}`);
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    await page.goto("/admin");
     await page.waitForLoadState("networkidle");
   });
 
-  test("navigates to delete question confirmation page", async ({ page }) => {
-    await page.getByRole("button", { name: /delete question .*/ }).first().click();
+  test("navigate to consultation list and attempt to delete", async ({ page }) => {
+    await page.locator('#consultations-consultation').getByRole('link', { name: 'Consultations' }).click();
     await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-    await expect(page).toHaveURL(
-      new RegExp(`/support/consultations/${consultationId}/questions/.+/delete`)
-    );
-    await expect(
-      page.getByRole("heading", { name: "Delete question" })
-    ).toBeVisible();
-    await expect(
-      page.getByText("Are you sure you want to delete the following question?")
-    ).toBeVisible();
-  });
+    const checkbox = page.getByRole('checkbox', { name: `Select this object for an action - ${analysisConsultation.title}` });
+    await expect(checkbox).toBeVisible();
+    await checkbox.check();
+    await expect(checkbox).toBeChecked();
 
-  test("deletes question and redirects to consultation dashboard", async ({ page }) => {
-    const deleteButtons = page.getByRole("button", { name: /delete question .*/ });
-    const questionCountBefore = await deleteButtons.count();
+    const actionSelect = page.locator('select[name="action"]');
+    await expect(actionSelect).toBeVisible();
+    await actionSelect.selectOption('delete_selected');
+    await expect(actionSelect).toHaveValue('delete_selected');
 
-    await deleteButtons.first().click();
+    const goButton = page.getByRole('button', { name: 'Run' });
+    await expect(goButton).toBeVisible();
+    await goButton.click();
     await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-    await page.getByRole("button", { name: "Yes, delete it" }).click();
+    // This button has a special character in it, but that's just django, don't change it
+    const confirmButton = page.getByRole('button', { name: 'Yes, I\u2019m sure' });
+    await expect(confirmButton).toBeVisible();
+    await confirmButton.click();
     await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/admin\/consultations\/consultation/);
 
-    await expect(page).toHaveURL(
-      new RegExp(`/support/consultations/${consultationId}$`)
-    );
-
-    // The dashboard now lists one fewer question, confirming the delete applied.
-    await expect(
-      page.getByRole("button", { name: /delete question .*/ })
-    ).toHaveCount(questionCountBefore - 1);
+    const testConsultations = await page.getByRole('link', { name: analysisConsultation.title, exact: true }).count();
+    expect(testConsultations).toBe(0);
   });
 
   test.afterEach(async () => {

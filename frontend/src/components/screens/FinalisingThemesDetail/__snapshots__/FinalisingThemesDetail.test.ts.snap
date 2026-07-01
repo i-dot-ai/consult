@@ -26,13 +26,14 @@ exports[`EditUser > should match snapshot after loading 1`] = `
           class="rotate-180"
         >
           <svg
+            aria-hidden="true"
             class="fill-neutral-500"
             height="1rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="1rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <path
               d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
               xmlns="http://www.w3.org/2000/svg"
@@ -62,13 +63,14 @@ exports[`EditUser > should match snapshot after loading 1`] = `
         class="bg-pink-50 p-2 rounded-md"
       >
         <svg
+          aria-hidden="true"
           class="fill-pink-700"
           height="1.3rem"
-          role="img"
           viewBox="0 -960 960 960"
           width="1.3rem"
           xmlns="http://www.w3.org/2000/svg"
         >
+          <!---->
           <!---->
           <path
             d="M856-390 570-104q-12 12-27 18t-30 6q-15 0-30-6t-27-18L103-457q-11-11-17-25.5T80-513v-287q0-33 23.5-56.5T160-880h287q16 0 31 6.5t26 17.5l352 353q12 12 17.5 27t5.5 30q0 15-5.5 29.5T856-390ZM513-160l286-286-353-354H160v286l353 354ZM260-640q25 0 42.5-17.5T320-700q0-25-17.5-42.5T260-760q-25 0-42.5 17.5T200-700q0 25 17.5 42.5T260-640Zm220 160Z"
@@ -162,13 +164,14 @@ exports[`EditUser > should match snapshot after loading 1`] = `
             class="flex items-center gap-2"
           >
             <svg
+              aria-hidden="true"
               class="fill-primary"
               height="1rem"
-              role="img"
               viewBox="0 -960 960 960"
               width="1rem"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <!---->
               <path
                 d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
                 xmlns="http://www.w3.org/2000/svg"
@@ -273,7 +276,7 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                     class="mb-4 block text-xs text-neutral-500"
                   >
                     Added
-              2 months ago by admin@example.com
+              3 months ago by admin@example.com
                   </small>
                    
                   <footer
@@ -292,13 +295,14 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                       <!---->
                       <!---->
                       <svg
+                        aria-hidden="true"
                         class="fill-neutral-500"
                         height="1rem"
-                        role="img"
                         viewBox="0 -960 960 960"
                         width="1rem"
                         xmlns="http://www.w3.org/2000/svg"
                       >
+                        <!---->
                         <path
                           d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"
                         />
@@ -325,13 +329,14 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                       <!---->
                       <!---->
                       <svg
+                        aria-hidden="true"
                         class="fill-neutral-500"
                         height="1rem"
-                        role="img"
                         viewBox="0 -960 960 960"
                         width="1rem"
                         xmlns="http://www.w3.org/2000/svg"
                       >
+                        <!---->
                         <path
                           d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
                           xmlns="http://www.w3.org/2000/svg"
@@ -380,13 +385,14 @@ exports[`EditUser > should match snapshot after loading 1`] = `
         class="flex w-full items-center justify-center gap-2"
       >
         <svg
+          aria-hidden="true"
           class="fill-white"
           height="1rem"
-          role="img"
           viewBox="0 -960 960 960"
           width="1rem"
           xmlns="http://www.w3.org/2000/svg"
         >
+          <!---->
           <path
             d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
             xmlns="http://www.w3.org/2000/svg"
@@ -443,13 +449,14 @@ exports[`EditUser > should match snapshot after loading 1`] = `
               class="flex items-center gap-2"
             >
               <svg
+                aria-hidden="true"
                 class="fill-secondary"
                 height="1rem"
-                role="img"
                 viewBox="0 -960 960 960"
                 width="1rem"
                 xmlns="http://www.w3.org/2000/svg"
               >
+                <!---->
                 <path
                   d="M160-360q-50 0-85-35t-35-85q0-50 35-85t85-35v-80q0-33 23.5-56.5T240-760h120q0-50 35-85t85-35q50 0 85 35t35 85h120q33 0 56.5 23.5T800-680v80q50 0 85 35t35 85q0 50-35 85t-85 35v160q0 33-23.5 56.5T720-120H240q-33 0-56.5-23.5T160-200v-160Zm200-80q25 0 42.5-17.5T420-500q0-25-17.5-42.5T360-560q-25 0-42.5 17.5T300-500q0 25 17.5 42.5T360-440Zm240 0q25 0 42.5-17.5T660-500q0-25-17.5-42.5T600-560q-25 0-42.5 17.5T540-500q0 25 17.5 42.5T600-440ZM320-280h320v-80H320v80Zm-80 80h480v-480H240v480Zm240-240Z"
                   xmlns="http://www.w3.org/2000/svg"
@@ -551,13 +558,14 @@ exports[`EditUser > should match snapshot initially 1`] = `
           class="rotate-180"
         >
           <svg
+            aria-hidden="true"
             class="fill-neutral-500"
             height="1rem"
-            role="img"
             viewBox="0 -960 960 960"
             width="1rem"
             xmlns="http://www.w3.org/2000/svg"
           >
+            <!---->
             <path
               d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"
               xmlns="http://www.w3.org/2000/svg"
@@ -587,13 +595,14 @@ exports[`EditUser > should match snapshot initially 1`] = `
         class="bg-pink-50 p-2 rounded-md"
       >
         <svg
+          aria-hidden="true"
           class="fill-pink-700"
           height="1.3rem"
-          role="img"
           viewBox="0 -960 960 960"
           width="1.3rem"
           xmlns="http://www.w3.org/2000/svg"
         >
+          <!---->
           <!---->
           <path
             d="M856-390 570-104q-12 12-27 18t-30 6q-15 0-30-6t-27-18L103-457q-11-11-17-25.5T80-513v-287q0-33 23.5-56.5T160-880h287q16 0 31 6.5t26 17.5l352 353q12 12 17.5 27t5.5 30q0 15-5.5 29.5T856-390ZM513-160l286-286-353-354H160v286l353 354ZM260-640q25 0 42.5-17.5T320-700q0-25-17.5-42.5T260-760q-25 0-42.5 17.5T200-700q0 25 17.5 42.5T260-640Zm220 160Z"
@@ -687,13 +696,14 @@ exports[`EditUser > should match snapshot initially 1`] = `
             class="flex items-center gap-2"
           >
             <svg
+              aria-hidden="true"
               class="fill-primary"
               height="1rem"
-              role="img"
               viewBox="0 -960 960 960"
               width="1rem"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <!---->
               <path
                 d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
                 xmlns="http://www.w3.org/2000/svg"
@@ -777,13 +787,14 @@ exports[`EditUser > should match snapshot initially 1`] = `
         class="flex w-full items-center justify-center gap-2"
       >
         <svg
+          aria-hidden="true"
           class="fill-white"
           height="1rem"
-          role="img"
           viewBox="0 -960 960 960"
           width="1rem"
           xmlns="http://www.w3.org/2000/svg"
         >
+          <!---->
           <path
             d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
             xmlns="http://www.w3.org/2000/svg"
@@ -840,13 +851,14 @@ exports[`EditUser > should match snapshot initially 1`] = `
               class="flex items-center gap-2"
             >
               <svg
+                aria-hidden="true"
                 class="fill-secondary"
                 height="1rem"
-                role="img"
                 viewBox="0 -960 960 960"
                 width="1rem"
                 xmlns="http://www.w3.org/2000/svg"
               >
+                <!---->
                 <path
                   d="M160-360q-50 0-85-35t-35-85q0-50 35-85t85-35v-80q0-33 23.5-56.5T240-760h120q0-50 35-85t85-35q50 0 85 35t35 85h120q33 0 56.5 23.5T800-680v80q50 0 85 35t35 85q0 50-35 85t-85 35v160q0 33-23.5 56.5T720-120H240q-33 0-56.5-23.5T160-200v-160Zm200-80q25 0 42.5-17.5T420-500q0-25-17.5-42.5T360-560q-25 0-42.5 17.5T300-500q0 25 17.5 42.5T360-440Zm240 0q25 0 42.5-17.5T660-500q0-25-17.5-42.5T600-560q-25 0-42.5 17.5T540-500q0 25 17.5 42.5T600-440ZM320-280h320v-80H320v80Zm-80 80h480v-480H240v480Zm240-240Z"
                   xmlns="http://www.w3.org/2000/svg"

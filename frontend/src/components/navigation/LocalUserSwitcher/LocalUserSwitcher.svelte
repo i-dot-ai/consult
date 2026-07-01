@@ -23,7 +23,7 @@
 </script>
 
 <div
-  class="flex items-center gap-1 rounded border border-amber-400 bg-amber-50 px-2 py-1 text-xs"
+  class="flex items-center gap-1 rounded-sm border border-amber-400 bg-amber-50 px-2 py-1 text-xs"
 >
   <span class="font-medium text-amber-800">Dev:</span>
   {#each USERS as user (user.email)}

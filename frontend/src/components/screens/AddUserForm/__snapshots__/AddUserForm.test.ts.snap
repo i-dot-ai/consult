@@ -26,7 +26,7 @@ exports[`AddUserForm > should match snapshot initially 1`] = `
     </label>
      
     <textarea
-      class="rounded border border-gray-300 px-3 py-2"
+      class="rounded-sm border border-gray-300 px-3 py-2"
       id="emailsInput"
       placeholder="Enter one or more email addresses, separated by comma, space, or newline."
       rows="3"
