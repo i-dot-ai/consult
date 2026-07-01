@@ -1,6 +1,7 @@
 import csv
 import io
 
+from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 
 from consultations.constants import NO_REASON_GIVEN_THEME_NAME, OTHER_THEME_NAME
@@ -67,9 +68,19 @@ def export_selected_themes_to_s3(consultation: Consultation) -> int:
             f"app_data/consultations/{consultation.code}/inputs/"
             f"question_part_{question.number}/themes.csv"
         )
-        s3_client.put_object(
-            Bucket=settings.AWS_BUCKET_NAME, Key=s3_path, Body=csv_buffer.getvalue()
-        )
+        try:
+            s3_client.put_object(
+                Bucket=settings.AWS_BUCKET_NAME, Key=s3_path, Body=csv_buffer.getvalue()
+            )
+        except (ClientError, BotoCoreError):
+            logger.exception(
+                "Failed to export selected themes to S3 for consultation '{consultation_code}', "
+                "question {question_number}, s3_path={s3_path}",
+                consultation_code=consultation.code,
+                question_number=question.number,
+                s3_path=s3_path,
+            )
+            raise
 
         logger.info(
             "Exported {themes_count} themes for question {question_number} to {s3_path}",

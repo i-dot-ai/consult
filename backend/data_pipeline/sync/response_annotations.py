@@ -1,15 +1,16 @@
 from typing import Dict, List, Optional
 
+from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
 
-import data_pipeline.s3 as s3
 from consultations.models import (
     Consultation,
     Question,
     ResponseAnnotation,
     SelectedTheme,
 )
+from data_pipeline import s3
 from data_pipeline.models import (
     AnnotationBatch,
     DetailDetectionInput,
@@ -54,10 +55,24 @@ def load_selected_themes_from_s3(
 
     logger.info("Loading selected themes from {key}", key=key)
 
-    # Read and parse JSON file
-    theme_data = s3.read_json(
-        bucket_name=bucket_name_str, key=key, raise_if_missing=True
-    )
+    try:
+        # Read and parse JSON file
+        theme_data = s3.read_json(
+            bucket_name=bucket_name_str, key=key, raise_if_missing=True
+        )
+    except (ClientError, BotoCoreError) as e:
+        logger.exception(
+            "Failed to load selected themes from S3 for consultation '{consultation_code}',"
+            " question {question_number}",
+            consultation_code=consultation_code,
+            question_number=question_number
+        )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(
+                f"Selected themes file not found for consultation '{consultation_code}', "
+                f"question {question_number}: {key}"
+            ) from e
+        raise
 
     # Validate each theme using Pydantic
     # Note: theme_data is guaranteed to be non-None because raise_if_missing=True
@@ -99,10 +114,19 @@ def load_sentiments_from_s3(
 
     logger.info("Loading sentiments from {key}", key=key)
 
-    # Read JSONL file (raise_if_missing=False because sentiment is optional)
-    sentiment_data = s3.read_jsonl(
-        bucket_name=bucket_name_str, key=key, raise_if_missing=False
-    )
+    try:
+        # Read JSONL file (raise_if_missing=False because sentiment is optional)
+        sentiment_data = s3.read_jsonl(
+            bucket_name=bucket_name_str, key=key, raise_if_missing=False
+        )
+    except (ClientError, BotoCoreError):
+        logger.exception(
+            "Failed to load sentiments from S3 for consultation '{consultation_code}',"
+            " question {question_number}",
+            consultation_code=consultation_code,
+            question_number=question_number
+        )
+        raise
 
     if not sentiment_data:
         logger.info("No sentiment file found at {key} (this is optional)", key=key)
@@ -147,10 +171,24 @@ def load_detail_detections_from_s3(
 
     logger.info("Loading detail detections from {key}", key=key)
 
-    # Read JSONL file
-    detail_data = s3.read_jsonl(
-        bucket_name=bucket_name_str, key=key, raise_if_missing=True
-    )
+    try:
+        # Read JSONL file
+        detail_data = s3.read_jsonl(
+            bucket_name=bucket_name_str, key=key, raise_if_missing=True
+        )
+    except (ClientError, BotoCoreError) as e:
+        logger.exception(
+            "Failed to load detail detections from S3 for consultation '{consultation_code}',"
+            " question {question_number}",
+            consultation_code=consultation_code,
+            question_number=question_number
+        )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(
+                f"Detail detections file not found for consultation '{consultation_code}', "
+                f"question {question_number}: {key}"
+            ) from e
+        raise
 
     # Validate each item using Pydantic
     validated_details = [DetailDetectionInput(**item) for item in detail_data]
@@ -191,10 +229,24 @@ def load_theme_mappings_from_s3(
 
     logger.info("Loading theme mappings from {key}", key=key)
 
-    # Read JSONL file
-    mapping_data = s3.read_jsonl(
-        bucket_name=bucket_name_str, key=key, raise_if_missing=True
-    )
+    try:
+        # Read JSONL file
+        mapping_data = s3.read_jsonl(
+            bucket_name=bucket_name_str, key=key, raise_if_missing=True
+        )
+    except (ClientError, BotoCoreError) as e:
+        logger.exception(
+            "Failed to load theme mappings from S3 for consultation '{consultation_code}',"
+            " question {question_number}",
+            consultation_code=consultation_code,
+            question_number=question_number
+        )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(
+                f"Theme mappings file not found for consultation '{consultation_code}', "
+                f"question {question_number}: {key}"
+            ) from e
+        raise
 
     # Validate each mapping using Pydantic
     validated_mappings = [ThemeMappingInput(**item) for item in mapping_data]
@@ -247,13 +299,19 @@ def load_annotation_batch(
                 .values_list("number", flat=True)
             )
         except Consultation.DoesNotExist:
+            logger.exception(
+                "Consultation with code '{consultation_code}' does not exist. "
+                "Base consultation data must be imported before annotations.",
+                consultation_code=consultation_code
+            )
             raise ValueError(
                 f"Consultation with code '{consultation_code}' does not exist. "
                 "Base consultation data must be imported before annotations."
             )
 
     logger.info(
-        "Loading annotations for consultation '{consultation_code}' (timestamp: {timestamp}) across {question_count} questions",
+        "Loading annotations for consultation '{consultation_code}' (timestamp: {timestamp}) across "
+        "{question_count} questions",
         consultation_code=consultation_code,
         timestamp=timestamp,
         question_count=len(question_numbers),
