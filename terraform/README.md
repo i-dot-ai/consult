@@ -30,21 +30,21 @@
 
 2. **Once the workflow is complete it is ready to be released. PLEASE ENSURE THAT THE BUILD WORKFLOW HAS SUCCEEDED BEFORE THIS NEXT STEP.**
 
-3. **To deploy the app to a test environment run: `make release env=<ENV>`**
-   1. You will only be able to deploy to `dev` or `preprod` through this make command
-   2. This will deploy the image from ECR to the ECS cluster. This will also deploy changes to batch.
+3. **To deploy the app to `dev` run: `make release`**
+   1. This make command only deploys to `dev`. This will deploy the image from ECR to the ECS cluster. This will also deploy changes to batch.
 
 4. **See the changes live**
    1. Once the workflows finishes it will take some time to for ECS to swap out the images
-   2. When completed you will be able to see the changes at:
+   2. When it has completed you will be able to see the changes at:
       1. dev: consult-dev.ai.cabinetoffice.gov.uk
-      2. preprod: consult-preprod.ai.cabinetoffice.gov.uk
 
-5. **To release to `prod`**
+5. **To release to `preprod` or `prod`**
    1. Create a PR to main
-   2. Once approved and merged, this will trigger both a build action.  Please ensure that any terraform changes are PR'd carefully before merging into main, this will affect production deployments.
-   3. When the build has successfully finished it will automatically trigger a release to `prod` to update ECS
+   2. Once approved and merged, this will automatically deploy to `preprod`, then `prod` once the `preprod` deploy succeeds. Please ensure that any terraform changes are PR'd carefully before merging into main, this will affect production deployments.
+   3. `preprod` and `prod` can also be deployed manually via `workflow_dispatch` in GitHub Actions, referencing a published release tag.
+   4. Once completed you will be able to see the changes at:
       1. prod: consult.ai.cabinetoffice.gov.uk
+      2. preprod: consult-preprod.ai.cabinetoffice.gov.uk
 
 ## Passing environment variables into ECS - how to give your docker runtime environment variables.
 1. This is done through `./infrastructure/ecs.tf` in `environment_variables`
@@ -76,4 +76,3 @@
    3. If you're trying this for the first time, here's a massively useful tool:  https://github.com/aws-containers/amazon-ecs-exec-checker
    4. Run this command `aws ecs execute-command --cluster <cluster-name> --task <task-id> --container <container-name> --interactive --command "/bin/sh"
     `
-

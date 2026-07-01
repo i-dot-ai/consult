@@ -304,14 +304,8 @@ tf_import:
 
 # Release commands to deploy your app to AWS
 .PHONY: release
-release: ## Deploy app
-## bail if env is not set
-	@if [ -z "$(env)" ]; then \
-		echo "make release requires an env= argument"; \
-		exit 1; \
-	fi
-
-	chmod +x ./terraform/scripts/release.sh && ./terraform/scripts/release.sh $(env)
+release: ## Deploy app to dev (preprod/prod deploy automatically on merge to main, or via workflow_dispatch)
+	chmod +x ./terraform/scripts/release.sh && ./terraform/scripts/release.sh
 
 # Lambda build
 .PHONY: build_lambda_artifacts/ci
