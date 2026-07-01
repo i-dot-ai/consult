@@ -3,6 +3,7 @@ import io
 
 from django.conf import settings
 
+from consultations.constants import NO_REASON_GIVEN_THEME_NAME, OTHER_THEME_NAME
 from consultations.models import (
     Consultation,
     SelectedTheme,
@@ -31,14 +32,16 @@ def export_selected_themes_to_s3(consultation: Consultation) -> int:
 
     questions = consultation.question_set.filter(has_free_text=True)
 
-    themes_by_question = {
+    non_generic_themes_by_question = {
         question: SelectedTheme.objects.filter(question=question)
-        .exclude(name__iexact="Other")
-        .exclude(name__iexact="No Reason Given")
+        .exclude(name__iexact=OTHER_THEME_NAME)
+        .exclude(name__iexact=NO_REASON_GIVEN_THEME_NAME)
         for question in questions
     }
 
-    missing = [q.number for q, themes in themes_by_question.items() if not themes.exists()]
+    missing = [
+        q.number for q, themes in non_generic_themes_by_question.items() if not themes.exists()
+    ]
     if missing:
         raise ValueError(
             f"Questions {missing} have no selected themes for consultation '{consultation.title}'"
@@ -47,10 +50,12 @@ def export_selected_themes_to_s3(consultation: Consultation) -> int:
     s3_client = get_s3_client()
     questions_exported = 0
 
-    for question, themes in themes_by_question.items():
+    for question in questions:
         csv_buffer = io.StringIO()
         writer = csv.writer(csv_buffer)
         writer.writerow(["Theme Name", "Theme Description"])
+
+        themes = SelectedTheme.objects.filter(question=question)
 
         for theme in themes:
             writer.writerow([theme.name, theme.description])

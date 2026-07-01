@@ -131,7 +131,7 @@ export const getApiConsultationEvaluationUrl = (consultationId: string) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "evaluation", "/");
 };
 export const getApiConsultationFoldersUrl = (
-  stage: "setup" | "find-themes" | "assign-themes",
+  stage: "setup" | "find-themes",
 ) => {
   const params = new URLSearchParams({ stage });
   return `${Routes.ApiConsultationFolders}?${params.toString()}`;

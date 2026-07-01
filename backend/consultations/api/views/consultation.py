@@ -27,6 +27,7 @@ from consultations.api.serializers import (
     DemographicOptionSerializer,
     ImportFinalisedThemesSerializer,
 )
+from consultations.constants import NO_REASON_GIVEN_THEME_NAME, OTHER_THEME_NAME
 from consultations.models import (
     Consultation,
     DemographicOption,
@@ -364,14 +365,14 @@ class ConsultationViewSet(ModelViewSet):
         for question in consultation.question_set.filter(has_free_text=True):
             SelectedTheme.objects.get_or_create(
                 question=question,
-                name="Other",
+                name=OTHER_THEME_NAME,
                 defaults={
                     "description": "The response discusses an issue not covered by the listed themes"
                 },
             )
             SelectedTheme.objects.get_or_create(
                 question=question,
-                name="No Reason Given",
+                name=NO_REASON_GIVEN_THEME_NAME,
                 defaults={
                     "description": "The response does not provide a substantive answer to the question"
                 },
@@ -438,7 +439,6 @@ class ConsultationViewSet(ModelViewSet):
         Stage query param:
         - 'setup': Return S3 folders without consultations (for creating new consultations)
         - 'find-themes': Return consultations with S3 folders (for finding themes)
-        - 'assign-themes': Return consultations with S3 folders (for assigning themes)
 
         URL: /api/consultations/folders?stage={STAGE}
         """
@@ -881,7 +881,9 @@ class ConsultationViewSet(ModelViewSet):
             SelectedTheme.objects.filter(
                 question__consultation=consultation,
             )
-            .filter(Q(name__iexact="no reason given") | Q(name__iexact="other"))
+            .filter(
+                Q(name__iexact=NO_REASON_GIVEN_THEME_NAME) | Q(name__iexact=OTHER_THEME_NAME)
+            )
             .values_list("id", flat=True)
         )
 
