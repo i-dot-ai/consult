@@ -3,6 +3,7 @@ from collections import Counter, defaultdict
 from typing import Any
 
 import sentry_sdk
+from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Count, F, Q
@@ -502,7 +503,18 @@ class ConsultationViewSet(ModelViewSet):
         stage = query_serializer.validated_data.get("stage")
 
         # Get all S3 folder codes
-        s3_codes = s3.get_consultation_folders()
+        try:
+            s3_codes = s3.get_consultation_folders()
+        except (ClientError, BotoCoreError) as e:
+            logger.exception("Failed to list consultation folders from S3")
+            sentry_sdk.capture_exception(e)
+            return Response(
+                {
+                    "error": "Failed to list consultation folders",
+                    "detail": str(e) if settings.DEBUG else "An unexpected error occurred",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         if not s3_codes:
             return Response([])

@@ -7,11 +7,11 @@ exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for 
 exclude-newer-span = "P14D"
 
 [options.exclude-newer-package]
-i-dot-ai-utilities = "2026-06-05T00:00:00Z"
-langsmith = "2026-07-02T00:00:00Z"
-cryptography = "2026-07-02T00:00:00Z"
-langchain = "2026-07-02T00:00:00Z"
-pydantic-settings = "2026-07-02T00:00:00Z"
+i-dot-ai-utilities = "2026-06-04T23:00:00Z"
+langsmith = "2026-07-01T23:00:00Z"
+cryptography = "2026-07-01T23:00:00Z"
+langchain = "2026-07-01T23:00:00Z"
+pydantic-settings = "2026-07-01T23:00:00Z"
 
 [manifest]
 overrides = [
