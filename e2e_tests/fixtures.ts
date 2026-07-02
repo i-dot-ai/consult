@@ -40,6 +40,7 @@ export type Consultation = {
   users: User["email"][];
   stage: ConsultationStage;
   questions?: Question[];
+  code?: string;
 };
 
 export type Fixture = {
@@ -365,6 +366,30 @@ export const signOffConsultation: Consultation = {
     {
       ...openQuestion,
       candidate_themes: openQuestionThemes,
+    },
+  ],
+};
+
+// A finalising-themes consultation where every free-text question is already
+// confirmed, so the "Confirm and Proceed to Assignment" button is enabled.
+export const finalisingThemesConfirmedConsultation: Consultation = {
+  title: "Test Consultation Ready for Assignment",
+  // Explicit code so the assign-themes export writes to a known S3 prefix the
+  // test can assert on (the loader leaves code empty otherwise).
+  code: "test-consultation-ready-for-assignment",
+  stage: "finalising_themes",
+  users: [defaultUser.email],
+  questions: [
+    {
+      ...hybridQuestion,
+      themes: hybridQuestionThemes,
+      theme_status: "confirmed",
+    },
+    multChoiceQuestion, // no free text → excluded from the "all confirmed" check
+    {
+      ...openQuestion,
+      themes: openQuestionThemes,
+      theme_status: "confirmed",
     },
   ],
 };

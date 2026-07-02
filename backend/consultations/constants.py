@@ -1,0 +1,2 @@
+OTHER_THEME_NAME = "Other"
+NO_REASON_GIVEN_THEME_NAME = "No Reason Given"

@@ -27,6 +27,7 @@ from consultations.api.serializers import (
     DemographicOptionSerializer,
     ImportFinalisedThemesSerializer,
 )
+from consultations.constants import NO_REASON_GIVEN_THEME_NAME, OTHER_THEME_NAME
 from consultations.models import (
     Consultation,
     DemographicOption,
@@ -41,7 +42,6 @@ from consultations.test_support.load_test_fixtures import (
     delete_data_from_fixtures,
 )
 from data_pipeline import jobs
-from data_pipeline.sync.candidate_themes import export_candidate_themes_to_s3
 from data_pipeline.sync.selected_themes import export_selected_themes_to_s3
 from hosting_environment import HostingEnvironment
 from ingest.jobs import (
@@ -338,85 +338,41 @@ class ConsultationViewSet(ModelViewSet):
         detail=True,
         methods=["post"],
         url_path="assign-themes",
-        permission_classes=[IsAuthenticated, IsAdminUser],
+        permission_classes=[IsAuthenticated, CanSeeConsultation | IsAdminUser],
     )
     def assign_themes(self, request, pk=None) -> Response:
         """
-        Export themes to S3 and submit AWS batch job to assign themes to responses.
+        Export selected themes to S3 and submit AWS batch job to assign them to responses.
 
-        Behaviour depends on consultation stage:
-        - FINALISING_THEMES: exports candidate themes and assigns
-          them to responses (CandidateThemeResponse), without changing stage.
-        - Other stages: exports selected themes and assigns them to responses
-          (ResponseAnnotation), advancing stage to ASSIGNING_THEMES.
+        Adds the default "Other" and "No Reason Given" themes, exports all selected
+        themes to S3, submits the ASSIGN_THEMES batch job (which assigns themes to
+        responses as ResponseAnnotation records), and advances the consultation to
+        the ASSIGNING_THEMES stage.
 
         URL: /api/consultations/{consultation_id}/assign-themes/
         """
 
         consultation = self.get_object()
 
-        is_finalising = consultation.stage == Consultation.Stage.FINALISING_THEMES
-
-        if is_finalising:
-            # During finalising: assign candidate themes to responses
-            try:
-                export_candidate_themes_to_s3(consultation)
-            except ValueError as e:
-                return Response(
-                    {"error": "No candidate themes found", "detail": str(e)},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            except Exception as e:
-                sentry_sdk.capture_exception(e)
-                return Response(
-                    {
-                        "error": "Failed to export candidate themes to S3",
-                        "detail": str(e) if settings.DEBUG else "Export failed",
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
-
-            try:
-                batch.submit_job(
-                    job_type="ASSIGN_THEMES",
-                    consultation_code=consultation.code,
-                    consultation_name=consultation.title,
-                    user_id=request.user.id,
-                    model_name=consultation.model_name,
-                    assignment_target="candidate_themes",
-                )
-            except Exception as e:
-                sentry_sdk.capture_exception(e)
-                return Response(
-                    {
-                        "error": "Failed to submit job to assign candidate themes",
-                        "detail": str(e) if settings.DEBUG else "Job submission failed",
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
-
-            # Stay in current stage - don't advance
+        if consultation.stage != Consultation.Stage.FINALISING_THEMES:
             return Response(
                 {
-                    "message": f"Assign Candidate Themes job started for consultation '{consultation.title}'",
-                    "consultation_id": str(consultation.id),
-                    "consultation_code": consultation.code,
+                    "error": "Consultation must be in the Finalising Themes stage before assigning themes"
                 },
-                status=status.HTTP_202_ACCEPTED,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Normal flow: assign selected themes to responses
         for question in consultation.question_set.filter(has_free_text=True):
             SelectedTheme.objects.get_or_create(
                 question=question,
-                name="Other",
+                name=OTHER_THEME_NAME,
                 defaults={
                     "description": "The response discusses an issue not covered by the listed themes"
                 },
             )
             SelectedTheme.objects.get_or_create(
                 question=question,
-                name="No Reason Given",
+                name=NO_REASON_GIVEN_THEME_NAME,
                 defaults={
                     "description": "The response does not provide a substantive answer to the question"
                 },
@@ -426,7 +382,7 @@ class ConsultationViewSet(ModelViewSet):
             export_selected_themes_to_s3(consultation)
         except ValueError as e:
             return Response(
-                {"error": "No selected themes found", "detail": str(e)},
+                {"error": "No selected themes found for at least one question.", "detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
@@ -483,7 +439,6 @@ class ConsultationViewSet(ModelViewSet):
         Stage query param:
         - 'setup': Return S3 folders without consultations (for creating new consultations)
         - 'find-themes': Return consultations with S3 folders (for finding themes)
-        - 'assign-themes': Return consultations with S3 folders (for assigning themes)
 
         URL: /api/consultations/folders?stage={STAGE}
         """
@@ -764,7 +719,15 @@ class ConsultationViewSet(ModelViewSet):
             questions.append(question_info)
 
         unmatched_source = sorted(set(source_by_text.keys()) - {q.text for q in target_questions})
-        warnings = {"unmatched_source_questions": unmatched_source}
+        questions_without_themes = sorted(
+            q["question_number"]
+            for q in questions
+            if q["status"] not in ("will_import", "has_existing_themes")
+        )
+        warnings = {
+            "unmatched_source_questions": unmatched_source,
+            "questions_without_themes": questions_without_themes,
+        }
 
         if dry_run:
             return Response(
@@ -775,6 +738,19 @@ class ConsultationViewSet(ModelViewSet):
                     "questions": questions,
                     "warnings": warnings,
                 }
+            )
+
+        if questions_without_themes:
+            return Response(
+                {
+                    "error": (
+                        "Cannot import: target questions "
+                        f"{questions_without_themes} would have no selected themes"
+                    ),
+                    "questions": questions,
+                    "warnings": warnings,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Execute the import
@@ -905,7 +881,9 @@ class ConsultationViewSet(ModelViewSet):
             SelectedTheme.objects.filter(
                 question__consultation=consultation,
             )
-            .filter(Q(name__iexact="no reason given") | Q(name__iexact="other"))
+            .filter(
+                Q(name__iexact=NO_REASON_GIVEN_THEME_NAME) | Q(name__iexact=OTHER_THEME_NAME)
+            )
             .values_list("id", flat=True)
         )
 
