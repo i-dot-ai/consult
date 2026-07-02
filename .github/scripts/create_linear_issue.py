@@ -1,9 +1,10 @@
 """
-Create a Linear issue in the PRO team's "In Review" state for a major dependency bump,
-randomly assigned to a member of the GIT project.
+Create a Linear issue in the configured team's "In Review" state for a major dependency bump,
+randomly assigned to a member of the configured assignee project.
 
 Required environment variables:
   LINEAR_API_KEY                - Linear personal API key (lin_api_*)
+  LINEAR_TEAM_KEY               - Key of the Linear team to create the issue in (e.g. "PRO")
   LINEAR_ASSIGNEE_PROJECT_KEY   - Key of the Linear project to draw assignees from (e.g. "GIT")
   PR_TITLE                      - Title of the Dependabot PR
   PR_URL                        - URL of the Dependabot PR
@@ -63,6 +64,7 @@ def resolve_assignee_id(api_key: str, project_key: str) -> str | None:
 
 def main() -> None:
     api_key = os.environ["LINEAR_API_KEY"]
+    team_key = os.environ["LINEAR_TEAM_KEY"]
     project_key = os.environ["LINEAR_ASSIGNEE_PROJECT_KEY"]
     pr_title = os.environ["PR_TITLE"]
     pr_url = os.environ["PR_URL"]
@@ -70,10 +72,10 @@ def main() -> None:
     prev_version = os.environ["PREVIOUS_VERSION"]
     new_version = os.environ["NEW_VERSION"]
 
-    # Resolve PRO team ID and "In Review" state ID
+    # Resolve team ID and "In Review" state ID from the team key
     team_resp = linear_query(api_key, """
-        query {
-          teams(filter: { key: { eq: "PRO" } }) {
+        query($key: String!) {
+          teams(filter: { key: { eq: $key } }) {
             nodes {
               id
               states {
@@ -82,11 +84,11 @@ def main() -> None:
             }
           }
         }
-    """)
+    """, {"key": team_key})
 
     teams = team_resp["data"]["teams"]["nodes"]
     if not teams:
-        print("ERROR: could not find a Linear team with key 'PRO'")
+        print(f"ERROR: could not find a Linear team with key '{team_key}'")
         sys.exit(1)
 
     team = teams[0]
