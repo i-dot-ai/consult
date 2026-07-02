@@ -20,6 +20,13 @@ Installation instructions assume using a Mac with Homebrew.
 - pre-commit (`brew install pre-commit`)
 - Postegres(optional) (`brew install postgresql`) if you are getting `psycopg2` error during `make setup`
 
+We use a 14-day cooldown on package installations to maintain security, these can be found in:
+
+- .github/dependabot.yml
+- frontend/.npmrc
+- e2e_tests/.npmrc
+- backend/pyproject.toml
+
 ### Prerequisites for running end-to-end tests
 
 Make sure that you have `coreutils` installed:
