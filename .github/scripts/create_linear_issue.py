@@ -99,7 +99,7 @@ def main() -> None:
         None,
     )
     if in_review_state is None:
-        print("ERROR: could not find an 'In Review' state in the PRO team workflow")
+        print(f"ERROR: could not find an 'In Review' state in the {project_key} team workflow")
         sys.exit(1)
 
     assignee_id = resolve_assignee_id(api_key, project_key)
