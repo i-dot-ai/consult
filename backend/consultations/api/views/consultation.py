@@ -290,6 +290,15 @@ class ConsultationViewSet(ModelViewSet):
         try:
             consultation = self.get_object()
 
+            if consultation.stage != Consultation.Stage.SETUP:
+                return Response(
+                    {
+                        "error": f"Consultation '{consultation.code}' not in setup stage",
+                        "detail": "ThemeFinder can only process consultations in the setup stage",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             free_text_questions = consultation.question_set.filter(has_free_text=True)
             if not free_text_questions.exists():
                 return Response(
@@ -500,7 +509,15 @@ class ConsultationViewSet(ModelViewSet):
 
         # Build a dict mapping code -> list of consultations (handles one-to-many relationship)
         consultations_by_code: dict[str, list[dict[str, Any]]] = {}
-        for c in Consultation.objects.filter(code__in=s3_codes).values("id", "code", "title"):
+
+        # We only want to show consultations in the setup stage for the find-themes view
+        consultations_filter = (
+            Q(code__in=s3_codes, stage=Consultation.Stage.SETUP)
+            if stage == "find-themes"
+            else Q(code__in=s3_codes)
+        )
+
+        for c in Consultation.objects.filter(consultations_filter).values("id", "code", "title"):
             code = c["code"]
             if code not in consultations_by_code:
                 consultations_by_code[code] = []
