@@ -20,7 +20,7 @@ dependencies = [
   "drf-spectacular==0.29.0",
   "factory_boy>=3.3.1",
   "gunicorn>=26.0.0",
-  "i-dot-ai-utilities[auth]>=0.4.4",
+  "i-dot-ai-utilities[auth]>=0.6.0",
   "openai>=2.41.0",
   "pgvector>=0.4.2",
   "psycopg>=3.3.4",
