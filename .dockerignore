@@ -37,3 +37,24 @@ frontend/.astro
 # Local env files
 .env
 .env.test
+
+# themefinder: development-only directories not needed in production images
+themefinder/evals
+themefinder/docs
+themefinder/tests
+themefinder/examples
+themefinder/architecture
+themefinder/.venv
+themefinder/.pytest_cache
+themefinder/.mypy_cache
+themefinder/.ruff_cache
+themefinder/**/__pycache__
+themefinder/*.egg-info
+
+# Local dev artifacts (sql.log may contain sensitive query data)
+**/sql.log
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.venv

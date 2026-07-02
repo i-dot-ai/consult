@@ -12,7 +12,7 @@ help:     ## Show this help.
 install: ## Install all dependencies
 	pre-commit install
 	cp .githooks/* .git/hooks/
-	cd backend && uv sync
+	uv sync --all-packages --all-extras --group dev
 	. "$(NVM_DIR)/nvm.sh" && cd frontend && nvm install && npm install
 	. "$(NVM_DIR)/nvm.sh" && cd e2e_tests && nvm install && npm install
 
@@ -48,6 +48,21 @@ test-backend: ## Run the backend tests
 .PHONY: test-frontend
 test-frontend: ## Run the frontend tests
 	cd frontend && npm run test
+
+.PHONY: test-themefinder
+test-themefinder: ## Run the themefinder tests
+	cd themefinder && uv run pytest tests/ -v
+
+.PHONY: test-all
+test-all: test-backend test-frontend test-themefinder ## Run all unit/integration tests
+
+.PHONY: run-evals
+run-evals: ## Run themefinder LLM evals (quick mode)
+	cd themefinder/evals && uv run python benchmark.py --quick
+
+.PHONY: run-benchmark
+run-benchmark: ## Run full themefinder benchmark (housing_S, 5 runs, all providers)
+	cd themefinder/evals && uv run python benchmark.py --dataset housing_S --runs 5 --provider all --judge-model gpt-4.1
 
 .PHONY: test-end-to-end
 test-end-to-end: ## Run end-to-end tests with Playwright

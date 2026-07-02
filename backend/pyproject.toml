@@ -20,14 +20,14 @@ dependencies = [
   "drf-spectacular==0.29.0",
   "factory_boy>=3.3.1",
   "gunicorn>=26.0.0",
-  "i-dot-ai-utilities[auth]>=0.4.4",
+  "i-dot-ai-utilities[auth]>=0.6.0",
   "openai>=2.41.0",
   "pgvector>=0.4.2",
   "psycopg>=3.3.4",
   "pydantic>=2.13.4",
   "pytest-random-order>=1.2.0",
   "sentry-sdk[django,redis,rq]>=2.61.1",
-  "themefinder>=0.8.2",
+  "themefinder",
   "werkzeug==3.1.8",
 ]
 
@@ -74,3 +74,6 @@ exclude = ['^consultations/migrations/']
 
 [tool.bandit]
 exclude = "*/.cruft.json"
+
+[tool.uv.sources]
+themefinder = { workspace = true }
