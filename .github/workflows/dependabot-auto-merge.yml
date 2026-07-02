@@ -56,7 +56,7 @@ jobs:
         if: steps.metadata.outputs.update-type == 'version-update:semver-major'
         env:
           LINEAR_API_KEY: ${{ secrets.DEPENDABOT_LINEAR_KEY }}
-          LINEAR_ASSIGNEE_EMAILS: ${{ secrets.LINEAR_ASSIGNEE_EMAILS }}
+          LINEAR_ASSIGNEE_PROJECT_KEY: ${{ secrets.LINEAR_ASSIGNEE_PROJECT_KEY }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_URL: ${{ github.event.pull_request.html_url }}
           DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
