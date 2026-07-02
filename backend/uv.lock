@@ -285,7 +285,7 @@ requires-dist = [
     { name = "drf-spectacular", specifier = "==0.29.0" },
     { name = "factory-boy", specifier = ">=3.3.1" },
     { name = "gunicorn", specifier = ">=26.0.0" },
-    { name = "i-dot-ai-utilities", extras = ["auth"], specifier = ">=0.4.4" },
+    { name = "i-dot-ai-utilities", extras = ["auth"], specifier = ">=0.6.0" },
     { name = "openai", specifier = ">=2.41.0" },
     { name = "pgvector", specifier = ">=0.4.2" },
     { name = "psycopg", specifier = ">=3.3.4" },
