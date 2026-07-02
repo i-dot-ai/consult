@@ -1,15 +1,15 @@
 """
-Create a Linear issue in the PRO team's "In Review" state for a major dependency bump.
+Create a Linear issue in the PRO team's "In Review" state for a major dependency bump,
+randomly assigned to a member of the GIT project.
 
 Required environment variables:
-  LINEAR_API_KEY         - Linear personal API key (lin_api_*)
-  LINEAR_ASSIGNEE_EMAILS - Comma-separated email addresses of the assignee pool
-                           e.g. "alice@example.com,bob@example.com"
-  PR_TITLE               - Title of the Dependabot PR
-  PR_URL                 - URL of the Dependabot PR
-  DEPENDENCY_NAMES       - Name(s) of the dependency being bumped
-  PREVIOUS_VERSION       - Version before the bump
-  NEW_VERSION            - Version after the bump
+  LINEAR_API_KEY                - Linear personal API key (lin_api_*)
+  LINEAR_ASSIGNEE_PROJECT_KEY   - Key of the Linear project to draw assignees from (e.g. "GIT")
+  PR_TITLE                      - Title of the Dependabot PR
+  PR_URL                        - URL of the Dependabot PR
+  DEPENDENCY_NAMES              - Name(s) of the dependency being bumped
+  PREVIOUS_VERSION              - Version before the bump
+  NEW_VERSION                   - Version after the bump
 """
 
 import json
@@ -30,24 +30,30 @@ def linear_query(api_key: str, query: str, variables: dict | None = None) -> dic
         return json.loads(resp.read())
 
 
-def resolve_assignee_id(api_key: str, pool_emails: list[str]) -> str | None:
-    """Resolve a random email from the pool to a Linear user ID."""
-    email_resp = linear_query(api_key, """
-        query {
-          users(filter: { active: { eq: true } }) {
-            nodes { id email isAssignable }
+def resolve_assignee_id(api_key: str, project_key: str) -> str | None:
+    """Pick a random assignable member from the given Linear project."""
+    project_resp = linear_query(api_key, """
+        query($key: String!) {
+          projects(filter: { identifier: { eq: $key } }) {
+            nodes {
+              id
+              name
+              members {
+                nodes { id email isAssignable }
+              }
+            }
           }
         }
-    """)
+    """, {"key": project_key})
 
-    all_users = email_resp["data"]["users"]["nodes"]
-    pool = [
-        u for u in all_users
-        if u["email"].lower() in pool_emails and u["isAssignable"]
-    ]
+    projects = project_resp["data"]["projects"]["nodes"]
+    if not projects:
+        print(f"WARNING: could not find a Linear project with key '{project_key}'")
+        return None
 
+    pool = [u for u in projects[0]["members"]["nodes"] if u["isAssignable"]]
     if not pool:
-        print(f"WARNING: none of the emails in LINEAR_ASSIGNEE_EMAILS matched an assignable Linear user")
+        print(f"WARNING: project '{project_key}' has no assignable members")
         return None
 
     chosen = random.choice(pool)
@@ -57,19 +63,14 @@ def resolve_assignee_id(api_key: str, pool_emails: list[str]) -> str | None:
 
 def main() -> None:
     api_key = os.environ["LINEAR_API_KEY"]
+    project_key = os.environ["LINEAR_ASSIGNEE_PROJECT_KEY"]
     pr_title = os.environ["PR_TITLE"]
     pr_url = os.environ["PR_URL"]
     dep_names = os.environ["DEPENDENCY_NAMES"]
     prev_version = os.environ["PREVIOUS_VERSION"]
     new_version = os.environ["NEW_VERSION"]
 
-    pool_emails = [
-        e.strip().lower()
-        for e in os.environ["LINEAR_ASSIGNEE_EMAILS"].split(",")
-        if e.strip()
-    ]
-
-    # Resolve team ID and "In Review" state ID from the team key
+    # Resolve PRO team ID and "In Review" state ID
     team_resp = linear_query(api_key, """
         query {
           teams(filter: { key: { eq: "PRO" } }) {
@@ -99,7 +100,7 @@ def main() -> None:
         print("ERROR: could not find an 'In Review' state in the PRO team workflow")
         sys.exit(1)
 
-    assignee_id = resolve_assignee_id(api_key, pool_emails)
+    assignee_id = resolve_assignee_id(api_key, project_key)
 
     issue_title = f"Review major dependency bump: {dep_names} {prev_version} -> {new_version}"
     issue_description = (
