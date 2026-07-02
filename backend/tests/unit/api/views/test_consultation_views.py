@@ -703,6 +703,31 @@ class TestGetConsultationFoldersEndpoint:
             assert result[1]["title"] == "Transport Consultation"
             assert result[1]["id"] == str(c2.id)
 
+    def test_get_folders_find_themes_stage_excludes_non_setup_consultations(
+        self, client, staff_user_token
+    ):
+        """Test find-themes stage excludes consultations not in SETUP stage"""
+        # Matching S3 folder, but not in SETUP stage - should be excluded
+        ConsultationFactory(
+            code="healthcare-2026",
+            title="Healthcare Consultation",
+            stage=Consultation.Stage.FINDING_THEMES,
+        )
+
+        url = reverse("consultations-folders")
+
+        with patch("data_pipeline.s3.get_consultation_folders") as mock_get_folders:
+            mock_get_folders.return_value = ["healthcare-2026", "education-2026"]
+
+            response = client.get(
+                url,
+                {"stage": "find-themes"},
+                headers={"Authorization": f"Bearer {staff_user_token}"},
+            )
+
+            assert response.status_code == 200
+            assert response.json() == []
+
     def test_get_folders_assign_themes_stage_returns_consultations(self, client, staff_user_token):
         """Test assign-themes stage returns consultations with matching S3 folders"""
         c1 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation")
