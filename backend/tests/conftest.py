@@ -63,7 +63,11 @@ def staff_user_token(staff_user):
 
 @pytest.fixture
 def consultation(non_staff_user):
-    _consultation = ConsultationFactory(title="My First Consultation", code="my-first-consultation")
+    _consultation = ConsultationFactory(
+        title="My First Consultation",
+        code="my-first-consultation",
+        stage=Consultation.Stage.SETUP,
+    )
     _consultation.users.add(non_staff_user)
     _consultation.save()
     yield _consultation
@@ -410,6 +414,7 @@ def minio_client():
         boto3.client: S3 client configured for MinIO endpoint
     """
     from consultations.utils import s3 as s3_utils
+
     client = s3_utils.get_s3_client()
     return client
 

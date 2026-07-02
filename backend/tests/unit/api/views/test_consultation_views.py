@@ -670,10 +670,16 @@ class TestGetConsultationFoldersEndpoint:
     def test_get_folders_find_themes_stage_returns_consultations(self, client, staff_user_token):
         """Test find-themes stage returns consultations with matching S3 folders"""
         # Create consultations with codes matching S3 folders
-        c1 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation")
-        c2 = ConsultationFactory(code="transport-2026", title="Transport Consultation")
+        c1 = ConsultationFactory(
+            code="healthcare-2026", title="Healthcare Consultation", stage=Consultation.Stage.SETUP
+        )
+        c2 = ConsultationFactory(
+            code="transport-2026", title="Transport Consultation", stage=Consultation.Stage.SETUP
+        )
         # Create consultation without matching S3 folder
-        ConsultationFactory(code="other-consultation", title="Other")
+        ConsultationFactory(
+            code="other-consultation", title="Other", stage=Consultation.Stage.SETUP
+        )
 
         url = reverse("consultations-folders")
 
@@ -719,8 +725,12 @@ class TestGetConsultationFoldersEndpoint:
 
     def test_get_folders_handles_one_to_many_relationship(self, client, staff_user_token):
         """Test endpoint handles multiple consultations with same code"""
-        c1 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation V1")
-        c2 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation V2")
+        c1 = ConsultationFactory(
+            code="healthcare-2026", title="Healthcare Consultation V1", stage=Consultation.Stage.SETUP
+        )
+        c2 = ConsultationFactory(
+            code="healthcare-2026", title="Healthcare Consultation V2", stage=Consultation.Stage.SETUP
+        )
 
         url = reverse("consultations-folders")
 
@@ -801,6 +811,21 @@ class TestFindThemesEndpoint:
         Question.objects.create(
             consultation=consultation, number=1, has_free_text=False, text="Test?"
         )
+
+        url = reverse("consultations-find-themes", kwargs={"pk": consultation.id})
+
+        response = client.post(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 400
+
+    def test_find_themes_rejects_wrong_stage(self, client, staff_user_token, free_text_question):
+        """Test find themes endpoint rejects consultations not in setup stage"""
+        consultation = free_text_question.consultation
+        consultation.stage = Consultation.Stage.FINDING_THEMES
+        consultation.save(update_fields=["stage"])
 
         url = reverse("consultations-find-themes", kwargs={"pk": consultation.id})
 
