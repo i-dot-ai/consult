@@ -10,6 +10,7 @@ from consultations.models import (
     ResponseAnnotation,
     SelectedTheme,
 )
+from data_pipeline import s3
 from data_pipeline.models import (
     AnnotationBatch,
     DetailDetectionInput,
@@ -17,7 +18,6 @@ from data_pipeline.models import (
     SentimentInput,
     ThemeMappingInput,
 )
-import data_pipeline.s3 as s3
 
 logger = settings.LOGGER
 
