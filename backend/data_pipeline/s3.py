@@ -39,7 +39,6 @@ def read_jsonl(
         if not raise_if_missing and e.response["Error"]["Code"] == "NoSuchKey":
             logger.info("File not found (skipping): {key}", key=key)
             return []
-        logger.exception("Error reading JSONL from S3: {key}", key=key)
         raise
     objects = []
     for line in response["Body"].iter_lines():
@@ -78,7 +77,6 @@ def read_json(
         if not raise_if_missing and e.response["Error"]["Code"] == "NoSuchKey":
             logger.info("File not found (skipping): {key}", key=key)
             return None
-        logger.exception("Error reading JSON from S3: {key}", key=key)
         raise
 
 

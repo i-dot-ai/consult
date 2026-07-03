@@ -4,7 +4,6 @@ from django.conf import settings
 from django.db import transaction
 from botocore.exceptions import BotoCoreError, ClientError
 
-import data_pipeline.s3 as s3
 from consultations.models import (
     Consultation,
     Question,
@@ -18,6 +17,7 @@ from data_pipeline.models import (
     SentimentInput,
     ThemeMappingInput,
 )
+import data_pipeline.s3 as s3
 
 logger = settings.LOGGER
 

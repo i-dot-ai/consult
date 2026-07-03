@@ -138,7 +138,7 @@ def load_responses_from_s3(
 
     raw_data = s3.read_jsonl(bucket_name, key, raise_if_missing=False)
     if not raw_data:
-        logger.warning(
+        logger.info(
             "No responses found for question {question_number} in S3 at {key}",
             question_number=question_number,
             key=key,
@@ -184,7 +184,7 @@ def load_multi_choice_from_s3(
     raw_data = s3.read_jsonl(bucket_name, key, raise_if_missing=False)
 
     if not raw_data:
-        logger.warning(
+        logger.info(
             "No multi-choice data found for question {question_number} in S3 at {key}",
             question_number=question_number,
             key=key,
