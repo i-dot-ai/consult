@@ -1,8 +1,8 @@
 from typing import Dict, List, Optional
 
+from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
-from botocore.exceptions import BotoCoreError, ClientError
 
 from consultations.models import (
     Consultation,
