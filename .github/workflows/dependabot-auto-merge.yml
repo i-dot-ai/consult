@@ -16,13 +16,14 @@ jobs:
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.actor.login == 'dependabot[bot]'
     steps:
-      - name: Resolve PR for this workflow run
+      - name: Resolve PR and first commit message
         id: pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           REPO: ${{ github.repository }}
         run: |
+          # Resolve PR number, URL, and title from the triggering commit SHA
           pr_data=$(gh api graphql \
             -f query='
               query($owner:String!, $repo:String!, $sha:String!) {
@@ -30,7 +31,7 @@ jobs:
                   commit: object(expression:$sha) {
                     ... on Commit {
                       associatedPullRequests(first:1) {
-                        nodes { number url title }
+                        nodes { number url title headRefName }
                       }
                     }
                   }
@@ -41,43 +42,62 @@ jobs:
             -f repo="${REPO##*/}" \
             -f sha="$HEAD_SHA" \
             --jq '.data.repository.commit.associatedPullRequests.nodes[0]')
-          echo "url=$(echo "$pr_data" | jq -r '.url')" >> "$GITHUB_OUTPUT"
-          echo "title=$(echo "$pr_data" | jq -r '.title')" >> "$GITHUB_OUTPUT"
-          echo "number=$(echo "$pr_data" | jq -r '.number')" >> "$GITHUB_OUTPUT"
 
-      - name: Determine update type from PR title
+          pr_number=$(echo "$pr_data" | jq -r '.number')
+          pr_url=$(echo "$pr_data" | jq -r '.url')
+          pr_title=$(echo "$pr_data" | jq -r '.title')
+
+          # Fetch the first commit message on the PR (contains Dependabot's YAML metadata block)
+          commit_msg=$(gh api "/repos/${REPO}/pulls/${pr_number}/commits" \
+            --jq '.[0].commit.message')
+
+          echo "number=$pr_number" >> "$GITHUB_OUTPUT"
+          echo "url=$pr_url"       >> "$GITHUB_OUTPUT"
+          echo "title=$pr_title"   >> "$GITHUB_OUTPUT"
+
+          # Write commit message to a file to avoid multiline output quoting issues
+          printf '%s' "$commit_msg" > /tmp/commit_msg.txt
+
+      - name: Determine update type from commit message
         id: update-type
-        env:
-          PR_TITLE: ${{ steps.pr.outputs.title }}
         run: |
-          # Dependabot PR titles follow the pattern:
-          #   "Bump <pkg> from <old> to <new>"
-          # We compare major/minor/patch components to classify the bump.
-          pkg=$(echo "$PR_TITLE" | grep -oP 'Bump \K\S+' || echo "")
-          old=$(echo "$PR_TITLE" | grep -oP 'from \K[\d]+\.[\d]+\.[\d]+' || echo "")
-          new=$(echo "$PR_TITLE" | grep -oP 'to \K[\d]+\.[\d]+\.[\d]+' || echo "")
+          commit_msg=$(cat /tmp/commit_msg.txt)
 
-          echo "dependency-names=$pkg" >> "$GITHUB_OUTPUT"
-          echo "previous-version=$old" >> "$GITHUB_OUTPUT"
-          echo "new-version=$new" >> "$GITHUB_OUTPUT"
+          # Extract the YAML block Dependabot embeds in every commit message:
+          #   ---
+          #   updated-dependencies:
+          #   - dependency-name: foo
+          #     dependency-type: direct:production
+          #     update-type: version-update:semver-patch
+          #   ...
+          yaml_block=$(echo "$commit_msg" | sed -n '/^---$/,/^\.\.\.$/{/^---$/d;/^\.\.\.$/{s/^\.\.\.$//;p;d};p}')
 
-          if [[ -z "$old" || -z "$new" ]]; then
-            echo "update-type=unknown" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          # Extract dependency-group (present for grouped PRs, empty string otherwise)
+          dep_group=$(echo "$commit_msg" | grep -oP 'dependency-group:\s\K\S+' || echo "")
 
-          old_major=$(echo "$old" | cut -d. -f1)
-          new_major=$(echo "$new" | cut -d. -f1)
-          old_minor=$(echo "$old" | cut -d. -f2)
-          new_minor=$(echo "$new" | cut -d. -f2)
+          # Extract all update-type values and pick the highest semver level
+          update_types=$(echo "$yaml_block" | grep -oP 'update-type:\s\K\S+' || echo "")
 
-          if [[ "$new_major" -gt "$old_major" ]]; then
-            echo "update-type=version-update:semver-major" >> "$GITHUB_OUTPUT"
-          elif [[ "$new_minor" -gt "$old_minor" ]]; then
-            echo "update-type=version-update:semver-minor" >> "$GITHUB_OUTPUT"
-          else
-            echo "update-type=version-update:semver-patch" >> "$GITHUB_OUTPUT"
-          fi
+          highest="version-update:semver-patch"
+          while IFS= read -r ut; do
+            if [[ "$ut" == "version-update:semver-major" ]]; then
+              highest="version-update:semver-major"
+              break
+            elif [[ "$ut" == "version-update:semver-minor" ]]; then
+              highest="version-update:semver-minor"
+            fi
+          done <<< "$update_types"
+
+          # Extract dependency names and versions (best-effort; used for Linear issue)
+          dep_names=$(echo "$yaml_block" | grep -oP 'dependency-name:\s\K\S+' | paste -sd ',' || echo "")
+          prev_ver=$(echo "$commit_msg" | grep -oP 'from \K[\d]+\.[\d]+[\d.]*' | head -1 || echo "")
+          new_ver=$(echo "$commit_msg" | grep -oP 'to \K[\d]+\.[\d]+[\d.]*' | head -1 || echo "")
+
+          echo "update-type=$highest"       >> "$GITHUB_OUTPUT"
+          echo "dependency-group=$dep_group" >> "$GITHUB_OUTPUT"
+          echo "dependency-names=$dep_names" >> "$GITHUB_OUTPUT"
+          echo "previous-version=$prev_ver"  >> "$GITHUB_OUTPUT"
+          echo "new-version=$new_ver"        >> "$GITHUB_OUTPUT"
 
       # ── Minor/patch: approve and enable auto-merge ────────────────────────
       - name: Approve PR
