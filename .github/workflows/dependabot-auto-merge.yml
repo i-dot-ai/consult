@@ -1,8 +1,9 @@
 name: Dependabot auto-merge
 
 on:
-  pull_request:
-    types: [opened]
+  workflow_run:
+    workflows: ["Required checks"]
+    types: [completed]
 
 permissions:
   contents: write
@@ -11,60 +12,139 @@ permissions:
 jobs:
   dependabot-auto-merge:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]'
     steps:
-      - name: Fetch Dependabot metadata
-        id: metadata
-        uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7 # v2.3.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Resolve PR and first commit message
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Resolve PR number, URL, and title from the triggering commit SHA
+          pr_data=$(gh api graphql \
+            -f query='
+              query($owner:String!, $repo:String!, $sha:String!) {
+                repository(owner:$owner, name:$repo) {
+                  commit: object(expression:$sha) {
+                    ... on Commit {
+                      associatedPullRequests(first:1) {
+                        nodes { number url title headRefName }
+                      }
+                    }
+                  }
+                }
+              }
+            ' \
+            -f owner="${REPO%%/*}" \
+            -f repo="${REPO##*/}" \
+            -f sha="$HEAD_SHA" \
+            --jq '.data.repository.commit.associatedPullRequests.nodes[0]')
+
+          pr_number=$(echo "$pr_data" | jq -r '.number')
+          pr_url=$(echo "$pr_data" | jq -r '.url')
+          pr_title=$(echo "$pr_data" | jq -r '.title')
+
+          # Fetch the first commit message on the PR (contains Dependabot's YAML metadata block)
+          commit_msg=$(gh api "/repos/${REPO}/pulls/${pr_number}/commits" \
+            --jq '.[0].commit.message')
+
+          echo "number=$pr_number" >> "$GITHUB_OUTPUT"
+          echo "url=$pr_url"       >> "$GITHUB_OUTPUT"
+          echo "title=$pr_title"   >> "$GITHUB_OUTPUT"
+
+          # Write commit message to a file to avoid multiline output quoting issues
+          printf '%s' "$commit_msg" > /tmp/commit_msg.txt
+
+      - name: Determine update type from commit message
+        id: update-type
+        run: |
+          commit_msg=$(cat /tmp/commit_msg.txt)
+
+          # Extract the YAML block Dependabot embeds in every commit message:
+          #   ---
+          #   updated-dependencies:
+          #   - dependency-name: foo
+          #     dependency-type: direct:production
+          #     update-type: version-update:semver-patch
+          #   ...
+          yaml_block=$(echo "$commit_msg" | sed -n '/^---$/,/^\.\.\.$/{/^---$/d;/^\.\.\.$/{s/^\.\.\.$//;p;d};p}')
+
+          # Extract dependency-group (present for grouped PRs, empty string otherwise)
+          dep_group=$(echo "$commit_msg" | grep -oP 'dependency-group:\s\K\S+' || echo "")
+
+          # Extract all update-type values and pick the highest semver level
+          update_types=$(echo "$yaml_block" | grep -oP 'update-type:\s\K\S+' || echo "")
+
+          highest="version-update:semver-patch"
+          while IFS= read -r ut; do
+            if [[ "$ut" == "version-update:semver-major" ]]; then
+              highest="version-update:semver-major"
+              break
+            elif [[ "$ut" == "version-update:semver-minor" ]]; then
+              highest="version-update:semver-minor"
+            fi
+          done <<< "$update_types"
+
+          # Extract dependency names and versions (best-effort; used for Linear issue)
+          dep_names=$(echo "$yaml_block" | grep -oP 'dependency-name:\s\K\S+' | paste -sd ',' || echo "")
+          prev_ver=$(echo "$commit_msg" | grep -oP 'from \K[\d]+\.[\d]+[\d.]*' | head -1 || echo "")
+          new_ver=$(echo "$commit_msg" | grep -oP 'to \K[\d]+\.[\d]+[\d.]*' | head -1 || echo "")
+
+          echo "update-type=$highest"       >> "$GITHUB_OUTPUT"
+          echo "dependency-group=$dep_group" >> "$GITHUB_OUTPUT"
+          echo "dependency-names=$dep_names" >> "$GITHUB_OUTPUT"
+          echo "previous-version=$prev_ver"  >> "$GITHUB_OUTPUT"
+          echo "new-version=$new_ver"        >> "$GITHUB_OUTPUT"
 
       # ── Minor/patch: approve and enable auto-merge ────────────────────────
       - name: Approve PR
         if: |
-          steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
-          steps.metadata.outputs.update-type == 'version-update:semver-patch'
+          steps.update-type.outputs.update-type == 'version-update:semver-minor' ||
+          steps.update-type.outputs.update-type == 'version-update:semver-patch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_URL: ${{ steps.pr.outputs.url }}
         run: gh pr review --approve "$PR_URL" --body "Auto-approved: all dependency bumps are minor or patch only."
 
       - name: Enable auto-merge
         if: |
-          steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
-          steps.metadata.outputs.update-type == 'version-update:semver-patch'
+          steps.update-type.outputs.update-type == 'version-update:semver-minor' ||
+          steps.update-type.outputs.update-type == 'version-update:semver-patch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_URL: ${{ steps.pr.outputs.url }}
         run: gh pr merge --auto --rebase "$PR_URL"
 
       # ── Major bump: label, leave for manual review, and create Linear issue ──
       - name: Create label if missing
-        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        if: steps.update-type.outputs.update-type == 'version-update:semver-major'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh label create "major-version-bump" --color "e11d48" --description "Contains a major version upgrade, requires manual review" || true
 
       - name: Label PR for manual review
-        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        if: steps.update-type.outputs.update-type == 'version-update:semver-major'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_URL: ${{ steps.pr.outputs.url }}
         run: gh pr edit "$PR_URL" --add-label "major-version-bump"
 
       - name: Checkout repository
-        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        if: steps.update-type.outputs.update-type == 'version-update:semver-major'
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Create Linear issue for major bump
-        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        if: steps.update-type.outputs.update-type == 'version-update:semver-major'
         env:
           LINEAR_API_KEY: ${{ secrets.DEPENDABOT_LINEAR_KEY }}
           LINEAR_TEAM_KEY: ${{ secrets.LINEAR_TEAM_KEY }}
           LINEAR_ASSIGNEE_PROJECT_KEY: ${{ secrets.LINEAR_ASSIGNEE_PROJECT_KEY }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
-          PREVIOUS_VERSION: ${{ steps.metadata.outputs.previous-version }}
-          NEW_VERSION: ${{ steps.metadata.outputs.new-version }}
+          PR_TITLE: ${{ steps.pr.outputs.title }}
+          PR_URL: ${{ steps.pr.outputs.url }}
+          DEPENDENCY_NAMES: ${{ steps.update-type.outputs.dependency-names }}
+          PREVIOUS_VERSION: ${{ steps.update-type.outputs.previous-version }}
+          NEW_VERSION: ${{ steps.update-type.outputs.new-version }}
         run: python3 .github/scripts/create_linear_issue.py
