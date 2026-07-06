@@ -56,12 +56,14 @@ def load_respondents_from_s3(
 
     try:
         raw_data = s3.read_jsonl(bucket_name, key)
-    except (ClientError, BotoCoreError):
+    except (ClientError, BotoCoreError) as e:
         logger.exception(
             "Failed to load respondents file from S3: bucket={bucket}, key={key}",
             bucket=bucket_name,
             key=key,
         )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(f"Respondents file not found: {key}") from e
         raise
 
     respondents = [RespondentInput(**data) for data in raw_data]
@@ -94,12 +96,14 @@ def load_question_from_s3(
 
     try:
         data = s3.read_json(bucket_name, key)
-    except (ClientError, BotoCoreError):
+    except (ClientError, BotoCoreError) as e:
         logger.exception(
             "Failed to load question file from S3: bucket={bucket}, key={key}",
             bucket=bucket_name,
             key=key,
         )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(f"Question file not found: {key}") from e
         raise
 
     if data is None:

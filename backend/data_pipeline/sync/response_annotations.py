@@ -60,13 +60,18 @@ def load_selected_themes_from_s3(
         theme_data = s3.read_json(
             bucket_name=bucket_name_str, key=key, raise_if_missing=True
         )
-    except (ClientError, BotoCoreError):
+    except (ClientError, BotoCoreError) as e:
         logger.exception(
             "Failed to load selected themes from S3 for consultation '{consultation_code}',"
             " question {question_number}",
             consultation_code=consultation_code,
             question_number=question_number
         )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(
+                f"Selected themes file not found for consultation '{consultation_code}', "
+                f"question {question_number}: {key}"
+            ) from e
         raise
 
     # Validate each theme using Pydantic
@@ -162,13 +167,18 @@ def load_detail_detections_from_s3(
         detail_data = s3.read_jsonl(
             bucket_name=bucket_name_str, key=key, raise_if_missing=True
         )
-    except (ClientError, BotoCoreError):
+    except (ClientError, BotoCoreError) as e:
         logger.exception(
             "Failed to load detail detections from S3 for consultation '{consultation_code}',"
             " question {question_number}",
             consultation_code=consultation_code,
             question_number=question_number
         )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(
+                f"Detail detections file not found for consultation '{consultation_code}', "
+                f"question {question_number}: {key}"
+            ) from e
         raise
 
     # Validate each item using Pydantic
@@ -215,13 +225,18 @@ def load_theme_mappings_from_s3(
         mapping_data = s3.read_jsonl(
             bucket_name=bucket_name_str, key=key, raise_if_missing=True
         )
-    except (ClientError, BotoCoreError):
+    except (ClientError, BotoCoreError) as e:
         logger.exception(
             "Failed to load theme mappings from S3 for consultation '{consultation_code}',"
             " question {question_number}",
             consultation_code=consultation_code,
             question_number=question_number
         )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(
+                f"Theme mappings file not found for consultation '{consultation_code}', "
+                f"question {question_number}: {key}"
+            ) from e
         raise
 
     # Validate each mapping using Pydantic
