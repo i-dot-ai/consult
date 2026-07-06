@@ -50,6 +50,8 @@ dev = [
 
 [tool.uv]
 exclude-newer = "P14D"
+# Use explicit UTC timestamps, not bare dates: uv renders bare dates in the
+# local timezone, which re-dirties uv.lock on non-UTC machines (see make install).
 exclude-newer-package = {"i-dot-ai-utilities" = "2026-06-05T00:00:00Z", "pydantic-settings" = "2026-07-02T00:00:00Z", "cryptography" = "2026-07-02T00:00:00Z", "langchain" = "2026-07-02T00:00:00Z", "langsmith" = "2026-07-02T00:00:00Z"}
 override-dependencies = [
   "cryptography>=49.0.0",
