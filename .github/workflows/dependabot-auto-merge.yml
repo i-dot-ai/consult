@@ -27,7 +27,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr review --approve "$PR_URL" --body "Auto-approved: all dependency bumps are minor or patch only."
+        run: gh pr review --approve "$PR_URL" --body 'Auto-approved - all dependency bumps are minor or patch only.'
 
       - name: Enable auto-merge
         if: |
@@ -43,7 +43,7 @@ jobs:
         if: steps.metadata.outputs.update-type == 'version-update:semver-major'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh label create "major-version-bump" --color "e11d48" --description "Contains a major version upgrade, requires manual review" || true
+        run: gh label create major-version-bump --color e11d48 --description 'Contains a major version upgrade, requires manual review' || true
 
       - name: Label PR for manual review
         if: steps.metadata.outputs.update-type == 'version-update:semver-major'
