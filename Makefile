@@ -12,7 +12,7 @@ help:     ## Show this help.
 install: ## Install all dependencies
 	pre-commit install
 	cp .githooks/* .git/hooks/
-	cd backend && uv sync
+	cd backend && TZ=UTC uv sync
 	. "$(NVM_DIR)/nvm.sh" && cd frontend && nvm install && npm install
 	. "$(NVM_DIR)/nvm.sh" && cd e2e_tests && nvm install && npm install
 
