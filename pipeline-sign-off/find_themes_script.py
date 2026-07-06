@@ -266,6 +266,17 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
     skipped_questions = []
     for question_dir in os.listdir(Path(consultation_dir) / "inputs"):
         if "question" in question_dir:
+            # Closed / multiple-choice questions have no free-text responses.jsonl to
+            # find themes in — skip them quietly rather than raising a FileNotFoundError.
+            responses_path = (
+                Path(consultation_dir) / "inputs" / question_dir / "responses.jsonl"
+            )
+            if not responses_path.exists():
+                logger.info(
+                    "Skipping %s: no free-text responses (closed question)", question_dir
+                )
+                continue
+
             logger.info("Processing %s...", question_dir)
             try:
                 # Create question-specific directory in the datestamped folder
