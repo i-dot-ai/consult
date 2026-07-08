@@ -1,9 +1,8 @@
 name: Dependabot auto-merge
 
 on:
-  workflow_run:
-    workflows: ["Required checks"]
-    types: [completed]
+  pull_request:
+    types: [opened, synchronize]
 
 permissions:
   contents: write
@@ -12,92 +11,51 @@ permissions:
 jobs:
   dependabot-auto-merge:
     runs-on: ubuntu-latest
-    if: |
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.actor.login == 'dependabot[bot]'
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
-      - name: Resolve PR and first commit message
-        id: pr
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-          REPO: ${{ github.repository }}
-        run: |
-          # Resolve PR number, URL, and title from the triggering commit SHA
-          pr_data=$(gh api graphql \
-            -f query='
-              query($owner:String!, $repo:String!, $sha:String!) {
-                repository(owner:$owner, name:$repo) {
-                  commit: object(expression:$sha) {
-                    ... on Commit {
-                      associatedPullRequests(first:1) {
-                        nodes { number url title headRefName }
-                      }
-                    }
-                  }
-                }
-              }
-            ' \
-            -f owner="${REPO%%/*}" \
-            -f repo="${REPO##*/}" \
-            -f sha="$HEAD_SHA" \
-            --jq '.data.repository.commit.associatedPullRequests.nodes[0]')
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7 # v2.3.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-          pr_number=$(echo "$pr_data" | jq -r '.number')
-          pr_url=$(echo "$pr_data" | jq -r '.url')
-          pr_title=$(echo "$pr_data" | jq -r '.title')
-
-          # Fetch the first commit message on the PR (contains Dependabot's YAML metadata block)
-          commit_msg=$(gh api "/repos/${REPO}/pulls/${pr_number}/commits" \
-            --jq '.[0].commit.message')
-
-          echo "number=$pr_number" >> "$GITHUB_OUTPUT"
-          echo "url=$pr_url"       >> "$GITHUB_OUTPUT"
-          echo "title=$pr_title"   >> "$GITHUB_OUTPUT"
-
-          # Write commit message to a file to avoid multiline output quoting issues
-          printf '%s' "$commit_msg" > /tmp/commit_msg.txt
-
-      - name: Determine update type from commit message
+      # fetch-metadata cannot determine update-type for uv ecosystem PRs because
+      # they use range constraints (>=x.y.z) rather than pinned versions, so there
+      # is no from/to pair to compare. Fall back to parsing the PR title in that case.
+      # uv title format: "update <pkg> requirement from >=X.Y.Z to >=A.B.C in /dir"
+      - name: Resolve update type
         id: update-type
+        env:
+          METADATA_UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          commit_msg=$(cat /tmp/commit_msg.txt)
+          if [[ -n "$METADATA_UPDATE_TYPE" && "$METADATA_UPDATE_TYPE" != "null" ]]; then
+            echo "update-type=$METADATA_UPDATE_TYPE" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
-          # Extract the YAML block Dependabot embeds in every commit message:
-          #   ---
-          #   updated-dependencies:
-          #   - dependency-name: foo
-          #     dependency-type: direct:production
-          #     update-type: version-update:semver-patch
-          #   ...
-          yaml_block=$(echo "$commit_msg" | sed -n '/^---$/,/^\.\.\.$/{/^---$/d;/^\.\.\.$/{s/^\.\.\.$//;p;d};p}')
+          # Extract versions from titles like:
+          #   "...requirement from >=2.61.1 to >=2.63.0..."
+          old=$(echo "$PR_TITLE" | grep -oP 'from >=?\K[\d]+\.[\d]+\.[\d]+' || echo "")
+          new=$(echo "$PR_TITLE" | grep -oP 'to >=?\K[\d]+\.[\d]+\.[\d]+' || echo "")
 
-          # Extract dependency-group (present for grouped PRs, empty string otherwise)
-          dep_group=$(echo "$commit_msg" | grep -oP 'dependency-group:\s\K\S+' || echo "")
+          if [[ -z "$old" || -z "$new" ]]; then
+            echo "update-type=unknown" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
-          # Extract all update-type values and pick the highest semver level
-          update_types=$(echo "$yaml_block" | grep -oP 'update-type:\s\K\S+' || echo "")
+          old_major=$(echo "$old" | cut -d. -f1)
+          new_major=$(echo "$new" | cut -d. -f1)
+          old_minor=$(echo "$old" | cut -d. -f2)
+          new_minor=$(echo "$new" | cut -d. -f2)
 
-          highest="version-update:semver-patch"
-          while IFS= read -r ut; do
-            if [[ "$ut" == "version-update:semver-major" ]]; then
-              highest="version-update:semver-major"
-              break
-            elif [[ "$ut" == "version-update:semver-minor" ]]; then
-              highest="version-update:semver-minor"
-            fi
-          done <<< "$update_types"
-
-          # Extract dependency names and versions (best-effort; used for Linear issue)
-          dep_names=$(echo "$yaml_block" | grep -oP 'dependency-name:\s\K\S+' | paste -sd ',' || echo "")
-          prev_ver=$(echo "$commit_msg" | grep -oP 'from \K[\d]+\.[\d]+[\d.]*' | head -1 || echo "")
-          new_ver=$(echo "$commit_msg" | grep -oP 'to \K[\d]+\.[\d]+[\d.]*' | head -1 || echo "")
-
-          echo "update-type=$highest"       >> "$GITHUB_OUTPUT"
-          echo "dependency-group=$dep_group" >> "$GITHUB_OUTPUT"
-          echo "dependency-names=$dep_names" >> "$GITHUB_OUTPUT"
-          echo "previous-version=$prev_ver"  >> "$GITHUB_OUTPUT"
-          echo "new-version=$new_ver"        >> "$GITHUB_OUTPUT"
+          if [[ "$new_major" -gt "$old_major" ]]; then
+            echo "update-type=version-update:semver-major" >> "$GITHUB_OUTPUT"
+          elif [[ "$new_minor" -gt "$old_minor" ]]; then
+            echo "update-type=version-update:semver-minor" >> "$GITHUB_OUTPUT"
+          else
+            echo "update-type=version-update:semver-patch" >> "$GITHUB_OUTPUT"
+          fi
 
       # ── Minor/patch: approve and enable auto-merge ────────────────────────
       - name: Approve PR
@@ -106,8 +64,8 @@ jobs:
           steps.update-type.outputs.update-type == 'version-update:semver-patch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ steps.pr.outputs.url }}
-        run: gh pr review --approve "$PR_URL" --body "Auto-approved: all dependency bumps are minor or patch only."
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr review --approve "$PR_URL" --body 'Auto-approved - all dependency bumps are minor or patch only.'
 
       - name: Enable auto-merge
         if: |
@@ -115,7 +73,7 @@ jobs:
           steps.update-type.outputs.update-type == 'version-update:semver-patch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ steps.pr.outputs.url }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
         run: gh pr merge --auto --rebase "$PR_URL"
 
       # ── Major bump: label, leave for manual review, and create Linear issue ──
@@ -123,13 +81,13 @@ jobs:
         if: steps.update-type.outputs.update-type == 'version-update:semver-major'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh label create "major-version-bump" --color "e11d48" --description "Contains a major version upgrade, requires manual review" || true
+        run: gh label create major-version-bump --color e11d48 --description 'Contains a major version upgrade, requires manual review' || true
 
       - name: Label PR for manual review
         if: steps.update-type.outputs.update-type == 'version-update:semver-major'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ steps.pr.outputs.url }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
         run: gh pr edit "$PR_URL" --add-label "major-version-bump"
 
       - name: Checkout repository
@@ -142,9 +100,9 @@ jobs:
           LINEAR_API_KEY: ${{ secrets.DEPENDABOT_LINEAR_KEY }}
           LINEAR_TEAM_KEY: ${{ secrets.LINEAR_TEAM_KEY }}
           LINEAR_ASSIGNEE_PROJECT_KEY: ${{ secrets.LINEAR_ASSIGNEE_PROJECT_KEY }}
-          PR_TITLE: ${{ steps.pr.outputs.title }}
-          PR_URL: ${{ steps.pr.outputs.url }}
-          DEPENDENCY_NAMES: ${{ steps.update-type.outputs.dependency-names }}
-          PREVIOUS_VERSION: ${{ steps.update-type.outputs.previous-version }}
-          NEW_VERSION: ${{ steps.update-type.outputs.new-version }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
+          PREVIOUS_VERSION: ${{ steps.metadata.outputs.previous-version }}
+          NEW_VERSION: ${{ steps.metadata.outputs.new-version }}
         run: python3 .github/scripts/create_linear_issue.py
