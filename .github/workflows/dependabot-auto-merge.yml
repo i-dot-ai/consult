@@ -19,11 +19,49 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # fetch-metadata cannot determine update-type for uv ecosystem PRs because
+      # they use range constraints (>=x.y.z) rather than pinned versions, so there
+      # is no from/to pair to compare. Fall back to parsing the PR title in that case.
+      # uv title format: "update <pkg> requirement from >=X.Y.Z to >=A.B.C in /dir"
+      - name: Resolve update type
+        id: update-type
+        env:
+          METADATA_UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if [[ -n "$METADATA_UPDATE_TYPE" && "$METADATA_UPDATE_TYPE" != "null" ]]; then
+            echo "update-type=$METADATA_UPDATE_TYPE" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Extract versions from titles like:
+          #   "...requirement from >=2.61.1 to >=2.63.0..."
+          old=$(echo "$PR_TITLE" | grep -oP 'from >=?\K[\d]+\.[\d]+\.[\d]+' || echo "")
+          new=$(echo "$PR_TITLE" | grep -oP 'to >=?\K[\d]+\.[\d]+\.[\d]+' || echo "")
+
+          if [[ -z "$old" || -z "$new" ]]; then
+            echo "update-type=unknown" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          old_major=$(echo "$old" | cut -d. -f1)
+          new_major=$(echo "$new" | cut -d. -f1)
+          old_minor=$(echo "$old" | cut -d. -f2)
+          new_minor=$(echo "$new" | cut -d. -f2)
+
+          if [[ "$new_major" -gt "$old_major" ]]; then
+            echo "update-type=version-update:semver-major" >> "$GITHUB_OUTPUT"
+          elif [[ "$new_minor" -gt "$old_minor" ]]; then
+            echo "update-type=version-update:semver-minor" >> "$GITHUB_OUTPUT"
+          else
+            echo "update-type=version-update:semver-patch" >> "$GITHUB_OUTPUT"
+          fi
+
       # ── Minor/patch: approve and enable auto-merge ────────────────────────
       - name: Approve PR
         if: |
-          steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
-          steps.metadata.outputs.update-type == 'version-update:semver-patch'
+          steps.update-type.outputs.update-type == 'version-update:semver-minor' ||
+          steps.update-type.outputs.update-type == 'version-update:semver-patch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
@@ -31,8 +69,8 @@ jobs:
 
       - name: Enable auto-merge
         if: |
-          steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
-          steps.metadata.outputs.update-type == 'version-update:semver-patch'
+          steps.update-type.outputs.update-type == 'version-update:semver-minor' ||
+          steps.update-type.outputs.update-type == 'version-update:semver-patch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
@@ -40,24 +78,24 @@ jobs:
 
       # ── Major bump: label, leave for manual review, and create Linear issue ──
       - name: Create label if missing
-        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        if: steps.update-type.outputs.update-type == 'version-update:semver-major'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh label create major-version-bump --color e11d48 --description 'Contains a major version upgrade, requires manual review' || true
 
       - name: Label PR for manual review
-        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        if: steps.update-type.outputs.update-type == 'version-update:semver-major'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: gh pr edit "$PR_URL" --add-label "major-version-bump"
 
       - name: Checkout repository
-        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        if: steps.update-type.outputs.update-type == 'version-update:semver-major'
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Create Linear issue for major bump
-        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        if: steps.update-type.outputs.update-type == 'version-update:semver-major'
         env:
           LINEAR_API_KEY: ${{ secrets.DEPENDABOT_LINEAR_KEY }}
           LINEAR_TEAM_KEY: ${{ secrets.LINEAR_TEAM_KEY }}
