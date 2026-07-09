@@ -43,7 +43,7 @@ repos:
     hooks:
       - id: mypy
         args: ["--ignore-missing-imports"]
-        additional_dependencies: ["types-PyYAML", "types-redis"]
+        additional_dependencies: ["types-PyYAML", "redis>=4.2"]
         files: '^backend/.*\.py$'
         exclude: (.*migrations|^lambda/)
 
