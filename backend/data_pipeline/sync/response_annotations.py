@@ -119,7 +119,7 @@ def load_sentiments_from_s3(
         sentiment_data = s3.read_jsonl(
             bucket_name=bucket_name_str, key=key, raise_if_missing=False
         )
-    except (ClientError, BotoCoreError) as e:
+    except (ClientError, BotoCoreError):
         logger.exception(
             "Failed to load sentiments from S3 for consultation '{consultation_code}',"
             " question {question_number}",
