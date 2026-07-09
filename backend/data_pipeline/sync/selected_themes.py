@@ -1,8 +1,8 @@
 import csv
 import io
 
-from django.conf import settings
 from botocore.exceptions import BotoCoreError, ClientError
+from django.conf import settings
 
 from consultations.constants import NO_REASON_GIVEN_THEME_NAME, OTHER_THEME_NAME
 from consultations.models import (
