@@ -114,10 +114,19 @@ def load_sentiments_from_s3(
 
     logger.info("Loading sentiments from {key}", key=key)
 
-    # Read JSONL file (raise_if_missing=False because sentiment is optional)
-    sentiment_data = s3.read_jsonl(
-        bucket_name=bucket_name_str, key=key, raise_if_missing=False
-    )
+    try:
+        # Read JSONL file (raise_if_missing=False because sentiment is optional)
+        sentiment_data = s3.read_jsonl(
+            bucket_name=bucket_name_str, key=key, raise_if_missing=False
+        )
+    except (ClientError, BotoCoreError) as e:
+        logger.exception(
+            "Failed to load sentiments from S3 for consultation '{consultation_code}',"
+            " question {question_number}",
+            consultation_code=consultation_code,
+            question_number=question_number
+        )
+        raise
 
     if not sentiment_data:
         logger.info("No sentiment file found at {key} (this is optional)", key=key)
