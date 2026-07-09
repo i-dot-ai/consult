@@ -5,7 +5,6 @@ import pytest
 from django.urls import reverse
 
 from consultations.models import (
-    CandidateTheme,
     Consultation,
     DemographicOption,
     Question,
@@ -728,33 +727,17 @@ class TestGetConsultationFoldersEndpoint:
             assert response.status_code == 200
             assert response.json() == []
 
-    def test_get_folders_assign_themes_stage_returns_consultations(self, client, staff_user_token):
-        """Test assign-themes stage returns consultations with matching S3 folders"""
-        c1 = ConsultationFactory(code="healthcare-2026", title="Healthcare Consultation")
-
-        url = reverse("consultations-folders")
-
-        with patch("data_pipeline.s3.get_consultation_folders") as mock_get_folders:
-            mock_get_folders.return_value = ["healthcare-2026", "education-2026"]
-
-            response = client.get(
-                url,
-                {"stage": "assign-themes"},
-                headers={"Authorization": f"Bearer {staff_user_token}"},
-            )
-
-            assert response.status_code == 200
-            result = response.json()
-            assert result[0]["code"] == "healthcare-2026"
-            assert result[0]["id"] == str(c1.id)
-
     def test_get_folders_handles_one_to_many_relationship(self, client, staff_user_token):
         """Test endpoint handles multiple consultations with same code"""
         c1 = ConsultationFactory(
-            code="healthcare-2026", title="Healthcare Consultation V1", stage=Consultation.Stage.SETUP
+            code="healthcare-2026",
+            title="Healthcare Consultation V1",
+            stage=Consultation.Stage.SETUP,
         )
         c2 = ConsultationFactory(
-            code="healthcare-2026", title="Healthcare Consultation V2", stage=Consultation.Stage.SETUP
+            code="healthcare-2026",
+            title="Healthcare Consultation V2",
+            stage=Consultation.Stage.SETUP,
         )
 
         url = reverse("consultations-folders")
@@ -865,9 +848,9 @@ class TestFindThemesEndpoint:
 @pytest.mark.django_db
 class TestAssignThemesEndpoint:
     def test_assign_themes_success(self, client, staff_user_token, free_text_question):
-        """Test successful assign themes job submission (post-finalising stage)"""
+        """Test assign themes exports selected themes and advances stage from finalising"""
         consultation = free_text_question.consultation
-        consultation.stage = Consultation.Stage.ASSIGNING_THEMES
+        consultation.stage = Consultation.Stage.FINALISING_THEMES
         consultation.save(update_fields=["stage"])
 
         SelectedTheme.objects.create(
@@ -883,48 +866,6 @@ class TestAssignThemesEndpoint:
             patch("consultations.api.views.consultation.batch") as mock_batch,
         ):
             mock_export.return_value = 1
-            mock_batch.submit_job.return_value = {"jobId": "test-job-456"}
-
-            response = client.post(
-                url,
-                headers={"Authorization": f"Bearer {staff_user_token}"},
-            )
-
-            assert response.status_code == 202
-
-            # Verify selected themes were exported to S3
-            mock_export.assert_called_once_with(consultation)
-
-            # Verify batch job was submitted
-            mock_batch.submit_job.assert_called_once_with(
-                job_type="ASSIGN_THEMES",
-                consultation_code=consultation.code,
-                consultation_name=consultation.title,
-                user_id=mock_batch.submit_job.call_args.kwargs["user_id"],
-                model_name=consultation.model_name,
-            )
-
-    def test_assign_themes_candidate_themes_during_finalising(
-        self, client, staff_user_token, free_text_question
-    ):
-        """Test assign themes exports candidate themes when in finalising stage"""
-        consultation = free_text_question.consultation
-        consultation.stage = Consultation.Stage.FINALISING_THEMES
-        consultation.save(update_fields=["stage"])
-
-        CandidateTheme.objects.create(
-            question=free_text_question, name="Candidate Theme", description="Description"
-        )
-
-        url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
-
-        with (
-            patch(
-                "consultations.api.views.consultation.export_candidate_themes_to_s3"
-            ) as mock_export,
-            patch("consultations.api.views.consultation.batch") as mock_batch,
-        ):
-            mock_export.return_value = 1
             mock_batch.submit_job.return_value = {"jobId": "test-job-789"}
 
             response = client.post(
@@ -934,42 +875,80 @@ class TestAssignThemesEndpoint:
 
             assert response.status_code == 202
 
-            # Verify candidate themes were exported
+            # Verify selected themes were exported
             mock_export.assert_called_once_with(consultation)
 
-            # Verify batch job was submitted with candidate_themes target
+            # Verify batch job was submitted for selected themes (default target)
             mock_batch.submit_job.assert_called_once_with(
                 job_type="ASSIGN_THEMES",
                 consultation_code=consultation.code,
                 consultation_name=consultation.title,
                 user_id=mock_batch.submit_job.call_args.kwargs["user_id"],
                 model_name=consultation.model_name,
-                assignment_target="candidate_themes",
             )
 
-            # Verify consultation stage was NOT changed
+            # Verify the default themes were created
+            assert SelectedTheme.objects.filter(question=free_text_question, name="Other").exists()
+            assert SelectedTheme.objects.filter(
+                question=free_text_question, name="No Reason Given"
+            ).exists()
+
+            # Verify consultation stage advanced to assigning themes
             consultation.refresh_from_db()
-            assert consultation.stage == Consultation.Stage.FINALISING_THEMES
+            assert consultation.stage == Consultation.Stage.ASSIGNING_THEMES
 
     def test_assign_themes_no_selected_themes(self, client, staff_user_token, free_text_question):
-        """Test assign themes fails when no themes are selected"""
+        """Test assign themes fails when no user-created themes exist"""
         consultation = free_text_question.consultation
-        consultation.stage = Consultation.Stage.ASSIGNING_THEMES
+        consultation.stage = Consultation.Stage.FINALISING_THEMES
         consultation.save(update_fields=["stage"])
 
         url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
 
-        with patch(
-            "consultations.api.views.consultation.export_selected_themes_to_s3"
-        ) as mock_export:
-            mock_export.side_effect = ValueError("No questions with selected themes found")
+        response = client.post(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
 
-            response = client.post(
-                url,
-                headers={"Authorization": f"Bearer {staff_user_token}"},
-            )
+        assert response.status_code == 400
+        assert response.json()["error"] == "No selected themes found for at least one question."
 
-            assert response.status_code == 400
+    def test_assign_themes_no_selected_themes_non_admin(
+        self, client, non_staff_user_token, free_text_question
+    ):
+        """Non-admin with correct stage but no themes gets the empty-themes error"""
+        consultation = free_text_question.consultation
+        consultation.stage = Consultation.Stage.FINALISING_THEMES
+        consultation.save(update_fields=["stage"])
+
+        url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
+
+        response = client.post(
+            url,
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+        assert response.status_code == 400
+        assert response.json()["error"] == "No selected themes found for at least one question."
+
+    def test_assign_themes_wrong_stage_blocked_for_non_admin(
+        self, client, non_staff_user_token, free_text_question
+    ):
+        """Non-admin users cannot regress a consultation from ANALYSIS by calling assign-themes"""
+        consultation = free_text_question.consultation
+        consultation.stage = Consultation.Stage.ANALYSIS
+        consultation.save(update_fields=["stage"])
+
+        url = reverse("consultations-assign-themes", kwargs={"pk": consultation.id})
+
+        response = client.post(
+            url,
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+        assert response.status_code == 400
+        consultation.refresh_from_db()
+        assert consultation.stage == Consultation.Stage.ANALYSIS
 
 
 @pytest.mark.django_db
@@ -1098,7 +1077,9 @@ class TestImportFinalisedThemesEndpoint:
 
         url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
 
-        with patch("consultations.api.views.consultation.export_selected_themes_to_s3"):
+        with patch(
+            "consultations.api.views.consultation.export_selected_themes_to_s3"
+        ) as mock_export:
             response = client.post(
                 url,
                 {"source_consultation_id": str(source.id)},
@@ -1106,10 +1087,11 @@ class TestImportFinalisedThemesEndpoint:
                 headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
-        assert response.status_code == 200
+        assert response.status_code == 400
         data = response.json()
         assert all(q["status"] == "duplicate_in_target" for q in data["questions"])
         assert SelectedTheme.objects.filter(question__consultation=target).count() == 0
+        mock_export.assert_not_called()
 
     def test_duplicate_source_questions_skipped(self, client, staff_user_token):
         source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
@@ -1124,7 +1106,9 @@ class TestImportFinalisedThemesEndpoint:
 
         url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
 
-        with patch("consultations.api.views.consultation.export_selected_themes_to_s3"):
+        with patch(
+            "consultations.api.views.consultation.export_selected_themes_to_s3"
+        ) as mock_export:
             response = client.post(
                 url,
                 {"source_consultation_id": str(source.id)},
@@ -1132,10 +1116,11 @@ class TestImportFinalisedThemesEndpoint:
                 headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
-        assert response.status_code == 200
+        assert response.status_code == 400
         data = response.json()
         assert data["questions"][0]["status"] == "duplicate_in_source"
         assert SelectedTheme.objects.filter(question__consultation=target).count() == 0
+        mock_export.assert_not_called()
 
     def test_no_match_in_source(self, client, staff_user_token):
         source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
@@ -1148,7 +1133,9 @@ class TestImportFinalisedThemesEndpoint:
 
         url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
 
-        with patch("consultations.api.views.consultation.export_selected_themes_to_s3"):
+        with patch(
+            "consultations.api.views.consultation.export_selected_themes_to_s3"
+        ) as mock_export:
             response = client.post(
                 url,
                 {"source_consultation_id": str(source.id)},
@@ -1156,10 +1143,46 @@ class TestImportFinalisedThemesEndpoint:
                 headers={"Authorization": f"Bearer {staff_user_token}"},
             )
 
-        assert response.status_code == 200
+        assert response.status_code == 400
         data = response.json()
         assert data["questions"][0]["status"] == "no_match_in_source"
         assert SelectedTheme.objects.filter(question__consultation=target).count() == 0
+        mock_export.assert_not_called()
+
+    def test_blocks_import_when_any_question_would_be_left_without_themes(
+        self, client, staff_user_token
+    ):
+        """A mix of importable and unmatched questions blocks the whole import."""
+        source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)
+        target = ConsultationFactory(title="Target", stage=Consultation.Stage.FINALISING_THEMES)
+        importable_text = "Do you agree?"
+        source_q = QuestionFactory(
+            consultation=source, has_free_text=True, number=1, text=importable_text
+        )
+        QuestionFactory(consultation=target, has_free_text=True, number=1, text=importable_text)
+        QuestionFactory(
+            consultation=target, has_free_text=True, number=2, text="No match in source"
+        )
+        SelectedThemeFactory(question=source_q, name="Theme A", description="Desc A")
+
+        url = reverse("consultations-import-finalised-themes", kwargs={"pk": target.id})
+
+        with patch(
+            "consultations.api.views.consultation.export_selected_themes_to_s3"
+        ) as mock_export:
+            response = client.post(
+                url,
+                {"source_consultation_id": str(source.id)},
+                content_type="application/json",
+                headers={"Authorization": f"Bearer {staff_user_token}"},
+            )
+
+        assert response.status_code == 400
+        data = response.json()
+        assert data["warnings"]["questions_without_themes"] == [2]
+        # No partial import happened - not even the importable question was written
+        assert SelectedTheme.objects.filter(question__consultation=target).count() == 0
+        mock_export.assert_not_called()
 
     def test_unmatched_source_questions_in_warnings(self, client, staff_user_token):
         source = ConsultationFactory(title="Source", stage=Consultation.Stage.ANALYSIS)

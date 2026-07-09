@@ -9,12 +9,12 @@ from factories import ConsultationFactory, QuestionFactory
 
 @pytest.mark.django_db
 class TestExportSelectedThemesToS3:
-    @patch("data_pipeline.sync.selected_themes.boto3")
+    @patch("data_pipeline.sync.selected_themes.get_s3_client")
     @patch("data_pipeline.sync.selected_themes.settings")
-    def test_export_selected_themes_to_s3(self, mock_settings, mock_boto3):
+    def test_export_selected_themes_to_s3(self, mock_settings, mock_get_s3_client):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
         mock_s3_client = Mock()
-        mock_boto3.client.return_value = mock_s3_client
+        mock_get_s3_client.return_value = mock_s3_client
 
         # Create consultation, questions and selected themes
         consultation = ConsultationFactory(code="test-code")
@@ -56,3 +56,25 @@ class TestExportSelectedThemesToS3:
         q3_csv_content = q3_call.kwargs["Body"]
         assert "Theme Name,Theme Description" in q3_csv_content
         assert "Theme 3A,Description 3A" in q3_csv_content
+
+    @patch("data_pipeline.sync.selected_themes.get_s3_client")
+    @patch("data_pipeline.sync.selected_themes.settings")
+    def test_raises_if_any_question_missing_themes(self, mock_settings, mock_get_s3_client):
+        mock_settings.AWS_BUCKET_NAME = "test-bucket"
+        mock_s3_client = Mock()
+        mock_get_s3_client.return_value = mock_s3_client
+
+        consultation = ConsultationFactory(code="test-code")
+
+        question1 = QuestionFactory(consultation=consultation, number=1, has_free_text=True)
+        QuestionFactory(consultation=consultation, number=3, has_free_text=True)
+
+        SelectedTheme.objects.create(
+            question=question1, name="Theme 1A", description="Description 1A"
+        )
+        # question 3 has no themes
+
+        with pytest.raises(ValueError, match=r"Questions \[3\] have no selected themes"):
+            export_selected_themes_to_s3(consultation)
+
+        mock_s3_client.put_object.assert_not_called()

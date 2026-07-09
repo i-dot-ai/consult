@@ -1,13 +1,14 @@
 import csv
 import io
 
-import boto3
 from django.conf import settings
 
+from consultations.constants import NO_REASON_GIVEN_THEME_NAME, OTHER_THEME_NAME
 from consultations.models import (
     Consultation,
     SelectedTheme,
 )
+from consultations.utils.s3 import get_s3_client
 
 logger = settings.LOGGER
 
@@ -29,24 +30,35 @@ def export_selected_themes_to_s3(consultation: Consultation) -> int:
         ValueError: If no questions have selected themes
     """
 
-    s3_client = boto3.client("s3")
+    questions = list(consultation.question_set.filter(has_free_text=True))
+
+    themes_by_question: dict = {}
+    for theme in SelectedTheme.objects.filter(question__in=questions):
+        themes_by_question.setdefault(theme.question_id, []).append(theme)
+
+    generic_theme_names = {OTHER_THEME_NAME.lower(), NO_REASON_GIVEN_THEME_NAME.lower()}
+    missing = [
+        q.number
+        for q in questions
+        if not any(
+            theme.name.lower() not in generic_theme_names
+            for theme in themes_by_question.get(q.id, [])
+        )
+    ]
+    if missing:
+        raise ValueError(
+            f"Questions {missing} have no selected themes for consultation '{consultation.title}'"
+        )
+
+    s3_client = get_s3_client()
     questions_exported = 0
 
-    questions = consultation.question_set.filter(has_free_text=True)
-
     for question in questions:
-        themes = SelectedTheme.objects.filter(question=question)
-
-        if not themes.exists():
-            logger.warning(
-                f"No selected themes found for question {question.number} "
-                f"in consultation {consultation.title}"
-            )
-            continue
-
         csv_buffer = io.StringIO()
         writer = csv.writer(csv_buffer)
         writer.writerow(["Theme Name", "Theme Description"])
+
+        themes = themes_by_question.get(question.id, [])
 
         for theme in themes:
             writer.writerow([theme.name, theme.description])
@@ -61,16 +73,11 @@ def export_selected_themes_to_s3(consultation: Consultation) -> int:
 
         logger.info(
             "Exported {themes_count} themes for question {question_number} to {s3_path}",
-            themes_count=themes.count(),
+            themes_count=len(themes),
             question_number=question.number,
             s3_path=s3_path,
         )
         questions_exported += 1
-
-    if questions_exported == 0:
-        raise ValueError(
-            f"No questions with selected themes found for consultation '{consultation.title}'"
-        )
 
     logger.info(
         f"Exported themes for {questions_exported} questions in consultation '{consultation.title}'"
