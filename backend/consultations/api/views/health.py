@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Callable
 
 import psycopg
@@ -23,9 +23,9 @@ def _run_check(checks: dict[str, str], name: str, check: Callable[[], None]) -> 
     try:
         check()
         checks[name] = OK
-    except Exception as e:
+    except Exception:
         checks[name] = NOT_OK
-        logger.exception(f"{name.capitalize()} healthcheck error: {e}")
+        logger.exception(f"{name.capitalize()} healthcheck error")
 
 
 def _check_database() -> None:
@@ -43,7 +43,10 @@ def _check_redis() -> None:
         socket_connect_timeout=CHECK_TIMEOUT_SECONDS,
         socket_timeout=CHECK_TIMEOUT_SECONDS,
     )
-    redis_client.ping()
+    try:
+        redis_client.ping()
+    finally:
+        redis_client.close()
 
 
 def _check_s3() -> None:
@@ -75,7 +78,7 @@ def health_check(_request) -> Response:
         {
             "status": app_status,
             "checks": checks,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         },
         status=http_status,
     )
