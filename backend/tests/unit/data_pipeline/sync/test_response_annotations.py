@@ -11,6 +11,7 @@ from data_pipeline.sync.response_annotations import (
     import_response_annotations_from_s3,
     load_detail_detections_from_s3,
     load_selected_themes_from_s3,
+    load_sentiments_from_s3,
     load_theme_mappings_from_s3,
 )
 from factories import (
@@ -169,6 +170,40 @@ class TestLoadSelectedThemesFromS3:
 
         with pytest.raises(ClientError) as exc_info:
             load_selected_themes_from_s3(
+                consultation_code="test-code",
+                question_number=1,
+                timestamp="2024-01-20",
+                bucket_name="test-bucket",
+            )
+
+        assert exc_info.value.response["Error"]["Code"] == "AccessDenied"
+
+
+class TestLoadSentimentsFromS3:
+    """Sentiment data is optional, so unlike the other loaders a missing file must not raise."""
+
+    @patch("data_pipeline.sync.response_annotations.s3.read_jsonl")
+    def test_returns_empty_list_when_sentiment_file_missing(self, mock_read_jsonl):
+        # read_jsonl itself swallows NoSuchKey and returns [] when raise_if_missing=False,
+        # so that's what load_sentiments_from_s3 sees - it should never observe a NoSuchKey error.
+        mock_read_jsonl.return_value = []
+
+        result = load_sentiments_from_s3(
+            consultation_code="test-code",
+            question_number=1,
+            timestamp="2024-01-20",
+            bucket_name="test-bucket",
+        )
+
+        assert result == []
+        assert mock_read_jsonl.call_args.kwargs["raise_if_missing"] is False
+
+    @patch("data_pipeline.sync.response_annotations.s3.read_jsonl")
+    def test_propagates_other_client_errors(self, mock_read_jsonl):
+        mock_read_jsonl.side_effect = _client_error("AccessDenied")
+
+        with pytest.raises(ClientError) as exc_info:
+            load_sentiments_from_s3(
                 consultation_code="test-code",
                 question_number=1,
                 timestamp="2024-01-20",
