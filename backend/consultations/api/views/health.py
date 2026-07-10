@@ -16,7 +16,7 @@ logger = settings.LOGGER
 
 OK = "ok"
 NOT_OK = "error"
-CHECK_TIMEOUT_SECONDS = 3
+CHECK_TIMEOUT_SECONDS = 5
 
 
 def _run_check(checks: dict[str, str], name: str, check: Callable[[], None]) -> None:
