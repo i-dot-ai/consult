@@ -19,6 +19,9 @@ jobs:
           filters: |
             backend:
               - 'backend/**'
+              - 'themefinder/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
               - 'Makefile'
               - '.github/workflows/backend-ci.yml'
             frontend:
