@@ -10,6 +10,7 @@ dependencies = [
     "openai>=2.14.0",
     "pydantic>=2.12.5",
     "sentry-sdk>=2.61.1",
+    "i-dot-ai-utilities>=0.6.0",
 ]
 
 [tool.uv]

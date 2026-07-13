@@ -9,18 +9,23 @@ from pathlib import Path
 import boto3
 import pandas as pd
 import sentry_sdk
+import structlog
 import urllib3
+from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
+from i_dot_ai_utilities.logging.types.enrichment_types import ExecutionEnvironmentType
+from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 from openai import OpenAI
 from pydantic import BaseModel
-from themefinder.llm import OpenAILLM
+
 from themefinder import (
+    rule_1_total_theme_number_less_than_70_slack,
+    rule_3_semantic_similarity_must_be_less_than_90pc_slack,
     theme_condensation,
     theme_generation,
     theme_refinement,
-    rule_1_total_theme_number_less_than_70_slack,
-    rule_3_semantic_similarity_must_be_less_than_90pc_slack,
 )
 from themefinder.advanced_tasks.theme_clustering_agent import ThemeClusteringAgent
+from themefinder.llm import OpenAILLM
 from themefinder.models import (
     ThemeNode,
 )
@@ -42,13 +47,52 @@ class ThemeNodeList(BaseModel):
     theme_nodes: list[ThemeNode]
 
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
+# The Fargate enricher reads ECS_CONTAINER_METADATA_URI_V4, which only exists on Fargate.
+_execution_environment = (
+    ExecutionEnvironmentType.FARGATE
+    if os.environ.get("EXECUTION_CONTEXT") == "batch"
+    else ExecutionEnvironmentType.LOCAL
 )
-logger = logging.getLogger(__name__)
+
+logger = StructuredLogger(
+    level="info",
+    options={
+        "execution_environment": _execution_environment,
+        "log_format": LogOutputFormat.JSON,
+        "ship_logs": True,
+    },
+)
+
+# boto3/urllib3 log via stdlib `logging`, which StructuredLogger never configures.
+# Route it through the same structlog JSON pipeline so it isn't silently dropped
+# (root logger defaults to WARNING with no handler) or lost to stderr unformatted.
+_stdlib_handler = logging.StreamHandler()
+_stdlib_handler.setFormatter(
+    structlog.stdlib.ProcessorFormatter(
+        foreign_pre_chain=[
+            structlog.contextvars.merge_contextvars,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.add_log_level,
+            structlog.processors.EventRenamer("message"),
+        ],
+        processors=[
+            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+            structlog.processors.format_exc_info,
+            structlog.processors.JSONRenderer(),
+        ],
+    )
+)
+logging.basicConfig(level=logging.INFO, handlers=[_stdlib_handler], force=True)
+
+logger.set_context_field("batch_job_id", os.environ.get("AWS_BATCH_JOB_ID", "unknown"))
+# Adopt the submitting Django request's context_id so both sides' logs join
+# on a single field in OpenSearch. If CONTEXT_ID is absent (e.g. the script
+# was invoked manually, outside a Batch submission), keep the context_id
+# StructuredLogger generated automatically rather than overwriting it with
+# a hardcoded "unknown".
+incoming_context_id = os.environ.get("CONTEXT_ID")
+if incoming_context_id:
+    logger.set_context_field("context_id", incoming_context_id)
 
 # Initialize Sentry if DSN is provided
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -72,18 +116,22 @@ def download_s3_subdir(subdir: str) -> None:
     to a local directory with the same name as the subdir.
     """
     prefix = str(Path(BASE_PREFIX) / subdir).rstrip("/") + "/"
-    logger.info("prefix: %s", prefix)
-    logger.info("bucket: %s", BUCKET_NAME)
+    logger.info("prefix: {prefix}", prefix=prefix)
+    logger.info("bucket: {bucket}", bucket=BUCKET_NAME)
 
     s3 = boto3.client("s3")
 
     paginator = s3.get_paginator("list_objects_v2")
     inputs_prefix = str(Path(BASE_PREFIX) / subdir / "inputs").rstrip("/") + "/"
-    logger.info("S3 inputs prefix: %s", inputs_prefix)
+    logger.info("S3 inputs prefix: {inputs_prefix}", inputs_prefix=inputs_prefix)
     pages = paginator.paginate(
         Bucket=BUCKET_NAME, Prefix=inputs_prefix, ExpectedBucketOwner=ACCOUNT_ID
     )
-    logger.info("Created paginator for bucket: %s with prefix: %s", BUCKET_NAME, inputs_prefix)
+    logger.info(
+        "Created paginator for bucket: {bucket} with prefix: {inputs_prefix}",
+        bucket=BUCKET_NAME,
+        inputs_prefix=inputs_prefix,
+    )
 
     for page in pages:
         contents = page.get("Contents", [])
@@ -94,9 +142,16 @@ def download_s3_subdir(subdir: str) -> None:
                 local_path = Path(subdir) / relative_path
                 local_path.parent.mkdir(parents=True, exist_ok=True)
                 s3.download_file(
-                    BUCKET_NAME, key, str(local_path), ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID}
+                    BUCKET_NAME,
+                    key,
+                    str(local_path),
+                    ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID},
                 )
-                logger.info("Downloaded %s to %s", key, local_path)
+                logger.info(
+                    "Downloaded {key} to {local_path}",
+                    key=key,
+                    local_path=str(local_path),
+                )
 
 
 def upload_directory_to_s3(local_path: str) -> None:
@@ -118,7 +173,12 @@ def upload_directory_to_s3(local_path: str) -> None:
                 s3_key,
                 ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID},
             )
-            logger.info("Uploaded %s to s3://%s/%s", local_file_path, BUCKET_NAME, s3_key)
+            logger.info(
+                "Uploaded {local_file_path} to s3://{bucket}/{s3_key}",
+                local_file_path=str(local_file_path),
+                bucket=BUCKET_NAME,
+                s3_key=s3_key,
+            )
 
 
 def load_question(consultation_dir: str, question_dir: str) -> tuple:
@@ -133,7 +193,9 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
         tuple: (question text, dataframe of responses)
     """
     question_path = Path(consultation_dir) / "inputs" / question_dir / "question.json"
-    responses_path = Path(consultation_dir) / "inputs" / question_dir / "responses.jsonl"
+    responses_path = (
+        Path(consultation_dir) / "inputs" / question_dir / "responses.jsonl"
+    )
 
     with question_path.open() as f:
         question = json.load(f)["question_text"]
@@ -144,7 +206,9 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
         for line in f:
             responses.append(json.loads(line))
     responses_df = pd.DataFrame(responses)
-    responses = responses_df.rename(columns={"themefinder_id": "response_id", "text": "response"})
+    responses = responses_df.rename(
+        columns={"themefinder_id": "response_id", "text": "response"}
+    )
     return question, responses
 
 
@@ -160,7 +224,9 @@ async def generate_themes(question: str, responses_df, llm):
     Returns:
         pd.DataFrame: DataFrame containing refined themes
     """
-    theme_df, _ = await theme_generation(responses_df, llm, question=question, partition_key=None)
+    theme_df, _ = await theme_generation(
+        responses_df, llm, question=question, partition_key=None
+    )
 
     condensed_theme_df, _ = await theme_condensation(
         theme_df,
@@ -201,9 +267,9 @@ async def agentic_theme_clustering(
     pd.DataFrame
         All themes from clustering
     """
-    refined_themes_df[["topic_label", "topic_description"]] = refined_themes_df["topic"].str.split(
-        ":", n=1, expand=True
-    )
+    refined_themes_df[["topic_label", "topic_description"]] = refined_themes_df[
+        "topic"
+    ].str.split(":", n=1, expand=True)
 
     initial_themes = [
         ThemeNode(
@@ -220,7 +286,9 @@ async def agentic_theme_clustering(
         target_themes=n_target_themes,
     )
     logger.info(
-        f"Clustering themes with max_iterations={max_cluster_iterations}, target_themes={n_target_themes}"
+        "Clustering themes with max_iterations={max_iterations}, target_themes={target_themes}",
+        max_iterations=max_cluster_iterations,
+        target_themes=n_target_themes,
     )
     all_themes_df = None
     for i in range(3):
@@ -231,7 +299,7 @@ async def agentic_theme_clustering(
             if len(all_themes_df) > 0:
                 break
         except:  # noqa: E722
-            logger.info(f"Error when clustering, attempt {i}, retrying")
+            logger.info("Error when clustering, attempt {attempt}, retrying", attempt=i)
 
     if all_themes_df is None or len(all_themes_df) == 0:
         logger.warning("Theme clustering failed after 3 attempts")
@@ -266,6 +334,8 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
     skipped_questions = []
     for question_dir in os.listdir(Path(consultation_dir) / "inputs"):
         if "question" in question_dir:
+            logger.set_context_field("question_id", question_dir)
+
             # Closed / multiple-choice questions have no free-text responses.jsonl to
             # find themes in — skip them quietly rather than raising a FileNotFoundError.
             responses_path = (
@@ -273,19 +343,27 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
             )
             if not responses_path.exists():
                 logger.info(
-                    "Skipping %s: no free-text responses (closed question)", question_dir
+                    "Skipping {question_id}: no free-text responses (closed question)",
+                    question_id=question_dir,
                 )
                 continue
 
-            logger.info("Processing %s...", question_dir)
+            logger.info("Processing {question_id}...", question_id=question_dir)
             try:
                 # Create question-specific directory in the datestamped folder
                 question_output_dir = (
-                    Path(consultation_dir) / "outputs" / "sign_off" / date / question_dir
+                    Path(consultation_dir)
+                    / "outputs"
+                    / "sign_off"
+                    / date
+                    / question_dir
                 )
                 if not question_output_dir.exists():
                     question_output_dir.mkdir(parents=True, exist_ok=True)
-                    logger.info("Created outputs directory at: %s", question_output_dir)
+                    logger.info(
+                        "Created outputs directory at: {output_dir}",
+                        output_dir=str(question_output_dir),
+                    )
 
                 # Load question and responses
                 question, responses_df = load_question(consultation_dir, question_dir)
@@ -306,9 +384,13 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
 
                 # Cluster themes if more than 20
                 if len(refined_themes_df) > 20:
-                    all_themes_df = await agentic_theme_clustering(refined_themes_df, llm)
+                    all_themes_df = await agentic_theme_clustering(
+                        refined_themes_df, llm
+                    )
                     if all_themes_df is not None:
-                        all_themes_list = [ThemeNode(**row) for _, row in all_themes_df.iterrows()]
+                        all_themes_list = [
+                            ThemeNode(**row) for _, row in all_themes_df.iterrows()
+                        ]
                     else:
                         logger.info("Clustering failed, using unclustered themes")
                         all_themes_list = [
@@ -318,15 +400,18 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                 else:
                     logger.info("Fewer than 20 themes, clustering not required")
                     all_themes_list = [
-                        refined_themes_to_theme_node(row) for _, row in refined_themes_df.iterrows()
+                        refined_themes_to_theme_node(row)
+                        for _, row in refined_themes_df.iterrows()
                     ]
 
-                rule_1_messages, rule_1_failed = rule_1_total_theme_number_less_than_70_slack(
-                    all_themes_list
+                rule_1_messages, rule_1_failed = (
+                    rule_1_total_theme_number_less_than_70_slack(all_themes_list)
                 )
 
                 rule_3_messages, rule_3_failed = (
-                    rule_3_semantic_similarity_must_be_less_than_90pc_slack(all_themes_list, client)
+                    rule_3_semantic_similarity_must_be_less_than_90pc_slack(
+                        all_themes_list, client
+                    )
                 )
 
                 msg = "failed ❌" if (rule_1_failed or rule_3_failed) else "passed ✅"
@@ -350,26 +435,43 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                 )
                 if response.status != 200:
                     response_data = (
-                        response.data.decode("utf-8") if response.data else "No response data"
+                        response.data.decode("utf-8")
+                        if response.data
+                        else "No response data"
                     )
-                    error_message = (
-                        f"Slack webhook failed with status {response.status}: {response_data}"
+                    logger.error(
+                        "Slack webhook failed with status {status}: {response_data}",
+                        status=response.status,
+                        response_data=response_data,
                     )
-                    logger.error(error_message)
                 else:
-                    logger.info(message)
+                    logger.info("Slack notification sent", slack_message=message)
 
-                with open(os.path.join(question_output_dir, "clustered_themes.json"), "w") as f:
-                    f.write(ThemeNodeList(theme_nodes=all_themes_list).model_dump_json())
+                with open(
+                    os.path.join(question_output_dir, "clustered_themes.json"), "w"
+                ) as f:
+                    f.write(
+                        ThemeNodeList(theme_nodes=all_themes_list).model_dump_json()
+                    )
 
                 logger.info(
-                    "Completed processing %s, saved to %s", question_dir, question_output_dir
+                    "Completed processing {question_id}, saved to {output_dir}",
+                    question_id=question_dir,
+                    output_dir=str(question_output_dir),
                 )
             except Exception:
-                logger.exception("Error processing %s", question_dir)
+                logger.exception(
+                    "Error processing {question_id}", question_id=question_dir
+                )
                 skipped_questions.append(question_dir)
+
+    # Don't let the last question processed leak onto the summary line below.
+    structlog.contextvars.unbind_contextvars("question_id")
     if skipped_questions:
-        logger.warning("Skipped questions: %s", skipped_questions)
+        logger.warning(
+            "Skipped questions: {skipped_questions}",
+            skipped_questions=skipped_questions,
+        )
     return str(Path(consultation_dir) / "outputs" / "sign_off" / date)
 
 
@@ -394,8 +496,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    logger.info("Starting processing for subdirectory: %s", args.subdir)
+    logger.set_context_field("consultation_code", args.subdir)
+
+    logger.info("Starting processing for subdirectory: {subdir}", subdir=args.subdir)
     download_s3_subdir(args.subdir)
     output_dir = asyncio.run(process_consultation(args.subdir, args.model_name))
     upload_directory_to_s3(output_dir)
-    logger.info("Processing completed for subdirectory: %s", args.subdir)
+    logger.info("Processing completed for subdirectory: {subdir}", subdir=args.subdir)

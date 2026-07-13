@@ -1,6 +1,26 @@
+from django.conf import settings
 from django.http import Http404
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+
+
+class RequestLoggingContextMiddleware:
+    """Refresh the structured-logging context at the start of every request.
+
+    settings.LOGGER's context_id is bound once, at settings-import time, in
+    whichever thread performs the import. Gunicorn's gthread workers reuse a
+    pool of threads across requests, so without this, a request handled on any
+    other thread inherits "unknown" or a stale context_id left over from a
+    previous request/task on that thread — breaking correlation between this
+    request's logs and any batch jobs it submits.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        settings.LOGGER.refresh_context()
+        return self.get_response(request)
 
 
 class JWTAuthenticationMiddleware:
