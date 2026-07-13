@@ -99,7 +99,7 @@ jobs:
         env:
           LINEAR_API_KEY: ${{ secrets.DEPENDABOT_LINEAR_KEY }}
           LINEAR_TEAM_KEY: ${{ secrets.LINEAR_TEAM_KEY }}
-          LINEAR_ASSIGNEE_PROJECT_KEY: ${{ secrets.LINEAR_ASSIGNEE_PROJECT_KEY }}
+          LINEAR_ASSIGNEE_TEAM_KEY: ${{ secrets.LINEAR_ASSIGNEE_TEAM_KEY }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_URL: ${{ github.event.pull_request.html_url }}
           DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
