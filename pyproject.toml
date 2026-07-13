@@ -1,0 +1,13 @@
+[tool.uv]
+exclude-newer = "P14D"
+# Resolution settings (overrides + per-package cutoffs) are only honoured at the
+# workspace root, so main's security constraints live here rather than in
+# backend/pyproject.toml.
+exclude-newer-package = {"i-dot-ai-utilities" = "2026-06-04", "pydantic-settings" = "2026-07-01", "cryptography" = "2026-07-01", "langchain" = "2026-07-01", "langsmith" = "2026-07-01"}
+override-dependencies = [
+  "cryptography>=49.0.0",
+  "langchain-core>=1.3.3",
+]
+
+[tool.uv.workspace]
+members = ["backend", "themefinder", "pipeline-sign-off", "pipeline-mapping"]
