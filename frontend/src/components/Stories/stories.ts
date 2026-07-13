@@ -44,6 +44,7 @@ import ThemeSelectionFormStory from "../screens/ThemeSelectionForm/ThemeSelectio
 import QuestionsReviewListStorySvelte from "../screens/QuestionsReviewList/QuestionsReviewListStory.svelte";
 import ManageConsultationsArchiveStory from "../screens/ManageConsultationsArchive/ManageConsultationsArchiveStory.svelte";
 import ErrorScreenStory from "../screens/ErrorScreen/ErrorScreenStory.svelte";
+import DataTableStory from "../shad/DataTable/DataTableStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -114,4 +115,5 @@ export default [
   QuestionsReviewListStorySvelte,
   ManageConsultationsArchiveStory,
   ErrorScreenStory,
+  DataTableStory,
 ] as Story[];

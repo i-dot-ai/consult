@@ -9,5 +9,15 @@
     "dist",
     "node_modules",
     "playwright-report"
-  ]
+  ],
+  "compilerOptions": {
+    "paths": {
+      "$shadlib": [
+        "./src/lib"
+      ],
+      "$shadlib/*": [
+        "./src/lib/*"
+      ]
+    }
+  }
 }
