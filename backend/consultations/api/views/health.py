@@ -31,10 +31,13 @@ def _run_check(checks: dict[str, str], name: str, check: Callable[[], None]) -> 
 def _check_database() -> None:
     conn_params = connection.get_connection_params()
     conn_params["connect_timeout"] = CHECK_TIMEOUT_SECONDS
-    with psycopg.connect(**conn_params) as conn:
+    conn = psycopg.connect(**conn_params)
+    try:
         with conn.cursor() as cursor:
             cursor.execute(f"SET statement_timeout = {CHECK_TIMEOUT_SECONDS * 1000}")
             cursor.execute("SELECT 1")
+    finally:
+        conn.close()
 
 
 def _check_redis() -> None:
