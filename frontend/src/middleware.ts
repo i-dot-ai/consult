@@ -44,22 +44,17 @@ export const onRequest: MiddlewareHandler = async (
     return await proxyToDjango(context, backendUrl);
   }
 
-  let internalAccessToken = null;
   let userIsStaff = false;
 
   const env = getEnv().toLowerCase();
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
-  if (env === "local" || env === "test") {
-    const devEmail = context.cookies.get("dev_email")?.value;
-    if (devEmail === LOCAL_USERS.POLICY.EMAIL) {
-      internalAccessToken = LOCAL_USERS.POLICY.INTERNAL_ACCESS_TOKEN;
-    } else {
-      internalAccessToken = LOCAL_USERS.ADMIN.INTERNAL_ACCESS_TOKEN;
-    }
-  } else {
-    internalAccessToken = context.request.headers.get("x-amzn-oidc-data");
-  }
+  const internalAccessToken =
+    env === "local" || env === "test"
+      ? context.cookies.get("dev_email")?.value === LOCAL_USERS.POLICY.EMAIL
+        ? LOCAL_USERS.POLICY.INTERNAL_ACCESS_TOKEN
+        : LOCAL_USERS.ADMIN.INTERNAL_ACCESS_TOKEN
+      : context.request.headers.get("x-amzn-oidc-data");
 
   if (internalAccessToken) {
     try {
