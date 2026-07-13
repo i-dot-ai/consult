@@ -35,24 +35,22 @@ def resolve_assignee_id(api_key: str, project_key: str) -> str | None:
     """Pick a random assignable member from the given Linear project."""
     project_resp = linear_query(api_key, """
         query($key: String!) {
-          projects(filter: { identifier: { eq: $key } }) {
-            nodes {
-              id
-              name
-              members {
-                nodes { id email isAssignable }
-              }
+          project(id: $key) {
+            id
+            name
+            members {
+              nodes { id email isAssignable }
             }
           }
         }
     """, {"key": project_key})
 
-    projects = project_resp["data"]["projects"]["nodes"]
-    if not projects:
+    project = project_resp["data"]["project"]
+    if not project:
         print(f"WARNING: could not find a Linear project with key '{project_key}'")
         return None
 
-    pool = [u for u in projects[0]["members"]["nodes"] if u["isAssignable"]]
+    pool = [u for u in project["members"]["nodes"] if u["isAssignable"]]
     if not pool:
         print(f"WARNING: project '{project_key}' has no assignable members")
         return None
