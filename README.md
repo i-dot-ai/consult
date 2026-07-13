@@ -146,3 +146,4 @@ The workspace settings are configured to:
 - Enable TypeScript support in Svelte files
 
 You can override these settings in your User Settings if you prefer different personal configurations. See the [VSCode settings documentation](https://code.visualstudio.com/docs/getstarted/settings) for more information on the settings hierarchy.
+
