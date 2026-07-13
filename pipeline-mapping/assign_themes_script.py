@@ -9,22 +9,66 @@ from pathlib import Path
 import boto3
 import pandas as pd
 import sentry_sdk
+import structlog
 import urllib3
-from themefinder.llm import OpenAILLM
+from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
+from i_dot_ai_utilities.logging.types.enrichment_types import ExecutionEnvironmentType
+from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
+
 from themefinder import (
     detail_detection,
     rule_2_themes_must_have_a_non_negligible_number_of_responses_slack,
     rule_4_themes_should_not_overlap_slack,
     theme_mapping,
 )
+from themefinder.llm import OpenAILLM
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
+# The Fargate enricher reads ECS_CONTAINER_METADATA_URI_V4, which only exists on Fargate.
+_execution_environment = (
+    ExecutionEnvironmentType.FARGATE
+    if os.environ.get("EXECUTION_CONTEXT") == "batch"
+    else ExecutionEnvironmentType.LOCAL
 )
-logger = logging.getLogger(__name__)
+
+logger = StructuredLogger(
+    level="info",
+    options={
+        "execution_environment": _execution_environment,
+        "log_format": LogOutputFormat.JSON,
+        "ship_logs": True,
+    },
+)
+
+# boto3/urllib3 log via stdlib `logging`, which StructuredLogger never configures.
+# Route it through the same structlog JSON pipeline so it isn't silently dropped
+# (root logger defaults to WARNING with no handler) or lost to stderr unformatted.
+_stdlib_handler = logging.StreamHandler()
+_stdlib_handler.setFormatter(
+    structlog.stdlib.ProcessorFormatter(
+        foreign_pre_chain=[
+            structlog.contextvars.merge_contextvars,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.add_log_level,
+            structlog.processors.EventRenamer("message"),
+        ],
+        processors=[
+            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+            structlog.processors.format_exc_info,
+            structlog.processors.JSONRenderer(),
+        ],
+    )
+)
+logging.basicConfig(level=logging.INFO, handlers=[_stdlib_handler], force=True)
+
+logger.set_context_field("batch_job_id", os.environ.get("AWS_BATCH_JOB_ID", "unknown"))
+# Adopt the submitting Django request's context_id so both sides' logs join
+# on a single field in OpenSearch. If CONTEXT_ID is absent (e.g. the script
+# was invoked manually, outside a Batch submission), keep the context_id
+# StructuredLogger generated automatically rather than overwriting it with
+# a hardcoded "unknown".
+incoming_context_id = os.environ.get("CONTEXT_ID")
+if incoming_context_id:
+    logger.set_context_field("context_id", incoming_context_id)
 
 # Initialize Sentry if DSN is provided
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -53,18 +97,22 @@ def download_s3_subdir(subdir: str) -> None:
     to a local directory with the same name as the subdir.
     """
     prefix = str(Path(BASE_PREFIX) / subdir).rstrip("/") + "/"
-    logger.info("prefix: %s", prefix)
-    logger.info("bucket: %s", BUCKET_NAME)
+    logger.info("prefix: {prefix}", prefix=prefix)
+    logger.info("bucket: {bucket}", bucket=BUCKET_NAME)
 
     s3 = boto3.client("s3")
 
     paginator = s3.get_paginator("list_objects_v2")
     inputs_prefix = str(Path(BASE_PREFIX) / subdir / "inputs").rstrip("/") + "/"
-    logger.info("S3 inputs prefix: %s", inputs_prefix)
+    logger.info("S3 inputs prefix: {inputs_prefix}", inputs_prefix=inputs_prefix)
     pages = paginator.paginate(
         Bucket=BUCKET_NAME, Prefix=inputs_prefix, ExpectedBucketOwner=ACCOUNT_ID
     )
-    logger.info("Created paginator for bucket: %s with prefix: %s", BUCKET_NAME, inputs_prefix)
+    logger.info(
+        "Created paginator for bucket: {bucket} with prefix: {inputs_prefix}",
+        bucket=BUCKET_NAME,
+        inputs_prefix=inputs_prefix,
+    )
 
     for page in pages:
         contents = page.get("Contents", [])
@@ -75,9 +123,16 @@ def download_s3_subdir(subdir: str) -> None:
                 local_path = Path(subdir) / relative_path
                 local_path.parent.mkdir(parents=True, exist_ok=True)
                 s3.download_file(
-                    BUCKET_NAME, key, str(local_path), ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID}
+                    BUCKET_NAME,
+                    key,
+                    str(local_path),
+                    ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID},
                 )
-                logger.info("Downloaded %s to %s", key, local_path)
+                logger.info(
+                    "Downloaded {key} to {local_path}",
+                    key=key,
+                    local_path=str(local_path),
+                )
 
 
 def upload_directory_to_s3(local_path: str) -> None:
@@ -99,7 +154,12 @@ def upload_directory_to_s3(local_path: str) -> None:
                 s3_key,
                 ExtraArgs={"ExpectedBucketOwner": ACCOUNT_ID},
             )
-            logger.info("Uploaded %s to s3://%s/%s", local_file_path, BUCKET_NAME, s3_key)
+            logger.info(
+                "Uploaded {local_file_path} to s3://{bucket}/{s3_key}",
+                local_file_path=str(local_file_path),
+                bucket=BUCKET_NAME,
+                s3_key=s3_key,
+            )
 
 
 def load_question(consultation_dir: str, question_dir: str) -> tuple:
@@ -115,7 +175,9 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
     """
 
     question_path = Path(consultation_dir) / "inputs" / question_dir / "question.json"
-    responses_path = Path(consultation_dir) / "inputs" / question_dir / "responses.jsonl"
+    responses_path = (
+        Path(consultation_dir) / "inputs" / question_dir / "responses.jsonl"
+    )
     themes_path = Path(consultation_dir) / "inputs" / question_dir / "themes.csv"
 
     with question_path.open() as f:
@@ -127,7 +189,9 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
         for line in f:
             responses.append(json.loads(line))
     responses_df = pd.DataFrame(responses)
-    responses = responses_df.rename(columns={"themefinder_id": "response_id", "text": "response"})
+    responses = responses_df.rename(
+        columns={"themefinder_id": "response_id", "text": "response"}
+    )
 
     with themes_path.open() as f:
         themes = pd.read_csv(themes_path)
@@ -164,16 +228,23 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
     skipped_questions = []
     for question_dir in os.listdir(Path(consultation_dir) / "inputs"):
         if "question" in question_dir:
-            logger.info("Processing %s...", question_dir)
+            logger.set_context_field("question_id", question_dir)
+
+            logger.info("Processing {question_id}...", question_id=question_dir)
             try:
                 question_output_dir = (
                     Path(consultation_dir) / "outputs" / "mapping" / date / question_dir
                 )
                 if not question_output_dir.exists():
                     question_output_dir.mkdir(parents=True, exist_ok=True)
-                    logger.info("Created outputs directory at: %s", question_output_dir)
+                    logger.info(
+                        "Created outputs directory at: {output_dir}",
+                        output_dir=str(question_output_dir),
+                    )
 
-                question, responses_df, themes_df = load_question(consultation_dir, question_dir)
+                question, responses_df, themes_df = load_question(
+                    consultation_dir, question_dir
+                )
 
                 detail_df, _ = await detail_detection(
                     responses_df,
@@ -183,7 +254,9 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                 detail_df = detail_df[["response_id", "evidence_rich"]]
                 detail_df = detail_df.rename(columns={"response_id": "themefinder_id"})
                 detail_df.to_json(
-                    question_output_dir / "detail_detection.jsonl", orient="records", lines=True
+                    question_output_dir / "detail_detection.jsonl",
+                    orient="records",
+                    lines=True,
                 )
 
                 mapped_df, _ = await theme_mapping(
@@ -205,7 +278,9 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                 themes_df.to_json(question_output_dir / "themes.json", orient="records")
 
                 logger.info(
-                    "Completed processing %s, saved to %s", question_dir, question_output_dir
+                    "Completed processing {question_id}, saved to {output_dir}",
+                    question_id=question_dir,
+                    output_dir=str(question_output_dir),
                 )
 
                 rule_2_messages, rule_2_failed = (
@@ -239,21 +314,31 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
                 )
                 if response.status != 200:
                     response_data = (
-                        response.data.decode("utf-8") if response.data else "No response data"
+                        response.data.decode("utf-8")
+                        if response.data
+                        else "No response data"
                     )
-                    error_message = (
-                        f"Slack webhook failed with status {response.status}: {response_data}"
+                    logger.error(
+                        "Slack webhook failed with status {status}: {response_data}",
+                        status=response.status,
+                        response_data=response_data,
                     )
-                    logger.error(error_message)
                 else:
-                    logger.info(message)
-
+                    logger.info("Slack notification sent", slack_message=message)
 
             except Exception:
-                logger.exception("Error processing %s", question_dir)
+                logger.exception(
+                    "Error processing {question_id}", question_id=question_dir
+                )
                 skipped_questions.append(question_dir)
+
+    # Don't let the last question processed leak onto the summary line below.
+    structlog.contextvars.unbind_contextvars("question_id")
     if skipped_questions:
-        logger.warning("Skipped questions: %s", skipped_questions)
+        logger.warning(
+            "Skipped questions: {skipped_questions}",
+            skipped_questions=skipped_questions,
+        )
     return str(Path(consultation_dir) / "outputs" / "mapping" / date)
 
 
@@ -278,8 +363,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    logger.info("Starting processing for subdirectory: %s", args.subdir)
+    logger.set_context_field("consultation_code", args.subdir)
+
+    logger.info("Starting processing for subdirectory: {subdir}", subdir=args.subdir)
     download_s3_subdir(args.subdir)
     output_dir = asyncio.run(process_consultation(args.subdir, args.model_name))
     upload_directory_to_s3(output_dir)
-    logger.info("Processing completed for subdirectory: %s", args.subdir)
+    logger.info("Processing completed for subdirectory: {subdir}", subdir=args.subdir)
