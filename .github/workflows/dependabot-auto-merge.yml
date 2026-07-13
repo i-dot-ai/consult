@@ -83,19 +83,40 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh label create major-version-bump --color e11d48 --description 'Contains a major version upgrade, requires manual review' || true
 
-      - name: Label PR for manual review
+      - name: Check if already labelled for manual review
+        id: already-labelled
         if: steps.update-type.outputs.update-type == 'version-update:semver-major'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          labels=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json labels --jq '[.labels[].name] | join(",")')
+          if echo "$labels" | grep -q "major-version-bump"; then
+            echo "already-labelled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "already-labelled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Label PR for manual review
+        if: |
+          steps.update-type.outputs.update-type == 'version-update:semver-major' &&
+          steps.already-labelled.outputs.already-labelled == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: gh pr edit "$PR_URL" --add-label "major-version-bump"
 
       - name: Checkout repository
-        if: steps.update-type.outputs.update-type == 'version-update:semver-major'
+        if: |
+          steps.update-type.outputs.update-type == 'version-update:semver-major' &&
+          steps.already-labelled.outputs.already-labelled == 'false'
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Create Linear issue for major bump
-        if: steps.update-type.outputs.update-type == 'version-update:semver-major'
+        if: |
+          steps.update-type.outputs.update-type == 'version-update:semver-major' &&
+          steps.already-labelled.outputs.already-labelled == 'false'
         env:
           LINEAR_API_KEY: ${{ secrets.DEPENDABOT_LINEAR_KEY }}
           LINEAR_TEAM_KEY: ${{ secrets.LINEAR_TEAM_KEY }}
