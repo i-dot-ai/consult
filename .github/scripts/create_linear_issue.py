@@ -1,11 +1,11 @@
 """
 Create a Linear issue in the configured team's "In Review" state for a major dependency bump,
-randomly assigned to a member of the configured assignee project.
+randomly assigned to a member of the configured assignee team.
 
 Required environment variables:
   LINEAR_API_KEY                - Linear personal API key (lin_api_*)
   LINEAR_TEAM_KEY               - Key of the Linear team to create the issue in (e.g. "PRO")
-  LINEAR_ASSIGNEE_PROJECT_KEY   - Key of the Linear project to draw assignees from (e.g. "GIT")
+  LINEAR_ASSIGNEE_TEAM_KEY      - Key of the Linear team to draw assignees from (e.g. "GIT")
   PR_TITLE                      - Title of the Dependabot PR
   PR_URL                        - URL of the Dependabot PR
   DEPENDENCY_NAMES              - Name(s) of the dependency being bumped
@@ -34,43 +34,35 @@ def linear_query(api_key: str, query: str, variables: dict | None = None) -> dic
     return result
 
 
-def resolve_assignee_id(api_key: str, project_key: str) -> str | None:
-    """Pick a random assignable member from the given Linear project."""
-    project_resp = linear_query(api_key, """
-        query {
-          projects(first: 50) {
+def resolve_assignee_id(api_key: str, team_key: str) -> str | None:
+    """Pick a random assignable member from the given Linear team."""
+    team_resp = linear_query(api_key, """
+        query($key: String!) {
+          teams(filter: { key: { eq: $key } }) {
             nodes {
               id
               name
-              slugId
               members {
                 nodes { id email isAssignable }
               }
             }
           }
         }
-    """)
+    """, {"key": team_key})
 
-    data = project_resp.get("data")
+    data = team_resp.get("data")
     if not data:
-        print(f"WARNING: could not retrieve project data")
+        print(f"WARNING: could not retrieve team data for key '{team_key}'")
         return None
 
-    projects = data["projects"]["nodes"]
-    print(f"Available projects: {[p['name'] for p in projects]}")
-
-    # Match by name (case-insensitive) or slugId
-    match = next(
-        (p for p in projects if p["name"].lower() == project_key.lower() or p["slugId"] == project_key),
-        None,
-    )
-    if not match:
-        print(f"WARNING: could not find a Linear project matching '{project_key}'")
+    teams = data["teams"]["nodes"]
+    if not teams:
+        print(f"WARNING: could not find a Linear team with key '{team_key}'")
         return None
 
-    pool = [u for u in match["members"]["nodes"] if u["isAssignable"]]
+    pool = [u for u in teams[0]["members"]["nodes"] if u["isAssignable"]]
     if not pool:
-        print(f"WARNING: project '{match['name']}' has no assignable members")
+        print(f"WARNING: team '{teams[0]['name']}' has no assignable members")
         return None
 
     chosen = random.choice(pool)
@@ -81,7 +73,7 @@ def resolve_assignee_id(api_key: str, project_key: str) -> str | None:
 def main() -> None:
     api_key = os.environ["LINEAR_API_KEY"]
     team_key = os.environ["LINEAR_TEAM_KEY"]
-    project_key = os.environ["LINEAR_ASSIGNEE_PROJECT_KEY"]
+    assignee_team_key = os.environ["LINEAR_ASSIGNEE_TEAM_KEY"]
     pr_title = os.environ["PR_TITLE"]
     pr_url = os.environ["PR_URL"]
     dep_names = os.environ["DEPENDENCY_NAMES"]
@@ -118,7 +110,7 @@ def main() -> None:
         print(f"ERROR: could not find an 'In Review' state in the {team_key} team workflow")
         sys.exit(1)
 
-    assignee_id = resolve_assignee_id(api_key, project_key)
+    assignee_id = resolve_assignee_id(api_key, assignee_team_key)
 
     issue_title = f"Review major dependency bump: {dep_names} {prev_version} -> {new_version}"
     issue_description = (
