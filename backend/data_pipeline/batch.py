@@ -2,6 +2,7 @@ import datetime
 from typing import Literal
 
 import boto3
+import structlog
 from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 
@@ -58,6 +59,9 @@ def submit_job(
         consultation_name=consultation_name,
     )
 
+    # Passed to the pipeline script so its logs can be joined to this request's in OpenSearch.
+    context_id = structlog.contextvars.get_contextvars().get("context_id", "unknown")
+
     def _log_submit_job_failure(prefix: str) -> None:
         logger.exception(
             prefix + " {job_type} batch job for consultation_code={consultation_code} "
@@ -81,7 +85,8 @@ def submit_job(
                     job_type,
                     "--model-name",
                     model_name,
-                ]
+                ],
+                "environment": [{"name": "CONTEXT_ID", "value": str(context_id)}],
             },
             parameters=parameters,
         )

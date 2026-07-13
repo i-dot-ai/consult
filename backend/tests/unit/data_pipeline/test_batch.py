@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+import structlog
 from botocore.exceptions import ClientError
 
 from data_pipeline.batch import submit_job
@@ -50,6 +51,10 @@ class TestSubmitBatchJob:
             "--model-name",
             "my-model",
         ]
+        # The caller's context_id is always passed through to the container
+        environment = call_args["containerOverrides"]["environment"]
+        assert [entry["name"] for entry in environment] == ["CONTEXT_ID"]
+        assert environment[0]["value"]
         assert call_args["parameters"]["consultation_code"] == "test-code"
         assert call_args["parameters"]["consultation_name"] == "Test Consultation"
         assert call_args["parameters"]["job_type"] == "FIND_THEMES"
@@ -96,6 +101,36 @@ class TestSubmitBatchJob:
 
         # Verify response
         assert response["jobId"] == "test-job-id-456"
+
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_job_propagates_context_id(self, mock_settings, mock_boto3):
+        """The caller's context_id is passed into the container so its logs can be joined"""
+        mock_settings.SUBMIT_BATCH_JOBS = True
+        mock_settings.FIND_THEMES_BATCH_JOB_NAME = "find-themes-job"
+        mock_settings.FIND_THEMES_BATCH_JOB_QUEUE = "find-themes-queue"
+        mock_settings.FIND_THEMES_BATCH_JOB_DEFINITION = "find-themes-def"
+
+        mock_batch_client = Mock()
+        mock_batch_client.submit_job.return_value = {"jobId": "test-job-id-789"}
+        mock_boto3.client.return_value = mock_batch_client
+
+        structlog.contextvars.bind_contextvars(context_id="request-context-abc")
+        try:
+            submit_job(
+                job_type="FIND_THEMES",
+                consultation_code="test-code",
+                consultation_name="Test Consultation",
+                user_id=123,
+                model_name="my-model",
+            )
+        finally:
+            structlog.contextvars.unbind_contextvars("context_id")
+
+        call_args = mock_batch_client.submit_job.call_args.kwargs
+        assert call_args["containerOverrides"]["environment"] == [
+            {"name": "CONTEXT_ID", "value": "request-context-abc"}
+        ]
 
     @patch("data_pipeline.batch.boto3")
     @patch("data_pipeline.batch.settings")

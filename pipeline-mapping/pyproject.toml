@@ -8,6 +8,7 @@ dependencies = [
     "pandas>=2.2.2",
     "urllib3>=2.0.0",
     "sentry-sdk>=2.61.1",
+    "i-dot-ai-utilities>=0.6.0",
 ]
 
 [tool.uv]
