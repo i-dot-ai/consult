@@ -1,20 +1,31 @@
-FROM public.ecr.aws/docker/library/python:3.11-slim-bullseye
+FROM public.ecr.aws/docker/library/python:3.12-slim AS uv-packages
 
-WORKDIR /app
+COPY --from=ghcr.io/astral-sh/uv:0.11.21 /uv /uvx /bin/
 
-COPY pipeline-sign-off/requirements.txt .
+# Only the manifests required by the target package are copied; uv tolerates missing
+# non-target workspace members.
+WORKDIR /src
+COPY pyproject.toml uv.lock .python-version ./
+COPY pipeline-sign-off/pyproject.toml ./pipeline-sign-off/
+COPY themefinder/pyproject.toml ./themefinder/
+COPY themefinder/src/ ./themefinder/src/
 
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /src/pipeline-sign-off
+ENV UV_PROJECT_ENVIRONMENT=/src/pipeline-sign-off/venv
+RUN uv sync --frozen --package pipeline-sign-off
 
-COPY pipeline-sign-off/find_themes_script.py .
 
-# Add non-root user and group
+FROM public.ecr.aws/docker/library/python:3.12-slim
+
 RUN groupadd --system nonroot && useradd --system --gid nonroot nonroot
 
-# Change ownership of application directory
-RUN chown -R nonroot:nonroot /app
+WORKDIR /src
+# themefinder src must be present at runtime — venv has an editable .pth pointing at it.
+COPY --chown=nonroot:nonroot themefinder/src ./themefinder/src
+COPY --chown=nonroot:nonroot pipeline-sign-off/find_themes_script.py ./pipeline-sign-off/
+COPY --chown=nonroot:nonroot --from=uv-packages /src/pipeline-sign-off/venv ./pipeline-sign-off/venv
 
-# Run under context of "nonroot" user
+WORKDIR /src/pipeline-sign-off
 USER nonroot
-
+ENV PATH="/src/pipeline-sign-off/venv/bin:$PATH"
 ENTRYPOINT ["python", "find_themes_script.py"]

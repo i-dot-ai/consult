@@ -1,20 +1,31 @@
-FROM public.ecr.aws/docker/library/python:3.11-slim-bullseye
+FROM public.ecr.aws/docker/library/python:3.12-slim AS uv-packages
 
-WORKDIR /app
+COPY --from=ghcr.io/astral-sh/uv:0.11.21 /uv /uvx /bin/
 
-COPY pipeline-mapping/requirements.txt .
+# Only the manifests required by the target package are copied; uv tolerates missing
+# non-target workspace members.
+WORKDIR /src
+COPY pyproject.toml uv.lock .python-version ./
+COPY pipeline-mapping/pyproject.toml ./pipeline-mapping/
+COPY themefinder/pyproject.toml ./themefinder/
+COPY themefinder/src/ ./themefinder/src/
 
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /src/pipeline-mapping
+ENV UV_PROJECT_ENVIRONMENT=/src/pipeline-mapping/venv
+RUN uv sync --frozen --package pipeline-mapping
 
-COPY pipeline-mapping/assign_themes_script.py .
 
-# Add non-root user and group
+FROM public.ecr.aws/docker/library/python:3.12-slim
+
 RUN groupadd --system nonroot && useradd --system --gid nonroot nonroot
 
-# Change ownership of application directory
-RUN chown -R nonroot:nonroot /app
+WORKDIR /src
+# themefinder src must be present at runtime — venv has an editable .pth pointing at it.
+COPY --chown=nonroot:nonroot themefinder/src ./themefinder/src
+COPY --chown=nonroot:nonroot pipeline-mapping/assign_themes_script.py ./pipeline-mapping/
+COPY --chown=nonroot:nonroot --from=uv-packages /src/pipeline-mapping/venv ./pipeline-mapping/venv
 
-# Run under context of "nonroot" user
+WORKDIR /src/pipeline-mapping
 USER nonroot
-
+ENV PATH="/src/pipeline-mapping/venv/bin:$PATH"
 ENTRYPOINT ["python", "assign_themes_script.py"]
