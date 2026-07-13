@@ -5,13 +5,13 @@ description = "Consult backend application"
 license = {text = "MIT"}
 requires-python = ">=3.12,<3.13"
 dependencies = [
-  "boto3>=1.43.34",
+  "boto3>=1.43.36",
   "django>=6.0.5",
   "django-environ>=0.14.0",
   "django-filter>=25.2",
   "django-redis>=7.0.0",
   "django-rq>=4.1.0",
-  "django-simple-history>=3.11.0",
+  "django-simple-history>=3.12.0",
   "django-storages>=1.14.6",
   "djangorestframework>=3.17.1",
   "djangorestframework-simplejwt[crypto]>=5.5.1",
@@ -21,7 +21,7 @@ dependencies = [
   "factory_boy>=3.3.1",
   "gunicorn>=26.0.0",
   "i-dot-ai-utilities[auth]>=0.6.0",
-  "openai>=2.43.0",
+  "openai>=2.44.0",
   "pgvector>=0.4.2",
   "psycopg>=3.3.4",
   "pydantic>=2.13.4",
@@ -43,14 +43,16 @@ dev = [
   "mypy>=2.1.0",
   "pre-commit>=4.6.0",
   "pytest-lazy-fixtures>=1.4.0",
-  "ruff>=0.15.18",
+  "ruff>=0.15.20",
   "pytest-django>=4.11.1",
   "django-webtest>=1.9.14",
 ]
 
 [tool.uv]
 exclude-newer = "P14D"
-exclude-newer-package = {"i-dot-ai-utilities" = "2026-06-04", "pydantic-settings" = "2026-07-01", "cryptography" = "2026-07-01", "langchain" = "2026-07-01", "langsmith" = "2026-07-01"}
+# Use explicit UTC timestamps, not bare dates: uv renders bare dates in the
+# local timezone, which re-dirties uv.lock on non-UTC machines (see make install).
+exclude-newer-package = {"i-dot-ai-utilities" = "2026-06-05T00:00:00Z", "pydantic-settings" = "2026-07-02T00:00:00Z", "cryptography" = "2026-07-02T00:00:00Z", "langchain" = "2026-07-02T00:00:00Z", "langsmith" = "2026-07-02T00:00:00Z"}
 override-dependencies = [
   "cryptography>=49.0.0",
   "langchain-core>=1.3.3",

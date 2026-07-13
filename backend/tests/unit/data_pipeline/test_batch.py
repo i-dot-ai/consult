@@ -9,6 +9,7 @@ class TestSubmitBatchJob:
     def test_submit_find_themes_job(self, mock_settings, mock_boto3):
         """Test submitting a FIND_THEMES batch job"""
         # Mock settings
+        mock_settings.SUBMIT_BATCH_JOBS = True
         mock_settings.FIND_THEMES_BATCH_JOB_NAME = "find-themes-job"
         mock_settings.FIND_THEMES_BATCH_JOB_QUEUE = "find-themes-queue"
         mock_settings.FIND_THEMES_BATCH_JOB_DEFINITION = "find-themes-def"
@@ -57,6 +58,7 @@ class TestSubmitBatchJob:
     def test_submit_assign_themes_job(self, mock_settings, mock_boto3):
         """Test submitting an ASSIGN_THEMES batch job"""
         # Mock settings
+        mock_settings.SUBMIT_BATCH_JOBS = True
         mock_settings.ASSIGN_THEMES_BATCH_JOB_NAME = "assign-themes-job"
         mock_settings.ASSIGN_THEMES_BATCH_JOB_QUEUE = "assign-themes-queue"
         mock_settings.ASSIGN_THEMES_BATCH_JOB_DEFINITION = "assign-themes-def"
@@ -92,3 +94,24 @@ class TestSubmitBatchJob:
 
         # Verify response
         assert response["jobId"] == "test-job-id-456"
+
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_job_stubbed_when_batch_disabled(self, mock_settings, mock_boto3):
+        """When SUBMIT_BATCH_JOBS is disabled, return a stub and never call AWS Batch"""
+        mock_settings.SUBMIT_BATCH_JOBS = False
+
+        response = submit_job(
+            job_type="ASSIGN_THEMES",
+            consultation_code="test-code-3",
+            consultation_name="Test Consultation 3",
+            user_id=789,
+            model_name="my-model",
+        )
+
+        # No real AWS Batch client is created or called
+        mock_boto3.client.assert_not_called()
+
+        # A stub response with a jobId is returned so callers keep working
+        assert "jobId" in response
+        assert "test-code-3" in response["jobId"]

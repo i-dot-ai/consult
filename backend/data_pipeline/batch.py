@@ -14,7 +14,7 @@ def submit_job(
     user_id: int,
     model_name: str,
     assignment_target: Literal["selected_themes", "candidate_themes"] = "selected_themes",
-) -> dict:
+) -> dict | None:
     """
     Submit a job to AWS Batch for ThemeFinder processing.
     This will be either to find themes or assign themes.
@@ -23,6 +23,13 @@ def submit_job(
     - "selected_themes": normal flow, imports into ResponseAnnotation
     - "candidate_themes": imports into CandidateThemeResponse (during finalising)
     """
+    if not settings.SUBMIT_BATCH_JOBS:
+        logger.info(
+            "SUBMIT_BATCH_JOBS disabled: skipping real AWS Batch submission for {job_type}",
+            job_type=job_type,
+        )
+        return {"jobId": f"local-stub-{job_type.lower()}-{consultation_code}"}
+
     if job_type == "FIND_THEMES":
         job_name = settings.FIND_THEMES_BATCH_JOB_NAME
         job_queue = settings.FIND_THEMES_BATCH_JOB_QUEUE
