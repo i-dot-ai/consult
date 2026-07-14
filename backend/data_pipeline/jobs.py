@@ -6,7 +6,11 @@ These functions are designed to be executed asynchronously via RQ (Redis Queue).
 
 from uuid import UUID
 
+from django.conf import settings
+
 from rq_context import job
+
+logger = settings.LOGGER
 
 DEFAULT_TIMEOUT_SECONDS = 3_600
 
