@@ -28,8 +28,8 @@ def _client_error(code: str) -> ClientError:
 
 @pytest.mark.django_db
 class TestImportConsultationFromS3:
-    @patch("data_pipeline.sync.consultation_setup.get_queue")
-    def test_import_consultation_from_s3(self, mock_get_queue, minio_test_bucket, minio_client):
+    @patch("data_pipeline.sync.consultation_setup.create_embeddings_for_question.enqueue")
+    def test_import_consultation_from_s3(self, mock_enqueue, minio_test_bucket, minio_client):
         """
         Test importing a complete consultation from S3 with multiple question types.
 
@@ -39,8 +39,6 @@ class TestImportConsultationFromS3:
         - Question 2: Multi choice only
         - Question 3: Hybrid (both free text and multi choice)
         """
-        # Setup: Mock the RQ queue (out of scope for S3 testing)
-        mock_queue = mock_get_queue.return_value
 
         # Track objects we create for cleanup
         created_keys = []
@@ -243,7 +241,7 @@ class TestImportConsultationFromS3:
             assert [opt.text for opt in q3_response_2.chosen_options.all()] == ["Not sure"]
 
             # Verify embedding jobs were enqueued for free text questions only
-            assert mock_queue.enqueue.call_count == 2
+            assert mock_enqueue.call_count == 2
 
         finally:
             # Cleanup: Delete all objects we created
