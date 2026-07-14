@@ -9,8 +9,8 @@ import boto3
 import pandas as pd
 import structlog
 import urllib3
-
 from pipeline_common import bootstrap_logger
+
 from themefinder import (
     detail_detection,
     rule_2_themes_must_have_a_non_negligible_number_of_responses_slack,
@@ -169,112 +169,129 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
     skipped_questions = []
     for question_dir in os.listdir(Path(consultation_dir) / "inputs"):
         if "question" in question_dir:
-            logger.set_context_field("question_id", question_dir)
+            with structlog.contextvars.bound_contextvars(question_id=question_dir):
+                logger.info("Processing {question_id}...", question_id=question_dir)
+                try:
+                    question_output_dir = (
+                        Path(consultation_dir)
+                        / "outputs"
+                        / "mapping"
+                        / date
+                        / question_dir
+                    )
+                    if not question_output_dir.exists():
+                        question_output_dir.mkdir(parents=True, exist_ok=True)
+                        logger.info(
+                            "Created outputs directory at: {output_dir}",
+                            output_dir=str(question_output_dir),
+                        )
 
-            logger.info("Processing {question_id}...", question_id=question_dir)
-            try:
-                question_output_dir = (
-                    Path(consultation_dir) / "outputs" / "mapping" / date / question_dir
-                )
-                if not question_output_dir.exists():
-                    question_output_dir.mkdir(parents=True, exist_ok=True)
+                    question, responses_df, themes_df = load_question(
+                        consultation_dir, question_dir
+                    )
+
+                    detail_df, _ = await detail_detection(
+                        responses_df,
+                        llm,
+                        question=question,
+                    )
+                    detail_df = detail_df[["response_id", "evidence_rich"]]
+                    detail_df = detail_df.rename(
+                        columns={"response_id": "themefinder_id"}
+                    )
+                    detail_df.to_json(
+                        question_output_dir / "detail_detection.jsonl",
+                        orient="records",
+                        lines=True,
+                    )
+
+                    mapped_df, _ = await theme_mapping(
+                        responses_df,
+                        llm,
+                        refined_themes_df=themes_df[["topic_id", "topic"]],
+                        question=question,
+                    )
+                    mapped_df = mapped_df[["response_id", "labels"]]
+                    mapped_df = mapped_df.rename(
+                        columns={
+                            "response_id": "themefinder_id",
+                            "labels": "theme_keys",
+                        }
+                    )
+                    mapped_df.to_json(
+                        question_output_dir / "mapping.jsonl",
+                        orient="records",
+                        lines=True,
+                    )
+
+                    themes_df = themes_df[
+                        ["topic_id", "Theme Name", "Theme Description"]
+                    ]
+                    themes_df.columns = ["theme_key", "theme_name", "theme_description"]
+                    themes_df.to_json(
+                        question_output_dir / "themes.json", orient="records"
+                    )
+
                     logger.info(
-                        "Created outputs directory at: {output_dir}",
+                        "Completed processing {question_id}, saved to {output_dir}",
+                        question_id=question_dir,
                         output_dir=str(question_output_dir),
                     )
 
-                question, responses_df, themes_df = load_question(
-                    consultation_dir, question_dir
-                )
-
-                detail_df, _ = await detail_detection(
-                    responses_df,
-                    llm,
-                    question=question,
-                )
-                detail_df = detail_df[["response_id", "evidence_rich"]]
-                detail_df = detail_df.rename(columns={"response_id": "themefinder_id"})
-                detail_df.to_json(
-                    question_output_dir / "detail_detection.jsonl",
-                    orient="records",
-                    lines=True,
-                )
-
-                mapped_df, _ = await theme_mapping(
-                    responses_df,
-                    llm,
-                    refined_themes_df=themes_df[["topic_id", "topic"]],
-                    question=question,
-                )
-                mapped_df = mapped_df[["response_id", "labels"]]
-                mapped_df = mapped_df.rename(
-                    columns={"response_id": "themefinder_id", "labels": "theme_keys"}
-                )
-                mapped_df.to_json(
-                    question_output_dir / "mapping.jsonl", orient="records", lines=True
-                )
-
-                themes_df = themes_df[["topic_id", "Theme Name", "Theme Description"]]
-                themes_df.columns = ["theme_key", "theme_name", "theme_description"]
-                themes_df.to_json(question_output_dir / "themes.json", orient="records")
-
-                logger.info(
-                    "Completed processing {question_id}, saved to {output_dir}",
-                    question_id=question_dir,
-                    output_dir=str(question_output_dir),
-                )
-
-                rule_2_messages, rule_2_failed = (
-                    rule_2_themes_must_have_a_non_negligible_number_of_responses_slack(
-                        mapped_df.to_dict(orient="records")
+                    rule_2_messages, rule_2_failed = (
+                        rule_2_themes_must_have_a_non_negligible_number_of_responses_slack(
+                            mapped_df.to_dict(orient="records")
+                        )
                     )
-                )
 
-                rule_3_messages, rule_3_failed = rule_4_themes_should_not_overlap_slack(
-                    mapped_df.to_dict(orient="records")
-                )
+                    rule_3_messages, rule_3_failed = (
+                        rule_4_themes_should_not_overlap_slack(
+                            mapped_df.to_dict(orient="records")
+                        )
+                    )
 
-                msg = "failed ❌" if (rule_2_failed or rule_3_failed) else "passed ✅"
+                    msg = (
+                        "failed ❌" if (rule_2_failed or rule_3_failed) else "passed ✅"
+                    )
 
-                message_title_block = {
-                    "type": "header",
-                    "text": {
-                        "type": "plain_text",
+                    message_title_block = {
+                        "type": "header",
+                        "text": {
+                            "type": "plain_text",
+                            "text": f"theme set mapping rules {msg} for {consultation_dir}/{question_dir}",
+                        },
+                    }
+                    message = {
                         "text": f"theme set mapping rules {msg} for {consultation_dir}/{question_dir}",
-                    },
-                }
-                message = {
-                    "text": f"theme set mapping rules {msg} for {consultation_dir}/{question_dir}",
-                    "blocks": [message_title_block] + rule_2_messages + rule_3_messages,
-                }
-                response = http.request(
-                    "POST",
-                    SLACK_WEBHOOK_URL,
-                    body=json.dumps(message),
-                    headers={"Content-Type": "application/json"},
-                )
-                if response.status != 200:
-                    response_data = (
-                        response.data.decode("utf-8")
-                        if response.data
-                        else "No response data"
+                        "blocks": [message_title_block]
+                        + rule_2_messages
+                        + rule_3_messages,
+                    }
+                    response = http.request(
+                        "POST",
+                        SLACK_WEBHOOK_URL,
+                        body=json.dumps(message),
+                        headers={"Content-Type": "application/json"},
                     )
-                    logger.error(
-                        "Slack webhook failed with status {status}: {response_data}",
-                        status=response.status,
-                        response_data=response_data,
+                    if response.status != 200:
+                        response_data = (
+                            response.data.decode("utf-8")
+                            if response.data
+                            else "No response data"
+                        )
+                        logger.error(
+                            "Slack webhook failed with status {status}: {response_data}",
+                            status=response.status,
+                            response_data=response_data,
+                        )
+                    else:
+                        logger.info("Slack notification sent", slack_message=message)
+
+                except Exception:
+                    logger.exception(
+                        "Error processing {question_id}", question_id=question_dir
                     )
-                else:
-                    logger.info("Slack notification sent", slack_message=message)
-
-            except Exception:
-                logger.exception(
-                    "Error processing {question_id}", question_id=question_dir
-                )
-                skipped_questions.append(question_dir)
-
-    # Don't let the last question processed leak onto the summary line below.
-    structlog.contextvars.unbind_contextvars("question_id")
+                    skipped_questions.append(question_dir)
     if skipped_questions:
         logger.warning(
             "Skipped questions: {skipped_questions}",
@@ -302,9 +319,22 @@ if __name__ == "__main__":
         type=str,
         required=True,
     )
+    parser.add_argument(
+        "--context-id",
+        type=str,
+        required=False,
+        help="context_id from the submitting Django request, for log correlation.",
+    )
     args = parser.parse_args()
 
     logger.set_context_field("consultation_code", args.subdir)
+    if args.context_id:
+        logger.set_context_field("context_id", args.context_id)
+
+    # Log sentry initialization after context set
+    sentry_dsn = os.environ.get("SENTRY_DSN")
+    if sentry_dsn:
+        logger.info("Sentry initialized")
 
     logger.info("Starting processing for subdirectory: {subdir}", subdir=args.subdir)
     download_s3_subdir(args.subdir)

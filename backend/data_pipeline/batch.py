@@ -59,8 +59,19 @@ def submit_job(
         consultation_name=consultation_name,
     )
 
-    # Passed to the pipeline script so its logs can be joined to this request's in OpenSearch.
-    context_id = structlog.contextvars.get_contextvars().get("context_id", "unknown")
+    # Pass the current request's context_id as a CLI arg so the pipeline script's
+    # logs can be joined to this request's logs in OpenSearch.
+    context_id = structlog.contextvars.get_contextvars().get("context_id")
+    command = [
+        "--subdir",
+        consultation_code,
+        "--job-type",
+        job_type,
+        "--model-name",
+        model_name,
+    ]
+    if context_id:
+        command += ["--context-id", context_id]
 
     def _log_submit_job_failure(prefix: str) -> None:
         logger.exception(
@@ -77,17 +88,7 @@ def submit_job(
             jobName=job_name,
             jobQueue=job_queue,
             jobDefinition=job_definition,
-            containerOverrides={
-                "command": [
-                    "--subdir",
-                    consultation_code,
-                    "--job-type",
-                    job_type,
-                    "--model-name",
-                    model_name,
-                ],
-                "environment": [{"name": "CONTEXT_ID", "value": str(context_id)}],
-            },
+            containerOverrides={"command": command},
             parameters=parameters,
         )
     except (ClientError, BotoCoreError):

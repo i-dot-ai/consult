@@ -1,4 +1,5 @@
 import pytest
+import structlog
 import yaml
 from django.conf import settings
 from django.contrib.postgres.search import SearchVector
@@ -25,6 +26,20 @@ from factories import (
     SelectedThemeFactory,
     UserFactory,
 )
+
+
+@pytest.fixture(autouse=True)
+def _reset_structlog_contextvars():
+    """Isolate structlog's process-global context between tests.
+
+    settings.LOGGER and data_pipeline.batch.submit_job read/write
+    structlog.contextvars, which persists across tests in a session. Without
+    this, a context_id bound by one test (e.g. via refresh_context()) leaks into
+    another and causes order-dependent failures under pytest --random-order.
+    """
+    structlog.contextvars.clear_contextvars()
+    yield
+    structlog.contextvars.clear_contextvars()
 
 
 @pytest.fixture()
