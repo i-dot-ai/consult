@@ -1,7 +1,8 @@
 import functools
 
-from django.conf import settings
 from django_rq import job as _rq_job
+
+from logging_context import get_context_id, rebind_context
 
 
 def job(*job_args, **job_kwargs):
@@ -15,7 +16,7 @@ def job(*job_args, **job_kwargs):
     def decorator(func):
         @functools.wraps(func)
         def context_aware(*args, context_id: str | None = None, **kwargs):
-            settings.LOGGER.rebind_context(context_id)
+            rebind_context(context_id)
             return func(*args, **kwargs)
 
         decorated = _rq_job(*job_args, **job_kwargs)(context_aware)
@@ -23,9 +24,7 @@ def job(*job_args, **job_kwargs):
 
         @functools.wraps(func)
         def enqueue_with_context(*args, context_id: str | None = None, **kwargs):
-            return enqueue_call(
-                *args, context_id=context_id or settings.LOGGER.get_context_id(), **kwargs
-            )
+            return enqueue_call(*args, context_id=context_id or get_context_id(), **kwargs)
 
         decorated.delay = enqueue_with_context
         decorated.enqueue = enqueue_with_context
