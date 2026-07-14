@@ -35,6 +35,7 @@ def lambda_handler(event, _context):
     run_date = parameters["run_date"]
     user_id = parameters.get("user_id")
     model_name = parameters.get("model_name")
+    context_id = parameters.get("context_id") or None
 
     logger.info(f"Batch job '{job_name}' completed with status: {job_status}")
     logger.info(f"Consultation code: {consultation_code}")
@@ -68,6 +69,7 @@ def lambda_handler(event, _context):
             run_date,
             user_id,
             model_name,
+            context_id=context_id,
         )
 
         logger.info("✅ RQ job enqueued successfully!")
