@@ -21,23 +21,6 @@ def test_execution_environment_is_fargate_when_running_in_batch(monkeypatch):
     assert options["execution_environment"] == ExecutionEnvironmentType.FARGATE
 
 
-def test_context_id_is_adopted_when_present(monkeypatch):
-    monkeypatch.setenv("CONTEXT_ID", "incoming-context-id")
-    with patch("pipeline_common.logging_bootstrap.StructuredLogger"):
-        logger = bootstrap_logger()
-    logger.set_context_field.assert_any_call("context_id", "incoming-context-id")
-
-
-def test_context_id_is_left_untouched_when_absent(monkeypatch):
-    monkeypatch.delenv("CONTEXT_ID", raising=False)
-    with patch("pipeline_common.logging_bootstrap.StructuredLogger"):
-        logger = bootstrap_logger()
-    context_id_calls = [
-        call for call in logger.set_context_field.call_args_list if call.args[0] == "context_id"
-    ]
-    assert context_id_calls == []
-
-
 def test_sentry_is_not_initialized_when_dsn_absent(monkeypatch):
     monkeypatch.delenv("SENTRY_DSN", raising=False)
     with (
