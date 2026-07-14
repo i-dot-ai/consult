@@ -9,6 +9,8 @@ COPY pyproject.toml uv.lock .python-version ./
 COPY pipeline-sign-off/pyproject.toml ./pipeline-sign-off/
 COPY themefinder/pyproject.toml ./themefinder/
 COPY themefinder/src/ ./themefinder/src/
+COPY pipeline-common/pyproject.toml ./pipeline-common/
+COPY pipeline-common/src/ ./pipeline-common/src/
 
 WORKDIR /src/pipeline-sign-off
 ENV UV_PROJECT_ENVIRONMENT=/src/pipeline-sign-off/venv
@@ -22,6 +24,8 @@ RUN groupadd --system nonroot && useradd --system --gid nonroot nonroot
 WORKDIR /src
 # themefinder src must be present at runtime — venv has an editable .pth pointing at it.
 COPY --chown=nonroot:nonroot themefinder/src ./themefinder/src
+# pipeline-common src must be present at runtime — venv has an editable .pth pointing at it.
+COPY --chown=nonroot:nonroot pipeline-common/src ./pipeline-common/src
 COPY --chown=nonroot:nonroot pipeline-sign-off/find_themes_script.py ./pipeline-sign-off/
 COPY --chown=nonroot:nonroot --from=uv-packages /src/pipeline-sign-off/venv ./pipeline-sign-off/venv
 
