@@ -2,9 +2,9 @@ from uuid import UUID
 
 from django.conf import settings
 from django.db import connection
-from django_rq import job
 
 from consultations import models
+from rq_context import job
 
 logger = settings.LOGGER
 
@@ -110,7 +110,6 @@ def delete_consultation_job(consultation_id: UUID):
     Args:
         consultation_id: UUID of the consultation to delete
     """
-    logger.refresh_context()
 
     try:
         # Fetch the consultation from database
