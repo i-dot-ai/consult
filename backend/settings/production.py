@@ -1,5 +1,6 @@
 import sentry_sdk
 from django.conf.global_settings import STORAGES
+from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
 from i_dot_ai_utilities.logging.types.enrichment_types import ExecutionEnvironmentType
 from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 
