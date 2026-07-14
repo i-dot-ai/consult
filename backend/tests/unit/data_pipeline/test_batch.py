@@ -231,3 +231,78 @@ class TestSubmitBatchJob:
         assert "Unexpected error submitting" in message
         assert kwargs["job_type"] == "FIND_THEMES"
         assert kwargs["consultation_code"] == "test-code"
+
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_job_defaults_context_id_from_ambient(self, mock_settings, mock_boto3):
+        """When no context_id is passed explicitly, submit_job picks up whatever's
+        currently bound to the logger, so the caller's action id propagates through
+        to the Batch job's parameters (and from there to the Lambda that imports
+        the results)."""
+        self._configure_batch_job_settings(mock_settings, "FIND_THEMES")
+
+        mock_batch_client = Mock()
+        mock_batch_client.submit_job.return_value = {"jobId": "test-job-id"}
+        mock_boto3.client.return_value = mock_batch_client
+
+        structlog.contextvars.clear_contextvars()
+        structlog.contextvars.bind_contextvars(context_id="ambient-id")
+
+        submit_job(
+            job_type="FIND_THEMES",
+            consultation_code="test-code",
+            consultation_name="Test Consultation",
+            user_id=123,
+            model_name="my-model",
+        )
+
+        call_args = mock_batch_client.submit_job.call_args.kwargs
+        assert call_args["parameters"]["context_id"] == "ambient-id"
+
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_job_explicit_context_id_overrides_ambient(self, mock_settings, mock_boto3):
+        self._configure_batch_job_settings(mock_settings, "FIND_THEMES")
+
+        mock_batch_client = Mock()
+        mock_batch_client.submit_job.return_value = {"jobId": "test-job-id"}
+        mock_boto3.client.return_value = mock_batch_client
+
+        structlog.contextvars.clear_contextvars()
+        structlog.contextvars.bind_contextvars(context_id="ambient-id")
+
+        submit_job(
+            job_type="FIND_THEMES",
+            consultation_code="test-code",
+            consultation_name="Test Consultation",
+            user_id=123,
+            model_name="my-model",
+            context_id="explicit-id",
+        )
+
+        call_args = mock_batch_client.submit_job.call_args.kwargs
+        assert call_args["parameters"]["context_id"] == "explicit-id"
+
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_job_with_no_context_sends_empty_string(self, mock_settings, mock_boto3):
+        """AWS Batch parameters must be strings, so an unset context_id becomes ""
+        rather than None."""
+        self._configure_batch_job_settings(mock_settings, "FIND_THEMES")
+
+        mock_batch_client = Mock()
+        mock_batch_client.submit_job.return_value = {"jobId": "test-job-id"}
+        mock_boto3.client.return_value = mock_batch_client
+
+        structlog.contextvars.clear_contextvars()
+
+        submit_job(
+            job_type="FIND_THEMES",
+            consultation_code="test-code",
+            consultation_name="Test Consultation",
+            user_id=123,
+            model_name="my-model",
+        )
+
+        call_args = mock_batch_client.submit_job.call_args.kwargs
+        assert call_args["parameters"]["context_id"] == ""
