@@ -5,7 +5,6 @@ import tiktoken
 from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
-from django_rq import get_queue
 
 import data_pipeline.s3 as s3
 from authentication.models import User
@@ -25,6 +24,7 @@ from data_pipeline.models import (
     ResponseInput,
 )
 from embeddings import embed_text
+from rq_context import job
 
 logger = settings.LOGGER
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
@@ -628,6 +628,7 @@ def _ingest_responses(
 # =============================================================================
 
 
+@job("default", timeout=DEFAULT_TIMEOUT_SECONDS)
 def create_embeddings_for_question(question_id: UUID) -> None:
     """
     Create embeddings for all responses to a question.
@@ -718,7 +719,6 @@ def import_consultation_from_s3(
     # Enqueue async jobs for embeddings
     if enqueue_embeddings:
         consultation = Consultation.objects.get(id=consultation_id)
-        queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
 
         for question in Question.objects.filter(consultation=consultation):
             if question.has_free_text:
@@ -726,7 +726,7 @@ def import_consultation_from_s3(
                     "Enqueueing embedding job for question {question_number}",
                     question_number=question.number,
                 )
-                queue.enqueue(create_embeddings_for_question, question.id)
+                create_embeddings_for_question.enqueue(question.id)
 
     logger.info("Completed S3 import for {consultation_code}", consultation_code=consultation_code)
     return consultation_id

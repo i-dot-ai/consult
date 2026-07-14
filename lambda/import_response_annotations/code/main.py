@@ -54,9 +54,11 @@ def lambda_handler(event, context):
     consultation_code = parameters["consultation_code"]
     run_date = parameters["run_date"]
     assignment_target = parameters.get("assignment_target", "selected_themes")
+    context_id = parameters.get("context_id")
 
     logger.set_context_field("batch_job_name", job_name)
     logger.set_context_field("consultation_code", consultation_code)
+    logger.set_context_field("context_id", context_id)
 
     logger.info(
         "Batch job '{job_name}' completed with status: {job_status} "
@@ -110,6 +112,7 @@ def lambda_handler(event, context):
             consultation_code,
             run_date,
             job_timeout=3_600,
+            context_id=context_id,
         )
 
         logger.info(
