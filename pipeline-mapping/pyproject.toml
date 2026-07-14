@@ -4,11 +4,11 @@ version = "0.1.0"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "themefinder",
+    "pipeline-common",
     "boto3>=1.42.17",
     "pandas>=2.2.2",
     "urllib3>=2.0.0",
-    "sentry-sdk>=2.61.1",
-    "i-dot-ai-utilities>=0.6.0",
+    "structlog>=23.1.0",
 ]
 
 [tool.uv]
@@ -16,3 +16,4 @@ package = false
 
 [tool.uv.sources]
 themefinder = { workspace = true }
+pipeline-common = { workspace = true }

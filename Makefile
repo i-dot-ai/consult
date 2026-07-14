@@ -53,8 +53,12 @@ test-frontend: ## Run the frontend tests
 test-themefinder: ## Run the themefinder tests
 	cd themefinder && uv run pytest tests/ -v
 
+.PHONY: test-pipeline-common
+test-pipeline-common: ## Run the pipeline-common tests
+	cd pipeline-common && uv run pytest tests/ -v
+
 .PHONY: test-all
-test-all: test-backend test-frontend test-themefinder ## Run all unit/integration tests
+test-all: test-backend test-frontend test-themefinder test-pipeline-common ## Run all unit/integration tests
 
 .PHONY: run-evals
 run-evals: ## Run themefinder LLM evals (quick mode)

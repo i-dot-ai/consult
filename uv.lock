@@ -8,7 +8,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-29T11:33:50.904124Z"
+exclude-newer = "2026-06-30T13:43:14.509778Z"
 exclude-newer-span = "P14D"
 
 [options.exclude-newer-package]
@@ -21,6 +21,7 @@ pydantic-settings = "2026-07-02T00:00:00Z"
 [manifest]
 members = [
     "consult",
+    "pipeline-common",
     "pipeline-mapping",
     "pipeline-sign-off",
     "themefinder",
@@ -1726,14 +1727,31 @@ wheels = [
 ]
 
 [[package]]
+name = "pipeline-common"
+version = "0.1.0"
+source = { editable = "pipeline-common" }
+dependencies = [
+    { name = "i-dot-ai-utilities" },
+    { name = "sentry-sdk" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "i-dot-ai-utilities", specifier = ">=0.6.0" },
+    { name = "sentry-sdk", specifier = ">=2.61.1" },
+    { name = "structlog", specifier = ">=23.1.0" },
+]
+
+[[package]]
 name = "pipeline-mapping"
 version = "0.1.0"
 source = { virtual = "pipeline-mapping" }
 dependencies = [
     { name = "boto3" },
-    { name = "i-dot-ai-utilities" },
     { name = "pandas" },
-    { name = "sentry-sdk" },
+    { name = "pipeline-common" },
+    { name = "structlog" },
     { name = "themefinder" },
     { name = "urllib3" },
 ]
@@ -1741,9 +1759,9 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = ">=1.42.17" },
-    { name = "i-dot-ai-utilities", specifier = ">=0.6.0" },
     { name = "pandas", specifier = ">=2.2.2" },
-    { name = "sentry-sdk", specifier = ">=2.61.1" },
+    { name = "pipeline-common", editable = "pipeline-common" },
+    { name = "structlog", specifier = ">=23.1.0" },
     { name = "themefinder", editable = "themefinder" },
     { name = "urllib3", specifier = ">=2.0.0" },
 ]
@@ -1754,11 +1772,11 @@ version = "0.1.0"
 source = { virtual = "pipeline-sign-off" }
 dependencies = [
     { name = "boto3" },
-    { name = "i-dot-ai-utilities" },
     { name = "openai" },
     { name = "pandas" },
+    { name = "pipeline-common" },
     { name = "pydantic" },
-    { name = "sentry-sdk" },
+    { name = "structlog" },
     { name = "themefinder" },
     { name = "urllib3" },
 ]
@@ -1766,11 +1784,11 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = ">=1.42.17" },
-    { name = "i-dot-ai-utilities", specifier = ">=0.6.0" },
     { name = "openai", specifier = ">=2.14.0" },
     { name = "pandas", specifier = ">=2.2.2" },
+    { name = "pipeline-common", editable = "pipeline-common" },
     { name = "pydantic", specifier = ">=2.12.5" },
-    { name = "sentry-sdk", specifier = ">=2.61.1" },
+    { name = "structlog", specifier = ">=23.1.0" },
     { name = "themefinder", editable = "themefinder" },
     { name = "urllib3", specifier = ">=2.0.0" },
 ]
