@@ -55,7 +55,7 @@ Output lands in `<output_dir>/inputs/question_part_*/responses.jsonl`
 (with `question.json` copied alongside) and `<output_dir>/demographics.jsonl`,
 ready to be uploaded to Consult.
 
-## Step 2 — In Consult: upload each dataset and run find themes
+## Step 2a — In Consult: upload each dataset and run find themes
 
 For each dataset directory created above:
 
@@ -74,6 +74,21 @@ For each dataset directory created above:
 
 You need `NUM_RUNS` completed `find_themes` jobs per dataset before
 continuing to Step 4.
+
+### Step 2b (alternative) — Run find_themes locally
+
+Instead of uploading to Consult and waiting on the Batch job, you can run
+`find_themes` directly against a dataset's `inputs/` directory, skipping S3
+and Slack entirely. This replaces both Step 2 and Step 3 for that run — the
+output is written straight into a `run_N` directory in the shape
+`compare_theme_counts.py`/`build_consensus_gt.py` expect
+(`run_N/question_part_*/clustered_themes.json`):
+
+```bash
+python run_find_themes_local.py "$DATA_DIR/<dataset_name>" "$DATA_DIR/<dataset_name>/run_N" [--model <model_name>]
+```
+
+Repeat with an incrementing `run_N` for each of the `NUM_RUNS` runs you need.
 
 ## Step 3 — Pull S3 outputs
 
@@ -107,10 +122,9 @@ separate `Consensus` column and excluded from the mean/stddev.
 ## Step 5 — Build consensus ground truths
 
 Consolidates all themes from all runs of each GT dataset into a single
-deduplicated consensus theme set via an LLM call. Only needed if you want to
-use a consensus GT rather than a single run — skip this step and pass
-`--run <n>` to `analyse_theme_similarity.py` instead if you prefer to
-analyse run-by-run:
+deduplicated consensus theme set via an LLM call. This step is required —
+`analyse_theme_similarity.py` always loads GTs from their `consensus/`
+subdirectory:
 
 ```bash
 python build_consensus_gt.py "$DATA_DIR/$GT1_NAME"
@@ -144,13 +158,16 @@ dataset's mean theme count per run), so they're directly comparable to the
 number of themes in each GT's consensus:
 
 ```bash
-python analyse_theme_similarity.py "$DATA_DIR" "$GT1_NAME" "$GT2_NAME"
+python analyse_theme_similarity.py "$DATA_DIR" "$GT1_NAME" "$GT2_NAME" --label-strip "<prefix_>"
 ```
+
+`--label-strip` is required: it's the substring stripped from directory names
+(e.g. `dwp_7_`) to produce chart labels.
 
 Optionally restrict to a specific test subdirectory:
 
 ```bash
-python analyse_theme_similarity.py "$DATA_DIR" "$GT1_NAME" "$GT2_NAME" <test_subdir>
+python analyse_theme_similarity.py "$DATA_DIR" "$GT1_NAME" "$GT2_NAME" <test_subdir> --label-strip "<prefix_>"
 ```
 
 For each question, the number of themes in each GT's consensus is printed
@@ -163,7 +180,6 @@ first, followed by two tables:
   GT1/GT2 consensus counts printed above
 
 Useful flags:
-- `--knn-num-neighbours` (default 5): k for k-NN classification
 - `--norm-both-threshold` (default 0.9): how close (as a ratio of the two
   normalised centroid distances) a theme's distances to GT1/GT2 must be
   before it's classed as ambiguous ('both') rather than assigned to one
