@@ -6,25 +6,25 @@ repos:
     hooks:
       - id: check-added-large-files
         name: Check for files larger than 5 MB
-        args: [ "--maxkb=5120" ]
+        args: ["--maxkb=5120"]
 
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.6
     hooks:
-    -   id: bandit
-        args: [ "-c", "backend/pyproject.toml", "-ll" ]
-        additional_dependencies: [ "bandit[toml]" ]
+      - id: bandit
+        args: ["-c", "backend/pyproject.toml", "-ll"]
+        additional_dependencies: ["bandit[toml]"]
         files: '^backend/.*\.py$'
 
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
-    -   id: detect-secrets
+      - id: detect-secrets
         exclude: (uv\.lock|\.env\.example|\.env\.test|^\.github/workflows/|\.cruft\.json)
 
   - repo: local
     hooks:
-    -   id: detect-ip
+      - id: detect-ip
         name: Detect IP addresses
         entry: '^(?!0\.0\.0\.0$)(?!127\.0\.0\.1$)\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
         language: pygrep
@@ -33,7 +33,7 @@ repos:
 
   - repo: local
     hooks:
-    -   id: detect-aws-account
+      - id: detect-aws-account
         name: Detect AWS account numbers
         language: pygrep
         entry: ':\d{12}:'
@@ -41,9 +41,9 @@ repos:
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.8.0
     hooks:
-    -   id: mypy
+      - id: mypy
         args: ["--ignore-missing-imports"]
-        additional_dependencies: [ "types-PyYAML" ]
+        additional_dependencies: ["types-PyYAML", "redis>=4.2"]
         files: '^backend/.*\.py$'
         exclude: (.*migrations|^lambda/)
 
