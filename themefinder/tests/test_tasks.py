@@ -420,6 +420,83 @@ async def test_find_themes(mock_llm, sample_df):
         assert mock_call_llm.await_count == 5
 
 
+def _patch_stage_functions():
+    """Patch all five find_themes stage functions with AsyncMocks returning
+    empty (results, unprocessables) tuples, so we can inspect routing."""
+    empty = (pd.DataFrame({"response_id": []}), pd.DataFrame())
+    patchers = {
+        stage: patch(
+            f"themefinder.tasks.{stage}",
+            new=AsyncMock(return_value=empty),
+        )
+        for stage in (
+            "theme_generation",
+            "theme_condensation",
+            "theme_refinement",
+            "theme_mapping",
+            "detail_detection",
+        )
+    }
+    return patchers
+
+
+@pytest.mark.asyncio
+async def test_find_themes_stage_llms_routes_per_stage(sample_df):
+    """stage_llms overrides route the named stages to their own LLM; the rest
+    fall back to the base llm."""
+    base_llm = Mock(name="base")
+    mapping_llm = Mock(name="mapping")
+    detail_llm = Mock(name="detail")
+
+    patchers = _patch_stage_functions()
+    mocks = {stage: p.start() for stage, p in patchers.items()}
+    try:
+        await find_themes(
+            sample_df.copy(),
+            base_llm,
+            question="q",
+            stage_llms={"theme_mapping": mapping_llm, "detail_detection": detail_llm},
+            verbose=False,
+        )
+    finally:
+        for p in patchers.values():
+            p.stop()
+
+    # The llm is the second positional arg of each stage function.
+    assert mocks["theme_generation"].call_args.args[1] is base_llm
+    assert mocks["theme_condensation"].call_args.args[1] is base_llm
+    assert mocks["theme_refinement"].call_args.args[1] is base_llm
+    assert mocks["theme_mapping"].call_args.args[1] is mapping_llm
+    assert mocks["detail_detection"].call_args.args[1] is detail_llm
+
+
+@pytest.mark.asyncio
+async def test_find_themes_without_stage_llms_uses_base_for_all(sample_df):
+    base_llm = Mock(name="base")
+    patchers = _patch_stage_functions()
+    mocks = {stage: p.start() for stage, p in patchers.items()}
+    try:
+        await find_themes(sample_df.copy(), base_llm, question="q", verbose=False)
+    finally:
+        for p in patchers.values():
+            p.stop()
+
+    for mock in mocks.values():
+        assert mock.call_args.args[1] is base_llm
+
+
+@pytest.mark.asyncio
+async def test_find_themes_unknown_stage_key_raises(sample_df):
+    with pytest.raises(ValueError, match="Unknown stage_llms keys"):
+        await find_themes(
+            sample_df.copy(),
+            Mock(),
+            question="q",
+            stage_llms={"not_a_stage": Mock()},
+            verbose=False,
+        )
+
+
 @pytest.mark.asyncio
 async def test_theme_clustering():
     """Test theme_clustering function"""
