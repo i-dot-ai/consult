@@ -1,16 +1,13 @@
-import json
 import os
 
 import numpy as np
 import pandas as pd
 from sklearn import metrics, utils
 from sklearn.preprocessing import MultiLabelBinarizer
-from themefinder.llm import OpenAILLM
+from themefinder.llm import LLM
 
+from evaluators import _parse_evaluation_response
 from prompts import generation_eval_prompt
-
-# Minimum score (0-5) to consider a topic well-grounded or captured
-GROUNDEDNESS_THRESHOLD = 3
 
 
 def calculate_generation_metrics(
@@ -34,11 +31,11 @@ def calculate_generation_metrics(
             - Recall Average topic Representation: Mean representation score
     """
     if llm is None:
-        llm = OpenAILLM(
-            model=os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT"),
-            request_kwargs={"temperature": 0},
+        llm = LLM(
+            os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT"),
             base_url=os.getenv("LLM_GATEWAY_URL"),
             api_key=os.getenv("CONSULT_EVAL_LITELLM_API_KEY"),
+            temperature=0,
         )
     precision_response = llm.invoke(
         generation_eval_prompt(
@@ -46,24 +43,20 @@ def calculate_generation_metrics(
             topic_list_2=topic_framework,
         )
     )
-    precision_scores = list(json.loads(precision_response.parsed).values())
+    precision = _parse_evaluation_response(precision_response.parsed)
     recall_response = llm.invoke(
         generation_eval_prompt(
             topic_list_1=topic_framework,
             topic_list_2=generated_topics,
         )
     )
-    recall_scores = list(json.loads(recall_response.parsed).values())
+    recall = _parse_evaluation_response(recall_response.parsed)
     return {
         "Precision N topics": len(generated_topics),
-        "Precision N not well grounded": sum(
-            score < GROUNDEDNESS_THRESHOLD for score in precision_scores
-        ),
-        "Precision Average Groundedness": np.mean(precision_scores).round(2),
-        "Recall N not Captured": sum(
-            score < GROUNDEDNESS_THRESHOLD for score in recall_scores
-        ),
-        "Recall Average topic Representation": np.mean(recall_scores).round(2),
+        "Precision N not well grounded": precision["n_below_threshold"],
+        "Precision Average Groundedness": round(precision["average"], 2),
+        "Recall N not Captured": recall["n_below_threshold"],
+        "Recall Average topic Representation": round(recall["average"], 2),
     }
 
 
