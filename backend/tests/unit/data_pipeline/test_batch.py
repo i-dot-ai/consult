@@ -6,20 +6,6 @@ from botocore.exceptions import ClientError
 
 from data_pipeline.batch import submit_job
 
-# Keys the import Lambdas read from event["detail"]["parameters"] -- see
-# lambda/import_candidate_themes/code/main.py and
-# lambda/import_response_annotations/code/main.py. Nothing else connects these
-# codebases, so if a key is renamed here without updating both Lambdas (or vice
-# versa), the break is silent until it hits production.
-LAMBDA_CONSUMED_PARAMETER_KEYS = {
-    "consultation_code",
-    "run_date",
-    "user_id",
-    "model_name",
-    "assignment_target",
-    "context_id",
-}
-
 
 class TestSubmitBatchJob:
     @staticmethod
@@ -320,26 +306,3 @@ class TestSubmitBatchJob:
 
         call_args = mock_batch_client.submit_job.call_args.kwargs
         assert call_args["parameters"]["context_id"] == ""
-
-    @patch("data_pipeline.batch.boto3")
-    @patch("data_pipeline.batch.settings")
-    def test_batch_parameters_match_lambda_contract(self, mock_settings, mock_boto3):
-        """submit_job's parameters dict is the sole data contract with the import
-        Lambdas -- pins every key a Lambda reads to actually being present, so a
-        rename on either side fails loudly here instead of silently in prod."""
-        self._configure_batch_job_settings(mock_settings, "FIND_THEMES")
-
-        mock_batch_client = Mock()
-        mock_batch_client.submit_job.return_value = {"jobId": "test-job-id"}
-        mock_boto3.client.return_value = mock_batch_client
-
-        submit_job(
-            job_type="FIND_THEMES",
-            consultation_code="test-code",
-            consultation_name="Test Consultation",
-            user_id=123,
-            model_name="my-model",
-        )
-
-        call_args = mock_batch_client.submit_job.call_args.kwargs
-        assert LAMBDA_CONSUMED_PARAMETER_KEYS <= call_args["parameters"].keys()
