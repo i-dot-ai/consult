@@ -1,4 +1,5 @@
 import logging
+from typing import Mapping
 
 import pandas as pd
 
@@ -23,11 +24,21 @@ from themefinder.prompts import (
 )
 from themefinder.themefinder_logging import logger
 
+STAGES = (
+    "theme_generation",
+    "theme_condensation",
+    "theme_refinement",
+    "theme_mapping",
+    "detail_detection",
+)
+
 
 async def find_themes(
     responses_df: pd.DataFrame,
     llm: LLM,
     question: str,
+    *,
+    stage_llms: Mapping[str, LLM] | None = None,
     system_prompt: str = CONSULTATION_SYSTEM_PROMPT,
     verbose: bool = True,
     concurrency: int = 10,
@@ -45,6 +56,9 @@ async def find_themes(
         responses_df: DataFrame containing survey responses
         llm: LLM instance for text analysis
         question: The survey question
+        stage_llms: Optional mapping of stage name to LLM, overriding ``llm`` for
+            specific stages. Keys must be a subset of ``STAGES``; any stage not
+            present uses ``llm``.
         system_prompt: System prompt to guide the LLM's behaviour.
         verbose: Whether to show information messages during processing.
         concurrency: Number of concurrent API calls to make.
@@ -59,23 +73,31 @@ async def find_themes(
     """
     logger.setLevel(logging.INFO if verbose else logging.CRITICAL)
 
+    overrides = stage_llms or {}
+    unknown = set(overrides) - set(STAGES)
+    if unknown:
+        raise ValueError(f"Unknown stage_llms keys: {sorted(unknown)}")
+
+    def pick(stage: str) -> LLM:
+        return overrides.get(stage, llm)
+
     theme_df, _ = await theme_generation(
         responses_df,
-        llm,
+        pick("theme_generation"),
         question=question,
         system_prompt=system_prompt,
         concurrency=concurrency,
     )
     condensed_theme_df, _ = await theme_condensation(
         theme_df,
-        llm,
+        pick("theme_condensation"),
         question=question,
         system_prompt=system_prompt,
         concurrency=concurrency,
     )
     refined_theme_df, _ = await theme_refinement(
         condensed_theme_df,
-        llm,
+        pick("theme_refinement"),
         question=question,
         system_prompt=system_prompt,
         concurrency=concurrency,
@@ -83,7 +105,7 @@ async def find_themes(
 
     mapping_df, mapping_unprocessables = await theme_mapping(
         responses_df[["response_id", "response"]],
-        llm,
+        pick("theme_mapping"),
         question=question,
         refined_themes_df=refined_theme_df,
         system_prompt=system_prompt,
@@ -91,7 +113,7 @@ async def find_themes(
     )
     detailed_df, _ = await detail_detection(
         responses_df[["response_id", "response"]],
-        llm,
+        pick("detail_detection"),
         question=question,
         system_prompt=system_prompt,
         concurrency=concurrency,
