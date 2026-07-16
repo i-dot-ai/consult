@@ -61,6 +61,8 @@ def lambda_handler(event, _context):
     try:
         # Connect to Redis
         redis_host = os.environ.get("REDIS_HOST")
+        if redis_host is None:
+            raise ValueError("REDIS_HOST environment variable is required")
         redis_port = int(os.environ.get("REDIS_PORT", "6379"))
 
         logger.info(
