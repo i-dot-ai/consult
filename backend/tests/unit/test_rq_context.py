@@ -158,16 +158,32 @@ class TestJob:
         assert sample.delay is sample.enqueue
 
     def test_dotted_path_dispatch_still_rebinds_context_id(self):
-        """Confirms the exact mechanism the import Lambdas depend on: enqueueing by
-        dotted string name (queue.enqueue("data_pipeline.jobs.foo", ...)) resolves
-        to our wrapper via RQ's own import_attribute, and calling it the way the
-        worker does still rebinds context_id correctly."""
+        """Confirms the mechanism any external caller enqueueing by dotted string
+        name (queue.enqueue("data_pipeline.jobs.foo", ...), rather than importing
+        the Python object) would depend on: RQ's own import_attribute resolves to
+        our wrapper, and calling it the way the worker does still rebinds
+        context_id correctly."""
         resolved = import_attribute("tests.unit.test_rq_context.probe_job")
 
-        seen_context_id, value = resolved(7, context_id="from-lambda")
+        seen_context_id, value = resolved(7, context_id="from-external-caller")
 
-        assert seen_context_id == "from-lambda"
+        assert seen_context_id == "from-external-caller"
         assert value == 7
+
+    def test_ambient_context_id_survives_a_real_delay_round_trip(self):
+        """The other TestJob tests prove enqueue-time auto-fill and execution-time
+        rebind as two separate, isolated halves (one against a stubbed _rq_job,
+        one by calling the job body directly) -- neither actually proves the two
+        halves connect correctly. This one does: RQ_QUEUES ASYNC=False in test
+        settings means .delay() runs the job synchronously through the real,
+        unmocked enqueue path (backed by the real Redis service CI/local dev both
+        run), so this is the one test asserting context_id survives the full
+        enqueue -> execution round trip, not just its two halves in isolation."""
+        rebind_context("ambient-real-id")
+
+        job = probe_job.delay(42)
+
+        assert job.result == ("ambient-real-id", 42)
 
 
 class TestNoBareDjangoRqUsage:
