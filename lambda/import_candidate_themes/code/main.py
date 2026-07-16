@@ -1,13 +1,22 @@
-import logging
 import os
 
 import redis  # type: ignore
 import sentry_sdk
+from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
+from i_dot_ai_utilities.logging.types.enrichment_types import (
+    ContextEnrichmentType,
+    ExecutionEnvironmentType,
+)
+from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 from rq import Queue
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
+logger = StructuredLogger(
+    level="info",
+    options={
+        "execution_environment": ExecutionEnvironmentType.LAMBDA,
+        "log_format": LogOutputFormat.JSON,
+    },
+)
 # Initialize Sentry if DSN is provided
 sentry_dsn = os.environ.get("SENTRY_DSN")
 if sentry_dsn:
@@ -25,6 +34,7 @@ def lambda_handler(event, _context):
 
     Enqueues a Django RQ job to import the candidate themes from S3 to the database.
     """
+    logger.refresh_context([{"type": ContextEnrichmentType.LAMBDA, "object": _context}])
 
     detail = event["detail"]
     job_name = detail["jobName"]
@@ -36,16 +46,27 @@ def lambda_handler(event, _context):
     user_id = parameters.get("user_id")
     model_name = parameters.get("model_name")
 
-    logger.info(f"Batch job '{job_name}' completed with status: {job_status}")
-    logger.info(f"Consultation code: {consultation_code}")
-    logger.info(f"Run date: {run_date}")
+    logger.set_context_field("batch_job_name", job_name)
+    logger.set_context_field("consultation_code", consultation_code)
+
+    logger.info(
+        "Batch job '{job_name}' completed with status: {job_status} consultation_code: {consultation_code} date: {run_date}",
+        job_name=job_name,
+        job_status=job_status,
+        consultation_code=consultation_code,
+        run_date=run_date,
+    )
 
     try:
         # Connect to Redis
         redis_host = os.environ.get("REDIS_HOST")
         redis_port = int(os.environ.get("REDIS_PORT", "6379"))
 
-        logger.info(f"Connecting to Redis: {redis_host}:{redis_port}")
+        logger.info(
+            "Connecting to Redis: {redis_host}:{redis_port}",
+            redis_host=redis_host,
+            redis_port=redis_port,
+        )
 
         redis_conn = redis.Redis(
             host=redis_host,
@@ -56,7 +77,7 @@ def lambda_handler(event, _context):
 
         # Test Redis connection
         ping_result = redis_conn.ping()
-        logger.info(f"✅ Redis PING result: {ping_result}")
+        logger.info("✅ Redis PING result: {ping_result}", ping_result=ping_result)
 
         # Enqueue the RQ job
         queue_name = "default"
@@ -70,17 +91,20 @@ def lambda_handler(event, _context):
             model_name,
         )
 
-        logger.info("✅ RQ job enqueued successfully!")
-        logger.info(f"Job ID: {job.id}")
-        logger.info(f"Job status: {job.get_status()}")
-        logger.info(f"Queue '{queue_name}' now has {len(queue)} jobs")
-
         logger.info(
-            f"✅ Successfully queued candidate themes import job {job.id} for: {consultation_code}"
+            "✅ Successfully queued candidate themes import job {job_id} for: {consultation_code}. "
+            "Job status: {job_status}, queue '{queue_name}' now has {job_count} jobs",
+            job_id=job.id,
+            consultation_code=consultation_code,
+            job_status=job.get_status(),
+            queue_name=queue_name,
+            job_count=len(queue),
         )
 
     except Exception as e:
-        error_msg = f"Failed to enqueue candidate themes import job: {str(e)}"
-        logger.error(f"ERROR: {error_msg}")
-        logger.error(f"Exception type: {type(e).__name__}")
+        logger.exception(
+            "Failed to enqueue candidate themes import job: {error} ({exception_type})",
+            error=str(e),
+            exception_type=type(e).__name__,
+        )
         raise
