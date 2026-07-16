@@ -1,18 +1,24 @@
 from unittest.mock import Mock, patch
 
+import pytest
+from botocore.exceptions import ClientError
+
 from data_pipeline.batch import submit_job
 
 
 class TestSubmitBatchJob:
+    @staticmethod
+    def _configure_batch_job_settings(mock_settings, job_type: str) -> None:
+        mock_settings.SUBMIT_BATCH_JOBS = True
+        setattr(mock_settings, f"{job_type}_BATCH_JOB_NAME", f"{job_type.lower()}-job".replace("_", "-"))
+        setattr(mock_settings, f"{job_type}_BATCH_JOB_QUEUE", f"{job_type.lower()}-queue".replace("_", "-"))
+        setattr(mock_settings, f"{job_type}_BATCH_JOB_DEFINITION", f"{job_type.lower()}-def".replace("_", "-"))
+
     @patch("data_pipeline.batch.boto3")
     @patch("data_pipeline.batch.settings")
     def test_submit_find_themes_job(self, mock_settings, mock_boto3):
         """Test submitting a FIND_THEMES batch job"""
-        # Mock settings
-        mock_settings.SUBMIT_BATCH_JOBS = True
-        mock_settings.FIND_THEMES_BATCH_JOB_NAME = "find-themes-job"
-        mock_settings.FIND_THEMES_BATCH_JOB_QUEUE = "find-themes-queue"
-        mock_settings.FIND_THEMES_BATCH_JOB_DEFINITION = "find-themes-def"
+        self._configure_batch_job_settings(mock_settings, "FIND_THEMES")
 
         # Mock boto3 batch client
         mock_batch_client = Mock()
@@ -57,11 +63,7 @@ class TestSubmitBatchJob:
     @patch("data_pipeline.batch.settings")
     def test_submit_assign_themes_job(self, mock_settings, mock_boto3):
         """Test submitting an ASSIGN_THEMES batch job"""
-        # Mock settings
-        mock_settings.SUBMIT_BATCH_JOBS = True
-        mock_settings.ASSIGN_THEMES_BATCH_JOB_NAME = "assign-themes-job"
-        mock_settings.ASSIGN_THEMES_BATCH_JOB_QUEUE = "assign-themes-queue"
-        mock_settings.ASSIGN_THEMES_BATCH_JOB_DEFINITION = "assign-themes-def"
+        self._configure_batch_job_settings(mock_settings, "ASSIGN_THEMES")
 
         # Mock boto3 batch client
         mock_batch_client = Mock()
@@ -115,3 +117,57 @@ class TestSubmitBatchJob:
         # A stub response with a jobId is returned so callers keep working
         assert "jobId" in response
         assert "test-code-3" in response["jobId"]
+
+    @patch("data_pipeline.batch.logger")
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_job_reraises_boto_errors(self, mock_settings, mock_boto3, mock_logger):
+        """Boto-specific errors are logged via the ClientError/BotoCoreError branch and re-raised unchanged"""
+        self._configure_batch_job_settings(mock_settings, "FIND_THEMES")
+
+        mock_batch_client = Mock()
+        mock_batch_client.submit_job.side_effect = ClientError(
+            {"Error": {"Code": "AccessDenied", "Message": "AccessDenied"}}, "SubmitJob"
+        )
+        mock_boto3.client.return_value = mock_batch_client
+
+        with pytest.raises(ClientError):
+            submit_job(
+                job_type="FIND_THEMES",
+                consultation_code="test-code",
+                consultation_name="Test Consultation",
+                user_id=123,
+                model_name="my-model",
+            )
+
+        mock_logger.exception.assert_called_once()
+        message, kwargs = mock_logger.exception.call_args[0][0], mock_logger.exception.call_args[1]
+        assert "Failed to submit" in message
+        assert kwargs["job_type"] == "FIND_THEMES"
+        assert kwargs["consultation_code"] == "test-code"
+
+    @patch("data_pipeline.batch.logger")
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_job_reraises_unexpected_errors(self, mock_settings, mock_boto3, mock_logger):
+        """Non-boto errors hit the separate catch-all branch, are logged, and re-raised, not swallowed"""
+        self._configure_batch_job_settings(mock_settings, "FIND_THEMES")
+
+        mock_batch_client = Mock()
+        mock_batch_client.submit_job.side_effect = ValueError("unexpected failure")
+        mock_boto3.client.return_value = mock_batch_client
+
+        with pytest.raises(ValueError, match="unexpected failure"):
+            submit_job(
+                job_type="FIND_THEMES",
+                consultation_code="test-code",
+                consultation_name="Test Consultation",
+                user_id=123,
+                model_name="my-model",
+            )
+
+        mock_logger.exception.assert_called_once()
+        message, kwargs = mock_logger.exception.call_args[0][0], mock_logger.exception.call_args[1]
+        assert "Unexpected error submitting" in message
+        assert kwargs["job_type"] == "FIND_THEMES"
+        assert kwargs["consultation_code"] == "test-code"
