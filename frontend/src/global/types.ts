@@ -42,9 +42,7 @@ export interface Question {
 }
 
 export type ConsultationStage =
-  | "finalising_themes"
-  | "assigning_themes"
-  | "analysis";
+  "finalising_themes" | "assigning_themes" | "analysis";
 export interface NextResponseInfo {
   id: string;
   consultation_id: string;
@@ -304,13 +302,7 @@ export type AstroGlobalRuntime = {
 };
 
 export type HttpMethod =
-  | "GET"
-  | "POST"
-  | "PUT"
-  | "PATCH"
-  | "DELETE"
-  | "HEAD"
-  | "OPTIONS";
+  "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
 
 export type MockCallbackArgs = RequestInit & { url: string; params: unknown };
 
