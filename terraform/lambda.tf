@@ -50,6 +50,8 @@ module "slack_notifier_lambda" {
     "SLACK_WEBHOOK_URL" = data.aws_ssm_parameter.slack_webhook_url.value,
     "LAMBDA_AWS_REGION" = data.aws_region.current.id,
     "ENVIRONMENT"       = terraform.workspace,
+    "APP_NAME"          = "${var.project_name}-slack-notifier",
+    "REPO"              = var.project_name,
     "AWS_BUCKET_NAME"   = module.app_bucket.id,
     "AWS_ACCOUNT_ID"    = data.aws_caller_identity.current.account_id
   }
@@ -99,6 +101,8 @@ module "import_candidate_themes_lambda" {
     AWS_ACCOUNT_ID    = data.aws_caller_identity.current.account_id
     SENTRY_DSN        = var.backend_sentry_dsn
     ENVIRONMENT       = terraform.workspace
+    APP_NAME          = "${var.project_name}-import-candidate-themes"
+    REPO              = var.project_name
   }
 }
 
@@ -146,5 +150,7 @@ module "import_response_annotations_lambda" {
     AWS_ACCOUNT_ID    = data.aws_caller_identity.current.account_id
     SENTRY_DSN        = var.backend_sentry_dsn
     ENVIRONMENT       = terraform.workspace
+    APP_NAME          = "${var.project_name}-import-response-annotations"
+    REPO              = var.project_name
   }
 }
