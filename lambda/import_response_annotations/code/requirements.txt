@@ -1,3 +1,4 @@
 redis==4.6.0
 django-rq
 sentry-sdk==2.59.0
+i-dot-ai-utilities==0.6.0
