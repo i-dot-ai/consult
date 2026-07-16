@@ -10,8 +10,7 @@
     maxChars?: number;
     context?: "dashboard" | "public" | "finalising-themes";
   } & (
-    | { text: string; children?: never }
-    | { text?: never; children?: Snippet }
+    { text: string; children?: never } | { text?: never; children?: Snippet }
   );
 
   let {
