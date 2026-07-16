@@ -28,13 +28,13 @@ if sentry_dsn:
     logger.info("Sentry initialized")
 
 
-def lambda_handler(event, _context):
+def lambda_handler(event, context):
     """
     Lambda triggered by EventBridge when find themes batch job completes.
 
     Enqueues a Django RQ job to import the candidate themes from S3 to the database.
     """
-    logger.refresh_context([{"type": ContextEnrichmentType.LAMBDA, "object": _context}])
+    logger.refresh_context([{"type": ContextEnrichmentType.LAMBDA, "object": context}])
 
     detail = event["detail"]
     job_name = detail["jobName"]
