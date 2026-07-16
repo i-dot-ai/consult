@@ -255,6 +255,12 @@ class ConsultationViewSet(ModelViewSet):
                 user_id=request.user.id,
             )
 
+            logger.info(
+                "Consultation setup job submitted for consultation {consultation_name} by user {user_id}",
+                consultation_name=validated["consultation_name"],
+                user_id=request.user.id,
+            )
+
             return Response(
                 {"message": "Consultation setup job started successfully"},
                 status=status.HTTP_202_ACCEPTED,
