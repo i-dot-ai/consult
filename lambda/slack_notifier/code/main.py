@@ -110,6 +110,9 @@ def send_slack_message(job: dict, consultation: dict, environment: str, user_id:
         )
 
     encoded_msg = json.dumps(message).encode("utf-8")
+    if SLACK_WEBHOOK_URL is None:
+        raise ValueError("SLACK_WEBHOOK_URL environment variable is required")
+
     response = http.request(
         "POST",
         SLACK_WEBHOOK_URL,
