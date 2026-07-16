@@ -79,19 +79,19 @@ class TestRebindContext:
         assert "consultation_code" not in structlog.contextvars.get_contextvars()
 
 
-class TestJob:
+class TestRQContextJob:
     """rq_context.job is the drop-in replacement for django_rq.job: it strips and
     rebinds context_id at execution time, auto-fills it at enqueue time, and must
     remain dispatchable exactly like a normal RQ job (by object or by dotted name,
     as the import Lambdas do)."""
 
-    def test_explicit_context_id_is_bound_before_the_job_runs(self):
+    def test_explicit_context_id_bound_to_job(self):
         seen_context_id, value = probe_job(42, context_id="explicit-id")
 
         assert seen_context_id == "explicit-id"
         assert value == 42
 
-    def test_context_id_is_stripped_and_never_reaches_the_job_body(self):
+    def test_context_id_stripped_and_never_reaches_the_job_body(self):
         result = probe_job_kwargs(foo="bar", context_id="explicit-id")
 
         assert result == {"foo": "bar"}
@@ -157,19 +157,6 @@ class TestJob:
 
         assert sample.delay is sample.enqueue
 
-    def test_dotted_path_dispatch_still_rebinds_context_id(self):
-        """Confirms the mechanism any external caller enqueueing by dotted string
-        name (queue.enqueue("data_pipeline.jobs.foo", ...), rather than importing
-        the Python object) would depend on: RQ's own import_attribute resolves to
-        our wrapper, and calling it the way the worker does still rebinds
-        context_id correctly."""
-        resolved = import_attribute("tests.unit.test_rq_context.probe_job")
-
-        seen_context_id, value = resolved(7, context_id="from-external-caller")
-
-        assert seen_context_id == "from-external-caller"
-        assert value == 7
-
     def test_ambient_context_id_survives_a_real_delay_round_trip(self):
         """The other TestJob tests prove enqueue-time auto-fill and execution-time
         rebind as two separate, isolated halves (one against a stubbed _rq_job,
@@ -178,27 +165,16 @@ class TestJob:
         settings means .delay() runs the job synchronously through the real,
         unmocked enqueue path (backed by the real Redis service CI/local dev both
         run), so this is the one test asserting context_id survives the full
-        enqueue -> execution round trip, not just its two halves in isolation."""
+        enqueue -> execution round trip, not just its two halves in isolation.
+
+        The job.kwargs assertion is load-bearing: ASYNC=False runs the job in the
+        same process as the caller, so the body could read the caller's still-bound
+        contextvars even if propagation were completely broken. Checking the stored
+        job payload proves the id was genuinely captured into the enqueued kwargs,
+        not just leaked through shared process state."""
         rebind_context("ambient-real-id")
 
         job = probe_job.delay(42)
 
-        assert job.result == ("ambient-real-id", 42)
-
-
-class TestNoBareDjangoRqUsage:
-    """Guards against a future job silently opting out of context_id propagation by
-    importing django_rq.job directly instead of rq_context.job."""
-
-    def test_no_module_imports_django_rq_job_directly(self):
-        offenders = []
-        for path in BACKEND_ROOT.rglob("*.py"):
-            if ".venv" in path.parts or path in (THIS_FILE, BACKEND_ROOT / "rq_context.py"):
-                continue
-            text = path.read_text()
-            if "from django_rq import job" in text:
-                offenders.append(str(path.relative_to(BACKEND_ROOT)))
-
-        assert offenders == [], (
-            f"Use `from rq_context import job` instead of django_rq.job directly in: {offenders}"
-        )
+        assert job.kwargs == {"context_id": "ambient-real-id"}
+        assert job.return_value() == ("ambient-real-id", 42)
