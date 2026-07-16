@@ -2,6 +2,7 @@ from typing import Dict, List, Optional
 from uuid import UUID
 
 import tiktoken
+from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
 from django_rq import get_queue
@@ -53,7 +54,17 @@ def load_respondents_from_s3(
 
     logger.info("Loading respondents from {key}", key=key)
 
-    raw_data = s3.read_jsonl(bucket_name, key)
+    try:
+        raw_data = s3.read_jsonl(bucket_name, key)
+    except (ClientError, BotoCoreError) as e:
+        logger.exception(
+            "Failed to load respondents file from S3: bucket={bucket}, key={key}",
+            bucket=bucket_name,
+            key=key,
+        )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(f"Respondents file not found: {key}") from e
+        raise
 
     respondents = [RespondentInput(**data) for data in raw_data]
 
@@ -83,7 +94,17 @@ def load_question_from_s3(
         "Loading question {question_number} from {key}", question_number=question_number, key=key
     )
 
-    data = s3.read_json(bucket_name, key)
+    try:
+        data = s3.read_json(bucket_name, key)
+    except (ClientError, BotoCoreError) as e:
+        logger.exception(
+            "Failed to load question file from S3: bucket={bucket}, key={key}",
+            bucket=bucket_name,
+            key=key,
+        )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(f"Question file not found: {key}") from e
+        raise
 
     if data is None:
         raise ValueError(f"Question file not found or empty: {key}")
@@ -120,6 +141,13 @@ def load_responses_from_s3(
     )
 
     raw_data = s3.read_jsonl(bucket_name, key, raise_if_missing=False)
+    if not raw_data:
+        logger.info(
+            "No responses found for question {question_number} in S3 at {key}",
+            question_number=question_number,
+            key=key,
+        )
+        return []
 
     responses = []
     for data in raw_data:
@@ -158,6 +186,14 @@ def load_multi_choice_from_s3(
     )
 
     raw_data = s3.read_jsonl(bucket_name, key, raise_if_missing=False)
+
+    if not raw_data:
+        logger.info(
+            "No multi-choice data found for question {question_number} in S3 at {key}",
+            question_number=question_number,
+            key=key,
+        )
+        return []
 
     multi_choices = []
     for data in raw_data:
