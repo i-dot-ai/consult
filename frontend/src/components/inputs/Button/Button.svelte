@@ -15,11 +15,7 @@
   export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
   export let highlighted: boolean = false;
   export let highlightVariant:
-    | "dark"
-    | "light"
-    | "primary"
-    | "approve"
-    | "none" = "dark";
+    "dark" | "light" | "primary" | "approve" | "none" = "dark";
   export let handleClick: (e: MouseEvent) => void = () => {};
   export let disabled: boolean = false;
   export let fullWidth: boolean = false;

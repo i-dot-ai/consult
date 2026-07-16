@@ -362,7 +362,7 @@
   </div>
 
   <div class="col-span-4 md:col-span-3">
-    {#if $questionStore.data?.multiple_choice_answer?.filter( (item) => Boolean(item.text), ).length}
+    {#if $questionStore.data?.multiple_choice_answer?.filter( (item) => Boolean(item.text) ).length}
       <MultiChoice
         data={$questionStore.data.multiple_choice_answer.filter((item) =>
           Boolean(item.text),

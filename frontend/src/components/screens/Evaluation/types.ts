@@ -1,7 +1,5 @@
 export type EvalStatus =
-  | "insufficient_data"
-  | "below_benchmark"
-  | "meets_benchmark";
+  "insufficient_data" | "below_benchmark" | "meets_benchmark";
 
 export type F1Stats = {
   mean: number;
