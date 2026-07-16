@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "engines": {
-    "node": "24.14.1"
+    "node": "26.5.0"
   },
   "scripts": {
     "dev": "astro dev --host",
@@ -46,7 +46,7 @@
     "@vitest/eslint-plugin": "^1.6.0",
     "eslint": "^10.6.0",
     "eslint-config-prettier": "^10.1.0",
-    "eslint-plugin-astro": "^1.7.0",
+    "eslint-plugin-astro": "^2.1.1",
     "eslint-plugin-prettier": "^5.5.0",
     "eslint-plugin-svelte": "^3.20.0",
     "eslint-plugin-testing-library": "^7.16.0",
