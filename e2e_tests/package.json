@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "engines": {
-    "node": "24.17.0"
+    "node": "26.5.0"
   },
   "scripts": {
     "e2e": "npx playwright test",
