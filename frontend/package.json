@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@astrojs/node": "^10.1.0",
-    "@astrojs/svelte": "^8.1.0",
+    "@astrojs/svelte": "^9.0.1",
     "@codemirror/lang-json": "^6.0.0",
     "@melt-ui/svelte": "^0.86.0",
     "@sentry/astro": "^10.62.0",
