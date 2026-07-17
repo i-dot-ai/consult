@@ -1,3 +1,4 @@
+import datetime
 import os
 
 import redis  # type: ignore
@@ -28,6 +29,13 @@ if sentry_dsn:
     logger.info("Sentry initialized")
 
 
+def _epoch_ms_to_iso(epoch_ms: int | None) -> str | None:
+    """Convert an AWS Batch epoch-millisecond timestamp to an ISO-8601 string."""
+    if epoch_ms is None:
+        return None
+    return datetime.datetime.fromtimestamp(epoch_ms / 1000, tz=datetime.UTC).isoformat()
+
+
 def lambda_handler(event, context):
     """
     Lambda triggered by EventBridge when find themes batch job completes.
@@ -39,6 +47,8 @@ def lambda_handler(event, context):
     detail = event["detail"]
     job_name = detail["jobName"]
     job_status = detail["status"]
+    start_date_time = _epoch_ms_to_iso(detail.get("startedAt"))
+    end_date_time = _epoch_ms_to_iso(detail.get("stoppedAt"))
 
     parameters = detail["parameters"]
     consultation_code = parameters["consultation_code"]
@@ -50,11 +60,13 @@ def lambda_handler(event, context):
     logger.set_context_field("consultation_code", consultation_code)
 
     logger.info(
-        "Batch job '{job_name}' completed with status: {job_status} consultation_code: {consultation_code} date: {run_date}",
+        "Batch job '{job_name}' completed with status: {job_status} consultation_code: {consultation_code} "
+        "start_date_time: {start_date_time} end_date_time: {end_date_time}",
         job_name=job_name,
         job_status=job_status,
         consultation_code=consultation_code,
-        run_date=run_date,
+        start_date_time=start_date_time,
+        end_date_time=end_date_time,
     )
 
     try:
@@ -103,10 +115,6 @@ def lambda_handler(event, context):
             job_count=len(queue),
         )
 
-    except Exception as e:
-        logger.exception(
-            "Failed to enqueue candidate themes import job: {error} ({exception_type})",
-            error=str(e),
-            exception_type=type(e).__name__,
-        )
+    except Exception:
+        logger.exception("Failed to enqueue candidate themes import job")
         raise
