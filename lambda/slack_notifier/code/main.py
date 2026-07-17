@@ -162,10 +162,6 @@ def lambda_handler(event, context):
 
         logger.info("✅ Slack message sent")
 
-    except Exception as e:
-        logger.exception(
-            "Failed to send Slack notification: {error} ({exception_type})",
-            error=str(e),
-            exception_type=type(e).__name__,
-        )
+    except Exception:
+        logger.exception("Failed to send Slack notification")
         raise
