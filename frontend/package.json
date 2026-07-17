@@ -19,14 +19,14 @@
     "typecheck": "svelte-check"
   },
   "dependencies": {
-    "@astrojs/node": "^10.1.0",
-    "@astrojs/svelte": "^8.1.0",
+    "@astrojs/node": "^11.0.1",
+    "@astrojs/svelte": "^9.0.1",
     "@codemirror/lang-json": "^6.0.0",
     "@melt-ui/svelte": "^0.86.0",
     "@sentry/astro": "^10.62.0",
     "@sveltestack/svelte-query": "^1.6.0",
     "@tanstack/svelte-query": "^6.1.36",
-    "astro": "^6.4.8",
+    "astro": "^7.0.5",
     "chart.js": "^4.5.0",
     "clsx": "^2.1.0",
     "path-to-regexp": "^8.4.0",
