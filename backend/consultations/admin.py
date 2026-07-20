@@ -79,7 +79,13 @@ def import_candidate_themes_from_s3_job(modeladmin, request, queryset):
         try:
             import_candidate_themes.enqueue(consultation.code, consultation.timestamp)
         except Exception as e:
-            logger.error("failed to start import_candidate_themes: {error}", error=e)
+            logger.exception(
+                "failed to start import_candidate_themes for {code}", code=consultation.code
+            )
+            messages.error(
+                request,
+                f"Failed to start import for '{consultation.code}': {e}",
+            )
 
 
 @admin.action(description="Clone consultation")
