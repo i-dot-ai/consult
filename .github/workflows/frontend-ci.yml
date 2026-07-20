@@ -7,7 +7,7 @@ on:
   workflow_call:
 
 env:
-  NODE_VERSION: "24.14.1" # Match exact version specified in .nvmrc and frontend/Dockerfile
+  NODE_VERSION: "26.5.0" # Match exact version specified in .nvmrc and frontend/Dockerfile
 
 jobs:
   test:
