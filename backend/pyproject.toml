@@ -5,7 +5,7 @@ description = "Consult backend application"
 license = {text = "MIT"}
 requires-python = ">=3.12,<3.13"
 dependencies = [
-  "boto3>=1.43.36",
+  "boto3>=1.43.40",
   "django>=6.0.5",
   "django-environ>=0.14.0",
   "django-filter>=25.2",
