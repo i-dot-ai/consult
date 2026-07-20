@@ -91,6 +91,10 @@ evals/data/*
 !evals/data/gambling_XS/
 !evals/data/generation/
 !evals/data/condensation/
+# The blanket *.json rule above (for GCP creds) also hides the reference
+# dataset's .json files (question.json inputs, themes.json outputs), which the
+# local eval fallback needs in CI. Re-include them explicitly.
+!evals/data/gambling_XS/**/*.json
 
 # Benchmark outputs (generated locally)
 evals/benchmark_*.log

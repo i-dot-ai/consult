@@ -1,16 +1,20 @@
 """LLM abstraction layer for themefinder.
 
-Provides a Protocol-based interface for LLM calls with structured output support,
-and an OpenAI implementation. Designed for easy extension to other providers.
+A single Pydantic AI-backed ``LLM`` class drives all chat/structured calls.
+The model/provider is a single configurable value: pass a provider-prefixed
+string (``"openai:gpt-4o"``, ``"anthropic:claude-..."``, ``"google:gemini-..."``)
+for direct-to-provider routing, or a ``base_url``/``api_key`` pair to route through
+an OpenAI-compatible gateway (the Consult LiteLLM proxy).
 """
 
-import asyncio
-import concurrent.futures
 from dataclasses import dataclass
-from typing import Protocol, runtime_checkable
 
-import openai
 from pydantic import BaseModel
+from pydantic_ai import Agent, NativeOutput
+from pydantic_ai.models import Model
+from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.settings import ModelSettings
 
 
 @dataclass
@@ -20,59 +24,71 @@ class LLMResponse:
     parsed: BaseModel | str
 
 
-@runtime_checkable
-class LLM(Protocol):
-    """Protocol defining the LLM interface for themefinder."""
+def _resolve_model(
+    model: str | Model,
+    base_url: str | None,
+    api_key: str | None,
+) -> str | Model:
+    """Resolve the ``model`` argument into something an ``Agent`` accepts.
 
-    async def ainvoke(
-        self, prompt: str, output_model: type[BaseModel] | None = None
-    ) -> LLMResponse: ...
+    - ``model`` is already a ``Model`` instance -> use as-is (also the test seam),
+      regardless of ``base_url``/``api_key``: a ready-made model carries its own
+      provider, so there is nothing for the gateway args to configure.
+    - ``base_url``/``api_key`` given (with a string ``model``) -> gateway mode:
+      build an ``OpenAIChatModel`` over an ``OpenAIProvider`` pointed at the
+      gateway. Here ``model`` is the gateway's model name (no ``provider:``
+      prefix); the proxy does the routing.
+    - otherwise -> pass the provider-prefixed string straight through to the
+      ``Agent``, which resolves the provider from env API keys.
+    """
+    if not isinstance(model, str):
+        return model
+    if base_url is not None or api_key is not None:
+        return OpenAIChatModel(
+            model,
+            provider=OpenAIProvider(base_url=base_url, api_key=api_key),
+        )
+    return model
 
-    def invoke(
-        self, prompt: str, output_model: type[BaseModel] | None = None
-    ) -> LLMResponse: ...
 
-
-class OpenAILLM:
-    """OpenAI SDK implementation of the LLM protocol."""
+class LLM:
+    """Pydantic AI-backed implementation of the themefinder LLM interface."""
 
     def __init__(
         self,
-        model,
-        request_kwargs: dict | None = None,
-        **client_kwargs,
+        model: str | Model,
+        *,
+        base_url: str | None = None,
+        api_key: str | None = None,
+        temperature: float | None = None,
+        model_settings: ModelSettings | None = None,
     ):
-        self.model = model
-        self.request_kwargs = request_kwargs or {}
-        self.client = openai.AsyncOpenAI(**client_kwargs)
+        self._model = _resolve_model(model, base_url, api_key)
+        self._settings = model_settings or (
+            ModelSettings(temperature=temperature) if temperature is not None else None
+        )
+        self._agent = Agent(self._model)
+
+    @staticmethod
+    def _output_type(output_model: type[BaseModel] | None):
+        return NativeOutput(output_model) if output_model is not None else str
 
     async def ainvoke(
         self, prompt: str, output_model: type[BaseModel] | None = None
     ) -> LLMResponse:
-        kwargs = {
-            "model": self.model,
-            "messages": [{"role": "user", "content": prompt}],
-            **self.request_kwargs,
-        }
-        if output_model:
-            kwargs["response_format"] = output_model
-            response = await self.client.chat.completions.parse(**kwargs)
-            return LLMResponse(parsed=response.choices[0].message.parsed)
-        else:
-            response = await self.client.chat.completions.create(**kwargs)
-            return LLMResponse(parsed=response.choices[0].message.content)
+        result = await self._agent.run(
+            prompt,
+            output_type=self._output_type(output_model),
+            model_settings=self._settings,
+        )
+        return LLMResponse(parsed=result.output)
 
     def invoke(
         self, prompt: str, output_model: type[BaseModel] | None = None
     ) -> LLMResponse:
-        """Synchronous wrapper around ainvoke."""
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
-        if loop and loop.is_running():
-            with concurrent.futures.ThreadPoolExecutor() as pool:
-                return pool.submit(
-                    asyncio.run, self.ainvoke(prompt, output_model)
-                ).result()
-        return asyncio.run(self.ainvoke(prompt, output_model))
+        result = self._agent.run_sync(
+            prompt,
+            output_type=self._output_type(output_model),
+            model_settings=self._settings,
+        )
+        return LLMResponse(parsed=result.output)

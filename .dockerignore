@@ -21,6 +21,19 @@ frontend/govuk-assets
 frontend/admin
 frontend/django_extensions
 
+# themefinder: development-only directories not needed in production images
+themefinder/evals
+themefinder/docs
+themefinder/tests
+themefinder/examples
+themefinder/architecture
+themefinder/.venv
+themefinder/.pytest_cache
+themefinder/.mypy_cache
+themefinder/.ruff_cache
+themefinder/**/__pycache__
+themefinder/*.egg-info
+
 # Local virtualenvs, dependencies and build output
 **/.venv
 **/venv
@@ -31,8 +44,11 @@ frontend/.astro
 # Python caches
 **/__pycache__
 **/.pytest_cache
+**/.mypy_cache
 **/.ruff_cache
-.mypy_cache
+
+# Local dev artifacts (sql.log may contain sensitive query data)
+**/sql.log
 
 # Local env files
 .env

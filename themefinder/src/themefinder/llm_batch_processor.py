@@ -2,12 +2,12 @@ import asyncio
 import logging
 import os
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
-import openai
 import pandas as pd
 import tiktoken
 from pydantic import BaseModel, ValidationError
+from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 from tenacity import (
     before,
     before_sleep_log,
@@ -95,7 +95,7 @@ async def batch_and_run(
 
 
 def partition_dataframe(
-    df: pd.DataFrame, partition_key: Optional[str]
+    df: pd.DataFrame, partition_key: str | None
 ) -> list[pd.DataFrame]:
     """Splits the DataFrame into partitions based on the partition_key if provided."""
     if partition_key:
@@ -153,7 +153,7 @@ def batch_task_input_df(
     df: pd.DataFrame,
     allowed_tokens: int,
     batch_size: int,
-    partition_key: Optional[str] = None,
+    partition_key: str | None = None,
 ) -> list[pd.DataFrame]:
     """
     Partitions and batches a DataFrame according to a token limit and batch size,
@@ -255,10 +255,12 @@ async def call_llm(
                     if isinstance(all_results, dict)
                     else all_results.responses
                 )
-            except (openai.BadRequestError, ValueError) as e:
-                logger.warning(e)
-                return [], batch_prompt.response_ids
-            except ValidationError as e:
+            except (
+                ModelHTTPError,
+                UnexpectedModelBehavior,
+                ValueError,
+                ValidationError,
+            ) as e:
                 logger.warning(e)
                 return [], batch_prompt.response_ids
 
@@ -329,7 +331,7 @@ def process_llm_responses(
     return task_responses
 
 
-def calculate_string_token_length(input_text: str, model: str = None) -> int:
+def calculate_string_token_length(input_text: str, model: str | None = None) -> int:
     """
     Calculates the number of tokens in a given string using the specified model's tokenizer.
 
@@ -342,7 +344,12 @@ def calculate_string_token_length(input_text: str, model: str = None) -> int:
     """
     # Use the MODEL_NAME env var if no model is provided; otherwise default to "gpt-4o"
     model = model or os.environ.get("MODEL_NAME", "gpt-4o")
-    tokenizer_encoding = tiktoken.encoding_for_model(model)
+    try:
+        tokenizer_encoding = tiktoken.encoding_for_model(model)
+    except KeyError:
+        # Non-OpenAI model names are unknown to tiktoken. Token counting here is
+        # only an approximate batching heuristic, so a default encoding is fine.
+        tokenizer_encoding = tiktoken.get_encoding("o200k_base")
     number_of_tokens = len(tokenizer_encoding.encode(input_text))
     return number_of_tokens
 

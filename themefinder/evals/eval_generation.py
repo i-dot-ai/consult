@@ -23,7 +23,7 @@ from evaluators import (
     create_title_specificity_evaluator,
 )
 from metrics import calculate_generation_metrics
-from themefinder.llm import OpenAILLM
+from themefinder.llm import LLM
 
 from themefinder import theme_condensation, theme_generation, theme_refinement
 
@@ -32,9 +32,9 @@ logger = logging.getLogger("themefinder.evals.generation")
 
 async def evaluate_generation(
     dataset: str = "gambling_XS",
-    llm: OpenAILLM | None = None,
+    llm: LLM | None = None,
     langfuse_ctx: langfuse_utils.LangfuseContext | None = None,
-    judge_llm: OpenAILLM | None = None,
+    judge_llm: LLM | None = None,
 ) -> dict:
     """Run generation evaluation.
 
@@ -63,11 +63,11 @@ async def evaluate_generation(
 
     # Use provided LLM or create new one
     if llm is None:
-        llm = OpenAILLM(
-            model=os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT"),
-            request_kwargs={"temperature": 0},
+        llm = LLM(
+            os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT"),
             base_url=os.getenv("LLM_GATEWAY_URL"),
             api_key=os.getenv("CONSULT_EVAL_LITELLM_API_KEY"),
+            temperature=0,
         )
 
     # Branch: Langfuse dataset vs local fallback
@@ -272,7 +272,7 @@ async def _run_local_fallback(config: DatasetConfig, llm) -> dict:
             question=question,
         )
 
-        eval_scores = calculate_generation_metrics(refined_df, theme_framework)
+        eval_scores = calculate_generation_metrics(refined_df, theme_framework, llm=llm)
         print(f"Theme Generation ({question_part}): \n {eval_scores}")
 
         # Collect scores with question prefix

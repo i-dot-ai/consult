@@ -12,8 +12,8 @@ import sentry_sdk
 import urllib3
 from openai import OpenAI
 from pydantic import BaseModel
-from themefinder.llm import OpenAILLM
 from themefinder import (
+    LLM,
     theme_condensation,
     theme_generation,
     theme_refinement,
@@ -254,11 +254,11 @@ async def process_consultation(consultation_dir: str, model_name: str) -> str:
         consultation_dir: Directory containing question subdirectories
         model_name: Language model instance for processing
     """
-    llm = OpenAILLM(
-        model=model_name,
-        request_kwargs={"temperature": 0},
+    llm = LLM(
+        model_name,
         base_url=os.environ["LLM_GATEWAY_URL"],
         api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+        temperature=0,
     )
 
     date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")

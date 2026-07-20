@@ -22,6 +22,10 @@ on:
           - refinement
           - all
         default: 'generation'
+      runs:
+        description: 'Number of repeats per model'
+        type: string
+        default: '1'
 
 jobs:
   themefinder-eval-start-runner:
@@ -40,7 +44,7 @@ jobs:
   themefinder-eval:
     needs: themefinder-eval-start-runner
     runs-on: ${{ needs.themefinder-eval-start-runner.outputs.label }}
-    timeout-minutes: 60
+    timeout-minutes: 180
 
     steps:
       - uses: actions/checkout@v7
@@ -79,16 +83,17 @@ jobs:
           ENVIRONMENT: production
           DATASET: ${{ github.event.inputs.dataset || 'gambling_XS' }}
           EVAL_TYPE: ${{ github.event.inputs.eval_type || 'generation' }}
+          RUNS: ${{ github.event.inputs.runs || '1' }}
         run: |
           set -o pipefail
           cd themefinder/evals
 
           if [ "$EVAL_TYPE" = "all" ]; then
-            echo "Running all evals for $DATASET..."
-            uv run python benchmark.py --quick 2>&1 | tee results.txt
+            echo "Running all evals for $DATASET ($RUNS repeats)..."
+            uv run python benchmark.py --dataset "$DATASET" --provider azure --models gpt-4.1 --runs "$RUNS" 2>&1 | tee results.txt
           else
-            echo "Running $EVAL_TYPE eval for $DATASET..."
-            uv run python benchmark.py --quick --evals "$EVAL_TYPE" 2>&1 | tee results.txt
+            echo "Running $EVAL_TYPE eval for $DATASET ($RUNS repeats)..."
+            uv run python benchmark.py --dataset "$DATASET" --provider azure --models gpt-4.1 --runs "$RUNS" --evals "$EVAL_TYPE" 2>&1 | tee results.txt
           fi
 
           if grep -q "Eval Results\|experiment\|accuracy\|f1" results.txt; then
