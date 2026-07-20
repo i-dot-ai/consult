@@ -260,7 +260,9 @@ class ConsultationViewSet(ModelViewSet):
                 status=status.HTTP_202_ACCEPTED,
             )
         except serializers.ValidationError as e:
-            logger.exception("Consultation setup request failed validation")
+            logger.warning(
+                "Consultation setup request failed validation: {detail}", detail=e.detail
+            )
             sentry_sdk.capture_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},

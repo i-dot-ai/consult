@@ -78,13 +78,13 @@ def import_candidate_themes_from_s3_job(modeladmin, request, queryset):
         )
         try:
             import_candidate_themes.enqueue(consultation.code, consultation.timestamp)
-        except Exception as e:
+        except Exception:
             logger.exception(
                 "failed to start import_candidate_themes for {code}", code=consultation.code
             )
             messages.error(
                 request,
-                f"Failed to start import for '{consultation.code}': {e}",
+                f"Failed to start import for '{consultation.code}' (see logs for details)",
             )
 
 
