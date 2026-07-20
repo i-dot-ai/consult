@@ -38,6 +38,7 @@ class ResponseFilter(FilterSet):
                 else bool(value)
             )
         except (AttributeError, IndexError, ValueError):
+            # Malformed filter value — fall back to no filtering rather than erroring.
             return queryset
 
         if show_unseen_only:
