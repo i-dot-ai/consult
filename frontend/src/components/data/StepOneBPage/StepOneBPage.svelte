@@ -14,11 +14,11 @@
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import { makeSnippet } from "../../../global/utils";
 
-  let checkedItems: string[] = $state(getStoredItems() || []);
+  let checkedItems: string[] = $derived(getStoredItems() || []);
 
   export const LEARNINGS_DISPLAYED_KEY = "dataSetupLearningsDisplayed";
 
-  let displayLearnings = $state(!localStorage.getItem(LEARNINGS_DISPLAYED_KEY));
+  let displayLearnings = $derived(!localStorage?.getItem(LEARNINGS_DISPLAYED_KEY));
 
   const CHECKLIST_A_ITEMS = [
     {
@@ -131,11 +131,11 @@
   }
 
   function getStoredItems(): string[] {
-    const storedItemsString = localStorage.getItem("dataSetupCheckedItems");
+    const storedItemsString = localStorage?.getItem("dataSetupCheckedItems");
     return storedItemsString ? JSON.parse(storedItemsString) : [];
   }
   function setStoredItems(newItems: string[]) {
-    localStorage.setItem("dataSetupCheckedItems", JSON.stringify(newItems));
+    localStorage?.setItem("dataSetupCheckedItems", JSON.stringify(newItems));
   }
   function addToStorage(itemKey: string) {
     const storedItems = getStoredItems();
@@ -167,7 +167,7 @@
   }
 
   function handlePersistentClose() {
-    localStorage.setItem(LEARNINGS_DISPLAYED_KEY, "true");
+    localStorage?.setItem(LEARNINGS_DISPLAYED_KEY, "true");
     displayLearnings = false;
   }
 </script>
