@@ -17,41 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  set-vars:
-    runs-on: ubuntu-latest
-    outputs:
-      ec2-instance-type: ${{ steps.export.outputs.ec2-instance-type }}
-      app-name: ${{ steps.export.outputs.app-name }}
-      aws-region: ${{ steps.export.outputs.aws-region }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - id: export
-        run: |
-          . ./.github/.github.env
-          echo "ec2-instance-type=${EC2_INSTANCE_TYPE}" >> $GITHUB_OUTPUT
-          echo "app-name=${APP_NAME}" >> $GITHUB_OUTPUT
-          echo "aws-region=${AWS_REGION}" >> $GITHUB_OUTPUT
-          echo "::add-mask::${AWS_REGION}"
-
-  start-runner:
-    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@main
-    needs: set-vars
-    permissions: write-all
-    with:
-      APP_NAME: ${{ needs.set-vars.outputs.app-name }}
-      EC2_INSTANCE_TYPE: ${{ needs.set-vars.outputs.ec2-instance-type }}
-      ENVIRONMENT: 'prod'
-      USE_OIDC: true
-    secrets:
-      AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT}}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-
   auto-review:
-    needs: start-runner
-    runs-on: ${{ needs.start-runner.outputs.label }}
+    runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
 
     permissions:
@@ -80,21 +47,3 @@ jobs:
           LLM_GATEWAY_URL: 'https://llm-gateway.i.ai.gov.uk'
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }} # Register a new repo key here: https://github.com/i-dot-ai/core-llm-gateway/blob/main/terraform/litellm/keys.tf#L2
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  stop-runner:
-    needs:
-      - set-vars
-      - start-runner
-      - auto-review
-    permissions: write-all
-    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@main
-    if: always() && needs.start-runner.outputs.use-persisted == '0'
-    with:
-      APP_NAME: ${{ needs.set-vars.outputs.app-name }}
-      RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
-      EC2_INSTANCE_ID: ${{ needs.start-runner.outputs.ec2-instance-id }}
-      USE_OIDC: true
-    secrets:
-      AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
