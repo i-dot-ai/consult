@@ -44,7 +44,7 @@ dev = [
   "pre-commit>=4.6.0",
   "pytest-lazy-fixtures>=1.4.0",
   "ruff>=0.15.20",
-  "pytest-django>=4.11.1",
+  "pytest-django>=4.12.0",
   "django-webtest>=1.9.14",
 ]
 
