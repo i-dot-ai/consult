@@ -69,10 +69,7 @@ export const getSupportConsultationEvaluationUrl = (consultationId: string) => {
   return urlJoin(Routes.SupportConsultations, consultationId, "evaluation");
 };
 export const getApiConsultationDetailUrl = (consultationId: string) => {
-  return urlJoin(
-    Routes.ApiConsultations,
-    consultationId,
-  );
+  return urlJoin(Routes.ApiConsultations, consultationId);
 };
 export const getApiImportFinalisedThemesUrl = (consultationId: string) => {
   return urlJoin(
