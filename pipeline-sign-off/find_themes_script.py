@@ -57,14 +57,12 @@ def download_s3_subdir(subdir: str) -> None:
     to a local directory with the same name as the subdir.
     """
     prefix = str(Path(BASE_PREFIX) / subdir).rstrip("/") + "/"
-    logger.info("prefix: {prefix}", prefix=prefix)
-    logger.info("bucket: {bucket}", bucket=BUCKET_NAME)
+    logger.info("prefix: {prefix}; bucket: {bucket}", prefix=prefix, bucket=BUCKET_NAME)
 
     s3 = boto3.client("s3")
 
     paginator = s3.get_paginator("list_objects_v2")
     inputs_prefix = str(Path(BASE_PREFIX) / subdir / "inputs").rstrip("/") + "/"
-    logger.info("S3 inputs prefix: {inputs_prefix}", inputs_prefix=inputs_prefix)
     pages = paginator.paginate(
         Bucket=BUCKET_NAME, Prefix=inputs_prefix, ExpectedBucketOwner=ACCOUNT_ID
     )
