@@ -4,8 +4,19 @@ import Layout from "../../../../layouts/Layout.astro";
 import FinalisingThemesArchive from "../../../../components/screens/FinalisingThemesArchive/FinalisingThemesArchive.svelte";
 import Section from "../../../../components/Section/Section.svelte";
 import type { AstroGlobalRuntime } from "../../../../global/types";
+import { checkUrlExists, get404Response } from "../../../../global/api";
+import { getApiConsultationDetailUrl } from "../../../../global/routes";
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
+
+
+const urlExists = await checkUrlExists(
+  Astro,
+  getApiConsultationDetailUrl(consultationId || ""),
+);
+if (!urlExists) {
+  return get404Response();
+}
 ---
 
 <Layout>
