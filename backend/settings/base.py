@@ -68,7 +68,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "middleware.RequestLoggingContextMiddleware",
+    # Early so the refreshed context covers all downstream request logging;
+    # request.user is read post-view, so this need not follow auth.
+    "middleware.RequestCorrelationMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "middleware.JWTAuthenticationMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
