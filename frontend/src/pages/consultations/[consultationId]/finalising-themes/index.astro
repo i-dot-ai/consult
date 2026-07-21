@@ -9,7 +9,6 @@ import { getApiConsultationDetailUrl } from "../../../../global/routes";
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
-
 const urlExists = await checkUrlExists(
   Astro,
   getApiConsultationDetailUrl(consultationId || ""),
