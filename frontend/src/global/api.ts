@@ -32,3 +32,27 @@ export const fetchBackendApi = async <T>(
     return response.json() as Promise<T>;
   }
 };
+
+export function get404Response() {
+  return new Response(null, {
+    status: 404,
+    statusText: "Not Found",
+  })
+};
+
+export async function checkUrlExists(
+  astro: Readonly<AstroGlobal> | APIContext,
+  url: string,
+) {
+  try {
+    await fetchBackendApi(
+      astro,
+      url,
+    );
+  } catch(err) {
+    if ((err as {status: number}).status === 404) {
+      return false;
+    }
+  }
+  return true;
+}
