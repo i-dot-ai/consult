@@ -13,7 +13,7 @@ def clean_empty_free_text(apps, schema_editor):
     updated = Response.objects.filter(free_text__in=["", "Not Provided", "-"]).update(
         free_text=None
     )
-    logger.info(f"Normalised {updated} empty free text values to NULL")
+    logger.info("Normalised {updated} empty free text values to NULL", updated=updated)
 
     # Delete responses with no free text AND no multi-choice options, in batches.
     BATCH_SIZE = 5000
@@ -28,8 +28,8 @@ def clean_empty_free_text(apps, schema_editor):
             break
         Response.objects.filter(id__in=batch_ids).delete()
         total_deleted += len(batch_ids)
-        logger.info(f"Deleted {total_deleted} empty responses so far...")
-    logger.info(f"Finished deleting {total_deleted} empty responses")
+        logger.info("Deleted {total_deleted} empty responses so far...", total_deleted=total_deleted)
+    logger.info("Finished deleting {total_deleted} empty responses", total_deleted=total_deleted)
 
     # Remove orphaned theme assignments in batches
     total_deleted = 0
@@ -43,8 +43,13 @@ def clean_empty_free_text(apps, schema_editor):
             break
         ResponseAnnotationTheme.objects.filter(id__in=batch_ids).delete()
         total_deleted += len(batch_ids)
-        logger.info(f"Deleted {total_deleted} orphaned theme assignments so far...")
-    logger.info(f"Finished deleting {total_deleted} orphaned theme assignments")
+        logger.info(
+            "Deleted {total_deleted} orphaned theme assignments so far...",
+            total_deleted=total_deleted,
+        )
+    logger.info(
+        "Finished deleting {total_deleted} orphaned theme assignments", total_deleted=total_deleted
+    )
 
 
 def backfill_response_counts(apps, schema_editor):
