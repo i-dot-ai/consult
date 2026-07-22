@@ -28,7 +28,6 @@ def clean_empty_free_text(apps, schema_editor):
             break
         Response.objects.filter(id__in=batch_ids).delete()
         total_deleted += len(batch_ids)
-        logger.info("Deleted {total_deleted} empty responses so far...", total_deleted=total_deleted)
     logger.info("Finished deleting {total_deleted} empty responses", total_deleted=total_deleted)
 
     # Remove orphaned theme assignments in batches
@@ -43,10 +42,6 @@ def clean_empty_free_text(apps, schema_editor):
             break
         ResponseAnnotationTheme.objects.filter(id__in=batch_ids).delete()
         total_deleted += len(batch_ids)
-        logger.info(
-            "Deleted {total_deleted} orphaned theme assignments so far...",
-            total_deleted=total_deleted,
-        )
     logger.info(
         "Finished deleting {total_deleted} orphaned theme assignments", total_deleted=total_deleted
     )
