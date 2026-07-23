@@ -195,7 +195,7 @@ module "worker" {
   # heartbeat rather than an ALB-style HTTP probe.
   http_healthcheck = false
   container_healthcheck = {
-    command     = ["CMD-SHELL", "python manage.py healthcheck_worker"]
+    command     = ["CMD-SHELL", "venv/bin/python3.12 manage.py healthcheck_worker"]
     interval    = 30
     timeout     = 10
     retries     = 3
