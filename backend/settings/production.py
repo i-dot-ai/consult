@@ -75,6 +75,7 @@ LOGGER = StructuredLogger(
         "ship_logs": True,
     },
 )
+LOGGER.set_context_field("execution_context", EXECUTION_CONTEXT)
 
 if env.str("ENVIRONMENT", "prod").lower() != "prod":  # noqa: F405
     INSTALLED_APPS.append("drf_spectacular")  # noqa F405
