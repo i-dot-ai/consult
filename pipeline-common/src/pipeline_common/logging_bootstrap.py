@@ -24,6 +24,9 @@ def bootstrap_logger() -> StructuredLogger:
     )
 
     logger.set_context_field(
+        "execution_context", os.environ.get("EXECUTION_CONTEXT", "batch")
+    )
+    logger.set_context_field(
         "batch_job_id", os.environ.get("AWS_BATCH_JOB_ID", "unknown")
     )
 
