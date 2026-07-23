@@ -59,7 +59,7 @@ module "backend" {
 
   environment_variables = merge(local.base_env_vars, local.django_env_vars, {
     "APP_NAME"                 = var.project_name
-    "EXECUTION_CONTEXT"        = "ecs"
+    "EXECUTION_CONTEXT"        = "backend"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-backend"
     "SENTRY_DSN"               = var.backend_sentry_dsn
   })
@@ -176,7 +176,7 @@ module "worker" {
 
   environment_variables = merge(local.base_env_vars, local.django_env_vars, {
     "APP_NAME"                 = var.project_name
-    "EXECUTION_CONTEXT"        = "ecs"
+    "EXECUTION_CONTEXT"        = "worker"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-worker"
     "SENTRY_DSN"               = var.backend_sentry_dsn
   })
