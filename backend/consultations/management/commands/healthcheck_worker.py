@@ -3,12 +3,15 @@ from datetime import datetime, timezone
 
 from django.core.management.base import BaseCommand, CommandError
 from django_rq import get_connection
+from rq.defaults import DEFAULT_JOB_MONITORING_INTERVAL
 from rq.worker import Worker
 
-# RQ workers re-heartbeat roughly every DEFAULT_JOB_MONITORING_INTERVAL (30s), both while
-# idle and while a job is running, so a worker that's genuinely alive never goes quiet for
-# long. This threshold gives a few missed cycles of slack before treating it as hung.
-STALE_HEARTBEAT_SECONDS = 120
+# RQ workers re-heartbeat every DEFAULT_JOB_MONITORING_INTERVAL, both while idle and while a
+# job is running. This is RQ's *default* cadence, not something read from the live worker -
+# RQ doesn't persist job_monitoring_interval to Redis, so it can't be introspected here. It
+# matches reality only because start-worker.sh doesn't override it; if it ever does, update
+# this too. 4x the interval gives a few missed cycles of slack before treating it as hung.
+STALE_HEARTBEAT_SECONDS = DEFAULT_JOB_MONITORING_INTERVAL * 4
 
 
 class Command(BaseCommand):
