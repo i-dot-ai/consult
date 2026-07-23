@@ -55,6 +55,14 @@ class TestRebindContext:
 
         assert "consultation_code" not in structlog.contextvars.get_contextvars()
 
+    def test_rebinds_execution_context_after_refresh(self, settings):
+        """The refresh wipes all fields, so execution_context must be re-seeded for worker logs."""
+        settings.EXECUTION_CONTEXT = "worker"
+
+        rebind_context("known-id")
+
+        assert structlog.contextvars.get_contextvars().get("execution_context") == "worker"
+
 
 class TestRQContextJob:
     """rq_context.job auto-fills context_id at enqueue time and rebinds it at execution time;
