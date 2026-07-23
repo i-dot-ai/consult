@@ -11,7 +11,7 @@ from middleware import (
 
 
 def _make_middleware(captured=None):
-    """Build the middleware wrapping a trivial view that records the bound context."""
+    """Build the middleware wrapping a trivial view that optionally records the bound context."""
 
     def view(request):
         if captured is not None:

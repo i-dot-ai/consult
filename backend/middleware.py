@@ -11,8 +11,8 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 CONTEXT_ID_HEADER = "x-context-id"
 # Django exposes request headers via request.META with this transformation.
 CONTEXT_ID_META_KEY = "HTTP_X_CONTEXT_ID"
-# Cap on a trusted inbound context id; the header is untrusted, so bound the
-# string we bind into log context and echo back to prevent log injection/replay.
+# The inbound header is untrusted, so cap how much of it we bind into the log
+# context and echo back, to prevent log injection and oversized-header replay.
 MAX_CONTEXT_ID_LEN = 128
 # Paths excluded from correlation logging (health checks are high-volume and noisy).
 EXCLUDED_PATH_PREFIXES = ("/api/health",)
@@ -21,12 +21,18 @@ EXCLUDED_PATH_PREFIXES = ("/api/health",)
 class RequestCorrelationMiddleware:
     """Give every request one ``context_id`` and log its metadata.
 
-    Per request: refresh the logger context (so a reused gthread worker never
-    carries a stale ``context_id``), reuse an inbound ``x-context-id`` header if
-    present, bind request metadata, set the id as a Sentry tag, and echo it back
-    on the response. Health paths are refreshed but excluded from correlation
-    logging. Written against the current ``StructuredLogger`` so the OTel version
-    is a drop-in later.
+    Per request:
+
+    * refresh the logger context (so a reused gthread worker never carries a
+      stale ``context_id``);
+    * reuse an inbound ``x-context-id`` header if present;
+    * bind request metadata;
+    * set the id as a Sentry tag;
+    * echo it back on the response.
+
+    Health paths are refreshed but excluded from correlation logging. Written
+    against the current ``StructuredLogger`` so the OTel version is a drop-in
+    later.
     """
 
     def __init__(self, get_response):
@@ -75,7 +81,7 @@ class RequestCorrelationMiddleware:
 
     @staticmethod
     def _sanitise_context_id(raw: str | None) -> str | None:
-        """Bound and sanitise an untrusted inbound header before trusting it."""
+        """Cap and sanitise an untrusted inbound header before trusting it."""
         if not raw:
             return None
         candidate = raw[:MAX_CONTEXT_ID_LEN].strip()
