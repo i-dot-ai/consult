@@ -41,7 +41,7 @@
     "@testing-library/jest-dom": "^6.9.0",
     "@testing-library/svelte": "^5.4.2",
     "@testing-library/user-event": "^14.6.0",
-    "@types/node": "^25.9.0",
+    "@types/node": "^26.1.1",
     "@vitest/coverage-v8": "^4.1.0",
     "@vitest/eslint-plugin": "^1.6.21",
     "eslint": "^10.6.0",
