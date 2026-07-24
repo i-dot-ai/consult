@@ -140,6 +140,7 @@
 
                   <div class="max-h-40" data-testid="metrics-chart">
                     <Chart
+                      interactive={false}
                       labels={selectedChartQuestion?.multiple_choice_answer?.map(
                         (multiChoiceAnswer: QuestionMultiAnswer) => {
                           return {
