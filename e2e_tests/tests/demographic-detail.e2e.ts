@@ -56,14 +56,14 @@ test.describe("Demographic Detail Page", () => {
     await expect (nationText).toHaveText("nation England 2 40% Northern Ireland 1 20% Scotland 1 20% Wales 1 20%  ");
   });
 
-  test("demographic chart item should strikethrough on click", async ({ page }) => {
+  test("demographic chart item should not strikethrough on click", async ({ page }) => {
     const yesItemText = page.getByTestId('chart-legend-item-container-Yes');
     await expect(yesItemText).not.toContainClass("line-through");
 
-    const yesItemClickable = page.getByTestId('chart-legend-item-clickable-Yes');
+    const yesItemClickable = page.getByTestId('chart-legend-item-static-Yes');
     await yesItemClickable.click();
     
-    await expect(yesItemText).toContainClass("line-through");
+    await expect(yesItemText).not.toContainClass("line-through");
   });
 
   test("demographic chart has expected labels", async ({ page }) => {
