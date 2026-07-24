@@ -28,7 +28,7 @@ if (urlStatus === 404) {
 
 const question: Question = await fetchBackendApi(
   Astro,
-  `/api/consultations/${consultationId}/questions/${questionId}`,
+  getApiQuestionUrl(consultationId || "", questionId || ""),
 );
 ---
 
