@@ -178,6 +178,7 @@
 
                     <div class="h-24">
                       <Chart
+                        interactive={false}
                         legendId={"legend-id" + question.number}
                         labels={question?.multiple_choice_answer
                           ?.slice()

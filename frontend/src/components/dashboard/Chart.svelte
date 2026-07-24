@@ -24,12 +24,14 @@
     data: number[];
     labels: LabelItem[];
     legendId?: string;
+    interactive?: boolean;
   }
 
   let {
     data = [],
     labels = [],
     legendId = "legend-container",
+    interactive = true,
   }: Props = $props();
 
   const MAX_TOOLTIP_LENGTH = 20;
@@ -100,11 +102,15 @@
           "whitespace-nowrap",
           "text-ellipsis",
           "ml-2",
-          "cursor-pointer",
+          interactive && "cursor-pointer",
           "text-sm",
         ]);
 
         li.onclick = () => {
+          if (!interactive) {
+            return;
+          }
+
           const { type } = chart.config as ChartConfiguration;
           if (type === "pie" || type === "doughnut") {
             chart.toggleDataVisibility(item.index || 0);
