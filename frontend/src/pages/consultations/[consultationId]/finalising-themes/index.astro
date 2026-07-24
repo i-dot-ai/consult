@@ -5,13 +5,13 @@ import FinalisingThemesArchive from "../../../../components/screens/FinalisingTh
 import Section from "../../../../components/Section/Section.svelte";
 import type { AstroGlobalRuntime } from "../../../../global/types";
 import { checkUrlStatus, get404Response } from "../../../../global/api";
-import { getApiConsultationDetailUrl } from "../../../../global/routes";
+import { getApiConsultationUrl } from "../../../../global/routes";
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
 const urlStatus = await checkUrlStatus(
   Astro,
-  getApiConsultationDetailUrl(consultationId || ""),
+  getApiConsultationUrl(consultationId || ""),
 );
 
 if (urlStatus === 404) {
