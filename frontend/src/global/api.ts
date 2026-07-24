@@ -40,16 +40,14 @@ export function get404Response() {
   });
 }
 
-export async function checkUrlExists(
+export async function checkUrlStatus(
   astro: Readonly<AstroGlobal> | APIContext,
   url: string,
 ) {
   try {
     await fetchBackendApi(astro, url);
   } catch (err) {
-    if ((err as { status: number }).status === 404) {
-      return false;
-    }
+    return (err as { status: number }).status;
   }
-  return true;
+  return 200;
 }

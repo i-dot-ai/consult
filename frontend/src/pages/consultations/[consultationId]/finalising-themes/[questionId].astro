@@ -1,6 +1,6 @@
 ---
 import {
-  checkUrlExists,
+  checkUrlStatus,
   fetchBackendApi,
   get404Response,
 } from "../../../../global/api";
@@ -17,11 +17,12 @@ import { getApiQuestionUrl } from "../../../../global/routes";
 const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
   .params;
 
-const urlExists = await checkUrlExists(
+const urlStatus = await checkUrlStatus(
   Astro,
   getApiQuestionUrl(consultationId || "", questionId || ""),
 );
-if (!urlExists) {
+
+if (urlStatus === 404) {
   return get404Response();
 }
 
