@@ -4,6 +4,17 @@ import structlog
 from django.conf import settings
 
 
+def refresh_logger_context() -> None:
+    """Refresh the logger context, re-seeding fields that must persist across the refresh.
+
+    ``refresh_context()`` clears all contextvars and re-seeds only the library's base
+    context, so any field we want on every log line (e.g. ``execution_context``) has to
+    be re-bound here. Routing all refreshes through this helper keeps that guarantee in
+    one place rather than relying on every refresh call site to remember."""
+    settings.LOGGER.refresh_context()
+    settings.LOGGER.set_context_field("execution_context", settings.EXECUTION_CONTEXT)
+
+
 def get_or_create_context_id() -> str:
     """Read the context_id currently bound to the logger, to propagate into an enqueued job.
 
@@ -24,6 +35,6 @@ def get_or_create_context_id() -> str:
 def rebind_context(context_id: str | None = None) -> None:
     """Reset the logger context (clears stale fields from any previous job on this worker),
     then rebind context_id to a propagated value if one was given."""
-    settings.LOGGER.refresh_context()
+    refresh_logger_context()
     if context_id:
         settings.LOGGER.set_context_field("context_id", context_id)

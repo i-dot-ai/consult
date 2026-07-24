@@ -43,6 +43,7 @@ def lambda_handler(event, context):
     Enqueues a Django RQ job to import the candidate themes from S3 to the database.
     """
     logger.refresh_context([{"type": ContextEnrichmentType.LAMBDA, "object": context}])
+    logger.set_context_field("execution_context", os.environ.get("EXECUTION_CONTEXT", "lambda"))
 
     detail = event["detail"]
     job_name = detail["jobName"]

@@ -7,6 +7,8 @@ from django.http import Http404
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
+from logging_context import refresh_logger_context
+
 # Inbound/outbound header used to correlate a request across services.
 CONTEXT_ID_HEADER = "x-context-id"
 # Django exposes request headers via request.META with this transformation.
@@ -67,7 +69,7 @@ class RequestCorrelationMiddleware:
 
     def _bind_context(self, request) -> str:
         """Reset context, honour an inbound context id, and bind request metadata."""
-        self.logger.refresh_context()
+        refresh_logger_context()
 
         inbound_context_id = self._sanitise_context_id(request.META.get(CONTEXT_ID_META_KEY))
         if inbound_context_id:

@@ -53,7 +53,8 @@ module "slack_notifier_lambda" {
     "APP_NAME"          = "${var.project_name}-slack-notifier",
     "REPO"              = var.project_name,
     "AWS_BUCKET_NAME"   = module.app_bucket.id,
-    "AWS_ACCOUNT_ID"    = data.aws_caller_identity.current.account_id
+    "AWS_ACCOUNT_ID"    = data.aws_caller_identity.current.account_id,
+    "EXECUTION_CONTEXT" = "lambda"
   }
 }
 
@@ -103,6 +104,7 @@ module "import_candidate_themes_lambda" {
     ENVIRONMENT       = terraform.workspace
     APP_NAME          = "${var.project_name}-import-candidate-themes"
     REPO              = var.project_name
+    EXECUTION_CONTEXT = "lambda"
   }
 }
 
@@ -152,5 +154,6 @@ module "import_response_annotations_lambda" {
     ENVIRONMENT       = terraform.workspace
     APP_NAME          = "${var.project_name}-import-response-annotations"
     REPO              = var.project_name
+    EXECUTION_CONTEXT = "lambda"
   }
 }
