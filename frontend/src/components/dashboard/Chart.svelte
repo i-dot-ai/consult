@@ -93,7 +93,7 @@
         const li = document.createElement("li");
         li.setAttribute(
           "data-testid",
-          `chart-legend-item-clickable-${item.text}`,
+          `chart-legend-item-${interactive ? "clickable" : "static"}-${item.text}`,
         );
         li.className = clsx([
           "flex",
