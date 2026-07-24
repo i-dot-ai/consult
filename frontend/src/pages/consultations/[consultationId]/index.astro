@@ -4,16 +4,17 @@ import Layout from "../../../layouts/Layout.astro";
 import ConsultationDetail from "../../../components/screens/ConsultationDetail/ConsultationDetail.svelte";
 import Section from "../../../components/Section/Section.svelte";
 import type { AstroGlobalRuntime } from "../../../global/types";
-import { checkUrlExists, get404Response } from "../../../global/api";
+import { checkUrlStatus, get404Response } from "../../../global/api";
 import { getApiConsultationDetailUrl } from "../../../global/routes";
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
-const urlExists = await checkUrlExists(
+const urlStatus = await checkUrlStatus(
   Astro,
   getApiConsultationDetailUrl(consultationId || ""),
 );
-if (!urlExists) {
+
+if (urlStatus === 404) {
   return get404Response();
 }
 ---
