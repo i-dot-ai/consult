@@ -5,6 +5,8 @@ import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 
+from logging_context import get_or_create_context_id
+
 logger = settings.LOGGER
 
 
@@ -15,6 +17,7 @@ def submit_job(
     user_id: int,
     model_name: str,
     assignment_target: Literal["selected_themes", "candidate_themes"] = "selected_themes",
+    context_id: str | None = None,
 ) -> dict | None:
     """
     Submit a job to AWS Batch for ThemeFinder processing.
@@ -23,7 +26,14 @@ def submit_job(
     assignment_target controls how the results are imported:
     - "selected_themes": normal flow, imports into ResponseAnnotation
     - "candidate_themes": imports into CandidateThemeResponse (during finalising)
+
+    context_id defaults to the caller's current logging context_id if not supplied,
+    so it propagates through to the Batch job's parameters (and from there to the
+    EventBridge event and the Lambda that imports the results).
     """
+    context_id = context_id or get_or_create_context_id()
+    settings.LOGGER.set_context_field("context_id", context_id)
+
     if not settings.SUBMIT_BATCH_JOBS:
         logger.info(
             "SUBMIT_BATCH_JOBS disabled: skipping real AWS Batch submission for {job_type}",
@@ -48,6 +58,7 @@ def submit_job(
         "model_name": model_name,
         "run_date": datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d"),
         "assignment_target": assignment_target,
+        "context_id": context_id,
     }
 
     batch = boto3.client("batch")
@@ -57,6 +68,19 @@ def submit_job(
         job_type=job_type,
         consultation_name=consultation_name,
     )
+
+    # Pass the current request's context_id as a CLI arg so the pipeline script's
+    # logs can be joined to this request's logs in OpenSearch.
+    command = [
+        "--subdir",
+        consultation_code,
+        "--job-type",
+        job_type,
+        "--model-name",
+        model_name,
+        "--context-id",
+        context_id,
+    ]
 
     def _log_submit_job_failure(prefix: str) -> None:
         logger.exception(
@@ -73,16 +97,7 @@ def submit_job(
             jobName=job_name,
             jobQueue=job_queue,
             jobDefinition=job_definition,
-            containerOverrides={
-                "command": [
-                    "--subdir",
-                    consultation_code,
-                    "--job-type",
-                    job_type,
-                    "--model-name",
-                    model_name,
-                ]
-            },
+            containerOverrides={"command": command},
             parameters=parameters,
         )
     except (ClientError, BotoCoreError):

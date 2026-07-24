@@ -7,7 +7,8 @@ These functions are designed to be executed asynchronously via RQ (Redis Queue).
 from uuid import UUID
 
 from django.conf import settings
-from django_rq import job
+
+from rq_context import job
 
 logger = settings.LOGGER
 
@@ -24,8 +25,6 @@ def import_consultation(
     from data_pipeline.sync.consultation_setup import (
         import_consultation_from_s3,
     )
-
-    logger.refresh_context()
 
     try:
         return import_consultation_from_s3(
@@ -58,8 +57,6 @@ def import_candidate_themes(
         export_candidate_themes_to_s3,
         import_candidate_themes_from_s3,
     )
-
-    logger.refresh_context()
 
     try:
         import_candidate_themes_from_s3(
@@ -116,8 +113,6 @@ def import_response_annotations(
         import_response_annotations_from_s3,
     )
 
-    logger.refresh_context()
-
     try:
         import_response_annotations_from_s3(
             consultation_code=consultation_code,
@@ -142,8 +137,6 @@ def import_candidate_theme_responses(
     from data_pipeline.sync.candidate_themes import (
         import_candidate_theme_responses_from_s3,
     )
-
-    logger.refresh_context()
 
     try:
         import_candidate_theme_responses_from_s3(

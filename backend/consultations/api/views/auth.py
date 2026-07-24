@@ -44,7 +44,6 @@ def _check_authorisation(token: str, unauthorised_log_message: str):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def validate_token(request):
-    logger.refresh_context()
     serializer = TokenSerializer(data=request.data)
     if not serializer.is_valid():
         return JsonResponse(serializer.errors, status=400)

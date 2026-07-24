@@ -260,12 +260,16 @@ class ConsultationViewSet(ModelViewSet):
                 status=status.HTTP_202_ACCEPTED,
             )
         except serializers.ValidationError as e:
+            logger.warning(
+                "Consultation setup request failed validation: {detail}", detail=e.detail
+            )
             sentry_sdk.capture_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
+            logger.exception("Failed to start consultation setup import job")
             sentry_sdk.capture_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
@@ -290,6 +294,7 @@ class ConsultationViewSet(ModelViewSet):
         """
         try:
             consultation = self.get_object()
+            logger.set_context_field("consultation_id", str(consultation.id))
 
             if consultation.stage != Consultation.Stage.SETUP:
                 return Response(
@@ -396,6 +401,10 @@ class ConsultationViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
+            logger.exception(
+                "Failed to export selected themes to S3 for consultation {consultation_code}",
+                consultation_code=consultation.code,
+            )
             sentry_sdk.capture_exception(e)
             return Response(
                 {
@@ -414,6 +423,10 @@ class ConsultationViewSet(ModelViewSet):
                 model_name=consultation.model_name,
             )
         except Exception as e:
+            logger.exception(
+                "Failed to submit ASSIGN_THEMES batch job for consultation {consultation_code}",
+                consultation_code=consultation.code,
+            )
             sentry_sdk.capture_exception(e)
             return Response(
                 {
@@ -550,8 +563,13 @@ class ConsultationViewSet(ModelViewSet):
                 status=status.HTTP_201_CREATED,
             )
         except Exception as e:
+            logger.exception(
+                "Failed to add users to consultation {consultation_id}",
+                consultation_id=str(consultation.id),
+            )
+            sentry_sdk.capture_exception(e)
             return Response(
-                {"error": f"An error occurred: {str(e)}"},
+                {"error": "Failed to add users to consultation"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -822,10 +840,19 @@ class ConsultationViewSet(ModelViewSet):
         try:
             export_selected_themes_to_s3(target)
         except Exception as e:
-            logger.error("S3 export failed after theme import: {error}", error=str(e))
+            logger.exception(
+                "S3 export failed after theme import for consultation {consultation_id} "
+                "({imported} themes saved to the database)",
+                consultation_id=str(target.id),
+                imported=imported_themes,
+            )
+            sentry_sdk.capture_exception(e)
             return Response(
                 {
-                    "error": f"Themes were saved to the database ({imported_themes} imported) but S3 export failed: {e}",
+                    "error": (
+                        f"Themes were saved to the database ({imported_themes} imported) "
+                        "but S3 export failed"
+                    ),
                     "total_themes_imported": imported_themes,
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

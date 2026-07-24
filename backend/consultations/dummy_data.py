@@ -3,7 +3,6 @@ from typing import Literal, Optional
 
 import yaml
 from django.conf import settings
-from django_rq import job
 
 from consultations.models import (
     Consultation,
@@ -21,6 +20,7 @@ from factories import (
     SelectedThemeFactory,
 )
 from hosting_environment import HostingEnvironment
+from rq_context import job
 
 logger = settings.LOGGER
 

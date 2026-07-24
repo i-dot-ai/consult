@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import Count
 from django_filters import CharFilter, UUIDFilter
 from django_filters.rest_framework import BaseInFilter, BooleanFilter, FilterSet
@@ -8,6 +9,8 @@ from rest_framework.filters import SearchFilter
 from authentication.models import User
 from consultations.models import DemographicOption, Response
 from embeddings import embed_text
+
+logger = settings.LOGGER
 
 
 class ResponseFilter(FilterSet):
@@ -38,6 +41,10 @@ class ResponseFilter(FilterSet):
                 else bool(value)
             )
         except (AttributeError, IndexError, ValueError):
+            # Malformed filter value — fall back to no filtering rather than erroring.
+            logger.warning(
+                "Ignoring malformed unseenResponsesOnly filter value: {value}", value=value
+            )
             return queryset
 
         if show_unseen_only:

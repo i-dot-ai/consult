@@ -2,9 +2,9 @@ from uuid import UUID
 
 from django.conf import settings
 from django.db import connection
-from django_rq import job
 
 from consultations import models
+from rq_context import job
 
 logger = settings.LOGGER
 
@@ -110,7 +110,6 @@ def delete_consultation_job(consultation_id: UUID):
     Args:
         consultation_id: UUID of the consultation to delete
     """
-    logger.refresh_context()
 
     try:
         # Fetch the consultation from database
@@ -161,11 +160,10 @@ def delete_consultation_job(consultation_id: UUID):
             consultation_id=consultation_id,
         )
 
-    except Exception as e:
-        logger.error(
-            "Error deleting consultation '{consultation_title}' (ID: {consultation_id}): {error}",
+    except Exception:
+        logger.exception(
+            "Error deleting consultation '{consultation_title}' (ID: {consultation_id})",
             consultation_title=consultation_title,
             consultation_id=consultation_id,
-            error=e,
         )
         raise

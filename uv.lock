@@ -8,7 +8,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-29T10:37:21.365542Z"
+exclude-newer = "2026-07-07T10:17:41.917709Z"
 exclude-newer-span = "P14D"
 
 [options.exclude-newer-package]
@@ -21,6 +21,7 @@ pydantic-settings = "2026-07-02T00:00:00Z"
 [manifest]
 members = [
     "consult",
+    "pipeline-common",
     "pipeline-mapping",
     "pipeline-sign-off",
     "themefinder",
@@ -147,30 +148,30 @@ wheels = [
 
 [[package]]
 name = "boto3"
-version = "1.43.36"
+version = "1.43.41"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore" },
     { name = "jmespath" },
     { name = "s3transfer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ff/9f/897287e955db0f50b12fd69ef45956e4fd2c7ddb48c736872f7ea2314443/boto3-1.43.36.tar.gz", hash = "sha256:587d7ee92a12e440ad12b0e7f11f3358f0c4d65b19f64726efc94aaf194aff28", size = 112690, upload-time = "2026-06-23T02:47:14.561Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/79/5b/e91af651bf4e902f86b9e2f8bc09ca20dbd1ad3c1e21b70bf34651cf3cee/boto3-1.43.41.tar.gz", hash = "sha256:0f56811f13677bfb4542daa0cce8532c95d9afd27b4ba7b681af36a0568624ad", size = 112677, upload-time = "2026-07-06T19:39:38.788Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9f/f1/274303f52483ecf199eae6f8d9b6f5951670397ee4d72c06cfd4eb644612/boto3-1.43.36-py3-none-any.whl", hash = "sha256:42942dde254673abcbc9e6e60017c88341a4f49d99d24e1f2e290fb38138c26f", size = 140031, upload-time = "2026-06-23T02:47:13.178Z" },
+    { url = "https://files.pythonhosted.org/packages/f9/4a/babb2de16f6ff0688697d2eac7d95566151c255f6b08f547306f57dabfc2/boto3-1.43.41-py3-none-any.whl", hash = "sha256:f48f862d2720ea9203ed2d842d436b8eb2d459ea31654a7ad7c0756fdf36c6b2", size = 140029, upload-time = "2026-07-06T19:39:37.125Z" },
 ]
 
 [[package]]
 name = "botocore"
-version = "1.43.36"
+version = "1.43.41"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jmespath" },
     { name = "python-dateutil" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7c/37/da9e7f6ca73ac73afd7f0bb7f238aa5daba35c081e98d7f48a7c399599c0/botocore-1.43.36.tar.gz", hash = "sha256:4cae47d1b2d426316b85a0087d9e69e048f13bc003b5177d74639fe9dfd28205", size = 15625488, upload-time = "2026-06-23T02:47:03.192Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6a/a1/48a0f38b0cac8196764607c0bca7e3ca50d3cffc825087b743d3635413f2/botocore-1.43.41.tar.gz", hash = "sha256:27627d79af0df7dcb7ecf78d8d3d1310da09a5e9460be30bf759f1c2ed095ee8", size = 15647567, upload-time = "2026-07-06T19:39:27.119Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5c/19/934f81592527a3f7f9b943c893e334c721a4644948642bc33885d584e9ec/botocore-1.43.36-py3-none-any.whl", hash = "sha256:3c65fdc39ed01d8dfde1e961b34038aed03c459f8ddf80717a12ac006475e49d", size = 15313630, upload-time = "2026-06-23T02:46:59.327Z" },
+    { url = "https://files.pythonhosted.org/packages/61/4f/19e0b97ce1801c66a4d1d35117f36240aa20f864338f093fccc23873a231/botocore-1.43.41-py3-none-any.whl", hash = "sha256:0cc6e79b30a2a98374f16a31cd9c7a9106a51b60650bd8c34cc8223f58ae6b8d", size = 15331199, upload-time = "2026-07-06T19:39:23.694Z" },
 ]
 
 [[package]]
@@ -310,12 +311,12 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "boto3", specifier = ">=1.43.36" },
+    { name = "boto3", specifier = ">=1.43.40" },
     { name = "django", specifier = ">=6.0.5" },
     { name = "django-environ", specifier = ">=0.14.0" },
     { name = "django-filter", specifier = ">=25.2" },
     { name = "django-redis", specifier = ">=7.0.0" },
-    { name = "django-rq", specifier = ">=4.1.0" },
+    { name = "django-rq", specifier = ">=4.1.1" },
     { name = "django-simple-history", specifier = ">=3.12.0" },
     { name = "django-storages", specifier = ">=1.14.6" },
     { name = "djangorestframework", specifier = ">=3.17.1" },
@@ -323,7 +324,7 @@ requires-dist = [
     { name = "drf-nested-routers", specifier = ">=0.95.0" },
     { name = "drf-orjson-renderer", specifier = ">=1.8.0" },
     { name = "drf-spectacular", specifier = "==0.29.0" },
-    { name = "factory-boy", specifier = ">=3.3.1" },
+    { name = "factory-boy", specifier = ">=3.3.3" },
     { name = "gunicorn", specifier = ">=26.0.0" },
     { name = "i-dot-ai-utilities", extras = ["auth"], specifier = ">=0.6.0" },
     { name = "openai", specifier = ">=2.44.0" },
@@ -331,7 +332,7 @@ requires-dist = [
     { name = "psycopg", specifier = ">=3.3.4" },
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "pytest-random-order", specifier = ">=1.2.0" },
-    { name = "sentry-sdk", extras = ["django", "redis", "rq"], specifier = ">=2.63.0" },
+    { name = "sentry-sdk", extras = ["django", "redis", "rq"], specifier = ">=2.64.0" },
     { name = "themefinder", editable = "themefinder" },
     { name = "werkzeug", specifier = "==3.1.8" },
 ]
@@ -348,7 +349,7 @@ dev = [
     { name = "mypy", specifier = ">=2.1.0" },
     { name = "pre-commit", specifier = ">=4.6.0" },
     { name = "pydot", specifier = ">=4.0.1" },
-    { name = "pytest-django", specifier = ">=4.11.1" },
+    { name = "pytest-django", specifier = ">=4.12.0" },
     { name = "pytest-lazy-fixtures", specifier = ">=1.4.0" },
     { name = "ruff", specifier = ">=0.15.20" },
 ]
@@ -567,16 +568,16 @@ wheels = [
 
 [[package]]
 name = "django-rq"
-version = "4.1.0"
+version = "4.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
     { name = "redis" },
     { name = "rq" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/42/41/11a347cacdd4df2849ff12f4d6d988e01cca869e41db90c9dd6d27f13f53/django_rq-4.1.0.tar.gz", hash = "sha256:d08eabd70f3a17f289cd9fc68b15efe8e1f45b0fe64c5504161277e8cd9eeb8e", size = 43660, upload-time = "2026-04-05T10:32:47.81Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b9/9d/7989e0e4df4ea4af1c95a1a6b751bdfe68d1ac0b15465fc1a0bcb679d551/django_rq-4.1.1.tar.gz", hash = "sha256:6976b8f50d22d844d350b2f0a26b209889bd60ece257b9888d4e5b7d17f622c3", size = 48776, upload-time = "2026-07-04T15:11:07.63Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4a/93/4f4d8db1d8ad6adbbdae46dc1d1453729af4dff8b722b8ced5f44447be82/django_rq-4.1.0-py3-none-any.whl", hash = "sha256:ba6e30cfbaefc3b96d9d9c9bd752ad5a9aa8b886e5d9483500b307c1733d2d39", size = 67426, upload-time = "2026-04-05T10:32:46.105Z" },
+    { url = "https://files.pythonhosted.org/packages/d7/32/512dfa80fce6390deb390da9492bcbabc4824b3f4574890e68daac13b2d4/django_rq-4.1.1-py3-none-any.whl", hash = "sha256:d10a14eaab06aebd223f0a7e5194d129ea126ac9236125150b2ff86e30f27dea", size = 73412, upload-time = "2026-07-04T15:11:06.068Z" },
 ]
 
 [[package]]
@@ -1726,13 +1727,31 @@ wheels = [
 ]
 
 [[package]]
+name = "pipeline-common"
+version = "0.1.0"
+source = { editable = "pipeline-common" }
+dependencies = [
+    { name = "i-dot-ai-utilities" },
+    { name = "sentry-sdk" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "i-dot-ai-utilities", specifier = ">=0.6.0" },
+    { name = "sentry-sdk", specifier = ">=2.61.1" },
+    { name = "structlog", specifier = ">=23.1.0" },
+]
+
+[[package]]
 name = "pipeline-mapping"
 version = "0.1.0"
 source = { virtual = "pipeline-mapping" }
 dependencies = [
     { name = "boto3" },
     { name = "pandas" },
-    { name = "sentry-sdk" },
+    { name = "pipeline-common" },
+    { name = "structlog" },
     { name = "themefinder" },
     { name = "urllib3" },
 ]
@@ -1741,7 +1760,8 @@ dependencies = [
 requires-dist = [
     { name = "boto3", specifier = ">=1.42.17" },
     { name = "pandas", specifier = ">=2.2.2" },
-    { name = "sentry-sdk", specifier = ">=2.61.1" },
+    { name = "pipeline-common", editable = "pipeline-common" },
+    { name = "structlog", specifier = ">=23.1.0" },
     { name = "themefinder", editable = "themefinder" },
     { name = "urllib3", specifier = ">=2.0.0" },
 ]
@@ -1754,8 +1774,9 @@ dependencies = [
     { name = "boto3" },
     { name = "openai" },
     { name = "pandas" },
+    { name = "pipeline-common" },
     { name = "pydantic" },
-    { name = "sentry-sdk" },
+    { name = "structlog" },
     { name = "themefinder" },
     { name = "urllib3" },
 ]
@@ -1765,8 +1786,9 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.42.17" },
     { name = "openai", specifier = ">=2.14.0" },
     { name = "pandas", specifier = ">=2.2.2" },
+    { name = "pipeline-common", editable = "pipeline-common" },
     { name = "pydantic", specifier = ">=2.12.5" },
-    { name = "sentry-sdk", specifier = ">=2.61.1" },
+    { name = "structlog", specifier = ">=23.1.0" },
     { name = "themefinder", editable = "themefinder" },
     { name = "urllib3", specifier = ">=2.0.0" },
 ]
@@ -2347,15 +2369,15 @@ wheels = [
 
 [[package]]
 name = "sentry-sdk"
-version = "2.63.0"
+version = "2.64.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ba/c8/b3c970a5b186722d276cd40a05b3254e03bccc0208560aff20f612e018e8/sentry_sdk-2.63.0.tar.gz", hash = "sha256:2a1502bf864769275dbc8c2c9fc7a0f7f5e18358180b615d262d13a31ffba216", size = 912449, upload-time = "2026-06-16T12:45:57.553Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/60/31/b7341f156a5f6f36f0b4845d6f1c28a2ae4799171dba7007f3a1e9b234b4/sentry_sdk-2.64.0.tar.gz", hash = "sha256:68be2c29e14ae310f8a39e1a79916b6d85c6cb41dcce789d14ff05fe293e4c55", size = 921020, upload-time = "2026-06-30T08:13:47.682Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7b/57/cb205f7d93373120f666b9c5736dc0815524d96a9b278e7a728f018dc22a/sentry_sdk-2.63.0-py3-none-any.whl", hash = "sha256:3a9b5ddd403f79eb73bd670f75f04485819db53d28f76ced7bc09041cb0dfd6a", size = 495950, upload-time = "2026-06-16T12:45:55.819Z" },
+    { url = "https://files.pythonhosted.org/packages/36/a8/3fb9a4319efa3b26f5be0e90e6d8918df43fa7c7e977d26390f589501d82/sentry_sdk-2.64.0-py3-none-any.whl", hash = "sha256:715ea91ca860a819e8d8a50a7bde3a80d0df3b4ed7b6660a20fb9a2d084188f1", size = 498901, upload-time = "2026-06-30T08:13:45.566Z" },
 ]
 
 [package.optional-dependencies]
