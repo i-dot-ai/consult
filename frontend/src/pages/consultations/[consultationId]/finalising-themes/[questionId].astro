@@ -1,5 +1,9 @@
 ---
-import { fetchBackendApi } from "../../../../global/api";
+import {
+  checkUrlStatus,
+  fetchBackendApi,
+  get404Response,
+} from "../../../../global/api";
 
 import type { AstroGlobalRuntime, Question } from "../../../../global/types";
 
@@ -8,12 +12,23 @@ import Section from "../../../../components/Section/Section.svelte";
 
 import FinalisingThemesDetail from "../../../../components/screens/FinalisingThemesDetail/FinalisingThemesDetail.svelte";
 import FinalisingThemesDetailCompleted from "../../../../components/screens/FinalisingThemesDetailCompleted/FinalisingThemesDetailCompleted.svelte";
+import { getApiQuestionUrl } from "../../../../global/routes";
 
 const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
   .params;
+
+const urlStatus = await checkUrlStatus(
+  Astro,
+  getApiQuestionUrl(consultationId || "", questionId || ""),
+);
+
+if (urlStatus === 404) {
+  return get404Response();
+}
+
 const question: Question = await fetchBackendApi(
   Astro,
-  `/api/consultations/${consultationId}/questions/${questionId}`,
+  getApiQuestionUrl(consultationId || "", questionId || ""),
 );
 ---
 

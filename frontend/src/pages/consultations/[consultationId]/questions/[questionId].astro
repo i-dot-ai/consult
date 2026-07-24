@@ -4,9 +4,20 @@ import Section from "../../../../components/Section/Section.svelte";
 
 import QuestionDetail from "../../../../components/screens/QuestionDetail/QuestionDetail.svelte";
 import type { AstroGlobalRuntime } from "../../../../global/types";
+import { checkUrlStatus, get404Response } from "../../../../global/api";
+import { getApiQuestionUrl } from "../../../../global/routes";
 
 const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
   .params;
+
+const urlStatus = await checkUrlStatus(
+  Astro,
+  getApiQuestionUrl(consultationId || "", questionId || ""),
+);
+
+if (urlStatus === 404) {
+  return get404Response();
+}
 ---
 
 <Layout>
