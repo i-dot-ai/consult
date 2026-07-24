@@ -46,8 +46,8 @@ export async function checkUrlStatus(
 ) {
   try {
     await fetchBackendApi(astro, url);
+    return 200;
   } catch (err) {
     return (err as { status: number }).status;
   }
-  return 200;
 }
