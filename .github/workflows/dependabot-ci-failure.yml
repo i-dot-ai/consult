@@ -67,13 +67,6 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Create CI failure label if missing
-        if: steps.labels.outputs.skip == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh label create ci-failure --color f97316 --description 'CI failed on a Dependabot PR' || true
-
       - name: Label PR with ci-failure
         if: steps.labels.outputs.skip == 'false'
         env:
