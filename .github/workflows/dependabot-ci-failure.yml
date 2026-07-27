@@ -43,18 +43,12 @@ jobs:
             -f sha="$HEAD_SHA" \
             --jq '.data.repository.commit.associatedPullRequests.nodes[0]')
 
-          if [ "$(echo "$pr_data" | jq -r '.number')" = "null" ]; then
-            echo "No associated PR found, skipping"
-            exit 0
-          fi
-
           echo "number=$(echo "$pr_data" | jq -r '.number')" >> "$GITHUB_OUTPUT"
           echo "url=$(echo "$pr_data"    | jq -r '.url')"    >> "$GITHUB_OUTPUT"
           echo "title=$(echo "$pr_data"  | jq -r '.title')"  >> "$GITHUB_OUTPUT"
 
       - name: Check existing PR labels
         id: labels
-        if: steps.pr.outputs.number != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
