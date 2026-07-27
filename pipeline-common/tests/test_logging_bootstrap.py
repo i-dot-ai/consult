@@ -22,19 +22,20 @@ def test_execution_environment_is_fargate_when_running_in_batch(monkeypatch):
 
 
 def test_execution_context_is_bound_from_env(monkeypatch):
-    monkeypatch.setenv("EXECUTION_CONTEXT", "batch")
+    # Use a non-default value so this fails if the env var is ignored and a value is hardcoded.
+    monkeypatch.setenv("EXECUTION_CONTEXT", "some-other-runtime")
     with patch("pipeline_common.logging_bootstrap.StructuredLogger") as mock_logger_cls:
         bootstrap_logger()
     logger = mock_logger_cls.return_value
-    logger.set_context_field.assert_any_call("execution_context", "batch")
+    logger.set_context_field.assert_any_call("execution_context", "some-other-runtime")
 
 
-def test_execution_context_defaults_to_batch_when_env_absent(monkeypatch):
+def test_execution_context_defaults_to_unknown_when_env_absent(monkeypatch):
     monkeypatch.delenv("EXECUTION_CONTEXT", raising=False)
     with patch("pipeline_common.logging_bootstrap.StructuredLogger") as mock_logger_cls:
         bootstrap_logger()
     logger = mock_logger_cls.return_value
-    logger.set_context_field.assert_any_call("execution_context", "batch")
+    logger.set_context_field.assert_any_call("execution_context", "unknown")
 
 
 def test_sentry_is_not_initialized_when_dsn_absent(monkeypatch):
