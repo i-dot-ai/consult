@@ -10,6 +10,8 @@ CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS  # noqa: F405
 
 
 SENTRY_DSN = env("SENTRY_DSN")  # noqa: F405
+# Re-read with no default on purpose: in deployed envs Terraform sets this per runtime,
+# so a missing value is a misconfiguration we want to fail loudly on rather than mask.
 EXECUTION_CONTEXT = env("EXECUTION_CONTEXT")  # noqa: F405
 
 
