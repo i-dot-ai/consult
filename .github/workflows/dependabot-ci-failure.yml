@@ -54,6 +54,7 @@ jobs:
 
       - name: Check existing PR labels
         id: labels
+        if: steps.pr.outputs.number != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
