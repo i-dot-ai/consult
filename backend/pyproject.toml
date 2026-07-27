@@ -17,7 +17,7 @@ dependencies = [
   "djangorestframework-simplejwt[crypto]>=5.5.1",
   "drf-nested-routers>=0.95.0",
   "drf-orjson-renderer>=1.8.0",
-  "drf-spectacular==0.29.0",
+  "drf-spectacular==0.30.0",
   "factory_boy>=3.3.3",
   "gunicorn>=26.0.0",
   "i-dot-ai-utilities[auth]>=0.6.0",
