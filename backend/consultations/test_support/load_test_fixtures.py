@@ -152,7 +152,7 @@ def create_data_from_fixtures(fixtures):
                 try:
                     consultation_object.users.add(User.objects.get(email=email))
                 except User.DoesNotExist:
-                    logger.warning(f"User {email} does not exist, skipping")
+                    logger.warning("User {email} does not exist, skipping", email=email)
 
             respondents = create_respondents_from_fixtures(consultation_data, consultation_object)
 
