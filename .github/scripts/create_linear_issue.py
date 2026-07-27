@@ -129,10 +129,10 @@ def attach_pr(api_key: str, issue_id: str, pr_url: str, pr_title: str) -> None:
 
     success = (resp.get("data") or {}).get("attachmentLinkURL", {}).get("success")
     if success:
-        print(f"Attached PR to Linear issue")
+        print("Attached PR to Linear issue")
     else:
         # Non-fatal: issue was created, attachment is best-effort
-        print(f"WARNING: failed to attach PR URL to Linear issue")
+        print("WARNING: failed to attach PR URL to Linear issue")
         print(json.dumps(resp, indent=2))
 
 
