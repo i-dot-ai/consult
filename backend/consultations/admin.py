@@ -102,7 +102,10 @@ def create_cloned_consultation(modeladmin, request, queryset):
             f"Cloning '{consultation.title}' in the background. Monitor progress in /django-rq.",
         )
     except Exception as e:
-        logger.exception(f"Error starting clone job for consultation {consultation.id}: {e}")
+        logger.exception(
+            "Error starting clone job for consultation {consultation_id}",
+            consultation_id=consultation.id,
+        )
         messages.error(request, f"Failed to start clone job: {e}")
 
 

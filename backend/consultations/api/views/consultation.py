@@ -294,6 +294,7 @@ class ConsultationViewSet(ModelViewSet):
         """
         try:
             consultation = self.get_object()
+            logger.set_context_field("consultation_id", str(consultation.id))
 
             if consultation.stage != Consultation.Stage.SETUP:
                 return Response(

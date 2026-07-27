@@ -25,7 +25,7 @@ def _run_check(checks: dict[str, str], name: str, check: Callable[[], None]) -> 
         checks[name] = OK
     except Exception:
         checks[name] = NOT_OK
-        logger.exception(f"{name.capitalize()} healthcheck error")
+        logger.exception("{check_name} healthcheck error", check_name=name.capitalize())
 
 
 def _check_database() -> None:

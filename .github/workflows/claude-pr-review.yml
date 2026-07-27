@@ -19,6 +19,7 @@ concurrency:
 jobs:
   set-vars:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
     outputs:
       ec2-instance-type: ${{ steps.export.outputs.ec2-instance-type }}
       app-name: ${{ steps.export.outputs.app-name }}
