@@ -20,7 +20,7 @@
     text: string;
     count: number;
   }
-  interface Props {
+  export interface Props {
     data: number[];
     labels: LabelItem[];
     legendId?: string;
@@ -200,7 +200,7 @@
           datasets: [
             {
               label: " counts",
-              data: data,
+              data: [...data],
               borderWidth: 1,
             },
           ],

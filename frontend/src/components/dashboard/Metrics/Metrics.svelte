@@ -11,7 +11,7 @@
   } from "../../../global/types";
 
   import TabView from "../../TabView/TabView.svelte";
-  import Chart from "../Chart.svelte";
+  import Chart from "../../Chart/Chart.svelte";
   import MetricsDemoCard from "../MetricsDemoCard/MetricsDemoCard.svelte";
   import MetricsSummary from "../MetricsSummary/MetricsSummary.svelte";
   import Panel from "../Panel/Panel.svelte";
