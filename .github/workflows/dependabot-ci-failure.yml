@@ -67,24 +67,20 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Label PR with ci-failure
-        if: steps.labels.outputs.skip == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ steps.pr.outputs.url }}
-        run: gh pr edit "$PR_URL" --add-label "ci-failure"
-
       - name: Checkout repository
         if: steps.labels.outputs.skip == 'false'
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - name: Create Linear issue for CI failure
+      - name: Label PR and create Linear issue for CI failure
         if: steps.labels.outputs.skip == 'false'
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINEAR_API_KEY: ${{ secrets.DEPENDABOT_LINEAR_KEY }}
           LINEAR_TEAM_KEY: ${{ secrets.LINEAR_TEAM_KEY }}
           LINEAR_ASSIGNEE_TEAM_KEY: ${{ secrets.LINEAR_ASSIGNEE_TEAM_KEY }}
           ISSUE_TYPE: ci-failure
           PR_TITLE: ${{ steps.pr.outputs.title }}
           PR_URL: ${{ steps.pr.outputs.url }}
-        run: python3 .github/scripts/create_linear_issue.py
+        run: |
+          gh pr edit "$PR_URL" --add-label "ci-failure"
+          python3 .github/scripts/create_linear_issue.py
