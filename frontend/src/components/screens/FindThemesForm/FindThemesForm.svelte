@@ -13,19 +13,26 @@
 
   let { consultations }: Props = $props();
 
-  const selectItems = $derived(
-    consultations.map(({ id, title, code }) => ({
+  const selectItems = $derived.by(() => {
+    if (consultations.length === 0) {
+      return [{ label: "No consultations found", value: "" }];
+    }
+    return consultations.map(({ id, title, code }) => ({
       value: id,
       label: `${title} (${code})`,
-    })),
-  );
+    }));
+  });
 
-  let consultationId = $state<string | undefined>(undefined);
+  let consultationId = $derived<string | undefined>(consultations[0]?.id);
   let submitting = $state<boolean>(false);
   let errorMessage = $state<string | undefined>(undefined);
   let success = $state<boolean>(false);
 
   const handleSubmit = async () => {
+    if (!consultationId) {
+      return;
+    }
+
     errorMessage = "";
     success = false;
     submitting = true;
@@ -88,11 +95,12 @@
     label="Consultation"
     items={selectItems}
     required
+    disabled={consultations.length === 0}
     value={consultationId}
     onchange={(val) => (consultationId = val)}
   />
 
-  <Button type="submit" variant="primary" disabled={submitting}>
+  <Button type="submit" variant="primary" disabled={submitting || consultations.length === 0}>
     Find Themes
   </Button>
 </form>
