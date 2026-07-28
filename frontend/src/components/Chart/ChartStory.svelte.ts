@@ -1,15 +1,10 @@
 import ChartTest from "./ChartTest.svelte";
+import { DATA, INTERACTIVE, LABELS, LEGEND_ID, LONG_DATA, LONG_LABELS } from "./testData";
 
-const data = $state([ 200, 400 ]);
-const labels = $state([
-    { count: 200, text: "first item" },
-    { count: 400, text: "second item" },
-]);
-const legendId = $state("test-legend");
-const interactive = $state(true);
-
-const LONG_DATA = Array.from(Array(10).keys());
-const LONG_LABELS = LONG_DATA.map((count) => ({ text: `Item ${count}`, count }));
+const data = $state(DATA);
+const labels = $state(LABELS);
+const legendId = $state(LEGEND_ID);
+const interactive = $state(INTERACTIVE);
 
 export default {
   name: "Chart",
