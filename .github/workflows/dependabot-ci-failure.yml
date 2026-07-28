@@ -57,12 +57,9 @@ jobs:
           labels=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json labels --jq '[.labels[].name] | join(",")')
           echo "list=$labels" >> "$GITHUB_OUTPUT"
 
-          # Skip if this is a major bump — it already has a Linear issue from dependabot-auto-merge
-          if echo "$labels" | grep -q "major-version-bump"; then
-            echo "skip=major-bump" >> "$GITHUB_OUTPUT"
-          # Skip if we already raised a CI failure issue for this PR
-          elif echo "$labels" | grep -q "ci-failure"; then
-            echo "skip=already-notified" >> "$GITHUB_OUTPUT"
+          # Skip if a major bump (already has a Linear issue) or ci-failure (already notified)
+          if echo "$labels" | grep -qE "major-version-bump|ci-failure"; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
