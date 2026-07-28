@@ -44,9 +44,7 @@ describe("FindThemesForm", () => {
     render(FindThemesForm, { consultations: [] });
 
     await waitFor(() => {
-      expect(
-        screen.getByText("No consultations found"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("No consultations found")).toBeInTheDocument();
     });
   });
 
