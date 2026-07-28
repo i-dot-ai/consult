@@ -22,6 +22,11 @@ export default {
       props: { consultations },
     },
     {
+      name: "Success Empty",
+      mocks: [findMock],
+      props: { consultations: [] },
+    },
+    {
       name: "Fetch Error",
       mocks: [{ ...findMock, throws: new Error("Error") }],
       props: { consultations },
