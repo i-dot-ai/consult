@@ -362,6 +362,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       >
                         <canvas
                           class="h-full"
+                          data-testid="chart-canvas"
                         />
                       </div>
                       <!---->

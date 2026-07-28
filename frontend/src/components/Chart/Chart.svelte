@@ -241,5 +241,5 @@
 </script>
 
 <div class="h-full w-full">
-  <canvas class="h-full" bind:this={chartElement}></canvas>
+  <canvas data-testid="chart-canvas" class="h-full" bind:this={chartElement}></canvas>
 </div>
