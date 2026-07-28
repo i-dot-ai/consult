@@ -1,0 +1,118 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Chart > should match snapshot initially 1`] = `
+<div>
+  <div
+    class="flex gap-4 justify-center items-center"
+  >
+    <div
+      id="test-legend"
+    >
+      <ul
+        class="flex flex-col m-0 p-0 h-full justify-around"
+      >
+        <li
+          class="flex flex-row items-center whitespace-nowrap text-ellipsis ml-2 cursor-pointer text-sm"
+          data-testid="chart-legend-item-clickable-first item"
+        >
+          <span
+            class="inline-block h-3 w-3 mr-1 shrink-0 rounded-full"
+            style="background: rgb(54, 162, 235); border-color: rgb(255, 255, 255); border-width: 1px;"
+          />
+          <div
+            class="flex justify-between items-center w-full gap-8"
+            data-testid="chart-legend-item-container-first item"
+          >
+            <p
+              class="m-0 p-0 max-w-[80%] whitespace-break-spaces"
+              style="color: rgb(102, 102, 102);"
+            >
+              first item
+            </p>
+            <div
+              class="flex gap-2 items-center text-xs"
+            >
+              <span
+                class="font-bold"
+              />
+              <span />
+            </div>
+          </div>
+        </li>
+        <li
+          class="flex flex-row items-center whitespace-nowrap text-ellipsis ml-2 cursor-pointer text-sm"
+          data-testid="chart-legend-item-clickable-second item"
+        >
+          <span
+            class="inline-block h-3 w-3 mr-1 shrink-0 rounded-full"
+            style="background: rgb(255, 99, 132); border-color: rgb(255, 255, 255); border-width: 1px;"
+          />
+          <div
+            class="flex justify-between items-center w-full gap-8"
+            data-testid="chart-legend-item-container-second item"
+          >
+            <p
+              class="m-0 p-0 max-w-[80%] whitespace-break-spaces"
+              style="color: rgb(102, 102, 102);"
+            >
+              second item
+            </p>
+            <div
+              class="flex gap-2 items-center text-xs"
+            >
+              <span
+                class="font-bold"
+              />
+              <span />
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+     
+    <div
+      class="h-24"
+    >
+      <div
+        class="h-full w-full"
+      >
+        <canvas
+          class="h-full"
+          data-testid="chart-canvas"
+          height="0"
+          style="display: block; box-sizing: border-box; height: 0px; width: 0px;"
+          width="0"
+        />
+      </div>
+      <!---->
+    </div>
+  </div>
+  
+</div>
+`;
+
+exports[`Chart > should match snapshot initially 2`] = `
+[
+  {
+    "props": {
+      "a": 1,
+      "b": 0,
+      "c": 0,
+      "d": 1,
+      "e": 0,
+      "f": 0,
+    },
+    "transform": [
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+    ],
+    "type": "setTransform",
+  },
+]
+`;
+
+exports[`Chart > should match snapshot initially 3`] = `[]`;
