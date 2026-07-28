@@ -30,6 +30,7 @@ exports[`FindThemesForm > should match snapshot initially 1`] = `
       >
         <option
           class="bg-white text-neutral-900"
+          selected=""
           value="folder1"
         >
           Folder One (folder-one)
