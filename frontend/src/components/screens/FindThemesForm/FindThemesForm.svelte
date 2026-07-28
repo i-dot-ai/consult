@@ -100,7 +100,11 @@
     onchange={(val) => (consultationId = val)}
   />
 
-  <Button type="submit" variant="primary" disabled={submitting || consultations.length === 0}>
+  <Button
+    type="submit"
+    variant="primary"
+    disabled={submitting || consultations.length === 0}
+  >
     Find Themes
   </Button>
 </form>
