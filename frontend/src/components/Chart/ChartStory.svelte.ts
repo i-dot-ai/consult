@@ -1,5 +1,12 @@
 import ChartTest from "./ChartTest.svelte";
-import { DATA, INTERACTIVE, LABELS, LEGEND_ID, LONG_DATA, LONG_LABELS } from "./testData";
+import {
+  DATA,
+  INTERACTIVE,
+  LABELS,
+  LEGEND_ID,
+  LONG_DATA,
+  LONG_LABELS,
+} from "./testData";
 
 const data = $state(DATA);
 const labels = $state(LABELS);
