@@ -1,3 +1,9 @@
+locals {
+  # 80% of the Lambda module's default 600s timeout, in milliseconds. Used by
+  # the import Lambda duration alarms below.
+  import_lambda_duration_threshold_ms = 480000
+}
+
 resource "aws_security_group" "lambda_sg" {
   name_prefix = "${local.name}-lambda-sg"
   vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
@@ -156,4 +162,80 @@ module "import_response_annotations_lambda" {
     REPO              = var.project_name
     EXECUTION_CONTEXT = "lambda"
   }
+}
+
+# Error-rate and throttle alarms for all 3 Lambdas, routed to the Slack SNS
+# topic. If an import Lambda fails, its Batch job completes but results are
+# never imported, so we need to hear about it. Alarm names embed the function
+# name, so the Slack alert says which Lambda fired and links to its logs.
+
+module "slack_notifier_lambda_alarm" {
+  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
+  # source        = "../../i-dot-ai-core-terraform-modules/modules/observability/lambda-alarms"
+  source          = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/lambda-alarms?ref=v1.2.0-lambda-alarms"
+  name            = "${local.name}-slack-notifier"
+  lambda_function = module.slack_notifier_lambda.function_name
+  sns_topic_arn   = [module.sns_topic.sns_topic_arn]
+}
+
+module "import_candidate_themes_lambda_alarm" {
+  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
+  # source        = "../../i-dot-ai-core-terraform-modules/modules/observability/lambda-alarms"
+  source          = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/lambda-alarms?ref=v1.2.0-lambda-alarms"
+  name            = "${local.name}-import-candidate-themes"
+  lambda_function = module.import_candidate_themes_lambda.function_name
+  sns_topic_arn   = [module.sns_topic.sns_topic_arn]
+}
+
+module "import_response_annotations_lambda_alarm" {
+  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
+  # source        = "../../i-dot-ai-core-terraform-modules/modules/observability/lambda-alarms"
+  source          = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/lambda-alarms?ref=v1.2.0-lambda-alarms"
+  name            = "${local.name}-import-response-annotations"
+  lambda_function = module.import_response_annotations_lambda.function_name
+  sns_topic_arn   = [module.sns_topic.sns_topic_arn]
+}
+
+# Duration alarms for the VPC-connected import Lambdas: on Redis + cold start
+# a run can near the 600s timeout and be killed mid-import. Fire at 480s (80%)
+# so slow runs surface first. The slack_notifier Lambda isn't VPC-connected, so
+# it gets no duration alarm.
+resource "aws_cloudwatch_metric_alarm" "import_candidate_themes_duration" {
+  alarm_name          = "${local.name}-import-candidate-themes-lambda-duration"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Duration"
+  namespace           = "AWS/Lambda"
+  period              = 60
+  statistic           = "Maximum"
+  threshold           = local.import_lambda_duration_threshold_ms
+  treat_missing_data  = "notBreaching"
+  alarm_description   = "import-candidate-themes Lambda run exceeded 480s (80% of its 600s timeout); check the function's logs."
+
+  dimensions = {
+    FunctionName = module.import_candidate_themes_lambda.function_name
+  }
+
+  # No ok_actions: a slow run recovering to normal isn't worth a Slack ping.
+  alarm_actions = [module.sns_topic.sns_topic_arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "import_response_annotations_duration" {
+  alarm_name          = "${local.name}-import-response-annotations-lambda-duration"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Duration"
+  namespace           = "AWS/Lambda"
+  period              = 60
+  statistic           = "Maximum"
+  threshold           = local.import_lambda_duration_threshold_ms
+  treat_missing_data  = "notBreaching"
+  alarm_description   = "import-response-annotations Lambda run exceeded 480s (80% of its 600s timeout); check the function's logs."
+
+  dimensions = {
+    FunctionName = module.import_response_annotations_lambda.function_name
+  }
+
+  # No ok_actions: a slow run recovering to normal isn't worth a Slack ping.
+  alarm_actions = [module.sns_topic.sns_topic_arn]
 }
