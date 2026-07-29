@@ -2,7 +2,7 @@
 import {
   checkUrlStatus,
   fetchBackendApi,
-  get404Response,
+  buildResponse,
 } from "../../../../global/api";
 
 import type { AstroGlobalRuntime, Question } from "../../../../global/types";
@@ -22,8 +22,8 @@ const urlStatus = await checkUrlStatus(
   getApiQuestionUrl(consultationId || "", questionId || ""),
 );
 
-if (urlStatus === 404) {
-  return get404Response();
+if (urlStatus && urlStatus >= 300) {
+  return buildResponse(urlStatus);
 }
 
 const question: Question = await fetchBackendApi(

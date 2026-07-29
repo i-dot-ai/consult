@@ -4,7 +4,7 @@ import Section from "../../../../components/Section/Section.svelte";
 
 import QuestionDetail from "../../../../components/screens/QuestionDetail/QuestionDetail.svelte";
 import type { AstroGlobalRuntime } from "../../../../global/types";
-import { checkUrlStatus, get404Response } from "../../../../global/api";
+import { checkUrlStatus, buildResponse } from "../../../../global/api";
 import { getApiQuestionUrl } from "../../../../global/routes";
 
 const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
@@ -15,8 +15,8 @@ const urlStatus = await checkUrlStatus(
   getApiQuestionUrl(consultationId || "", questionId || ""),
 );
 
-if (urlStatus === 404) {
-  return get404Response();
+if (urlStatus && urlStatus >= 300) {
+  return buildResponse(urlStatus);
 }
 ---
 

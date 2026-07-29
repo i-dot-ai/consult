@@ -33,10 +33,15 @@ export const fetchBackendApi = async <T>(
   }
 };
 
-export function get404Response() {
+export function buildResponse(statusCode: 403 | 404 | 500){
+  const STATUSES = {
+    403: "Unauthorized",
+    404: "Not Found",
+    500: "Server Error",
+  }
   return new Response(null, {
-    status: 404,
-    statusText: "Not Found",
+    status: statusCode,
+    statusText: STATUSES[statusCode],
   });
 }
 
@@ -48,6 +53,6 @@ export async function checkUrlStatus(
     await fetchBackendApi(astro, url);
     return 200;
   } catch (err) {
-    return (err as { status: number }).status;
+    return (err as { status: number }).status || 500;
   }
 }
