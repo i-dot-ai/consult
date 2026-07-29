@@ -136,6 +136,7 @@ def lambda_handler(event, context):
     when AWS Batch job changes state.
     """
     logger.refresh_context([{"type": ContextEnrichmentType.LAMBDA, "object": context}])
+    logger.set_context_field("execution_context", os.environ.get("EXECUTION_CONTEXT", "lambda"))
 
     logger.info("Received event: {event}", event=json.dumps(event))
 
