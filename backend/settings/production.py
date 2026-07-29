@@ -4,6 +4,7 @@ from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
 from i_dot_ai_utilities.logging.types.enrichment_types import ExecutionEnvironmentType
 from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 
+from sentry_context import sentry_before_send
 from settings.base import *  # noqa
 
 CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS  # noqa: F405
@@ -24,36 +25,6 @@ STORAGES["staticfiles"] = {  # noqa: F405
     "BACKEND": "storages.backends.s3.S3Storage",
     "OPTIONS": {"bucket_name": env("AWS_BUCKET_NAME"), "location": "app_data/static/"},  # noqa: F405
 }
-
-
-def sentry_before_send(event, hint):
-    """Filters Sentry events before sending.
-
-    Adapted from https://jkfran.com/capturing-unhandled-exceptions-sentry-python/
-
-    This function filters out handled exceptions.
-
-    Args:
-        event (dict): The event dictionary containing exception data.
-
-        hint (dict): Additional information about the event, including
-            the original exception.
-
-    Returns:
-        dict: The modified event dictionary, or None if the event should be
-            ignored.
-    """
-    # Ignore handled exceptions
-    exceptions = event.get("exception", {}).get("values", [])
-    if exceptions:
-        exc = exceptions[-1]
-        mechanism = exc.get("mechanism")
-
-        if mechanism:
-            if mechanism.get("handled"):
-                return None
-
-    return event
 
 
 sentry_sdk.init(

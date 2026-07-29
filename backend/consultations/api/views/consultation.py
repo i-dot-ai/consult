@@ -2,7 +2,6 @@ import statistics
 from collections import Counter, defaultdict
 from typing import Any
 
-import sentry_sdk
 from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
@@ -48,6 +47,7 @@ from hosting_environment import HostingEnvironment
 from ingest.jobs import (
     delete_consultation_job,
 )
+from sentry_context import capture_handled_sentry_exception
 
 logger = settings.LOGGER
 
@@ -263,14 +263,14 @@ class ConsultationViewSet(ModelViewSet):
             logger.warning(
                 "Consultation setup request failed validation: {detail}", detail=e.detail
             )
-            sentry_sdk.capture_exception(e)
+            capture_handled_sentry_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
             logger.exception("Failed to start consultation setup import job")
-            sentry_sdk.capture_exception(e)
+            capture_handled_sentry_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -340,7 +340,7 @@ class ConsultationViewSet(ModelViewSet):
             logger.exception(
                 f"Error starting Find Themes job for consultation {consultation.title}: {e}"
             )
-            sentry_sdk.capture_exception(e)
+            capture_handled_sentry_exception(e)
             return Response(
                 {
                     "error": "Failed to start Find Themes job",
@@ -405,7 +405,7 @@ class ConsultationViewSet(ModelViewSet):
                 "Failed to export selected themes to S3 for consultation {consultation_code}",
                 consultation_code=consultation.code,
             )
-            sentry_sdk.capture_exception(e)
+            capture_handled_sentry_exception(e)
             return Response(
                 {
                     "error": "Failed to export themes to S3",
@@ -427,7 +427,7 @@ class ConsultationViewSet(ModelViewSet):
                 "Failed to submit ASSIGN_THEMES batch job for consultation {consultation_code}",
                 consultation_code=consultation.code,
             )
-            sentry_sdk.capture_exception(e)
+            capture_handled_sentry_exception(e)
             return Response(
                 {
                     "error": "Failed to submit job to assign themes",
@@ -475,7 +475,7 @@ class ConsultationViewSet(ModelViewSet):
             s3_codes = s3.get_consultation_folders()
         except (ClientError, BotoCoreError) as e:
             logger.exception("Failed to list consultation folders from S3")
-            sentry_sdk.capture_exception(e)
+            capture_handled_sentry_exception(e)
             return Response(
                 {
                     "error": "Failed to list consultation folders",
@@ -567,7 +567,7 @@ class ConsultationViewSet(ModelViewSet):
                 "Failed to add users to consultation {consultation_id}",
                 consultation_id=str(consultation.id),
             )
-            sentry_sdk.capture_exception(e)
+            capture_handled_sentry_exception(e)
             return Response(
                 {"error": "Failed to add users to consultation"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -846,7 +846,7 @@ class ConsultationViewSet(ModelViewSet):
                 consultation_id=str(target.id),
                 imported=imported_themes,
             )
-            sentry_sdk.capture_exception(e)
+            capture_handled_sentry_exception(e)
             return Response(
                 {
                     "error": (
