@@ -33,12 +33,12 @@ export const fetchBackendApi = async <T>(
   }
 };
 
-export function buildResponse(statusCode: 403 | 404 | 500){
+export function buildResponse(statusCode: 403 | 404 | 500) {
   const STATUSES = {
     403: "Unauthorized",
     404: "Not Found",
     500: "Server Error",
-  }
+  };
   return new Response(null, {
     status: statusCode,
     statusText: STATUSES[statusCode],
