@@ -38,6 +38,16 @@ describe("FindThemesForm", () => {
     });
   });
 
+  it("should render no consultation found text if no consultations are given", async () => {
+    mockRoute(findMock);
+
+    render(FindThemesForm, { consultations: [] });
+
+    await waitFor(() => {
+      expect(screen.getByText("No consultations found")).toBeInTheDocument();
+    });
+  });
+
   it("should send post request when button is clicked", async () => {
     const findBodyMock = vi.fn();
     mockRoute({ ...findMock, body: findBodyMock });

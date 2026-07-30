@@ -59,7 +59,7 @@ module "backend" {
 
   environment_variables = merge(local.base_env_vars, local.django_env_vars, {
     "APP_NAME"                 = var.project_name
-    "EXECUTION_CONTEXT"        = "ecs"
+    "EXECUTION_CONTEXT"        = "backend"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-backend"
     "SENTRY_DSN"               = var.backend_sentry_dsn
   })
@@ -176,7 +176,7 @@ module "worker" {
 
   environment_variables = merge(local.base_env_vars, local.django_env_vars, {
     "APP_NAME"                 = var.project_name
-    "EXECUTION_CONTEXT"        = "ecs"
+    "EXECUTION_CONTEXT"        = "worker"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-worker"
     "SENTRY_DSN"               = var.backend_sentry_dsn
   })
@@ -190,13 +190,16 @@ module "worker" {
 
   container_port = local.backend_port
 
-  health_check = {
-    healthy_threshold   = 3
-    unhealthy_threshold = 3
-    accepted_response   = "200"
-    path                = "/"
-    timeout             = 6
-    port                = 8000
+  # The worker runs `manage.py rqworker` (backend/start-worker.sh), not an HTTP server, so
+  # this uses a command-based container health check backed by the RQ worker's own Redis
+  # heartbeat rather than an ALB-style HTTP probe.
+  http_healthcheck = false
+  container_healthcheck = {
+    command     = ["CMD-SHELL", "venv/bin/python3.12 manage.py healthcheck_worker"]
+    interval    = 60
+    timeout     = 20
+    retries     = 3
+    startPeriod = 60
   }
 
   autoscaling_minimum_target = 3

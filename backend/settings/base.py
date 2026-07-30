@@ -33,6 +33,9 @@ env = environ.Env(DEBUG=(bool, False))
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
 ENVIRONMENT = env("ENVIRONMENT")
+# Identifies the runtime a log line originated from (backend/worker/batch/lambda).
+# Set per-runtime by Terraform in deployed envs; defaults to "local" for dev/test.
+EXECUTION_CONTEXT: str = env("EXECUTION_CONTEXT", default="local")
 AWS_ACCOUNT_ID = env("AWS_ACCOUNT_ID", default=None)
 MINIO_ADDRESS = env.str("MINIO_ENDPOINT", default=None)
 AWS_ACCESS_KEY = env.str("MINIO_ACCESS_KEY", default=None)
@@ -232,6 +235,7 @@ LOGGER = StructuredLogger(
         "log_format": LogOutputFormat.JSON,
     },
 )
+LOGGER.set_context_field("execution_context", EXECUTION_CONTEXT)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

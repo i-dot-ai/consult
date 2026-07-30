@@ -17,6 +17,7 @@ def _make_middleware(captured=None):
         if captured is not None:
             captured["context_id"] = structlog.contextvars.get_contextvars().get("context_id")
             captured["path"] = structlog.contextvars.get_contextvars().get("path")
+            captured["execution_context"] = structlog.contextvars.get_contextvars().get("execution_context")
         return HttpResponse(status=200)
 
     return RequestCorrelationMiddleware(view)
@@ -103,6 +104,17 @@ def test_pre_bound_stale_context_id_is_replaced(request_factory):
         assert captured["context_id"] not in ("stale-value", "unknown")
     finally:
         structlog.contextvars.unbind_contextvars("context_id")
+
+
+def test_execution_context_is_bound_and_survives_refresh(request_factory, settings):
+    """execution_context must be re-bound after the per-request refresh_context() wipe."""
+    settings.EXECUTION_CONTEXT = "backend"
+    captured = {}
+    middleware = _make_middleware(captured)
+
+    middleware(request_factory.get("/api/consultations/"))
+
+    assert captured["execution_context"] == "backend"
 
 
 def test_health_path_is_excluded(request_factory):
