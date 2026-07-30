@@ -41,7 +41,7 @@ export function buildResponse(statusCode: 403 | 404 | 500) {
   };
   return new Response(null, {
     status: statusCode,
-    statusText: STATUSES[statusCode],
+    statusText: STATUSES[statusCode] || "Error",
   });
 }
 
