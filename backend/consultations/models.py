@@ -56,7 +56,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     stage = models.CharField(
         max_length=32,
         choices=Stage.choices,
-        default=Stage.FINALISING_THEMES,
+        default=Stage.SETUP,
     )
     code = models.SlugField(max_length=256)
     timestamp = models.SlugField(max_length=256, null=True, blank=True)

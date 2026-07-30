@@ -23,6 +23,11 @@ def bootstrap_logger() -> StructuredLogger:
         },
     )
 
+    # Fall back to "unknown" rather than "batch" so a runtime that forgets to set
+    # EXECUTION_CONTEXT is visible in the logs instead of silently masquerading as batch.
+    logger.set_context_field(
+        "execution_context", os.environ.get("EXECUTION_CONTEXT", "unknown")
+    )
     logger.set_context_field(
         "batch_job_id", os.environ.get("AWS_BATCH_JOB_ID", "unknown")
     )
