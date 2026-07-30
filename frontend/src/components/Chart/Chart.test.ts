@@ -55,6 +55,27 @@ describe("Chart", () => {
     });
   });
 
+  it("should not disable item on click if not interactive", async () => {
+    render(Chart, {
+      data: DATA,
+      labels: LABELS,
+      legendId: LEGEND_ID,
+      interactive: false,
+    });
+
+    expect(screen.getByText("first item")).not.toHaveClass("line-through");
+
+    const legendItemButton = screen.getByTestId(
+      "chart-legend-item-static-first item",
+    );
+    const user = userEvent.setup();
+    await user.click(legendItemButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("first item")).not.toHaveClass("line-through");
+    });
+  });
+
   it("should match snapshot initially", () => {
     const { container } = render(Chart, {
       data: DATA,
