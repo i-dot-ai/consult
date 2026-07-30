@@ -9,8 +9,9 @@ def capture_handled_sentry_exception(error=None, **kwargs):
     response). Tags the event so sentry_before_send always forwards it, regardless
     of the handled/unhandled mechanism Sentry infers for manual captures.
     """
-    kwargs.setdefault("tags", {})[MANUAL_CAPTURE_TAG] = "true"
-    return sentry_sdk.capture_exception(error, **kwargs)
+    new_kwargs = kwargs.copy()
+    new_kwargs.setdefault("tags", {})[MANUAL_CAPTURE_TAG] = "true"
+    return sentry_sdk.capture_exception(error, **new_kwargs)
 
 
 def sentry_before_send(event, hint):
@@ -35,17 +36,26 @@ def sentry_before_send(event, hint):
         dict: The modified event dictionary, or None if the event should be
             ignored.
     """
-    if event.get("tags", {}).get(MANUAL_CAPTURE_TAG):
-        return event
+    try:
+        # If the event was captured via capture_handled_sentry_exception, it will be
+        # tagged so we always send it, regardless of the handled/unhandled mechanism
+        # Sentry infers for manual captures.
+        if event["tags"][MANUAL_CAPTURE_TAG]:
+            return event
+    except KeyError:
+        pass
 
     # Ignore handled exceptions
-    exceptions = event.get("exception", {}).get("values", [])
-    if exceptions:
+    try:
+        exceptions = event["exception"]["values"]
+
         exc = exceptions[-1]
-        mechanism = exc.get("mechanism")
+        mechanism = exc["mechanism"]
 
         if mechanism:
-            if mechanism.get("handled"):
+            if mechanism["handled"]:
                 return None
+    except (KeyError, IndexError):
+        pass
 
     return event
