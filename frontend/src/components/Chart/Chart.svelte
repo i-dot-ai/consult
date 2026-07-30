@@ -20,7 +20,7 @@
     text: string;
     count: number;
   }
-  interface Props {
+  export interface Props {
     data: number[];
     labels: LabelItem[];
     legendId?: string;
@@ -200,7 +200,7 @@
           datasets: [
             {
               label: " counts",
-              data: data,
+              data: [...data],
               borderWidth: 1,
             },
           ],
@@ -241,5 +241,6 @@
 </script>
 
 <div class="h-full w-full">
-  <canvas class="h-full" bind:this={chartElement}></canvas>
+  <canvas data-testid="chart-canvas" class="h-full" bind:this={chartElement}
+  ></canvas>
 </div>

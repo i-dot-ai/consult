@@ -19,7 +19,7 @@
   import { createFetchStore } from "../../../global/stores";
 
   import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
-  import Chart from "../../dashboard/Chart.svelte";
+  import Chart from "../../Chart/Chart.svelte";
   import MetricsDemoCard from "../../dashboard/MetricsDemoCard/MetricsDemoCard.svelte";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import RespondentTopbar from "../../dashboard/RespondentTopbar/RespondentTopbar.svelte";
