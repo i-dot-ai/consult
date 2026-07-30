@@ -10,7 +10,7 @@ def capture_handled_sentry_exception(error=None, **kwargs):
     of the handled/unhandled mechanism Sentry infers for manual captures.
     """
     new_kwargs = kwargs.copy()
-    new_kwargs.setdefault("tags", {})[MANUAL_CAPTURE_TAG] = "true"
+    new_kwargs["tags"] = {**kwargs.get("tags", {}), MANUAL_CAPTURE_TAG: "true"}
     return sentry_sdk.capture_exception(error, **new_kwargs)
 
 
