@@ -114,7 +114,8 @@ jobs:
         env:
           LINEAR_API_KEY: ${{ secrets.DEPENDABOT_LINEAR_KEY }}
           LINEAR_TEAM_KEY: ${{ secrets.LINEAR_TEAM_KEY }}
-          LINEAR_ASSIGNEE_TEAM_KEY: ${{ secrets.LINEAR_ASSIGNEE_TEAM_KEY }}
+          DEPENDABOT_USER_MAP: ${{ secrets.DEPENDABOT_USER_MAP }}
+          GITHUB_ASSIGNEE: ${{ github.event.pull_request.assignees[0].login }}
           ISSUE_TYPE: major-bump
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_URL: ${{ github.event.pull_request.html_url }}
