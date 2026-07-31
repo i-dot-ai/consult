@@ -1,6 +1,6 @@
 """
-Create a Linear issue for Dependabot PR events, randomly assigned to a member
-of the configured assignee team.
+Create a Linear issue for Dependabot PR events, assigned to the GitHub-assigned
+reviewer via a username-to-Linear-email map stored in a secret.
 
 Supports two issue types, selected via the ISSUE_TYPE environment variable:
 
@@ -10,7 +10,9 @@ Supports two issue types, selected via the ISSUE_TYPE environment variable:
 Required environment variables (all types):
   LINEAR_API_KEY                - Linear personal API key (lin_api_*)
   LINEAR_TEAM_KEY               - Key of the Linear team to create the issue in (e.g. "ENG")
-  LINEAR_ASSIGNEE_TEAM_KEY      - Key of the Linear team to draw assignees from (e.g. "GIT")
+  DEPENDABOT_USER_MAP           - JSON secret mapping GitHub username to Linear email
+                                  e.g. '{"octocat": "octocat@example.com"}'
+  GITHUB_ASSIGNEE               - GitHub username of the PR assignee (may be empty)
   ISSUE_TYPE                    - "major-bump" or "ci-failure"
   PR_TITLE                      - Title of the Dependabot PR
   PR_URL                        - URL of the Dependabot PR
@@ -23,7 +25,6 @@ Required for major-bump only:
 
 import json
 import os
-import random
 import sys
 import urllib.request
 
@@ -65,35 +66,32 @@ def resolve_team(api_key: str, team_key: str) -> dict:
     return team
 
 
-def resolve_assignee_id(api_key: str, team_key: str) -> str | None:
-    """Pick a random assignable member from the given Linear team."""
+def resolve_assignee_id(api_key: str, github_username: str, user_map: dict) -> str | None:
+    """Resolve a Linear user ID from a GitHub username via the user map."""
+    if not github_username:
+        return None
+
+    email = user_map.get(github_username)
+    if not email:
+        print(f"WARNING: GitHub user '{github_username}' not found in user map, issue will be unassigned")
+        return None
+
     resp = linear_query(api_key, """
-        query($key: String!) {
-          teams(filter: { key: { eq: $key } }) {
-            nodes {
-              name
-              members {
-                nodes { id email isAssignable }
-              }
-            }
+        query($email: String!) {
+          users(filter: { email: { eq: $email } }) {
+            nodes { id email }
           }
         }
-    """, {"key": team_key})
+    """, {"email": email})
 
     try:
-        team = resp["data"]["teams"]["nodes"][0]
+        user = resp["data"]["users"]["nodes"][0]
     except (KeyError, IndexError):
-        print(f"WARNING: could not find a Linear team with key '{team_key}'")
+        print(f"WARNING: no Linear user found for email '{email}', issue will be unassigned")
         return None
 
-    pool = [u for u in team["members"]["nodes"] if u["isAssignable"]]
-    if not pool:
-        print(f"WARNING: team '{team['name']}' has no assignable members")
-        return None
-
-    chosen = random.choice(pool)
-    print(f"Assigning to: {chosen['email']}")
-    return chosen["id"]
+    print(f"Assigning to: {user['email']}")
+    return user["id"]
 
 
 def create_issue(api_key: str, issue_input: dict) -> str:
@@ -141,7 +139,8 @@ def attach_pr(api_key: str, issue_id: str, pr_url: str, pr_title: str) -> None:
 def main() -> None:
     api_key = os.environ["LINEAR_API_KEY"]
     team_key = os.environ["LINEAR_TEAM_KEY"]
-    assignee_team_key = os.environ["LINEAR_ASSIGNEE_TEAM_KEY"]
+    github_assignee = os.environ.get("GITHUB_ASSIGNEE", "")
+    user_map = json.loads(os.environ.get("DEPENDABOT_USER_MAP", "{}"))
     issue_type = os.environ["ISSUE_TYPE"]
     pr_title = os.environ["PR_TITLE"]
     pr_url = os.environ["PR_URL"]
@@ -157,7 +156,7 @@ def main() -> None:
         print(f"ERROR: could not find an 'In Review' state in the '{team_key}' team workflow")
         sys.exit(1)
 
-    assignee_id = resolve_assignee_id(api_key, assignee_team_key)
+    assignee_id = resolve_assignee_id(api_key, github_assignee, user_map)
 
     if issue_type == "major-bump":
         dep_names = os.environ["DEPENDENCY_NAMES"]
