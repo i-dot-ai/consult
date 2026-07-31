@@ -47,6 +47,10 @@ jobs:
           echo "url=$(echo "$pr_data"    | jq -r '.url')"    >> "$GITHUB_OUTPUT"
           echo "title=$(echo "$pr_data"  | jq -r '.title')"  >> "$GITHUB_OUTPUT"
 
+          assignee=$(gh pr view "$(echo "$pr_data" | jq -r '.number')" \
+            --repo "$REPO" --json assignees --jq '.assignees[0].login // ""')
+          echo "assignee=$assignee" >> "$GITHUB_OUTPUT"
+
       - name: Check existing PR labels
         id: labels
         env:
@@ -74,7 +78,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINEAR_API_KEY: ${{ secrets.DEPENDABOT_LINEAR_KEY }}
           LINEAR_TEAM_KEY: ${{ secrets.LINEAR_TEAM_KEY }}
-          LINEAR_ASSIGNEE_TEAM_KEY: ${{ secrets.LINEAR_ASSIGNEE_TEAM_KEY }}
+          DEPENDABOT_USER_MAP: ${{ secrets.DEPENDABOT_USER_MAP }}
+          GITHUB_ASSIGNEE: ${{ steps.pr.outputs.assignee }}
           ISSUE_TYPE: ci-failure
           PR_TITLE: ${{ steps.pr.outputs.title }}
           PR_URL: ${{ steps.pr.outputs.url }}
