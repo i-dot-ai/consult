@@ -57,11 +57,12 @@ def resolve_team(api_key: str, team_key: str) -> dict:
         }
     """, {"key": team_key})
 
-    teams = (resp.get("data") or {}).get("teams", {}).get("nodes", [])
-    if not teams:
+    try:
+        team = resp["data"]["teams"]["nodes"][0]
+    except (KeyError, IndexError):
         print(f"ERROR: could not find a Linear team with key '{team_key}'")
         sys.exit(1)
-    return teams[0]
+    return team
 
 
 def resolve_assignee_id(api_key: str, team_key: str) -> str | None:
@@ -79,14 +80,15 @@ def resolve_assignee_id(api_key: str, team_key: str) -> str | None:
         }
     """, {"key": team_key})
 
-    teams = (resp.get("data") or {}).get("teams", {}).get("nodes", [])
-    if not teams:
+    try:
+        team = resp["data"]["teams"]["nodes"][0]
+    except (KeyError, IndexError):
         print(f"WARNING: could not find a Linear team with key '{team_key}'")
         return None
 
-    pool = [u for u in teams[0]["members"]["nodes"] if u["isAssignable"]]
+    pool = [u for u in team["members"]["nodes"] if u["isAssignable"]]
     if not pool:
-        print(f"WARNING: team '{teams[0]['name']}' has no assignable members")
+        print(f"WARNING: team '{team['name']}' has no assignable members")
         return None
 
     chosen = random.choice(pool)
