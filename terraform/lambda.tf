@@ -157,3 +157,29 @@ module "import_response_annotations_lambda" {
     EXECUTION_CONTEXT = "lambda"
   }
 }
+
+module "slack_notifier_lambda_alarm" {
+  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
+  source          = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/lambda-alarms?ref=v1.3.0-lambda-alarms"
+  name            = "${local.name}-slack-notifier"
+  lambda_function = module.slack_notifier_lambda.function_name
+  sns_topic_arn   = [module.sns_topic.sns_topic_arn]
+}
+
+module "import_candidate_themes_lambda_alarm" {
+  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
+  source                = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/lambda-alarms?ref=v1.3.0-lambda-alarms"
+  name                  = "${local.name}-import-candidate-themes"
+  lambda_function       = module.import_candidate_themes_lambda.function_name
+  sns_topic_arn         = [module.sns_topic.sns_topic_arn]
+  duration_threshold_ms = 480000 # 80% of the 600s timeout
+}
+
+module "import_response_annotations_lambda_alarm" {
+  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
+  source                = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/lambda-alarms?ref=v1.3.0-lambda-alarms"
+  name                  = "${local.name}-import-response-annotations"
+  lambda_function       = module.import_response_annotations_lambda.function_name
+  sns_topic_arn         = [module.sns_topic.sns_topic_arn]
+  duration_threshold_ms = 480000 # 80% of the 600s timeout
+}

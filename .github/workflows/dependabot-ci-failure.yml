@@ -1,0 +1,88 @@
+name: Dependabot CI failure
+
+on:
+  workflow_run:
+    workflows: ["Required checks"]
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  notify-ci-failure:
+    runs-on: ubuntu-latest
+    # Only fire when CI failed/cancelled on a Dependabot PR
+    if: |
+      github.event.workflow_run.conclusion != 'success' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]'
+    steps:
+      - name: Resolve PR from workflow run
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+          GQL_QUERY: |
+            query($owner:String!, $repo:String!, $sha:String!) {
+              repository(owner:$owner, name:$repo) {
+                commit: object(expression:$sha) {
+                  ... on Commit {
+                    associatedPullRequests(first:1) {
+                      nodes { number url title }
+                    }
+                  }
+                }
+              }
+            }
+        run: |
+          pr_data=$(gh api graphql \
+            -f query="$GQL_QUERY" \
+            -f owner="${REPO%%/*}" \
+            -f repo="${REPO##*/}" \
+            -f sha="$HEAD_SHA" \
+            --jq '.data.repository.commit.associatedPullRequests.nodes[0]')
+
+          echo "number=$(echo "$pr_data" | jq -r '.number')" >> "$GITHUB_OUTPUT"
+          echo "url=$(echo "$pr_data"    | jq -r '.url')"    >> "$GITHUB_OUTPUT"
+          echo "title=$(echo "$pr_data"  | jq -r '.title')"  >> "$GITHUB_OUTPUT"
+
+          assignee=$(gh pr view "$(echo "$pr_data" | jq -r '.number')" \
+            --repo "$REPO" --json assignees --jq '.assignees[0].login // ""')
+          echo "assignee=$assignee" >> "$GITHUB_OUTPUT"
+
+      - name: Check existing PR labels
+        id: labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          labels=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json labels --jq '[.labels[].name] | join(",")')
+          echo "list=$labels" >> "$GITHUB_OUTPUT"
+
+          # Skip if a major bump (already has a Linear issue) or ci-failure (already notified)
+          if echo "$labels" | grep -qE "major-version-bump|ci-failure"; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout repository
+        if: steps.labels.outputs.skip == 'false'
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Label PR and create Linear issue for CI failure
+        if: steps.labels.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LINEAR_API_KEY: ${{ secrets.DEPENDABOT_LINEAR_KEY }}
+          LINEAR_TEAM_KEY: ${{ secrets.LINEAR_TEAM_KEY }}
+          DEPENDABOT_USER_MAP: ${{ secrets.DEPENDABOT_USER_MAP }}
+          GITHUB_ASSIGNEE: ${{ steps.pr.outputs.assignee }}
+          ISSUE_TYPE: ci-failure
+          PR_TITLE: ${{ steps.pr.outputs.title }}
+          PR_URL: ${{ steps.pr.outputs.url }}
+        run: |
+          gh pr edit "$PR_URL" --add-label "ci-failure"
+          python3 .github/scripts/create_linear_issue.py
