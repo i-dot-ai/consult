@@ -3,9 +3,9 @@ import type { APIContext, AstroGlobal } from "astro";
 import { getBackendUrl } from "./utils";
 
 interface FetchBackendApiReturn<T> {
-  data?: T,
-  status: number,
-  error?: string,
+  data?: T;
+  status: number;
+  error?: string;
 }
 export const fetchBackendApi = async <T>(
   astro: Readonly<AstroGlobal> | APIContext,
@@ -28,29 +28,35 @@ export const fetchBackendApi = async <T>(
 
     if (!response.ok) {
       const error = await response.json();
-      return ({
+      return {
         status: response.status,
         error: error,
-      });
+      };
     }
 
     if (response.status == 204) {
       // 204 No Content
-      return ({
+      return {
         status: 204,
         data: {} as T,
-      });
+      };
     } else {
       return {
         status: response.status,
-        data: await response.json() as T,
+        data: (await response.json()) as T,
       };
     }
-  } catch(err) {
-    return ({
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(`${error.name}: ${error.message}`);
+    } else {
+      console.error(error);
+    }
+
+    return {
       status: 500,
       error: "Fetch failed - unknown error",
-    })
+    };
   }
 };
 
