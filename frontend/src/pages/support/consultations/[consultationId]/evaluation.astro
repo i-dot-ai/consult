@@ -1,5 +1,5 @@
 ---
-import { fetchBackendApi } from "../../../../global/api";
+import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import type { AstroGlobalRuntime } from "../../../../global/types";
 
 import Layout from "../../../../layouts/Layout.astro";
@@ -10,23 +10,33 @@ import EvaluationDashboard from "../../../../components/screens/Evaluation/Evalu
 import type { ConsultationEval } from "../../../../components/screens/Evaluation/types";
 import {
   getApiConsultationEvaluationUrl,
+  getQuestionsUrl,
   getSupportConsultationDetails,
+  Routes,
 } from "../../../../global/routes";
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
 if (!consultationId) {
   return (Astro as unknown as AstroGlobalRuntime).redirect(
-    "/support/consultations",
+    Routes.SupportConsultations,
   );
 }
 
-const data = await fetchBackendApi<ConsultationEval>(
+const {
+  data: evaluationData,
+  error: evaluationError,
+  status: evaluationStatus,
+} = await fetchBackendApi<ConsultationEval>(
   Astro,
   getApiConsultationEvaluationUrl(consultationId),
 );
 
-const questionDetailBaseUrl = `/consultations/${consultationId}/questions`;
+const questionDetailBaseUrl = getQuestionsUrl(consultationId);
+
+if (evaluationError) {
+  return buildResponse(evaluationStatus);
+}
 ---
 
 <Layout>
@@ -37,12 +47,12 @@ const questionDetailBaseUrl = `/consultations/${consultationId}/questions`;
       </Link>
     </div>
 
-    <Title level={1} text={`Evaluation: ${data.title}`} />
+    <Title level={1} text={`Evaluation: ${evaluationData!.title}`} />
 
     <EvaluationDashboard
       client:load
       {consultationId}
-      initialData={data}
+      initialData={evaluationData!}
       {questionDetailBaseUrl}
     />
 
