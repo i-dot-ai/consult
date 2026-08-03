@@ -140,7 +140,11 @@ def main() -> None:
     api_key = os.environ["LINEAR_API_KEY"]
     team_key = os.environ["LINEAR_TEAM_KEY"]
     github_assignee = os.environ.get("GITHUB_ASSIGNEE", "")
-    user_map = json.loads(os.environ.get("DEPENDABOT_USER_MAP", "{}"))
+    try:
+        user_map = json.loads(os.environ.get("DEPENDABOT_USER_MAP", "{}"))
+    except json.JSONDecodeError as e:
+        print(f"ERROR: DEPENDABOT_USER_MAP is not valid JSON: {e}")
+        sys.exit(1)
     issue_type = os.environ["ISSUE_TYPE"]
     pr_title = os.environ["PR_TITLE"]
     pr_url = os.environ["PR_URL"]
