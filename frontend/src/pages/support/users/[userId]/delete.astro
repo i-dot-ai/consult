@@ -1,5 +1,5 @@
 ---
-import { fetchBackendApi } from "../../../../global/api";
+import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import type { AstroGlobalRuntime, User } from "../../../../global/types";
 
 import Layout from "../../../../layouts/Layout.astro";
@@ -15,12 +15,20 @@ if (!userId) {
 }
 
 // Fetch user data
-let user = await fetchBackendApi<User>(Astro, getApiUserDetails(userId));
+let {
+  data: userData,
+  error: userError,
+  status: userStatus,
+} = await fetchBackendApi<User>(Astro, getApiUserDetails(userId));
+
+if (userError) {
+  return buildResponse(userStatus);
+}
 ---
 
 <Layout>
   <Section>
     <Title level={1} text="Delete user" />
-    <DeleteUserForm user={user} client:load />
+    <DeleteUserForm user={userData!} client:load />
   </Section>
 </Layout>
