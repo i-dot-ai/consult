@@ -1,9 +1,5 @@
 ---
-import {
-  checkUrlStatus,
-  fetchBackendApi,
-  buildResponse,
-} from "../../../../global/api";
+import { fetchBackendApi, buildResponse } from "../../../../global/api";
 
 import type { AstroGlobalRuntime, Question } from "../../../../global/types";
 
@@ -17,25 +13,23 @@ import { getApiQuestionUrl } from "../../../../global/routes";
 const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
   .params;
 
-const urlStatus = await checkUrlStatus(
+const {
+  data: questionData,
+  error: questionError,
+  status: questionStatus,
+} = await fetchBackendApi<Question>(
   Astro,
   getApiQuestionUrl(consultationId || "", questionId || ""),
 );
-
-if (urlStatus && urlStatus >= 300) {
-  return buildResponse(urlStatus);
+if (questionError) {
+  return buildResponse(questionStatus);
 }
-
-const question: Question = await fetchBackendApi(
-  Astro,
-  getApiQuestionUrl(consultationId || "", questionId || ""),
-);
 ---
 
 <Layout>
   <Section>
     {
-      question?.theme_status === "confirmed" ? (
+      questionData?.theme_status === "confirmed" ? (
         <FinalisingThemesDetailCompleted
           client:only="svelte"
           consultationId={consultationId || ""}
