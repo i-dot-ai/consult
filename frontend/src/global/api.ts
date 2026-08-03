@@ -5,7 +5,7 @@ import { getBackendUrl } from "./utils";
 interface FetchBackendApiReturn<T> {
   data?: T;
   status: number;
-  error?: string;
+  error?: unknown;
 }
 export const fetchBackendApi = async <T>(
   astro: Readonly<AstroGlobal> | APIContext,
