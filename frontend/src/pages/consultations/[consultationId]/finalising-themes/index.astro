@@ -4,18 +4,16 @@ import Layout from "../../../../layouts/Layout.astro";
 import FinalisingThemesArchive from "../../../../components/screens/FinalisingThemesArchive/FinalisingThemesArchive.svelte";
 import Section from "../../../../components/Section/Section.svelte";
 import type { AstroGlobalRuntime } from "../../../../global/types";
-import { checkUrlStatus, buildResponse } from "../../../../global/api";
+import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import { getApiConsultationUrl } from "../../../../global/routes";
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
-const urlStatus = await checkUrlStatus(
-  Astro,
-  getApiConsultationUrl(consultationId || ""),
-);
+const { error: consultationError, status: consultationStatus } =
+  await fetchBackendApi(Astro, getApiConsultationUrl(consultationId || ""));
 
-if (urlStatus && urlStatus >= 300) {
-  return buildResponse(urlStatus);
+if (consultationError) {
+  return buildResponse(consultationStatus);
 }
 ---
 

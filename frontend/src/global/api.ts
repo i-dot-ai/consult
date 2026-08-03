@@ -73,15 +73,3 @@ export function buildResponse(statusCode: number) {
       : "Error",
   });
 }
-
-export async function checkUrlStatus(
-  astro: Readonly<AstroGlobal> | APIContext,
-  url: string,
-) {
-  try {
-    const { status } = await fetchBackendApi(astro, url);
-    return status;
-  } catch (err) {
-    return (err as { status: number }).status || 500;
-  }
-}
