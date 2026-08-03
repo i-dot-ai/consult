@@ -1,5 +1,5 @@
 ---
-import { fetchBackendApi } from "../../../../../../global/api";
+import { buildResponse, fetchBackendApi } from "../../../../../../global/api";
 import type {
   AstroGlobalRuntime,
   ConsultationResponse,
@@ -25,12 +25,28 @@ if (!consultationId || !userId) {
   );
 }
 
-let consultation = await fetchBackendApi<ConsultationResponse>(
+let {
+  data: consultationData,
+  error: consultationError,
+  status: consultationStatus,
+} = await fetchBackendApi<ConsultationResponse>(
   Astro,
   getApiConsultationUrl(consultationId),
 );
 
-let user = await fetchBackendApi<User>(Astro, getApiUserDetails(userId));
+let {
+  data: userData,
+  error: userError,
+  status: userStatus,
+} = await fetchBackendApi<User>(Astro, getApiUserDetails(userId));
+
+if (consultationError) {
+  return buildResponse(consultationStatus);
+}
+
+if (userError) {
+  return buildResponse(userStatus);
+}
 ---
 
 <Layout>
@@ -38,8 +54,8 @@ let user = await fetchBackendApi<User>(Astro, getApiUserDetails(userId));
     <Title level={1} text="Remove user from consultation" />
     <RemoveUserFromConsultationForm
       client:load
-      user={user}
-      consultation={consultation}
+      user={userData!}
+      consultation={consultationData!}
     />
   </Section>
 </Layout>
