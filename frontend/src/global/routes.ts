@@ -42,6 +42,7 @@ export enum Routes {
   Design = "/design",
   SupportDataPipeline = "/support/data-pipeline",
   SupportUsers = "/support/users",
+  SupportUsersNew = "/support/users/new",
   SupportConsultations = "/support/consultations",
   SupportEmail = "consult@cabinetoffice.gov.uk",
   SupportQueue = "/django-rq",
@@ -505,3 +506,10 @@ export const getSupportConsultationDetails = (consultationId: string) => {
 export const getApiUserConsultations = (userId: string) => {
   return urlJoin(Routes.ApiUsers, userId, "consultations/");
 };
+
+export const getSupportUserDetail = (userId: string) => {
+  return urlJoin(Routes.SupportUsers, userId);
+}
+export const getQuestionsUrl = (consultationId: string) => {
+  return urlJoin(Suffixes.Consultations, consultationId, Suffixes.Questions);
+}
