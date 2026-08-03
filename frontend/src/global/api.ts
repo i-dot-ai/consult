@@ -39,7 +39,7 @@ export const fetchBackendApi = async <T>(
       };
     }
 
-    if (response.status == 204) {
+    if (response.status === 204) {
       // 204 No Content
       return {
         status: 204,
