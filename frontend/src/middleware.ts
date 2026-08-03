@@ -79,7 +79,7 @@ export const onRequest: MiddlewareHandler = async (
     console.error(
       "Error accessing user info - ",
       `Status: ${status} - `,
-      JSON.stringify(error, null, 2),
+      typeof error === "object" ? JSON.stringify(error, null, 2) : error,
     );
   }
 
