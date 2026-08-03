@@ -1,5 +1,5 @@
 ---
-import { fetchBackendApi } from "../../../global/api";
+import { buildResponse, fetchBackendApi } from "../../../global/api";
 import type {
   AstroGlobalRuntime,
   ConsultationResponse,
@@ -24,19 +24,38 @@ if (!userId) {
   return (Astro as unknown as AstroGlobalRuntime).redirect(Routes.SupportUsers);
 }
 
-const currentUser = await fetchBackendApi<User>(Astro, Routes.ApiUser);
+const {
+  data: currentUserData,
+  error: currentUserError,
+  status: currentUserStatus,
+} = await fetchBackendApi<User>(Astro, Routes.ApiUser);
 
-const viewedUser = await fetchBackendApi<User>(
-  Astro,
-  getApiUserDetails(userId),
-);
+const {
+  data: viewedUserData,
+  error: viewedUserError,
+  status: viewedUserStatus,
+} = await fetchBackendApi<User>(Astro, getApiUserDetails(userId));
 
-const consultationsData = await fetchBackendApi<ConsultationResponse[]>(
+const {
+  data: consultationsData,
+  error: consultationsError,
+  status: consultationsStatus,
+} = await fetchBackendApi<ConsultationResponse[]>(
   Astro,
   getApiUserConsultations(userId),
 );
 
-const isOwnProfile = currentUser.id === viewedUser.id;
+if (currentUserError) {
+  return buildResponse(currentUserStatus);
+}
+if (viewedUserError) {
+  return buildResponse(viewedUserStatus);
+}
+if (consultationsError) {
+  return buildResponse(consultationsStatus);
+}
+
+const isOwnProfile = currentUserData!.id === viewedUserData!.id;
 ---
 
 <Layout>
@@ -61,7 +80,7 @@ const isOwnProfile = currentUser.id === viewedUser.id;
       <Title level={2} text="Consultations" />
 
       {
-        consultationsData.length > 0 ? (
+        consultationsData!.length > 0 ? (
           <div class="overflow-x-auto">
             <table class="w-full text-left">
               <thead class="border-b font-bold">
@@ -71,7 +90,7 @@ const isOwnProfile = currentUser.id === viewedUser.id;
                 </tr>
               </thead>
               <tbody>
-                {consultationsData.map((consultation) => (
+                {consultationsData!.map((consultation) => (
                   <tr class="border-b hover:bg-gray-50">
                     <td class="py-3 pr-4">{consultation.title}</td>
                     <td class="space-y-1 py-3">
