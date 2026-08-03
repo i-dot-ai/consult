@@ -1,5 +1,5 @@
 ---
-import { fetchBackendApi } from "../../../global/api";
+import { buildResponse, fetchBackendApi } from "../../../global/api";
 import type { Consultation } from "../../../global/types";
 
 import Layout from "../../../layouts/Layout.astro";
@@ -7,11 +7,19 @@ import Section from "../../../components/Section/Section.svelte";
 import { Routes } from "../../../global/routes";
 import ManageConsultationsArchive from "../../../components/screens/ManageConsultationsArchive/ManageConsultationsArchive.svelte";
 
-const data = await fetchBackendApi<{ results: Consultation[] }>(
+const {
+  data: consultationData,
+  error: consultationError,
+  status: consultationStatus,
+} = await fetchBackendApi<{ results: Consultation[] }>(
   Astro,
   Routes.ApiConsultations,
 );
-const consultations = data.results;
+const consultations = consultationData?.results || [];
+
+if (consultationError) {
+  return buildResponse(consultationStatus);
+}
 ---
 
 <Layout>
