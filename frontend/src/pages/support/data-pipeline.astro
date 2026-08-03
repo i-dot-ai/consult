@@ -1,5 +1,5 @@
 ---
-import { fetchBackendApi } from "../../global/api";
+import { fetchBackendApi, buildResponse } from "../../global/api";
 import Layout from "../../layouts/Layout.astro";
 import Section from "../../components/Section/Section.svelte";
 import Text from "../../components/Text/Text.svelte";
@@ -14,16 +14,32 @@ import type { ConsultationFolder } from "../../global/types";
 const bucketName = import.meta.env.AWS_BUCKET_NAME;
 
 // S3 folders without a matching consultation
-const setupFolders = await fetchBackendApi<string[]>(
+const {
+  data: setupFoldersData,
+  error: setupFoldersError,
+  status: setupFoldersStatus,
+} = await fetchBackendApi<string[]>(
   Astro,
   getApiConsultationFoldersUrl("setup"),
 );
 
 // Consultations with matching S3 folders
-const findThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
+const {
+  data: findThemesFoldersData,
+  error: findThemesFoldersError,
+  status: findThemesFoldersStatus,
+} = await fetchBackendApi<ConsultationFolder[]>(
   Astro,
   getApiConsultationFoldersUrl("find-themes"),
 );
+
+if (setupFoldersError) {
+  return buildResponse(setupFoldersStatus);
+}
+
+if (findThemesFoldersError) {
+  return buildResponse(findThemesFoldersStatus);
+}
 ---
 
 <Layout>
@@ -89,7 +105,10 @@ const findThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
           app.</Text
         >
 
-        <CreateConsultationForm client:load s3Folders={setupFolders} />
+        <CreateConsultationForm
+          client:load
+          s3Folders={setupFoldersData || []}
+        />
 
         <div class="my-8"></div>
 
@@ -126,7 +145,7 @@ const findThemesFolders = await fetchBackendApi<ConsultationFolder[]>(
       and can take up to a few hours depending on the size of the consultation.
     </Text>
 
-    <FindThemesForm client:load consultations={findThemesFolders} />
+    <FindThemesForm client:load consultations={findThemesFoldersData || []} />
 
     <div class="my-8"></div>
 
