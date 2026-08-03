@@ -509,7 +509,7 @@ export const getApiUserConsultations = (userId: string) => {
 
 export const getSupportUserDetail = (userId: string) => {
   return urlJoin(Routes.SupportUsers, userId);
-}
+};
 export const getQuestionsUrl = (consultationId: string) => {
   return urlJoin(Suffixes.Consultations, consultationId, Suffixes.Questions);
-}
+};

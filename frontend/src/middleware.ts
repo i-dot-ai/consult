@@ -44,8 +44,6 @@ export const onRequest: MiddlewareHandler = async (
     return await proxyToDjango(context, backendUrl);
   }
 
-  let userIsStaff = false;
-
   const env = getEnv().toLowerCase();
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
@@ -72,15 +70,20 @@ export const onRequest: MiddlewareHandler = async (
     return context.redirect(Routes.SignInError);
   }
 
-  try {
-    const resp = await fetchBackendApi<{ is_staff: boolean }>(
-      context,
-      Routes.ApiUser,
+  const { data, error, status } = await fetchBackendApi<{ is_staff: boolean }>(
+    context,
+    Routes.ApiUser,
+  );
+
+  if (!data) {
+    console.error(
+      "Error accessing user info - ",
+      `Status: ${status} - `,
+      JSON.stringify(error, null, 2),
     );
-    userIsStaff = Boolean(resp.is_staff);
-  } catch (e) {
-    console.error("Error accessing user info", JSON.stringify(e, null, 2));
   }
+
+  const userIsStaff = Boolean(data?.is_staff || false);
 
   for (const protectedStaffRoute of protectedStaffRoutes) {
     if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
