@@ -27,7 +27,12 @@ export const fetchBackendApi = async <T>(
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = response.headers
+        .get("content-type")
+        ?.includes("application/json")
+        ? await response.json()
+        : await response.text();
+
       return {
         status: response.status,
         error: error,
