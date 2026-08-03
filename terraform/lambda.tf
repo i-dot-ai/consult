@@ -171,7 +171,6 @@ module "import_response_annotations_lambda" {
 
 module "slack_notifier_lambda_alarm" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
-  # source        = "../../i-dot-ai-core-terraform-modules/modules/observability/lambda-alarms"
   source          = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/lambda-alarms?ref=v1.3.0-lambda-alarms"
   name            = "${local.name}-slack-notifier"
   lambda_function = module.slack_notifier_lambda.function_name
@@ -180,7 +179,6 @@ module "slack_notifier_lambda_alarm" {
 
 module "import_candidate_themes_lambda_alarm" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
-  # source        = "../../i-dot-ai-core-terraform-modules/modules/observability/lambda-alarms"
   source                = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/lambda-alarms?ref=v1.3.0-lambda-alarms"
   name                  = "${local.name}-import-candidate-themes"
   lambda_function       = module.import_candidate_themes_lambda.function_name
@@ -190,7 +188,6 @@ module "import_candidate_themes_lambda_alarm" {
 
 module "import_response_annotations_lambda_alarm" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
-  # source        = "../../i-dot-ai-core-terraform-modules/modules/observability/lambda-alarms"
   source                = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/lambda-alarms?ref=v1.3.0-lambda-alarms"
   name                  = "${local.name}-import-response-annotations"
   lambda_function       = module.import_response_annotations_lambda.function_name
