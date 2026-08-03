@@ -158,17 +158,6 @@ module "import_response_annotations_lambda" {
   }
 }
 
-# Error-rate and throttle alarms for all 3 Lambdas, routed to the Slack SNS
-# topic. If an import Lambda fails, its Batch job completes but results are
-# never imported, so we need to hear about it. Alarm names embed the function
-# name, so the Slack alert says which Lambda fired and links to its logs.
-#
-# The two import Lambdas also get a duration alarm (via duration_threshold_ms):
-# they're VPC-connected, so on Redis + cold start a run can near the 600s
-# timeout and be killed mid-import. Fire at 480s (80% of the Lambda module's
-# default 600s timeout) so slow runs surface first. The slack_notifier Lambda
-# isn't VPC-connected, so it gets no duration alarm.
-
 module "slack_notifier_lambda_alarm" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   source          = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/lambda-alarms?ref=v1.3.0-lambda-alarms"
@@ -183,7 +172,7 @@ module "import_candidate_themes_lambda_alarm" {
   name                  = "${local.name}-import-candidate-themes"
   lambda_function       = module.import_candidate_themes_lambda.function_name
   sns_topic_arn         = [module.sns_topic.sns_topic_arn]
-  duration_threshold_ms = 480000
+  duration_threshold_ms = 480000 # 80% of the 600s timeout
 }
 
 module "import_response_annotations_lambda_alarm" {
@@ -192,5 +181,5 @@ module "import_response_annotations_lambda_alarm" {
   name                  = "${local.name}-import-response-annotations"
   lambda_function       = module.import_response_annotations_lambda.function_name
   sns_topic_arn         = [module.sns_topic.sns_topic_arn]
-  duration_threshold_ms = 480000
+  duration_threshold_ms = 480000 # 80% of the 600s timeout
 }
