@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "engines": {
-    "node": "24.14.1"
+    "node": "26.6.0"
   },
   "scripts": {
     "dev": "astro dev --host",
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@melt-ui/pp": "^0.3.0",
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.3.3",
     "@testing-library/jest-dom": "^6.9.0",
     "@testing-library/svelte": "^5.4.2",
