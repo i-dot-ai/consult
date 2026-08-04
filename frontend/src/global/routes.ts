@@ -55,20 +55,25 @@ export enum Routes {
 export const getConsultationDetailUrl = (consultationId: string) => {
   return urlJoin(Routes.Consultations, consultationId);
 };
+
 export const getConsultationAnalysisUrl = (consultationId: string) => {
   return urlJoin(Routes.Consultations, consultationId, Suffixes.Analysis, "/");
 };
+
 export const getSupportConsultationDeleteUrl = (consultationId: string) => {
   return urlJoin(Routes.SupportConsultations, consultationId, Suffixes.Delete);
 };
+
 export const getSupportConsultationImportThemesUrl = (
   consultationId: string,
 ) => {
   return urlJoin(Routes.SupportConsultations, consultationId, "import-themes");
 };
+
 export const getSupportConsultationEvaluationUrl = (consultationId: string) => {
   return urlJoin(Routes.SupportConsultations, consultationId, "evaluation");
 };
+
 export const getApiImportFinalisedThemesUrl = (consultationId: string) => {
   return urlJoin(
     Routes.ApiConsultations,
@@ -77,9 +82,11 @@ export const getApiImportFinalisedThemesUrl = (consultationId: string) => {
     "/",
   );
 };
+
 export const getFinaliseThemesUrl = (consultationId: string) => {
   return urlJoin(Routes.Consultations, consultationId, Suffixes.FinaliseThemes);
 };
+
 export const getFinaliseThemesDetailUrl = (
   consultationId: string,
   questionId: string,
@@ -125,24 +132,30 @@ export const getRespondentDetailUrl = (
     respondentId,
   );
 };
+
 export const getApiConsultationUrl = (consultationId: string) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "/");
 };
+
 export const getApiConsultationEvaluationUrl = (consultationId: string) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "evaluation", "/");
 };
+
 export const getApiConsultationFoldersUrl = (
   stage: "setup" | "find-themes",
 ) => {
   const params = new URLSearchParams({ stage });
   return `${Routes.ApiConsultationFolders}?${params.toString()}`;
 };
+
 export const getApiFindThemesUrl = (consultationId: string) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "find-themes", "/");
 };
+
 export const getApiAssignThemesUrl = (consultationId: string) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "assign-themes", "/");
 };
+
 export const getApiAnswersUrl = (consultationId: string) => {
   return urlJoin(
     Routes.ApiConsultations,
@@ -151,6 +164,7 @@ export const getApiAnswersUrl = (consultationId: string) => {
     "/",
   );
 };
+
 export const getApiQuestionThemesUrl = (
   consultationId: string,
   questionId: string,
@@ -164,9 +178,11 @@ export const getApiQuestionThemesUrl = (
     "/",
   );
 };
+
 export const getApiDemographicsUrl = (consultationId: string) => {
   return urlJoin(Routes.ApiConsultations, consultationId, "demographics", "/");
 };
+
 export const getApiQuestionResponsesUrl = (
   consultationId: string,
   questionId: string,
@@ -180,6 +196,7 @@ export const getApiQuestionResponsesUrl = (
     "/",
   );
 };
+
 export const getApiQuestionsUrl = (
   consultationId: string,
   options?: { include?: string },
@@ -196,6 +213,7 @@ export const getApiQuestionsUrl = (
   }
   return base;
 };
+
 export const getApiQuestionUrl = (
   consultationId: string,
   questionId: string,
@@ -208,6 +226,7 @@ export const getApiQuestionUrl = (
     "/",
   );
 };
+
 export const getApiResponseUrl = (consultationId: string, answerId: string) => {
   return urlJoin(
     Routes.ApiConsultations,
@@ -217,6 +236,7 @@ export const getApiResponseUrl = (consultationId: string, answerId: string) => {
     "/",
   );
 };
+
 export const getApiAnswerFlagUrl = (
   consultationId: string,
   answerId: string,
@@ -230,6 +250,7 @@ export const getApiAnswerFlagUrl = (
     "/",
   );
 };
+
 export const getApiConsultationRespondentsUrl = (consultationId: string) => {
   return urlJoin(
     Routes.ApiConsultations,
@@ -238,6 +259,7 @@ export const getApiConsultationRespondentsUrl = (consultationId: string) => {
     "/",
   );
 };
+
 export const getApiConsultationRespondentUrl = (
   consultationId: string,
   respondentId: string,
@@ -250,6 +272,7 @@ export const getApiConsultationRespondentUrl = (
     "/",
   );
 };
+
 export const getQuestionsByRespondentUrl = (
   consultationId: string,
   respondentId: string,
@@ -275,6 +298,7 @@ export const getApiGetSelectedThemesUrl = (
     "/",
   );
 };
+
 export const getApiGetSelectedThemeUrl = (
   consultationId: string,
   questionId: string,
@@ -290,6 +314,7 @@ export const getApiGetSelectedThemeUrl = (
     "/",
   );
 };
+
 export const getApiDeleteSelectedThemeUrl = (
   consultationId: string,
   questionId: string,
@@ -305,6 +330,7 @@ export const getApiDeleteSelectedThemeUrl = (
     "/",
   );
 };
+
 export const getApiUpdateSelectedThemeUrl = (
   consultationId: string,
   questionId: string,
@@ -320,6 +346,7 @@ export const getApiUpdateSelectedThemeUrl = (
     "/",
   );
 };
+
 export const getApiCreateSelectedThemeUrl = (
   consultationId: string,
   questionId: string,
@@ -333,6 +360,7 @@ export const getApiCreateSelectedThemeUrl = (
     "/",
   );
 };
+
 export const getApiGetGeneratedThemesUrl = (
   consultationId: string,
   questionId: string,
@@ -346,6 +374,7 @@ export const getApiGetGeneratedThemesUrl = (
     "/",
   );
 };
+
 export const getApiSelectGeneratedThemeUrl = (
   consultationId: string,
   questionId: string,
@@ -362,6 +391,7 @@ export const getApiSelectGeneratedThemeUrl = (
     "/",
   );
 };
+
 export const getApiCandidateThemeResponsesUrl = (
   consultationId: string,
   questionId: string,
@@ -378,6 +408,7 @@ export const getApiCandidateThemeResponsesUrl = (
     "/",
   );
 };
+
 export const getApiConfirmFinalisingThemesUrl = (
   consultationId: string,
   questionId: string,
@@ -510,6 +541,7 @@ export const getApiUserConsultations = (userId: string) => {
 export const getSupportUserDetail = (userId: string) => {
   return urlJoin(Routes.SupportUsers, userId);
 };
+
 export const getQuestionsUrl = (consultationId: string) => {
   return urlJoin(Suffixes.Consultations, consultationId, Suffixes.Questions);
 };
