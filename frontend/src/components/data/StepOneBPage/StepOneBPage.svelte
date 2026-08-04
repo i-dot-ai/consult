@@ -14,11 +14,15 @@
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import { makeSnippet } from "../../../global/utils";
 
-  let checkedItems: string[] = $state(getStoredItems() || []);
+  const LEARNINGS_DISPLAYED_KEY = "dataSetupLearningsDisplayed";
 
-  export const LEARNINGS_DISPLAYED_KEY = "dataSetupLearningsDisplayed";
+  let checkedItems: string[] = $state([]);
+  let displayLearnings = $state(true);
 
-  let displayLearnings = $state(!localStorage.getItem(LEARNINGS_DISPLAYED_KEY));
+  $effect(() => {
+    checkedItems = getStoredItems();
+    displayLearnings = !localStorage.getItem(LEARNINGS_DISPLAYED_KEY);
+  });
 
   const CHECKLIST_A_ITEMS = [
     {
