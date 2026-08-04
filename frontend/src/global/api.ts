@@ -2,11 +2,10 @@ import type { APIContext, AstroGlobal } from "astro";
 
 import { getBackendUrl } from "./utils";
 
-interface FetchBackendApiReturn<T> {
-  data?: T;
-  status: number;
-  error?: unknown;
-}
+type FetchBackendApiReturn<T> =
+  | { data: T; status: number; error?: never }
+  | { data?: never; status: number; error: unknown };
+
 export const fetchBackendApi = async <T>(
   astro: Readonly<AstroGlobal> | APIContext,
   endpoint: string,
