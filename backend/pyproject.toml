@@ -69,9 +69,11 @@ extend-select = ["TID251"]
 "django_rq.job".msg = "Use rq_context.job instead, so context_id propagates into the worker"
 "django_rq.get_queue".msg = "Use an rq_context.job-decorated function's .enqueue()/.delay() instead, so context_id propagates into the worker"
 "django_rq.enqueue".msg = "Use an rq_context.job-decorated function's .enqueue()/.delay() instead, so context_id propagates into the worker"
+"sentry_sdk.capture_exception".msg = "Use sentry_context.capture_handled_sentry_exception instead, so before_send doesn't silently drop it"
 
 [tool.ruff.lint.per-file-ignores]
 "rq_context.py" = ["TID251"]
+"sentry_context.py" = ["TID251"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "settings.test"
