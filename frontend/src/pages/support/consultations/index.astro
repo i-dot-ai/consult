@@ -15,7 +15,6 @@ const {
   Astro,
   Routes.ApiConsultations,
 );
-const consultations = consultationData?.results || [];
 
 if (consultationError) {
   return buildResponse(consultationStatus);
@@ -24,6 +23,6 @@ if (consultationError) {
 
 <Layout>
   <Section>
-    <ManageConsultationsArchive client:load consultations={consultations} />
+    <ManageConsultationsArchive client:load consultations={consultationData!.results} />
   </Section>
 </Layout>
