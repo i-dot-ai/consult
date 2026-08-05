@@ -1,4 +1,4 @@
-# 1. Record architecture decisions
+# 10. Observability Improvements
 
 Date: 2026-08-05
 
