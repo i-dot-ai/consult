@@ -22,9 +22,9 @@ Key decisions to enable that:
 
 - We will increase the coverage of the current python logging package.
 - Tracing IDs will be added where possible to enable log traces throughout the application.
-- We will convert the logging pacakge to use OTeL format for logging.
+- We will convert the logging package to use OTeL format for logging.
 - We will create an NPM package to increase logging surface to include the frontend.
-- We will add relevant logging to the applications running in pipeline in batch, lamdbda and worker locations.
+- We will add relevant logging to the applications running in pipeline in batch, lambda and worker locations.
 - We will increase the infrastructure logging to include the pipeline, RDS and any other locations we wish to capture.
 
 ## Consequences
