@@ -1,4 +1,4 @@
-# 11. Minimum Self-Serve
+# 12. Minimum Self-Serve
 
 Date: 2026-08-06
 
