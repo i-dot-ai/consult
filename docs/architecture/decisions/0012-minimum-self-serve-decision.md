@@ -32,8 +32,6 @@ decided that the following will be the MVP, and we will iterate from there:
 - Ability to check and confirm question types
 - Ability to confirm the consultation
 
-
-
 ## Consequences
 
 The consequences of this work carry some risk:
