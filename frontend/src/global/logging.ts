@@ -14,7 +14,7 @@ let logger: LoggerAdapter = skipLogging;
 
 if (enabled) {
     try {
-        // @ts-ignore: Unreachable code error
+        // @ts-ignore: Cannot find module
         const observabilityUtils = await import("@i-dot-ai-npm/utilities-observability");
 
         const loggingTools = await setupLogger(observabilityUtils);
