@@ -38,7 +38,8 @@ decided that the following will be the MVP, and we will iterate from there:
 
 The consequences of this work carry some risk:
 
-- We open the floodgates to everyone and brick the system
+- Self-serve allows too many users to join at once and parts of the system - likely the pipeline - buckle under the
+load
 - We get major scope creep as more things become requirements for self-serve to work
 - Data templates that we get aren't representative of the users data
 - The pipeline gets overwhelmed
