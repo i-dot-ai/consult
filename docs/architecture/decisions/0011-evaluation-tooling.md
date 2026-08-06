@@ -21,7 +21,7 @@ confidence in the models we have access to, and unlock more features for our var
 
 ## Decision
 
-Georgia has done some excellent work researching our various options. Following documentation created
+Our evaluation engineers have done some excellent work researching our various options. Following documentation created
 and discussions had around evaluation, the outcome is:
 
 - Use langfuse as the evaluation application as we already have it, but investigate other options, e.g. Laminar, if
