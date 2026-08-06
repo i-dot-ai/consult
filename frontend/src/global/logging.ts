@@ -4,13 +4,13 @@ export interface LoggerAdapter {
     middleware: MiddlewareHandler;
 }
 
-const skipLogging: LoggerAdapter = {
+const disabledLogger: LoggerAdapter = {
     middleware: async (_, next) => next(),
 }
 
 const enabled = import.meta.env.LOGGING_ENABLED === "true";
 
-let logger: LoggerAdapter = skipLogging;
+let logger: LoggerAdapter = disabledLogger;
 
 if (enabled) {
     try {
@@ -20,6 +20,17 @@ if (enabled) {
         const loggingTools = await setupLogger(observabilityUtils);
 
         logger = loggingTools.logger;
+
+        const liveLogger: LoggerAdapter = {
+            middleware: async (_, next) => {
+                // TODO: Call logging action here once logger is implemented
+                // Ex: logger.log(...);
+
+                return next();
+            },
+        }
+
+        logger = liveLogger;
     } catch(err) {
         console.warn(
             "@i-dot-ai-npm/utilities-observability could not be loaded. Logging will be disabled.",
