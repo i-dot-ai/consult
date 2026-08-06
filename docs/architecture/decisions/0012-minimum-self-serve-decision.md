@@ -23,7 +23,7 @@ would like to start off with a small MVP to get the risk stage out of the way, t
 After many discussions about self-serve, what it will entail, how to action it, what to include in the MVP - we have
 decided that the following will be the MVP, and we will iterate from there:
 
-- Permissions fill follow a 3 tier structure:
+- Permissions will follow a 3 tier structure:
   - superuser
   - consultation manager
   - consultation user
