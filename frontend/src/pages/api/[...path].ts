@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getBackendUrl } from "../../global/utils";
 
-const handler: APIRoute = async ({ params, request, cookies }) => {
+const handler: APIRoute = async ({ params, request, cookies, locals }) => {
   const backendUrl = getBackendUrl();
   const path = params.path || "";
   const url = new URL(request.url);
@@ -20,6 +20,11 @@ const handler: APIRoute = async ({ params, request, cookies }) => {
     if (key.toLowerCase() !== "host") {
       headersToSend.set(key, value);
     }
+  }
+
+  // Forward context ID set in middleware
+  if (locals.contextId) {
+    headersToSend.set("x-context-id", locals.contextId);
   }
 
   // Set auth headers
