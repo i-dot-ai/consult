@@ -223,11 +223,7 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
 }
 
 const contextMiddleware = defineMiddleware(async (context, next) => {
-  let contextId = context.request.headers.get("x-context-id");
-
-  if (!contextId) {
-    contextId = randomUUID();
-  }
+  const contextId = randomUUID();
 
   context.locals.contextId = contextId;
 
