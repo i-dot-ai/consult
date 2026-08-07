@@ -17,8 +17,8 @@
 
   let { consultationId, initialData, questionDetailBaseUrl }: Props = $props();
 
-  const availableUsers: EvalUser[] = initialData.users;
-  let data: ConsultationEval = $state(initialData);
+  const availableUsers: EvalUser[] = $derived(initialData.users);
+  let data: ConsultationEval = $state({ ...initialData });
   let selectedUserIds: string[] = $state([]);
   let isLoading = $state(false);
   let error: string | null = $state(null);
