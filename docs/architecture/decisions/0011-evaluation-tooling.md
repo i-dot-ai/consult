@@ -27,7 +27,7 @@ and discussions had around evaluation, the outcome is:
 - Use langfuse as the evaluation application as we already have it, but investigate other options, e.g. Laminar, if
 needed
 - Use pydantic-evals for LAJ (LLM-as-a-judge), with DeepEval if needed later
-- Use Langfuse for storing evaluation datasets for now, but explore other storage options, such as S3 over this period
+- Use Langfuse for storing evaluation datasets initially, but explore other storage options, such as S3 over this period
 - Use LiteLLM for the model provider
 - Use this to try to get a consensus on which model provides an equal or improved result, aiming to switch before
 October 2026
