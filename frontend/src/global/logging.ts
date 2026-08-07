@@ -23,9 +23,9 @@ if (enabled) {
     const logger_ = loggingTools.logger;
 
     const liveLogger: LoggerAdapter = {
-      middleware: async (_, next) => {
+      middleware: async ({ locals }, next) => {
         // TODO: Call logging action here once logger is implemented
-        logger_.log();
+        logger_.log(locals.contextId);
 
         return next();
       },
