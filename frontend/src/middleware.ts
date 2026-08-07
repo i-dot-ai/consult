@@ -4,6 +4,9 @@ import { fetchBackendApi } from "./global/api";
 import { LOCAL_USERS } from "./global/localUsers";
 import { getBackendUrl, getEnv } from "./global/utils";
 import { AuthReasons } from "./global/types";
+import { defineMiddleware, sequence } from "astro:middleware";
+import { randomUUID } from "node:crypto";
+import logging from "./global/logging";
 
 const getCspValue = (): string => {
   return `
@@ -20,7 +23,8 @@ const getCspValue = (): string => {
 
 class TokenExpiredError extends Error {}
 
-export const onRequest: MiddlewareHandler = async (
+
+const mainMiddleware = defineMiddleware(async (
   context: APIContext,
   next: MiddlewareNext,
 ) => {
@@ -109,7 +113,7 @@ export const onRequest: MiddlewareHandler = async (
   }
 
   return response;
-};
+});
 
 async function validateUserToken(
   backendUrl: string,
@@ -220,3 +224,30 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
     );
   }
 }
+
+const contextMiddleware = defineMiddleware(async (context, next) => {
+  let contextId = context.request.headers.get("x-context-id");
+
+  if (!contextId) {
+    contextId = randomUUID();
+  }
+
+  context.locals.contextId = contextId;
+
+  const response = await next();
+
+  response.headers.set("x-context-id", contextId);
+
+  return response;
+});
+
+export const onRequest = sequence(
+  // Adds x-context-id to each response
+  contextMiddleware,
+
+  // Adds logging
+  logging.middleware,
+
+  // Rest of the middleware
+  mainMiddleware,
+)
