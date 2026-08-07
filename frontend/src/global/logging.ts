@@ -20,12 +20,12 @@ if (enabled) {
 
     const loggingTools = await setupLogger(observabilityUtils);
 
-    logger = loggingTools.logger;
+    const logger_ = loggingTools.logger;
 
     const liveLogger: LoggerAdapter = {
       middleware: async (_, next) => {
         // TODO: Call logging action here once logger is implemented
-        // Ex: logger.log(...);
+        logger_.log();
 
         return next();
       },
