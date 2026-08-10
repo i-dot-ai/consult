@@ -1,6 +1,19 @@
 import { vi } from "vitest";
 import "@testing-library/jest-dom";
 
+import * as matchers from "vitest-axe/matchers";
+import { expect } from "vitest";
+
+expect.extend(matchers);
+
+import "vitest";
+import type { AxeMatchers } from "vitest-axe/matchers";
+
+declare module "vitest" {
+	export interface Assertion extends AxeMatchers {}
+	export interface AsymmetricMatchersContaining extends AxeMatchers {}
+}
+
 // Set required environment variables for tests
 process.env.PUBLIC_ENVIRONMENT = "local";
 process.env.BACKEND_URL = "http://localhost:8000";
