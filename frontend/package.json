@@ -38,7 +38,7 @@
     "@melt-ui/pp": "^0.3.0",
     "@playwright/test": "^1.61.1",
     "@tailwindcss/vite": "^4.3.3",
-    "@testing-library/jest-dom": "^6.9.0",
+    "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/svelte": "^5.4.2",
     "@testing-library/user-event": "^14.6.0",
     "@types/node": "^25.9.0",
