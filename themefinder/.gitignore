@@ -84,6 +84,7 @@ site/
 !package.json
 !package-lock.json
 !tsconfig.json
+!evals/data/**/*.json
 
 # Synthetic datasets (generated locally, not committed)
 # Keep gambling_XS as reference dataset
