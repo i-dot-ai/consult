@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
 import ErrorScreen from "./ErrorScreen.svelte";
+import { axe } from "vitest-axe";
 
 describe("ErrorScreen", () => {
   it("should display heading and text for status 404", async () => {
@@ -32,5 +33,13 @@ describe("ErrorScreen", () => {
   it("matches snapshot 500", () => {
     const { container } = render(ErrorScreen, { status: 500 });
     expect(container).toMatchSnapshot();
+  });
+
+  it("should have no axe violations", async () => {
+    const { container } = render(ErrorScreen);
+
+    expect(
+      await axe(container.outerHTML)
+    ).toHaveNoViolations();
   });
 });

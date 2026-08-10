@@ -30,7 +30,7 @@
   {/if}
 {/snippet}
 
-<div class="mt-16">
+<main class="mt-16">
   <div class="my-8 flex items-center justify-center">
     <MaterialIcon size="5rem" color="fill-neutral-500">
       {@render icon()}
@@ -47,4 +47,4 @@
       {BODIES[status]}
     </span>
   </Text>
-</div>
+</main>

@@ -2,7 +2,7 @@
 
 exports[`ErrorScreen > matches snapshot 404 1`] = `
 <div>
-  <div
+  <main
     class="mt-16"
   >
     <div
@@ -58,14 +58,14 @@ exports[`ErrorScreen > matches snapshot 404 1`] = `
       <!---->
     </p>
     <!---->
-  </div>
+  </main>
   
 </div>
 `;
 
 exports[`ErrorScreen > matches snapshot 500 1`] = `
 <div>
-  <div
+  <main
     class="mt-16"
   >
     <div
@@ -121,7 +121,7 @@ exports[`ErrorScreen > matches snapshot 500 1`] = `
       <!---->
     </p>
     <!---->
-  </div>
+  </main>
   
 </div>
 `;
