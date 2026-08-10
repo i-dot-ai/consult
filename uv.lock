@@ -1051,7 +1051,7 @@ wheels = [
 
 [[package]]
 name = "langfuse"
-version = "4.12.0"
+version = "4.9.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "backoff" },
@@ -1063,9 +1063,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "wrapt" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c9/ba/3a969cad28bcef7f42e0fd052df4cf54004268a3a405108e3e2e03055678/langfuse-4.12.0.tar.gz", hash = "sha256:af4c12ae61f69726e0ac73d14a4ada1a119013d5558598828d382f2a238d7314", size = 348143, upload-time = "2026-06-25T11:57:12.269Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0e/9a/c2e4b5c33a225a0158de0e774396823612a6c5beea21cde42e95b196c398/langfuse-4.9.1.tar.gz", hash = "sha256:e3d7162a8004f71abd6ad90fba2f3a7d0088cbdce1c77deea521837d49580ab4", size = 339957, upload-time = "2026-06-19T09:30:49.841Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/f3/da8f6972566cfb9eb701a0d6a48668ab3e5ba6ae4ffeabb85e24a10e02ac/langfuse-4.12.0-py3-none-any.whl", hash = "sha256:55f6231d1e64dc6e9debe776cb3f06eb93ca7afb51322ce54571fa7493ac05c9", size = 609201, upload-time = "2026-06-25T11:57:10.497Z" },
+    { url = "https://files.pythonhosted.org/packages/15/9e/2b21989730ebb613118a667e59f652aebb5a1ca07de10984bf28a02a888f/langfuse-4.9.1-py3-none-any.whl", hash = "sha256:3feb00679aff2ff45b0e786574c748d7c40d23768452e17e3a02e8706b7cbce3", size = 599839, upload-time = "2026-06-19T09:30:48.4Z" },
 ]
 
 [[package]]
@@ -2512,7 +2512,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.29" },
     { name = "coverage", marker = "extra == 'dev'", specifier = ">=7.6.10" },
     { name = "cryptography", specifier = ">=46.0.7" },
-    { name = "langfuse", specifier = ">=3.12.1" },
+    { name = "langfuse", specifier = ">=3.12.1,<4.10.0" },
     { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.6.1" },
     { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.5.50" },
     { name = "mkdocstrings", extras = ["python"], marker = "extra == 'docs'", specifier = ">=0.27.0" },
