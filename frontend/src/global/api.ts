@@ -22,6 +22,7 @@ export const fetchBackendApi = async <T>(
         contentType: "application/json",
         Authorization: `Bearer ${accessToken}`,
         cookie: astro.request.headers.get("cookie") || "",
+        "x-context-id": astro.locals.contextId,
       },
     });
 
