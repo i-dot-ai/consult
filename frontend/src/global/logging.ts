@@ -44,7 +44,7 @@ if (enabled) {
 // @ts-expect-error: Parameter implicitly has an 'any' type
 async function setupLogger(observabilityUtils) {
   const { configureOtel, createLogger, getMeter } = observabilityUtils;
-  const SERVICE_NAME = "consult-service";
+  const SERVICE_NAME = "consult-frontend-service";
 
   await configureOtel({
     serviceName: SERVICE_NAME,
