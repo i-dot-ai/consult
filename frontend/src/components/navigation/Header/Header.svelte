@@ -16,6 +16,14 @@
 
   import type { Props } from "./types";
 
+  interface NavButtonOptions {
+    label?: string;
+    url?: string;
+    external?: boolean;
+    tabindex?: number;
+    centered?: boolean;
+  }
+
   const {
     title = "Incubator for AI",
     subtitle = "",
@@ -56,19 +64,19 @@
   }
 </script>
 
-{#snippet navButton(
-  label: string,
-  url?: string,
-  external?: boolean,
-  tabindex?: number,
-  centered?: boolean,
-)}
+{#snippet navButton({
+  label,
+  url,
+  external,
+  tabindex,
+  centered,
+}: NavButtonOptions = {})}
   <div class="hover:text-primary">
     <Button
       variant="ghost"
       fullWidth={true}
       size="sm"
-      href={url}
+      href={url || ""}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
       {tabindex}
@@ -87,7 +95,7 @@
           centered && "justify-center",
         ])}
       >
-        {label}
+        {label || ""}
         {#if external}
           <MaterialIcon size="0.8rem" color="fill-current">
             <OpenInNew />
@@ -216,24 +224,23 @@
               >
                 {#each navItem.children as subItem, i (i)}
                   <li>
-                    {@render navButton(
-                      subItem.label,
-                      subItem.url,
-                      subItem.external,
-                      activeSubmenu === id ? 0 : -1,
-                    )}
+                    {@render navButton({
+                      label: subItem.label,
+                      url: subItem.url,
+                      external: subItem.external,
+                      tabindex: activeSubmenu === id ? 0 : -1,
+                    })}
                   </li>
                 {/each}
               </ol>
             {/if}
           {:else}
-            {@render navButton(
-              navItem.label,
-              navItem.url,
-              navItem.external,
-              undefined,
-              true,
-            )}
+            {@render navButton({
+              label: navItem.label,
+              url: navItem.url,
+              external: navItem.external,
+              centered: true,
+            })}
           {/if}
 
           {#if isMobile}
