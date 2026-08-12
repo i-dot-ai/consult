@@ -6,7 +6,7 @@ exports[`Header > matches snapshot 1`] = `
     class="w-full"
   >
     <div
-      class="flex justify-between border-b border-primary p-2"
+      class="flex border-b border-primary p-2 flex-wrap justify-around gap-y-4 md:justify-between"
     >
       <div
         class="flex items-center gap-2"
@@ -96,7 +96,9 @@ exports[`Header > matches snapshot 1`] = `
         />
         <!---->
          
-        <p>
+        <p
+          class="flex flex-wrap"
+        >
           <span
             class="text-sm text-neutral-800"
           >
@@ -104,7 +106,7 @@ exports[`Header > matches snapshot 1`] = `
           </span>
            
           <span
-            class="mr-1 text-xs text-neutral-500 whitespace-nowrap"
+            class="mr-1 text-xs text-neutral-500"
           >
             / Dashboard
           </span>
@@ -163,7 +165,7 @@ exports[`Header > matches snapshot 1`] = `
                   <!---->
                   <!---->
                   <span
-                    class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1"
+                    class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1 justify-center"
                   >
                     Home 
                     <!---->
