@@ -58,20 +58,22 @@
     },
 
     // only show if user is staff
-    ...(isStaff ? [
-      {
-        label: "Manage",
-        children: [
+    ...(isStaff
+      ? [
           {
-            label: "Manage Consultations",
-            url: Routes.SupportConsultations,
+            label: "Manage",
+            children: [
+              {
+                label: "Manage Consultations",
+                url: Routes.SupportConsultations,
+              },
+              { label: "Manage Users", url: Routes.SupportUsers },
+              { label: "Data Pipeline", url: Routes.SupportDataPipeline },
+              { label: "Langfuse", url: langfuseUrl, external: true },
+            ],
           },
-          { label: "Manage Users", url: Routes.SupportUsers },
-          { label: "Data Pipeline", url: Routes.SupportDataPipeline },
-          { label: "Langfuse", url: langfuseUrl, external: true },
-        ],
-      },
-    ] : []),
+        ]
+      : []),
   ]}
 >
   {#snippet endItems()}
