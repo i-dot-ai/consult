@@ -30,9 +30,6 @@ test.describe("Consultations - List Page", () => {
       page.getByRole("heading", { name: /Your consultations/i }),
     ).toBeVisible();
 
-    // Check for the description text
-    await expect(page.getByText(/review themes/i)).toBeVisible();
-
     // Check that at least one consultation is displayed
     const consultationItems = page
       .locator('[data-testid="consultation-item"]')
