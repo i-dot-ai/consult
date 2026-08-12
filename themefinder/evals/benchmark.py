@@ -983,11 +983,14 @@ Examples:
     if args.models:
         selected, missing, unhealthy = _select_named_models(gateway_models, args.models)
         if missing:
+            # Fail fast rather than silently running a smaller comparison than
+            # requested: a name that doesn't match is almost always a typo or
+            # a stale model reference, not something to route around.
             available = sorted(m.name for m in gateway_models)
             console.print(
                 f"[red]No matching models: {missing}. Available: {available}[/red]"
             )
-            return
+            sys.exit(1)
         for gm in unhealthy:
             console.print(
                 f"[yellow]Warning: {gm.name} is reported unhealthy by the gateway "
@@ -1003,7 +1006,7 @@ Examples:
 
     if not selected:
         console.print("[red]No models matched the given selector.[/red]")
-        return
+        sys.exit(1)
 
     models = [
         mc for gm in selected for mc in _to_model_configs(gm, args.reasoning_effort)
