@@ -174,9 +174,28 @@ async def discover_chat_models() -> list[GatewayModel]:
     filter_by_family, or an exact-name lookup) based on how they want to select.
     """
     async with _gateway_client() as client:
-        model_group_items, health_checks = await asyncio.gather(
-            fetch_model_group_info(client),
-            fetch_health_latest(client),
+        try:
+            model_group_items, health_checks = await asyncio.gather(
+                fetch_model_group_info(client),
+                fetch_health_latest(client),
+            )
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code in (401, 403):
+                raise RuntimeError(
+                    f"CONSULT_EVAL_LITELLM_API_KEY lacks access to {e.request.url.path} "
+                    f"(HTTP {e.response.status_code}). Please ensure that the allowed "
+                    "paths for this key are correctly set via the LLM gateway UI."
+                ) from e
+            raise
+
+    # A key whose model grant is a wildcard (e.g. "all-team-models") can get
+    # this route back unexpanded - a single "*" row instead of individual
+    # models - rather than a real list to discover from.
+    if any(item.get("model_group") == "*" for item in model_group_items):
+        raise RuntimeError(
+            "/model_group/info returned an unexpanded '*' entry instead of "
+            "individual model names - this requires checking the settings "
+            "in the model gateway."
         )
 
     chat_models = filter_chat_models(model_group_items)
