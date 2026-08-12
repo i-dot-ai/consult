@@ -1,9 +1,9 @@
 """Interactive CLI for synthetic consultation dataset generation."""
 
-import os
 from pathlib import Path
 
 import openai
+import utils_gateway
 from rich.box import DOUBLE, HEAVY, ROUNDED
 from rich.console import Console
 from rich.panel import Panel
@@ -198,10 +198,10 @@ async def run_interactive_cli() -> GenerationConfig:
     console.clear()
     console.print(BANNER)
 
-    client = openai.AsyncAzureOpenAI(
-        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-        api_version=os.getenv("OPENAI_API_VERSION", "2024-12-01-preview"),
+    base_url, api_key = utils_gateway.gateway_credentials()
+    client = openai.AsyncOpenAI(
+        base_url=base_url,
+        api_key=api_key,
         timeout=600,
     )
 
@@ -352,7 +352,7 @@ async def run_interactive_cli() -> GenerationConfig:
 
 
 async def _question_approval_workflow(
-    client: openai.AsyncAzureOpenAI,
+    client: openai.AsyncOpenAI,
     topic: str,
     n_questions: int,
 ) -> list[QuestionConfig]:
@@ -414,7 +414,7 @@ async def _question_approval_workflow(
 
 
 async def _context_field_workflow(
-    client: openai.AsyncAzureOpenAI,
+    client: openai.AsyncOpenAI,
     topic: str,
     questions: list[QuestionConfig],
 ) -> list[DemographicField]:
@@ -533,7 +533,7 @@ def _display_context_fields(fields: list[DemographicField]) -> None:
 
 
 async def _review_single_question(
-    client: openai.AsyncAzureOpenAI,
+    client: openai.AsyncOpenAI,
     gen_q: GeneratedQuestion,
     topic: str,
     question_num: int,
