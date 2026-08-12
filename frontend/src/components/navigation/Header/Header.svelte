@@ -310,7 +310,7 @@
       </p>
     </div>
 
-    <div class="ml-4 flex items-center">
+    <div class="ml-4 flex items-center md:ml-auto">
       <!-- Mobile menu button -->
       <button
         class={clsx([
