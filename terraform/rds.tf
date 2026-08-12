@@ -1,3 +1,8 @@
+locals {
+  rds_freeable_memory_low_bytes = 858993459 # ~10% of Aurora Serverless v2 min_capacity floor (4 ACU = 8 GiB).
+  rds_connections_high_count    = 720       # ~80% of Postgres default max_connections at 8 GiB (~900).
+}
+
 module "rds" {
   # source                                = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/rds"
   source                                = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/rds?ref=v4.4.0-rds"
@@ -40,13 +45,11 @@ module "rds_alarms" {
   }
 
   alarms_config = {
-    # ~10% of Aurora Serverless v2 min_capacity floor (4 ACU = 8 GiB).
     freeable_memory_low = {
-      threshold = 858993459
+      threshold = local.rds_freeable_memory_low_bytes
     }
-    # ~80% of Postgres default max_connections at 8 GiB (~900).
     database_connections_high = {
-      threshold = 720
+      threshold = local.rds_connections_high_count
     }
   }
 }
