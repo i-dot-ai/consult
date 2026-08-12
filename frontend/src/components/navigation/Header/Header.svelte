@@ -227,7 +227,13 @@
               </ol>
             {/if}
           {:else}
-            {@render navButton(navItem.label, navItem.url, navItem.external, undefined, true)}
+            {@render navButton(
+              navItem.label,
+              navItem.url,
+              navItem.external,
+              undefined,
+              true,
+            )}
           {/if}
 
           {#if isMobile}
@@ -286,13 +292,7 @@
 
         <!-- Breadcrumb parts -->
         {#each pathParts as pathPart, i (i)}
-          <span
-            class={clsx([
-              "mr-1",
-              "text-xs",
-              "text-neutral-500",
-            ])}
-          >
+          <span class={clsx(["mr-1", "text-xs", "text-neutral-500"])}>
             <!--
               Only add slash to first item if subtitle is passed to
               avoid having the vertical divider and slash side by side
