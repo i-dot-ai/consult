@@ -61,6 +61,7 @@
   url?: string,
   external?: boolean,
   tabindex?: number,
+  centered?: boolean,
 )}
   <div class="hover:text-primary">
     <Button
@@ -83,6 +84,7 @@
           "flex",
           "items-center",
           "gap-1",
+          centered && "justify-center",
         ])}
       >
         {label}
@@ -225,7 +227,7 @@
               </ol>
             {/if}
           {:else}
-            {@render navButton(navItem.label, navItem.url, navItem.external)}
+            {@render navButton(navItem.label, navItem.url, navItem.external, undefined, true)}
           {/if}
 
           {#if isMobile}
