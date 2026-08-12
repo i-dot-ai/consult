@@ -243,10 +243,13 @@
   <div
     class={clsx([
       "flex",
-      "justify-between",
       "border-b",
       "border-primary",
       "p-2",
+      "flex-wrap",
+      "justify-around",
+      "gap-y-4",
+      "md:justify-between",
     ])}
   >
     <div class={clsx(["flex", "items-center", "gap-2"])}>
@@ -276,7 +279,7 @@
         ></div>
       {/if}
 
-      <p>
+      <p class="flex flex-wrap">
         <span class="text-sm text-neutral-800">
           {subtitle}
         </span>
@@ -288,7 +291,6 @@
               "mr-1",
               "text-xs",
               "text-neutral-500",
-              "whitespace-nowrap",
             ])}
           >
             <!--
