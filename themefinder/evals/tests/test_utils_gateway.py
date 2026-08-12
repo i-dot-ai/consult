@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
+import httpx
 import pytest
 
 import utils_gateway
@@ -74,6 +75,15 @@ class TestLatestHealthByModel:
         )
         assert utils_gateway.latest_health_by_model(checks, now=self.NOW) == {
             "gpt-4o": "unhealthy"
+        }
+
+    def test_malformed_record_skipped(self):
+        checks = {
+            "bad": {"model_name": "gpt-4o"},  # missing checked_at and status
+            **dict([_health("claude-haiku", "healthy", hours_ago=1, now=self.NOW)]),
+        }
+        assert utils_gateway.latest_health_by_model(checks, now=self.NOW) == {
+            "claude-haiku": "healthy"
         }
 
 
@@ -209,3 +219,88 @@ class TestDiscoverChatModels:
         assert by_name["mystery-model"].family is None
         assert by_name["gemini-flash"].supports_reasoning is True
         assert by_name["gpt-4o"].supports_reasoning is False
+
+    async def test_missing_supports_reasoning_defaults_false(self, monkeypatch):
+        model_group_items = [{"model_group": "gpt-4o", "mode": "chat"}]
+
+        async def fake_model_group_info(client):
+            return model_group_items
+
+        async def fake_health_latest(client):
+            return {}
+
+        monkeypatch.setattr(
+            utils_gateway, "fetch_model_group_info", fake_model_group_info
+        )
+        monkeypatch.setattr(utils_gateway, "fetch_health_latest", fake_health_latest)
+        monkeypatch.setenv("LLM_GATEWAY_URL", "https://gateway.example.invalid")
+        monkeypatch.setenv("CONSULT_EVAL_LITELLM_API_KEY", "test-key")
+
+        result = await utils_gateway.discover_chat_models()
+
+        assert result[0].supports_reasoning is False
+
+    async def test_raises_runtime_error_on_401(self, monkeypatch):
+        request = httpx.Request("GET", "https://gateway.example.invalid/health/latest")
+        response = httpx.Response(401, request=request)
+
+        async def fake_model_group_info(client):
+            return []
+
+        async def fake_health_latest(client):
+            raise httpx.HTTPStatusError(
+                "401 Unauthorized", request=request, response=response
+            )
+
+        monkeypatch.setattr(
+            utils_gateway, "fetch_model_group_info", fake_model_group_info
+        )
+        monkeypatch.setattr(utils_gateway, "fetch_health_latest", fake_health_latest)
+        monkeypatch.setenv("LLM_GATEWAY_URL", "https://gateway.example.invalid")
+        monkeypatch.setenv("CONSULT_EVAL_LITELLM_API_KEY", "test-key")
+
+        with pytest.raises(RuntimeError, match="lacks access"):
+            await utils_gateway.discover_chat_models()
+
+    async def test_non_permission_error_propagates_unchanged(self, monkeypatch):
+        request = httpx.Request("GET", "https://gateway.example.invalid/health/latest")
+        response = httpx.Response(500, request=request)
+
+        async def fake_model_group_info(client):
+            return []
+
+        async def fake_health_latest(client):
+            raise httpx.HTTPStatusError(
+                "500 Internal Server Error", request=request, response=response
+            )
+
+        monkeypatch.setattr(
+            utils_gateway, "fetch_model_group_info", fake_model_group_info
+        )
+        monkeypatch.setattr(utils_gateway, "fetch_health_latest", fake_health_latest)
+        monkeypatch.setenv("LLM_GATEWAY_URL", "https://gateway.example.invalid")
+        monkeypatch.setenv("CONSULT_EVAL_LITELLM_API_KEY", "test-key")
+
+        # Not a permission error - should propagate as-is, not get converted
+        # into the "check your key permissions" RuntimeError.
+        with pytest.raises(httpx.HTTPStatusError):
+            await utils_gateway.discover_chat_models()
+
+    async def test_raises_runtime_error_on_wildcard_entry(self, monkeypatch):
+        model_group_items = [{"model_group": "*", "mode": "chat"}]
+
+        async def fake_model_group_info(client):
+            return model_group_items
+
+        async def fake_health_latest(client):
+            return {}
+
+        monkeypatch.setattr(
+            utils_gateway, "fetch_model_group_info", fake_model_group_info
+        )
+        monkeypatch.setattr(utils_gateway, "fetch_health_latest", fake_health_latest)
+        monkeypatch.setenv("LLM_GATEWAY_URL", "https://gateway.example.invalid")
+        monkeypatch.setenv("CONSULT_EVAL_LITELLM_API_KEY", "test-key")
+
+        with pytest.raises(RuntimeError, match="unexpanded"):
+            await utils_gateway.discover_chat_models()
