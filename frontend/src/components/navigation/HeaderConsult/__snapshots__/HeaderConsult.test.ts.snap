@@ -113,7 +113,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
       </div>
        
       <div
-        class="ml-4 flex items-center"
+        class="ml-4 flex items-center md:ml-auto"
       >
         <button
           class="block md:hidden p-1 rounded-sm border border-neutral-200 transition-colors hover:bg-neutral-100"
