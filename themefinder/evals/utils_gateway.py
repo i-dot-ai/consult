@@ -110,17 +110,23 @@ def latest_health_by_model(
 
     Keeps the most recent check per model name; a check older than
     `stale_after` is dropped (that row, not the model) rather than trusted
-    as current status.
+    as current status. A row missing any of the fields below is skipped the
+    same way — the model just falls back to "unknown" health rather than
+    one malformed row taking down discovery for every model.
     """
     now = now or datetime.now(timezone.utc)
     latest: dict[str, tuple[datetime, str]] = {}  # name -> (checked_at, status)
 
     for check in health_checks.values():
-        name = check["model_name"]
-        checked_at = _parse_checked_at(check["checked_at"])
+        name = check.get("model_name")
+        checked_at_raw = check.get("checked_at")
+        status = check.get("status")
+        if name is None or checked_at_raw is None or status is None:
+            continue
+        checked_at = _parse_checked_at(checked_at_raw)
         if name in latest and checked_at <= latest[name][0]:
             continue
-        latest[name] = (checked_at, check["status"])
+        latest[name] = (checked_at, status)
 
     return {
         name: status
@@ -181,7 +187,7 @@ async def discover_chat_models() -> list[GatewayModel]:
             name=item["model_group"],
             family=derive_family(item["model_group"]),
             health=health_by_name.get(item["model_group"], "unknown"),
-            supports_reasoning=item["supports_reasoning"],
+            supports_reasoning=item.get("supports_reasoning", False),
         )
         for item in chat_models
     ]
