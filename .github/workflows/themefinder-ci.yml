@@ -42,8 +42,14 @@ jobs:
 
       - name: Run tests with coverage
         working-directory: themefinder
-        run: .ci-venv/bin/coverage run -m pytest -v -s
+        run: .ci-venv/bin/coverage run -m pytest tests/ -v -s
 
       - name: Coverage report
         working-directory: themefinder
         run: .ci-venv/bin/coverage report -m --fail-under=95
+
+      # TODO: not counted towards coverage yet - fold into the gate above
+      # once evals/ is refactored and has more tests.
+      - name: Run evals unit tests
+        working-directory: themefinder
+        run: .ci-venv/bin/python -m pytest evals/tests/ -v
