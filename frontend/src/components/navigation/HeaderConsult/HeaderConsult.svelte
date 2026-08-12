@@ -49,32 +49,29 @@
   pathParts={path}
   navItems={[
     {
+      label: "My Consultations",
+      url: Routes.Consultations,
+    },
+    {
       label: "Support",
       children: [{ label: "Privacy notice", url: Routes.Privacy }],
     },
 
     // only show if user is staff
-    ...(isStaff
-      ? [
+    ...(isStaff ? [
+      {
+        label: "Manage",
+        children: [
           {
-            label: "Manage",
-            children: [
-              {
-                label: "Manage Consultations",
-                url: Routes.SupportConsultations,
-              },
-              { label: "Manage Users", url: Routes.SupportUsers },
-              { label: "Data Pipeline", url: Routes.SupportDataPipeline },
-              { label: "Langfuse", url: langfuseUrl, external: true },
-            ],
+            label: "Manage Consultations",
+            url: Routes.SupportConsultations,
           },
-        ]
-      : [
-          {
-            label: "My Consultations",
-            url: Routes.Consultations,
-          },
-        ]),
+          { label: "Manage Users", url: Routes.SupportUsers },
+          { label: "Data Pipeline", url: Routes.SupportDataPipeline },
+          { label: "Langfuse", url: langfuseUrl, external: true },
+        ],
+      },
+    ] : []),
   ]}
 >
   {#snippet endItems()}
