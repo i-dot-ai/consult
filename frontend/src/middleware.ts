@@ -182,6 +182,11 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
       headersToSend.set("X-CSRFToken", csrfCookie.value);
     }
 
+    const contextId = context.locals.contextId;
+    if (contextId) {
+      headersToSend.set("x-context-id", contextId);
+    }
+
     const response = await fetch(fullBackendUrl, {
       method: context.request.method,
       headers: headersToSend,
