@@ -10,7 +10,7 @@ describe("IntroCard", () => {
   it("should render order number text", () => {
     render(IntroCard, testData);
 
-    expect(screen.getByText(`Step ${testData.order}`)).toBeInTheDocument();
+    expect(screen.getByText(`Step ${testData.steps}`)).toBeInTheDocument();
   });
 
   it("should render title", () => {
@@ -35,6 +35,12 @@ describe("IntroCard", () => {
     render(IntroCard, { ...testData, showArrow: false });
 
     expect(screen.queryByTestId("intro-card-arrow")).not.toBeInTheDocument();
+  });
+
+  it("should render all steps as formatted text", () => {
+    render(IntroCard, { ...testData, steps: [1, 2, 3] });
+
+    expect(screen.getByText("Steps 1, 2 & 3")).toBeInTheDocument();
   });
 
   it("should render as current if isActive is true", () => {

@@ -1,16 +1,15 @@
-from typing import Dict, List, Optional
 
+from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
 
-import data_pipeline.s3 as s3
 from consultations.models import (
     Consultation,
     Question,
-    Response,
     ResponseAnnotation,
     SelectedTheme,
 )
+from data_pipeline import s3
 from data_pipeline.models import (
     AnnotationBatch,
     DetailDetectionInput,
@@ -31,9 +30,8 @@ def load_selected_themes_from_s3(
     consultation_code: str,
     question_number: int,
     timestamp: str,
-    bucket_name: Optional[str] = None,
-    s3_client=None,
-) -> List[SelectedThemeInput]:
+    bucket_name: str | None = None,
+) -> list[SelectedThemeInput]:
     """
     Load and validate selected themes for a single question from S3.
 
@@ -42,7 +40,6 @@ def load_selected_themes_from_s3(
         question_number: The question number (e.g., 1 for question_part_1)
         timestamp: The timestamp folder identifying the mapping run
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
-        s3_client: Optional boto3 S3 client (for testing)
 
     Returns:
         List of validated SelectedThemeInput objects
@@ -57,10 +54,24 @@ def load_selected_themes_from_s3(
 
     logger.info("Loading selected themes from {key}", key=key)
 
-    # Read and parse JSON file
-    theme_data = s3.read_json(
-        bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
-    )
+    try:
+        # Read and parse JSON file
+        theme_data = s3.read_json(
+            bucket_name=bucket_name_str, key=key, raise_if_missing=True
+        )
+    except (ClientError, BotoCoreError) as e:
+        logger.exception(
+            "Failed to load selected themes from S3 for consultation '{consultation_code}',"
+            " question {question_number}",
+            consultation_code=consultation_code,
+            question_number=question_number
+        )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(
+                f"Selected themes file not found for consultation '{consultation_code}', "
+                f"question {question_number}: {key}"
+            ) from e
+        raise
 
     # Validate each theme using Pydantic
     # Note: theme_data is guaranteed to be non-None because raise_if_missing=True
@@ -80,9 +91,8 @@ def load_sentiments_from_s3(
     consultation_code: str,
     question_number: int,
     timestamp: str,
-    bucket_name: Optional[str] = None,
-    s3_client=None,
-) -> List[SentimentInput]:
+    bucket_name: str | None = None,
+) -> list[SentimentInput]:
     """
     Load and validate sentiments for a single question from S3.
 
@@ -93,7 +103,6 @@ def load_sentiments_from_s3(
         question_number: The question number
         timestamp: The timestamp folder identifying the mapping run
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
-        s3_client: Optional boto3 S3 client (for testing)
 
     Returns:
         List of validated SentimentInput objects (empty if file doesn't exist)
@@ -104,10 +113,19 @@ def load_sentiments_from_s3(
 
     logger.info("Loading sentiments from {key}", key=key)
 
-    # Read JSONL file (raise_if_missing=False because sentiment is optional)
-    sentiment_data = s3.read_jsonl(
-        bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=False
-    )
+    try:
+        # Read JSONL file (raise_if_missing=False because sentiment is optional)
+        sentiment_data = s3.read_jsonl(
+            bucket_name=bucket_name_str, key=key, raise_if_missing=False
+        )
+    except (ClientError, BotoCoreError):
+        logger.exception(
+            "Failed to load sentiments from S3 for consultation '{consultation_code}',"
+            " question {question_number}",
+            consultation_code=consultation_code,
+            question_number=question_number
+        )
+        raise
 
     if not sentiment_data:
         logger.info("No sentiment file found at {key} (this is optional)", key=key)
@@ -129,9 +147,8 @@ def load_detail_detections_from_s3(
     consultation_code: str,
     question_number: int,
     timestamp: str,
-    bucket_name: Optional[str] = None,
-    s3_client=None,
-) -> List[DetailDetectionInput]:
+    bucket_name: str | None = None,
+) -> list[DetailDetectionInput]:
     """
     Load and validate detail detection data for a single question from S3.
 
@@ -140,7 +157,6 @@ def load_detail_detections_from_s3(
         question_number: The question number
         timestamp: The timestamp folder identifying the mapping run
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
-        s3_client: Optional boto3 S3 client (for testing)
 
     Returns:
         List of validated DetailDetectionInput objects
@@ -154,10 +170,24 @@ def load_detail_detections_from_s3(
 
     logger.info("Loading detail detections from {key}", key=key)
 
-    # Read JSONL file
-    detail_data = s3.read_jsonl(
-        bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
-    )
+    try:
+        # Read JSONL file
+        detail_data = s3.read_jsonl(
+            bucket_name=bucket_name_str, key=key, raise_if_missing=True
+        )
+    except (ClientError, BotoCoreError) as e:
+        logger.exception(
+            "Failed to load detail detections from S3 for consultation '{consultation_code}',"
+            " question {question_number}",
+            consultation_code=consultation_code,
+            question_number=question_number
+        )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(
+                f"Detail detections file not found for consultation '{consultation_code}', "
+                f"question {question_number}: {key}"
+            ) from e
+        raise
 
     # Validate each item using Pydantic
     validated_details = [DetailDetectionInput(**item) for item in detail_data]
@@ -175,9 +205,8 @@ def load_theme_mappings_from_s3(
     consultation_code: str,
     question_number: int,
     timestamp: str,
-    bucket_name: Optional[str] = None,
-    s3_client=None,
-) -> List[ThemeMappingInput]:
+    bucket_name: str | None = None,
+) -> list[ThemeMappingInput]:
     """
     Load and validate theme mappings for a single question from S3.
 
@@ -186,7 +215,6 @@ def load_theme_mappings_from_s3(
         question_number: The question number
         timestamp: The timestamp folder identifying the mapping run
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
-        s3_client: Optional boto3 S3 client (for testing)
 
     Returns:
         List of validated ThemeMappingInput objects
@@ -200,10 +228,24 @@ def load_theme_mappings_from_s3(
 
     logger.info("Loading theme mappings from {key}", key=key)
 
-    # Read JSONL file
-    mapping_data = s3.read_jsonl(
-        bucket_name=bucket_name_str, key=key, s3_client=s3_client, raise_if_missing=True
-    )
+    try:
+        # Read JSONL file
+        mapping_data = s3.read_jsonl(
+            bucket_name=bucket_name_str, key=key, raise_if_missing=True
+        )
+    except (ClientError, BotoCoreError) as e:
+        logger.exception(
+            "Failed to load theme mappings from S3 for consultation '{consultation_code}',"
+            " question {question_number}",
+            consultation_code=consultation_code,
+            question_number=question_number
+        )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(
+                f"Theme mappings file not found for consultation '{consultation_code}', "
+                f"question {question_number}: {key}"
+            ) from e
+        raise
 
     # Validate each mapping using Pydantic
     validated_mappings = [ThemeMappingInput(**item) for item in mapping_data]
@@ -220,9 +262,8 @@ def load_theme_mappings_from_s3(
 def load_annotation_batch(
     consultation_code: str,
     timestamp: str,
-    question_numbers: Optional[List[int]] = None,
-    bucket_name: Optional[str] = None,
-    s3_client=None,
+    question_numbers: list[int] | None = None,
+    bucket_name: str | None = None,
 ) -> AnnotationBatch:
     """
     Load all response annotations for a consultation, organized by question.
@@ -232,7 +273,6 @@ def load_annotation_batch(
         timestamp: The timestamp folder identifying the mapping run
         question_numbers: Optional list of question numbers to load (defaults to all questions in consultation)
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
-        s3_client: Optional boto3 S3 client (for testing)
 
     Returns:
         AnnotationBatch with all annotations organized by question number
@@ -258,47 +298,53 @@ def load_annotation_batch(
                 .values_list("number", flat=True)
             )
         except Consultation.DoesNotExist:
+            logger.exception(
+                "Consultation with code '{consultation_code}' does not exist. "
+                "Base consultation data must be imported before annotations.",
+                consultation_code=consultation_code
+            )
             raise ValueError(
                 f"Consultation with code '{consultation_code}' does not exist. "
                 "Base consultation data must be imported before annotations."
             )
 
     logger.info(
-        "Loading annotations for consultation '{consultation_code}' (timestamp: {timestamp}) across {question_count} questions",
+        "Loading annotations for consultation '{consultation_code}' (timestamp: {timestamp}) across "
+        "{question_count} questions",
         consultation_code=consultation_code,
         timestamp=timestamp,
         question_count=len(question_numbers),
     )
 
     # Load data for each question
-    sentiments_by_question: Dict[int, List[SentimentInput]] = {}
-    details_by_question: Dict[int, List[DetailDetectionInput]] = {}
-    mappings_by_question: Dict[int, List[ThemeMappingInput]] = {}
-    selected_themes_by_question: Dict[int, List[SelectedThemeInput]] = {}
+    sentiments_by_question: dict[int, list[SentimentInput]] = {}
+    details_by_question: dict[int, list[DetailDetectionInput]] = {}
+    mappings_by_question: dict[int, list[ThemeMappingInput]] = {}
+    selected_themes_by_question: dict[int, list[SelectedThemeInput]] = {}
 
     for question_number in question_numbers:
         # Load selected themes (required)
         themes = load_selected_themes_from_s3(
-            consultation_code, question_number, timestamp, bucket_name_str, s3_client
+            consultation_code, question_number, timestamp, bucket_name_str
         )
         selected_themes_by_question[question_number] = themes
 
         # Load sentiments (optional)
         sentiments = load_sentiments_from_s3(
-            consultation_code, question_number, timestamp, bucket_name_str, s3_client
+            consultation_code, question_number, timestamp, bucket_name_str
         )
         if sentiments:
             sentiments_by_question[question_number] = sentiments
 
         # Load detail detections (required)
         details = load_detail_detections_from_s3(
-            consultation_code, question_number, timestamp, bucket_name_str, s3_client
+            consultation_code, question_number, timestamp, bucket_name_str
         )
         details_by_question[question_number] = details
 
         # Load theme mappings (required)
         mappings = load_theme_mappings_from_s3(
-            consultation_code, question_number, timestamp, bucket_name_str, s3_client
+            consultation_code, question_number, timestamp, bucket_name_str
         )
         mappings_by_question[question_number] = mappings
 
@@ -335,8 +381,8 @@ def load_annotation_batch(
 
 
 def _build_batch_key_to_db_theme_lookup(
-    question: Question, batch_themes: List[SelectedThemeInput]
-) -> Dict[str, SelectedTheme]:
+    question: Question, batch_themes: list[SelectedThemeInput]
+) -> dict[str, SelectedTheme]:
     """
     Build a lookup from batch job theme_keys to database SelectedTheme records.
 
@@ -375,7 +421,7 @@ def _build_batch_key_to_db_theme_lookup(
     # Build lookup by name (the stable identifier across batch output and database)
     db_themes_by_name = {theme.name: theme for theme in db_themes}
 
-    # Map batch theme_key -> database SelectedTheme (joined on name)
+    # Assign batch theme_key -> database SelectedTheme (joined on name)
     batch_key_to_db_theme = {}
     missing_themes = []
     themes_to_update = []
@@ -422,10 +468,10 @@ def _build_batch_key_to_db_theme_lookup(
 
 def _import_response_annotations(
     question: Question,
-    sentiments: List[SentimentInput],
-    details: List[DetailDetectionInput],
-    mappings: List[ThemeMappingInput],
-    theme_lookup: Dict[str, SelectedTheme],
+    sentiments: list[SentimentInput],
+    details: list[DetailDetectionInput],
+    mappings: list[ThemeMappingInput],
+    theme_lookup: dict[str, SelectedTheme],
 ) -> None:
     """
     Import response annotations for a single question into database.
@@ -443,14 +489,13 @@ def _import_response_annotations(
         theme_lookup: Dictionary mapping theme_key -> SelectedTheme
     """
     # Delete existing annotations for this question (idempotent)
-    existing_count = ResponseAnnotation.objects.filter(response__question=question).count()
-    if existing_count > 0:
+    deleted_count, _ = ResponseAnnotation.objects.filter(response__question=question).delete()
+    if deleted_count > 0:
         logger.info(
-            "Deleting {existing_count} existing annotations for question {question_number}",
-            existing_count=existing_count,
+            "Deleted {deleted_count} existing annotations for question {question_number}",
+            deleted_count=deleted_count,
             question_number=question.number,
         )
-        ResponseAnnotation.objects.filter(response__question=question).delete()
 
     logger.info(
         "Importing annotations for question {question_number}", question_number=question.number
@@ -461,9 +506,12 @@ def _import_response_annotations(
     detail_lookup = {d.themefinder_id: d.as_bool for d in details}
     mapping_lookup = {m.themefinder_id: m.theme_keys for m in mappings}
 
-    # Get all responses for this question with their respondent themefinder_ids
-    responses = Response.objects.filter(question=question).select_related("respondent")
-    response_lookup = {r.respondent.themefinder_id: r for r in responses}
+    # Get all responses for this question, excluding empty/placeholder responses
+    responses = question.get_non_empty_responses().select_related("respondent")
+    # Filter out responses without themefinder_id since we can't match them to batch data
+    response_lookup = {
+        r.respondent.themefinder_id: r for r in responses if r.respondent.themefinder_id is not None
+    }
 
     # Create ResponseAnnotation objects
     annotations_to_create = []
@@ -500,22 +548,55 @@ def _import_response_annotations(
     )
 
     # Now link annotations to themes
-    # Rebuild lookup with created annotation objects
-    annotation_by_tf_id = {}
-    for annotation in created_annotations:
-        tf_id = annotation.response.respondent.themefinder_id
-        annotation_by_tf_id[tf_id] = annotation
+    # Build lookup from created annotations using the response_id to avoid N+1 queries
+    # We use response_id because it's available on the annotation object without triggering a query
+    annotation_by_response_id = {ann.response_id: ann for ann in created_annotations}  # type: ignore[attr-defined]
 
-    # Create ResponseAnnotationThemes
+    # Build reverse lookup from themefinder_id to response_id using our prefetched responses
+    response_id_by_tf_id = {
+        r.respondent.themefinder_id: r.id
+        for r in responses
+        if r.respondent.themefinder_id is not None
+    }
+
+    # Collect all ResponseAnnotationTheme records to create in bulk
+    from consultations.models import ResponseAnnotationTheme
+
+    annotation_themes_to_create = []
     themes_linked = 0
+
     for themefinder_id, theme_keys in annotation_theme_data:
-        annotation = annotation_by_tf_id[themefinder_id]
+        # Get the response_id from our prefetched lookup
+        response_id = response_id_by_tf_id.get(themefinder_id)
+        if not response_id:
+            logger.warning(
+                "No response found for themefinder_id {themefinder_id}",
+                themefinder_id=themefinder_id,
+            )
+            continue
+
+        maybe_annotation = annotation_by_response_id.get(response_id)
+        if maybe_annotation is None:
+            logger.warning(
+                "No annotation found for response_id {response_id}",
+                response_id=response_id,
+            )
+            continue
+
+        # Type narrowing for mypy - at this point we know the annotation is not None
+        ann: ResponseAnnotation = maybe_annotation
 
         # Get SelectedTheme objects for these keys
-        themes_to_link = []
         for theme_key in theme_keys:
             if theme_key in theme_lookup:
-                themes_to_link.append(theme_lookup[theme_key])
+                annotation_themes_to_create.append(
+                    ResponseAnnotationTheme(
+                        response_annotation=ann,
+                        theme=theme_lookup[theme_key],
+                        assigned_by=None,  # AI assignment
+                    )
+                )
+                themes_linked += 1
             else:
                 logger.warning(
                     "Theme key '{theme_key}' not found in selected themes for question {question_number}",
@@ -523,10 +604,12 @@ def _import_response_annotations(
                     question_number=question.number,
                 )
 
-        # Link themes to annotation (as AI-assigned themes)
-        if themes_to_link:
-            annotation.add_original_ai_themes(themes_to_link)
-            themes_linked += len(themes_to_link)
+    # Bulk create all theme assignments at once
+    if annotation_themes_to_create:
+        ResponseAnnotationTheme.objects.bulk_create(
+            annotation_themes_to_create,
+            ignore_conflicts=True,  # Handle duplicates gracefully
+        )
 
     logger.info(
         "Linked {themes_linked} theme assignments for question {question_number}",
@@ -582,7 +665,7 @@ def import_response_annotations(batch: AnnotationBatch) -> None:
     # Import data for each question
     questions_processed = 0
 
-    for question_number in batch.selected_themes_by_question.keys():
+    for question_number in batch.selected_themes_by_question:
         # Get question
         try:
             question = Question.objects.get(consultation=consultation, number=question_number)
@@ -623,7 +706,7 @@ def import_response_annotations(batch: AnnotationBatch) -> None:
 def import_response_annotations_from_s3(
     consultation_code: str,
     timestamp: str,
-    question_numbers: Optional[List[int]] = None,
+    question_numbers: list[int] | None = None,
 ) -> None:
     """
     High-level orchestration function to import response annotations from S3.

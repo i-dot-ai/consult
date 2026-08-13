@@ -1,6 +1,7 @@
 import random
 
 import factory
+from django.db.models import F
 from django.utils import timezone
 from factory import fuzzy
 from factory.django import DjangoModelFactory
@@ -50,6 +51,10 @@ class MultiChoiceAnswerFactory(DjangoModelFactory):
 
 
 class QuestionWithMultipleChoiceFactory(QuestionFactory):
+    class Meta:
+        model = models.Question
+        skip_postgeneration_save = True
+
     has_free_text = False
     has_multiple_choice = True
 
@@ -61,6 +66,10 @@ class QuestionWithMultipleChoiceFactory(QuestionFactory):
 
 
 class QuestionWithBothFactory(QuestionFactory):
+    class Meta:
+        model = models.Question
+        skip_postgeneration_save = True
+
     has_free_text = True
     has_multiple_choice = True
 
@@ -75,6 +84,7 @@ class QuestionWithBothFactory(QuestionFactory):
 class RespondentFactory(DjangoModelFactory):
     class Meta:
         model = models.Respondent
+        skip_postgeneration_save = True
 
     consultation = factory.SubFactory(ConsultationFactory)
     themefinder_id = factory.LazyAttribute(lambda o: random.randint(2, 500000000))
@@ -102,12 +112,16 @@ class RespondentFactory(DjangoModelFactory):
                 field_value=encode(v),
             )
             self.demographics.add(o)
+            DemographicOption.objects.filter(pk=o.pk).update(
+                response_count=F("response_count") + 1
+            )
         self.save()
 
 
 class ResponseFactory(DjangoModelFactory):
     class Meta:
         model = models.Response
+        skip_postgeneration_save = True
 
     respondent = factory.SubFactory(RespondentFactory)
     question = factory.SubFactory(QuestionFactory)
@@ -115,6 +129,12 @@ class ResponseFactory(DjangoModelFactory):
     embedding = factory.LazyAttribute(
         lambda o: None if not o.free_text else embed_text(o.free_text)
     )
+
+    @factory.post_generation
+    def update_response_counts(self, create, extracted, **kwargs):
+        if not create:
+            return
+        self.question.update_response_counts()
 
 
 class ResponseWithMultipleChoiceFactory(ResponseFactory):
@@ -132,6 +152,13 @@ class ResponseWithMultipleChoiceFactory(ResponseFactory):
         )
         self.chosen_options.set(chosen_options)
         self.save()
+
+    @factory.post_generation
+    def update_response_counts(self, create, extracted, **kwargs):
+        if not create:
+            return
+        MultiChoiceAnswer.update_response_counts(self.question)
+        self.question.update_response_counts()
 
 
 class ResponseWithBothFactory(ResponseFactory):
@@ -172,6 +199,7 @@ class CandidateThemeFactory(DjangoModelFactory):
 class ResponseAnnotationFactory(DjangoModelFactory):
     class Meta:
         model = models.ResponseAnnotation
+        skip_postgeneration_save = True
 
     response = factory.SubFactory(ResponseFactory)
     sentiment = fuzzy.FuzzyChoice(models.ResponseAnnotation.Sentiment.values)

@@ -122,37 +122,38 @@ class TestQuestionSerializer:
         """Test question information serializer with valid data"""
         data = {
             "question_text": "What do you think about this topic?",
-            "total_responses": 150,
             "number": 1,
         }
         serializer = QuestionSerializer(data=data)
         assert serializer.is_valid()
-        expected = {
+        assert serializer.validated_data == {
             "text": "What do you think about this topic?",
             "number": 1,
         }
-
-        assert serializer.validated_data == expected
 
     def test_missing_fields(self):
         """Test question information serializer with missing fields"""
         data = {
             "question_text": "What do you think about this topic?",
-            "total_responses": 150,
         }
         serializer = QuestionSerializer(data=data)
         assert not serializer.is_valid()
         assert "number" in serializer.errors
 
-    def test_invalid_response_count(self):
-        """Test question information serializer with invalid response count"""
+    def test_response_counts_are_read_only(self):
+        """Test that response count fields are ignored on input"""
         data = {
             "question_text": "What do you think about this topic?",
-            "total_responses": "invalid",
+            "number": 1,
+            "total_response_count": 999,
+            "free_text_response_count": 999,
+            "multi_choice_response_count": 999,
         }
         serializer = QuestionSerializer(data=data)
-        assert not serializer.is_valid()
-        assert "number" in serializer.errors
+        assert serializer.is_valid()
+        assert "total_response_count" not in serializer.validated_data
+        assert "free_text_response_count" not in serializer.validated_data
+        assert "multi_choice_response_count" not in serializer.validated_data
 
 
 class TestConsultationExportSerializer:

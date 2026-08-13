@@ -50,7 +50,7 @@
         <tbody>
           <tr class="border-b">
             <th class="py-3 pr-4 text-left font-semibold">Created at</th>
-            <td class="py-3"
+            <td class="py-3" data-testid="created-at-value"
               >{new Date($userStore.data.created_at).toLocaleDateString()}</td
             >
           </tr>
@@ -60,7 +60,7 @@
 
     {#if $userUpdateStore.error}
       <div
-        class="mb-6 rounded border border-red-200 bg-red-50 px-4 py-3 text-red-800"
+        class="mb-6 rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-red-800"
       >
         {$userUpdateStore.data?.is_staff[0] || "failed to update user"}
       </div>

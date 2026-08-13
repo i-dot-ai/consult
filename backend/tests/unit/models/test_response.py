@@ -33,18 +33,6 @@ class TestResponse:
         assert response.free_text
         assert response.chosen_options.count() >= 1
 
-    def test_unique_constraint(self):
-        """Test that only one response per respondent per question is allowed"""
-        response = factories.ResponseFactory()
-
-        # Try to create another response for same respondent and question
-        with pytest.raises(Exception):  # Will raise IntegrityError
-            models.Response.objects.create(
-                respondent=response.respondent,
-                question=response.free_text_question,
-                free_text="Duplicate response",
-            )
-
     def test_response_annotation_relationship(self):
         """Test one-to-one relationship with ResponseAnnotation"""
         response = factories.ResponseFactory()

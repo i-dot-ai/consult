@@ -12,7 +12,7 @@ describe("DeleteQuestionForm", () => {
     id: "consultation-123",
     title: "Test Consultation",
     code: "test-code",
-    stage: "theme_sign_off",
+    stage: "finalising_themes",
     users: [],
   };
 
@@ -22,7 +22,11 @@ describe("DeleteQuestionForm", () => {
     question_text: "What do you think about climate change?",
     has_free_text: true,
     has_multiple_choice: false,
-    total_responses: 50,
+    total_response_count: 50,
+    free_text_response_count: 50,
+    multi_choice_response_count: 0,
+    multiple_choice_answer: [],
+    proportion_of_audited_answers: 0,
     theme_status: "draft",
   };
 
@@ -250,10 +254,10 @@ describe("DeleteQuestionForm", () => {
     expect(() => screen.getByText("Error: 500")).toThrow();
   });
 
-  it("should render with question text even when undefined", () => {
+  it("should render with empty question text", () => {
     const questionWithoutText: Question = {
       ...mockQuestion,
-      question_text: undefined,
+      question_text: "",
     };
 
     render(DeleteQuestionForm, {

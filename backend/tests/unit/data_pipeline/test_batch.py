@@ -1,17 +1,32 @@
 from unittest.mock import Mock, patch
 
+import pytest
+import structlog
+from botocore.exceptions import ClientError
+
 from data_pipeline.batch import submit_job
 
 
 class TestSubmitBatchJob:
+    @staticmethod
+    def _configure_batch_job_settings(mock_settings, job_type: str) -> None:
+        mock_settings.SUBMIT_BATCH_JOBS = True
+        setattr(mock_settings, f"{job_type}_BATCH_JOB_NAME", f"{job_type.lower()}-job".replace("_", "-"))
+        setattr(mock_settings, f"{job_type}_BATCH_JOB_QUEUE", f"{job_type.lower()}-queue".replace("_", "-"))
+        setattr(mock_settings, f"{job_type}_BATCH_JOB_DEFINITION", f"{job_type.lower()}-def".replace("_", "-"))
+
+    @staticmethod
+    def _context_id_from_command(command: list[str]) -> str | None:
+        """Reads the value following --context-id, wherever it falls in the command list."""
+        if "--context-id" not in command:
+            return None
+        return command[command.index("--context-id") + 1]
+
     @patch("data_pipeline.batch.boto3")
     @patch("data_pipeline.batch.settings")
     def test_submit_find_themes_job(self, mock_settings, mock_boto3):
         """Test submitting a FIND_THEMES batch job"""
-        # Mock settings
-        mock_settings.FIND_THEMES_BATCH_JOB_NAME = "find-themes-job"
-        mock_settings.FIND_THEMES_BATCH_JOB_QUEUE = "find-themes-queue"
-        mock_settings.FIND_THEMES_BATCH_JOB_DEFINITION = "find-themes-def"
+        self._configure_batch_job_settings(mock_settings, "FIND_THEMES")
 
         # Mock boto3 batch client
         mock_batch_client = Mock()
@@ -19,13 +34,17 @@ class TestSubmitBatchJob:
         mock_boto3.client.return_value = mock_batch_client
 
         # Submit job
-        response = submit_job(
-            job_type="FIND_THEMES",
-            consultation_code="test-code",
-            consultation_name="Test Consultation",
-            user_id=123,
-            model_name="my-model",
-        )
+        structlog.contextvars.bind_contextvars(context_id="request-context-id")
+        try:
+            response = submit_job(
+                job_type="FIND_THEMES",
+                consultation_code="test-code",
+                consultation_name="Test Consultation",
+                user_id=123,
+                model_name="my-model",
+            )
+        finally:
+            structlog.contextvars.unbind_contextvars("context_id")
 
         # Verify batch client was called correctly
         mock_boto3.client.assert_called_once_with("batch")
@@ -42,6 +61,8 @@ class TestSubmitBatchJob:
             "FIND_THEMES",
             "--model-name",
             "my-model",
+            "--context-id",
+            "request-context-id",
         ]
         assert call_args["parameters"]["consultation_code"] == "test-code"
         assert call_args["parameters"]["consultation_name"] == "Test Consultation"
@@ -56,10 +77,7 @@ class TestSubmitBatchJob:
     @patch("data_pipeline.batch.settings")
     def test_submit_assign_themes_job(self, mock_settings, mock_boto3):
         """Test submitting an ASSIGN_THEMES batch job"""
-        # Mock settings
-        mock_settings.ASSIGN_THEMES_BATCH_JOB_NAME = "assign-themes-job"
-        mock_settings.ASSIGN_THEMES_BATCH_JOB_QUEUE = "assign-themes-queue"
-        mock_settings.ASSIGN_THEMES_BATCH_JOB_DEFINITION = "assign-themes-def"
+        self._configure_batch_job_settings(mock_settings, "ASSIGN_THEMES")
 
         # Mock boto3 batch client
         mock_batch_client = Mock()
@@ -67,13 +85,17 @@ class TestSubmitBatchJob:
         mock_boto3.client.return_value = mock_batch_client
 
         # Submit job
-        response = submit_job(
-            job_type="ASSIGN_THEMES",
-            consultation_code="test-code-2",
-            consultation_name="Test Consultation 2",
-            user_id=456,
-            model_name="my-model",
-        )
+        structlog.contextvars.bind_contextvars(context_id="request-context-id-2")
+        try:
+            response = submit_job(
+                job_type="ASSIGN_THEMES",
+                consultation_code="test-code-2",
+                consultation_name="Test Consultation 2",
+                user_id=456,
+                model_name="my-model",
+            )
+        finally:
+            structlog.contextvars.unbind_contextvars("context_id")
 
         # Verify batch client was called correctly
         call_args = mock_batch_client.submit_job.call_args.kwargs
@@ -87,8 +109,144 @@ class TestSubmitBatchJob:
             "ASSIGN_THEMES",
             "--model-name",
             "my-model",
+            "--context-id",
+            "request-context-id-2",
         ]
         assert call_args["parameters"]["job_type"] == "ASSIGN_THEMES"
+        assert call_args["parameters"]["context_id"] == "request-context-id-2"
 
         # Verify response
         assert response["jobId"] == "test-job-id-456"
+
+    def _submit_find_themes_job(self, mock_settings, mock_boto3, **submit_job_kwargs):
+        """Configures FIND_THEMES settings/boto3, calls submit_job with the given kwargs
+        (over sensible defaults), and returns boto3's submit_job call kwargs."""
+        self._configure_batch_job_settings(mock_settings, "FIND_THEMES")
+
+        mock_batch_client = Mock()
+        mock_batch_client.submit_job.return_value = {"jobId": "test-job-id"}
+        mock_boto3.client.return_value = mock_batch_client
+
+        kwargs = {
+            "job_type": "FIND_THEMES",
+            "consultation_code": "test-code",
+            "consultation_name": "Test Consultation",
+            "user_id": 123,
+            "model_name": "my-model",
+            **submit_job_kwargs,
+        }
+        submit_job(**kwargs)
+
+        return mock_batch_client.submit_job.call_args.kwargs
+
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_job_propagates_context_id(self, mock_settings, mock_boto3):
+        """The caller's context_id is appended as --context-id so pipeline logs can be joined"""
+        structlog.contextvars.bind_contextvars(context_id="request-context-abc")
+        try:
+            call_args = self._submit_find_themes_job(mock_settings, mock_boto3)
+        finally:
+            structlog.contextvars.unbind_contextvars("context_id")
+
+        assert self._context_id_from_command(call_args["containerOverrides"]["command"]) == "request-context-abc"
+        assert call_args["parameters"]["context_id"] == "request-context-abc"
+
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_job_explicit_context_id_overrides_ambient(self, mock_settings, mock_boto3):
+        """An explicit context_id wins over whatever's ambiently bound, in both the command and parameters"""
+        structlog.contextvars.bind_contextvars(context_id="ambient-id")
+        try:
+            call_args = self._submit_find_themes_job(mock_settings, mock_boto3, context_id="explicit-id")
+        finally:
+            structlog.contextvars.unbind_contextvars("context_id")
+
+        assert self._context_id_from_command(call_args["containerOverrides"]["command"]) == "explicit-id"
+        assert call_args["parameters"]["context_id"] == "explicit-id"
+
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_job_mints_context_id_when_absent(self, mock_settings, mock_boto3):
+        """When nothing is bound and nothing explicit is passed, submit_job still mints a
+        real context_id rather than sending an empty one, and command/parameters agree."""
+        call_args = self._submit_find_themes_job(mock_settings, mock_boto3)
+
+        minted = self._context_id_from_command(call_args["containerOverrides"]["command"])
+        assert minted
+        assert call_args["parameters"]["context_id"] == minted
+
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_job_stubbed_when_batch_disabled(self, mock_settings, mock_boto3):
+        """When SUBMIT_BATCH_JOBS is disabled, return a stub and never call AWS Batch"""
+        mock_settings.SUBMIT_BATCH_JOBS = False
+
+        response = submit_job(
+            job_type="ASSIGN_THEMES",
+            consultation_code="test-code-3",
+            consultation_name="Test Consultation 3",
+            user_id=789,
+            model_name="my-model",
+        )
+
+        # No real AWS Batch client is created or called
+        mock_boto3.client.assert_not_called()
+
+        # A stub response with a jobId is returned so callers keep working
+        assert "jobId" in response
+        assert "test-code-3" in response["jobId"]
+
+    @patch("data_pipeline.batch.logger")
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_job_reraises_boto_errors(self, mock_settings, mock_boto3, mock_logger):
+        """Boto-specific errors are logged via the ClientError/BotoCoreError branch and re-raised unchanged"""
+        self._configure_batch_job_settings(mock_settings, "FIND_THEMES")
+
+        mock_batch_client = Mock()
+        mock_batch_client.submit_job.side_effect = ClientError(
+            {"Error": {"Code": "AccessDenied", "Message": "AccessDenied"}}, "SubmitJob"
+        )
+        mock_boto3.client.return_value = mock_batch_client
+
+        with pytest.raises(ClientError):
+            submit_job(
+                job_type="FIND_THEMES",
+                consultation_code="test-code",
+                consultation_name="Test Consultation",
+                user_id=123,
+                model_name="my-model",
+            )
+
+        mock_logger.exception.assert_called_once()
+        message, kwargs = mock_logger.exception.call_args[0][0], mock_logger.exception.call_args[1]
+        assert "Failed to submit" in message
+        assert kwargs["job_type"] == "FIND_THEMES"
+        assert kwargs["consultation_code"] == "test-code"
+
+    @patch("data_pipeline.batch.logger")
+    @patch("data_pipeline.batch.boto3")
+    @patch("data_pipeline.batch.settings")
+    def test_submit_job_reraises_unexpected_errors(self, mock_settings, mock_boto3, mock_logger):
+        """Non-boto errors hit the separate catch-all branch, are logged, and re-raised, not swallowed"""
+        self._configure_batch_job_settings(mock_settings, "FIND_THEMES")
+
+        mock_batch_client = Mock()
+        mock_batch_client.submit_job.side_effect = ValueError("unexpected failure")
+        mock_boto3.client.return_value = mock_batch_client
+
+        with pytest.raises(ValueError, match="unexpected failure"):
+            submit_job(
+                job_type="FIND_THEMES",
+                consultation_code="test-code",
+                consultation_name="Test Consultation",
+                user_id=123,
+                model_name="my-model",
+            )
+
+        mock_logger.exception.assert_called_once()
+        message, kwargs = mock_logger.exception.call_args[0][0], mock_logger.exception.call_args[1]
+        assert "Unexpected error submitting" in message
+        assert kwargs["job_type"] == "FIND_THEMES"
+        assert kwargs["consultation_code"] == "test-code"

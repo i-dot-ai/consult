@@ -3,7 +3,7 @@
 
   import {
     getConsultationDetailUrl,
-    getThemeSignOffUrl,
+    getFinaliseThemesUrl,
     Routes,
   } from "../../../global/routes";
 
@@ -21,8 +21,8 @@
   const STAGES = [
     "data_setup",
     "theme_find",
-    "theme_sign_off",
-    "theme_mapping",
+    "finalising_themes",
+    "assigning_themes",
     "quality_check",
     "analysis",
   ];
@@ -50,7 +50,7 @@
     },
     {
       text: "Finalise themes",
-      url: getThemeSignOffUrl(consultationId),
+      url: getFinaliseThemesUrl(consultationId),
     },
     {
       text: "Assign themes (AI)",
@@ -102,7 +102,7 @@
                   ? "past-stage"
                   : "current-stage"}
               class={clsx([
-                "flex h-8 w-8 items-center justify-center rounded-full ring",
+                "flex h-8 w-8 items-center justify-center rounded-full ring-3",
                 // future stages
                 i > currStage && "bg-pink-300 ring-pink-100",
                 // past stages

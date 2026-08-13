@@ -14,36 +14,40 @@
   export interface Props {
     title: string;
     subtitle: string;
-    icon?: Component;
+    Icon?: Component;
     editable?: boolean;
     updateSubtitle?: (newSubtitle: string) => void;
+    testId?: string;
   }
 
   let {
     title = "",
     subtitle = "",
-    icon,
+    Icon,
     editable = false,
     updateSubtitle = () => {},
+    testId,
   }: Props = $props();
 
-  let stagedSubtitle: string = $derived(subtitle);
+  let stagedSubtitle = $state("");
   let editing: boolean = $state(false);
 
-  const toggleEditing = () => {
-    // Reset staged subtitle if exiting edit mode
-    if (editing) {
-      stagedSubtitle = subtitle;
+  $effect(() => {
+    if (!editing) {
+      stagedSubtitle = subtitle || "";
     }
+  });
+
+  const toggleEditing = () => {
     editing = !editing;
   };
 </script>
 
 <div in:slide class="mt-4 flex items-start gap-2 text-xs">
-  {#if icon}
+  {#if Icon}
     <div class="h-max rounded-lg bg-neutral-100 p-1">
       <MaterialIcon size="1.3rem" color="fill-neutral-700">
-        <svelte:component this={icon} />
+        <Icon />
       </MaterialIcon>
     </div>
   {/if}
@@ -73,7 +77,7 @@
           id="edit-subtitle-input"
           label="Edit Subtitle"
           hideLabel={true}
-          value={stagedSubtitle}
+          value={stagedSubtitle || ""}
           placeholder="Business or organisation name"
           setValue={(newValue) => (stagedSubtitle = newValue.trim())}
         />
@@ -115,8 +119,8 @@
         </div>
       </div>
     {:else}
-      <p class={clsx([!subtitle && "text-neutral-400"])}>
-        {subtitle ?? "Add a stakeholder's name"}
+      <p class={clsx([!subtitle && "text-neutral-400"])} data-testid={testId}>
+        {subtitle || "Add a stakeholder's name"}
       </p>
     {/if}
   </div>

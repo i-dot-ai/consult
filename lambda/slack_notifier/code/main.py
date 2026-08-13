@@ -1,13 +1,23 @@
 import json
-import logging
 import os
 
 import urllib3
+from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
+from i_dot_ai_utilities.logging.types.enrichment_types import (
+    ContextEnrichmentType,
+    ExecutionEnvironmentType,
+)
+from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 
 http = urllib3.PoolManager()
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = StructuredLogger(
+    level="info",
+    options={
+        "execution_environment": ExecutionEnvironmentType.LAMBDA,
+        "log_format": LogOutputFormat.JSON,
+    },
+)
 
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
 
@@ -26,7 +36,9 @@ MESSAGE_TITLE = {
 
 
 def send_slack_message(job: dict, consultation: dict, environment: str, user_id: str):
-    message_title = f"{MESSAGE_TITLE[job['type']][job['status']]} {consultation['name']}"
+    message_title = (
+        f"{MESSAGE_TITLE[job['type']][job['status']]} {consultation['name']}"
+    )
 
     region = os.environ.get("LAMBDA_AWS_REGION", "eu-west-2")
     bucket = os.environ.get("AWS_BUCKET_NAME", "consult-data")
@@ -38,9 +50,7 @@ def send_slack_message(job: dict, consultation: dict, environment: str, user_id:
     else:
         s3_path = f"app_data/consultations/{consultation['code']}/outputs/mapping/"
 
-    s3_url = (
-        f"https://s3.console.aws.amazon.com/s3/buckets/{bucket}?prefix={s3_path}&region={region}"
-    )
+    s3_url = f"https://s3.console.aws.amazon.com/s3/buckets/{bucket}?prefix={s3_path}&region={region}"
 
     message = {
         "text": message_title,
@@ -100,6 +110,9 @@ def send_slack_message(job: dict, consultation: dict, environment: str, user_id:
         )
 
     encoded_msg = json.dumps(message).encode("utf-8")
+    if SLACK_WEBHOOK_URL is None:
+        raise ValueError("SLACK_WEBHOOK_URL environment variable is required")
+
     response = http.request(
         "POST",
         SLACK_WEBHOOK_URL,
@@ -108,30 +121,48 @@ def send_slack_message(job: dict, consultation: dict, environment: str, user_id:
     )
 
     if response.status != 200:
-        response_data = response.data.decode("utf-8") if response.data else "No response data"
-        error_message = f"Slack webhook failed with status {response.status}: {response_data}"
-        logger.error(error_message)
+        response_data = (
+            response.data.decode("utf-8") if response.data else "No response data"
+        )
+        error_message = (
+            f"Slack webhook failed with status {response.status}: {response_data}"
+        )
         raise Exception(error_message)
 
 
-def lambda_handler(event, _context):
+def lambda_handler(event, context):
     """
     Lambda handler for sending Slack notifications, triggered by EventBridge,
     when AWS Batch job changes state.
     """
-    logger.info(f"Received event: {json.dumps(event)}")
+    logger.refresh_context([{"type": ContextEnrichmentType.LAMBDA, "object": context}])
+    logger.set_context_field("execution_context", os.environ.get("EXECUTION_CONTEXT", "lambda"))
 
-    detail = event["detail"]
-    parameters = detail["parameters"]
+    logger.info("Received event: {event}", event=json.dumps(event))
 
-    job = {"id": detail["jobId"], "status": detail["status"], "type": parameters["job_type"]}
-    consultation = {
-        "name": parameters["consultation_name"],
-        "code": parameters["consultation_code"],
-    }
-    environment = os.environ.get("ENVIRONMENT", "unknown")
-    user_id = parameters["user_id"]
+    try:
+        detail = event["detail"]
+        parameters = detail["parameters"]
 
-    send_slack_message(job, consultation, environment, user_id)
+        job = {
+            "id": detail["jobId"],
+            "status": detail["status"],
+            "type": parameters["job_type"],
+        }
+        consultation = {
+            "name": parameters["consultation_name"],
+            "code": parameters["consultation_code"],
+        }
+        environment = os.environ.get("ENVIRONMENT", "unknown")
+        user_id = parameters["user_id"]
 
-    logger.info("✅ Slack message sent")
+        logger.set_context_field("batch_job_name", detail.get("jobName", job["type"]))
+        logger.set_context_field("consultation_code", consultation["code"])
+
+        send_slack_message(job, consultation, environment, user_id)
+
+        logger.info("✅ Slack message sent")
+
+    except Exception:
+        logger.exception("Failed to send Slack notification")
+        raise

@@ -1,19 +1,13 @@
 name: Frontend CI
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "frontend/**"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "frontend/**"
+  workflow_dispatch:
+  # Called by required-checks.yml (PR gate, after path filtering) and deploy-main
+  # (no path filtering — always runs in full before a deploy).
+  workflow_call:
 
 env:
-  NODE_VERSION: "20.18.0" # Match exact version specified in .nvmrc and frontend/Dockerfile
+  NODE_VERSION: "26.6.0" # Match exact version specified in .nvmrc and frontend/Dockerfile
 
 jobs:
   test:
@@ -24,10 +18,10 @@ jobs:
         working-directory: ./frontend
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -47,10 +41,10 @@ jobs:
         working-directory: ./frontend
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -62,5 +56,5 @@ jobs:
       - name: Check code quality and formatting with ESLint and Prettier
         run: npm run lint
 
-      - name: Check type errors against baseline
-        run: npm run typecheck:check-baseline
+      - name: Check type errors with TypeScript
+        run: npm run typecheck

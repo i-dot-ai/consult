@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, ClassVar
 
 from django.utils import timezone
 from rest_framework import serializers
@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "email", "is_staff", "created_at", "emails"]
+        fields: ClassVar[list] = ["id", "email", "is_staff", "created_at", "emails"]
 
     def to_internal_value(self, data):
         if email := data.get("email"):
@@ -37,11 +37,10 @@ class UserSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
 
         # Check if this is an update operation and user is updating themselves
-        if self.instance and request and request.user == self.instance:
-            if value is False:
-                raise serializers.ValidationError(
-                    "You cannot remove admin privileges from yourself"
-                )
+        if self.instance and request and request.user == self.instance and value is False:
+            raise serializers.ValidationError(
+                "You cannot remove admin privileges from yourself"
+            )
 
         return value
 
@@ -51,15 +50,15 @@ class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
 
     response_count = serializers.SerializerMethodField()
 
-    def get_response_count(self, obj) -> int | None:
-        try:
+    def get_response_count(self, obj) -> int:
+        # When filters are applied, the view annotates a dynamic count
+        if hasattr(obj, "prefetched_response_count"):
             return obj.prefetched_response_count
-        except AttributeError:
-            return None
+        return obj.response_count
 
     class Meta:
         model = MultiChoiceAnswer
-        fields = ["id", "text", "response_count"]
+        fields: ClassVar[list] = ["id", "text", "response_count"]
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
@@ -67,25 +66,33 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     multiple_choice_answer = MultiChoiceAnswerSerializer(
         many=True, source="multichoiceanswer_set", read_only=True
     )
-    proportion_of_audited_answers = serializers.ReadOnlyField()
-    total_responses = serializers.SerializerMethodField()
+    proportion_of_audited_answers = serializers.SerializerMethodField()
 
-    def get_total_responses(self, obj) -> int:
-        return obj.prefetched_total_responses
+    def get_proportion_of_audited_answers(self, obj) -> float:
+        if not obj.free_text_response_count:
+            return 0
+        reviewed = getattr(obj, "prefetched_reviewed_responses", 0) or 0
+        return reviewed / obj.free_text_response_count
 
     class Meta:
         model = Question
-        fields = [
+        fields: ClassVar[list] = [
             "id",
             "number",
-            "total_responses",
+            "total_response_count",
+            "free_text_response_count",
+            "multi_choice_response_count",
             "question_text",
-            "number",
             "has_free_text",
             "has_multiple_choice",
             "multiple_choice_answer",
             "proportion_of_audited_answers",
             "theme_status",
+        ]
+        read_only_fields: ClassVar[list] = [
+            "total_response_count",
+            "free_text_response_count",
+            "multi_choice_response_count",
         ]
 
 
@@ -94,7 +101,7 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Consultation
-        fields = ["id", "title", "code", "stage", "users", "created_at"]
+        fields: ClassVar[list] = ["id", "title", "code", "stage", "users", "created_at"]
 
 
 class DemographicAggregationsSerializer(serializers.Serializer):
@@ -111,7 +118,7 @@ class ThemeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SelectedTheme
-        fields = ["id", "name", "description", "key"]
+        fields: ClassVar[list] = ["id", "name", "description", "key"]
 
 
 class ThemeInformationSerializer(serializers.Serializer):
@@ -123,6 +130,17 @@ class ResponseThemeInformationSerializer(serializers.Serializer):
     all_themes = ThemeSerializer(many=True)
 
 
+class QuestionThemeSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField()
+    name = serializers.CharField()
+    description = serializers.CharField()
+    count = serializers.IntegerField()
+
+    class Meta:
+        model = SelectedTheme
+        fields: ClassVar[list] = ["id", "name", "description", "count"]
+
+
 class ThemeAggregationsSerializer(serializers.Serializer):
     theme_aggregations = serializers.DictField(child=serializers.IntegerField())
 
@@ -132,8 +150,8 @@ class SelectedThemeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SelectedTheme
-        fields = ["id", "name", "description", "version", "modified_at", "last_modified_by"]
-        read_only_fields = ["id", "version", "modified_at", "last_modified_by"]
+        fields: ClassVar[list] = ["id", "name", "description", "version", "modified_at", "last_modified_by"]
+        read_only_fields: ClassVar[list] = ["id", "version", "modified_at", "last_modified_by"]
 
     def get_last_modified_by(self, obj):
         return obj.last_modified_by.email if obj.last_modified_by else None
@@ -149,7 +167,7 @@ class ThemeSerializer2(serializers.ModelSerializer):
 
     class Meta:
         model = SelectedTheme
-        fields = ["name", "description", "key", "question_id", "response_count"]
+        fields: ClassVar[list] = ["name", "description", "key", "question_id", "response_count"]
 
 
 class CandidateThemeSerializer(serializers.ModelSerializer):
@@ -157,7 +175,7 @@ class CandidateThemeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CandidateTheme
-        fields = [
+        fields: ClassVar[list] = [
             "id",
             "name",
             "description",
@@ -181,7 +199,7 @@ class CandidateThemeResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CandidateThemeResponse
-        fields = ["response_id", "free_text"]
+        fields: ClassVar[list] = ["response_id", "free_text"]
 
 
 class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
@@ -206,7 +224,7 @@ class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ResponseAnnotationTheme
-        fields = ["id", "assigned_by", "name", "description", "key"]
+        fields: ClassVar[list] = ["id", "assigned_by", "name", "description", "key"]
 
 
 class DemographicOptionSerializer(serializers.Serializer):
@@ -221,7 +239,7 @@ class RespondentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Respondent
-        fields = ["id", "themefinder_id", "demographics", "name"]
+        fields: ClassVar[list] = ["id", "themefinder_id", "demographics", "name"]
 
 
 class ResponseSerializer(serializers.ModelSerializer):
@@ -297,7 +315,7 @@ class ResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Response
-        fields = [
+        fields: ClassVar[list] = [
             "id",
             "identifier",
             "respondent_id",
@@ -320,7 +338,7 @@ class ConsultationFolderQuerySerializer(serializers.Serializer):
     """Validates query parameters for consultation folders endpoint."""
 
     stage = serializers.ChoiceField(
-        choices=["setup", "find-themes", "assign-themes"],
+        choices=["setup", "find-themes"],
         required=True,
     )
 
@@ -333,6 +351,10 @@ class ConsultationSetupSerializer(serializers.Serializer):
 class ConsultationExportSerializer(serializers.Serializer):
     s3_key = serializers.CharField(max_length=255, default="", allow_null=True)
     question_ids = serializers.ListSerializer(child=serializers.CharField())
+
+
+class ImportFinalisedThemesSerializer(serializers.Serializer):
+    source_consultation_id = serializers.UUIDField()
 
 
 class TokenSerializer(serializers.Serializer):

@@ -4,6 +4,7 @@
   import Title from "../../Title.svelte";
   import Button from "../../inputs/Button/Button.svelte";
   import { parseEmails } from "./parseEmails";
+  import { Routes } from "../../../global/routes";
 
   let emailsInput: string = "";
   let isStaff: boolean = false;
@@ -25,7 +26,7 @@
 
     try {
       const reqBody = emails.length === 1 ? { email: emails[0] } : { emails };
-      const res = await fetch("/api/users/", {
+      const res = await fetch(Routes.ApiUsers, {
         method: "POST",
         body: JSON.stringify({
           ...reqBody,
@@ -35,7 +36,7 @@
       });
 
       if (res.ok) {
-        window.location.href = "/support/users";
+        window.location.href = Routes.SupportUsers;
       } else {
         if (emails.length === 1) {
           const errorResponse: { email?: string[] } = await res.json();
@@ -68,11 +69,10 @@
   <textarea
     id="emailsInput"
     rows="3"
-    class="rounded border border-gray-300 px-3 py-2"
+    class="rounded-sm border border-gray-300 px-3 py-2"
     placeholder="Enter one or more email addresses, separated by comma, space, or newline."
     bind:value={emailsInput}
-    disabled={loading}
-  ></textarea>
+    disabled={loading}></textarea>
   {#if error}
     {#if typeof error === "string"}
       <p class="text-sm text-red-500">{`Error: ${error}`}</p>
@@ -90,6 +90,8 @@
   </div>
 
   <div class="mt-4">
-    <a href="/support/users" class="text-gray-700 underline">← Back to users</a>
+    <a href={Routes.SupportUsers} class="text-gray-700 underline"
+      >← Back to users</a
+    >
   </div>
 </form>

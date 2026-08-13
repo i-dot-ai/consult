@@ -1,0 +1,70 @@
+name: deploy-main
+
+# Auto-deploy pipeline for merges to main.
+#
+# On every push to main:
+#   1. Run the full CI suite (backend, frontend, E2E) as a gate.
+#   2. Deploy to preprod (infra first, then app).
+#   3. Only if preprod deploys succeed, deploy to prod (infra first, then app).
+#
+# Each deploy reuses release-infra / release-app via workflow_call, passing the
+# target environment explicitly. Infra is deployed before app in each
+# environment so that infrastructure prerequisites (env vars, IAM, migrations
+# run via Terraform) are in place before the new images roll out.
+
+on:
+  push:
+    branches:
+      - main
+    # Documentation-only changes can't affect a deploy, so skip the whole
+    # pipeline (CI gate + preprod/prod deploys) when nothing else changed.
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - "LICENSE"
+
+# Avoid overlapping prod deploys if several merges land in quick succession.
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  backend-ci:
+    uses: ./.github/workflows/backend-ci.yml
+    secrets: inherit
+
+  frontend-ci:
+    uses: ./.github/workflows/frontend-ci.yml
+    secrets: inherit
+
+  e2e-tests:
+    uses: ./.github/workflows/e2e-tests.yml
+    secrets: inherit
+
+  preprod-infra:
+    needs: [backend-ci, frontend-ci, e2e-tests]
+    uses: ./.github/workflows/release-infra.yml
+    secrets: inherit
+    with:
+      environment: preprod
+
+  preprod-app:
+    needs: [preprod-infra]
+    uses: ./.github/workflows/release-app.yml
+    secrets: inherit
+    with:
+      environment: preprod
+
+  prod-infra:
+    needs: [preprod-app]
+    uses: ./.github/workflows/release-infra.yml
+    secrets: inherit
+    with:
+      environment: prod
+
+  prod-app:
+    needs: [prod-infra]
+    uses: ./.github/workflows/release-app.yml
+    secrets: inherit
+    with:
+      environment: prod

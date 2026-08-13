@@ -1,13 +1,10 @@
-from typing import Dict, List, Optional
 from uuid import UUID
 
-import boto3
 import tiktoken
+from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
-from django_rq import get_queue
 
-import data_pipeline.s3 as s3
 from authentication.models import User
 from consultations.models import (
     Consultation,
@@ -17,6 +14,7 @@ from consultations.models import (
     Respondent,
     Response,
 )
+from data_pipeline import s3
 from data_pipeline.models import (
     ConsultationDataBatch,
     MultiChoiceInput,
@@ -25,6 +23,7 @@ from data_pipeline.models import (
     ResponseInput,
 )
 from embeddings import embed_text
+from rq_context import job
 
 logger = settings.LOGGER
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
@@ -37,8 +36,8 @@ ResponseThemeThroughModel = Response.chosen_options.through
 
 
 def load_respondents_from_s3(
-    consultation_code: str, bucket_name: str, s3_client=None
-) -> List[RespondentInput]:
+    consultation_code: str, bucket_name: str
+) -> list[RespondentInput]:
     """
     Load and validate respondents from S3.
 
@@ -54,7 +53,17 @@ def load_respondents_from_s3(
 
     logger.info("Loading respondents from {key}", key=key)
 
-    raw_data = s3.read_jsonl(bucket_name, key, s3_client)
+    try:
+        raw_data = s3.read_jsonl(bucket_name, key)
+    except (ClientError, BotoCoreError) as e:
+        logger.exception(
+            "Failed to load respondents file from S3: bucket={bucket}, key={key}",
+            bucket=bucket_name,
+            key=key,
+        )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(f"Respondents file not found: {key}") from e
+        raise
 
     respondents = [RespondentInput(**data) for data in raw_data]
 
@@ -65,7 +74,7 @@ def load_respondents_from_s3(
 
 
 def load_question_from_s3(
-    consultation_code: str, question_number: int, bucket_name: str, s3_client=None
+    consultation_code: str, question_number: int, bucket_name: str
 ) -> QuestionInput:
     """
     Load and validate a single question from S3.
@@ -74,7 +83,6 @@ def load_question_from_s3(
         consultation_code: Consultation code
         question_number: Question number
         bucket_name: S3 bucket name
-        s3_client: Optional boto3 S3 client
 
     Returns:
         Validated QuestionInput object
@@ -85,7 +93,17 @@ def load_question_from_s3(
         "Loading question {question_number} from {key}", question_number=question_number, key=key
     )
 
-    data = s3.read_json(bucket_name, key, s3_client)
+    try:
+        data = s3.read_json(bucket_name, key)
+    except (ClientError, BotoCoreError) as e:
+        logger.exception(
+            "Failed to load question file from S3: bucket={bucket}, key={key}",
+            bucket=bucket_name,
+            key=key,
+        )
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+            raise ValueError(f"Question file not found: {key}") from e
+        raise
 
     if data is None:
         raise ValueError(f"Question file not found or empty: {key}")
@@ -100,8 +118,8 @@ def load_question_from_s3(
 
 
 def load_responses_from_s3(
-    consultation_code: str, question_number: int, bucket_name: str, s3_client=None
-) -> List[ResponseInput]:
+    consultation_code: str, question_number: int, bucket_name: str
+) -> list[ResponseInput]:
     """
     Load and validate free text responses for a question from S3.
 
@@ -109,7 +127,6 @@ def load_responses_from_s3(
         consultation_code: Consultation code
         question_number: Question number
         bucket_name: S3 bucket name
-        s3_client: Optional boto3 S3 client
 
     Returns:
         List of validated ResponseInput objects
@@ -122,7 +139,14 @@ def load_responses_from_s3(
         key=key,
     )
 
-    raw_data = s3.read_jsonl(bucket_name, key, s3_client, raise_if_missing=False)
+    raw_data = s3.read_jsonl(bucket_name, key, raise_if_missing=False)
+    if not raw_data:
+        logger.info(
+            "No responses found for question {question_number} in S3 at {key}",
+            question_number=question_number,
+            key=key,
+        )
+        return []
 
     responses = []
     for data in raw_data:
@@ -139,8 +163,8 @@ def load_responses_from_s3(
 
 
 def load_multi_choice_from_s3(
-    consultation_code: str, question_number: int, bucket_name: str, s3_client=None
-) -> List[MultiChoiceInput]:
+    consultation_code: str, question_number: int, bucket_name: str
+) -> list[MultiChoiceInput]:
     """
     Load and validate multi-choice selections for a question from S3.
 
@@ -148,7 +172,6 @@ def load_multi_choice_from_s3(
         consultation_code: Consultation code
         question_number: Question number
         bucket_name: S3 bucket name
-        s3_client: Optional boto3 S3 client
 
     Returns:
         List of validated MultiChoiceInput objects
@@ -161,7 +184,15 @@ def load_multi_choice_from_s3(
         key=key,
     )
 
-    raw_data = s3.read_jsonl(bucket_name, key, s3_client, raise_if_missing=False)
+    raw_data = s3.read_jsonl(bucket_name, key, raise_if_missing=False)
+
+    if not raw_data:
+        logger.info(
+            "No multi-choice data found for question {question_number} in S3 at {key}",
+            question_number=question_number,
+            key=key,
+        )
+        return []
 
     multi_choices = []
     for data in raw_data:
@@ -180,7 +211,7 @@ def load_multi_choice_from_s3(
 def load_consultation_data_batch(
     consultation_code: str,
     consultation_title: str,
-    bucket_name: Optional[str] = None,
+    bucket_name: str | None = None,
 ) -> ConsultationDataBatch:
     """
     Load and validate base consultation data from S3.
@@ -207,10 +238,8 @@ def load_consultation_data_batch(
         consultation_code=consultation_code,
     )
 
-    s3_client = boto3.client("s3")
-
     # Load respondents
-    respondents = load_respondents_from_s3(consultation_code, bucket_name, s3_client)
+    respondents = load_respondents_from_s3(consultation_code, bucket_name)
 
     # Discover question folders
     inputs_path = f"app_data/consultations/{consultation_code}/inputs/"
@@ -231,24 +260,24 @@ def load_consultation_data_batch(
     # Load questions
     questions = []
     for question_number in question_numbers:
-        question = load_question_from_s3(consultation_code, question_number, bucket_name, s3_client)
+        question = load_question_from_s3(consultation_code, question_number, bucket_name)
         questions.append(question)
 
     # Load responses and multi-choice data
-    responses_by_question: Dict[int, List[ResponseInput]] = {}
-    multi_choice_by_question: Dict[int, List[MultiChoiceInput]] = {}
+    responses_by_question: dict[int, list[ResponseInput]] = {}
+    multi_choice_by_question: dict[int, list[MultiChoiceInput]] = {}
 
     for question_number in question_numbers:
         # Load free text responses
         responses = load_responses_from_s3(
-            consultation_code, question_number, bucket_name, s3_client
+            consultation_code, question_number, bucket_name
         )
         if responses:
             responses_by_question[question_number] = responses
 
         # Load multi-choice data
         multi_choices = load_multi_choice_from_s3(
-            consultation_code, question_number, bucket_name, s3_client
+            consultation_code, question_number, bucket_name
         )
         if multi_choices:
             multi_choice_by_question[question_number] = multi_choices
@@ -280,7 +309,7 @@ def load_consultation_data_batch(
 
 @transaction.atomic
 def import_consultation_data(
-    batch: ConsultationDataBatch, user_id: UUID, batch_size: int = 2048
+    batch: ConsultationDataBatch, user_id: UUID, batch_size: int = 512
 ) -> UUID:
     """
     Import base consultation data (consultation, respondents, questions, responses) into database.
@@ -351,7 +380,7 @@ def import_consultation_data(
     return consultation.id
 
 
-def _ingest_respondents(consultation: Consultation, respondents: List[RespondentInput]) -> None:
+def _ingest_respondents(consultation: Consultation, respondents: list[RespondentInput]) -> None:
     """
     Create respondents and their demographics for a consultation.
 
@@ -404,7 +433,7 @@ def _ingest_respondents(consultation: Consultation, respondents: List[Respondent
     logger.info("Created {respondent_count} respondents", respondent_count=len(created_respondents))
 
 
-def _ingest_questions(consultation: Consultation, questions: List[QuestionInput]) -> None:
+def _ingest_questions(consultation: Consultation, questions: list[QuestionInput]) -> None:
     """
     Create questions and their multi-choice options for a consultation.
 
@@ -456,9 +485,9 @@ def _ingest_questions(consultation: Consultation, questions: List[QuestionInput]
 
 def _ingest_responses(
     consultation: Consultation,
-    responses_by_question: Dict[int, List[ResponseInput]],
-    multi_choice_by_question: Dict[int, List[MultiChoiceInput]],
-    batch_size: int = 2048,
+    responses_by_question: dict[int, list[ResponseInput]],
+    multi_choice_by_question: dict[int, list[MultiChoiceInput]],
+    batch_size: int = 512,
 ) -> None:
     """
     Create responses with careful indexing to link correct respondent + question.
@@ -492,7 +521,7 @@ def _ingest_responses(
         multi_choice_responses = multi_choice_by_question.get(question_number, [])
 
         # Merge free text and multi-choice by themefinder_id
-        responses_by_tf_id: Dict[int, Dict] = {}
+        responses_by_tf_id: dict[int, dict] = {}
 
         for resp in free_text_responses:
             responses_by_tf_id[resp.themefinder_id] = {
@@ -509,8 +538,12 @@ def _ingest_responses(
                     "multi_choice": mc.options,
                 }
 
+        mc_options_lookup = {
+            opt.text: opt for opt in MultiChoiceAnswer.objects.filter(question=question)
+        }
+
         # Create Response objects with batching based on token count
-        responses_to_create: List = []
+        responses_to_create: list = []
         response_theme_associations_to_create = []  # type: ignore
         max_total_tokens = 100_000
         total_tokens = 0
@@ -520,11 +553,9 @@ def _ingest_responses(
                 logger.warning("No respondent found for themefinder_id {tf_id}", tf_id=tf_id)
                 continue
 
-            mc_options_lookup = {
-                opt.text: opt for opt in MultiChoiceAnswer.objects.filter(question=question)
-            }
-
             free_text = data["free_text"]
+            if free_text in ("", "Not Provided", "-"):
+                free_text = None
 
             # Calculate tokens for free text
             if free_text:
@@ -582,11 +613,11 @@ def _ingest_responses(
                 f"Saved final batch of {len(created_responses)} responses for question {question_number}"
             )
 
-        # Update question total_responses count
-        question.update_total_responses()
-        logger.info(
-            f"Updated total_responses count for question {question_number}: {question.total_responses}"
-        )
+        # Update denormalised response counts
+        MultiChoiceAnswer.update_response_counts(question)
+        question.update_response_counts()
+
+    DemographicOption.update_response_counts(consultation)
 
     logger.info("Completed response ingestion")
 
@@ -596,6 +627,7 @@ def _ingest_responses(
 # =============================================================================
 
 
+@job("default", timeout=DEFAULT_TIMEOUT_SECONDS)
 def create_embeddings_for_question(question_id: UUID) -> None:
     """
     Create embeddings for all responses to a question.
@@ -651,8 +683,8 @@ def import_consultation_from_s3(
     consultation_code: str,
     consultation_title: str,
     user_id: UUID,
-    enqueue_embeddings: bool = True,
-    batch_size: int = 2048,
+    enqueue_embeddings: bool = False,  # Whether to enqueue embedding jobs after import (default False for consultation setup for now)
+    batch_size: int = 512,
 ) -> UUID:
     """
     Import consultation base data from S3.
@@ -686,7 +718,6 @@ def import_consultation_from_s3(
     # Enqueue async jobs for embeddings
     if enqueue_embeddings:
         consultation = Consultation.objects.get(id=consultation_id)
-        queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
 
         for question in Question.objects.filter(consultation=consultation):
             if question.has_free_text:
@@ -694,7 +725,7 @@ def import_consultation_from_s3(
                     "Enqueueing embedding job for question {question_number}",
                     question_number=question.number,
                 )
-                queue.enqueue(create_embeddings_for_question, question.id)
+                create_embeddings_for_question.enqueue(question.id)
 
     logger.info("Completed S3 import for {consultation_code}", consultation_code=consultation_code)
     return consultation_id

@@ -1,13 +1,15 @@
 from datetime import datetime
-from unittest.mock import patch
 from uuid import uuid4
 
 import orjson
 import pytest
 from django.urls import reverse
 
-from consultations.models import ResponseAnnotation, ResponseAnnotationTheme
+from consultations.api.views.response import MAX_BULK_MARK_READ
+from consultations.models import ResponseAnnotation, ResponseAnnotationTheme, ResponseReadBy
 from factories import (
+    ConsultationFactory,
+    QuestionFactory,
     RespondentFactory,
     ResponseAnnotationFactory,
     ResponseAnnotationFactoryNoThemes,
@@ -17,227 +19,6 @@ from factories import (
 
 @pytest.mark.django_db
 class TestResponseViewSet:
-    def test_get_demographic_aggregations_empty(self, client, staff_user_token, free_text_question):
-        """Test API endpoint returns empty aggregations when no data exists"""
-        url = reverse(
-            "response-demographic-aggregations",
-            kwargs={"consultation_pk": free_text_question.consultation.id},
-        )
-        response = client.get(
-            url,
-            query_params={"question_id": free_text_question.id},
-            headers={"Authorization": f"Bearer {staff_user_token}"},
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "demographic_aggregations" in data
-        assert data["demographic_aggregations"] == {}
-
-    def test_get_demographic_aggregations_with_data(
-        self, client, staff_user_token, free_text_question
-    ):
-        """Test API endpoint returns demographic aggregations correctly"""
-        # Create respondents with different demographic data
-        respondent1 = RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"gender": "male", "age_group": "25-34", "region": "north"},
-        )
-        respondent2 = RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"gender": "female", "age_group": "25-34", "region": "south"},
-        )
-        respondent3 = RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"gender": "male", "age_group": "35-44", "region": "north"},
-        )
-
-        # Create responses for each respondent
-        ResponseFactory(respondent=respondent1, question=free_text_question)
-        ResponseFactory(respondent=respondent2, question=free_text_question)
-        ResponseFactory(respondent=respondent3, question=free_text_question)
-
-        url = reverse(
-            "response-demographic-aggregations",
-            kwargs={"consultation_pk": free_text_question.consultation.id},
-        )
-        response = client.get(
-            url,
-            query_params={"question_id": free_text_question.id},
-            headers={"Authorization": f"Bearer {staff_user_token}"},
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "demographic_aggregations" in data
-
-        aggregations = data["demographic_aggregations"]
-        assert aggregations["gender"]["male"] == 2
-        assert aggregations["gender"]["female"] == 1
-        assert aggregations["age_group"]["25-34"] == 2
-        assert aggregations["age_group"]["35-44"] == 1
-        assert aggregations["region"]["north"] == 2
-        assert aggregations["region"]["south"] == 1
-
-    def test_get_demographic_aggregations_with_filters(
-        self,
-        client,
-        staff_user_token,
-        free_text_question,
-        individual_demographic,
-        northern_demographic,
-        group_demographic,
-        southern_demographic,
-    ):
-        """Test API endpoint applies demographic filters correctly"""
-        # Create respondents with different demographics
-
-        respondent1 = RespondentFactory(
-            consultation=free_text_question.consultation,
-        )
-        respondent1.demographics.set([individual_demographic, northern_demographic])
-
-        respondent2 = RespondentFactory(
-            consultation=free_text_question.consultation,
-        )
-        respondent2.demographics.set([group_demographic, southern_demographic])
-
-        ResponseFactory(question=free_text_question, respondent=respondent1)
-        ResponseFactory(question=free_text_question, respondent=respondent2)
-
-        url = reverse(
-            "response-demographic-aggregations",
-            kwargs={"consultation_pk": free_text_question.consultation.id},
-        )
-
-        # Filter by individual=true
-        response = client.get(
-            url,
-            query_params={
-                "demographics": individual_demographic.pk,
-                "question_id": free_text_question.id,
-            },
-            headers={"Authorization": f"Bearer {staff_user_token}"},
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-
-        # Should only include data from individual=True respondent
-        aggregations = data["demographic_aggregations"]
-        assert aggregations["individual"]["True"] == 1
-        assert aggregations["region"]["north"] == 1
-        # Should not have data from individual=False respondent
-        assert "False" not in aggregations["individual"]
-        assert "south" not in aggregations["region"]
-
-        response = client.get(
-            url + "?demoFilters=individual:true&demoFilters=individual:false",
-            headers={"Authorization": f"Bearer {staff_user_token}"},
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-        assert data["demographic_aggregations"]["individual"] == {"True": 1, "False": 1}
-        assert data["demographic_aggregations"]["region"] == {"north": 1, "south": 1}
-
-    def test_get_theme_aggregations_no_responses(
-        self, client, staff_user_token, free_text_question
-    ):
-        """Test API endpoint returns empty aggregations when no responses exist"""
-        url = reverse(
-            "response-theme-aggregations",
-            kwargs={"consultation_pk": free_text_question.consultation.id},
-        )
-        response = client.get(
-            url,
-            query_params={"question_id": free_text_question.id},
-            headers={"Authorization": f"Bearer {staff_user_token}"},
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "theme_aggregations" in data
-        assert data["theme_aggregations"] == {}
-
-    def test_get_theme_aggregations_with_responses(
-        self, client, staff_user_token, free_text_question, theme_a, theme_b
-    ):
-        """Test API endpoint returns theme aggregations correctly"""
-        # Create respondents and responses
-        respondent1 = RespondentFactory(consultation=free_text_question.consultation)
-        respondent2 = RespondentFactory(consultation=free_text_question.consultation)
-
-        response1 = ResponseFactory(question=free_text_question, respondent=respondent1)
-        response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
-
-        # Create annotations with themes
-        annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
-        annotation1.add_original_ai_themes([theme_a])
-
-        annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
-        annotation2.add_original_ai_themes([theme_a, theme_b])
-
-        url = reverse(
-            "response-theme-aggregations",
-            kwargs={"consultation_pk": free_text_question.consultation.id},
-        )
-        response = client.get(
-            url,
-            query_params={"question_id": free_text_question.id},
-            headers={"Authorization": f"Bearer {staff_user_token}"},
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "theme_aggregations" in data
-
-        aggregations = data["theme_aggregations"]
-        assert aggregations[str(theme_a.id)] == 2  # Theme A appears in 2 responses
-        assert aggregations[str(theme_b.id)] == 1  # Theme B appears in 1 response
-
-    def test_get_theme_aggregations_with_filters(
-        self, client, staff_user_token, free_text_question, theme_a, theme_b
-    ):
-        """Test API endpoint applies theme filtering correctly"""
-        # Create responses with different theme combinations
-        respondent1 = RespondentFactory(consultation=free_text_question.consultation)
-        respondent2 = RespondentFactory(consultation=free_text_question.consultation)
-
-        response1 = ResponseFactory(question=free_text_question, respondent=respondent1)
-        response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
-
-        # Response 1: has theme1 and theme2
-        annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
-        annotation1.add_original_ai_themes([theme_a, theme_b])
-
-        # Response 2: has only theme1
-        annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
-        annotation2.add_original_ai_themes([theme_a])
-
-        url = reverse(
-            "response-theme-aggregations",
-            kwargs={"consultation_pk": free_text_question.consultation.id},
-        )
-
-        # Filter by theme1 AND theme2 - should only return response1
-        response = client.get(
-            url,
-            query_params={
-                "themeFilters": f"{theme_a.id},{theme_b.id}",
-                "question_id": free_text_question.id,
-            },
-            headers={"Authorization": f"Bearer {staff_user_token}"},
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-
-        # Should only show counts from responses that have BOTH themes
-        aggregations = data["theme_aggregations"]
-        assert aggregations[str(theme_a.id)] == 1  # Only response1 has both themes
-        assert aggregations[str(theme_b.id)] == 1  # Only response1 has both themes
-
     def test_get_filtered_responses_basic(
         self, client, staff_user_token, free_text_question, django_assert_num_queries
     ):
@@ -265,13 +46,12 @@ class TestResponseViewSet:
         Test for no N+1 queries. Regardless of the number of responses, we expect:
         - 1 query to get authentication user for permission checking
         - 1 query to get authentication user for is_flagged annotation
-        - 1 query to count respondents
         - 1 query to count filtered responses
         - 1 query to get responses with related data (includes is_read annotation)
         - 1 query to prefetch multiple choice answers
         - 1 query to prefetch demographic data
         """
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(6):
             response = client.get(
                 url,
                 query_params={"question_id": free_text_question.id},
@@ -284,8 +64,7 @@ class TestResponseViewSet:
         data = orjson.loads(response.content)
 
         assert len(data["all_respondents"]) == 2
-        assert data["respondents_total"] == 2
-        assert data["filtered_total"] == 2
+        assert data["total_count"] == 2
 
         # Verify respondent data structure
         respondents = sorted(data["all_respondents"], key=lambda x: x["identifier"])
@@ -299,8 +78,55 @@ class TestResponseViewSet:
     def test_get_filtered_responses_with_pagination(
         self, client, staff_user_token, free_text_question
     ):
-        """Test API endpoint pagination"""
-        # Create multiple respondents
+        """Test cursor-based pagination returns the correct page and a usable next cursor"""
+        for _ in range(5):
+            respondent = RespondentFactory(consultation=free_text_question.consultation)
+            ResponseFactory(question=free_text_question, respondent=respondent)
+
+        url = reverse(
+            "response-list",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+        auth = {"Authorization": f"Bearer {staff_user_token}"}
+
+        # First page — no cursor
+        page1 = client.get(
+            url,
+            query_params={"page_size": 2, "question_id": free_text_question.id},
+            headers=auth,
+        )
+        assert page1.status_code == 200
+        data1 = orjson.loads(page1.content)
+        assert len(data1["all_respondents"]) == 2
+        assert data1["has_more_pages"] is True
+        assert data1["total_count"] == 5
+        assert data1["next_cursor"] is not None
+
+        # Second page — use the cursor from page 1
+        page2 = client.get(
+            url,
+            query_params={
+                "page_size": 2,
+                "question_id": free_text_question.id,
+                "cursor": data1["next_cursor"],
+            },
+            headers=auth,
+        )
+        assert page2.status_code == 200
+        data2 = orjson.loads(page2.content)
+        assert len(data2["all_respondents"]) == 2
+        assert data2["has_more_pages"] is True
+        # total_count is omitted on subsequent pages to avoid an extra COUNT query
+        assert "total_count" not in data2
+        # No overlap between pages
+        page1_ids = {response["id"] for response in data1["all_respondents"]}
+        page2_ids = {response["id"] for response in data2["all_respondents"]}
+        assert page1_ids.isdisjoint(page2_ids)
+
+    def test_total_count_returned_on_first_page_only(
+        self, client, staff_user_token, free_text_question
+    ):
+        """total_count is included on page 1 for accurate pagination display, omitted on subsequent pages."""
         for i in range(5):
             respondent = RespondentFactory(consultation=free_text_question.consultation)
             ResponseFactory(question=free_text_question, respondent=respondent)
@@ -309,23 +135,30 @@ class TestResponseViewSet:
             "response-list",
             kwargs={"consultation_pk": free_text_question.consultation.id},
         )
+
+        # First load (no cursor) includes total_count
+        response = client.get(
+            url,
+            query_params={"page_size": 2, "question_id": free_text_question.id},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        data = orjson.loads(response.content)
+        assert data["total_count"] == 5
+        assert data["has_more_pages"]
+        assert data["next_cursor"] is not None
+
+        # Subsequent load (with cursor) omits total_count
         response = client.get(
             url,
             query_params={
                 "page_size": 2,
-                "page": 1,
+                "cursor": data["next_cursor"],
                 "question_id": free_text_question.id,
             },
             headers={"Authorization": f"Bearer {staff_user_token}"},
         )
-
-        assert response.status_code == 200
-
         data = orjson.loads(response.content)
-
-        assert len(data["all_respondents"]) == 2
-        assert data["has_more_pages"]
-        assert data["filtered_total"] == 5
+        assert "total_count" not in data
 
     def test_get_filtered_responses_with_demographic_filters(
         self,
@@ -370,8 +203,7 @@ class TestResponseViewSet:
 
         data = orjson.loads(response.content)
 
-        assert data["respondents_total"] == 2  # Total respondents
-        assert data["filtered_total"] == 1  # Filtered to individuals only
+        assert data["total_count"] == 1  # Filtered to individuals only
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
@@ -425,8 +257,7 @@ class TestResponseViewSet:
 
         data = orjson.loads(response.content)
 
-        # assert data["respondents_total"] == 3  # Total respondents
-        assert data["filtered_total"] == 1  # Only response1 has both themes
+        assert data["total_count"] == 1  # Only response1 has both themes
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
@@ -468,8 +299,7 @@ class TestResponseViewSet:
 
         data = response.json()
 
-        assert data["respondents_total"] == 2  # Total respondents
-        assert data["filtered_total"] == 1  # Only response1
+        assert data["total_count"] == 1  # Only response1
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
 
@@ -516,8 +346,7 @@ class TestResponseViewSet:
 
         data = response.json()
 
-        assert data["respondents_total"] == 2  # Total respondents
-        assert data["filtered_total"] == count  # Only response1
+        assert data["total_count"] == count  # Only response1
         assert len(data["all_respondents"]) == 2 if evidence_rich is None else 2
         if isinstance(evidence_rich, bool):
             assert data["all_respondents"][0]["evidenceRich"] == evidence_rich
@@ -577,8 +406,7 @@ class TestResponseViewSet:
 
         data = response.json()
 
-        assert data["respondents_total"] == 2  # Total respondents
-        assert data["filtered_total"] == count  # Only response1
+        assert data["total_count"] == count  # Only response1
         assert len(data["all_respondents"]) == 2 if sentiments is None else 2
 
         assert sorted(x["sentiment"] for x in data["all_respondents"]) == expected
@@ -612,8 +440,7 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200
-        assert response.json()["respondents_total"] == 2
-        assert response.json()["filtered_total"] == expected_responses
+        assert response.json()["total_count"] == expected_responses
         if expected_responses == 1:
             assert response.json()["all_respondents"][0]["is_flagged"] == is_flagged
 
@@ -658,8 +485,7 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200
-        assert response.json()["respondents_total"] == 2
-        assert response.json()["filtered_total"] == expected_responses
+        assert response.json()["total_count"] == expected_responses
 
     @pytest.mark.parametrize(("is_flagged", "is_edited"), [(True, True), (False, False)])
     def test_get_responses_with_is_flagged(
@@ -725,10 +551,64 @@ class TestResponseViewSet:
         )
 
         assert response.status_code == 200, response.json()
-        assert response.json()["respondents_total"] == 2
-        assert response.json()["filtered_total"] == 1
+        assert response.json()["total_count"] == 1
         assert response.json()["all_respondents"][0]["id"] == str(response_1.id)
         assert response.json()["all_respondents"][0]["respondent_id"] == str(respondent_1.id)
+
+    def test_question_responses_excludes_null_free_text(
+        self, client, staff_user_token, free_text_question
+    ):
+        """Responses listed under a question should exclude those with no free text."""
+        from consultations.models import Response
+
+        respondent_with_text = RespondentFactory(consultation=free_text_question.consultation)
+        respondent_no_text = RespondentFactory(consultation=free_text_question.consultation)
+        response_with_text = Response.objects.create(
+            question=free_text_question, respondent=respondent_with_text, free_text="some text"
+        )
+        Response.objects.create(
+            question=free_text_question, respondent=respondent_no_text, free_text=None
+        )
+
+        # Nested under question — should only return the response with free text
+        url = reverse(
+            "question-response-list",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "question_pk": free_text_question.id,
+            },
+        )
+        response = client.get(url, headers={"Authorization": f"Bearer {staff_user_token}"})
+
+        assert response.status_code == 200
+        data = response.json()["all_respondents"]
+        assert len(data) == 1
+        assert data[0]["id"] == str(response_with_text.id)
+
+    def test_consultation_responses_includes_null_free_text(
+        self, client, staff_user_token, free_text_question
+    ):
+        """Responses listed at consultation level (e.g. respondent detail) include all responses."""
+        from consultations.models import Response
+
+        respondent = RespondentFactory(consultation=free_text_question.consultation)
+        Response.objects.create(
+            question=free_text_question, respondent=respondent, free_text="some text"
+        )
+        Response.objects.create(question=free_text_question, respondent=respondent, free_text=None)
+
+        url = reverse(
+            "response-list",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+        response = client.get(
+            url,
+            query_params={"respondent_id": respondent.id},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        assert len(response.json()["all_respondents"]) == 2
 
     def test_patch_response_human_reviewed(
         self, client, staff_user, staff_user_token, free_text_annotation
@@ -898,7 +778,7 @@ class TestResponseViewSet:
         assert history[3].theme.key == "Human assigned theme C"
         assert history[3].assigned_by == staff_user
 
-        assert list(free_text_annotation.get_original_ai_themes()) == [ai_assigned_theme]
+        assert free_text_annotation.get_original_ai_theme_ids() == {ai_assigned_theme.id}
 
     def test_patch_response_themes_invalid(self, client, staff_user_token, free_text_annotation):
         url = reverse(
@@ -988,111 +868,12 @@ class TestResponseViewSet:
         data = orjson.loads(response.content)
 
         assert len(data["all_respondents"]) == 1
-        assert data["respondents_total"] == 2
-        assert data["filtered_total"] == 1
+        assert data["total_count"] == 1
 
         # Verify respondent data structure
         respondent = data["all_respondents"][0]
         assert respondent["identifier"] == str(respondent1.identifier)
         assert respondent["free_text_answer_text"] == response1.free_text
-
-    def test_semantic_search(
-        self,
-        client,
-        staff_user_token,
-        embedded_responses,
-    ):
-        """Test API endpoint returns responses in order of semantic similarity"""
-        url = reverse(
-            "response-list",
-            kwargs={"consultation_pk": embedded_responses["consultation_id"]},
-        )
-
-        with patch(
-            "consultations.api.filters.embed_text",
-            return_value=embedded_responses["search_mode"]["semantic"]["embedding"],
-        ):
-            response = client.get(
-                url,
-                query_params={
-                    "question_id": embedded_responses["question_id"],
-                    "searchMode": "semantic",
-                    "searchValue": "public transport",
-                },
-                headers={"Authorization": f"Bearer {staff_user_token}"},
-            )
-
-        assert response.status_code == 200
-
-        # Parse the response
-        data = orjson.loads(response.content)
-
-        assert len(data["all_respondents"]) == 5
-        assert data["respondents_total"] == 5
-        assert data["filtered_total"] == 5
-
-        # Verify order of responses by semantic similarity to searchValue
-        response_texts = [r["free_text_answer_text"] for r in data["all_respondents"]]
-        assert response_texts == [
-            "We need better buses and trains to connect our neighbourhoods",
-            "The local council should really be investing in public transport infrastructure to help reduce carbon emissions",
-            "I drive to work every day and fuel costs are rising rapidly",
-            "Something must be done about bin collections in my area",
-            "The local library needs more funding for children's programs",
-        ]
-
-    def test_representative_response_search(
-        self, client, staff_user_token, embedded_responses, django_assert_num_queries
-    ):
-        """Test API endpoint returns representative responses for a theme"""
-        url = reverse(
-            "response-list",
-            kwargs={"consultation_pk": embedded_responses["consultation_id"]},
-        )
-        theme_name = "Public Transport"
-        theme_description = "Local councils should invest in public transport infrastructure"
-
-        with patch(
-            "consultations.api.filters.embed_text",
-            return_value=embedded_responses["search_mode"]["representative"]["embedding"],
-        ):
-            """
-            Test for no N+1 queries. Regardless of the number of responses, we expect:
-            - 1 query to get authentication user for permission checking
-            - 1 query to get authentication user for is_flagged annotation
-            - 1 query to count respondents
-            - 1 query to count filtered responses
-            - 1 query to get responses with related data (includes is_read annotation)
-            - 1 query to calculate average hybrid_score across responses
-            - 1 query to calculate standard deviation of hybrid_score across responses
-            - 1 query to prefetch multiple choice answers
-            - 1 query to prefetch demographic data
-            """
-            with django_assert_num_queries(9):
-                response = client.get(
-                    url,
-                    query_params={
-                        "question_id": embedded_responses["question_id"],
-                        "searchMode": "representative",
-                        "searchValue": f"{theme_name} {theme_description}",
-                    },
-                    headers={"Authorization": f"Bearer {staff_user_token}"},
-                )
-
-        assert response.status_code == 200
-
-        # Parse the response
-        data = orjson.loads(response.content)
-
-        assert len(data["all_respondents"]) == 1
-        assert data["respondents_total"] == 5
-        assert data["filtered_total"] == 1
-
-        # Verify which responses are considered representative
-        response_texts = [r["free_text_answer_text"] for r in data["all_respondents"]]
-        assert response_texts == [
-            "The local council should really be investing in public transport infrastructure to help reduce carbon emissions",
-        ]
 
     def test_get_themes_for_response(self, client, staff_user_token, free_text_question):
         """Test API endpoint returns themes for a specific response"""
@@ -1273,3 +1054,165 @@ class TestResponseViewSet:
 
         assert response.status_code == 200
         assert response.json()["all_respondents"][0]["themes"] == []
+
+    def test_mark_read_bulk_marks_all_responses(
+        self, client, staff_user, staff_user_token, free_text_question
+    ):
+        """Bulk endpoint marks every supplied response as read in a single request."""
+        responses = [ResponseFactory(question=free_text_question) for _ in range(3)]
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": [str(response.id) for response in responses]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        for response in responses:
+            assert response.is_read_by(staff_user)
+
+    def test_mark_read_bulk_is_idempotent(
+        self, client, staff_user, staff_user_token, free_text_question
+    ):
+        """Re-sending already-read responses does not error or create duplicate records."""
+        response = ResponseFactory(question=free_text_question)
+        response.mark_as_read_by(staff_user)
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": [str(response.id)]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        assert ResponseReadBy.objects.filter(response=response, user=staff_user).count() == 1
+
+    def test_mark_read_bulk_ignores_responses_outside_consultation(
+        self, client, staff_user, staff_user_token, free_text_question
+    ):
+        """Responses belonging to another consultation are not marked, even if their ID is sent."""
+        in_scope = ResponseFactory(question=free_text_question)
+
+        other_consultation = ConsultationFactory(title="Other", code="other-consultation")
+        other_question = QuestionFactory(consultation=other_consultation)
+        out_of_scope = ResponseFactory(question=other_question)
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": [str(in_scope.id), str(out_of_scope.id)]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        assert in_scope.is_read_by(staff_user)
+        assert not out_of_scope.is_read_by(staff_user)
+
+    def test_mark_read_bulk_rejects_empty_payload(
+        self, client, staff_user_token, free_text_question
+    ):
+        """An empty or missing response_ids list is rejected with a 400."""
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        empty_response = client.post(
+            url,
+            data={"response_ids": []},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert empty_response.status_code == 400
+
+    def test_mark_read_bulk_skips_invalid_uuids(
+        self, client, staff_user, staff_user_token, free_text_question
+    ):
+        """Non-UUID values are skipped without erroring; valid IDs are still marked."""
+        valid_response = ResponseFactory(question=free_text_question)
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": ["not-a-uuid", str(valid_response.id)]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        assert valid_response.is_read_by(staff_user)
+
+    def test_mark_read_bulk_rejects_payload_over_limit(
+        self, client, staff_user_token, free_text_question
+    ):
+        """A payload exceeding the per-request cap is rejected with a 400."""
+        too_many_ids = [str(uuid4()) for _ in range(MAX_BULK_MARK_READ + 1)]
+
+        url = reverse(
+            "response-mark-read-bulk",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+
+        api_response = client.post(
+            url,
+            data={"response_ids": too_many_ids},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 400
+
+    def test_mark_read_bulk_nested_under_question_scopes_to_that_question(
+        self, client, staff_user, staff_user_token, consultation
+    ):
+        """When nested under a question, only that question's responses are marked."""
+        question_in_scope = QuestionFactory(consultation=consultation, number=1)
+        question_other = QuestionFactory(consultation=consultation, number=2)
+
+        response_in_scope = ResponseFactory(question=question_in_scope)
+        response_other_question = ResponseFactory(question=question_other)
+
+        url = reverse(
+            "question-response-mark-read-bulk",
+            kwargs={
+                "consultation_pk": consultation.id,
+                "question_pk": question_in_scope.id,
+            },
+        )
+
+        api_response = client.post(
+            url,
+            data={
+                "response_ids": [
+                    str(response_in_scope.id),
+                    str(response_other_question.id),
+                ]
+            },
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert api_response.status_code == 200
+        assert response_in_scope.is_read_by(staff_user)
+        assert not response_other_question.is_read_by(staff_user)

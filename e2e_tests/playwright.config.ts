@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+import { testAccessToken } from "./constants";
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -20,13 +22,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Opt out of parallel tests. */
+  workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [
-    ["list"],
-    ["html", { open: "never" }],
-  ],
+  reporter: [["list"], ["html", { open: "never" }]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
@@ -37,8 +36,13 @@ export default defineConfig({
 
     /* Global headers for auth-at-the-edge */
     extraHTTPHeaders: {
-      "x-amzn-oidc-data": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIn0.k27nav4gbG-2lIArYInTqP1GUz2LRuzb3lWandMKRoY" // pragma: allowlist secret
+      "x-amzn-oidc-data": testAccessToken,
     },
+  },
+
+  /* Global expect timeout */
+  expect: {
+    timeout: 30000,
   },
 
   /* Configure projects for major browsers */

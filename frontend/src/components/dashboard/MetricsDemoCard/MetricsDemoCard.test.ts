@@ -8,11 +8,13 @@ describe("MetricsDemoCard", () => {
     title: "Test Demo Card",
     items: [
       {
+        id: "test-id-1",
         title: "Test Demo Item 1",
         count: 5,
         percentage: 25,
       },
       {
+        id: "test-id-2",
         title: "Test Demo Item 2",
         count: 15,
         percentage: 75,
@@ -20,16 +22,19 @@ describe("MetricsDemoCard", () => {
     ],
     extraItems: [
       {
+        id: "test-id-3",
         title: "Test Demo Item 3",
         count: 5,
         percentage: 25,
       },
       {
+        id: "test-id-4",
         title: "Test Demo Item 4",
         count: 5,
         percentage: 25,
       },
       {
+        id: "test-id-5",
         title: "Test Demo Item 5",
         count: 5,
         percentage: 25,
@@ -96,6 +101,7 @@ describe("MetricsDemoCard", () => {
       title: testData.title,
       items: [
         {
+          id: "test-long-count",
           title: "Test Demo Item 1",
           count: LONG_COUNT,
           percentage: 100,

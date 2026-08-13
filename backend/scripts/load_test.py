@@ -36,10 +36,10 @@ import django
 django.setup()
 
 # Now we can import Django models
-from django.contrib.auth import get_user_model  # noqa: E402
-from django.contrib.auth.models import AbstractBaseUser  # noqa: E402
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractBaseUser
 
-from consultations.models import (  # noqa: E402
+from consultations.models import (
     CandidateTheme,
     Consultation,
     DemographicOption,
@@ -137,7 +137,7 @@ def periodic_reconnect() -> None:
         connection.close()
         connection.ensure_connection()
         print("  ♻️  Reconnected to database")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"  ⚠️  Warning: Failed to reconnect to database: {e}")
 
 
@@ -401,9 +401,9 @@ def create_consultation(
         SystemExit: If the user does not exist in the database
     """
     stage_mapping = {
-        Stage.NO_THEMES: Consultation.Stage.THEME_SIGN_OFF,
-        Stage.CANDIDATE_THEMES: Consultation.Stage.THEME_SIGN_OFF,
-        Stage.THEMES_APPROVED: Consultation.Stage.THEME_MAPPING,  # After "Confirm and Proceed" clicked
+        Stage.NO_THEMES: Consultation.Stage.FINALISING_THEMES,
+        Stage.CANDIDATE_THEMES: Consultation.Stage.FINALISING_THEMES,
+        Stage.THEMES_APPROVED: Consultation.Stage.ASSIGNING_THEMES,  # After "Confirm and Proceed" clicked
         Stage.ANALYSIS: Consultation.Stage.ANALYSIS,  # After response annotations imported
     }
 
@@ -423,7 +423,7 @@ def create_consultation(
     consultation = Consultation.objects.create(
         title=name,
         code=name.lower().replace(" ", "-"),
-        stage=stage_mapping.get(stage, Consultation.Stage.THEME_SIGN_OFF),
+        stage=stage_mapping.get(stage, Consultation.Stage.FINALISING_THEMES),
         display_ai_selected_themes=True,
         model_name=Consultation.ModelName.GPT_41,
     )
@@ -452,7 +452,7 @@ def create_demographics(consultation: Consultation) -> dict[str, list[Demographi
     for field_name, options in SAMPLE_DEMOGRAPHICS.items():
         demographics[field_name] = []
         for option_value in options:
-            demo_option, created = DemographicOption.objects.get_or_create(
+            demo_option, _created = DemographicOption.objects.get_or_create(
                 consultation=consultation,
                 field_name=field_name,
                 field_value=option_value,
@@ -503,7 +503,7 @@ def create_respondents(
         # Prepare M2M relationships for demographics
         demographics_m2m = []
         for respondent in created_respondents:
-            for field_name, options in demographics.items():
+            for options in demographics.values():
                 if options:
                     demographics_m2m.append(
                         Respondent.demographics.through(
@@ -646,8 +646,8 @@ def create_responses_for_question(
             batch = m2m_to_create[i : i + M2M_BATCH_SIZE]
             Response.chosen_options.through.objects.bulk_create(batch)
 
-    # Update question's total_responses count
-    question.update_total_responses()
+    # Update question's response counts
+    question.update_response_counts()
 
     return len(all_created)
 
@@ -699,7 +699,7 @@ def resume_load_test(
 
     # Get demographics
     demographics = {}
-    for field_name in SAMPLE_DEMOGRAPHICS.keys():
+    for field_name in SAMPLE_DEMOGRAPHICS:
         options = list(
             DemographicOption.objects.filter(consultation=consultation, field_name=field_name)
         )
@@ -728,7 +728,7 @@ def resume_load_test(
 
             # Add demographics
             for respondent in created:
-                for field_name, options in demographics.items():
+                for options in demographics.values():
                     if options:
                         m2m_to_create.append(
                             Respondent.demographics.through(
@@ -862,10 +862,10 @@ def resume_load_test(
             print(f"✓ Marked {updated_count} questions as signed off (theme_status=CONFIRMED)")
 
             # Update consultation stage if needed
-            if consultation.stage != Consultation.Stage.THEME_MAPPING:
-                consultation.stage = Consultation.Stage.THEME_MAPPING
+            if consultation.stage != Consultation.Stage.ASSIGNING_THEMES:
+                consultation.stage = Consultation.Stage.ASSIGNING_THEMES
                 consultation.save(update_fields=["stage"])
-                print("✓ Updated consultation stage to THEME_MAPPING")
+                print("✓ Updated consultation stage to ASSIGNING_THEMES")
         else:
             # Load existing selected themes
             all_selected_themes = {}
@@ -1235,7 +1235,7 @@ def test_database_connection() -> None:
         print("✓ Database connection successful\n")
     except OperationalError as e:
         print("✗ ERROR: Could not connect to the database\n")
-        print(f"Error details: {str(e)}\n")
+        print(f"Error details: {e!s}\n")
         print("Troubleshooting steps:")
         print("  1. Check if PostgreSQL is running:")
         print("     - Docker: docker-compose up -d postgres")

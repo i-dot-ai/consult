@@ -11,7 +11,7 @@
   } from "../../../global/types";
 
   import TabView from "../../TabView/TabView.svelte";
-  import Chart from "../Chart.svelte";
+  import Chart from "../../Chart/Chart.svelte";
   import MetricsDemoCard from "../MetricsDemoCard/MetricsDemoCard.svelte";
   import MetricsSummary from "../MetricsSummary/MetricsSummary.svelte";
   import Panel from "../Panel/Panel.svelte";
@@ -61,9 +61,9 @@
     ),
   );
 
-  let totalResponses = $derived(
+  let totalResponseCount = $derived(
     questions?.reduce(
-      (acc, question) => acc + (question?.total_responses || 0),
+      (acc, question) => acc + (question?.total_response_count || 0),
       0,
     ),
   );
@@ -88,7 +88,7 @@
           class={clsx([
             "flex",
             "justify-between",
-            "max-w-[40rem]",
+            "max-w-160",
             "flex-wrap",
             !loading &&
               !chartQuestions.length &&
@@ -97,7 +97,7 @@
         >
           <MetricsSummary
             questionCount={questions?.length}
-            responseCount={totalResponses}
+            responseCount={totalResponseCount}
             demoCount={demoOptionCategories.length}
           />
         </div>
@@ -138,8 +138,9 @@
                 >
                   <div id="legend-container"></div>
 
-                  <div class="max-h-[10rem]" data-testid="metrics-chart">
+                  <div class="max-h-40" data-testid="metrics-chart">
                     <Chart
+                      interactive={false}
                       labels={selectedChartQuestion?.multiple_choice_answer?.map(
                         (multiChoiceAnswer: QuestionMultiAnswer) => {
                           return {
@@ -168,7 +169,6 @@
     <div transition:slide class="mt-8">
       <TabView
         variant="dots"
-        title="Demographics Breakdown"
         tabs={paginatedCategories.map((_: string[], index: number) => ({
           title: `Demo option category page ${index + 1}`,
           id: `tab-${index}`,
@@ -196,6 +196,7 @@
             )}
 
             <MetricsDemoCard
+              testId="demographics-metrics-summary"
               {consultationId}
               title={category}
               items={[...demoOptions]
@@ -211,6 +212,7 @@
                   },
                 )
                 .map((demoOption: DemoOptionsResponseItem) => ({
+                  id: demoOption.id,
                   title: demoOption.value,
                   count: demoOption.count,
                   percentage: getPercentage(demoOption.count, total),

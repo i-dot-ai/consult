@@ -19,6 +19,7 @@
   export let name: string | undefined = undefined;
   export let setValue: (newValue: string) => void = () => {};
   export let required: boolean = false;
+  export let testId: string | undefined = undefined;
 
   export let variant: "default" | "search" = "default";
 </script>
@@ -33,7 +34,7 @@
       "p-1",
       "border",
       "border-gray-300",
-      "rounded-sm",
+      "rounded-xs",
       "focus:outline-2",
       "focus:outline-yellow-300",
       variant === "search" && "pl-8 pr-4",
@@ -45,6 +46,7 @@
     {value}
     {autocomplete}
     {required}
+    data-testid={testId}
     on:input={(e) => setValue((e.target as HTMLInputElement).value)}
   />
 

@@ -1,5 +1,5 @@
 import { getApiAnswersUrl, Suffixes } from "../routes";
-import type { AnswersResponse } from "../types";
+import type { ResponsesBody } from "../types";
 
 // ============================================================
 // Query Keys and API URLs
@@ -39,7 +39,7 @@ export const representativeResponsesQueryOptions = ({
   variant,
 }: RepresentativeResponsesParams) => ({
   queryKey: responses.representativeResponses.key(variant, themeId),
-  queryFn: async (): Promise<AnswersResponse> => {
+  queryFn: async (): Promise<ResponsesBody[]> => {
     const queryString = new URLSearchParams({
       searchMode: "representative",
       searchValue: `${themeName} ${themeDescription}`,

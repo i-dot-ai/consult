@@ -5,12 +5,7 @@
 
   interface Props {
     variant?:
-      | "default"
-      | "dark"
-      | "warning"
-      | "primary"
-      | "primary-light"
-      | "success";
+      "default" | "dark" | "warning" | "primary" | "primary-light" | "success";
     children: Snippet;
   }
   let { variant = "default", children }: Props = $props();

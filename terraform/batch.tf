@@ -24,7 +24,7 @@ module "batch_job_mapping" {
   use_fargate              = true
   iam_role_name            = "${local.name}-mapping-role"
   platform_capabilities    = ["FARGATE"]
-  task_memory_requirements = "2048"
+  task_memory_requirements = "4096"
   env_vars = merge(local.base_env_vars, {
     "SLACK_WEBHOOK_URL"        = data.aws_ssm_parameter.slack_webhook_url.value,
     "EXECUTION_CONTEXT"        = "batch"
@@ -32,6 +32,8 @@ module "batch_job_mapping" {
     "APP_NAME"                 = "${var.project_name}-mapping"
     "LLM_GATEWAY_URL"          = local.llm_gateway_url
     "AWS_ACCOUNT_ID"           = data.aws_caller_identity.current.account_id
+    "SENTRY_DSN"               = var.backend_sentry_dsn
+    "ENVIRONMENT"              = terraform.workspace
   })
   additional_iam_policies = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
   secrets = [
@@ -52,7 +54,7 @@ module "batch_job_sign_off" {
   use_fargate              = true
   iam_role_name            = "${local.name}-sign-off-role"
   platform_capabilities    = ["FARGATE"]
-  task_memory_requirements = "2048"
+  task_memory_requirements = "4096"
   env_vars = merge(local.base_env_vars, {
     "SLACK_WEBHOOK_URL"        = data.aws_ssm_parameter.slack_webhook_url.value,
     "EXECUTION_CONTEXT"        = "batch"
@@ -60,6 +62,8 @@ module "batch_job_sign_off" {
     "DOCKER_BUILDER_CONTAINER" = "consult-sign-off"
     "LLM_GATEWAY_URL"          = local.llm_gateway_url
     "AWS_ACCOUNT_ID"           = data.aws_caller_identity.current.account_id
+    "SENTRY_DSN"               = var.backend_sentry_dsn
+    "ENVIRONMENT"              = terraform.workspace
   })
   additional_iam_policies = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
   secrets = [

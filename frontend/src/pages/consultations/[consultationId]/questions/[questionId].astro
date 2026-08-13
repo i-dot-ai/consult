@@ -1,0 +1,31 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section/Section.svelte";
+
+import QuestionDetail from "../../../../components/screens/QuestionDetail/QuestionDetail.svelte";
+import type { AstroGlobalRuntime } from "../../../../global/types";
+import { buildResponse, fetchBackendApi } from "../../../../global/api";
+import { getApiQuestionUrl } from "../../../../global/routes";
+
+const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
+  .params;
+
+const { error, status } = await fetchBackendApi(
+  Astro,
+  getApiQuestionUrl(consultationId || "", questionId || ""),
+);
+
+if (error) {
+  return buildResponse(status);
+}
+---
+
+<Layout>
+  <Section>
+    <QuestionDetail
+      client:load
+      consultationId={consultationId || ""}
+      questionId={questionId || ""}
+    />
+  </Section>
+</Layout>

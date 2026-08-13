@@ -51,14 +51,6 @@ locals {
       value = "postgres://${module.rds.rds_instance_username}:${module.rds.rds_instance_db_password}@${module.rds.db_instance_address}/${module.rds.db_instance_name}"
     },
     {
-      name  = "GUNICORN_WORKERS"
-      value = "placeholder"
-    },
-    {
-      name  = "GUNICORN_TIMEOUT"
-      value = "placeholder"
-    },
-    {
       name  = "ADMIN_USERS"
       value = "placeholder"
     },
@@ -119,6 +111,21 @@ resource "aws_ssm_parameter" "env_secrets" {
   lifecycle {
     ignore_changes = [
       value,
+    ]
+  }
+}
+
+resource "aws_ssm_parameter" "image_tag_placeholders" {
+  for_each = toset(["backend", "frontend", "pipeline-mapping", "pipeline-sign-off"])
+
+  type  = "String"
+  name  = "/${local.name}/env_secrets/${each.key}/IMAGE_TAG"
+  value = "latest"
+
+  lifecycle {
+    ignore_changes = [
+      value,
+      tags,
     ]
   }
 }

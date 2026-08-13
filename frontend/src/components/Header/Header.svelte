@@ -56,7 +56,7 @@
             "before:bg-primary",
             "before:h-full",
             "before:ml-6",
-            "before:-skew-x-[30deg]",
+            "before:skew-x-[-30deg]",
             "before:w-32",
           ])}
         >

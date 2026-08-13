@@ -1,9 +1,8 @@
 import random
-from typing import Literal, Optional
+from typing import Literal
 
 import yaml
 from django.conf import settings
-from django_rq import job
 
 from consultations.models import (
     Consultation,
@@ -21,6 +20,7 @@ from factories import (
     SelectedThemeFactory,
 )
 from hosting_environment import HostingEnvironment
+from rq_context import job
 
 logger = settings.LOGGER
 
@@ -28,10 +28,12 @@ DATA_BY_STAGE = {
     Consultation.Stage.ANALYSIS: {
         "CONSULTATION_NAME": "Dummy Consultation at Analysis Stage",
         "QUESTION_THEME_STATUS": Question.ThemeStatus.CONFIRMED,
+        "CONSULTATION_CODE": "dummy-consultation-analysis",
     },
-    Consultation.Stage.THEME_SIGN_OFF: {
-        "CONSULTATION_NAME": "Dummy Consultation at Theme Sign Off Stage",
+    Consultation.Stage.FINALISING_THEMES: {
+        "CONSULTATION_NAME": "Dummy Consultation at Finalising Themes Stage",
         "QUESTION_THEME_STATUS": Question.ThemeStatus.DRAFT,
+        "CONSULTATION_CODE": "dummy-consultation-finalising",
     },
 }
 
@@ -39,7 +41,8 @@ DATA_BY_STAGE = {
 def create_consultation(stage):
     """Create and return a Consultation."""
     name = DATA_BY_STAGE[stage]["CONSULTATION_NAME"]
-    return ConsultationFactory(title=name, stage=stage)
+    code = DATA_BY_STAGE[stage]["CONSULTATION_CODE"]
+    return ConsultationFactory(title=name, stage=stage, code=code)
 
 
 def create_respondents(consultation, number_respondents):
@@ -142,8 +145,8 @@ def create_response_chosen_options(response, multiple_choice_options):
 def create_dummy_consultation_from_yaml(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
-    consultation: Optional[Consultation] = None,
-    consultation_stage: Optional[Literal["theme_sign_off", "analysis"]] = None,
+    consultation: Consultation | None = None,
+    consultation_stage: Literal["finalising_themes", "analysis"] | None = None,
 ) -> ConsultationFactory:
     """
     Create consultation with questions, responses and themes from yaml file.
@@ -208,7 +211,7 @@ def create_dummy_consultation_from_yaml(
 def create_dummy_consultation_from_yaml_job(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
-    consultation: Optional[Consultation] = None,
+    consultation: Consultation | None = None,
 ):
     create_dummy_consultation_from_yaml(
         file_path=file_path,

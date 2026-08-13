@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.db.models import CharField, Prefetch, Value
 from django.db.models.functions import MD5, Cast, Concat
 from django.shortcuts import get_object_or_404
@@ -17,8 +19,8 @@ from consultations.api.serializers import (
 
 class CandidateThemeViewSet(ModelViewSet):
     serializer_class = CandidateThemeSerializer
-    permission_classes = [IsAuthenticated, CanSeeConsultation]
-    http_method_names = ["get", "post"]
+    permission_classes: ClassVar[list] = [IsAuthenticated, CanSeeConsultation]
+    http_method_names: ClassVar[list] = ["get", "post"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
@@ -98,6 +100,7 @@ class CandidateThemeViewSet(ModelViewSet):
             models.CandidateThemeResponse.objects.filter(
                 candidate_theme=candidate_theme,
             )
+            .filter(response__free_text__isnull=False)
             .select_related("response")
             .annotate(
                 sort_key=MD5(

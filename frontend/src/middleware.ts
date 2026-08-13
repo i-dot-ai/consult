@@ -1,7 +1,12 @@
-import type { APIContext, MiddlewareHandler, MiddlewareNext } from "astro";
+import type { APIContext, MiddlewareNext } from "astro";
 import { Routes } from "./global/routes";
 import { fetchBackendApi } from "./global/api";
+import { LOCAL_USERS } from "./global/localUsers";
 import { getBackendUrl, getEnv } from "./global/utils";
+import { AuthReasons } from "./global/types";
+import { defineMiddleware, sequence } from "astro:middleware";
+import { randomUUID } from "node:crypto";
+import logging from "./global/logging";
 
 const getCspValue = (): string => {
   return `
@@ -16,91 +21,96 @@ const getCspValue = (): string => {
     .trim();
 };
 
-export const onRequest: MiddlewareHandler = async (
-  context: APIContext,
-  next: MiddlewareNext,
-) => {
-  const url = context.url;
-  const backendUrl = getBackendUrl();
+class TokenExpiredError extends Error {}
 
-  if (/^\/api\//.test(url.pathname)) {
-    return next();
-  }
+const mainMiddleware = defineMiddleware(
+  async (context: APIContext, next: MiddlewareNext) => {
+    const url = context.url;
+    const backendUrl = getBackendUrl();
 
-  if (/^\/health[/]?$/.test(url.pathname)) {
-    return next();
-  }
+    if (/^\/api\//.test(url.pathname)) {
+      return next();
+    }
 
-  // Proxy Django admin and static files without applying frontend security headers
-  if (
-    /^\/admin(\/|$)/.test(url.pathname) ||
-    /^\/django-rq(\/|$)/.test(url.pathname) ||
-    /^\/static(\/|$)/.test(url.pathname)
-  ) {
-    return await proxyToDjango(context, backendUrl);
-  }
+    if (/^\/health[/]?$/.test(url.pathname)) {
+      return next();
+    }
 
-  let internalAccessToken = null;
-  let userIsStaff = false;
+    // Proxy Django admin and static files without applying frontend security headers
+    if (
+      /^\/admin(\/|$)/.test(url.pathname) ||
+      /^\/django-rq(\/|$)/.test(url.pathname) ||
+      /^\/static(\/|$)/.test(url.pathname)
+    ) {
+      return await proxyToDjango(context, backendUrl);
+    }
 
-  const env = getEnv().toLowerCase();
-  const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
+    const env = getEnv().toLowerCase();
+    const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
-  if (env === "local" || env === "test") {
-    internalAccessToken =
-      process.env.TEST_INTERNAL_ACCESS_TOKEN ||
-      import.meta.env?.TEST_INTERNAL_ACCESS_TOKEN;
-  } else {
-    internalAccessToken = context.request.headers.get("x-amzn-oidc-data");
-  }
+    const internalAccessToken =
+      env === "local" || env === "test"
+        ? context.cookies.get("dev_email")?.value === LOCAL_USERS.POLICY.EMAIL
+          ? LOCAL_USERS.POLICY.INTERNAL_ACCESS_TOKEN
+          : LOCAL_USERS.ADMIN.INTERNAL_ACCESS_TOKEN
+        : context.request.headers.get("x-amzn-oidc-data");
 
-  if (internalAccessToken) {
-    try {
-      await validateUserToken(backendUrl, internalAccessToken, context);
-    } catch (e: unknown) {
-      console.error("Unknown error signing in", e);
+    if (internalAccessToken) {
+      try {
+        await validateUserToken(backendUrl, internalAccessToken, context);
+      } catch (e: unknown) {
+        if (e instanceof TokenExpiredError) {
+          console.warn("[auth] SSO token expired, redirecting to logout");
+          return context.redirect(Routes.SignOut);
+        }
+        console.error("Unknown error signing in", JSON.stringify(e, null, 2));
+        return context.redirect(Routes.SignInError);
+      }
+    } else {
+      console.error("Authentication token not found");
       return context.redirect(Routes.SignInError);
     }
-  } else {
-    console.error("Authentication token not found");
-    return context.redirect(Routes.SignInError);
-  }
 
-  try {
-    const resp = await fetchBackendApi<{ is_staff: boolean }>(
-      context,
-      Routes.ApiUser,
-    );
-    userIsStaff = Boolean(resp.is_staff);
-  } catch (e) {
-    console.error("Error accessing user info", e);
-  }
+    const { data, error, status } = await fetchBackendApi<{
+      is_staff: boolean;
+    }>(context, Routes.ApiUser);
 
-  for (const protectedStaffRoute of protectedStaffRoutes) {
-    if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
-      console.error("Redirecting to /");
-      return context.redirect(Routes.Home);
+    if (!data) {
+      console.error(
+        "Error accessing user info - ",
+        `Status: ${status} - `,
+        typeof error === "object" ? JSON.stringify(error, null, 2) : error,
+      );
     }
-  }
 
-  const response = await next();
+    const userIsStaff = Boolean(data?.is_staff || false);
 
-  const EXTRA_HEADERS: Record<string, string> = {
-    "X-Content-Type-Options": "nosniff",
-    "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Permissions-Policy":
-      "camera=(), microphone=(), geolocation=(), payment=()",
-    "X-Frame-Options": "DENY",
-    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-    "Content-Security-Policy": getCspValue(),
-  };
+    for (const protectedStaffRoute of protectedStaffRoutes) {
+      if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
+        console.error("Redirecting to /");
+        return context.redirect(Routes.Home);
+      }
+    }
 
-  for (const [key, value] of Object.entries(EXTRA_HEADERS)) {
-    response.headers.set(key, value);
-  }
+    const response = await next();
 
-  return response;
-};
+    const EXTRA_HEADERS: Record<string, string> = {
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "strict-origin-when-cross-origin",
+      "Permissions-Policy":
+        "camera=(), microphone=(), geolocation=(), payment=()",
+      "X-Frame-Options": "DENY",
+      "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+      "Content-Security-Policy": getCspValue(),
+    };
+
+    for (const [key, value] of Object.entries(EXTRA_HEADERS)) {
+      response.headers.set(key, value);
+    }
+
+    return response;
+  },
+);
 
 async function validateUserToken(
   backendUrl: string,
@@ -116,15 +126,26 @@ async function validateUserToken(
     headers: { "Content-Type": "application/json" },
   });
   const data = await response.json();
+  if (response.status === 403 && data.detail === AuthReasons.TOKEN_EXPIRED) {
+    throw new TokenExpiredError("SSO token has expired");
+  }
 
-  context.cookies.set("sessionId", data.sessionId, {
-    path: "/",
-    sameSite: "strict",
-  });
-  context.cookies.set("accessToken", data.access, {
-    path: "/",
-    sameSite: "strict",
-  });
+  if (!response.ok) {
+    throw new Error(
+      `Token validation failed with status ${response.status}: ${data.detail}`,
+    );
+  }
+
+  if (data?.sessionId && data?.access) {
+    context.cookies.set("sessionId", data?.sessionId, {
+      path: "/",
+      sameSite: "strict",
+    });
+    context.cookies.set("accessToken", data?.access, {
+      path: "/",
+      sameSite: "strict",
+    });
+  }
 }
 
 async function proxyToDjango(context: APIContext, backendUrl: string) {
@@ -159,6 +180,11 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
     const csrfCookie = context.cookies.get("csrftoken");
     if (csrfCookie) {
       headersToSend.set("X-CSRFToken", csrfCookie.value);
+    }
+
+    const contextId = context.locals.contextId;
+    if (contextId) {
+      headersToSend.set("x-context-id", contextId);
     }
 
     const response = await fetch(fullBackendUrl, {
@@ -200,3 +226,26 @@ async function proxyToDjango(context: APIContext, backendUrl: string) {
     );
   }
 }
+
+const contextMiddleware = defineMiddleware(async (context, next) => {
+  const contextId = randomUUID();
+
+  context.locals.contextId = contextId;
+
+  const response = await next();
+
+  response.headers.set("x-context-id", contextId);
+
+  return response;
+});
+
+export const onRequest = sequence(
+  // Adds x-context-id to each response
+  contextMiddleware,
+
+  // Adds logging
+  logging.middleware,
+
+  // Rest of the middleware
+  mainMiddleware,
+);

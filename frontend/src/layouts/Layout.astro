@@ -8,14 +8,14 @@ import FloatingPanelContent from "../components/navigation/FloatingPanelContent/
 import { fetchBackendApi } from "../global/api";
 import { getApiConsultationUrl, Routes, Suffixes } from "../global/routes";
 import type { AstroGlobalRuntime, Consultation } from "../global/types";
-import { getLangfuseUrl } from "../global/utils";
+import { getEnv, getLangfuseUrl } from "../global/utils";
 
 function isConsultationSubUrl(url: string): boolean {
   const consultationUrlRe = /\/consultations\/.*\S.*/;
   return consultationUrlRe.test(url);
 }
-function isThemeSignOffUrl(url: string): boolean {
-  return url.includes(Suffixes.ThemeSignOff);
+function isFinalisingThemeUrl(url: string): boolean {
+  return url.includes(Suffixes.FinaliseThemes);
 }
 function isEvaluationsUrl(url: string): boolean {
   return url.startsWith(Routes.Evaluations);
@@ -25,7 +25,8 @@ function isDashboardUrl(url: string): boolean {
     return false;
   }
   return (
-    url.includes(Suffixes.Consultations) && !url.includes(Suffixes.ThemeSignOff)
+    url.includes(Suffixes.Consultations) &&
+    !url.includes(Suffixes.FinaliseThemes)
   );
 }
 function getPathText(url: string, consultation?: Consultation): string[] {
@@ -35,8 +36,8 @@ function getPathText(url: string, consultation?: Consultation): string[] {
     parts.push(consultation.title);
   }
 
-  if (isThemeSignOffUrl(url)) {
-    parts.push("Theme Sign Off");
+  if (isFinalisingThemeUrl(url)) {
+    parts.push("Finalising Themes");
   } else if (isDashboardUrl(url)) {
     parts.push("Dashboard");
   } else if (isEvaluationsUrl(url)) {
@@ -52,31 +53,37 @@ let isStaff: boolean = false;
 let email: string | unknown = null;
 let consultation: Consultation | undefined;
 let showProcess: boolean = isConsultationSubUrl(pathname);
-try {
-  const data = await fetchBackendApi<{ is_staff: boolean; email: string }>(
-    Astro,
-    Routes.ApiUser,
-  );
+
+const { data, error } = await fetchBackendApi<{
+  is_staff: boolean;
+  email: string;
+}>(Astro, Routes.ApiUser);
+
+if (error || !data) {
+  console.log("user not signed in", error);
+} else {
   isStaff = data.is_staff;
   email = data.email;
   console.log(`user ${email} signed in`);
-} catch (e) {
-  console.log("user not signed in", e);
 }
 
 if (consultationId) {
-  try {
-    consultation = await fetchBackendApi<Consultation>(
+  const { data: consultationData, error: consultationError } =
+    await fetchBackendApi<Consultation>(
       Astro,
       getApiConsultationUrl(consultationId),
     );
-  } catch {
+
+  if (consultationError) {
     console.log("failed to retrieve consultation data");
+  } else {
+    consultation = consultationData;
   }
 }
 
 // Get langfuse URL server-side so it's available at runtime in ECS
 const langfuseUrl = getLangfuseUrl();
+const env = getEnv().toLowerCase();
 ---
 
 <!doctype html>
@@ -88,7 +95,7 @@ const langfuseUrl = getLangfuseUrl();
     <title>Consult</title>
   </head>
   <body>
-    <div class="mx-auto flex h-full max-w-screen-3xl flex-col">
+    <div class="mx-auto flex h-full max-w-(--breakpoint-3xl) flex-col">
       <HeaderConsult
         client:load
         isStaff={isStaff}
@@ -98,6 +105,7 @@ const langfuseUrl = getLangfuseUrl();
         consultationId={consultationId}
         consultationStage={consultation?.stage}
         langfuseUrl={langfuseUrl}
+        {env}
       />
 
       <main class="grow">

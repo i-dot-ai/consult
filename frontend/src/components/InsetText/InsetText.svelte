@@ -11,8 +11,7 @@
     children: unknown;
   }>();
 
-  // Ensure variant is a valid key for type safety
-  const validVariant = variant as keyof typeof variantClasses;
+  const validVariant = $derived(variant as keyof typeof variantClasses);
 
   const variantClasses = {
     default: "border-blue-500 bg-blue-50",

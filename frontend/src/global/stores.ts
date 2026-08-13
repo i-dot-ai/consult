@@ -55,6 +55,13 @@ export type MockFetch<T> = (config: {
   body?: string;
 }) => T;
 
+export type StoreFetch = (
+  url: string,
+  method?: string,
+  body?: Record<string, unknown>,
+  headers?: HeadersInit,
+) => Promise<void>;
+
 // Shared fetch logic
 export const createFetchStore = <T>({
   mockFetch,
@@ -65,12 +72,7 @@ export const createFetchStore = <T>({
     isLoading: boolean;
     error: string | null;
     status: number;
-    fetch: (
-      url: string,
-      method?: string,
-      body?: BodyInit,
-      headers?: HeadersInit,
-    ) => Promise<void>;
+    fetch: StoreFetch;
   }> = writable({
     data: null,
     isLoading: false,
@@ -80,20 +82,22 @@ export const createFetchStore = <T>({
   });
 
   let prevPromise: Promise<void> | null = null;
+  let prevUrl: string;
   let resolvePrev: (() => void) | null = null;
   let debouncedFetch: ReturnType<typeof debounce> | null = null;
 
   const doFetch = async (
     url: string,
     method: string = "GET",
-    body?: BodyInit,
+    // Narrowed from BodyInit — all callers pass plain objects that are JSON.stringify'd below
+    body?: Record<string, unknown>,
     headers?: HeadersInit,
   ) => {
     // immediate feedback to the UI that fetching has started
     // even though it awaits debounce timeout
     store.update((store) => ({ ...store, isLoading: true, error: "" }));
 
-    if (!debouncedFetch) {
+    if (!debouncedFetch || (prevUrl && prevUrl !== url)) {
       debouncedFetch = debounce(async () => {
         try {
           if (mockFetch) {
@@ -150,6 +154,8 @@ export const createFetchStore = <T>({
 
       debouncedFetch!();
     });
+
+    prevUrl = url;
 
     return prevPromise;
   };

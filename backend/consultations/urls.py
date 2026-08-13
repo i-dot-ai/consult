@@ -27,6 +27,7 @@ consultations_router.register("responses", ResponseViewSet, basename="response")
 questions_router = NestedDefaultRouter(consultations_router, "questions", lookup="question")
 questions_router.register("selected-themes", SelectedThemeViewSet, basename="selected-theme")
 questions_router.register("candidate-themes", CandidateThemeViewSet, basename="candidate-theme")
+questions_router.register("responses", ResponseViewSet, basename="question-response")
 
 
 urlpatterns = [

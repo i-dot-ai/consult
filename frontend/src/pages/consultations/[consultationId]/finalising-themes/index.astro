@@ -1,0 +1,27 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+
+import FinalisingThemesArchive from "../../../../components/screens/FinalisingThemesArchive/FinalisingThemesArchive.svelte";
+import Section from "../../../../components/Section/Section.svelte";
+import type { AstroGlobalRuntime } from "../../../../global/types";
+import { buildResponse, fetchBackendApi } from "../../../../global/api";
+import { getApiConsultationUrl } from "../../../../global/routes";
+
+const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
+
+const { error: consultationError, status: consultationStatus } =
+  await fetchBackendApi(Astro, getApiConsultationUrl(consultationId || ""));
+
+if (consultationError) {
+  return buildResponse(consultationStatus);
+}
+---
+
+<Layout>
+  <Section>
+    <FinalisingThemesArchive
+      client:only="svelte"
+      consultationId={consultationId || ""}
+    />
+  </Section>
+</Layout>

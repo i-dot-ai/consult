@@ -13,13 +13,15 @@
 
   export interface Props {
     variant?: "primary" | "secondary" | "warning";
-    title: string;
-    confirmText: string;
+    title?: string;
+    confirmText?: string;
+    confirmDisabled?: boolean;
     canCancel?: boolean;
-    icon?: Component;
+    canConfirm?: boolean;
+    Icon?: Component;
     open?: boolean;
-    setOpen: (newValue: boolean) => void;
-    handleConfirm: MouseEventHandler<HTMLElement>;
+    setOpen?: (newValue: boolean) => void;
+    handleConfirm?: MouseEventHandler<HTMLElement>;
     children?: Snippet;
   }
 
@@ -28,8 +30,10 @@
     title = "",
     open = false,
     confirmText = "Confirm",
+    confirmDisabled = false,
     canCancel = true,
-    icon,
+    canConfirm = true,
+    Icon,
     setOpen = () => {},
     handleConfirm = () => {},
     children,
@@ -93,9 +97,9 @@
       }}
     >
       <div class="mb-2 flex items-center gap-2">
-        {#if icon}
+        {#if Icon}
           <MaterialIcon color={getIconColor()} size="1.3rem">
-            <svelte:component this={icon} />
+            <Icon />
           </MaterialIcon>
         {/if}
         <h3
@@ -121,13 +125,16 @@
           </div>
         {/if}
 
-        <Button
-          size="sm"
-          variant={variant === "secondary" ? "approve" : "primary"}
-          handleClick={handleConfirm as () => void}
-        >
-          {confirmText}
-        </Button>
+        {#if canConfirm}
+          <Button
+            size="sm"
+            variant={variant === "secondary" ? "approve" : "primary"}
+            handleClick={handleConfirm as () => void}
+            disabled={confirmDisabled}
+          >
+            {confirmText}
+          </Button>
+        {/if}
       </footer>
     </div>
   </div>

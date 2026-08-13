@@ -329,7 +329,7 @@ class TestCandidateThemeInput:
     def test_candidate_theme_missing_required_fields(self):
         """Test that missing required fields raises ValidationError"""
         data = {"topic_id": "123"}
-        with pytest.raises(Exception):  # Pydantic ValidationError
+        with pytest.raises(ValidationError):
             ThemeNode(**data)
 
     def test_candidate_theme_invalid_source_topic_count_type(self):
@@ -341,7 +341,7 @@ class TestCandidateThemeInput:
             "source_topic_count": "not an int",  # Should be int
             "parent_id": "0",
         }
-        with pytest.raises(Exception):  # Pydantic ValidationError
+        with pytest.raises(ValidationError):
             ThemeNode(**data)
 
 
@@ -399,7 +399,7 @@ class TestCandidateThemeBatch:
             "consultation_code": "TEST",
             # Missing timestamp
         }
-        with pytest.raises(Exception):  # Pydantic ValidationError
+        with pytest.raises(ValidationError):
             CandidateThemeBatch(**data)
 
     def test_candidate_theme_batch_invalid_nested_theme(self):
@@ -413,7 +413,7 @@ class TestCandidateThemeBatch:
                 ]
             },
         }
-        with pytest.raises(Exception):  # Pydantic ValidationError
+        with pytest.raises(ValidationError):
             CandidateThemeBatch(**data)
 
 

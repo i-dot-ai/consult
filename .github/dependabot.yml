@@ -2,8 +2,10 @@
 
 version: 2
 updates:
-  - package-ecosystem: "pip"
-    directory: "/"
+  - package-ecosystem: "uv"
+    directory: "/backend"
+    cooldown:
+      default-days: 14
     schedule:
       interval: "weekly"
     groups:
@@ -13,7 +15,9 @@ updates:
           - "patch"
 
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "/frontend"
+    cooldown:
+      default-days: 14
     schedule:
       interval: "weekly"
     groups:
@@ -23,17 +27,21 @@ updates:
           - "patch"
 
   - package-ecosystem: "npm"
-    directory: "/prototype"
+    directory: "/e2e_tests"
+    cooldown:
+      default-days: 14
     schedule:
       interval: "weekly"
     groups:
-      prototype-updates:
+      e2e-updates:
         update-types:
           - "minor"
           - "patch"
 
   - package-ecosystem: "github-actions"
     directory: "/"
+    cooldown:
+      default-days: 14
     schedule:
       interval: "weekly"
     groups:

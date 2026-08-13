@@ -8,8 +8,15 @@ describe("QuestionCard", () => {
     question: {
       id: "test-question",
       number: 1,
-      total_responses: 100,
+      total_response_count: 100,
+      free_text_response_count: 100,
+      multi_choice_response_count: 0,
       question_text: "Test question text",
+      has_free_text: true,
+      has_multiple_choice: false,
+      multiple_choice_answer: [],
+      proportion_of_audited_answers: 0,
+      theme_status: "draft",
     },
   };
 
@@ -25,7 +32,7 @@ describe("QuestionCard", () => {
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(`${testData.question.total_responses} responses`),
+      screen.getByText(`${testData.question.total_response_count} responses`),
     ).toBeInTheDocument();
     expect(screen.getByTestId("question-icon")).toBeInTheDocument();
     expect(screen.getByTestId("fav-button")).toBeInTheDocument();
@@ -40,7 +47,7 @@ describe("QuestionCard", () => {
       highlightText: HIGHLIGHT_TEXT,
     });
 
-    const highlightedText = screen.getByTestId("highlighted-text");
+    const highlightedText = screen.getByTestId(testData.question.question_text);
     expect(highlightedText).toBeInTheDocument();
     expect(highlightedText.textContent).toEqual(HIGHLIGHT_TEXT);
   });
@@ -53,7 +60,7 @@ describe("QuestionCard", () => {
     });
 
     const questionButton = screen.getByTestId(
-      `Click to view question: ${testData.question.question_text}`,
+      `question-link-${testData.question.id}`,
     );
 
     expect(questionButton.getAttribute("aria-label")).toEqual(
@@ -73,7 +80,7 @@ describe("QuestionCard", () => {
     });
 
     const questionButton = screen.queryByTestId(
-      `Click to view question: ${testData.question.question_text}`,
+      `question-link-${testData.question.id}`,
     );
     expect(questionButton).toBeNull();
   });
@@ -101,7 +108,7 @@ describe("QuestionCard", () => {
       ),
     ).toBeNull();
     expect(
-      screen.queryByText(`${testData.question.total_responses} responses`),
+      screen.queryByText(`${testData.question.total_response_count} responses`),
     ).toBeNull();
   });
 

@@ -1,0 +1,43 @@
+import type { Question } from "../../../global/types";
+
+export const questionsData: Question[] = [
+  {
+    id: "question-one",
+    number: 1,
+    total_response_count: 100,
+    free_text_response_count: 80,
+    multi_choice_response_count: 20,
+    question_text: "Question one",
+    has_free_text: true,
+    has_multiple_choice: false,
+    multiple_choice_answer: [],
+    proportion_of_audited_answers: 0.5,
+    theme_status: "draft",
+  },
+  {
+    id: "question-two",
+    number: 2,
+    total_response_count: 200,
+    free_text_response_count: 150,
+    multi_choice_response_count: 50,
+    question_text: "Question two",
+    has_free_text: true,
+    has_multiple_choice: false,
+    multiple_choice_answer: [],
+    proportion_of_audited_answers: 0.25,
+    theme_status: "draft",
+  },
+  {
+    id: "question-three",
+    number: 3,
+    total_response_count: 300,
+    free_text_response_count: 300,
+    multi_choice_response_count: 0,
+    question_text: "Question three",
+    has_free_text: true,
+    has_multiple_choice: false,
+    multiple_choice_answer: [],
+    proportion_of_audited_answers: 1,
+    theme_status: "draft",
+  },
+];

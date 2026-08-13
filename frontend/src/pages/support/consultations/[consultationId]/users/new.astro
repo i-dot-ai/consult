@@ -1,5 +1,5 @@
 ---
-import { fetchBackendApi } from "../../../../../global/api";
+import { buildResponse, fetchBackendApi } from "../../../../../global/api";
 import type {
   AstroGlobalRuntime,
   ConsultationResponse,
@@ -24,10 +24,18 @@ if (!consultationId) {
   );
 }
 
-let consultation = await fetchBackendApi<ConsultationResponse>(
+let {
+  data: consultationData,
+  error: consultationError,
+  status: consultationStatus,
+} = await fetchBackendApi<ConsultationResponse>(
   Astro,
   getApiConsultationUrl(consultationId),
 );
+
+if (consultationError) {
+  return buildResponse(consultationStatus);
+}
 ---
 
 <Layout>
@@ -39,7 +47,7 @@ let consultation = await fetchBackendApi<ConsultationResponse>(
       >
     </div>
     <Title level={1} text="Add users" />
-    <Text>Adding to {consultation.title}</Text>
+    <Text>Adding to {consultationData!.title}</Text>
     <AddUserToConsultationForm client:load consultationId={consultationId} />
   </Section>
 </Layout>

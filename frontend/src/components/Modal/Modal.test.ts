@@ -40,8 +40,8 @@ describe("Modal", () => {
     });
 
     expect(screen.getByText("Child Element")).toBeInTheDocument();
-    expect(screen.getByText(testData.title)).toBeInTheDocument();
-    expect(screen.getByText(testData.confirmText)).toBeInTheDocument();
+    expect(screen.getByText(testData.title!)).toBeInTheDocument();
+    expect(screen.getByText(testData.confirmText!)).toBeInTheDocument();
   });
 
   it("should close when close button is clicked", async () => {

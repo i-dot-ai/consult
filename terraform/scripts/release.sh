@@ -1,26 +1,18 @@
 #!/bin/bash
 # Usage:
-## Just pass the name of the env we want to tag and deploy.
-## This will create a tag locally with a format of $$ENV-$BRANCH-$CURRENT_USER-$TIMESTAMP
-## Then push it to the remote git.
-ENV=$1
+## Deploys to dev only, by pushing a release-dev-* tag.
+## preprod and prod both deploy automatically on merge to main (see
+## deploy-main.yml), and can also be deployed manually via workflow_dispatch in
+## GitHub Actions, referencing a published release tag.
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 CURRENT_USER=$(whoami)
 TIMESTAMP=$(date +%d-%m-%y--%H%M%S)
-TAG_NAME="release-$ENV-$BRANCH-$CURRENT_USER-$TIMESTAMP"
+TAG_NAME="release-dev-$BRANCH-$CURRENT_USER-$TIMESTAMP"
 
 echo "Current branch name is" "$BRANCH"
-echo "Current environment name is" "$ENV"
+echo "Deploying to dev"
 echo "Timestamp assigned will be $TIMESTAMP"
 echo "New tag name will be " "$TAG_NAME"
-
-if [ $ENV == 'prod' ]; then
-    echo ''
-    if [ $BRANCH != 'main' ]; then
-        echo -e "\033[0;31mYou can only deploy to prod through a PR into main\033[0m"
-        exit 0
-    fi
-fi
 
 ##
 echo "Removing Local tags"

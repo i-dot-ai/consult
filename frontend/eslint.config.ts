@@ -33,6 +33,7 @@ export default defineConfig([
           argsIgnorePattern: "^_",
         },
       ],
+      "svelte/prefer-writable-derived": ["warn"],
     },
   },
   {

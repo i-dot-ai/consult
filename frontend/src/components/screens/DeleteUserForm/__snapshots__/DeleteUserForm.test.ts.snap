@@ -1,0 +1,43 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DeleteUserForm > should match snapshot initially 1`] = `
+<div>
+  <form
+    class="flex flex-col gap-4"
+  >
+    <!---->
+     
+    <p
+      class="mb-4 text-lg text-neutral-700"
+    >
+      Are you sure you want to delete this user: 
+      <strong>
+        user@test.com
+      </strong>
+      ?
+      <!---->
+    </p>
+    <!---->
+     
+    <!---->
+    <button
+      aria-pressed="false"
+      class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+      data-variant="primary"
+      role="button"
+      tabindex="0"
+      type="submit"
+    >
+      <!---->
+      <!---->
+      Yes, delete user
+      
+      
+      
+    </button>
+    
+    <!---->
+  </form>
+  
+</div>
+`;

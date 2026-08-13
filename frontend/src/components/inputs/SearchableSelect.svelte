@@ -24,6 +24,7 @@
   export let options: SearchableSelectOption<unknown>[] = [];
   export let selectedValues: unknown[] = [];
   export let hideArrow: boolean = false;
+  export let placeholder: string = "Select themes...";
   export let notFoundMessage: string = "No results found";
 
   const toOption = (
@@ -87,7 +88,7 @@
         "flex",
         "items-center",
         "justify-between",
-        "rounded",
+        "rounded-sm",
         "bg-white",
         "px-3",
         "pr-12",
@@ -96,7 +97,7 @@
         "border-neutral-300",
         "pl-8",
       ])}
-      placeholder="Select themes..."
+      {placeholder}
     />
     {#if !hideArrow}
       <div
@@ -128,8 +129,8 @@
       "max-h-[300px]",
       "flex-col",
       "overflow-hidden",
-      "rounded",
-      "shadow",
+      "rounded-sm",
+      "shadow-sm",
     ])}
     use:melt={$menu}
     transition:fly={{ duration: 150, y: -5 }}
@@ -161,9 +162,9 @@
             "pl-4",
             "pr-4",
             "hover:bg-neutral-100",
-            "data-[highlighted]:bg-neutral-200",
-            "data-[highlighted]:text-neutral-900",
-            "data-[disabled]:opacity-50",
+            "data-highlighted:bg-neutral-200",
+            "data-highlighted:text-neutral-900",
+            "data-disabled:opacity-50",
           ])}
         >
           {#if selectedValues.includes(option.value)}
@@ -194,6 +195,8 @@
 {/if}
 
 <style lang="postcss">
+  @reference "../../styles/global.css";
+
   .check {
     @apply absolute left-2 top-1/2 text-neutral-500;
     translate: 0 calc(-50% + 1px);

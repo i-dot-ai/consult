@@ -2,9 +2,9 @@ from uuid import UUID
 
 from django.conf import settings
 from django.db import connection
-from django_rq import job
 
 from consultations import models
+from rq_context import job
 
 logger = settings.LOGGER
 
@@ -100,17 +100,29 @@ def delete_responses_in_batches(consultation_id: UUID, batch_size: int = 1000):
                 break
 
 
-@job("default", timeout=3_600)
-def delete_consultation_job(consultation: models.Consultation):
-    logger.refresh_context()
+@job("default", timeout=28_800)  # 8 hours
+def delete_consultation_job(consultation_id: UUID):
+    """
+    RQ job to delete a consultation and all related data.
 
-    consultation_id = consultation.id
-    consultation_title = consultation.title
+    This job is executed asynchronously on the worker container.
+
+    Args:
+        consultation_id: UUID of the consultation to delete
+    """
 
     try:
-        # Re-fetch the consultation to ensure we have a fresh DB connection
+        # Fetch the consultation from database
         consultation = models.Consultation.objects.get(id=consultation_id)
+        consultation_title = consultation.title
+    except models.Consultation.DoesNotExist:
+        logger.error(
+            "Consultation {consultation_id} not found, may have already been deleted",
+            consultation_id=consultation_id,
+        )
+        return
 
+    try:
         # Delete related objects in order to avoid foreign key constraints
         logger.info(
             "Deleting consultation '{consultation_title}' (ID: {consultation_id})",
@@ -125,7 +137,7 @@ def delete_consultation_job(consultation: models.Consultation):
         delete_response_related_table("consultations_candidatethemeresponse", consultation_id)
         delete_response_related_table("consultations_responseannotation", consultation_id)
         delete_response_related_table("consultations_response_chosen_options", consultation_id)
-        delete_response_related_table("consultations_response_read_by", consultation_id)
+        delete_response_related_table("consultations_responsereadby", consultation_id)
 
         logger.info("Deleting responses...")
         delete_responses_in_batches(consultation_id)
@@ -148,11 +160,10 @@ def delete_consultation_job(consultation: models.Consultation):
             consultation_id=consultation_id,
         )
 
-    except Exception as e:
-        logger.error(
-            "Error deleting consultation '{consultation_title}' (ID: {consultation_id}): {error}",
+    except Exception:
+        logger.exception(
+            "Error deleting consultation '{consultation_title}' (ID: {consultation_id})",
             consultation_title=consultation_title,
             consultation_id=consultation_id,
-            error=e,
         )
         raise

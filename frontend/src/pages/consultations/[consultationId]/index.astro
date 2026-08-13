@@ -1,11 +1,22 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 
-import ConsultationDetail from "../../../components/screens/ConsultationDetail.svelte";
+import ConsultationDetail from "../../../components/screens/ConsultationDetail/ConsultationDetail.svelte";
 import Section from "../../../components/Section/Section.svelte";
 import type { AstroGlobalRuntime } from "../../../global/types";
+import { buildResponse, fetchBackendApi } from "../../../global/api";
+import { getApiConsultationUrl } from "../../../global/routes";
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
+
+const { error, status } = await fetchBackendApi(
+  Astro,
+  getApiConsultationUrl(consultationId || ""),
+);
+
+if (error) {
+  return buildResponse(status);
+}
 ---
 
 <Layout>

@@ -2,8 +2,14 @@ import pytest
 from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from consultations.models import Question
-from factories import MultiChoiceAnswerFactory, QuestionFactory, RespondentFactory, ResponseFactory
+from consultations.models import MultiChoiceAnswer, Question
+from factories import (
+    MultiChoiceAnswerFactory,
+    QuestionFactory,
+    RespondentFactory,
+    ResponseAnnotationFactoryNoThemes,
+    ResponseFactory,
+)
 
 
 @pytest.mark.django_db
@@ -11,7 +17,7 @@ class TestQuestionViewSet:
     def test_get_theme_information_no_themes(self, client, staff_user_token, free_text_question):
         """Test API endpoint returns empty themes list when no themes exist"""
         url = reverse(
-            "question-theme-information",
+            "question-themes",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
                 "pk": free_text_question.id,
@@ -32,7 +38,7 @@ class TestQuestionViewSet:
     ):
         """Test API endpoint returns theme information correctly"""
         url = reverse(
-            "question-theme-information",
+            "question-themes",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
                 "pk": free_text_question.id,
@@ -57,6 +63,80 @@ class TestQuestionViewSet:
             assert "id" in theme_data
             assert "name" in theme_data
             assert "description" in theme_data
+            assert "count" in theme_data
+
+    def test_get_themes_with_counts(
+        self, client, staff_user_token, free_text_question, theme_a, theme_b
+    ):
+        """Test themes endpoint returns correct response counts per theme"""
+        respondent1 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent2 = RespondentFactory(consultation=free_text_question.consultation)
+        response1 = ResponseFactory(question=free_text_question, respondent=respondent1)
+        response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
+
+        # Assign theme_a to both responses, theme_b to only one
+        ann1 = ResponseAnnotationFactoryNoThemes(response=response1)
+        ann1.add_original_ai_themes([theme_a, theme_b])
+        ann2 = ResponseAnnotationFactoryNoThemes(response=response2)
+        ann2.add_original_ai_themes([theme_a])
+
+        url = reverse(
+            "question-themes",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        themes = {t["name"]: t["count"] for t in response.json()["themes"]}
+        assert themes["Theme A"] == 2
+        assert themes["Theme B"] == 1
+
+    def test_get_themes_filtered_by_demographic(
+        self,
+        client,
+        staff_user_token,
+        free_text_question,
+        theme_a,
+        individual_demographic,
+        group_demographic,
+    ):
+        """Test themes endpoint filters counts when demographic filter is applied"""
+        respondent1 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent1.demographics.set([individual_demographic])
+        respondent2 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent2.demographics.set([group_demographic])
+
+        response1 = ResponseFactory(question=free_text_question, respondent=respondent1)
+        response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
+
+        ann1 = ResponseAnnotationFactoryNoThemes(response=response1)
+        ann1.add_original_ai_themes([theme_a])
+        ann2 = ResponseAnnotationFactoryNoThemes(response=response2)
+        ann2.add_original_ai_themes([theme_a])
+
+        url = reverse(
+            "question-themes",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        # Filter to only individual respondents
+        response = client.get(
+            url,
+            query_params={"demographics": individual_demographic.pk},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        themes = {t["name"]: t["count"] for t in response.json()["themes"]}
+        assert themes["Theme A"] == 1
 
     def test_get_free_text_question(self, client, staff_user, free_text_question, staff_user_token):
         """Test API endpoint returns question information correctly"""
@@ -66,9 +146,6 @@ class TestQuestionViewSet:
             ResponseFactory(
                 question=free_text_question, respondent=respondent, free_text=f"Response {i}"
             )
-
-        # Update the total_responses count
-        free_text_question.update_total_responses()
 
         url = reverse(
             "question-detail",
@@ -86,7 +163,7 @@ class TestQuestionViewSet:
         data = response.json()
 
         assert data["question_text"] == free_text_question.text
-        assert data["total_responses"] == 3
+        assert data["total_response_count"] == 3
         assert data["multiple_choice_answer"] == []
 
     def test_get_multiple_choice_question(
@@ -115,9 +192,235 @@ class TestQuestionViewSet:
         data = response.json()
 
         assert data["question_text"] == multi_choice_question.text
-        assert data["total_responses"] == 2
+        assert data["total_response_count"] == 2
         answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
         assert answer_counts == {"blue": 1, "green": 0, "red": 2}
+
+    def test_get_multiple_choice_question_with_demographic_filter(
+        self,
+        client,
+        staff_user_token,
+        multi_choice_question,
+        northern_demographic,
+        southern_demographic,
+    ):
+        """Test that demographic filters correctly update multiple choice counts"""
+        from consultations.models import Response
+
+        # Create multi-choice answers
+        red = multi_choice_question.multichoiceanswer_set.get(text="red")
+        blue = multi_choice_question.multichoiceanswer_set.get(text="blue")
+
+        # Create respondents with demographics
+        # Respondent 1: northern, chooses red and blue
+        respondent_1 = RespondentFactory(consultation=multi_choice_question.consultation)
+        respondent_1.demographics.add(northern_demographic)
+        response_1 = Response.objects.create(
+            respondent=respondent_1, question=multi_choice_question
+        )
+        response_1.chosen_options.add(red, blue)
+
+        # Respondent 2: northern, chooses red
+        respondent_2 = RespondentFactory(consultation=multi_choice_question.consultation)
+        respondent_2.demographics.add(northern_demographic)
+        response_2 = Response.objects.create(
+            respondent=respondent_2, question=multi_choice_question
+        )
+        response_2.chosen_options.add(red)
+
+        # Respondent 3: southern, chooses blue
+        respondent_3 = RespondentFactory(consultation=multi_choice_question.consultation)
+        respondent_3.demographics.add(southern_demographic)
+        response_3 = Response.objects.create(
+            respondent=respondent_3, question=multi_choice_question
+        )
+        response_3.chosen_options.add(blue)
+
+        # Update denormalised counts
+        MultiChoiceAnswer.update_response_counts(multi_choice_question)
+        multi_choice_question.update_response_counts()
+
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": multi_choice_question.consultation.id,
+                "pk": multi_choice_question.id,
+            },
+        )
+
+        # Test 1: No filter - should show all counts
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
+        assert answer_counts == {"blue": 2, "red": 2, "green": 0}
+        assert data["total_response_count"] == 3
+        assert data["multi_choice_response_count"] == 3
+
+        # Test 2: Filter by northern demographic - should show filtered counts
+        response = client.get(
+            url + f"?demographics={northern_demographic.id}",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
+        assert answer_counts == {"blue": 1, "red": 2, "green": 0}
+        assert data["total_response_count"] == 2
+        assert data["multi_choice_response_count"] == 2
+
+        # Test 3: Filter by southern demographic - should show filtered counts
+        response = client.get(
+            url + f"?demographics={southern_demographic.id}",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
+        assert answer_counts == {"blue": 1, "red": 0, "green": 0}
+        assert data["total_response_count"] == 1
+        assert data["multi_choice_response_count"] == 1
+
+    def test_get_free_text_question_with_demographic_filter(
+        self,
+        client,
+        staff_user_token,
+        free_text_question,
+        northern_demographic,
+        southern_demographic,
+    ):
+        """Test that demographic filters correctly update free text response counts"""
+        from consultations.models import Response
+
+        # Respondent 1: northern, has free text
+        respondent_1 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent_1.demographics.add(northern_demographic)
+        Response.objects.create(
+            respondent=respondent_1, question=free_text_question, free_text="Northern response 1"
+        )
+
+        # Respondent 2: northern, has free text
+        respondent_2 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent_2.demographics.add(northern_demographic)
+        Response.objects.create(
+            respondent=respondent_2, question=free_text_question, free_text="Northern response 2"
+        )
+
+        # Respondent 3: southern, has free text
+        respondent_3 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent_3.demographics.add(southern_demographic)
+        Response.objects.create(
+            respondent=respondent_3, question=free_text_question, free_text="Southern response"
+        )
+
+        free_text_question.update_response_counts()
+
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+
+        # No filter - should show all counts
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total_response_count"] == 3
+
+        # Filter by northern - should show filtered counts
+        response = client.get(
+            url + f"?demographics={northern_demographic.id}",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total_response_count"] == 2
+
+        # Filter by southern - should show filtered counts
+        response = client.get(
+            url + f"?demographics={southern_demographic.id}",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total_response_count"] == 1
+
+    def test_get_question_with_search_filter(
+        self,
+        client,
+        staff_user_token,
+        free_text_question,
+    ):
+        """Test that search filters update question counts consistently"""
+        from consultations.models import Response
+
+        respondent_1 = RespondentFactory(consultation=free_text_question.consultation)
+        Response.objects.create(
+            respondent=respondent_1,
+            question=free_text_question,
+            free_text="Climate policy is important",
+        )
+
+        respondent_2 = RespondentFactory(consultation=free_text_question.consultation)
+        Response.objects.create(
+            respondent=respondent_2,
+            question=free_text_question,
+            free_text="Housing policy needs reform",
+        )
+
+        respondent_3 = RespondentFactory(consultation=free_text_question.consultation)
+        Response.objects.create(
+            respondent=respondent_3,
+            question=free_text_question,
+            free_text="Other topics entirely",
+        )
+
+        free_text_question.update_response_counts()
+
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+
+        # No filter — all 3 responses
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        assert response.json()["total_response_count"] == 3
+
+        # Search for "policy" — 2 responses match
+        response = client.get(
+            url + "?searchValue=policy&searchMode=keyword",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        assert response.json()["total_response_count"] == 2
+        assert response.json()["free_text_response_count"] == 2
+
+        # Search for "climate" — 1 response matches
+        response = client.get(
+            url + "?searchValue=climate&searchMode=keyword",
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+        assert response.status_code == 200
+        assert response.json()["total_response_count"] == 1
+        assert response.json()["free_text_response_count"] == 1
 
     def test_patch_question_theme_status(
         self, client, staff_user, free_text_question, staff_user_token
@@ -401,3 +704,101 @@ class TestQuestionViewSet:
 
         assert response.status_code == 200
         assert response.json()["theme_status"] == "confirmed"
+
+
+@pytest.mark.django_db
+class TestQuestionResponseViewSet:
+    """Tests for the nested /questions/{qid}/responses/ route"""
+
+    def test_question_responses_returns_scoped_results(
+        self, client, staff_user_token, consultation, free_text_question
+    ):
+        """Test nested route only returns responses for the given question"""
+        question_2 = QuestionFactory(consultation=consultation, has_free_text=True, number=3)
+
+        respondent1 = RespondentFactory(consultation=consultation)
+        respondent2 = RespondentFactory(consultation=consultation)
+        ResponseFactory(question=free_text_question, respondent=respondent1)
+        ResponseFactory(question=question_2, respondent=respondent2)
+
+        url = reverse(
+            "question-response-list",
+            kwargs={
+                "consultation_pk": consultation.id,
+                "question_pk": free_text_question.id,
+            },
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total_count"] == 1
+        assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
+
+    def test_question_responses_pagination(self, client, staff_user_token, free_text_question):
+        """Test nested route supports cursor-based pagination"""
+        for _ in range(5):
+            respondent = RespondentFactory(consultation=free_text_question.consultation)
+            ResponseFactory(question=free_text_question, respondent=respondent)
+
+        url = reverse(
+            "question-response-list",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "question_pk": free_text_question.id,
+            },
+        )
+        auth = {"Authorization": f"Bearer {staff_user_token}"}
+
+        page1 = client.get(url, query_params={"page_size": 2}, headers=auth)
+        assert page1.status_code == 200
+        data1 = page1.json()
+        assert len(data1["all_respondents"]) == 2
+        assert data1["has_more_pages"] is True
+        assert data1["total_count"] == 5
+        assert data1["next_cursor"] is not None
+
+        page2 = client.get(
+            url,
+            query_params={"page_size": 2, "cursor": data1["next_cursor"]},
+            headers=auth,
+        )
+        assert page2.status_code == 200
+        data2 = page2.json()
+        assert len(data2["all_respondents"]) == 2
+        assert "total_count" not in data2
+        page1_ids = {response["id"] for response in data1["all_respondents"]}
+        page2_ids = {response["id"] for response in data2["all_respondents"]}
+        assert page1_ids.isdisjoint(page2_ids)
+
+    def test_question_responses_with_theme_filter(
+        self, client, staff_user_token, free_text_question, theme_a
+    ):
+        """Test nested route works with theme filters"""
+        respondent1 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent2 = RespondentFactory(consultation=free_text_question.consultation)
+        response1 = ResponseFactory(question=free_text_question, respondent=respondent1)
+        ResponseFactory(question=free_text_question, respondent=respondent2)
+
+        annotation = ResponseAnnotationFactoryNoThemes(response=response1)
+        annotation.add_original_ai_themes([theme_a])
+
+        url = reverse(
+            "question-response-list",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "question_pk": free_text_question.id,
+            },
+        )
+        response = client.get(
+            url,
+            query_params={"themeFilters": str(theme_a.id)},
+            headers={"Authorization": f"Bearer {staff_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)

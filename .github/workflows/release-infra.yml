@@ -4,12 +4,29 @@ on:
   push:
     tags:
       - release-dev-**
-      - release-preprod-**
 
-  workflow_run:
-    workflows: [build]
-    types: [completed]
-    branches: [main]
+  release:
+    types: [published]
+
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git ref to deploy (tag or SHA)'
+        required: true
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options: [dev, preprod, prod]
+
+  # Called by deploy-main to deploy a specific environment as part of the
+  # merge-to-main pipeline (preprod, then prod once preprod succeeds).
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: string
 
 jobs:
   set-vars:
@@ -21,10 +38,33 @@ jobs:
       repo: ${{ steps.export.outputs.repo }}
       infra-config-repo: ${{ steps.export.outputs.infra-config-repo }}
       environment: ${{ steps.env-var.outputs.environment }}
+      terraform-changed: ${{ steps.check-terraform.outputs.terraform-changed }}
+      lambda-changed: ${{ steps.check-terraform.outputs.lambda-changed }}
+      should-deploy: ${{ steps.should-deploy.outputs.should-deploy }}
+      commit-hash: ${{ steps.export.outputs.commit-hash }}
+      sha-short: ${{ steps.export.outputs.sha-short }}
 
     steps:
+      - name: Validate preprod/prod deployment uses a release tag
+        if: github.event_name == 'workflow_dispatch' && (inputs.environment == 'preprod' || inputs.environment == 'prod')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_TAG: ${{ inputs.tag }}
+          GH_REPOSITORY: ${{ github.repository }}
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/${GH_REPOSITORY}/releases/tags/${INPUT_TAG}")
+          if [[ "$HTTP_STATUS" != "200" ]]; then
+            echo "::error::Preprod and production deployments must reference a published release tag. Got: '${INPUT_TAG}'"
+            exit 1
+          fi
+
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag || '' }}
+          fetch-depth: 0
 
       - id: export
         run: |
@@ -37,20 +77,61 @@ jobs:
           echo "repo=${REPO}" >> $GITHUB_OUTPUT
           echo "infra-config-repo=${INFRA_CONFIG_REPO}" >> $GITHUB_OUTPUT
           echo "::add-mask::${AWS_REGION}"
+          echo "sha-short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "commit-hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - id: env-var
+        env:
+          INPUTS_ENVIRONMENT: ${{ inputs.environment }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
-          # prod env from main branch
-          if [[ "${{ github.ref_name }}" == main ]]; then
+          # An explicit environment input (from workflow_call or workflow_dispatch)
+          # always wins. A called workflow reports the caller's event_name/ref_name,
+          # so this must be checked before the branch-based rules below.
+          if [[ -n "$INPUTS_ENVIRONMENT" ]]; then
+            export ENVIRONMENT=$INPUTS_ENVIRONMENT
+          elif [[ "${{ github.event_name }}" == "release" ]]; then
+            export ENVIRONMENT=prod
+          elif [[ "$GITHUB_REF_NAME" == main ]]; then
             export ENVIRONMENT=preprod
           else
-            export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $2 }')
+            export ENVIRONMENT=$(echo "$GITHUB_REF_NAME" | awk -F- '{ print $2 }')
           fi
           echo "environment=${ENVIRONMENT}"
           echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
 
+      - uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
+        id: check-terraform
+        with:
+          filters: |
+            terraform-changed:
+              - 'terraform/**'
+            lambda-changed:
+              - 'lambda/**'
+
+      - id: should-deploy
+        env:
+          ENVIRONMENT: ${{ steps.env-var.outputs.environment }}
+        run: |
+          # Path filtering applies to prod only. dev/preprod always deploy the
+          # full infra: moving from a feature branch to main can require an infra
+          # redeploy that isn't visible in the changed paths, so we never skip
+          # there. For prod, an automatic deploy from a main merge is skipped
+          # when neither terraform/ nor lambda/ changed; explicit release or
+          # workflow_dispatch deploys always run.
+          if [[ "$ENVIRONMENT" != "prod" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "release" || \
+                  "${{ github.event_name }}" == "workflow_dispatch" || \
+                  "${{ steps.check-terraform.outputs.terraform-changed }}" == "true" || \
+                  "${{ steps.check-terraform.outputs.lambda-changed }}" == "true" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+          fi
 
   start-runner:
+    if: needs.set-vars.outputs.should-deploy == 'true'
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@main
     needs: set-vars
     permissions: write-all
@@ -65,14 +146,14 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
-
   build-lambdas:
     needs:
       - set-vars
-      - start-runner
+    if: needs.set-vars.outputs.should-deploy == 'true'
     uses: ./.github/workflows/build-lambda-artifacts.yml
     with:
       upload_directory: ./lambda/build
+      commit_hash: ${{ needs.set-vars.outputs.commit-hash }}
 
   build-infra:
     needs:
@@ -87,7 +168,6 @@ jobs:
       ENVIRONMENT: ${{ needs.set-vars.outputs.environment }}
       PUBLIC_INFRA_DEPLOYMENT: true
       INFRA_CONFIG_REPO: ${{ needs.set-vars.outputs.infra-config-repo }}
-      IMAGE_TAG: ${{ github.sha }}
       ARTIFACTS_PATH: ${{ needs.build-lambdas.outputs.target_directory }}
       USE_OIDC: true
     secrets:
@@ -96,14 +176,50 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
+  determine-success:
+    needs: [set-vars, start-runner, build-infra]
+    runs-on: ${{ needs.start-runner.outputs.label }}
+    if: always() && needs.set-vars.outputs.should-deploy == 'true' && needs.set-vars.outputs.environment == 'prod'
+    outputs:
+      success: ${{ steps.success.outputs.success }}
+    steps:
+      - id: success
+        run: |
+          if [[ "${{ needs.build-infra.result }}" == "success" ]]; then
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
+
+  notify-slack:
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/slack-notify.yml@main
+    needs: [set-vars, start-runner, build-infra, determine-success]
+    if: always() && needs.set-vars.outputs.should-deploy == 'true' && needs.set-vars.outputs.environment == 'prod'
+    with:
+      WORKFLOW_PASSED: ${{ needs.determine-success.outputs.success == 'true' }}
+      RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
+      SUCCESS_PAYLOAD: >-
+        {"blocks":[{"type":"section","text":{"type":"mrkdwn","text":
+        ":large_green_circle: `${{ needs.set-vars.outputs.environment }}` *infra deployment succeeded*\n\nDeployed SHA: `${{ needs.set-vars.outputs.sha-short }}`"}}]}
+      FAILURE_PAYLOAD: >-
+        {"blocks":[{"type":"section","text":{"type":"mrkdwn","text":
+        ":x: `${{ needs.set-vars.outputs.environment }}` *infra deployment failed*\n\nAttempted SHA: `${{ needs.set-vars.outputs.sha-short }}`\nLogs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}}]}
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   stop-runner:
     needs:
       - set-vars
       - start-runner
       - build-infra
+      - determine-success
+      - notify-slack
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@main
     permissions: write-all
-    if: needs.start-runner.outputs.use-persisted == 0 && always()
+    if: >-
+      always() &&
+      needs.set-vars.outputs.should-deploy == 'true' &&
+      needs.start-runner.outputs.use-persisted == 0
     with:
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
       EC2_INSTANCE_ID: ${{ needs.start-runner.outputs.ec2-instance-id }}

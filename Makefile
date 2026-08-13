@@ -12,24 +12,28 @@ help:     ## Show this help.
 install: ## Install all dependencies
 	pre-commit install
 	cp .githooks/* .git/hooks/
-	cd backend && uv sync
+	TZ=UTC uv sync --all-packages --all-extras --group dev
 	. "$(NVM_DIR)/nvm.sh" && cd frontend && nvm install && npm install
 	. "$(NVM_DIR)/nvm.sh" && cd e2e_tests && nvm install && npm install
 
 .PHONY: setup
 setup: ## Set up env files and database with dummy data
-	test -f .env || cp .env.test .env
-	test -f frontend/.env || cp frontend/.env.example frontend/.env
+	$(MAKE) sync
 	$(MAKE) dev_environment
+
+.PHONY: sync
+sync: ## Add new env vars from the templates into local .env files (prompts before writing; preserves existing values)
+	@./scripts/sync_env.sh .env.test .env frontend/.env.example frontend/.env
 
 .PHONY: serve
 serve: ## Run the backend and frontend together
-	docker compose up -d postgres redis
+	docker compose up -d postgres redis minio
+	> backend/sql.log
 	uv tool run honcho start -f Procfile.dev
 
 .PHONY: backend
 backend: ## Run the backend and the worker
-	docker compose up -d postgres redis
+	docker compose up -d postgres redis minio
 	uv tool run honcho start -f Procfile.dev web worker worker2
 
 .PHONY: frontend
@@ -39,24 +43,52 @@ frontend: ## Run the frontend
 .PHONY: test-backend
 test-backend: ## Run the backend tests
 	cd backend && PYTHONPATH=.. uv run pytest tests/ --random-order
+	@echo "Tests complete!"
 
 .PHONY: test-frontend
 test-frontend: ## Run the frontend tests
 	cd frontend && npm run test
 
+.PHONY: test-themefinder
+test-themefinder: ## Run the themefinder tests
+	cd themefinder && uv run pytest tests/ -v
+
+.PHONY: test-pipeline-common
+test-pipeline-common: ## Run the pipeline-common tests
+	cd pipeline-common && uv run pytest tests/ -v
+
+.PHONY: test-all
+test-all: test-backend test-frontend test-themefinder test-pipeline-common ## Run all unit/integration tests
+
+.PHONY: run-evals
+run-evals: ## Run themefinder LLM evals (quick mode)
+	cd themefinder/evals && uv run python benchmark.py --quick
+
+.PHONY: run-benchmark
+run-benchmark: ## Run full themefinder benchmark (housing_S, 5 runs, all providers)
+	cd themefinder/evals && uv run python benchmark.py --dataset housing_S --runs 5 --provider all --judge-model gpt-4.1
+
 .PHONY: test-end-to-end
 test-end-to-end: ## Run end-to-end tests with Playwright
+	# Run the tests, then ALWAYS clean up, then re-raise the tests' exit status so CI
+	# still fails on failure. Without this wrapper a failure mid-run (e.g. a service
+	# health-check timeout or a failing test) would skip cleanup and leave
+	# docker-compose.override.yml behind, silently repointing every later
+	# `docker compose` command at the E2E database.
+	@$(MAKE) _run-e2e-tests; status=$$?; $(MAKE) _clean-e2e; exit $$status
+
+.PHONY: _run-e2e-tests
+_run-e2e-tests:
 	$(eval E2E_DB_URL := postgresql://postgres:postgres@postgres:5432/consult_e2e_test)  # pragma: allowlist secret
 	@echo "Setting up test database..."
 	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;" || true
 	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "CREATE DATABASE consult_e2e_test;"
 	@echo "Initializing test data..."
-	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py migrate
-	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) -e ADMIN_USERS=email@example.com backend venv/bin/python manage.py createadminusers
-	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py generate_dummy_data
-	@docker compose run -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py shell -c \
+	@docker compose run --rm -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py migrate
+	@docker compose run --rm -e DATABASE_URL=$(E2E_DB_URL) -e ADMIN_USERS=admin@example.com backend venv/bin/python manage.py createadminusers
+	@docker compose run --rm -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py shell -c \
 		"from authentication.models import User; from consultations.models import Consultation; \
-		user = User.objects.get(email='email@example.com'); \
+		user = User.objects.get(email='admin@example.com'); \
 		[c.users.add(user) for c in Consultation.objects.all()]"
 	@echo "Starting services..."
 	@echo "services:" > docker-compose.override.yml
@@ -73,11 +105,30 @@ test-end-to-end: ## Run end-to-end tests with Playwright
 	@echo "Running tests..."
 	@cd e2e_tests && npm install
 	@if [ -z "$$CI" ]; then cd e2e_tests && npx playwright install --with-deps; fi
-	@cd e2e_tests && npm run e2e
+	@cd e2e_tests && npm run e2e-chrome
+
+.PHONY: _clean-e2e
+_clean-e2e: ## Internal: always-run cleanup for test-end-to-end (drop test DB, remove generated override)
 	@echo "Cleaning up..."
-	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;"
+	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;" 2>/dev/null || true
 	@rm -f docker-compose.override.yml
 
+
+.PHONY: build-consultation-template
+build-consultation-template: ## Generate scripts/consult_data_template.xlsx (opinionated Q.U. workbook with live validation)
+	cd scripts && uv run python build_consult_data_template.py
+
+.PHONY: setup-consultation
+setup-consultation: ## Set up a new ThemeFinder consultation: validate, build inputs, upload to S3. Args: name=<slug> [until=validate|build|upload] [responses=<path>] [qu=<path>]
+	@if [ -z "$(name)" ]; then echo "Usage: make setup-consultation name=<slug> [until=validate|build|upload]"; exit 1; fi
+	cd scripts && uv run python setup_consultation.py "$(name)" \
+		$(if $(until),--until $(until)) \
+		$(if $(responses),--responses $(responses)) \
+		$(if $(qu),--qu $(qu))
+
+.PHONY: test-consultation-scripts
+test-consultation-scripts: ## Run tests for the consultation setup scripts
+	cd scripts && uv run --group dev pytest tests/
 
 .PHONY: check-python-code
 check-python-code: ## Check Python code - linting and mypy
@@ -106,11 +157,11 @@ migrate: ## Apply migrations
 
 .PHONY: setup_db
 setup_db: ## Set up the development db on docker
-	docker compose up -d postgres
+	docker compose up -d postgres minio
 
 .PHONY: reset_db
 reset_db: ## Reset the dev db
-	docker compose down postgres
+	docker compose down postgres minio
 	docker volume rm -f consult_postgres_data
 	$(MAKE) setup_db
 
@@ -122,12 +173,8 @@ check_db: ## Make sure the db is addressable
 dummy_data: ## Generate dummy consultations. Only works in dev
 	cd backend && PYTHONPATH=.. uv run python manage.py generate_dummy_data
 
-.PHONY: dev_admin_user
-dev_admin_user:
-	cd backend && PYTHONPATH=.. uv run python manage.py shell -c "from authentication.models import User; from consultations.models import Consultation; user = User.objects.create_user(email='email@example.com', password='admin', is_staff=True); user.save(); [c.users.add(user) for c in Consultation.objects.all()]" # pragma: allowlist secret
-
 .PHONY: dev_environment
-dev_environment: reset_db migrate dummy_data dev_admin_user ## set up the database with dummy data
+dev_environment: reset_db migrate dummy_data ## set up the database with dummy data
 
 # Docker
 AWS_REGION=eu-west-2
@@ -150,6 +197,21 @@ IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 ifndef cache
 	override cache = ./.build-cache
 endif
+
+.PHONY: docker_clean
+docker_clean: ## Reclaim local Docker space (stopped containers, dangling images, build cache)
+	docker compose down --remove-orphans
+	docker container prune -f
+	docker image prune -f
+	docker builder prune -f
+	@echo "Skipping volume prune to preserve local data (postgres_data, redis_data)."
+	@echo "To also remove unused volumes, run: make docker_clean_volumes"
+
+.PHONY: docker_clean_volumes
+docker_clean_volumes: ## DESTRUCTIVE: prune unused Docker volumes (wipes local postgres_data/redis_data when containers are down)
+	@echo "WARNING: this prunes ALL unused volumes, including local DB/Redis data."
+	@read -p "Continue? [y/N] " ans && [ "$$ans" = "y" ] || [ "$$ans" = "Y" ] || (echo "Aborted." && exit 1)
+	docker volume prune -f
 
 .PHONY: docker_build
 docker_build: ## Build the docker container for the specified service when running in CI/CD
@@ -203,7 +265,7 @@ CONFIG_DIR=../../../consult-infra-config
 env=prod
 else
 CONFIG_DIR=../../consult-infra-config
-tf_build_args=-var "image_tag=$(IMAGE_TAG)"
+tf_build_args=$(if $(TF_TARGET),-target $(TF_TARGET),)
 endif
 
 TF_BACKEND_CONFIG=$(CONFIG_DIR)/backend.hcl
@@ -223,7 +285,7 @@ tf_init_and_set_workspace:
 
 .PHONY: tf_init
 tf_init: ## Initialise terraform
-	terraform -chdir=./terraform/$(instance) init -backend-config=$(TF_BACKEND_CONFIG) -reconfigure
+	terraform -chdir=./terraform/$(instance) init -backend-config=$(TF_BACKEND_CONFIG) -reconfigure -lock-timeout=10m
 
 .PHONY: tf_plan
 tf_plan: ## Plan terraform
@@ -247,7 +309,7 @@ tf_apply_universal: ## Apply terraform
 .PHONY: tf_auto_apply
 tf_auto_apply: ## Auto apply terraform
 	make tf_init_and_set_workspace && \
-	terraform -chdir=./terraform apply -auto-approve -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+	terraform -chdir=./terraform apply -auto-approve -lock-timeout=10m -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
 .PHONY: tf_destroy
 tf_destroy: ## Destroy terraform
@@ -261,14 +323,8 @@ tf_import:
 
 # Release commands to deploy your app to AWS
 .PHONY: release
-release: ## Deploy app
-## bail if env is not set
-	@if [ -z "$(env)" ]; then \
-		echo "make release requires an env= argument"; \
-		exit 1; \
-	fi
-
-	chmod +x ./terraform/scripts/release.sh && ./terraform/scripts/release.sh $(env)
+release: ## Deploy app to dev (preprod/prod deploy automatically on merge to main, or via workflow_dispatch)
+	chmod +x ./terraform/scripts/release.sh && ./terraform/scripts/release.sh
 
 # Lambda build
 .PHONY: build_lambda_artifacts/ci

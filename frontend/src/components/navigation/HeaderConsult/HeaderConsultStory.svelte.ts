@@ -13,7 +13,7 @@ export default {
     { name: "isSignedIn", value: true, type: "bool" },
     { name: "isStaff", value: true, type: "bool" },
     { name: "showProcess", value: true, type: "bool" },
-    { name: "consultationStage", value: "theme_mapping", type: "text" },
+    { name: "consultationStage", value: "assigning_themes", type: "text" },
   ],
   stories: [
     {

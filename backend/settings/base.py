@@ -20,6 +20,8 @@ from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
 from i_dot_ai_utilities.logging.types.enrichment_types import ExecutionEnvironmentType
 from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 
+from hosting_environment import HostingEnvironment
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -31,7 +33,13 @@ env = environ.Env(DEBUG=(bool, False))
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
 ENVIRONMENT = env("ENVIRONMENT")
+# Identifies the runtime a log line originated from (backend/worker/batch/lambda).
+# Set per-runtime by Terraform in deployed envs; defaults to "local" for dev/test.
+EXECUTION_CONTEXT: str = env("EXECUTION_CONTEXT", default="local")
 AWS_ACCOUNT_ID = env("AWS_ACCOUNT_ID", default=None)
+MINIO_ADDRESS = env.str("MINIO_ENDPOINT", default=None)
+AWS_ACCESS_KEY = env.str("MINIO_ACCESS_KEY", default=None)
+AWS_SECRET_KEY = env.str("MINIO_SECRET_KEY", default=None)
 
 DOMAIN_NAME = env("DOMAIN_NAME", default="0.0.0.0")  # nosec
 
@@ -63,6 +71,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Early so the refreshed context covers all downstream request logging;
+    # request.user is read post-view, so this need not follow auth.
+    "middleware.RequestCorrelationMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "middleware.JWTAuthenticationMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -97,16 +108,22 @@ WSGI_APPLICATION = "wsgi.application"
 AUTH_USER_MODEL = "authentication.User"
 
 # Local and testing origin
-TRUSTED_ORIGIN = "http://localhost:3000"
+TRUSTED_ORIGINS = ["http://localhost:3000"]
 
 if ENVIRONMENT.lower() == "prod":
-    TRUSTED_ORIGIN = "https://consult.ai.cabinetoffice.gov.uk"
+    TRUSTED_ORIGINS = ["https://consult.ai.cabinetoffice.gov.uk", "https://consult.i.ai.gov.uk"]
 if ENVIRONMENT.lower() == "dev":
-    TRUSTED_ORIGIN = "https://consult-dev.ai.cabinetoffice.gov.uk"
+    TRUSTED_ORIGINS = [
+        "https://consult-dev.ai.cabinetoffice.gov.uk",
+        "https://consult.dev.i.ai.gov.uk",
+    ]
 if ENVIRONMENT.lower() == "preprod":
-    TRUSTED_ORIGIN = "https://consult-preprod.ai.cabinetoffice.gov.uk"
+    TRUSTED_ORIGINS = [
+        "https://consult-preprod.ai.cabinetoffice.gov.uk",
+        "https://consult.preprod.i.ai.gov.uk",
+    ]
 
-CSRF_TRUSTED_ORIGINS = [TRUSTED_ORIGIN]
+CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS
 
 # Database with Connection Pooling
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -218,6 +235,7 @@ LOGGER = StructuredLogger(
         "log_format": LogOutputFormat.JSON,
     },
 )
+LOGGER.set_context_field("execution_context", EXECUTION_CONTEXT)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -243,6 +261,11 @@ ASSIGN_THEMES_BATCH_JOB_DEFINITION = env("ASSIGN_THEMES_BATCH_JOB_DEFINITION")
 FIND_THEMES_BATCH_JOB_NAME = env("FIND_THEMES_BATCH_JOB_NAME")
 FIND_THEMES_BATCH_JOB_QUEUE = env("FIND_THEMES_BATCH_JOB_QUEUE")
 FIND_THEMES_BATCH_JOB_DEFINITION = env("FIND_THEMES_BATCH_JOB_DEFINITION")
+
+# Only submit real AWS Batch jobs in deployed environments. In local/test/e2e the
+# AWS Batch call is stubbed (see data_pipeline.batch.submit_job), which keeps a
+# single source of truth (is_deployed) while staying easy to mock in tests.
+SUBMIT_BATCH_JOBS = HostingEnvironment.is_deployed()
 
 # redis
 redis_host = env.str("REDIS_HOST", "localhost")

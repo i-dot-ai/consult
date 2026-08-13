@@ -16,11 +16,15 @@
   export let tabs: Tab[] = [];
   export let value: string = "";
   export let handleChange: (newValue: string) => void = () => {};
-  export let title: string = "";
   export let variant: "default" | "dots" = "default";
 
+  // prevTabIndex is initialised to the current tab so the direction calculation
+  // is correct from the first tab change, even if the component mounts with a
+  // non-first tab selected.
+  // direction has no initialiser because the $: block always sets it before
+  // first render, making a default value redundant.
   let prevTabIndex: number = tabs.findIndex((tab) => tab.id === value);
-  let direction: TabDirections = TabDirections.Forward;
+  let direction: TabDirections;
   const writableValue = writable(value);
 
   $: {
@@ -35,7 +39,9 @@
     // Update writableValue for the parent
     writableValue.set(value);
 
-    // Keep track of prev tab index for fly animation
+    // prevTabIndex is read at the start of the next reactive invocation.
+    // The linter cannot reason across $: block runs so this is a false positive.
+    // eslint-disable-next-line no-useless-assignment
     prevTabIndex = tabs.findIndex((tab) => tab.id === value);
   }
 
@@ -128,8 +134,9 @@
             >
               {#if tab.icon}
                 <div class="shrink-0">
-                  <MaterialIcon color="fill-neutral-500">
-                    <svelte:component this={tab.icon} />
+                  <MaterialIcon color="fill-neutral-500" title={tab.title}>
+                    {@const Icon = tab.icon}
+                    <Icon />
                   </MaterialIcon>
                 </div>
               {/if}

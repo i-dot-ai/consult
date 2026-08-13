@@ -1,0 +1,21 @@
+[project]
+name = "pipeline-sign-off"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "themefinder",
+    "pipeline-common",
+    "boto3>=1.42.17",
+    "pandas>=2.2.2",
+    "urllib3>=2.0.0",
+    "openai>=2.14.0",
+    "pydantic>=2.12.5",
+    "structlog>=23.1.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+themefinder = { workspace = true }
+pipeline-common = { workspace = true }

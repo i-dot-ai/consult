@@ -1,5 +1,5 @@
 ---
-import { fetchBackendApi } from "../../../global/api";
+import { buildResponse, fetchBackendApi } from "../../../global/api";
 import type {
   AstroGlobalRuntime,
   ConsultationResponse,
@@ -15,24 +15,41 @@ import {
   getApiQuestionsUrl,
 } from "../../../global/routes";
 import { Routes } from "../../../global/routes";
-import QuestionsReviewList from "../../../components/screens/QuestionsReviewList.svelte";
+import QuestionsReviewList from "../../../components/screens/QuestionsReviewList/QuestionsReviewList.svelte";
 
 const { consultationId = "" } = (Astro as unknown as AstroGlobalRuntime).params;
 
-const consultation = await fetchBackendApi<ConsultationResponse>(
+const {
+  data: consultationData,
+  error: consultationError,
+  status: consultationStatus,
+} = await fetchBackendApi<ConsultationResponse>(
   Astro,
   getApiConsultationUrl(consultationId),
 );
 
-const questions = await fetchBackendApi<{ results: Question[] }>(
+const {
+  data: questions,
+  error: questionsError,
+  status: questionsStatus,
+} = await fetchBackendApi<{ results: Question[] }>(
   Astro,
-  getApiQuestionsUrl(consultationId),
+  getApiQuestionsUrl(consultationId, {
+    include: "proportion_of_audited_answers",
+  }),
 );
+
+if (consultationError) {
+  return buildResponse(consultationStatus);
+}
+if (questionsError) {
+  return buildResponse(questionsStatus);
+}
 ---
 
 <Layout>
   <Section>
-    <Title level={1} text={consultation.title} />
+    <Title level={1} text={consultationData?.title} />
     <Link href={Routes.Consultations}>Back to your consultations</Link>
 
     <h2>All free text questions for review</h2>

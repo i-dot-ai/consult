@@ -7,7 +7,7 @@ export default {
     { name: "value", value: 40, type: "number" },
     {
       name: "thickness",
-      value: 40,
+      value: 2,
       type: "select",
       options: [
         { value: 1, label: "1" },

@@ -12,6 +12,7 @@
   import { getConsultationAnalysisUrl } from "../../../global/routes";
 
   interface MetricsDemoItem {
+    id: string;
     title: string;
     count: number;
     percentage: number;
@@ -22,6 +23,7 @@
     items?: MetricsDemoItem[];
     hideThreshold?: number;
     consultationId?: string;
+    testId?: string;
   }
 
   let {
@@ -29,6 +31,7 @@
     items = [],
     hideThreshold = 3,
     consultationId = "",
+    testId = "metrics-demo-card",
   }: Props = $props();
 
   let displayAll: boolean = $state(false);
@@ -48,7 +51,7 @@
       <div class="flex items-center justify-end gap-2">
         <span class="text-sm">{count.toLocaleString()}</span>
         <span class="text-xs text-primary">{percentage}%</span>
-        <div class="w-[2rem]">
+        <div class="w-8">
           <Progress value={percentage} />
         </div>
       </div>
@@ -65,11 +68,12 @@
     "lg:col-span-4",
     "h-full",
   ])}
+  data-testid={testId}
 >
   <Panel bg={true} border={true}>
     <Title level={4} text={title} />
 
-    {#each items as item, index (item.title)}
+    {#each items as item, index (item.id)}
       {@render cardItem(item, index)}
     {/each}
 

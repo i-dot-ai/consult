@@ -31,7 +31,7 @@
 
 <div>
   <Title level={3}>
-    <span class={clsx(["block", "text-sm", "font-[500]", "mb-2"])}>
+    <span class={clsx(["block", "text-sm", "font-medium", "mb-2"])}>
       {title}
     </span>
   </Title>
@@ -46,7 +46,8 @@
     {#each items as item (item.id)}
       <div
         class={clsx(
-          "bg-neutral-100",
+          "bg-neutral-50",
+          "shadow-sm",
           "text-xs",
           "p-2",
           "rounded-lg",
@@ -65,33 +66,37 @@
           onchange={(checked, value) => onChange(value!, checked)}
         />
 
-        <div>
-          <label for={getCheckboxId(item.id)} class="hover:cursor-pointer">
-            <Title level={4}>
-              <span class={clsx(["block", "mb-1"])}>
-                {item.title}
-              </span>
-            </Title>
-          </label>
+        <div class={clsx(["w-full"])}>
+          <div class={clsx(["flex", "justify-between", "gap-4", "w-full"])}>
+            <label for={getCheckboxId(item.id)} class="hover:cursor-pointer">
+              <Title level={4}>
+                <span class={clsx(["block", "mb-1"])}>
+                  {item.title}
+                </span>
+              </Title>
+            </label>
 
-          <Button
-            variant="ghost"
-            handleClick={() => {
-              if (expanded.includes(item.id)) {
-                expanded = expanded.filter((itemId) => itemId !== item.id);
-              } else {
-                expanded = [...expanded, item.id];
-              }
-            }}
-            ariaControls={`${item.id}-details`}
-            ariaLabel={`Show/Hide ${item.id}-details`}
-          >
-            <span class="-ml-2 text-secondary hover:underline">
-              {expanded.includes(item.id)
-                ? "Hide example"
-                : "Show me an example"}
-            </span>
-          </Button>
+            <Button
+              variant="ghost"
+              handleClick={() => {
+                if (expanded.includes(item.id)) {
+                  expanded = expanded.filter((itemId) => itemId !== item.id);
+                } else {
+                  expanded = [...expanded, item.id];
+                }
+              }}
+              ariaControls={`${item.id}-details`}
+              ariaLabel={`Show/Hide ${item.id}-details`}
+            >
+              <span
+                class="-ml-2 text-nowrap text-secondarydark hover:underline"
+              >
+                {expanded.includes(item.id)
+                  ? "Hide example"
+                  : "Show me an example"}
+              </span>
+            </Button>
+          </div>
 
           {#if expanded.includes(item.id)}
             <div

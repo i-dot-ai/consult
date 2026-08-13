@@ -3,7 +3,6 @@ from uuid import UUID
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Model, QuerySet
-from django_rq import job
 
 from consultations.models import (
     CandidateTheme,
@@ -17,6 +16,7 @@ from consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
+from rq_context import job
 
 logger = settings.LOGGER
 

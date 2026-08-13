@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.conf import settings
 from django.contrib import admin, messages
 from django.http import HttpResponseRedirect
@@ -26,10 +28,10 @@ logger = settings.LOGGER
 
 
 class ResponseAdmin(admin.ModelAdmin):
-    list_filter = ["question", "question__consultation"]
-    list_display = ["free_text", "question"]
+    list_filter: ClassVar[list] = ["question", "question__consultation"]
+    list_display: ClassVar[list] = ["free_text", "question"]
     list_select_related = True
-    readonly_fields = [
+    readonly_fields: ClassVar[list] = [
         "respondent",
         "question",
         "free_text",
@@ -78,8 +80,14 @@ def import_candidate_themes_from_s3_job(modeladmin, request, queryset):
         )
         try:
             import_candidate_themes.enqueue(consultation.code, consultation.timestamp)
-        except Exception as e:
-            logger.error("failed to start import_candidate_themes: {error}", error=e)
+        except Exception:
+            logger.exception(
+                "failed to start import_candidate_themes for {code}", code=consultation.code
+            )
+            messages.error(
+                request,
+                f"Failed to start import for '{consultation.code}' (see logs for details)",
+            )
 
 
 @admin.action(description="Clone consultation")
@@ -96,12 +104,15 @@ def create_cloned_consultation(modeladmin, request, queryset):
             f"Cloning '{consultation.title}' in the background. Monitor progress in /django-rq.",
         )
     except Exception as e:
-        logger.exception(f"Error starting clone job for consultation {consultation.id}: {e}")
+        logger.exception(
+            "Error starting clone job for consultation {consultation_id}",
+            consultation_id=consultation.id,
+        )
         messages.error(request, f"Failed to start clone job: {e}")
 
 
 class ConsultationAdmin(admin.ModelAdmin):
-    actions = [
+    actions: ClassVar[list] = [
         create_small_dummy_consultation,
         create_large_dummy_consultation,
         import_candidate_themes_from_s3_job,
@@ -130,18 +141,18 @@ def reset_sign_off(modeladmin, request, queryset):
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    list_filter = ["consultation"]
-    list_display = ["text", "number", "consultation"]
+    list_filter: ClassVar[list] = ["consultation"]
+    list_display: ClassVar[list] = ["text", "number", "consultation"]
     list_select_related = True
-    readonly_fields = [
+    readonly_fields: ClassVar[list] = [
         "consultation",
         "text",
         "number",
         "has_free_text",
         "has_multiple_choice",
     ]
-    inlines = [MultiChoiceAnswerInline]
-    actions = [set_has_free_text_false, reset_sign_off]
+    inlines: ClassVar[list] = [MultiChoiceAnswerInline]
+    actions: ClassVar[list] = [set_has_free_text_false, reset_sign_off]
     change_form_template = "admin/consultations/question/change_form.html"
 
     def get_urls(self):
@@ -190,7 +201,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
 
 class ResponseAnnotationAdmin(SimpleHistoryAdmin):
-    readonly_fields = [
+    readonly_fields: ClassVar[list] = [
         "response",
         "themes",
         "sentiment",
@@ -202,7 +213,7 @@ class ResponseAnnotationAdmin(SimpleHistoryAdmin):
 
 
 class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
-    readonly_fields = [
+    readonly_fields: ClassVar[list] = [
         "response_annotation",
         "theme",
         "assigned_by",
@@ -210,22 +221,22 @@ class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
 
 
 class RespondentAdmin(admin.ModelAdmin):
-    readonly_fields = ["consultation", "themefinder_id"]
+    readonly_fields: ClassVar[list] = ["consultation", "themefinder_id"]
 
 
 class DemographicOptionAdmin(admin.ModelAdmin):
-    list_filter = ["consultation"]
-    readonly_fields = ["consultation", "field_name", "field_value"]
+    list_filter: ClassVar[list] = ["consultation"]
+    readonly_fields: ClassVar[list] = ["consultation", "field_name", "field_value"]
 
 
 class CandidateThemeAdmin(admin.ModelAdmin):
-    list_filter = ["question__consultation", "question"]
-    list_display = ["name", "question", "approximate_frequency"]
+    list_filter: ClassVar[list] = ["question__consultation", "question"]
+    list_display: ClassVar[list] = ["name", "question", "approximate_frequency"]
 
 
 class SelectedThemeAdmin(admin.ModelAdmin):
-    list_filter = ["question__consultation", "question"]
-    list_display = ["name", "question", "key"]
+    list_filter: ClassVar[list] = ["question__consultation", "question"]
+    list_display: ClassVar[list] = ["name", "question", "key"]
 
 
 admin.site.register(CandidateTheme, CandidateThemeAdmin)

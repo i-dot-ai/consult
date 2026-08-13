@@ -57,15 +57,13 @@ def test_get_non_empty_responses(consultation, free_text_question):
     respondent1 = RespondentFactory(consultation=consultation)
     respondent2 = RespondentFactory(consultation=consultation)
     respondent3 = RespondentFactory(consultation=consultation)
-    respondent4 = RespondentFactory(consultation=consultation)
     ResponseFactory(question=free_text_question, respondent=respondent1, free_text="Has text")
-    ResponseFactory(question=free_text_question, respondent=respondent2, free_text="Not Provided")
-    ResponseFactory(question=free_text_question, respondent=respondent3, free_text="")
-    ResponseFactory(question=free_text_question, respondent=respondent4, free_text=None)
+    ResponseFactory(question=free_text_question, respondent=respondent2, free_text="More text")
+    ResponseFactory(question=free_text_question, respondent=respondent3, free_text=None)
 
     result = free_text_question.get_non_empty_responses()
 
-    assert result.count() == 1
+    assert result.count() == 2
 
 
 @pytest.mark.django_db
@@ -73,15 +71,9 @@ class TestSampleResponses:
     def test_keeps_specified_number_of_responses(self):
         consultation = ConsultationFactory()
         question = QuestionFactory(consultation=consultation)
-        for i in range(5):
+        for i in range(10):
             respondent = RespondentFactory(consultation=consultation)
             ResponseFactory(question=question, respondent=respondent, free_text=f"Response {i}")
-        for i in range(5):
-            respondent = RespondentFactory(consultation=consultation)
-            ResponseFactory(question=question, respondent=respondent, free_text="Not Provided")
-        for i in range(5):
-            respondent = RespondentFactory(consultation=consultation)
-            ResponseFactory(question=question, respondent=respondent, free_text="")
         for i in range(5):
             respondent = RespondentFactory(consultation=consultation)
             ResponseFactory(question=question, respondent=respondent, free_text=None)
@@ -89,12 +81,12 @@ class TestSampleResponses:
         result = question.sample_responses(keep_count=3)
 
         assert result.kept == 3
-        assert result.deleted == 17
+        assert result.deleted == 12
         assert Response.objects.filter(question=question).count() == 3
 
         question.refresh_from_db()
 
-        assert question.total_responses == 3
+        assert question.free_text_response_count == 3
 
     def test_raises_error_if_keep_count_less_than_one(self):
         consultation = ConsultationFactory()

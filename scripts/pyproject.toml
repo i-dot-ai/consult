@@ -1,0 +1,20 @@
+[project]
+name = "consult-scripts"
+version = "0.1.0"
+description = "Consultation setup CLIs (validate Q.U. workbooks, build ThemeFinder inputs, upload to S3)."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3>=1.42",
+    "openpyxl>=3.1",
+    "pandas>=2.0",
+    "xlsxwriter>=3.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

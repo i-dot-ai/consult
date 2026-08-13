@@ -6,7 +6,7 @@ from authentication.models import User
 
 @pytest.mark.django_db
 def test_create_valid_user():
-    user = User.objects.create_user(email="email@example.com")
+    user = User.objects.create_user(email="admin@example.com")
     assert user.id
     assert not user.is_staff
 
@@ -19,18 +19,18 @@ def test_create_user_with_invalid_email():
 
 @pytest.mark.django_db
 def test_create_user_with_duplicate_email():
-    User.objects.create_user(email="email@example.com")
+    User.objects.create_user(email="admin@example.com")
 
     with pytest.raises(ValidationError):
         # we don't respect case
-        User.objects.create_user(email="EMAIL@example.com")
+        User.objects.create_user(email="ADMIN@example.com")
 
 
 @pytest.mark.django_db
 def test_create_user_idempotent():
-    User.objects.create_user(email="email@example.com")
+    User.objects.create_user(email="admin@example.com")
 
     # no error thrown
-    User.objects.create_user(email="email@example.com", idempotent=True)
+    User.objects.create_user(email="admin@example.com", idempotent=True)
 
     assert User.objects.count() == 1

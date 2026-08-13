@@ -1,0 +1,20 @@
+[project]
+name = "pipeline-common"
+version = "0.1.0"
+description = "Shared AWS Batch job bootstrap (StructuredLogger + Sentry) for pipeline-mapping and pipeline-sign-off."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "i-dot-ai-utilities>=0.6.0",
+    "structlog>=23.1.0",
+    "sentry-sdk>=2.61.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = "."
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"

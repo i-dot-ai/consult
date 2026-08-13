@@ -2,7 +2,7 @@
 
 Consult is a web application that combines AI with human oversight to process public consultation responses at scale to inform public policy. Once consultation responses are uploaded to the app, the AI identifies themes across the responses using the [themefinder](https://pypi.org/project/themefinder/) package. Users review and finalise these themes — selecting, editing, or creating new ones — before AI assigns the finalised themes to individual responses. The results are presented in a dashboard for users to analyse and draw insights from.
 
-The repository is split into a Django REST backend (`backend/`), an Astro and Svelte frontend (`frontend/`), AI processing pipelines that run on AWS Batch (`pipeline-sign-off/`, `pipeline-mapping/`), Lambda functions that sync pipeline results to the database (`lambda/`), and Terraform infrastructure (`terraform/`).
+The repository is split into a Django REST backend (`backend/`), an Astro and Svelte frontend (`frontend/`), AI processing pipelines that run on AWS Batch (`pipeline-sign-off/`, `pipeline-mapping/`), Lambda functions that sync pipeline results to the database (`lambda/`), and Terraform infrastructure ([`terraform/`](terraform/README.md)).
 
 > [!IMPORTANT]
 > Incubation Project: This project is an incubation project; as such, we don't recommend using this for critical use cases yet. We are currently in a research stage, trialling the tool for case studies across the Civil Service. If you are a civil servant and wish to take part in our research stage, please contact us at i-dot-ai-enquiries@cabinetoffice.gov.uk.
@@ -18,6 +18,24 @@ Installation instructions assume using a Mac with Homebrew.
 - nvm ([instructions](https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script))
 - GraphViz (`brew install graphviz`), used for generating database diagrams
 - pre-commit (`brew install pre-commit`)
+- Postegres(optional) (`brew install postgresql`) if you are getting `psycopg2` error during `make setup`
+
+We use a 14-day cooldown on package installations to maintain security, these can be found in:
+
+- .github/dependabot.yml
+- frontend/.npmrc
+- e2e_tests/.npmrc
+- backend/pyproject.toml
+
+### Prerequisites for running end-to-end tests
+
+Make sure that you have `coreutils` installed:
+`brew install coreutils`
+
+Also note that you will need to add a personal access token on github with `read:packages` access and then use this to log in on the command line before running the end-to-end tests:
+```
+echo $PASSWORD | docker login ghcr.io -u <username> --password-stdin
+```
 
 ### Clone and install
 
@@ -77,8 +95,32 @@ make test-frontend
 Run end-to-end tests:
 
 ```
+docker compose up -d postgres # postgres must be running already
 make test-end-to-end
 ```
+If you are getting error while running e2e that the frontend is failing to start during the docker spin up its likely because of the timeout module that is missing and you will need to run
+
+```shell
+brew install coreutils
+```
+
+### Setting up a new consultation
+
+The `scripts/` directory contains CLI tools for preparing a consultation's
+data for the ThemeFinder pipeline:
+
+```bash
+# Generate an opinionated Q.U. workbook template with live in-sheet validation:
+make build-consultation-template
+
+# Validate a Q.U. workbook against response data, build the ThemeFinder
+# input layout, and upload it to S3:
+make setup-consultation name=my_consultation
+```
+
+See [`scripts/README.md`](scripts/README.md) for the full pipeline
+walkthrough and [`scripts/setup_consultation_checks.md`](scripts/setup_consultation_checks.md)
+for the list of validation rules.
 
 ### VSCode setup (recommended)
 

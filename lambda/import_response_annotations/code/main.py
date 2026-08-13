@@ -1,40 +1,90 @@
-import logging
+import datetime
 import os
 
 import redis  # type: ignore
+import sentry_sdk
+from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
+from i_dot_ai_utilities.logging.types.enrichment_types import (
+    ContextEnrichmentType,
+    ExecutionEnvironmentType,
+)
+from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 from rq import Queue
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = StructuredLogger(
+    level="info",
+    options={
+        "execution_environment": ExecutionEnvironmentType.LAMBDA,
+        "log_format": LogOutputFormat.JSON,
+    },
+)
+# Initialize Sentry if DSN is provided
+sentry_dsn = os.environ.get("SENTRY_DSN")
+if sentry_dsn:
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        environment=os.environ.get("ENVIRONMENT", "unknown"),
+        traces_sample_rate=1.0,
+    )
+    logger.info("Sentry initialized")
 
 
-def lambda_handler(event, _context):
+def _epoch_ms_to_iso(epoch_ms: int | None) -> str | None:
+    """Convert an AWS Batch epoch-millisecond timestamp to an ISO-8601 string."""
+    if epoch_ms is None:
+        return None
+    return datetime.datetime.fromtimestamp(epoch_ms / 1000, tz=datetime.UTC).isoformat()
+
+
+def lambda_handler(event, context):
     """
     Lambda triggered by EventBridge when assign themes batch job completes.
 
     Enqueues a Django RQ job to import response annotations from S3 to the database.
     """
+    logger.refresh_context([{"type": ContextEnrichmentType.LAMBDA, "object": context}])
+    logger.set_context_field("execution_context", os.environ.get("EXECUTION_CONTEXT", "lambda"))
 
     detail = event["detail"]
     job_name = detail["jobName"]
     job_status = detail["status"]
+    start_date_time = _epoch_ms_to_iso(detail.get("startedAt"))
+    end_date_time = _epoch_ms_to_iso(detail.get("stoppedAt"))
 
     parameters = detail["parameters"]
     consultation_code = parameters["consultation_code"]
     run_date = parameters["run_date"]
     assignment_target = parameters.get("assignment_target", "selected_themes")
+    context_id = parameters.get("context_id")
 
-    logger.info(f"Batch job '{job_name}' completed with status: {job_status}")
-    logger.info(f"Consultation code: {consultation_code}")
-    logger.info(f"Run date: {run_date}")
-    logger.info(f"Assignment target: {assignment_target}")
+    logger.set_context_field("batch_job_name", job_name)
+    logger.set_context_field("consultation_code", consultation_code)
+    logger.set_context_field("context_id", context_id)
+
+    logger.info(
+        "Batch job '{job_name}' completed with status: {job_status} "
+        "consultation_code: {consultation_code} start_date_time: {start_date_time} "
+        "end_date_time: {end_date_time} assignment_target: {assignment_target}",
+        job_name=job_name,
+        job_status=job_status,
+        consultation_code=consultation_code,
+        start_date_time=start_date_time,
+        end_date_time=end_date_time,
+        assignment_target=assignment_target,
+    )
 
     try:
         # Connect to Redis
         redis_host = os.environ.get("REDIS_HOST")
+        if redis_host is None:
+            raise ValueError("REDIS_HOST environment variable is required")
         redis_port = int(os.environ.get("REDIS_PORT", "6379"))
 
-        logger.info(f"Connecting to Redis: {redis_host}:{redis_port}")
+        logger.info(
+            "Connecting to Redis: {redis_host}:{redis_port}",
+            redis_host=redis_host,
+            redis_port=redis_port,
+        )
 
         redis_conn = redis.Redis(
             host=redis_host,
@@ -45,7 +95,7 @@ def lambda_handler(event, _context):
 
         # Test Redis connection
         ping_result = redis_conn.ping()
-        logger.info(f"✅ Redis PING result: {ping_result}")
+        logger.info("✅ Redis PING result: {ping_result}", ping_result=ping_result)
 
         # Enqueue the appropriate RQ job based on assignment target
         queue_name = "default"
@@ -63,20 +113,20 @@ def lambda_handler(event, _context):
             consultation_code,
             run_date,
             job_timeout=3_600,
+            context_id=context_id,
         )
-
-        logger.info("✅ RQ job enqueued successfully!")
-        logger.info(f"Job ID: {job.id}")
-        logger.info(f"Job function: {rq_job_name}")
-        logger.info(f"Job status: {job.get_status()}")
-        logger.info(f"Queue '{queue_name}' now has {len(queue)} jobs")
 
         logger.info(
-            f"✅ Successfully queued import job {job.id} for: {consultation_code}"
+            "✅ Successfully queued import job {job_id} ({rq_job_name}) for: {consultation_code}. "
+            "Job status: {job_status}, queue '{queue_name}' now has {job_count} jobs",
+            job_id=job.id,
+            rq_job_name=rq_job_name,
+            consultation_code=consultation_code,
+            job_status=job.get_status(),
+            queue_name=queue_name,
+            job_count=len(queue),
         )
 
-    except Exception as e:
-        error_msg = f"Failed to enqueue response annotations import job: {str(e)}"
-        logger.error(f"ERROR: {error_msg}")
-        logger.error(f"Exception type: {type(e).__name__}")
+    except Exception:
+        logger.exception("Failed to enqueue response annotations import job")
         raise
