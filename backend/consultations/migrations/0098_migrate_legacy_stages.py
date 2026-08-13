@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.db import migrations
 
 
@@ -14,10 +16,10 @@ def reverse_migrate_legacy_stages(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [
+    dependencies: ClassVar[list] = [
         ("consultations", "0097_candidatethemeresponse"),
     ]
 
-    operations = [
+    operations: ClassVar[list] = [
         migrations.RunPython(migrate_legacy_stages, reverse_code=reverse_migrate_legacy_stages),
     ]

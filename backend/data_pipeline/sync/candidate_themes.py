@@ -1,6 +1,5 @@
 import csv
 import io
-from typing import Dict, List, Optional
 
 from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
@@ -8,13 +7,13 @@ from django.db import transaction
 from themefinder.models import ThemeNode
 
 import consultations.utils.s3 as s3_utils
-import data_pipeline.s3 as s3
 from consultations.models import (
     CandidateTheme,
     CandidateThemeResponse,
     Consultation,
     Question,
 )
+from data_pipeline import s3
 from data_pipeline.models import CandidateThemeBatch, ThemeMappingInput, ThemeNodeList
 
 logger = settings.LOGGER
@@ -29,8 +28,8 @@ def load_candidate_themes_from_s3(
     consultation_code: str,
     question_number: int,
     timestamp: str,
-    bucket_name: Optional[str] = None,
-) -> List[ThemeNode]:
+    bucket_name: str | None = None,
+) -> list[ThemeNode]:
     """
     Load and validate candidate themes for a single question from S3.
 
@@ -77,8 +76,8 @@ def load_candidate_themes_from_s3(
 def load_candidate_themes_batch(
     consultation_code: str,
     timestamp: str,
-    question_numbers: Optional[List[int]] = None,
-    bucket_name: Optional[str] = None,
+    question_numbers: list[int] | None = None,
+    bucket_name: str | None = None,
 ) -> CandidateThemeBatch:
     """
     Load all candidate themes for a consultation, organized by question.
@@ -119,7 +118,7 @@ def load_candidate_themes_batch(
     )
 
     # Load themes for each question
-    themes_by_question: Dict[int, List[ThemeNode]] = {}
+    themes_by_question: dict[int, list[ThemeNode]] = {}
 
     for question_number in question_numbers:
         themes = load_candidate_themes_from_s3(
@@ -153,7 +152,7 @@ def load_candidate_themes_batch(
 # ============================================================================
 
 
-def _import_candidate_themes_for_question(question: Question, themes: List[ThemeNode]) -> None:
+def _import_candidate_themes_for_question(question: Question, themes: list[ThemeNode]) -> None:
     """
     Import candidate themes for a single question into database.
 
@@ -324,7 +323,7 @@ def import_candidate_themes(batch: CandidateThemeBatch) -> None:
 def import_candidate_themes_from_s3(
     consultation_code: str,
     timestamp: str,
-    question_numbers: Optional[List[int]] = None,
+    question_numbers: list[int] | None = None,
 ) -> None:
     """
     High-level orchestration function to import candidate themes from S3.
@@ -460,8 +459,8 @@ def export_candidate_themes_to_s3(consultation: Consultation) -> int:
 
 def _build_candidate_theme_lookup(
     question: Question,
-    batch_themes: List,
-) -> Dict[str, CandidateTheme]:
+    batch_themes: list,
+) -> dict[str, CandidateTheme]:
     """
     Build a lookup from batch job theme_keys to database CandidateTheme records.
 
@@ -499,8 +498,8 @@ def _build_candidate_theme_lookup(
 
 def _import_candidate_theme_responses(
     question: Question,
-    mappings: List[ThemeMappingInput],
-    theme_lookup: Dict[str, CandidateTheme],
+    mappings: list[ThemeMappingInput],
+    theme_lookup: dict[str, CandidateTheme],
 ) -> None:
     """
     Import candidate theme to response mappings for a single question.

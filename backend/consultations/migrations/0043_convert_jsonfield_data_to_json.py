@@ -1,5 +1,6 @@
 # Convert JSONField data to JSON from string
 import json
+from typing import ClassVar
 
 from django.db import migrations
 
@@ -38,11 +39,11 @@ def convert_answer_chosen_options(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [
+    dependencies: ClassVar[list] = [
         ("consultations", "0042_respondent_themefinder_respondent_id"),
     ]
 
-    operations = [
+    operations: ClassVar[list] = [
         migrations.RunPython(
             convert_questionpart_options, reverse_code=migrations.RunPython.noop, elidable=True
         ),

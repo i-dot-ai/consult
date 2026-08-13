@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 from themefinder.models import ThemeNode
@@ -17,7 +17,7 @@ class RespondentInput(BaseModel):
     """
 
     themefinder_id: int
-    demographic_data: Dict[str, List[str]] = Field(default_factory=dict)
+    demographic_data: dict[str, list[str]] = Field(default_factory=dict)
 
     model_config = {"extra": "forbid"}
 
@@ -33,7 +33,7 @@ class QuestionInput(BaseModel):
     question_text: str
     question_number: int
     has_free_text: bool = True
-    multi_choice_options: List[str] = Field(default_factory=list)
+    multi_choice_options: list[str] = Field(default_factory=list)
 
     @field_validator("multi_choice_options", mode="before")
     @classmethod
@@ -67,7 +67,7 @@ class MultiChoiceInput(BaseModel):
     """
 
     themefinder_id: int
-    options: List[str]
+    options: list[str]
 
     model_config = {"extra": "forbid"}
 
@@ -86,13 +86,13 @@ class ConsultationDataBatch(BaseModel):
 
     consultation_code: str
     consultation_title: str
-    timestamp: Optional[str] = None
-    respondents: List[RespondentInput]
-    questions: List[QuestionInput]
+    timestamp: str | None = None
+    respondents: list[RespondentInput]
+    questions: list[QuestionInput]
 
     # Keyed by question_number for efficient lookup
-    responses_by_question: Dict[int, List[ResponseInput]] = Field(default_factory=dict)
-    multi_choice_by_question: Dict[int, List[MultiChoiceInput]] = Field(default_factory=dict)
+    responses_by_question: dict[int, list[ResponseInput]] = Field(default_factory=dict)
+    multi_choice_by_question: dict[int, list[MultiChoiceInput]] = Field(default_factory=dict)
 
     model_config = {"extra": "forbid"}
 
@@ -115,7 +115,7 @@ class CandidateThemeBatch(BaseModel):
 
     consultation_code: str
     timestamp: str
-    themes_by_question: Dict[int, List[ThemeNode]] = Field(default_factory=dict)
+    themes_by_question: dict[int, list[ThemeNode]] = Field(default_factory=dict)
 
     model_config = {"extra": "forbid"}
 
@@ -169,7 +169,7 @@ class ThemeMappingInput(BaseModel):
     """
 
     themefinder_id: int
-    theme_keys: List[str]
+    theme_keys: list[str]
 
     model_config = {"extra": "forbid"}
 
@@ -206,10 +206,10 @@ class AnnotationBatch(BaseModel):
 
     consultation_code: str
     timestamp: str
-    sentiments_by_question: Dict[int, List[SentimentInput]] = Field(default_factory=dict)
-    details_by_question: Dict[int, List[DetailDetectionInput]] = Field(default_factory=dict)
-    mappings_by_question: Dict[int, List[ThemeMappingInput]] = Field(default_factory=dict)
-    selected_themes_by_question: Dict[int, List[SelectedThemeInput]] = Field(default_factory=dict)
+    sentiments_by_question: dict[int, list[SentimentInput]] = Field(default_factory=dict)
+    details_by_question: dict[int, list[DetailDetectionInput]] = Field(default_factory=dict)
+    mappings_by_question: dict[int, list[ThemeMappingInput]] = Field(default_factory=dict)
+    selected_themes_by_question: dict[int, list[SelectedThemeInput]] = Field(default_factory=dict)
 
     model_config = {"extra": "forbid"}
 

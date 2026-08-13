@@ -242,11 +242,17 @@ resource "aws_service_discovery_service" "service_discovery_service" {
 module "sns_topic" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   # source                       = "../../i-dot-ai-core-terraform-modules/modules/observability/cloudwatch-slack-integration"
-  source        = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/cloudwatch-slack-integration?ref=v2.0.2-cloudwatch-slack-integration"
+  source        = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/cloudwatch-slack-integration?ref=v2.2.0-cloudwatch-slack-integration"
   name          = local.name
   slack_webhook = data.aws_secretsmanager_secret_version.platform_slack_webhook.secret_string
 
   permissions_boundary_name = "infra/i-dot-ai-${var.env}-${var.project_name}-perms-boundary-app"
+
+  # TODO(PRO-504): revisit once the observability stack is ready; point this at
+  # the RDS dashboard there instead of the runbook.
+  alert_links = {
+    "Runbook" = "https://github.com/i-dot-ai/consult/blob/main/RUNBOOK.md"
+  }
 }
 
 module "backend-ecs-alarm" {

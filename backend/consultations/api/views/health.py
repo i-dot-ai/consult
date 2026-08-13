@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
-from typing import Callable
+from collections.abc import Callable
+from datetime import UTC, datetime
 
 import psycopg
 import redis
@@ -81,7 +81,7 @@ def health_check(_request) -> Response:
         {
             "status": app_status,
             "checks": checks,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         },
         status=http_status,
     )

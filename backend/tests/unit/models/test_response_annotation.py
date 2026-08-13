@@ -1,4 +1,5 @@
 import pytest
+from django.db import IntegrityError
 from django.utils import timezone
 from freezegun import freeze_time
 
@@ -34,7 +35,7 @@ class TestResponseAnnotation:
         assert annotation.response == response
 
         # Can't create another annotation for same response
-        with pytest.raises(Exception):  # Will raise IntegrityError
+        with pytest.raises(IntegrityError):
             ResponseAnnotationFactory(response=response)
 
     def test_themes_relationship(self):

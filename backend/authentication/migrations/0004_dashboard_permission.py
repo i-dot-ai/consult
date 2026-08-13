@@ -1,4 +1,6 @@
 # Add a permission for dashboards
+from typing import ClassVar
+
 from django.db import migrations
 
 
@@ -13,10 +15,10 @@ def delete_dashboard_viewer_group(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [
+    dependencies: ClassVar[list] = [
         ("authentication", "0003_user_groups_user_is_superuser_user_user_permissions"),
     ]
-    operations = [
+    operations: ClassVar[list] = [
         migrations.RunPython(
             create_dashboard_permission, reverse_code=delete_dashboard_viewer_group
         ),

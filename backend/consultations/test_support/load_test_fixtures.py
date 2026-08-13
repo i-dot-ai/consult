@@ -22,7 +22,7 @@ def create_response_from_fixtures(respondents, index, question_object, response_
     response = Response.objects.create(
         respondent=respondents[index],
         question=question_object,
-        free_text=response_data["free_text"] if "free_text" in response_data else None,
+        free_text=response_data.get("free_text", None),
     )
 
     if "chosen_options" in response_data:

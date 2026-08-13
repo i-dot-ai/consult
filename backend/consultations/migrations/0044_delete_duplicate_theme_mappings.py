@@ -1,5 +1,7 @@
 # Delete the second duplicate theme mapping for each (answer, theme) pair
 
+from typing import ClassVar
+
 from django.db import migrations
 from django.db.models import Count
 
@@ -30,11 +32,11 @@ class Migration(migrations.Migration):
                 id__in=theme_mapping_ids_to_keep
             ).delete()
 
-    dependencies = [
+    dependencies: ClassVar[list] = [
         ("consultations", "0043_convert_jsonfield_data_to_json"),
     ]
 
-    operations = [
+    operations: ClassVar[list] = [
         migrations.RunPython(
             delete_duplicate_theme_mappings, reverse_code=migrations.RunPython.noop, elidable=True
         ),

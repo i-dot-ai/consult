@@ -15,6 +15,7 @@ jobs:
     steps:
       - name: Fetch Dependabot metadata
         id: metadata
+        continue-on-error: true
         uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -27,8 +28,15 @@ jobs:
         id: update-type
         env:
           METADATA_UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+          METADATA_OUTCOME: ${{ steps.metadata.outcome }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
+          # If fetch-metadata failed (e.g. human pushed to a dependabot PR), skip auto-merge
+          if [[ "$METADATA_OUTCOME" != "success" ]]; then
+            echo "update-type=skip" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           if [[ -n "$METADATA_UPDATE_TYPE" && "$METADATA_UPDATE_TYPE" != "null" ]]; then
             echo "update-type=$METADATA_UPDATE_TYPE" >> "$GITHUB_OUTPUT"
             exit 0
