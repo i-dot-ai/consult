@@ -4,12 +4,14 @@
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Description from "../../svg/material/Description.svelte";
   import Group from "../../svg/material/Group.svelte";
-  import Shield from "../../svg/material/Shield.svelte";
+  import ContactSupport from "../../svg/material/ContactSupport.svelte";
+  import Graph3 from "../../svg/material/Graph3.svelte";
 
   export interface Props {
     questionCount: number;
     responseCount: number;
     demoCount: number;
+    respondentCount: number;
   }
 
   let { questionCount = 0, responseCount = 0, demoCount = 0 }: Props = $props();
@@ -36,6 +38,7 @@
   </div>
 {/snippet}
 
-{@render row("Questions", questionCount, Group)}
+{@render row("Questions", questionCount, ContactSupport)}
+{@render row("Respondents", responseCount, Group)}
 {@render row("Responses", responseCount, Description)}
-{@render row("Demographics", demoCount, Shield)}
+{@render row("Demographics", demoCount, Graph3)}
