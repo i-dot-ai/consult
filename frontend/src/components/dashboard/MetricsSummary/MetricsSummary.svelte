@@ -14,7 +14,12 @@
     respondentCount: number;
   }
 
-  let { questionCount = 0, responseCount = 0, demoCount = 0, respondentCount = 0 }: Props = $props();
+  let {
+    questionCount = 0,
+    responseCount = 0,
+    demoCount = 0,
+    respondentCount = 0,
+  }: Props = $props();
 </script>
 
 {#snippet row(text: string, count: number, Icon: Component)}
