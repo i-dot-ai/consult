@@ -172,13 +172,17 @@ export const longQuestionsMock = {
   },
 };
 
+const totalQuestionCount = QUESTIONS.reduce(
+  (acc, curr) => acc + curr.total_response_count,
+  0,
+);
 export const defaultRespondentsMock = {
   url: RESPONDENTS_URL,
   body: {
-    count: 1,
+    count: totalQuestionCount,
     next: null,
     previous: null,
-    // array of 400 empty objects
-    results: Array.from(Array(400).keys()).map((_) => ({})),
+    // array of empty objects corresponding to total response count
+    results: Array.from(Array(totalQuestionCount).keys()).map((_) => ({})),
   },
 };

@@ -8,7 +8,6 @@
     DemoOptionsResponseItem,
     Question,
     QuestionMultiAnswer,
-    Respondent,
   } from "../../../global/types";
 
   import TabView from "../../TabView/TabView.svelte";
@@ -28,7 +27,7 @@
     questions: Question[];
     demoOptions: DemoOptionsResponseItem[];
     demoOptionsLoading: boolean;
-    respondents: Respondent[];
+    respondentCount: number;
   }
   let {
     consultationId = "",
@@ -36,7 +35,7 @@
     questions = [],
     demoOptions = [],
     demoOptionsLoading = true,
-    respondents = [],
+    respondentCount = 0,
   }: Props = $props();
 
   const itemsPerTab = 3;
@@ -102,7 +101,7 @@
             questionCount={questions?.length}
             responseCount={totalResponseCount}
             demoCount={demoOptionCategories.length}
-            respondentCount={respondents.length}
+            {respondentCount}
           />
         </div>
       </Panel>
