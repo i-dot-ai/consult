@@ -68,7 +68,7 @@
     loading={!dataRequested || $questionsStore.isLoading}
     demoOptionsLoading={!dataRequested || $demoOptionsStore.isLoading}
     demoOptions={$demoOptionsStore.data || []}
-    respondents={$respondentsStore.data?.results || []}
+    respondentCount={$respondentsStore.data?.count ?? 0}
   />
 </section>
 
