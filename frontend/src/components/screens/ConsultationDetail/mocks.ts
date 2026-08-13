@@ -2,6 +2,7 @@ export const CONSULTATION_ID = "test-consultation";
 
 const DEMO_OPTIONS_URL = /\/api\/consultations\/.*\/demographic-options\//;
 const QUESTIONS_URL = /\/api\/consultations\/.*\/questions\//;
+const RESPONDENTS_URL = /\/api\/consultations\/.*\/respondents\//;
 
 const QUESTIONS = [
   {
@@ -168,5 +169,16 @@ export const longQuestionsMock = {
         id: (index + 1).toString(),
         number: index + 1,
       })),
+  },
+};
+
+export const defaultRespondentsMock = {
+  url: RESPONDENTS_URL,
+  body: {
+    count: 1,
+    next: null,
+    previous: null,
+    // array of 400 empty objects
+    results: Array.from(Array(400).keys()).map(_ => ({})),
   },
 };
