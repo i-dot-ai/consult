@@ -179,6 +179,6 @@ export const defaultRespondentsMock = {
     next: null,
     previous: null,
     // array of 400 empty objects
-    results: Array.from(Array(400).keys()).map(_ => ({})),
+    results: Array.from(Array(400).keys()).map((_) => ({})),
   },
 };
