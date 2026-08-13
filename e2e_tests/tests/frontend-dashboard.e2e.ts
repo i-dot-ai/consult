@@ -37,15 +37,15 @@ test.describe("Dashboard Page", () => {
 
   test("metric counts should be as expected", async ({ page }) => {
     const numberOfQuestions = analysisConsultation.questions!.length.toString();
-    const numberOfResponses = analysisConsultation.questions!.reduce((sum, question) => sum + (question.responses ? question.responses.length : 0), 0).toString();
+    const numberOfAnswers = analysisConsultation.questions!.reduce((sum, question) => sum + (question.responses ? question.responses.length : 0), 0).toString();
 
     const questionOnPage = page.getByTestId("metric-count-questions");
     await expect (questionOnPage).toBeVisible();
     await expect (questionOnPage).toHaveText(numberOfQuestions);
 
-    const responsesOnPage = page.getByTestId("metric-count-responses");
-    await expect (responsesOnPage).toBeVisible();
-    await expect (responsesOnPage).toHaveText(numberOfResponses);
+    const answersOnPage = page.getByTestId("metric-count-answers");
+    await expect (answersOnPage).toBeVisible();
+    await expect (answersOnPage).toHaveText(numberOfAnswers);
 
     // demographic info is more complicated to work out, and is fixed to a size of 2 in fixture setup
     const demographicsOnPage = page.getByTestId("metric-count-demographics");
