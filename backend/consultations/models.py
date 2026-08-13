@@ -1,6 +1,7 @@
 import uuid
 from dataclasses import dataclass
 from textwrap import shorten
+from typing import ClassVar
 
 from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
@@ -36,7 +37,7 @@ class TimeStampedModel(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ["created_at"]
+        ordering: ClassVar[list] = ["created_at"]
 
 
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
@@ -215,13 +216,13 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         return SampleResult(kept=keep_count, deleted=delete_count)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        constraints = [
+        constraints: ClassVar[list] = [
             models.UniqueConstraint(
                 fields=["consultation", "number"], name="unique_question_number"
             ),
         ]
-        ordering = ["number"]
-        indexes = [
+        ordering: ClassVar[list] = ["number"]
+        indexes: ClassVar[list] = [
             models.Index(fields=["consultation", "has_free_text"]),
         ]
 
@@ -236,7 +237,7 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
     name = models.TextField(null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        indexes = [
+        indexes: ClassVar[list] = [
             models.Index(fields=["consultation", "themefinder_id"]),
         ]
 
@@ -262,7 +263,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     read_by = models.ManyToManyField(User, through="ResponseReadBy", blank=True)
 
     class Meta:
-        indexes = [
+        indexes: ClassVar[list] = [
             GinIndex(fields=["search_vector"]),
             models.Index(fields=["question", "id"]),
         ]
@@ -291,7 +292,7 @@ class ResponseReadBy(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = [("response", "user")]
+        unique_together: ClassVar[list] = [("response", "user")]
 
 
 @receiver(post_save, sender=Response)
@@ -325,13 +326,13 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
         cls.objects.bulk_update(options, ["response_count"], batch_size=1000)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        constraints = [
+        constraints: ClassVar[list] = [
             models.UniqueConstraint(
                 fields=["consultation", "field_name", "field_value"],
                 name="unique_demographic_option",
             ),
         ]
-        indexes = [
+        indexes: ClassVar[list] = [
             models.Index(fields=["consultation", "field_name"]),
         ]
 
@@ -350,14 +351,14 @@ class SelectedTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     last_modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        constraints = [
+        constraints: ClassVar[list] = [
             models.UniqueConstraint(
                 fields=["question", "key"],
                 name="unique_theme",
                 condition=models.Q(key__isnull=False),
             ),
         ]
-        indexes = [
+        indexes: ClassVar[list] = [
             models.Index(fields=["question"]),
         ]
 
@@ -378,7 +379,7 @@ class CandidateTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     )
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        indexes = [
+        indexes: ClassVar[list] = [
             models.Index(fields=["question"]),
         ]
 
@@ -397,13 +398,13 @@ class CandidateThemeResponse(UUIDPrimaryKeyModel, TimeStampedModel):
     response = models.ForeignKey(Response, on_delete=models.CASCADE)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        constraints = [
+        constraints: ClassVar[list] = [
             models.UniqueConstraint(
                 fields=["candidate_theme", "response"],
                 name="unique_candidate_theme_response",
             ),
         ]
-        indexes = [
+        indexes: ClassVar[list] = [
             models.Index(fields=["candidate_theme"]),
         ]
 
@@ -426,7 +427,7 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.assigned_by is None
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        constraints = [
+        constraints: ClassVar[list] = [
             models.UniqueConstraint(
                 fields=[
                     "response_annotation",
@@ -474,7 +475,7 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
         ).exists()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        indexes = [
+        indexes: ClassVar[list] = [
             models.Index(fields=["human_reviewed"]),
             models.Index(fields=["sentiment"]),
             models.Index(fields=["evidence_rich"]),

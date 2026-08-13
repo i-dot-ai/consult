@@ -1,4 +1,5 @@
 import uuid
+from typing import ClassVar
 
 from django.db.models import Exists, OuterRef
 from rest_framework import status
@@ -98,10 +99,10 @@ class BespokeResultsSetPagination(PageNumberPagination):
 
 class ResponseViewSet(ModelViewSet):
     serializer_class = ResponseSerializer
-    permission_classes = [IsAuthenticated, CanSeeConsultation]
+    permission_classes: ClassVar[list] = [IsAuthenticated, CanSeeConsultation]
     pagination_class = BespokeResultsSetPagination
-    filter_backends = [ResponseSearchFilter]
-    http_method_names = ["get", "patch", "post"]
+    filter_backends: ClassVar[list] = [ResponseSearchFilter]
+    http_method_names: ClassVar[list] = ["get", "patch", "post"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]

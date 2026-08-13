@@ -1,5 +1,5 @@
 import socket
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import redis
 from django.core.management.base import BaseCommand, CommandError
@@ -38,7 +38,7 @@ class Command(BaseCommand):
         if worker.last_heartbeat is None:
             raise CommandError(f"RQ worker '{worker.name}' has no recorded heartbeat")
 
-        age_seconds = (datetime.now(timezone.utc) - worker.last_heartbeat).total_seconds()
+        age_seconds = (datetime.now(UTC) - worker.last_heartbeat).total_seconds()
         if age_seconds > STALE_HEARTBEAT_SECONDS:
             raise CommandError(
                 f"RQ worker '{worker.name}' heartbeat is stale ({age_seconds:.0f}s old)"

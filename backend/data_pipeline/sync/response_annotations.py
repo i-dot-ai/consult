@@ -1,4 +1,3 @@
-from typing import Dict, List, Optional
 
 from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
@@ -31,8 +30,8 @@ def load_selected_themes_from_s3(
     consultation_code: str,
     question_number: int,
     timestamp: str,
-    bucket_name: Optional[str] = None,
-) -> List[SelectedThemeInput]:
+    bucket_name: str | None = None,
+) -> list[SelectedThemeInput]:
     """
     Load and validate selected themes for a single question from S3.
 
@@ -92,8 +91,8 @@ def load_sentiments_from_s3(
     consultation_code: str,
     question_number: int,
     timestamp: str,
-    bucket_name: Optional[str] = None,
-) -> List[SentimentInput]:
+    bucket_name: str | None = None,
+) -> list[SentimentInput]:
     """
     Load and validate sentiments for a single question from S3.
 
@@ -148,8 +147,8 @@ def load_detail_detections_from_s3(
     consultation_code: str,
     question_number: int,
     timestamp: str,
-    bucket_name: Optional[str] = None,
-) -> List[DetailDetectionInput]:
+    bucket_name: str | None = None,
+) -> list[DetailDetectionInput]:
     """
     Load and validate detail detection data for a single question from S3.
 
@@ -206,8 +205,8 @@ def load_theme_mappings_from_s3(
     consultation_code: str,
     question_number: int,
     timestamp: str,
-    bucket_name: Optional[str] = None,
-) -> List[ThemeMappingInput]:
+    bucket_name: str | None = None,
+) -> list[ThemeMappingInput]:
     """
     Load and validate theme mappings for a single question from S3.
 
@@ -263,8 +262,8 @@ def load_theme_mappings_from_s3(
 def load_annotation_batch(
     consultation_code: str,
     timestamp: str,
-    question_numbers: Optional[List[int]] = None,
-    bucket_name: Optional[str] = None,
+    question_numbers: list[int] | None = None,
+    bucket_name: str | None = None,
 ) -> AnnotationBatch:
     """
     Load all response annotations for a consultation, organized by question.
@@ -318,10 +317,10 @@ def load_annotation_batch(
     )
 
     # Load data for each question
-    sentiments_by_question: Dict[int, List[SentimentInput]] = {}
-    details_by_question: Dict[int, List[DetailDetectionInput]] = {}
-    mappings_by_question: Dict[int, List[ThemeMappingInput]] = {}
-    selected_themes_by_question: Dict[int, List[SelectedThemeInput]] = {}
+    sentiments_by_question: dict[int, list[SentimentInput]] = {}
+    details_by_question: dict[int, list[DetailDetectionInput]] = {}
+    mappings_by_question: dict[int, list[ThemeMappingInput]] = {}
+    selected_themes_by_question: dict[int, list[SelectedThemeInput]] = {}
 
     for question_number in question_numbers:
         # Load selected themes (required)
@@ -382,8 +381,8 @@ def load_annotation_batch(
 
 
 def _build_batch_key_to_db_theme_lookup(
-    question: Question, batch_themes: List[SelectedThemeInput]
-) -> Dict[str, SelectedTheme]:
+    question: Question, batch_themes: list[SelectedThemeInput]
+) -> dict[str, SelectedTheme]:
     """
     Build a lookup from batch job theme_keys to database SelectedTheme records.
 
@@ -469,10 +468,10 @@ def _build_batch_key_to_db_theme_lookup(
 
 def _import_response_annotations(
     question: Question,
-    sentiments: List[SentimentInput],
-    details: List[DetailDetectionInput],
-    mappings: List[ThemeMappingInput],
-    theme_lookup: Dict[str, SelectedTheme],
+    sentiments: list[SentimentInput],
+    details: list[DetailDetectionInput],
+    mappings: list[ThemeMappingInput],
+    theme_lookup: dict[str, SelectedTheme],
 ) -> None:
     """
     Import response annotations for a single question into database.
@@ -666,7 +665,7 @@ def import_response_annotations(batch: AnnotationBatch) -> None:
     # Import data for each question
     questions_processed = 0
 
-    for question_number in batch.selected_themes_by_question.keys():
+    for question_number in batch.selected_themes_by_question:
         # Get question
         try:
             question = Question.objects.get(consultation=consultation, number=question_number)
@@ -707,7 +706,7 @@ def import_response_annotations(batch: AnnotationBatch) -> None:
 def import_response_annotations_from_s3(
     consultation_code: str,
     timestamp: str,
-    question_numbers: Optional[List[int]] = None,
+    question_numbers: list[int] | None = None,
 ) -> None:
     """
     High-level orchestration function to import response annotations from S3.

@@ -25,7 +25,7 @@ class UserManager(BaseUserManager):
             if idempotent and (["User with this Email address already exists."] == e.messages):
                 return user
             else:
-                raise e
+                raise
 
         user.save(using=self._db)
         return user

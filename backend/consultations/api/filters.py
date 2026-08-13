@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.conf import settings
 from django.db.models import Count
 from django_filters import CharFilter, UUIDFilter
@@ -91,7 +93,7 @@ class ResponseFilter(FilterSet):
 
     class Meta:
         model = Response
-        fields = ["respondent_id", "chosen_options"]
+        fields: ClassVar[list] = ["respondent_id", "chosen_options"]
 
 
 def apply_search_filter(queryset, query_params):
@@ -161,7 +163,7 @@ class UserFilter(FilterSet):
 
     class Meta:
         model = User
-        fields = ["consultation_id"]
+        fields: ClassVar[list] = ["consultation_id"]
 
 
 class ResponseSearchSerializer(serializers.Serializer):
