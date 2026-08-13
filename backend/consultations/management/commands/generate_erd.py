@@ -8,7 +8,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if not HostingEnvironment.is_local():
-            raise Exception("This command only works in the LOCAL env")
+            raise RuntimeError("This command only works in the LOCAL env")
 
         call_command(
             "graph_models",

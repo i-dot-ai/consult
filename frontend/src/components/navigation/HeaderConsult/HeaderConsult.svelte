@@ -49,6 +49,10 @@
   pathParts={path}
   navItems={[
     {
+      label: "My Consultations",
+      url: Routes.Consultations,
+    },
+    {
       label: "Support",
       children: [{ label: "Privacy notice", url: Routes.Privacy }],
     },
@@ -69,12 +73,7 @@
             ],
           },
         ]
-      : [
-          {
-            label: "My Consultations",
-            url: Routes.Consultations,
-          },
-        ]),
+      : []),
   ]}
 >
   {#snippet endItems()}

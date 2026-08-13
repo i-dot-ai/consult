@@ -1,6 +1,6 @@
 import statistics
 from collections import Counter, defaultdict
-from typing import Any
+from typing import Any, ClassVar
 
 from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
@@ -13,8 +13,6 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-import data_pipeline.batch as batch
-import data_pipeline.s3 as s3
 from authentication.models import User
 from consultations.api.filters import get_filtered_responses
 from consultations.api.permissions import (
@@ -41,7 +39,7 @@ from consultations.test_support.load_test_fixtures import (
     create_data_from_fixtures,
     delete_data_from_fixtures,
 )
-from data_pipeline import jobs
+from data_pipeline import batch, jobs, s3
 from data_pipeline.sync.selected_themes import export_selected_themes_to_s3
 from hosting_environment import HostingEnvironment
 from ingest.jobs import (
@@ -116,9 +114,9 @@ def get_evaluation_status(sample_size, f1):
 
 class ConsultationViewSet(ModelViewSet):
     serializer_class = ConsultationSerializer
-    permission_classes = [IsAuthenticated, CanSeeConsultation | IsAdminUser]
-    filterset_fields = ["code"]
-    http_method_names = ["get", "patch", "delete", "post"]
+    permission_classes: ClassVar[list] = [IsAuthenticated, CanSeeConsultation | IsAdminUser]
+    filterset_fields: ClassVar[list] = ["code"]
+    http_method_names: ClassVar[list] = ["get", "patch", "delete", "post"]
 
     def get_queryset(self):
         scope = self.request.query_params.get("scope")
@@ -144,7 +142,7 @@ class ConsultationViewSet(ModelViewSet):
 
         if self.action == "destroy":
             # Only admin users can delete consultations
-            permission_classes = [IsAuthenticated, IsAdminUser]
+            permission_classes: ClassVar[list] = [IsAuthenticated, IsAdminUser]
 
         return [permission() for permission in permission_classes]
 
@@ -338,7 +336,7 @@ class ConsultationViewSet(ModelViewSet):
 
         except Exception as e:
             logger.exception(
-                f"Error starting Find Themes job for consultation {consultation.title}: {e}"
+                f"Error starting Find Themes job for consultation {consultation.title}"
             )
             capture_handled_sentry_exception(e)
             return Response(
@@ -510,8 +508,8 @@ class ConsultationViewSet(ModelViewSet):
         else:
             # Return only consultations that have S3 folders, sorted by title then code
             consultations = []
-            for code in consultations_by_code:
-                for consultation in consultations_by_code[code]:
+            for code, items in consultations_by_code.items():
+                for consultation in items:
                     consultations.append(
                         {
                             "id": consultation["id"],
@@ -547,7 +545,7 @@ class ConsultationViewSet(ModelViewSet):
 
         try:
             users = User.objects.filter(email__in=emails)
-            found_emails = set(user.email for user in users)
+            found_emails = {user.email for user in users}
             non_existent_emails = [email for email in emails if email not in found_emails]
 
             if users.exists():
@@ -977,17 +975,17 @@ class ConsultationViewSet(ModelViewSet):
             edited_response_ids = set()
 
             for response_annotation in read_response_annotations:
-                surviving_ai_themes = set(
+                surviving_ai_themes = {
                     rat.theme_id
                     for rat in response_annotation.responseannotationtheme_set.all()
                     if rat.assigned_by_id is None
-                )
+                }
                 deleted_ai_themes = deleted_themes_by_annotation.get(response_annotation.id, set())
                 original_themes = surviving_ai_themes | deleted_ai_themes
 
-                current_themes = set(
+                current_themes = {
                     rat.theme_id for rat in response_annotation.responseannotationtheme_set.all()
-                )
+                }
 
                 if original_themes != current_themes:
                     edited_response_ids.add(response_annotation.response_id)

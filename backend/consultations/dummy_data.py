@@ -1,5 +1,5 @@
 import random
-from typing import Literal, Optional
+from typing import Literal
 
 import yaml
 from django.conf import settings
@@ -145,8 +145,8 @@ def create_response_chosen_options(response, multiple_choice_options):
 def create_dummy_consultation_from_yaml(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
-    consultation: Optional[Consultation] = None,
-    consultation_stage: Optional[Literal["finalising_themes", "analysis"]] = None,
+    consultation: Consultation | None = None,
+    consultation_stage: Literal["finalising_themes", "analysis"] | None = None,
 ) -> ConsultationFactory:
     """
     Create consultation with questions, responses and themes from yaml file.
@@ -211,7 +211,7 @@ def create_dummy_consultation_from_yaml(
 def create_dummy_consultation_from_yaml_job(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
-    consultation: Optional[Consultation] = None,
+    consultation: Consultation | None = None,
 ):
     create_dummy_consultation_from_yaml(
         file_path=file_path,

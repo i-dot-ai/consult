@@ -5,31 +5,31 @@ from i_dot_ai_utilities.logging.types.enrichment_types import ExecutionEnvironme
 from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 
 from sentry_context import sentry_before_send
-from settings.base import *  # noqa
+from settings.base import *
 
-CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS  # noqa: F405
+CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS
 
 
-SENTRY_DSN = env("SENTRY_DSN")  # noqa: F405
+SENTRY_DSN = env("SENTRY_DSN")
 # Re-read with no default on purpose: in deployed envs Terraform sets this per runtime,
 # so a missing value is a misconfiguration we want to fail loudly on rather than mask.
-EXECUTION_CONTEXT = env("EXECUTION_CONTEXT")  # noqa: F405
+EXECUTION_CONTEXT = env("EXECUTION_CONTEXT")
 
 
-STORAGES["default"] = {  # noqa: F405
+STORAGES["default"] = {
     "BACKEND": "storages.backends.s3.S3Storage",
-    "OPTIONS": {"bucket_name": env("AWS_BUCKET_NAME"), "location": "app_data/"},  # noqa: F405
+    "OPTIONS": {"bucket_name": env("AWS_BUCKET_NAME"), "location": "app_data/"},
 }
 
-STORAGES["staticfiles"] = {  # noqa: F405
+STORAGES["staticfiles"] = {
     "BACKEND": "storages.backends.s3.S3Storage",
-    "OPTIONS": {"bucket_name": env("AWS_BUCKET_NAME"), "location": "app_data/static/"},  # noqa: F405
+    "OPTIONS": {"bucket_name": env("AWS_BUCKET_NAME"), "location": "app_data/static/"},
 }
 
 
 sentry_sdk.init(
     dsn=SENTRY_DSN,
-    environment=ENVIRONMENT,  # noqa: F405
+    environment=ENVIRONMENT,
     before_send=sentry_before_send,
     traces_sample_rate=1.0,
     profile_session_sample_rate=1.0,
@@ -50,10 +50,10 @@ LOGGER = StructuredLogger(
 )
 LOGGER.set_context_field("execution_context", EXECUTION_CONTEXT)
 
-if env.str("ENVIRONMENT", "prod").lower() != "prod":  # noqa: F405
-    INSTALLED_APPS.append("drf_spectacular")  # noqa F405
+if env.str("ENVIRONMENT", "prod").lower() != "prod":
+    INSTALLED_APPS.append("drf_spectacular")
 
-    REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"  # noqa F405
+    REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"
 
     # DRF Spectacular settings
     SPECTACULAR_SETTINGS = {

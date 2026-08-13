@@ -1,5 +1,7 @@
 # Populate slug field for existing ProcessingRuns
 
+from typing import ClassVar
+
 import faker as _faker
 from django.db import migrations
 
@@ -20,11 +22,11 @@ def populate_processing_run_slug(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [
+    dependencies: ClassVar[list] = [
         ("consultations", "0024_processingrun_finished_at_processingrun_slug_and_more"),
     ]
 
-    operations = [
+    operations: ClassVar[list] = [
         migrations.RunPython(
             populate_processing_run_slug, reverse_code=migrations.RunPython.noop, elidable=True
         )

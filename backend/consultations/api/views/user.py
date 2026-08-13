@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -14,10 +16,10 @@ from consultations.api.serializers import (
 
 class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes: ClassVar[list] = [IsAuthenticated, IsAdminUser]
     pagination_class = PageNumberPagination
     filterset_class = UserFilter
-    http_method_names = ["get", "post", "patch", "delete"]
+    http_method_names: ClassVar[list] = ["get", "post", "patch", "delete"]
 
     def create(self, request, *args, **kwargs):
         # Support both single and bulk creation

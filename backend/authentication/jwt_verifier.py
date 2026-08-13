@@ -7,12 +7,36 @@ OIDC authentication. These JWTs are signed with AWS's regional keys.
 
 import urllib.request
 from functools import lru_cache
-from typing import Any, Optional
+from typing import Any
 
 import jwt
 from django.conf import settings
 
 logger = settings.LOGGER
+
+
+@lru_cache(maxsize=10)
+def _fetch_public_key_cached(url_template: str, kid: str) -> str:
+    """
+    Fetch a public key from AWS ALB by key ID (module-level to avoid lru_cache on method).
+
+    Args:
+        url_template: URL template with {} placeholder for kid
+        kid: Key ID from the JWT header
+
+    Returns:
+        PEM-formatted public key
+
+    Raises:
+        jwt.InvalidTokenError: If key cannot be fetched
+    """
+    url = url_template.format(kid)
+    try:
+        with urllib.request.urlopen(url, timeout=10) as response:  # nosec B310
+            return response.read().decode("utf-8")
+    except OSError as e:
+        logger.error("Failed to fetch ALB public key")
+        raise jwt.InvalidTokenError(f"Cannot fetch public key for kid {kid}: {e!s}")
 
 
 class ALBJWTVerifier:
@@ -27,7 +51,7 @@ class ALBJWTVerifier:
     def __init__(
         self,
         region: str,
-        audience: Optional[str] = None,
+        audience: str | None = None,
     ):
         """
         Initialize the ALB JWT verifier.
@@ -40,7 +64,6 @@ class ALBJWTVerifier:
         self.audience = audience
         self.public_key_url_template = f"https://public-keys.auth.elb.{region}.amazonaws.com/{{}}"
 
-    @lru_cache(maxsize=10)
     def _fetch_public_key(self, kid: str) -> str:
         """
         Fetch a public key from AWS ALB by key ID.
@@ -54,14 +77,7 @@ class ALBJWTVerifier:
         Raises:
             jwt.InvalidTokenError: If key cannot be fetched
         """
-        url = self.public_key_url_template.format(kid)
-
-        try:
-            with urllib.request.urlopen(url, timeout=10) as response:  # nosec B310
-                return response.read().decode("utf-8")
-        except Exception as e:
-            logger.error("Failed to fetch ALB public key")
-            raise jwt.InvalidTokenError(f"Cannot fetch public key for kid {kid}: {str(e)}")
+        return _fetch_public_key_cached(self.public_key_url_template, kid)
 
     def verify_token(self, token: str) -> dict[str, Any]:
         """
@@ -121,10 +137,10 @@ class ALBJWTVerifier:
 
         except Exception as e:
             logger.exception("Unexpected error verifying ALB JWT token")
-            raise jwt.InvalidTokenError(f"Token verification failed: {str(e)}")
+            raise jwt.InvalidTokenError(f"Token verification failed: {e!s}")
 
 
-def get_jwt_verifier() -> Optional[ALBJWTVerifier]:
+def get_jwt_verifier() -> ALBJWTVerifier | None:
     """
     Get a configured JWT verifier instance for AWS ALB tokens.
 

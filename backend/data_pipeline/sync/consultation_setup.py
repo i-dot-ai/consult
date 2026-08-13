@@ -1,4 +1,3 @@
-from typing import Dict, List, Optional
 from uuid import UUID
 
 import tiktoken
@@ -6,7 +5,6 @@ from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
 
-import data_pipeline.s3 as s3
 from authentication.models import User
 from consultations.models import (
     Consultation,
@@ -16,6 +14,7 @@ from consultations.models import (
     Respondent,
     Response,
 )
+from data_pipeline import s3
 from data_pipeline.models import (
     ConsultationDataBatch,
     MultiChoiceInput,
@@ -38,7 +37,7 @@ ResponseThemeThroughModel = Response.chosen_options.through
 
 def load_respondents_from_s3(
     consultation_code: str, bucket_name: str
-) -> List[RespondentInput]:
+) -> list[RespondentInput]:
     """
     Load and validate respondents from S3.
 
@@ -120,7 +119,7 @@ def load_question_from_s3(
 
 def load_responses_from_s3(
     consultation_code: str, question_number: int, bucket_name: str
-) -> List[ResponseInput]:
+) -> list[ResponseInput]:
     """
     Load and validate free text responses for a question from S3.
 
@@ -165,7 +164,7 @@ def load_responses_from_s3(
 
 def load_multi_choice_from_s3(
     consultation_code: str, question_number: int, bucket_name: str
-) -> List[MultiChoiceInput]:
+) -> list[MultiChoiceInput]:
     """
     Load and validate multi-choice selections for a question from S3.
 
@@ -212,7 +211,7 @@ def load_multi_choice_from_s3(
 def load_consultation_data_batch(
     consultation_code: str,
     consultation_title: str,
-    bucket_name: Optional[str] = None,
+    bucket_name: str | None = None,
 ) -> ConsultationDataBatch:
     """
     Load and validate base consultation data from S3.
@@ -265,8 +264,8 @@ def load_consultation_data_batch(
         questions.append(question)
 
     # Load responses and multi-choice data
-    responses_by_question: Dict[int, List[ResponseInput]] = {}
-    multi_choice_by_question: Dict[int, List[MultiChoiceInput]] = {}
+    responses_by_question: dict[int, list[ResponseInput]] = {}
+    multi_choice_by_question: dict[int, list[MultiChoiceInput]] = {}
 
     for question_number in question_numbers:
         # Load free text responses
@@ -381,7 +380,7 @@ def import_consultation_data(
     return consultation.id
 
 
-def _ingest_respondents(consultation: Consultation, respondents: List[RespondentInput]) -> None:
+def _ingest_respondents(consultation: Consultation, respondents: list[RespondentInput]) -> None:
     """
     Create respondents and their demographics for a consultation.
 
@@ -434,7 +433,7 @@ def _ingest_respondents(consultation: Consultation, respondents: List[Respondent
     logger.info("Created {respondent_count} respondents", respondent_count=len(created_respondents))
 
 
-def _ingest_questions(consultation: Consultation, questions: List[QuestionInput]) -> None:
+def _ingest_questions(consultation: Consultation, questions: list[QuestionInput]) -> None:
     """
     Create questions and their multi-choice options for a consultation.
 
@@ -486,8 +485,8 @@ def _ingest_questions(consultation: Consultation, questions: List[QuestionInput]
 
 def _ingest_responses(
     consultation: Consultation,
-    responses_by_question: Dict[int, List[ResponseInput]],
-    multi_choice_by_question: Dict[int, List[MultiChoiceInput]],
+    responses_by_question: dict[int, list[ResponseInput]],
+    multi_choice_by_question: dict[int, list[MultiChoiceInput]],
     batch_size: int = 512,
 ) -> None:
     """
@@ -522,7 +521,7 @@ def _ingest_responses(
         multi_choice_responses = multi_choice_by_question.get(question_number, [])
 
         # Merge free text and multi-choice by themefinder_id
-        responses_by_tf_id: Dict[int, Dict] = {}
+        responses_by_tf_id: dict[int, dict] = {}
 
         for resp in free_text_responses:
             responses_by_tf_id[resp.themefinder_id] = {
@@ -544,7 +543,7 @@ def _ingest_responses(
         }
 
         # Create Response objects with batching based on token count
-        responses_to_create: List = []
+        responses_to_create: list = []
         response_theme_associations_to_create = []  # type: ignore
         max_total_tokens = 100_000
         total_tokens = 0

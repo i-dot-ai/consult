@@ -1,5 +1,4 @@
 import json
-from typing import Dict, List, Optional
 
 from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
@@ -12,7 +11,7 @@ account_id = settings.AWS_ACCOUNT_ID
 
 def read_jsonl(
     bucket_name: str, key: str, raise_if_missing: bool = True
-) -> List[Dict]:
+) -> list[dict]:
     """
     Read a JSONL file from S3 and return list of parsed objects.
     Args:
@@ -49,7 +48,7 @@ def read_jsonl(
 
 def read_json(
     bucket_name: str, key: str, raise_if_missing: bool = True
-) -> Optional[Dict]:
+) -> dict | None:
     """
     Read a JSON file from S3 and return parsed object.
     Args:
@@ -80,7 +79,7 @@ def read_json(
         raise
 
 
-def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
+def get_question_folders(inputs_path: str, bucket_name: str) -> list[str]:
     """
     Get all question_part_N folders from the inputs path.
 
@@ -108,7 +107,7 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> List[str]:
     if settings.ENVIRONMENT.upper() not in ["LOCAL", "TEST"]:
         params["ExpectedBucketOwner"] = settings.AWS_ACCOUNT_ID
 
-    question_folders: List[str] = []
+    question_folders: list[str] = []
     continuation_token = None
     page_count = 0
 
@@ -281,7 +280,7 @@ def get_consultation_folders() -> list[str]:
             )
             break
 
-    sorted_codes = sorted(list(s3_codes))
+    sorted_codes = sorted(s3_codes)
     logger.info(
         "Final result: Found {count} unique consultation codes: {codes}",
         count=len(sorted_codes),

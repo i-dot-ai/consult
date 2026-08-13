@@ -9,7 +9,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
     class="w-full"
   >
     <div
-      class="flex justify-between border-b border-primary p-2"
+      class="flex border-b border-primary p-2 flex-wrap justify-around gap-y-4 md:justify-between"
     >
       <div
         class="flex items-center gap-2"
@@ -99,7 +99,9 @@ exports[`HeaderConsult > matches snapshot 1`] = `
         />
         <!---->
          
-        <p>
+        <p
+          class="flex flex-wrap"
+        >
           <span
             class="text-sm text-neutral-800"
           >
@@ -111,7 +113,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
       </div>
        
       <div
-        class="ml-4 flex items-center"
+        class="ml-4 flex items-center md:ml-auto"
       >
         <button
           class="block md:hidden p-1 rounded-sm border border-neutral-200 transition-colors hover:bg-neutral-100"
@@ -142,6 +144,41 @@ exports[`HeaderConsult > matches snapshot 1`] = `
           <ol
             class="flex items-center gap-4"
           >
+            <li
+              class="relative"
+            >
+              <div
+                class="hover:text-primary"
+              >
+                <!---->
+                <a
+                  aria-pressed="false"
+                  class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  data-variant="ghost"
+                  disabled="false"
+                  href="/consultations"
+                  role="link"
+                  tabindex="0"
+                >
+                  <!---->
+                  <!---->
+                  <span
+                    class="whitespace-nowrap text-center md:text-left py-1 md:py-0 w-full flex items-center gap-1 justify-center"
+                  >
+                    My Consultations 
+                    <!---->
+                  </span>
+                  
+                  
+                  
+                </a>
+                
+                <!---->
+              </div>
+              <!---->
+               
+              <!---->
+            </li>
             <li
               class="relative"
             >

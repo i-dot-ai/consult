@@ -16,6 +16,14 @@
 
   import type { Props } from "./types";
 
+  interface NavButtonOptions {
+    label?: string;
+    url?: string;
+    external?: boolean;
+    tabindex?: number;
+    centered?: boolean;
+  }
+
   const {
     title = "Incubator for AI",
     subtitle = "",
@@ -56,18 +64,19 @@
   }
 </script>
 
-{#snippet navButton(
-  label: string,
-  url?: string,
-  external?: boolean,
-  tabindex?: number,
-)}
+{#snippet navButton({
+  label,
+  url,
+  external,
+  tabindex,
+  centered,
+}: NavButtonOptions = {})}
   <div class="hover:text-primary">
     <Button
       variant="ghost"
       fullWidth={true}
       size="sm"
-      href={url}
+      href={url || ""}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
       {tabindex}
@@ -83,9 +92,10 @@
           "flex",
           "items-center",
           "gap-1",
+          centered && "justify-center",
         ])}
       >
-        {label}
+        {label || ""}
         {#if external}
           <MaterialIcon size="0.8rem" color="fill-current">
             <OpenInNew />
@@ -214,18 +224,23 @@
               >
                 {#each navItem.children as subItem, i (i)}
                   <li>
-                    {@render navButton(
-                      subItem.label,
-                      subItem.url,
-                      subItem.external,
-                      activeSubmenu === id ? 0 : -1,
-                    )}
+                    {@render navButton({
+                      label: subItem.label,
+                      url: subItem.url,
+                      external: subItem.external,
+                      tabindex: activeSubmenu === id ? 0 : -1,
+                    })}
                   </li>
                 {/each}
               </ol>
             {/if}
           {:else}
-            {@render navButton(navItem.label, navItem.url, navItem.external)}
+            {@render navButton({
+              label: navItem.label,
+              url: navItem.url,
+              external: navItem.external,
+              centered: true,
+            })}
           {/if}
 
           {#if isMobile}
@@ -241,10 +256,13 @@
   <div
     class={clsx([
       "flex",
-      "justify-between",
       "border-b",
       "border-primary",
       "p-2",
+      "flex-wrap",
+      "justify-around",
+      "gap-y-4",
+      "md:justify-between",
     ])}
   >
     <div class={clsx(["flex", "items-center", "gap-2"])}>
@@ -274,21 +292,14 @@
         ></div>
       {/if}
 
-      <p>
+      <p class="flex flex-wrap">
         <span class="text-sm text-neutral-800">
           {subtitle}
         </span>
 
         <!-- Breadcrumb parts -->
         {#each pathParts as pathPart, i (i)}
-          <span
-            class={clsx([
-              "mr-1",
-              "text-xs",
-              "text-neutral-500",
-              "whitespace-nowrap",
-            ])}
-          >
+          <span class={clsx(["mr-1", "text-xs", "text-neutral-500"])}>
             <!--
               Only add slash to first item if subtitle is passed to
               avoid having the vertical divider and slash side by side
@@ -299,7 +310,7 @@
       </p>
     </div>
 
-    <div class="ml-4 flex items-center">
+    <div class="ml-4 flex items-center md:ml-auto">
       <!-- Mobile menu button -->
       <button
         class={clsx([
