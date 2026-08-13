@@ -164,7 +164,6 @@
 
                   <div
                     class={clsx([
-                      "grow",
                       "flex",
                       "flex-row-reverse",
                       "justify-center",
