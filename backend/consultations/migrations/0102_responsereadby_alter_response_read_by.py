@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
@@ -5,12 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    dependencies: ClassVar[list] = [
         ("consultations", "0101_clean_empty_responses_and_denormalise_counts"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
-    operations = [
+    operations: ClassVar[list] = [
         migrations.RemoveField(
             model_name="response",
             name="read_by",

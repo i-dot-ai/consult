@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.conf import settings
 from django.db import connection, migrations, models
 
@@ -129,11 +131,11 @@ def backfill_response_counts(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [
+    dependencies: ClassVar[list] = [
         ("consultations", "0100_remove_legacy_stage_choices"),
     ]
 
-    operations = [
+    operations: ClassVar[list] = [
         # Step 1: Rename existing field and add new fields (nullable initially)
         migrations.RenameField(
             model_name="question",

@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.db.models import Count, OuterRef, Q, Subquery, Value
 from django.db.models.functions import Coalesce
 from rest_framework.decorators import action
@@ -23,9 +25,9 @@ class QuestionPagination(PageNumberPagination):
 
 class QuestionViewSet(ModelViewSet):
     serializer_class = QuestionSerializer
-    permission_classes = [IsAuthenticated, CanSeeConsultation]
-    filterset_fields = ["has_free_text"]
-    http_method_names = ["get", "patch", "delete"]
+    permission_classes: ClassVar[list] = [IsAuthenticated, CanSeeConsultation]
+    filterset_fields: ClassVar[list] = ["has_free_text"]
+    http_method_names: ClassVar[list] = ["get", "patch", "delete"]
     pagination_class = QuestionPagination
 
     def get_queryset(self):

@@ -115,7 +115,7 @@ class JWTAuthenticationMiddleware:
             if auth_header and auth_header.startswith("Bearer "):
                 result = self.jwt_auth.authenticate(request)
                 if result is not None:
-                    user, token = result
+                    user, _token = result
                     request.user = user
                     # Mark as authenticated via JWT for later middleware
                     request._cached_user = user
@@ -160,6 +160,6 @@ class CSRFExemptMiddleware:
     def __call__(self, request):
         # Disable CSRF checks for support console routes
         if request.path.startswith("/support/"):
-            setattr(request, "_dont_enforce_csrf_checks", True)
+            request._dont_enforce_csrf_checks = True
 
         return self.get_response(request)

@@ -36,10 +36,10 @@ import django
 django.setup()
 
 # Now we can import Django models
-from django.contrib.auth import get_user_model  # noqa: E402
-from django.contrib.auth.models import AbstractBaseUser  # noqa: E402
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractBaseUser
 
-from consultations.models import (  # noqa: E402
+from consultations.models import (
     CandidateTheme,
     Consultation,
     DemographicOption,
@@ -137,7 +137,7 @@ def periodic_reconnect() -> None:
         connection.close()
         connection.ensure_connection()
         print("  ♻️  Reconnected to database")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"  ⚠️  Warning: Failed to reconnect to database: {e}")
 
 
@@ -452,7 +452,7 @@ def create_demographics(consultation: Consultation) -> dict[str, list[Demographi
     for field_name, options in SAMPLE_DEMOGRAPHICS.items():
         demographics[field_name] = []
         for option_value in options:
-            demo_option, created = DemographicOption.objects.get_or_create(
+            demo_option, _created = DemographicOption.objects.get_or_create(
                 consultation=consultation,
                 field_name=field_name,
                 field_value=option_value,
@@ -503,7 +503,7 @@ def create_respondents(
         # Prepare M2M relationships for demographics
         demographics_m2m = []
         for respondent in created_respondents:
-            for field_name, options in demographics.items():
+            for options in demographics.values():
                 if options:
                     demographics_m2m.append(
                         Respondent.demographics.through(
@@ -699,7 +699,7 @@ def resume_load_test(
 
     # Get demographics
     demographics = {}
-    for field_name in SAMPLE_DEMOGRAPHICS.keys():
+    for field_name in SAMPLE_DEMOGRAPHICS:
         options = list(
             DemographicOption.objects.filter(consultation=consultation, field_name=field_name)
         )
@@ -728,7 +728,7 @@ def resume_load_test(
 
             # Add demographics
             for respondent in created:
-                for field_name, options in demographics.items():
+                for options in demographics.values():
                     if options:
                         m2m_to_create.append(
                             Respondent.demographics.through(
@@ -1235,7 +1235,7 @@ def test_database_connection() -> None:
         print("✓ Database connection successful\n")
     except OperationalError as e:
         print("✗ ERROR: Could not connect to the database\n")
-        print(f"Error details: {str(e)}\n")
+        print(f"Error details: {e!s}\n")
         print("Troubleshooting steps:")
         print("  1. Check if PostgreSQL is running:")
         print("     - Docker: docker-compose up -d postgres")

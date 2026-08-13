@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
@@ -10,9 +12,9 @@ from consultations.api.serializers import RespondentSerializer
 
 class RespondentViewSet(ModelViewSet):
     serializer_class = RespondentSerializer
-    permission_classes = [IsAuthenticated, CanSeeConsultation]
-    filterset_fields = {"themefinder_id": ["exact", "gte", "lte"]}
-    http_method_names = ["get", "patch"]
+    permission_classes: ClassVar[list] = [IsAuthenticated, CanSeeConsultation]
+    filterset_fields: ClassVar[dict] = {"themefinder_id": ["exact", "gte", "lte"]}
+    http_method_names: ClassVar[list] = ["get", "patch"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]

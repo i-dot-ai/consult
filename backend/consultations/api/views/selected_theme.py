@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ParseError
@@ -15,8 +17,8 @@ from consultations.api.serializers import SelectedThemeSerializer
 
 class SelectedThemeViewSet(ModelViewSet):
     serializer_class = SelectedThemeSerializer
-    permission_classes = [IsAuthenticated, CanSeeConsultation]
-    http_method_names = ["get", "post", "patch", "delete"]
+    permission_classes: ClassVar[list] = [IsAuthenticated, CanSeeConsultation]
+    http_method_names: ClassVar[list] = ["get", "post", "patch", "delete"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]

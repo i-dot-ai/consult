@@ -57,7 +57,7 @@ class TestGetQuestionFolders:
                         Bucket=minio_test_bucket,
                         Key=key
                     )
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     logger.warning("Failed to cleanup object {key}: {e}", key=key, e=e)
 
 
@@ -107,5 +107,5 @@ class TestGetConsultationFolders:
                         Bucket=minio_test_bucket,
                         Key=key
                     )
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     logger.warning("Failed to cleanup object {key}: {e}", key=key, e=e)

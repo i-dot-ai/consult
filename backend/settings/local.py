@@ -1,18 +1,18 @@
 from django.conf.global_settings import STORAGES
 
-from settings.base import *  # noqa
+from settings.base import *
 
-INSTALLED_APPS.append("django_extensions")  # noqa F405
-INSTALLED_APPS.append("drf_spectacular")  # noqa F405
+INSTALLED_APPS.append("django_extensions")
+INSTALLED_APPS.append("drf_spectacular")
 
-STORAGES["default"] = {  # noqa
+STORAGES["default"] = {
     "BACKEND": "django.core.files.storage.FileSystemStorage",
     "OPTIONS": {
-        "location": BASE_DIR / "tmp"  # noqa
+        "location": BASE_DIR / "tmp"
     },
 }
 
-REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"  # noqa F405
+REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"
 
 # DRF Spectacular settings
 SPECTACULAR_SETTINGS = {
