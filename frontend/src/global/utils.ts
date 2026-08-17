@@ -6,14 +6,16 @@ import { createRawSnippet } from "svelte";
 
 import type { Mock } from "./types";
 
-export const getEnv = (): string => {
-  // Try runtime environment variable first (for server-side)
+export const getEnvironment = (): string | undefined => {
   if (typeof process !== "undefined" && process.env?.PUBLIC_ENVIRONMENT) {
     return process.env.PUBLIC_ENVIRONMENT;
   }
 
-  // Fall back to build-time public env var (for client-side)
-  const env = import.meta.env.PUBLIC_ENVIRONMENT;
+  return import.meta.env.PUBLIC_ENVIRONMENT || undefined;
+};
+
+export const getEnv = (): string => {
+  const env = getEnvironment();
   if (env) {
     return env;
   }
@@ -21,6 +23,14 @@ export const getEnv = (): string => {
   throw new Error(
     "PUBLIC_ENVIRONMENT environment variable is not set. This is required for the application to function.",
   );
+};
+
+export const getRelease = (): string | undefined => {
+  if (typeof process !== "undefined" && process.env?.SENTRY_RELEASE) {
+    return process.env.SENTRY_RELEASE;
+  }
+
+  return import.meta.env.SENTRY_RELEASE || undefined;
 };
 
 export const getBackendUrl = (): string => {

@@ -122,6 +122,7 @@ module "frontend" {
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
     "PUBLIC_LANGFUSE_URL"      = "https://core-langfuse.i.ai.gov.uk/",
     "PUBLIC_HOMEPAGE_URL"      = "https://${local.host}"
+    "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["frontend"].value
   })
 
   secrets = [
