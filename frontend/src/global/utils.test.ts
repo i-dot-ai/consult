@@ -3,6 +3,8 @@ import {
   formatDate,
   formatTimeDeltaText,
   getEnv,
+  getEnvironment,
+  getRelease,
   getPercentage,
   getTimeDeltaInMinutes,
   toTitleCase,
@@ -74,6 +76,50 @@ describe("getEnv", () => {
     expect(() => getEnv()).toThrow(
       "PUBLIC_ENVIRONMENT environment variable is not set",
     );
+  });
+});
+
+describe("getEnvironment", () => {
+  const originalEnv = process.env.PUBLIC_ENVIRONMENT;
+
+  afterEach(() => {
+    if (originalEnv === undefined) {
+      delete process.env.PUBLIC_ENVIRONMENT;
+    } else {
+      process.env.PUBLIC_ENVIRONMENT = originalEnv;
+    }
+  });
+
+  it("returns environment from process.env.PUBLIC_ENVIRONMENT", () => {
+    process.env.PUBLIC_ENVIRONMENT = "prod";
+    expect(getEnvironment()).toEqual("prod");
+  });
+
+  it("returns undefined when PUBLIC_ENVIRONMENT is not set", () => {
+    delete process.env.PUBLIC_ENVIRONMENT;
+    expect(getEnvironment()).toBeUndefined();
+  });
+});
+
+describe("getRelease", () => {
+  const originalRelease = process.env.SENTRY_RELEASE;
+
+  afterEach(() => {
+    if (originalRelease === undefined) {
+      delete process.env.SENTRY_RELEASE;
+    } else {
+      process.env.SENTRY_RELEASE = originalRelease;
+    }
+  });
+
+  it("returns the release from process.env.SENTRY_RELEASE", () => {
+    process.env.SENTRY_RELEASE = "abc1234";
+    expect(getRelease()).toEqual("abc1234");
+  });
+
+  it("returns undefined when SENTRY_RELEASE is not set", () => {
+    delete process.env.SENTRY_RELEASE;
+    expect(getRelease()).toBeUndefined();
   });
 });
 
