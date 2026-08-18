@@ -39,8 +39,8 @@ describe("QuestionDetail", () => {
     });
   });
 
-  it.each(mocks.themesMock.body().themes)(
-    "should render themes",
+  it.each(mocks.themesMock.body().themes.filter(theme => theme.count > 0))(
+    "should render matched themes",
     async (theme) => {
       setupMocks();
 
@@ -51,6 +51,41 @@ describe("QuestionDetail", () => {
       await waitFor(() => {
         expect(screen.getByText(theme.name)).toBeInTheDocument();
         expect(screen.getByText(theme.description)).toBeInTheDocument();
+      });
+    },
+  );
+
+  it.each(mocks.themesMock.body().themes.filter(theme => theme.count === 0))(
+    "should not render unmatched themes initially",
+    async (theme) => {
+      setupMocks();
+
+      render(QuestionDetail, {
+        consultationId: CONSULTATION_ID,
+        questionId: QUESTION_ID,
+      });
+      await waitFor(() => {
+        expect(screen.queryByText(theme.name)).not.toBeInTheDocument();
+        expect(screen.queryByText(theme.description)).not.toBeInTheDocument();
+      });
+    },
+  );
+
+  it.each(mocks.themesMock.body().themes.filter(theme => theme.count === 0))(
+    "should render unmatched themes if toggled on",
+    async (theme) => {
+      setupMocks();
+
+      render(QuestionDetail, {
+        consultationId: CONSULTATION_ID,
+        questionId: QUESTION_ID,
+      });
+
+      const user = userEvent.setup();
+      await user.click(screen.getByLabelText("Show Unmatched Themes"));
+
+      await waitFor(() => {
+        expect(screen.getByText(theme.name)).toBeInTheDocument();
       });
     },
   );
