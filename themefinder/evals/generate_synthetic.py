@@ -55,8 +55,6 @@ async def main() -> None:
         print(str(e))
         return
 
-    # Initialise LLM for response generation (gpt-5-nano with medium reasoning)
-    # Medium reasoning ≈ o1 performance, 2x faster throughput than mini/low
     _OpenAIClientClass = _LangfuseOpenAI if LANGFUSE_AVAILABLE else openai.AsyncOpenAI
     base_url, api_key = utils_gateway.gateway_credentials()
     client = _OpenAIClientClass(
