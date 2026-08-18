@@ -153,6 +153,8 @@ async def generate_respondent_survey(
             try:
                 response = (
                     (
+                        # Medium reasoning on gpt-5-nano ≈ o1 performance, at
+                        # roughly 2x the throughput of mini/low.
                         await client.beta.chat.completions.parse(
                             model=deployment,
                             messages=messages,
