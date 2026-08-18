@@ -17,6 +17,10 @@ import httpx
 # treating a check as stale.
 STALE_AFTER = timedelta(hours=72)
 
+# TODO: hardcoded substring matching for a small, manually maintained subset
+# of model families. New model names (e.g. a future o-series release) won't
+# be recognised until added here by hand. Replace with a proper family field
+# once the gateway exposes that as metadata, rather than us inferring it.
 _FAMILY_SUBSTRINGS = ("claude", "gemini", "locai")
 _GPT_MARKERS = ("gpt", "o4-", "o1-", "o3-")
 
