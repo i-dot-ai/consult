@@ -8,6 +8,7 @@
   import { getPercentage } from "../../../global/utils.ts";
 
   import Progress from "../../Progress/Progress.svelte";
+  import Switch from "../../inputs/Switch/Switch.svelte";
 
   interface Props {
     themes: FormattedTheme[];
@@ -23,7 +24,15 @@
     countsLoading = false,
   }: Props = $props();
 
+  let showUnmatchedThemes = $state(false);
+
   let showFullSkeleton = $derived(skeleton && themes.length === 0);
+  let matchedThemes = $derived(themes.filter(theme => theme.count > 0));
+  let unmatchedThemes = $derived(themes.filter(theme => theme.count === 0));
+  let displayThemes = $derived(showUnmatchedThemes
+    ? [...matchedThemes, ...unmatchedThemes]
+    : matchedThemes
+  );
 
   const TABLE_FLIP_SPEED = 10;
 </script>
@@ -53,7 +62,7 @@
             ])}
           >
             <td class="pr-4">
-              <div transition:fade class="p-2">
+              <div in:fade class="p-2">
                 <h3
                   class="blink mb-2 w-max select-none bg-neutral-100 text-sm font-bold text-neutral-100"
                 >
@@ -88,7 +97,7 @@
       </tbody>
     {:else}
       <tbody in:fade>
-        {#each themes as theme (theme.id)}
+        {#each displayThemes as theme (theme.id)}
           {@const percentage = getPercentage(
             theme.count,
             freeTextResponseCount,
@@ -112,7 +121,7 @@
             aria-pressed={theme.highlighted ? "true" : "false"}
           >
             <td class="pr-4">
-              <div transition:fade class="p-2">
+              <div in:fade class="p-2">
                 <h3 class="text-sm font-normal">{theme.name}</h3>
                 <p class="text-sm font-light text-neutral-500">
                   {theme.description}
@@ -156,4 +165,16 @@
       </tbody>
     {/if}
   </table>
+</div>
+
+{#snippet switchLabel()}
+  <span class="text-sm">Show Unmatched Themes</span>
+{/snippet}
+<div class="flex justify-end mt-4">
+  <Switch
+    id="unmatched-themes-switch"
+    value={showUnmatchedThemes}
+    label={switchLabel}
+    handleChange={(newVal) => showUnmatchedThemes = newVal}
+  />
 </div>
