@@ -39,7 +39,7 @@ describe("QuestionDetail", () => {
     });
   });
 
-  it.each(mocks.themesMock.body().themes.filter(theme => theme.count > 0))(
+  it.each(mocks.themesMock.body().themes.filter((theme) => theme.count > 0))(
     "should render matched themes",
     async (theme) => {
       setupMocks();
@@ -55,7 +55,7 @@ describe("QuestionDetail", () => {
     },
   );
 
-  it.each(mocks.themesMock.body().themes.filter(theme => theme.count === 0))(
+  it.each(mocks.themesMock.body().themes.filter((theme) => theme.count === 0))(
     "should not render unmatched themes initially",
     async (theme) => {
       setupMocks();
@@ -71,7 +71,7 @@ describe("QuestionDetail", () => {
     },
   );
 
-  it.each(mocks.themesMock.body().themes.filter(theme => theme.count === 0))(
+  it.each(mocks.themesMock.body().themes.filter((theme) => theme.count === 0))(
     "should render unmatched themes if toggled on",
     async (theme) => {
       setupMocks();

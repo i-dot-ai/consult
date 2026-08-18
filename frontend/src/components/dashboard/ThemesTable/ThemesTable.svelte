@@ -27,11 +27,12 @@
   let showUnmatchedThemes = $state(false);
 
   let showFullSkeleton = $derived(skeleton && themes.length === 0);
-  let matchedThemes = $derived(themes.filter(theme => theme.count > 0));
-  let unmatchedThemes = $derived(themes.filter(theme => theme.count === 0));
-  let displayThemes = $derived(showUnmatchedThemes
-    ? [...matchedThemes, ...unmatchedThemes]
-    : matchedThemes
+  let matchedThemes = $derived(themes.filter((theme) => theme.count > 0));
+  let unmatchedThemes = $derived(themes.filter((theme) => theme.count === 0));
+  let displayThemes = $derived(
+    showUnmatchedThemes
+      ? [...matchedThemes, ...unmatchedThemes]
+      : matchedThemes,
   );
 
   const TABLE_FLIP_SPEED = 10;
@@ -175,6 +176,6 @@
     id="unmatched-themes-switch"
     value={showUnmatchedThemes}
     label={switchLabel}
-    handleChange={(newVal) => showUnmatchedThemes = newVal}
+    handleChange={(newVal) => (showUnmatchedThemes = newVal)}
   />
 </div>
