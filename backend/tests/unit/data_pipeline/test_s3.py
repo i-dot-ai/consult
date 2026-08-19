@@ -29,18 +29,11 @@ class TestGetQuestionFolders:
             ]
 
             for key in test_objects:
-                minio_client.put_object(
-                    Bucket=minio_test_bucket,
-                    Key=key,
-                    Body=b"test content"
-                )
+                minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=b"test content")
                 created_keys.append(key)
 
             # Execute: Call the function under test
-            result = get_question_folders(
-                "app_data/consultations/test/inputs/",
-                minio_test_bucket
-            )
+            result = get_question_folders("app_data/consultations/test/inputs/", minio_test_bucket)
 
             # Verify: Check results
             expected = [
@@ -53,10 +46,7 @@ class TestGetQuestionFolders:
             # Cleanup: Delete all objects we created
             for key in created_keys:
                 try:
-                    minio_client.delete_object(
-                        Bucket=minio_test_bucket,
-                        Key=key
-                    )
+                    minio_client.delete_object(Bucket=minio_test_bucket, Key=key)
                 except Exception as e:  # noqa: BLE001
                     logger.warning("Failed to cleanup object {key}: {e}", key=key, e=e)
 
@@ -85,11 +75,7 @@ class TestGetConsultationFolders:
             ]
 
             for key in test_objects:
-                minio_client.put_object(
-                    Bucket=minio_test_bucket,
-                    Key=key,
-                    Body=b"test content"
-                )
+                minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=b"test content")
                 created_keys.append(key)
 
             # Execute: Call the function under test
@@ -103,9 +89,6 @@ class TestGetConsultationFolders:
             # Cleanup: Delete all objects we created
             for key in created_keys:
                 try:
-                    minio_client.delete_object(
-                        Bucket=minio_test_bucket,
-                        Key=key
-                    )
+                    minio_client.delete_object(Bucket=minio_test_bucket, Key=key)
                 except Exception as e:  # noqa: BLE001
                     logger.warning("Failed to cleanup object {key}: {e}", key=key, e=e)
