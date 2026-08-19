@@ -5,12 +5,12 @@ from django.db import connections
 
 
 class Command(BaseCommand):
-    help = "Prepare the environment: runs migrations on prod; resets and seeds the database and S3 on dev and preprod."
+    help = "Prepare the environment: runs migrations on prod; resets and seeds the database and S3 on dev only."
 
     def handle(self, *args, **options):
         environment = getattr(settings, "ENVIRONMENT", "").lower()
 
-        if environment == "prod":
+        if environment in ["prod", "preprod"]:
             self.stdout.write("Running migrate on prod.")
             call_command("migrate", verbosity=1)
             return
