@@ -65,6 +65,7 @@ describe("Metrics", () => {
         count: 500,
       },
     ],
+    respondentCount: 30,
     demoOptionsLoading: false,
   };
 

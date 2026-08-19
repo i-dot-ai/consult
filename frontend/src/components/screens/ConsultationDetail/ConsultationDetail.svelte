@@ -15,8 +15,10 @@
   import type {
     DemoOptionsResponse,
     QuestionsResponse,
+    RespondentsResponse,
   } from "../../../global/types.ts";
   import {
+    getApiConsultationRespondentsUrl,
     getApiQuestionsUrl,
     getQuestionDetailUrl,
   } from "../../../global/routes.ts";
@@ -33,12 +35,14 @@
 
   const questionsStore = createFetchStore<QuestionsResponse>();
   const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
+  const respondentsStore = createFetchStore<RespondentsResponse>();
 
   onMount(() => {
     $questionsStore.fetch(getApiQuestionsUrl(consultationId));
     $demoOptionsStore.fetch(
       `/api/consultations/${consultationId}/demographics/`,
     );
+    $respondentsStore.fetch(getApiConsultationRespondentsUrl(consultationId));
     dataRequested = true;
   });
 
@@ -64,6 +68,7 @@
     loading={!dataRequested || $questionsStore.isLoading}
     demoOptionsLoading={!dataRequested || $demoOptionsStore.isLoading}
     demoOptions={$demoOptionsStore.data || []}
+    respondentCount={$respondentsStore.data?.count ?? 0}
   />
 </section>
 

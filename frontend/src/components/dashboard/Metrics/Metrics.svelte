@@ -27,6 +27,7 @@
     questions: Question[];
     demoOptions: DemoOptionsResponseItem[];
     demoOptionsLoading: boolean;
+    respondentCount: number;
   }
   let {
     consultationId = "",
@@ -34,6 +35,7 @@
     questions = [],
     demoOptions = [],
     demoOptionsLoading = true,
+    respondentCount = 0,
   }: Props = $props();
 
   const itemsPerTab = 3;
@@ -99,6 +101,7 @@
             questionCount={questions?.length}
             responseCount={totalResponseCount}
             demoCount={demoOptionCategories.length}
+            {respondentCount}
           />
         </div>
       </Panel>

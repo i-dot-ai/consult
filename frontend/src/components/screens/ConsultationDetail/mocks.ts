@@ -2,6 +2,7 @@ export const CONSULTATION_ID = "test-consultation";
 
 const DEMO_OPTIONS_URL = /\/api\/consultations\/.*\/demographic-options\//;
 const QUESTIONS_URL = /\/api\/consultations\/.*\/questions\//;
+const RESPONDENTS_URL = /\/api\/consultations\/.*\/respondents\//;
 
 const QUESTIONS = [
   {
@@ -168,5 +169,20 @@ export const longQuestionsMock = {
         id: (index + 1).toString(),
         number: index + 1,
       })),
+  },
+};
+
+const totalQuestionCount = QUESTIONS.reduce(
+  (acc, curr) => acc + curr.total_response_count,
+  0,
+);
+export const defaultRespondentsMock = {
+  url: RESPONDENTS_URL,
+  body: {
+    count: totalQuestionCount,
+    next: null,
+    previous: null,
+    // array of empty objects corresponding to total response count
+    results: Array.from(Array(totalQuestionCount).keys()).map((_) => ({})),
   },
 };
