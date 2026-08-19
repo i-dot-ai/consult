@@ -5,7 +5,7 @@ from django.db import connections
 
 
 class Command(BaseCommand):
-    help = "Prepare the environment: runs migrations on prod; resets and seeds the database and S3 on dev only."
+    help = "Prepare the environment: runs migrations on prod and preprod; resets and seeds the database and S3 on dev only."
 
     def handle(self, *args, **options):
         environment = getattr(settings, "ENVIRONMENT", "").lower()
