@@ -1,5 +1,6 @@
+import datetime
 import json
-from datetime import date
+from zoneinfo import ZoneInfo
 
 import boto3
 from django.conf import settings
@@ -15,7 +16,7 @@ from consultations.dummy_data import (
 )
 from hosting_environment import HostingEnvironment
 
-TIMESTAMP = date.today().isoformat()
+TIMESTAMP = datetime.datetime.now(tz=ZoneInfo("Europe/London")).date()
 
 
 def _to_jsonl(records):
@@ -144,8 +145,6 @@ def _build_themes_json(question_data):
     ]
     themes.extend(DEFAULT_THEMES)
     return themes
-
-
 
 
 def _build_candidate_theme_mappings(question_data):

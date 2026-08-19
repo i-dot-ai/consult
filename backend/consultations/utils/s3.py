@@ -4,6 +4,7 @@ from django.conf import settings
 
 logger = settings.LOGGER
 
+
 def get_s3_client(config: Config | None = None):
     config = config or Config()
     if settings.ENVIRONMENT.upper() in ["LOCAL", "TEST"]:

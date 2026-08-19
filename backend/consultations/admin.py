@@ -55,9 +55,7 @@ def create_dummy_consultation(modeladmin, request, queryset, size=10):
         )
         return
 
-    create_dummy_consultation_job.delay(
-        number_respondents=size, consultation=consultation
-    )
+    create_dummy_consultation_job.delay(number_respondents=size, consultation=consultation)
 
 
 @admin.action(description="create small dummy consultation")

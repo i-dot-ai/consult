@@ -1,6 +1,5 @@
 import json
 import random
-from typing import Optional
 
 from django.conf import settings
 
@@ -24,6 +23,7 @@ from factories import (
     SelectedThemeFactory,
 )
 from hosting_environment import HostingEnvironment
+from rq_context import job
 
 logger = settings.LOGGER
 
@@ -235,8 +235,8 @@ def create_candidate_theme_responses(question):
 def create_dummy_consultation(
     file_path: str = SAMPLE_QUESTIONS_PATH,
     number_respondents: int = 10,
-    consultation: Optional[Consultation] = None,
-    config: Optional[dict] = None,
+    consultation: Consultation | None = None,
+    config: dict | None = None,
 ) -> Consultation:
     """
     Create consultation with questions, responses and themes from JSON file.
@@ -320,8 +320,8 @@ def create_dummy_consultation(
 def create_dummy_consultation_job(
     file_path: str = SAMPLE_QUESTIONS_PATH,
     number_respondents: int = 10,
-    consultation: Optional[Consultation] = None,
-    config: Optional[dict] = None,
+    consultation: Consultation | None = None,
+    config: dict | None = None,
 ):
     create_dummy_consultation(
         file_path=file_path,
