@@ -38,6 +38,18 @@
   const TABLE_FLIP_SPEED = 10;
 </script>
 
+<div class="flex justify-end mb-4">
+  {#snippet switchLabel()}
+    <span class="text-xs">Show {unmatchedThemes.length} unmatched themes</span>
+  {/snippet}
+  <Switch
+    id="unmatched-themes-switch"
+    value={showUnmatchedThemes}
+    label={switchLabel}
+    handleChange={(newVal) => (showUnmatchedThemes = newVal)}
+  />
+</div>
+
 <div class="w-full overflow-auto">
   <table class="text-md w-full">
     <thead class="text-sm">
@@ -168,14 +180,3 @@
   </table>
 </div>
 
-{#snippet switchLabel()}
-  <span class="text-sm">Show Unmatched Themes</span>
-{/snippet}
-<div class="flex justify-end mt-4">
-  <Switch
-    id="unmatched-themes-switch"
-    value={showUnmatchedThemes}
-    label={switchLabel}
-    handleChange={(newVal) => (showUnmatchedThemes = newVal)}
-  />
-</div>
