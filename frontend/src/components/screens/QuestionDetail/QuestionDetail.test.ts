@@ -82,7 +82,7 @@ describe("QuestionDetail", () => {
       });
 
       const user = userEvent.setup();
-      await user.click(screen.getByLabelText("Show Unmatched Themes"));
+      await user.click(screen.getByLabelText(/Show \d+ unmatched themes/));
 
       await waitFor(() => {
         expect(screen.getByText(theme.name)).toBeInTheDocument();
