@@ -142,9 +142,7 @@ class QuestionViewSet(ModelViewSet):
                 )
             )
         else:
-            themes = themes.annotate(
-                count=Count("responseannotation", distinct=True)
-            )
+            themes = themes.annotate(count=Count("responseannotation", distinct=True))
 
         serializer = QuestionThemeSerializer(themes, many=True)
         return Response({"themes": serializer.data})
