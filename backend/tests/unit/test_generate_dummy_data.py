@@ -58,7 +58,7 @@ def test_theme_sign_off_draft_has_candidate_themes_and_responses():
     consultation = create_dummy_consultation(number_respondents=10, config=config)
     q4 = models.Question.objects.get(consultation=consultation, number=4)
 
-    assert consultation.stage == models.Consultation.Stage.THEME_SIGN_OFF
+    assert consultation.stage == models.Consultation.Stage.FINALISING_THEMES
     assert q4.theme_status == models.Question.ThemeStatus.DRAFT
 
     # Has candidate themes at multiple levels
@@ -82,7 +82,7 @@ def test_theme_sign_off_confirmed_has_selected_themes():
     consultation = create_dummy_consultation(number_respondents=10, config=config)
     q4 = models.Question.objects.get(consultation=consultation, number=4)
 
-    assert consultation.stage == models.Consultation.Stage.THEME_SIGN_OFF
+    assert consultation.stage == models.Consultation.Stage.ASSIGNING_THEMES
     assert q4.theme_status == models.Question.ThemeStatus.CONFIRMED
 
     # Has SelectedThemes

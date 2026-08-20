@@ -11,8 +11,9 @@ from consultations.models import Consultation
 
 class TestPrepareEnvironment:
     @pytest.mark.django_db
-    def test_does_not_reset_on_prod(self, settings):
-        settings.ENVIRONMENT = "prod"
+    @pytest.mark.parametrize("environment", ["prod", "preprod"])
+    def test_does_not_reset_on_prod_or_preprod(self, settings, environment):
+        settings.ENVIRONMENT = environment
 
         Consultation.objects.create(title="Should survive", code="KEEP_ME")
         call_command("prepare_environment")
@@ -20,9 +21,8 @@ class TestPrepareEnvironment:
         assert Consultation.objects.filter(code="KEEP_ME").exists()
 
     @pytest.mark.django_db
-    @pytest.mark.parametrize("environment", ["dev", "preprod"])
-    def test_resets_and_seeds_db(self, settings, environment):
-        settings.ENVIRONMENT = environment
+    def test_resets_and_seeds_db(self, settings):
+        settings.ENVIRONMENT = "dev"
 
         Consultation.objects.create(title="Should be deleted", code="DELETE_ME")
         call_command("prepare_environment")
@@ -32,14 +32,14 @@ class TestPrepareEnvironment:
 
         # Consultations created at each stage
         assert Consultation.objects.filter(stage=Consultation.Stage.SETUP).exists()
-        assert Consultation.objects.filter(stage=Consultation.Stage.THEME_SIGN_OFF).count() == 2
+        assert Consultation.objects.filter(stage=Consultation.Stage.FINALISING_THEMES).exists()
+        assert Consultation.objects.filter(stage=Consultation.Stage.ASSIGNING_THEMES).exists()
         assert Consultation.objects.filter(stage=Consultation.Stage.ANALYSIS).exists()
 
         # Admin user was created
         assert User.objects.filter(email="email@example.com", is_staff=True).exists()
 
     @pytest.mark.django_db
-    @pytest.mark.parametrize("environment", ["dev", "preprod"])
     @mock_aws
     @patch("factories.embed_text", return_value=[0.0] * 3072)
     @patch(
@@ -50,8 +50,8 @@ class TestPrepareEnvironment:
         "consultations.management.commands.prepare_s3.HostingEnvironment.is_deployed",
         return_value=True,
     )
-    def test_seeds_s3(self, _mock_deployed, _mock_prod, _mock_embed, settings, environment):
-        settings.ENVIRONMENT = environment
+    def test_seeds_s3(self, _mock_deployed, _mock_prod, _mock_embed, settings):
+        settings.ENVIRONMENT = "dev"
         settings.AWS_BUCKET_NAME = "test-bucket"
 
         conn = boto3.resource("s3", region_name="eu-west-2")
