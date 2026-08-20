@@ -55,7 +55,7 @@
     "globals": "^17.9.0",
     "http-proxy-middleware": "^4.2.0",
     "jiti": "^2.7.0",
-    "jsdom": "^29.0.0",
+    "jsdom": "^30.0.1",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-svelte": "^4.1.1",
