@@ -38,6 +38,47 @@ core, non-optional dependency of the package purely to support this duplication.
 - Consolidating the codebase's scattered `os.getenv()` calls into a single settings object is noted as a
   follow-up, not implemented here (see [Configuration strategy](#configuration-strategy)).
 
+## One entry point per stage, shared by every caller
+
+Every way an eval actually gets run converges on the same function call:
+
+```
+python eval_generation.py --dataset X        ─┐
+benchmark.py --evals generation / --quick      ├──▶  evaluate_generation(dataset, llm, judge_llm, context)
+themefinder-eval.yml (CI, workflow_dispatch)  ─┘            │
+                                                             ▼
+                                              resolve_backends(context, stage, dataset) ──▶ run_stage(...)
+```
+
+`eval_generation.py`'s `__main__` block calls `asyncio.run(evaluate_generation(dataset=args.dataset))` — the
+same function `benchmark.py::EVAL_FUNCS["generation"]` points at, which the `themefinder-eval.yml` workflow
+also reaches (via `benchmark.py --evals "$EVAL_TYPE"` or `--quick`). No caller has its own copy of the
+Langfuse-vs-local branching logic. This is the property that makes the framework's swappability real for
+every caller, not just for tests: **every `eval_*.py`'s `__main__`/CLI block calls its own module's
+`evaluate_X` wrapper, never a lower-level function like `run_stage` directly** — so a CLI run and a
+`benchmark.py` run of the same stage are guaranteed to take the identical path through `resolve_backends` and
+`run_stage`.
+
+### Adding a new eval stage
+
+The pattern to extend the framework to a new stage, rather than hand-rolling a one-off script that bypasses
+the ports:
+
+1. Add the stage name to `datasets.py::VALID_STAGES`.
+2. Add local fixture data under `evals/data/<dataset>/` for the new stage.
+3. Write the evaluator(s) as a new file in `evals/evaluators/`, exported from `evals/evaluators/__init__.py`.
+4. Write `evals/eval_<stage>.py`: a `_task(inputs, llm)` function, a module-level `StageConfig`, and a thin
+   `evaluate_<stage>(dataset, llm, judge_llm, context)` wrapper calling `resolve_backends` + `run_stage` —
+   copy the shape of `eval_generation.py`.
+5. Register it in `benchmark.py::EVAL_FUNCS` (and its `evals_with_judge` set, if the stage uses an LLM
+   judge).
+6. Add the stage to `.github/workflows/themefinder-eval.yml`'s `eval_type` `choices` list.
+
+Steps 1, 5, and 6 are three independent lists of the same stage names — `VALID_STAGES`, `EVAL_FUNCS`, and the
+workflow YAML — with nothing deriving one from another. All three must be updated by hand; missing one means
+a stage silently works in some entry points and not others (most commonly: it works locally and via
+`benchmark.py`, but never appears in the CI dropdown).
+
 ## Architecture overview
 
 Four ports, each an explicit `abc.ABC`, each with a default adapter:
@@ -273,8 +314,13 @@ shape.
   `_run_with_langfuse`. Its `finish_run()` flushes the Langfuse context — but only if `EvalBackends.
   context_owned` is `True` (see below), so a context supplied by a caller like `benchmark.py` is never
   flushed twice.
-- **`LocalJSONArtefactStore`** writes results under `evals/benchmark_results/<stage>/` — a strict
-  improvement over today's local fallback, which never persisted anything at all.
+- **`LocalJSONArtefactStore`** writes results under `evals/local_eval_runs/<stage>/` — deliberately not
+  `evals/benchmark_results/`, which `benchmark.py` already owns as a timestamp-keyed directory
+  (`benchmark_results/<benchmark_id>/benchmark.log`) that `visualise_benchmark.py` scans expecting only
+  timestamp children. `local_eval_runs/` is a strict improvement over today's local fallback, which never
+  persisted anything at all — but it's a separate, non-interchangeable output tree from `benchmark.py`'s
+  results directory. `visualise_benchmark.py` doesn't import any `eval_*.py` module today (it only reads
+  persisted Langfuse/`benchmark_results` data) and isn't updated to read `local_eval_runs/` in this pass.
 
 Both return the same flat `dict[str, Any]` shape `benchmark.py` already parses (see below).
 
@@ -330,8 +376,20 @@ async def evaluate_generation(dataset="gambling_XS", llm=None, judge_llm=None, c
 
 Each script collapses from roughly 300 lines to a `_task(inputs, llm)` async function, a module-level
 `StageConfig`, the thin wrapper above, and the unchanged CLI/`__main__` block. `_run_with_langfuse` /
-`_run_local_fallback` are deleted, not relocated. `eval_mapping.py` additionally sets `StageConfig.
-case_filter` to reproduce its `--question` CLI flag.
+`_run_local_fallback` are deleted, not relocated.
+
+`eval_mapping.py` keeps its existing `question_num: int | None = None` parameter to reproduce its
+`--question` CLI flag — but its wrapper does **not** mutate the module-level `StageConfig`. It builds a
+per-call config instead: `dataclasses.replace(STAGE, case_filter=...)` when `question_num` is given, the
+unmodified `STAGE` otherwise. `benchmark.py` never passes `question_num`, so its calls always see the
+unfiltered `STAGE` regardless of what any concurrent or prior CLI invocation did in the same process —
+mutating the shared module-level object would have made a CLI `--question 2` run capable of leaking a filter
+into an unrelated `benchmark.py` run. All four `evaluate_X` wrappers otherwise share one signature —
+`(dataset, llm, judge_llm, context)` — with `question_num` as `evaluate_mapping`'s only addition.
+`evaluate_mapping` accepts `judge_llm` too, for signature uniformity, even though `StageConfig.
+build_evaluators` for mapping ignores it (`mapping_f1_evaluator` is a deterministic F1 metric, not an LLM
+judge) — consistent with `benchmark.py`'s existing `evals_with_judge` set, which already never passes
+`judge_llm` to mapping.
 
 **Deliberate, disclosed behaviour change:** local (no-Langfuse) runs now get the same LLM-judge suite as
 Langfuse runs, instead of the cheaper `metrics.py` stats — removing the inconsistency that existed between
