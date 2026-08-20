@@ -34,9 +34,6 @@ core, non-optional dependency of the package purely to support this duplication.
   one single-line exception (see [Compatibility contract](#compatibility-contract-with-benchmarkpy)). It is
   not rewritten to call the new ports directly.
 - `evals/synthetic/` (synthetic data generation) is untouched.
-- `evals/metrics.py` (the old local-fallback scoring) becomes unused but is not deleted.
-- Consolidating the codebase's scattered `os.getenv()` calls into a single settings object is noted as a
-  follow-up, not implemented here (see [Configuration strategy](#configuration-strategy)).
 
 ## One entry point per stage, shared by every caller
 
@@ -393,8 +390,10 @@ judge) — consistent with `benchmark.py`'s existing `evals_with_judge` set, whi
 
 **Deliberate, disclosed behaviour change:** local (no-Langfuse) runs now get the same LLM-judge suite as
 Langfuse runs, instead of the cheaper `metrics.py` stats — removing the inconsistency that existed between
-the two paths today. `evals/metrics.py` becomes unused as a result; it's left in place as a follow-up
-deletion candidate rather than removed in this pass.
+the two paths today. `evals/metrics.py` is deleted outright as part of this pass: its only two importers,
+`eval_generation.py::calculate_generation_metrics` and `eval_mapping.py::calculate_mapping_metrics`, are both
+exclusively inside the `_run_local_fallback` code removed from those files (`eval_condensation.py`/
+`eval_refinement.py` never imported it).
 
 ## Compatibility contract with benchmark.py
 
@@ -412,21 +411,128 @@ Langfuse.
 
 ## Configuration strategy
 
-`THEMEFINDER_EVAL_ENGINE` is the only new environment variable this framework introduces, and an environment
-variable is the right mechanism for it. `evals/` already reads a dozen environment variables via ad hoc
-`os.getenv()` calls scattered across `benchmark.py`, `langfuse_utils.py`, `utils_gateway.py`, and every
-`eval_*.py` — `LANGFUSE_SECRET_KEY`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_BASE_URL`, `AUTO_EVAL_4_1_SWEDEN_
-DEPLOYMENT`, `LLM_GATEWAY_URL`, `CONSULT_EVAL_LITELLM_API_KEY`, `ENVIRONMENT`, `GITHUB_SHA`,
-`LANGFUSE_PROJECT_ID` — with no config-file infrastructure anywhere in the package. Introducing a file-based
-format for a single switch would be inconsistent with the existing convention and adds parsing overhead with
-no real benefit at this scale.
+Environment variables are the right mechanism for `evals/` config — it already reads config exclusively via
+`os.getenv()`, with no config-file infrastructure anywhere in the package, so a file-based format would be
+inconsistent with the existing convention and adds parsing overhead for no benefit at this scale. `THEMEFINDER_EVAL_ENGINE`
+follows that convention.
 
-The scattered-`os.getenv()` pattern itself is a pre-existing smell this framework doesn't fix. A future pass
-could centralise these into one small settings object — a `dataclass` or `pydantic.BaseSettings` built once
-and passed into adapters as a constructor argument, rather than each adapter or helper reaching into
-`os.environ` directly. That's out of scope here because it touches `utils_gateway.py` and `benchmark.py`,
-both otherwise untouched or minimally touched by this pass; it's noted as a follow-up alongside the
-`evals/metrics.py` deletion.
+But "env var" and "an ad hoc `os.getenv()` call in whichever file happens to need it, independently of every
+other file that needs the same value" are two different decisions. This framework makes the first and fixes
+the second.
+
+### The problem, scoped and measured
+
+Checked first against the rest of the monorepo, not assumed: `backend/` already has a proper Django settings
+module (`backend/settings/{base,local,production,test}.py}`) and its handful of `os.getenv`/`os.environ` hits
+are idiomatic Django bootstrap (`os.environ.setdefault("DJANGO_SETTINGS_MODULE", ...)`) or single-purpose
+reads — not sprawl. `lambda/*` and `pipeline-*/` are independently-deployed units with no shared caller, so a
+per-file env read there carries no drift risk. The real problem is scoped to `themefinder/evals/`: one
+importable package, many modules, each independently reaching into `os.environ` for overlapping config.
+
+Grep-verified inventory (excluding `evals/metrics.py`, deleted outright in this pass — see
+[Rollout sequencing](#rollout-sequencing) — so not worth migrating first):
+
+| Env var | Read independently in | Call sites |
+|---|---|---|
+| `AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT` | `eval_generation.py`, `eval_condensation.py`, `eval_mapping.py`, `eval_refinement.py`, `langfuse_utils.py` | 5 |
+| `LANGFUSE_SECRET_KEY` / `PUBLIC_KEY` / `BASE_URL` | `langfuse_utils.py`, `benchmark.py::query_langfuse_costs()` (builds its own `Langfuse` client from a second, independent read) | 2 |
+| `LANGFUSE_BASE_URL` / `LANGFUSE_PROJECT_ID` | `visualise_benchmark.py` | adds a 3rd site for `LANGFUSE_BASE_URL` |
+| `LLM_GATEWAY_URL` / `CONSULT_EVAL_LITELLM_API_KEY` | `utils_gateway.py` | 1 (already fine) |
+| `ENVIRONMENT`, `GITHUB_SHA` | `langfuse_utils.py` | 1 (already fine) |
+| `THEMEFINDER_EVAL_ENGINE` (new) | `config.py::resolve_backends` | 1 (new, single-sited by construction) |
+
+Separately, `dotenv.load_dotenv()` is called independently in 7 files (`benchmark.py`, all four `eval_*.py`,
+`visualise_benchmark.py`, `generate_synthetic.py`) — the same "everyone re-does the same setup" problem one
+level up.
+
+### `evals/settings.py`
+
+```python
+# deliberately not named config.py — that name is already taken by evals/config.py, which wires
+# adapters together; this module just reads the environment, once.
+from dataclasses import dataclass
+from functools import lru_cache
+import os
+import dotenv
+
+@dataclass(frozen=True)
+class EvalSettings:
+    auto_eval_deployment: str | None
+    llm_gateway_url: str | None
+    llm_gateway_api_key: str | None
+    langfuse_secret_key: str | None
+    langfuse_public_key: str | None
+    langfuse_base_url: str | None
+    langfuse_project_id: str | None
+    environment: str
+    git_sha: str
+    eval_engine: str
+
+@lru_cache(maxsize=1)
+def get_settings() -> EvalSettings:
+    dotenv.load_dotenv()
+    return EvalSettings(
+        auto_eval_deployment=os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT"),
+        llm_gateway_url=os.getenv("LLM_GATEWAY_URL"),
+        llm_gateway_api_key=os.getenv("CONSULT_EVAL_LITELLM_API_KEY"),
+        langfuse_secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+        langfuse_public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+        langfuse_base_url=os.getenv("LANGFUSE_BASE_URL"),
+        langfuse_project_id=os.getenv("LANGFUSE_PROJECT_ID"),
+        environment=os.getenv("ENVIRONMENT", "development"),
+        git_sha=os.getenv("GITHUB_SHA", "local")[:7],
+        eval_engine=os.getenv("THEMEFINDER_EVAL_ENGINE", "pydantic_evals"),
+    )
+```
+
+`get_settings()` is a process-wide cached singleton: env vars are read once and `.env` is loaded once,
+regardless of how many modules ask. `frozen=True` means nothing can mutate it after construction.
+
+**Dependency injection lands exactly at the boundaries that already have one** — `resolve_backends` and the
+two existing shared helper functions each grow an optional `settings: EvalSettings | None = None` parameter,
+defaulting to `get_settings()`, the same optional-with-a-default pattern `context` already uses:
+
+- `resolve_backends(context=None, *, stage, dataset, settings=None)` reads `settings.eval_engine` instead of
+  `os.getenv("THEMEFINDER_EVAL_ENGINE", ...)` directly, and forwards `settings` when it builds a default
+  Langfuse context.
+- `langfuse_utils.get_langfuse_context(session_id, eval_type, metadata=None, tags=None, settings=None)` reads
+  `settings.langfuse_secret_key` / `.langfuse_public_key` / `.langfuse_base_url` / `.environment` / `.git_sha`
+  / `.auto_eval_deployment` internally. **No caller changes** — `benchmark.py` calls it exactly as before.
+- `utils_gateway.gateway_credentials(settings=None)` reads `settings.llm_gateway_url` /
+  `.llm_gateway_api_key` internally. Every existing call site (`base_url, api_key =
+  utils_gateway.gateway_credentials()`, present in all four `eval_*.py` files) is unchanged.
+- `benchmark.py::query_langfuse_costs()`'s 3 independent reads become `get_settings()` reads, removing the
+  duplicate credential logic without changing behaviour.
+- `visualise_benchmark.py`'s 2 reads become `get_settings()` reads.
+- The 5 inline `os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT")` sites building each stage's default task LLM
+  become `get_settings().auto_eval_deployment` — a direct read, no DI needed since these are leaf
+  construction sites already guarded by `if llm is None` (only exercised in ad hoc runs, never in tests that
+  inject a fake LLM).
+- All 7 explicit `dotenv.load_dotenv()` calls are deleted — `get_settings()` already guarantees `.env` is
+  loaded before any field is read.
+
+This keeps "zero Langfuse code in the four stage scripts" intact: the stage scripts only ever read
+`get_settings().auto_eval_deployment`, a plain `str | None` — no Langfuse import, no Langfuse-named field
+touched. `EvalSettings` bundles Langfuse fields alongside non-Langfuse ones; the stage scripts simply never
+reach for the ones with "langfuse" in the name.
+
+### Test impact: a real correctness risk, not just style
+
+`test_benchmark.py` and `test_utils_gateway.py` already have 12 `monkeypatch.setenv(...)` calls between them.
+A naive `@lru_cache` singleton would silently break both: the first test to call `get_settings()` poisons the
+cache for every later test expecting a different env var value, since `lru_cache` never re-reads after the
+first call. Fix — one autouse fixture in `evals/tests/conftest.py`:
+
+```python
+@pytest.fixture(autouse=True)
+def _reset_eval_settings_cache():
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
+```
+
+This runs before and after every test, so the existing `monkeypatch.setenv` usage keeps working with zero
+changes to `test_benchmark.py` or `test_utils_gateway.py` themselves — only `conftest.py` gets the addition.
 
 ## Rollout sequencing
 
@@ -435,7 +541,13 @@ Each phase is independently revertible; nothing is broken in between phases.
 1. **Groundwork** — extras group in `pyproject.toml`, workflow YAML updates, `eval_types.py` +
    empty `adapters/` package scaffolding with all four `base.py` ABCs (additive, unused). Move
    `langfuse_utils.py` → `utils/langfuse_utils.py` and `utils.py` → `utils/prompt_utils.py`, updating the two
-   long-term import sites (`benchmark.py`, `generate_synthetic.py`).
+   long-term import sites (`benchmark.py`, `generate_synthetic.py`). Add `evals/settings.py` and the autouse
+   `_reset_eval_settings_cache()` fixture *before* anything depends on it, then migrate
+   `utils_gateway.gateway_credentials()`, `utils/langfuse_utils.get_langfuse_context()`,
+   `benchmark.py::query_langfuse_costs()`, and `visualise_benchmark.py`'s two reads onto it — removing their
+   `os.getenv()` calls and (outside the four `eval_*.py` files, handled in step 5) their `dotenv.load_dotenv()`
+   calls. Verify the existing `monkeypatch.setenv`-based tests in `test_benchmark.py`/`test_utils_gateway.py`
+   still pass.
 2. **Dataset adapters** — `local_json_adapter.py`, `langfuse_adapter.py`, `fallback_adapter.py`, tested
    against real `evals/data/gambling_XS` fixtures.
 3. **Evaluator split + adapter** — split flat `evaluators.py` into `evals/evaluators/`, function bodies moved
@@ -445,12 +557,17 @@ Each phase is independently revertible; nothing is broken in between phases.
    swappability test runs fully offline at this point.
 5. **Migrate stage modules one at a time** — `eval_generation.py` first (most complex: three-stage pipeline,
    four evaluators), then `eval_mapping.py`, `eval_condensation.py`, `eval_refinement.py`. The one-line
-   `benchmark.py` kwarg rename lands alongside the first migration. For each stage: run before and after
-   against `gambling_XS`, with and without `LANGFUSE_*` env vars set, and diff the returned score dict.
+   `benchmark.py` kwarg rename lands alongside the first migration. For each stage: drop its
+   `dotenv.load_dotenv()` call and swap its inline `os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT")` for
+   `get_settings().auto_eval_deployment`; run before and after against `gambling_XS`, with and without
+   `LANGFUSE_*` env vars set, and diff the returned score dict. Once `eval_generation.py` and
+   `eval_mapping.py` are both migrated — their only two importers of `evals/metrics.py` gone — delete
+   `evals/metrics.py` outright.
 6. **Cleanup note only** — confirm `utils/langfuse_utils.py` is still needed only by `benchmark.py`,
-   `generate_synthetic.py`, and the two Langfuse adapters; flag `evals/metrics.py` and the settings
-   consolidation as follow-up candidates; note (without implementing) how `benchmark.py` could later call
-   `resolve_backends`/`run_stage` directly, and how `evals/synthetic/` could target `DatasetPort`.
+   `generate_synthetic.py`, and the two Langfuse adapters; note (without implementing) how `benchmark.py`
+   could later call `resolve_backends`/`run_stage` directly, and how `evals/synthetic/` could target
+   `DatasetPort`. The `os.getenv()` centralisation and the `evals/metrics.py` deletion are both done in steps
+   1 and 5, not deferred.
 
 ## Testing strategy
 
@@ -467,16 +584,19 @@ Each phase is independently revertible; nothing is broken in between phases.
 - A grep-based check enforces the zero-Langfuse-in-scripts rule directly:
   `grep -ril langfuse evals/eval_*.py evals/stage_runner.py evals/eval_types.py evals/adapters/*/base.py
   evals/evaluators/*.py` must return nothing.
+- A second grep-based check enforces the `os.getenv()` centralisation directly: `grep -rn "os\.getenv\|os\.
+  environ\.get" evals/*.py` returns only one line per var inside `evals/settings.py::get_settings()`, plus
+  `benchmark.py`'s unrelated `GRPC_DNS_RESOLVER` process-level workaround (not app config, not migrated).
+  `grep -rn load_dotenv evals/*.py` returns only `evals/settings.py`. `evals/metrics.py` no longer exists.
 - The `evaluators.py` and `langfuse_utils.py` splits are checked for byte-level fidelity: the concatenation of
   the new files' non-boilerplate content is diffed against the pre-split file at `git show HEAD:...` to
   confirm relocation only, no rewriting.
 - `pytest tests/ -v` (95% coverage gate) and `pytest evals/tests/ -v` — including the untouched
-  `test_benchmark.py` and `test_utils_gateway.py` — stay green throughout every phase.
+  `test_benchmark.py` and `test_utils_gateway.py`, whose 12 `monkeypatch.setenv` calls keep passing via the
+  new autouse cache-clearing fixture — stay green throughout every phase.
 
 ## Deferred to a later pass
 
 - Adapting `benchmark.py` to call `resolve_backends`/`run_stage` directly instead of the four stage-script
   wrappers.
 - Adapting `evals/synthetic/` to target `DatasetPort` instead of talking to Langfuse directly.
-- Deleting `evals/metrics.py` once confirmed fully unused.
-- Consolidating the scattered `os.getenv()` calls across the eval suite into a single settings object.

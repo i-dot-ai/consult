@@ -47,10 +47,13 @@ scripts onto it in place, incrementally:
 - `benchmark.py` (multi-model runner) and `evals/synthetic/` (synthetic data generation) are explicitly out
   of scope for this pass and keep working unchanged against the new stage-script signatures; adapting them
   to call the ports directly is deferred to a later pass.
-- `THEMEFINDER_EVAL_ENGINE` stays an env var, not a config file. `evals/` already reads a dozen env vars via
-  ad hoc `os.getenv()` calls scattered across `benchmark.py`, `langfuse_utils.py`, and `utils_gateway.py`,
-  with no config-file infrastructure anywhere in the package — adding a file-based config format for one
-  switch would be inconsistent with the codebase and adds parsing overhead for no benefit at this scale.
+- `THEMEFINDER_EVAL_ENGINE` stays an env var, not a config file — consistent with the rest of `evals/`, which
+  has no config-file infrastructure. But the scattered ad hoc `os.getenv()` calls that read those env vars
+  (8 vars, 17 call sites across 9 files, with `AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT` alone read independently in
+  5 places) are centralised into one `evals/settings.py::EvalSettings`, built once per process and injected
+  as an optional parameter at the same points `context` already is. This is fixed in this pass, not deferred
+  — scoped strictly to `themefinder/evals/` after confirming `backend/` already has proper Django settings
+  and `lambda/`/`pipeline-*/` are independently-deployed units where per-file reads are appropriate.
 - Every way an eval gets run — direct CLI (`python eval_generation.py`), `benchmark.py`, and the
   `themefinder-eval.yml` CI workflow — is required to converge on the same `evaluate_X(...)` function per
   stage, which is the only thing allowed to call `resolve_backends`/`run_stage`. No caller gets its own copy
@@ -62,13 +65,13 @@ scripts onto it in place, incrementally:
   `sentence-transformers`.
 - Local (no-Langfuse) runs now use the same LLM-judge evaluator suite as Langfuse runs, rather than the
   cheaper local-fallback stats — a disclosed behaviour change that removes an existing inconsistency between
-  the two paths. `evals/metrics.py`, which powered the old fallback, becomes unused and is flagged as a
-  follow-up deletion candidate.
+  the two paths. `evals/metrics.py`, which powered the old fallback, is deleted outright in this pass (its
+  only two importers are the `_run_local_fallback` code being removed from `eval_generation.py` and
+  `eval_mapping.py`).
 - The abstraction is proven rather than assumed: a swappability test runs the same cases through both
   `PydanticEvalsRunner` and a pydantic-evals-free inline runner and asserts identical output.
 - More files and more indirection than the current flat layout, but each port is independently testable
   offline, and Langfuse can be replaced (dataset storage, artefact storage, or both) without touching the
   eval scripts, the evaluators, or the runner.
 - `benchmark.py` and `evals/synthetic/` still couple to Langfuse directly for now; migrating them onto the
-  new ports is deferred to a follow-up pass, as is the `evals/metrics.py` removal and consolidating the
-  scattered `os.getenv()` calls into one settings object.
+  new ports is deferred to a follow-up pass.
