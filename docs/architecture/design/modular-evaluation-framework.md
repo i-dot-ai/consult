@@ -290,13 +290,18 @@ async requirement.
 ### Dataset adapters
 
 - **`LangfuseDatasetAdapter`** wraps `client.get_dataset(...)`, converts each `DatasetItem` into a `Case`,
-  and keeps a `native_item(case_id)` lookup so `LangfuseArtefactStore` can link results back to the original
-  Langfuse dataset item.
+  and stamps `Case.metadata["langfuse_item_id"] = item.id` on every `Case` it builds. This is the *only*
+  channel the Langfuse dataset item ID crosses into the artefact store — not a direct reference to the
+  adapter instance, which would violate "no adapter file imports from a sibling adapter file."
+  `LocalJSONDatasetAdapter`-sourced cases simply never carry this key.
 - **`LocalJSONDatasetAdapter`** loads cases from `evals/data/<dataset>/`, building on the
   Langfuse-vs-local-JSON duality already present in `datasets.py::load_local_data`.
 - **`FallbackDatasetAdapter`** tries a primary `DatasetPort` and falls back to a secondary one on
   `DatasetNotFoundError`. It logs a warning when the fallback triggers, so a genuine Langfuse
-  auth/connectivity failure is never silently mistaken for an intentionally offline run.
+  auth/connectivity failure is never silently mistaken for an intentionally offline run. This is what
+  `resolve_backends()` actually wires in as the "Langfuse-backed" dataset port whenever the context is
+  enabled — `FallbackDatasetAdapter(primary=LangfuseDatasetAdapter(...), secondary=LocalJSONDatasetAdapter(...))`,
+  never a bare `LangfuseDatasetAdapter` — see [Orchestration](#orchestration) below for why.
 
 ### Evaluator adapter
 
@@ -333,10 +338,16 @@ class PydanticEvalsLLMJudgeAdapter(EvaluatorPort):
         return [Score(name=self._name, value=float(result.value), comment=result.reason or "")]
 ```
 
-(`LLMJudge`'s and `EvaluatorContext`'s exact constructor kwargs above are reconstructed from general
-knowledge of the library's shape, not verified against a fresh doc fetch — confirm against the installed
-`pydantic-evals` version before implementing; the pattern — build an `EvaluatorContext` from our `Case`, call
-the native judge, translate its result into our `Score` — is the right shape regardless of exact kwarg names.)
+(Confidence flag, structural not just naming: the above assumes `EvaluatorContext` can be constructed
+standalone, outside pydantic-evals' own `Dataset.evaluate()` loop — not verified this session.
+`EvaluatorContext` may carry fields the engine populates internally during a real run (span/trace data,
+attempt counts, or similar) that aren't reproducible from just `Case` + `output`, in which case
+`LLMJudge.evaluate(ctx)` could fail or behave differently against a hand-built `ctx`. **First implementation
+step: a standalone spike confirming `EvaluatorContext(...)` can be built and passed to `LLMJudge.evaluate()`
+outside `Dataset.evaluate()` at all**, before writing the rest of the adapter around that assumption. If it
+can't, the adapter's shape needs to change — most likely to only support native pydantic-evals evaluators
+when `PydanticEvalsRunner` is actually driving the full `Dataset.evaluate()` call, a real constraint on the
+"any evaluator, any runner" swappability claim, not just an implementation detail.)
 
 This has to go through `EvaluatorPort`, not bypass it. The shortcut of handing `LLMJudge` instances straight
 to `pydantic_evals.Dataset(evaluators=[...])` inside `PydanticEvalsRunner` only works while `PydanticEvalsRunner`
@@ -366,6 +377,13 @@ below. Every other runner (`InlineSequentialRunner` included) leaves `engine_rep
   `_run_with_langfuse`. Its `finish_run()` flushes the Langfuse context — but only if `EvalBackends.
   context_owned` is `True` (see below), so a context supplied by a caller like `benchmark.py` is never
   flushed twice. It's also the only adapter that unpacks `engine_report` when `finish_run()` receives one.
+  `record_case()` reads `outcome.case.metadata.get("langfuse_item_id")` defensively: present, it links the
+  score to that Langfuse dataset item exactly as `_run_with_langfuse` does today; absent — because
+  `resolve_backends()` paired it with a `FallbackDatasetAdapter` that actually fell back to local JSON for
+  this dataset — it still creates a trace and pushes scores, just without dataset-item linkage, instead of
+  crashing. That combination (Langfuse artefact store, locally-sourced case) never existed before this
+  refactor: today's `_run_with_langfuse` falls back to `_run_local_fallback` *entirely* the moment
+  `get_dataset()` fails, so there was never a mixed state to handle.
 - **`LocalJSONArtefactStore`** writes results under `evals/local_eval_runs/<stage>/` — deliberately not
   `evals/benchmark_results/`, which `benchmark.py` already owns as a timestamp-keyed directory
   (`benchmark_results/<benchmark_id>/benchmark.log`) that `visualise_benchmark.py` scans expecting only
@@ -437,8 +455,16 @@ directly (besides the Langfuse adapter modules themselves):
 
 - If `context` is `None`, it builds a default one via `langfuse_utils.get_langfuse_context(...)` and sets
   `context_owned=True` on the `EvalBackends` it returns.
-- If the resulting context is enabled, it wires up the Langfuse-backed adapters; otherwise, the local-only
-  ones.
+- If the resulting context is enabled: `dataset = FallbackDatasetAdapter(primary=LangfuseDatasetAdapter(...),
+  secondary=LocalJSONDatasetAdapter(...))` — never a bare `LangfuseDatasetAdapter` — preserving today's
+  per-dataset-name fallback (`_run_with_langfuse`'s `try/except` around `ctx.client.get_dataset(config.name)`,
+  which is about *this dataset* not existing in Langfuse, a different condition from Langfuse not being
+  configured at all). `artefacts = LangfuseArtefactStore(...)` regardless of whether the dataset actually
+  fell back — artefact storage location follows "is Langfuse configured," not "did this particular dataset
+  load from Langfuse" (see [Artefact store adapters](#artefact-store-adapters) above for how
+  `LangfuseArtefactStore` handles a case that has no Langfuse item to link against).
+- If the context is disabled: `dataset = LocalJSONDatasetAdapter(...)` directly (nothing to fall back from)
+  and `artefacts = LocalJSONArtefactStore(...)`.
 - It picks the runner via one environment variable, `THEMEFINDER_EVAL_ENGINE` (default `pydantic_evals`),
   read once at the top of the function — the explicit seam a second engine plugs into later. There is no
   plugin registry; this is deliberately simple.
@@ -687,6 +713,12 @@ Each phase is independently revertible; nothing is broken in between phases.
   `evaluate()` output matches the `list[Score]` shape `CallableEvaluatorAdapter` produces — proving a native
   pydantic-evals judge and a hand-rolled `evaluators.py` judge are genuinely interchangeable in a
   `StageConfig.build_evaluators` list.
+- **Dataset-fallback / artefact-linkage proof** (`test_dataset_adapters.py`, `test_artefact_store.py`): a
+  `FallbackDatasetAdapter` wrapping a `LangfuseDatasetAdapter` pointed at a nonexistent dataset name falls
+  back to `LocalJSONDatasetAdapter` — assert the resulting `Case`s carry no `"langfuse_item_id"` in
+  `metadata`; separately, `LangfuseArtefactStore.record_case()` called with a `CaseOutcome` whose case lacks
+  that key creates a trace and pushes scores without raising — proving the degradation path described above
+  actually works, not just reads plausibly.
 - Each adapter has its own offline unit test (`test_dataset_adapters.py`, `test_evaluator_adapters.py`,
   `test_artefact_store.py`), each asserting the concrete adapter is a genuine subclass of its ABC and that
   instantiating an incomplete subclass raises `TypeError`.
