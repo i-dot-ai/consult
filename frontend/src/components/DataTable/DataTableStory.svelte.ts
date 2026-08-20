@@ -9,17 +9,17 @@ interface RowItem {
 const rows = $state([
   {
     id: 1,
-    name: "Test Item 1",
+    name: "Test Item 1 - A",
     createdAt: "2026-08-19",
   },
   {
     id: 2,
-    name: "Test Item 2",
+    name: "Test Item 2 - B",
     createdAt: "2026-06-19",
   },
   {
     id: 3,
-    name: "Test Item 3",
+    name: "Test Item 3 - C",
     createdAt: "2025-10-10",
   },
 ]);
