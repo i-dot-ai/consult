@@ -38,7 +38,9 @@
 
   let labelText = $derived(typeof label === "string" ? label : label?.text);
   let labelClasses = $derived(typeof label === "object" ? label?.classes : "");
-  let labelHorizontal = $derived(typeof label === "object" && label?.horizontal);
+  let labelHorizontal = $derived(
+    typeof label === "object" && label?.horizontal,
+  );
 
   // Convert GOV.UK label classes to Tailwind equivalents
   let tailwindLabelClasses = $derived(
@@ -62,15 +64,17 @@
   }
 </script>
 
-<div class={clsx([
-  errorMessage && "mr-4 border-l-4 border-red-600 pl-3",
-  labelHorizontal && "flex items-center gap-4",
-])}>
+<div
+  class={clsx([
+    errorMessage && "mr-4 border-l-4 border-red-600 pl-3",
+    labelHorizontal && "flex items-center gap-4",
+  ])}
+>
   {#if labelText && !hideLabel}
-    <label class={clsx([
-      tailwindLabelClasses,
-      labelHorizontal && "min-w-max",
-    ])} for={id}>
+    <label
+      class={clsx([tailwindLabelClasses, labelHorizontal && "min-w-max"])}
+      for={id}
+    >
       {labelText}
     </label>
   {/if}
