@@ -85,15 +85,17 @@
   });
 
   const filteredRows = $derived.by(() => {
-    const searchableColumns = visibleColumns.filter(column => {
+    const searchableColumns = visibleColumns.filter((column) => {
       return column.filterValue !== undefined || column.hidden !== true;
-    })
+    });
 
-    return sortedRows.filter(row => {
-      return searchableColumns.some(column => {
+    return sortedRows.filter((row) => {
+      return searchableColumns.some((column) => {
         const value = column.filterValue?.(row) ?? row[column.key];
-        return String(value ?? "").toLocaleLowerCase().includes(searchQuery.trim().toLocaleLowerCase());
-      })
+        return String(value ?? "")
+          .toLocaleLowerCase()
+          .includes(searchQuery.trim().toLocaleLowerCase());
+      });
     });
   });
 
@@ -197,19 +199,13 @@
   </div>
 
   {#if searchable}
-    <div class={clsx([
-      "w-1/3",
-      "mt-2",
-      "mb-4",
-      "ml-auto",
-      "text-sm",
-    ])}>
+    <div class={clsx(["w-1/3", "mt-2", "mb-4", "ml-auto", "text-sm"])}>
       <TextInput
-        label={"Search"}
+        label="Search"
         hideLabel={true}
         variant="search"
         value={searchQuery}
-        setValue={(newValue) => searchQuery = newValue}
+        setValue={(newValue) => (searchQuery = newValue)}
         placeholder={searchPlaceholder}
       />
     </div>
