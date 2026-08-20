@@ -10,7 +10,7 @@ stages:
     outs:
       - ../../data/${dataset}
   evaluate:
-    cmd: uv run evaluate.py --dataset ${dataset} --output scores.json
+    cmd: uv run evaluate.py --dataset ${dataset} --model ${model} --output scores.json
     deps:
       - evaluate.py
       - download_data.py
@@ -24,6 +24,7 @@ stages:
       - ../../data/${dataset}
     params:
       - dataset
+      - model
     outs:
       - scores.json:
           cache: false

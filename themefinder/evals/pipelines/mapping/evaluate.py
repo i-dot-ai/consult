@@ -34,6 +34,7 @@ from themefinder import theme_mapping
 async def evaluate_mapping(
     dataset: str = "gambling_XS",
     question_num: int | None = None,
+    model: str | None = None,
     llm: OpenAILLM | None = None,
     langfuse_ctx: langfuse_utils.LangfuseContext | None = None,
 ) -> dict:
@@ -42,6 +43,9 @@ async def evaluate_mapping(
     Args:
         dataset: Dataset identifier (e.g., "gambling_S", "healthcare_M")
         question_num: Optional specific question number (1-3) to evaluate
+        model: Optional gateway model name to use for theme mapping (falls
+            back to AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT env var if not set).
+            Ignored if `llm` is provided.
         llm: Optional pre-configured LLM instance (for benchmark runs)
         langfuse_ctx: Optional pre-configured Langfuse context (for benchmark runs)
 
@@ -67,7 +71,7 @@ async def evaluate_mapping(
     if llm is None:
         base_url, api_key = utils_gateway.gateway_credentials()
         llm = OpenAILLM(
-            model=os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT"),
+            model=model or os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT"),
             request_kwargs={"temperature": 0},
             base_url=base_url,
             api_key=api_key,
@@ -236,6 +240,12 @@ if __name__ == "__main__":
         "--question", type=int, default=None, help="Specific question number (1-3)"
     )
     parser.add_argument(
+        "--model",
+        default=None,
+        help="Gateway model name to use for theme mapping "
+        "(defaults to AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT env var)",
+    )
+    parser.add_argument(
         "--output",
         default="scores.json",
         help="Path to write evaluation results (JSON)",
@@ -243,6 +253,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     scores = asyncio.run(
-        evaluate_mapping(dataset=args.dataset, question_num=args.question)
+        evaluate_mapping(
+            dataset=args.dataset, question_num=args.question, model=args.model
+        )
     )
     write_results(scores, Path(args.output))
