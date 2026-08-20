@@ -29,6 +29,7 @@
   import LoadingIndicator from "../LoadingIndicator/LoadingIndicator.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import Select from "../inputs/Select/Select.svelte";
+  import Button from "../inputs/Button/Button.svelte";
 
   type Props = {
     rows?: T[];
@@ -40,7 +41,7 @@
     searchable?: boolean;
     searchPlaceholder?: string;
     paginated?: boolean;
-    initialPageSize?: number;
+    pageSizes?: number[];
     onSortChange?: (sort: SortState<T> | null) => void;
     onRowClick?: (row: T) => void;
   };
@@ -55,7 +56,7 @@
     searchable = true,
     searchPlaceholder = "Search...",
     paginated = true,
-    initialPageSize = 1,
+    pageSizes = [1, 10, 50, 100, 250, 500],
     onSortChange,
     onRowClick,
   }: Props = $props();
@@ -68,7 +69,7 @@
 
   let currentPage = $state(1);
 
-  let pageSize = $derived(initialPageSize);
+  let pageSize = $derived(pageSizes[0]);
 
   const visibleColumns = $derived(columns.filter((column) => !column.hidden));
 
@@ -415,18 +416,43 @@
     <div class="text-xs page-size-container">
       <Select
         id="page-size-select"
-        items={[
-          { value: "10", label: "10" },
-          { value: "50", label: "50" },
-          { value: "100", label: "100" },
-          { value: "200", label: "200" },
-        ]}
+        items={pageSizes.map(option => ({
+          value: option.toString(),
+          label: option.toString(),
+        }))}
+        value={pageSize.toString()}
         onchange={(value) => {
           pageSize = Number.parseInt(value);
         }}
         label={{ text: "Page Size", horizontal: true }}
       />
     </div>
+
+    <nav aria-label="Pagination" class="flex items-center gap-1">
+      <Button
+        disabled={currentPage === 1}
+        ariaLabel="Previous Page"
+        handleClick={() => setPage(currentPage - 1)}
+        variant="ghost"
+        size="xs"
+      >
+        Previous
+      </Button>
+
+      <span class="px-2 text-xs text-neutral-600" aria-current="page">
+        Page {currentPage} of {totalPages}
+      </span>
+
+      <Button
+        disabled={currentPage === totalPages}
+        ariaLabel="Next Page"
+        variant="ghost"
+        size="xs"
+        handleClick={() => setPage(currentPage + 1)}
+      >
+        Next
+      </Button>
+    </nav>
   </div>
 {/if}
 
