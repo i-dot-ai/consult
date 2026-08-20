@@ -1,72 +1,7 @@
-import json
-import os
-
 import numpy as np
 import pandas as pd
-import utils_gateway
 from sklearn import metrics, utils
 from sklearn.preprocessing import MultiLabelBinarizer
-from themefinder.llm import OpenAILLM
-
-from prompts import generation_eval_prompt
-
-# Minimum score (0-5) to consider a topic well-grounded or captured
-GROUNDEDNESS_THRESHOLD = 3
-
-
-def calculate_generation_metrics(
-    generated_topics: pd.DataFrame,
-    topic_framework: dict,
-    llm=None,
-) -> dict[str, float | int]:
-    """Calculate precision and recall metrics for generated themes against a framework.
-
-    Args:
-        generated_topics (pd.DataFrame): DataFrame containing generated themes as columns
-        topic_framework (dict): Dictionary containing reference framework themes
-        llm: Optional LLM instance. If not provided, creates one from env vars.
-
-    Returns:
-        dict[str, float | int]: Dictionary with keys:
-            - Precision N topics: Number of generated topics
-            - Precision N not well grounded: Count of topics below threshold
-            - Precision Average Groundedness: Mean groundedness score
-            - Recall N not Captured: Count of framework topics not captured
-            - Recall Average topic Representation: Mean representation score
-    """
-    if llm is None:
-        base_url, api_key = utils_gateway.gateway_credentials()
-        llm = OpenAILLM(
-            model=os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT"),
-            request_kwargs={"temperature": 0},
-            base_url=base_url,
-            api_key=api_key,
-        )
-    precision_response = llm.invoke(
-        generation_eval_prompt(
-            topic_list_1=generated_topics,
-            topic_list_2=topic_framework,
-        )
-    )
-    precision_scores = list(json.loads(precision_response.parsed).values())
-    recall_response = llm.invoke(
-        generation_eval_prompt(
-            topic_list_1=topic_framework,
-            topic_list_2=generated_topics,
-        )
-    )
-    recall_scores = list(json.loads(recall_response.parsed).values())
-    return {
-        "Precision N topics": len(generated_topics),
-        "Precision N not well grounded": sum(
-            score < GROUNDEDNESS_THRESHOLD for score in precision_scores
-        ),
-        "Precision Average Groundedness": np.mean(precision_scores).round(2),
-        "Recall N not Captured": sum(
-            score < GROUNDEDNESS_THRESHOLD for score in recall_scores
-        ),
-        "Recall Average topic Representation": np.mean(recall_scores).round(2),
-    }
 
 
 def calculate_mapping_metrics(
