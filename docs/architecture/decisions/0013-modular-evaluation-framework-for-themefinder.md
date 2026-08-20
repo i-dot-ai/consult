@@ -38,6 +38,12 @@ scripts onto it in place, incrementally:
   `local_json_adapter.py`).
 - pydantic-evals becomes the default engine behind `EvalRunnerPort`, selected via one env var
   (`THEMEFINDER_EVAL_ENGINE`) — the explicit seam a second engine plugs into later.
+- `EvaluatorPort` gains a second adapter this pass, `PydanticEvalsLLMJudgeAdapter` (wrapping pydantic-evals'
+  native `LLMJudge`), built and unit-tested but not yet wired into any stage — the landing spot for the
+  team's expected future migration of `evaluators.py`'s hand-rolled judges onto pydantic-evals' own judge
+  primitive, per ADR-0011. `RunReport` also gains an optional `engine_report` field so `PydanticEvalsRunner`'s
+  native `EvaluationReport` can reach `LangfuseArtefactStore` for a richer summary, without widening any
+  port's real contract or requiring other adapters to know about it.
 - Langfuse-specific code is confined to the Langfuse adapters and to `evals/config.py::resolve_backends()`,
   the single function that constructs and owns the Langfuse context. The four stage scripts contain zero
   Langfuse-specific code — no import, no type reference, no branding in a parameter name. This required one
