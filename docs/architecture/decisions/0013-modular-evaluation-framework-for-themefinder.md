@@ -14,10 +14,12 @@ Detailed design: [Modular Evaluation Framework for Themefinder](../design/modula
 loading, Langfuse tracing, a multi-model benchmark runner, and synthetic data generation. But the execution
 engine and the artefact store are hard-wired together. Each of the four stage eval scripts
 (`eval_generation.py`, `eval_mapping.py`, `eval_condensation.py`, `eval_refinement.py`) hand-rolls its own
-Langfuse-path/local-fallback branch, duplicating the majority of its logic across both paths, and the two
-paths don't even share the same scoring logic — the Langfuse path uses the full LLM-judge suite, the local
-fallback uses cheaper stats. As a direct consequence, `langfuse` is a core, non-optional dependency of the
-package purely to support this duplication.
+Langfuse-path/local-fallback branch, duplicating the majority of its logic across both paths. Mapping is the
+one stage where the two paths don't even share scoring logic — its Langfuse path uses `evaluators.py`'s
+LLM-judge-free F1 evaluator, its local fallback uses a separate sklearn-based implementation in `metrics.py`;
+generation, condensation, and refinement are already consistent, each calling the same `evaluators.py`
+functions in both paths. As a direct consequence, `langfuse` is a core, non-optional dependency of the
+package purely to support the duplication.
 
 We want a framework that starts with pydantic-evals as the execution engine (owning case iteration,
 concurrency, retries, reporting) and treats Langfuse purely as dataset and artefact storage rather than as
@@ -63,11 +65,11 @@ scripts onto it in place, incrementally:
 
 - `langfuse` moves from a core dependency to an optional `eval` extra, alongside `scikit-learn` and
   `sentence-transformers`.
-- Local (no-Langfuse) runs now use the same LLM-judge evaluator suite as Langfuse runs, rather than the
-  cheaper local-fallback stats — a disclosed behaviour change that removes an existing inconsistency between
-  the two paths. `evals/metrics.py`, which powered the old fallback, is deleted outright in this pass (its
-  only two importers are the `_run_local_fallback` code being removed from `eval_generation.py` and
-  `eval_mapping.py`).
+- Mapping's local runs now use `evaluators.py::mapping_f1_evaluator` instead of the separate
+  `metrics.py::calculate_mapping_metrics` implementation — a disclosed behaviour change that removes mapping's
+  Langfuse-vs-local inconsistency, the only one remaining (generation, condensation, and refinement were
+  already consistent). `evals/metrics.py`, which powered the old mapping fallback, is deleted outright in
+  this pass once `eval_mapping.py`'s import of it is removed.
 - The abstraction is proven rather than assumed: a swappability test runs the same cases through both
   `PydanticEvalsRunner` and a pydantic-evals-free inline runner and asserts identical output.
 - More files and more indirection than the current flat layout, but each port is independently testable

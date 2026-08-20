@@ -14,9 +14,11 @@ Langfuse tracing, a multi-model benchmark runner, synthetic data generation. But
 artefact store are hard-wired together. Each of the four stage eval scripts —
 `eval_generation.py`, `eval_mapping.py`, `eval_condensation.py`, `eval_refinement.py` — hand-rolls its own
 `_run_with_langfuse(...)` / `_run_local_fallback(...)` branch, duplicating most of its logic across both
-paths. Worse, the two paths don't even share scoring logic: the Langfuse path uses the full `evaluators.py`
-LLM-judge suite, the local fallback uses cheaper stats from `metrics.py`. As a direct result, `langfuse` is a
-core, non-optional dependency of the package purely to support this duplication.
+paths. Mapping is the one stage where the two paths don't even share scoring logic: its Langfuse path calls
+`evaluators.py::mapping_f1_evaluator`, its local fallback calls a separate sklearn-based implementation,
+`metrics.py::calculate_mapping_metrics`. Generation, condensation, and refinement are already consistent —
+each already calls the same `evaluators.py` LLM-judge functions in both paths. As a direct result, `langfuse`
+is a core, non-optional dependency of the package purely to support the duplication.
 
 ## Goals
 
@@ -296,6 +298,13 @@ async requirement.
 `evals/evaluators/`'s factories already produce into `list[Score]`. This replaces the normalization block
 that today is copy-pasted into every stage file (e.g. `eval_condensation.py:135-150`).
 
+Its wrapped callables are a mix of sync and async: 5 of the 7 evaluator factories (`groundedness`,
+`coverage`, `title_specificity`, `condensation_quality`, `refinement_quality`) return `async def` callables
+(retried internally via a shared `_invoke_with_retry` helper), while `mapping_f1_evaluator` and the
+redundancy callable stay sync. `CallableEvaluatorAdapter.evaluate()` handles both —
+`result = await fn(...) if inspect.iscoroutinefunction(fn) else fn(...)` — rather than assuming every
+wrapped callable is one or the other.
+
 ### Runner adapter
 
 **`PydanticEvalsRunner`** wraps `pydantic_evals.Dataset.evaluate`. Internally it builds a
@@ -388,12 +397,15 @@ build_evaluators` for mapping ignores it (`mapping_f1_evaluator` is a determinis
 judge) — consistent with `benchmark.py`'s existing `evals_with_judge` set, which already never passes
 `judge_llm` to mapping.
 
-**Deliberate, disclosed behaviour change:** local (no-Langfuse) runs now get the same LLM-judge suite as
-Langfuse runs, instead of the cheaper `metrics.py` stats — removing the inconsistency that existed between
-the two paths today. `evals/metrics.py` is deleted outright as part of this pass: its only two importers,
-`eval_generation.py::calculate_generation_metrics` and `eval_mapping.py::calculate_mapping_metrics`, are both
-exclusively inside the `_run_local_fallback` code removed from those files (`eval_condensation.py`/
-`eval_refinement.py` never imported it).
+**Scoring-consistency status per stage:** generation, condensation, and refinement are already consistent —
+each already calls the same `evaluators.py` LLM-judge suite in both its local and Langfuse paths, so this
+plan doesn't change their local-run scoring. **Mapping is the one stage this plan changes local-run
+behaviour for**: its local fallback currently calls `metrics.py::calculate_mapping_metrics`, while `run_stage`
+calls `StageConfig.build_evaluators` — which wraps `evaluators.py::mapping_f1_evaluator` — regardless of
+dataset source. Mapping's local runs switch onto `mapping_f1_evaluator` as a direct structural consequence of
+adopting `run_stage`, not a special extra step. `evals/metrics.py` is deleted outright as part of this pass:
+`eval_mapping.py::calculate_mapping_metrics` is its only remaining importer (`eval_generation.py` no longer
+imports it, `eval_condensation.py`/`eval_refinement.py` never did).
 
 ## Compatibility contract with benchmark.py
 
@@ -560,9 +572,11 @@ Each phase is independently revertible; nothing is broken in between phases.
    `benchmark.py` kwarg rename lands alongside the first migration. For each stage: drop its
    `dotenv.load_dotenv()` call and swap its inline `os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT")` for
    `get_settings().auto_eval_deployment`; run before and after against `gambling_XS`, with and without
-   `LANGFUSE_*` env vars set, and diff the returned score dict. Once `eval_generation.py` and
-   `eval_mapping.py` are both migrated — their only two importers of `evals/metrics.py` gone — delete
-   `evals/metrics.py` outright.
+   `LANGFUSE_*` env vars set, and diff the returned score dict (expected to match for every stage except
+   mapping, whose local-path score dict changes shape from `calculate_mapping_metrics`'s keys to
+   `mapping_f1_evaluator`'s — the one disclosed behaviour change, see above). Once `eval_mapping.py` is
+   migrated — its `from metrics import calculate_mapping_metrics` line gone, the only remaining
+   `evals/metrics.py` import — delete `evals/metrics.py` outright.
 6. **Cleanup note only** — confirm `utils/langfuse_utils.py` is still needed only by `benchmark.py`,
    `generate_synthetic.py`, and the two Langfuse adapters; note (without implementing) how `benchmark.py`
    could later call `resolve_backends`/`run_stage` directly, and how `evals/synthetic/` could target
