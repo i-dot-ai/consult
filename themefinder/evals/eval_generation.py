@@ -6,11 +6,9 @@ against a ground truth theme framework.
 
 import argparse
 import asyncio
-import contextvars
 import logging
 import os
 from datetime import datetime
-from functools import partial
 
 import dotenv
 import langfuse_utils
@@ -163,35 +161,16 @@ async def _run_with_langfuse(ctx, config: DatasetConfig, llm, judge_llm=None) ->
             if trace:
                 trace.update(output=output)
 
-            # Run LLM-based evaluators concurrently (copy context per task for logging)
-            loop = asyncio.get_event_loop()
-            llm_evaluators = [
-                groundedness_evaluator,
-                coverage_evaluator,
-                specificity_evaluator,
-            ]
-            llm_tasks = [
-                loop.run_in_executor(
-                    None,
-                    partial(
-                        contextvars.copy_context().run,
-                        evaluator,
-                        output=output,
-                        expected_output=item.expected_output,
-                    ),
-                )
-                for evaluator in llm_evaluators
-            ]
-            try:
-                llm_results = await asyncio.wait_for(
-                    asyncio.gather(*llm_tasks, return_exceptions=True),
-                    timeout=300,
-                )
-            except asyncio.TimeoutError:
-                logger.error("LLM evaluators timed out after 300s")
-                llm_results = [TimeoutError("LLM evaluators timed out")] * len(
-                    llm_evaluators
-                )
+            llm_results = await asyncio.gather(
+                groundedness_evaluator(
+                    output=output, expected_output=item.expected_output
+                ),
+                coverage_evaluator(output=output, expected_output=item.expected_output),
+                specificity_evaluator(
+                    output=output, expected_output=item.expected_output
+                ),
+                return_exceptions=True,
+            )
 
             # Run redundancy evaluator synchronously (embedding-based, no LLM call)
             redundancy_result = redundancy_evaluator(
@@ -247,9 +226,8 @@ async def _run_local_fallback(config: DatasetConfig, llm, judge_llm=None) -> dic
 
     Calls the same evaluators as `_run_with_langfuse` (groundedness, coverage,
     specificity, redundancy) instead of the separate `metrics.py` calculation,
-    so local and Langfuse runs score generation identically. Sequential, no
-    concurrency/timeout wrapper — unlike the Langfuse branch, there's no need
-    to protect a long dataset run here, and each evaluator already catches its
+    so local and Langfuse runs score generation identically. LLM-based
+    evaluators run concurrently via asyncio.gather(); each already catches its
     own errors internally.
 
     Args:
@@ -296,12 +274,15 @@ async def _run_local_fallback(config: DatasetConfig, llm, judge_llm=None) -> dic
 
         output = _build_output(refined_df)
 
-        eval_results = [
+        llm_results = await asyncio.gather(
             groundedness_evaluator(output=output, expected_output=expected_output),
             coverage_evaluator(output=output, expected_output=expected_output),
             specificity_evaluator(output=output, expected_output=expected_output),
-            redundancy_evaluator(output=output, expected_output=expected_output),
-        ]
+        )
+        redundancy_result = redundancy_evaluator(
+            output=output, expected_output=expected_output
+        )
+        eval_results = [*llm_results, redundancy_result]
 
         for eval_result in eval_results:
             if isinstance(eval_result, dict):
