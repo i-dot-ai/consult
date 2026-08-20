@@ -27,6 +27,7 @@
   import ArrowForward from "../svg/material/ArrowForward.svelte";
   import SwapVert from "../svg/material/SwapVert.svelte";
   import LoadingIndicator from "../LoadingIndicator/LoadingIndicator.svelte";
+  import TextInput from "../inputs/TextInput/TextInput.svelte";
 
   type Props = {
     rows?: T[];
@@ -35,6 +36,8 @@
     loading?: boolean;
     sortable?: boolean;
     initialSort?: SortState<T>;
+    searchable?: boolean;
+    searchPlaceholder?: string;
     onSortChange?: (sort: SortState<T> | null) => void;
     onRowClick?: (row: T) => void;
   };
@@ -46,6 +49,8 @@
     loading = false,
     sortable = true,
     initialSort,
+    searchable = true,
+    searchPlaceholder = "Search...",
     onSortChange,
     onRowClick,
   }: Props = $props();
@@ -53,6 +58,8 @@
   let sort = $derived<SortState<T> | null>(initialSort ?? null);
 
   let announcement = $state("");
+
+  let searchQuery = $state("");
 
   const visibleColumns = $derived(columns.filter((column) => !column.hidden));
 
@@ -74,6 +81,19 @@
       const result = compareValues(aValue, bValue);
 
       return sort?.direction === "asc" ? result : -result;
+    });
+  });
+
+  const filteredRows = $derived.by(() => {
+    const searchableColumns = visibleColumns.filter(column => {
+      return column.filterValue !== undefined || column.hidden !== true;
+    })
+
+    return sortedRows.filter(row => {
+      return searchableColumns.some(column => {
+        const value = column.filterValue?.(row) ?? row[column.key];
+        return String(value ?? "").toLocaleLowerCase().includes(searchQuery.trim().toLocaleLowerCase());
+      })
     });
   });
 
@@ -175,6 +195,25 @@
   <div class="sr-only" aria-live="polite" aria-atomic="true">
     {announcement}
   </div>
+
+  {#if searchable}
+    <div class={clsx([
+      "w-1/3",
+      "mt-2",
+      "mb-4",
+      "ml-auto",
+      "text-sm",
+    ])}>
+      <TextInput
+        label={"Search"}
+        hideLabel={true}
+        variant="search"
+        value={searchQuery}
+        setValue={(newValue) => searchQuery = newValue}
+        placeholder={searchPlaceholder}
+      />
+    </div>
+  {/if}
 
   <div
     class={clsx([
@@ -294,10 +333,10 @@
       <tbody class="divide-y divide-neutral-200">
         {#if loading}
           {@render messageRow(loadingMessage)}
-        {:else if sortedRows.length === 0}
+        {:else if filteredRows.length === 0}
           {@render messageRow(noDataMessage)}
         {:else}
-          {#each sortedRows as row, i (i)}
+          {#each filteredRows as row, i (i)}
             <tr
               class={clsx([
                 "transition-colors",
