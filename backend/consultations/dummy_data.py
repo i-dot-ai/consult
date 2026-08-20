@@ -37,13 +37,13 @@ DUMMY_CONSULTATIONS = [
     {
         "CONSULTATION_NAME": "Dummy Consultation - Starting finalising themes",
         "CONSULTATION_CODE": "dummy-start-finalising-themes",
-        "CONSULTATION_STAGE": Consultation.Stage.THEME_SIGN_OFF,
+        "CONSULTATION_STAGE": Consultation.Stage.FINALISING_THEMES,
         "QUESTION_THEME_STATUS": Question.ThemeStatus.DRAFT,
     },
     {
         "CONSULTATION_NAME": "Dummy Consultation - Finished finalising themes",
         "CONSULTATION_CODE": "dummy-finished-finalising-themes",
-        "CONSULTATION_STAGE": Consultation.Stage.THEME_SIGN_OFF,
+        "CONSULTATION_STAGE": Consultation.Stage.ASSIGNING_THEMES,
         "QUESTION_THEME_STATUS": Question.ThemeStatus.CONFIRMED,
     },
     {
@@ -242,9 +242,9 @@ def create_dummy_consultation(
     Create consultation with questions, responses and themes from JSON file.
     Creates relevant objects depending on stage and theme status:
     - SETUP: Consultation, Questions, Respondents, Responses (ready for finding themes)
-    - THEME_SIGN_OFF (DRAFT): + CandidateThemes + CandidateThemeResponses (finalising)
-    - THEME_SIGN_OFF (CONFIRMED): + CandidateThemes + SelectedThemes (ready for assignment)
-    - ANALYSIS: + SelectedThemes + ResponseAnnotations
+    - FINALISING_THEMES (DRAFT): + CandidateThemes + CandidateThemeResponses (finalising)
+    - ASSIGNING_THEMES (CONFIRMED): + CandidateThemes + SelectedThemes (ready for assignment)
+    - ANALYSIS: + CandidateThemes + SelectedThemes + ResponseAnnotations
     """
     if HostingEnvironment.is_production():
         raise RuntimeError("Dummy data generation should not be run in production")
@@ -266,11 +266,13 @@ def create_dummy_consultation(
         questions_data = json.load(file)
 
     has_candidate_themes = consultation_stage in [
-        Consultation.Stage.THEME_SIGN_OFF,
+        Consultation.Stage.FINALISING_THEMES,
+        Consultation.Stage.ASSIGNING_THEMES,
         Consultation.Stage.ANALYSIS,
     ]
     has_candidate_theme_responses = consultation_stage in [
-        Consultation.Stage.THEME_SIGN_OFF,
+        Consultation.Stage.FINALISING_THEMES,
+        Consultation.Stage.ASSIGNING_THEMES,
         Consultation.Stage.ANALYSIS,
     ]
     has_default_selected_themes = consultation_stage == Consultation.Stage.ANALYSIS
