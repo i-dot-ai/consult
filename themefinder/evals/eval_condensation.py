@@ -275,4 +275,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     asyncio.run(evaluate_condensation(dataset=args.dataset))
-    asyncio.run(evaluate_condensation(dataset=args.dataset))
