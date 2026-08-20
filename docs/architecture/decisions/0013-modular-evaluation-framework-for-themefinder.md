@@ -6,6 +6,8 @@ Date: 2026-08-19
 
 Accepted
 
+Detailed design: [Modular Evaluation Framework for Themefinder](../design/modular-evaluation-framework.md).
+
 ## Context
 
 `themefinder/evals/` already has a working LLM-quality evaluation framework: LLM-judge evaluators, dataset
@@ -49,6 +51,10 @@ scripts onto it in place, incrementally:
   ad hoc `os.getenv()` calls scattered across `benchmark.py`, `langfuse_utils.py`, and `utils_gateway.py`,
   with no config-file infrastructure anywhere in the package — adding a file-based config format for one
   switch would be inconsistent with the codebase and adds parsing overhead for no benefit at this scale.
+- Every way an eval gets run — direct CLI (`python eval_generation.py`), `benchmark.py`, and the
+  `themefinder-eval.yml` CI workflow — is required to converge on the same `evaluate_X(...)` function per
+  stage, which is the only thing allowed to call `resolve_backends`/`run_stage`. No caller gets its own copy
+  of the Langfuse-vs-local branching logic ever again.
 
 ## Consequences
 
