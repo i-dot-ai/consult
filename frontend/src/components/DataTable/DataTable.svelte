@@ -110,10 +110,13 @@
   });
 
   const totalRows = $derived(filteredRows.length);
-  const totalPages = $derived(paginated ? Math.max(1, Math.ceil(totalRows / pageSize)) : 1);
-  const paginatedRows = $derived(paginated
-    ? filteredRows.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-    : filteredRows
+  const totalPages = $derived(
+    paginated ? Math.max(1, Math.ceil(totalRows / pageSize)) : 1,
+  );
+  const paginatedRows = $derived(
+    paginated
+      ? filteredRows.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+      : filteredRows,
   );
 
   function setPage(page: number) {
@@ -390,21 +393,23 @@
 </div>
 
 {#if paginated && !loading}
-  <div class={clsx([
-    "mt-4",
-    "flex",
-    "flex-wrap",
-    "items-center",
-    "justify-between",
-    "gap-4",
-  ])}>
-    <p class={clsx([ "text-sm", "text-neutral-600" ])}>
+  <div
+    class={clsx([
+      "mt-4",
+      "flex",
+      "flex-wrap",
+      "items-center",
+      "justify-between",
+      "gap-4",
+    ])}
+  >
+    <p class={clsx(["text-sm", "text-neutral-600"])}>
       Showing
       <span class="font-medium text-neutral-900">
         {totalRows === 0 ? 0 : (currentPage - 1) * pageSize + 1}
       </span>
       -
-      <span class={clsx([ "font-medium", "text-gray-900" ])}>
+      <span class={clsx(["font-medium", "text-gray-900"])}>
         {Math.min(currentPage * pageSize, totalRows)}
       </span>
       of
@@ -416,7 +421,7 @@
     <div class="text-xs page-size-container">
       <Select
         id="page-size-select"
-        items={pageSizes.map(option => ({
+        items={pageSizes.map((option) => ({
           value: option.toString(),
           label: option.toString(),
         }))}
