@@ -89,6 +89,58 @@ Four ports, each an explicit `abc.ABC`, each with a default adapter:
 | `EvalRunnerPort` | Orchestrate task execution + evaluation | `PydanticEvalsRunner`, wrapping `pydantic_evals.Dataset.evaluate` |
 | `ArtefactStorePort` | Persist run/case results and scores | `LangfuseArtefactStore` (default), `LocalJSONArtefactStore` (no-Langfuse) |
 
+```mermaid
+flowchart TB
+    ES["evaluate_X(dataset, llm, judge_llm, context)"] --> RB["resolve_backends()"]
+    RB --> EB(["EvalBackends"])
+    ES --> RS["run_stage()"]
+    RS -.uses.-> EB
+
+    RS --> DS
+    RS --> RN
+    RN --> EV
+    RS --> AS
+
+    subgraph DS["DatasetPort"]
+        direction LR
+        FDA["FallbackDatasetAdapter<br/>(Langfuse-enabled runs)"] --> LDA["LangfuseDatasetAdapter"]
+        FDA --> LJDA["LocalJSONDatasetAdapter"]
+    end
+
+    subgraph EV["EvaluatorPort"]
+        direction LR
+        CEA["CallableEvaluatorAdapter<br/>wraps evals/evaluators/"]
+        PEA["PydanticEvalsLLMJudgeAdapter<br/>wraps LLMJudge — built, not wired yet"]
+    end
+
+    subgraph RN["EvalRunnerPort"]
+        direction LR
+        PER["PydanticEvalsRunner<br/>(default, THEMEFINDER_EVAL_ENGINE)"]
+        ISR["InlineSequentialRunner<br/>(test-only)"]
+    end
+
+    subgraph AS["ArtefactStorePort"]
+        direction LR
+        LAS["LangfuseArtefactStore"]
+        LJAS["LocalJSONArtefactStore"]
+    end
+
+    classDef langfuse fill:#f8b4b4,stroke:#902020,color:#1a1a1a
+    classDef local fill:#b4d4f8,stroke:#204090,color:#1a1a1a
+    classDef pyd fill:#ddc4f8,stroke:#502090,color:#1a1a1a
+    classDef port fill:#eee,stroke:#666,color:#1a1a1a,font-weight:bold
+    class LDA,LAS,FDA langfuse
+    class LJDA,LJAS,ISR local
+    class PER,PEA pyd
+    class CEA local
+    class DS,EV,RN,AS port
+```
+
+Colour key: pink = Langfuse-specific, blue = local/generic, purple = pydantic-evals-specific. Every port has
+at least one adapter of each flavour except `EvalRunnerPort`, whose only *production* adapter
+(`PydanticEvalsRunner`) is pydantic-evals-specific by design — `InlineSequentialRunner` exists purely to
+prove the port is swappable, not as a real alternative engine.
+
 ```
 eval_generation.py ─┐   evaluate_generation(dataset, llm, context, judge_llm):
 eval_mapping.py     ─┤     backends = resolve_backends(context, stage=STAGE.stage, dataset=dataset)
@@ -659,43 +711,25 @@ changes to `test_benchmark.py` or `test_utils_gateway.py` themselves — only `c
 
 ## Rollout sequencing
 
-Each phase is independently revertible; nothing is broken in between phases.
+This ships as fourteen separate PRs across four waves — full file-by-file breakdown, dependencies, and
+per-PR verification steps live in the "PR breakdown" section of the working plan, not duplicated here. The
+shape:
 
-1. **Groundwork** — extras group in `pyproject.toml`, workflow YAML updates, `eval_types.py` +
-   empty `adapters/` package scaffolding with all four `base.py` ABCs (additive, unused). Move
-   `langfuse_utils.py` → `utils/langfuse_utils.py` and `utils.py` → `utils/prompt_utils.py`, updating the two
-   long-term import sites (`benchmark.py`, `generate_synthetic.py`). Add `evals/settings.py` and the autouse
-   `_reset_eval_settings_cache()` fixture *before* anything depends on it, then migrate
-   `utils_gateway.gateway_credentials()`, `utils/langfuse_utils.get_langfuse_context()`,
-   `benchmark.py::query_langfuse_costs()`, and `visualise_benchmark.py`'s two reads onto it — removing their
-   `os.getenv()` calls and (outside the four `eval_*.py` files, handled in step 5) their `dotenv.load_dotenv()`
-   calls. Verify the existing `monkeypatch.setenv`-based tests in `test_benchmark.py`/`test_utils_gateway.py`
-   still pass.
-2. **Dataset adapters** — `local_json_adapter.py`, `langfuse_adapter.py`, `fallback_adapter.py`, tested
-   against real `evals/data/gambling_XS` fixtures.
-3. **Evaluator split + adapters** — split flat `evaluators.py` into `evals/evaluators/`, function bodies moved
-   verbatim; add `llm_judge_adapter.py` importing from the new package. Also add
-   `pydantic_evals_llm_judge_adapter.py` (`PydanticEvalsLLMJudgeAdapter`), unit-tested against a stubbed
-   `LLMJudge` — built and proven, not wired into any `StageConfig`.
-4. **Runner + artefact adapters + shared runner** — `pydantic_evals_adapter.py` (populates `RunReport.
-   engine_report`), both artefact store adapters (`langfuse_adapter.py`'s `finish_run` unpacks
-   `engine_report` when present), `config.py`, `stage_runner.py`, and the test fakes. Nothing
-   production-facing changes yet; the swappability test runs fully offline at this point.
-5. **Migrate stage modules one at a time** — `eval_generation.py` first (most complex: three-stage pipeline,
-   four evaluators), then `eval_mapping.py`, `eval_condensation.py`, `eval_refinement.py`. The one-line
-   `benchmark.py` kwarg rename lands alongside the first migration. For each stage: drop its
-   `dotenv.load_dotenv()` call and swap its inline `os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT")` for
-   `get_settings().auto_eval_deployment`; run before and after against `gambling_XS`, with and without
-   `LANGFUSE_*` env vars set, and diff the returned score dict (expected to match for every stage except
-   mapping, whose local-path score dict changes shape from `calculate_mapping_metrics`'s keys to
-   `mapping_f1_evaluator`'s — the one disclosed behaviour change, see above). Once `eval_mapping.py` is
-   migrated — its `from metrics import calculate_mapping_metrics` line gone, the only remaining
-   `evals/metrics.py` import — delete `evals/metrics.py` outright.
-6. **Cleanup note only** — confirm `utils/langfuse_utils.py` is still needed only by `benchmark.py`,
-   `generate_synthetic.py`, and the two Langfuse adapters; note (without implementing) how `benchmark.py`
-   could later call `resolve_backends`/`run_stage` directly, and how `evals/synthetic/` could target
-   `DatasetPort`. The `os.getenv()` centralisation and the `evals/metrics.py` deletion are both done in steps
-   1 and 5, not deferred.
+- **Wave 0 — Groundwork** (6 PRs, strictly sequential): extras group, `eval_types.py`, `settings.py` +
+  its test fixture, the `utils/` directory move, wiring `settings.py` into existing helpers, the
+  `evaluators.py` split. All additive or mechanical — nothing production-facing changes yet.
+- **Wave 1 — Ports** (4 PRs, parallelisable): one PR per port — `DatasetPort`, `EvaluatorPort` (both
+  evaluator adapters together), `EvalRunnerPort`, `ArtefactStorePort` — each self-contained with its own
+  offline tests. None of them are wired into production code yet, so a team can split these across people.
+- **Wave 2 — Orchestration** (1 PR): `resolve_backends` + `run_stage` + the swappability proof. The
+  architecture's proof point — every port comes together here for the first time.
+- **Wave 3 — Stage migrations** (3 PRs, strictly sequential): `eval_generation.py` (+ the `benchmark.py`
+  kwarg rename, landing together since they're two halves of one contract change) first — hardest case,
+  done first on purpose; then `eval_mapping.py` (+ `evals/metrics.py` deletion, the one PR with a real
+  disclosed behaviour change); then `eval_condensation.py`/`eval_refinement.py`.
+
+Every PR in every wave leaves `pytest tests/` and `pytest evals/tests/` green — none of them is a partial or
+broken intermediate state.
 
 ## Testing strategy
 
