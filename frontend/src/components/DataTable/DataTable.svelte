@@ -28,6 +28,7 @@
   import SwapVert from "../svg/material/SwapVert.svelte";
   import LoadingIndicator from "../LoadingIndicator/LoadingIndicator.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
+  import Select from "../inputs/Select/Select.svelte";
 
   type Props = {
     rows?: T[];
@@ -38,6 +39,8 @@
     initialSort?: SortState<T>;
     searchable?: boolean;
     searchPlaceholder?: string;
+    paginated?: boolean;
+    initialPageSize?: number;
     onSortChange?: (sort: SortState<T> | null) => void;
     onRowClick?: (row: T) => void;
   };
@@ -51,6 +54,8 @@
     initialSort,
     searchable = true,
     searchPlaceholder = "Search...",
+    paginated = true,
+    initialPageSize = 1,
     onSortChange,
     onRowClick,
   }: Props = $props();
@@ -60,6 +65,10 @@
   let announcement = $state("");
 
   let searchQuery = $state("");
+
+  let currentPage = $state(1);
+
+  let pageSize = $derived(initialPageSize);
 
   const visibleColumns = $derived(columns.filter((column) => !column.hidden));
 
@@ -98,6 +107,18 @@
       });
     });
   });
+
+  const totalRows = $derived(filteredRows.length);
+  const totalPages = $derived(paginated ? Math.max(1, Math.ceil(totalRows / pageSize)) : 1);
+  const paginatedRows = $derived(paginated
+    ? filteredRows.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    : filteredRows
+  );
+
+  function setPage(page: number) {
+    currentPage = Math.min(Math.max(page, 1), totalPages);
+    announcement = `Page ${currentPage} of ${totalPages}`;
+  }
 
   function getSortValue(row: T, column: DataTableColumn<T>) {
     return column.sortValue ? column.sortValue(row) : row[column.key];
@@ -205,7 +226,10 @@
         hideLabel={true}
         variant="search"
         value={searchQuery}
-        setValue={(newValue) => (searchQuery = newValue)}
+        setValue={(newValue) => {
+          searchQuery = newValue;
+          currentPage = 1;
+        }}
         placeholder={searchPlaceholder}
       />
     </div>
@@ -329,10 +353,10 @@
       <tbody class="divide-y divide-neutral-200">
         {#if loading}
           {@render messageRow(loadingMessage)}
-        {:else if filteredRows.length === 0}
+        {:else if paginatedRows.length === 0}
           {@render messageRow(noDataMessage)}
         {:else}
-          {#each filteredRows as row, i (i)}
+          {#each paginatedRows as row, i (i)}
             <tr
               class={clsx([
                 "transition-colors",
@@ -363,3 +387,53 @@
     </table>
   </div>
 </div>
+
+{#if paginated && !loading}
+  <div class={clsx([
+    "mt-4",
+    "flex",
+    "flex-wrap",
+    "items-center",
+    "justify-between",
+    "gap-4",
+  ])}>
+    <p class={clsx([ "text-sm", "text-neutral-600" ])}>
+      Showing
+      <span class="font-medium text-neutral-900">
+        {totalRows === 0 ? 0 : (currentPage - 1) * pageSize + 1}
+      </span>
+      -
+      <span class={clsx([ "font-medium", "text-gray-900" ])}>
+        {Math.min(currentPage * pageSize, totalRows)}
+      </span>
+      of
+      <span class="font-medium text-neutral-900">
+        {totalRows}
+      </span>
+    </p>
+
+    <div class="text-xs page-size-container">
+      <Select
+        id="page-size-select"
+        items={[
+          { value: "10", label: "10" },
+          { value: "50", label: "50" },
+          { value: "100", label: "100" },
+          { value: "200", label: "200" },
+        ]}
+        onchange={(value) => {
+          pageSize = Number.parseInt(value);
+        }}
+        label={{ text: "Page Size", horizontal: true }}
+      />
+    </div>
+  </div>
+{/if}
+
+<style>
+  @reference "../../styles/global.css";
+
+  .page-size-container :global(label) {
+    @apply text-xs;
+  }
+</style>
