@@ -1,0 +1,29 @@
+stages:
+  download_data:
+    cmd: uv run download_data.py --dataset ${dataset}
+    deps:
+      - download_data.py
+      - ../../datasets.py
+      - ../../langfuse_utils.py
+    params:
+      - dataset
+    outs:
+      - ../../data/${dataset}
+  evaluate:
+    cmd: uv run evaluate.py --dataset ${dataset} --output scores.json
+    deps:
+      - evaluate.py
+      - download_data.py
+      - ../../datasets.py
+      - ../../langfuse_utils.py
+      - ../../utils_gateway.py
+      - ../../evaluators.py
+      - ../../metrics.py
+      - ../../prompts.py
+      - ../../../src/themefinder
+      - ../../data/${dataset}
+    params:
+      - dataset
+    outs:
+      - scores.json:
+          cache: false
