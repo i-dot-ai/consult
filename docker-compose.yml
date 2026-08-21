@@ -75,6 +75,7 @@ services:
       - DJANGO_SETTINGS_MODULE=backend.settings.local
       - DOMAIN_NAME=localhost:3000
       - MINIO_ENDPOINT=http://minio:9100
+      - REDIS_HOST=redis
     depends_on:
       postgres:
         condition: service_healthy
