@@ -11,7 +11,7 @@ from consultations.models import Consultation
 
 class TestPrepareEnvironment:
     @pytest.mark.django_db
-    @pytest.mark.parametrize("environment", ["prod", "preprod"])
+    @pytest.mark.parametrize("environment", ["prod", "preprod", "test"])
     def test_does_not_reset_on_prod_or_preprod(self, settings, environment):
         settings.ENVIRONMENT = environment
 

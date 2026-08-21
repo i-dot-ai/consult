@@ -73,8 +73,7 @@ test-end-to-end: ## Run end-to-end tests with Playwright
 	# Run the tests, then ALWAYS clean up, then re-raise the tests' exit status so CI
 	# still fails on failure. Without this wrapper a failure mid-run (e.g. a service
 	# health-check timeout or a failing test) would skip cleanup and leave
-	# docker-compose.override.yml behind, silently repointing every later
-	# `docker compose` command at the E2E database.
+	# the e2e test database behind or a stale Astro dev.json lock file.
 	@$(MAKE) _run-e2e-tests; status=$$?; $(MAKE) _clean-e2e; exit $$status
 
 .PHONY: _run-e2e-tests
@@ -91,11 +90,7 @@ _run-e2e-tests:
 		user = User.objects.get(email='admin@example.com'); \
 		[c.users.add(user) for c in Consultation.objects.all()]"
 	@echo "Starting services..."
-	@echo "services:" > docker-compose.override.yml
-	@echo "  backend:" >> docker-compose.override.yml
-	@echo "    environment:" >> docker-compose.override.yml
-	@echo "      - DATABASE_URL=$(E2E_DB_URL)" >> docker-compose.override.yml
-	@docker compose down backend 2>/dev/null || true
+	@rm -f frontend/.astro/dev.json
 	@docker compose up -d backend frontend
 	@echo "Waiting for services to be ready..."
 	@timeout 120 sh -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 2; done' || \
@@ -112,6 +107,7 @@ _clean-e2e: ## Internal: always-run cleanup for test-end-to-end (drop test DB, r
 	@echo "Cleaning up..."
 	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "DROP DATABASE IF EXISTS consult_e2e_test;" 2>/dev/null || true
 	@rm -f docker-compose.override.yml
+	@rm -f frontend/.astro/dev.json
 
 
 .PHONY: build-consultation-template

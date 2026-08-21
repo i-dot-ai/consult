@@ -10,8 +10,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         environment = getattr(settings, "ENVIRONMENT", "").lower()
 
-        if environment in ["prod", "preprod"]:
-            self.stdout.write("Running migrate on prod.")
+        if environment in ["prod", "preprod", "test"]:
+            self.stdout.write(f"Running migrate on {environment}.")
             call_command("migrate", verbosity=1)
             return
 
