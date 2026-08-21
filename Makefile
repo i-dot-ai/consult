@@ -91,7 +91,7 @@ _run-e2e-tests:
 		[c.users.add(user) for c in Consultation.objects.all()]"
 	@echo "Starting services..."
 	@rm -f frontend/.astro/dev.json
-	@docker compose up -d backend frontend
+	@DATABASE_URL=$(E2E_DB_URL) docker compose up -d backend frontend
 	@echo "Waiting for services to be ready..."
 	@timeout 120 sh -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 2; done' || \
 		(echo "Frontend failed to start" && docker compose logs frontend && exit 1)
