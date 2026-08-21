@@ -253,11 +253,7 @@ class ResponseViewSet(ModelViewSet):
 
         if len(requested_response_ids) > MAX_BULK_MARK_READ:
             return Response(
-                {
-                    "message": (
-                        f"Too many response IDs provided. Maximum is {MAX_BULK_MARK_READ}."
-                    )
-                },
+                {"message": (f"Too many response IDs provided. Maximum is {MAX_BULK_MARK_READ}.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
