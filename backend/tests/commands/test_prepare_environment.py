@@ -37,7 +37,7 @@ class TestPrepareEnvironment:
         assert Consultation.objects.filter(stage=Consultation.Stage.ANALYSIS).exists()
 
         # Admin user was created
-        assert User.objects.filter(email="email@example.com", is_staff=True).exists()
+        assert User.objects.filter(email="admin@example.com", is_staff=True).exists()
 
     @pytest.mark.django_db
     @mock_aws
