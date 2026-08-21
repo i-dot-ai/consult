@@ -88,10 +88,10 @@ _run-e2e-tests:
 	@docker exec -i $$(docker compose ps -q postgres) psql -U postgres -c "CREATE DATABASE consult_e2e_test;"
 	@echo "Initializing test data..."
 	@docker compose run --rm -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py migrate
-	@docker compose run --rm -e DATABASE_URL=$(E2E_DB_URL) -e ADMIN_USERS=admin@example.com backend venv/bin/python manage.py createadminusers
+	@docker compose run --rm -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py createadminusers
 	@docker compose run --rm -e DATABASE_URL=$(E2E_DB_URL) backend venv/bin/python manage.py shell -c \
 		"from authentication.models import User; from consultations.models import Consultation; \
-		user = User.objects.get(email='admin@example.com'); \
+		user = User.objects.get(email='email@example.com'); \
 		[c.users.add(user) for c in Consultation.objects.all()]"
 	@echo "Starting services..."
 	@rm -f frontend/.astro/dev.json
