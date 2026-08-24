@@ -2,6 +2,20 @@ import sentry_sdk
 
 MANUAL_CAPTURE_TAG = "consult.manual_capture"
 
+# Error capture is independent of these rates: before_send runs regardless, so
+# lowering them doesn't drop errors.
+PROD_PERF_SAMPLE_RATE = 0.1
+NON_PROD_PERF_SAMPLE_RATE = 1.0
+
+
+def default_perf_sample_rate(environment):
+    """Env-aware default for trace/profile sampling. Overridable per environment via
+    the SENTRY_*_SAMPLE_RATE env vars; this is just the fallback when they're unset.
+    """
+    if environment.lower() == "prod":
+        return PROD_PERF_SAMPLE_RATE
+    return NON_PROD_PERF_SAMPLE_RATE
+
 
 def capture_handled_sentry_exception(error=None, **kwargs):
     """Drop-in replacement for sentry_sdk.capture_exception for exceptions the
