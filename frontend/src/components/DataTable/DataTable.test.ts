@@ -72,6 +72,25 @@ describe("DataTable", () => {
     }
   });
 
+  it("should display correct default page size options", async () => {
+    const PAGE_SIZES = [1, 3];
+
+    render(DataTable, {
+      ...TEST_DATA,
+      pageSizes: PAGE_SIZES,
+    } as Record<string, unknown>);
+
+    const lastRow = ROWS[ROWS.length - 1];
+    expect(screen.queryByText(lastRow.name)).not.toBeInTheDocument();
+
+    const pageSizeSelect = screen.getByRole("combobox");
+
+    const user = userEvent.setup();
+    await user.selectOptions(pageSizeSelect, "3");
+
+    expect(screen.getByText(lastRow.name)).toBeInTheDocument();
+  });
+
   it("should display correct custom page size options", async () => {
     const PAGE_SIZES = [1, 5, 15, 30];
 
