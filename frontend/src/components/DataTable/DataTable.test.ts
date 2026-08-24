@@ -142,6 +142,13 @@ describe("DataTable", () => {
     assertVisibleItems(currentPage);
   });
 
+  it("should disable prev button if on first page", async () => {
+    render(DataTable, TEST_DATA as Record<string, unknown>);
+
+    const nextButton = screen.getByLabelText("Next Page");
+    expect(nextButton).toBeDisabled();
+  });
+
   it("should display correct custom page size options", async () => {
     const PAGE_SIZES = [1, 5, 15, 30];
 
