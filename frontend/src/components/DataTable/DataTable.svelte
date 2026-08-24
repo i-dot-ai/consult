@@ -56,7 +56,7 @@
     searchable = true,
     searchPlaceholder = "Search...",
     paginated = true,
-    pageSizes = [1, 10, 50, 100, 250, 500],
+    pageSizes = [10, 50, 100, 250, 500],
     onSortChange,
     onRowClick,
   }: Props = $props();
