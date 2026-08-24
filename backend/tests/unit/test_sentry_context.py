@@ -1,8 +1,13 @@
 from unittest.mock import patch
 
+import pytest
+
 from sentry_context import (
     MANUAL_CAPTURE_TAG,
+    NON_PROD_PERF_SAMPLE_RATE,
+    PROD_PERF_SAMPLE_RATE,
     capture_handled_sentry_exception,
+    default_perf_sample_rate,
     sentry_before_send,
 )
 
@@ -77,3 +82,20 @@ class TestSentryBeforeSend:
         event = _event(mechanism={"type": "django", "handled": False})
 
         assert sentry_before_send(event, {}) is event
+
+
+class TestDefaultPerfSampleRate:
+    def test_prod_samples_a_fraction(self):
+        assert default_perf_sample_rate("prod") == PROD_PERF_SAMPLE_RATE
+
+    @pytest.mark.parametrize("environment", ["dev", "preprod", "local"])
+    def test_non_prod_keeps_everything(self, environment):
+        assert default_perf_sample_rate(environment) == NON_PROD_PERF_SAMPLE_RATE
+
+    @pytest.mark.parametrize("environment", ["PROD", "Prod"])
+    def test_prod_match_is_case_insensitive(self, environment):
+        assert default_perf_sample_rate(environment) == PROD_PERF_SAMPLE_RATE
+
+    def test_prod_default_is_lower_than_non_prod(self):
+        """The whole point of the ticket: prod deliberately samples less."""
+        assert PROD_PERF_SAMPLE_RATE < NON_PROD_PERF_SAMPLE_RATE
