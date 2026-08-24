@@ -20,7 +20,7 @@ export const ROWS = [
     name: "Test Item 3 - C",
     createdAt: "2025-10-10",
   },
-]
+];
 
 export const COLUMNS = [
   {

@@ -1,9 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 
 import DataTable from "./DataTable.svelte";
-import { CAPTION, COLUMNS, INITIAL_SORT, LOADING, onRowClick, ROWS, type RowItem } from "./testData";
+import {
+  CAPTION,
+  COLUMNS,
+  INITIAL_SORT,
+  LOADING,
+  onRowClick,
+  ROWS,
+} from "./testData";
 
 describe("DataTable", () => {
   const TEST_DATA = {
@@ -18,20 +25,14 @@ describe("DataTable", () => {
   it.each(TEST_DATA.columns)("should render column label", (column) => {
     render(DataTable, TEST_DATA as Record<string, unknown>);
 
-    expect(
-      screen.getByText(column.label),
-    ).toBeInTheDocument();
+    expect(screen.getByText(column.label)).toBeInTheDocument();
   });
 
   it.each(TEST_DATA.rows)("should render row data", (row) => {
     render(DataTable, TEST_DATA as Record<string, unknown>);
 
-    expect(
-      screen.getByText(row.name),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(row.createdAt),
-    ).toBeInTheDocument();
+    expect(screen.getByText(row.name)).toBeInTheDocument();
+    expect(screen.getByText(row.createdAt)).toBeInTheDocument();
   });
 
   it("should call callback when a row is clicked", async () => {
@@ -46,12 +47,10 @@ describe("DataTable", () => {
     const user = userEvent.setup();
     await user.click(rowElement);
 
-    expect(
-    onRowClickCallback
-    ).toHaveBeenCalledWith({
-      "createdAt": "2026-08-19",
-      "id": 1,
-      "name": "Test Item 1 - A",
+    expect(onRowClickCallback).toHaveBeenCalledWith({
+      createdAt: "2026-08-19",
+      id: 1,
+      name: "Test Item 1 - A",
     });
   });
 
@@ -60,12 +59,16 @@ describe("DataTable", () => {
 
     render(DataTable, TEST_DATA as Record<string, unknown>);
 
-    const pageSizeSelectOptions = screen.getAllByTestId("page-size-select-option");
+    const pageSizeSelectOptions = screen.getAllByTestId(
+      "page-size-select-option",
+    );
 
     expect(pageSizeSelectOptions).toHaveLength(5);
 
-    for (let i=0; i<PAGE_SIZES.length; i++) {
-      expect(pageSizeSelectOptions[i]).toHaveTextContent(PAGE_SIZES[i].toString());
+    for (let i = 0; i < PAGE_SIZES.length; i++) {
+      expect(pageSizeSelectOptions[i]).toHaveTextContent(
+        PAGE_SIZES[i].toString(),
+      );
     }
   });
 
@@ -77,12 +80,16 @@ describe("DataTable", () => {
       pageSizes: PAGE_SIZES,
     } as Record<string, unknown>);
 
-    const pageSizeSelectOptions = screen.getAllByTestId("page-size-select-option");
+    const pageSizeSelectOptions = screen.getAllByTestId(
+      "page-size-select-option",
+    );
 
     expect(pageSizeSelectOptions).toHaveLength(4);
 
-    for (let i=0; i<PAGE_SIZES.length; i++) {
-      expect(pageSizeSelectOptions[i]).toHaveTextContent(PAGE_SIZES[i].toString());
+    for (let i = 0; i < PAGE_SIZES.length; i++) {
+      expect(pageSizeSelectOptions[i]).toHaveTextContent(
+        PAGE_SIZES[i].toString(),
+      );
     }
   });
 
@@ -91,13 +98,14 @@ describe("DataTable", () => {
 
     const pageSizeSelect = screen.getByRole("combobox");
 
-    expect(
-      pageSizeSelect
-    ).toHaveValue("10");
+    expect(pageSizeSelect).toHaveValue("10");
   });
 
   it("should match snapshot", () => {
-    const { container } = render(DataTable, TEST_DATA as Record<string, unknown>);
+    const { container } = render(
+      DataTable,
+      TEST_DATA as Record<string, unknown>,
+    );
     expect(container).toMatchSnapshot();
   });
 });
