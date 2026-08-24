@@ -120,6 +120,7 @@
         value={item.value}
         selected={value === item.value}
         class="bg-white text-neutral-900"
+        data-testid={`${id}-option`}
       >
         {item.label}
       </option>

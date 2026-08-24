@@ -1,54 +1,11 @@
 import DataTable from "./DataTable.svelte";
+import { CAPTION, COLUMNS, INITIAL_SORT, LOADING, onRowClick, ROWS } from "./testData";
 
-interface RowItem {
-  id: number;
-  name: string;
-  createdAt: string;
-}
-
-const rows = $state([
-  {
-    id: 1,
-    name: "Test Item 1 - A",
-    createdAt: "2026-08-19",
-  },
-  {
-    id: 2,
-    name: "Test Item 2 - B",
-    createdAt: "2026-06-19",
-  },
-  {
-    id: 3,
-    name: "Test Item 3 - C",
-    createdAt: "2025-10-10",
-  },
-]);
-
-const columns = $state([
-  {
-    key: "name",
-    label: "Name",
-    sortable: true,
-  },
-  {
-    key: "createdAt",
-    label: "Date Created",
-    sortable: true,
-
-    sortValue: (item: RowItem) => new Date(item.createdAt).getTime(),
-  },
-]);
-
-const caption = $state("Example Data");
-
-const initialSort = $state({
-  key: "name",
-  direction: "asc",
-});
-
-const loading = $state(false);
-
-const onRowClick = (row: RowItem) => alert("Row clicked: " + row.name);
+const rows = $state(ROWS);
+const columns = $state(COLUMNS);
+const caption = $state(CAPTION);
+const initialSort = $state(INITIAL_SORT);
+const loading = $state(LOADING);
 
 export default {
   name: "DataTable",
