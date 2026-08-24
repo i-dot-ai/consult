@@ -72,7 +72,7 @@ describe("DataTable", () => {
     }
   });
 
-  it("should display correct default page size options", async () => {
+  it("should display paginate items", async () => {
     const PAGE_SIZES = [1, 3];
 
     render(DataTable, {
@@ -91,6 +91,55 @@ describe("DataTable", () => {
 
     expect(screen.getByText(lastRow.name)).toBeInTheDocument();
     expect(screen.getByTestId("visible-items-text")).toHaveTextContent("Showing 1 - 3 of 3");
+  });
+
+  it("should change items displayed when navinagated to other pages", async () => {
+    const PAGE_SIZES = [1];
+
+    render(DataTable, {
+      ...TEST_DATA,
+      pageSizes: PAGE_SIZES,
+    } as Record<string, unknown>);
+
+    let currentPage = 1;
+    const user = userEvent.setup();
+    const nextButton = screen.getByLabelText("Next Page");
+    const prevButton = screen.getByLabelText("Previous Page");
+
+    const assertVisibleItems = (currentPage: number) => {
+      for (let i=0; i<ROWS.length; i++) {
+        if (i === currentPage - 1) {
+          expect(screen.getByText(ROWS[i].name)).toBeInTheDocument();
+        } else {
+          expect(screen.queryByText(ROWS[i].name)).not.toBeInTheDocument();
+        }
+      }
+      expect(screen.getByTestId("visible-items-text")).toHaveTextContent(`Showing ${currentPage} - ${currentPage} of ${ROWS.length}`);
+    }
+
+    const goNext = async () => {
+      await user.click(nextButton);
+      currentPage += 1;
+    }
+
+    const goPrev = async () => {
+      await user.click(prevButton);
+      currentPage -= 1;
+    }
+
+    assertVisibleItems(currentPage);
+
+    await goNext();
+    assertVisibleItems(currentPage);
+
+    await goNext();
+    assertVisibleItems(currentPage);
+
+    await goPrev();
+    assertVisibleItems(currentPage);
+
+    await goPrev();
+    assertVisibleItems(currentPage);
   });
 
   it("should display correct custom page size options", async () => {
