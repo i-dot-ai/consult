@@ -1,5 +1,12 @@
 import DataTable from "./DataTable.svelte";
-import { CAPTION, COLUMNS, INITIAL_SORT, LOADING, onRowClick, ROWS } from "./testData";
+import {
+  CAPTION,
+  COLUMNS,
+  INITIAL_SORT,
+  LOADING,
+  onRowClick,
+  ROWS,
+} from "./testData";
 
 const rows = $state(ROWS);
 const columns = $state(COLUMNS);
