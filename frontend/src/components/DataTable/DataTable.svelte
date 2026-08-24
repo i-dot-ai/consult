@@ -403,7 +403,7 @@
       "gap-4",
     ])}
   >
-    <p class={clsx(["text-sm", "text-neutral-600"])}>
+    <p class={clsx(["text-sm", "text-neutral-600"])} data-testid="visible-items-text">
       Showing
       <span class="font-medium text-neutral-900">
         {totalRows === 0 ? 0 : (currentPage - 1) * pageSize + 1}

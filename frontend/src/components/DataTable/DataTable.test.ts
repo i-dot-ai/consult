@@ -82,6 +82,7 @@ describe("DataTable", () => {
 
     const lastRow = ROWS[ROWS.length - 1];
     expect(screen.queryByText(lastRow.name)).not.toBeInTheDocument();
+    expect(screen.getByTestId("visible-items-text")).toHaveTextContent("Showing 1 - 1 of 3");
 
     const pageSizeSelect = screen.getByRole("combobox");
 
@@ -89,6 +90,7 @@ describe("DataTable", () => {
     await user.selectOptions(pageSizeSelect, "3");
 
     expect(screen.getByText(lastRow.name)).toBeInTheDocument();
+    expect(screen.getByTestId("visible-items-text")).toHaveTextContent("Showing 1 - 3 of 3");
   });
 
   it("should display correct custom page size options", async () => {

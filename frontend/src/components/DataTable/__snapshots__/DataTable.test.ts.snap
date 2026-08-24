@@ -222,6 +222,7 @@ exports[`DataTable > should match snapshot 1`] = `
   >
     <p
       class="text-sm text-neutral-600 svelte-e9ladz"
+      data-testid="visible-items-text"
     >
       Showing 
       <span
