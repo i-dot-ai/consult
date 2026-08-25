@@ -6,6 +6,8 @@ const columns = $state(TEST_DATA.columns);
 const caption = $state(TEST_DATA.caption);
 const initialSort = $state(TEST_DATA.initialSort);
 const loading = $state(TEST_DATA.loading);
+const columnSelect = $state(TEST_DATA.columnSelect);
+const searchable = $state(TEST_DATA.searchable);
 
 export default {
   name: "DataTable",
@@ -17,6 +19,8 @@ export default {
     { name: "initialSort", value: initialSort, type: "json" },
     { name: "loading", value: loading, type: "bool" },
     { name: "onRowClick", value: TEST_DATA.onRowClick, type: "func" },
+    { name: "columnSelect", value: columnSelect, type: "bool" },
+    { name: "searchable", value: searchable, type: "bool" },
   ],
   stories: [
     {

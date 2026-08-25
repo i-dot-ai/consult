@@ -18,6 +18,7 @@
   import type { SearchableSelectOption } from "../../global/types";
 
   export let label: string = "";
+  export let hideLabel: boolean = false;
   export let handleChange: (
     option: SearchableSelectOption<T>,
   ) => void = () => {};
@@ -68,7 +69,7 @@
 </script>
 
 <div class="flex flex-col gap-1">
-  <label use:melt={$meltLabel}>
+  <label use:melt={$meltLabel} class={hideLabel ? "sr-only" : undefined}>
     <span class="text-sm font-medium text-neutral-900">
       {label}
     </span>

@@ -37,6 +37,10 @@ export const COLUMNS = [
   },
 ];
 
+export const COLUMN_SELECT = true;
+
+export const SEARCHABLE = true;
+
 export const extraColumns = [
   ...COLUMNS,
   {
@@ -100,5 +104,7 @@ export const TEST_DATA = {
   caption: CAPTION,
   initialSort: INITIAL_SORT,
   loading: LOADING,
+  columnSelect: COLUMN_SELECT,
+  searchable: SEARCHABLE,
   onRowClick,
 };
