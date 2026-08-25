@@ -10,7 +10,7 @@
   import Search from "../../svg/material/Search.svelte";
 
   export let inputType: HTMLInputTypeAttribute = "text";
-  export let id: string = "";
+  export let id: string = "text-input";
   export let label: string = "";
   export let hideLabel: boolean = false;
   export let value: string = "";

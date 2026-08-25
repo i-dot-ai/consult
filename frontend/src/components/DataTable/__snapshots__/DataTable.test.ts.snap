@@ -21,14 +21,14 @@ exports[`DataTable > should match snapshot 1`] = `
       >
         <label
           class="sr-only"
-          for=""
+          for="search-input"
         >
           Search
         </label>
          
         <input
           class="h-9 w-full p-1 border border-gray-300 rounded-xs focus:outline-2 focus:outline-yellow-300 pl-8 pr-4 svelte-1auzwdn"
-          id=""
+          id="search-input"
           placeholder="Search..."
           type="text"
         />
