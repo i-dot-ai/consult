@@ -84,7 +84,7 @@ exports[`DataTable > should match snapshot 1`] = `
             >
               <button
                 aria-label="Sorted ascending by Name. Click to sort descending."
-                class="inline-flex min-h-8 w-full items-center justify-start gap-2 rounded-md text-left cursor-pointer hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 svelte-e9ladz"
+                class="inline-flex py-2 w-full items-center justify-start gap-2 rounded-md text-left cursor-pointer hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 svelte-e9ladz"
                 type="button"
               >
                 <span>
@@ -127,7 +127,7 @@ exports[`DataTable > should match snapshot 1`] = `
             >
               <button
                 aria-label="Sort by Date Created"
-                class="inline-flex min-h-8 w-full items-center justify-start gap-2 rounded-md text-left cursor-pointer hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 svelte-e9ladz"
+                class="inline-flex py-2 w-full items-center justify-start gap-2 rounded-md text-left cursor-pointer hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 svelte-e9ladz"
                 type="button"
               >
                 <span>
@@ -167,6 +167,7 @@ exports[`DataTable > should match snapshot 1`] = `
           <!---->
           <tr
             class="transition-colors hover:bg-neutral-50 cursor-pointer svelte-e9ladz"
+            data-testid="datatable-row"
           >
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
@@ -182,6 +183,7 @@ exports[`DataTable > should match snapshot 1`] = `
           </tr>
           <tr
             class="transition-colors hover:bg-neutral-50 cursor-pointer svelte-e9ladz"
+            data-testid="datatable-row"
           >
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
@@ -197,6 +199,7 @@ exports[`DataTable > should match snapshot 1`] = `
           </tr>
           <tr
             class="transition-colors hover:bg-neutral-50 cursor-pointer svelte-e9ladz"
+            data-testid="datatable-row"
           >
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"

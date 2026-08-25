@@ -5,6 +5,21 @@ import userEvent from "@testing-library/user-event";
 import DataTable from "./DataTable.svelte";
 import { TEST_DATA } from "./testData";
 
+function isRowsSorted(rows: HTMLElement[], reverse?: boolean) {
+  for (let i=0; i<rows.length - 1; i++) {
+    const contentA = rows[i].textContent;
+    const contentB = rows[i+1].textContent;
+
+    if (contentA > contentB && !reverse) {
+      return false;
+    }
+    if ((contentB > contentA) && reverse) {
+      return false;
+    }
+  }
+  return true;
+}
+
 describe("DataTable", () => {
   it.each(TEST_DATA.columns)("should render column label", (column) => {
     render(DataTable, TEST_DATA as Record<string, unknown>);
@@ -265,6 +280,25 @@ describe("DataTable", () => {
     expect(screen.queryByText(TEST_DATA.rows[1].name)).not.toBeInTheDocument();
     expect(screen.queryByText(TEST_DATA.rows[2].name)).not.toBeInTheDocument();
     expect(screen.getByText("No data available")).toBeInTheDocument();
+  });
+
+  it("should switch between ascending and descending sort when columns are clicked", async () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      initialSort: undefined,
+    } as Record<string, unknown>);
+
+    let rows;
+    const user = userEvent.setup();
+    const sortButton = screen.getByLabelText("Sort by Name");
+
+    await user.click(sortButton);
+    rows = screen.getAllByTestId("datatable-row");
+    expect(isRowsSorted(rows)).toBeTruthy();
+
+    await user.click(sortButton);
+    rows = screen.getAllByTestId("datatable-row");
+    expect(isRowsSorted(rows, true)).toBeTruthy();
   });
 
   it("should match snapshot", () => {

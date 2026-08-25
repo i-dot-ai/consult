@@ -369,6 +369,7 @@
                 Boolean(onRowClick) && "cursor-pointer",
               ])}
               onclick={() => onRowClick?.(row)}
+              data-testid="datatable-row"
             >
               {#each visibleColumns as column (column.key)}
                 <td
