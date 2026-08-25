@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Shared AWS Batch job bootstrap (StructuredLogger + Sentry) for pipeline-mapping and pipeline-sign-off."
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "i-dot-ai-utilities>=0.6.0",
+    "i-dot-ai-utilities[otel]>=0.7.0rc1",
     "structlog>=23.1.0",
     "sentry-sdk>=2.61.1",
 ]
