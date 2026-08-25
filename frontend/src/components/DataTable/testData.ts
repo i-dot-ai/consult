@@ -49,10 +49,10 @@ export const LOADING = false;
 export const onRowClick = (row: RowItem) => alert("Row clicked: " + row.name);
 
 export const TEST_DATA = {
-    rows: ROWS,
-    columns: COLUMNS,
-    caption: CAPTION,
-    initialSort: INITIAL_SORT,
-    loading: LOADING,
-    onRowClick,
-}
+  rows: ROWS,
+  columns: COLUMNS,
+  caption: CAPTION,
+  initialSort: INITIAL_SORT,
+  loading: LOADING,
+  onRowClick,
+};

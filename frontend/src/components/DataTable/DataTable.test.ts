@@ -64,9 +64,11 @@ describe("DataTable", () => {
       pageSizes: PAGE_SIZES,
     } as Record<string, unknown>);
 
-    const lastRow =  TEST_DATA.rows[ TEST_DATA.rows.length - 1];
+    const lastRow = TEST_DATA.rows[TEST_DATA.rows.length - 1];
     expect(screen.queryByText(lastRow.name)).not.toBeInTheDocument();
-    expect(screen.getByTestId("visible-items-text")).toHaveTextContent("Showing 1 - 1 of 3");
+    expect(screen.getByTestId("visible-items-text")).toHaveTextContent(
+      "Showing 1 - 1 of 3",
+    );
 
     const pageSizeSelect = screen.getByRole("combobox");
 
@@ -74,7 +76,9 @@ describe("DataTable", () => {
     await user.selectOptions(pageSizeSelect, "3");
 
     expect(screen.getByText(lastRow.name)).toBeInTheDocument();
-    expect(screen.getByTestId("visible-items-text")).toHaveTextContent("Showing 1 - 3 of 3");
+    expect(screen.getByTestId("visible-items-text")).toHaveTextContent(
+      "Showing 1 - 3 of 3",
+    );
   });
 
   it("should set current page to first page when a different page size is selected", async () => {
@@ -120,26 +124,34 @@ describe("DataTable", () => {
     const prevButton = screen.getByLabelText("Previous Page");
 
     const assertVisibleItems = (currentPage: number) => {
-      for (let i=0; i<TEST_DATA.rows.length; i++) {
-        if (i === currentPage - 1) {
-          expect(screen.getByText(TEST_DATA.rows[i].name)).toBeInTheDocument();
+      for (let pageIndex = 0; pageIndex < TEST_DATA.rows.length; pageIndex++) {
+        if (pageIndex === currentPage - 1) {
+          // eslint-disable-next-line vitest/no-conditional-expect
+          expect(screen.getByText(TEST_DATA.rows[pageIndex].name)).toBeInTheDocument();
         } else {
-          expect(screen.queryByText(TEST_DATA.rows[i].name)).not.toBeInTheDocument();
+          // eslint-disable-next-line vitest/no-conditional-expect
+          expect(
+            screen.queryByText(TEST_DATA.rows[pageIndex].name),
+          ).not.toBeInTheDocument();
         }
       }
-      expect(screen.getByTestId("visible-items-text")).toHaveTextContent(`Showing ${currentPage} - ${currentPage} of ${ TEST_DATA.rows.length}`);
-      expect(screen.getByTestId("current-page")).toHaveTextContent(`Page ${currentPage} of ${ TEST_DATA.rows.length}`);
-    }
+      expect(screen.getByTestId("visible-items-text")).toHaveTextContent(
+        `Showing ${currentPage} - ${currentPage} of ${TEST_DATA.rows.length}`,
+      );
+      expect(screen.getByTestId("current-page")).toHaveTextContent(
+        `Page ${currentPage} of ${TEST_DATA.rows.length}`,
+      );
+    };
 
     const goNext = async () => {
       await user.click(nextButton);
       currentPage += 1;
-    }
+    };
 
     const goPrev = async () => {
       await user.click(prevButton);
       currentPage -= 1;
-    }
+    };
 
     assertVisibleItems(currentPage);
 

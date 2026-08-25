@@ -403,7 +403,10 @@
       "gap-4",
     ])}
   >
-    <p class={clsx(["text-sm", "text-neutral-600"])} data-testid="visible-items-text">
+    <p
+      class={clsx(["text-sm", "text-neutral-600"])}
+      data-testid="visible-items-text"
+    >
       Showing
       <span class="font-medium text-neutral-900">
         {totalRows === 0 ? 0 : (currentPage - 1) * pageSize + 1}
@@ -445,7 +448,11 @@
         Previous
       </Button>
 
-      <span class="px-2 text-xs text-neutral-600" aria-current="page" data-testid="current-page">
+      <span
+        class="px-2 text-xs text-neutral-600"
+        aria-current="page"
+        data-testid="current-page"
+      >
         Page {currentPage} of {totalPages}
       </span>
 
