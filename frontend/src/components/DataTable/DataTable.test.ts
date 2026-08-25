@@ -247,7 +247,7 @@ describe("DataTable", () => {
     const searchInput = screen.getByLabelText("Search");
     await user.type(searchInput, TEST_DATA.rows[0].name);
 
-    expect(screen.queryByText(TEST_DATA.rows[0].name)).toBeInTheDocument();
+    expect(screen.getByText(TEST_DATA.rows[0].name)).toBeInTheDocument();
     expect(screen.queryByText(TEST_DATA.rows[1].name)).not.toBeInTheDocument();
     expect(screen.queryByText(TEST_DATA.rows[2].name)).not.toBeInTheDocument();
     expect(screen.queryByText("No data available")).not.toBeInTheDocument();
@@ -264,7 +264,7 @@ describe("DataTable", () => {
     expect(screen.queryByText(TEST_DATA.rows[0].name)).not.toBeInTheDocument();
     expect(screen.queryByText(TEST_DATA.rows[1].name)).not.toBeInTheDocument();
     expect(screen.queryByText(TEST_DATA.rows[2].name)).not.toBeInTheDocument();
-    expect(screen.queryByText("No data available")).toBeInTheDocument();
+    expect(screen.getByText("No data available")).toBeInTheDocument();
   });
 
   it("should match snapshot", () => {
