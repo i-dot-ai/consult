@@ -279,7 +279,7 @@
                   type="button"
                   class={clsx([
                     "inline-flex",
-                    "min-h-8",
+                    "py-2",
                     "w-full",
                     "items-center",
                     "justify-start",
