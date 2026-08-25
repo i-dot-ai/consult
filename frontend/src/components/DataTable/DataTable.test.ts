@@ -6,14 +6,14 @@ import DataTable from "./DataTable.svelte";
 import { TEST_DATA } from "./testData";
 
 function isRowsSorted(rows: HTMLElement[], reverse?: boolean) {
-  for (let i=0; i<rows.length - 1; i++) {
+  for (let i = 0; i < rows.length - 1; i++) {
     const contentA = rows[i].textContent;
-    const contentB = rows[i+1].textContent;
+    const contentB = rows[i + 1].textContent;
 
     if (contentA > contentB && !reverse) {
       return false;
     }
-    if ((contentB > contentA) && reverse) {
+    if (contentB > contentA && reverse) {
       return false;
     }
   }
@@ -307,15 +307,20 @@ describe("DataTable", () => {
       initialSort: undefined,
     } as Record<string, unknown>);
 
-    let rows;
     const user = userEvent.setup();
     const sortButton = screen.getByLabelText("Sort by Name");
 
     await user.click(sortButton);
-    expect(sortButton).toHaveAttribute("aria-label", "Sorted ascending by Name. Click to sort descending.")
+    expect(sortButton).toHaveAttribute(
+      "aria-label",
+      "Sorted ascending by Name. Click to sort descending.",
+    );
 
     await user.click(sortButton);
-    expect(sortButton).toHaveAttribute("aria-label", "Sorted descending by Name. Click to sort ascending.")
+    expect(sortButton).toHaveAttribute(
+      "aria-label",
+      "Sorted descending by Name. Click to sort ascending.",
+    );
   });
 
   it("should match snapshot", () => {

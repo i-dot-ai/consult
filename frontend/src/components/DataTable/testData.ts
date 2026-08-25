@@ -38,50 +38,50 @@ export const COLUMNS = [
 ];
 
 export const extraColumns = [
-    ...COLUMNS,
-    {
-        key: "column1",
-        label: "Column One",
-        sortable: true,
-    },
-    {
-        key: "column2",
-        label: "Column Two",
-        sortable: true,
-    },
-    {
-        key: "column3",
-        label: "Column Three",
-        sortable: true,
-    },
-    {
-        key: "column4",
-        label: "Column Four",
-        sortable: true,
-    },
-    {
-        key: "column5",
-        label: "Column Five",
-        sortable: true,
-    },
-    {
-        key: "column6",
-        label: "Column Six",
-        sortable: true,
-    },
+  ...COLUMNS,
+  {
+    key: "column1",
+    label: "Column One",
+    sortable: true,
+  },
+  {
+    key: "column2",
+    label: "Column Two",
+    sortable: true,
+  },
+  {
+    key: "column3",
+    label: "Column Three",
+    sortable: true,
+  },
+  {
+    key: "column4",
+    label: "Column Four",
+    sortable: true,
+  },
+  {
+    key: "column5",
+    label: "Column Five",
+    sortable: true,
+  },
+  {
+    key: "column6",
+    label: "Column Six",
+    sortable: true,
+  },
 ];
 
 export const extraRows = ROWS.map((row, i) => {
-    return {
-        ...row,
-        column1: 10 * i,
-        column2: 20 * i,
-        column3: 30 * i,
-        column4: 40 * i,
-        column5: 50 * i,
-        column6: 60 * i,
-    }
-})
+  return {
+    ...row,
+    column1: 10 * i,
+    column2: 20 * i,
+    column3: 30 * i,
+    column4: 40 * i,
+    column5: 50 * i,
+    column6: 60 * i,
+  };
+});
 
 export const CAPTION = "Example Data";
 
