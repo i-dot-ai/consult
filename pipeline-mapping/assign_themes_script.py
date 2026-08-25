@@ -9,7 +9,7 @@ import boto3
 import pandas as pd
 import structlog
 import urllib3
-from pipeline_common import bootstrap_logger
+from pipeline_common import bootstrap_logger, execution_span, flush_otel
 
 from themefinder import (
     detail_detection,
@@ -19,7 +19,7 @@ from themefinder import (
 )
 from themefinder.llm import OpenAILLM
 
-logger = bootstrap_logger()
+logger = bootstrap_logger(service_name="consult-pipeline-mapping")
 
 
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
@@ -329,13 +329,20 @@ if __name__ == "__main__":
     if args.context_id:
         logger.set_context_field("context_id", args.context_id)
 
-    # Log sentry initialization after context set
     sentry_dsn = os.environ.get("SENTRY_DSN")
     if sentry_dsn:
         logger.info("Sentry initialized")
 
     logger.info("Starting processing for subdirectory: {subdir}", subdir=args.subdir)
-    download_s3_subdir(args.subdir)
-    output_dir = asyncio.run(process_consultation(args.subdir, args.model_name))
-    upload_directory_to_s3(output_dir)
-    logger.info("Processing completed for subdirectory: {subdir}", subdir=args.subdir)
+    try:
+        with execution_span(
+            "batch.assign_themes",
+            context_id=args.context_id,
+            consultation_code=args.subdir,
+        ):
+            download_s3_subdir(args.subdir)
+            output_dir = asyncio.run(process_consultation(args.subdir, args.model_name))
+            upload_directory_to_s3(output_dir)
+            logger.info("Processing completed for subdirectory: {subdir}", subdir=args.subdir)
+    finally:
+        flush_otel()
