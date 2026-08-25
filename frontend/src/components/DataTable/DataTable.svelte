@@ -444,7 +444,7 @@
         Previous
       </Button>
 
-      <span class="px-2 text-xs text-neutral-600" aria-current="page">
+      <span class="px-2 text-xs text-neutral-600" aria-current="page" data-testid="current-page">
         Page {currentPage} of {totalPages}
       </span>
 

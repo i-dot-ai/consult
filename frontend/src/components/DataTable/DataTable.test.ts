@@ -115,6 +115,7 @@ describe("DataTable", () => {
         }
       }
       expect(screen.getByTestId("visible-items-text")).toHaveTextContent(`Showing ${currentPage} - ${currentPage} of ${ROWS.length}`);
+      expect(screen.getByTestId("current-page")).toHaveTextContent(`Page ${currentPage} of ${ROWS.length}`);
     }
 
     const goNext = async () => {

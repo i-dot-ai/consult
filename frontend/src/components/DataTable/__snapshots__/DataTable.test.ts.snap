@@ -336,6 +336,7 @@ exports[`DataTable > should match snapshot 1`] = `
       <span
         aria-current="page"
         class="px-2 text-xs text-neutral-600"
+        data-testid="current-page"
       >
         Page 1 of 1
       </span>
