@@ -301,6 +301,23 @@ describe("DataTable", () => {
     expect(isRowsSorted(rows, true)).toBeTruthy();
   });
 
+  it("should display correct labels for sort buttons depending on sort applied", async () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      initialSort: undefined,
+    } as Record<string, unknown>);
+
+    let rows;
+    const user = userEvent.setup();
+    const sortButton = screen.getByLabelText("Sort by Name");
+
+    await user.click(sortButton);
+    expect(sortButton).toHaveAttribute("aria-label", "Sorted ascending by Name. Click to sort descending.")
+
+    await user.click(sortButton);
+    expect(sortButton).toHaveAttribute("aria-label", "Sorted descending by Name. Click to sort ascending.")
+  });
+
   it("should match snapshot", () => {
     const { container } = render(
       DataTable,
