@@ -24,22 +24,8 @@ on:
         default: 'generation'
 
 jobs:
-  themefinder-eval-start-runner:
-    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@main
-    permissions: write-all
-    with:
-      EC2_INSTANCE_TYPE: t3.medium
-      ENVIRONMENT: prod
-    secrets:
-      AWS_GITHUBRUNNER_USER_ACCESS_KEY: ${{ secrets.AWS_GITHUBRUNNER_USER_ACCESS_KEY }}
-      AWS_GITHUBRUNNER_USER_SECRET_ID: ${{ secrets.AWS_GITHUBRUNNER_USER_SECRET_ID }}
-      AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-
   themefinder-eval:
-    needs: themefinder-eval-start-runner
-    runs-on: ${{ needs.themefinder-eval-start-runner.outputs.label }}
+    runs-on: ubuntu-latest
     timeout-minutes: 60
 
     steps:
@@ -149,18 +135,3 @@ jobs:
                 }
               ]
             }
-
-  themefinder-eval-stop-runner:
-    needs: [themefinder-eval-start-runner, themefinder-eval]
-    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@main
-    if: needs.themefinder-eval-start-runner.outputs.use-persisted == 0 && always()
-    permissions: write-all
-    with:
-      RUNNER_LABEL: ${{ needs.themefinder-eval-start-runner.outputs.label }}
-      EC2_INSTANCE_ID: ${{ needs.themefinder-eval-start-runner.outputs.ec2-instance-id }}
-    secrets:
-      AWS_GITHUBRUNNER_USER_ACCESS_KEY: ${{ secrets.AWS_GITHUBRUNNER_USER_ACCESS_KEY }}
-      AWS_GITHUBRUNNER_USER_SECRET_ID: ${{ secrets.AWS_GITHUBRUNNER_USER_SECRET_ID }}
-      AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
