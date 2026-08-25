@@ -226,6 +226,7 @@
   {#if searchable}
     <div class={clsx(["w-1/3", "mt-2", "mb-4", "ml-auto", "text-sm"])}>
       <TextInput
+        id="search-input"
         label="Search"
         hideLabel={true}
         variant="search"
