@@ -127,7 +127,9 @@ describe("DataTable", () => {
       for (let pageIndex = 0; pageIndex < TEST_DATA.rows.length; pageIndex++) {
         if (pageIndex === currentPage - 1) {
           // eslint-disable-next-line vitest/no-conditional-expect
-          expect(screen.getByText(TEST_DATA.rows[pageIndex].name)).toBeInTheDocument();
+          expect(
+            screen.getByText(TEST_DATA.rows[pageIndex].name),
+          ).toBeInTheDocument();
         } else {
           // eslint-disable-next-line vitest/no-conditional-expect
           expect(
@@ -223,7 +225,7 @@ describe("DataTable", () => {
     expect(screen.getByText("No data available")).toBeInTheDocument();
   });
 
-  it("should display no data message if no data and not loading", async () => {
+  it("should clear search query if reset search button is clicked", async () => {
     render(DataTable, TEST_DATA as Record<string, unknown>);
 
     const user = userEvent.setup();
