@@ -47,14 +47,16 @@ module "slack_notifier_lambda" {
   account_id                    = data.aws_caller_identity.current.account_id
   lambda_additional_policy_arns = { for idx, arn in [aws_iam_policy.lambda_exec_custom_policy.arn] : idx => arn }
   environment_variables = {
-    "SLACK_WEBHOOK_URL" = data.aws_ssm_parameter.slack_webhook_url.value,
-    "LAMBDA_AWS_REGION" = data.aws_region.current.id,
-    "ENVIRONMENT"       = terraform.workspace,
-    "APP_NAME"          = "${var.project_name}-slack-notifier",
-    "REPO"              = var.project_name,
-    "AWS_BUCKET_NAME"   = module.app_bucket.id,
-    "AWS_ACCOUNT_ID"    = data.aws_caller_identity.current.account_id,
-    "EXECUTION_CONTEXT" = "lambda"
+    "SLACK_WEBHOOK_URL"           = data.aws_ssm_parameter.slack_webhook_url.value,
+    "LAMBDA_AWS_REGION"           = data.aws_region.current.id,
+    "ENVIRONMENT"                 = terraform.workspace,
+    "APP_NAME"                    = "${var.project_name}-slack-notifier",
+    "REPO"                        = var.project_name,
+    "AWS_BUCKET_NAME"             = module.app_bucket.id,
+    "AWS_ACCOUNT_ID"              = data.aws_caller_identity.current.account_id,
+    "EXECUTION_CONTEXT"           = "lambda",
+    "OTEL_ENABLED"                = var.env == "dev",
+    "OTEL_EXPORTER_OTLP_ENDPOINT" = local.otel_exporter_otlp_endpoint,
   }
 }
 
@@ -95,16 +97,18 @@ module "import_candidate_themes_lambda" {
   aws_security_group_ids        = [aws_security_group.lambda_sg.id]
   subnet_ids                    = data.terraform_remote_state.vpc.outputs.private_subnets
   environment_variables = {
-    REDIS_HOST        = module.elasticache.redis_address
-    REDIS_PORT        = module.elasticache.redis_port
-    AWS_BUCKET_NAME   = module.app_bucket.id
-    LAMBDA_AWS_REGION = data.aws_region.current.id
-    AWS_ACCOUNT_ID    = data.aws_caller_identity.current.account_id
-    SENTRY_DSN        = var.backend_sentry_dsn
-    ENVIRONMENT       = terraform.workspace
-    APP_NAME          = "${var.project_name}-import-candidate-themes"
-    REPO              = var.project_name
-    EXECUTION_CONTEXT = "lambda"
+    REDIS_HOST                  = module.elasticache.redis_address
+    REDIS_PORT                  = module.elasticache.redis_port
+    AWS_BUCKET_NAME             = module.app_bucket.id
+    LAMBDA_AWS_REGION           = data.aws_region.current.id
+    AWS_ACCOUNT_ID              = data.aws_caller_identity.current.account_id
+    SENTRY_DSN                  = var.backend_sentry_dsn
+    ENVIRONMENT                 = terraform.workspace
+    APP_NAME                    = "${var.project_name}-import-candidate-themes"
+    REPO                        = var.project_name
+    EXECUTION_CONTEXT           = "lambda"
+    OTEL_ENABLED                = var.env == "dev"
+    OTEL_EXPORTER_OTLP_ENDPOINT = local.otel_exporter_otlp_endpoint
   }
 }
 
@@ -145,16 +149,18 @@ module "import_response_annotations_lambda" {
   aws_security_group_ids        = [aws_security_group.lambda_sg.id]
   subnet_ids                    = data.terraform_remote_state.vpc.outputs.private_subnets
   environment_variables = {
-    REDIS_HOST        = module.elasticache.redis_address
-    REDIS_PORT        = module.elasticache.redis_port
-    AWS_BUCKET_NAME   = module.app_bucket.id
-    LAMBDA_AWS_REGION = data.aws_region.current.id
-    AWS_ACCOUNT_ID    = data.aws_caller_identity.current.account_id
-    SENTRY_DSN        = var.backend_sentry_dsn
-    ENVIRONMENT       = terraform.workspace
-    APP_NAME          = "${var.project_name}-import-response-annotations"
-    REPO              = var.project_name
-    EXECUTION_CONTEXT = "lambda"
+    REDIS_HOST                  = module.elasticache.redis_address
+    REDIS_PORT                  = module.elasticache.redis_port
+    AWS_BUCKET_NAME             = module.app_bucket.id
+    LAMBDA_AWS_REGION           = data.aws_region.current.id
+    AWS_ACCOUNT_ID              = data.aws_caller_identity.current.account_id
+    SENTRY_DSN                  = var.backend_sentry_dsn
+    ENVIRONMENT                 = terraform.workspace
+    APP_NAME                    = "${var.project_name}-import-response-annotations"
+    REPO                        = var.project_name
+    EXECUTION_CONTEXT           = "lambda"
+    OTEL_ENABLED                = var.env == "dev"
+    OTEL_EXPORTER_OTLP_ENDPOINT = local.otel_exporter_otlp_endpoint
   }
 }
 
