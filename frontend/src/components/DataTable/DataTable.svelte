@@ -11,6 +11,7 @@
     label: string;
     sortable?: boolean;
     hidden?: boolean;
+    columnSelect?: boolean;
     width?: string;
     align?: "left" | "center" | "right";
     sortValue?: (row: T) => unknown;
@@ -30,6 +31,7 @@
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import Select from "../inputs/Select/Select.svelte";
   import Button from "../inputs/Button/Button.svelte";
+  import SearchableSelect from "../inputs/SearchableSelect.svelte";
 
   type Props = {
     rows?: T[];
@@ -42,6 +44,7 @@
     searchPlaceholder?: string;
     paginated?: boolean;
     pageSizes?: number[];
+    columnSelect?: boolean;
     onSortChange?: (sort: SortState<T> | null) => void;
     onRowClick?: (row: T) => void;
   };
@@ -57,6 +60,7 @@
     searchPlaceholder = "Search...",
     paginated = true,
     pageSizes = [10, 50, 100, 250, 500],
+    columnSelect = true,
     onSortChange,
     onRowClick,
   }: Props = $props();
@@ -223,22 +227,52 @@
     {announcement}
   </div>
 
-  {#if searchable}
-    <div class={clsx(["w-1/3", "mt-2", "mb-4", "ml-auto", "text-sm"])}>
-      <TextInput
-        id="search-input"
-        label="Search"
+  <div class={clsx([
+    "flex",
+    "justify-between",
+    "items-center",
+    "gap-2",
+    "pb-4",
+    "pt-2",
+  ])}>
+    {#if columnSelect}
+      <SearchableSelect
+        label="Visible columns"
+        options={columns.map((column) => ({
+          value: column.key,
+          label: column.label,
+        }))}
         hideLabel={true}
-        variant="search"
-        value={searchQuery}
-        setValue={(newValue) => {
-          searchQuery = newValue;
-          currentPage = 1;
+        placeholder={`${visibleColumns.length} columns visible`}
+        selectedValues={visibleColumns.map(c => c.key)}
+        handleChange={(newVal) => {
+          columns = columns.map(column => ({
+            ...column,
+            hidden: newVal.value === column.key
+              ? !column.hidden
+              : column.hidden
+          }))
         }}
-        placeholder={searchPlaceholder}
       />
-    </div>
-  {/if}
+    {/if}
+
+    {#if searchable}
+      <div class={clsx(["w-1/3", "ml-auto", "text-sm"])}>
+        <TextInput
+          id="search-input"
+          label="Search"
+          hideLabel={true}
+          variant="search"
+          value={searchQuery}
+          setValue={(newValue) => {
+            searchQuery = newValue;
+            currentPage = 1;
+          }}
+          placeholder={searchPlaceholder}
+        />
+      </div>
+    {/if}
+  </div>
 
   <div
     class={clsx([
