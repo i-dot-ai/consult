@@ -1,18 +1,11 @@
 import DataTable from "./DataTable.svelte";
-import {
-  CAPTION,
-  COLUMNS,
-  INITIAL_SORT,
-  LOADING,
-  onRowClick,
-  ROWS,
-} from "./testData";
+import { TEST_DATA } from "./testData";
 
-const rows = $state(ROWS);
-const columns = $state(COLUMNS);
-const caption = $state(CAPTION);
-const initialSort = $state(INITIAL_SORT);
-const loading = $state(LOADING);
+const rows = $state(TEST_DATA.rows);
+const columns = $state(TEST_DATA.columns);
+const caption = $state(TEST_DATA.caption);
+const initialSort = $state(TEST_DATA.initialSort);
+const loading = $state(TEST_DATA.loading);
 
 export default {
   name: "DataTable",
@@ -23,7 +16,15 @@ export default {
     { name: "caption", value: caption, type: "text" },
     { name: "initialSort", value: initialSort, type: "json" },
     { name: "loading", value: loading, type: "bool" },
-    { name: "onRowClick", value: onRowClick, type: "func" },
+    { name: "onRowClick", value: TEST_DATA.onRowClick, type: "func" },
   ],
-  stories: [],
+  stories: [
+    {
+      name: "Paginated",
+      props: {
+        ...TEST_DATA,
+        pageSizes: [1, 3],
+      }
+    },
+  ],
 };

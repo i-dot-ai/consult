@@ -3,25 +3,9 @@ import { render, screen } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 
 import DataTable from "./DataTable.svelte";
-import {
-  CAPTION,
-  COLUMNS,
-  INITIAL_SORT,
-  LOADING,
-  onRowClick,
-  ROWS,
-} from "./testData";
+import { TEST_DATA } from "./testData";
 
 describe("DataTable", () => {
-  const TEST_DATA = {
-    caption: CAPTION,
-    columns: COLUMNS,
-    rows: ROWS,
-    loading: LOADING,
-    initialSort: INITIAL_SORT,
-    onRowClick: onRowClick,
-  };
-
   it.each(TEST_DATA.columns)("should render column label", (column) => {
     render(DataTable, TEST_DATA as Record<string, unknown>);
 
@@ -42,7 +26,7 @@ describe("DataTable", () => {
       onRowClick: onRowClickCallback,
     } as Record<string, unknown>);
 
-    const firstRow = ROWS[0];
+    const firstRow = TEST_DATA.rows[0];
     const rowElement = screen.getByText(firstRow.name);
     const user = userEvent.setup();
     await user.click(rowElement);
@@ -72,7 +56,7 @@ describe("DataTable", () => {
     }
   });
 
-  it("should display paginate items", async () => {
+  it("should update visible items when page size is changed", async () => {
     const PAGE_SIZES = [1, 3];
 
     render(DataTable, {
@@ -80,7 +64,7 @@ describe("DataTable", () => {
       pageSizes: PAGE_SIZES,
     } as Record<string, unknown>);
 
-    const lastRow = ROWS[ROWS.length - 1];
+    const lastRow =  TEST_DATA.rows[ TEST_DATA.rows.length - 1];
     expect(screen.queryByText(lastRow.name)).not.toBeInTheDocument();
     expect(screen.getByTestId("visible-items-text")).toHaveTextContent("Showing 1 - 1 of 3");
 
@@ -107,15 +91,15 @@ describe("DataTable", () => {
     const prevButton = screen.getByLabelText("Previous Page");
 
     const assertVisibleItems = (currentPage: number) => {
-      for (let i=0; i<ROWS.length; i++) {
+      for (let i=0; i<TEST_DATA.rows.length; i++) {
         if (i === currentPage - 1) {
-          expect(screen.getByText(ROWS[i].name)).toBeInTheDocument();
+          expect(screen.getByText(TEST_DATA.rows[i].name)).toBeInTheDocument();
         } else {
-          expect(screen.queryByText(ROWS[i].name)).not.toBeInTheDocument();
+          expect(screen.queryByText(TEST_DATA.rows[i].name)).not.toBeInTheDocument();
         }
       }
-      expect(screen.getByTestId("visible-items-text")).toHaveTextContent(`Showing ${currentPage} - ${currentPage} of ${ROWS.length}`);
-      expect(screen.getByTestId("current-page")).toHaveTextContent(`Page ${currentPage} of ${ROWS.length}`);
+      expect(screen.getByTestId("visible-items-text")).toHaveTextContent(`Showing ${currentPage} - ${currentPage} of ${ TEST_DATA.rows.length}`);
+      expect(screen.getByTestId("current-page")).toHaveTextContent(`Page ${currentPage} of ${ TEST_DATA.rows.length}`);
     }
 
     const goNext = async () => {
