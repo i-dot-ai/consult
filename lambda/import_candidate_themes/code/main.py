@@ -9,6 +9,7 @@ from i_dot_ai_utilities.logging.types.enrichment_types import (
     ExecutionEnvironmentType,
 )
 from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
+from otel_bootstrap import bootstrap_otel, execution_span, flush_otel
 from rq import Queue
 
 logger = StructuredLogger(
@@ -27,6 +28,8 @@ if sentry_dsn:
         traces_sample_rate=1.0,
     )
     logger.info("Sentry initialized")
+
+bootstrap_otel(service_name="consult-import-candidate-themes", logger=logger)
 
 
 def _epoch_ms_to_iso(epoch_ms: int | None) -> str | None:
@@ -73,52 +76,55 @@ def lambda_handler(event, context):
     )
 
     try:
-        # Connect to Redis
-        redis_host = os.environ.get("REDIS_HOST")
-        if redis_host is None:
-            raise ValueError("REDIS_HOST environment variable is required")
-        redis_port = int(os.environ.get("REDIS_PORT", "6379"))
-
-        logger.info(
-            "Connecting to Redis: {redis_host}:{redis_port}",
-            redis_host=redis_host,
-            redis_port=redis_port,
-        )
-
-        redis_conn = redis.Redis(
-            host=redis_host,
-            port=redis_port,
-            socket_timeout=30,
-            socket_connect_timeout=30,
-        )
-
-        # Test Redis connection
-        ping_result = redis_conn.ping()
-        logger.info("✅ Redis PING result: {ping_result}", ping_result=ping_result)
-
-        # Enqueue the RQ job
-        queue_name = "default"
-        queue = Queue(queue_name, connection=redis_conn)
-        logger.info("Enqueueing RQ job to import candidate themes...")
-        job = queue.enqueue(
-            "data_pipeline.jobs.import_candidate_themes",
-            consultation_code,
-            run_date,
-            user_id,
-            model_name,
+        with execution_span(
+            "lambda.import_candidate_themes",
             context_id=context_id,
-        )
-
-        logger.info(
-            "✅ Successfully queued candidate themes import job {job_id} for: {consultation_code}. "
-            "Job status: {job_status}, queue '{queue_name}' now has {job_count} jobs",
-            job_id=job.id,
             consultation_code=consultation_code,
-            job_status=job.get_status(),
-            queue_name=queue_name,
-            job_count=len(queue),
-        )
+        ):
+            redis_host = os.environ.get("REDIS_HOST")
+            if redis_host is None:
+                raise ValueError("REDIS_HOST environment variable is required")
+            redis_port = int(os.environ.get("REDIS_PORT", "6379"))
 
+            logger.info(
+                "Connecting to Redis: {redis_host}:{redis_port}",
+                redis_host=redis_host,
+                redis_port=redis_port,
+            )
+
+            redis_conn = redis.Redis(
+                host=redis_host,
+                port=redis_port,
+                socket_timeout=30,
+                socket_connect_timeout=30,
+            )
+
+            ping_result = redis_conn.ping()
+            logger.info("✅ Redis PING result: {ping_result}", ping_result=ping_result)
+
+            queue_name = "default"
+            queue = Queue(queue_name, connection=redis_conn)
+            logger.info("Enqueueing RQ job to import candidate themes...")
+            job = queue.enqueue(
+                "data_pipeline.jobs.import_candidate_themes",
+                consultation_code,
+                run_date,
+                user_id,
+                model_name,
+                context_id=context_id,
+            )
+
+            logger.info(
+                "✅ Successfully queued candidate themes import job {job_id} for: {consultation_code}. "
+                "Job status: {job_status}, queue '{queue_name}' now has {job_count} jobs",
+                job_id=job.id,
+                consultation_code=consultation_code,
+                job_status=job.get_status(),
+                queue_name=queue_name,
+                job_count=len(queue),
+            )
     except Exception:
         logger.exception("Failed to enqueue candidate themes import job")
         raise
+    finally:
+        flush_otel()
