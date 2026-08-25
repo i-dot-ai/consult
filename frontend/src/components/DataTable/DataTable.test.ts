@@ -239,6 +239,34 @@ describe("DataTable", () => {
     expect(screen.queryByText("No data available")).not.toBeInTheDocument();
   });
 
+  it("should display items found as a result of search query", async () => {
+    render(DataTable, TEST_DATA as Record<string, unknown>);
+
+    const user = userEvent.setup();
+
+    const searchInput = screen.getByLabelText("Search");
+    await user.type(searchInput, TEST_DATA.rows[0].name);
+
+    expect(screen.queryByText(TEST_DATA.rows[0].name)).toBeInTheDocument();
+    expect(screen.queryByText(TEST_DATA.rows[1].name)).not.toBeInTheDocument();
+    expect(screen.queryByText(TEST_DATA.rows[2].name)).not.toBeInTheDocument();
+    expect(screen.queryByText("No data available")).not.toBeInTheDocument();
+  });
+
+  it("should display nothing if search query does not match anything", async () => {
+    render(DataTable, TEST_DATA as Record<string, unknown>);
+
+    const user = userEvent.setup();
+
+    const searchInput = screen.getByLabelText("Search");
+    await user.type(searchInput, "some text that will not match");
+
+    expect(screen.queryByText(TEST_DATA.rows[0].name)).not.toBeInTheDocument();
+    expect(screen.queryByText(TEST_DATA.rows[1].name)).not.toBeInTheDocument();
+    expect(screen.queryByText(TEST_DATA.rows[2].name)).not.toBeInTheDocument();
+    expect(screen.queryByText("No data available")).toBeInTheDocument();
+  });
+
   it("should match snapshot", () => {
     const { container } = render(
       DataTable,
