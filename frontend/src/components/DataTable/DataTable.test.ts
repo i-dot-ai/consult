@@ -223,6 +223,20 @@ describe("DataTable", () => {
     expect(screen.getByText("No data available")).toBeInTheDocument();
   });
 
+  it("should display no data message if no data and not loading", async () => {
+    render(DataTable, TEST_DATA as Record<string, unknown>);
+
+    const user = userEvent.setup();
+
+    const searchInput = screen.getByLabelText("Search");
+    await user.type(searchInput, "text that does not exist in the data");
+    expect(screen.getByText("No data available")).toBeInTheDocument();
+
+    const searchResetButton = screen.getByLabelText("Reset search");
+    await user.click(searchResetButton);
+    expect(screen.queryByText("No data available")).not.toBeInTheDocument();
+  });
+
   it("should match snapshot", () => {
     const { container } = render(
       DataTable,

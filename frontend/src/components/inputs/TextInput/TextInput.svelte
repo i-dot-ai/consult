@@ -60,7 +60,7 @@
         "mt-0.5 -translate-y-1/2",
       ])}
     >
-      <Button variant="ghost" handleClick={() => setValue("")}>
+      <Button variant="ghost" handleClick={() => setValue("")} ariaLabel="Reset search">
         <MaterialIcon size="1rem" color="black">
           <Close />
         </MaterialIcon>
