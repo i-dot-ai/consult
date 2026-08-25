@@ -77,6 +77,35 @@ describe("DataTable", () => {
     expect(screen.getByTestId("visible-items-text")).toHaveTextContent("Showing 1 - 3 of 3");
   });
 
+  it("should set current page to first page when a different page size is selected", async () => {
+    const PAGE_SIZES = [1, 3];
+
+    render(DataTable, {
+      ...TEST_DATA,
+      pageSizes: PAGE_SIZES,
+    } as Record<string, unknown>);
+
+    const pageSizeSelect = screen.getByRole("combobox");
+    const nextButton = screen.getByLabelText("Next Page");
+    const user = userEvent.setup();
+
+    // go to page 2
+    await user.click(nextButton);
+
+    // only second is visible with page size 1
+    expect(screen.queryByText(TEST_DATA.rows[0].name)).not.toBeInTheDocument();
+    expect(screen.getByText(TEST_DATA.rows[1].name)).toBeInTheDocument();
+    expect(screen.queryByText(TEST_DATA.rows[2].name)).not.toBeInTheDocument();
+
+    // change page size to 3
+    await user.selectOptions(pageSizeSelect, "3");
+
+    // all are visible because page size is 3 and current page is set to 1
+    for (const row of TEST_DATA.rows) {
+      expect(screen.getByText(row.name)).toBeInTheDocument();
+    }
+  });
+
   it("should change items displayed when navinagated to other pages", async () => {
     const PAGE_SIZES = [1];
 
