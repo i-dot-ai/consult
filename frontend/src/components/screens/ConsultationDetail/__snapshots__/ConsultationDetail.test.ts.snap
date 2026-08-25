@@ -427,6 +427,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
       >
         <div
           class="animate-spin ease-in-out w-max m-auto"
+          data-testid="loading-indicator"
           style="animation-timing-function: ease-in-out;"
         >
           <svg
@@ -1525,6 +1526,7 @@ exports[`ConsultationDetail > should match snapshot initially 1`] = `
              
             <div
               class="animate-spin ease-in-out w-max m-auto"
+              data-testid="loading-indicator"
               style="animation-timing-function: ease-in-out;"
             >
               <svg
@@ -1558,6 +1560,7 @@ exports[`ConsultationDetail > should match snapshot initially 1`] = `
       >
         <div
           class="animate-spin ease-in-out w-max m-auto"
+          data-testid="loading-indicator"
           style="animation-timing-function: ease-in-out;"
         >
           <svg
@@ -1745,6 +1748,7 @@ exports[`ConsultationDetail > should match snapshot initially 1`] = `
       >
         <div
           class="animate-spin ease-in-out w-max m-auto"
+          data-testid="loading-indicator"
           style="animation-timing-function: ease-in-out;"
         >
           <svg

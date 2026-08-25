@@ -26,5 +26,20 @@ export default {
         pageSizes: [1, 3],
       }
     },
+    {
+      name: "Loading",
+      props: {
+        ...TEST_DATA,
+        loading: true,
+      }
+    },
+    {
+      name: "No Data",
+      props: {
+        ...TEST_DATA,
+        rows: [],
+        loading: false,
+      }
+    },
   ],
 };

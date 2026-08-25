@@ -192,6 +192,25 @@ describe("DataTable", () => {
     expect(pageSizeSelect).toHaveValue("10");
   });
 
+  it("should display loading indicator if loading", async () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      loading: true,
+    } as Record<string, unknown>);
+
+    expect(screen.getByTestId("loading-indicator")).toBeInTheDocument();
+  });
+
+  it("should display no data message if no data and not loading", async () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      loading: false,
+      rows: [],
+    } as Record<string, unknown>);
+
+    expect(screen.getByText("No data available")).toBeInTheDocument();
+  });
+
   it("should match snapshot", () => {
     const { container } = render(
       DataTable,
