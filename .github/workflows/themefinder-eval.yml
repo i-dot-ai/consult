@@ -64,26 +64,25 @@ jobs:
           EVAL_TYPE: ${{ github.event.inputs.eval_type || 'generation' }}
         run: |
           set -o pipefail
-          cd themefinder/evals
 
           if [ "$EVAL_TYPE" = "all" ]; then
             echo "Running all evals for $DATASET..."
-            uv run python benchmark.py --quick 2>&1 | tee results.txt
+            make run-evals 2>&1 | tee themefinder/evals/results.txt
           else
             echo "Running $EVAL_TYPE eval for $DATASET..."
-            uv run python benchmark.py --quick --evals "$EVAL_TYPE" 2>&1 | tee results.txt
+            make run-eval EVAL_TYPE="$EVAL_TYPE" 2>&1 | tee themefinder/evals/results.txt
           fi
 
-          if grep -q "Eval Results\|experiment\|accuracy\|f1" results.txt; then
+          if grep -q "Eval Results\|experiment\|accuracy\|f1" themefinder/evals/results.txt; then
             echo "eval_success=true" >> $GITHUB_OUTPUT
           else
             echo "eval_success=false" >> $GITHUB_OUTPUT
           fi
 
-          BENCHMARK_ID=$(grep "BENCHMARK_ID=" results.txt | tail -1 | cut -d= -f2)
+          BENCHMARK_ID=$(grep "BENCHMARK_ID=" themefinder/evals/results.txt | tail -1 | cut -d= -f2)
           echo "benchmark_id=$BENCHMARK_ID" >> $GITHUB_OUTPUT
 
-          SCORES=$(grep -E "^\s+(question|f1|accuracy)" results.txt | head -6 | sed 's/^[[:space:]]*//' | tr '\n' ' · ' || echo "")
+          SCORES=$(grep -E "^\s+(question|f1|accuracy)" themefinder/evals/results.txt | head -6 | sed 's/^[[:space:]]*//' | tr '\n' ' · ' || echo "")
           echo "scores=$SCORES" >> $GITHUB_OUTPUT
 
       - name: Upload results

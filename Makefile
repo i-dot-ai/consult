@@ -64,6 +64,10 @@ test-all: test-backend test-frontend test-themefinder test-pipeline-common ## Ru
 run-evals: ## Run themefinder LLM evals (quick mode)
 	cd themefinder/evals && uv run python benchmark.py --quick
 
+.PHONY: run-eval
+run-eval: ## Args e.g.: EVAL_TYPE=generation|mapping|condensation|refinement
+	cd themefinder/evals && uv run python benchmark.py --quick --evals "$(EVAL_TYPE)"
+
 .PHONY: run-benchmark
 run-benchmark: ## Run full themefinder benchmark (housing_S, 5 runs, all providers)
 	cd themefinder/evals && uv run python benchmark.py --dataset housing_S --runs 5 --provider all --judge-model gpt-4.1
