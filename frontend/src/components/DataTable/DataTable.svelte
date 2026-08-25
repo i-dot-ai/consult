@@ -427,6 +427,7 @@
         }))}
         value={pageSize.toString()}
         onchange={(value) => {
+          currentPage = 1;
           pageSize = Number.parseInt(value);
         }}
         label={{ text: "Page Size", horizontal: true }}
