@@ -24,14 +24,14 @@ export default {
       props: {
         ...TEST_DATA,
         pageSizes: [1, 3],
-      }
+      },
     },
     {
       name: "Loading",
       props: {
         ...TEST_DATA,
         loading: true,
-      }
+      },
     },
     {
       name: "No Data",
@@ -39,7 +39,7 @@ export default {
         ...TEST_DATA,
         rows: [],
         loading: false,
-      }
+      },
     },
   ],
 };
