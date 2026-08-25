@@ -1,5 +1,5 @@
 import DataTable from "./DataTable.svelte";
-import { TEST_DATA } from "./testData";
+import { extraColumns, extraRows, TEST_DATA } from "./testData";
 
 const rows = $state(TEST_DATA.rows);
 const columns = $state(TEST_DATA.columns);
@@ -39,6 +39,14 @@ export default {
         ...TEST_DATA,
         rows: [],
         loading: false,
+      },
+    },
+    {
+      name: "More Columns",
+      props: {
+        ...TEST_DATA,
+        columns: extraColumns,
+        rows: extraRows,
       },
     },
   ],
