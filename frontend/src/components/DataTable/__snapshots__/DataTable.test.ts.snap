@@ -172,7 +172,7 @@ exports[`DataTable > should match snapshot 1`] = `
               <button
                 aria-label="Sorted ascending by Name. Click to sort descending."
                 aria-pressed="true"
-                class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                 data-variant="ghost"
                 role="button"
                 tabindex="0"
@@ -226,7 +226,7 @@ exports[`DataTable > should match snapshot 1`] = `
               <button
                 aria-label="Sort by Date Created"
                 aria-pressed="false"
-                class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
                 data-variant="ghost"
                 role="button"
                 tabindex="0"
