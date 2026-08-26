@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 
 import DataTable from "./DataTable.svelte";
 import { TEST_DATA } from "./testData";
+import { derandomize } from "../../global/utils";
 
 function isRowsSorted(rows: HTMLElement[], reverse?: boolean) {
   for (let i = 0; i < rows.length - 1; i++) {
@@ -328,6 +329,9 @@ describe("DataTable", () => {
       DataTable,
       TEST_DATA as Record<string, unknown>,
     );
+
+    derandomize(container, ["id", "for", "aria-controls", "aria-labelledby"], "id-derandomised");
+
     expect(container).toMatchSnapshot();
   });
 });
