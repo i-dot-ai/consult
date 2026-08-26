@@ -309,26 +309,13 @@
               aria-sort={getSortText(column, sort)}
             >
               {#if sortable && column.sortable !== false}
-                <button
-                  type="button"
-                  class={clsx([
-                    "inline-flex",
-                    "py-2",
-                    "w-full",
-                    "items-center",
-                    "justify-start",
-                    "gap-2",
-                    "rounded-md",
-                    "text-left",
-                    "cursor-pointer",
-                    "hover:bg-neutral-100",
-                    "focus:outline-none",
-                    "focus-visible:ring-2",
-                    "focus-visible:ring-blue-500",
-                    "focus-visible:ring-offset-2",
-                  ])}
-                  aria-label={getSortAriaLabel(column)}
-                  onclick={() => sortBy(column)}
+                <Button
+                  variant="ghost"
+                  justify="left"
+                  size="xs"
+                  ariaLabel={getSortAriaLabel(column)}
+                  handleClick={() => sortBy(column)}
+                  fullWidth={true}
                 >
                   <span>
                     {column.label}
@@ -353,7 +340,7 @@
                       </MaterialIcon>
                     {/if}
                   </span>
-                </button>
+                </Button>
               {:else}
                 <span>{column.label}</span>
               {/if}
