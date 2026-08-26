@@ -22,8 +22,8 @@ exports[`DataTable > should match snapshot 1`] = `
         <label
           class="sr-only svelte-ekj0e2"
           data-melt-combobox-label=""
-          for="AS0-u86odi"
-          id="P3LptAC1NT"
+          for="4j47HfWzx5"
+          id="rW3AUk-XDZ"
         >
           <span
             class="text-sm font-medium text-neutral-900"
@@ -58,15 +58,15 @@ exports[`DataTable > should match snapshot 1`] = `
            
           <input
             aria-autocomplete="list"
-            aria-controls="rz1G3MxKDq"
+            aria-controls="4N_Z9Gmy4U"
             aria-expanded="false"
-            aria-labelledby="P3LptAC1NT"
+            aria-labelledby="rW3AUk-XDZ"
             autocomplete="off"
             class="w-full leading-8 flex items-center justify-between rounded-sm bg-white px-3 pr-12 text-black border border-neutral-300 pl-8 svelte-ekj0e2"
             data-melt-combobox-input=""
             data-melt-combobox-trigger=""
             data-state="closed"
-            id="AS0-u86odi"
+            id="4j47HfWzx5"
             placeholder="2 columns visible"
             role="combobox"
           />

@@ -85,7 +85,7 @@ describe("DataTable", () => {
       "Showing 1 - 1 of 3",
     );
 
-    const pageSizeSelect = screen.getByRole("combobox");
+    const pageSizeSelect = screen.getByLabelText("Page Size");
 
     const user = userEvent.setup();
     await user.selectOptions(pageSizeSelect, "3");
@@ -104,7 +104,7 @@ describe("DataTable", () => {
       pageSizes: PAGE_SIZES,
     } as Record<string, unknown>);
 
-    const pageSizeSelect = screen.getByRole("combobox");
+    const pageSizeSelect = screen.getByLabelText("Page Size");
     const nextButton = screen.getByLabelText("Next Page");
     const user = userEvent.setup();
 
@@ -216,7 +216,7 @@ describe("DataTable", () => {
   it("should initially show 10 items", () => {
     render(DataTable, TEST_DATA as Record<string, unknown>);
 
-    const pageSizeSelect = screen.getByRole("combobox");
+    const pageSizeSelect = screen.getByLabelText("Page Size");
 
     expect(pageSizeSelect).toHaveValue("10");
   });
