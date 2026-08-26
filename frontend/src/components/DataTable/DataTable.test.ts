@@ -335,7 +335,9 @@ describe("DataTable", () => {
     const numExpectedVisibleColumnsAfter = TEST_DATA.columns.length - 1;
 
     // expect all columns to be visible initially
-    expect(screen.getAllByTestId("column-header")).toHaveLength(numExpectedVisibleColumnsBefore);
+    expect(screen.getAllByTestId("column-header")).toHaveLength(
+      numExpectedVisibleColumnsBefore,
+    );
 
     // click reveals options
     await user.click(columnSelect);
@@ -349,7 +351,9 @@ describe("DataTable", () => {
     await user.click(firstColumnOption!);
 
     // expect one column to be hidden at this point
-    expect(screen.getAllByTestId("column-header")).toHaveLength(numExpectedVisibleColumnsAfter);
+    expect(screen.getAllByTestId("column-header")).toHaveLength(
+      numExpectedVisibleColumnsAfter,
+    );
   });
 
   it("should match snapshot", () => {
@@ -358,7 +362,11 @@ describe("DataTable", () => {
       TEST_DATA as Record<string, unknown>,
     );
 
-    derandomize(container, ["id", "for", "aria-controls", "aria-labelledby"], "id-derandomised");
+    derandomize(
+      container,
+      ["id", "for", "aria-controls", "aria-labelledby"],
+      "id-derandomised",
+    );
 
     expect(container).toMatchSnapshot();
   });
