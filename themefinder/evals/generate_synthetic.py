@@ -18,13 +18,11 @@ import os
 import sys
 from contextlib import nullcontext
 
-import dotenv
 import openai
 
 # Add parent to path for imports
 sys.path.insert(0, str(os.path.dirname(__file__)))
 
-import utils_gateway
 from synthetic.cli import (
     create_progress_bar,
     print_error,
@@ -33,11 +31,12 @@ from synthetic.cli import (
 )
 from synthetic.config import RESPONSE_GENERATION_MODEL
 from synthetic.generator import SyntheticDatasetGenerator
+from utils import gateway
 
 # Optional Langfuse integration
 try:
-    import langfuse_utils
     from langfuse.openai import AsyncOpenAI as _LangfuseOpenAI
+    from utils import langfuse
 
     LANGFUSE_AVAILABLE = True
 except ImportError:
@@ -46,8 +45,6 @@ except ImportError:
 
 async def main() -> None:
     """Main entry point for synthetic dataset generation."""
-    dotenv.load_dotenv()
-
     # Collect configuration interactively
     try:
         config = await run_interactive_cli()
@@ -56,7 +53,7 @@ async def main() -> None:
         return
 
     _OpenAIClientClass = _LangfuseOpenAI if LANGFUSE_AVAILABLE else openai.AsyncOpenAI
-    base_url, api_key = utils_gateway.gateway_credentials()
+    base_url, api_key = gateway.gateway_credentials()
     client = _OpenAIClientClass(
         base_url=base_url,
         api_key=api_key,
@@ -67,7 +64,7 @@ async def main() -> None:
     langfuse_ctx = None
 
     if LANGFUSE_AVAILABLE:
-        langfuse_ctx = langfuse_utils.get_langfuse_context(
+        langfuse_ctx = langfuse.get_langfuse_context(
             session_id=f"synthetic_{config.dataset_name}",
             eval_type="synthetic_generation",
             metadata={
@@ -93,7 +90,7 @@ async def main() -> None:
     n_themes = 0
 
     _trace = (
-        langfuse_utils.trace_context(langfuse_ctx, name="synthetic_generation")
+        langfuse.trace_context(langfuse_ctx, name="synthetic_generation")
         if langfuse_ctx
         else nullcontext()
     )
@@ -126,7 +123,7 @@ async def main() -> None:
 
     finally:
         if LANGFUSE_AVAILABLE and langfuse_ctx:
-            langfuse_utils.flush(langfuse_ctx)
+            langfuse.flush(langfuse_ctx)
 
 
 if __name__ == "__main__":

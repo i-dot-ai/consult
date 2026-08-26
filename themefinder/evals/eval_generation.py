@@ -7,13 +7,9 @@ against a ground truth theme framework.
 import argparse
 import asyncio
 import logging
-import os
 from datetime import datetime
 
-import dotenv
-import langfuse_utils
 import pandas as pd
-import utils_gateway
 from datasets import DatasetConfig, load_local_data
 from evaluators import (
     create_coverage_evaluator,
@@ -21,7 +17,9 @@ from evaluators import (
     create_redundancy_evaluator,
     create_title_specificity_evaluator,
 )
+from settings import eval_settings
 from themefinder.llm import OpenAILLM
+from utils import gateway, langfuse
 
 from themefinder import theme_condensation, theme_generation, theme_refinement
 
@@ -44,7 +42,7 @@ def _build_output(refined_df: pd.DataFrame) -> dict:
 async def evaluate_generation(
     dataset: str = "gambling_XS",
     llm: OpenAILLM | None = None,
-    langfuse_ctx: langfuse_utils.LangfuseContext | None = None,
+    langfuse_ctx: langfuse.LangfuseContext | None = None,
     judge_llm: OpenAILLM | None = None,
 ) -> dict:
     """Run generation evaluation.
@@ -57,15 +55,13 @@ async def evaluate_generation(
     Returns:
         Dict containing evaluation scores
     """
-    dotenv.load_dotenv()
-
     config = DatasetConfig(dataset=dataset, stage="generation")
 
     # Use provided context or create new one
     owns_context = langfuse_ctx is None
     if langfuse_ctx is None:
         session_id = f"{config.name.replace('/', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        langfuse_ctx = langfuse_utils.get_langfuse_context(
+        langfuse_ctx = langfuse.get_langfuse_context(
             session_id=session_id,
             eval_type="generation",
             metadata={"dataset": dataset},
@@ -74,9 +70,9 @@ async def evaluate_generation(
 
     # Use provided LLM or create new one
     if llm is None:
-        base_url, api_key = utils_gateway.gateway_credentials()
+        base_url, api_key = gateway.gateway_credentials()
         llm = OpenAILLM(
-            model=os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT"),
+            model=eval_settings.auto_eval_model,
             request_kwargs={"temperature": 0},
             base_url=base_url,
             api_key=api_key,
@@ -92,7 +88,7 @@ async def evaluate_generation(
 
     # Only flush if we created the context
     if owns_context:
-        langfuse_utils.flush(langfuse_ctx)
+        langfuse.flush(langfuse_ctx)
     return result
 
 
@@ -130,7 +126,7 @@ async def _run_with_langfuse(ctx, config: DatasetConfig, llm, judge_llm=None) ->
 
     for item in items:
         # Create trace for this item with full metadata
-        with langfuse_utils.dataset_item_trace(ctx, item, ctx.session_id) as (
+        with langfuse.dataset_item_trace(ctx, item, ctx.session_id) as (
             trace,
             trace_id,
         ):
