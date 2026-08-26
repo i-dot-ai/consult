@@ -76,7 +76,7 @@ async def evaluate_generation(
     if llm is None:
         base_url, api_key = utils_gateway.gateway_credentials()
         llm = OpenAILLM(
-            model=os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT"),
+            model=os.getenv("AUTO_EVAL_MODEL"),
             request_kwargs={"temperature": 0},
             base_url=base_url,
             api_key=api_key,

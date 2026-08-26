@@ -62,15 +62,15 @@ test-all: test-backend test-frontend test-themefinder test-pipeline-common ## Ru
 
 .PHONY: run-evals
 run-evals: ## Run themefinder LLM evals (quick mode)
-	cd themefinder/evals && uv run python benchmark.py --quick
+	cd themefinder/evals && uv run --extra eval python benchmark.py --quick
 
 .PHONY: run-eval
 run-eval: ## Args e.g.: EVAL_TYPE=generation|mapping|condensation|refinement
-	cd themefinder/evals && uv run python benchmark.py --quick --evals "$(EVAL_TYPE)"
+	cd themefinder/evals && uv run --extra eval python benchmark.py --quick --evals "$(EVAL_TYPE)"
 
 .PHONY: run-benchmark
 run-benchmark: ## Run full themefinder benchmark (housing_S, 5 runs, all providers)
-	cd themefinder/evals && uv run python benchmark.py --dataset housing_S --runs 5 --provider all --judge-model gpt-4.1
+	cd themefinder/evals && uv run --extra eval python benchmark.py --dataset housing_S --runs 5 --provider all --judge-model gpt-4.1
 
 .PHONY: test-end-to-end
 test-end-to-end: ## Run end-to-end tests with Playwright

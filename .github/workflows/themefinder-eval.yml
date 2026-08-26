@@ -39,7 +39,7 @@ jobs:
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9  # v9.0.0
 
       - name: Install dependencies
-        run: uv sync --package themefinder --extra dev
+        run: uv sync --package themefinder --extra dev --extra eval
 
       - name: Get version info
         id: version
@@ -53,7 +53,7 @@ jobs:
         env:
           LLM_GATEWAY_URL: ${{ secrets.LLM_GATEWAY_URL }}
           CONSULT_EVAL_LITELLM_API_KEY: ${{ secrets.CONSULT_EVAL_LITELLM_API_KEY }}
-          AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT: ${{ secrets.AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT }}
+          AUTO_EVAL_MODEL: ${{ secrets.AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT }}
           LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
           LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
           LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
