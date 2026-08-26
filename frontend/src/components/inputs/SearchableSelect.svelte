@@ -111,6 +111,7 @@
           "text-neutral-900",
           "transition-transform",
           "-rotate-90",
+          "pointer-events-none",
           $open && "rotate-0",
         ])}
       >
