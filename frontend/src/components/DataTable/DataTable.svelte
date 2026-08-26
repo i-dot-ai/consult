@@ -239,6 +239,7 @@
   >
     {#if columnSelect}
       <SearchableSelect
+        id="visible-columns-select"
         label="Visible columns"
         options={columns.map((column) => ({
           value: column.key,
