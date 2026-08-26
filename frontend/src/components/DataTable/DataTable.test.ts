@@ -324,9 +324,10 @@ describe("DataTable", () => {
     );
   });
 
-  it("should filter columns via column select", async () => {
+  it("should toggle visibility of columns via column select", async () => {
     render(DataTable, TEST_DATA as Record<string, unknown>);
 
+    let columnOptions;
     const user = userEvent.setup();
     const columnSelect = screen.getByLabelText("Visible columns");
 
@@ -343,7 +344,7 @@ describe("DataTable", () => {
     await user.click(columnSelect);
 
     // there's an option for each column
-    const columnOptions = screen.getAllByTestId("searchable-select-option");
+    columnOptions = screen.getAllByTestId("searchable-select-option");
     expect(columnOptions).toHaveLength(numExpectedColumnOptions);
 
     // click on first option in the dropdown
@@ -353,6 +354,17 @@ describe("DataTable", () => {
     // expect one column to be hidden at this point
     expect(screen.getAllByTestId("column-header")).toHaveLength(
       numExpectedVisibleColumnsAfter,
+    );
+
+    // click select again to reveal dropdown, it's disappeared after last click
+    await user.click(columnSelect);
+
+    // click on the first option again to reveal it back
+    await user.click(screen.getAllByTestId("searchable-select-option").at(0)!);
+
+    // expect that all columns are visible again
+    expect(screen.getAllByTestId("column-header")).toHaveLength(
+      numExpectedVisibleColumnsBefore,
     );
   });
 
