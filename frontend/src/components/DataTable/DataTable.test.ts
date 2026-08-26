@@ -324,6 +324,34 @@ describe("DataTable", () => {
     );
   });
 
+  it("should filter columns via column select", async () => {
+    render(DataTable, TEST_DATA as Record<string, unknown>);
+
+    const user = userEvent.setup();
+    const columnSelect = screen.getByLabelText("Visible columns");
+
+    const numExpectedColumnOptions = TEST_DATA.columns.length;
+    const numExpectedVisibleColumnsBefore = TEST_DATA.columns.length;
+    const numExpectedVisibleColumnsAfter = TEST_DATA.columns.length - 1;
+
+    // expect all columns to be visible initially
+    expect(screen.getAllByTestId("column-header")).toHaveLength(numExpectedVisibleColumnsBefore);
+
+    // click reveals options
+    await user.click(columnSelect);
+
+    // there's an option for each column
+    const columnOptions = screen.getAllByTestId("searchable-select-option");
+    expect(columnOptions).toHaveLength(numExpectedColumnOptions);
+
+    // click on first option in the dropdown
+    const firstColumnOption = columnOptions.at(0);
+    await user.click(firstColumnOption!);
+
+    // expect one column to be hidden at this point
+    expect(screen.getAllByTestId("column-header")).toHaveLength(numExpectedVisibleColumnsAfter);
+  });
+
   it("should match snapshot", () => {
     const { container } = render(
       DataTable,

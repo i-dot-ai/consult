@@ -168,6 +168,7 @@
             "data-highlighted:text-neutral-900",
             "data-disabled:opacity-50",
           ])}
+          data-testid="searchable-select-option"
         >
           {#if selectedValues.includes(option.value)}
             <div class="check absolute left-2 top-1/2 z-10 text-neutral-900">

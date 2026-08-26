@@ -308,6 +308,7 @@
                 column.align === "right" && "text-right",
               ])}
               aria-sort={getSortText(column, sort)}
+              data-testid="column-header"
             >
               {#if sortable && column.sortable !== false}
                 <Button
