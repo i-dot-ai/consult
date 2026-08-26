@@ -52,7 +52,7 @@
       trigger: id,
       menu: `${id}-menu`,
       label: `${id}-label`,
-    }
+    },
   });
 
   $: if (!$open) {
