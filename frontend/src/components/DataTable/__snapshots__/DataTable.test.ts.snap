@@ -14,52 +14,137 @@ exports[`DataTable > should match snapshot 1`] = `
     </div>
      
     <div
-      class="w-1/3 mt-2 mb-4 ml-auto text-sm svelte-e9ladz"
+      class="flex justify-between items-center gap-2 pb-4 pt-2 svelte-e9ladz"
     >
       <div
-        class="relative"
+        class="flex flex-col gap-1"
       >
         <label
-          class="sr-only"
-          for="search-input"
+          class="sr-only svelte-ekj0e2"
+          data-melt-combobox-label=""
+          for="AS0-u86odi"
+          id="P3LptAC1NT"
         >
-          Search
+          <span
+            class="text-sm font-medium text-neutral-900"
+          >
+            Visible columns
+          </span>
         </label>
          
-        <input
-          class="h-9 w-full p-1 border border-gray-300 rounded-xs focus:outline-2 focus:outline-yellow-300 pl-8 pr-4 svelte-1auzwdn"
-          id="search-input"
-          placeholder="Search..."
-          type="text"
-        />
-         
-        <!---->
-         
         <div
-          class="absolute left-2 top-1/2 mt-0.5 -translate-y-1/2 transform"
+          class="relative"
         >
-          <svg
-            aria-hidden="true"
-            class="fill-neutral-400"
-            height="1.2rem"
-            viewBox="0 -960 960 960"
-            width="1.2rem"
-            xmlns="http://www.w3.org/2000/svg"
+          <div
+            class="absolute left-2 top-1/2 -translate-y-1/2"
           >
-            <!---->
-            <path
-              d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-400"
+              height="1rem"
+              viewBox="0 -960 960 960"
+              width="1rem"
               xmlns="http://www.w3.org/2000/svg"
-            />
+            >
+              <!---->
+              <path
+                d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              <!---->
+            </svg>
             <!---->
-          </svg>
+          </div>
+           
+          <input
+            aria-autocomplete="list"
+            aria-controls="rz1G3MxKDq"
+            aria-expanded="false"
+            aria-labelledby="P3LptAC1NT"
+            autocomplete="off"
+            class="w-full leading-8 flex items-center justify-between rounded-sm bg-white px-3 pr-12 text-black border border-neutral-300 pl-8 svelte-ekj0e2"
+            data-melt-combobox-input=""
+            data-melt-combobox-trigger=""
+            data-state="closed"
+            id="AS0-u86odi"
+            placeholder="2 columns visible"
+            role="combobox"
+          />
+           
+          <div
+            class="absolute right-2 top-1/2 z-10 -translate-y-1/2 text-neutral-900 transition-transform -rotate-90 pointer-events-none svelte-ekj0e2"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-700"
+              height="1rem"
+              viewBox="0 -960 960 960"
+              width="1rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <path
+                d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"
+              />
+              <!---->
+            </svg>
+            <!---->
+          </div>
+          <!---->
+        </div>
+      </div>
+       
+      <!---->
+      <!---->
+       
+      <div
+        class="w-1/3 ml-auto text-sm svelte-e9ladz"
+      >
+        <div
+          class="relative"
+        >
+          <label
+            class="sr-only"
+            for="search-input"
+          >
+            Search
+          </label>
+           
+          <input
+            class="h-9 w-full p-1 border border-gray-300 rounded-xs focus:outline-2 focus:outline-yellow-300 pl-8 pr-4 svelte-1auzwdn"
+            id="search-input"
+            placeholder="Search..."
+            type="text"
+          />
+           
+          <!---->
+           
+          <div
+            class="absolute left-2 top-1/2 mt-0.5 -translate-y-1/2 transform"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-400"
+              height="1.2rem"
+              viewBox="0 -960 960 960"
+              width="1.2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <path
+                d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              <!---->
+            </svg>
+            <!---->
+          </div>
           <!---->
         </div>
         <!---->
       </div>
       <!---->
     </div>
-    <!---->
      
     <div
       class="overflow-x-auto rounded-lg border border-neutral-200 bg-white svelte-e9ladz"
@@ -82,11 +167,17 @@ exports[`DataTable > should match snapshot 1`] = `
               class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
               scope="col"
             >
+              <!---->
               <button
                 aria-label="Sorted ascending by Name. Click to sort descending."
-                class="inline-flex py-2 w-full items-center justify-start gap-2 rounded-md text-left cursor-pointer hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 svelte-e9ladz"
-                type="button"
+                aria-pressed="true"
+                class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                data-variant="ghost"
+                role="button"
+                tabindex="0"
               >
+                <!---->
+                <!---->
                 <span>
                   Name
                 </span>
@@ -117,7 +208,11 @@ exports[`DataTable > should match snapshot 1`] = `
                   </div>
                   <!---->
                 </span>
+                
+                
+                
               </button>
+              
               <!---->
             </th>
             <th
@@ -125,11 +220,17 @@ exports[`DataTable > should match snapshot 1`] = `
               class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
               scope="col"
             >
+              <!---->
               <button
                 aria-label="Sort by Date Created"
-                class="inline-flex py-2 w-full items-center justify-start gap-2 rounded-md text-left cursor-pointer hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 svelte-e9ladz"
-                type="button"
+                aria-pressed="false"
+                class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                data-variant="ghost"
+                role="button"
+                tabindex="0"
               >
+                <!---->
+                <!---->
                 <span>
                   Date Created
                 </span>
@@ -155,7 +256,11 @@ exports[`DataTable > should match snapshot 1`] = `
                   </svg>
                   <!---->
                 </span>
+                
+                
+                
               </button>
+              
               <!---->
             </th>
             
