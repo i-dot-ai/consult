@@ -326,7 +326,6 @@ describe("DataTable", () => {
   it("should toggle visibility of columns via column select", async () => {
     render(DataTable, TEST_DATA as Record<string, unknown>);
 
-    let columnOptions;
     const user = userEvent.setup();
     const columnSelect = screen.getByLabelText("Visible columns");
 
@@ -343,7 +342,7 @@ describe("DataTable", () => {
     await user.click(columnSelect);
 
     // there's an option for each column
-    columnOptions = screen.getAllByTestId("searchable-select-option");
+    const columnOptions = screen.getAllByTestId("searchable-select-option");
     expect(columnOptions).toHaveLength(numExpectedColumnOptions);
 
     // click on first option in the dropdown
