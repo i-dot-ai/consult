@@ -5,23 +5,22 @@ Evaluates the theme refinement task that improves theme labels and descriptions.
 
 import argparse
 import asyncio
-import os
 from datetime import datetime
 
-import dotenv
-import langfuse_utils
 import pandas as pd
-import utils_gateway
 from datasets import DatasetConfig, load_local_data
 from evaluators import create_refinement_quality_evaluator
-from themefinder import theme_refinement
+from settings import eval_settings
 from themefinder.llm import OpenAILLM
+from utils import gateway, langfuse
+
+from themefinder import theme_refinement
 
 
 async def evaluate_refinement(
     dataset: str = "gambling_XS",
     llm: OpenAILLM | None = None,
-    langfuse_ctx: langfuse_utils.LangfuseContext | None = None,
+    langfuse_ctx: langfuse.LangfuseContext | None = None,
     judge_llm: OpenAILLM | None = None,
 ) -> dict:
     """Run refinement evaluation.
@@ -34,15 +33,13 @@ async def evaluate_refinement(
     Returns:
         Dict containing evaluation results
     """
-    dotenv.load_dotenv()
-
     config = DatasetConfig(dataset=dataset, stage="refinement")
 
     # Use provided context or create new one
     owns_context = langfuse_ctx is None
     if langfuse_ctx is None:
         session_id = f"{config.name.replace('/', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        langfuse_ctx = langfuse_utils.get_langfuse_context(
+        langfuse_ctx = langfuse.get_langfuse_context(
             session_id=session_id,
             eval_type="refinement",
             metadata={"dataset": dataset},
@@ -51,9 +48,9 @@ async def evaluate_refinement(
 
     # Use provided LLM or create new one
     if llm is None:
-        base_url, api_key = utils_gateway.gateway_credentials()
+        base_url, api_key = gateway.gateway_credentials()
         llm = OpenAILLM(
-            model=os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT"),
+            model=eval_settings.auto_eval_model,
             request_kwargs={"temperature": 0},
             base_url=base_url,
             api_key=api_key,
@@ -70,7 +67,7 @@ async def evaluate_refinement(
 
     # Only flush if we created the context
     if owns_context:
-        langfuse_utils.flush(langfuse_ctx)
+        langfuse.flush(langfuse_ctx)
     return result
 
 
@@ -101,7 +98,7 @@ async def _run_with_langfuse(ctx, config: DatasetConfig, llm, eval_llm) -> dict:
 
     for item in items:
         # Create trace for this item with full metadata
-        with langfuse_utils.dataset_item_trace(ctx, item, ctx.session_id) as (
+        with langfuse.dataset_item_trace(ctx, item, ctx.session_id) as (
             trace,
             trace_id,
         ):
@@ -200,8 +197,8 @@ async def _run_local_fallback(config: DatasetConfig, llm, eval_llm) -> dict:
         question = item["input"].get("question", "")
         original_records = themes_df.to_dict(orient="records")
 
-        with langfuse_utils.trace_context(
-            langfuse_utils.LangfuseContext(client=None, handler=None)
+        with langfuse.trace_context(
+            langfuse.LangfuseContext(client=None, handler=None)
         ):
             refined_df, _ = await theme_refinement(
                 themes_df,

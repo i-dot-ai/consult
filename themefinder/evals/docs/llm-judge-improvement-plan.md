@@ -588,7 +588,7 @@ def setup_langfuse_evaluators(client: Langfuse):
 | **Models/Patterns** | Langfuse SDK, evaluator configuration |
 | **Impact** | Medium - better observability, easier cost control |
 
-**Files to modify**: `langfuse_utils.py`, `benchmark.py`
+**Files to modify**: `langfuse.py`, `benchmark.py`
 
 ---
 
@@ -774,7 +774,7 @@ def intruder_test(theme: dict, responses: list[str], n_intruders: int = 1) -> fl
 | `evals/prompts/generation_eval.txt` | P2, P3, P5 |
 | `evals/prompts/condensation_eval.txt` | P3, P5 |
 | `evals/prompts/refinement_eval.txt` | P3, P5 |
-| `langfuse_utils.py` | P10 |
+| `langfuse.py` | P10 |
 | `metrics.py` | P4 |
 | `utils.py` | P1 |
 | **New files** | |

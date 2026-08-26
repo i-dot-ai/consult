@@ -38,7 +38,7 @@ jobs:
         working-directory: themefinder
         run: |
           uv venv --python ${{ matrix.python-version }} .ci-venv
-          uv pip install --python .ci-venv/bin/python -e ".[dev]"
+          uv pip install --python .ci-venv/bin/python -e ".[dev,eval]"
 
       - name: Run tests with coverage
         working-directory: themefinder
