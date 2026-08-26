@@ -164,7 +164,8 @@ def create_default_selected_themes(question):
 
 def create_response(respondent, question, free_text_answers):
     """Create and return a Response."""
-    free_text = random.choice(free_text_answers) if question.has_free_text else None
+    raw = random.choice(free_text_answers) if question.has_free_text else None
+    free_text = raw if raw not in ("", "Not Provided", "-") else None
     return ResponseFactory(question=question, free_text=free_text, respondent=respondent)
 
 
