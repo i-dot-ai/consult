@@ -227,14 +227,16 @@
     {announcement}
   </div>
 
-  <div class={clsx([
-    "flex",
-    "justify-between",
-    "items-center",
-    "gap-2",
-    "pb-4",
-    "pt-2",
-  ])}>
+  <div
+    class={clsx([
+      "flex",
+      "justify-between",
+      "items-center",
+      "gap-2",
+      "pb-4",
+      "pt-2",
+    ])}
+  >
     {#if columnSelect}
       <SearchableSelect
         label="Visible columns"
@@ -244,14 +246,13 @@
         }))}
         hideLabel={true}
         placeholder={`${visibleColumns.length} columns visible`}
-        selectedValues={visibleColumns.map(c => c.key)}
+        selectedValues={visibleColumns.map((column) => column.key)}
         handleChange={(newVal) => {
-          columns = columns.map(column => ({
+          columns = columns.map((column) => ({
             ...column,
-            hidden: newVal.value === column.key
-              ? !column.hidden
-              : column.hidden
-          }))
+            hidden:
+              newVal.value === column.key ? !column.hidden : column.hidden,
+          }));
         }}
       />
     {/if}
