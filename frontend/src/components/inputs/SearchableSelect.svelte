@@ -17,6 +17,7 @@
   import Search from "../svg/material/Search.svelte";
   import type { SearchableSelectOption } from "../../global/types";
 
+  export let id: string = "searchable-select";
   export let label: string = "";
   export let hideLabel: boolean = false;
   export let handleChange: (
@@ -47,6 +48,11 @@
       return next;
     },
     forceVisible: true,
+    ids: {
+      trigger: id,
+      menu: `${id}-menu`,
+      label: `${id}-label`,
+    }
   });
 
   $: if (!$open) {
