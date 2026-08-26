@@ -318,7 +318,6 @@
                   size="xs"
                   ariaLabel={getSortAriaLabel(column)}
                   handleClick={() => sortBy(column)}
-                  fullWidth={true}
                   highlighted={sort?.key === column.key}
                   highlightVariant="none"
                 >
