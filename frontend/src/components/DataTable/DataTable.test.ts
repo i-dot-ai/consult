@@ -144,6 +144,19 @@ describe("DataTable", () => {
     }
   });
 
+  it("should display page related elements if paginated", () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      paginated: true,
+    } as Record<string, unknown>);
+
+    expect(screen.getByTestId("current-page")).toBeInTheDocument();
+    expect(screen.getByLabelText("Page Size")).toBeInTheDocument();
+    expect(screen.getByTestId("visible-items-text")).toBeInTheDocument();
+    expect(screen.getByLabelText("Previous Page")).toBeInTheDocument();
+    expect(screen.getByLabelText("Next Page")).toBeInTheDocument();
+  });
+
   it("should change items displayed when navinagated to other pages", async () => {
     const PAGE_SIZES = [1];
 
@@ -207,7 +220,25 @@ describe("DataTable", () => {
   it("should disable prev button if on first page", async () => {
     render(DataTable, TEST_DATA as Record<string, unknown>);
 
+    const prevButton = screen.getByLabelText("Previous Page");
+    expect(prevButton).toBeDisabled();
+  });
+
+  it("should disable next button if on last page", async () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      pageSizes: [1],
+    } as Record<string, unknown>);
+
     const nextButton = screen.getByLabelText("Next Page");
+    const user = userEvent.setup();
+
+    // navigate to last page
+    for (let i=0; i<TEST_DATA.rows.length - 1; i++) {
+      await user.click(nextButton);
+    }
+
+    // now on last page, next should be disabled
     expect(nextButton).toBeDisabled();
   });
 
@@ -319,6 +350,43 @@ describe("DataTable", () => {
       "aria-label",
       "Sorted descending by Name. Click to sort ascending.",
     );
+  });
+
+  it("should not render column select if not columnSelect enabled", async () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      columnSelect: false,
+    } as Record<string, unknown>);
+
+    expect(screen.queryByLabelText("Visible columns")).not.toBeInTheDocument();
+  });
+
+  it("should not render search input if not searchable", async () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      searchable: false,
+    } as Record<string, unknown>);
+
+    expect(screen.queryByLabelText("Search")).not.toBeInTheDocument();
+  });
+
+  it("should not paginate if not paginated", async () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      paginated: false,
+      pageSizes: [1],
+    } as Record<string, unknown>);
+
+    for (let i=0; i<TEST_DATA.rows.length; i++) {
+      expect(screen.getByText(TEST_DATA.rows[i].name)).toBeInTheDocument();
+    }
+
+    // Assert that page related elements are hidden
+    expect(screen.queryByTestId("current-page")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Page Size")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("visible-items-text")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Previous Page")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Next Page")).not.toBeInTheDocument();
   });
 
   it("should toggle visibility of columns via column select", async () => {
