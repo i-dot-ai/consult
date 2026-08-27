@@ -54,19 +54,38 @@ describe("DataTable", () => {
   });
 
   it("should display correct default page size options", async () => {
-    const PAGE_SIZES = [10, 50, 100, 250, 500];
-
     render(DataTable, TEST_DATA as Record<string, unknown>);
 
     const pageSizeSelectOptions = screen.getAllByTestId(
       "page-size-select-option",
     );
 
-    expect(pageSizeSelectOptions).toHaveLength(5);
+    expect(pageSizeSelectOptions).toHaveLength(TEST_DATA.pageSizes.length);
 
-    for (let i = 0; i < PAGE_SIZES.length; i++) {
+    for (let i = 0; i < TEST_DATA.pageSizes.length; i++) {
       expect(pageSizeSelectOptions[i]).toHaveTextContent(
-        PAGE_SIZES[i].toString(),
+        TEST_DATA.pageSizes[i].toString(),
+      );
+    }
+  });
+
+  it("should display correct custom page size options", async () => {
+    const CUSTOM_PAGE_SIZES = [10, 50, 100, 250, 500];
+
+    render(DataTable, {
+      ...TEST_DATA,
+      pageSizes: CUSTOM_PAGE_SIZES,
+    } as Record<string, unknown>);
+
+    const pageSizeSelectOptions = screen.getAllByTestId(
+      "page-size-select-option",
+    );
+
+    expect(pageSizeSelectOptions).toHaveLength(CUSTOM_PAGE_SIZES.length);
+
+    for (let i = 0; i < CUSTOM_PAGE_SIZES.length; i++) {
+      expect(pageSizeSelectOptions[i]).toHaveTextContent(
+        CUSTOM_PAGE_SIZES[i].toString(),
       );
     }
   });
@@ -190,27 +209,6 @@ describe("DataTable", () => {
 
     const nextButton = screen.getByLabelText("Next Page");
     expect(nextButton).toBeDisabled();
-  });
-
-  it("should display correct custom page size options", async () => {
-    const PAGE_SIZES = [1, 5, 15, 30];
-
-    render(DataTable, {
-      ...TEST_DATA,
-      pageSizes: PAGE_SIZES,
-    } as Record<string, unknown>);
-
-    const pageSizeSelectOptions = screen.getAllByTestId(
-      "page-size-select-option",
-    );
-
-    expect(pageSizeSelectOptions).toHaveLength(4);
-
-    for (let i = 0; i < PAGE_SIZES.length; i++) {
-      expect(pageSizeSelectOptions[i]).toHaveTextContent(
-        PAGE_SIZES[i].toString(),
-      );
-    }
   });
 
   it("should initially show 10 items", () => {
@@ -372,10 +370,20 @@ describe("DataTable", () => {
       sortable: false,
     } as Record<string, unknown>);
 
-    for (const columnName of TEST_DATA.columns.map(col => col.label)) {
-      expect(screen.queryAllByLabelText(`Sorted ascending by ${columnName}. Click to sort descending.`)).toHaveLength(0);
-      expect(screen.queryAllByLabelText(`Sorted descending by ${columnName}. Click to sort ascending.`)).toHaveLength(0);
-      expect(screen.queryAllByLabelText(`Sort by ${columnName}`)).toHaveLength(0);
+    for (const columnName of TEST_DATA.columns.map((col) => col.label)) {
+      expect(
+        screen.queryAllByLabelText(
+          `Sorted ascending by ${columnName}. Click to sort descending.`,
+        ),
+      ).toHaveLength(0);
+      expect(
+        screen.queryAllByLabelText(
+          `Sorted descending by ${columnName}. Click to sort ascending.`,
+        ),
+      ).toHaveLength(0);
+      expect(screen.queryAllByLabelText(`Sort by ${columnName}`)).toHaveLength(
+        0,
+      );
     }
   });
 
@@ -389,9 +397,17 @@ describe("DataTable", () => {
     } as Record<string, unknown>);
 
     // custom initial sort should be applied
-    expect(screen.getByLabelText("Sorted descending by Date Created. Click to sort ascending.")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(
+        "Sorted descending by Date Created. Click to sort ascending.",
+      ),
+    ).toBeInTheDocument();
     // default initial sort should not be applied
-    expect(screen.queryByLabelText("Sorted ascending by Name. Click to sort descending.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText(
+        "Sorted ascending by Name. Click to sort descending.",
+      ),
+    ).not.toBeInTheDocument();
   });
 
   it("should match snapshot", () => {

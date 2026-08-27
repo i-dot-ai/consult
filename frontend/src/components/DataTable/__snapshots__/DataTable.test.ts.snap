@@ -388,13 +388,6 @@ exports[`DataTable > should match snapshot 1`] = `
           <option
             class="bg-white text-neutral-900"
             data-testid="page-size-select-option"
-            value="50"
-          >
-            50
-          </option>
-          <option
-            class="bg-white text-neutral-900"
-            data-testid="page-size-select-option"
             value="100"
           >
             100
@@ -402,16 +395,9 @@ exports[`DataTable > should match snapshot 1`] = `
           <option
             class="bg-white text-neutral-900"
             data-testid="page-size-select-option"
-            value="250"
+            value="1000"
           >
-            250
-          </option>
-          <option
-            class="bg-white text-neutral-900"
-            data-testid="page-size-select-option"
-            value="500"
-          >
-            500
+            1000
           </option>
           
         </select>
