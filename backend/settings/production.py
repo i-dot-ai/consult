@@ -4,7 +4,7 @@ from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
 from i_dot_ai_utilities.logging.types.enrichment_types import ExecutionEnvironmentType
 from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 
-from sentry_context import sentry_before_send
+from sentry_context import default_perf_sample_rate, sentry_before_send
 from settings.base import *
 
 CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS
@@ -27,12 +27,16 @@ STORAGES["staticfiles"] = {
 }
 
 
+_perf_sample_rate = default_perf_sample_rate(ENVIRONMENT)
+
 sentry_sdk.init(
     dsn=SENTRY_DSN,
     environment=ENVIRONMENT,
     before_send=sentry_before_send,
-    traces_sample_rate=1.0,
-    profile_session_sample_rate=1.0,
+    traces_sample_rate=env.float("SENTRY_TRACES_SAMPLE_RATE", default=_perf_sample_rate),
+    profile_session_sample_rate=env.float(
+        "SENTRY_PROFILE_SESSION_SAMPLE_RATE", default=_perf_sample_rate
+    ),
     profile_lifecycle="trace",
 )
 
