@@ -9,6 +9,7 @@ const loading = $state(TEST_DATA.loading);
 const columnSelect = $state(TEST_DATA.columnSelect);
 const searchable = $state(TEST_DATA.searchable);
 const sortable = $state(TEST_DATA.sortable);
+const pageSizes = $state(TEST_DATA.pageSizes);
 
 export default {
   name: "DataTable",
@@ -23,6 +24,7 @@ export default {
     { name: "columnSelect", value: columnSelect, type: "bool" },
     { name: "searchable", value: searchable, type: "bool" },
     { name: "sortable", value: sortable, type: "bool" },
+    { name: "pageSizes", value: pageSizes, type: "json" },
   ],
   stories: [
     {
@@ -60,7 +62,7 @@ export default {
       props: {
         ...TEST_DATA,
         sortable: false,
-      }
-    }
+      },
+    },
   ],
 };

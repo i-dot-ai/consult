@@ -94,6 +94,8 @@ export const INITIAL_SORT = {
   direction: "asc",
 };
 
+export const PAGE_SIZES = [10, 100, 1000];
+
 export const LOADING = false;
 
 export const SORTABLE = true;
@@ -105,6 +107,7 @@ export const TEST_DATA = {
   columns: COLUMNS,
   caption: CAPTION,
   initialSort: INITIAL_SORT,
+  pageSizes: PAGE_SIZES,
   loading: LOADING,
   columnSelect: COLUMN_SELECT,
   searchable: SEARCHABLE,

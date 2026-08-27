@@ -71,7 +71,12 @@
 
   let searchQuery = $state("");
 
-  let currentPage = $state(1);
+  let currentPage = $derived.by(() => {
+    // set currentPage back to 1 if pageSizes or searchQuery change
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    pageSizes && searchQuery;
+    return 1;
+  });
 
   let pageSize = $derived(pageSizes[0]);
 
@@ -266,10 +271,7 @@
           hideLabel={true}
           variant="search"
           value={searchQuery}
-          setValue={(newValue) => {
-            searchQuery = newValue;
-            currentPage = 1;
-          }}
+          setValue={(newValue) => (searchQuery = newValue)}
           placeholder={searchPlaceholder}
         />
       </div>
