@@ -18,6 +18,7 @@ from consultations.dummy_data import (
 )
 from hosting_environment import HostingEnvironment
 
+
 def _to_jsonl(records):
     return "\n".join(json.dumps(r) for r in records)
 
