@@ -57,7 +57,7 @@
     sortable = true,
     initialSort,
     searchable = true,
-    searchPlaceholder = "Search...",
+    searchPlaceholder,
     paginated = true,
     pageSizes = [10, 50, 100, 250, 500],
     columnSelect = true,
@@ -272,7 +272,7 @@
           variant="search"
           value={searchQuery}
           setValue={(newValue) => (searchQuery = newValue)}
-          placeholder={searchPlaceholder}
+          placeholder={searchPlaceholder || "Search..."}
         />
       </div>
     {/if}
