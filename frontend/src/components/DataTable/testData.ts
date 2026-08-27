@@ -102,6 +102,8 @@ export const SORTABLE = true;
 
 export const PAGINATED = true;
 
+export const SEARCH_PLACEHOLDER = "";
+
 export const onRowClick = (row: RowItem) => alert("Row clicked: " + row.name);
 
 export const TEST_DATA = {
@@ -113,6 +115,7 @@ export const TEST_DATA = {
   loading: LOADING,
   columnSelect: COLUMN_SELECT,
   searchable: SEARCHABLE,
+  searchPlaceholder: SEARCH_PLACEHOLDER,
   sortable: SORTABLE,
   paginated: PAGINATED,
   onRowClick,

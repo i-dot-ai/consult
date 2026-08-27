@@ -8,6 +8,7 @@ const initialSort = $state(TEST_DATA.initialSort);
 const loading = $state(TEST_DATA.loading);
 const columnSelect = $state(TEST_DATA.columnSelect);
 const searchable = $state(TEST_DATA.searchable);
+const searchPlaceholder = $state(TEST_DATA.searchPlaceholder);
 const sortable = $state(TEST_DATA.sortable);
 const paginated = $state(TEST_DATA.paginated);
 const pageSizes = $state(TEST_DATA.pageSizes);
@@ -27,6 +28,7 @@ export default {
     { name: "sortable", value: sortable, type: "bool" },
     { name: "paginated", value: paginated, type: "bool" },
     { name: "pageSizes", value: pageSizes, type: "json" },
+    { name: "searchPlaceholder", value: searchPlaceholder, type: "text" },
   ],
   stories: [
     {
