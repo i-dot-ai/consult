@@ -1,4 +1,6 @@
+import csv
 import datetime
+import io
 import json
 from zoneinfo import ZoneInfo
 
@@ -15,9 +17,6 @@ from consultations.dummy_data import (
     candidate_theme_keys_for_respondent,
 )
 from hosting_environment import HostingEnvironment
-
-TIMESTAMP = datetime.datetime.now(tz=ZoneInfo("Europe/London")).date()
-
 
 def _to_jsonl(records):
     return "\n".join(json.dumps(r) for r in records)
@@ -197,12 +196,12 @@ def _build_evidence_rich():
 def _build_themes_csv(question_data):
     """Build themes.csv content (selected themes) for the assign-themes batch job."""
     themes = _build_themes_json(question_data)
-    lines = ["Theme Name,Theme Description"]
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["Theme Name", "Theme Description"])
     for theme in themes:
-        name = theme["theme_name"]
-        description = theme["theme_description"]
-        lines.append(f"{name},{description}")
-    return "\n".join(lines)
+        writer.writerow([theme["theme_name"], theme["theme_description"]])
+    return buf.getvalue()
 
 
 class Command(BaseCommand):
@@ -219,15 +218,16 @@ class Command(BaseCommand):
 
         s3_client = boto3.client("s3")
         bucket = settings.AWS_BUCKET_NAME
+        timestamp = datetime.datetime.now(tz=ZoneInfo("Europe/London")).date()
 
         self._delete_existing_data(s3_client, bucket)
         questions_data = _load_questions()
 
         # S3-only consultation (no DB record)
-        self._seed_consultation(s3_client, bucket, "dummy-s3-only", questions_data)
+        self._seed_consultation(s3_client, bucket, "dummy-s3-only", questions_data, timestamp)
 
         # SETUP — inputs only
-        self._seed_consultation(s3_client, bucket, "dummy-setup", questions_data)
+        self._seed_consultation(s3_client, bucket, "dummy-setup", questions_data, timestamp)
 
         # Starting finalising themes — has clustered themes + candidate theme mappings
         self._seed_consultation(
@@ -235,6 +235,7 @@ class Command(BaseCommand):
             bucket,
             "dummy-start-finalising-themes",
             questions_data,
+            timestamp,
             include_clustered_themes=True,
             include_candidate_theme_mappings=True,
         )
@@ -245,6 +246,7 @@ class Command(BaseCommand):
             bucket,
             "dummy-finished-finalising-themes",
             questions_data,
+            timestamp,
             include_clustered_themes=True,
             include_candidate_theme_mappings=True,
             include_themes_csv=True,
@@ -256,6 +258,7 @@ class Command(BaseCommand):
             bucket,
             "dummy-analysis",
             questions_data,
+            timestamp,
             include_clustered_themes=True,
             include_candidate_theme_mappings=True,
             include_mapping_outputs=True,
@@ -287,6 +290,7 @@ class Command(BaseCommand):
         bucket,
         code,
         questions_data,
+        timestamp,
         include_clustered_themes=False,
         include_candidate_theme_mappings=False,
         include_mapping_outputs=False,
@@ -338,7 +342,7 @@ class Command(BaseCommand):
                 continue
 
             if include_clustered_themes:
-                key = f"{prefix}/outputs/sign_off/{TIMESTAMP}/question_part_{q_num}/clustered_themes.json"
+                key = f"{prefix}/outputs/sign_off/{timestamp}/question_part_{q_num}/clustered_themes.json"
                 s3_client.put_object(
                     Bucket=bucket,
                     Key=key,
@@ -346,7 +350,7 @@ class Command(BaseCommand):
                 )
 
             if include_candidate_theme_mappings:
-                out_prefix = f"{prefix}/outputs/mapping/{TIMESTAMP}/question_part_{q_num}"
+                out_prefix = f"{prefix}/outputs/mapping/{timestamp}/question_part_{q_num}"
                 themes = _build_candidate_themes_json(question_data)
                 s3_client.put_object(
                     Bucket=bucket,
@@ -367,7 +371,7 @@ class Command(BaseCommand):
                 )
 
             if include_mapping_outputs:
-                out_prefix = f"{prefix}/outputs/mapping/{TIMESTAMP}/question_part_{q_num}"
+                out_prefix = f"{prefix}/outputs/mapping/{timestamp}/question_part_{q_num}"
                 themes = _build_themes_json(question_data)
                 s3_client.put_object(
                     Bucket=bucket,
