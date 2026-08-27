@@ -207,14 +207,15 @@ def _build_themes_csv(question_data):
 
 class Command(BaseCommand):
     help = "Reset and seed S3 with dummy consultation data matching the DB. Only runs on deployed non-prod environments."
+    environment = getattr(settings, "ENVIRONMENT", "").lower()
 
     def handle(self, *args, **options):
-        if HostingEnvironment.is_production():
-            self.stdout.write("Skipping S3 seed on production.")
+        if HostingEnvironment.is_production() or HostingEnvironment.is_preprod_environment():
+            self.stdout.write(f"Skipping S3 seed on {self.environment} environment.")
             return
 
         if not HostingEnvironment.is_deployed():
-            self.stdout.write("Skipping S3 seed on local environment (no real S3 bucket).")
+            self.stdout.write(f"Skipping S3 seed on {self.environment} environment (no real S3 bucket).")
             return
 
         s3_client = boto3.client("s3")

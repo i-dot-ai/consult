@@ -23,6 +23,11 @@ class HostingEnvironment:
         return env.str("ENVIRONMENT", "").upper() == "PROD"
 
     @staticmethod
+    def is_preprod_environment() -> bool:
+        environment = env.str("ENVIRONMENT", "").upper()
+        return environment == "PREPROD"
+
+    @staticmethod
     def is_development_environment() -> bool:
         environment = env.str("ENVIRONMENT", "").upper()
         development_environments = ["LOCAL", "TEST", "DEV", "DEVELOPMENT"]
