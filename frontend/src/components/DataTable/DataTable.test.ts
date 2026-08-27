@@ -234,7 +234,7 @@ describe("DataTable", () => {
     const user = userEvent.setup();
 
     // navigate to last page
-    for (let i=0; i<TEST_DATA.rows.length - 1; i++) {
+    for (let i = 0; i < TEST_DATA.rows.length - 1; i++) {
       await user.click(nextButton);
     }
 
@@ -330,6 +330,25 @@ describe("DataTable", () => {
     expect(isRowsSorted(rows, true)).toBeTruthy();
   });
 
+  it("should call sort callback when a sort button is clicked", async () => {
+    const onSortChangeCallback = vi.fn();
+
+    render(DataTable, {
+      ...TEST_DATA,
+      onSortChange: onSortChangeCallback,
+    } as Record<string, unknown>);
+
+    const user = userEvent.setup();
+    const sortButton = screen.getByLabelText("Sort by Date Created");
+
+    await user.click(sortButton);
+
+    expect(onSortChangeCallback).toHaveBeenCalledWith({
+      key: "createdAt",
+      direction: "asc",
+    });
+  });
+
   it("should display correct labels for sort buttons depending on sort applied", async () => {
     render(DataTable, {
       ...TEST_DATA,
@@ -377,7 +396,7 @@ describe("DataTable", () => {
       pageSizes: [1],
     } as Record<string, unknown>);
 
-    for (let i=0; i<TEST_DATA.rows.length; i++) {
+    for (let i = 0; i < TEST_DATA.rows.length; i++) {
       expect(screen.getByText(TEST_DATA.rows[i].name)).toBeInTheDocument();
     }
 
