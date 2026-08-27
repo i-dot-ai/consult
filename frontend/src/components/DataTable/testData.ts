@@ -96,6 +96,8 @@ export const INITIAL_SORT = {
 
 export const LOADING = false;
 
+export const SORTABLE = true;
+
 export const onRowClick = (row: RowItem) => alert("Row clicked: " + row.name);
 
 export const TEST_DATA = {
@@ -106,5 +108,6 @@ export const TEST_DATA = {
   loading: LOADING,
   columnSelect: COLUMN_SELECT,
   searchable: SEARCHABLE,
+  sortable: SORTABLE,
   onRowClick,
 };

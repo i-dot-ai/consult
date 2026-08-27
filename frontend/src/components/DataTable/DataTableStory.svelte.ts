@@ -8,6 +8,7 @@ const initialSort = $state(TEST_DATA.initialSort);
 const loading = $state(TEST_DATA.loading);
 const columnSelect = $state(TEST_DATA.columnSelect);
 const searchable = $state(TEST_DATA.searchable);
+const sortable = $state(TEST_DATA.sortable);
 
 export default {
   name: "DataTable",
@@ -21,6 +22,7 @@ export default {
     { name: "onRowClick", value: TEST_DATA.onRowClick, type: "func" },
     { name: "columnSelect", value: columnSelect, type: "bool" },
     { name: "searchable", value: searchable, type: "bool" },
+    { name: "sortable", value: sortable, type: "bool" },
   ],
   stories: [
     {
@@ -53,5 +55,12 @@ export default {
         rows: extraRows,
       },
     },
+    {
+      name: "Not Sortable",
+      props: {
+        ...TEST_DATA,
+        sortable: false,
+      }
+    }
   ],
 };

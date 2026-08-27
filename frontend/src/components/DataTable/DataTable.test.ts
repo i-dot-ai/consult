@@ -366,6 +366,19 @@ describe("DataTable", () => {
     );
   });
 
+  it("should not render column headers as sort buttons if not sortable", async () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      sortable: false,
+    } as Record<string, unknown>);
+
+    for (const columnName of TEST_DATA.columns.map(col => col.label)) {
+      expect(screen.queryAllByLabelText(`Sorted ascending by ${columnName}. Click to sort descending.`)).toHaveLength(0);
+      expect(screen.queryAllByLabelText(`Sorted descending by ${columnName}. Click to sort ascending.`)).toHaveLength(0);
+      expect(screen.queryAllByLabelText(`Sort by ${columnName}`)).toHaveLength(0);
+    }
+  });
+
   it("should match snapshot", () => {
     const { container } = render(
       DataTable,
