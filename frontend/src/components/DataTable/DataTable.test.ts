@@ -379,6 +379,21 @@ describe("DataTable", () => {
     }
   });
 
+  it("should apply initial sort", async () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      initialSort: {
+        key: "createdAt",
+        direction: "desc",
+      },
+    } as Record<string, unknown>);
+
+    // custom initial sort should be applied
+    expect(screen.getByLabelText("Sorted descending by Date Created. Click to sort ascending.")).toBeInTheDocument();
+    // default initial sort should not be applied
+    expect(screen.queryByLabelText("Sorted ascending by Name. Click to sort descending.")).not.toBeInTheDocument();
+  });
+
   it("should match snapshot", () => {
     const { container } = render(
       DataTable,
