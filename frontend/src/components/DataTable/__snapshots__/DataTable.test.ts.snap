@@ -22,8 +22,8 @@ exports[`DataTable > should match snapshot 1`] = `
         <label
           class="sr-only svelte-ekj0e2"
           data-melt-combobox-label=""
-          for="visible-columns-select"
-          id="visible-columns-select-label"
+          for="data-table-visible-columns-select"
+          id="data-table-visible-columns-select-label"
         >
           <span
             class="text-sm font-medium text-neutral-900"
@@ -58,15 +58,15 @@ exports[`DataTable > should match snapshot 1`] = `
            
           <input
             aria-autocomplete="list"
-            aria-controls="visible-columns-select-menu"
+            aria-controls="data-table-visible-columns-select-menu"
             aria-expanded="false"
-            aria-labelledby="visible-columns-select-label"
+            aria-labelledby="data-table-visible-columns-select-label"
             autocomplete="off"
             class="w-full leading-8 flex items-center justify-between rounded-sm bg-white px-3 pr-12 text-black border border-neutral-300 pl-8 svelte-ekj0e2"
             data-melt-combobox-input=""
             data-melt-combobox-trigger=""
             data-state="closed"
-            id="visible-columns-select"
+            id="data-table-visible-columns-select"
             placeholder="2 columns visible"
             role="combobox"
           />
@@ -105,14 +105,14 @@ exports[`DataTable > should match snapshot 1`] = `
         >
           <label
             class="sr-only"
-            for="search-input"
+            for="data-table-search-input"
           >
             Search
           </label>
            
           <input
             class="h-9 w-full p-1 border border-gray-300 rounded-xs focus:outline-2 focus:outline-yellow-300 pl-8 pr-4 svelte-1auzwdn"
-            id="search-input"
+            id="data-table-search-input"
             placeholder="Search..."
             type="text"
           />
@@ -362,7 +362,7 @@ exports[`DataTable > should match snapshot 1`] = `
       >
         <label
           class="mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6 min-w-max"
-          for="page-size-select"
+          for="data-table-page-size-select"
         >
           Page Size
         </label>
@@ -374,12 +374,12 @@ exports[`DataTable > should match snapshot 1`] = `
          
         <select
           class="h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700 focus:outline-2 focus:outline-yellow-300 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50"
-          id="page-size-select"
-          name="page-size-select"
+          id="data-table-page-size-select"
+          name="data-table-page-size-select"
         >
           <option
             class="bg-white text-neutral-900"
-            data-testid="page-size-select-option"
+            data-testid="data-table-page-size-select-option"
             selected=""
             value="10"
           >
@@ -387,14 +387,14 @@ exports[`DataTable > should match snapshot 1`] = `
           </option>
           <option
             class="bg-white text-neutral-900"
-            data-testid="page-size-select-option"
+            data-testid="data-table-page-size-select-option"
             value="100"
           >
             100
           </option>
           <option
             class="bg-white text-neutral-900"
-            data-testid="page-size-select-option"
+            data-testid="data-table-page-size-select-option"
             value="1000"
           >
             1000

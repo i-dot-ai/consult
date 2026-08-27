@@ -57,7 +57,7 @@ describe("DataTable", () => {
     render(DataTable, TEST_DATA as Record<string, unknown>);
 
     const pageSizeSelectOptions = screen.getAllByTestId(
-      "page-size-select-option",
+      "data-table-page-size-select-option",
     );
 
     expect(pageSizeSelectOptions).toHaveLength(TEST_DATA.pageSizes.length);
@@ -78,7 +78,7 @@ describe("DataTable", () => {
     } as Record<string, unknown>);
 
     const pageSizeSelectOptions = screen.getAllByTestId(
-      "page-size-select-option",
+      "data-table-page-size-select-option",
     );
 
     expect(pageSizeSelectOptions).toHaveLength(CUSTOM_PAGE_SIZES.length);
