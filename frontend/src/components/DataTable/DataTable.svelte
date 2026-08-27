@@ -34,6 +34,7 @@
   import SearchableSelect from "../inputs/SearchableSelect.svelte";
 
   type Props = {
+    id?: string;
     rows?: T[];
     columns: DataTableColumn<T>[];
     caption?: string;
@@ -50,6 +51,7 @@
   };
 
   let {
+    id = "data-table",
     rows = [],
     columns,
     caption = "Data table",
@@ -244,7 +246,7 @@
   >
     {#if columnSelect}
       <SearchableSelect
-        id="visible-columns-select"
+        id={`${id}-visible-columns-select`}
         label="Visible columns"
         options={columns.map((column) => ({
           value: column.key,
@@ -266,7 +268,7 @@
     {#if searchable}
       <div class={clsx(["w-1/3", "ml-auto", "text-sm"])}>
         <TextInput
-          id="search-input"
+          id={`${id}-search-input`}
           label="Search"
           hideLabel={true}
           variant="search"
@@ -452,7 +454,7 @@
 
     <div class="text-xs page-size-container">
       <Select
-        id="page-size-select"
+        id={`${id}-page-size-select`}
         items={pageSizes.map((option) => ({
           value: option.toString(),
           label: option.toString(),
