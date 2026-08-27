@@ -337,7 +337,7 @@
                         </MaterialIcon>
                       </div>
                     {:else if sort?.key === column.key && sort.direction === "desc"}
-                      <div class="rotate-270">
+                      <div class="-rotate-90">
                         <MaterialIcon color="fill-neutral-500">
                           <ArrowForward />
                         </MaterialIcon>
