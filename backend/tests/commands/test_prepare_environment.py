@@ -21,7 +21,24 @@ class TestPrepareEnvironment:
         assert Consultation.objects.filter(code="KEEP_ME").exists()
 
     @pytest.mark.django_db
-    def test_resets_and_seeds_db(self, settings):
+    @patch(
+        "consultations.management.commands.prepare_environment.HostingEnvironment.is_deployed",
+        return_value=False,
+    )
+    def test_does_not_reset_when_dev_but_not_deployed(self, _mock_deployed, settings):
+        settings.ENVIRONMENT = "dev"
+
+        Consultation.objects.create(title="Should survive", code="KEEP_ME")
+        call_command("prepare_environment")
+
+        assert Consultation.objects.filter(code="KEEP_ME").exists()
+
+    @pytest.mark.django_db
+    @patch(
+        "consultations.management.commands.prepare_environment.HostingEnvironment.is_deployed",
+        return_value=True,
+    )
+    def test_resets_and_seeds_db(self, _mock_deployed, settings):
         settings.ENVIRONMENT = "dev"
 
         Consultation.objects.create(title="Should be deleted", code="DELETE_ME")
@@ -50,7 +67,15 @@ class TestPrepareEnvironment:
         "consultations.management.commands.prepare_s3.HostingEnvironment.is_deployed",
         return_value=True,
     )
-    def test_seeds_s3(self, _mock_deployed, _mock_prod, _mock_embed, settings):
+    @patch(
+        "consultations.management.commands.prepare_environment.HostingEnvironment.is_deployed",
+        return_value=True,
+    )
+    def test_seeds_s3(self, _mock_env_deployed, _mock_s3_deployed, _mock_prod, _mock_embed, settings):
+        # prepare_environment calls prepare_s3 from the dev branch; prepare_s3 itself guards
+        # on is_deployed(). We patch both here (and mock S3 via moto) so the test runs
+        # without a real S3 bucket, while still exercising the full prepare_environment → prepare_s3
+        # call chain on a dev environment.
         settings.ENVIRONMENT = "dev"
         settings.AWS_BUCKET_NAME = "test-bucket"
 
