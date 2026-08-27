@@ -349,6 +349,18 @@ describe("DataTable", () => {
     });
   });
 
+  it("should render custom searchPlaceholder", async () => {
+    const SEARCH_PLACEHOLDER = "Test Placeholder";
+
+    render(DataTable, {
+      ...TEST_DATA,
+      searchPlaceholder: SEARCH_PLACEHOLDER,
+    } as Record<string, unknown>);
+
+    const searchInput = screen.getByLabelText("Search");
+    expect(searchInput).toHaveAttribute("placeholder", SEARCH_PLACEHOLDER);
+  });
+
   it("should display correct labels for sort buttons depending on sort applied", async () => {
     render(DataTable, {
       ...TEST_DATA,
