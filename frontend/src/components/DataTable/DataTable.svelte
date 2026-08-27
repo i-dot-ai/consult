@@ -76,7 +76,7 @@
   let currentPage = $derived.by(() => {
     // set currentPage back to 1 if pageSizes or searchQuery change
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    pageSizes && searchQuery;
+    pageSizes && searchQuery && rows;
     return 1;
   });
 
