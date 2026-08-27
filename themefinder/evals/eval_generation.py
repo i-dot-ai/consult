@@ -6,11 +6,9 @@ against a ground truth theme framework.
 
 import argparse
 import asyncio
-import contextvars
 import logging
 import os
 from datetime import datetime
-from functools import partial
 
 import dotenv
 import langfuse_utils
@@ -23,12 +21,24 @@ from evaluators import (
     create_redundancy_evaluator,
     create_title_specificity_evaluator,
 )
-from metrics import calculate_generation_metrics
 from themefinder.llm import OpenAILLM
 
 from themefinder import theme_condensation, theme_generation, theme_refinement
 
 logger = logging.getLogger("themefinder.evals.generation")
+
+
+def _build_output(refined_df: pd.DataFrame) -> dict:
+    """Split combined "label: description" topic field into separate fields
+    for evaluators that need the label alone (specificity, redundancy)."""
+    themes = []
+    for record in refined_df.to_dict(orient="records"):
+        if "topic" in record and ":" in record["topic"]:
+            label, description = record["topic"].split(":", 1)
+            record["topic_label"] = label.strip()
+            record["topic_description"] = description.strip()
+        themes.append(record)
+    return {"themes": themes}
 
 
 async def evaluate_generation(
@@ -78,7 +88,7 @@ async def evaluate_generation(
             langfuse_ctx, config, llm, judge_llm=judge_llm
         )
     else:
-        result = await _run_local_fallback(config, llm)
+        result = await _run_local_fallback(config, llm, judge_llm=judge_llm)
 
     # Only flush if we created the context
     if owns_context:
@@ -104,7 +114,7 @@ async def _run_with_langfuse(ctx, config: DatasetConfig, llm, judge_llm=None) ->
         print(
             f"Dataset {config.name} not found in Langfuse, falling back to local: {e}"
         )
-        return await _run_local_fallback(config, llm)
+        return await _run_local_fallback(config, llm, judge_llm=judge_llm)
 
     # Use dedicated judge LLM if provided, otherwise fall back to task LLM
     eval_llm = judge_llm or llm
@@ -145,50 +155,22 @@ async def _run_with_langfuse(ctx, config: DatasetConfig, llm, judge_llm=None) ->
                 question=question,
             )
 
-            # Parse combined "label: description" topic field into separate fields
-            # for evaluators that need the label alone (specificity, redundancy)
-            themes = []
-            for record in refined_df.to_dict(orient="records"):
-                if "topic" in record and ":" in record["topic"]:
-                    label, description = record["topic"].split(":", 1)
-                    record["topic_label"] = label.strip()
-                    record["topic_description"] = description.strip()
-                themes.append(record)
-            output = {"themes": themes}
+            output = _build_output(refined_df)
 
             # Update trace with output
             if trace:
                 trace.update(output=output)
 
-            # Run LLM-based evaluators concurrently (copy context per task for logging)
-            loop = asyncio.get_event_loop()
-            llm_evaluators = [
-                groundedness_evaluator,
-                coverage_evaluator,
-                specificity_evaluator,
-            ]
-            llm_tasks = [
-                loop.run_in_executor(
-                    None,
-                    partial(
-                        contextvars.copy_context().run,
-                        evaluator,
-                        output=output,
-                        expected_output=item.expected_output,
-                    ),
-                )
-                for evaluator in llm_evaluators
-            ]
-            try:
-                llm_results = await asyncio.wait_for(
-                    asyncio.gather(*llm_tasks, return_exceptions=True),
-                    timeout=300,
-                )
-            except asyncio.TimeoutError:
-                logger.error("LLM evaluators timed out after 300s")
-                llm_results = [TimeoutError("LLM evaluators timed out")] * len(
-                    llm_evaluators
-                )
+            llm_results = await asyncio.gather(
+                groundedness_evaluator(
+                    output=output, expected_output=item.expected_output
+                ),
+                coverage_evaluator(output=output, expected_output=item.expected_output),
+                specificity_evaluator(
+                    output=output, expected_output=item.expected_output
+                ),
+                return_exceptions=True,
+            )
 
             # Run redundancy evaluator synchronously (embedding-based, no LLM call)
             redundancy_result = redundancy_evaluator(
@@ -239,12 +221,19 @@ async def _run_with_langfuse(ctx, config: DatasetConfig, llm, judge_llm=None) ->
     return all_scores
 
 
-async def _run_local_fallback(config: DatasetConfig, llm) -> dict:
+async def _run_local_fallback(config: DatasetConfig, llm, judge_llm=None) -> dict:
     """Run evaluation without Langfuse (local development).
+
+    Calls the same evaluators as `_run_with_langfuse` (groundedness, coverage,
+    specificity, redundancy) instead of the separate `metrics.py` calculation,
+    so local and Langfuse runs score generation identically. LLM-based
+    evaluators run concurrently via asyncio.gather(); each already catches its
+    own errors internally.
 
     Args:
         config: DatasetConfig
         llm: LLM instance
+        judge_llm: Optional dedicated judge LLM (defaults to task llm)
 
     Returns:
         Dict containing evaluation scores
@@ -252,11 +241,20 @@ async def _run_local_fallback(config: DatasetConfig, llm) -> dict:
     data_items = load_local_data(config)
     all_scores = {}
 
+    # Use dedicated judge LLM if provided, otherwise fall back to task LLM
+    eval_llm = judge_llm or llm
+
+    # Create evaluator functions
+    groundedness_evaluator = create_groundedness_evaluator(eval_llm)
+    coverage_evaluator = create_coverage_evaluator(eval_llm)
+    specificity_evaluator = create_title_specificity_evaluator(eval_llm)
+    redundancy_evaluator = create_redundancy_evaluator()
+
     for item in data_items:
         question_part = item.get("metadata", {}).get("question_part", "unknown")
         responses_df = pd.DataFrame(item["input"]["responses"])
         question = item["input"]["question"]
-        theme_framework = item["expected_output"]["themes"]
+        expected_output = item["expected_output"]
 
         themes_df, _ = await theme_generation(
             responses_df=responses_df,
@@ -274,14 +272,32 @@ async def _run_local_fallback(config: DatasetConfig, llm) -> dict:
             question=question,
         )
 
-        eval_scores = calculate_generation_metrics(refined_df, theme_framework)
-        print(f"Theme Generation ({question_part}): \n {eval_scores}")
+        output = _build_output(refined_df)
 
-        # Collect scores with question prefix
-        for key, value in eval_scores.items():
-            if isinstance(value, (int, float)):
-                all_scores[f"{question_part}_{key}"] = value
+        llm_results = await asyncio.gather(
+            groundedness_evaluator(output=output, expected_output=expected_output),
+            coverage_evaluator(output=output, expected_output=expected_output),
+            specificity_evaluator(output=output, expected_output=expected_output),
+        )
+        redundancy_result = redundancy_evaluator(
+            output=output, expected_output=expected_output
+        )
+        eval_results = [*llm_results, redundancy_result]
 
+        for eval_result in eval_results:
+            if isinstance(eval_result, dict):
+                name = eval_result.get("name", "unknown")
+                value = eval_result.get("value", 0.0)
+            else:
+                name = eval_result.name
+                value = eval_result.value
+            all_scores[f"{question_part}_{name}"] = value
+            print(f"  {question_part}/{name}: {value}")
+
+        # Include pipeline output for disk persistence, matching _run_with_langfuse
+        all_scores[f"{question_part}_output"] = output
+
+    print("Theme Generation Eval Results (local)")
     return all_scores
 
 

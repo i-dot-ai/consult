@@ -40,6 +40,9 @@ locals {
   batch_mapping_image_url  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/${var.project_name}-pipeline-mapping:${data.aws_ssm_parameter.image_tags["pipeline-mapping"].value}"
   batch_sign_off_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/${var.project_name}-pipeline-sign-off:${data.aws_ssm_parameter.image_tags["pipeline-sign-off"].value}"
   llm_gateway_url          = "https://llm-gateway.i.ai.gov.uk/"
+
+  # Dev PoC collector from the util docs; dev only, so no other env ships telemetry.
+  otel_exporter_otlp_endpoint = var.env == "dev" ? "https://search-i-dot-ai-dev-otel-poc-ekysqcfxvnh6touzvaf4dqa7ju.eu-west-2.es.amazonaws.com" : ""
 }
 
 data "aws_ssm_parameter" "auth_api_invoke_url" {

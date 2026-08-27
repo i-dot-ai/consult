@@ -734,11 +734,80 @@ class BenchmarkRunner:
         console.print(f"[green]Results saved to {output_path}[/green]")
 
 
-def query_langfuse_costs(benchmark_id: str) -> pd.DataFrame:
+def _fetch_langfuse_cost_rows(client, benchmark_id: str) -> pd.DataFrame:
+    """Fetch one snapshot of cost/token data for a benchmark from Langfuse.
+
+    Returns:
+        DataFrame with cost data per model/eval, sorted for stable comparison
+        across repeated calls (see query_langfuse_costs).
+    """
+    traces = client.api.trace.list(
+        tags=[f"benchmark:{benchmark_id}"],
+        limit=100,
+    )
+
+    rows = []
+    for trace in traces.data:
+        metadata = trace.metadata or {}
+
+        # TODO: this re-fetches every trace on every poll, even ones already
+        # confirmed stable - inefficient for a full eval sweep with many
+        # traces. Left as-is since this fix was about getting cost tracking
+        # working correctly, not optimising it; revisit alongside a broader
+        # refactor of the evals code.
+        full_trace = client.api.trace.get(trace.id)
+        input_tokens = 0
+        output_tokens = 0
+        total_tokens = 0
+        for obs in full_trace.observations:
+            if obs.usage:
+                input_tokens += obs.usage.input or 0
+                output_tokens += obs.usage.output or 0
+                total_tokens += obs.usage.total or 0
+
+        rows.append(
+            {
+                "model_tag": metadata.get("model_tag", "unknown"),
+                "eval": metadata.get("eval_type", "unknown"),
+                "run": metadata.get("run_number", 0),
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "total_tokens": total_tokens,
+                "cost_usd": trace.total_cost or 0,
+            }
+        )
+
+    if not rows:
+        return pd.DataFrame()
+    return (
+        pd.DataFrame(rows)
+        .sort_values(["model_tag", "eval", "run"])
+        .reset_index(drop=True)
+    )
+
+
+def query_langfuse_costs(
+    benchmark_id: str,
+    poll_interval_seconds: float = 4.0,
+    max_wait_seconds: float = 60.0,
+    stable_reads_required: int = 3,
+) -> pd.DataFrame:
     """Query Langfuse for cost data from benchmark runs.
+
+    Langfuse ingests traces asynchronously, so querying immediately after a
+    run can undercount tokens/cost. Token and cost figures only ever grow as
+    ingestion completes (never shrink or change once landed), so polling
+    until a read repeats unchanged `stable_reads_required` times in a row is
+    a reliable "ingestion has caught up" signal. Capped at max_wait_seconds
+    so a genuinely stuck observation can't hang the benchmark indefinitely -
+    whatever was last read is returned when the cap is hit.
 
     Args:
         benchmark_id: The benchmark ID to query.
+        poll_interval_seconds: Delay between polls.
+        max_wait_seconds: Give up and return the latest read after this long.
+        stable_reads_required: Consecutive identical reads needed to trust
+            the result.
 
     Returns:
         DataFrame with cost data per model/eval.
@@ -759,32 +828,39 @@ def query_langfuse_costs(benchmark_id: str) -> pd.DataFrame:
             host=base_url,
         )
 
-        # Fetch traces with benchmark tag
-        traces = client.api.trace.list(
-            tags=[f"benchmark:{benchmark_id}"],
-            limit=100,
-        )
+        deadline = time.monotonic() + max_wait_seconds
+        previous: pd.DataFrame | None = None
+        stable_count = 0
+        result = pd.DataFrame()
 
-        if not traces.data:
+        while True:
+            result = _fetch_langfuse_cost_rows(client, benchmark_id)
+
+            if result.empty:
+                stable_count = 0
+            else:
+                stable_count = (
+                    stable_count + 1
+                    if previous is not None and result.equals(previous)
+                    else 1
+                )
+            previous = result
+
+            if stable_count >= stable_reads_required:
+                break
+            if time.monotonic() >= deadline:
+                console.print(
+                    f"[yellow]Gave up waiting for Langfuse ingestion to "
+                    f"settle after {max_wait_seconds}s - cost/token figures "
+                    f"below may be incomplete[/yellow]"
+                )
+                break
+            time.sleep(poll_interval_seconds)
+
+        if result.empty:
             console.print("[yellow]No traces found for benchmark[/yellow]")
-            return pd.DataFrame()
 
-        rows = []
-        for trace in traces.data:
-            metadata = trace.metadata or {}
-            rows.append(
-                {
-                    "model_tag": metadata.get("model_tag", "unknown"),
-                    "eval": metadata.get("eval_type", "unknown"),
-                    "run": metadata.get("run_number", 0),
-                    "input_tokens": trace.usage.input if trace.usage else 0,
-                    "output_tokens": trace.usage.output if trace.usage else 0,
-                    "total_tokens": trace.usage.total if trace.usage else 0,
-                    "cost_usd": trace.usage.total_cost if trace.usage else 0,
-                }
-            )
-
-        return pd.DataFrame(rows)
+        return result
 
     except Exception as e:
         console.print(f"[red]Failed to query Langfuse costs: {e}[/red]")
