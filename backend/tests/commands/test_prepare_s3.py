@@ -5,25 +5,20 @@ import pytest
 from django.core.management import call_command
 from moto import mock_aws
 
-PREPROD_PATCH = patch(
-    "consultations.management.commands.prepare_s3.HostingEnvironment.is_preprod_environment",
-    return_value=False,
-)
+
+def _mock_deployed_dev(mock_env):
+    """Configure HostingEnvironment mock for a deployed dev environment."""
+    mock_env.is_production.return_value = False
+    mock_env.is_preprod_environment.return_value = False
+    mock_env.is_deployed.return_value = True
 
 
 class TestPrepareS3:
     @pytest.mark.django_db
     @mock_aws
-    @PREPROD_PATCH
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_production",
-        return_value=False,
-    )
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_deployed",
-        return_value=True,
-    )
-    def test_deletes_existing_data_before_seeding(self, _mock_deployed, _mock_prod, _mock_preprod, settings):
+    @patch("consultations.management.commands.prepare_s3.HostingEnvironment")
+    def test_deletes_existing_data_before_seeding(self, mock_hosting_env, settings):
+        _mock_deployed_dev(mock_hosting_env)
         settings.AWS_BUCKET_NAME = "test-bucket"
 
         conn = boto3.resource("s3", region_name="eu-west-2")
@@ -50,16 +45,9 @@ class TestPrepareS3:
 
     @pytest.mark.django_db
     @mock_aws
-    @PREPROD_PATCH
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_production",
-        return_value=False,
-    )
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_deployed",
-        return_value=True,
-    )
-    def test_seeds_s3_with_data_for_each_stage(self, _mock_deployed, _mock_prod, _mock_preprod, settings):
+    @patch("consultations.management.commands.prepare_s3.HostingEnvironment")
+    def test_seeds_s3_with_data_for_each_stage(self, mock_hosting_env, settings):
+        _mock_deployed_dev(mock_hosting_env)
         settings.AWS_BUCKET_NAME = "test-bucket"
 
         conn = boto3.resource("s3", region_name="eu-west-2")
@@ -76,6 +64,8 @@ class TestPrepareS3:
         # S3-only consultation has input data
         assert any("dummy-s3-only/inputs/respondents.jsonl" in k for k in keys)
         assert any("dummy-s3-only/inputs/question_part_1/question.json" in k for k in keys)
+        # Multi-choice-only questions also get responses.jsonl (respondent manifest)
+        assert any("dummy-s3-only/inputs/question_part_2/responses.jsonl" in k for k in keys)
 
         # Setup consultation has input data
         assert any("dummy-setup/inputs/respondents.jsonl" in k for k in keys)
@@ -126,19 +116,11 @@ class TestPrepareS3:
 
     @pytest.mark.django_db
     @mock_aws
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_production",
-        return_value=False,
-    )
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_preprod_environment",
-        return_value=True,
-    )
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_deployed",
-        return_value=True,
-    )
-    def test_skips_on_preprod(self, _mock_deployed, _mock_preprod, _mock_prod, settings):
+    @patch("consultations.management.commands.prepare_s3.HostingEnvironment")
+    def test_skips_on_preprod(self, mock_hosting_env, settings):
+        mock_hosting_env.is_production.return_value = False
+        mock_hosting_env.is_preprod_environment.return_value = True
+        mock_hosting_env.is_deployed.return_value = True
         settings.AWS_BUCKET_NAME = "test-bucket"
 
         conn = boto3.resource("s3", region_name="eu-west-2")
@@ -155,15 +137,11 @@ class TestPrepareS3:
 
     @pytest.mark.django_db
     @mock_aws
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_production",
-        return_value=False,
-    )
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_deployed",
-        return_value=False,
-    )
-    def test_skips_on_local(self, _mock_deployed, _mock_prod, settings):
+    @patch("consultations.management.commands.prepare_s3.HostingEnvironment")
+    def test_skips_on_local(self, mock_hosting_env, settings):
+        mock_hosting_env.is_production.return_value = False
+        mock_hosting_env.is_preprod_environment.return_value = False
+        mock_hosting_env.is_deployed.return_value = False
         settings.AWS_BUCKET_NAME = "test-bucket"
 
         conn = boto3.resource("s3", region_name="eu-west-2")
