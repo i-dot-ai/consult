@@ -305,7 +305,7 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 100,
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_RENDERER_CLASSES": (
-        "drf_orjson_renderer.renderers.ORJSONRenderer",
+        "consultations.api.renderers.ConsultORJSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ),
     "DEFAULT_AUTHENTICATION_CLASSES": (

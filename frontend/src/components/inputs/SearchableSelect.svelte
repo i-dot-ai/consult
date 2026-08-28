@@ -17,7 +17,9 @@
   import Search from "../svg/material/Search.svelte";
   import type { SearchableSelectOption } from "../../global/types";
 
+  export let id: string = "searchable-select";
   export let label: string = "";
+  export let hideLabel: boolean = false;
   export let handleChange: (
     option: SearchableSelectOption<T>,
   ) => void = () => {};
@@ -46,6 +48,11 @@
       return next;
     },
     forceVisible: true,
+    ids: {
+      trigger: id,
+      menu: `${id}-menu`,
+      label: `${id}-label`,
+    },
   });
 
   $: if (!$open) {
@@ -68,7 +75,7 @@
 </script>
 
 <div class="flex flex-col gap-1">
-  <label use:melt={$meltLabel}>
+  <label use:melt={$meltLabel} class={hideLabel ? "sr-only" : undefined}>
     <span class="text-sm font-medium text-neutral-900">
       {label}
     </span>
@@ -110,6 +117,7 @@
           "text-neutral-900",
           "transition-transform",
           "-rotate-90",
+          "pointer-events-none",
           $open && "rotate-0",
         ])}
       >
@@ -166,6 +174,7 @@
             "data-highlighted:text-neutral-900",
             "data-disabled:opacity-50",
           ])}
+          data-testid="searchable-select-option"
         >
           {#if selectedValues.includes(option.value)}
             <div class="check absolute left-2 top-1/2 z-10 text-neutral-900">
