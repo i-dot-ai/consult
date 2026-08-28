@@ -32,7 +32,10 @@ const mainMiddleware = defineMiddleware(
       return next();
     }
 
-    if (/^\/health[/]?$/.test(url.pathname)) {
+    if (
+      /^\/health[/]?$/.test(url.pathname) ||
+      /^\/live[/]?$/.test(url.pathname)
+    ) {
       return next();
     }
 
