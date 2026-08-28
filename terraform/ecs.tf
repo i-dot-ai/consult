@@ -8,7 +8,6 @@ locals {
     "REPO"                        = var.project_name
     "AWS_ACCOUNT_ID"              = data.aws_caller_identity.current.account_id
     # OTel PoC is dev only; other envs (prod included) stay Sentry-only.
-    # Bootstraps read OTEL_ENABLED from the env directly; no Django setting.
     "OTEL_ENABLED"                = false
     "OTEL_EXPORTER_OTLP_ENDPOINT" = local.otel_exporter_otlp_endpoint
   }
@@ -64,6 +63,7 @@ module "backend" {
   environment_variables = merge(local.base_env_vars, local.django_env_vars, {
     "APP_NAME"                 = var.project_name
     "EXECUTION_CONTEXT"        = "backend"
+    "OTEL_SERVICE_NAME"        = "consult-backend"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-backend"
     "SENTRY_DSN"               = var.backend_sentry_dsn
     "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["backend"].value
@@ -183,6 +183,7 @@ module "worker" {
   environment_variables = merge(local.base_env_vars, local.django_env_vars, {
     "APP_NAME"                 = var.project_name
     "EXECUTION_CONTEXT"        = "worker"
+    "OTEL_SERVICE_NAME"        = "consult-worker"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-worker"
     "SENTRY_DSN"               = var.backend_sentry_dsn
     "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["worker"].value

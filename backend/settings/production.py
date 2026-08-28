@@ -4,6 +4,8 @@ from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
 from i_dot_ai_utilities.logging.types.enrichment_types import ExecutionEnvironmentType
 from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 
+from otel_bootstrap import bootstrap_otel
+from otel_django import configure_django_otel
 from sentry_context import default_perf_sample_rate, sentry_before_send
 from settings.base import *
 
@@ -54,6 +56,18 @@ LOGGER = StructuredLogger(
     },
 )
 LOGGER.set_context_field("execution_context", EXECUTION_CONTEXT)
+
+
+if OTEL_ENABLED:
+    # No defaults: Terraform sets these per runtime, so a missing value is a
+    # misconfiguration we fail loudly on rather than silently disabling telemetry.
+    OTEL_EXPORTER_OTLP_ENDPOINT = env("OTEL_EXPORTER_OTLP_ENDPOINT")
+    OTEL_SERVICE_NAME = env("OTEL_SERVICE_NAME")
+    if EXECUTION_CONTEXT == "worker":
+        bootstrap_otel(logger=LOGGER, service_name=OTEL_SERVICE_NAME)
+    else:
+        configure_django_otel(logger=LOGGER, service_name=OTEL_SERVICE_NAME)
+
 
 if env.str("ENVIRONMENT", "prod").lower() != "prod":
     INSTALLED_APPS.append("drf_spectacular")

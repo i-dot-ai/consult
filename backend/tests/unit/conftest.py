@@ -1,6 +1,24 @@
 import pytest
+from i_dot_ai_utilities.logging._otel import setup as otel_setup
 
 import factories
+
+
+@pytest.fixture
+def otel_enabled(settings):
+    settings.OTEL_ENABLED = True
+
+
+@pytest.fixture
+def otel_disabled(settings):
+    settings.OTEL_ENABLED = False
+
+
+@pytest.fixture
+def reset_otel():
+    otel_setup._reset_for_tests()
+    yield
+    otel_setup._reset_for_tests()
 
 
 @pytest.fixture

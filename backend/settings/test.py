@@ -11,6 +11,9 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env.test"))
 
 from settings.base import *
 
+OTEL_EXPORTER_OTLP_ENDPOINT = "http://collector-test:4317"
+OTEL_SERVICE_NAME = "consult-backend-test"
+
 STORAGES["default"] = {
     "BACKEND": "django.core.files.storage.InMemoryStorage",
 }
