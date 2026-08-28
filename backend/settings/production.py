@@ -38,6 +38,7 @@ sentry_sdk.init(
         "SENTRY_PROFILE_SESSION_SAMPLE_RATE", default=_perf_sample_rate
     ),
     profile_lifecycle="trace",
+    release=SENTRY_RELEASE
 )
 
 
