@@ -3,14 +3,15 @@ locals {
   frontend_port = 3000
 
   base_env_vars = {
-    "ENVIRONMENT"    = terraform.workspace
-    "DEBUG"          = var.env == "prod" ? false : true
-    "REPO"           = var.project_name
-    "AWS_ACCOUNT_ID" = data.aws_caller_identity.current.account_id
+    "ENVIRONMENT"                 = terraform.workspace
+    "DEBUG"                       = var.env == "prod" ? false : true
+    "REPO"                        = var.project_name
+    "AWS_ACCOUNT_ID"              = data.aws_caller_identity.current.account_id
     # OTel PoC is dev only; other envs (prod included) stay Sentry-only.
     # Bootstraps read OTEL_ENABLED from the env directly; no Django setting.
     "OTEL_ENABLED"                = false
     "OTEL_EXPORTER_OTLP_ENDPOINT" = local.otel_exporter_otlp_endpoint
+    "SENTRY_RELEASE"              = data.aws_ssm_parameter.image_tags["frontend"].value
   }
 
   django_env_vars = {
@@ -126,7 +127,6 @@ module "frontend" {
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
     "PUBLIC_LANGFUSE_URL"      = "https://core-langfuse.i.ai.gov.uk/",
     "PUBLIC_HOMEPAGE_URL"      = "https://${local.host}"
-    "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["frontend"].value
   })
 
   secrets = [
