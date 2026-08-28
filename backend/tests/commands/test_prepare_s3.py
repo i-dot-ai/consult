@@ -121,6 +121,35 @@ class TestPrepareS3:
     @mock_aws
     @patch(
         "consultations.management.commands.prepare_s3.HostingEnvironment.is_production",
+        return_value=True,
+    )
+    @patch(
+        "consultations.management.commands.prepare_s3.HostingEnvironment.is_preprod_environment",
+        return_value=False,
+    )
+    @patch(
+        "consultations.management.commands.prepare_s3.HostingEnvironment.is_deployed",
+        return_value=True,
+    )
+    def test_skips_on_preprod(self, _mock_deployed, _mock_preprod, _mock_prod, settings):
+        settings.AWS_BUCKET_NAME = "test-bucket"
+
+        conn = boto3.resource("s3", region_name="eu-west-2")
+        conn.create_bucket(
+            Bucket="test-bucket",
+            CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
+        )
+
+        call_command("prepare_s3")
+
+        bucket = conn.Bucket("test-bucket")
+        keys = [obj.key for obj in bucket.objects.all()]
+        assert len(keys) == 0
+
+    @pytest.mark.django_db
+    @mock_aws
+    @patch(
+        "consultations.management.commands.prepare_s3.HostingEnvironment.is_production",
         return_value=False,
     )
     @patch(

@@ -78,6 +78,10 @@ class TestPrepareEnvironment:
     @mock_aws
     @patch("factories.embed_text", return_value=[0.0] * 3072)
     @patch(
+        "consultations.management.commands.prepare_s3.HostingEnvironment.is_preprod_environment",
+        return_value=False,
+    )
+    @patch(
         "consultations.management.commands.prepare_s3.HostingEnvironment.is_production",
         return_value=False,
     )
@@ -90,7 +94,7 @@ class TestPrepareEnvironment:
         return_value=True,
     )
     def test_seeds_s3(
-        self, _mock_env_deployed, _mock_s3_deployed, _mock_prod, _mock_embed, settings
+        self, _mock_env_deployed, _mock_s3_deployed, _mock_prod, _mock_preprod, _mock_embed, settings
     ):
         # prepare_environment calls prepare_s3 from the dev branch; prepare_s3 itself guards
         # on is_deployed(). We patch both here (and mock S3 via moto) so the test runs

@@ -352,7 +352,7 @@ class Command(BaseCommand):
                     Body=json.dumps(_build_clustered_themes(question_data)),
                 )
 
-            if include_candidate_theme_mappings:
+            if include_candidate_theme_mappings and not include_mapping_outputs:
                 out_prefix = f"{prefix}/outputs/mapping/{timestamp}/question_part_{q_num}"
                 themes = _build_candidate_themes_json(question_data)
                 s3_client.put_object(
