@@ -401,6 +401,8 @@
               data-testid="datatable-row"
             >
               {#each visibleColumns as column (column.key)}
+                {@const content = row[column.key]}
+
                 <td
                   class={clsx([
                     "whitespace-nowrap",
@@ -412,7 +414,11 @@
                     column.align === "right" && "text-right",
                   ])}
                 >
-                  {row[column.key]}
+                  {#if typeof content === "string"}
+                    {content}
+                  {:else if typeof content === "function"}
+                    {@render content()}
+                  {/if}
                 </td>
               {/each}
             </tr>
