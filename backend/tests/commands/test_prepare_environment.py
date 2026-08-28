@@ -23,11 +23,11 @@ class TestPrepareEnvironment:
     @pytest.mark.django_db
     @mock_aws
     @patch("consultations.management.commands.prepare_s3.HostingEnvironment")
+    @patch("consultations.management.commands.prepare_environment.HostingEnvironment")
     @patch("factories.embed_text", return_value=[0.0] * 3072)
-    def test_resets_and_seeds_db(self, _mock_embed, mock_hosting_env, settings):
-        mock_hosting_env.is_production.return_value = False
-        mock_hosting_env.is_preprod_environment.return_value = False
-        mock_hosting_env.is_deployed.return_value = True
+    def test_resets_and_seeds_db(self, _mock_embed, mock_env, mock_s3_env, settings):
+        mock_env.is_dev.return_value = True
+        mock_s3_env.is_dev.return_value = True
 
         settings.ENVIRONMENT = "dev"
         settings.AWS_BUCKET_NAME = "test-bucket"
@@ -55,11 +55,11 @@ class TestPrepareEnvironment:
     @pytest.mark.django_db
     @mock_aws
     @patch("consultations.management.commands.prepare_s3.HostingEnvironment")
+    @patch("consultations.management.commands.prepare_environment.HostingEnvironment")
     @patch("factories.embed_text", return_value=[0.0] * 3072)
-    def test_seeds_s3(self, _mock_embed, mock_hosting_env, settings):
-        mock_hosting_env.is_production.return_value = False
-        mock_hosting_env.is_preprod_environment.return_value = False
-        mock_hosting_env.is_deployed.return_value = True
+    def test_seeds_s3(self, _mock_embed, mock_env, mock_s3_env, settings):
+        mock_env.is_dev.return_value = True
+        mock_s3_env.is_dev.return_value = True
 
         settings.ENVIRONMENT = "dev"
         settings.AWS_BUCKET_NAME = "test-bucket"
