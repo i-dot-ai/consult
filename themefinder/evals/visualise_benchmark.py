@@ -15,18 +15,17 @@ Usage:
 
 import argparse
 import json
-import os
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote
 
-import dotenv
 import numpy as np
 import pandas as pd
 from rich.console import Console
 from rich.table import Table
+from settings import get_settings
 
 console = Console()
 
@@ -897,8 +896,9 @@ def _get_langfuse_url(benchmark_id: str) -> str | None:
     Uses LANGFUSE_BASE_URL and LANGFUSE_PROJECT_ID from environment.
     Returns None if not configured.
     """
-    base_url = os.getenv("LANGFUSE_BASE_URL")
-    project_id = os.getenv("LANGFUSE_PROJECT_ID")
+    settings = get_settings()
+    base_url = settings.langfuse_base_url
+    project_id = settings.langfuse_project_id
 
     if not base_url or not project_id:
         return None
@@ -1828,7 +1828,6 @@ def _html_footer() -> str:
 
 def main():
     """Main entry point."""
-    dotenv.load_dotenv()
 
     parser = argparse.ArgumentParser(description="Visualise benchmark results")
     parser.add_argument(

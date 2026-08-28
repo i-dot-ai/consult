@@ -18,7 +18,6 @@ import os
 import sys
 from contextlib import nullcontext
 
-import dotenv
 import openai
 
 # Add parent to path for imports
@@ -36,8 +35,8 @@ from synthetic.generator import SyntheticDatasetGenerator
 
 # Optional Langfuse integration
 try:
-    import langfuse_utils
     from langfuse.openai import AsyncOpenAI as _LangfuseOpenAI
+    from utils import langfuse_utils
 
     LANGFUSE_AVAILABLE = True
 except ImportError:
@@ -46,8 +45,6 @@ except ImportError:
 
 async def main() -> None:
     """Main entry point for synthetic dataset generation."""
-    dotenv.load_dotenv()
-
     # Collect configuration interactively
     try:
         config = await run_interactive_cli()

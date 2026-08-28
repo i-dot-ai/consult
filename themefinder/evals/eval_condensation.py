@@ -10,13 +10,13 @@ import os
 from datetime import datetime
 
 import dotenv
-import langfuse_utils
 import pandas as pd
 import utils_gateway
 from datasets import DatasetConfig, load_local_data
 from evaluators import calculate_redundancy_score, create_condensation_quality_evaluator
 from themefinder import theme_condensation
 from themefinder.llm import OpenAILLM
+from utils import langfuse_utils
 
 
 async def evaluate_condensation(

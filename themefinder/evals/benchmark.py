@@ -33,12 +33,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-import dotenv
 import nest_asyncio
 import pandas as pd
 import utils_gateway
 from rich.console import Console
 from rich.table import Table
+from settings import get_settings
 from themefinder.llm import OpenAILLM
 
 # Allow nested asyncio.run() calls (needed by eval modules)
@@ -61,7 +61,7 @@ except ImportError:
 os.environ.setdefault("GRPC_DNS_RESOLVER", "native")
 
 
-import langfuse_utils  # noqa: E402
+from utils import langfuse_utils  # noqa: E402
 from eval_condensation import evaluate_condensation  # noqa: E402
 from eval_generation import evaluate_generation  # noqa: E402
 from eval_mapping import evaluate_mapping  # noqa: E402
@@ -815,9 +815,10 @@ def query_langfuse_costs(
     try:
         from langfuse import Langfuse
 
-        secret_key = os.getenv("LANGFUSE_SECRET_KEY")
-        public_key = os.getenv("LANGFUSE_PUBLIC_KEY")
-        base_url = os.getenv("LANGFUSE_BASE_URL")
+        settings = get_settings()
+        secret_key = settings.langfuse_secret_key
+        public_key = settings.langfuse_public_key
+        base_url = settings.langfuse_base_url
 
         if not all([secret_key, public_key, base_url]):
             return pd.DataFrame()
@@ -968,8 +969,6 @@ def _select_healthy_models(
 
 async def main():
     """Main entry point."""
-    dotenv.load_dotenv()
-
     parser = argparse.ArgumentParser(
         description="Run ThemeFinder benchmark across gateway-discovered chat models",
         formatter_class=argparse.RawDescriptionHelpFormatter,

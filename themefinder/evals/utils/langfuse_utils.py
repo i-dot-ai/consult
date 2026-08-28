@@ -4,10 +4,11 @@ Provides graceful fallback when Langfuse is not configured.
 """
 
 import logging
-import os
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Generator
+
+from settings import EvalSettings, get_settings
 
 if TYPE_CHECKING:
     from langfuse import Langfuse
@@ -90,6 +91,7 @@ def get_langfuse_context(
     eval_type: str,
     metadata: dict | None = None,
     tags: list[str] | None = None,
+    settings: EvalSettings | None = None,
 ) -> LangfuseContext:
     """Initialise Langfuse with structured tags and metadata.
 
@@ -103,13 +105,16 @@ def get_langfuse_context(
         eval_type: Type of evaluation (e.g., "generation", "sentiment", "mapping")
         metadata: Optional additional metadata dict to merge with standard metadata
         tags: Optional additional tags to merge with standard tags
+        settings: EvalSettings to read credentials/env context from; defaults
+            to the process-wide get_settings() singleton.
 
     Returns:
         LangfuseContext with client and handler (or None values if not configured)
     """
-    secret_key = os.getenv("LANGFUSE_SECRET_KEY")
-    public_key = os.getenv("LANGFUSE_PUBLIC_KEY")
-    base_url = os.getenv("LANGFUSE_BASE_URL")
+    settings = settings or get_settings()
+    secret_key = settings.langfuse_secret_key
+    public_key = settings.langfuse_public_key
+    base_url = settings.langfuse_base_url
 
     if not all([secret_key, public_key, base_url]):
         logger.info("Langfuse not configured - tracing disabled")
@@ -126,9 +131,9 @@ def get_langfuse_context(
 
         # Build standard tags and metadata
         version = _get_version()
-        environment = os.getenv("ENVIRONMENT", "development")
-        git_sha = os.getenv("GITHUB_SHA", "local")[:7]
-        model = os.getenv("AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT", "unknown")
+        environment = settings.environment
+        git_sha = settings.git_sha
+        model = settings.auto_eval_model or "unknown"
 
         # Build standard tags - note: model tag is only added if not provided
         # by caller (benchmark.py provides its own model tag)

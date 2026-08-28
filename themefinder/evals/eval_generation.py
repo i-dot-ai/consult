@@ -11,7 +11,6 @@ import os
 from datetime import datetime
 
 import dotenv
-import langfuse_utils
 import pandas as pd
 import utils_gateway
 from datasets import DatasetConfig, load_local_data
@@ -22,6 +21,7 @@ from evaluators import (
     create_title_specificity_evaluator,
 )
 from themefinder.llm import OpenAILLM
+from utils import langfuse_utils
 
 from themefinder import theme_condensation, theme_generation, theme_refinement
 

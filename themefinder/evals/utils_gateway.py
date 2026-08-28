@@ -7,11 +7,12 @@ model list changes.
 """
 
 import asyncio
-import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 import httpx
+
+from settings import EvalSettings, get_settings
 
 # Health checks are observed to run within ~48h; 72h gives margin before
 # treating a check as stale.
@@ -139,10 +140,11 @@ def latest_health_by_model(
     }
 
 
-def gateway_credentials() -> tuple[str, str]:
+def gateway_credentials(settings: EvalSettings | None = None) -> tuple[str, str]:
     """Read and validate the two required gateway env vars."""
-    base_url = os.getenv("LLM_GATEWAY_URL")
-    api_key = os.getenv("CONSULT_EVAL_LITELLM_API_KEY")
+    settings = settings or get_settings()
+    base_url = settings.llm_gateway_url
+    api_key = settings.llm_gateway_api_key
     if not base_url or not api_key:
         raise RuntimeError(
             "LLM_GATEWAY_URL and CONSULT_EVAL_LITELLM_API_KEY must be set"
