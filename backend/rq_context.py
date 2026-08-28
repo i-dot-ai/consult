@@ -3,6 +3,7 @@ import functools
 from django_rq import job as _rq_job
 
 from logging_context import get_or_create_context_id, rebind_context
+from otel_bootstrap import execution_span, flush_otel
 
 
 def job(*job_args, **job_kwargs):
@@ -17,7 +18,19 @@ def job(*job_args, **job_kwargs):
         @functools.wraps(func)
         def context_aware(*args, context_id: str | None = None, **kwargs):
             rebind_context(context_id)
-            return func(*args, **kwargs)
+            # Resolve after rebinding so the span carries the same id as the logs.
+            resolved_context_id = get_or_create_context_id()
+            try:
+                with execution_span(
+                    f"rq.job {func.__name__}",
+                    context_id=resolved_context_id,
+                    rq_job=func.__name__,
+                ):
+                    return func(*args, **kwargs)
+            finally:
+                # A worker can idle after a job, so flush at the boundary rather
+                # than wait for the batch processor's timer.
+                flush_otel()
 
         decorated = _rq_job(*job_args, **job_kwargs)(context_aware)
         enqueue_call = decorated.delay  # .delay and .enqueue are the same underlying function
