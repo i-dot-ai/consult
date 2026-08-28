@@ -10,9 +10,9 @@ process.env.BACKEND_URL = "http://localhost:8000";
 vi.mock("svelte/transition");
 
 vi.mock(import("./src/global/utils"), async (importOriginal) => {
-  const actual = await importOriginal<typeof import('./src/global/utils')>();
+  const actual = await importOriginal<typeof import("./src/global/utils")>();
   return {
     ...actual,
-    formatTimeDeltaText: vi.fn(() => "<FORMATTED_TIME_DELTA_TEXT>")
-  }
+    formatTimeDeltaText: vi.fn(() => "<FORMATTED_TIME_DELTA_TEXT>"),
+  };
 });
