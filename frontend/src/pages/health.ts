@@ -4,7 +4,7 @@ import { Routes } from "../global/routes";
 
 type BackendHealthStatus = "ok" | "error" | "unreachable";
 
-const timeoutMs = 5000;
+const timeoutMs = 12000;
 
 interface HealthResponse {
   status: "ok" | "error";
