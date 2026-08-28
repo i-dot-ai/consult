@@ -68,11 +68,7 @@ def _check_s3() -> None:
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def health_check(_request) -> Response:
-    """Check health of connected services.
-
-    S3 is treated as a non-critical dependency: its status is reported but does
-    not affect the overall health status or HTTP response code.
-    """
+    """Check health of connected services."""
     critical_checks: dict[str, str] = {}
     non_critical_checks: dict[str, str] = {}
 
