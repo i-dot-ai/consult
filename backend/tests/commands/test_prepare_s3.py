@@ -5,10 +5,16 @@ import pytest
 from django.core.management import call_command
 from moto import mock_aws
 
+PREPROD_PATCH = patch(
+    "consultations.management.commands.prepare_s3.HostingEnvironment.is_preprod_environment",
+    return_value=False,
+)
+
 
 class TestPrepareS3:
     @pytest.mark.django_db
     @mock_aws
+    @PREPROD_PATCH
     @patch(
         "consultations.management.commands.prepare_s3.HostingEnvironment.is_production",
         return_value=False,
@@ -17,7 +23,7 @@ class TestPrepareS3:
         "consultations.management.commands.prepare_s3.HostingEnvironment.is_deployed",
         return_value=True,
     )
-    def test_deletes_existing_data_before_seeding(self, _mock_deployed, _mock_prod, settings):
+    def test_deletes_existing_data_before_seeding(self, _mock_deployed, _mock_prod, _mock_preprod, settings):
         settings.AWS_BUCKET_NAME = "test-bucket"
 
         conn = boto3.resource("s3", region_name="eu-west-2")
@@ -44,6 +50,7 @@ class TestPrepareS3:
 
     @pytest.mark.django_db
     @mock_aws
+    @PREPROD_PATCH
     @patch(
         "consultations.management.commands.prepare_s3.HostingEnvironment.is_production",
         return_value=False,
@@ -52,7 +59,7 @@ class TestPrepareS3:
         "consultations.management.commands.prepare_s3.HostingEnvironment.is_deployed",
         return_value=True,
     )
-    def test_seeds_s3_with_data_for_each_stage(self, _mock_deployed, _mock_prod, settings):
+    def test_seeds_s3_with_data_for_each_stage(self, _mock_deployed, _mock_prod, _mock_preprod, settings):
         settings.AWS_BUCKET_NAME = "test-bucket"
 
         conn = boto3.resource("s3", region_name="eu-west-2")
@@ -121,11 +128,11 @@ class TestPrepareS3:
     @mock_aws
     @patch(
         "consultations.management.commands.prepare_s3.HostingEnvironment.is_production",
-        return_value=True,
+        return_value=False,
     )
     @patch(
         "consultations.management.commands.prepare_s3.HostingEnvironment.is_preprod_environment",
-        return_value=False,
+        return_value=True,
     )
     @patch(
         "consultations.management.commands.prepare_s3.HostingEnvironment.is_deployed",
