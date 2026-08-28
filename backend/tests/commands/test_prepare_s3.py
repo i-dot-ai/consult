@@ -107,27 +107,9 @@ class TestPrepareS3:
 
     @pytest.mark.django_db
     @mock_aws
+    @pytest.mark.parametrize("environment", ["local", "preprod", "prod", "test"])
     @patch("consultations.management.commands.prepare_s3.HostingEnvironment")
-    def test_skips_on_preprod(self, mock_hosting_env, settings):
-        mock_hosting_env.is_dev.return_value = False
-        settings.AWS_BUCKET_NAME = "test-bucket"
-
-        conn = boto3.resource("s3", region_name="eu-west-2")
-        conn.create_bucket(
-            Bucket="test-bucket",
-            CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
-        )
-
-        call_command("prepare_s3")
-
-        bucket = conn.Bucket("test-bucket")
-        keys = [obj.key for obj in bucket.objects.all()]
-        assert len(keys) == 0
-
-    @pytest.mark.django_db
-    @mock_aws
-    @patch("consultations.management.commands.prepare_s3.HostingEnvironment")
-    def test_skips_on_local(self, mock_hosting_env, settings):
+    def test_skips_on_non_dev(self, mock_hosting_env, environment, settings):
         mock_hosting_env.is_dev.return_value = False
         settings.AWS_BUCKET_NAME = "test-bucket"
 
