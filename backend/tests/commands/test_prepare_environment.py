@@ -22,16 +22,13 @@ class TestPrepareEnvironment:
 
     @pytest.mark.django_db
     @mock_aws
+    @patch("consultations.management.commands.prepare_s3.HostingEnvironment")
     @patch("factories.embed_text", return_value=[0.0] * 3072)
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_production",
-        return_value=False,
-    )
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_deployed",
-        return_value=True,
-    )
-    def test_resets_and_seeds_db(self, _mock_s3_deployed, _mock_s3_prod, _mock_embed, settings):
+    def test_resets_and_seeds_db(self, _mock_embed, mock_hosting_env, settings):
+        mock_hosting_env.is_production.return_value = False
+        mock_hosting_env.is_preprod_environment.return_value = False
+        mock_hosting_env.is_deployed.return_value = True
+
         settings.ENVIRONMENT = "dev"
         settings.AWS_BUCKET_NAME = "test-bucket"
 
@@ -57,24 +54,13 @@ class TestPrepareEnvironment:
 
     @pytest.mark.django_db
     @mock_aws
+    @patch("consultations.management.commands.prepare_s3.HostingEnvironment")
     @patch("factories.embed_text", return_value=[0.0] * 3072)
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_preprod_environment",
-        return_value=False,
-    )
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_production",
-        return_value=False,
-    )
-    @patch(
-        "consultations.management.commands.prepare_s3.HostingEnvironment.is_deployed",
-        return_value=True,
-    )
-    def test_seeds_s3(self, _mock_s3_deployed, _mock_prod, _mock_preprod, _mock_embed, settings):
-        # prepare_environment calls prepare_s3 from the dev branch; prepare_s3 itself guards
-        # on is_deployed(). We patch it here (and mock S3 via moto) so the test runs
-        # without a real S3 bucket, while still exercising the full prepare_environment → prepare_s3
-        # call chain.
+    def test_seeds_s3(self, _mock_embed, mock_hosting_env, settings):
+        mock_hosting_env.is_production.return_value = False
+        mock_hosting_env.is_preprod_environment.return_value = False
+        mock_hosting_env.is_deployed.return_value = True
+
         settings.ENVIRONMENT = "dev"
         settings.AWS_BUCKET_NAME = "test-bucket"
 
