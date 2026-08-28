@@ -12,8 +12,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         environment = getattr(settings, "ENVIRONMENT", "").lower()
 
-        if environment != "dev" or not HostingEnvironment.is_deployed():
+        if environment != "dev":
             self.stdout.write(f"Running migrate on {environment}.")
+            call_command("migrate", verbosity=1)
+            return
+
+        if not HostingEnvironment.is_deployed():
+            self.stdout.write("Running migrate on dev (local — skipping DB reset and seed).")
             call_command("migrate", verbosity=1)
             return
 
