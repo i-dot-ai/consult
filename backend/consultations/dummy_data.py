@@ -247,7 +247,7 @@ def create_dummy_consultation(
     - ASSIGNING_THEMES (CONFIRMED): + CandidateThemes + SelectedThemes (ready for assignment)
     - ANALYSIS: + CandidateThemes + SelectedThemes + ResponseAnnotations
     """
-    if HostingEnvironment.is_production():
+    if HostingEnvironment.is_production() or HostingEnvironment.is_preprod_environment():
         raise RuntimeError("Dummy data generation should not be run in production")
 
     if config is None:

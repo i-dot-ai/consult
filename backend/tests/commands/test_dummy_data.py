@@ -21,7 +21,7 @@ def test_name_parameter_sets_consultation_name(mock_is_local):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("environment", ["prod"])
+@pytest.mark.parametrize("environment", ["prod", "preprod"])
 def test_the_tool_will_only_run_in_dev(environment):
     with (
         patch.dict(os.environ, {"ENVIRONMENT": environment}),
