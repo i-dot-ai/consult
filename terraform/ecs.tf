@@ -11,7 +11,6 @@ locals {
     # Bootstraps read OTEL_ENABLED from the env directly; no Django setting.
     "OTEL_ENABLED"                = false
     "OTEL_EXPORTER_OTLP_ENDPOINT" = local.otel_exporter_otlp_endpoint
-    "SENTRY_RELEASE"              = data.aws_ssm_parameter.image_tags["frontend"].value
   }
 
   django_env_vars = {
@@ -67,6 +66,7 @@ module "backend" {
     "EXECUTION_CONTEXT"        = "backend"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-backend"
     "SENTRY_DSN"               = var.backend_sentry_dsn
+    "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["backend"].value
   })
 
   secrets = [
@@ -126,7 +126,8 @@ module "frontend" {
     "EXECUTION_CONTEXT"        = "ecs"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
     "PUBLIC_LANGFUSE_URL"      = "https://core-langfuse.i.ai.gov.uk/",
-    "PUBLIC_HOMEPAGE_URL"      = "https://${local.host}"
+    "PUBLIC_HOMEPAGE_URL"      = "https://${local.host}",
+    "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["frontend"].value
   })
 
   secrets = [
@@ -184,6 +185,7 @@ module "worker" {
     "EXECUTION_CONTEXT"        = "worker"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-worker"
     "SENTRY_DSN"               = var.backend_sentry_dsn
+    "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["worker"].value
   })
 
   secrets = [
