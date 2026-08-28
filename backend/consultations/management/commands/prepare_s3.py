@@ -216,7 +216,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         environment = getattr(settings, "ENVIRONMENT", "").lower()
 
-        if not HostingEnvironment.is_development_environment():
+        if not HostingEnvironment.is_dev():
             self.stdout.write(f"Skipping S3 seed on {environment} environment.")
             return
 

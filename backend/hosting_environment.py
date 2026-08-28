@@ -32,3 +32,7 @@ class HostingEnvironment:
         environment = env.str("ENVIRONMENT", "").upper()
         development_environments = ["LOCAL", "TEST", "DEV", "DEVELOPMENT"]
         return environment in development_environments
+
+    @staticmethod
+    def is_dev() -> bool:
+        return env.str("ENVIRONMENT", "").upper() == "DEV"
