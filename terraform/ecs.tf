@@ -9,7 +9,7 @@ locals {
     "AWS_ACCOUNT_ID" = data.aws_caller_identity.current.account_id
     # OTel PoC is dev only; other envs (prod included) stay Sentry-only.
     # Bootstraps read OTEL_ENABLED from the env directly; no Django setting.
-    "OTEL_ENABLED"                = var.env == "dev"
+    "OTEL_ENABLED"                = false
     "OTEL_EXPORTER_OTLP_ENDPOINT" = local.otel_exporter_otlp_endpoint
   }
 
