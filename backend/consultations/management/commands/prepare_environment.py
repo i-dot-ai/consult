@@ -3,22 +3,15 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import connections
 
-from hosting_environment import HostingEnvironment
-
 
 class Command(BaseCommand):
-    help = "Prepare the environment: runs migrations on prod; resets and seeds the database and S3 on dev only."
+    help = "Prepare the environment: runs migrations on prod/preprod/test/local; resets and seeds the database and S3 on deployed dev only."
 
     def handle(self, *args, **options):
         environment = getattr(settings, "ENVIRONMENT", "").lower()
 
         if environment != "dev":
             self.stdout.write(f"Running migrate on {environment}.")
-            call_command("migrate", verbosity=1)
-            return
-
-        if not HostingEnvironment.is_deployed():
-            self.stdout.write("Running migrate on dev (local — skipping DB reset and seed).")
             call_command("migrate", verbosity=1)
             return
 
