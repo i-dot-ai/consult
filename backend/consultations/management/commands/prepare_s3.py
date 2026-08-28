@@ -216,12 +216,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         environment = getattr(settings, "ENVIRONMENT", "").lower()
 
-        if HostingEnvironment.is_production() or HostingEnvironment.is_preprod_environment():
+        if not HostingEnvironment.is_development_environment():
             self.stdout.write(f"Skipping S3 seed on {environment} environment.")
-            return
-
-        if not HostingEnvironment.is_deployed():
-            self.stdout.write(f"Skipping S3 seed on {environment} environment (no real S3 bucket).")
             return
 
         s3_client = boto3.client("s3")
