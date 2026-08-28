@@ -147,8 +147,13 @@ def _build_themes_json(question_data):
     return themes
 
 
-def _build_candidate_theme_mappings(question_data):
-    """Build mapping.jsonl for candidate themes using deterministic assignment per sibling group."""
+def _build_hierarchical_candidate_theme_mappings(question_data):
+    """Build mapping.jsonl for candidate themes, respecting the parent-child hierarchy.
+
+    Themes are grouped by parent so that sibling themes compete against each other —
+    each respondent is assigned 1–2 keys from each sibling group independently.
+    This mirrors how the real find-themes pipeline produces clustered outputs.
+    """
     candidate_themes = question_data.get("candidate_themes", [])
     if not candidate_themes:
         return []
@@ -363,7 +368,7 @@ class Command(BaseCommand):
                 s3_client.put_object(
                     Bucket=bucket,
                     Key=f"{out_prefix}/mapping.jsonl",
-                    Body=_to_jsonl(_build_candidate_theme_mappings(question_data)),
+                    Body=_to_jsonl(_build_hierarchical_candidate_theme_mappings(question_data)),
                 )
 
             if include_themes_csv:
