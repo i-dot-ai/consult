@@ -42,7 +42,7 @@ exports[`SelectedThemeCard > should render 1`] = `
               class="mb-4 block text-xs text-neutral-500"
             >
               Added
-              a moment ago by testuser
+              &lt;FORMATTED_TIME_DELTA_TEXT&gt; ago by testuser
             </small>
              
             <footer

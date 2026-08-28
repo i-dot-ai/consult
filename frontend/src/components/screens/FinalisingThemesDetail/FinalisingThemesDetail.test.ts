@@ -42,7 +42,7 @@ function clearMocks() {
   resetMocks();
 }
 
-describe("EditUser", () => {
+describe("FinalisingThemesDetail", () => {
   beforeEach(() => {
     clearMocks();
   });
