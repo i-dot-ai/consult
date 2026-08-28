@@ -34,11 +34,12 @@ class TestPrepareEnvironment:
         assert Consultation.objects.filter(code="KEEP_ME").exists()
 
     @pytest.mark.django_db
+    @patch("factories.embed_text", return_value=[0.0] * 3072)
     @patch(
         "consultations.management.commands.prepare_environment.HostingEnvironment.is_deployed",
         return_value=True,
     )
-    def test_resets_and_seeds_db(self, _mock_deployed, settings):
+    def test_resets_and_seeds_db(self, _mock_deployed, _mock_embed, settings):
         settings.ENVIRONMENT = "dev"
 
         Consultation.objects.create(title="Should be deleted", code="DELETE_ME")
