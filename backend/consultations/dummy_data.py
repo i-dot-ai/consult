@@ -1,5 +1,4 @@
 import json
-import random
 
 from django.conf import settings
 
@@ -164,34 +163,46 @@ def create_default_selected_themes(question):
 
 def create_response(respondent, question, free_text_answers):
     """Create and return a Response."""
-    raw = random.choice(free_text_answers) if question.has_free_text else None
-    free_text = raw if raw not in ("", "Not Provided", "-") else None
-    return ResponseFactory(question=question, free_text=free_text, respondent=respondent)
+    if question.has_free_text:
+        non_empty = [a for a in free_text_answers if a not in ("", "Not Provided", "-")]
+        raw = non_empty[respondent.themefinder_id % len(non_empty)] if non_empty else None
+    else:
+        raw = None
+    return ResponseFactory(question=question, free_text=raw, respondent=respondent)
 
 
 def create_response_annotation(response, question):
     """Create a ResponseAnnotation and ResponseAnnotationThemes for a free text response."""
     selected_themes = list(question.selectedtheme_set.all())
-    themes_for_response = random.sample(
-        selected_themes,
-        k=random.randint(1, len(selected_themes)),
-    )
-    random_sentiment = random.choice([s[0] for s in ResponseAnnotation.Sentiment.choices])
-    random_evidence_rich = random.choice([True, False])
+    tf_id = response.respondent.themefinder_id
+
+    # Assign 1 or 2 themes deterministically based on themefinder_id
+    num_themes = 1 + (tf_id % 2)
+    themes_for_response = [selected_themes[tf_id % len(selected_themes)]]
+    if num_themes > 1 and len(selected_themes) > 1:
+        themes_for_response.append(selected_themes[(tf_id + 1) % len(selected_themes)])
+
+    sentiment_choices = [s[0] for s in ResponseAnnotation.Sentiment.choices]
+    sentiment = sentiment_choices[tf_id % len(sentiment_choices)]
+    evidence_rich = tf_id % 3 == 0
+
     response_annotation = ResponseAnnotationFactoryNoThemes(
         response=response,
-        sentiment=random_sentiment,
-        evidence_rich=random_evidence_rich,
+        sentiment=sentiment,
+        evidence_rich=evidence_rich,
     )
     response_annotation.add_original_ai_themes(themes_for_response)
 
 
 def create_response_chosen_options(response, multiple_choice_options):
     """Add chosen options to a multiple choice response."""
-    chosen_options = random.sample(
-        multiple_choice_options,
-        k=random.randint(1, len(multiple_choice_options)),
-    )
+    tf_id = response.respondent.themefinder_id
+    # Pick 1 or 2 options deterministically based on themefinder_id
+    num_options = 1 + (tf_id % 2)
+    chosen_options = [
+        multiple_choice_options[(tf_id + j) % len(multiple_choice_options)]
+        for j in range(num_options)
+    ]
     answers = MultiChoiceAnswer.objects.filter(question=response.question, text__in=chosen_options)
     response.chosen_options.add(*answers)
 
