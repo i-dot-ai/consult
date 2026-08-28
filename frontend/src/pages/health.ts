@@ -24,7 +24,7 @@ export const GET: APIRoute = async () => {
     const response = await fetch(
       new URL("/api/health/", backendUrl).toString(),
       {
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(12000),
       },
     );
 
