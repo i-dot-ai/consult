@@ -55,7 +55,7 @@ module "slack_notifier_lambda" {
     "AWS_BUCKET_NAME"             = module.app_bucket.id,
     "AWS_ACCOUNT_ID"              = data.aws_caller_identity.current.account_id,
     "EXECUTION_CONTEXT"           = "lambda",
-    "OTEL_ENABLED"                = var.env == "dev",
+    "OTEL_ENABLED"                = false,
     "OTEL_EXPORTER_OTLP_ENDPOINT" = local.otel_exporter_otlp_endpoint,
   }
 }
@@ -107,7 +107,7 @@ module "import_candidate_themes_lambda" {
     APP_NAME                    = "${var.project_name}-import-candidate-themes"
     REPO                        = var.project_name
     EXECUTION_CONTEXT           = "lambda"
-    OTEL_ENABLED                = var.env == "dev"
+    OTEL_ENABLED                = false
     OTEL_EXPORTER_OTLP_ENDPOINT = local.otel_exporter_otlp_endpoint
   }
 }
@@ -159,7 +159,7 @@ module "import_response_annotations_lambda" {
     APP_NAME                    = "${var.project_name}-import-response-annotations"
     REPO                        = var.project_name
     EXECUTION_CONTEXT           = "lambda"
-    OTEL_ENABLED                = var.env == "dev"
+    OTEL_ENABLED                = false
     OTEL_EXPORTER_OTLP_ENDPOINT = local.otel_exporter_otlp_endpoint
   }
 }
