@@ -1,4 +1,8 @@
 import type { MiddlewareHandler } from "astro";
+import {
+  configureOtel,
+  createLogger,
+} from "@i-dot-ai-npm/utilities-observability";
 
 export interface LoggerAdapter {
   middleware: MiddlewareHandler;
@@ -8,55 +12,61 @@ const disabledLogger: LoggerAdapter = {
   middleware: async (_, next) => next(),
 };
 
-const enabled = import.meta.env.LOGGING_ENABLED === "true";
+const serviceName = process.env.OTEL_SERVICE_NAME;
+const otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+const otelEnabled = process.env.OTEL_ENABLED === "true";
 
-let logger: LoggerAdapter = disabledLogger;
+const buildLogger = async (serviceName: string): Promise<LoggerAdapter> => {
+  const deploymentEnvironment = process.env.ENVIRONMENT;
 
-if (enabled) {
   try {
-    const observabilityUtils =
-      // @ts-expect-error: Cannot find module
-      await import("@i-dot-ai-npm/utilities-observability");
+    // configureOtel patches pino, so it has to run before createLogger.
+    await configureOtel({
+      serviceName,
+      deploymentEnvironment,
+      otlpEndpoint,
+    });
 
-    const loggingTools = await setupLogger(observabilityUtils);
+    const logger = createLogger({
+      serviceName,
+      deploymentEnvironment,
+      otlpEndpoint,
+      // Marks log lines for the CloudWatch subscription filter, matching the backend.
+      shipLogs: 1,
+    });
 
-    const logger_ = loggingTools.logger;
+    return {
+      middleware: async ({ locals, request }, next) => {
+        const start = performance.now();
+        const { method } = request;
+        const { pathname } = new URL(request.url);
 
-    const liveLogger: LoggerAdapter = {
-      middleware: async ({ locals }, next) => {
-        // TODO: Call logging action here once logger is implemented
-        logger_.log(locals.contextId);
+        const response = await next();
 
-        return next();
+        logger.info(
+          {
+            contextId: locals.contextId,
+            method,
+            path: pathname,
+            status: response.status,
+            durationMs: Math.round(performance.now() - start),
+          },
+          "request completed",
+        );
+
+        return response;
       },
     };
-
-    logger = liveLogger;
-  } catch (err) {
-    console.warn(
-      "@i-dot-ai-npm/utilities-observability could not be loaded. Logging will be disabled.",
-      err,
-    );
+  } catch (error) {
+    // Telemetry setup must never stop the server from handling requests.
+    console.warn("OTel setup failed; request logging disabled", error);
+    return disabledLogger;
   }
-}
+};
 
-// Types not available until @i-dot-ai-npm/utilities-observability is implemented
-// @ts-expect-error: Parameter implicitly has an 'any' type
-async function setupLogger(observabilityUtils) {
-  const { configureOtel, createLogger, getMeter } = observabilityUtils;
-  const SERVICE_NAME = "consult-frontend-service";
-
-  await configureOtel({
-    serviceName: SERVICE_NAME,
-    deploymentEnvironment: import.meta.env.ENVIRONMENT,
-    otlpEndpoint: import.meta.env.OTEL_EXPORTER_OTLP_ENDPOINT,
-  });
-
-  const logger = createLogger({ serviceName: SERVICE_NAME, shipLogs: 0 });
-  const meter = getMeter();
-  const counter = meter.createCounter("poc.requests");
-
-  return { logger, meter, counter };
-}
+const logger: LoggerAdapter =
+  otelEnabled && otlpEndpoint && serviceName
+    ? await buildLogger(serviceName)
+    : disabledLogger;
 
 export default logger;
