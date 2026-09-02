@@ -185,7 +185,7 @@ module "worker" {
     "EXECUTION_CONTEXT"        = "worker"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-worker"
     "SENTRY_DSN"               = var.backend_sentry_dsn
-    "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["worker"].value
+    "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["backend"].value
   })
 
   secrets = [
