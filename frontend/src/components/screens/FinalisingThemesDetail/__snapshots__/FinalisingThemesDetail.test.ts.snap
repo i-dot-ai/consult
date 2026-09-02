@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`EditUser > should match snapshot after loading 1`] = `
+exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
 <div>
   <!---->
   <!---->
@@ -276,7 +276,7 @@ exports[`EditUser > should match snapshot after loading 1`] = `
                     class="mb-4 block text-xs text-neutral-500"
                   >
                     Added
-              5 months ago by admin@example.com
+              &lt;FORMATTED_TIME_DELTA_TEXT&gt; ago by admin@example.com
                   </small>
                    
                   <footer
@@ -532,7 +532,7 @@ exports[`EditUser > should match snapshot after loading 1`] = `
 </div>
 `;
 
-exports[`EditUser > should match snapshot initially 1`] = `
+exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
 <div>
   <!---->
   <!---->
