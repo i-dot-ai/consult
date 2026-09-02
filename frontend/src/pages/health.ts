@@ -1,7 +1,10 @@
 import type { APIRoute } from "astro";
 import { getBackendUrl } from "../global/utils";
+import { Routes } from "../global/routes";
 
 type BackendHealthStatus = "ok" | "error" | "unreachable";
+
+const timeoutMs = 5000;
 
 interface HealthResponse {
   status: "ok" | "error";
@@ -22,9 +25,9 @@ export const GET: APIRoute = async () => {
   try {
     const backendUrl = getBackendUrl();
     const response = await fetch(
-      new URL("/api/health/", backendUrl).toString(),
+      new URL(Routes.ApiHealth, backendUrl).toString(),
       {
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(timeoutMs),
       },
     );
 
