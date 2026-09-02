@@ -13,7 +13,6 @@ interface ImportMetaEnv {
   readonly PUBLIC_HOMEPAGE_URL?: string;
   readonly ENVIRONMENT?: string;
   readonly OTEL_EXPORTER_OTLP_ENDPOINT?: string;
-  readonly LOGGING_ENABLED?: string;
 }
 
 interface ImportMeta {
