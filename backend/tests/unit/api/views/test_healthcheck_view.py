@@ -117,7 +117,6 @@ class TestHealthCheckView:
         assert data["checks"]["redis"] == OK
 
 
-@pytest.mark.django_db
 class TestLiveCheckView:
     def test_returns_200_when_process_is_running(self, client):
         """Always returns 200 regardless of dependency state."""
@@ -128,10 +127,3 @@ class TestLiveCheckView:
         data = response.json()
         assert data["status"] == OK
         assert data["timestamp"]
-
-    def test_requires_no_authentication(self, client):
-        """Liveness probe must be accessible without any credentials."""
-        url = reverse("live")
-        response = client.get(url)
-
-        assert response.status_code == 200
