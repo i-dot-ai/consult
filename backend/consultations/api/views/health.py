@@ -68,20 +68,32 @@ def _check_s3() -> None:
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def health_check(_request) -> Response:
-    """Check health of connected services"""
-    checks: dict[str, str] = {}
-    _run_check(checks, "database", _check_database)
-    _run_check(checks, "redis", _check_redis)
-    _run_check(checks, "s3", _check_s3)
+    """Check health of connected services."""
+    critical_checks: dict[str, str] = {}
+    non_critical_checks: dict[str, str] = {}
 
-    app_status = OK if all(check == OK for check in checks.values()) else NOT_OK
+    _run_check(critical_checks, "database", _check_database)
+    _run_check(critical_checks, "redis", _check_redis)
+    _run_check(non_critical_checks, "s3", _check_s3)
+
+    app_status = OK if all(v == OK for v in critical_checks.values()) else NOT_OK
     http_status = 200 if app_status == OK else 503
 
     return Response(
         {
             "status": app_status,
-            "checks": checks,
+            "checks": {**critical_checks, **non_critical_checks},
             "timestamp": datetime.now(UTC).isoformat(),
         },
         status=http_status,
+    )
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def live_check(_request) -> Response:
+    """Liveness probe — returns 200 whenever the process is running."""
+    return Response(
+        {"status": OK, "timestamp": datetime.now(UTC).isoformat()},
+        status=200,
     )
