@@ -5,7 +5,7 @@ description = "Consult backend application"
 license = {text = "MIT"}
 requires-python = ">=3.12,<3.13"
 dependencies = [
-  "boto3>=1.43.62",
+  "boto3>=1.43.74",
   "django>=6.1",
   "django-environ>=0.14.0",
   "django-filter>=26.1",
@@ -26,7 +26,7 @@ dependencies = [
   "psycopg>=3.3.4",
   "pydantic>=2.13.4",
   "pytest-random-order>=1.2.0",
-  "sentry-sdk[django,redis,rq]>=2.66.1",
+  "sentry-sdk[django,redis,rq]>=2.68.0",
   "themefinder",
   "werkzeug==3.1.8",
 ]
@@ -41,9 +41,9 @@ dev = [
   "honcho>=2.0.0",
   "moto>=5.2.2",
   "mypy>=2.3.0",
-  "pre-commit>=4.6.1",
+  "pre-commit>=4.6.2",
   "pytest-lazy-fixtures>=1.4.0",
-  "ruff>=0.16.2",
+  "ruff>=0.16.3",
   "pytest-django>=4.14.0",
   "django-webtest>=1.9.14",
 ]
