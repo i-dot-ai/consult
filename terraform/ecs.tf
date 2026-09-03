@@ -82,7 +82,7 @@ module "backend" {
     accepted_response   = 200
     path                = "/api/health"
     interval            = 20
-    timeout             = 15
+    timeout             = 17
     healthy_threshold   = 2
     unhealthy_threshold = 4
     port                = local.backend_port
