@@ -288,6 +288,8 @@ class ConsultationViewSet(ModelViewSet):
         themes when the job completes.
         (See: lambda/import_candidate_themes/import_candidate_themes_handler.py)
 
+        Advances consultation to FINDING_THEMES stage
+
         URL: /api/consultations/{consultation_id}/find-themes/
         """
         try:
@@ -324,6 +326,15 @@ class ConsultationViewSet(ModelViewSet):
             logger.info(
                 f"Find Themes job submitted for consultation {consultation.title} by user {request.user.id}"
             )
+
+            try:
+                consultation.stage = Consultation.Stage.FINDING_THEMES
+                consultation.save(update_fields=["stage"])
+            except Exception:
+                logger.exception(
+                    f"Failed to update consultation stage for consultation {consultation.title} "
+                    "while starting Find Themes job"
+                )
 
             return Response(
                 {
