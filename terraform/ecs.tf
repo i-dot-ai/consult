@@ -81,10 +81,10 @@ module "backend" {
   health_check = {
     accepted_response   = 200
     path                = "/api/health"
-    interval            = 60
-    timeout             = 50
+    interval            = 20
+    timeout             = 17
     healthy_threshold   = 2
-    unhealthy_threshold = 5
+    unhealthy_threshold = 4
     port                = local.backend_port
   }
 
@@ -141,10 +141,10 @@ module "frontend" {
 
   health_check = {
     accepted_response   = 200
-    interval            = 60
-    timeout             = 70
+    interval            = 20
+    timeout             = 17
     healthy_threshold   = 2
-    unhealthy_threshold = 5
+    unhealthy_threshold = 4
     port                = local.frontend_port
     path                = "/health"
   }
@@ -203,9 +203,9 @@ module "worker" {
   http_healthcheck = false
   container_healthcheck = {
     command     = ["CMD-SHELL", "venv/bin/python3.12 manage.py healthcheck_worker"]
-    interval    = 60
-    timeout     = 20
-    retries     = 3
+    interval    = 20
+    timeout     = 10
+    retries     = 4
     startPeriod = 60
   }
 

@@ -39,6 +39,7 @@ export enum Routes {
   ApiUser = "/api/user/",
   ApiUsers = "/api/users/",
   ApiAstroSignIn = "/api/astro/sign-in/",
+  ApiHealth = "/api/health/",
   Design = "/design",
   SupportDataPipeline = "/support/data-pipeline",
   SupportUsers = "/support/users",
