@@ -330,7 +330,7 @@ class ConsultationViewSet(ModelViewSet):
             try:
                 consultation.stage = Consultation.Stage.FINDING_THEMES
                 consultation.save(update_fields=["stage"])
-            except:
+            except Exception:
                 logger.exception(
                     f"Failed to update consultation stage for consultation {consultation.title} "
                     "while starting Find Themes job"
