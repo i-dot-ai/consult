@@ -71,7 +71,7 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/postgres}
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
       - DJANGO_SETTINGS_MODULE=backend.settings.local
       - DOMAIN_NAME=localhost:3000
       - MINIO_ENDPOINT=http://minio:9100
@@ -83,6 +83,12 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/')"]
+      interval: 15s
+      timeout: 12s
+      retries: 3
+      start_period: 40s
     networks:
       - consult
     # command: sh -c "venv/bin/python manage.py migrate && venv/bin/python manage.py runserver 0.0.0.0:8000"
@@ -100,7 +106,14 @@ services:
     volumes:
       - ./frontend:/app
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 20s
+      timeout: 17s
+      retries: 3
+      start_period: 60s
     networks:
       - consult
     command: sh -c "npm install && npm run dev"
