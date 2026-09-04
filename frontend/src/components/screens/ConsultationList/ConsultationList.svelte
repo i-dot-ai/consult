@@ -1,11 +1,6 @@
 <script lang="ts">
-  import { slide } from "svelte/transition";
-
-  import Title from "../../Title.svelte";
   import Link from "../../Link.svelte";
-  import Alert from "../../Alert.svelte";
   import DataTable from "../../DataTable/DataTable.svelte";
-  import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
 
   import {
     getConsultationDetailUrl,
@@ -38,47 +33,6 @@
 </script>
 
 <section class="mt-4">
-  {#if consultations.query.error}
-    <Alert>
-      <p>{consultations.query.error?.message || "An error happened"}</p>
-    </Alert>
-  {:else if consultations.query.isPending}
-    <p transition:slide>
-      <LoadingMessage message="Loading consultations..." />
-    </p>
-  {:else if consultations.query?.data?.results?.length === 0}
-    No consultations available
-  {:else}
-    <ul>
-      {#each consultations.query.data?.results as consultation (consultation.id)}
-        <li>
-          <Title level={2} text={consultation.title} />
-
-          <div class="flex flex-wrap gap-4">
-            <Link
-              href={getConsultationEvalUrl(consultation.id)}
-              ariaLabel={`View Evaluation for ${consultation.title}`}
-            >
-              View Evaluation
-            </Link>
-            <Link
-              href={getFinaliseThemesUrl(consultation.id)}
-              ariaLabel={`Finalise Themes for ${consultation.title}`}
-            >
-              Finalise Themes
-            </Link>
-            <Link
-              href={getConsultationDetailUrl(consultation.id)}
-              ariaLabel={`View Dashboard for ${consultation.title}`}
-            >
-              View Dashboard
-            </Link>
-          </div>
-        </li>
-      {/each}
-    </ul>
-  {/if}
-
   <DataTable
     columns={[
       { label: "Name", key: "name", sortable: true },
@@ -106,7 +60,11 @@
       }
     ]}
     rows={consultationRows}
-    loading={consultations.query.isPending}
+    loadingCondition={consultations.query.isPending}
+    errorCondition={Boolean(consultations.query.error)}
+    loadingText="Loading consultations..."
+    emptyText={"No consultations available"}
+    errorText={consultations.query.error?.message || "There has been an error"}
   >
     {#snippet cellContent(content, row, column)}
       {#if ["evalLink", "themesLink", "dashboardLink"].includes(column.key)}
