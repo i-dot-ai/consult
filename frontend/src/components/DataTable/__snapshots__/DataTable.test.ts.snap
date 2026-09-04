@@ -147,7 +147,7 @@ exports[`DataTable > should match snapshot 1`] = `
     </div>
      
     <div
-      class="overflow-x-auto rounded-lg border border-neutral-200 bg-white svelte-e9ladz"
+      class="max-h-[50rem] overflow-x-auto rounded-lg border border-neutral-200 bg-white svelte-e9ladz"
     >
       <table
         class="min-w-full divide-y divide-neutral-200 svelte-e9ladz"
@@ -279,12 +279,18 @@ exports[`DataTable > should match snapshot 1`] = `
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
             >
+              <!---->
               Test Item 1 - A
+              
+              <!---->
             </td>
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
             >
+              <!---->
               2026-08-19
+              
+              <!---->
             </td>
             
           </tr>
@@ -295,12 +301,18 @@ exports[`DataTable > should match snapshot 1`] = `
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
             >
+              <!---->
               Test Item 2 - B
+              
+              <!---->
             </td>
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
             >
+              <!---->
               2026-06-19
+              
+              <!---->
             </td>
             
           </tr>
@@ -311,12 +323,18 @@ exports[`DataTable > should match snapshot 1`] = `
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
             >
+              <!---->
               Test Item 3 - C
+              
+              <!---->
             </td>
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
             >
+              <!---->
               2025-10-10
+              
+              <!---->
             </td>
             
           </tr>
