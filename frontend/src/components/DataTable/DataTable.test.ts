@@ -253,7 +253,7 @@ describe("DataTable", () => {
   it("should display loading indicator if loading", async () => {
     render(DataTable, {
       ...TEST_DATA,
-      loading: true,
+      loadingCondition: true,
     } as Record<string, unknown>);
 
     expect(screen.getByTestId("loading-indicator")).toBeInTheDocument();
@@ -262,7 +262,7 @@ describe("DataTable", () => {
   it("should display no data message if no data and not loading", async () => {
     render(DataTable, {
       ...TEST_DATA,
-      loading: false,
+      loadingCondition: false,
       rows: [],
     } as Record<string, unknown>);
 

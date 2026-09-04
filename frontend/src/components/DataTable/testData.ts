@@ -112,7 +112,7 @@ export const TEST_DATA = {
   caption: CAPTION,
   initialSort: INITIAL_SORT,
   pageSizes: PAGE_SIZES,
-  loading: LOADING,
+  loadingCondition: LOADING,
   columnSelect: COLUMN_SELECT,
   searchable: SEARCHABLE,
   searchPlaceholder: SEARCH_PLACEHOLDER,
