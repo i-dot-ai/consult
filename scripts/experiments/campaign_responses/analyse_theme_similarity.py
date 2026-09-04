@@ -379,7 +379,10 @@ def plot_summary(
 
     for question, datasets in sorted(summary.items()):
         names = sorted(datasets.keys(), key=lambda n: dataset_sort_key(n, dataset_order))
-        display_names = [format_dataset_label(n, label_strip) for n in names]
+        axis_labels = []
+        for n in names:
+            match = re.search(r"\d+", n)
+            axis_labels.append(match.group() if match else n)
 
         def series(field: str) -> tuple[list[float], list[float]]:
             means, stds = [], []
@@ -396,37 +399,46 @@ def plot_summary(
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(
-            x=display_names, y=g1_means, error_y=dict(type="data", array=g1_stds),
-            mode="lines+markers", name=f"Near→{gt1_label} (+both)",
+            x=axis_labels, y=g1_means, error_y=dict(type="data", array=g1_stds),
+            mode="lines+markers", name="Campaign",
+            line=dict(width=4), marker=dict(size=9),
         ))
         fig.add_trace(go.Scatter(
-            x=display_names, y=g2_means, error_y=dict(type="data", array=g2_stds),
-            mode="lines+markers", name=f"Near→{gt2_label} (+both)",
+            x=axis_labels, y=g2_means, error_y=dict(type="data", array=g2_stds),
+            mode="lines+markers", name="Non-campaign",
+            line=dict(width=4), marker=dict(size=9),
         ))
         fig.add_trace(go.Scatter(
-            x=display_names, y=overlap_means, error_y=dict(type="data", array=overlap_stds),
-            mode="lines+markers", name="Near overlap",
+            x=axis_labels, y=overlap_means, error_y=dict(type="data", array=overlap_stds),
+            mode="lines+markers", name="Both",
+            line=dict(width=4), marker=dict(size=9),
         ))
 
         gt1_count = gt1_counts_by_question.get(question, 0)
         gt2_count = gt2_counts_by_question.get(question, 0)
         fig.add_hline(
-            y=gt1_count, line_dash="dash", annotation_text=f"{gt1_label} consensus ({gt1_count})",
+            y=gt1_count, line_dash="dash", line_width=3, annotation_text=f"{gt1_label} consensus ({gt1_count})",
             annotation_font_size=9,
         )
         fig.add_hline(
-            y=gt2_count, line_dash="dot", annotation_text=f"{gt2_label} consensus ({gt2_count})",
+            y=gt2_count, line_dash="dot", line_width=3, annotation_text=f"{gt2_label} consensus ({gt2_count})",
             annotation_font_size=9,
         )
 
+        question_num_match = re.search(r"\d+", question)
+        question_title = f"Question {question_num_match.group()}" if question_num_match else question
+
         fig.update_layout(
-            title=f"{question}: nearest-theme counts (inclusive) vs consensus ground truth size",
-            xaxis_title="Dataset",
+            title=question_title,
             yaxis_title="Theme count",
-            xaxis=dict(type="category", categoryorder="array", categoryarray=display_names),
-            font=dict(size=10),
-            title_font=dict(size=13),
-            legend=dict(font=dict(size=9)),
+            xaxis=dict(
+                type="category", categoryorder="array", categoryarray=axis_labels,
+                showticklabels=False,
+                title=dict(text="Non-Campaign:Campaign Ratio", font=dict(size=24)),
+            ),
+            font=dict(size=24),
+            title_font=dict(size=32),
+            legend=dict(font=dict(size=20)),
             width=1600,
             height=900,
         )
