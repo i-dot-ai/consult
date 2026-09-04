@@ -16,6 +16,7 @@
     align?: "left" | "center" | "right";
     sortValue?: (row: T) => unknown;
     filterValue?: (row: T) => string;
+    displayValue?: (row: T) => string;
   };
 </script>
 
@@ -48,6 +49,7 @@
     columnSelect?: boolean;
     onSortChange?: (sort: SortState<T> | null) => void;
     onRowClick?: (row: T) => void;
+    cellContent?: Snippet<[content: unknown, row:T, column: DataTableColumn<T>]>;
   };
 
   let {
@@ -65,6 +67,7 @@
     columnSelect = true,
     onSortChange,
     onRowClick,
+    cellContent,
   }: Props = $props();
 
   let sort = $derived<SortState<T> | null>(initialSort ?? null);
@@ -401,7 +404,7 @@
               data-testid="datatable-row"
             >
               {#each visibleColumns as column (column.key)}
-                {@const content = row[column.key]}
+                {@const content = column.displayValue ? column.displayValue(row) : row[column.key]}
 
                 <td
                   class={clsx([
@@ -414,10 +417,14 @@
                     column.align === "right" && "text-right",
                   ])}
                 >
-                  {#if typeof content === "string"}
-                    {content}
-                  {:else if typeof content === "function"}
-                    {@render content()}
+                  {#if cellContent}
+                    {@render cellContent(content, row, column)}
+                  {:else}
+                    {#if typeof content === "string"}
+                      {content}
+                    {:else if typeof content === "function"}
+                      {@render content()}
+                    {/if}
                   {/if}
                 </td>
               {/each}
