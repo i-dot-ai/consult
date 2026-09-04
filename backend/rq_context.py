@@ -37,7 +37,9 @@ def job(*job_args, **job_kwargs):
 
         @functools.wraps(func)
         def enqueue_with_context(*args, context_id: str | None = None, **kwargs):
-            return enqueue_call(*args, context_id=context_id or get_or_create_context_id(), **kwargs)
+            return enqueue_call(
+                *args, context_id=context_id or get_or_create_context_id(), **kwargs
+            )
 
         decorated.delay = enqueue_with_context
         decorated.enqueue = enqueue_with_context

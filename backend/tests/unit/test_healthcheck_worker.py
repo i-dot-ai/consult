@@ -60,5 +60,8 @@ class TestHealthcheckWorker:
             call_command("healthcheck_worker")
 
     def test_fails_with_a_clear_message_when_redis_is_unreachable(self):
-        with patch("rq.worker.Worker.all", side_effect=redis.exceptions.ConnectionError("boom")), pytest.raises(CommandError, match="Could not reach Redis"):
-                call_command("healthcheck_worker")
+        with (
+            patch("rq.worker.Worker.all", side_effect=redis.exceptions.ConnectionError("boom")),
+            pytest.raises(CommandError, match="Could not reach Redis"),
+        ):
+            call_command("healthcheck_worker")
