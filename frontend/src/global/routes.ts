@@ -1,5 +1,9 @@
 import urlJoin from "url-join";
 
+export enum Prefixes {
+  ApiV1 = "/api",
+}
+
 export enum Suffixes {
   FinaliseThemes = "finalising-themes",
   Analysis = "analysis",
@@ -29,17 +33,6 @@ export enum Routes {
   DataSharing = "/data-sharing",
   GetInvolved = "/get-involved",
   SignInError = "/sign-in-error",
-  SignOut = "/api/logout/",
-  APIValidateToken = "/api/validate-token/",
-  ApiResponses = "/api/responses/",
-  ApiConsultations = "/api/consultations/",
-  ApiConsultationFolders = "/api/consultations/folders/",
-  ApiConsultationSetup = "/api/consultations/setup/",
-  ApiConsultationQuestions = "/api/questions/",
-  ApiUser = "/api/user/",
-  ApiUsers = "/api/users/",
-  ApiAstroSignIn = "/api/astro/sign-in/",
-  ApiHealth = "/api/health/",
   Design = "/design",
   SupportDataPipeline = "/support/data-pipeline",
   SupportUsers = "/support/users",
@@ -49,6 +42,21 @@ export enum Routes {
   SupportQueue = "/django-rq",
   Profile = "/profile",
   Privacy = "/privacy",
+
+  // API Routes
+  ApiSignOut = `${Prefixes.ApiV1}/logout`,
+  APIValidateToken = `${Prefixes.ApiV1}/validate-token/`,
+  ApiResponses = `${Prefixes.ApiV1}/responses/`,
+  ApiConsultations = `${Prefixes.ApiV1}/consultations`,
+  ApiConsultationFolders = `${Prefixes.ApiV1}/consultations/folders/`,
+  ApiConsultationSetup = `${Prefixes.ApiV1}/consultations/setup/`,
+  ApiConsultationQuestions = `${Prefixes.ApiV1}/questions/`,
+  ApiUser = `${Prefixes.ApiV1}/user/`,
+  ApiUsers = `${Prefixes.ApiV1}/users/`,
+  ApiAstroSignIn = `${Prefixes.ApiV1}/astro/sign-in/`,
+  ApiHealth = `${Prefixes.ApiV1}/health/`,
+
+  // External Routes
   ConsultAlertsSlackChannel = "https://i-dot-ai.slack.com/archives/C0930D3DSKW",
   ThemeFinderRepository = "https://github.com/i-dot-ai/themefinder",
 }
