@@ -16,15 +16,16 @@ def test_name_parameter_sets_consultation_name(mock_is_local):
         stdout=StringIO(),  # we'll ignore this
     )
 
-    assert models.Consultation.objects.count() == 2
-    assert models.Question.objects.count() == 8
+    assert models.Consultation.objects.count() == 4
+    assert models.Question.objects.count() == 16
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("environment", ["prod"])
+@pytest.mark.parametrize("environment", ["prod", "preprod"])
 def test_the_tool_will_only_run_in_dev(environment):
-    with patch.dict(os.environ, {"ENVIRONMENT": environment}), pytest.raises(
-        Exception, match=r"Dummy data generation should not be run in production"
+    with (
+        patch.dict(os.environ, {"ENVIRONMENT": environment}),
+        pytest.raises(Exception, match=r"Dummy data generation should not be run in production"),
     ):
         call_command(
             "generate_dummy_data",

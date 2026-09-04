@@ -7,9 +7,7 @@ INSTALLED_APPS.append("drf_spectacular")
 
 STORAGES["default"] = {
     "BACKEND": "django.core.files.storage.FileSystemStorage",
-    "OPTIONS": {
-        "location": BASE_DIR / "tmp"
-    },
+    "OPTIONS": {"location": BASE_DIR / "tmp"},
 }
 
 REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"

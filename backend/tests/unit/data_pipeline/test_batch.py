@@ -11,9 +11,19 @@ class TestSubmitBatchJob:
     @staticmethod
     def _configure_batch_job_settings(mock_settings, job_type: str) -> None:
         mock_settings.SUBMIT_BATCH_JOBS = True
-        setattr(mock_settings, f"{job_type}_BATCH_JOB_NAME", f"{job_type.lower()}-job".replace("_", "-"))
-        setattr(mock_settings, f"{job_type}_BATCH_JOB_QUEUE", f"{job_type.lower()}-queue".replace("_", "-"))
-        setattr(mock_settings, f"{job_type}_BATCH_JOB_DEFINITION", f"{job_type.lower()}-def".replace("_", "-"))
+        setattr(
+            mock_settings, f"{job_type}_BATCH_JOB_NAME", f"{job_type.lower()}-job".replace("_", "-")
+        )
+        setattr(
+            mock_settings,
+            f"{job_type}_BATCH_JOB_QUEUE",
+            f"{job_type.lower()}-queue".replace("_", "-"),
+        )
+        setattr(
+            mock_settings,
+            f"{job_type}_BATCH_JOB_DEFINITION",
+            f"{job_type.lower()}-def".replace("_", "-"),
+        )
 
     @staticmethod
     def _context_id_from_command(command: list[str]) -> str | None:
@@ -149,7 +159,10 @@ class TestSubmitBatchJob:
         finally:
             structlog.contextvars.unbind_contextvars("context_id")
 
-        assert self._context_id_from_command(call_args["containerOverrides"]["command"]) == "request-context-abc"
+        assert (
+            self._context_id_from_command(call_args["containerOverrides"]["command"])
+            == "request-context-abc"
+        )
         assert call_args["parameters"]["context_id"] == "request-context-abc"
 
     @patch("data_pipeline.batch.boto3")
@@ -158,11 +171,16 @@ class TestSubmitBatchJob:
         """An explicit context_id wins over whatever's ambiently bound, in both the command and parameters"""
         structlog.contextvars.bind_contextvars(context_id="ambient-id")
         try:
-            call_args = self._submit_find_themes_job(mock_settings, mock_boto3, context_id="explicit-id")
+            call_args = self._submit_find_themes_job(
+                mock_settings, mock_boto3, context_id="explicit-id"
+            )
         finally:
             structlog.contextvars.unbind_contextvars("context_id")
 
-        assert self._context_id_from_command(call_args["containerOverrides"]["command"]) == "explicit-id"
+        assert (
+            self._context_id_from_command(call_args["containerOverrides"]["command"])
+            == "explicit-id"
+        )
         assert call_args["parameters"]["context_id"] == "explicit-id"
 
     @patch("data_pipeline.batch.boto3")

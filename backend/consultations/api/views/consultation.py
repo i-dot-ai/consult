@@ -946,9 +946,7 @@ class ConsultationViewSet(ModelViewSet):
             SelectedTheme.objects.filter(
                 question__consultation=consultation,
             )
-            .filter(
-                Q(name__iexact=NO_REASON_GIVEN_THEME_NAME) | Q(name__iexact=OTHER_THEME_NAME)
-            )
+            .filter(Q(name__iexact=NO_REASON_GIVEN_THEME_NAME) | Q(name__iexact=OTHER_THEME_NAME))
             .values_list("id", flat=True)
         )
 
