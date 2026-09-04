@@ -54,7 +54,9 @@
     loadingText?: string;
     onSortChange?: (sort: SortState<T> | null) => void;
     onRowClick?: (row: T) => void;
-    cellContent?: Snippet<[content: unknown, row:T, column: DataTableColumn<T>]>;
+    cellContent?: Snippet<
+      [content: unknown, row: T, column: DataTableColumn<T>]
+    >;
   };
 
   let {
@@ -396,7 +398,10 @@
       {/snippet}
 
       {#snippet errorMessage()}
-        <div role="status" class="flex justify-center items-center flex-col gap-2">
+        <div
+          role="status"
+          class="flex justify-center items-center flex-col gap-2"
+        >
           <MaterialIcon size="3rem" color="fill-neutral-300">
             <Error />
           </MaterialIcon>
@@ -428,7 +433,9 @@
               data-testid="datatable-row"
             >
               {#each visibleColumns as column (column.key)}
-                {@const content = column.displayValue ? column.displayValue(row) : row[column.key]}
+                {@const content = column.displayValue
+                  ? column.displayValue(row)
+                  : row[column.key]}
 
                 <td
                   class={clsx([

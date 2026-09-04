@@ -10,26 +10,34 @@
   import { buildConsultationsGetQuery } from "../../../global/queries/consultations/queries.ts";
   import type { Consultation } from "../../../global/types.ts";
 
+  interface Link {
+    url: string;
+    ariaLabel: string;
+    text: string;
+  }
+
   const consultations = buildConsultationsGetQuery();
-  const consultationRows = $derived(consultations.query.data?.results.map((consultation: Consultation) => ({
-    name: consultation.title,
-    createdAt: consultation.created_at,
-    evalLink: {
-      url: getConsultationEvalUrl(consultation.id),
-      ariaLabel: `View Evaluation for ${consultation.title}`,
-      text: "View Evaluation",
-    },
-    themesLink: {
-      url: getFinaliseThemesUrl(consultation.id),
-      ariaLabel: `Finalise Themes for ${consultation.title}`,
-      text: "Finalise Themes",
-    },
-    dashboardLink: {
-      url: getConsultationDetailUrl(consultation.id),
-      ariaLabel: `View Dashboard for ${consultation.title}`,
-      text: "View Dashboard",
-    },
-  })))
+  const consultationRows = $derived(
+    consultations.query.data?.results.map((consultation: Consultation) => ({
+      name: consultation.title,
+      createdAt: consultation.created_at,
+      evalLink: {
+        url: getConsultationEvalUrl(consultation.id),
+        ariaLabel: `View Evaluation for ${consultation.title}`,
+        text: "View Evaluation",
+      },
+      themesLink: {
+        url: getFinaliseThemesUrl(consultation.id),
+        ariaLabel: `Finalise Themes for ${consultation.title}`,
+        text: "Finalise Themes",
+      },
+      dashboardLink: {
+        url: getConsultationDetailUrl(consultation.id),
+        ariaLabel: `View Dashboard for ${consultation.title}`,
+        text: "View Dashboard",
+      },
+    })),
+  );
 </script>
 
 <section class="mt-4">
@@ -40,8 +48,12 @@
         label: "Date Created",
         key: "createdAt",
         sortable: true,
-        sortValue: (item: any) => new Date(item.createdAt).getTime(),
-        displayValue: (item: any) => new Date(item.createdAt).toLocaleDateString(),
+        sortValue: (item) =>
+          new Date((item as { createdAt: string }).createdAt).getTime(),
+        displayValue: (item) =>
+          new Date(
+            (item as { createdAt: string }).createdAt,
+          ).toLocaleDateString(),
       },
       {
         label: "Evaluation",
@@ -57,24 +69,21 @@
         label: "Dashboard",
         key: "dashboardLink",
         sortable: false,
-      }
+      },
     ]}
     rows={consultationRows}
     loadingCondition={consultations.query.isPending}
     errorCondition={Boolean(consultations.query.error)}
     loadingText="Loading consultations..."
-    emptyText={"No consultations available"}
+    emptyText="No consultations available"
     errorText={consultations.query.error?.message || "There has been an error"}
     columnSelect={false}
   >
     {#snippet cellContent(content, row, column)}
       {#if ["evalLink", "themesLink", "dashboardLink"].includes(column.key)}
-        {@const rowData = row[column.key]}
+        {@const rowData = row[column.key] as Link}
 
-        <Link
-          href={rowData.url}
-          ariaLabel={rowData.ariaLabel}
-        >
+        <Link href={rowData.url} ariaLabel={rowData.ariaLabel}>
           {rowData.text}
         </Link>
       {:else}
