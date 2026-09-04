@@ -10,11 +10,6 @@ class ConsultationsConfig(AppConfig):
     def ready(self):
         logger = settings.LOGGER
 
-        if settings.EXECUTION_CONTEXT == "worker":
-            from otel_bootstrap import bootstrap_otel
-
-            bootstrap_otel(service_name="consult-worker")
-
         if settings.ENVIRONMENT.upper() in ["LOCAL", "TEST"]:
             s3_client = s3.get_s3_client()
             buckets = s3_client.list_buckets()["Buckets"]
