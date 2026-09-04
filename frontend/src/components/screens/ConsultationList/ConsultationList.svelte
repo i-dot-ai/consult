@@ -65,6 +65,7 @@
     loadingText="Loading consultations..."
     emptyText={"No consultations available"}
     errorText={consultations.query.error?.message || "There has been an error"}
+    columnSelect={false}
   >
     {#snippet cellContent(content, row, column)}
       {#if ["evalLink", "themesLink", "dashboardLink"].includes(column.key)}
