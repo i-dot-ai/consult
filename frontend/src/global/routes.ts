@@ -44,10 +44,10 @@ export enum Routes {
   Privacy = "/privacy",
 
   // API Routes
-  ApiSignOut = `${Prefixes.ApiV1}/logout`,
+  ApiSignOut = `${Prefixes.ApiV1}/logout/`,
   APIValidateToken = `${Prefixes.ApiV1}/validate-token/`,
   ApiResponses = `${Prefixes.ApiV1}/responses/`,
-  ApiConsultations = `${Prefixes.ApiV1}/consultations`,
+  ApiConsultations = `${Prefixes.ApiV1}/consultations/`,
   ApiConsultationFolders = `${Prefixes.ApiV1}/consultations/folders/`,
   ApiConsultationSetup = `${Prefixes.ApiV1}/consultations/setup/`,
   ApiConsultationQuestions = `${Prefixes.ApiV1}/questions/`,
