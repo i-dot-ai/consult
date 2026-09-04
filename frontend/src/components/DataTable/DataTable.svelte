@@ -16,6 +16,7 @@
     align?: "left" | "center" | "right";
     sortValue?: (row: T) => unknown;
     filterValue?: (row: T) => string;
+    displayValue?: (row: T) => string;
   };
 </script>
 
@@ -27,6 +28,7 @@
   import MaterialIcon from "../MaterialIcon.svelte";
   import ArrowForward from "../svg/material/ArrowForward.svelte";
   import SwapVert from "../svg/material/SwapVert.svelte";
+  import Error from "../svg/material/Error.svelte";
   import LoadingIndicator from "../LoadingIndicator/LoadingIndicator.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import Select from "../inputs/Select/Select.svelte";
@@ -38,7 +40,6 @@
     rows?: T[];
     columns: DataTableColumn<T>[];
     caption?: string;
-    loading?: boolean;
     sortable?: boolean;
     initialSort?: SortState<T>;
     searchable?: boolean;
@@ -46,8 +47,16 @@
     paginated?: boolean;
     pageSizes?: number[];
     columnSelect?: boolean;
+    loadingCondition?: boolean;
+    errorCondition?: boolean;
+    emptyText?: string;
+    errorText?: string;
+    loadingText?: string;
     onSortChange?: (sort: SortState<T> | null) => void;
     onRowClick?: (row: T) => void;
+    cellContent?: Snippet<
+      [content: unknown, row: T, column: DataTableColumn<T>]
+    >;
   };
 
   let {
@@ -55,7 +64,6 @@
     rows = [],
     columns,
     caption = "Data table",
-    loading = false,
     sortable = true,
     initialSort,
     searchable = true,
@@ -63,8 +71,14 @@
     paginated = true,
     pageSizes = [10, 50, 100, 250, 500],
     columnSelect = true,
+    loadingCondition = false,
+    errorCondition = false,
+    emptyText = "No data available",
+    errorText = "There was an error",
+    loadingText = "Loading data...",
     onSortChange,
     onRowClick,
+    cellContent,
   }: Props = $props();
 
   let sort = $derived<SortState<T> | null>(initialSort ?? null);
@@ -282,6 +296,7 @@
 
   <div
     class={clsx([
+      "max-h-[50rem]",
       "overflow-x-auto",
       "rounded-lg",
       "border",
@@ -375,18 +390,35 @@
       {/snippet}
 
       {#snippet loadingMessage()}
-        <span role="status">
+        <div role="status">
           <LoadingIndicator size="3rem" />
-        </span>
+
+          {loadingText}
+        </div>
+      {/snippet}
+
+      {#snippet errorMessage()}
+        <div
+          role="status"
+          class="flex justify-center items-center flex-col gap-2"
+        >
+          <MaterialIcon size="3rem" color="fill-neutral-300">
+            <Error />
+          </MaterialIcon>
+
+          <p>{errorText}</p>
+        </div>
       {/snippet}
 
       {#snippet noDataMessage()}
-        <span>No data available</span>
+        <span>{emptyText}</span>
       {/snippet}
 
       <tbody class="divide-y divide-neutral-200">
-        {#if loading}
+        {#if loadingCondition && !errorCondition}
           {@render messageRow(loadingMessage)}
+        {:else if errorCondition}
+          {@render messageRow(errorMessage)}
         {:else if paginatedRows.length === 0}
           {@render messageRow(noDataMessage)}
         {:else}
@@ -401,6 +433,10 @@
               data-testid="datatable-row"
             >
               {#each visibleColumns as column (column.key)}
+                {@const content = column.displayValue
+                  ? column.displayValue(row)
+                  : row[column.key]}
+
                 <td
                   class={clsx([
                     "whitespace-nowrap",
@@ -412,7 +448,15 @@
                     column.align === "right" && "text-right",
                   ])}
                 >
-                  {row[column.key]}
+                  {#if cellContent}
+                    {@render cellContent(content, row, column)}
+                  {:else}
+                    {#if typeof content === "string"}
+                      {content}
+                    {:else if typeof content === "function"}
+                      {@render content()}
+                    {/if}
+                  {/if}
                 </td>
               {/each}
             </tr>
@@ -423,7 +467,7 @@
   </div>
 </div>
 
-{#if paginated && !loading}
+{#if paginated && !loadingCondition}
   <div
     class={clsx([
       "mt-4",
