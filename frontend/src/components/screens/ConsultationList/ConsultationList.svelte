@@ -10,7 +10,7 @@
   import { buildConsultationsGetQuery } from "../../../global/queries/consultations/queries.ts";
   import type { Consultation } from "../../../global/types.ts";
 
-  interface Link {
+  interface LinkData {
     url: string;
     ariaLabel: string;
     text: string;
@@ -81,10 +81,10 @@
   >
     {#snippet cellContent(content, row, column)}
       {#if ["evalLink", "themesLink", "dashboardLink"].includes(column.key)}
-        {@const rowData = row[column.key] as Link}
+        {@const linkData = row[column.key] as LinkData}
 
-        <Link href={rowData.url} ariaLabel={rowData.ariaLabel}>
-          {rowData.text}
+        <Link href={linkData.url} ariaLabel={linkData.ariaLabel}>
+          {linkData.text}
         </Link>
       {:else}
         <span>{content}</span>
