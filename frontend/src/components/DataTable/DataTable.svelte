@@ -469,7 +469,7 @@
   </div>
 </div>
 
-{#if paginated && !loadingCondition}
+{#if paginated && !loadingCondition && !errorCondition}
   <div
     class={clsx([
       "mt-4",
