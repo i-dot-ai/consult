@@ -1,10 +1,7 @@
 <script lang="ts">
-  import clsx from "clsx";
-
   import { fade } from "svelte/transition";
 
-  import type { ResponsesBody, SelectedTheme } from "../../../global/types";
-  import { type MockFetch } from "../../../global/stores";
+  import type { SelectedTheme } from "../../../global/types";
   import {
     formatTimeDeltaText,
     getTimeDeltaInMinutes,
@@ -19,13 +16,9 @@
   import Tag from "../../Tag/Tag.svelte";
 
   export interface Props {
-    consultationId: string;
-    questionId: string;
     theme: SelectedTheme;
     removeTheme: (themeId: string) => void;
     updateTheme: (themeId: string, title: string, description: string) => void;
-    maxResponses?: number;
-    responsesMock?: MockFetch<ResponsesBody>;
   }
 
   let {
@@ -59,7 +52,7 @@
     <div in:fade>
       <Panel>
         <div class="flex flex-wrap sm:flex-nowrap">
-          <div class={clsx(["md:w-auto"])}>
+          <div class="md:w-auto">
             <header class="flex items-center gap-2">
               <h2>{theme.name}</h2>
 
