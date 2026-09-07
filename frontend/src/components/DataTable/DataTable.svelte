@@ -52,6 +52,7 @@
     emptyText?: string;
     errorText?: string;
     loadingText?: string;
+    maxHeight?: string;
     onSortChange?: (sort: SortState<T> | null) => void;
     onRowClick?: (row: T) => void;
     cellContent?: Snippet<
@@ -76,6 +77,7 @@
     emptyText = "No data available",
     errorText = "There was an error",
     loadingText = "Loading data...",
+    maxHeight = "max-h-[50rem]",
     onSortChange,
     onRowClick,
     cellContent,
@@ -296,7 +298,7 @@
 
   <div
     class={clsx([
-      "max-h-[50rem]",
+      maxHeight,
       "overflow-x-auto",
       "rounded-lg",
       "border",
@@ -399,7 +401,7 @@
 
       {#snippet errorMessage()}
         <div
-          role="status"
+          role="alert"
           class="flex justify-center items-center flex-col gap-2"
         >
           <MaterialIcon size="3rem" color="fill-neutral-300">
