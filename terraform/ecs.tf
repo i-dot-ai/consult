@@ -3,13 +3,13 @@ locals {
   frontend_port = 3000
 
   base_env_vars = {
-    "ENVIRONMENT"    = terraform.workspace
-    "DEBUG"          = var.env == "prod" ? false : true
-    "REPO"           = var.project_name
-    "AWS_ACCOUNT_ID" = data.aws_caller_identity.current.account_id
+    "ENVIRONMENT"                 = terraform.workspace
+    "DEBUG"                       = var.env == "prod" ? false : true
+    "REPO"                        = var.project_name
+    "AWS_ACCOUNT_ID"              = data.aws_caller_identity.current.account_id
     # OTel PoC is dev only; other envs (prod included) stay Sentry-only.
     # Bootstraps read OTEL_ENABLED from the env directly; no Django setting.
-    "OTEL_ENABLED"                = var.env == "dev"
+    "OTEL_ENABLED"                = false
     "OTEL_EXPORTER_OTLP_ENDPOINT" = local.otel_exporter_otlp_endpoint
   }
 
@@ -66,6 +66,7 @@ module "backend" {
     "EXECUTION_CONTEXT"        = "backend"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-backend"
     "SENTRY_DSN"               = var.backend_sentry_dsn
+    "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["backend"].value
   })
 
   secrets = [
@@ -80,10 +81,10 @@ module "backend" {
   health_check = {
     accepted_response   = 200
     path                = "/api/health"
-    interval            = 60
-    timeout             = 50
+    interval            = 20
+    timeout             = 17
     healthy_threshold   = 2
-    unhealthy_threshold = 5
+    unhealthy_threshold = 4
     port                = local.backend_port
   }
 
@@ -125,7 +126,7 @@ module "frontend" {
     "EXECUTION_CONTEXT"        = "ecs"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
     "PUBLIC_LANGFUSE_URL"      = "https://core-langfuse.i.ai.gov.uk/",
-    "PUBLIC_HOMEPAGE_URL"      = "https://${local.host}"
+    "PUBLIC_HOMEPAGE_URL"      = "https://${local.host}",
     "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["frontend"].value
   })
 
@@ -140,10 +141,10 @@ module "frontend" {
 
   health_check = {
     accepted_response   = 200
-    interval            = 60
-    timeout             = 70
+    interval            = 20
+    timeout             = 17
     healthy_threshold   = 2
-    unhealthy_threshold = 5
+    unhealthy_threshold = 4
     port                = local.frontend_port
     path                = "/health"
   }
@@ -184,6 +185,7 @@ module "worker" {
     "EXECUTION_CONTEXT"        = "worker"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-worker"
     "SENTRY_DSN"               = var.backend_sentry_dsn
+    "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["backend"].value
   })
 
   secrets = [
@@ -201,9 +203,9 @@ module "worker" {
   http_healthcheck = false
   container_healthcheck = {
     command     = ["CMD-SHELL", "venv/bin/python3.12 manage.py healthcheck_worker"]
-    interval    = 60
-    timeout     = 20
-    retries     = 3
+    interval    = 20
+    timeout     = 10
+    retries     = 4
     startPeriod = 60
   }
 

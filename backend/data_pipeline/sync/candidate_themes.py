@@ -54,9 +54,7 @@ def load_candidate_themes_from_s3(
     logger.info("Loading candidate themes from {key}", key=key)
 
     # Read and parse JSON file
-    theme_data = s3.read_json(
-        bucket_name=bucket_name_str, key=key, raise_if_missing=False
-    )
+    theme_data = s3.read_json(bucket_name=bucket_name_str, key=key, raise_if_missing=False)
 
     if theme_data is None:
         logger.info("No candidate themes file found at {key}", key=key)

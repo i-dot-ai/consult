@@ -32,7 +32,10 @@ const mainMiddleware = defineMiddleware(
       return next();
     }
 
-    if (/^\/health[/]?$/.test(url.pathname)) {
+    if (
+      /^\/health[/]?$/.test(url.pathname) ||
+      /^\/live[/]?$/.test(url.pathname)
+    ) {
       return next();
     }
 
@@ -61,7 +64,7 @@ const mainMiddleware = defineMiddleware(
       } catch (e: unknown) {
         if (e instanceof TokenExpiredError) {
           console.warn("[auth] SSO token expired, redirecting to logout");
-          return context.redirect(Routes.SignOut);
+          return context.redirect(Routes.ApiSignOut);
         }
         console.error("Unknown error signing in", JSON.stringify(e, null, 2));
         return context.redirect(Routes.SignInError);

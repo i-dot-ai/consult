@@ -85,6 +85,17 @@ def import_candidate_themes(
         raise
 
     try:
+        consultation.stage = Consultation.Stage.FINALISING_THEMES
+        consultation.save(update_fields=["stage"])
+    except Exception:
+        logger.exception(
+            "Failed to update consultation stage for consultation_code={consultation_code} "
+            "after importing candidate themes",
+            consultation_code=consultation_code,
+        )
+        # Do not raise if fails as this is not a crucial step
+
+    try:
         export_candidate_themes_to_s3(consultation)
     except Exception:
         logger.exception(

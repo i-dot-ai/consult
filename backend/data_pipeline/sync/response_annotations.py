@@ -1,4 +1,3 @@
-
 from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
@@ -56,15 +55,13 @@ def load_selected_themes_from_s3(
 
     try:
         # Read and parse JSON file
-        theme_data = s3.read_json(
-            bucket_name=bucket_name_str, key=key, raise_if_missing=True
-        )
+        theme_data = s3.read_json(bucket_name=bucket_name_str, key=key, raise_if_missing=True)
     except (ClientError, BotoCoreError) as e:
         logger.exception(
             "Failed to load selected themes from S3 for consultation '{consultation_code}',"
             " question {question_number}",
             consultation_code=consultation_code,
-            question_number=question_number
+            question_number=question_number,
         )
         if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
             raise ValueError(
@@ -115,15 +112,13 @@ def load_sentiments_from_s3(
 
     try:
         # Read JSONL file (raise_if_missing=False because sentiment is optional)
-        sentiment_data = s3.read_jsonl(
-            bucket_name=bucket_name_str, key=key, raise_if_missing=False
-        )
+        sentiment_data = s3.read_jsonl(bucket_name=bucket_name_str, key=key, raise_if_missing=False)
     except (ClientError, BotoCoreError):
         logger.exception(
             "Failed to load sentiments from S3 for consultation '{consultation_code}',"
             " question {question_number}",
             consultation_code=consultation_code,
-            question_number=question_number
+            question_number=question_number,
         )
         raise
 
@@ -172,15 +167,13 @@ def load_detail_detections_from_s3(
 
     try:
         # Read JSONL file
-        detail_data = s3.read_jsonl(
-            bucket_name=bucket_name_str, key=key, raise_if_missing=True
-        )
+        detail_data = s3.read_jsonl(bucket_name=bucket_name_str, key=key, raise_if_missing=True)
     except (ClientError, BotoCoreError) as e:
         logger.exception(
             "Failed to load detail detections from S3 for consultation '{consultation_code}',"
             " question {question_number}",
             consultation_code=consultation_code,
-            question_number=question_number
+            question_number=question_number,
         )
         if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
             raise ValueError(
@@ -230,15 +223,13 @@ def load_theme_mappings_from_s3(
 
     try:
         # Read JSONL file
-        mapping_data = s3.read_jsonl(
-            bucket_name=bucket_name_str, key=key, raise_if_missing=True
-        )
+        mapping_data = s3.read_jsonl(bucket_name=bucket_name_str, key=key, raise_if_missing=True)
     except (ClientError, BotoCoreError) as e:
         logger.exception(
             "Failed to load theme mappings from S3 for consultation '{consultation_code}',"
             " question {question_number}",
             consultation_code=consultation_code,
-            question_number=question_number
+            question_number=question_number,
         )
         if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
             raise ValueError(
@@ -301,7 +292,7 @@ def load_annotation_batch(
             logger.exception(
                 "Consultation with code '{consultation_code}' does not exist. "
                 "Base consultation data must be imported before annotations.",
-                consultation_code=consultation_code
+                consultation_code=consultation_code,
             )
             raise ValueError(
                 f"Consultation with code '{consultation_code}' does not exist. "

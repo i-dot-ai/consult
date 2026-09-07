@@ -799,7 +799,7 @@ class TestResponseViewSet:
         )
         assert response.status_code == 400
         assert response.json() == {
-            "themes": [[f'Invalid pk "{fake_uuid}" - object does not exist.']]
+            "themes": {"0": [f'Invalid pk "{fake_uuid}" - object does not exist.']}
         }
 
     @pytest.mark.parametrize("is_flagged", [True, False])

@@ -7,15 +7,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies: ClassVar[list] = [
-        ('consultations', '0102_responsereadby_alter_response_read_by'),
+        ("consultations", "0102_responsereadby_alter_response_read_by"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations: ClassVar[list] = [
         migrations.AddIndex(
-            model_name='response',
-            index=models.Index(fields=['question', 'id'], name='consultatio_questio_13c9db_idx'),
+            model_name="response",
+            index=models.Index(fields=["question", "id"], name="consultatio_questio_13c9db_idx"),
         ),
     ]

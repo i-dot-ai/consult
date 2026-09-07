@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   formatDate,
   formatTimeDeltaText,
@@ -9,6 +9,8 @@ import {
   getTimeDeltaInMinutes,
   toTitleCase,
 } from "./utils";
+
+vi.unmock("./utils");
 
 describe("getPercentage", () => {
   it("correctly calculates percentages", () => {

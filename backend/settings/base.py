@@ -40,6 +40,7 @@ AWS_ACCOUNT_ID = env("AWS_ACCOUNT_ID", default=None)
 MINIO_ADDRESS = env.str("MINIO_ENDPOINT", default=None)
 AWS_ACCESS_KEY = env.str("MINIO_ACCESS_KEY", default=None)
 AWS_SECRET_KEY = env.str("MINIO_SECRET_KEY", default=None)
+SENTRY_RELEASE = env.str("SENTRY_RELEASE", default="")
 
 DOMAIN_NAME = env("DOMAIN_NAME", default="0.0.0.0")  # nosec
 
@@ -305,7 +306,7 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 100,
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_RENDERER_CLASSES": (
-        "drf_orjson_renderer.renderers.ORJSONRenderer",
+        "consultations.api.renderers.ConsultORJSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ),
     "DEFAULT_AUTHENTICATION_CLASSES": (

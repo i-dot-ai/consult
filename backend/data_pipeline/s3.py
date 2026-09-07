@@ -9,9 +9,7 @@ logger = settings.LOGGER
 account_id = settings.AWS_ACCOUNT_ID
 
 
-def read_jsonl(
-    bucket_name: str, key: str, raise_if_missing: bool = True
-) -> list[dict]:
+def read_jsonl(bucket_name: str, key: str, raise_if_missing: bool = True) -> list[dict]:
     """
     Read a JSONL file from S3 and return list of parsed objects.
     Args:
@@ -46,9 +44,7 @@ def read_jsonl(
     return objects
 
 
-def read_json(
-    bucket_name: str, key: str, raise_if_missing: bool = True
-) -> dict | None:
+def read_json(bucket_name: str, key: str, raise_if_missing: bool = True) -> dict | None:
     """
     Read a JSON file from S3 and return parsed object.
     Args:
@@ -101,7 +97,7 @@ def get_question_folders(inputs_path: str, bucket_name: str) -> list[str]:
         "Bucket": bucket_name,
         "Prefix": inputs_path,
         "Delimiter": "/",  # Group by directory to get only subdirectories
-        "MaxKeys": 1000,   # Max allowed per page by AWS
+        "MaxKeys": 1000,  # Max allowed per page by AWS
     }
 
     if settings.ENVIRONMENT.upper() not in ["LOCAL", "TEST"]:
@@ -193,7 +189,7 @@ def get_consultation_folders() -> list[str]:
         "Bucket": settings.AWS_BUCKET_NAME,
         "Prefix": "app_data/consultations/",
         "Delimiter": "/",  # Group by directory to get only top-level consultation folders
-        "MaxKeys": 1000,   # Max allowed per page by AWS
+        "MaxKeys": 1000,  # Max allowed per page by AWS
     }
 
     if settings.ENVIRONMENT.upper() not in ["LOCAL", "TEST"]:

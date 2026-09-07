@@ -6,15 +6,26 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies: ClassVar[list] = [
-        ('consultations', '0098_migrate_legacy_stages'),
+        ("consultations", "0098_migrate_legacy_stages"),
     ]
 
     operations: ClassVar[list] = [
         migrations.AlterField(
-            model_name='consultation',
-            name='stage',
-            field=models.CharField(choices=[('setup', 'Data Setup'), ('finding_themes', 'Finding Themes'), ('finalising_themes', 'Finalising Themes'), ('assigning_themes', 'Assigning Themes'), ('analysis', 'Analysis'), ('theme_sign_off', 'Theme Sign Off'), ('theme_mapping', 'Theme Mapping')], default='finalising_themes', max_length=32),
+            model_name="consultation",
+            name="stage",
+            field=models.CharField(
+                choices=[
+                    ("setup", "Data Setup"),
+                    ("finding_themes", "Finding Themes"),
+                    ("finalising_themes", "Finalising Themes"),
+                    ("assigning_themes", "Assigning Themes"),
+                    ("analysis", "Analysis"),
+                    ("theme_sign_off", "Theme Sign Off"),
+                    ("theme_mapping", "Theme Mapping"),
+                ],
+                default="finalising_themes",
+                max_length=32,
+            ),
         ),
     ]

@@ -38,9 +38,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         # Check if this is an update operation and user is updating themselves
         if self.instance and request and request.user == self.instance and value is False:
-            raise serializers.ValidationError(
-                "You cannot remove admin privileges from yourself"
-            )
+            raise serializers.ValidationError("You cannot remove admin privileges from yourself")
 
         return value
 
@@ -150,7 +148,14 @@ class SelectedThemeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SelectedTheme
-        fields: ClassVar[list] = ["id", "name", "description", "version", "modified_at", "last_modified_by"]
+        fields: ClassVar[list] = [
+            "id",
+            "name",
+            "description",
+            "version",
+            "modified_at",
+            "last_modified_by",
+        ]
         read_only_fields: ClassVar[list] = ["id", "version", "modified_at", "last_modified_by"]
 
     def get_last_modified_by(self, obj):

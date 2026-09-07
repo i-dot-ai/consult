@@ -6,7 +6,7 @@ from rest_framework_nested.routers import NestedDefaultRouter
 from .api.views.auth import logout_view, validate_token
 from .api.views.candidate_theme import CandidateThemeViewSet
 from .api.views.consultation import ConsultationViewSet
-from .api.views.health import health_check
+from .api.views.health import health_check, live_check
 from .api.views.question import QuestionViewSet
 from .api.views.respondent import RespondentViewSet
 from .api.views.response import ResponseViewSet
@@ -33,6 +33,7 @@ questions_router.register("responses", ResponseViewSet, basename="question-respo
 urlpatterns = [
     # API endpoints
     path("api/health/", health_check, name="health"),
+    path("api/live/", live_check, name="live"),
     path("api/", include(router.urls)),
     path("api/", include(consultations_router.urls)),
     path("api/", include(questions_router.urls)),
