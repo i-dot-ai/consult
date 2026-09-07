@@ -204,19 +204,19 @@ test.describe("Finalise Themes - Detail Page", () => {
     await expect(page.getByText(TEST_TITLE, { exact: true })).toBeVisible();
   })
 
-  test("Representative responses button toggles responses", async ({ page }) => {
+  test("Sample Answers button toggles responses", async ({ page }) => {
     // initially hidden
-    await expect(page.getByRole("heading", { name: "Representative Responses" })).not.toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sample Answers" })).not.toBeVisible();
     await expect(page.getByText("There are no responses")).not.toBeVisible();
 
     // revealed upon click
-    await page.getByRole("button", { name: "Representative Responses" }).first().click();
-    await expect(page.getByRole("heading", { name: "Representative Responses" })).toBeVisible();
+    await page.getByRole("button", { name: "Sample Answers" }).first().click();
+    await expect(page.getByRole("heading", { name: "Sample Answers" })).toBeVisible();
     await expect(page.getByText("There are no responses")).toBeVisible();
 
     // hidden upon re-click
     await page.getByRole("button", { name: "Hide Responses" }).first().click();
-    await expect(page.getByRole("heading", { name: "Representative Responses" })).not.toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sample Answers" })).not.toBeVisible();
     await expect(page.getByText("There are no responses")).not.toBeVisible();
   })
 
