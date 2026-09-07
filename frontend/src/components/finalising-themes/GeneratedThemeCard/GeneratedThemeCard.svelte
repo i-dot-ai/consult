@@ -144,7 +144,7 @@
                   <Visibility />
                 </MaterialIcon>
                 <span class="whitespace-nowrap">
-                  {showResponses ? "Hide" : "Representative"} Responses
+                  {showResponses ? "Hide" : "Sample"} Answers
                 </span>
               </div>
             </Button>
@@ -159,7 +159,7 @@
         >
           <ResponsesList
             variant="generated"
-            title="Representative Responses"
+            title="Sample Answers"
             loading={$responsesStore.isLoading}
             responses={$responsesStore.data?.results?.map(
               (item) => item.free_text,
