@@ -215,7 +215,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     await expect(page.getByText("There are no responses")).toBeVisible();
 
     // hidden upon re-click
-    await page.getByRole("button", { name: "Hide Responses" }).first().click();
+    await page.getByRole("button", { name: "Hide Answers" }).first().click();
     await expect(page.getByRole("heading", { name: "Sample Answers" })).not.toBeVisible();
     await expect(page.getByText("There are no responses")).not.toBeVisible();
   })
