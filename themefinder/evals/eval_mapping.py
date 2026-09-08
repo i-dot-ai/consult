@@ -35,7 +35,7 @@ async def evaluate_mapping(
     Returns:
         Dict containing evaluation scores
     """
-    config = DatasetConfig(dataset=dataset, stage="mapping")
+    config = DatasetConfig(dataset=dataset, component="mapping")
 
     # Use provided context or create new one
     owns_context = langfuse_ctx is None

@@ -11,10 +11,10 @@ Everything here lives under `themefinder/evals/`.
 
 `themefinder/evals/` has a working LLM-quality evaluation framework: LLM-judge evaluators, dataset loading,
 Langfuse tracing, a multi-model benchmark runner, synthetic data generation. But the execution engine and the
-artefact store are hard-wired together. Each of the four stage eval scripts —
+artefact store are hard-wired together. Each of the four component eval scripts —
 `eval_generation.py`, `eval_mapping.py`, `eval_condensation.py`, `eval_refinement.py` — writes its own custom
 `_run_with_langfuse(...)` / `_run_local_fallback(...)` branch, duplicating most of its logic across both
-paths. Mapping is the one stage where the two paths don't even share scoring logic: its Langfuse path calls
+paths. Mapping is the one component where the two paths don't even share scoring logic: its Langfuse path calls
 `evaluators.py::mapping_f1_evaluator`, its local fallback calls a separate sklearn-based implementation,
 `metrics.py::calculate_mapping_metrics`. Generation, condensation, and refinement are already consistent —
 each already calls the same `evaluators.py` LLM-judge functions in both paths. As a direct result, `langfuse`
@@ -26,16 +26,16 @@ is a core, non-optional dependency of the package purely to support the duplicat
 - Langfuse is dataset + artefact storage only — not the orchestrator.
 - Both the engine and the storage backend are genuinely swappable, proven by a test, not just structurally
   possible.
-- Zero Langfuse-specific code in the four stage scripts: no import, no type reference, no branding in a
+- Zero Langfuse-specific code in the four component scripts: no import, no type reference, no branding in a
   parameter name.
 - Migrate in place, incrementally, with each phase independently revertible.
 - DVC drives reproducible eval runs: a `dvc.yaml` pipeline wraps the same entry points every other caller
-  uses, giving dependency-aware caching (skip a stage when nothing it depends on changed) and experiment
+  uses, giving dependency-aware caching (skip a component when nothing it depends on changed) and experiment
   tracking (`dvc exp run`/`dvc metrics show`) for comparing intentional variations.
 
 ## Non-goals (this pass)
 
-- `benchmark.py` (multi-model runner) keeps calling the four stage functions exactly as it does today, with
+- `benchmark.py` (multi-model runner) keeps calling the four component functions exactly as it does today, with
   one single-line exception (see [Compatibility contract](#compatibility-contract-with-benchmarkpy)). It is
   not rewritten to call the new ports directly.
 - `evals/synthetic/` and its CLI entry point `generate_synthetic.py` (synthetic data generation) are
@@ -43,7 +43,7 @@ is a core, non-optional dependency of the package purely to support the duplicat
   construction, trace wrap, and flush — the `evals/synthetic/` package it wraps has no Langfuse references of
   its own.
 
-## One entry point per stage, shared by every caller
+## One entry point per component, shared by every caller
 
 Every way an eval actually gets run converges on the same function call:
 
@@ -52,7 +52,7 @@ python eval_generation.py --dataset X        ─┐
 benchmark.py --evals generation / --quick      ├──▶  evaluate_generation(...)
 themefinder-eval.yml (CI, workflow_dispatch)  ─┤            │
 dvc.yaml (dvc repro / dvc exp run)            ─┘            ▼
-                                              resolve_backends(...) ──▶ run_stage(...)
+                                              resolve_backends(...) ──▶ run_component(...)
 ```
 
 `eval_generation.py`'s `__main__` block calls its own `evaluate_generation` wrapper with the CLI-supplied
@@ -61,23 +61,23 @@ dataset — the same function `benchmark.py::EVAL_FUNCS["generation"]` points at
 also reaches (via `benchmark.py --evals "$EVAL_TYPE"` or `--quick`). No caller has its own copy of the
 Langfuse-vs-local branching logic. This is the property that makes the framework's swappability real for
 every caller, not just for tests: **every `eval_*.py`'s `__main__`/CLI block calls its own module's
-`evaluate_X` wrapper, never a lower-level function like `run_stage` directly** — so a CLI run and a
-`benchmark.py` run of the same stage are guaranteed to take the identical path through `resolve_backends` and
-`run_stage`. `dvc.yaml` (see [Running via DVC](#running-via-dvc) below) is a fourth caller added this pass,
+`evaluate_X` wrapper, never a lower-level function like `run_component` directly** — so a CLI run and a
+`benchmark.py` run of the same component are guaranteed to take the identical path through `resolve_backends` and
+`run_component`. `dvc.yaml` (see [Running via DVC](#running-via-dvc) below) is a fourth caller added this pass,
 shelling out to the same entry points.
 
-### Adding a new eval stage
+### Adding a new eval component
 
-Extending the framework to a new stage means adding an evaluator, fixture data, and an `eval_<stage>.py`
-entry point in the shape of the existing ones — but the stage's *name* must not be a fact duplicated
-independently across `VALID_STAGES`, `EVAL_FUNCS`, the CI workflow's `choices` list, and `params.yaml`, the
-way it is today. Those are currently four independent lists of the same stage names with nothing deriving
-one from another, so missing an update to one of them means a stage silently works in some entry points and
+Extending the framework to a new component means adding an evaluator, fixture data, and an `eval_<component>.py`
+entry point in the shape of the existing ones — but the component's *name* must not be a fact duplicated
+independently across `VALID_COMPONENTS`, `EVAL_FUNCS`, the CI workflow's `choices` list, and `params.yaml`, the
+way it is today. Those are currently four independent lists of the same component names with nothing deriving
+one from another, so missing an update to one of them means a component silently works in some entry points and
 not others (most commonly: it works locally and via `benchmark.py`, but never appears in the CI dropdown, or
 never gets a `dvc repro` stage).
 
-The stage set must instead have a single source of truth that every other list either derives from or is
-validated against, so registering a new stage is a one-place change. The exact mechanism for that — a shared
+The component set must instead have a single source of truth that every other list either derives from or is
+validated against, so registering a new component is a one-place change. The exact mechanism for that — a shared
 constant the others read, a generation step, a test asserting the lists agree, or something else — is a
 decision for implementation time, not this document.
 
@@ -87,7 +87,7 @@ Four ports, each an explicit `abc.ABC`, each with a default adapter:
 
 | Port | Role | Default adapter |
 |---|---|---|
-| `DatasetPort` | Load `list[Case]` for a stage/dataset | `LangfuseDatasetAdapter` (Langfuse-enabled runs) or `LocalJSONDatasetAdapter` (otherwise) |
+| `DatasetPort` | Load `list[Case]` for a component/dataset | `LangfuseDatasetAdapter` (Langfuse-enabled runs) or `LocalJSONDatasetAdapter` (otherwise) |
 | `EvaluatorPort` | Score a case's output | seven custom evaluator classes in `evals/adapters/evaluators/` (e.g. `GroundednessEvaluator`) |
 | `EvalRunnerPort` | Orchestrate task execution + evaluation | `PydanticEvalsRunner`, wrapping `pydantic_evals.Dataset.evaluate` |
 | `ArtefactStorePort` | Persist run/case results and scores | `LangfuseArtefactStore` (default), `LocalJSONArtefactStore` (no-Langfuse) |
@@ -96,7 +96,7 @@ Four ports, each an explicit `abc.ABC`, each with a default adapter:
 flowchart TB
     ES["evaluate_X(...)"] -->|"① calls"| RB["resolve_backends()"]
     RB -->|"② builds one adapter<br/>per port, bundles them"| EB
-    ES -->|"③ calls, passing backends"| RS["run_stage(...)"]
+    ES -->|"③ calls, passing backends"| RS["run_component(...)"]
     RS -->|"④ reads backends.*"| EB
 
     EB["EvalBackends<br/>— a plain struct, not a port —<br/>bundles a dataset port,<br/>a runner port, and an<br/>artefact-store port"]
@@ -132,14 +132,14 @@ flowchart TB
 ```
 
 `EvalBackends` isn't a port and doesn't implement anything — it's the plain struct `resolve_backends()`
-returns and `run_stage()` reads, holding exactly one concrete adapter per port and nothing else (see
+returns and `run_component()` reads, holding exactly one concrete adapter per port and nothing else (see
 [Orchestration](#orchestration) below for why it doesn't also carry Langfuse's flush-ownership flag). The
 grey nodes are the four ports, each an `abc.ABC`; the dashed `implemented by`
 arrows below each one are the inheritance relationship called out above — every concrete adapter genuinely
 subclasses its port's ABC, `isinstance(adapter, DatasetPort)` holds, and instantiating an adapter missing an
 abstract method raises `TypeError`. `EvalRunnerPort` additionally invokes `EvaluatorPort` once per case while
 it runs — the one edge between two ports directly, reflecting that the runner is what drives evaluation, not
-`run_stage()` calling evaluators itself.
+`run_component()` calling evaluators itself.
 
 Colour key: pink = Langfuse-specific, blue = local/generic, purple = pydantic-evals-specific, grey = a port
 (`abc.ABC`), yellow = `EvalBackends`. Every port has at least one adapter of each flavour except
@@ -147,9 +147,9 @@ Colour key: pink = Langfuse-specific, blue = local/generic, purple = pydantic-ev
 design — `InlineSequentialRunner` exists purely to prove the port is swappable, not as a real alternative
 engine.
 
-`context` is deliberately untyped (`Any`) at every boundary the stage scripts touch. They forward it to
+`context` is deliberately untyped (`Any`) at every boundary the component scripts touch. They forward it to
 `resolve_backends` without inspecting it — they have no idea what it is, Langfuse-shaped or otherwise. The
-runtime call sequence itself — `resolve_backends()` building `EvalBackends`, `run_stage()` reading it — is
+runtime call sequence itself — `resolve_backends()` building `EvalBackends`, `run_component()` reading it — is
 covered in full in [Orchestration](#orchestration) below, not repeated here.
 
 ## Directory structure
@@ -179,7 +179,7 @@ evals/adapters/
     mapping_f1.py                     # MappingF1Evaluator(EvaluatorPort) — deterministic, not an LLM judge
     redundancy.py                      # RedundancyEvaluator(EvaluatorPort) — embedding-based, not an LLM judge
     pydantic_evals_llm_judge_adapter.py  # PydanticEvalsLLMJudgeAdapter, wraps pydantic_evals.evaluators.LLMJudge
-                                            # (built + tested, not wired into any StageConfig yet)
+                                            # (built + tested, not wired into any ComponentConfig yet)
   runners/
     __init__.py
     base.py                  # EvalRunnerPort(ABC) — async run(cases, task, evaluators, max_concurrency) -> RunReport
@@ -195,7 +195,7 @@ No adapter file imports from a sibling adapter file — each implementation depe
 Filenames use an explicit `_adapter.py` suffix (rather than e.g. `langfuse.py`) so nothing in this tree
 shadows the real third-party `langfuse` / `pydantic_evals` packages by name.
 
-`eval_types.py` (shared domain dataclasses), `stage_runner.py`, and `config.py` are orchestration, not
+`eval_types.py` (shared domain dataclasses), `component_runner.py`, and `config.py` are orchestration, not
 themselves adapters, and stay at the top level of `evals/`.
 
 ### Retiring `evaluators.py`, and splitting `langfuse_utils.py`
@@ -219,7 +219,7 @@ Grounded in the actual current contents of `evaluators.py`: seven public factori
 plus five shared private helpers and the `_invoke_with_retry` wrapper used by the five async ones. Retiring
 the file folds each factory's closure body directly into its new class's `evaluate()` method — which classes
 share the retry/parsing base and which subclass `EvaluatorPort` directly is covered in [Evaluator
-adapters](#evaluator-adapters) below, not repeated here. `StageConfig.build_evaluators` constructs these
+adapters](#evaluator-adapters) below, not repeated here. `ComponentConfig.build_evaluators` constructs these
 directly, passing the judge LLM to whichever evaluators need it — generation's set, for example, is
 groundedness, coverage, and title-specificity (each needing the judge LLM) plus redundancy (which doesn't).
 
@@ -237,21 +237,21 @@ evals/utils/
 
 Every `import langfuse_utils` site becomes `from utils import langfuse_utils`; call sites like
 `langfuse_utils.get_langfuse_context(...)` are unchanged. `benchmark.py` and `generate_synthetic.py` keep
-this import long-term — they legitimately talk to Langfuse. The four `eval_*.py` stage scripts have their
+this import long-term — they legitimately talk to Langfuse. The four `eval_*.py` component scripts have their
 `import langfuse_utils` line deleted entirely, not relocated.
 
 ## Domain types — `evals/eval_types.py`
 
 Framework-owned types, so no port implementation needs to import `pydantic_evals` or `langfuse` types
 directly. A handful of small, frozen dataclasses — `Case`, `Score`, `CaseOutcome`, `RunReport`, and
-`StageConfig` — plus a `DatasetNotFoundError` exception that a `DatasetPort` raises and
+`ComponentConfig` — plus a `DatasetNotFoundError` exception that a `DatasetPort` raises and
 `FallbackDatasetAdapter` catches to trigger its fallback. `Score` is isomorphic to today's `{"name",
 "value", "comment"}` shape, so converting `evaluators.py` output is a one-liner.
 
-`StageConfig.task` takes `case.inputs` — a plain `dict` — not the full `Case` object. This is deliberate: it
+`ComponentConfig.task` takes `case.inputs` — a plain `dict` — not the full `Case` object. This is deliberate: it
 matches pydantic-evals' native task contract, since its evaluation loop invokes a task with just a case's
-inputs, so `PydanticEvalsRunner` needs no bridging on the task side. `run_stage` binds the LLM once before
-handing the resulting callable to whichever runner is active. If a stage genuinely needs data from
+inputs, so `PydanticEvalsRunner` needs no bridging on the task side. `run_component` binds the LLM once before
+handing the resulting callable to whichever runner is active. If a component genuinely needs data from
 `Case.metadata` inside its task, that data is folded into `inputs` when the dataset adapter builds the
 `Case`, rather than widening this contract back to the full `Case`.
 
@@ -307,7 +307,7 @@ runner already does `await evaluator.evaluate(...)` uniformly for all seven.
 **`PydanticEvalsLLMJudgeAdapter`** wraps `pydantic_evals.evaluators.LLMJudge` behind the same `EvaluatorPort`
 — the planned home for the team's expected future migration of the five custom LLM-judge classes onto
 pydantic-evals' own judge primitive, per ADR-0011's "use pydantic-evals for LAJ" mandate. Built and
-unit-tested this pass (stubbed `LLMJudge`, no network); not wired into any `StageConfig` yet — retiring a
+unit-tested this pass (stubbed `LLMJudge`, no network); not wired into any `ComponentConfig` yet — retiring a
 custom evaluator class is an output-quality-parity judgment call for a dedicated future pass, not a
 side effect of this one.
 
@@ -324,13 +324,13 @@ when `PydanticEvalsRunner` is actually driving the full `Dataset.evaluate()` cal
 
 This has to go through `EvaluatorPort`, not bypass it. The shortcut of handing `LLMJudge` instances straight
 to `pydantic_evals.Dataset(evaluators=[...])` inside `PydanticEvalsRunner` only works while `PydanticEvalsRunner`
-is the active runner — the moment a `StageConfig` mixes a bypassed-native evaluator with any other runner
+is the active runner — the moment a `ComponentConfig` mixes a bypassed-native evaluator with any other runner
 (`InlineSequentialRunner` included), that evaluator silently can't run, breaking the swappability the whole
 framework is built around for that one evaluator. Wrapping it costs one adapter file and keeps every
 evaluator — native or custom — runnable under every runner. The migration path this unlocks:
-`StageConfig.build_evaluators` returns `list[EvaluatorPort]`, and nothing stops that list from mixing adapter
+`ComponentConfig.build_evaluators` returns `list[EvaluatorPort]`, and nothing stops that list from mixing adapter
 types — `groundedness` could move to `PydanticEvalsLLMJudgeAdapter` while `coverage` stays on
-`CoverageEvaluator`, one evaluator at a time, with zero change to `run_stage`, either runner, or any
+`CoverageEvaluator`, one evaluator at a time, with zero change to `run_component`, either runner, or any
 artefact store.
 
 ### Runner adapter
@@ -359,7 +359,7 @@ below. Every other runner (`InlineSequentialRunner` included) leaves `engine_rep
   [Orchestration](#orchestration) below), so "Langfuse artefact store, locally-sourced case" is a normal,
   deliberately-supported combination (someone who wants results stored locally while still pulling cases
   from a curated Langfuse dataset), not an edge case.
-- **`LocalJSONArtefactStore`** writes to `evals/local_eval_runs/<stage>/<dataset>/results.json`, overwritten
+- **`LocalJSONArtefactStore`** writes to `evals/local_eval_runs/<component>/<dataset>/results.json`, overwritten
   each run — deliberately not `evals/benchmark_results/`, which `benchmark.py` already owns as a
   timestamp-keyed directory (`benchmark_results/<benchmark_id>/benchmark.log`) that `visualise_benchmark.py`
   scans expecting only timestamp children. `local_eval_runs/` is a strict improvement over today's local
@@ -439,52 +439,52 @@ It picks the runner via one environment variable, `THEMEFINDER_EVAL_ENGINE` (def
 read once at the top of the function — the explicit seam a second engine plugs into later. There is no
 plugin registry; this is deliberately simple, the same pattern the two new selectors above follow.
 
-### `evals/stage_runner.py::run_stage`
+### `evals/component_runner.py::run_component`
 
-`run_stage` loads cases via `backends.dataset`, builds evaluators via `StageConfig.build_evaluators`, runs
+`run_component` loads cases via `backends.dataset`, builds evaluators via `ComponentConfig.build_evaluators`, runs
 the task via `backends.runner`, records and finishes via `backends.artefacts`, and returns a flat result
 dict. Pure ports — no `langfuse` or
-`pydantic_evals` import, no conditional branching on context state. This is the one function all four stage
+`pydantic_evals` import, no conditional branching on context state. This is the one function all four component
 scripts delegate to, and the function the swappability test exercises directly with fake backends.
 
-### The four stage scripts
+### The four component scripts
 
-Each script collapses to a small async task function, a module-level `StageConfig`, a thin
-`evaluate_<stage>` wrapper that resolves backends and calls `run_stage`, and the unchanged CLI/`__main__`
+Each script collapses to a small async task function, a module-level `ComponentConfig`, a thin
+`evaluate_<component>` wrapper that resolves backends and calls `run_component`, and the unchanged CLI/`__main__`
 block. `_run_with_langfuse` / `_run_local_fallback` are deleted, not relocated.
 
 `eval_mapping.py` keeps its optional `question_num` parameter for its `--question` CLI flag, but builds a
-filtered per-call config rather than mutating the shared module-level `StageConfig` — so a CLI run's filter
+filtered per-call config rather than mutating the shared module-level `ComponentConfig` — so a CLI run's filter
 can never leak into a concurrent `benchmark.py` run. All four wrappers otherwise take the same inputs; `evaluate_mapping` accepts a judge LLM too, for consistency, even though
 mapping's evaluator ignores it.
 
-**Scoring-consistency status per stage:** generation, condensation, and refinement are already consistent —
+**Scoring-consistency status per component:** generation, condensation, and refinement are already consistent —
 each already calls the same `evaluators.py` LLM-judge suite in both its local and Langfuse paths, so this
-plan doesn't change their local-run scoring. **Mapping is the one stage this plan changes local-run
-behaviour for**: its local fallback currently calls `metrics.py::calculate_mapping_metrics`, while `run_stage`
-calls `StageConfig.build_evaluators` — which wraps `evaluators.py::mapping_f1_evaluator` — regardless of
+plan doesn't change their local-run scoring. **Mapping is the one component this plan changes local-run
+behaviour for**: its local fallback currently calls `metrics.py::calculate_mapping_metrics`, while `run_component`
+calls `ComponentConfig.build_evaluators` — which wraps `evaluators.py::mapping_f1_evaluator` — regardless of
 dataset source. Mapping's local runs switch onto `mapping_f1_evaluator` as a direct structural consequence of
-adopting `run_stage`, not a special extra step. `evals/metrics.py` is deleted outright as part of this pass:
+adopting `run_component`, not a special extra step. `evals/metrics.py` is deleted outright as part of this pass:
 `eval_mapping.py::calculate_mapping_metrics` is its only remaining importer (`eval_generation.py` no longer
 imports it, `eval_condensation.py`/`eval_refinement.py` never did).
 
 ## Running via DVC
 
 A fourth caller of `evaluate_X()`, alongside direct CLI, `benchmark.py`, and the CI workflow — `evals/dvc.yaml`
-defines pipeline stages that shell out to the same `eval_<stage>.py` entry points every other caller uses,
-never `run_stage()` directly. This buys `dvc repro`'s dependency-aware caching (skip re-running a stage when
+defines pipeline stages that shell out to the same `eval_<component>.py` entry points every other caller uses,
+never `run_component()` directly. This buys `dvc repro`'s dependency-aware caching (skip re-running a component when
 nothing it depends on has changed) and `dvc exp run`/`dvc metrics show` for comparing intentional variations
 as tracked experiments — not strict reproducibility, since LLM evals are stochastic, but a real win for
 "nothing relevant changed, don't bother re-running" and for comparing designed variations.
 
 Full `dvc.yaml`/`params.yaml` listing lives in the working plan's "Running via DVC" section, not duplicated
 here. One point worth calling out at this level: DVC needs a concrete local `metrics` file to track for
-every stage, but `LangfuseArtefactStore` doesn't write anything to disk — so each CLI entry point's
+every component, but `LangfuseArtefactStore` doesn't write anything to disk — so each CLI entry point's
 `__main__` block writes its already-computed result (the same flat dict `evaluate_X()` already returns,
 regardless of which `ArtefactStorePort` recorded it "officially") to a stable path,
-`evals/local_eval_runs/<stage>/<dataset>/results.json`, unconditionally. This is a CLI-level concern, not a
-port capability — `run_stage()` and `ArtefactStorePort` stay exactly as designed, with no new abstract
-method and no query against Langfuse. Whether a stage actually needs to *run* at all is entirely DVC's own
+`evals/local_eval_runs/<component>/<dataset>/results.json`, unconditionally. This is a CLI-level concern, not a
+port capability — `run_component()` and `ArtefactStorePort` stay exactly as designed, with no new abstract
+method and no query against Langfuse. Whether a component actually needs to *run* at all is entirely DVC's own
 job, via its native dependency-hash caching (`dvc repro` comparing `deps` against `dvc.lock`, backed by
 `dvc pull`/`push` to a shared remote) — unrelated to which artefact store is configured, so
 `artefact_store=local` is not required for DVC to work, and `dataset_source=langfuse` works alongside it too
@@ -492,16 +492,16 @@ job, via its native dependency-hash caching (`dvc repro` comparing `deps` agains
 
 ## Compatibility contract with benchmark.py
 
-`benchmark.py` calls each stage's `evaluate_X` wrapper with the dataset, LLM, context, and judge LLM, and
+`benchmark.py` calls each component's `evaluate_X` wrapper with the dataset, LLM, context, and judge LLM, and
 expects a flat dict back, which it splits by value type into `scores` vs
 `outputs`. It also owns opening the Langfuse trace context itself and later calls
 `langfuse_utils.extract_session_metrics(session_id=...)` for cost/token data.
 
-Every stage function keeps this exact shape, and Langfuse traces stay queryable by `session_id`. The only
+Every component function keeps this exact shape, and Langfuse traces stay queryable by `session_id`. The only
 change inside `benchmark.py` is a one-line kwarg rename at its call site: `"langfuse_ctx": langfuse_ctx`
 becomes `"context": langfuse_ctx`. The local variable name inside `benchmark.py` is unaffected — only the
-kwarg key crossing into the now-generic stage function signature changes. This is what makes "zero
-Langfuse-specific code in the stage scripts" achievable without touching how `benchmark.py` itself talks to
+kwarg key crossing into the now-generic component function signature changes. This is what makes "zero
+Langfuse-specific code in the component scripts" achievable without touching how `benchmark.py` itself talks to
 Langfuse.
 
 ## Configuration strategy
@@ -558,13 +558,13 @@ two existing shared helper functions (`get_langfuse_context`, `gateway_credentia
 settings parameter, defaulting to `get_settings()`, the same optional-with-a-default pattern `context`
 already uses; no existing call site changes. `get_settings()` then replaces every other scattered read this
 pass found — `query_langfuse_costs()`'s and `visualise_benchmark.py`'s independent credential reads, the
-five inline per-stage `os.getenv("AUTO_EVAL_MODEL")` sites, and all seven explicit `dotenv.load_dotenv()`
+five inline per-component `os.getenv("AUTO_EVAL_MODEL")` sites, and all seven explicit `dotenv.load_dotenv()`
 calls (deleted outright, since `get_settings()` already guarantees `.env` is loaded before any field is
 read).
 
-This keeps "zero Langfuse code in the four stage scripts" intact: the stage scripts only ever read the
+This keeps "zero Langfuse code in the four component scripts" intact: the component scripts only ever read the
 model name off settings — no Langfuse import, no Langfuse-named field touched. `EvalSettings` bundles
-Langfuse fields alongside non-Langfuse ones; the stage scripts simply never
+Langfuse fields alongside non-Langfuse ones; the component scripts simply never
 reach for the ones with "langfuse" in the name.
 
 ### Test impact: a real correctness risk, not just style
@@ -585,19 +585,19 @@ This work is broken down into 8 issues across five waves:
   All additive or mechanical — nothing production-facing changes yet. There's no separate
   `evaluators.py`-split issue here, since retiring it happens directly inside the `EvaluatorPort` issue below.
 - **Wave 1 — Ports** (4 issues, parallelisable): one issue per port type — `DatasetPort`, `EvaluatorPort` (all seven evaluator classes plus `PydanticEvalsLLMJudgeAdapter`), `EvalRunnerPort`, `ArtefactStorePort` — each self-contained with its own offline tests. None of them are wired into production code yet, so a team can split these across people. The `EvaluatorPort` issue's first step is the `EvaluatorContext`-standalone-construction spike flagged under [Evaluator adapters](#evaluator-adapters) above — if it fails, `PydanticEvalsLLMJudgeAdapter` splits off into its own follow-up issue and this one narrows to the seven custom classes.
-- **Wave 2 — Orchestration** (1 issue): `resolve_backends` + `run_stage` + the swappability proof. The
+- **Wave 2 — Orchestration** (1 issue): `resolve_backends` + `run_component` + the swappability proof. The
   architecture's proof point — every port comes together here for the first time.
-- **Wave 3 — Stage migrations** (1 issue, though could be split if it gets too large): `eval_generation.py` (+ the `benchmark.py`
+- **Wave 3 — Component migrations** (1 issue, though could be split if it gets too large): `eval_generation.py` (+ the `benchmark.py`
   kwarg rename, landing together since they're two halves of one contract change) first — hardest case,
   done first on purpose; then `eval_mapping.py` (+ `evals/metrics.py` deletion, the one part of this issue with
   a real disclosed behaviour change); then `eval_condensation.py`/`eval_refinement.py`.
 - **Wave 4 — DVC pipeline** (1 issue): `evals/dvc.yaml` + `evals/params.yaml` (see [Running via
   DVC](#running-via-dvc) above). Independent of the ports-and-adapters refactor — it only shells out to the
   existing `eval_*.py` entry points — but only meaningful once Wave 3 lands, since that's what gives
-  `LocalJSONArtefactStore` a stable output for every stage. `params.yaml`'s `stages` list is also the fourth
-  independent list of stage names (alongside `VALID_STAGES`, `EVAL_FUNCS`, and the CI workflow's `choices`)
+  `LocalJSONArtefactStore` a stable output for every component. `params.yaml`'s `components` list is also the fourth
+  independent list of component names (alongside `VALID_COMPONENTS`, `EVAL_FUNCS`, and the CI workflow's `choices`)
   — this wave is where the single source of truth described under [Adding a new eval
-  stage](#adding-a-new-eval-stage) is designed and implemented, so `params.yaml` is generated from or
+  component](#adding-a-new-eval-component) is designed and implemented, so `params.yaml` is generated from or
   validated against it from the start rather than joining the duplication and getting fixed later.
 
 Every issue in every wave leaves `pytest tests/` and `pytest evals/tests/` green — none of them is a partial
@@ -608,7 +608,7 @@ or broken intermediate state.
 - `evals/tests/fakes.py` provides `FakeDatasetPort`, `FakeEvaluatorPort`, `FakeArtefactStore` (each
   subclassing the real ABC) and `InlineSequentialRunner` — a ~15-line loop implementing `EvalRunnerPort` with
   zero pydantic-evals dependency.
-- **Swappability proof** (`test_stage_runner.py`): the same fake cases, evaluators, and task run once through
+- **Swappability proof** (`test_component_runner.py`): the same fake cases, evaluators, and task run once through
   `PydanticEvalsRunner()` and once through `InlineSequentialRunner()`, asserting identical `RunReport.
   outcomes`/`scores` — the one expected difference, `engine_report` (populated for `PydanticEvalsRunner`,
   `None` otherwise), is asserted explicitly rather than silently ignored. This is the concrete evidence the
@@ -618,7 +618,7 @@ or broken intermediate state.
   stubbed `LLMJudge`, passes the same ABC-subclass checks as every other evaluator class, and its
   `evaluate()` output matches the `list[Score]` shape a custom evaluator like `GroundednessEvaluator`
   produces — proving a native pydantic-evals judge and a custom one are genuinely interchangeable in a
-  `StageConfig.build_evaluators` list.
+  `ComponentConfig.build_evaluators` list.
 - **Dataset-source failure / independent-selection proof** (`test_dataset_adapters.py`, `test_config.py`,
   `test_artefact_store.py`): a `LangfuseDatasetAdapter` pointed at a nonexistent dataset name raises
   `DatasetNotFoundError` rather than falling back to anything; `resolve_backends()` wires `dataset=langfuse,
@@ -631,7 +631,7 @@ or broken intermediate state.
   `test_artefact_store.py`), each asserting the concrete adapter is a genuine subclass of its ABC and that
   instantiating an incomplete subclass raises `TypeError`.
 - A grep-based check enforces the zero-Langfuse-in-scripts rule directly:
-  `grep -ril langfuse evals/eval_*.py evals/stage_runner.py evals/eval_types.py evals/adapters/*/base.py
+  `grep -ril langfuse evals/eval_*.py evals/component_runner.py evals/eval_types.py evals/adapters/*/base.py
   evals/adapters/evaluators/*.py` must return nothing, aside from `pydantic_evals_llm_judge_adapter.py`
   (which legitimately imports `pydantic_evals`, not `langfuse` — the grep target is `langfuse`, not
   `pydantic_evals`, so this file is expected to be clean too).
@@ -650,7 +650,7 @@ or broken intermediate state.
 
 ## Deferred to a later pass
 
-- Adapting `benchmark.py` to call `resolve_backends`/`run_stage` directly instead of the four stage-script
+- Adapting `benchmark.py` to call `resolve_backends`/`run_component` directly instead of the four component-script
   wrappers.
 - Removing `benchmark.py`'s remaining *direct* Langfuse coupling (context construction, flush, and
   cost/token metrics extraction) by routing it through `resolve_backends`/`ArtefactStorePort` instead — the

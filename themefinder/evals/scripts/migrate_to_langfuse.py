@@ -11,8 +11,8 @@ Usage:
     # Migrate specific dataset
     uv run python scripts/migrate_to_langfuse.py --dataset gambling_XS
 
-    # Migrate specific stage only
-    uv run python scripts/migrate_to_langfuse.py --stage generation
+    # Migrate specific component only
+    uv run python scripts/migrate_to_langfuse.py --component generation
 """
 
 import argparse
@@ -51,15 +51,15 @@ def get_langfuse_client():
     )
 
 
-def migrate_stage(client, dataset: str, stage: str) -> None:
-    """Migrate a single eval stage to Langfuse.
+def migrate_component(client, dataset: str, component: str) -> None:
+    """Migrate a single eval component to Langfuse.
 
     Args:
         client: Langfuse client
         dataset: Dataset identifier (e.g., "gambling_XS")
-        stage: Eval stage (generation, mapping, condensation, refinement)
+        component: Eval component (generation, mapping, condensation, refinement)
     """
-    config = DatasetConfig(dataset=dataset, stage=stage)
+    config = DatasetConfig(dataset=dataset, component=component)
     print(f"Migrating {config.name}...")
 
     # Load data using the unified loader
@@ -80,7 +80,7 @@ def migrate_stage(client, dataset: str, stage: str) -> None:
             expected_output=item.get("expected_output"),
             metadata={
                 "dataset": dataset,
-                "stage": stage,
+                "component": component,
                 **item.get("metadata", {}),
             },
         )
@@ -88,27 +88,29 @@ def migrate_stage(client, dataset: str, stage: str) -> None:
     print(f"  Created dataset: {config.name} ({len(items)} items)")
 
 
-def migrate_all(dataset: str = "gambling_XS", stage: str | None = None) -> None:
-    """Migrate all eval stages for a dataset.
+def migrate_all(dataset: str = "gambling_XS", component: str | None = None) -> None:
+    """Migrate all eval components for a dataset.
 
     Args:
         dataset: Dataset identifier (e.g., "gambling_XS")
-        stage: Optional specific stage to migrate (None = all)
+        component: Optional specific component to migrate (None = all)
     """
     client = get_langfuse_client()
 
-    stages = ["generation", "mapping", "condensation", "refinement"]
+    components = ["generation", "mapping", "condensation", "refinement"]
 
-    if stage:
-        if stage not in stages:
-            raise ValueError(f"Unknown stage: {stage}. Valid stages: {stages}")
-        migrate_stage(client, dataset, stage)
+    if component:
+        if component not in components:
+            raise ValueError(
+                f"Unknown component: {component}. Valid components: {components}"
+            )
+        migrate_component(client, dataset, component)
     else:
-        for s in stages:
+        for c in components:
             try:
-                migrate_stage(client, dataset, s)
+                migrate_component(client, dataset, c)
             except Exception as e:
-                print(f"  Error migrating {s}: {e}")
+                print(f"  Error migrating {c}: {e}")
 
     # Flush to ensure all data is sent
     client.flush()
@@ -125,8 +127,8 @@ if __name__ == "__main__":
         help="Dataset identifier (e.g., gambling_XS)",
     )
     parser.add_argument(
-        "--stage", default=None, help="Specific stage to migrate (optional)"
+        "--component", default=None, help="Specific component to migrate (optional)"
     )
     args = parser.parse_args()
 
-    migrate_all(dataset=args.dataset, stage=args.stage)
+    migrate_all(dataset=args.dataset, component=args.component)
