@@ -1,204 +1,103 @@
+<script lang="ts" module>
+  export const buildDateTimeString = (date: Date) => {
+    const dateString = date.toLocaleString(navigator.language, {
+      month: "long",
+      day: "2-digit",
+      year: "numeric",
+    });
+    const timeString = date.toLocaleTimeString(navigator.language, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    return `${dateString} at ${timeString}`;
+  };
+</script>
+
 <script lang="ts">
-  import clsx from "clsx";
-
-  import { fade } from "svelte/transition";
-
   import { getSupportConsultationDetails } from "../../../global/routes";
-  import { formatDate } from "../../../global/utils";
 
   import Link from "../../Link.svelte";
   import Title from "../../Title.svelte";
-  import MaterialIcon from "../../MaterialIcon.svelte";
-  import ArrowForward from "../../svg/material/ArrowForward.svelte";
-  import Button from "../../inputs/Button/Button.svelte";
-  import TextInput from "../../inputs/TextInput/TextInput.svelte";
+  import DataTable from "../../DataTable/DataTable.svelte";
+
+  interface LinkData {
+    url: string;
+    text: string;
+    ariaLabel: string;
+  }
 
   interface Consultation {
     id: string;
     title: string;
     created_at: string;
   }
+
+  interface DisplayConsultation {
+    createdAt: string;
+    name: LinkData;
+  }
+
   interface Props {
     consultations: Consultation[];
   }
 
   let { consultations = [] }: Props = $props();
 
-  const SORT_DIRECTION = {
-    ASC: "ascending",
-    DESC: "descending",
-    NONE: "none",
-  } as const;
+  let displayConsultations = $derived(
+    consultations.map((consultation) => ({
+      name: {
+        url: getSupportConsultationDetails(consultation.id),
+        text: consultation.title,
+        ariaLabel: `View ${consultation.title}`,
+      },
+      createdAt: consultation.created_at,
+    })),
+  );
 
-  type SortDirection =
-    | typeof SORT_DIRECTION.ASC
-    | typeof SORT_DIRECTION.DESC
-    | typeof SORT_DIRECTION.NONE;
-
-  let nameSortDirection = $state<SortDirection>(SORT_DIRECTION.NONE);
-  let dateSortDirection = $state<SortDirection>(SORT_DIRECTION.DESC);
-  let searchValue = $state("");
-
-  let displayConsultations = $derived.by(() => {
-    let result = [...consultations];
-
-    if (dateSortDirection !== SORT_DIRECTION.NONE) {
-      result.sort((a, b) => {
-        const dateA = new Date(a.created_at).getTime();
-        const dateB = new Date(b.created_at).getTime();
-
-        if (dateA === dateB) {
-          return 0;
-        }
-
-        const dateDirectionMultiplier =
-          dateSortDirection === SORT_DIRECTION.ASC ? -1 : 1;
-
-        return (dateA < dateB ? 1 : -1) * dateDirectionMultiplier;
-      });
-    }
-
-    if (nameSortDirection !== SORT_DIRECTION.NONE) {
-      result.sort((a, b) => {
-        const nameA = a.title;
-        const nameB = b.title;
-
-        const nameDirectionMultiplier =
-          nameSortDirection === SORT_DIRECTION.ASC ? 1 : -1;
-
-        if (nameA < nameB) {
-          return -1 * nameDirectionMultiplier;
-        } else if (nameA > nameB) {
-          return 1 * nameDirectionMultiplier;
-        }
-        return 0;
-      });
-    }
-
-    if (searchValue) {
-      result = result.filter((consultation) => {
-        const textA = consultation.title.toLocaleLowerCase();
-        const textB = searchValue.toLocaleLowerCase();
-        return textA.includes(textB);
-      });
-    }
-
-    return result;
-  });
+  const getFormattedDateTime = (item: DisplayConsultation) => {
+    const dateObj = new Date(item.createdAt);
+    return buildDateTimeString(dateObj);
+  };
 </script>
-
-{#snippet sortButton(
-  text: string,
-  direction: SortDirection,
-  setDirection: (newDirection: SortDirection) => void,
-  resetDirections: () => void,
-)}
-  <Button
-    variant="ghost"
-    handleClick={() => {
-      resetDirections();
-
-      if (direction === SORT_DIRECTION.NONE) {
-        setDirection(SORT_DIRECTION.ASC);
-      } else if (direction === SORT_DIRECTION.ASC) {
-        setDirection(SORT_DIRECTION.DESC);
-      } else {
-        setDirection(SORT_DIRECTION.NONE);
-      }
-    }}
-    ariaLabel={`sort consultations by ${text}`}
-    ariaControls="consultations-list"
-    highlighted={direction !== SORT_DIRECTION.NONE}
-    highlightVariant="none"
-  >
-    {text}
-    {#if direction !== SORT_DIRECTION.NONE}
-      <div
-        class={clsx([
-          "transition-transform",
-          direction === SORT_DIRECTION.ASC ? "rotate-90" : "-rotate-90",
-        ])}
-      >
-        <MaterialIcon color="fill-neutral-500">
-          <ArrowForward />
-        </MaterialIcon>
-      </div>
-    {/if}
-  </Button>
-{/snippet}
 
 <Title level={1} text="Consultations" />
 
-<div class="mt-2 w-full md:w-1/3">
-  <TextInput
-    id="search-consultations"
-    label="Search consultations"
-    placeholder="Find consultation..."
-    hideLabel={true}
-    value={searchValue}
-    setValue={(newValue) => (searchValue = newValue.trim())}
-  />
-</div>
+<DataTable
+  columns={[
+    {
+      key: "name",
+      label: "Name",
+      sortable: true,
+      sortValue: (item) => item.name.text,
+      filterValue: (item) => item.name.text,
+    },
+    {
+      key: "createdAt",
+      label: "Date Created",
+      sortable: true,
+      sortValue: (item) => new Date(item.createdAt).getTime(),
+      displayValue: (item) => getFormattedDateTime(item),
+      filterValue: (item) => getFormattedDateTime(item),
+    },
+  ]}
+  rows={displayConsultations}
+  emptyText="No consultations found for the given query"
+  initialSort={{
+    key: "createdAt",
+    direction: "desc",
+  }}
+  searchPlaceholder="Search consultations"
+>
+  {#snippet cellContent(content, row, column)}
+    {#if column.key === "name"}
+      {@const linkData = row[column.key] as LinkData}
 
-<div class="overflow-x-auto">
-  <table class="w-full whitespace-nowrap text-left">
-    <thead class="font-bold">
-      <tr>
-        <th
-          class="py-2 pr-2"
-          aria-sort={nameSortDirection || "none"}
-          data-testid="name-column"
-        >
-          {@render sortButton(
-            "Name",
-            nameSortDirection,
-            (newSortDirection: SortDirection) => {
-              nameSortDirection = newSortDirection;
-            },
-            () => (dateSortDirection = SORT_DIRECTION.NONE),
-          )}
-        </th>
-        <th
-          class="py-2 pr-2"
-          aria-sort={dateSortDirection || "none"}
-          data-testid="date-column"
-        >
-          {@render sortButton(
-            "Created At",
-            dateSortDirection,
-            (newSortDirection: SortDirection) => {
-              dateSortDirection = newSortDirection;
-            },
-            () => (nameSortDirection = SORT_DIRECTION.NONE),
-          )}
-        </th>
-      </tr>
-    </thead>
-    <tbody id="consultations-list">
-      {#if displayConsultations.length === 0}
-        <tr in:fade={{ duration: 200 }} class="border-t hover:bg-gray-50">
-          <td colspan="2" class="text-neutral-500">
-            No consultation found for the given query
-          </td>
-        </tr>
-      {/if}
-
-      {#each displayConsultations as consultation (consultation.id)}
-        <tr
-          transition:fade={{ duration: 200 }}
-          class="border-t hover:bg-gray-50"
-          data-testid="consultation-item"
-        >
-          <td data-testid="title" class="py-2 pr-2">
-            <Link href={getSupportConsultationDetails(consultation.id)}>
-              {consultation.title}
-            </Link>
-          </td>
-          <td data-testid="created-at" class="py-2 pr-2"
-            >{formatDate(consultation.created_at)}</td
-          >
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-</div>
+      <Link href={linkData.url} ariaLabel={linkData.ariaLabel}>
+        {linkData.text}
+      </Link>
+    {:else}
+      <span>{content}</span>
+    {/if}
+  {/snippet}
+</DataTable>

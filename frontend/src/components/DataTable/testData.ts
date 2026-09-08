@@ -33,7 +33,7 @@ export const COLUMNS = [
     label: "Date Created",
     sortable: true,
 
-    sortValue: (item: RowItem) => new Date(item.createdAt).getTime(),
+    sortValue: (item: RowItem) => new Date(item.createdAt),
   },
 ];
 

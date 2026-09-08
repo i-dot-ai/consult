@@ -165,7 +165,7 @@ exports[`DataTable > should match snapshot 1`] = `
             <th
               aria-sort="ascending"
               class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
-              data-testid="column-header"
+              data-testid="header-name"
               scope="col"
             >
               <!---->
@@ -219,7 +219,7 @@ exports[`DataTable > should match snapshot 1`] = `
             <th
               aria-sort="none"
               class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
-              data-testid="column-header"
+              data-testid="header-createdAt"
               scope="col"
             >
               <!---->
@@ -278,6 +278,7 @@ exports[`DataTable > should match snapshot 1`] = `
           >
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+              data-testid="cell-name"
             >
               <!---->
               Test Item 1 - A
@@ -286,6 +287,7 @@ exports[`DataTable > should match snapshot 1`] = `
             </td>
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+              data-testid="cell-createdAt"
             >
               <!---->
               2026-08-19
@@ -300,6 +302,7 @@ exports[`DataTable > should match snapshot 1`] = `
           >
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+              data-testid="cell-name"
             >
               <!---->
               Test Item 2 - B
@@ -308,6 +311,7 @@ exports[`DataTable > should match snapshot 1`] = `
             </td>
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+              data-testid="cell-createdAt"
             >
               <!---->
               2026-06-19
@@ -322,6 +326,7 @@ exports[`DataTable > should match snapshot 1`] = `
           >
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+              data-testid="cell-name"
             >
               <!---->
               Test Item 3 - C
@@ -330,6 +335,7 @@ exports[`DataTable > should match snapshot 1`] = `
             </td>
             <td
               class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+              data-testid="cell-createdAt"
             >
               <!---->
               2025-10-10
