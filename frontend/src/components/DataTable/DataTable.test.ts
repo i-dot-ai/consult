@@ -20,6 +20,19 @@ function isRowsSorted(rows: HTMLElement[], reverse?: boolean) {
   return true;
 }
 
+const compareRowDates = (nameA: HTMLElement, nameB: HTMLElement) => {
+  const rowA = TEST_DATA.rows.find((row) => row.name === nameA.textContent)!;
+  const rowB = TEST_DATA.rows.find((row) => row.name === nameB.textContent)!;
+
+  const dateA = new Date(rowA.createdAt).getTime();
+  const dateB = new Date(rowB.createdAt).getTime();
+
+  if (dateA === dateB) {
+    return 0;
+  }
+  return dateA < dateB ? -1 : 1;
+};
+
 describe("DataTable", () => {
   it.each(TEST_DATA.columns)("should render column label", (column) => {
     render(DataTable, TEST_DATA as Record<string, unknown>);
@@ -431,7 +444,7 @@ describe("DataTable", () => {
     const numExpectedVisibleColumnsAfter = TEST_DATA.columns.length - 1;
 
     // expect all columns to be visible initially
-    expect(screen.getAllByTestId("column-header")).toHaveLength(
+    expect(screen.getAllByTestId("header", { exact: false })).toHaveLength(
       numExpectedVisibleColumnsBefore,
     );
 
@@ -447,7 +460,7 @@ describe("DataTable", () => {
     await user.click(firstColumnOption!);
 
     // expect one column to be hidden at this point
-    expect(screen.getAllByTestId("column-header")).toHaveLength(
+    expect(screen.getAllByTestId("header", { exact: false })).toHaveLength(
       numExpectedVisibleColumnsAfter,
     );
 
@@ -458,7 +471,7 @@ describe("DataTable", () => {
     await user.click(screen.getAllByTestId("searchable-select-option").at(0)!);
 
     // expect that all columns are visible again
-    expect(screen.getAllByTestId("column-header")).toHaveLength(
+    expect(screen.getAllByTestId("header", { exact: false })).toHaveLength(
       numExpectedVisibleColumnsBefore,
     );
   });
@@ -507,6 +520,44 @@ describe("DataTable", () => {
         "Sorted ascending by Name. Click to sort descending.",
       ),
     ).not.toBeInTheDocument();
+  });
+
+  it("should correctly sort dates", async () => {
+    render(DataTable, TEST_DATA as Record<string, unknown>);
+
+    const dateSortButton = screen.getByRole("button", {
+      name: "Sort by Date Created",
+    });
+
+    const user = userEvent.setup();
+
+    // Click once to apply sort
+    await user.click(dateSortButton);
+
+    const names = screen.getAllByTestId("cell-name");
+    const namesSortedByDate = names.toSorted(compareRowDates);
+
+    expect(names).toEqual(namesSortedByDate);
+  });
+
+  it("should correctly sort dates reversed", async () => {
+    render(DataTable, TEST_DATA as Record<string, unknown>);
+
+    const dateSortButton = screen.getByRole("button", {
+      name: "Sort by Date Created",
+    });
+
+    const user = userEvent.setup();
+
+    // Click once to apply sort
+    await user.click(dateSortButton);
+    // Click once again to reverse sort
+    await user.click(dateSortButton);
+
+    const names = screen.getAllByTestId("cell-name");
+    const namesSortedByDate = names.toSorted(compareRowDates);
+
+    expect(names).toEqual(namesSortedByDate.toReversed());
   });
 
   it("should match snapshot", () => {

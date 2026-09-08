@@ -330,7 +330,7 @@
                 column.align === "right" && "text-right",
               ])}
               aria-sort={getSortText(column, sort)}
-              data-testid="column-header"
+              data-testid={`header-${column.key}`}
             >
               {#if sortable && column.sortable !== false}
                 <Button
@@ -449,6 +449,7 @@
                     column.align === "center" && "text-center",
                     column.align === "right" && "text-right",
                   ])}
+                  data-testid={`cell-${column.key}`}
                 >
                   {#if cellContent}
                     {@render cellContent(content, row, column)}
