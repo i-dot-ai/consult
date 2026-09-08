@@ -29,13 +29,13 @@ dataset is required to be tagged with. The data card will have the following fie
     * created_at
 
 * Provenance
-    * source_type (user annotation / synthetic)
-    * labeling_method (single human labeling / double human labeling / model-assisted)
-    * transformations (normalization / dedupe / PII redaction / filtering)
+    * source_type (human / synthetic)
+    * labelling_method (single human / double human / automatic)
+    * transformations (normalization / deduplication / PII redaction / filtering)
 
 * Permissions
     * contains_pii (yes / no)
-    * allowed_uses (evaluation / fine-tuning)
+    * permitted_for_optimisation (yes / no)
     * sensitivity (public / internal)
     * retention_end_date (date)
 
@@ -51,6 +51,13 @@ We will use Langfuse as our system of record, passing the metadata JSON into cal
 via the `metadata` field. This will enable us to view and edit the metadata manually through the Langfuse portal,
 or programatically through the Langfuse SDK. As a back-up, we should consider storing the JSON files in S3 too.
 
+### Dataset Upload Script
+
+We will write a script that makes it easy to comply with the data labelling and storage requirements, by:
+1. Connecting to Langfuse automatically (using env variables)
+2. Prompting the user for values for each field in the data card
+3. Uploading the dataset and its metadata to Langfuse
+
 ## Consequences
 
 ### Positive
@@ -60,4 +67,4 @@ or programatically through the Langfuse SDK. As a back-up, we should consider st
 
 ### Negative
 
-1. Additional admin burden when ingesting data (but this can be minimised by using a standard template)
+1. Additional admin burden when ingesting data (but this can be minimised by using the Dataset Upload Script detailed above)
