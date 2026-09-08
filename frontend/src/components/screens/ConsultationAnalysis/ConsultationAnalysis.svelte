@@ -117,6 +117,10 @@
 
     {#if !dataRequested || $demoOptionsStore.isLoading}
       <LoadingMessage message="Loading Demographics..." />
+    {:else if demoCategories.length === 0 || !$demoOptionsStore.data || $demoOptionsStore.data.length === 0}
+      <p class="text-neutral-500 text-center font-lg my-12">
+        No demographics found
+      </p>
     {:else}
       <div class="mb-4 grid grid-cols-12 gap-4">
         {#each demoCategories as category (category)}
