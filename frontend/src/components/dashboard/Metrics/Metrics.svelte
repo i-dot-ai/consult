@@ -228,6 +228,8 @@
   {:else if demoOptionsLoading}
     <LoadingMessage message="Loading Demographics..." />
   {:else}
-    <div class="my-4"></div>
+    <div class="mt-16 mb-8 text-neutral-500 font-lg text-center">
+      No demographic data found
+    </div>
   {/if}
 </Panel>
