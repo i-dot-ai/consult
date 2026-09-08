@@ -448,8 +448,6 @@
         {#each selectedThemes.query.data?.results ?? [] as selectedTheme (selectedTheme.id)}
           <div transition:slide={{ duration: 150 }} class="mb-4 last:mb-0">
             <SelectedThemeCard
-              {consultationId}
-              {questionId}
               theme={selectedTheme}
               {removeTheme}
               {updateTheme}
