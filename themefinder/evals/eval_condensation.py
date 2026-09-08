@@ -34,7 +34,7 @@ async def evaluate_condensation(
     Returns:
         Dict containing evaluation results
     """
-    config = DatasetConfig(dataset=dataset, stage="condensation")
+    config = DatasetConfig(dataset=dataset, component="condensation")
 
     # Use provided context or create new one
     owns_context = langfuse_ctx is None

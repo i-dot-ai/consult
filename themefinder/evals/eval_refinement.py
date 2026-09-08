@@ -33,7 +33,7 @@ async def evaluate_refinement(
     Returns:
         Dict containing evaluation results
     """
-    config = DatasetConfig(dataset=dataset, stage="refinement")
+    config = DatasetConfig(dataset=dataset, component="refinement")
 
     # Use provided context or create new one
     owns_context = langfuse_ctx is None

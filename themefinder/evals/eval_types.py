@@ -1,8 +1,7 @@
 """Domain types shared across the ports-and-adapters evaluation framework.
 
-Deliberately free of any `langfuse` or `pydantic_evals` import — these are the
-plain data shapes every port (`DatasetPort`, `EvaluatorPort`, `EvalRunnerPort`,
-`ArtefactStorePort`) and `stage_runner.py` operate on.
+Deliberately free of any tool specific import — these are the
+plain data shapes every port and runner operate on.
 """
 
 from collections.abc import Awaitable, Callable
@@ -44,8 +43,8 @@ class RunReport:
 
 
 @dataclass
-class StageConfig:
-    stage: str  # one of datasets.VALID_STAGES
+class ComponentConfig:
+    component: str  # one of datasets.VALID_COMPONENTS
     task: Callable[[dict, Any], Awaitable[dict]]  # (case.inputs, llm) -> output dict
     build_evaluators: Callable[[Any], list[Any]]  # (judge_llm) -> list[EvaluatorPort]
     case_filter: Callable[[Case], bool] | None = None

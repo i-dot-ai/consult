@@ -532,8 +532,8 @@ def calculate_consistency_metrics(data: BenchmarkData) -> pd.DataFrame:
 # Composite Performance Index (TQI)
 # =============================================================================
 
-# Stage weights for the ThemeFinder Quality Index
-STAGE_WEIGHTS = {
+# Component weights for the ThemeFinder Quality Index
+COMPONENT_WEIGHTS = {
     "generation": 0.40,
     "condensation": 0.10,
     "refinement": 0.10,
@@ -563,17 +563,17 @@ REFINEMENT_WEIGHTS = {
 REFINEMENT_SCALE = {k: 5.0 for k in REFINEMENT_WEIGHTS}
 
 
-def _weighted_stage_score(
-    stage_df: pd.DataFrame,
+def _weighted_component_score(
+    component_df: pd.DataFrame,
     metrics_dict: dict[str, list[str]],
     weights: dict[str, float],
     scales: dict[str, float],
     invert: set[str] | None = None,
 ) -> float | None:
-    """Calculate a weighted stage score from detected metric columns.
+    """Calculate a weighted component score from detected metric columns.
 
     Args:
-        stage_df: DataFrame filtered to one model + one eval type.
+        component_df: DataFrame filtered to one model + one eval type.
         metrics_dict: Detected metric columns {metric_name: [col_names]}.
         weights: Weight per metric (keys must match metrics_dict or use suffixed names).
         scales: Max raw value per metric (for normalisation to 0-1).
@@ -592,7 +592,7 @@ def _weighted_stage_score(
         cols = metrics_dict.get(col_key, [])
         if not cols:
             continue
-        values = stage_df[cols].values.flatten()
+        values = component_df[cols].values.flatten()
         values = values[~np.isnan(values.astype(float))]
         if len(values) == 0:
             continue
@@ -610,7 +610,7 @@ def calculate_composite_scores(data: BenchmarkData) -> pd.DataFrame:
     """Calculate composite ThemeFinder Quality Index (TQI) per model.
 
     Combines generation, condensation, refinement, and mapping
-    stage scores into a single 0-1 composite using statistically-derived weights.
+    component scores into a single 0-1 composite using statistically-derived weights.
 
     Returns DataFrame with columns:
         model_tag, generation_score, condensation_score, refinement_score,
@@ -627,11 +627,11 @@ def calculate_composite_scores(data: BenchmarkData) -> pd.DataFrame:
         model_df = df[df["model_tag"] == model]
         scores: dict[str, float | None] = {}
 
-        # --- Generation stage score ---
+        # --- Generation component score ---
         gen_metrics = data.detected_metrics.get("generation", {})
         gen_df = model_df[model_df["eval"] == "generation"]
         scores["generation"] = (
-            _weighted_stage_score(
+            _weighted_component_score(
                 gen_df,
                 gen_metrics,
                 GENERATION_WEIGHTS,
@@ -641,11 +641,11 @@ def calculate_composite_scores(data: BenchmarkData) -> pd.DataFrame:
             else None
         )
 
-        # --- Condensation stage score ---
+        # --- Condensation component score ---
         cond_metrics = data.detected_metrics.get("condensation", {})
         cond_df = model_df[model_df["eval"] == "condensation"]
         scores["condensation"] = (
-            _weighted_stage_score(
+            _weighted_component_score(
                 cond_df,
                 cond_metrics,
                 CONDENSATION_WEIGHTS,
@@ -656,11 +656,11 @@ def calculate_composite_scores(data: BenchmarkData) -> pd.DataFrame:
             else None
         )
 
-        # --- Refinement stage score ---
+        # --- Refinement component score ---
         ref_metrics = data.detected_metrics.get("refinement", {})
         ref_df = model_df[model_df["eval"] == "refinement"]
         scores["refinement"] = (
-            _weighted_stage_score(
+            _weighted_component_score(
                 ref_df,
                 ref_metrics,
                 REFINEMENT_WEIGHTS,
@@ -670,7 +670,7 @@ def calculate_composite_scores(data: BenchmarkData) -> pd.DataFrame:
             else None
         )
 
-        # --- Mapping stage score ---
+        # --- Mapping component score ---
         map_metrics = data.detected_metrics.get("mapping", {})
         map_df = model_df[model_df["eval"] == "mapping"]
         f1_cols = map_metrics.get("f1", [])
@@ -682,10 +682,10 @@ def calculate_composite_scores(data: BenchmarkData) -> pd.DataFrame:
             scores["mapping"] = float(np.mean(values)) if len(values) > 0 else None
 
         # --- Composite ---
-        if all(scores[s] is not None for s in STAGE_WEIGHTS):
+        if all(scores[s] is not None for s in COMPONENT_WEIGHTS):
             composite = sum(
-                STAGE_WEIGHTS[s] * scores[s]
-                for s in STAGE_WEIGHTS  # type: ignore[operator]
+                COMPONENT_WEIGHTS[s] * scores[s]
+                for s in COMPONENT_WEIGHTS  # type: ignore[operator]
             )
         else:
             composite = None
@@ -1643,22 +1643,24 @@ def _html_composite_section(data: BenchmarkData) -> str:
 
     models = valid_df["model_tag"].tolist()
     gen_contributions = (
-        valid_df["generation_score"] * STAGE_WEIGHTS["generation"]
+        valid_df["generation_score"] * COMPONENT_WEIGHTS["generation"]
     ).tolist()
     cond_contributions = (
-        valid_df["condensation_score"] * STAGE_WEIGHTS["condensation"]
+        valid_df["condensation_score"] * COMPONENT_WEIGHTS["condensation"]
     ).tolist()
     ref_contributions = (
-        valid_df["refinement_score"] * STAGE_WEIGHTS["refinement"]
+        valid_df["refinement_score"] * COMPONENT_WEIGHTS["refinement"]
     ).tolist()
-    map_contributions = (valid_df["mapping_score"] * STAGE_WEIGHTS["mapping"]).tolist()
+    map_contributions = (
+        valid_df["mapping_score"] * COMPONENT_WEIGHTS["mapping"]
+    ).tolist()
     composites = valid_df["composite"].tolist()
 
     # --- Stacked bar chart data ---
     stacked_traces = json.dumps(
         [
             {
-                "name": f"Generation ({int(STAGE_WEIGHTS['generation'] * 100)}%)",
+                "name": f"Generation ({int(COMPONENT_WEIGHTS['generation'] * 100)}%)",
                 "y": models,
                 "x": gen_contributions,
                 "type": "bar",
@@ -1667,7 +1669,7 @@ def _html_composite_section(data: BenchmarkData) -> str:
                 "hovertemplate": "%{y}: %{x:.3f}<extra>Generation</extra>",
             },
             {
-                "name": f"Condensation ({int(STAGE_WEIGHTS['condensation'] * 100)}%)",
+                "name": f"Condensation ({int(COMPONENT_WEIGHTS['condensation'] * 100)}%)",
                 "y": models,
                 "x": cond_contributions,
                 "type": "bar",
@@ -1676,7 +1678,7 @@ def _html_composite_section(data: BenchmarkData) -> str:
                 "hovertemplate": "%{y}: %{x:.3f}<extra>Condensation</extra>",
             },
             {
-                "name": f"Refinement ({int(STAGE_WEIGHTS['refinement'] * 100)}%)",
+                "name": f"Refinement ({int(COMPONENT_WEIGHTS['refinement'] * 100)}%)",
                 "y": models,
                 "x": ref_contributions,
                 "type": "bar",
@@ -1685,7 +1687,7 @@ def _html_composite_section(data: BenchmarkData) -> str:
                 "hovertemplate": "%{y}: %{x:.3f}<extra>Refinement</extra>",
             },
             {
-                "name": f"Mapping ({int(STAGE_WEIGHTS['mapping'] * 100)}%)",
+                "name": f"Mapping ({int(COMPONENT_WEIGHTS['mapping'] * 100)}%)",
                 "y": models,
                 "x": map_contributions,
                 "type": "bar",
@@ -1697,7 +1699,7 @@ def _html_composite_section(data: BenchmarkData) -> str:
     )
 
     # --- Heatmap data ---
-    # Columns: individual normalised metrics + stage scores + composite
+    # Columns: individual normalised metrics + component scores + composite
     heatmap_models = list(reversed(models))  # top = best
     heatmap_cols = ["Grnd", "Cov", "Spec", "Gen", "Cond", "Ref", "Map", "TQI"]
     heatmap_z = []

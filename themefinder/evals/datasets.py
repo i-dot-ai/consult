@@ -3,7 +3,7 @@
 Provides dataset configuration, naming conventions, and local fallback loading
 for evaluation datasets.
 
-Dataset naming: eval/{dataset}/{stage}
+Dataset naming: eval/{dataset}/{component}
 Where dataset is a descriptor like "gambling_100", "healthcare_500", "tuition_1000"
 """
 
@@ -17,7 +17,7 @@ import pandas as pd
 
 logger = logging.getLogger("themefinder.evals.datasets")
 
-VALID_STAGES = ["generation", "mapping", "condensation", "refinement"]
+VALID_COMPONENTS = ["generation", "mapping", "condensation", "refinement"]
 
 # Data directory for local eval datasets
 DATA_DIR = Path(__file__).parent / "data"
@@ -29,23 +29,23 @@ class DatasetConfig:
 
     Attributes:
         dataset: Dataset identifier (e.g., "gambling_100", "healthcare_500")
-        stage: Evaluation stage (generation, sentiment, mapping, condensation, refinement)
+        component: Evaluation component (generation, sentiment, mapping, condensation, refinement)
     """
 
     dataset: str
-    stage: str
+    component: str
 
     def __post_init__(self) -> None:
         """Validate configuration."""
-        if self.stage not in VALID_STAGES:
+        if self.component not in VALID_COMPONENTS:
             raise ValueError(
-                f"Invalid stage '{self.stage}'. Must be one of: {VALID_STAGES}"
+                f"Invalid component '{self.component}'. Must be one of: {VALID_COMPONENTS}"
             )
 
     @property
     def name(self) -> str:
         """Langfuse dataset name using folder notation."""
-        return f"eval/{self.dataset}/{self.stage}"
+        return f"eval/{self.dataset}/{self.component}"
 
     @property
     def local_path(self) -> Path:
@@ -69,10 +69,10 @@ def get_or_create_dataset(client: Any, config: DatasetConfig) -> Any:
         logger.info(f"Creating new dataset: {config.name}")
         return client.create_dataset(
             name=config.name,
-            description=f"{config.stage.title()} eval for {config.dataset}",
+            description=f"{config.component.title()} eval for {config.dataset}",
             metadata={
                 "dataset": config.dataset,
-                "stage": config.stage,
+                "component": config.component,
             },
         )
 
@@ -300,8 +300,8 @@ def load_local_data(config: DatasetConfig) -> list[dict]:
         "refinement": load_local_refinement_data,
     }
 
-    loader = loaders.get(config.stage)
+    loader = loaders.get(config.component)
     if not loader:
-        raise ValueError(f"No loader for stage: {config.stage}")
+        raise ValueError(f"No loader for component: {config.component}")
 
     return loader(config)
