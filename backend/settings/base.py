@@ -36,6 +36,12 @@ ENVIRONMENT = env("ENVIRONMENT")
 # Identifies the runtime a log line originated from (backend/worker/batch/lambda).
 # Set per-runtime by Terraform in deployed envs; defaults to "local" for dev/test.
 EXECUTION_CONTEXT: str = env("EXECUTION_CONTEXT", default="local")
+
+OTEL_ENABLED = env.bool("OTEL_ENABLED", default=False)
+OTEL_EXPORTER_OTLP_ENDPOINT = env.str("OTEL_EXPORTER_OTLP_ENDPOINT", default="")
+OTEL_SERVICE_NAME = env.str("OTEL_SERVICE_NAME", default="")
+OTEL_CONFIGURED = bool(OTEL_ENABLED and OTEL_EXPORTER_OTLP_ENDPOINT and OTEL_SERVICE_NAME)
+
 AWS_ACCOUNT_ID = env("AWS_ACCOUNT_ID", default=None)
 MINIO_ADDRESS = env.str("MINIO_ENDPOINT", default=None)
 AWS_ACCESS_KEY = env.str("MINIO_ACCESS_KEY", default=None)
