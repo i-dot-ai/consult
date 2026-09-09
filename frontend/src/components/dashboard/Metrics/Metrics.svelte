@@ -20,6 +20,8 @@
   import Finance from "../../svg/material/Finance.svelte";
   import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
   import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import Search from "../../svg/material/Search.svelte";
 
   interface Props {
     consultationId: string;
@@ -228,8 +230,16 @@
   {:else if demoOptionsLoading}
     <LoadingMessage message="Loading Demographics..." />
   {:else}
-    <div class="mt-16 mb-8 text-neutral-500 font-lg text-center">
-      No demographic data found
+    <div class="mt-16 mb-8">
+      <div class="flex justify-center mt-12 mb-4">
+        <MaterialIcon color="fill-neutral-300" size="3rem">
+          <Search />
+        </MaterialIcon>
+      </div>
+
+      <p class="text-neutral-500 font-lg text-center">
+        No demographic data found
+      </p>
     </div>
   {/if}
 </Panel>
