@@ -45,7 +45,6 @@ from hosting_environment import HostingEnvironment
 from ingest.jobs import (
     delete_consultation_job,
 )
-from sentry_context import capture_handled_sentry_exception
 
 logger = settings.LOGGER
 
@@ -261,14 +260,12 @@ class ConsultationViewSet(ModelViewSet):
             logger.warning(
                 "Consultation setup request failed validation: {detail}", detail=e.detail
             )
-            capture_handled_sentry_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        except Exception as e:
+        except Exception:
             logger.exception("Failed to start consultation setup import job")
-            capture_handled_sentry_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -349,7 +346,6 @@ class ConsultationViewSet(ModelViewSet):
             logger.exception(
                 f"Error starting Find Themes job for consultation {consultation.title}"
             )
-            capture_handled_sentry_exception(e)
             return Response(
                 {
                     "error": "Failed to start Find Themes job",
@@ -414,7 +410,6 @@ class ConsultationViewSet(ModelViewSet):
                 "Failed to export selected themes to S3 for consultation {consultation_code}",
                 consultation_code=consultation.code,
             )
-            capture_handled_sentry_exception(e)
             return Response(
                 {
                     "error": "Failed to export themes to S3",
@@ -436,7 +431,6 @@ class ConsultationViewSet(ModelViewSet):
                 "Failed to submit ASSIGN_THEMES batch job for consultation {consultation_code}",
                 consultation_code=consultation.code,
             )
-            capture_handled_sentry_exception(e)
             return Response(
                 {
                     "error": "Failed to submit job to assign themes",
@@ -484,7 +478,6 @@ class ConsultationViewSet(ModelViewSet):
             s3_codes = s3.get_consultation_folders()
         except (ClientError, BotoCoreError) as e:
             logger.exception("Failed to list consultation folders from S3")
-            capture_handled_sentry_exception(e)
             return Response(
                 {
                     "error": "Failed to list consultation folders",
@@ -571,12 +564,11 @@ class ConsultationViewSet(ModelViewSet):
                 },
                 status=status.HTTP_201_CREATED,
             )
-        except Exception as e:
+        except Exception:
             logger.exception(
                 "Failed to add users to consultation {consultation_id}",
                 consultation_id=str(consultation.id),
             )
-            capture_handled_sentry_exception(e)
             return Response(
                 {"error": "Failed to add users to consultation"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -848,14 +840,13 @@ class ConsultationViewSet(ModelViewSet):
         # Export to S3
         try:
             export_selected_themes_to_s3(target)
-        except Exception as e:
+        except Exception:
             logger.exception(
                 "S3 export failed after theme import for consultation {consultation_id} "
                 "({imported} themes saved to the database)",
                 consultation_id=str(target.id),
                 imported=imported_themes,
             )
-            capture_handled_sentry_exception(e)
             return Response(
                 {
                     "error": (
