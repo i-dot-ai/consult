@@ -26,6 +26,8 @@
   import TitleRow from "../../dashboard/TitleRow.svelte";
   import Finance from "../../svg/material/Finance.svelte";
   import PieChart from "../../svg/material/PieChart.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import Search from "../../svg/material/Search.svelte";
 
   interface Props {
     consultationId: string;
@@ -74,6 +76,14 @@
       }));
   }
 
+  function isDemoDataEmpty() {
+    return (
+      demoCategories.length === 0 ||
+      !$demoOptionsStore.data ||
+      $demoOptionsStore.data.length === 0
+    );
+  }
+
   let demographicsData = $derived(
     demoCategories.reduce(
       (acc, category) => {
@@ -117,10 +127,18 @@
 
     {#if !dataRequested || $demoOptionsStore.isLoading}
       <LoadingMessage message="Loading Demographics..." />
-    {:else if demoCategories.length === 0 || !$demoOptionsStore.data || $demoOptionsStore.data.length === 0}
-      <p class="text-neutral-500 text-center font-lg my-12">
-        No demographics found
-      </p>
+    {:else if isDemoDataEmpty()}
+      <div>
+        <div class="flex justify-center mt-12 mb-4">
+          <MaterialIcon color="fill-neutral-300" size="3rem">
+            <Search />
+          </MaterialIcon>
+        </div>
+
+        <p class="text-neutral-500 text-center font-lg mb-12">
+          No demographics found
+        </p>
+      </div>
     {:else}
       <div class="mb-4 grid grid-cols-12 gap-4">
         {#each demoCategories as category (category)}
