@@ -237,7 +237,7 @@
         </MaterialIcon>
       </div>
 
-      <p class="text-neutral-500 font-lg text-center">
+      <p class="text-neutral-500 text-center">
         No demographic data found
       </p>
     </div>
