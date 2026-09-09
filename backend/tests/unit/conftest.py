@@ -4,6 +4,11 @@ import factories
 
 
 @pytest.fixture
+def otel_disabled(settings):
+    settings.OTEL_CONFIGURED = False
+
+
+@pytest.fixture
 def question_with_4_responses(free_text_question):
     consultation = free_text_question.consultation
     respondent_1 = factories.RespondentFactory(themefinder_id=1, consultation=consultation)

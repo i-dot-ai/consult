@@ -77,7 +77,7 @@
   </ol>
 {:else if responses?.length > 0}
   <p class="mt-2 text-sm text-neutral-500">
-    Showing a sample of {responses.length} out of a total of {totalCount} responses.
+    Showing a sample of {responses.length} out of a total of {totalCount} answers.
   </p>
   <ol class="mt-2 max-h-80 overflow-y-auto">
     {#each responses as response, i (i)}
