@@ -231,7 +231,7 @@
     <LoadingMessage message="Loading Demographics..." />
   {:else}
     <div class="mt-16 mb-8">
-      <div class="flex justify-center mt-12 mb-4">
+      <div class="flex justify-center mb-4">
         <MaterialIcon color="fill-neutral-300" size="3rem">
           <Search />
         </MaterialIcon>
