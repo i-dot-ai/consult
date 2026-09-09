@@ -98,6 +98,12 @@ describe("Metrics", () => {
     });
   });
 
+  it("should render empty demo data message if no demo data", () => {
+    render(Metrics, { ...testData, demoOptions: [] });
+
+    expect(screen.getByText("No demographic data found")).toBeInTheDocument();
+  });
+
   it("should only render options for the current page", () => {
     const NEXT_PAGE_DEMO_OPTIONS = [
       {
