@@ -40,6 +40,16 @@ describe("ConsultationAnalysis", () => {
     });
   });
 
+  it("should display no demo data message when no demo data present", async () => {
+    setupMocks();
+
+    render(ConsultationAnalysis);
+
+    await waitFor(() => {
+      expect(screen.getByText("No demographics found")).toBeInTheDocument();
+    });
+  });
+
   it("should match snapshot initially", () => {
     setupMocks();
 
