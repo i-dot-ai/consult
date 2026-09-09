@@ -158,7 +158,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
         </div>
          
         <p
-          class="text-neutral-500 text-center font-lg mb-12"
+          class="text-neutral-500 text-center mb-12"
         >
           No demographics found
         </p>
