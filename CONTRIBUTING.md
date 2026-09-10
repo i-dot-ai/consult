@@ -34,6 +34,8 @@ found [here](https://github.com/i-dot-ai/config/tree/main/ways-of-working).
   point reviewers at where to start, and flag the PR size.
 - **Self-review first.** Read your own diff before requesting review - it catches
   leftover debug code, stray files, and unclear naming, and respects reviewers' time.
+- If you self-review and catch fixes that you are going to look at, raise them as a comment with a checkbox
+  yourself, so that reviewers know they don't need to review this part.
 - **Keep the Linear issue up to date** as the PR moves through review - see the Linear
   conventions in [docs/devex.md](docs/devex.md#linear).
 - **Double-check for AI leftovers** before requesting a review - excessive comments, imports out of place
