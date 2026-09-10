@@ -59,6 +59,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         choices=Stage.choices,
         default=Stage.SETUP,
     )
+    assign_themes_running = models.BooleanField(default=False)
     code = models.SlugField(max_length=256)
     timestamp = models.SlugField(max_length=256, null=True, blank=True)
     display_ai_selected_themes = models.BooleanField(
