@@ -52,6 +52,10 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         GPT_4O = "gpt-4o-sweden"
         GPT_41 = "gpt-4.1"
 
+    class RunningJob(models.TextChoices):
+        FIND_THEMES = "find-themes"
+        ASSIGN_THEMES = "assign-themes"
+
     title = models.CharField(max_length=256)
     users = models.ManyToManyField(User)
     stage = models.CharField(
@@ -60,6 +64,12 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         default=Stage.SETUP,
     )
     assign_themes_running = models.BooleanField(default=False)
+    running_job = models.CharField(
+        max_length=16,
+        choices=RunningJob,
+        null=True,
+        default=None,
+    )
     code = models.SlugField(max_length=256)
     timestamp = models.SlugField(max_length=256, null=True, blank=True)
     display_ai_selected_themes = models.BooleanField(
