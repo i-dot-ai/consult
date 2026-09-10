@@ -3,7 +3,10 @@
 Compares `output["themes"]` (refined) against `case.inputs["themes"]` (the
 pre-refinement themes) — not `case.expected_output`, for the same reason as
 CondensationQualityEvaluator: refinement has no ground truth to compare
-against, only a before/after pair.
+against, only a before/after pair. Also a two-theme-list comparison, so it
+inherits `ThemeComparisonJudgeEvaluator` the same way condensation does:
+`shuffle`/`decision_scored` stay `False`, extracting four named numeric keys
+directly via its own `_build_scores`.
 
 NOTE: this one LLM call scores four metrics (information_retention,
 response_references, distinctiveness, fluency) together, same as today's
@@ -13,47 +16,36 @@ issue reviewing the LLM-as-judge prompts themselves; see prompts.py's
 refinement_eval_prompt.
 """
 
-import logging
 from typing import Any
 
 from eval_types import Case, Score
 from prompts import refinement_eval_prompt
 
-from .common import LLMJudgeEvaluator
-
-logger = logging.getLogger(__name__)
-
-REFINEMENT_METRICS = (
-    "information_retention",
-    "response_references",
-    "distinctiveness",
-    "fluency",
-)
+from .common import ThemeComparisonJudgeEvaluator
 
 
-class RefinementQualityEvaluator(LLMJudgeEvaluator):
+class RefinementQualityEvaluator(ThemeComparisonJudgeEvaluator):
     prompt_fn = staticmethod(refinement_eval_prompt)
+    first_kwarg = "original_topics"
+    second_kwarg = "new_topics"
+    metric_names = (
+        "information_retention",
+        "response_references",
+        "distinctiveness",
+        "fluency",
+    )
 
-    async def evaluate(self, case: Case, output: Any) -> list[Score]:
-        try:
-            original_themes = case.inputs.get("themes", [])
-            refined_themes = output.get("themes", [])
+    def _topic_lists(self, case: Case, output: Any) -> tuple[Any, Any]:
+        original_themes = case.inputs.get("themes", [])
+        refined_themes = output.get("themes", [])
+        return original_themes, refined_themes
 
-            response = await self.invoke_with_retry(
-                self.prompt_fn(
-                    original_topics=original_themes, new_topics=refined_themes
-                )
+    def _build_scores(self, parsed: dict) -> list[Score]:
+        return [
+            Score(
+                metric,
+                round(float(parsed.get(metric, 0)), 2),
+                parsed.get(f"{metric}_reasoning", ""),
             )
-            parsed = self._parse_json_markdown(response.parsed)
-
-            return [
-                Score(
-                    metric,
-                    round(float(parsed.get(metric, 0)), 2),
-                    parsed.get(f"{metric}_reasoning", ""),
-                )
-                for metric in REFINEMENT_METRICS
-            ]
-        except Exception as e:
-            logger.error(f"Refinement quality evaluation failed: {e}")
-            return [Score(metric, 0.0, f"Error: {e}") for metric in REFINEMENT_METRICS]
+            for metric in self.metric_names
+        ]
