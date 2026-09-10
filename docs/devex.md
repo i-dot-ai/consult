@@ -61,13 +61,15 @@ Conventions:
   PR on the issue. You can copy the branch name from the Linear item to link them from creation time.
 - If an issue is only partly delivered, note that in the description rather than closing
   it (e.g. "engineering done, content outstanding"). Raise the follow-up ticket.
+- Use a checkbox list in the PR description to list any follow-up actions that are needed, such as raising
+  a follow-up ticket, and check them as complete when they are done.
 - Sub-issues that ship in the same PR as their parent get closed together.
 - Respect the planned backlog: pick up prioritised work rather than starting something
   off-plan. Adding **sub-issues** under an existing ticket is fine, but avoid doing
   unplanned work and then raising a **top-level ticket** to describe what you already
   built - that bypasses prioritisation. If new work seems worth doing, raise it as an
   issue and let it be prioritised before picking it up.
-- Similar to above, follow the milestones and targets set out by the project tech-lead
+- Similar to above, follow the milestones and targets set out by the project tech-lead.
 
 
 ## Safety notes
