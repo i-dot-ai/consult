@@ -43,7 +43,7 @@ found [here](https://github.com/i-dot-ai/config/tree/main/ways-of-working).
 
 ## Reviewers
 
-- **Always add one reviewer from the team.** PRs don't auto-request the whole team - a sinle person
+- **Always add one reviewer from the team.** PRs don't auto-request the whole team - a single person
   from the team will be automatically assigned when a PR is opened. (See
   [`CODEOWNERS`](.github/CODEOWNERS).)
 - **One approval is required to merge** (enforced by branch protection). 

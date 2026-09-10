@@ -25,12 +25,10 @@ site has instructions on how to set up both claude code and OpenCode configs.
 MCP (Model Context Protocol) servers give the agent extra tools; plugins bundle skills
 and MCP servers together. The suggested set for this repo:
 
-### Suggested MCP servers / plugins
-
 | Tool                                                                      | Type       | What it's for                                         | Setup                                                                     |
 |---------------------------------------------------------------------------|------------|-------------------------------------------------------|---------------------------------------------------------------------------|
 | [GitHub CLI (`gh`)](https://cli.github.com/)                              | CLI        | Open PRs, check CI, read failed job logs              | `brew install gh` then `gh auth login`                                    |
-| [Linear MCP](https://linear.app/docs/mcp)                                 | MCP server | Read/update `EDU-*` issues, attach PRs, create issues | `claude mcp add --transport sse linear-server https://mcp.linear.app/sse` |
+| [Linear MCP](https://linear.app/docs/mcp)                                 | MCP server | Read/update `PRO-*` issues, attach PRs, create issues | `claude mcp add --transport sse linear-server https://mcp.linear.app/sse` |
 | [Context7](https://context7.com/) | MCP Server | Finds up-to-date docs for relevant tools/techniques   | `npx ctx7 setup`, then get API key from the site                          |
 
 ### GitHub CLI (`gh`)
