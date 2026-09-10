@@ -440,8 +440,8 @@ class ConsultationViewSet(ModelViewSet):
             )
 
         consultation.stage = Consultation.Stage.ASSIGNING_THEMES
-        consultation.assign_themes_running = True
-        consultation.save(update_fields=["stage", "assign_themes_running"])
+        consultation.running_job = Consultation.RunningJob.ASSIGN_THEMES
+        consultation.save(update_fields=["stage", "running_job"])
 
         return Response(
             {
