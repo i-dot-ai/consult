@@ -62,6 +62,8 @@ re-review. Reserve "request changes" for **blocking** issues.
 - **Reply, don't just resolve.** Push the fix, then reply (even briefly - "done",
   "fixed in `abc123`") so the reviewer knows what happened. If you disagree, say why
   rather than silently closing the thread.
+- If it is helpful to you, reply to the user with a checklist of actions to take from their comment,
+  so they know what you are working on.
 - **The commenter resolves the thread**, not the author - it signals they're satisfied.
   For plain **nit**s the author may resolve their own.
 - **Re-request review after non-trivial changes** (the 🔄 icon by the reviewer's name)
