@@ -53,8 +53,9 @@ found [here](https://github.com/i-dot-ai/config/tree/main/ways-of-working).
   awareness, and if a change warrants a specific person's sign-off, tag or message them
   explicitly asking for approval - and don't merge until they've approved.
 
-A reviewer can approve with open **nit**/**consider** comments - trust the author to
-handle them. Reserve "request changes" for **blocking** issues.
+A reviewer can approve with open **nit**/**consider** comments only when small **nit** comments are the
+only comments left on the PR that are unresolved - trust the author to handle the nit comments without a need for a
+re-review. Reserve "request changes" for **blocking** issues.
 
 ## Addressing review comments
 
