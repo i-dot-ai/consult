@@ -140,11 +140,11 @@ def import_response_annotations(
     finally:
         try:
             consultation = Consultation.objects.get(code=consultation_code)
-            consultation.assign_themes_running = False
-            consultation.save(update_fields=["assign_themes_running"])
+            consultation.running_job = None
+            consultation.save(update_fields=["running_job"])
         except Exception:
             logger.exception(
-                "Failed to update assign_themes_running flag for consultation_code={consultation_code} "
+                "Failed to update running_job value for consultation_code={consultation_code} "
                 "while importing response annotations",
                 consultation_code=consultation_code,
             )

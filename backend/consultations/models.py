@@ -63,7 +63,6 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         choices=Stage.choices,
         default=Stage.SETUP,
     )
-    assign_themes_running = models.BooleanField(default=False)
     running_job = models.CharField(
         max_length=16,
         choices=RunningJob,
