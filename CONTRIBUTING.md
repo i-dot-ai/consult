@@ -20,8 +20,10 @@ found [here](https://github.com/i-dot-ai/config/tree/main/ways-of-working).
 - CICD will only run on the relevant changes, e.g. if only the frontend has been changed
   then only the frontend tests will run. It is your responsibility to make sure no unintended
   changes happen in a location that isn't tested automatically
-- **Branch off `main`.** Name branches should follow
-  Linear patterns, but if not possible then follow a `feat/...`, `fix/...`, `docs/...`, or `chore/...` pattern.
+- **Branch off `main`.** Name branches should follow the Linear patterns, this can be done simply by copying the branch
+  name from the Linear work item.
+- GitHub now supports [stacked PRs](https://docs.github.com/en/pull-requests/how-tos/stacked-pull-requests), make
+  use of these when doing large pieces of work to break down individual pieces of reviewable code.
 - **Keep PRs small and focused** - one logical change. A reviewer should be able to
   hold the whole diff in their head. If a change is genuinely large (a migration, a
   refactor that touches many files), split it where you can and explain the shape in
