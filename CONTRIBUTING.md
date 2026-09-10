@@ -73,9 +73,14 @@ re-review. Reserve "request changes" for **blocking** issues.
   reviewer can then see just what changed since they last looked. Rebase on merge.
 - **Out-of-scope suggestions become a follow-up**, not scope creep in this PR. Open a
   Linear issue and link it.
+- Make commit messages concise and clear
+  - What problem are they solving?
+  - What files are affected?
+  - e.g. Corrected comment related to auth function header `AWS_HEADER_ID` in middleware.ts
 
 ## Merging
 
+- Only rebase a PR when the go-ahead has been given for the PR to be merged, to preserve history during reviews.
 - Rebase-merge to keep `main` history clean.
 - CI (build, tests, pre-commit, and the Claude auto-review) must be green. Don't merge
   around a red check without understanding why it's red.
