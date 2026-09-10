@@ -28,8 +28,8 @@ found [here](https://github.com/i-dot-ai/config/tree/main/ways-of-working).
   hold the whole diff in their head. If a change is genuinely large (a migration, a
   refactor that touches many files), split it where you can and explain the shape in
   the PR description.
-- **Fill in the template.** GitHub loads
-  [`.github/pull_request_template.md`](.github/pull_request_template.md) automatically:
+- **Fill in the template.** (or even better, get your coding agent to do it, but don't make it too verbose)
+  GitHub loads [`.github/pull_request_template.md`](.github/pull_request_template.md) automatically:
   say what changed and why, link the Linear issue (`PRO-*` if not done automatically by branch name),
   point reviewers at where to start, and flag the PR size.
 - **Self-review first.** Read your own diff before requesting review - it catches
