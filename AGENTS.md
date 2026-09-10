@@ -34,6 +34,12 @@ Always use the PR template at `.github/PULL_REQUEST_TEMPLATE.md` when writing PR
 
 ---
 
+## Engineering standards
+
+Our engineering standards can be found in `CONTRIBUTING.md` and the files/sites linked to from that file.
+
+---
+
 ## Architecture
 
 ### High-Level Structure
