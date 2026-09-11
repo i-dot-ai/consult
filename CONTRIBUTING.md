@@ -70,7 +70,8 @@ re-review. Reserve "request changes" for **blocking** issues.
   so it re-enters their queue - remember this is what gets your PR over the line once
   you've addressed the comments; a reviewer won't necessarily come back on their own.
 - **Prefer follow-up commits over force-pushes** while a review is in progress - a
-  reviewer can then see just what changed since they last looked. Rebase on merge.
+  reviewer can then see just what changed since they last looked. Manually rebase
+  the branch before merging.
 - **Out-of-scope suggestions become a follow-up**, not scope creep in this PR. Open a
   Linear issue and link it.
 - Make commit messages concise and clear
