@@ -1,8 +1,10 @@
-"""CoverageEvaluator — how well expected themes are covered by generated themes (recall direction)."""
+"""CoverageEvaluator — how well expected themes are covered by generated themes (recall direction).
 
-from typing import Any
+Sibling of GroundednessEvaluator (see that file for the reverse direction
+and the general note on why groundedness/coverage split into two
+single-metric evaluators while condensation/refinement don't).
+"""
 
-from eval_types import Case
 from prompts import generation_eval_prompt
 
 from .common import ThemeComparisonJudgeEvaluator
@@ -14,7 +16,6 @@ class CoverageEvaluator(ThemeComparisonJudgeEvaluator):
     shuffle = True
     decision_scored = True
 
-    def _topic_lists(self, case: Case, output: Any) -> tuple[Any, Any]:
-        generated_themes = output.get("themes", [])
-        expected_themes = (case.expected_output or {}).get("themes", {})
-        return expected_themes, generated_themes
+    # ground_truth_attr stays "expected_output" (the default) and
+    # _topic_order stays the default (case-side/expected first,
+    # output-side/generated second) — see common.py and groundedness.py.

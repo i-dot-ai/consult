@@ -264,28 +264,50 @@ class ThemeComparisonJudgeEvaluator(LLMJudgeEvaluator):
     """Base for any evaluator whose judge prompt compares two theme lists in
     one LLM call: groundedness/coverage (via `generation_eval_prompt`,
     ternary decision-scored) and condensation/refinement quality (via their
-    own prompts, direct multi-key numeric extraction). Subclasses implement
-    `_topic_lists` — no boolean "reverse" flag; each subclass just states its
-    own (topic_list_1, topic_list_2) directly — and set `prompt_fn` plus
-    `first_kwarg`/`second_kwarg` naming the two keyword arguments that
+    own prompts, direct multi-key numeric extraction). Retrieval is fully
+    shared here: case-side themes always come from `getattr(case,
+    ground_truth_attr)["themes"]` — `ground_truth_attr` names which `Case`
+    field that is, `"expected_output"` by default (groundedness/coverage,
+    which have real ground truth); condensation/refinement override it to
+    `"inputs"`, since they have no ground truth to compare against, only a
+    before/after pair (see those files' docstrings) — and output-side is
+    always `output["themes"]`. No subclass implements retrieval itself.
+    `_topic_order` is the only thing that varies: it defaults to
+    (case-side, output-side) — matches CoverageEvaluator and
+    condensation/refinement — and only GroundednessEvaluator overrides it,
+    to swap the order instead (same two theme lists as CoverageEvaluator,
+    just scored in the reverse direction). Subclasses also set `prompt_fn`
+    plus `first_kwarg`/`second_kwarg` naming the two keyword arguments that
     particular prompt function expects (default `"topic_list_1"`/
     `"topic_list_2"`, matching `generation_eval_prompt`; condensation/
     refinement override these to their own prompts' argument names).
-    `shuffle`/`decision_scored` default to `LLMJudgeEvaluator`'s `False` here
-    too — groundedness/coverage turn both on, condensation/refinement turn
-    neither on (no shuffling today, and they extract named numeric keys
-    directly rather than ternary-scoring, via this class's shared
+    `shuffle`/`decision_scored` default to `LLMJudgeEvaluator`'s `False`
+    here too — groundedness/coverage turn both on, condensation/refinement
+    turn neither on (no shuffling today, and they extract named numeric
+    keys directly rather than ternary-scoring, via this class's shared
     `_build_scores` below).
     """
 
     first_kwarg: str = "topic_list_1"
     second_kwarg: str = "topic_list_2"
 
-    def _topic_lists(self, case: Case, output: Any) -> tuple[Any, Any]:
-        raise NotImplementedError
+    #: Name of the `Case` field holding this evaluator's case-side
+    #: (ground-truth / pre-transform) themes.
+    ground_truth_attr: str = "expected_output"
+
+    def _topic_order(self, case_themes: Any, output_themes: Any) -> tuple[Any, Any]:
+        """Order the two retrieved theme lists into (topic_list_1,
+        topic_list_2). Default keeps case-side first, output-side second —
+        matches CoverageEvaluator and condensation/refinement.
+        GroundednessEvaluator overrides this to swap the order instead of
+        touching retrieval."""
+        return case_themes, output_themes
 
     def _build_prompt(self, case: Case, output: Any) -> str:
-        topic_list_1, topic_list_2 = self._topic_lists(case, output)
+        case_side = getattr(case, self.ground_truth_attr) or {}
+        case_themes = case_side.get("themes", [])
+        output_themes = output.get("themes", [])
+        topic_list_1, topic_list_2 = self._topic_order(case_themes, output_themes)
         if self.shuffle:
             topic_list_1 = self._shuffle_themes(topic_list_1)
             topic_list_2 = self._shuffle_themes(topic_list_2)

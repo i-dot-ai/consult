@@ -10,15 +10,20 @@ directly via `ThemeComparisonJudgeEvaluator`'s shared `_build_scores`.
 
 NOTE: this one LLM call scores four metrics (information_retention,
 response_references, distinctiveness, fluency) together, same as today's
-evaluators.py — one combined prompt/response, one shared calibration example.
-Splitting this into one prompt per metric is deliberately deferred to a later
-issue reviewing the LLM-as-judge prompts themselves; see prompts.py's
-refinement_eval_prompt.
+evaluators.py — one combined prompt/response, one shared calibration
+example, purely to amortise re-presenting the original/refined topic
+lists, not because the metrics need joint reasoning — each has its own
+independent rubric (and distinctiveness/fluency don't even read
+`original_topics`, a natural split point already inside the prompt).
+Contrast with GroundednessEvaluator/CoverageEvaluator, which get one
+metric each because their shared prompt is a single asymmetric matching
+task that can't be split this way (see that pair's docstrings). Splitting
+refinement's prompt into one call per metric is deliberately deferred —
+see ADR-0013 (`docs/architecture/decisions/0013-modular-evaluation-framework-for-themefinder.md`)
+— at which point this becomes four single-metric evaluators on the same
+`ThemeComparisonJudgeEvaluator` base, same shape as groundedness/coverage.
 """
 
-from typing import Any
-
-from eval_types import Case
 from prompts import refinement_eval_prompt
 
 from .common import ThemeComparisonJudgeEvaluator
@@ -34,8 +39,8 @@ class RefinementQualityEvaluator(ThemeComparisonJudgeEvaluator):
         "distinctiveness",
         "fluency",
     )
-
-    def _topic_lists(self, case: Case, output: Any) -> tuple[Any, Any]:
-        original_themes = case.inputs.get("themes", [])
-        refined_themes = output.get("themes", [])
-        return original_themes, refined_themes
+    # No ground truth to compare against — case.expected_output is always
+    # None for refinement cases — so the pre-transform themes live on
+    # case.inputs instead (see datasets.py::load_local_condensation_data,
+    # which refinement's loader reuses).
+    ground_truth_attr = "inputs"

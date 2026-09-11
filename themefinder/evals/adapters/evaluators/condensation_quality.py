@@ -12,14 +12,18 @@ directly via `ThemeComparisonJudgeEvaluator`'s shared `_build_scores`.
 
 NOTE: this one LLM call scores two metrics (compression_quality,
 information_retention) together, same as today's evaluators.py — one combined
-prompt/response, one shared calibration example. Splitting this into one
-prompt per metric is deliberately deferred to a later issue reviewing the
-LLM-as-judge prompts themselves; see prompts.py's condensation_eval_prompt.
+prompt/response, one shared calibration example, purely to amortise
+re-presenting the original/condensed topic lists, not because the two
+metrics need joint reasoning — each has its own independent rubric.
+Contrast with GroundednessEvaluator/CoverageEvaluator, which get one
+metric each because their shared prompt is a single asymmetric matching
+task that can't be split this way (see that pair's docstrings). Splitting
+condensation's prompt into one call per metric is deliberately deferred —
+see ADR-0013 (`docs/architecture/decisions/0013-modular-evaluation-framework-for-themefinder.md`)
+— at which point this becomes two single-metric evaluators on the same
+`ThemeComparisonJudgeEvaluator` base, same shape as groundedness/coverage.
 """
 
-from typing import Any
-
-from eval_types import Case
 from prompts import condensation_eval_prompt
 
 from .common import ThemeComparisonJudgeEvaluator
@@ -30,8 +34,7 @@ class CondensationQualityEvaluator(ThemeComparisonJudgeEvaluator):
     first_kwarg = "original_topics"
     second_kwarg = "condensed_topics"
     metric_names = ("compression_quality", "information_retention")
-
-    def _topic_lists(self, case: Case, output: Any) -> tuple[Any, Any]:
-        original_themes = case.inputs.get("themes", [])
-        condensed_themes = output.get("themes", [])
-        return original_themes, condensed_themes
+    # No ground truth to compare against — case.expected_output is always
+    # None for condensation cases — so the pre-transform themes live on
+    # case.inputs instead (see datasets.py::load_local_condensation_data).
+    ground_truth_attr = "inputs"
