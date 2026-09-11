@@ -74,10 +74,29 @@ re-review. Reserve "request changes" for **blocking** issues.
   the branch before merging.
 - **Out-of-scope suggestions become a follow-up**, not scope creep in this PR. Open a
   Linear issue and link it.
-- Make commit messages concise and clear
-  - What problem are they solving?
-  - What files are affected?
-  - e.g. Corrected comment related to auth function header `AWS_HEADER_ID` in middleware.ts
+- Make commit messages precise and clear
+  - What problem does the commit solve?
+  - What files/directories are affected?
+  - What Linear issue is the commit related to?
+
+Examples of a good commit for small changes, which includes the Linear issue number,
+the change intent and the file affected:
+
+```
+PRO-123: Corrected comment related to auth function header `AWS_HEADER_ID` in middleware.ts
+```
+
+or for larger changes, which includes the directories and what changed, the intent, 
+and the Linear issue number:
+
+```
+themefinder/evals: Add new get_settings and eval_settings singleton for loading env variables and settings for evaluation framework.
+                   Add new eval_types.py for defining types used in evaluation framework.
+                   Move util files into new directory and create module
+themefinder/evals/tests: Add new test_settings.py for testing settings and env variable loading. Update other tests to use new settings and util module.
+
+                         pro-615 Groundwork for refactor of evaluation framework to use new settings and util module and eval types.
+```
 
 ## Merging
 
