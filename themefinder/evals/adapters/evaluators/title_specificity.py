@@ -18,13 +18,7 @@ class TitleSpecificityEvaluator(LLMJudgeEvaluator):
     metric_names = ("specificity",)
 
     def _build_prompt(self, case: Case, output: Any) -> str | None:
-        themes = output.get("themes", [])
-        if isinstance(themes, list):
-            titles = [t.get("topic_label", t.get("topic", "")) for t in themes]
-        elif isinstance(themes, dict):
-            titles = list(themes.keys())
-        else:
-            titles = []
+        titles = self.extract_theme_titles(output.get("themes", []))
 
         if not titles:
             # Nothing to evaluate — skip the LLM call entirely. `evaluate()`

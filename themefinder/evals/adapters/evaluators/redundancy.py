@@ -24,6 +24,8 @@ def _get_sentence_model():
 
 
 class RedundancyEvaluator(EvaluatorPort):
+    metric_names = ("redundancy",)
+
     def __init__(self, threshold: float = 0.85):
         self.threshold = threshold
 
@@ -43,12 +45,7 @@ class RedundancyEvaluator(EvaluatorPort):
                 "flagged_pairs": [],
             }
 
-        if isinstance(themes, list):
-            titles = [t.get("topic_label", t.get("topic", "")) for t in themes]
-        elif isinstance(themes, dict):
-            titles = list(themes.keys())
-        else:
-            titles = []
+        titles = self.extract_theme_titles(themes)
 
         if len(titles) < 2:
             return {
@@ -90,19 +87,15 @@ class RedundancyEvaluator(EvaluatorPort):
             "flagged_pairs": flagged_pairs,
         }
 
-    async def evaluate(self, case: Case, output: Any) -> list[Score]:
-        try:
-            result = self._calculate_redundancy_score(output.get("themes", []))
+    async def _score(self, case: Case, output: Any) -> list[Score]:
+        result = self._calculate_redundancy_score(output.get("themes", []))
 
-            comment = f"{result['n_redundant_pairs']}/{result['n_total_pairs']} pairs above threshold"
-            if result["flagged_pairs"]:
-                pair_strs = [
-                    f"  {p['theme_a']} ↔ {p['theme_b']} ({p['similarity']})"
-                    for p in result["flagged_pairs"]
-                ]
-                comment += "\n" + "\n".join(pair_strs)
+        comment = f"{result['n_redundant_pairs']}/{result['n_total_pairs']} pairs above threshold"
+        if result["flagged_pairs"]:
+            pair_strs = [
+                f"  {p['theme_a']} ↔ {p['theme_b']} ({p['similarity']})"
+                for p in result["flagged_pairs"]
+            ]
+            comment += "\n" + "\n".join(pair_strs)
 
-            return [Score("redundancy", round(result["ratio"], 2), comment)]
-        except Exception as e:
-            logger.error(f"Redundancy evaluation failed: {e}")
-            return [Score("redundancy", 0.0, f"Error: {e}")]
+        return [Score("redundancy", round(result["ratio"], 2), comment)]

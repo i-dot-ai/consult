@@ -6,7 +6,7 @@ CondensationQualityEvaluator: refinement has no ground truth to compare
 against, only a before/after pair. Also a two-theme-list comparison, so it
 inherits `ThemeComparisonJudgeEvaluator` the same way condensation does:
 `shuffle`/`decision_scored` stay `False`, extracting four named numeric keys
-directly via its own `_build_scores`.
+directly via `ThemeComparisonJudgeEvaluator`'s shared `_build_scores`.
 
 NOTE: this one LLM call scores four metrics (information_retention,
 response_references, distinctiveness, fluency) together, same as today's
@@ -18,7 +18,7 @@ refinement_eval_prompt.
 
 from typing import Any
 
-from eval_types import Case, Score
+from eval_types import Case
 from prompts import refinement_eval_prompt
 
 from .common import ThemeComparisonJudgeEvaluator
@@ -39,13 +39,3 @@ class RefinementQualityEvaluator(ThemeComparisonJudgeEvaluator):
         original_themes = case.inputs.get("themes", [])
         refined_themes = output.get("themes", [])
         return original_themes, refined_themes
-
-    def _build_scores(self, parsed: dict) -> list[Score]:
-        return [
-            Score(
-                metric,
-                round(float(parsed.get(metric, 0)), 2),
-                parsed.get(f"{metric}_reasoning", ""),
-            )
-            for metric in self.metric_names
-        ]

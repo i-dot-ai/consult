@@ -6,7 +6,7 @@ this class hierarchy). The five LLM-judge `EvaluatorPort` subclasses live in
 their own sibling files: groundedness.py, coverage.py, title_specificity.py,
 condensation_quality.py, refinement_quality.py.
 
-`LLMJudgeEvaluator.evaluate()` is one shared template for all five judges:
+`LLMJudgeEvaluator._score()` is one shared template for all five judges:
 build a prompt (`_build_prompt`, subclass hook — may return None to skip the
 LLM call entirely when there's nothing to evaluate), invoke the judge,
 *always* parse the raw response via `_parse_json_markdown`, then either run
@@ -14,7 +14,9 @@ the STRONG/PARTIAL/NO ternary post-processing (`_decision_score`/
 `_build_comment`, only when `decision_scored` is True) or hand the parsed
 dict to the subclass's own `_build_scores` hook. `shuffle` is a second
 opt-in class property, read by whichever subclass's `_build_prompt` wants it
-(today, only `ThemeComparisonJudgeEvaluator`'s).
+(today, only `ThemeComparisonJudgeEvaluator`'s). The error boundary around
+all of this — catch, log, zero-score fallback — lives on `EvaluatorPort.evaluate()`,
+not here.
 """
 
 import json
@@ -51,17 +53,18 @@ DECISION_SCORES = {
 
 class LLMJudgeEvaluator(EvaluatorPort):
     """Base for the five LLM-as-judge evaluators — carries the judge LLM,
-    the shared retry/parsing plumbing, and the one `evaluate()` template
+    the shared retry/parsing plumbing, and the one `_score()` template
     every one of them runs through.
 
     Subclasses set:
     - `prompt_fn`: the prompts.py builder function, as `staticmethod(...)`.
     - `metric_names`: tuple of Score names this evaluator produces — a
       1-tuple for single-metric evaluators, used both for the decision-scored
-      path's one Score and for the error-path's zero-score fallback list.
+      path's one Score and for `EvaluatorPort.evaluate()`'s error-path
+      zero-score fallback list.
     - `shuffle` (default False): whether `_build_prompt` should shuffle its
       theme-list inputs before prompting.
-    - `decision_scored` (default False): whether `evaluate()` should run the
+    - `decision_scored` (default False): whether `_score()` should run the
       STRONG/PARTIAL/NO ternary post-processing on the parsed response
       (`_decision_score`/`_build_comment`) instead of calling the subclass's
       own `_build_scores`.
@@ -75,7 +78,6 @@ class LLMJudgeEvaluator(EvaluatorPort):
 
     shuffle: bool = False
     decision_scored: bool = False
-    metric_names: tuple[str, ...] = ()
 
     def __init__(self, llm: Any):
         self.llm = llm
@@ -144,7 +146,7 @@ class LLMJudgeEvaluator(EvaluatorPort):
     def _decision_score(self, parsed: dict) -> dict[str, Any]:
         """Post-process an already-parsed STRONG/PARTIAL/NO ternary-decision response.
 
-        Only called by `evaluate()` when `decision_scored = True`. Extracts
+        Only called by `_score()` when `decision_scored = True`. Extracts
         per-topic evaluations and maps decisions to numeric scores.
 
         Args:
@@ -195,7 +197,7 @@ class LLMJudgeEvaluator(EvaluatorPort):
     def _build_comment(result: dict[str, Any], metric_name: str) -> str:
         """Build an enriched comment string from decision-scored evaluation details.
 
-        Only called by `evaluate()` when `decision_scored = True`.
+        Only called by `_score()` when `decision_scored = True`.
 
         Args:
             result: Parsed evaluation result from _decision_score.
@@ -241,25 +243,21 @@ class LLMJudgeEvaluator(EvaluatorPort):
         `_decision_score`/`_build_comment` instead."""
         raise NotImplementedError
 
-    async def evaluate(self, case: Case, output: Any) -> list[Score]:
-        try:
-            prompt = self._build_prompt(case, output)
-            if prompt is None:
-                parsed: dict = {}
-            else:
-                response = await self.invoke_with_retry(prompt)
-                parsed = self._parse_json_markdown(response.parsed)
+    async def _score(self, case: Case, output: Any) -> list[Score]:
+        prompt = self._build_prompt(case, output)
+        if prompt is None:
+            parsed: dict = {}
+        else:
+            response = await self.invoke_with_retry(prompt)
+            parsed = self._parse_json_markdown(response.parsed)
 
-            if self.decision_scored:
-                result = self._decision_score(parsed)
-                metric_name = self.metric_names[0]
-                comment = self._build_comment(result, metric_name)
-                return [Score(metric_name, round(result["average"], 2), comment)]
+        if self.decision_scored:
+            result = self._decision_score(parsed)
+            metric_name = self.metric_names[0]
+            comment = self._build_comment(result, metric_name)
+            return [Score(metric_name, round(result["average"], 2), comment)]
 
-            return self._build_scores(parsed)
-        except Exception as e:
-            logger.error(f"{type(self).__name__} evaluation failed: {e}")
-            return [Score(name, 0.0, f"Error: {e}") for name in self.metric_names]
+        return self._build_scores(parsed)
 
 
 class ThemeComparisonJudgeEvaluator(LLMJudgeEvaluator):
@@ -276,7 +274,8 @@ class ThemeComparisonJudgeEvaluator(LLMJudgeEvaluator):
     `shuffle`/`decision_scored` default to `LLMJudgeEvaluator`'s `False` here
     too — groundedness/coverage turn both on, condensation/refinement turn
     neither on (no shuffling today, and they extract named numeric keys
-    directly rather than ternary-scoring, via their own `_build_scores`).
+    directly rather than ternary-scoring, via this class's shared
+    `_build_scores` below).
     """
 
     first_kwarg: str = "topic_list_1"
@@ -293,3 +292,19 @@ class ThemeComparisonJudgeEvaluator(LLMJudgeEvaluator):
         return self.prompt_fn(
             **{self.first_kwarg: topic_list_1, self.second_kwarg: topic_list_2}
         )
+
+    def _build_scores(self, parsed: dict) -> list[Score]:
+        """Default for the non-decision-scored subclasses (condensation,
+        refinement): extract one Score per name in `metric_names` directly
+        from the parsed response, whose judge prompts return named numeric
+        keys plus a `{metric}_reasoning` string rather than a ternary
+        per-topic decision. Both current subclasses share this verbatim, so
+        it lives here instead of being copy-pasted onto each."""
+        return [
+            Score(
+                metric,
+                round(float(parsed.get(metric, 0)), 2),
+                parsed.get(f"{metric}_reasoning", ""),
+            )
+            for metric in self.metric_names
+        ]

@@ -8,7 +8,7 @@ This is a two-theme-list comparison like groundedness/coverage, so it
 inherits `ThemeComparisonJudgeEvaluator`'s prompt-building — but doesn't
 shuffle (`shuffle` stays `False`) and isn't ternary decision-scored
 (`decision_scored` stays `False`): it extracts two named numeric keys
-directly via its own `_build_scores`.
+directly via `ThemeComparisonJudgeEvaluator`'s shared `_build_scores`.
 
 NOTE: this one LLM call scores two metrics (compression_quality,
 information_retention) together, same as today's evaluators.py — one combined
@@ -19,7 +19,7 @@ LLM-as-judge prompts themselves; see prompts.py's condensation_eval_prompt.
 
 from typing import Any
 
-from eval_types import Case, Score
+from eval_types import Case
 from prompts import condensation_eval_prompt
 
 from .common import ThemeComparisonJudgeEvaluator
@@ -35,13 +35,3 @@ class CondensationQualityEvaluator(ThemeComparisonJudgeEvaluator):
         original_themes = case.inputs.get("themes", [])
         condensed_themes = output.get("themes", [])
         return original_themes, condensed_themes
-
-    def _build_scores(self, parsed: dict) -> list[Score]:
-        return [
-            Score(
-                metric,
-                round(float(parsed.get(metric, 0)), 2),
-                parsed.get(f"{metric}_reasoning", ""),
-            )
-            for metric in self.metric_names
-        ]
