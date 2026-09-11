@@ -15,7 +15,3 @@ class CoverageEvaluator(ThemeComparisonJudgeEvaluator):
     metric_names = ("coverage",)
     shuffle = True
     decision_scored = True
-
-    # ground_truth_attr stays "expected_output" (the default) and
-    # _topic_order stays the default (case-side/expected first,
-    # output-side/generated second) — see common.py and groundedness.py.

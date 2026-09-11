@@ -41,6 +41,5 @@ class RefinementQualityEvaluator(ThemeComparisonJudgeEvaluator):
     )
     # No ground truth to compare against — case.expected_output is always
     # None for refinement cases — so the pre-transform themes live on
-    # case.inputs instead (see datasets.py::load_local_condensation_data,
-    # which refinement's loader reuses).
+    # case.inputs instead (see datasets.py::load_local_condensation_data)
     ground_truth_attr = "inputs"

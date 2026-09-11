@@ -36,5 +36,5 @@ class CondensationQualityEvaluator(ThemeComparisonJudgeEvaluator):
     metric_names = ("compression_quality", "information_retention")
     # No ground truth to compare against — case.expected_output is always
     # None for condensation cases — so the pre-transform themes live on
-    # case.inputs instead (see datasets.py::load_local_condensation_data).
+    # case.inputs instead
     ground_truth_attr = "inputs"
