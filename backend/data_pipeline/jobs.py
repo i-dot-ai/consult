@@ -120,6 +120,7 @@ def import_response_annotations(
     run_date: str,
 ) -> None:
     """Import response annotations from S3 (assign-themes batch job output)."""
+    from consultations.models import Consultation
     from data_pipeline.sync.response_annotations import (
         import_response_annotations_from_s3,
     )
