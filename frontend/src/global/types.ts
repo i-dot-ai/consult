@@ -92,11 +92,6 @@ export interface FormattedTheme {
   key?: string;
 }
 
-export interface SelectOption {
-  value: string;
-  label: string;
-}
-
 export interface RadioItem {
   value: string;
   text: string;
