@@ -22,7 +22,7 @@ jobs:
 
       - name: Start postgres
         run: |
-          docker compose up -d postgres minio
+          docker compose up -d postgres
           sleep 5
 
       - name: Set up Node.js (for Playwright only)
