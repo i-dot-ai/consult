@@ -27,13 +27,13 @@ sync: ## Add new env vars from the templates into local .env files (prompts befo
 
 .PHONY: serve
 serve: ## Run the backend and frontend together
-	docker compose up -d postgres redis minio
+	docker compose up -d postgres redis
 	> backend/sql.log
 	uv tool run honcho start -f Procfile.dev
 
 .PHONY: backend
 backend: ## Run the backend and the worker
-	docker compose up -d postgres redis minio
+	docker compose up -d postgres redis
 	uv tool run honcho start -f Procfile.dev web worker worker2
 
 .PHONY: frontend
@@ -157,11 +157,11 @@ migrate: ## Apply migrations
 
 .PHONY: setup_db
 setup_db: ## Set up the development db on docker
-	docker compose up -d postgres minio
+	docker compose up -d postgres
 
 .PHONY: reset_db
 reset_db: ## Reset the dev db
-	docker compose down postgres minio
+	docker compose down postgres
 	docker volume rm -f consult_postgres_data
 	$(MAKE) setup_db
 
