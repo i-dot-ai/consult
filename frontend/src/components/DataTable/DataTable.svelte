@@ -508,6 +508,9 @@
         }))}
         value={pageSize.toString()}
         onchange={(value) => {
+          if (value === undefined) {
+            return;
+          }
           currentPage = 1;
           pageSize = Number.parseInt(value);
         }}

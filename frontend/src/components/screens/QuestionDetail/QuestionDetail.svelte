@@ -9,7 +9,7 @@
   import Button from "../../inputs/Button/Button.svelte";
   import QuestionCard from "../../dashboard/QuestionCard/QuestionCard.svelte";
   import Panel from "../../dashboard/Panel/Panel.svelte";
-  import Alert from "../../Alert.svelte";
+  import Alert from "../../Alert/Alert.svelte";
   import KeyboardArrowDown from "../../svg/material/KeyboardArrowDown.svelte";
   import Lan from "../../svg/material/Lan.svelte";
   import FilterAlt from "../../svg/material/FilterAlt.svelte";
@@ -333,7 +333,7 @@
 <section class="my-4">
   {#if $consultationStore.error || $questionStore.error}
     <div class="my-2">
-      <Alert>
+      <Alert variant="error">
         <span class="text-sm">
           Question Details Error: {$consultationStore.error ||
             $questionStore.error}
@@ -520,7 +520,7 @@
             </div>
           {:else if $responsesStore.error}
             <div transition:slide class="my-2">
-              <Alert>
+              <Alert variant="error">
                 <span class="text-sm">
                   Responses Error: {$responsesStore.error}
                 </span>
