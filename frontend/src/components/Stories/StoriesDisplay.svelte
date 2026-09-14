@@ -217,17 +217,13 @@
                     id={inputId}
                     label={prop.name}
                     hideLabel={true}
-                    value={prop.label}
+                    value={prop.value}
                     items={prop.options! as { value: string; label: string }[]}
                     onchange={(nextVal) => {
                       if (!nextVal) {
                         return;
                       }
-                      prop.value = prop.options?.find(
-                        (opt: { label: string }) => {
-                          return opt.label === nextVal;
-                        },
-                      )?.value;
+                      prop.value = nextVal;
                     }}
                   />
                 {:else if prop.type === "json"}
@@ -262,6 +258,11 @@
                       Function: {prop.schema || "No schema provided"}
                     </span>
                   </Tag>
+                {:else}
+                  <div class="flex gap-2 items-center">
+                    <p>{prop.name}: </p>
+                    <Tag>{prop.type}</Tag>
+                  </div>
                 {/if}
               {/each}
 
@@ -291,7 +292,7 @@
                           if (!nextVal) {
                             return;
                           }
-                          currMock.status = parseInt(nextVal);
+                          currMock.status = parseInt(nextVal as string);
                         }}
                       />
 
