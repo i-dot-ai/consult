@@ -19,7 +19,7 @@
   } from "../../../global/types.ts";
   import Tag from "../../Tag/Tag.svelte";
   import Modal from "../../Modal/Modal.svelte";
-  import Alert from "../../Alert.svelte";
+  import Alert from "../../Alert/Alert.svelte";
   import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
   import OnboardingTour from "../../OnboardingTour/OnboardingTour.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
@@ -152,7 +152,7 @@
           </li>
         </ol>
 
-        <Alert>
+        <Alert variant="error">
           <span class="text-sm">
             <strong>Warning:</strong> Once started, this process cannot be stopped
             or easily reversed. Ensure all theme selections are final.
@@ -178,7 +178,7 @@
 
         {#if $consultationUpdateStore.error}
           <div class="mb-4 mt-2">
-            <Alert>
+            <Alert variant="error">
               <span class="text-sm">{$consultationUpdateStore.error}</span>
             </Alert>
           </div>
@@ -192,7 +192,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected Sign-Off Modal Error</Alert>
+        <Alert variant="error">Unexpected Sign-Off Modal Error</Alert>
       </Panel>
     </div>
   {/snippet}
@@ -284,7 +284,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected Question List Error</Alert>
+        <Alert variant="error">Unexpected Question List Error</Alert>
       </Panel>
     </div>
   {/snippet}
@@ -364,7 +364,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected onboarding tour error</Alert>
+        <Alert variant="error">Unexpected onboarding tour error</Alert>
       </Panel>
     </div>
   {/snippet}

@@ -21,7 +21,7 @@
     RespondentsResponse,
     ResponseBody,
   } from "../../../global/types.ts";
-  import Alert from "../../Alert.svelte";
+  import Alert from "../../Alert/Alert.svelte";
   import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Panel from "../../dashboard/Panel/Panel.svelte";
@@ -183,7 +183,7 @@
             {console.error(error)}
 
             <Panel>
-              <Alert>Unexpected responses error</Alert>
+              <Alert variant="error">Unexpected responses error</Alert>
             </Panel>
           </div>
         {/snippet}
@@ -234,7 +234,7 @@
             {console.error(error)}
 
             <Panel>
-              <Alert>Unexpected responses error</Alert>
+              <Alert variant="error">Unexpected responses error</Alert>
             </Panel>
           </div>
         {/snippet}

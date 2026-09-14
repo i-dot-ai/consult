@@ -37,7 +37,7 @@
   import Stacks from "../../svg/material/Stacks.svelte";
   import Tag from "../../Tag/Tag.svelte";
   import Modal from "../../Modal/Modal.svelte";
-  import Alert from "../../Alert.svelte";
+  import Alert from "../../Alert/Alert.svelte";
   import Target from "../../svg/material/Target.svelte";
   import EditSquare from "../../svg/material/EditSquare.svelte";
   import ErrorModal, {
@@ -519,7 +519,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected selected themes error</Alert>
+        <Alert variant="error">Unexpected selected themes error</Alert>
       </Panel>
     </div>
   {/snippet}
@@ -646,7 +646,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected generated themes error</Alert>
+        <Alert variant="error">Unexpected generated themes error</Alert>
       </Panel>
     </div>
   {/snippet}
@@ -683,7 +683,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected onboarding tour error</Alert>
+        <Alert variant="error">Unexpected onboarding tour error</Alert>
       </Panel>
     </div>
   {/snippet}
