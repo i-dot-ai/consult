@@ -29,17 +29,17 @@ dataset is required to be tagged with. The data card will have the following fie
     * created_at
 
 * Provenance
-    * source_type (human / synthetic)
-    * labelling_method (single human / double human / automatic)
+    * source_type (single human / double human / synthetic)
+    * labelling_method (blind ground truth / verification / automatic)
     * transformations (normalization / deduplication / PII redaction / filtering)
 
 * Permissions
     * contains_pii (yes / no)
-    * permitted_for_optimisation (yes / no)
+    * permitted_for_product_improvements (yes / no)
     * sensitivity (public / internal)
     * retention_end_date (date)
 
-* Usage boundaries
+* Dev Usage Boundaries
     * split_role (training / fine-tuning / eval / red-teaming / monitoring)
 
 **NOTE**: we want to keep the balance between recording everything we need to use data in a compliant way,
