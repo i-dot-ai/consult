@@ -1,14 +1,12 @@
 import { test, expect } from "@playwright/test";
-import { ListObjectsV2Command } from "@aws-sdk/client-s3";
 
 import {
   createFixtureData,
-  makeMinioClient,
   CleanupManager,
 } from "./helpers";
 import { gotoFinaliseThemesList } from "./navigation";
 import { finalisingThemesConfirmedConsultation } from "../fixtures";
-import { S3_BUCKET, testAccessToken } from "../constants";
+import { testAccessToken } from "../constants";
 
 test.describe.configure({ mode: "serial" });
 const cleanupManager = new CleanupManager();
