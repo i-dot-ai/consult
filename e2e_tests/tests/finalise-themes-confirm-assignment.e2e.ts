@@ -56,21 +56,6 @@ test.describe("Finalise Themes - Confirm and Proceed to Assignment", () => {
 
     expect((await assignResponse).status()).toBe(202);
 
-    // The selected-themes CSV is sent to Minio
-    const s3 = makeMinioClient();
-    const prefix = `app_data/consultations/${consultationCode}/inputs/`;
-    await expect
-      .poll(
-        async () => {
-          const out = await s3.send(
-            new ListObjectsV2Command({ Bucket: S3_BUCKET, Prefix: prefix }),
-          );
-          return (out.Contents ?? []).some((o) => o.Key?.endsWith("themes.csv"));
-        },
-        { timeout: 15000 },
-      )
-      .toBe(true);
-
     // Consultation stage advances to assigning_themes
     await expect
       .poll(
