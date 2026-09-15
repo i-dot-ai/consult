@@ -27,7 +27,7 @@ see ADR-0013 (`docs/architecture/decisions/0013-modular-evaluation-framework-for
 
 from prompts import refinement_eval_prompt
 
-from .common import ThemeComparisonJudgeEvaluator
+from .llm_judge import ThemeComparisonJudgeEvaluator
 
 
 class RefinementQualityEvaluator(ThemeComparisonJudgeEvaluator):

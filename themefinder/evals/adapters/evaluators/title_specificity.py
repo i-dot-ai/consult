@@ -10,7 +10,7 @@ from typing import Any
 from eval_types import Case, Score
 from prompts import title_specificity_eval_prompt
 
-from .common import LLMJudgeEvaluator
+from .llm_judge import LLMJudgeEvaluator
 
 
 class TitleSpecificityEvaluator(LLMJudgeEvaluator):

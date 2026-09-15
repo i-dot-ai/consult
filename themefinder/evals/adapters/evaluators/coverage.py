@@ -7,7 +7,7 @@ single-metric evaluators while condensation/refinement don't).
 
 from prompts import generation_eval_prompt
 
-from .common import DecisionScoredComparisonJudge
+from .llm_judge import DecisionScoredComparisonJudge
 
 
 class CoverageEvaluator(DecisionScoredComparisonJudge):

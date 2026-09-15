@@ -15,7 +15,7 @@ from typing import Any
 
 from prompts import generation_eval_prompt
 
-from .common import DecisionScoredComparisonJudge
+from .llm_judge import DecisionScoredComparisonJudge
 
 
 class GroundednessEvaluator(DecisionScoredComparisonJudge):
