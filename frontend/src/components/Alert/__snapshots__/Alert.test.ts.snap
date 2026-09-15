@@ -1,9 +1,10 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Alert > should match snapshot initially 1`] = `
+exports[`Alert > should match snapshot 1`] = `
 <div>
   <div
     class="flex items-center justify-start gap-2 rounded-lg bg-sky-50 p-2"
+    data-testid="alert-info"
   >
     <div
       data-testid="icon"

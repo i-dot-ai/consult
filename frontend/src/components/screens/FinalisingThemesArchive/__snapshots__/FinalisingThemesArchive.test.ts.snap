@@ -863,6 +863,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
     >
       <div
         class="flex items-center justify-start gap-2 rounded-lg bg-pink-50 p-2"
+        data-testid="alert-error"
       >
         <!---->
          
@@ -1080,6 +1081,7 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
     >
       <div
         class="flex items-center justify-start gap-2 rounded-lg bg-pink-50 p-2"
+        data-testid="alert-error"
       >
         <!---->
          

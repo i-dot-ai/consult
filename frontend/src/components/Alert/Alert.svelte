@@ -4,7 +4,7 @@
   import type { Component, Snippet } from 'svelte';
   import MaterialIcon from "../MaterialIcon.svelte";
 
-  interface Props {
+  export interface Props {
     children: Snippet;
     Icon?: Component;
     variant?: "info" | "warning" | "error" | "success";
@@ -38,15 +38,18 @@
   };
 </script>
 
-<div class={clsx([
-  "flex",
-  "items-center",
-  "justify-start",
-  "gap-2",
-  "rounded-lg",
-  COLORS.background[variant],
-  "p-2",
-])}>
+<div
+  class={clsx([
+    "flex",
+    "items-center",
+    "justify-start",
+    "gap-2",
+    "rounded-lg",
+    COLORS.background[variant],
+    "p-2",
+  ])}
+  data-testid={`alert-${variant}`}
+>
   {#if Icon}
     <div data-testid="icon">
       <MaterialIcon color={COLORS.icon[variant]}>
