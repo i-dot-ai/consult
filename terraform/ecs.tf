@@ -2,6 +2,8 @@ locals {
   backend_port  = 8000
   frontend_port = 3000
 
+  data_setup_v2_enabled = var.env == "prod" ? false : true
+
   base_env_vars = {
     "ENVIRONMENT"                 = terraform.workspace
     "DEBUG"                       = var.env == "prod" ? false : true
@@ -67,6 +69,7 @@ module "backend" {
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-backend"
     "SENTRY_DSN"               = var.backend_sentry_dsn
     "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["backend"].value
+    "DATA_SETUP_V2_ENABLED"    = local.data_setup_v2_enabled
   })
 
   secrets = [
@@ -119,16 +122,17 @@ module "frontend" {
   permissions_boundary_name    = "infra/i-dot-ai-${var.env}-${var.project_name}-perms-boundary-app"
 
   environment_variables = merge(local.base_env_vars, {
-    "PUBLIC_ENVIRONMENT"       = var.env
-    "PUBLIC_BACKEND_URL"       = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
-    "BACKEND_URL"              = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
-    "APP_NAME"                 = var.project_name
-    "EXECUTION_CONTEXT"        = "ecs"
-    "OTEL_SERVICE_NAME"        = "consult-frontend"
-    "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
-    "PUBLIC_LANGFUSE_URL"      = "https://core-langfuse.i.ai.gov.uk/",
-    "PUBLIC_HOMEPAGE_URL"      = "https://${local.host}",
-    "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["frontend"].value
+    "PUBLIC_ENVIRONMENT"           = var.env
+    "PUBLIC_BACKEND_URL"           = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
+    "BACKEND_URL"                  = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
+    "APP_NAME"                     = var.project_name
+    "EXECUTION_CONTEXT"            = "ecs"
+    "OTEL_SERVICE_NAME"            = "consult-frontend"
+    "DOCKER_BUILDER_CONTAINER"     = "${var.project_name}-frontend",
+    "PUBLIC_LANGFUSE_URL"          = "https://core-langfuse.i.ai.gov.uk/",
+    "PUBLIC_HOMEPAGE_URL"          = "https://${local.host}",
+    "SENTRY_RELEASE"               = data.aws_ssm_parameter.image_tags["frontend"].value
+    "PUBLIC_DATA_SETUP_V2_ENABLED" = local.data_setup_v2_enabled
   })
 
   secrets = [

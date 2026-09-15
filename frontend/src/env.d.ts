@@ -11,6 +11,7 @@ interface ImportMetaEnv {
   readonly PUBLIC_INTERNAL_ACCESS_CLIENT_ID?: string;
   readonly PUBLIC_LANGFUSE_URL?: string;
   readonly PUBLIC_HOMEPAGE_URL?: string;
+  readonly PUBLIC_DATA_SETUP_V2_ENABLED?: string;
   readonly ENVIRONMENT?: string;
 }
 

@@ -2,7 +2,7 @@ import type { APIContext, MiddlewareNext } from "astro";
 import { Routes } from "./global/routes";
 import { fetchBackendApi } from "./global/api";
 import { LOCAL_USERS } from "./global/localUsers";
-import { getBackendUrl, getEnv } from "./global/utils";
+import { getBackendUrl, getDataSetupV2Enabled, getEnv } from "./global/utils";
 import { AuthReasons } from "./global/types";
 import { defineMiddleware, sequence } from "astro:middleware";
 import { randomUUID } from "node:crypto";
@@ -27,6 +27,15 @@ const mainMiddleware = defineMiddleware(
   async (context: APIContext, next: MiddlewareNext) => {
     const url = context.url;
     const backendUrl = getBackendUrl();
+
+    if (!getDataSetupV2Enabled()) {
+      if (/^\/api\/v2(\/|$)/.test(url.pathname)) {
+        return new Response("Not Found", { status: 404 });
+      }
+      if (/^\/v2(\/|$)/.test(url.pathname)) {
+        return context.redirect(Routes.Home);
+      }
+    }
 
     if (/^\/api\//.test(url.pathname)) {
       return next();
