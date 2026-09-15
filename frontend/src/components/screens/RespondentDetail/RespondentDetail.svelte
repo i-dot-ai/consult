@@ -183,7 +183,7 @@
             {console.error(error)}
 
             <Panel>
-              <Alert>Unexpected responses error</Alert>
+              <Alert variant="error">Unexpected responses error</Alert>
             </Panel>
           </div>
         {/snippet}
@@ -234,7 +234,7 @@
             {console.error(error)}
 
             <Panel>
-              <Alert>Unexpected responses error</Alert>
+              <Alert variant="error">Unexpected responses error</Alert>
             </Panel>
           </div>
         {/snippet}

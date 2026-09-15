@@ -3,14 +3,14 @@
 exports[`Alert > should match snapshot initially 1`] = `
 <div>
   <div
-    class="flex items-center justify-start gap-2 rounded-lg bg-pink-50 p-2"
+    class="flex items-center justify-start gap-2 rounded-lg bg-sky-50 p-2"
   >
     <div
       data-testid="icon"
     >
       <svg
         aria-hidden="true"
-        class="fill-pink-700"
+        class="fill-sky-800"
         height="1rem"
         viewBox="0 -960 960 960"
         width="1rem"
@@ -29,7 +29,7 @@ exports[`Alert > should match snapshot initially 1`] = `
     <!---->
      
     <div
-      class="w-full text-pink-700"
+      class="w-full text-sky-800"
     >
       <p
         color="text-red-600 font-bold"

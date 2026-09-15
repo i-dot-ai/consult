@@ -333,7 +333,7 @@
 <section class="my-4">
   {#if $consultationStore.error || $questionStore.error}
     <div class="my-2">
-      <Alert>
+      <Alert variant="error">
         <span class="text-sm">
           Question Details Error: {$consultationStore.error ||
             $questionStore.error}
@@ -520,7 +520,7 @@
             </div>
           {:else if $responsesStore.error}
             <div transition:slide class="my-2">
-              <Alert>
+              <Alert variant="error">
                 <span class="text-sm">
                   Responses Error: {$responsesStore.error}
                 </span>

@@ -519,7 +519,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected selected themes error</Alert>
+        <Alert variant="error">Unexpected selected themes error</Alert>
       </Panel>
     </div>
   {/snippet}
@@ -646,7 +646,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected generated themes error</Alert>
+        <Alert variant="error">Unexpected generated themes error</Alert>
       </Panel>
     </div>
   {/snippet}
@@ -683,7 +683,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected onboarding tour error</Alert>
+        <Alert variant="error">Unexpected onboarding tour error</Alert>
       </Panel>
     </div>
   {/snippet}

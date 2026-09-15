@@ -109,7 +109,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected top row error</Alert>
+        <Alert variant="error">Unexpected top row error</Alert>
       </Panel>
     </div>
   {/snippet}
@@ -141,7 +141,7 @@
               </div>
             {:else if $questionStore.error}
               <div class="mb-4">
-                <Alert>
+                <Alert variant="error">
                   {$questionStore.error}
                 </Alert>
               </div>
@@ -188,7 +188,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected question details error</Alert>
+        <Alert variant="error">Unexpected question details error</Alert>
       </Panel>
     </div>
   {/snippet}
@@ -214,7 +214,7 @@
           {/each}
         {:else if $selectedThemesStore.error}
           <div class="my-2">
-            <Alert>
+            <Alert variant="error">
               {$selectedThemesStore.error}
             </Alert>
           </div>
@@ -234,7 +234,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected selected themes error</Alert>
+        <Alert variant="error">Unexpected selected themes error</Alert>
       </Panel>
     </div>
   {/snippet}
@@ -275,7 +275,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected bottom row error</Alert>
+        <Alert variant="error">Unexpected bottom row error</Alert>
       </Panel>
     </div>
   {/snippet}

@@ -22,3 +22,5 @@ export const childrenLong = createRawSnippet(() => ({
 export const Icon = Help;
 
 export const children = childrenDefault;
+
+export const defaultVariant = "info";
