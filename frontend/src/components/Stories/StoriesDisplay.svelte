@@ -260,7 +260,7 @@
                   </Tag>
                 {:else}
                   <div class="flex gap-2 items-center">
-                    <p>{prop.name}: </p>
+                    <p>{prop.name}:</p>
                     <Tag>{prop.type}</Tag>
                   </div>
                 {/if}

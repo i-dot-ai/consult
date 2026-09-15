@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  export interface LabelConfig<T> {
+  export interface LabelConfig {
     text: string;
     classes?: string;
     horizontal?: boolean;
@@ -13,7 +13,7 @@
   export interface Props<T> {
     id: string;
     name?: string;
-    label?: string | LabelConfig<T>;
+    label?: string | LabelConfig;
     hideLabel?: boolean;
     items: SelectOption<T>[];
     value?: T;
@@ -68,7 +68,9 @@
     }
 
     const target = event.target as HTMLSelectElement;
-    const option = items.find(item => item.value === target.value || item.label === target.value)!;
+    const option = items.find(
+      (item) => item.value === target.value || item.label === target.value,
+    )!;
     onchange(option?.value);
   }
 </script>
@@ -118,8 +120,7 @@
     {name}
     value={typeof value === "string"
       ? value
-      : items.find(item => item.value === value)?.label
-    }
+      : items.find((item) => item.value === value)?.label}
     {disabled}
     {required}
     aria-describedby={[hint && `${id}-hint`, errorMessage && `${id}-error`]
@@ -129,10 +130,7 @@
   >
     {#each items as item, i (i)}
       <option
-        value={typeof item.value === "string"
-          ? item.value
-          : item.label
-        }
+        value={typeof item.value === "string" ? item.value : item.label}
         selected={value === item.value}
         class="bg-white text-neutral-900"
         data-testid={`${id}-option`}

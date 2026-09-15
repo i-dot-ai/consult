@@ -1,7 +1,7 @@
 <script lang="ts">
-  import clsx from 'clsx';
+  import clsx from "clsx";
 
-  import type { Component, Snippet } from 'svelte';
+  import type { Component, Snippet } from "svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
 
   export interface Props {
@@ -10,11 +10,7 @@
     variant?: "info" | "warning" | "error" | "success";
   }
 
-  let {
-    Icon,
-    children,
-    variant="info",
-  }: Props = $props();
+  let { Icon, children, variant = "info" }: Props = $props();
 
   const COLORS = {
     background: {
@@ -59,11 +55,8 @@
   {/if}
 
   {#if children}
-    <div class={clsx([
-      "w-full",
-      COLORS.text[variant]
-    ])}>
+    <div class={clsx(["w-full", COLORS.text[variant]])}>
       {@render children()}
-    </div>  
+    </div>
   {/if}
 </div>

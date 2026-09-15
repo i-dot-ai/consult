@@ -4,9 +4,9 @@ import Help from "../svg/material/Help.svelte";
 import Alert from "./Alert.svelte";
 import { childrenDefault, childrenLong, defaultVariant } from "./testData";
 
-let children = $state(childrenDefault);
-let Icon = $state(Help);
-let variant = $state(defaultVariant);
+const children = $state(childrenDefault);
+const Icon = $state(Help);
+const variant = $state(defaultVariant);
 
 export default {
   name: "Alert",
@@ -31,15 +31,15 @@ export default {
       ],
     },
     {
-        name: "variant",
-        value: variant,
-        type: "select",
-        options: [
-            { value: "info", label: "Info" },
-            { value: "warning", label: "Warning" },
-            { value: "error", label: "Error" },
-            { value: "success", label: "Success" },
-        ],
+      name: "variant",
+      value: variant,
+      type: "select",
+      options: [
+        { value: "info", label: "Info" },
+        { value: "warning", label: "Warning" },
+        { value: "error", label: "Error" },
+        { value: "success", label: "Success" },
+      ],
     },
   ],
   stories: [

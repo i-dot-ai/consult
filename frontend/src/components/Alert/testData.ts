@@ -4,7 +4,7 @@ import Help from "../svg/material/Help.svelte";
 const childContentClass = "text-red-600 font-bold";
 
 export const childrenDefault = createRawSnippet(() => ({
-    render: () => `
+  render: () => `
         <p color="${childContentClass}">
             Child content
         </p>
@@ -12,7 +12,7 @@ export const childrenDefault = createRawSnippet(() => ({
 }));
 
 export const childrenLong = createRawSnippet(() => ({
-    render: () => `
+  render: () => `
         <p color="${childContentClass}">
             ${"Long child content".repeat(20)}
         </p>
