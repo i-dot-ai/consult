@@ -214,13 +214,17 @@ class TestDecisionScoredJudges(_JudgeContractTests):
         assert prompt.index(self.first_marker) < prompt.index(self.second_marker)
 
 
-class TestCondensationQualityEvaluator(_JudgeContractTests):
-    """CondensationQualityEvaluator — the numeric-key path
-    (`ThemeComparisonJudgeEvaluator._build_scores`), reading case-side themes
-    from `case.inputs` since there's no ground-truth `expected_output`."""
+class _NumericKeyJudgeTests(_JudgeContractTests):
+    """Shared contract for the numeric-key judges (condensation, refinement),
+    which both extract one numeric value plus a `{metric}_reasoning` string per
+    metric via `ThemeComparisonJudgeEvaluator._build_scores` — the *same*
+    inherited method. Rather than test that method twice and let the two copies
+    drift, both classes inherit these tests and differ only in their
+    `evaluator_cls` / `metric_names`. Responses and expected Scores are built
+    from the evaluator's own `metric_names`, so nothing is hard-coded."""
 
-    evaluator_cls = CondensationQualityEvaluator
-    metric_names = evaluator_cls.metric_names
+    #: Reasoning strings zipped onto the metrics (one per metric) — arbitrary,
+    #: just needs enough entries to cover the widest evaluator's metric_names.
     options = ["tight", "loose", "kept", "lost"]
 
     async def test_extracts_named_metrics(self):
@@ -256,6 +260,28 @@ class TestCondensationQualityEvaluator(_JudgeContractTests):
 
         assert scores[1] == Score(missing, 0.0, "")
 
+    async def test_parses_fenced_json(self):
+        """`_parse_json_markdown` strips a ```json code fence before parsing —
+        the one parsing branch the other tests don't cover (they all feed bare
+        JSON), and one real judges routinely trigger."""
+        first = self.metric_names[0]
+        body = json.dumps({first: 4, f"{first}_reasoning": "r"})
+        judge = _FakeJudge(f"```json\n{body}\n```")
+
+        scores = await self._evaluate(judge)
+
+        assert scores[0] == Score(first, 4.0, "r")
+
+
+class TestCondensationQualityEvaluator(_NumericKeyJudgeTests):
+    """CondensationQualityEvaluator — the numeric-key path
+    (`ThemeComparisonJudgeEvaluator._build_scores`), reading case-side themes
+    from `case.inputs` since there's no ground-truth `expected_output`. Inherits
+    the numeric-key contract; adds the input-side wiring check below."""
+
+    evaluator_cls = CondensationQualityEvaluator
+    metric_names = evaluator_cls.metric_names
+
     async def test_reads_case_themes_from_inputs(self):
         """Wiring: condensation/refinement have no ground truth
         (expected_output is None), so case-side themes come from
@@ -272,37 +298,15 @@ class TestCondensationQualityEvaluator(_JudgeContractTests):
         prompt = judge.prompts[0]
         assert prompt.index("INPUT_ONLY") < prompt.index("OUTPUT_ONLY")
 
-    async def test_parses_fenced_json(self):
-        """`_parse_json_markdown` strips a ```json code fence before parsing —
-        the one parsing branch the other tests don't cover (they all feed bare
-        JSON), and one real judges routinely trigger."""
-        first = self.metric_names[0]
-        body = json.dumps({first: 4, f"{first}_reasoning": "r"})
-        judge = _FakeJudge(f"```json\n{body}\n```")
 
-        scores = await self._evaluate(judge)
-
-        assert scores[0] == Score(first, 4.0, "r")
-
-
-class TestRefinementQualityEvaluator(_JudgeContractTests):
+class TestRefinementQualityEvaluator(_NumericKeyJudgeTests):
     """RefinementQualityEvaluator — the numeric-key path over its own four
-    metrics (information_retention, response_references, distinctiveness, fluency)."""
+    metrics (information_retention, response_references, distinctiveness,
+    fluency). Same inherited `_build_scores` as condensation, so it inherits the
+    full numeric-key contract and only pins its own `metric_names`."""
 
     evaluator_cls = RefinementQualityEvaluator
     metric_names = evaluator_cls.metric_names
-
-    async def test_returns_all_four_metrics(self):
-        # Values derived from the evaluator's own metric_names (as in the
-        # condensation test); here we check only the names and numeric values,
-        # not the reasoning comments.
-        expected_scores = range(len(self.metric_names))
-        judge = _FakeJudge(json.dumps(dict(zip(self.metric_names, expected_scores))))
-
-        scores = await self._evaluate(judge)
-
-        assert [s.name for s in scores] == list(self.metric_names)
-        assert [s.value for s in scores] == [float(v) for v in expected_scores]
 
 
 class TestTitleSpecificityEvaluator(_JudgeContractTests):
