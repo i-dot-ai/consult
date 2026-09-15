@@ -8,6 +8,7 @@ from i_dot_ai_utilities.logging.types.enrichment_types import (
     ExecutionEnvironmentType,
 )
 from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
+from otel_bootstrap import bootstrap_otel, execution_span, flush_otel
 
 http = urllib3.PoolManager()
 
@@ -18,6 +19,7 @@ logger = StructuredLogger(
         "log_format": LogOutputFormat.JSON,
     },
 )
+bootstrap_otel(service_name="consult-slack-notifier", logger=logger)
 
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
 
@@ -158,11 +160,19 @@ def lambda_handler(event, context):
 
         logger.set_context_field("batch_job_name", detail.get("jobName", job["type"]))
         logger.set_context_field("consultation_code", consultation["code"])
+        logger.set_context_field("context_id", parameters.get("context_id"))
 
-        send_slack_message(job, consultation, environment, user_id)
+        with execution_span(
+            "lambda.slack_notifier",
+            context_id=parameters.get("context_id"),
+            consultation_code=consultation["code"],
+        ):
+            send_slack_message(job, consultation, environment, user_id)
 
         logger.info("✅ Slack message sent")
 
     except Exception:
         logger.exception("Failed to send Slack notification")
         raise
+    finally:
+        flush_otel()

@@ -10,7 +10,7 @@
   import Search from "../../svg/material/Search.svelte";
 
   export let inputType: HTMLInputTypeAttribute = "text";
-  export let id: string = "";
+  export let id: string = "text-input";
   export let label: string = "";
   export let hideLabel: boolean = false;
   export let value: string = "";
@@ -60,7 +60,11 @@
         "mt-0.5 -translate-y-1/2",
       ])}
     >
-      <Button variant="ghost" handleClick={() => setValue("")}>
+      <Button
+        variant="ghost"
+        handleClick={() => setValue("")}
+        ariaLabel="Reset search"
+      >
         <MaterialIcon size="1rem" color="black">
           <Close />
         </MaterialIcon>

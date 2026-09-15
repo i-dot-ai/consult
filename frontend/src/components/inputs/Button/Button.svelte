@@ -28,6 +28,7 @@
   export let noPadding: boolean = false;
   export let fixedHoverColor: boolean = false;
   export let tabindex: number | undefined = undefined;
+  export let justify: "left" | "center" | "right" = "center";
 </script>
 
 <svelte:element
@@ -50,6 +51,8 @@
       clsx([size === "xs" ? "py-0.5" : "py-1"]),
     !noPadding && variant !== "dot" && clsx([size === "xs" ? "px-1" : "px-2"]),
     "border",
+    justify === "left" && "text-start",
+    justify === "right" && "text-end",
     variant === "default" && "border-gray-300 bg-white",
     variant === "gray" && "border-gray-300 bg-neutral-100",
     variant === "primary" && "border-gray-300 bg-primary text-white",

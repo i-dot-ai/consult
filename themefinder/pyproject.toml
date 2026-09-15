@@ -19,7 +19,7 @@ dependencies = [
     "httpx>=0.23.0",
     "pandas>=2.2.2",
     "python-dotenv>=1.0.1",
-    "langfuse>=3.12.1,<4.10.0",
+    "langfuse>=3.12.1,<4.0.0",
     "boto3>=1.29",
     "scikit-learn",
     "openpyxl>=3.1.5",

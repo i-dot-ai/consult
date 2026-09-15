@@ -124,7 +124,9 @@ class TestImportConsultationFromS3:
 
             # Create question 1 files (free text only)
             key = "app_data/consultations/test-code/inputs/question_part_1/question.json"
-            minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=json.dumps(question_1).encode())
+            minio_client.put_object(
+                Bucket=minio_test_bucket, Key=key, Body=json.dumps(question_1).encode()
+            )
             created_keys.append(key)
 
             key = "app_data/consultations/test-code/inputs/question_part_1/responses.jsonl"
@@ -138,7 +140,9 @@ class TestImportConsultationFromS3:
 
             # Create question 2 files (multi choice only)
             key = "app_data/consultations/test-code/inputs/question_part_2/question.json"
-            minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=json.dumps(question_2).encode())
+            minio_client.put_object(
+                Bucket=minio_test_bucket, Key=key, Body=json.dumps(question_2).encode()
+            )
             created_keys.append(key)
 
             key = "app_data/consultations/test-code/inputs/question_part_2/responses.jsonl"
@@ -152,7 +156,9 @@ class TestImportConsultationFromS3:
 
             # Create question 3 files (hybrid)
             key = "app_data/consultations/test-code/inputs/question_part_3/question.json"
-            minio_client.put_object(Bucket=minio_test_bucket, Key=key, Body=json.dumps(question_3).encode())
+            minio_client.put_object(
+                Bucket=minio_test_bucket, Key=key, Body=json.dumps(question_3).encode()
+            )
             created_keys.append(key)
 
             key = "app_data/consultations/test-code/inputs/question_part_3/responses.jsonl"
@@ -229,7 +235,10 @@ class TestImportConsultationFromS3:
             assert [opt.text for opt in q2_response_1.chosen_options.all()] == ["Option A"]
 
             q2_response_2 = Response.objects.get(question=question_2_db, respondent=respondent_2)
-            assert {opt.text for opt in q2_response_2.chosen_options.all()} == {"Option B", "Option C"}
+            assert {opt.text for opt in q2_response_2.chosen_options.all()} == {
+                "Option B",
+                "Option C",
+            }
 
             # Verify responses for hybrid question
             q3_response_1 = Response.objects.get(question=question_3_db, respondent=respondent_1)
@@ -247,10 +256,7 @@ class TestImportConsultationFromS3:
             # Cleanup: Delete all objects we created
             for key in created_keys:
                 try:
-                    minio_client.delete_object(
-                        Bucket=minio_test_bucket,
-                        Key=key
-                    )
+                    minio_client.delete_object(Bucket=minio_test_bucket, Key=key)
                 except Exception as e:  # noqa: BLE001
                     logger.warning("Failed to cleanup object {key}: {e}", key=key, e=e)
 

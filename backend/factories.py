@@ -112,9 +112,7 @@ class RespondentFactory(DjangoModelFactory):
                 field_value=encode(v),
             )
             self.demographics.add(o)
-            DemographicOption.objects.filter(pk=o.pk).update(
-                response_count=F("response_count") + 1
-            )
+            DemographicOption.objects.filter(pk=o.pk).update(response_count=F("response_count") + 1)
         self.save()
 
 

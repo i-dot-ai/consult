@@ -126,7 +126,7 @@ async def _run_with_langfuse(ctx, config: DatasetConfig, llm, eval_llm) -> dict:
                 trace.update(output=output)
 
             # LLM-as-judge: compression quality + information retention
-            quality_results = condensation_evaluator(
+            quality_results = await condensation_evaluator(
                 output={"themes": condensed_records},
                 expected_output={"themes": original_records},
             )
@@ -234,7 +234,7 @@ async def _run_local_fallback(config: DatasetConfig, llm, eval_llm) -> dict:
         all_results[f"{question_part}_output"] = {"condensed_themes": condensed_records}
 
         # LLM-as-judge: compression quality + information retention
-        quality_results = condensation_evaluator(
+        quality_results = await condensation_evaluator(
             output={"themes": condensed_records},
             expected_output={"themes": original_records},
         )
@@ -274,5 +274,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    asyncio.run(evaluate_condensation(dataset=args.dataset))
     asyncio.run(evaluate_condensation(dataset=args.dataset))

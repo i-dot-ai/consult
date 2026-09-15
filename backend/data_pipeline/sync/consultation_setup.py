@@ -35,9 +35,7 @@ ResponseThemeThroughModel = Response.chosen_options.through
 # =============================================================================
 
 
-def load_respondents_from_s3(
-    consultation_code: str, bucket_name: str
-) -> list[RespondentInput]:
+def load_respondents_from_s3(consultation_code: str, bucket_name: str) -> list[RespondentInput]:
     """
     Load and validate respondents from S3.
 
@@ -269,16 +267,12 @@ def load_consultation_data_batch(
 
     for question_number in question_numbers:
         # Load free text responses
-        responses = load_responses_from_s3(
-            consultation_code, question_number, bucket_name
-        )
+        responses = load_responses_from_s3(consultation_code, question_number, bucket_name)
         if responses:
             responses_by_question[question_number] = responses
 
         # Load multi-choice data
-        multi_choices = load_multi_choice_from_s3(
-            consultation_code, question_number, bucket_name
-        )
+        multi_choices = load_multi_choice_from_s3(consultation_code, question_number, bucket_name)
         if multi_choices:
             multi_choice_by_question[question_number] = multi_choices
 

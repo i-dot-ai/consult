@@ -14,6 +14,7 @@
 <div
   style="animation-timing-function: ease-in-out;"
   class={clsx(["animate-spin", "ease-in-out", "w-max", "m-auto"])}
+  data-testid="loading-indicator"
 >
   <MaterialIcon color="fill-neutral-300" {size}>
     <ProgressActivity />

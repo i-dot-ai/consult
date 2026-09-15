@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies: ClassVar[list] = [
         ("consultations", "0099_alter_consultation_stage_default"),
     ]

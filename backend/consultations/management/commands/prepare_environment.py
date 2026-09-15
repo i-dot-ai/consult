@@ -1,0 +1,30 @@
+from django.conf import settings
+from django.core.management import call_command
+from django.core.management.base import BaseCommand
+from django.db import connections
+
+from hosting_environment import HostingEnvironment
+
+
+class Command(BaseCommand):
+    help = "Prepare the environment: runs migrations on prod/preprod/test/local; resets and seeds the database and S3 on deployed dev only."
+
+    def handle(self, *args, **options):
+        environment = getattr(settings, "ENVIRONMENT", "").lower()
+
+        if not HostingEnvironment.is_dev():
+            self.stdout.write(f"Running migrate on {environment}.")
+            call_command("migrate", verbosity=1)
+            return
+
+        self.stdout.write(f"Resetting database on {environment}...")
+        connection = connections["default"]
+        with connection.cursor() as cursor:
+            cursor.execute("DROP SCHEMA public CASCADE;")
+            cursor.execute("CREATE SCHEMA public;")
+
+        call_command("migrate", verbosity=1)
+        call_command("createadminusers", verbosity=1)
+        call_command("generate_dummy_data", verbosity=1)
+        call_command("prepare_s3", verbosity=1)
+        self.stdout.write("Environment prepared.")

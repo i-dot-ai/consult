@@ -12,8 +12,16 @@ from functools import lru_cache
 from typing import Any
 
 import numpy as np
+import openai
 from sklearn import metrics
 from sklearn.preprocessing import MultiLabelBinarizer
+from tenacity import (
+    before_sleep_log,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_random_exponential,
+)
 
 from prompts import (
     condensation_eval_prompt,
@@ -23,6 +31,34 @@ from prompts import (
 )
 
 logger = logging.getLogger("themefinder.evals.evaluators")
+
+
+@retry(
+    wait=wait_random_exponential(min=1, max=20),
+    stop=stop_after_attempt(3),
+    retry=retry_if_exception_type(
+        (openai.APIConnectionError, openai.RateLimitError, openai.InternalServerError)
+    ),
+    before_sleep=before_sleep_log(logger, logging.WARNING),
+    reraise=True,
+)
+async def _invoke_with_retry(llm: Any, prompt: str) -> Any:
+    """Call llm.ainvoke(), retrying on transient connection errors.
+
+    OpenAILLM.invoke()'s sync wrapper spins up a fresh event loop per call
+    while reusing a single shared AsyncOpenAI client - the client's
+    connection pool is bound to whichever loop first touched it, so reusing
+    it from a different loop occasionally raises a spurious
+    APIConnectionError. Calling ainvoke() directly (we're always inside a
+    running loop here) avoids that entirely; the retry is a backstop for
+    ordinary transient network issues, same as llm_batch_processor.py.
+
+    Only retries connection errors, rate limits, and server-side 5xxs -
+    APIConnectionError's own subclass APITimeoutError is covered too.
+    Non-transient errors (bad request, auth, etc.) reraise immediately
+    instead of burning retry attempts on something that won't change.
+    """
+    return await llm.ainvoke(prompt)
 
 
 def _parse_json_markdown(text: str) -> dict:
@@ -160,7 +196,7 @@ def _build_comment(result: dict[str, Any], metric_name: str) -> str:
     return f"{summary}\n" + "\n".join(decision_parts)
 
 
-def _calculate_groundedness_scores(
+async def _calculate_groundedness_scores(
     generated_themes: list[dict] | dict,
     expected_themes: dict,
     llm: Any,
@@ -178,17 +214,18 @@ def _calculate_groundedness_scores(
     shuffled_generated = _shuffle_themes(generated_themes)
     shuffled_expected = _shuffle_themes(expected_themes)
 
-    response = llm.invoke(
+    response = await _invoke_with_retry(
+        llm,
         generation_eval_prompt(
             topic_list_1=shuffled_generated,
             topic_list_2=shuffled_expected,
-        )
+        ),
     )
 
     return _parse_evaluation_response(response.parsed)
 
 
-def _calculate_coverage_scores(
+async def _calculate_coverage_scores(
     generated_themes: list[dict] | dict,
     expected_themes: dict,
     llm: Any,
@@ -207,11 +244,12 @@ def _calculate_coverage_scores(
     shuffled_expected = _shuffle_themes(expected_themes)
 
     # Reverse direction: expected -> generated
-    response = llm.invoke(
+    response = await _invoke_with_retry(
+        llm,
         generation_eval_prompt(
             topic_list_1=shuffled_expected,
             topic_list_2=shuffled_generated,
-        )
+        ),
     )
 
     return _parse_evaluation_response(response.parsed)
@@ -227,10 +265,12 @@ def create_groundedness_evaluator(llm: Any):
         Evaluator function compatible with run_experiment()
     """
 
-    def groundedness_evaluator(*, output: dict, expected_output: dict, **kwargs) -> Any:
+    async def groundedness_evaluator(
+        *, output: dict, expected_output: dict, **kwargs
+    ) -> Any:
         """Evaluate how well generated themes are grounded in expected themes."""
         try:
-            result = _calculate_groundedness_scores(
+            result = await _calculate_groundedness_scores(
                 output.get("themes", []),
                 expected_output.get("themes", {}),
                 llm,
@@ -256,10 +296,12 @@ def create_coverage_evaluator(llm: Any):
         Evaluator function compatible with run_experiment()
     """
 
-    def coverage_evaluator(*, output: dict, expected_output: dict, **kwargs) -> Any:
+    async def coverage_evaluator(
+        *, output: dict, expected_output: dict, **kwargs
+    ) -> Any:
         """Evaluate how well expected themes are covered by generated themes."""
         try:
-            result = _calculate_coverage_scores(
+            result = await _calculate_coverage_scores(
                 output.get("themes", []),
                 expected_output.get("themes", {}),
                 llm,
@@ -307,7 +349,7 @@ def mapping_f1_evaluator(*, output: dict, expected_output: dict, **kwargs) -> An
         return _make_evaluation("f1_score", 0.0, f"Error: {e}")
 
 
-def _calculate_title_specificity(
+async def _calculate_title_specificity(
     themes: list[dict] | dict,
     llm: Any,
 ) -> dict[str, Any]:
@@ -331,10 +373,11 @@ def _calculate_title_specificity(
     if not titles:
         return {"ratio": 0.0, "n_specific": 0, "n_total": 0, "details": []}
 
-    response = llm.invoke(
+    response = await _invoke_with_retry(
+        llm,
         title_specificity_eval_prompt(
             theme_titles=titles,
-        )
+        ),
     )
 
     parsed = _parse_json_markdown(response.parsed)
@@ -377,10 +420,12 @@ def create_title_specificity_evaluator(llm: Any):
         Evaluator function compatible with run_experiment().
     """
 
-    def specificity_evaluator(*, output: dict, expected_output: dict, **kwargs) -> Any:
+    async def specificity_evaluator(
+        *, output: dict, expected_output: dict, **kwargs
+    ) -> Any:
         """Evaluate how specific the generated theme titles are."""
         try:
-            result = _calculate_title_specificity(
+            result = await _calculate_title_specificity(
                 output.get("themes", []),
                 llm,
             )
@@ -402,7 +447,7 @@ def create_title_specificity_evaluator(llm: Any):
     return specificity_evaluator
 
 
-def _calculate_condensation_scores(
+async def _calculate_condensation_scores(
     condensed_themes: list[dict] | dict,
     original_themes: list[dict] | dict,
     llm: Any,
@@ -417,11 +462,12 @@ def _calculate_condensation_scores(
     Returns:
         Dict with compression_quality, information_retention, and reasoning.
     """
-    response = llm.invoke(
+    response = await _invoke_with_retry(
+        llm,
         condensation_eval_prompt(
             original_topics=original_themes,
             condensed_topics=condensed_themes,
-        )
+        ),
     )
 
     parsed = _parse_json_markdown(response.parsed)
@@ -448,12 +494,12 @@ def create_condensation_quality_evaluator(llm: Any):
         Evaluator function that returns a list of Evaluation objects.
     """
 
-    def condensation_evaluator(
+    async def condensation_evaluator(
         *, output: dict, expected_output: dict, **kwargs
     ) -> list:
         """Evaluate condensation quality on compression and information retention."""
         try:
-            result = _calculate_condensation_scores(
+            result = await _calculate_condensation_scores(
                 output.get("themes", []),
                 expected_output.get("themes", []),
                 llm,
@@ -485,7 +531,7 @@ REFINEMENT_METRICS = (
 )
 
 
-def _calculate_refinement_scores(
+async def _calculate_refinement_scores(
     refined_themes: list[dict] | dict,
     original_themes: list[dict] | dict,
     llm: Any,
@@ -500,11 +546,12 @@ def _calculate_refinement_scores(
     Returns:
         Dict with four metric scores and reasoning.
     """
-    response = llm.invoke(
+    response = await _invoke_with_retry(
+        llm,
         refinement_eval_prompt(
             original_topics=original_themes,
             new_topics=refined_themes,
-        )
+        ),
     )
 
     parsed = _parse_json_markdown(response.parsed)
@@ -525,10 +572,12 @@ def create_refinement_quality_evaluator(llm: Any):
         Evaluator function that returns a list of Evaluation objects.
     """
 
-    def refinement_evaluator(*, output: dict, expected_output: dict, **kwargs) -> list:
+    async def refinement_evaluator(
+        *, output: dict, expected_output: dict, **kwargs
+    ) -> list:
         """Evaluate refinement quality on four dimensions."""
         try:
-            result = _calculate_refinement_scores(
+            result = await _calculate_refinement_scores(
                 output.get("themes", []),
                 expected_output.get("themes", []),
                 llm,

@@ -10,4 +10,5 @@ build:
 	mkdir -p -- ${BUILD_DIR} ${PACKAGES_DIR}/python
 	uv pip install -r code/requirements.txt --target code/package
 	cp code/main.py ${BUILD_DIR}/
+	cp ../shared/otel_bootstrap.py ${BUILD_DIR}/
 	cp -r code/package/* ${PACKAGES_DIR}/python/

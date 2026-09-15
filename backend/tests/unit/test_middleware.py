@@ -17,7 +17,9 @@ def _make_middleware(captured=None):
         if captured is not None:
             captured["context_id"] = structlog.contextvars.get_contextvars().get("context_id")
             captured["path"] = structlog.contextvars.get_contextvars().get("path")
-            captured["execution_context"] = structlog.contextvars.get_contextvars().get("execution_context")
+            captured["execution_context"] = structlog.contextvars.get_contextvars().get(
+                "execution_context"
+            )
         return HttpResponse(status=200)
 
     return RequestCorrelationMiddleware(view)
@@ -38,7 +40,9 @@ def test_reuses_inbound_context_id(request_factory):
     middleware = _make_middleware(captured)
     inbound = "inbound-correlation-id"
 
-    response = middleware(request_factory.get("/api/consultations/", headers={"x-context-id": inbound}))
+    response = middleware(
+        request_factory.get("/api/consultations/", headers={"x-context-id": inbound})
+    )
 
     assert captured["context_id"] == inbound
     assert response[CONTEXT_ID_HEADER] == inbound

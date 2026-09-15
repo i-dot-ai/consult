@@ -6,7 +6,8 @@ from i_dot_ai_utilities.logging.types.enrichment_types import ExecutionEnvironme
 from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 
 
-def bootstrap_logger() -> StructuredLogger:
+def bootstrap_logger(service_name: str | None = None) -> StructuredLogger:
+    """Build the StructuredLogger. Pass service_name to also bootstrap OTel; omit it to skip OTel."""
     # The Fargate enricher reads ECS_CONTAINER_METADATA_URI_V4, which only exists on Fargate.
     _execution_environment = (
         ExecutionEnvironmentType.FARGATE
@@ -40,5 +41,12 @@ def bootstrap_logger() -> StructuredLogger:
             environment=os.environ.get("ENVIRONMENT", "unknown"),
             traces_sample_rate=1.0,
         )
+
+    # Configure OTel after the logger exists so the trace-context processor can
+    # be re-inserted into the structlog config the logger just set up.
+    if service_name:
+        from pipeline_common.otel import bootstrap_otel
+
+        bootstrap_otel(service_name, logger)
 
     return logger

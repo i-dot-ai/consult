@@ -30,6 +30,7 @@ exports[`FindThemesForm > should match snapshot initially 1`] = `
       >
         <option
           class="bg-white text-neutral-900"
+          data-testid="consultation_id-option"
           selected=""
           value="folder1"
         >

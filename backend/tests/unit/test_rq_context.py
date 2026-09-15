@@ -66,11 +66,11 @@ class TestRebindContext:
 
 class TestRQContextJob:
     """rq_context.job auto-fills context_id at enqueue time and rebinds it at execution time;
-       ASYNC=False in tests runs .delay()/.enqueue() through the real path."""
+    ASYNC=False in tests runs .delay()/.enqueue() through the real path."""
 
     def test_ambient_context_id_survives_a_real_delay_round_trip(self):
         """Proves context_id survives the full enqueue -> execution round trip;
-           the job.kwargs check rules out a same-process leak masquerading as propagation."""
+        the job.kwargs check rules out a same-process leak masquerading as propagation."""
         rebind_context("ambient-real-id")
 
         job = probe_job.delay(42)

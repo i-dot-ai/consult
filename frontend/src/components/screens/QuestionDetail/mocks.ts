@@ -193,6 +193,20 @@ const themes = [
       "A test framework that benefits both consumers and manufacturers.",
     count: 45,
   },
+  {
+    id: "some-unmatched-theme",
+    name: "Some Unmatched Theme",
+    description:
+      "A test framework that benefits both consumers and manufacturers.",
+    count: 0,
+  },
+  {
+    id: "another-unmatched-theme",
+    name: "Another Unmatched Theme",
+    description:
+      "A test framework that benefits both consumers and manufacturers.",
+    count: 0,
+  },
 ];
 
 const filterAnswers = (responses: ResponseBody[], params: QueryParams) => {
