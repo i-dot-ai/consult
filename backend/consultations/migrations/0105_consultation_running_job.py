@@ -6,15 +6,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies: ClassVar[list] = [
-        ('consultations', '0104_alter_consultation_stage'),
+        ("consultations", "0104_alter_consultation_stage"),
     ]
 
     operations: ClassVar[list] = [
         migrations.AddField(
-            model_name='consultation',
-            name='running_job',
-            field=models.CharField(choices=[('find-themes', 'Find Themes'), ('assign-themes', 'Assign Themes')], default=None, max_length=16, null=True),
+            model_name="consultation",
+            name="running_job",
+            field=models.CharField(
+                choices=[("find-themes", "Find Themes"), ("assign-themes", "Assign Themes")],
+                default=None,
+                max_length=16,
+                null=True,
+            ),
         ),
     ]

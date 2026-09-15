@@ -15,6 +15,7 @@ logger = settings.LOGGER
 def _client_error(code: str) -> ClientError:
     return ClientError({"Error": {"Code": code, "Message": code}}, "GetObject")
 
+
 class TestLoadRespondentsFromS3:
     @patch("data_pipeline.sync.consultation_setup.s3.read_jsonl")
     def test_raises_value_error_when_file_missing(self, mock_read_jsonl):
