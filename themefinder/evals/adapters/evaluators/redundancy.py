@@ -27,6 +27,8 @@ class RedundancyEvaluator(EvaluatorPort):
     metric_names = ("redundancy",)
 
     def __init__(self, threshold: float = 0.85):
+        """Store the cosine-similarity threshold at or above which a title pair
+        counts as redundant."""
         self.threshold = threshold
 
     def _calculate_redundancy_score(self, themes: list[dict] | dict) -> dict[str, Any]:
@@ -88,6 +90,10 @@ class RedundancyEvaluator(EvaluatorPort):
         }
 
     async def _score(self, case: Case, output: Any) -> list[Score]:
+        """The concrete scoring behind `EvaluatorPort.evaluate()`: score the
+        redundancy of `output["themes"]` as the fraction of title pairs whose
+        similarity exceeds `self.threshold`, listing the flagged pairs in the
+        comment. Ignores `case`."""
         result = self._calculate_redundancy_score(output.get("themes", []))
 
         comment = f"{result['n_redundant_pairs']}/{result['n_total_pairs']} pairs above threshold"

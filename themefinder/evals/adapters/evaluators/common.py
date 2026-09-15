@@ -1,4 +1,5 @@
-"""Shared LLM-judge machinery: `LLMJudgeEvaluator` and `ThemeComparisonJudgeEvaluator`.
+"""Shared LLM-judge machinery: `LLMJudgeEvaluator`, `ThemeComparisonJudgeEvaluator`
+and `DecisionScoredComparisonJudge`.
 
 Moved from `evaluators.py` (behaviour-preserving, not byte-identical — the
 old factory closures and module-level helper functions become methods on
@@ -6,17 +7,10 @@ this class hierarchy). The five LLM-judge `EvaluatorPort` subclasses live in
 their own sibling files: groundedness.py, coverage.py, title_specificity.py,
 condensation_quality.py, refinement_quality.py.
 
-`LLMJudgeEvaluator._score()` is one shared template for all five judges:
-build a prompt (`_build_prompt`, subclass hook — may return None to skip the
-LLM call entirely when there's nothing to evaluate), invoke the judge,
-*always* parse the raw response via `_parse_json_markdown`, then either run
-the STRONG/PARTIAL/NO ternary post-processing (`_decision_score`/
-`_build_comment`, only when `decision_scored` is True) or hand the parsed
-dict to the subclass's own `_build_scores` hook. `shuffle` is a second
-opt-in class property, read by whichever subclass's `_build_prompt` wants it
-(today, only `ThemeComparisonJudgeEvaluator`'s). The error boundary around
-all of this — catch, log, zero-score fallback — lives on `EvaluatorPort.evaluate()`,
-not here.
+`LLMJudgeEvaluator._score()` is the shared template every judge runs through;
+`_build_scores` is the single scoring hook each judge implements for its own
+response shape. The error boundary — catch, log, zero-score fallback — lives
+on `EvaluatorPort.evaluate()`, not here.
 """
 
 import json
@@ -40,46 +34,20 @@ from .base import EvaluatorPort
 
 logger = logging.getLogger(__name__)
 
-# Minimum score (0-5) to consider a topic well-grounded or captured
-GROUNDEDNESS_THRESHOLD = 3
-
-# Score mapping from ternary decisions to numeric values (0-5 scale)
-DECISION_SCORES = {
-    "STRONG": 5,
-    "PARTIAL": 3,
-    "NO": 0,
-}
-
 
 class LLMJudgeEvaluator(EvaluatorPort):
-    """Base for the five LLM-as-judge evaluators — carries the judge LLM,
-    the shared retry/parsing plumbing, and the one `_score()` template
-    every one of them runs through.
-
-    Subclasses set:
-    - `prompt_fn`: the prompts.py builder function, as `staticmethod(...)`.
-    - `metric_names`: tuple of Score names this evaluator produces — a
-      1-tuple for single-metric evaluators, used both for the decision-scored
-      path's one Score and for `EvaluatorPort.evaluate()`'s error-path
-      zero-score fallback list.
-    - `shuffle` (default False): whether `_build_prompt` should shuffle its
-      theme-list inputs before prompting.
-    - `decision_scored` (default False): whether `_score()` should run the
-      STRONG/PARTIAL/NO ternary post-processing on the parsed response
-      (`_decision_score`/`_build_comment`) instead of calling the subclass's
-      own `_build_scores`.
-
-    And implement:
-    - `_build_prompt(case, output) -> str | None`: build the judge prompt, or
-      return None to skip the LLM call entirely (nothing to evaluate).
-    - `_build_scores(parsed) -> list[Score]`: only called when
-      `decision_scored` is False — turn the parsed response into Scores.
+    """Base for the LLM-as-judge evaluators: carries the judge LLM, the shared
+    retry/parsing plumbing, and the `_score()` template. Subclasses set a
+    `prompt_fn` and `metric_names`, and implement `_build_prompt` (build the
+    judge prompt, or return None to skip the call) and `_build_scores` (turn
+    the parsed response into Scores).
     """
 
     shuffle: bool = False
-    decision_scored: bool = False
 
     def __init__(self, llm: Any):
+        """Store the injected judge LLM — any object exposing an async
+        `ainvoke(prompt)` that returns a response with a `.parsed` string."""
         self.llm = llm
 
     @retry(
@@ -97,14 +65,6 @@ class LLMJudgeEvaluator(EvaluatorPort):
     )
     async def invoke_with_retry(self, prompt: str) -> Any:
         """Call self.llm.ainvoke(), retrying on transient connection errors.
-
-        OpenAILLM.invoke()'s sync wrapper spins up a fresh event loop per call
-        while reusing a single shared AsyncOpenAI client - the client's
-        connection pool is bound to whichever loop first touched it, so reusing
-        it from a different loop occasionally raises a spurious
-        APIConnectionError. Calling ainvoke() directly (we're always inside a
-        running loop here) avoids that entirely; the retry is a backstop for
-        ordinary transient network issues, same as llm_batch_processor.py.
 
         Only retries connection errors, rate limits, and server-side 5xxs -
         APIConnectionError's own subclass APITimeoutError is covered too.
@@ -143,11 +103,122 @@ class LLMJudgeEvaluator(EvaluatorPort):
 
         return themes
 
-    def _decision_score(self, parsed: dict) -> dict[str, Any]:
-        """Post-process an already-parsed STRONG/PARTIAL/NO ternary-decision response.
+    def _build_prompt(self, case: Case, output: Any) -> str | None:
+        """Build the judge prompt, or None to skip the LLM call entirely
+        (nothing to evaluate). Every subclass implements this."""
+        raise NotImplementedError
 
-        Only called by `_score()` when `decision_scored = True`. Extracts
-        per-topic evaluations and maps decisions to numeric scores.
+    def _build_scores(self, parsed: dict) -> list[Score]:
+        """Turn the parsed judge response into Scores — the single scoring
+        hook `_score()` always calls. Every leaf evaluator implements this
+        (directly, or via one of the bases below)."""
+        raise NotImplementedError
+
+    async def _score(self, case: Case, output: Any) -> list[Score]:
+        """The judge's main scoring routine — the concrete work behind
+        `EvaluatorPort.evaluate()`, run inside that method's shared error
+        boundary. One template shared by all five judges: build the prompt
+        (`_build_prompt`, which may return None to skip the LLM call when
+        there's nothing to score), invoke the judge with retries, parse the
+        raw response, then delegate to `_build_scores` — the single scoring
+        hook each judge implements for its own response shape.
+        """
+        prompt = self._build_prompt(case, output)
+        if prompt is not None:
+            response = await self.invoke_with_retry(prompt)
+            parsed = self._parse_json_markdown(response.parsed)
+        else:
+            parsed: dict = {}
+
+        return self._build_scores(parsed)
+
+
+class ThemeComparisonJudgeEvaluator(LLMJudgeEvaluator):
+    """Base for judges that compare two theme lists in one LLM call. Retrieves
+    the case-side themes from the `Case` field named by `ground_truth_attr`
+    (`"expected_output"` by default) and the output-side from
+    `output["themes"]`, orders the pair via `_topic_order`, and passes them to
+    `prompt_fn` under the names in `first_kwarg`/`second_kwarg`. Scores the
+    parsed response by extracting one named numeric key per metric.
+    """
+
+    first_kwarg: str = "topic_list_1"
+    second_kwarg: str = "topic_list_2"
+
+    #: Name of the `Case` field holding this evaluator's case-side
+    #: (ground-truth / pre-transform) themes.
+    ground_truth_attr: str = "expected_output"
+
+    def _topic_order(self, case_themes: Any, output_themes: Any) -> tuple[Any, Any]:
+        """Order the two retrieved theme lists into (topic_list_1,
+        topic_list_2). Defaults to case-side first, output-side second;
+        subclasses may override to swap without touching retrieval."""
+        return case_themes, output_themes
+
+    def _build_prompt(self, case: Case, output: Any) -> str:
+        """Retrieve the two theme lists — case-side from the `ground_truth_attr`
+        field, output-side from `output["themes"]` — order them via
+        `_topic_order`, optionally shuffle, and pass them to `prompt_fn` under
+        its two keyword-argument names."""
+        case_side = getattr(case, self.ground_truth_attr) or {}
+        case_themes = case_side.get("themes", [])
+        output_themes = output.get("themes", [])
+        topic_list_1, topic_list_2 = self._topic_order(case_themes, output_themes)
+        if self.shuffle:
+            topic_list_1 = self._shuffle_themes(topic_list_1)
+            topic_list_2 = self._shuffle_themes(topic_list_2)
+        return self.prompt_fn(
+            **{self.first_kwarg: topic_list_1, self.second_kwarg: topic_list_2}
+        )
+
+    def _build_scores(self, parsed: dict) -> list[Score]:
+        """Extract one Score per name in `metric_names` directly from the
+        parsed response, reading each metric's numeric value and its
+        `{metric}_reasoning` comment."""
+        return [
+            Score(
+                metric,
+                round(float(parsed.get(metric, 0)), 2),
+                parsed.get(f"{metric}_reasoning", ""),
+            )
+            for metric in self.metric_names
+        ]
+
+
+# Minimum score (0-5) to consider a topic well-grounded or captured, for the
+# decision-scored judges below.
+GROUNDEDNESS_THRESHOLD = 3
+
+# Score mapping from ternary decisions to numeric values (0-5 scale).
+DECISION_SCORES = {
+    "STRONG": 5,
+    "PARTIAL": 3,
+    "NO": 0,
+}
+
+
+class DecisionScoredComparisonJudge(ThemeComparisonJudgeEvaluator):
+    """Theme-comparison judge whose prompt asks for a per-theme
+    STRONG/PARTIAL/NO decision rather than named numeric scores. Maps those
+    decisions to 0-5, averages them into a single metric, and builds an
+    enriched comment; subclasses set `threshold_label` for the comment summary.
+    """
+
+    #: Phrase used in the comment summary, e.g. "themes below threshold".
+    threshold_label: str = ""
+
+    def _build_scores(self, parsed: dict) -> list[Score]:
+        """Map the parsed per-theme STRONG/PARTIAL/NO decisions to a single
+        averaged 0-5 metric with an enriched comment — overriding the
+        numeric-key extraction inherited from `ThemeComparisonJudgeEvaluator`."""
+        result = self._decision_score(parsed)
+        metric_name = self.metric_names[0]
+        comment = self._build_comment(result)
+        return [Score(metric_name, round(result["average"], 2), comment)]
+
+    def _decision_score(self, parsed: dict) -> dict[str, Any]:
+        """Turn a parsed STRONG/PARTIAL/NO ternary-decision response into
+        numeric scores plus per-topic details.
 
         Args:
             parsed: The judge's response, already run through `_parse_json_markdown`.
@@ -193,25 +264,14 @@ class LLMJudgeEvaluator(EvaluatorPort):
             "details": details,
         }
 
-    @staticmethod
-    def _build_comment(result: dict[str, Any], metric_name: str) -> str:
-        """Build an enriched comment string from decision-scored evaluation details.
-
-        Only called by `_score()` when `decision_scored = True`.
-
-        Args:
-            result: Parsed evaluation result from _decision_score.
-            metric_name: Either "groundedness" or "coverage".
-
-        Returns:
-            Comment string with threshold summary and per-theme decisions.
-        """
-        threshold_label = (
-            "themes below threshold"
-            if metric_name == "groundedness"
-            else "themes not captured"
+    def _build_comment(self, result: dict[str, Any]) -> str:
+        """Build an enriched comment from decision-scored evaluation details:
+        a `n_below_threshold/n_total {threshold_label}` summary, then one line
+        per theme — unless the response was in the legacy numeric format, which
+        carries no per-theme decisions and so gets the summary alone."""
+        summary = (
+            f"{result['n_below_threshold']}/{result['n_total']} {self.threshold_label}"
         )
-        summary = f"{result['n_below_threshold']}/{result['n_total']} {threshold_label}"
 
         details = result.get("details", [])
         if not details or details[0].get("decision") == "LEGACY":
@@ -231,102 +291,3 @@ class LLMJudgeEvaluator(EvaluatorPort):
                 )
 
         return f"{summary}\n" + "\n".join(decision_parts)
-
-    def _build_prompt(self, case: Case, output: Any) -> str | None:
-        """Build the judge prompt, or None to skip the LLM call entirely
-        (nothing to evaluate). Every subclass implements this."""
-        raise NotImplementedError
-
-    def _build_scores(self, parsed: dict) -> list[Score]:
-        """Turn the parsed response into Scores. Only called when
-        `decision_scored` is False — decision-scored evaluators use
-        `_decision_score`/`_build_comment` instead."""
-        raise NotImplementedError
-
-    async def _score(self, case: Case, output: Any) -> list[Score]:
-        prompt = self._build_prompt(case, output)
-        if prompt is None:
-            parsed: dict = {}
-        else:
-            response = await self.invoke_with_retry(prompt)
-            parsed = self._parse_json_markdown(response.parsed)
-
-        if self.decision_scored:
-            result = self._decision_score(parsed)
-            metric_name = self.metric_names[0]
-            comment = self._build_comment(result, metric_name)
-            return [Score(metric_name, round(result["average"], 2), comment)]
-
-        return self._build_scores(parsed)
-
-
-class ThemeComparisonJudgeEvaluator(LLMJudgeEvaluator):
-    """Base for any evaluator whose judge prompt compares two theme lists in
-    one LLM call: groundedness/coverage (via `generation_eval_prompt`,
-    ternary decision-scored) and condensation/refinement quality (via their
-    own prompts, direct multi-key numeric extraction). Retrieval is fully
-    shared here: case-side themes always come from `getattr(case,
-    ground_truth_attr)["themes"]` — `ground_truth_attr` names which `Case`
-    field that is, `"expected_output"` by default (groundedness/coverage,
-    which have real ground truth); condensation/refinement override it to
-    `"inputs"`, since they have no ground truth to compare against, only a
-    before/after pair (see those files' docstrings) — and output-side is
-    always `output["themes"]`. No subclass implements retrieval itself.
-    `_topic_order` is the only thing that varies: it defaults to
-    (case-side, output-side) — matches CoverageEvaluator and
-    condensation/refinement — and only GroundednessEvaluator overrides it,
-    to swap the order instead (same two theme lists as CoverageEvaluator,
-    just scored in the reverse direction). Subclasses also set `prompt_fn`
-    plus `first_kwarg`/`second_kwarg` naming the two keyword arguments that
-    particular prompt function expects (default `"topic_list_1"`/
-    `"topic_list_2"`, matching `generation_eval_prompt`; condensation/
-    refinement override these to their own prompts' argument names).
-    `shuffle`/`decision_scored` default to `LLMJudgeEvaluator`'s `False`
-    here too — groundedness/coverage turn both on, condensation/refinement
-    turn neither on (no shuffling today, and they extract named numeric
-    keys directly rather than ternary-scoring, via this class's shared
-    `_build_scores` below).
-    """
-
-    first_kwarg: str = "topic_list_1"
-    second_kwarg: str = "topic_list_2"
-
-    #: Name of the `Case` field holding this evaluator's case-side
-    #: (ground-truth / pre-transform) themes.
-    ground_truth_attr: str = "expected_output"
-
-    def _topic_order(self, case_themes: Any, output_themes: Any) -> tuple[Any, Any]:
-        """Order the two retrieved theme lists into (topic_list_1,
-        topic_list_2). Default keeps case-side first, output-side second —
-        matches CoverageEvaluator and condensation/refinement.
-        GroundednessEvaluator overrides this to swap the order instead of
-        touching retrieval."""
-        return case_themes, output_themes
-
-    def _build_prompt(self, case: Case, output: Any) -> str:
-        case_side = getattr(case, self.ground_truth_attr) or {}
-        case_themes = case_side.get("themes", [])
-        output_themes = output.get("themes", [])
-        topic_list_1, topic_list_2 = self._topic_order(case_themes, output_themes)
-        if self.shuffle:
-            topic_list_1 = self._shuffle_themes(topic_list_1)
-            topic_list_2 = self._shuffle_themes(topic_list_2)
-        return self.prompt_fn(
-            **{self.first_kwarg: topic_list_1, self.second_kwarg: topic_list_2}
-        )
-
-    def _build_scores(self, parsed: dict) -> list[Score]:
-        """Default for the non-decision-scored subclasses (condensation,
-        refinement): extract one Score per name in `metric_names` directly
-        from the parsed response, whose judge prompts return named numeric
-        keys plus a `{metric}_reasoning` string rather than a ternary
-        per-topic decision. Both current subclasses share this verbatim, so
-        it lives here instead of being copy-pasted onto each."""
-        return [
-            Score(
-                metric,
-                round(float(parsed.get(metric, 0)), 2),
-                parsed.get(f"{metric}_reasoning", ""),
-            )
-            for metric in self.metric_names
-        ]

@@ -15,14 +15,16 @@ from typing import Any
 
 from prompts import generation_eval_prompt
 
-from .common import ThemeComparisonJudgeEvaluator
+from .common import DecisionScoredComparisonJudge
 
 
-class GroundednessEvaluator(ThemeComparisonJudgeEvaluator):
+class GroundednessEvaluator(DecisionScoredComparisonJudge):
     prompt_fn = staticmethod(generation_eval_prompt)
     metric_names = ("groundedness",)
+    threshold_label = "themes below threshold"
     shuffle = True
-    decision_scored = True
 
     def _topic_order(self, case_themes: Any, output_themes: Any) -> tuple[Any, Any]:
+        """Swap the default order: groundedness scores generated (output)
+        themes against expected (case) themes, so output goes first."""
         return output_themes, case_themes

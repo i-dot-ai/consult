@@ -18,6 +18,8 @@ class TitleSpecificityEvaluator(LLMJudgeEvaluator):
     metric_names = ("specificity",)
 
     def _build_prompt(self, case: Case, output: Any) -> str | None:
+        """Build the specificity prompt from `output["themes"]`'s titles, or
+        None to skip the LLM call when there are no titles. Ignores `case`."""
         titles = self.extract_theme_titles(output.get("themes", []))
 
         if not titles:
@@ -29,6 +31,9 @@ class TitleSpecificityEvaluator(LLMJudgeEvaluator):
         return self.prompt_fn(theme_titles=titles)
 
     def _build_scores(self, parsed: dict) -> list[Score]:
+        """Count how many titles the judge marked SPECIFIC (vs VAGUE) and
+        return that fraction as the specificity score, listing any vague
+        titles in the comment."""
         evaluations = parsed.get("evaluations", parsed)
 
         n_specific = 0

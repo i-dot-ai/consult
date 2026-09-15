@@ -13,6 +13,10 @@ class MappingF1Evaluator(EvaluatorPort):
     metric_names = ("f1_score",)
 
     async def _score(self, case: Case, output: Any) -> list[Score]:
+        """The concrete scoring behind `EvaluatorPort.evaluate()`: multi-label
+        samples-averaged F1 of the predicted `output["labels"]` against the
+        expected `case.expected_output["mappings"]`, keyed by response id.
+        Returns a zero score when the case has no expected mappings."""
         output_labels = output.get("labels", {})
         expected_mappings = (case.expected_output or {}).get("mappings", {})
 

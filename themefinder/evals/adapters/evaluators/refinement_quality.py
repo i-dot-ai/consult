@@ -5,8 +5,9 @@ pre-refinement themes) — not `case.expected_output`, for the same reason as
 CondensationQualityEvaluator: refinement has no ground truth to compare
 against, only a before/after pair. Also a two-theme-list comparison, so it
 inherits `ThemeComparisonJudgeEvaluator` the same way condensation does:
-`shuffle`/`decision_scored` stay `False`, extracting four named numeric keys
-directly via `ThemeComparisonJudgeEvaluator`'s shared `_build_scores`.
+`shuffle` stays `False`, and it extracts four named numeric keys directly via
+`ThemeComparisonJudgeEvaluator`'s shared `_build_scores` (rather than going via
+`DecisionScoredComparisonJudge` as groundedness/coverage do).
 
 NOTE: this one LLM call scores four metrics (information_retention,
 response_references, distinctiveness, fluency) together, same as today's

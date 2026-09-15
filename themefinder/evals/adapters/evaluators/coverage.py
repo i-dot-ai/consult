@@ -7,11 +7,11 @@ single-metric evaluators while condensation/refinement don't).
 
 from prompts import generation_eval_prompt
 
-from .common import ThemeComparisonJudgeEvaluator
+from .common import DecisionScoredComparisonJudge
 
 
-class CoverageEvaluator(ThemeComparisonJudgeEvaluator):
+class CoverageEvaluator(DecisionScoredComparisonJudge):
     prompt_fn = staticmethod(generation_eval_prompt)
     metric_names = ("coverage",)
+    threshold_label = "themes not captured"
     shuffle = True
-    decision_scored = True

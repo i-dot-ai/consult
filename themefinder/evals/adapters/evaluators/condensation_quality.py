@@ -6,9 +6,10 @@ pre-condensation themes) — not `case.expected_output`, which is `None` for
 condensation cases (no ground truth; see `datasets.py::load_local_condensation_data`).
 This is a two-theme-list comparison like groundedness/coverage, so it
 inherits `ThemeComparisonJudgeEvaluator`'s prompt-building — but doesn't
-shuffle (`shuffle` stays `False`) and isn't ternary decision-scored
-(`decision_scored` stays `False`): it extracts two named numeric keys
-directly via `ThemeComparisonJudgeEvaluator`'s shared `_build_scores`.
+shuffle (`shuffle` stays `False`) and isn't ternary decision-scored: it
+extracts two named numeric keys directly via
+`ThemeComparisonJudgeEvaluator`'s shared `_build_scores` (rather than going
+via `DecisionScoredComparisonJudge` as groundedness/coverage do).
 
 NOTE: this one LLM call scores two metrics (compression_quality,
 information_retention) together, same as today's evaluators.py — one combined
