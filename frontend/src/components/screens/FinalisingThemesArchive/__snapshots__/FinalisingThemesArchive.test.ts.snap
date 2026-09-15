@@ -872,6 +872,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
           Unexpected onboarding tour error
           <!---->
         </div>
+        <!---->
       </div>
       <!---->
     </div>
@@ -1088,6 +1089,7 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
           Unexpected onboarding tour error
           <!---->
         </div>
+        <!---->
       </div>
       <!---->
     </div>

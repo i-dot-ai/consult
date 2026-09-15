@@ -9,7 +9,7 @@
   import Button from "../../inputs/Button/Button.svelte";
   import QuestionCard from "../../dashboard/QuestionCard/QuestionCard.svelte";
   import Panel from "../../dashboard/Panel/Panel.svelte";
-  import Alert from "../../Alert.svelte";
+  import Alert from "../../Alert/Alert.svelte";
   import KeyboardArrowDown from "../../svg/material/KeyboardArrowDown.svelte";
   import Lan from "../../svg/material/Lan.svelte";
   import FilterAlt from "../../svg/material/FilterAlt.svelte";

@@ -37,7 +37,7 @@
   import Stacks from "../../svg/material/Stacks.svelte";
   import Tag from "../../Tag/Tag.svelte";
   import Modal from "../../Modal/Modal.svelte";
-  import Alert from "../../Alert.svelte";
+  import Alert from "../../Alert/Alert.svelte";
   import Target from "../../svg/material/Target.svelte";
   import EditSquare from "../../svg/material/EditSquare.svelte";
   import ErrorModal, {

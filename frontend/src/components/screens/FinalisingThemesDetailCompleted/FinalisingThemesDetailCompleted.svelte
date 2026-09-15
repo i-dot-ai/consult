@@ -23,7 +23,7 @@
   import Headphones from "../../svg/material/Headphones.svelte";
   import Help from "../../svg/material/Help.svelte";
   import ArrowForward from "../../svg/material/ArrowForward.svelte";
-  import Alert from "../../Alert.svelte";
+  import Alert from "../../Alert/Alert.svelte";
 
   interface Props {
     questionId: string;

@@ -118,7 +118,7 @@
     {name}
     value={typeof value === "string"
       ? value
-      : items.find(item => item.value === value)!.label
+      : items.find(item => item.value === value)?.label
     }
     {disabled}
     {required}

@@ -19,7 +19,7 @@
   } from "../../../global/types.ts";
   import Tag from "../../Tag/Tag.svelte";
   import Modal from "../../Modal/Modal.svelte";
-  import Alert from "../../Alert.svelte";
+  import Alert from "../../Alert/Alert.svelte";
   import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
   import OnboardingTour from "../../OnboardingTour/OnboardingTour.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";

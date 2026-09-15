@@ -520,6 +520,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
           Unexpected onboarding tour error
           <!---->
         </div>
+        <!---->
       </div>
       <!---->
     </div>
@@ -922,6 +923,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
           Unexpected onboarding tour error
           <!---->
         </div>
+        <!---->
       </div>
       <!---->
     </div>
