@@ -23,8 +23,22 @@ on:
         default: 'generation'
 
 jobs:
+  themefinder-eval-start-runner:
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@main
+    permissions: write-all
+    with:
+      EC2_INSTANCE_TYPE: t3.medium
+      ENVIRONMENT: prod
+    secrets:
+      AWS_GITHUBRUNNER_USER_ACCESS_KEY: ${{ secrets.AWS_GITHUBRUNNER_USER_ACCESS_KEY }}
+      AWS_GITHUBRUNNER_USER_SECRET_ID: ${{ secrets.AWS_GITHUBRUNNER_USER_SECRET_ID }}
+      AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
   themefinder-eval:
-    runs-on: ubuntu-latest
+    needs: themefinder-eval-start-runner
+    runs-on: ${{ needs.themefinder-eval-start-runner.outputs.label }}
     timeout-minutes: 60
 
     steps:
@@ -39,7 +53,7 @@ jobs:
         uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d  # v10.0.1
 
       - name: Install dependencies
-        run: uv sync --package themefinder --extra dev
+        run: uv sync --package themefinder --extra dev --extra eval
 
       - name: Get version info
         id: version
@@ -53,7 +67,7 @@ jobs:
         env:
           LLM_GATEWAY_URL: ${{ secrets.LLM_GATEWAY_URL }}
           CONSULT_EVAL_LITELLM_API_KEY: ${{ secrets.CONSULT_EVAL_LITELLM_API_KEY }}
-          AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT: ${{ secrets.AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT }}
+          AUTO_EVAL_MODEL: ${{ secrets.AUTO_EVAL_MODEL }}
           LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
           LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
           LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
@@ -133,3 +147,18 @@ jobs:
                 }
               ]
             }
+
+  themefinder-eval-stop-runner:
+    needs: [themefinder-eval-start-runner, themefinder-eval]
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@main
+    if: needs.themefinder-eval-start-runner.outputs.use-persisted == 0 && always()
+    permissions: write-all
+    with:
+      RUNNER_LABEL: ${{ needs.themefinder-eval-start-runner.outputs.label }}
+      EC2_INSTANCE_ID: ${{ needs.themefinder-eval-start-runner.outputs.ec2-instance-id }}
+    secrets:
+      AWS_GITHUBRUNNER_USER_ACCESS_KEY: ${{ secrets.AWS_GITHUBRUNNER_USER_ACCESS_KEY }}
+      AWS_GITHUBRUNNER_USER_SECRET_ID: ${{ secrets.AWS_GITHUBRUNNER_USER_SECRET_ID }}
+      AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

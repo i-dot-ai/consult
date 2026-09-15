@@ -101,7 +101,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
                 <span
                   class="whitespace-nowrap"
                 >
-                  Representative Responses
+                  Sample Answers
                 </span>
               </div>
               

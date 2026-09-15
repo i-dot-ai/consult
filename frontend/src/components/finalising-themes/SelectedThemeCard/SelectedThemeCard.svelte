@@ -1,15 +1,7 @@
 <script lang="ts">
-  import clsx from "clsx";
+  import { fade } from "svelte/transition";
 
-  import { untrack } from "svelte";
-  import { fade, fly } from "svelte/transition";
-
-  import type {
-    ResponsesBody,
-    ResponseBody,
-    SelectedTheme,
-  } from "../../../global/types";
-  import { createFetchStore, type MockFetch } from "../../../global/stores";
+  import type { SelectedTheme } from "../../../global/types";
   import {
     formatTimeDeltaText,
     getTimeDeltaInMinutes,
@@ -21,38 +13,21 @@
   import Delete from "../../svg/material/Delete.svelte";
   import EditSquare from "../../svg/material/EditSquare.svelte";
   import ThemeForm from "../ThemeForm/ThemeForm.svelte";
-  import ResponsesList from "../ResponsesList/ResponsesList.svelte";
   import Tag from "../../Tag/Tag.svelte";
 
   export interface Props {
-    consultationId: string;
-    questionId: string;
     theme: SelectedTheme;
     removeTheme: (themeId: string) => void;
     updateTheme: (themeId: string, title: string, description: string) => void;
-    maxResponses?: number;
-    responsesMock?: MockFetch<ResponsesBody>;
   }
 
   let {
     theme,
     removeTheme = () => {},
     updateTheme = () => {},
-    maxResponses = 50,
-    responsesMock,
   }: Props = $props();
 
-  const responsesStore = createFetchStore<ResponsesBody>({
-    mockFetch: untrack(() => responsesMock),
-  });
-
-  let showAnswers = $state(false);
   let editing = $state(false);
-
-  const resetAnswers = () => {
-    $responsesStore.data = null;
-    showAnswers = false;
-  };
 </script>
 
 <article
@@ -69,7 +44,6 @@
         handleCancel={() => (editing = false)}
         handleConfirm={(title, description) => {
           updateTheme(theme.id, title, description);
-          resetAnswers();
           editing = false;
         }}
       />
@@ -78,7 +52,7 @@
     <div in:fade>
       <Panel>
         <div class="flex flex-wrap sm:flex-nowrap">
-          <div class={clsx([showAnswers ? "md:w-1/3" : "md:w-auto"])}>
+          <div class="md:w-auto">
             <header class="flex items-center gap-2">
               <h2>{theme.name}</h2>
 
@@ -118,54 +92,8 @@
                 </MaterialIcon>
                 Remove
               </Button>
-
-              <!-- 
-              TODO: Remove all relevant representative responses code
-              <Button
-                size="sm"
-                handleClick={() => {
-                  if (!$answersStore.data) {
-                    const queryString = new URLSearchParams({
-                      searchMode: "representative",
-                      searchValue: `${theme.name} ${theme.description}`,
-                      question_id: questionId,
-                    }).toString();
-
-                    $answersStore.fetch(
-                      `${getApiAnswersUrl(consultationId)}?${queryString}`,
-                    );
-                  }
-                  showAnswers = !showAnswers;
-                }}
-                disabled={$answersStore.isLoading}
-              >
-                <MaterialIcon color="fill-neutral-500">
-                  <Docs />
-                </MaterialIcon>
-                <span class="block w-full text-start">
-                  Representative Responses
-                </span>
-              </Button>
-              -->
             </footer>
           </div>
-
-          {#if showAnswers}
-            <aside
-              transition:fly={{ x: 300 }}
-              class="grow pt-4 sm:ml-4 sm:w-2/3 sm:border-l sm:border-neutral-200 sm:pl-4 sm:pt-0"
-            >
-              <ResponsesList
-                title="Representative Responses"
-                loading={$responsesStore.isLoading}
-                responses={$responsesStore.data?.all_respondents
-                  ?.slice(0, maxResponses)
-                  .map(
-                    (response: ResponseBody) => response.free_text_answer_text,
-                  ) || []}
-              />
-            </aside>
-          {/if}
         </div>
       </Panel>
     </div>

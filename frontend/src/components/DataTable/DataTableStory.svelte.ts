@@ -5,7 +5,7 @@ const rows = $state(TEST_DATA.rows);
 const columns = $state(TEST_DATA.columns);
 const caption = $state(TEST_DATA.caption);
 const initialSort = $state(TEST_DATA.initialSort);
-const loading = $state(TEST_DATA.loading);
+const loadingCondition = $state(TEST_DATA.loadingCondition);
 const columnSelect = $state(TEST_DATA.columnSelect);
 const searchable = $state(TEST_DATA.searchable);
 const searchPlaceholder = $state(TEST_DATA.searchPlaceholder);
@@ -21,7 +21,7 @@ export default {
     { name: "columns", value: columns, type: "json" },
     { name: "caption", value: caption, type: "text" },
     { name: "initialSort", value: initialSort, type: "json" },
-    { name: "loading", value: loading, type: "bool" },
+    { name: "loadingCondition", value: loadingCondition, type: "bool" },
     { name: "onRowClick", value: TEST_DATA.onRowClick, type: "func" },
     { name: "columnSelect", value: columnSelect, type: "bool" },
     { name: "searchable", value: searchable, type: "bool" },

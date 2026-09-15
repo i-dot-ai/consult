@@ -148,29 +148,29 @@ test.describe("Support Console - Consultations", () => {
   });
 
   test("initially sorted by date", async ({ page }) => {
-    const sortByDateButton = page.getByRole("button", { name: "Created At" });
+    const sortByDateButton = page.getByRole("button", { name: "Date Created" });
     await expect(sortByDateButton).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByTestId("date-column")).toHaveAttribute("aria-sort", "descending");
+    await expect(page.getByTestId("header-createdAt")).toHaveAttribute("aria-sort", "descending");
   });
 
   test("toggles date sort state when date sort button is clicked", async ({ page }) => {
-    const sortByDateButton = page.getByRole("button", { name: "Created At" });
+    const sortByDateButton = page.getByRole("button", { name: "Date Created" });
 
     // Click once to unset sorting
     await sortByDateButton.click();
     await expect(sortByDateButton).toHaveAttribute("aria-pressed", "false");
-    await expect(page.getByTestId("date-column")).toHaveAttribute("aria-sort", "none");
+    await expect(page.getByTestId("header-createdAt")).toHaveAttribute("aria-sort", "none");
 
     // Click once more to apply ascending sorting
     await sortByDateButton.click();
     await expect(sortByDateButton).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByTestId("date-column")).toHaveAttribute("aria-sort", "ascending");
+    await expect(page.getByTestId("header-createdAt")).toHaveAttribute("aria-sort", "ascending");
   });
 
   test("initially does not sort by name", async ({ page }) => {
     const sortByNameButton = page.getByRole("button", { name: "Name" });
     await expect(sortByNameButton).toHaveAttribute("aria-pressed", "false");
-    await expect(page.getByTestId("name-column")).toHaveAttribute("aria-sort", "none");
+    await expect(page.getByTestId("header-name")).toHaveAttribute("aria-sort", "none");
   });
 
   test("toggles name sort state when name sort button is clicked", async ({ page }) => {
@@ -179,12 +179,12 @@ test.describe("Support Console - Consultations", () => {
     // Click once to apply sorting
     await sortByNameButton.click();
     await expect(sortByNameButton).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByTestId("name-column")).toHaveAttribute("aria-sort", "ascending");
+    await expect(page.getByTestId("header-name")).toHaveAttribute("aria-sort", "ascending");
 
     // Click once more to reverse sorting
     await sortByNameButton.click();
     await expect(sortByNameButton).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByTestId("name-column")).toHaveAttribute("aria-sort", "descending");
+    await expect(page.getByTestId("header-name")).toHaveAttribute("aria-sort", "descending");
   });
 
   test("consultations list shows creation dates", async ({ page }) => {

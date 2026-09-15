@@ -120,6 +120,7 @@ def import_response_annotations(
     run_date: str,
 ) -> None:
     """Import response annotations from S3 (assign-themes batch job output)."""
+    from consultations.models import Consultation
     from data_pipeline.sync.response_annotations import (
         import_response_annotations_from_s3,
     )
@@ -137,6 +138,17 @@ def import_response_annotations(
             run_date=run_date,
         )
         raise
+    finally:
+        try:
+            consultation = Consultation.objects.get(code=consultation_code)
+            consultation.running_job = None
+            consultation.save(update_fields=["running_job"])
+        except Exception:
+            logger.exception(
+                "Failed to update running_job value for consultation_code={consultation_code} "
+                "while importing response annotations",
+                consultation_code=consultation_code,
+            )
 
 
 @job("default", timeout=3600)

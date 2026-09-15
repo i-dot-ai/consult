@@ -33,7 +33,7 @@ export const COLUMNS = [
     label: "Date Created",
     sortable: true,
 
-    sortValue: (item: RowItem) => new Date(item.createdAt).getTime(),
+    sortValue: (item: RowItem) => new Date(item.createdAt),
   },
 ];
 
@@ -112,7 +112,7 @@ export const TEST_DATA = {
   caption: CAPTION,
   initialSort: INITIAL_SORT,
   pageSizes: PAGE_SIZES,
-  loading: LOADING,
+  loadingCondition: LOADING,
   columnSelect: COLUMN_SELECT,
   searchable: SEARCHABLE,
   searchPlaceholder: SEARCH_PLACEHOLDER,

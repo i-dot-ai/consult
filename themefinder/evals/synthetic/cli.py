@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import openai
-import utils_gateway
 from rich.box import DOUBLE, HEAVY, ROUNDED
 from rich.console import Console
 from rich.panel import Panel
@@ -22,6 +21,7 @@ from rich.prompt import Confirm, IntPrompt, Prompt
 from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
+from utils import gateway
 
 from synthetic.config import (
     DemographicField,
@@ -198,7 +198,7 @@ async def run_interactive_cli() -> GenerationConfig:
     console.clear()
     console.print(BANNER)
 
-    base_url, api_key = utils_gateway.gateway_credentials()
+    base_url, api_key = gateway.gateway_credentials()
     client = openai.AsyncOpenAI(
         base_url=base_url,
         api_key=api_key,

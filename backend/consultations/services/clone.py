@@ -141,6 +141,7 @@ def clone_consultation(original: Consultation) -> Consultation:
         title=f"{original.title} (Clone)",
         code="",
         stage=original.stage,
+        data_source=original.data_source,
     )
     cloned.users.set(original.users.all())
     consultation_map = {original.id: cloned.id}

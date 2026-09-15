@@ -41,7 +41,7 @@ exports[`ResponsesList > should render 1`] = `
   <p
     class="mt-2 text-sm text-neutral-500"
   >
-    Showing a sample of 2 out of a total of 2 responses.
+    Showing a sample of 2 out of a total of 2 answers.
   </p>
    
   <ol

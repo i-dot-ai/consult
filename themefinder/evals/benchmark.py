@@ -33,13 +33,17 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-import dotenv
 import nest_asyncio
 import pandas as pd
-import utils_gateway
+from eval_condensation import evaluate_condensation
+from eval_generation import evaluate_generation
+from eval_mapping import evaluate_mapping
+from eval_refinement import evaluate_refinement
 from rich.console import Console
 from rich.table import Table
+from settings import eval_settings
 from themefinder.llm import OpenAILLM
+from utils import gateway, langfuse
 
 # Allow nested asyncio.run() calls (needed by eval modules)
 nest_asyncio.apply()
@@ -47,9 +51,8 @@ nest_asyncio.apply()
 # Monkey-patch openai with langfuse-openai for automatic LLM call tracing.
 # Must happen before any OpenAILLM instances are created.
 try:
-    from langfuse.openai import openai as _langfuse_openai
-
     import openai
+    from langfuse.openai import openai as _langfuse_openai
 
     openai.OpenAI = _langfuse_openai.OpenAI
     openai.AsyncOpenAI = _langfuse_openai.AsyncOpenAI
@@ -60,12 +63,6 @@ except ImportError:
 # Switches from buggy C-ares resolver to native resolver
 os.environ.setdefault("GRPC_DNS_RESOLVER", "native")
 
-
-import langfuse_utils  # noqa: E402
-from eval_condensation import evaluate_condensation  # noqa: E402
-from eval_generation import evaluate_generation  # noqa: E402
-from eval_mapping import evaluate_mapping  # noqa: E402
-from eval_refinement import evaluate_refinement  # noqa: E402
 
 console = Console()
 
@@ -165,7 +162,7 @@ class ModelConfig:
         request_kwargs: dict[str, Any] = {}
         if not self.reasoning_effort:
             request_kwargs["temperature"] = self.temperature
-        base_url, api_key = utils_gateway.gateway_credentials()
+        base_url, api_key = gateway.gateway_credentials()
         return OpenAILLM(
             model=self.name,
             request_kwargs=request_kwargs,
@@ -183,7 +180,7 @@ class ModelConfig:
 
 
 def _to_model_configs(
-    gateway_model: utils_gateway.GatewayModel, reasoning_efforts: list[str]
+    gateway_model: gateway.GatewayModel, reasoning_efforts: list[str]
 ) -> list[ModelConfig]:
     """Expand one gateway model into one ModelConfig per requested effort level.
 
@@ -462,7 +459,7 @@ class BenchmarkRunner:
         )
 
         # Set up Langfuse context with benchmark metadata
-        langfuse_ctx = langfuse_utils.get_langfuse_context(
+        langfuse_ctx = langfuse.get_langfuse_context(
             session_id=session_id,
             eval_type=eval_type,
             metadata={
@@ -486,7 +483,7 @@ class BenchmarkRunner:
         # Create dedicated judge LLM if configured (separates judge from task model)
         judge_llm = None
         if self.config.judge_model:
-            base_url, api_key = utils_gateway.gateway_credentials()
+            base_url, api_key = gateway.gateway_credentials()
             judge_llm = OpenAILLM(
                 model=self.config.judge_model,
                 request_kwargs={"temperature": 0},
@@ -501,7 +498,7 @@ class BenchmarkRunner:
         # Only pass judge_llm to evals that use LLM-as-judge
         evals_with_judge = {"generation", "condensation", "refinement"}
 
-        with langfuse_utils.trace_context(langfuse_ctx, name=f"{eval_type}_eval"):
+        with langfuse.trace_context(langfuse_ctx, name=f"{eval_type}_eval"):
             kwargs = {
                 "dataset": self.config.dataset,
                 "llm": llm,
@@ -513,10 +510,10 @@ class BenchmarkRunner:
         end_time = time.perf_counter()
         duration_seconds = end_time - start_time
 
-        langfuse_utils.flush(langfuse_ctx)
+        langfuse.flush(langfuse_ctx)
 
         # Extract token/cost metrics from Langfuse
-        metrics = langfuse_utils.extract_session_metrics(
+        metrics = langfuse.extract_session_metrics(
             client=langfuse_ctx.client,
             session_id=session_id,
             benchmark_tag=f"benchmark:{self.benchmark_id}",
@@ -815,12 +812,14 @@ def query_langfuse_costs(
     try:
         from langfuse import Langfuse
 
-        secret_key = os.getenv("LANGFUSE_SECRET_KEY")
-        public_key = os.getenv("LANGFUSE_PUBLIC_KEY")
-        base_url = os.getenv("LANGFUSE_BASE_URL")
+        langfuse_settings = eval_settings.active_langfuse
 
-        if not all([secret_key, public_key, base_url]):
+        if langfuse_settings is None:
             return pd.DataFrame()
+
+        secret_key = langfuse_settings.secret_key
+        public_key = langfuse_settings.public_key
+        base_url = langfuse_settings.base_url
 
         client = Langfuse(
             secret_key=secret_key,
@@ -937,39 +936,35 @@ def _validate_selector_args(args: argparse.Namespace) -> str | None:
 
 
 def _select_named_models(
-    gateway_models: list[utils_gateway.GatewayModel], names: list[str]
-) -> tuple[
-    list[utils_gateway.GatewayModel], list[str], list[utils_gateway.GatewayModel]
-]:
+    gateway_models: list[gateway.GatewayModel], names: list[str]
+) -> tuple[list[gateway.GatewayModel], list[str], list[gateway.GatewayModel]]:
     """--models: exact-name lookup. Unhealthy matches are still selected (the
     user asked for them by name) — just flagged for a warning, not dropped.
 
     Returns (selected, missing, unhealthy).
     """
-    found, missing = utils_gateway.select_by_name(gateway_models, names)
-    _, unhealthy = utils_gateway.split_unhealthy(found)
+    found, missing = gateway.select_by_name(gateway_models, names)
+    _, unhealthy = gateway.split_unhealthy(found)
     return found, missing, unhealthy
 
 
 def _select_healthy_models(
-    gateway_models: list[utils_gateway.GatewayModel], families: list[str] | None
-) -> tuple[list[utils_gateway.GatewayModel], list[utils_gateway.GatewayModel]]:
+    gateway_models: list[gateway.GatewayModel], families: list[str] | None
+) -> tuple[list[gateway.GatewayModel], list[gateway.GatewayModel]]:
     """--family/--all: broad selection, unhealthy models dropped (not just warned).
 
     Returns (selected, excluded).
     """
     candidates = (
-        utils_gateway.filter_by_family(gateway_models, families)
+        gateway.filter_by_family(gateway_models, families)
         if families
         else gateway_models
     )
-    return utils_gateway.split_unhealthy(candidates)
+    return gateway.split_unhealthy(candidates)
 
 
 async def main():
     """Main entry point."""
-    dotenv.load_dotenv()
-
     parser = argparse.ArgumentParser(
         description="Run ThemeFinder benchmark across gateway-discovered chat models",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -1014,7 +1009,7 @@ Examples:
     parser.add_argument(
         "--family",
         nargs="+",
-        choices=utils_gateway.KNOWN_FAMILIES,
+        choices=gateway.KNOWN_FAMILIES,
         help="Vendor famil(y/ies) to run, e.g. --family gemini claude",
     )
     parser.add_argument(
@@ -1054,7 +1049,7 @@ Examples:
     if args.models:
         args.models = list(dict.fromkeys(args.models))
 
-    gateway_models = await utils_gateway.discover_chat_models()
+    gateway_models = await gateway.discover_chat_models()
 
     if args.models:
         selected, missing, unhealthy = _select_named_models(gateway_models, args.models)

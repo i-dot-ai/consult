@@ -52,12 +52,32 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         GPT_4O = "gpt-4o-sweden"
         GPT_41 = "gpt-4.1"
 
+    class RunningJob(models.TextChoices):
+        FIND_THEMES = "find-themes"
+        ASSIGN_THEMES = "assign-themes"
+
+    class DataSource(models.TextChoices):
+        QUALTRICS = "qualtrics", "Qualtrics"
+        CITIZEN_SPACE = "citizen-space", "Citizen Space"
+
     title = models.CharField(max_length=256)
     users = models.ManyToManyField(User)
     stage = models.CharField(
         max_length=32,
         choices=Stage.choices,
         default=Stage.SETUP,
+    )
+    running_job = models.CharField(
+        max_length=16,
+        choices=RunningJob,
+        null=True,
+        default=None,
+    )
+    data_source = models.CharField(
+        max_length=128,
+        choices=DataSource,
+        null=True,
+        default=None,
     )
     code = models.SlugField(max_length=256)
     timestamp = models.SlugField(max_length=256, null=True, blank=True)

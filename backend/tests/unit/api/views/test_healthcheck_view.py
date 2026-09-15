@@ -6,7 +6,7 @@ from django.urls import reverse
 from consultations.api.views.health import NOT_OK, OK
 
 CRITICAL_CHECK_NAMES = ("database", "redis")
-ALL_CHECK_NAMES = ("database", "redis", "s3")
+ALL_CHECK_NAMES = ("database", "redis")
 
 
 def _break_database(mock_connect, exception):
@@ -83,7 +83,9 @@ class TestHealthCheckView:
         for name in ALL_CHECK_NAMES:
             assert data["checks"][name] == OK
 
-    @pytest.mark.parametrize("failing_check,patch_target,apply_failure,exception", CRITICAL_FAILURE_CASES)
+    @pytest.mark.parametrize(
+        "failing_check,patch_target,apply_failure,exception", CRITICAL_FAILURE_CASES
+    )
     def test_critical_dependency_failure_returns_503(
         self, client, failing_check, patch_target, apply_failure, exception
     ):

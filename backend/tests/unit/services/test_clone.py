@@ -4,6 +4,7 @@ import pytest
 
 from consultations.models import (
     CandidateTheme,
+    Consultation,
     DemographicOption,
     MultiChoiceAnswer,
     Question,
@@ -45,6 +46,20 @@ class TestCloneConsultation:
         assert cloned.code == ""
         assert cloned.stage == original.stage
         assert set(cloned.users.all()) == {user1, user2}
+
+    def test_consultation_data_source_is_cloned(self):
+        original = ConsultationFactory(data_source=Consultation.DataSource.QUALTRICS)
+
+        cloned = clone_consultation(original)
+
+        assert cloned.data_source == Consultation.DataSource.QUALTRICS
+
+    def test_consultation_null_data_source_is_cloned(self):
+        original = ConsultationFactory(data_source=None)
+
+        cloned = clone_consultation(original)
+
+        assert cloned.data_source is None
 
     def test_respondents_and_demographics(self):
         original = ConsultationFactory()

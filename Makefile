@@ -27,13 +27,13 @@ sync: ## Add new env vars from the templates into local .env files (prompts befo
 
 .PHONY: serve
 serve: ## Run the backend and frontend together
-	docker compose up -d postgres redis minio
+	docker compose up -d postgres redis
 	> backend/sql.log
 	uv tool run honcho start -f Procfile.dev
 
 .PHONY: backend
 backend: ## Run the backend and the worker
-	docker compose up -d postgres redis minio
+	docker compose up -d postgres redis
 	uv tool run honcho start -f Procfile.dev web worker worker2
 
 .PHONY: frontend
@@ -62,15 +62,15 @@ test-all: test-backend test-frontend test-themefinder test-pipeline-common ## Ru
 
 .PHONY: run-evals
 run-evals: ## Run themefinder LLM evals (quick mode)
-	cd themefinder/evals && uv run python benchmark.py --quick
+	cd themefinder/evals && uv run --extra eval python benchmark.py --quick
 
 .PHONY: run-eval
 run-eval: ## Args e.g.: EVAL_TYPE=generation|mapping|condensation|refinement
-	cd themefinder/evals && uv run python benchmark.py --quick --evals "$(EVAL_TYPE)"
+	cd themefinder/evals && uv run --extra eval python benchmark.py --quick --evals "$(EVAL_TYPE)"
 
 .PHONY: run-benchmark
 run-benchmark: ## Run full themefinder benchmark (housing_S, 5 runs, all providers)
-	cd themefinder/evals && uv run python benchmark.py --dataset housing_S --runs 5 --provider all --judge-model gpt-4.1
+	cd themefinder/evals && uv run --extra eval python benchmark.py --dataset housing_S --runs 5 --provider all --judge-model gpt-4.1
 
 .PHONY: test-end-to-end
 test-end-to-end: ## Run end-to-end tests with Playwright
@@ -157,11 +157,11 @@ migrate: ## Apply migrations
 
 .PHONY: setup_db
 setup_db: ## Set up the development db on docker
-	docker compose up -d postgres minio
+	docker compose up -d postgres
 
 .PHONY: reset_db
 reset_db: ## Reset the dev db
-	docker compose down postgres minio
+	docker compose down postgres
 	docker volume rm -f consult_postgres_data
 	$(MAKE) setup_db
 
