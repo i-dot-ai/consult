@@ -1,7 +1,6 @@
 import pytest
 import structlog
 import yaml
-from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django.test import RequestFactory
 from rest_framework_simplejwt.tokens import RefreshToken

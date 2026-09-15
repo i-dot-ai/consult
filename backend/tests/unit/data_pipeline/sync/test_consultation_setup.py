@@ -1,22 +1,13 @@
-import json
 from unittest.mock import patch
 
 import pytest
 from botocore.exceptions import ClientError
 from django.conf import settings
-from django.db.models import Count
 
-from consultations.models import (
-    Consultation,
-    Question,
-    Respondent,
-    Response,
-)
 from data_pipeline.sync.consultation_setup import (
     load_question_from_s3,
     load_respondents_from_s3,
 )
-from factories import UserFactory
 
 logger = settings.LOGGER
 
