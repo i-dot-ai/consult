@@ -15,9 +15,11 @@
 
 <div class="flex items-center justify-start gap-2 rounded-lg bg-pink-50 p-2">
   {#if Icon}
-    <MaterialIcon color="fill-pink-700">
-      <Icon />
-    </MaterialIcon>
+    <div data-testid="icon">
+      <MaterialIcon color="fill-pink-700">
+        <Icon />
+      </MaterialIcon>
+    </div>
   {/if}
 
   {#if children}

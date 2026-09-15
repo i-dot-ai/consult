@@ -1,4 +1,5 @@
 import { createRawSnippet } from "svelte";
+import Help from "../svg/material/Help.svelte";
 
 const childContentClass = "text-red-600 font-bold";
 
@@ -17,3 +18,7 @@ export const childrenLong = createRawSnippet(() => ({
         </p>
     `,
 }));
+
+export const Icon = Help;
+
+export const children = childrenDefault;
