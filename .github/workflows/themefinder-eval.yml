@@ -71,6 +71,8 @@ jobs:
           LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
           LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
           LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
+          THEMEFINDER_EVAL_DATASET_SOURCE: langfuse
+          THEMEFINDER_EVAL_ARTEFACT_STORE: langfuse
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           ENVIRONMENT: production
           DATASET: ${{ github.event.inputs.dataset || 'gambling_XS' }}
