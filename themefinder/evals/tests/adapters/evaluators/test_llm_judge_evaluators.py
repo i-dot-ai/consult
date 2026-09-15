@@ -12,6 +12,7 @@ functions in prompts.py are pure `str.format()` calls, so we use the real ones
 and assert on the emitted prompt string for wiring checks.
 """
 
+import json
 import types
 from collections import namedtuple
 
@@ -57,11 +58,11 @@ class _JudgeContractTests:
     LLMJudgeEvaluator — port conformance and the shared error boundary. Run
     against each concrete judge by subclassing rather than duplicated per file:
     each per-evaluator test class subclasses this and provides `evaluator_cls`
-    and the `metric_names` it's expected to emit (as class attributes, or set on
-    the instance by a fixture for the parametrised judges)."""
+    (a class attribute, or set on the instance by a fixture for the parametrised
+    judges). The metric names the contract checks are read from that evaluator's
+    own `metric_names`, so there's a single source of truth to follow."""
 
     evaluator_cls: type
-    metric_names: tuple[str, ...]
 
     async def _evaluate(self, judge, *, output=None, **case_kwargs):
         """Run this class's evaluator against a case and return the scores — the
@@ -87,26 +88,26 @@ class _JudgeContractTests:
         `EvaluatorPort.evaluate()`'s shared try/except, rather than raising."""
         scores = await self._evaluate(_RaisingJudge())
 
-        assert [s.name for s in scores] == list(self.metric_names)
+        assert [s.name for s in scores] == list(self.evaluator_cls.metric_names)
         assert all(s.value == 0.0 for s in scores)
         assert all(s.comment.startswith("Error:") for s in scores)
 
 
 #: The two decision-scored judges, which share all their scoring machinery
 #: (STRONG/PARTIAL/NO → 5/3/0, averaging, comment building) via
-#: `DecisionScoredComparisonJudge` and differ only in these three things:
-#: the metric name, the comment's summary phrase, and their topic order
-#: (groundedness scores output→expected; coverage scores expected→output, so
-#: the marker expected to appear *first* in the prompt differs).
+#: `DecisionScoredComparisonJudge` and differ only in their comment summary
+#: phrase and their topic order (groundedness scores output→expected; coverage
+#: scores expected→output, so the marker expected to appear *first* in the
+#: prompt differs). The metric name comes from each evaluator's own
+#: `metric_names`, so it isn't duplicated here.
 _DecisionJudge = namedtuple(
-    "_DecisionJudge", "cls metric summary_phrase first_marker second_marker"
+    "_DecisionJudge", "cls summary_phrase first_marker second_marker"
 )
 
 DECISION_SCORED_JUDGES = [
     pytest.param(
         _DecisionJudge(
             GroundednessEvaluator,
-            "groundedness",
             "themes below threshold",
             "OUTPUT_ONLY",
             "EXPECTED_ONLY",
@@ -116,7 +117,6 @@ DECISION_SCORED_JUDGES = [
     pytest.param(
         _DecisionJudge(
             CoverageEvaluator,
-            "coverage",
             "themes not captured",
             "EXPECTED_ONLY",
             "OUTPUT_ONLY",
@@ -139,8 +139,7 @@ class TestDecisionScoredJudges(_JudgeContractTests):
     @pytest.fixture(autouse=True)
     def _setup(self, judge_cfg):
         self.evaluator_cls = judge_cfg.cls
-        self.metric_names = (judge_cfg.metric,)
-        self.metric = judge_cfg.metric
+        self.metric = judge_cfg.cls.metric_names[0]
         self.summary_phrase = judge_cfg.summary_phrase
         self.first_marker = judge_cfg.first_marker
         self.second_marker = judge_cfg.second_marker
@@ -221,28 +220,41 @@ class TestCondensationQualityEvaluator(_JudgeContractTests):
     from `case.inputs` since there's no ground-truth `expected_output`."""
 
     evaluator_cls = CondensationQualityEvaluator
-    metric_names = ("compression_quality", "information_retention")
+    metric_names = evaluator_cls.metric_names
+    options = ["tight", "loose", "kept", "lost"]
 
     async def test_extracts_named_metrics(self):
-        judge = _FakeJudge(
-            '{"compression_quality": 4, "compression_quality_reasoning": "tight",'
-            ' "information_retention": 5, "information_retention_reasoning": "kept"}'
-        )
+        # Build the judge response and the expected Scores from the evaluator's
+        # own metric_names, so nothing is hard-coded and the test follows along
+        # if the evaluator's metrics change.
+        expected_scores = range(len(self.metric_names))
+        expected_reasonings = self.options[: len(self.metric_names)]
+        response = {}
+        for metric, score, reasoning in zip(
+            self.metric_names, expected_scores, expected_reasonings
+        ):
+            response[metric] = score
+            response[f"{metric}_reasoning"] = reasoning
+        judge = _FakeJudge(json.dumps(response))
+
         scores = await self._evaluate(judge)
 
         assert scores == [
-            Score("compression_quality", 4.0, "tight"),
-            Score("information_retention", 5.0, "kept"),
+            Score(metric, float(score), reasoning)
+            for metric, score, reasoning in zip(
+                self.metric_names, expected_scores, expected_reasonings
+            )
         ]
 
     async def test_missing_metric_defaults_to_zero(self):
-        # information_retention absent from the response.
-        judge = _FakeJudge(
-            '{"compression_quality": 4, "compression_quality_reasoning": "tight"}'
-        )
+        # Only the first metric is present; the second is absent from the
+        # response and must fall back to 0.0 with an empty comment.
+        present, missing = self.metric_names[0], self.metric_names[1]
+        judge = _FakeJudge(json.dumps({present: 4, f"{present}_reasoning": "tight"}))
+
         scores = await self._evaluate(judge)
 
-        assert scores[1] == Score("information_retention", 0.0, "")
+        assert scores[1] == Score(missing, 0.0, "")
 
     async def test_reads_case_themes_from_inputs(self):
         """Wiring: condensation/refinement have no ground truth
@@ -260,33 +272,37 @@ class TestCondensationQualityEvaluator(_JudgeContractTests):
         prompt = judge.prompts[0]
         assert prompt.index("INPUT_ONLY") < prompt.index("OUTPUT_ONLY")
 
+    async def test_parses_fenced_json(self):
+        """`_parse_json_markdown` strips a ```json code fence before parsing —
+        the one parsing branch the other tests don't cover (they all feed bare
+        JSON), and one real judges routinely trigger."""
+        first = self.metric_names[0]
+        body = json.dumps({first: 4, f"{first}_reasoning": "r"})
+        judge = _FakeJudge(f"```json\n{body}\n```")
+
+        scores = await self._evaluate(judge)
+
+        assert scores[0] == Score(first, 4.0, "r")
+
 
 class TestRefinementQualityEvaluator(_JudgeContractTests):
     """RefinementQualityEvaluator — the numeric-key path over its own four
     metrics (information_retention, response_references, distinctiveness, fluency)."""
 
     evaluator_cls = RefinementQualityEvaluator
-    metric_names = (
-        "information_retention",
-        "response_references",
-        "distinctiveness",
-        "fluency",
-    )
+    metric_names = evaluator_cls.metric_names
 
     async def test_returns_all_four_metrics(self):
-        judge = _FakeJudge(
-            '{"information_retention": 5, "response_references": 4,'
-            ' "distinctiveness": 3, "fluency": 2}'
-        )
+        # Values derived from the evaluator's own metric_names (as in the
+        # condensation test); here we check only the names and numeric values,
+        # not the reasoning comments.
+        expected_scores = range(len(self.metric_names))
+        judge = _FakeJudge(json.dumps(dict(zip(self.metric_names, expected_scores))))
+
         scores = await self._evaluate(judge)
 
-        assert [s.name for s in scores] == [
-            "information_retention",
-            "response_references",
-            "distinctiveness",
-            "fluency",
-        ]
-        assert [s.value for s in scores] == [5.0, 4.0, 3.0, 2.0]
+        assert [s.name for s in scores] == list(self.metric_names)
+        assert [s.value for s in scores] == [float(v) for v in expected_scores]
 
 
 class TestTitleSpecificityEvaluator(_JudgeContractTests):
@@ -295,7 +311,6 @@ class TestTitleSpecificityEvaluator(_JudgeContractTests):
     there are no titles."""
 
     evaluator_cls = TitleSpecificityEvaluator
-    metric_names = ("specificity",)
 
     async def test_counts_specific_vs_vague(self):
         judge = _FakeJudge(
@@ -320,25 +335,3 @@ class TestTitleSpecificityEvaluator(_JudgeContractTests):
         # never invoked, and _build_scores({}) yields the empty-case comment.
         assert judge.prompts == []
         assert scores == [Score("specificity", 0.0, "0/0 titles specific")]
-
-
-@pytest.mark.parametrize(
-    "parsed",
-    [
-        '{"compression_quality": 4, "compression_quality_reasoning": "r",'
-        ' "information_retention": 5, "information_retention_reasoning": "r"}',
-        '```json\n{"compression_quality": 4, "compression_quality_reasoning": "r",'
-        ' "information_retention": 5, "information_retention_reasoning": "r"}\n```',
-    ],
-    ids=["bare", "fenced"],
-)
-async def test_parses_bare_and_fenced_json(parsed):
-    """`_parse_json_markdown` handles both a bare JSON string and one wrapped
-    in a ```json code fence."""
-    case = make_case(inputs={"themes": {}})
-
-    scores = await CondensationQualityEvaluator(_FakeJudge(parsed)).evaluate(
-        case, {"themes": {}}
-    )
-
-    assert [s.value for s in scores] == [4.0, 5.0]
