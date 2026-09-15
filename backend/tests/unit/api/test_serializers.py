@@ -1,8 +1,11 @@
 import uuid
 from uuid import uuid4
 
+import pytest
+
 from consultations.api.serializers import (
     ConsultationExportSerializer,
+    ConsultationSerializer,
     DemographicAggregationsSerializer,
     QuestionSerializer,
     RespondentSerializer,
@@ -11,6 +14,28 @@ from consultations.api.serializers import (
     ThemeInformationSerializer,
     ThemeSerializer,
 )
+from consultations.models import Consultation
+from factories import ConsultationFactory
+
+
+@pytest.mark.django_db
+class TestConsultationSerializer:
+    def test_data_source_included_in_fields(self):
+        consultation = ConsultationFactory(data_source=Consultation.DataSource.QUALTRICS)
+        serializer = ConsultationSerializer(consultation)
+        assert "data_source" in serializer.data
+        assert serializer.data["data_source"] == Consultation.DataSource.QUALTRICS
+
+    def test_data_source_null(self):
+        consultation = ConsultationFactory(data_source=None)
+        serializer = ConsultationSerializer(consultation)
+        assert "data_source" in serializer.data
+        assert serializer.data["data_source"] is None
+
+    def test_data_source_citizen_space(self):
+        consultation = ConsultationFactory(data_source=Consultation.DataSource.CITIZEN_SPACE)
+        serializer = ConsultationSerializer(consultation)
+        assert serializer.data["data_source"] == Consultation.DataSource.CITIZEN_SPACE
 
 
 class TestDemographicAggregationsSerializer:
