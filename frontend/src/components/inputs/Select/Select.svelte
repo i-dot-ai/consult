@@ -1,26 +1,32 @@
-<script lang="ts">
-  import clsx from "clsx";
-  import type { SelectOption } from "../../../global/types";
-
-  interface LabelConfig {
+<script lang="ts" module>
+  export interface LabelConfig {
     text: string;
     classes?: string;
     horizontal?: boolean;
   }
 
-  interface Props {
+  export interface SelectOption<T> {
+    value: T;
+    label: string;
+  }
+
+  export interface Props<T> {
     id: string;
     name?: string;
     label?: string | LabelConfig;
     hideLabel?: boolean;
-    items: SelectOption[];
-    value?: string;
+    items: SelectOption<T>[];
+    value?: T;
     disabled?: boolean;
     required?: boolean;
     errorMessage?: string;
     hint?: string;
-    onchange?: (value: string) => void;
+    onchange?: (value: T) => void;
   }
+</script>
+
+<script lang="ts" generics="T">
+  import clsx from "clsx";
 
   let {
     id,
@@ -28,13 +34,13 @@
     label,
     hideLabel = false,
     items,
-    value = "",
+    value = "" as T,
     disabled = false,
     required = false,
     errorMessage,
     hint,
     onchange,
-  }: Props = $props();
+  }: Props<T> = $props();
 
   let labelText = $derived(typeof label === "string" ? label : label?.text);
   let labelClasses = $derived(typeof label === "object" ? label?.classes : "");
@@ -57,10 +63,15 @@
   );
 
   function handleChange(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    if (onchange) {
-      onchange(target.value);
+    if (!onchange) {
+      return;
     }
+
+    const target = event.target as HTMLSelectElement;
+    const option = items.find(
+      (item) => item.value === target.value || item.label === target.value,
+    )!;
+    onchange(option?.value);
   }
 </script>
 
@@ -107,7 +118,9 @@
     ])}
     {id}
     {name}
-    {value}
+    value={typeof value === "string"
+      ? value
+      : items.find((item) => item.value === value)?.label}
     {disabled}
     {required}
     aria-describedby={[hint && `${id}-hint`, errorMessage && `${id}-error`]
@@ -115,9 +128,9 @@
       .join(" ") || undefined}
     onchange={handleChange}
   >
-    {#each items as item (item.value)}
+    {#each items as item, i (i)}
       <option
-        value={item.value}
+        value={typeof item.value === "string" ? item.value : item.label}
         selected={value === item.value}
         class="bg-white text-neutral-900"
         data-testid={`${id}-option`}
