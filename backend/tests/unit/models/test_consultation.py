@@ -9,13 +9,11 @@ def test_initial_consultation_stage():
     assert consultation.stage == Consultation.Stage.SETUP
 
 
-@pytest.mark.django_db
 def test_initial_consultation_data_source_is_none():
     consultation = Consultation()
     assert consultation.data_source is None
 
 
-@pytest.mark.django_db
 def test_consultation_data_source_choices():
     assert Consultation.DataSource.QUALTRICS == "qualtrics"
     assert Consultation.DataSource.CITIZEN_SPACE == "citizen-space"
