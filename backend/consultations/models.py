@@ -56,6 +56,10 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         FIND_THEMES = "find-themes"
         ASSIGN_THEMES = "assign-themes"
 
+    class DataSource(models.TextChoices):
+        QUALTRICS = "qualtrics", "Qualtrics"
+        CITIZEN_SPACE = "citizen-space", "Citizen Space"
+
     title = models.CharField(max_length=256)
     users = models.ManyToManyField(User)
     stage = models.CharField(
@@ -66,6 +70,12 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     running_job = models.CharField(
         max_length=16,
         choices=RunningJob,
+        null=True,
+        default=None,
+    )
+    data_source = models.CharField(
+        max_length=128,
+        choices=DataSource.choices,
         null=True,
         default=None,
     )
