@@ -43,9 +43,6 @@ OTEL_SERVICE_NAME = env.str("OTEL_SERVICE_NAME", default="")
 OTEL_CONFIGURED = bool(OTEL_ENABLED and OTEL_EXPORTER_OTLP_ENDPOINT and OTEL_SERVICE_NAME)
 
 AWS_ACCOUNT_ID = env("AWS_ACCOUNT_ID", default=None)
-MINIO_ADDRESS = env.str("MINIO_ENDPOINT", default=None)
-AWS_ACCESS_KEY = env.str("MINIO_ACCESS_KEY", default=None)
-AWS_SECRET_KEY = env.str("MINIO_SECRET_KEY", default=None)
 SENTRY_RELEASE = env.str("SENTRY_RELEASE", default="")
 
 DOMAIN_NAME = env("DOMAIN_NAME", default="0.0.0.0")  # nosec

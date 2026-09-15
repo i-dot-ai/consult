@@ -50,7 +50,6 @@ services:
       - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/postgres}
       - DJANGO_SETTINGS_MODULE=backend.settings.local
       - DOMAIN_NAME=localhost:3000
-      - MINIO_ENDPOINT=http://minio:9100
       - REDIS_HOST=redis
     depends_on:
       postgres:
