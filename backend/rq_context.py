@@ -3,7 +3,7 @@ import functools
 from django_rq import job as _rq_job
 
 from logging_context import get_or_create_context_id, rebind_context
-from otel_bootstrap import execution_span, flush_otel
+from otel_worker import execution_span, flush_otel
 
 
 def job(*job_args, **job_kwargs):

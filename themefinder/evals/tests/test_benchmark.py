@@ -1,7 +1,7 @@
 import argparse
 
 import benchmark
-from conftest import make_gateway_model
+from conftest import make_gateway_model, set_gateway_credentials
 
 
 def _args(models=None, family=None, all_=False, **extra):
@@ -20,8 +20,7 @@ class TestModelConfigTag:
 
 class TestModelConfigCreateLlm:
     def _set_gateway_env(self, monkeypatch):
-        monkeypatch.setenv("LLM_GATEWAY_URL", "https://gateway.example.invalid")
-        monkeypatch.setenv("CONSULT_EVAL_LITELLM_API_KEY", "test-key")
+        set_gateway_credentials(monkeypatch)
 
     def test_sets_temperature_when_no_reasoning_effort(self, monkeypatch):
         self._set_gateway_env(monkeypatch)

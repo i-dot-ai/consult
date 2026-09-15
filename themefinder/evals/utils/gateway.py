@@ -6,12 +6,11 @@ the eval suite runs against, so it updates automatically as the gateway's
 model list changes.
 """
 
-import asyncio
-import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 import httpx
+from settings import eval_settings
 
 # Health checks are observed to run within ~48h; 72h gives margin before
 # treating a check as stale.
@@ -141,8 +140,8 @@ def latest_health_by_model(
 
 def gateway_credentials() -> tuple[str, str]:
     """Read and validate the two required gateway env vars."""
-    base_url = os.getenv("LLM_GATEWAY_URL")
-    api_key = os.getenv("CONSULT_EVAL_LITELLM_API_KEY")
+    base_url = eval_settings.gateway.url
+    api_key = eval_settings.gateway.api_key
     if not base_url or not api_key:
         raise RuntimeError(
             "LLM_GATEWAY_URL and CONSULT_EVAL_LITELLM_API_KEY must be set"
@@ -160,7 +159,7 @@ def _gateway_client() -> httpx.AsyncClient:
 
 
 async def fetch_model_group_info(client: httpx.AsyncClient) -> list[dict]:
-    response = await client.get("/model_group/info")
+    response = await client.get("v1/models")
     response.raise_for_status()
     return response.json()["data"]
 
@@ -179,10 +178,7 @@ async def discover_chat_models() -> list[GatewayModel]:
     """
     async with _gateway_client() as client:
         try:
-            model_group_items, health_checks = await asyncio.gather(
-                fetch_model_group_info(client),
-                fetch_health_latest(client),
-            )
+            model_group_items = await fetch_model_group_info(client)
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (401, 403):
                 raise RuntimeError(
@@ -202,15 +198,18 @@ async def discover_chat_models() -> list[GatewayModel]:
             "in the model gateway."
         )
 
-    chat_models = filter_chat_models(model_group_items)
-    health_by_name = latest_health_by_model(health_checks)
-
+    # TODO (PRO-759): v1/models dropped chat-mode filtering, health, and reasoning
+    # support - needs investigation of the new gateway API (likely a per-model
+    # health endpoint) rather than a blind reimplementation. Also check whether
+    # family=item["owned_by"] below should instead be derive_family(item["id"]).
+    # chat_models = filter_chat_models(model_group_items)
+    # health_by_name = latest_health_by_model(health_checks)
     return [
         GatewayModel(
-            name=item["model_group"],
-            family=derive_family(item["model_group"]),
-            health=health_by_name.get(item["model_group"], "unknown"),
-            supports_reasoning=item.get("supports_reasoning", False),
+            name=item["id"],
+            family=item["owned_by"],
+            health="unknown",
+            supports_reasoning=False,
         )
-        for item in chat_models
+        for item in model_group_items
     ]
