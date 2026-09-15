@@ -7,6 +7,9 @@ RefinementQualityEvaluator) are covered separately — they need a fake judge
 LLM, not the plain fixtures here.
 """
 
+import sys
+import types
+
 import adapters.evaluators.redundancy as redundancy_module
 import pytest
 from adapters.evaluators.base import EvaluatorPort
@@ -109,34 +112,54 @@ class TestRedundancyEvaluatorWithoutModel:
 
 @pytest.fixture
 def patched_similarity(monkeypatch):
-    """Patch the embedding model + cosine similarity so the pairwise-
-    threshold logic can be tested deterministically, without real
-    sentence-transformers weights or a network call. Skips cleanly if the
-    optional `eval` extra isn't installed. Returns a setter for the fake
-    similarity matrix `cos_sim` should return.
+    """Patch the embedding model and `cos_sim` so RedundancyEvaluator's own
+    logic — pairing, thresholding, ratio/rounding, comment formatting — can
+    be tested directly. These tests control `cos_sim`'s output outright
+    rather than deriving it from real (or hand-rolled) embedding math:
+    whether cosine similarity itself is computed correctly is
+    sentence-transformers' job to test, not ours. Neither the real package
+    nor torch needs to be installed for these tests to run.
+
+    `cos_sim` is imported locally inside `_calculate_redundancy_score`
+    (`from sentence_transformers.util import cos_sim`), so there's nothing
+    already-imported for `monkeypatch.setattr` to patch when the real
+    package isn't installed — this injects a fake module into
+    `sys.modules["sentence_transformers.util"]` instead. Python's import
+    system checks `sys.modules` for that exact dotted name before ever
+    touching the real package, so the local import resolves to this fake
+    regardless of whether sentence-transformers is actually installed.
+
+    Returns an object with `.set_matrix(matrix)` and `.model` (the fake
+    model, whose `.encode_calls` records each call's titles — for wiring
+    assertions, separate from the similarity-math tests below).
     """
-    pytest.importorskip("sentence_transformers")
-    import sentence_transformers.util as st_util
+    state: dict[str, list[list[float]]] = {}
 
     class _FakeModel:
+        def __init__(self):
+            self.encode_calls: list[list[str]] = []
+
         def encode(self, titles, convert_to_tensor=True):
+            self.encode_calls.append(list(titles))
             return titles
 
-    monkeypatch.setattr(redundancy_module, "_get_sentence_model", lambda: _FakeModel())
+    fake_model = _FakeModel()
+    monkeypatch.setattr(redundancy_module, "_get_sentence_model", lambda: fake_model)
 
-    state: dict[str, list[list[float]]] = {}
-    monkeypatch.setattr(st_util, "cos_sim", lambda a, b: state["matrix"])
+    fake_util = types.ModuleType("sentence_transformers.util")
+    fake_util.cos_sim = lambda a, b: state["matrix"]
+    monkeypatch.setitem(sys.modules, "sentence_transformers.util", fake_util)
 
     def _set_matrix(matrix: list[list[float]]) -> None:
         state["matrix"] = matrix
 
-    return _set_matrix
+    return types.SimpleNamespace(set_matrix=_set_matrix, model=fake_model)
 
 
 class TestRedundancyEvaluatorWithModel:
     async def test_flags_pairs_above_threshold(self, patched_similarity):
         # A~B similar (0.9, flagged), A~C and B~C dissimilar (0.1)
-        patched_similarity(
+        patched_similarity.set_matrix(
             [
                 [1.0, 0.9, 0.1],
                 [0.9, 1.0, 0.1],
@@ -162,7 +185,7 @@ class TestRedundancyEvaluatorWithModel:
         assert "A ↔ B (0.9)" in score.comment
 
     async def test_no_pairs_above_threshold(self, patched_similarity):
-        patched_similarity([[1.0, 0.1], [0.1, 1.0]])
+        patched_similarity.set_matrix([[1.0, 0.1], [0.1, 1.0]])
         case = make_case()
         output = {"themes": [{"topic_label": "A"}, {"topic_label": "B"}]}
 
@@ -171,7 +194,7 @@ class TestRedundancyEvaluatorWithModel:
         assert scores == [Score("redundancy", 0.0, "0/1 pairs above threshold")]
 
     async def test_respects_custom_threshold(self, patched_similarity):
-        patched_similarity([[1.0, 0.5], [0.5, 1.0]])
+        patched_similarity.set_matrix([[1.0, 0.5], [0.5, 1.0]])
         case = make_case()
         output = {"themes": [{"topic_label": "A"}, {"topic_label": "B"}]}
 
@@ -181,10 +204,22 @@ class TestRedundancyEvaluatorWithModel:
         assert "1/1 pairs above threshold" in scores[0].comment
 
     async def test_theme_titles_extracted_from_dict_shape(self, patched_similarity):
-        patched_similarity([[1.0, 0.9], [0.9, 1.0]])
+        patched_similarity.set_matrix([[1.0, 0.9], [0.9, 1.0]])
         case = make_case()
         output = {"themes": {"Theme A": "desc", "Theme B": "desc"}}
 
         scores = await RedundancyEvaluator(threshold=0.85).evaluate(case, output)
 
         assert "Theme A ↔ Theme B" in scores[0].comment
+
+    async def test_encode_called_with_extracted_titles(self, patched_similarity):
+        """Wiring check, separate from the threshold/ratio tests above:
+        confirms the titles extracted from `output["themes"]` are what
+        actually reach `.encode()`, in order."""
+        patched_similarity.set_matrix([[1.0, 0.1], [0.1, 1.0]])
+        case = make_case()
+        output = {"themes": [{"topic_label": "A"}, {"topic_label": "B"}]}
+
+        await RedundancyEvaluator().evaluate(case, output)
+
+        assert patched_similarity.model.encode_calls == [["A", "B"]]
