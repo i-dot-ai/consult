@@ -146,3 +146,10 @@ The workspace settings are configured to:
 - Enable TypeScript support in Svelte files
 
 You can override these settings in your User Settings if you prefer different personal configurations. See the [VSCode settings documentation](https://code.visualstudio.com/docs/getstarted/settings) for more information on the settings hierarchy.
+
+### Running Evals
+
+Component-level evals live in `themefinder/evals/pipelines/`, where there is one dir per component. Each dir holds a DVC pipeline that runs an eval for that specific component. To run a specific component's eval pipeline:
+1. `cd` to the relevant dir
+2. Set the desired parameters in the `params.yaml` file
+3. Run `uv run --package themefinder --extra dev dvc repro` to run the pipeline in a version-aware fashion (i.e. only running the stages whose dependencies have changed since their last run). If you want to run the whole pipeline regardless of version changes, run `uv run --package themefinder --extra dev dvc repro --force`
