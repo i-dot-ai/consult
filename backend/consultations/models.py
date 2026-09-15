@@ -75,7 +75,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     )
     data_source = models.CharField(
         max_length=128,
-        choices=DataSource.choices,
+        choices=DataSource,
         null=True,
         default=None,
     )
