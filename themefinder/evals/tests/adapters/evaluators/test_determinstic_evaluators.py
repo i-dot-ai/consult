@@ -82,7 +82,7 @@ class TestRedundancyEvaluatorWithoutModel:
 
     async def test_fewer_than_two_titles_short_circuits(self):
         case = make_case()
-        output = {"themes": [{"topic_label": "Only one theme"}]}
+        output = {"themes": {"Only one theme": "desc"}}
 
         scores = await RedundancyEvaluator().evaluate(case, output)
 
@@ -91,7 +91,7 @@ class TestRedundancyEvaluatorWithoutModel:
     async def test_no_themes_short_circuits(self):
         case = make_case()
 
-        scores = await RedundancyEvaluator().evaluate(case, {"themes": []})
+        scores = await RedundancyEvaluator().evaluate(case, {"themes": {}})
 
         assert scores == [Score("redundancy", 0.0, "0/0 pairs above threshold")]
 
@@ -103,7 +103,7 @@ class TestRedundancyEvaluatorWithoutModel:
             redundancy_module, "_get_sentence_model", _raise_import_error
         )
         case = make_case()
-        output = {"themes": [{"topic_label": "A"}, {"topic_label": "B"}]}
+        output = {"themes": {"A": "desc", "B": "desc"}}
 
         scores = await RedundancyEvaluator().evaluate(case, output)
 
@@ -167,13 +167,7 @@ class TestRedundancyEvaluatorWithModel:
             ]
         )
         case = make_case()
-        output = {
-            "themes": [
-                {"topic_label": "A"},
-                {"topic_label": "B"},
-                {"topic_label": "C"},
-            ]
-        }
+        output = {"themes": {"A": "desc", "B": "desc", "C": "desc"}}
 
         scores = await RedundancyEvaluator(threshold=0.85).evaluate(case, output)
 
@@ -187,7 +181,7 @@ class TestRedundancyEvaluatorWithModel:
     async def test_no_pairs_above_threshold(self, patched_similarity):
         patched_similarity.set_matrix([[1.0, 0.1], [0.1, 1.0]])
         case = make_case()
-        output = {"themes": [{"topic_label": "A"}, {"topic_label": "B"}]}
+        output = {"themes": {"A": "desc", "B": "desc"}}
 
         scores = await RedundancyEvaluator(threshold=0.85).evaluate(case, output)
 
@@ -196,21 +190,12 @@ class TestRedundancyEvaluatorWithModel:
     async def test_respects_custom_threshold(self, patched_similarity):
         patched_similarity.set_matrix([[1.0, 0.5], [0.5, 1.0]])
         case = make_case()
-        output = {"themes": [{"topic_label": "A"}, {"topic_label": "B"}]}
+        output = {"themes": {"A": "desc", "B": "desc"}}
 
         scores = await RedundancyEvaluator(threshold=0.4).evaluate(case, output)
 
         assert scores[0].value == 1.0
         assert "1/1 pairs above threshold" in scores[0].comment
-
-    async def test_theme_titles_extracted_from_dict_shape(self, patched_similarity):
-        patched_similarity.set_matrix([[1.0, 0.9], [0.9, 1.0]])
-        case = make_case()
-        output = {"themes": {"Theme A": "desc", "Theme B": "desc"}}
-
-        scores = await RedundancyEvaluator(threshold=0.85).evaluate(case, output)
-
-        assert "Theme A ↔ Theme B" in scores[0].comment
 
     async def test_encode_called_with_extracted_titles(self, patched_similarity):
         """Wiring check, separate from the threshold/ratio tests above:
@@ -218,7 +203,7 @@ class TestRedundancyEvaluatorWithModel:
         actually reach `.encode()`, in order."""
         patched_similarity.set_matrix([[1.0, 0.1], [0.1, 1.0]])
         case = make_case()
-        output = {"themes": [{"topic_label": "A"}, {"topic_label": "B"}]}
+        output = {"themes": {"A": "desc", "B": "desc"}}
 
         await RedundancyEvaluator().evaluate(case, output)
 

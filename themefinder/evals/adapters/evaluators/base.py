@@ -63,6 +63,14 @@ class EvaluatorPort(ABC):
         task output uses: a list of dicts keyed by `topic_label`/`topic`, or a
         dict keyed by label. Shared by TitleSpecificityEvaluator and
         RedundancyEvaluator, which both only care about the title strings.
+
+        TODO: the label-keyed dict (`{label: description}`) is the canonical
+        theme shape going forward — that's the one the evaluators and their
+        tests should assume. The list-of-dicts branch (`topic_label`/`topic`
+        keys) is legacy and only survives here for outputs that haven't been
+        normalised yet. When the evaluators are next reworked, normalise themes
+        to the dict shape upstream and delete this helper — consumers shouldn't
+        each re-derive titles.
         """
         if isinstance(themes, list):
             return [t.get("topic_label", t.get("topic", "")) for t in themes]
