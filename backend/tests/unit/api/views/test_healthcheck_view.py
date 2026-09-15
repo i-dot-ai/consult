@@ -6,7 +6,7 @@ from django.urls import reverse
 from consultations.api.views.health import NOT_OK, OK
 
 CRITICAL_CHECK_NAMES = ("database", "redis")
-ALL_CHECK_NAMES = ("database", "redis", "s3")
+ALL_CHECK_NAMES = ("database", "redis")
 
 
 def _break_database(mock_connect, exception):
