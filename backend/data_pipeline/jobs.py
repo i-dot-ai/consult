@@ -150,6 +150,7 @@ def import_response_annotations(
                 consultation_code=consultation_code,
             )
 
+
 @job("default", timeout=3600)
 def import_candidate_theme_responses(
     consultation_code: str,

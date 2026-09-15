@@ -99,7 +99,15 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Consultation
-        fields: ClassVar[list] = ["id", "title", "code", "stage", "users", "created_at", "running_job"]
+        fields: ClassVar[list] = [
+            "id",
+            "title",
+            "code",
+            "stage",
+            "users",
+            "created_at",
+            "running_job",
+        ]
 
 
 class DemographicAggregationsSerializer(serializers.Serializer):
