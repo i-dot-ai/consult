@@ -124,6 +124,7 @@ module "frontend" {
     "BACKEND_URL"              = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
     "APP_NAME"                 = var.project_name
     "EXECUTION_CONTEXT"        = "ecs"
+    "OTEL_SERVICE_NAME"        = "consult-frontend"
     "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
     "PUBLIC_LANGFUSE_URL"      = "https://core-langfuse.i.ai.gov.uk/",
     "PUBLIC_HOMEPAGE_URL"      = "https://${local.host}",
