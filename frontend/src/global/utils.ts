@@ -96,6 +96,17 @@ export const getHomepageUrl = (): string => {
   return "/";
 };
 
+export const getDataSetupV2Enabled = (): boolean => {
+  if (
+    typeof process !== "undefined" &&
+    process.env?.PUBLIC_DATA_SETUP_V2_ENABLED
+  ) {
+    return process.env.PUBLIC_DATA_SETUP_V2_ENABLED === "true";
+  }
+
+  return import.meta.env.PUBLIC_DATA_SETUP_V2_ENABLED === "true";
+};
+
 export const applyHighlight = (
   fullText: string,
   matchedText: string,
