@@ -104,6 +104,7 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
             "title",
             "code",
             "stage",
+            "data_source",
             "users",
             "created_at",
             "running_job",
