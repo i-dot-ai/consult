@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   formatDate,
   formatTimeDeltaText,
+  getDataSetupV2Enabled,
   getEnv,
   getEnvironment,
   getRelease,
@@ -78,6 +79,33 @@ describe("getEnv", () => {
     expect(() => getEnv()).toThrow(
       "PUBLIC_ENVIRONMENT environment variable is not set",
     );
+  });
+});
+
+describe("getDataSetupV2Enabled", () => {
+  const original = process.env.PUBLIC_DATA_SETUP_V2_ENABLED;
+
+  afterEach(() => {
+    if (original === undefined) {
+      delete process.env.PUBLIC_DATA_SETUP_V2_ENABLED;
+    } else {
+      process.env.PUBLIC_DATA_SETUP_V2_ENABLED = original;
+    }
+  });
+
+  it("is true when the flag is 'true'", () => {
+    process.env.PUBLIC_DATA_SETUP_V2_ENABLED = "true";
+    expect(getDataSetupV2Enabled()).toBe(true);
+  });
+
+  it("is false when the flag is 'false'", () => {
+    process.env.PUBLIC_DATA_SETUP_V2_ENABLED = "false";
+    expect(getDataSetupV2Enabled()).toBe(false);
+  });
+
+  it("is false when the flag is unset", () => {
+    delete process.env.PUBLIC_DATA_SETUP_V2_ENABLED;
+    expect(getDataSetupV2Enabled()).toBe(false);
   });
 });
 
