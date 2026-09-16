@@ -22,7 +22,6 @@ from abc import abstractmethod
 
 import numpy as np
 import openai
-from eval_types import Case, Score
 from tenacity import (
     before_sleep_log,
     retry,
@@ -31,6 +30,7 @@ from tenacity import (
     wait_random_exponential,
 )
 
+from eval_types import Case, Score
 from .base import EvaluatorPort
 
 logger = logging.getLogger(__name__)
