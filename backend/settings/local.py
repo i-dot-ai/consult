@@ -20,4 +20,5 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
     "SCHEMA_PATH_PREFIX": "/api/",
+    "PREPROCESSING_HOOKS": ["consultations.api.schema.hide_disabled_v2_endpoints"],
 }
