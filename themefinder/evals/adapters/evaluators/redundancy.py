@@ -35,7 +35,7 @@ class RedundancyEvaluator(EvaluatorPort):
         """Compute pairwise cosine similarity between theme titles, flagging
         pairs above `self.threshold`."""
         try:
-            _get_sentence_model()
+            model = _get_sentence_model()
         except ImportError:
             logger.warning(
                 "sentence-transformers not installed, skipping redundancy check"
@@ -57,7 +57,6 @@ class RedundancyEvaluator(EvaluatorPort):
                 "flagged_pairs": [],
             }
 
-        model = _get_sentence_model()
         embeddings = model.encode(titles, convert_to_tensor=True)
 
         from sentence_transformers.util import cos_sim

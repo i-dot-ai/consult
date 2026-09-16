@@ -18,6 +18,7 @@ import logging
 import random
 import re
 from typing import Any
+from abc import abstractmethod
 
 import numpy as np
 import openai
@@ -103,16 +104,16 @@ class LLMJudgeEvaluator(EvaluatorPort):
 
         return themes
 
+    @abstractmethod
     def _build_prompt(self, case: Case, output: Any) -> str | None:
         """Build the judge prompt, or None to skip the LLM call entirely
         (nothing to evaluate). Every subclass implements this."""
-        raise NotImplementedError
 
+    @abstractmethod
     def _build_scores(self, parsed: dict) -> list[Score]:
         """Turn the parsed judge response into Scores — the single scoring
         hook `_score()` always calls. Every leaf evaluator implements this
         (directly, or via one of the bases below)."""
-        raise NotImplementedError
 
     async def _score(self, case: Case, output: Any) -> list[Score]:
         """The judge's main scoring routine — the concrete work behind
