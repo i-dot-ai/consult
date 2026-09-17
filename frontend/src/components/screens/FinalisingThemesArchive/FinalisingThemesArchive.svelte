@@ -95,14 +95,14 @@
     )?.length || 0,
   );
 
-  let pollingInterval: NodeJS.Timeout | null = $state(null);
+  let pollingInterval: ReturnType<typeof setInterval> | null = $state(null);
 
   const clearPollingInterval = () => {
     if (pollingInterval) {
       clearInterval(pollingInterval);
       pollingInterval = null;
     }
-  }
+  };
 
   $effect(() => {
     const runningJob = $consultationStore.data?.running_job;
@@ -116,7 +116,7 @@
 
   onDestroy(() => {
     clearPollingInterval();
-  })
+  });
 </script>
 
 <TitleRow
@@ -133,10 +133,11 @@
 <svelte:boundary>
   {@const runningJob = $consultationStore.data?.running_job}
 
-  {#if (runningJob && runningJob === "assign-themes")}
+  {#if runningJob && runningJob === "assign-themes"}
     <div class="blink">
       <Alert variant="info">
-        We are currently processing theme assignment for this consultation. This may take a while.
+        We are currently processing theme assignment for this consultation. This
+        may take a while.
       </Alert>
     </div>
   {/if}
