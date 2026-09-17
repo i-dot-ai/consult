@@ -252,7 +252,11 @@ class _NumericKeyJudgeTests(_JudgeContractTests):
 
     async def test_missing_metric_defaults_to_zero(self):
         # Only the first metric is present; the second is absent from the
-        # response and must fall back to 0.0 with an empty comment.
+        # response and must fall back to 0.0 with an empty comment. Skip
+        # for evaluators with only one metric.
+        if len(self.metric_names) == 1:
+            pytest.skip("single-metric evaluators have no topic order to test")
+
         present, missing = self.metric_names[0], self.metric_names[1]
         judge = _FakeJudge(json.dumps({present: 4, f"{present}_reasoning": "tight"}))
 

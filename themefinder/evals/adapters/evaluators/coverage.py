@@ -1,8 +1,6 @@
 """CoverageEvaluator — how well expected themes are covered by generated themes (recall direction).
 
-Sibling of GroundednessEvaluator (see that file for the reverse direction
-and the general note on why groundedness/coverage split into two
-single-metric evaluators while condensation/refinement don't).
+Sibling of GroundednessEvaluator, which scores the reverse direction.
 """
 
 from prompts import generation_eval_prompt

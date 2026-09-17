@@ -1,8 +1,6 @@
 """TitleSpecificityEvaluator — how specific/concrete generated theme titles are.
 
-Ignores `case` entirely — scores the specificity of `output["themes"]`'s titles
-alone, matching today's `create_title_specificity_evaluator` (which accepts an
-`expected_output` kwarg for shape compatibility but never reads it).
+Ignores `case`; scores the titles in `output["themes"]` alone.
 """
 
 from typing import Any
@@ -18,22 +16,20 @@ class TitleSpecificityEvaluator(LLMJudgeEvaluator):
     metric_names = ("specificity",)
 
     def _build_prompt(self, case: Case, output: Any) -> str | None:
-        """Build the specificity prompt from `output["themes"]`'s titles, or
-        None to skip the LLM call when there are no titles. Ignores `case`."""
+        """Build the specificity prompt from the output titles, or None to
+        skip the LLM call when there are none."""
         titles = self.extract_theme_titles(output.get("themes", []))
 
         if not titles:
-            # Nothing to evaluate — skip the LLM call entirely. `evaluate()`
-            # then runs `_build_scores({})` below, which naturally produces
-            # "0/0 titles specific" without any special-casing here.
+            # Nothing to evaluate — skip the LLM call; `_build_scores({})`
+            # then produces "0/0 titles specific".
             return None
 
         return self.prompt_fn(theme_titles=titles)
 
     def _build_scores(self, parsed: dict) -> list[Score]:
-        """Count how many titles the judge marked SPECIFIC (vs VAGUE) and
-        return that fraction as the specificity score, listing any vague
-        titles in the comment."""
+        """Return the fraction of titles the judge marked SPECIFIC as the
+        score, listing any vague titles in the comment."""
         evaluations = parsed.get("evaluations", parsed)
 
         n_specific = 0
