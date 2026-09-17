@@ -14,7 +14,8 @@ import {
 } from "./mocks";
 import userEvent from "@testing-library/user-event";
 
-const RUNNING_JOB_ALERT = "We are currently processing theme assignment for this consultation. This may take a while.";
+const RUNNING_JOB_ALERT =
+  "We are currently processing theme assignment for this consultation. This may take a while.";
 
 const mocks = {
   consultationMock,
@@ -238,7 +239,6 @@ describe("FinalisingThemesArchive", () => {
       expect(screen.queryByText(RUNNING_JOB_ALERT)).not.toBeInTheDocument();
     });
   });
-
 
   it("should start polling back end if there is an assign-themes running job", async () => {
     vi.useFakeTimers();
