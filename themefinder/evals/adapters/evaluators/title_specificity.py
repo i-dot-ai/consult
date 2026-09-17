@@ -1,0 +1,51 @@
+"""TitleSpecificityEvaluator — how specific/concrete generated theme titles are.
+
+Ignores `case`; scores the titles in `output["themes"]` alone.
+"""
+
+from typing import Any
+
+from eval_types import Case, Score
+from prompts import title_specificity_eval_prompt
+
+from .llm_judge import LLMJudgeEvaluator
+
+
+class TitleSpecificityEvaluator(LLMJudgeEvaluator):
+    prompt_fn = staticmethod(title_specificity_eval_prompt)
+    metric_names = ("specificity",)
+
+    def _build_prompt(self, case: Case, output: Any) -> str | None:
+        """Build the specificity prompt from the output titles, or None to
+        skip the LLM call when there are none."""
+        titles = self.extract_theme_titles(output.get("themes", []))
+
+        if not titles:
+            # Nothing to evaluate — skip the LLM call; `_build_scores({})`
+            # then produces "0/0 titles specific".
+            return None
+
+        return self.prompt_fn(theme_titles=titles)
+
+    def _build_scores(self, parsed: dict) -> list[Score]:
+        """Return the fraction of titles the judge marked SPECIFIC as the
+        score, listing any vague titles in the comment."""
+        evaluations = parsed.get("evaluations", parsed)
+
+        n_specific = 0
+        vague_titles = []
+        for title, evaluation in evaluations.items():
+            decision = evaluation.get("decision", "VAGUE").upper()
+            if decision == "SPECIFIC":
+                n_specific += 1
+            else:
+                vague_titles.append(title)
+
+        n_total = len(evaluations)
+        ratio = n_specific / n_total if n_total > 0 else 0.0
+
+        comment = f"{n_specific}/{n_total} titles specific"
+        if vague_titles:
+            comment += f"\nVague: {', '.join(vague_titles)}"
+
+        return [Score("specificity", round(ratio, 2), comment)]

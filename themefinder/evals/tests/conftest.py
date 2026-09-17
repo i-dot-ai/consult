@@ -4,6 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pytest  # noqa: E402
+from eval_types import Case  # noqa: E402
 from settings import get_settings  # noqa: E402
 from utils import gateway  # noqa: E402
 
@@ -47,3 +48,12 @@ def make_gateway_model(
     return gateway.GatewayModel(
         name=name, family=family, health=health, supports_reasoning=supports_reasoning
     )
+
+
+def make_case(
+    inputs: dict | None = None,
+    expected_output: dict | None = None,
+    case_id: str = "case-1",
+) -> Case:
+    """Shared Case test fixture builder for evaluator adapter tests."""
+    return Case(id=case_id, inputs=inputs or {}, expected_output=expected_output)
