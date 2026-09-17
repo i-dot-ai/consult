@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { slide } from "svelte/transition";
 
   import {
@@ -36,11 +36,21 @@
   import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
   import Price from "../../svg/material/Price.svelte";
 
+  const FIVE_MINUTES = 5 * 60 * 1000;
+
   interface Props {
     consultationId: string;
+    pollFrequency?: number;
+    handleIntervalTick?: () => void;
   }
 
-  let { consultationId = "" }: Props = $props();
+  let {
+    consultationId = "",
+    pollFrequency = FIVE_MINUTES,
+    handleIntervalTick = () => {
+      $consultationStore.fetch(getApiConsultationUrl(consultationId));
+    },
+  }: Props = $props();
 
   let searchValue: string = $state("");
   let isConfirmModalOpen: boolean = $state(false);
@@ -84,6 +94,29 @@
       (question: Question) => question.theme_status === "confirmed",
     )?.length || 0,
   );
+
+  let pollingInterval: NodeJS.Timeout | null = $state(null);
+
+  const clearPollingInterval = () => {
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      pollingInterval = null;
+    }
+  }
+
+  $effect(() => {
+    const runningJob = $consultationStore.data?.running_job;
+
+    if (runningJob !== null && !pollingInterval) {
+      pollingInterval = setInterval(handleIntervalTick, pollFrequency);
+    } else if (pollingInterval && runningJob === null) {
+      clearPollingInterval();
+    }
+  });
+
+  onDestroy(() => {
+    clearPollingInterval();
+  })
 </script>
 
 <TitleRow
@@ -96,6 +129,28 @@
 </TitleRow>
 
 <hr class="my-6" />
+
+<svelte:boundary>
+  {@const runningJob = $consultationStore.data?.running_job}
+
+  {#if (runningJob && runningJob === "assign-themes")}
+    <div class="blink">
+      <Alert variant="info">
+        We are currently processing theme assignment for this consultation. This may take a while.
+      </Alert>
+    </div>
+  {/if}
+
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
+
+      <Panel>
+        <Alert variant="error">Unexpected Running Job Alert Error</Alert>
+      </Panel>
+    </div>
+  {/snippet}
+</svelte:boundary>
 
 <svelte:boundary>
   {#if $consultationStore.data}
