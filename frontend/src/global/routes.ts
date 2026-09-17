@@ -2,6 +2,7 @@ import urlJoin from "url-join";
 
 export enum Prefixes {
   ApiV1 = "/api",
+  ApiV2 = "/api/v2",
 }
 
 export enum Suffixes {
