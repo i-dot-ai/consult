@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any
 from eval_types import Case, Score
 from pydantic_evals.evaluators import Evaluator, EvaluatorContext, LLMJudge
 from pydantic_evals.evaluators.evaluator import EvaluationReason
-from pydantic_evals.otel._errors import SpanTreeRecordingError
+from pydantic_evals.otel import SpanTreeRecordingError
 
 from .base import EvaluatorPort
 
@@ -70,6 +70,7 @@ class PydanticEvalsEvaluator(EvaluatorPort):
             expected_output=case.expected_output,
             output=output,
             duration=0.0,
+            # `_span_tree` is a required kw-only dataclass field, so we must pass it
             _span_tree=SpanTreeRecordingError("span tree not recorded outside a run"),
             attributes={},
             metrics={},
