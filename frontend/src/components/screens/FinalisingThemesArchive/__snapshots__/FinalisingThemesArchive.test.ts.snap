@@ -101,7 +101,8 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
       <div
         class="w-full text-sky-800"
       >
-        We are currently processing theme assignment for this consultation. This may take a while.
+        We are currently processing theme assignment for this consultation. This
+        may take a while.
         <!---->
       </div>
       <!---->
