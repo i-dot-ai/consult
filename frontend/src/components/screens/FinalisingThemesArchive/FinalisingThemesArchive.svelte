@@ -107,7 +107,7 @@
   $effect(() => {
     const runningJob = $consultationStore.data?.running_job;
 
-    if (runningJob !== null && !pollingInterval) {
+    if (runningJob === "assign-themes" && !pollingInterval) {
       pollingInterval = setInterval(handleIntervalTick, pollFrequency);
     } else if (pollingInterval && runningJob === null) {
       clearPollingInterval();
@@ -131,9 +131,7 @@
 <hr class="my-6" />
 
 <svelte:boundary>
-  {@const runningJob = $consultationStore.data?.running_job}
-
-  {#if runningJob && runningJob === "assign-themes"}
+  {#if $consultationStore.data?.running_job === "assign-themes"}
     <div class="blink">
       <Alert variant="info">
         We are currently processing theme assignment for this consultation. This

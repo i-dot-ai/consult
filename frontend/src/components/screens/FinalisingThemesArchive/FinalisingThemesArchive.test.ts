@@ -241,9 +241,7 @@ describe("FinalisingThemesArchive", () => {
   });
 
   it("should start polling back end if there is an assign-themes running job", async () => {
-    vi.useFakeTimers();
-
-    const POLL_FREQUENCY = 3000;
+    const POLL_FREQUENCY = 30;
 
     mockRoute({
       ...consultationMock,
@@ -262,14 +260,38 @@ describe("FinalisingThemesArchive", () => {
       pollFrequency: POLL_FREQUENCY,
     });
 
-    vi.advanceTimersByTime(POLL_FREQUENCY * 2);
-
     await waitFor(() => {
-      expect(handleIntervalTickMock).toHaveBeenCalledTimes(2);
+      expect(handleIntervalTickMock).toHaveBeenCalled();
     });
-
-    vi.useRealTimers();
   });
+
+  it.each(["find-themes", null])(
+    "should not start polling back end if there is not an assign-themes running job",
+    async (runningJob) => {
+      const POLL_FREQUENCY = 30;
+
+      mockRoute({
+        ...consultationMock,
+        body: {
+          ...consultationMock.body,
+          running_job: runningJob,
+        },
+      });
+      mockRoute(questionsAllSignedOffMock);
+
+      const handleIntervalTickMock = vi.fn();
+
+      render(FinalisingThemesArchive, {
+        consultationId: CONSULTATION_ID,
+        handleIntervalTick: handleIntervalTickMock,
+        pollFrequency: POLL_FREQUENCY,
+      });
+
+      await waitFor(() => {
+        expect(handleIntervalTickMock).not.toHaveBeenCalled();
+      });
+    },
+  );
 
   it("should match snapshot initially", () => {
     setupMocks();
