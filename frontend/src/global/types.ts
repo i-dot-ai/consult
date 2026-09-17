@@ -185,6 +185,7 @@ export interface ConsultationResponse {
   code: string;
   users: User[];
   stage: ConsultationStage;
+  running_job: null | "assign-themes" | "find-themes";
 }
 export interface QuestionsResponse {
   count: number;
