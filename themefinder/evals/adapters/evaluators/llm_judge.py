@@ -7,7 +7,7 @@ import json
 import logging
 import random
 import re
-from typing import Any, Function
+from typing import Any, Callable
 from abc import abstractmethod
 
 import numpy as np
@@ -33,7 +33,7 @@ class LLMJudgeEvaluator(EvaluatorPort):
     """
 
     shuffle: bool = False
-    prompt_fn: Function = None
+    prompt_fn: Callable = None
 
     def __init__(self, llm: Any):
         """Store the injected judge LLM — any object with an async `ainvoke`
