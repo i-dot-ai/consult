@@ -22,6 +22,7 @@ export const consultationMock = {
       },
     ],
     created_at: "2025-11-03T13:51:12.067131Z",
+    running_job: "assign-themes",
   },
 };
 
