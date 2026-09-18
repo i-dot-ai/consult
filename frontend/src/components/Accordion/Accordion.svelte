@@ -12,11 +12,12 @@
   export interface Props {
     title: Snippet;
     content: Snippet;
-    variant?: "light" | "gray" | "gray-white" | "warning";
+    variant?: "light" | "gray" | "gray-white" | "warning" | "ghost";
     Icon?: Component;
     onClose?: () => void;
     onClick?: () => void;
     ariaLabel?: string;
+    initialExpanded?: boolean;
   }
 
   let {
@@ -27,9 +28,10 @@
     onClose,
     onClick,
     ariaLabel,
+    initialExpanded,
   }: Props = $props();
 
-  let expanded = $state(false);
+  let expanded = $state(initialExpanded);
 
   function getButtonVariant() {
     if (variant === "gray") {
@@ -37,6 +39,9 @@
     }
     if (variant === "warning") {
       return "warning";
+    }
+    if (variant === "ghost") {
+      return "gray";
     }
     return "default";
   }
@@ -120,15 +125,16 @@
   </div>
 </Button>
 
-{#if expanded}
+{#if expanded && content}
   <div
     transition:slide
     class={clsx([
-      variant === "light" && "bg-white",
-      variant === "gray" && "bg-neutral-100",
-      variant === "gray-white" && "bg-neutral-100",
-      variant === "warning" && "border-yellow-300 bg-yellow-50",
-      "rounded-b-lg border border-t-0 border-neutral-300 p-4",
+      variant === "light" && "bg-white p-4",
+      variant === "gray" && "bg-neutral-100 p-4",
+      variant === "gray-white" && "bg-neutral-100 p-4",
+      variant === "warning" && "border-yellow-300 bg-yellow-50 p-4",
+      variant === "ghost" && "border-transparent p-0",
+      "rounded-b-lg border border-t-0 border-neutral-300",
     ])}
   >
     {@render content()}
