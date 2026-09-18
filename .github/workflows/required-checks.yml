@@ -2,8 +2,6 @@ name: Required checks
 
 on:
   pull_request:
-    branches:
-      - main
 
 jobs:
   changes:
