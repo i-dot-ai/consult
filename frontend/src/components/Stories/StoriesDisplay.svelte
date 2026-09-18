@@ -21,6 +21,7 @@
   import { mockRoute, toTitleCase } from "../../global/utils.ts";
   import { queryClient } from "../../global/queryClient.ts";
   import Textarea from "../inputs/Textarea/Textarea.svelte";
+  import Accordion from "../Accordion/Accordion.svelte";
 
   const getSelectedUrlParam = () => {
     return Object.fromEntries(new URLSearchParams(window.location.search))
@@ -110,37 +111,44 @@
         {/if}
 
         {#each categoriesToDisplay as category (category)}
-          <h2 class="font-medium">{category || "General"}</h2>
-          {#each storiesToDisplay.filter((story) => story.category === category) as story (category + story.name)}
-            <li>
-              <a
-                href={`/stories?selected=${story.name}`}
-                class={clsx([
-                  "block",
-                  "w-full",
-                  "h-full",
-                  "px-2",
-                  "py-1",
-                  "rounded-lg",
-                  "transition-colors",
-                  "text-neutral-700",
-                  "hover:text-pink-500",
-                  "hover:bg-neutral-100",
-                  currStory?.name === story.name &&
-                    "text-primary hover:text-pink-600",
-                ])}
-                onclick={(e) => {
-                  e.preventDefault();
-                  selected = story.name;
-                  currStoryTab = "interactive";
-                  var newurl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?selected=${story.name}`;
-                  window.history.pushState({ path: newurl }, "", newurl);
-                }}
-              >
-                {story.name}
-              </a>
-            </li>
-          {/each}
+          <Accordion variant="ghost" initialExpanded={true}>
+            {#snippet title()}
+              <h2 class="font-medium">{category || "General"}</h2>
+            {/snippet}
+
+            {#snippet content()}
+              {#each storiesToDisplay.filter((story) => story.category === category) as story (category + story.name)}
+                <li class="ml-2">
+                  <a
+                    href={`/stories?selected=${story.name}`}
+                    class={clsx([
+                      "block",
+                      "w-full",
+                      "h-full",
+                      "px-2",
+                      "py-1",
+                      "rounded-lg",
+                      "transition-colors",
+                      "text-neutral-700",
+                      "hover:text-pink-500",
+                      "hover:bg-neutral-100",
+                      currStory?.name === story.name &&
+                        "text-primary hover:text-pink-600",
+                    ])}
+                    onclick={(e) => {
+                      e.preventDefault();
+                      selected = story.name;
+                      currStoryTab = "interactive";
+                      var newurl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?selected=${story.name}`;
+                      window.history.pushState({ path: newurl }, "", newurl);
+                    }}
+                  >
+                    {story.name}
+                  </a>
+                </li>
+              {/each}
+            {/snippet}
+          </Accordion>
         {/each}
       </ul>
     </Panel>
@@ -186,6 +194,10 @@
             {/each}
           </ul>
         </div>
+
+        {#if currStory.stories.length === 0}
+          <hr class="my-4"/>
+        {/if}
 
         <div class="mt-4">
           {#if currStoryTab !== "interactive" && storyTab}
