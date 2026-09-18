@@ -37,6 +37,8 @@ ENVIRONMENT = env("ENVIRONMENT")
 # Set per-runtime by Terraform in deployed envs; defaults to "local" for dev/test.
 EXECUTION_CONTEXT: str = env("EXECUTION_CONTEXT", default="local")
 
+DATA_SETUP_V2_ENABLED = env.bool("DATA_SETUP_V2_ENABLED", default=False)
+
 OTEL_ENABLED = env.bool("OTEL_ENABLED", default=False)
 OTEL_EXPORTER_OTLP_ENDPOINT = env.str("OTEL_EXPORTER_OTLP_ENDPOINT", default="")
 OTEL_SERVICE_NAME = env.str("OTEL_SERVICE_NAME", default="")
