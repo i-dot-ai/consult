@@ -34,6 +34,7 @@
   let selected = $state(getSelectedUrlParam());
   let currStory = $state(stories.find((story) => story.name === selected));
   let currStoryTab = $state("interactive");
+  let searchQuery = $state("");
 
   $effect(() => {
     // if currStory is declared with derived instead of state
@@ -63,6 +64,16 @@
   });
 
   const categories = [...new Set(stories.map((story) => story.category))];
+  let storiesToDisplay = $derived(
+    stories.filter((story) =>
+      story.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+    ),
+  );
+  let categoriesToDisplay = $derived(
+    categories.filter((category) =>
+      storiesToDisplay.some((story) => story.category === category),
+    ),
+  );
 
   $effect.pre(() => {
     const mocks = storyTab?.mocks || currStory?.mocks;
@@ -83,10 +94,24 @@
 <div class="grid grid-cols-4 gap-8">
   <aside class="sticky top-4 col-span-1 h-[80vh]">
     <Panel border={true} bg={false}>
+      <div class="mb-4">
+        <TextInput
+          id="story-search"
+          variant="search"
+          placeholder="Search stories"
+          value={searchQuery}
+          setValue={(newVal) => (searchQuery = newVal.trim())}
+        />
+      </div>
+
       <ul class="flex flex-col gap-2">
-        {#each categories as category (category)}
+        {#if storiesToDisplay.length === 0}
+          <p class="text-center text-neutral-500">No matching stories</p>
+        {/if}
+
+        {#each categoriesToDisplay as category (category)}
           <h2 class="font-medium">{category || "General"}</h2>
-          {#each stories.filter((story) => story.category === category) as story (category + story.name)}
+          {#each storiesToDisplay.filter((story) => story.category === category) as story (category + story.name)}
             <li>
               <a
                 href={`/stories?selected=${story.name}`}
