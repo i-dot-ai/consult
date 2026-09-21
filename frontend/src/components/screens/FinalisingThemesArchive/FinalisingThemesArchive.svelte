@@ -109,7 +109,7 @@
 
     if (runningJob === "assign-themes" && !pollingInterval) {
       pollingInterval = setInterval(handleIntervalTick, pollFrequency);
-    } else if (pollingInterval && runningJob === null) {
+    } else if (pollingInterval && runningJob !== "assign-themes") {
       clearPollingInterval();
     }
   });
