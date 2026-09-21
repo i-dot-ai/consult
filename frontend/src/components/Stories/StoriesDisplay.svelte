@@ -107,24 +107,27 @@
 
       <ul class="flex flex-col gap-2">
         {#if storiesToDisplay.length === 0}
-          <p class="text-center text-neutral-500">No matching stories</p>
+          <li>
+            <p class="text-center text-neutral-500">No matching stories</p>
+          </li>
         {/if}
 
         {#each categoriesToDisplay as category (category)}
-          <Accordion variant="ghost" initialExpanded={true}>
-            {#snippet title()}
-              <h2 class="font-medium">{category || "General"}</h2>
-            {/snippet}
+          <li>
+            <Accordion variant="ghost" initialExpanded={true}>
+              {#snippet title()}
+                <h2 class="font-medium">{category || "General"}</h2>
+              {/snippet}
 
-            {#snippet content()}
-              {#each storiesToDisplay.filter((story) => story.category === category) as story (category + story.name)}
-                <li class="ml-2">
+              {#snippet content()}
+                {#each storiesToDisplay.filter((story) => story.category === category) as story (category + story.name)}
                   <a
                     href={`/stories?selected=${story.name}`}
                     class={clsx([
                       "block",
                       "w-full",
                       "h-full",
+                      "ml-2",
                       "px-2",
                       "py-1",
                       "rounded-lg",
@@ -145,10 +148,10 @@
                   >
                     {story.name}
                   </a>
-                </li>
-              {/each}
-            {/snippet}
-          </Accordion>
+                {/each}
+              {/snippet}
+            </Accordion>
+          </li>
         {/each}
       </ul>
     </Panel>

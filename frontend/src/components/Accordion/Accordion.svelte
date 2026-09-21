@@ -129,12 +129,12 @@
   <div
     transition:slide
     class={clsx([
-      variant === "light" && "bg-white p-4",
-      variant === "gray" && "bg-neutral-100 p-4",
-      variant === "gray-white" && "bg-neutral-100 p-4",
-      variant === "warning" && "border-yellow-300 bg-yellow-50 p-4",
-      variant === "ghost" && "border-transparent p-0",
-      "rounded-b-lg border border-t-0 border-neutral-300",
+      variant === "light" && "bg-white border-neutral-300 p-4",
+      variant === "gray" && "bg-neutral-100 border-neutral-300 p-4",
+      variant === "gray-white" && "bg-neutral-100 border-neutral-300 p-4",
+      variant === "warning" && "bg-yellow-50 border-yellow-300 p-4",
+      variant === "ghost" && "bg-transparent border-transparent p-0 pt-2",
+      "rounded-b-lg border border-t-0",
     ])}
   >
     {@render content()}
