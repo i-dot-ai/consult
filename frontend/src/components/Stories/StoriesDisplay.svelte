@@ -196,7 +196,7 @@
         </div>
 
         {#if currStory.stories.length === 0}
-          <hr class="my-4"/>
+          <hr class="my-4" />
         {/if}
 
         <div class="mt-4">
