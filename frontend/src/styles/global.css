@@ -175,3 +175,21 @@ table iai-progress-bar .container .bar {
 table iai-progress-bar .container {
   background-color: #bebebe !important;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .blink-light {
+    animation: none;
+  }
+
+  .blink {
+    animation: none;
+  }
+
+  .growshrink {
+    animation: none;
+  }
+
+  .hozshift {
+    animation: none;
+  }
+}
