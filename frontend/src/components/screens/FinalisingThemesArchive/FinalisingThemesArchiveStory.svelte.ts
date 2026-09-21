@@ -131,10 +131,7 @@ export default {
     },
     {
       name: "Consultation With Running Job",
-      mocks: [
-        consultationMockWithRunningJob("assign-themes"),
-        questionsMock,
-      ],
+      mocks: [consultationMockWithRunningJob("assign-themes"), questionsMock],
       props: { consultationId: CONSULTATION_ID },
     },
   ],

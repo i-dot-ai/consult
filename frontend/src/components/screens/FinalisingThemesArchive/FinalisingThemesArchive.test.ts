@@ -247,7 +247,9 @@ describe("FinalisingThemesArchive", () => {
     async (runningJob) => {
       const POLL_FREQUENCY = 30;
 
-      mockRoute(consultationMockWithRunningJob(runningJob as "find-themes" | null));
+      mockRoute(
+        consultationMockWithRunningJob(runningJob as "find-themes" | null),
+      );
       mockRoute(questionsAllSignedOffMock);
 
       const handleIntervalTickMock = vi.fn();

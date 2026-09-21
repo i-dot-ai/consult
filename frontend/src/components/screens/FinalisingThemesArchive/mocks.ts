@@ -26,7 +26,9 @@ export const consultationMock = {
   },
 };
 
-export const consultationMockWithRunningJob = (job: "assign-themes" | "find-themes" | null) => ({
+export const consultationMockWithRunningJob = (
+  job: "assign-themes" | "find-themes" | null,
+) => ({
   ...consultationMock,
   body: {
     ...consultationMock.body,
