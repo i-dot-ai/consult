@@ -265,7 +265,7 @@
                   />
                 {:else if prop.type === "json"}
                   <CodeMirror
-                    value={JSON.stringify(prop.value)}
+                    value={JSON.stringify(prop.value, null, 2)}
                     lang={json()}
                     onchange={(newVal) => {
                       prop.value = JSON.parse(newVal);
