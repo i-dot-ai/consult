@@ -27,7 +27,7 @@
     "@sentry/astro": "^10.73.0",
     "@sveltestack/svelte-query": "^1.6.0",
     "@tanstack/svelte-query": "^6.1.48",
-    "astro": "^7.2.10",
+    "astro": "^7.3.1",
     "chart.js": "^4.5.0",
     "clsx": "^2.1.0",
     "path-to-regexp": "^8.4.0",
@@ -37,15 +37,15 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@melt-ui/pp": "^0.3.0",
-    "@playwright/test": "^1.62.1",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.3.3",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/svelte": "^5.4.2",
-    "@testing-library/user-event": "^14.6.6",
-    "@types/node": "^26.4.0",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/node": "^26.5.0",
     "@vitest/coverage-v8": "^4.1.11",
     "@vitest/eslint-plugin": "^1.6.27",
-    "eslint": "^10.9.1",
+    "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.0",
     "eslint-plugin-astro": "^3.1.0",
     "eslint-plugin-prettier": "^5.5.0",
@@ -64,6 +64,6 @@
     "tailwindcss": "^4.3.0",
     "typescript-eslint": "^8.69.0",
     "vitest": "^4.1.0",
-    "vitest-canvas-mock": "^1.1.5"
+    "vitest-canvas-mock": "^1.2.0"
   }
 }
