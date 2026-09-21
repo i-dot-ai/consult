@@ -8,11 +8,15 @@ import { mockRoute } from "../../../global/utils";
 import {
   CONSULTATION_ID,
   consultationMock,
+  consultationMockWithRunningJob,
   consultationUpdateMock,
   questionsAllSignedOffMock,
   questionsMock,
 } from "./mocks";
 import userEvent from "@testing-library/user-event";
+
+const RUNNING_JOB_ALERT =
+  "We are currently processing theme assignment for this consultation. This may take a while.";
 
 const mocks = {
   consultationMock,
@@ -180,6 +184,88 @@ describe("FinalisingThemesArchive", () => {
     });
   });
 
+  it("should not render running job alert if there is no running job", async () => {
+    mockRoute(consultationMockWithRunningJob(null));
+    mockRoute(questionsAllSignedOffMock);
+
+    render(FinalisingThemesArchive, {
+      consultationId: CONSULTATION_ID,
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText(RUNNING_JOB_ALERT)).not.toBeInTheDocument();
+    });
+  });
+
+  it("should render running job alert if there is an assign-themes running job", async () => {
+    mockRoute(consultationMockWithRunningJob("assign-themes"));
+    mockRoute(questionsAllSignedOffMock);
+
+    render(FinalisingThemesArchive, {
+      consultationId: CONSULTATION_ID,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(RUNNING_JOB_ALERT)).toBeInTheDocument();
+    });
+  });
+
+  it("should not render running job alert if there is a find-themes running job", async () => {
+    mockRoute(consultationMockWithRunningJob("find-themes"));
+    mockRoute(questionsAllSignedOffMock);
+
+    render(FinalisingThemesArchive, {
+      consultationId: CONSULTATION_ID,
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText(RUNNING_JOB_ALERT)).not.toBeInTheDocument();
+    });
+  });
+
+  it("should start polling back end if there is an assign-themes running job", async () => {
+    const POLL_FREQUENCY = 30;
+
+    mockRoute(consultationMockWithRunningJob("assign-themes"));
+    mockRoute(questionsAllSignedOffMock);
+
+    const handleIntervalTickMock = vi.fn();
+
+    render(FinalisingThemesArchive, {
+      consultationId: CONSULTATION_ID,
+      handleIntervalTick: handleIntervalTickMock,
+      pollFrequency: POLL_FREQUENCY,
+    });
+
+    await waitFor(() => {
+      expect(handleIntervalTickMock).toHaveBeenCalled();
+    });
+  });
+
+  it.each(["find-themes", null])(
+    "should not start polling back end if there is not an assign-themes running job",
+    async (runningJob) => {
+      const POLL_FREQUENCY = 30;
+
+      mockRoute(
+        consultationMockWithRunningJob(runningJob as "find-themes" | null),
+      );
+      mockRoute(questionsAllSignedOffMock);
+
+      const handleIntervalTickMock = vi.fn();
+
+      render(FinalisingThemesArchive, {
+        consultationId: CONSULTATION_ID,
+        handleIntervalTick: handleIntervalTickMock,
+        pollFrequency: POLL_FREQUENCY,
+      });
+
+      await waitFor(() => {
+        expect(handleIntervalTickMock).not.toHaveBeenCalled();
+      });
+    },
+  );
+
   it("should match snapshot initially", () => {
     setupMocks();
 
@@ -202,6 +288,17 @@ describe("FinalisingThemesArchive", () => {
           exact: false,
         }),
       ).toBeInTheDocument();
+    });
+    expect(container).toMatchSnapshot();
+  });
+
+  it("should match snapshot when a job is running", () => {
+    mockRoute(consultationMockWithRunningJob("assign-themes"));
+    mockRoute(consultationUpdateMock);
+    mockRoute(questionsMock);
+
+    const { container } = render(FinalisingThemesArchive, {
+      consultationId: CONSULTATION_ID,
     });
     expect(container).toMatchSnapshot();
   });

@@ -27,6 +27,7 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -72,6 +73,11 @@
   -webkit-animation: 2s blink ease-in-out infinite;
 }
 
+.blink-light {
+  animation: 2s blink-light ease-in-out infinite;
+  -webkit-animation: 2s blink-light ease-in-out infinite;
+}
+
 .growshrink {
   animation: 2s growshrink ease-in-out infinite;
   -webkit-animation: 2s growshrink ease-in-out infinite;
@@ -95,6 +101,18 @@
 
   50% {
     opacity: 0.33;
+  }
+}
+
+@keyframes blink-light {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
   }
 }
 
@@ -156,4 +174,22 @@ table iai-progress-bar .container .bar {
 .demo-filter iai-progress-bar .container,
 table iai-progress-bar .container {
   background-color: #bebebe !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blink-light {
+    animation: none;
+  }
+
+  .blink {
+    animation: none;
+  }
+
+  .growshrink {
+    animation: none;
+  }
+
+  .hozshift {
+    animation: none;
+  }
 }
