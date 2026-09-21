@@ -65,7 +65,7 @@ jobs:
             echo "update-type=version-update:semver-patch" >> "$GITHUB_OUTPUT"
           fi
 
-      # ── Minor/patch: approve and enable auto-merge ────────────────────────
+      # ── Minor/patch: approve and squash merge ────────────────────────────
       - name: Approve PR
         if: |
           steps.update-type.outputs.update-type == 'version-update:semver-minor' ||
@@ -82,7 +82,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr merge --auto --rebase "$PR_URL"
+        run: gh pr merge --auto --squash "$PR_URL"
 
       # ── Major bump: label, leave for manual review, and create Linear issue ──
       - name: Check if already labelled for manual review
