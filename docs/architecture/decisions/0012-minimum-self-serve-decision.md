@@ -4,7 +4,7 @@ Date: 2026-08-06
 
 ## Status
 
-Accepted
+Superseded by [0016](0016-user-permissions-mvp.md)
 
 ## Context
 
