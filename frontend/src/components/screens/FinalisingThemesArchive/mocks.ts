@@ -22,8 +22,19 @@ export const consultationMock = {
       },
     ],
     created_at: "2025-11-03T13:51:12.067131Z",
+    running_job: null,
   },
 };
+
+export const consultationMockWithRunningJob = (
+  job: "assign-themes" | "find-themes" | null,
+) => ({
+  ...consultationMock,
+  body: {
+    ...consultationMock.body,
+    running_job: job,
+  },
+});
 
 export const questionsMock = {
   url: getApiQuestionsUrl(CONSULTATION_ID),

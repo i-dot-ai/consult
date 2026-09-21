@@ -1,6 +1,7 @@
 import {
   CONSULTATION_ID,
   consultationMock,
+  consultationMockWithRunningJob,
   consultationUpdateMock,
   questionsAllSignedOffMock,
   questionsMock,
@@ -126,6 +127,11 @@ export default {
         },
         questionsMock,
       ],
+      props: { consultationId: CONSULTATION_ID },
+    },
+    {
+      name: "Consultation With Running Job",
+      mocks: [consultationMockWithRunningJob("assign-themes"), questionsMock],
       props: { consultationId: CONSULTATION_ID },
     },
   ],
