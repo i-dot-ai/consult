@@ -1,6 +1,7 @@
 import {
   CONSULTATION_ID,
   consultationMock,
+  consultationMockWithRunningJob,
   consultationUpdateMock,
   questionsAllSignedOffMock,
   questionsMock,
@@ -124,6 +125,14 @@ export default {
           ...consultationMock,
           throws: new Error("Fetch error"),
         },
+        questionsMock,
+      ],
+      props: { consultationId: CONSULTATION_ID },
+    },
+    {
+      name: "Consultation With Running Job",
+      mocks: [
+        consultationMockWithRunningJob("assign-themes"),
         questionsMock,
       ],
       props: { consultationId: CONSULTATION_ID },

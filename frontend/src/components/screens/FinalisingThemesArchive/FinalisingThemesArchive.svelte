@@ -132,7 +132,7 @@
 
 <svelte:boundary>
   {#if $consultationStore.data?.running_job === "assign-themes"}
-    <div class="blink">
+    <div class="blink-light">
       <Alert variant="info">
         We are currently processing theme assignment for this consultation. This
         may take a while.
