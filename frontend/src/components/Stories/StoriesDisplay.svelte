@@ -142,7 +142,7 @@
                       e.preventDefault();
                       selected = story.name;
                       currStoryTab = "interactive";
-                      var newurl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?selected=${story.name}`;
+                      const newurl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?selected=${story.name}`;
                       window.history.pushState({ path: newurl }, "", newurl);
                     }}
                   >
@@ -271,7 +271,11 @@
                     value={JSON.stringify(prop.value, null, 2)}
                     lang={json()}
                     onchange={(newVal) => {
-                      prop.value = JSON.parse(newVal);
+                      try {
+                        prop.value = JSON.parse(newVal);
+                      } catch {
+                        // Do nothing, invalid JSON
+                      }
                     }}
                   />
                 {:else if prop.type === "html"}
