@@ -26,7 +26,7 @@ Always use the PR template at `.github/PULL_REQUEST_TEMPLATE.md` when writing PR
 
 ## Technology Stack
 
-**Backend**: Python 3.12, Django 5.2.11, PostgreSQL with pgvector, Redis, Django RQ  
+**Backend**: Python 3.12, Django 6.1, PostgreSQL with pgvector, Redis, Django RQ  
 **Frontend**: Astro 5.16.6, Svelte, Tailwind CSS, TypeScript
 **Infrastructure**: AWS ECS, AWS Batch, Lambda, S3, Terraform  
 **AI Library**: `themefinder` 0.8.2 (theme discovery and assignment)  

@@ -3,7 +3,7 @@ import json
 import pytest
 from django.urls import reverse
 
-from consultations.models import User
+from authentication.models import User
 
 
 @pytest.mark.django_db

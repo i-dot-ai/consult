@@ -15,8 +15,6 @@ from django.utils import timezone
 from pgvector.django import VectorField
 from simple_history.models import HistoricalRecords
 
-from authentication.models import User
-
 
 # TODO: we don't use this anymore, remove it without manage.py makemigrations complaining
 class MultipleChoiceSchemaValidator(BaseValidator):
@@ -61,7 +59,15 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         CITIZEN_SPACE = "citizen-space", "Citizen Space"
 
     title = models.CharField(max_length=256)
-    users = models.ManyToManyField(User)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="owned_consultations",
+        help_text="The user who created this consultation (owner).",
+    )
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     stage = models.CharField(
         max_length=32,
         choices=Stage.choices,
@@ -280,7 +286,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     chosen_options = models.ManyToManyField("MultiChoiceAnswer", blank=True)
     embedding = VectorField(dimensions=settings.EMBEDDING_DIMENSION, null=True, blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
-    read_by = models.ManyToManyField(User, through="ResponseReadBy", blank=True)
+    read_by = models.ManyToManyField(settings.AUTH_USER_MODEL, through="ResponseReadBy", blank=True)
 
     class Meta:
         indexes: ClassVar[list] = [
@@ -308,7 +314,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class ResponseReadBy(models.Model):
     response = models.ForeignKey(Response, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -368,7 +374,9 @@ class SelectedTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     description = models.TextField()
     key = models.CharField(max_length=128, null=True, blank=True)
     version = models.IntegerField(default=1)
-    last_modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    last_modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints: ClassVar[list] = [
@@ -438,7 +446,7 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     response_annotation = models.ForeignKey("ResponseAnnotation", on_delete=models.CASCADE)
     theme = models.ForeignKey(SelectedTheme, on_delete=models.CASCADE)
     assigned_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=True, blank=True
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True
     )  # None for AI, User for human
 
     history = HistoricalRecords()
@@ -475,9 +483,13 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
 
     # Human review tracking
     human_reviewed = models.BooleanField(default=False)
-    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
     reviewed_at = models.DateTimeField(null=True, blank=True)
-    flagged_by = models.ManyToManyField(to=User, blank=True, related_name="flagged_by")
+    flagged_by = models.ManyToManyField(
+        to=settings.AUTH_USER_MODEL, blank=True, related_name="flagged_by"
+    )
 
     # History tracking
     history = HistoricalRecords()
@@ -596,5 +608,7 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
 
 class FileUpload(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, editable=False)
-    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
     s3_key = models.TextField(null=False, blank=False)

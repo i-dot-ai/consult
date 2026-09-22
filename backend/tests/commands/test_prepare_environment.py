@@ -22,7 +22,7 @@ class TestPrepareEnvironment:
 
         assert Consultation.objects.filter(code="KEEP_ME").exists()
 
-    @pytest.mark.django_db
+    @pytest.mark.django_db(transaction=True)
     @mock_aws
     @patch("consultations.management.commands.prepare_s3.HostingEnvironment")
     @patch("consultations.management.commands.prepare_environment.HostingEnvironment")
@@ -54,7 +54,7 @@ class TestPrepareEnvironment:
         # Admin user was created
         assert User.objects.filter(email="admin@example.com", is_staff=True).exists()
 
-    @pytest.mark.django_db
+    @pytest.mark.django_db(transaction=True)
     @mock_aws
     @patch("consultations.management.commands.prepare_s3.HostingEnvironment")
     @patch("consultations.management.commands.prepare_environment.HostingEnvironment")

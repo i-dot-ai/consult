@@ -266,6 +266,15 @@ class TestCloneConsultation:
 
         assert cloned_response.read_by.count() == 0
 
+    def test_created_by_is_not_cloned(self):
+        """A cloned consultation has no owner — created_by must be set explicitly after cloning."""
+        user = UserFactory()
+        original = ConsultationFactory(created_by=user)
+
+        cloned = clone_consultation(original)
+
+        assert cloned.created_by is None
+
     def test_response_flagged_by_is_not_cloned(self):
         original = ConsultationFactory()
         question = QuestionFactory(consultation=original)
