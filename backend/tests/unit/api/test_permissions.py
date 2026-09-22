@@ -6,7 +6,11 @@ import pytest
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
-from factories import UserFactory
+from consultations.api.views_v2.permissions import (
+    CanSeeConsultationV2,
+    IsConsultationOwnerOrSuperuser,
+)
+from factories import ConsultationFactory, UserFactory
 from tests.utils import build_url
 
 
@@ -219,3 +223,198 @@ class TestAPIViewPermissions:
         )
         isolated_user.delete()
         assert response.status_code == 403
+
+
+@pytest.mark.django_db
+class TestCanSeeConsultationV2:
+    def test_assigned_user_can_see_consultation(self, request_factory, non_staff_user, consultation):
+        """A user in the users M2M is granted access."""
+        request = request_factory.get("/")
+        request.user = non_staff_user
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id}
+
+        assert CanSeeConsultationV2().has_permission(request, view) is True
+
+    def test_owner_can_see_consultation(self, request_factory, non_staff_user):
+        """A user set as created_by is granted access even if not in users M2M."""
+        consultation = ConsultationFactory(created_by=non_staff_user)
+
+        request = request_factory.get("/")
+        request.user = non_staff_user
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id}
+
+        assert CanSeeConsultationV2().has_permission(request, view) is True
+
+    def test_unrelated_user_denied(self, request_factory, consultation):
+        """A user with no relationship to the consultation is denied."""
+        other_user = UserFactory()
+
+        request = request_factory.get("/")
+        request.user = other_user
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id}
+
+        assert CanSeeConsultationV2().has_permission(request, view) is False
+
+    def test_superuser_can_see_any_consultation(self, request_factory, consultation):
+        """A staff user bypasses the consultation check entirely."""
+        superuser = UserFactory(is_staff=True)
+
+        request = request_factory.get("/")
+        request.user = superuser
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id}
+
+        assert CanSeeConsultationV2().has_permission(request, view) is True
+
+    def test_staff_but_not_superuser_is_not_bypassed(self, request_factory, consultation):
+        """A non-staff user with no relationship to the consultation is denied."""
+        non_staff_user = UserFactory(is_staff=False)
+
+        request = request_factory.get("/")
+        request.user = non_staff_user
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id}
+
+        assert CanSeeConsultationV2().has_permission(request, view) is False
+
+    def test_unauthenticated_user_denied(self, request_factory, consultation):
+        """Unauthenticated requests are always denied."""
+        request = request_factory.get("/")
+        request.user = Mock()
+        request.user.is_authenticated = False
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id}
+
+        assert CanSeeConsultationV2().has_permission(request, view) is False
+
+    def test_missing_consultation_pk_grants_access(self, request_factory, non_staff_user):
+        """No consultation pk in kwargs means no restriction — allow through."""
+        request = request_factory.get("/")
+        request.user = non_staff_user
+
+        view = Mock()
+        view.kwargs = {}
+
+        assert CanSeeConsultationV2().has_permission(request, view) is True
+
+    def test_nonexistent_consultation_pk_denied(self, request_factory, non_staff_user):
+        """A pk that matches no consultation is denied."""
+        request = request_factory.get("/")
+        request.user = non_staff_user
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": uuid4()}
+
+        assert CanSeeConsultationV2().has_permission(request, view) is False
+
+    def test_consultation_pk_preferred_over_pk(self, request_factory, non_staff_user, consultation):
+        """consultation_pk takes precedence over pk in kwargs."""
+        request = request_factory.get("/")
+        request.user = non_staff_user
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id, "pk": uuid4()}
+
+        assert CanSeeConsultationV2().has_permission(request, view) is True
+
+
+@pytest.mark.django_db
+class TestIsConsultationOwnerOrSuperuser:
+    def test_owner_is_granted_access(self, request_factory, non_staff_user):
+        """The user recorded as created_by is granted access."""
+        consultation = ConsultationFactory(created_by=non_staff_user)
+
+        request = request_factory.get("/")
+        request.user = non_staff_user
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id}
+
+        assert IsConsultationOwnerOrSuperuser().has_permission(request, view) is True
+
+    def test_assigned_user_who_is_not_owner_is_denied(self, request_factory, non_staff_user, consultation):
+        """A user in the users M2M but not the owner is denied."""
+        # non_staff_user is in consultation.users but is not created_by
+        request = request_factory.get("/")
+        request.user = non_staff_user
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id}
+
+        assert IsConsultationOwnerOrSuperuser().has_permission(request, view) is False
+
+    def test_superuser_is_granted_access(self, request_factory, consultation):
+        """A staff user bypasses the ownership check entirely."""
+        superuser = UserFactory(is_staff=True)
+
+        request = request_factory.get("/")
+        request.user = superuser
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id}
+
+        assert IsConsultationOwnerOrSuperuser().has_permission(request, view) is True
+
+    def test_staff_but_not_superuser_is_denied(self, request_factory, consultation):
+        """A non-staff user with no ownership is denied."""
+        non_staff_user = UserFactory(is_staff=False)
+
+        request = request_factory.get("/")
+        request.user = non_staff_user
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id}
+
+        assert IsConsultationOwnerOrSuperuser().has_permission(request, view) is False
+
+    def test_unauthenticated_user_denied(self, request_factory, consultation):
+        """Unauthenticated requests are always denied."""
+        request = request_factory.get("/")
+        request.user = Mock()
+        request.user.is_authenticated = False
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id}
+
+        assert IsConsultationOwnerOrSuperuser().has_permission(request, view) is False
+
+    def test_missing_consultation_pk_denied(self, request_factory, non_staff_user):
+        """No consultation pk means we cannot verify ownership — deny."""
+        request = request_factory.get("/")
+        request.user = non_staff_user
+
+        view = Mock()
+        view.kwargs = {}
+
+        assert IsConsultationOwnerOrSuperuser().has_permission(request, view) is False
+
+    def test_nonexistent_consultation_pk_denied(self, request_factory, non_staff_user):
+        """A pk that matches no consultation is denied."""
+        request = request_factory.get("/")
+        request.user = non_staff_user
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": uuid4()}
+
+        assert IsConsultationOwnerOrSuperuser().has_permission(request, view) is False
+
+    def test_unrelated_user_denied(self, request_factory, consultation):
+        """A user with no relationship to the consultation is denied."""
+        other_user = UserFactory()
+
+        request = request_factory.get("/")
+        request.user = other_user
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id}
+
+        assert IsConsultationOwnerOrSuperuser().has_permission(request, view) is False

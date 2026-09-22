@@ -133,8 +133,8 @@ def _clone_candidate_themes(
 @transaction.atomic
 def clone_consultation(original: Consultation) -> Consultation:
     """
-    Clone a consultation including all related objects (with the
-    exception of users).
+    Clone a consultation including all related objects, including users,
+    with the exception of created_by.
     """
     # Clone consultation and give the same users access
     cloned = Consultation.objects.create(
