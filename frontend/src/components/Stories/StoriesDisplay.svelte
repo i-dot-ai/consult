@@ -21,6 +21,7 @@
   import { mockRoute, toTitleCase } from "../../global/utils.ts";
   import { queryClient } from "../../global/queryClient.ts";
   import Textarea from "../inputs/Textarea/Textarea.svelte";
+  import Accordion from "../Accordion/Accordion.svelte";
 
   const getSelectedUrlParam = () => {
     return Object.fromEntries(new URLSearchParams(window.location.search))
@@ -34,6 +35,7 @@
   let selected = $state(getSelectedUrlParam());
   let currStory = $state(stories.find((story) => story.name === selected));
   let currStoryTab = $state("interactive");
+  let searchQuery = $state("");
 
   $effect(() => {
     // if currStory is declared with derived instead of state
@@ -63,6 +65,16 @@
   });
 
   const categories = [...new Set(stories.map((story) => story.category))];
+  let storiesToDisplay = $derived(
+    stories.filter((story) =>
+      story.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+    ),
+  );
+  let categoriesToDisplay = $derived(
+    categories.filter((category) =>
+      storiesToDisplay.some((story) => story.category === category),
+    ),
+  );
 
   $effect.pre(() => {
     const mocks = storyTab?.mocks || currStory?.mocks;
@@ -83,39 +95,63 @@
 <div class="grid grid-cols-4 gap-8">
   <aside class="sticky top-4 col-span-1 h-[80vh]">
     <Panel border={true} bg={false}>
+      <div class="mb-4">
+        <TextInput
+          id="story-search"
+          variant="search"
+          placeholder="Search stories"
+          value={searchQuery}
+          setValue={(newVal) => (searchQuery = newVal.trim())}
+        />
+      </div>
+
       <ul class="flex flex-col gap-2">
-        {#each categories as category (category)}
-          <h2 class="font-medium">{category || "General"}</h2>
-          {#each stories.filter((story) => story.category === category) as story (category + story.name)}
-            <li>
-              <a
-                href={`/stories?selected=${story.name}`}
-                class={clsx([
-                  "block",
-                  "w-full",
-                  "h-full",
-                  "px-2",
-                  "py-1",
-                  "rounded-lg",
-                  "transition-colors",
-                  "text-neutral-700",
-                  "hover:text-pink-500",
-                  "hover:bg-neutral-100",
-                  currStory?.name === story.name &&
-                    "text-primary hover:text-pink-600",
-                ])}
-                onclick={(e) => {
-                  e.preventDefault();
-                  selected = story.name;
-                  currStoryTab = "interactive";
-                  var newurl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?selected=${story.name}`;
-                  window.history.pushState({ path: newurl }, "", newurl);
-                }}
-              >
-                {story.name}
-              </a>
-            </li>
-          {/each}
+        {#if storiesToDisplay.length === 0}
+          <li>
+            <p class="text-center text-neutral-500">No matching stories</p>
+          </li>
+        {/if}
+
+        {#each categoriesToDisplay as category (category)}
+          <li>
+            <Accordion variant="ghost" initialExpanded={true}>
+              {#snippet title()}
+                <h2 class="font-medium">{category || "General"}</h2>
+              {/snippet}
+
+              {#snippet content()}
+                {#each storiesToDisplay.filter((story) => story.category === category) as story (category + story.name)}
+                  <a
+                    href={`/stories?selected=${story.name}`}
+                    class={clsx([
+                      "block",
+                      "w-full",
+                      "h-full",
+                      "ml-2",
+                      "px-2",
+                      "py-1",
+                      "rounded-lg",
+                      "transition-colors",
+                      "text-neutral-700",
+                      "hover:text-pink-500",
+                      "hover:bg-neutral-100",
+                      currStory?.name === story.name &&
+                        "text-primary hover:text-pink-600",
+                    ])}
+                    onclick={(e) => {
+                      e.preventDefault();
+                      selected = story.name;
+                      currStoryTab = "interactive";
+                      const newurl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?selected=${story.name}`;
+                      window.history.pushState({ path: newurl }, "", newurl);
+                    }}
+                  >
+                    {story.name}
+                  </a>
+                {/each}
+              {/snippet}
+            </Accordion>
+          </li>
         {/each}
       </ul>
     </Panel>
@@ -161,6 +197,10 @@
             {/each}
           </ul>
         </div>
+
+        {#if currStory.stories.length === 0}
+          <hr class="my-4" />
+        {/if}
 
         <div class="mt-4">
           {#if currStoryTab !== "interactive" && storyTab}
@@ -228,10 +268,14 @@
                   />
                 {:else if prop.type === "json"}
                   <CodeMirror
-                    value={JSON.stringify(prop.value)}
+                    value={JSON.stringify(prop.value, null, 2)}
                     lang={json()}
                     onchange={(newVal) => {
-                      prop.value = JSON.parse(newVal);
+                      try {
+                        prop.value = JSON.parse(newVal);
+                      } catch {
+                        // Do nothing, invalid JSON
+                      }
                     }}
                   />
                 {:else if prop.type === "html"}
