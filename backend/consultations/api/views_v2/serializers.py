@@ -41,6 +41,13 @@ class ConsultationSerializerV2(serializers.ModelSerializer):
         ]
 
 
+class ConsultationCreateSerializerV2(serializers.ModelSerializer):
+    class Meta:
+        model = Consultation
+        fields: ClassVar[list] = ["id", "title"]
+        read_only_fields: ClassVar[list] = ["id"]
+
+
 class UserSerializer(serializers.ModelSerializer):
     emails = serializers.ListSerializer(child=serializers.EmailField(), required=False)
 
