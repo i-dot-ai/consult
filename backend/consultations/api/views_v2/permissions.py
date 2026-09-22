@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import permissions
 
 from consultations import models
@@ -5,15 +6,14 @@ from consultations import models
 
 class CanSeeConsultationV2(permissions.BasePermission):
     """
-    Allows access only to users who have access to the specific consultation.
+    Allows access only to superusers or users who are assigned to or own
+    the specific consultation.
     """
 
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
 
-        # Allow staff/admin users early — they should be able to pass view-level
-        # permission checks so that object-level checks (or IsAdminUser) can run.
         if getattr(request.user, "is_staff", False):
             return True
 
@@ -22,7 +22,32 @@ class CanSeeConsultationV2(permissions.BasePermission):
             # No consultation specified so no consultation to restrict access to
             return True
 
-        # Using exists() is more efficient than get_object_or_404 for permission checks
+        # Grant access if the user is assigned to or owns the consultation
         return models.Consultation.objects.filter(
-            id=consultation_pk, users__in=[request.user]
+            id=consultation_pk
+        ).filter(
+            Q(users=request.user) | Q(created_by=request.user)
+        ).exists()
+
+
+class IsConsultationOwnerOrSuperuser(permissions.BasePermission):
+    """
+    Allows access only to staff users or users who own the specific consultation
+    (i.e. are recorded as created_by). Use this to protect views that assigned
+    users should not be able to access, such as deletion or configuration.
+    """
+
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
+        if getattr(request.user, "is_staff", False):
+            return True
+
+        consultation_pk = view.kwargs.get("consultation_pk") or view.kwargs.get("pk")
+        if not consultation_pk:
+            return False
+
+        return models.Consultation.objects.filter(
+            id=consultation_pk, created_by=request.user
         ).exists()
