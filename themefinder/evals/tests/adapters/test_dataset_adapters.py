@@ -60,6 +60,15 @@ def test_local_json_dataset_adapter_loads_gambling_xs_cases(
         assert first_case.expected_output is None
 
 
+def test_local_json_dataset_adapter_raises_dataset_not_found_error():
+    adapter = LocalJSONDatasetAdapter()
+
+    with pytest.raises(DatasetNotFoundError, match="evals/data/does_not_exist"):
+        adapter.load_cases(
+            DatasetConfig(dataset="does_not_exist", component="generation")
+        )
+
+
 def test_langfuse_dataset_adapter_converts_items_to_cases():
     source_items = load_local_data(
         DatasetConfig(dataset="gambling_XS", component="mapping")
