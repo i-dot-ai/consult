@@ -9,22 +9,15 @@ from factories import ConsultationFactory, UserFactory
 
 
 @pytest.mark.django_db
-def test_v2_delete_consultation_assigned_user_returns_202(
+def test_v2_delete_consultation_assigned_user_not_owner_returns_403(
     client, consultation, non_staff_user_token
 ):
-    """An assigned user can queue deletion and gets 202 with a confirmation body."""
+    """An assigned user who is not the owner is denied — deletion requires ownership."""
     url = reverse("consultation-v2-detail", kwargs={"pk": consultation.id})
 
-    with patch("ingest.jobs.delete_consultation_job.delay") as mock_delay:
-        response = client.delete(url, headers={"Authorization": f"Bearer {non_staff_user_token}"})
+    response = client.delete(url, headers={"Authorization": f"Bearer {non_staff_user_token}"})
 
-    assert response.status_code == 202
-    body = response.json()
-    assert "queued" in body["message"]
-    assert body["consultation_id"] == str(consultation.id)
-    mock_delay.assert_called_once_with(consultation.id)
-
-    # Consultation must still exist — worker handles actual deletion
+    assert response.status_code == 403
     assert Consultation.objects.filter(pk=consultation.pk).exists()
 
 
