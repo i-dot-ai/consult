@@ -180,7 +180,8 @@ export interface ResponseBody {
   is_read: boolean;
 }
 
-export type RunningJob = null | "assign-themes" | "find-themes" | "delete-consultation";
+export type RunningJob =
+  null | "assign-themes" | "find-themes" | "delete-consultation";
 
 export interface ConsultationResponse {
   id: string;
