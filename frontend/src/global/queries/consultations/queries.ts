@@ -8,6 +8,16 @@ export function buildConsultationsGetQuery() {
   });
 }
 
+export function buildConsultationDeleteQuery(consultationId: string) {
+  return buildQuery<ConsultationsGetResponse>(
+    consultationQueryParts.url(consultationId),
+    {
+      key: consultationQueryParts.key(consultationId),
+      method: "DELETE",
+    },
+  );
+}
+
 export function buildConsultationGetQuery(consultationId: string) {
   return buildQuery<ConsultationsGetResponse>(
     consultationQueryParts.url(consultationId),
