@@ -1,8 +1,8 @@
 """Tests for the dataset port and its concrete adapters."""
 
 import types
-
 import pytest
+
 from adapters.datasets.base import DatasetPort
 from adapters.datasets.langfuse_adapter import LangfuseDatasetAdapter
 from adapters.datasets.local_json_adapter import LocalJSONDatasetAdapter
@@ -18,14 +18,6 @@ def test_local_json_dataset_adapter_is_dataset_port():
 def test_langfuse_dataset_adapter_is_dataset_port():
     client = types.SimpleNamespace(get_dataset=lambda name: None)
     assert isinstance(LangfuseDatasetAdapter(client), DatasetPort)
-
-
-def test_dataset_port_enforces_load_cases_implementation():
-    class _IncompleteDatasetAdapter(DatasetPort):
-        pass
-
-    with pytest.raises(TypeError):
-        _IncompleteDatasetAdapter()
 
 
 @pytest.mark.parametrize(

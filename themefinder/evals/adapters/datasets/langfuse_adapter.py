@@ -4,13 +4,14 @@ from typing import Any
 
 from datasets import DatasetConfig
 from eval_types import Case, DatasetNotFoundError
+from langfuse import Langfuse
 from langfuse.api import NotFoundError
 
 from .base import DatasetPort
 
 
 class LangfuseDatasetAdapter(DatasetPort):
-    def __init__(self, client: Any):
+    def __init__(self, client: Langfuse):
         self.client = client
 
     def load_cases(self, config: DatasetConfig) -> list[Case]:
