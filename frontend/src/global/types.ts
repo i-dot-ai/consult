@@ -61,6 +61,7 @@ export interface Consultation {
   code: string;
   stage: ConsultationStage;
   created_at: string;
+  running_job: RunningJob;
 }
 
 export interface ConsultationFolder {
@@ -179,14 +180,17 @@ export interface ResponseBody {
   is_read: boolean;
 }
 
+export type RunningJob = null | "assign-themes" | "find-themes" | "delete-consultation";
+
 export interface ConsultationResponse {
   id: string;
   title: string;
   code: string;
   users: User[];
   stage: ConsultationStage;
-  running_job?: null | "assign-themes" | "find-themes";
+  running_job?: RunningJob;
 }
+
 export interface QuestionsResponse {
   count: number;
   next: string | null;
