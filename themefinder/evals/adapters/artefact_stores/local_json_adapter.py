@@ -10,9 +10,9 @@ from eval_types import CaseOutcome, RunReport
 
 from .base import (
     ArtefactStorePort,
-    _build_results_payload,
-    _flatten_run_report,
-    _serialise_outcome,
+    build_results_payload,
+    flatten_run_report,
+    serialise_outcome,
 )
 
 
@@ -33,7 +33,7 @@ class LocalJSONArtefactStore(ArtefactStorePort):
         self._recorded_outcomes = []
 
     def record_case(self, outcome: CaseOutcome) -> None:
-        self._recorded_outcomes.append(_serialise_outcome(outcome))
+        self._recorded_outcomes.append(serialise_outcome(outcome))
 
     def finish_run(
         self,
@@ -48,7 +48,7 @@ class LocalJSONArtefactStore(ArtefactStorePort):
         output_path = self.output_dir / component / dataset / "results.json"
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        payload = _build_results_payload(
+        payload = build_results_payload(
             component,
             dataset,
             report,
@@ -59,7 +59,7 @@ class LocalJSONArtefactStore(ArtefactStorePort):
             encoding="utf-8",
         )
 
-        return _flatten_run_report(report)
+        return flatten_run_report(report)
 
     def _require_run_metadata(self, field: str) -> str:
         value = getattr(self, f"_{field}")

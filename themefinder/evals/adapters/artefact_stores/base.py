@@ -28,25 +28,25 @@ class ArtefactStorePort(ABC):
         """Finalise the run and return the flat benchmark-compatible result dict."""
 
 
-def _case_key(case: Case) -> str:
+def case_key(case: Case) -> str:
     question_part = case.metadata.get("question_part")
     if question_part:
         return str(question_part)
     return case.id
 
 
-def _json_safe(value: Any) -> Any:
+def json_safe(value: Any) -> Any:
     if value is None or isinstance(value, bool | int | float | str):
         return value
 
     if is_dataclass(value):
-        return _json_safe(asdict(value))
+        return json_safe(asdict(value))
 
     if isinstance(value, dict):
-        return {str(key): _json_safe(item) for key, item in value.items()}
+        return {str(key): json_safe(item) for key, item in value.items()}
 
     if isinstance(value, list | tuple | set):
-        return [_json_safe(item) for item in value]
+        return [json_safe(item) for item in value]
 
     return str(value)
 
@@ -54,9 +54,9 @@ def _json_safe(value: Any) -> Any:
 def _serialise_case(case: Case) -> dict[str, Any]:
     return {
         "id": case.id,
-        "inputs": _json_safe(case.inputs),
-        "expected_output": _json_safe(case.expected_output),
-        "metadata": _json_safe(case.metadata),
+        "inputs": json_safe(case.inputs),
+        "expected_output": json_safe(case.expected_output),
+        "metadata": json_safe(case.metadata),
     }
 
 
@@ -68,21 +68,21 @@ def _serialise_score(score: Score) -> dict[str, Any]:
     }
 
 
-def _serialise_outcome(outcome: CaseOutcome) -> dict[str, Any]:
+def serialise_outcome(outcome: CaseOutcome) -> dict[str, Any]:
     return {
         "case": _serialise_case(outcome.case),
-        "output": _json_safe(outcome.output),
+        "output": json_safe(outcome.output),
         "scores": [_serialise_score(score) for score in outcome.scores],
         "error": outcome.error,
     }
 
 
-def _flatten_run_report(report: RunReport) -> dict[str, Any]:
+def flatten_run_report(report: RunReport) -> dict[str, Any]:
     results: dict[str, Any] = {}
 
     for outcome in report.outcomes:
-        key = _case_key(outcome.case)
-        results[f"{key}_output"] = _json_safe(outcome.output)
+        key = case_key(outcome.case)
+        results[f"{key}_output"] = json_safe(outcome.output)
 
         for score in outcome.scores:
             results[f"{key}_{score.name}"] = score.value
@@ -90,7 +90,7 @@ def _flatten_run_report(report: RunReport) -> dict[str, Any]:
     return results
 
 
-def _build_results_payload(
+def build_results_payload(
     component: str,
     dataset: str,
     report: RunReport,
@@ -98,16 +98,16 @@ def _build_results_payload(
     recorded_outcomes: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     outcomes = recorded_outcomes or [
-        _serialise_outcome(outcome) for outcome in report.outcomes
+        serialise_outcome(outcome) for outcome in report.outcomes
     ]
 
     return {
         "component": component,
         "dataset": dataset,
-        "results": _flatten_run_report(report),
+        "results": flatten_run_report(report),
         "outcomes": outcomes,
         "errors": {
-            _case_key(outcome.case): outcome.error
+            case_key(outcome.case): outcome.error
             for outcome in report.outcomes
             if outcome.error is not None
         },

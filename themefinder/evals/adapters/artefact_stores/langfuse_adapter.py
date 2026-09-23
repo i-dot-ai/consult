@@ -10,7 +10,7 @@ from eval_types import CaseOutcome, RunReport
 from utils import langfuse as langfuse_utils
 from utils.langfuse import LangfuseContext
 
-from .base import ArtefactStorePort, _case_key, _flatten_run_report, _json_safe
+from .base import ArtefactStorePort, case_key, flatten_run_report, json_safe
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class LangfuseArtefactStore(ArtefactStorePort):
         if self.owns_context:
             langfuse_utils.flush(self.context)
 
-        return _flatten_run_report(report)
+        return flatten_run_report(report)
 
     @contextmanager
     def _trace_for_outcome(
@@ -127,9 +127,9 @@ class LangfuseArtefactStore(ArtefactStorePort):
             return None, None
 
         trace_kwargs = {
-            "name": f"{self._run_name}:{_case_key(outcome.case)}",
-            "input": _json_safe(outcome.case.inputs),
-            "output": _json_safe(outcome.output),
+            "name": f"{self._run_name}:{case_key(outcome.case)}",
+            "input": json_safe(outcome.case.inputs),
+            "output": json_safe(outcome.output),
             "metadata": self.context.metadata,
             "tags": self.context.tags,
             "session_id": self.context.session_id,
@@ -169,7 +169,7 @@ class LangfuseArtefactStore(ArtefactStorePort):
     def _update_trace(self, trace: Any, *, output: Any) -> None:
         update = getattr(trace, "update", None)
         if callable(update):
-            update(output=_json_safe(output))
+            update(output=json_safe(output))
 
     @property
     def _run_name(self) -> str:
