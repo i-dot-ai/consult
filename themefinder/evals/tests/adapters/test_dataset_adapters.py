@@ -8,6 +8,7 @@ from adapters.datasets.langfuse_adapter import LangfuseDatasetAdapter
 from adapters.datasets.local_json_adapter import LocalJSONDatasetAdapter
 from datasets import DatasetConfig, load_local_data
 from eval_types import Case, DatasetNotFoundError
+from langfuse.api import NotFoundError
 
 
 def test_local_json_dataset_adapter_is_dataset_port():
@@ -92,9 +93,20 @@ def test_langfuse_dataset_adapter_converts_items_to_cases():
 def test_langfuse_dataset_adapter_raises_dataset_not_found_error():
     class _MissingDatasetClient:
         def get_dataset(self, name):
-            raise RuntimeError("missing")
+            raise NotFoundError(body={"message": "missing"})
 
     adapter = LangfuseDatasetAdapter(_MissingDatasetClient())
 
     with pytest.raises(DatasetNotFoundError, match="eval/gambling_XS/generation"):
+        adapter.load_cases(DatasetConfig(dataset="gambling_XS", component="generation"))
+
+
+def test_langfuse_dataset_adapter_preserves_non_not_found_errors():
+    class _FailingDatasetClient:
+        def get_dataset(self, name):
+            raise RuntimeError("boom")
+
+    adapter = LangfuseDatasetAdapter(_FailingDatasetClient())
+
+    with pytest.raises(RuntimeError, match="boom"):
         adapter.load_cases(DatasetConfig(dataset="gambling_XS", component="generation"))

@@ -4,6 +4,7 @@ from typing import Any
 
 from datasets import DatasetConfig
 from eval_types import Case, DatasetNotFoundError
+from langfuse.api import NotFoundError
 
 from .base import DatasetPort
 
@@ -16,7 +17,7 @@ class LangfuseDatasetAdapter(DatasetPort):
         """Load a Langfuse dataset and normalise its items into `Case` objects."""
         try:
             dataset = self.client.get_dataset(config.name)
-        except Exception as exc:
+        except NotFoundError as exc:
             raise DatasetNotFoundError(
                 f"Langfuse dataset {config.name} not found or inaccessible"
             ) from exc
