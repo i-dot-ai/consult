@@ -36,9 +36,12 @@ class ConsultationViewSet(CreateModelMixin, ReadOnlyModelViewSet):
             Q(users=self.request.user) | Q(created_by=self.request.user)
         ).distinct()
 
+    def perform_destroy(self, instance):
+        delete_consultation_job.delay(instance.id)
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        delete_consultation_job.delay(instance.id)
+        self.perform_destroy(instance)
         return Response(
             {
                 "message": f"Deletion of consultation '{instance.title}' has been queued",
