@@ -23,11 +23,11 @@ class CanSeeConsultationV2(permissions.BasePermission):
             return True
 
         # Grant access if the user is assigned to or owns the consultation
-        return models.Consultation.objects.filter(
-            id=consultation_pk
-        ).filter(
-            Q(users=request.user) | Q(created_by=request.user)
-        ).exists()
+        return (
+            models.Consultation.objects.filter(id=consultation_pk)
+            .filter(Q(users=request.user) | Q(created_by=request.user))
+            .exists()
+        )
 
 
 class IsConsultationOwnerOrSuperuser(permissions.BasePermission):

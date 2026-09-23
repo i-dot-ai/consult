@@ -377,9 +377,7 @@ class SelectedTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     description = models.TextField()
     key = models.CharField(max_length=128, null=True, blank=True)
     version = models.IntegerField(default=1)
-    last_modified_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    last_modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints: ClassVar[list] = [
@@ -486,13 +484,9 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
 
     # Human review tracking
     human_reviewed = models.BooleanField(default=False)
-    reviewed_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
-    flagged_by = models.ManyToManyField(
-        to=User, blank=True, related_name="flagged_by"
-    )
+    flagged_by = models.ManyToManyField(to=User, blank=True, related_name="flagged_by")
 
     # History tracking
     history = HistoricalRecords()
@@ -611,7 +605,5 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
 
 class FileUpload(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, editable=False)
-    uploaded_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     s3_key = models.TextField(null=False, blank=False)
