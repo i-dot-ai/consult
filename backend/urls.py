@@ -19,7 +19,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
-from consultations import urls
+from consultations import urls, urls_v2
 
 urlpatterns = [
     path("", include(urls)),
@@ -28,4 +28,4 @@ urlpatterns = [
 ]
 
 if settings.DATA_SETUP_V2_ENABLED:
-    urlpatterns.insert(0, path("api/v2/", include("consultations.api.urls_v2")))
+    urlpatterns.insert(0, path("", include(urls_v2)))

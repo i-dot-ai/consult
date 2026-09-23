@@ -6,7 +6,7 @@ import pytest
 from consultations.api.permissions import (
     CanSeeConsultation,
 )
-from consultations.api.views_v2.permissions import (
+from consultations.api_v2.permissions import (
     CanSeeConsultationV2,
     IsConsultationOwnerOrSuperuser,
 )
@@ -227,7 +227,9 @@ class TestAPIViewPermissions:
 
 @pytest.mark.django_db
 class TestCanSeeConsultationV2:
-    def test_assigned_user_can_see_consultation(self, request_factory, non_staff_user, consultation):
+    def test_assigned_user_can_see_consultation(
+        self, request_factory, non_staff_user, consultation
+    ):
         """A user in the users M2M is granted access."""
         request = request_factory.get("/")
         request.user = non_staff_user
@@ -341,7 +343,9 @@ class TestIsConsultationOwnerOrSuperuser:
 
         assert IsConsultationOwnerOrSuperuser().has_permission(request, view) is True
 
-    def test_assigned_user_who_is_not_owner_is_denied(self, request_factory, non_staff_user, consultation):
+    def test_assigned_user_who_is_not_owner_is_denied(
+        self, request_factory, non_staff_user, consultation
+    ):
         """A user in the users M2M but not the owner is denied."""
         # non_staff_user is in consultation.users but is not created_by
         request = request_factory.get("/")
