@@ -102,18 +102,11 @@ class LangfuseArtefactStore(ArtefactStorePort):
             return
 
         try:
-            with dataset_item.run(
+            run_cm = dataset_item.run(
                 run_name=self._run_name,
                 run_metadata=self.context.metadata,
-            ) as trace:
-                update_trace = getattr(trace, "update_trace", None)
-                if callable(update_trace):
-                    update_trace(
-                        session_id=self.context.session_id,
-                        tags=self.context.tags,
-                        metadata=self.context.metadata,
-                    )
-                yield trace, self._trace_id(trace)
+            )
+            trace = run_cm.__enter__()
         except Exception as exc:
             logger.warning(
                 "Failed to create Langfuse dataset-item trace for %s: %s",
@@ -121,6 +114,24 @@ class LangfuseArtefactStore(ArtefactStorePort):
                 exc,
             )
             yield self._create_unlinked_trace(outcome)
+            return
+
+        update_trace = getattr(trace, "update_trace", None)
+        if callable(update_trace):
+            update_trace(
+                session_id=self.context.session_id,
+                tags=self.context.tags,
+                metadata=self.context.metadata,
+            )
+
+        try:
+            yield trace, self._trace_id(trace)
+        except BaseException as exc:
+            suppress = run_cm.__exit__(type(exc), exc, exc.__traceback__)
+            if not suppress:
+                raise
+        else:
+            run_cm.__exit__(None, None, None)
 
     def _create_unlinked_trace(self, outcome: CaseOutcome) -> tuple[Any, str | None]:
         if not self.context.client:

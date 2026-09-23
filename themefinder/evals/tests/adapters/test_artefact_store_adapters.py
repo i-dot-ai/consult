@@ -233,6 +233,29 @@ class TestLangfuseArtefactStore:
             }
         ]
 
+    def test_record_case_propagates_errors_after_yield_for_dataset_item_traces(self):
+        client = _FakeLangfuseClient()
+        client.dataset_items["item-123"] = _FakeDatasetItem("item-123")
+        client.raise_on_create_score = RuntimeError("boom")
+        context = LangfuseContext(client=client, session_id="session-1")
+        store = LangfuseArtefactStore(context=context, owns_context=False)
+        outcome = _make_outcome(
+            case=_make_case(
+                case_id="case-9",
+                question_part="question_part_9",
+                langfuse_item_id="item-123",
+            )
+        )
+
+        store.start_run("generation", "demo")
+
+        with pytest.raises(RuntimeError, match="boom"):
+            store.record_case(outcome)
+
+        dataset_item = client.dataset_items["item-123"]
+        assert dataset_item.exit_calls == [(RuntimeError, "boom")]
+        assert client.create_trace_calls == []
+
     def test_finish_run_flushes_when_context_is_owned(self):
         client = _FakeLangfuseClient()
         context = LangfuseContext(client=client)
@@ -297,13 +320,20 @@ class _FakeDatasetItem:
         self.item_id = item_id
         self.run_calls: list[dict] = []
         self.last_trace: _FakeTrace | None = None
+        self.exit_calls: list[tuple[type[BaseException] | None, str | None]] = []
 
     @contextmanager
     def run(self, *, run_name: str, run_metadata: dict | None = None):
         self.run_calls.append({"run_name": run_name, "run_metadata": run_metadata})
         trace = _FakeTrace(f"dataset-trace-{self.item_id}")
         self.last_trace = trace
-        yield trace
+        try:
+            yield trace
+        except BaseException as exc:
+            self.exit_calls.append((type(exc), str(exc)))
+            raise
+        else:
+            self.exit_calls.append((None, None))
 
 
 class _FakeLangfuseClient:
@@ -312,6 +342,7 @@ class _FakeLangfuseClient:
         self.create_trace_calls: list[dict] = []
         self.scores: list[dict] = []
         self.flush_calls = 0
+        self.raise_on_create_score: BaseException | None = None
 
     def get_dataset_item(self, item_id: str):
         return self.dataset_items.get(item_id)
@@ -321,6 +352,8 @@ class _FakeLangfuseClient:
         return _FakeTrace(f"trace-{len(self.create_trace_calls)}")
 
     def create_score(self, **kwargs):
+        if self.raise_on_create_score is not None:
+            raise self.raise_on_create_score
         self.scores.append(kwargs)
 
     def flush(self):
