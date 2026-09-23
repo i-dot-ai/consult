@@ -48,6 +48,21 @@ class ConsultationCreateSerializerV2(serializers.ModelSerializer):
         read_only_fields: ClassVar[list] = ["id"]
 
 
+class UserCreateSerializerV2(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields: ClassVar[list] = ["id", "email", "is_staff"]
+        read_only_fields: ClassVar[list] = ["id", "is_staff"]
+
+    def to_internal_value(self, data):
+        if email := data.get("email"):
+            data = {**data, "email": email.lower()}
+        return super().to_internal_value(data)
+
+    def create(self, validated_data):
+        return User.objects.create_user(email=validated_data["email"])
+
+
 class UserSerializer(serializers.ModelSerializer):
     emails = serializers.ListSerializer(child=serializers.EmailField(), required=False)
 
