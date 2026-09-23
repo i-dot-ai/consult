@@ -4,10 +4,12 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
+from consultations.api_v2.permissions import CanSeeConsultationV2
+from consultations.api_v2.serializers import (
+    ConsultationCreateSerializerV2,
+    ConsultationSerializerV2,
+)
 from consultations.models import Consultation
-
-from .permissions import CanSeeConsultationV2
-from .serializers import ConsultationCreateSerializerV2, ConsultationSerializerV2
 
 
 class ConsultationViewSet(CreateModelMixin, ReadOnlyModelViewSet):
