@@ -322,23 +322,3 @@ def test_delete_consultation_with_multiple_questions():
         ).count()
         == 0
     )
-
-
-@pytest.mark.django_db
-def test_delete_consultation_job_sets_running_job_before_deletion():
-    """The job marks running_job=DELETING_CONSULTATION before any data is removed."""
-    consultation = Consultation.objects.create(title="Test Consultation")
-    states_seen = []
-
-    original_delete = Consultation.delete
-
-    def capture_running_job(self, *args, **kwargs):
-        # Refresh from DB so we see what was persisted, not just in-memory state
-        self.refresh_from_db()
-        states_seen.append(self.running_job)
-        return original_delete(self, *args, **kwargs)
-
-    with patch.object(Consultation, "delete", capture_running_job):
-        delete_consultation_job(consultation.id)
-
-    assert states_seen == [Consultation.RunningJob.DELETING]

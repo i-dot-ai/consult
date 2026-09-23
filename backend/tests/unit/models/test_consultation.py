@@ -20,12 +20,6 @@ def test_consultation_data_source_choices():
     assert Consultation.DataSource.CITIZEN_SPACE == "citizen-space"
 
 
-def test_consultation_running_job_choices():
-    assert Consultation.RunningJob.FIND_THEMES == "find-themes"
-    assert Consultation.RunningJob.ASSIGN_THEMES == "assign-themes"
-    assert Consultation.RunningJob.DELETING == "deleting"
-
-
 def test_initial_consultation_created_by_is_none():
     consultation = Consultation()
     assert consultation.created_by is None

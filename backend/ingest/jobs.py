@@ -115,8 +115,6 @@ def delete_consultation_job(consultation_id: UUID):
         # Fetch the consultation from database
         consultation = models.Consultation.objects.get(id=consultation_id)
         consultation_title = consultation.title
-        consultation.running_job = models.Consultation.RunningJob.DELETING
-        consultation.save(update_fields=["running_job"])
     except models.Consultation.DoesNotExist:
         logger.error(
             "Consultation {consultation_id} not found, may have already been deleted",
