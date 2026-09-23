@@ -55,6 +55,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     class RunningJob(models.TextChoices):
         FIND_THEMES = "find-themes"
         ASSIGN_THEMES = "assign-themes"
+        DELETE_CONSULTATION = "delete-consultation"
 
     class DataSource(models.TextChoices):
         QUALTRICS = "qualtrics", "Qualtrics"
@@ -76,7 +77,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         default=Stage.SETUP,
     )
     running_job = models.CharField(
-        max_length=16,
+        max_length=32,
         choices=RunningJob,
         null=True,
         default=None,
