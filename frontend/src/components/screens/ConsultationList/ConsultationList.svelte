@@ -38,9 +38,7 @@
     deleteAlertDuration: number;
   }
 
-  const {
-    deleteAlertDuration = 5000,
-  }: Props = $props();
+  const { deleteAlertDuration = 5000 }: Props = $props();
 
   let deleteConsultationId = $state("");
   let alerts: string[] = $state([]);
@@ -51,40 +49,43 @@
   );
 
   const consultationRows = $derived(
-    consultations.query.data?.results.filter(
-      (consultation: Consultation) => consultation.running_job !== "delete-consultation"
-    ).map((consultation: Consultation) => ({
-      name: consultation.title,
-      createdAt: consultation.created_at,
-      evalLink: {
-        url: getConsultationEvalUrl(consultation.id),
-        ariaLabel: `View Evaluation for ${consultation.title}`,
-        text: "View Evaluation",
-      },
-      themesLink: {
-        url: getFinaliseThemesUrl(consultation.id),
-        ariaLabel: `Finalise Themes for ${consultation.title}`,
-        text: "Finalise Themes",
-      },
-      dashboardLink: {
-        url: getConsultationDetailUrl(consultation.id),
-        ariaLabel: `View Dashboard for ${consultation.title}`,
-        text: "View Dashboard",
-      },
-      actions: {
-        id: consultation.id,
+    consultations.query.data?.results
+      .filter(
+        (consultation: Consultation) =>
+          consultation.running_job !== "delete-consultation",
+      )
+      .map((consultation: Consultation) => ({
         name: consultation.title,
-      },
-    })),
+        createdAt: consultation.created_at,
+        evalLink: {
+          url: getConsultationEvalUrl(consultation.id),
+          ariaLabel: `View Evaluation for ${consultation.title}`,
+          text: "View Evaluation",
+        },
+        themesLink: {
+          url: getFinaliseThemesUrl(consultation.id),
+          ariaLabel: `Finalise Themes for ${consultation.title}`,
+          text: "Finalise Themes",
+        },
+        dashboardLink: {
+          url: getConsultationDetailUrl(consultation.id),
+          ariaLabel: `View Dashboard for ${consultation.title}`,
+          text: "View Dashboard",
+        },
+        actions: {
+          id: consultation.id,
+          name: consultation.title,
+        },
+      })),
   );
 
   let alertTimeouts: ReturnType<typeof setTimeout>[] = [];
 
   onDestroy(() => {
-    alertTimeouts.forEach(timeout => {
+    alertTimeouts.forEach((timeout) => {
       clearInterval(timeout);
-    })
-  })
+    });
+  });
 </script>
 
 <section>
@@ -205,20 +206,17 @@
 
     // Display alert that the consultation has been deleted
     const consultationToDelete = consultations.query?.data?.results.find(
-      (consultation: Consultation) => consultation.id === deleteConsultationId
+      (consultation: Consultation) => consultation.id === deleteConsultationId,
     );
     const newAlertText = `Consultation ${consultationToDelete.title} has been deleted.`;
     alerts = [...alerts, newAlertText];
 
     // Set timeout to remove alert
     const newAlertTimeout = setTimeout(() => {
-      alerts = alerts.filter(alert => alert !== newAlertText);
+      alerts = alerts.filter((alert) => alert !== newAlertText);
     }, deleteAlertDuration);
 
-    alertTimeouts = [
-      ...alertTimeouts,
-      newAlertTimeout,
-    ];
+    alertTimeouts = [...alertTimeouts, newAlertTimeout];
 
     // Reset consultation selected for deletion
     deleteConsultationId = "";
