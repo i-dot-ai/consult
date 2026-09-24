@@ -116,23 +116,28 @@ def create_issue(api_key: str, issue_input: dict) -> str:
     sys.exit(1)
 
 
-def attach_pr(api_key: str, issue_id: str, pr_url: str, pr_title: str) -> None:
-    """Link the GitHub PR URL to the Linear issue as an attachment."""
+def attach_pr(api_key: str, issue_id: str, pr_url: str) -> None:
+    """Link the GitHub PR URL to the Linear issue as a tracked GitHub PR attachment.
+
+    Uses attachmentLinkGitHubPR (rather than attachmentLinkURL) so that Linear's
+    GitHub integration can monitor the PR lifecycle and automatically transition
+    the issue to Done when the PR is merged.
+    """
     resp = linear_query(api_key, """
-        mutation AttachPR($issueId: String!, $url: String!, $title: String) {
-          attachmentLinkURL(issueId: $issueId, url: $url, title: $title) {
+        mutation AttachPR($issueId: String!, $url: String!) {
+          attachmentLinkGitHubPR(issueId: $issueId, url: $url) {
             success
             attachment { id }
           }
         }
-    """, {"issueId": issue_id, "url": pr_url, "title": pr_title})
+    """, {"issueId": issue_id, "url": pr_url})
 
-    success = (resp.get("data") or {}).get("attachmentLinkURL", {}).get("success")
+    success = (resp.get("data") or {}).get("attachmentLinkGitHubPR", {}).get("success")
     if success:
         print("Attached PR to Linear issue")
     else:
         # Non-fatal: issue was created, attachment is best-effort
-        print("WARNING: failed to attach PR URL to Linear issue")
+        print("WARNING: failed to attach GitHub PR to Linear issue")
         print(json.dumps(resp, indent=2))
 
 
@@ -197,7 +202,7 @@ def main() -> None:
         issue_input["assigneeId"] = assignee_id
 
     issue_id = create_issue(api_key, issue_input)
-    attach_pr(api_key, issue_id, pr_url, pr_title)
+    attach_pr(api_key, issue_id, pr_url)
 
 
 if __name__ == "__main__":
