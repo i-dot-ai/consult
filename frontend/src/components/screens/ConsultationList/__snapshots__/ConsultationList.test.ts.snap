@@ -2,6 +2,39 @@
 
 exports[`ConsultationList > should match snapshot after loading 1`] = `
 <div>
+  <section>
+    <!---->
+    <h2
+      class="text-neutral-700 text-lg"
+      style=""
+    >
+      <!---->
+      Consultations
+      
+      
+    </h2>
+    
+    <!---->
+     
+    <p
+      class="text-neutral-500 text-sm"
+    >
+      2 consultations
+      <!---->
+    </p>
+  </section>
+   
+  <section>
+    <div
+      class="sr-only"
+    >
+      No alerts to list
+    </div>
+    <!---->
+     
+    <!---->
+  </section>
+   
   <section
     class="mt-4"
   >
@@ -217,6 +250,17 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 </span>
                 <!---->
               </th>
+              <th
+                aria-sort="none"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
+                data-testid="header-actions"
+                scope="col"
+              >
+                <span>
+                  Actions
+                </span>
+                <!---->
+              </th>
               
             </tr>
           </thead>
@@ -332,6 +376,53 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 
                 <!---->
               </td>
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+                data-testid="cell-actions"
+              >
+                <!---->
+                <!---->
+                <div>
+                  <!---->
+                  <button
+                    aria-label="Delete Dummy Consultation at Analysis Stage"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="default"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <!---->
+                    <!---->
+                    <!---->
+                    <svg
+                      aria-hidden="true"
+                      class="fill-neutral-500"
+                      height="1rem"
+                      viewBox="0 -960 960 960"
+                      width="1rem"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <!---->
+                      <path
+                        d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
+                    <!---->
+                     Delete
+                    
+                    
+                    
+                  </button>
+                  
+                  <!---->
+                </div>
+                
+                
+                <!---->
+              </td>
               
             </tr>
             <tr
@@ -438,6 +529,53 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                   
                 </a>
                 
+                
+                
+                <!---->
+              </td>
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+                data-testid="cell-actions"
+              >
+                <!---->
+                <!---->
+                <div>
+                  <!---->
+                  <button
+                    aria-label="Delete Dummy Consultation at Finalising Themes Stage"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="default"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <!---->
+                    <!---->
+                    <!---->
+                    <svg
+                      aria-hidden="true"
+                      class="fill-neutral-500"
+                      height="1rem"
+                      viewBox="0 -960 960 960"
+                      width="1rem"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <!---->
+                      <path
+                        d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
+                    <!---->
+                     Delete
+                    
+                    
+                    
+                  </button>
+                  
+                  <!---->
+                </div>
                 
                 
                 <!---->
@@ -599,12 +737,49 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
     <!---->
     <!---->
   </section>
+   
+  <!---->
+  
+  <!---->
   
 </div>
 `;
 
 exports[`ConsultationList > should match snapshot initially 1`] = `
 <div>
+  <section>
+    <!---->
+    <h2
+      class="text-neutral-700 text-lg"
+      style=""
+    >
+      <!---->
+      Consultations
+      
+      
+    </h2>
+    
+    <!---->
+     
+    <p
+      class="text-neutral-500 text-sm"
+    >
+      Loading consultations...
+      <!---->
+    </p>
+  </section>
+   
+  <section>
+    <div
+      class="sr-only"
+    >
+      No alerts to list
+    </div>
+    <!---->
+     
+    <!---->
+  </section>
+   
   <section
     class="mt-4"
   >
@@ -820,6 +995,17 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
                 </span>
                 <!---->
               </th>
+              <th
+                aria-sort="none"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
+                data-testid="header-actions"
+                scope="col"
+              >
+                <span>
+                  Actions
+                </span>
+                <!---->
+              </th>
               
             </tr>
           </thead>
@@ -829,7 +1015,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
             <tr>
               <td
                 class="px-4 py-12 text-center text-sm text-neutral-500 svelte-e9ladz"
-                colspan="5"
+                colspan="6"
               >
                 <div
                   role="status"
@@ -871,6 +1057,10 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
     <!---->
     <!---->
   </section>
+   
+  <!---->
+  
+  <!---->
   
 </div>
 `;
