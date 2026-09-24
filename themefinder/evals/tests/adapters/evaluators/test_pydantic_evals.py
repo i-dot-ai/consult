@@ -21,11 +21,9 @@ from typing import Any
 
 import pytest
 from adapters.evaluators.base import EvaluatorPort
-from adapters.evaluators.pydantic_evals import (
-    PydanticEvalsEvaluator,
-    gateway_judge_model,
-)
-from conftest import make_case, set_gateway_credentials
+from adapters.evaluators.pydantic_evals import PydanticEvalsEvaluator
+
+from conftest import make_case
 from eval_types import Score
 from pydantic_evals.evaluators import (
     Contains,
@@ -190,18 +188,17 @@ class TestPydanticEvalsEvaluator:
             Score("LLMJudge_pass", 1.0, "looks grounded"),
         ]
 
-    def test_gateway_judge_model_points_at_the_gateway(self, monkeypatch):
-        """gateway_judge_model builds a pydantic-ai OpenAIChatModel for a gateway
-        model-group name, pointed at the gateway's OpenAI-compatible endpoint via the
-        shared credentials — the model a wrapped LLMJudge would call. No request made."""
-        set_gateway_credentials(
-            monkeypatch, url="https://gateway.example.invalid", api_key="k"
-        )
+    def test_pydantic_evaluator_exposes_wrapped_evaluator_for_a_native_runner(self):
+        """A native pydantic-evals runner needs the genuine native Evaluator to drop into
+        its own Dataset (Dataset takes list[Evaluator], not EvaluatorPort). The adapter
+        holds it intact and hands back the exact same object via `pydantic_evaluator`, so
+        the native loop runs it directly with full fidelity (real span tree/metrics), not
+        the degraded context `_build_context` supplies on this framework's own path."""
+        evaluator = Equals(value=5)
+        adapter = PydanticEvalsEvaluator(evaluator)
 
-        model = gateway_judge_model("claude-sonnet-4")
-
-        assert model.model_name == "claude-sonnet-4"
-        assert str(model.client.base_url).startswith("https://gateway.example.invalid")
+        assert adapter.pydantic_evaluator is evaluator
+        assert isinstance(adapter.pydantic_evaluator, Evaluator)
 
     async def test_str_label_recorded_in_comment_with_zero_value(self):
         scores = await PydanticEvalsEvaluator(LabelEval()).evaluate(make_case(), {})
