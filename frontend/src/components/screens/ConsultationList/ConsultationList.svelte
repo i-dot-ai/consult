@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { onDestroy } from "svelte";
+  import { fade } from "svelte/transition";
+
   import Link from "../../Link.svelte";
   import DataTable from "../../DataTable/DataTable.svelte";
   import Modal from "../../Modal/Modal.svelte";
   import Alert from "../../Alert/Alert.svelte";
   import Title from "../../Title.svelte";
-  import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Warning from "../../svg/material/Warning.svelte";
   import Delete from "../../svg/material/Delete.svelte";
@@ -32,22 +34,26 @@
     name: string;
   }
 
+  interface Props {
+    deleteAlertDuration: number;
+  }
+
+  const {
+    deleteAlertDuration = 5000,
+  }: Props = $props();
+
   let deleteConsultationId = $state("");
+  let alerts: string[] = $state([]);
 
   const consultations = buildConsultationsGetQuery();
   const consultationDelete = $derived(
     buildConsultationDeleteQuery(deleteConsultationId),
   );
 
-  let consultationsBeingDeleted = $derived(
-    consultations.query?.data?.results.filter(
-      (consultation: Consultation) =>
-        consultation.running_job === "delete-consultation",
-    ) || [],
-  );
-
   const consultationRows = $derived(
-    consultations.query.data?.results.map((consultation: Consultation) => ({
+    consultations.query.data?.results.filter(
+      (consultation: Consultation) => consultation.running_job !== "delete-consultation"
+    ).map((consultation: Consultation) => ({
       name: consultation.title,
       createdAt: consultation.created_at,
       evalLink: {
@@ -71,6 +77,14 @@
       },
     })),
   );
+
+  let alertTimeouts: ReturnType<typeof setTimeout>[] = [];
+
+  onDestroy(() => {
+    alertTimeouts.forEach(timeout => {
+      clearInterval(timeout);
+    })
+  })
 </script>
 
 <section>
@@ -84,16 +98,19 @@
   </p>
 </section>
 
-{#if consultationsBeingDeleted.length > 0}
-  <div class="mt-4 blink-light">
-    <Alert variant="info">
-      {consultationsBeingDeleted.length} consultation{consultationsBeingDeleted.length >
-      1
-        ? "s are"
-        : " is"} currently being deleted. This may take a while.
-    </Alert>
-  </div>
-{/if}
+<section>
+  {#if alerts.length === 0}
+    <div class="sr-only">No alerts to list</div>
+  {/if}
+
+  {#each alerts as alert, i (i)}
+    <div class="mt-4" transition:fade>
+      <Alert variant="info">
+        {alert}
+      </Alert>
+    </div>
+  {/each}
+</section>
 
 <section class="mt-4">
   <DataTable
@@ -148,9 +165,6 @@
         </Link>
       {:else if column.key === "actions"}
         {@const { id, name } = content as ActionData}
-        {@const deleting = consultationsBeingDeleted.find(
-          (consultation: Consultation) => consultation.id === id,
-        )}
 
         <div>
           <Button
@@ -158,17 +172,12 @@
             handleClick={() => {
               deleteConsultationId = id;
             }}
-            disabled={deleting}
           >
-            {#if deleting}
-              <LoadingIndicator size="1rem" />
-            {:else}
-              <MaterialIcon color="fill-neutral-500">
-                <Delete />
-              </MaterialIcon>
-            {/if}
+            <MaterialIcon color="fill-neutral-500">
+              <Delete />
+            </MaterialIcon>
 
-            {deleting ? "Deleting..." : "Delete"}
+            Delete
           </Button>
         </div>
       {:else}
@@ -191,8 +200,27 @@
   canCancel={true}
   confirmText="Delete"
   handleConfirm={async () => {
+    // Trigger deletion on the server
     await consultationDelete.fetch({});
 
+    // Display alert that the consultation has been deleted
+    const consultationToDelete = consultations.query?.data?.results.find(
+      (consultation: Consultation) => consultation.id === deleteConsultationId
+    );
+    const newAlertText = `Consultation ${consultationToDelete.title} has been deleted.`;
+    alerts = [...alerts, newAlertText];
+
+    // Set timeout to remove alert
+    const newAlertTimeout = setTimeout(() => {
+      alerts = alerts.filter(alert => alert !== newAlertText);
+    }, deleteAlertDuration);
+
+    alertTimeouts = [
+      ...alertTimeouts,
+      newAlertTimeout,
+    ];
+
+    // Reset consultation selected for deletion
     deleteConsultationId = "";
 
     // Refresh consultations as running_job should now be stale
