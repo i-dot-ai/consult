@@ -56,39 +56,41 @@
     buildConsultationDeleteQuery(deleteConsultationId),
   );
 
+  const consultationsToDisplay = $derived(
+    consultations.query.data?.results.filter(
+      (consultation: Consultation) =>
+        consultation.running_job !== "delete-consultation",
+    ) || [],
+  );
+
   const consultationRows = $derived(
-    consultations.query.data?.results
-      .filter(
-        (consultation: Consultation) =>
-          consultation.running_job !== "delete-consultation",
-      )
-      .map((consultation: Consultation) => ({
-        name: {
-          text: consultation.title,
-          links: [
-            {
-              url: getConsultationEvalUrl(consultation.id),
-              ariaLabel: `View Evaluation for ${consultation.title}`,
-              text: "View Evaluation",
-            },
-            {
-              url: getFinaliseThemesUrl(consultation.id),
-              ariaLabel: `Finalise Themes for ${consultation.title}`,
-              text: "Finalise Themes",
-            },
-            {
-              url: getConsultationDetailUrl(consultation.id),
-              ariaLabel: `View Dashboard for ${consultation.title}`,
-              text: "View Dashboard",
-            },
-          ],
-        },
-        createdAt: consultation.created_at,
-        actions: {
-          id: consultation.id,
-          name: consultation.title,
-        },
-      })),
+    consultationsToDisplay.map((consultation: Consultation) => ({
+      name: {
+        text: consultation.title,
+        links: [
+          {
+            url: getConsultationEvalUrl(consultation.id),
+            ariaLabel: `View Evaluation for ${consultation.title}`,
+            text: "View Evaluation",
+          },
+          {
+            url: getFinaliseThemesUrl(consultation.id),
+            ariaLabel: `Finalise Themes for ${consultation.title}`,
+            text: "Finalise Themes",
+          },
+          {
+            url: getConsultationDetailUrl(consultation.id),
+            ariaLabel: `View Dashboard for ${consultation.title}`,
+            text: "View Dashboard",
+          },
+        ],
+      },
+      createdAt: consultation.created_at,
+      actions: {
+        id: consultation.id,
+        name: consultation.title,
+      },
+    })),
   );
 
   let alertTimeouts: ReturnType<typeof setTimeout>[] = [];
@@ -106,7 +108,7 @@
     {#if consultations.query.isPending}
       Loading consultations...
     {:else}
-      {consultations.query?.data?.results.length || 0} consultations
+      {consultationsToDisplay.length || 0} consultations
     {/if}
   </p>
 </section>
@@ -219,7 +221,7 @@
     await consultationDelete.fetch({});
 
     // Display alert that the consultation has been deleted
-    const consultationToDelete = consultations.query?.data?.results.find(
+    const consultationToDelete = consultationsToDisplay.find(
       (consultation: Consultation) => consultation.id === deleteConsultationId,
     );
     const newAlertText = `Consultation ${consultationToDelete.title} has been deleted.`;
