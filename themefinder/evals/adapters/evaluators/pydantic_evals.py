@@ -56,23 +56,22 @@ class PydanticEvalsEvaluator(EvaluatorPort):
 
     async def _score(self, case: Case, output: Any) -> list[Score]:
         """Run the wrapped evaluator and project its `EvaluatorOutput` onto
-        `metric_names`. Catches a KeyError for a mismatch of expected vs emitted metric names.
+        `metric_names`, raising if the declared names don't match the emitted keys.
         """
         raw = await self._evaluator.evaluate_async(self._build_context(case, output))
         results = dict(raw) if isinstance(raw, Mapping) else {self.metric_names[0]: raw}
-        try:
-            # a size mismatch means undeclared extras; when sizes match, any key
-            # mismatch forces a missing declared name in the projection (KeyError too)
-            if len(results) != len(self.metric_names):
-                raise KeyError
-            return [self._to_score(name, results[name]) for name in self.metric_names]
-        except KeyError as e:
+
+        missing = set(self.metric_names) - results.keys()
+        extra = results.keys() - set(self.metric_names)
+        if missing or extra:
             raise ValueError(
                 f"{self._evaluator.get_serialization_name()} emitted metrics "
                 f"{sorted(results)}, but metric_names declares "
                 f"{sorted(self.metric_names)}. "
                 f"Pass metric_names={tuple(results)} when wrapping it."
-            ) from e
+            )
+
+        return [self._to_score(name, results[name]) for name in self.metric_names]
 
     def _to_score(self, name: str, value: Any) -> Score:
         """Convert a metric value (bare scalar or `EvaluationReason`) into a `Score`."""

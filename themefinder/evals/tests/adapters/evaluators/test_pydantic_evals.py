@@ -157,8 +157,8 @@ class TestPydanticEvalsEvaluator:
 
         assert scores == [Score(name, value, "") for name, value in expected.items()]
 
-    async def test_declared_names_mismatching_emitted_keys_fail_loudly(self):
-        """Declaring names that don't match the evaluator's emitted keys fails loudly"""
+    async def test_declared_names_mismatch_degrades_gracefully(self):
+        """Declaring names that don't match the evaluator's emitted keys results in fail"""
         adapter = PydanticEvalsEvaluator(MultiMetricEval(), metric_names=("f1",))
 
         scores = await adapter.evaluate(make_case(), {})
