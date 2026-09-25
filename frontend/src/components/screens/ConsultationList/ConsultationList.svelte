@@ -96,7 +96,10 @@
     })),
   );
 
-  function canDelete(userData: CurrentUserGetResponse, consultationCreatedBy: string) {
+  function canDelete(
+    userData: CurrentUserGetResponse,
+    consultationCreatedBy: string,
+  ) {
     if (!userData || !consultationCreatedBy) {
       return false;
     }
