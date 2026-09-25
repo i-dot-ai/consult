@@ -96,6 +96,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 
 class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
     users = UserSerializer(many=True, read_only=True)
+    created_by = serializers.SlugRelatedField(slug_field="email", read_only=True)
 
     class Meta:
         model = Consultation
