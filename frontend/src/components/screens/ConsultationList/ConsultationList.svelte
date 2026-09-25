@@ -29,6 +29,11 @@
     text: string;
   }
 
+  interface NameCellData {
+    text: string;
+    links: LinkData[];
+  }
+
   interface ActionData {
     id: string;
     name: string;
@@ -55,23 +60,27 @@
           consultation.running_job !== "delete-consultation",
       )
       .map((consultation: Consultation) => ({
-        name: consultation.title,
+        name: {
+          text: consultation.title,
+          links: [
+            {
+              url: getConsultationEvalUrl(consultation.id),
+              ariaLabel: `View Evaluation for ${consultation.title}`,
+              text: "View Evaluation",
+            },
+            {
+              url: getFinaliseThemesUrl(consultation.id),
+              ariaLabel: `Finalise Themes for ${consultation.title}`,
+              text: "Finalise Themes",
+            },
+            {
+              url: getConsultationDetailUrl(consultation.id),
+              ariaLabel: `View Dashboard for ${consultation.title}`,
+              text: "View Dashboard",
+            },
+          ],
+        },
         createdAt: consultation.created_at,
-        evalLink: {
-          url: getConsultationEvalUrl(consultation.id),
-          ariaLabel: `View Evaluation for ${consultation.title}`,
-          text: "View Evaluation",
-        },
-        themesLink: {
-          url: getFinaliseThemesUrl(consultation.id),
-          ariaLabel: `Finalise Themes for ${consultation.title}`,
-          text: "Finalise Themes",
-        },
-        dashboardLink: {
-          url: getConsultationDetailUrl(consultation.id),
-          ariaLabel: `View Dashboard for ${consultation.title}`,
-          text: "View Dashboard",
-        },
         actions: {
           id: consultation.id,
           name: consultation.title,
@@ -116,7 +125,12 @@
 <section class="mt-4">
   <DataTable
     columns={[
-      { label: "Name", key: "name", sortable: true },
+      {
+        label: "Name",
+        key: "name",
+        sortable: true,
+        sortValue: (details) => (details.name as NameCellData).text,
+      },
       {
         label: "Date Created",
         key: "createdAt",
@@ -127,21 +141,6 @@
           new Date(
             (item as { createdAt: string }).createdAt,
           ).toLocaleDateString(),
-      },
-      {
-        label: "Evaluation",
-        key: "evalLink",
-        sortable: false,
-      },
-      {
-        label: "Themes",
-        key: "themesLink",
-        sortable: false,
-      },
-      {
-        label: "Dashboard",
-        key: "dashboardLink",
-        sortable: false,
       },
       {
         label: "Actions",
@@ -158,12 +157,20 @@
     columnSelect={false}
   >
     {#snippet cellContent(content, row, column)}
-      {#if ["evalLink", "themesLink", "dashboardLink"].includes(column.key)}
-        {@const linkData = row[column.key] as LinkData}
+      {#if column.key === "name"}
+        {@const cellData = row[column.key] as NameCellData}
 
-        <Link href={linkData.url} ariaLabel={linkData.ariaLabel}>
-          {linkData.text}
-        </Link>
+        <div>
+          <p>{cellData.text}</p>
+
+          <div class="flex gap-3 mt-2">
+            {#each cellData.links as link, i (i)}
+              <Link href={link.url} ariaLabel={link.ariaLabel}>
+                {link.text}
+              </Link>
+            {/each}
+          </div>
+        </div>
       {:else if column.key === "actions"}
         {@const { id, name } = content as ActionData}
 
