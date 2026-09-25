@@ -23,6 +23,7 @@
   } from "../../../global/queries/consultations/queries.ts";
   import type { Consultation } from "../../../global/types.ts";
   import Panel from "../../dashboard/Panel/Panel.svelte";
+  import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries.ts";
 
   interface LinkData {
     url: string;
@@ -41,7 +42,7 @@
   }
 
   interface Props {
-    deleteAlertDuration: number;
+    deleteAlertDuration?: number;
   }
 
   const { deleteAlertDuration = 5000 }: Props = $props();
@@ -49,6 +50,7 @@
   let deleteConsultationId = $state("");
   let alerts: string[] = $state([]);
 
+  const user = buildCurrentUserGetQuery();
   const consultations = buildConsultationsGetQuery();
   const consultationDelete = $derived(
     buildConsultationDeleteQuery(deleteConsultationId),
@@ -173,22 +175,26 @@
           </div>
         </div>
       {:else if column.key === "actions"}
-        {@const { id, name } = content as ActionData}
+        {#if user.query?.data?.is_staff}
+          {@const { id, name } = content as ActionData}
 
-        <div>
-          <Button
-            ariaLabel={`Delete ${name}`}
-            handleClick={() => {
-              deleteConsultationId = id;
-            }}
-          >
-            <MaterialIcon color="fill-neutral-500">
-              <Delete />
-            </MaterialIcon>
+          <div>
+            <Button
+              ariaLabel={`Delete ${name}`}
+              handleClick={() => {
+                deleteConsultationId = id;
+              }}
+            >
+              <MaterialIcon color="fill-neutral-500">
+                <Delete />
+              </MaterialIcon>
 
-            Delete
-          </Button>
-        </div>
+              Delete
+            </Button>
+          </div>
+        {:else}
+          <hr class="my-2 w-12" />
+        {/if}
       {:else}
         <span>{content}</span>
       {/if}
