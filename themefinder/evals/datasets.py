@@ -305,3 +305,51 @@ def load_local_data(config: DatasetConfig) -> list[dict]:
         raise ValueError(f"No loader for component: {config.component}")
 
     return loader(config)
+
+
+def publish_local_dataset_to_langfuse(client: Any, dataset: str) -> dict[str, int]:
+    """Publish a locally generated dataset into Langfuse eval datasets.
+
+    Existing non-empty Langfuse datasets are left untouched to avoid silently
+    duplicating items on repeated uploads.
+
+    Args:
+        client: Langfuse client instance.
+        dataset: Dataset identifier, e.g. ``housing_500``.
+
+    Returns:
+        Mapping of component name to number of items uploaded for that component.
+    """
+    uploaded_counts: dict[str, int] = {}
+
+    for component in VALID_COMPONENTS:
+        config = DatasetConfig(dataset=dataset, component=component)
+        items = load_local_data(config)
+        dataset_obj = get_or_create_dataset(client, config)
+        existing_items = getattr(dataset_obj, "items", None) or []
+
+        if existing_items:
+            logger.info(
+                "Skipping Langfuse upload for %s because it already has %s item(s)",
+                config.name,
+                len(existing_items),
+            )
+            uploaded_counts[component] = 0
+            continue
+
+        for item in items:
+            client.create_dataset_item(
+                dataset_name=config.name,
+                input=item["input"],
+                expected_output=item.get("expected_output"),
+                metadata={
+                    "dataset": dataset,
+                    "component": component,
+                    **item.get("metadata", {}),
+                },
+            )
+
+        uploaded_counts[component] = len(items)
+
+    client.flush()
+    return uploaded_counts
