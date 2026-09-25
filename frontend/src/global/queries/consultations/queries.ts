@@ -9,7 +9,7 @@ export function buildConsultationsGetQuery() {
 }
 
 export function buildConsultationDeleteQuery(consultationId: string) {
-  return buildQuery<ConsultationsGetResponse>(
+  return buildQuery<void>(
     consultationQueryParts.url(consultationId),
     {
       key: consultationQueryParts.key(consultationId),
