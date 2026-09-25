@@ -12,6 +12,7 @@ from rich.progress import Progress, TaskID
 from synthetic.config import (
     GenerationConfig,
     NoiseLevel,
+    PREVIEW_RESPONDENT_COUNT,
     ResponseLength,
     ResponseType,
 )
@@ -27,6 +28,10 @@ from synthetic.writers import DatasetWriter
 logger = logging.getLogger(__name__)
 
 BATCH_SIZE = 100  # Respondents per batch (parallelised across respondents)
+
+
+class ThemeGenerationError(RuntimeError):
+    """Raised when theme generation fails for one or more questions."""
 
 
 class SyntheticDatasetGenerator:
@@ -58,24 +63,14 @@ class SyntheticDatasetGenerator:
         self._checkpoint_path = config.output_dir / ".checkpoint.json"
         self._generated_count = 0
 
-    async def generate(self, progress: Progress | None = None) -> Path:
-        """Generate complete synthetic dataset.
-
-        Args:
-            progress: Optional Rich progress bar for tracking.
-
-        Returns:
-            Path to generated dataset directory.
-        """
-        # Create output directory structure
+    async def generate_themes(
+        self, progress: Progress | None = None
+    ) -> dict[int, list[dict]]:
+        """Generate and persist themes for all configured questions."""
         self.writer.initialise_directories(self.config.questions)
 
-        # Step 1: Generate themes for ALL questions upfront
-        # Each question has FAN_OUT_COUNT parallel calls + 1 consolidation = FAN_OUT_COUNT + 1 LLM calls
         n_questions = len(self.config.questions)
-        total_theme_calls = (
-            n_questions * FAN_OUT_COUNT
-        )  # Fan-out calls only (consolidation is fast)
+        total_theme_calls = n_questions * FAN_OUT_COUNT
 
         theme_task_id: TaskID | None = None
         theme_progress_count = 0
@@ -86,8 +81,7 @@ class SyntheticDatasetGenerator:
                 total=total_theme_calls,
             )
 
-        def on_fan_out_complete():
-            """Callback for each completed fan-out call."""
+        def on_fan_out_complete() -> None:
             nonlocal theme_progress_count
             theme_progress_count += 1
             if progress and theme_task_id is not None:
@@ -99,7 +93,6 @@ class SyntheticDatasetGenerator:
         )
 
         async def generate_themes_for_question(question_config):
-            """Generate themes for a single question."""
             client, _ = self.llm
             themes = await generate_themes(
                 client=client,
@@ -112,60 +105,169 @@ class SyntheticDatasetGenerator:
                 f"Generated {len(themes)} themes for question {question_config.number}"
             )
 
-            # Write themes and question config
             question_part = f"question_part_{question_config.number}"
             self.writer.write_themes(question_part, themes)
             self.writer.write_question(question_part, question_config)
 
             return question_config.number, themes
 
-        # Run ALL questions in parallel (N questions × 10 fan-out = N×10 concurrent calls)
         theme_tasks = [
             asyncio.create_task(generate_themes_for_question(q))
             for q in self.config.questions
         ]
         results = await asyncio.gather(*theme_tasks, return_exceptions=True)
 
-        # Build themes dict from results, fail if any question failed
         themes_by_question: dict[int, list[dict]] = {}
         for i, result in enumerate(results):
             if isinstance(result, Exception):
                 q_num = self.config.questions[i].number
                 logger.error(f"Theme generation for question {q_num} failed: {result}")
-                raise RuntimeError(
+                raise ThemeGenerationError(
                     f"Theme generation failed for question {q_num}"
                 ) from result
             q_num, themes = result
             themes_by_question[q_num] = themes
 
-        # Mark theme generation complete
         if progress and theme_task_id is not None:
             progress.update(theme_task_id, completed=total_theme_calls)
 
-        # Step 2: Sample demographics and create respondent specs
-        demographics = sample_demographics(
-            self.config.demographic_fields,
-            self.config.n_responses,
-            self.rng,
+        return themes_by_question
+
+    async def regenerate_themes_for_question(
+        self,
+        question_number: int,
+        progress: Progress | None = None,
+    ) -> list[dict]:
+        """Regenerate and persist themes for a single question."""
+        question_config = next(
+            q for q in self.config.questions if q.number == question_number
         )
 
-        respondent_specs = self._create_respondent_specs(demographics)
+        task_id: TaskID | None = None
+        progress_count = 0
 
-        # Write respondents file
+        if progress:
+            task_id = progress.add_task(
+                f"[cyan]Regenerating themes for Q{question_number}...",
+                total=FAN_OUT_COUNT,
+            )
+
+        def on_fan_out_complete() -> None:
+            nonlocal progress_count
+            progress_count += 1
+            if progress and task_id is not None:
+                progress.update(task_id, completed=progress_count)
+
+        client, _ = self.llm
+        themes = await generate_themes(
+            client=client,
+            topic=self.config.topic,
+            question=question_config.text,
+            demographic_fields=self.config.demographic_fields,
+            on_fan_out_complete=on_fan_out_complete,
+        )
+
+        if progress and task_id is not None:
+            progress.update(task_id, completed=FAN_OUT_COUNT)
+
+        question_part = f"question_part_{question_config.number}"
+        self.writer.write_themes(question_part, themes)
+        self.writer.write_question(question_part, question_config)
+        return themes
+
+    def build_respondent_specs(
+        self,
+        n_respondents: int | None = None,
+    ) -> list[RespondentSpec]:
+        """Sample personas and create respondent specs for preview or full runs."""
+        n_samples = n_respondents or self.config.n_responses
+        demographics = sample_demographics(
+            self.config.demographic_fields,
+            n_samples,
+            self.rng,
+        )
+        return self._create_respondent_specs(demographics, n_responses=n_samples)
+
+    async def generate_preview_samples(
+        self,
+        themes_by_question: dict[int, list[dict]],
+        progress: Progress | None = None,
+        n_respondents: int = PREVIEW_RESPONDENT_COUNT,
+    ) -> list[dict]:
+        """Generate a small preview sample without writing final dataset files."""
+        respondent_specs = self.build_respondent_specs(n_respondents)
+        total_responses = len(respondent_specs) * len(self.config.questions)
+        preview_task_id: TaskID | None = None
+        generated_count = 0
+
+        if progress:
+            preview_task_id = progress.add_task(
+                "[green]Generating preview responses...",
+                total=total_responses,
+            )
+
+        def on_response_complete() -> None:
+            nonlocal generated_count
+            generated_count += 1
+            if progress and preview_task_id is not None:
+                progress.update(preview_task_id, completed=generated_count)
+
+        preview_responses = await generate_respondent_batch(
+            llm=self.llm,
+            respondents=respondent_specs,
+            questions=self.config.questions,
+            themes_by_question=themes_by_question,
+            noise_level=self.config.noise_level,
+            on_response_complete=on_response_complete,
+        )
+
+        if progress and preview_task_id is not None:
+            progress.update(preview_task_id, completed=total_responses)
+
+        preview_by_id = {spec.response_id: spec for spec in respondent_specs}
+        for response in preview_responses:
+            spec = preview_by_id[response["response_id"]]
+            response["persona"] = spec.persona
+            response["length"] = spec.length.name.lower()
+            response["noise_type"] = spec.noise_type
+            response["question_text"] = next(
+                q.text
+                for q in self.config.questions
+                if q.number == response["question_number"]
+            )
+
+        return preview_responses
+
+    async def write_full_dataset(
+        self,
+        themes_by_question: dict[int, list[dict]],
+        progress: Progress | None = None,
+    ) -> Path:
+        """Generate and persist the full dataset after themes are approved."""
+        self.writer.initialise_directories(self.config.questions)
+
+        for question_config in self.config.questions:
+            question_part = f"question_part_{question_config.number}"
+            self.writer.write_question(question_part, question_config)
+            self.writer.write_themes(
+                question_part, themes_by_question[question_config.number]
+            )
+
+        respondent_specs = self.build_respondent_specs(self.config.n_responses)
+
         respondents = [
             {"response_id": spec.response_id, "demographic_data": spec.persona}
             for spec in respondent_specs
         ]
         self.writer.write_respondents(respondents)
 
-        # Initialise streaming files for all questions
         for question_config in self.config.questions:
             question_part = f"question_part_{question_config.number}"
             self.writer.init_streaming_files(question_part)
 
-        # Step 3: Generate responses in batches of respondents
         total_responses = self.config.n_responses * len(self.config.questions)
         response_task_id: TaskID | None = None
+        self._generated_count = 0
 
         if progress:
             response_task_id = progress.add_task(
@@ -173,8 +275,7 @@ class SyntheticDatasetGenerator:
                 total=total_responses,
             )
 
-        def on_response_complete():
-            """Callback for each completed response."""
+        def on_response_complete() -> None:
             self._generated_count += 1
             if progress and response_task_id is not None:
                 progress.update(response_task_id, completed=self._generated_count)
@@ -200,29 +301,35 @@ class SyntheticDatasetGenerator:
                 on_response_complete=on_response_complete,
             )
 
-            # Group responses by question and write
             self._write_batch_responses(batch_responses)
-
-            # Checkpoint
             self._save_checkpoint(batch_num, len(respondent_specs))
-
-            # Brief pause between batches for rate limiting
             await asyncio.sleep(0.2)
 
-        # Validate generated dataset
         validation_result = validate_dataset(self.config.output_dir)
         if not validation_result.is_valid:
             logger.warning(f"Validation warnings: {validation_result.errors}")
 
-        # Clean up checkpoint on success
         if self._checkpoint_path.exists():
             self._checkpoint_path.unlink()
 
         return self.config.output_dir
 
+    async def generate(self, progress: Progress | None = None) -> Path:
+        """Generate complete synthetic dataset.
+
+        Args:
+            progress: Optional Rich progress bar for tracking.
+
+        Returns:
+            Path to generated dataset directory.
+        """
+        themes_by_question = await self.generate_themes(progress)
+        return await self.write_full_dataset(themes_by_question, progress)
+
     def _create_respondent_specs(
         self,
         demographics: list[dict],
+        n_responses: int | None = None,
     ) -> list[RespondentSpec]:
         """Create respondent specifications with stance-influenced dispositions.
 
@@ -235,7 +342,7 @@ class SyntheticDatasetGenerator:
         Returns:
             List of RespondentSpec objects.
         """
-        n = self.config.n_responses
+        n = n_responses or self.config.n_responses
         specs = []
 
         # Base disposition probabilities

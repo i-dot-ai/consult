@@ -1,5 +1,6 @@
 """Interactive CLI for synthetic consultation dataset generation."""
 
+from collections import defaultdict
 from pathlib import Path
 
 import openai
@@ -21,6 +22,7 @@ from rich.prompt import Confirm, IntPrompt, Prompt
 from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
+from rich.syntax import Syntax
 from utils import gateway
 
 from synthetic.config import (
@@ -859,6 +861,160 @@ def create_progress_bar() -> Progress:
         SmoothedTimeRemainingColumn(warmup_items=5),
         console=console,
         refresh_per_second=4,
+    )
+
+
+def review_generated_themes(
+    questions: list[QuestionConfig],
+    themes_by_question: dict[int, list[dict]],
+) -> tuple[str, int | None]:
+    """Display generated themes and ask whether to approve or regenerate."""
+    console.print()
+    console.print(Rule("[bold cyan]Theme Review[/bold cyan]", style="cyan"))
+
+    for question in questions:
+        console.print()
+        console.print(
+            Panel(
+                f"[bold]Question {question.number}[/bold]\n\n{question.text}",
+                box=ROUNDED,
+                border_style="blue",
+                padding=(1, 2),
+            )
+        )
+
+        theme_table = Table(box=ROUNDED, border_style="dim")
+        theme_table.add_column("ID", style="bold cyan", width=5)
+        theme_table.add_column("Theme", style="bold white")
+        theme_table.add_column("Description", style="dim")
+
+        for theme in themes_by_question[question.number]:
+            theme_table.add_row(
+                theme["topic_id"],
+                theme["topic_label"],
+                theme["topic_description"],
+            )
+
+        console.print(theme_table)
+
+    console.print()
+    console.print(
+        "  [green]approve[/green] │ [yellow]regenerate one[/yellow] │ [red]regenerate all[/red]"
+    )
+    action = Prompt.ask(
+        "[bold yellow]Action[/bold yellow]",
+        choices=["approve", "regenerate_one", "regenerate_all"],
+        default="approve",
+    )
+
+    if action == "regenerate_one":
+        question_choices = [str(q.number) for q in questions]
+        question_number = int(
+            Prompt.ask(
+                "[bold yellow]Regenerate themes for question[/bold yellow]",
+                choices=question_choices,
+                default=question_choices[0],
+            )
+        )
+        return action, question_number
+
+    return action, None
+
+
+def review_preview_samples(
+    questions: list[QuestionConfig],
+    preview_responses: list[dict],
+    themes_by_question: dict[int, list[dict]],
+) -> str:
+    """Display sampled responses and ask whether to continue or regenerate."""
+    console.print()
+    console.print(Rule("[bold green]Preview Samples[/bold green]", style="green"))
+
+    grouped: dict[int, list[dict]] = defaultdict(list)
+    for response in preview_responses:
+        grouped[response["question_number"]].append(response)
+
+    for question in questions:
+        console.print()
+        console.print(
+            Panel(
+                f"[bold]Question {question.number}[/bold]\n\n{question.text}",
+                box=ROUNDED,
+                border_style="green",
+                padding=(1, 2),
+            )
+        )
+
+        theme_lookup = {
+            theme["topic_id"]: theme["topic_label"]
+            for theme in themes_by_question[question.number]
+        }
+
+        for response in grouped.get(question.number, []):
+            labels = [
+                f"{label} ({theme_lookup.get(label, label)})"
+                for label in response.get("labels", [])
+            ]
+            persona_table = Table(box=None, show_header=False, padding=(0, 1))
+            persona_table.add_column("Field", style="bold cyan")
+            persona_table.add_column("Value", style="white")
+            for key, value in response.get("persona", {}).items():
+                persona_table.add_row(key, value)
+
+            response_table = Table(box=None, show_header=False, padding=(0, 1))
+            response_table.add_column("Field", style="bold cyan")
+            response_table.add_column("Value", style="white")
+            response_table.add_row("Respondent", str(response["response_id"]))
+            response_table.add_row("Position", response["position"])
+            response_table.add_row("Length", response.get("length", "unknown"))
+            response_table.add_row(
+                "Themes",
+                ", ".join(labels) if labels else "None",
+            )
+            response_table.add_row(
+                "Stances",
+                ", ".join(response.get("stances", [])) or "None",
+            )
+            response_table.add_row(
+                "Noise",
+                response.get("noise_type") or "None",
+            )
+
+            body = response["response"]
+            console.print(
+                Panel(
+                    persona_table,
+                    title="[bold]Persona[/bold]",
+                    box=ROUNDED,
+                    border_style="cyan",
+                )
+            )
+            console.print(
+                Panel(
+                    response_table,
+                    title="[bold]Response Metadata[/bold]",
+                    box=ROUNDED,
+                    border_style="magenta",
+                )
+            )
+            console.print(
+                Panel(
+                    Syntax(body, "markdown", theme="ansi_dark", word_wrap=True),
+                    title="[bold]Generated Response[/bold]",
+                    box=ROUNDED,
+                    border_style="white",
+                    padding=(0, 1),
+                )
+            )
+
+    console.print()
+    console.print(
+        "  [green]continue[/green] │ [yellow]regenerate preview[/yellow] │ [red]regenerate themes[/red]"
+    )
+    return Prompt.ask(
+        "[bold yellow]Action[/bold yellow]",
+        choices=["continue", "regenerate_preview", "regenerate_themes"],
+        default="continue",
     )
 
 
