@@ -22,6 +22,7 @@
     buildConsultationsGetQuery,
   } from "../../../global/queries/consultations/queries.ts";
   import type { Consultation } from "../../../global/types.ts";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
 
   interface LinkData {
     url: string;
@@ -203,10 +204,10 @@
       deleteConsultationId = "";
     }
   }}
-  title="Delete consultation"
+  title="Delete consultation?"
   Icon={Warning}
   canCancel={true}
-  confirmText="Delete"
+  confirmText="Delete consultation"
   handleConfirm={async () => {
     // Trigger deletion on the server
     await consultationDelete.fetch({});
@@ -233,8 +234,13 @@
   }}
 >
   <p>
-    Are you sure you would like to <strong>delete</strong> consultation "{consultations.query.data?.results.find(
+    This deletes {consultations.query.data?.results.find(
       (consultation: Consultation) => consultation.id === deleteConsultationId,
-    )?.title}"? This action is <strong>irreversible</strong>.
+    )?.title} and all its responses, themes and records. It cannot be undone.
+
+    <Panel variant="default">
+      Large consultations can take a while to delete. You can leave this page
+      while it happens.
+    </Panel>
   </p>
 </Modal>
