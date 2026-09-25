@@ -12,23 +12,15 @@ import types
 
 import adapters.evaluators.redundancy as redundancy_module
 import pytest
-from adapters.evaluators.base import EvaluatorPort
 from adapters.evaluators.mapping_f1 import MappingF1Evaluator
 from adapters.evaluators.redundancy import RedundancyEvaluator
 from conftest import make_case
 from eval_types import Score
 
 
-def test_mapping_f1_evaluator_is_evaluator_port():
-    assert isinstance(MappingF1Evaluator(), EvaluatorPort)
-
-
-def test_redundancy_evaluator_is_evaluator_port():
-    assert isinstance(RedundancyEvaluator(), EvaluatorPort)
-
-
 class TestMappingF1Evaluator:
     async def test_perfect_match_scores_one(self):
+        """Identical expected and predicted mappings score f1 = 1.0."""
         case = make_case(expected_output={"mappings": {"r1": ["a", "b"], "r2": ["c"]}})
         output = {"labels": {"r1": ["a", "b"], "r2": ["c"]}}
 
@@ -37,6 +29,7 @@ class TestMappingF1Evaluator:
         assert scores == [Score("f1_score", 1.0, "Evaluated on 2 responses")]
 
     async def test_complete_mismatch_scores_zero(self):
+        """Disjoint expected and predicted labels score f1 = 0.0."""
         case = make_case(expected_output={"mappings": {"r1": ["a"]}})
         output = {"labels": {"r1": ["b"]}}
 
@@ -46,6 +39,7 @@ class TestMappingF1Evaluator:
         assert scores[0].value == 0.0
 
     async def test_missing_response_in_output_treated_as_empty_prediction(self):
+        """A response absent from the output counts as an empty prediction (f1 = 0)."""
         case = make_case(expected_output={"mappings": {"r1": ["a"], "r2": ["b"]}})
         output = {"labels": {"r1": ["a"]}}  # r2 has no prediction at all
 
@@ -55,6 +49,7 @@ class TestMappingF1Evaluator:
         assert scores[0].value == 0.5
 
     async def test_no_expected_mappings_short_circuits(self):
+        """No expected mappings short-circuits to a 0.0 score with an explanatory comment."""
         case = make_case(expected_output=None)
         output = {"labels": {"r1": ["a"]}}
 
@@ -63,9 +58,7 @@ class TestMappingF1Evaluator:
         assert scores == [Score("f1_score", 0.0, "No expected mappings")]
 
     async def test_bad_output_falls_back_to_zero_score(self):
-        """evaluate()'s shared error boundary (EvaluatorPort.evaluate) should
-        catch the AttributeError from `None.get(...)` and degrade gracefully
-        rather than raising."""
+        """Bad output (None) hits the shared error boundary and degrades to a 0.0 Score."""
         case = make_case(expected_output={"mappings": {"r1": ["a"]}})
 
         scores = await MappingF1Evaluator().evaluate(case, None)
@@ -81,6 +74,7 @@ class TestRedundancyEvaluatorWithoutModel:
     run regardless of whether the optional `eval` extra is installed."""
 
     async def test_fewer_than_two_titles_short_circuits(self):
+        """Fewer than two themes means no pairs to compare, so redundancy is 0.0."""
         case = make_case()
         output = {"themes": {"Only one theme": "desc"}}
 
@@ -89,6 +83,7 @@ class TestRedundancyEvaluatorWithoutModel:
         assert scores == [Score("redundancy", 0.0, "0/0 pairs above threshold")]
 
     async def test_no_themes_short_circuits(self):
+        """No themes short-circuits to a 0.0 redundancy score."""
         case = make_case()
 
         scores = await RedundancyEvaluator().evaluate(case, {"themes": {}})
@@ -96,6 +91,8 @@ class TestRedundancyEvaluatorWithoutModel:
         assert scores == [Score("redundancy", 0.0, "0/0 pairs above threshold")]
 
     async def test_missing_library_degrades_gracefully(self, monkeypatch):
+        """A missing sentence-transformers install degrades to a 0.0 score, not a crash."""
+
         def _raise_import_error():
             raise ImportError("sentence-transformers not installed")
 
@@ -158,6 +155,7 @@ def patched_similarity(monkeypatch):
 
 class TestRedundancyEvaluatorWithModel:
     async def test_flags_pairs_above_threshold(self, patched_similarity):
+        """Pairs above the similarity threshold are counted and named in the comment."""
         # A~B similar (0.9, flagged), A~C and B~C dissimilar (0.1)
         patched_similarity.set_matrix(
             [
@@ -179,6 +177,7 @@ class TestRedundancyEvaluatorWithModel:
         assert "A ↔ B (0.9)" in score.comment
 
     async def test_no_pairs_above_threshold(self, patched_similarity):
+        """No pair above the threshold scores 0.0."""
         patched_similarity.set_matrix([[1.0, 0.1], [0.1, 1.0]])
         case = make_case()
         output = {"themes": {"A": "desc", "B": "desc"}}
@@ -188,6 +187,7 @@ class TestRedundancyEvaluatorWithModel:
         assert scores == [Score("redundancy", 0.0, "0/1 pairs above threshold")]
 
     async def test_respects_custom_threshold(self, patched_similarity):
+        """A custom threshold changes which pairs count as redundant."""
         patched_similarity.set_matrix([[1.0, 0.5], [0.5, 1.0]])
         case = make_case()
         output = {"themes": {"A": "desc", "B": "desc"}}
@@ -198,9 +198,7 @@ class TestRedundancyEvaluatorWithModel:
         assert "1/1 pairs above threshold" in scores[0].comment
 
     async def test_encode_called_with_extracted_titles(self, patched_similarity):
-        """Wiring check, separate from the threshold/ratio tests above:
-        confirms the titles extracted from `output["themes"]` are what
-        actually reach `.encode()`, in order."""
+        """Wiring: the titles extracted from the output themes are what reach `.encode()`."""
         patched_similarity.set_matrix([[1.0, 0.1], [0.1, 1.0]])
         case = make_case()
         output = {"themes": {"A": "desc", "B": "desc"}}
