@@ -220,6 +220,55 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               <th
                 aria-sort="none"
                 class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
+                data-testid="header-createdBy"
+                scope="col"
+              >
+                <!---->
+                <button
+                  aria-label="Sort by Created by"
+                  aria-pressed="false"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  data-variant="ghost"
+                  role="button"
+                  tabindex="0"
+                >
+                  <!---->
+                  <!---->
+                  <span>
+                    Created by
+                  </span>
+                   
+                  <span
+                    aria-hidden="true"
+                    class="text-neutral-400"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="fill-neutral-500"
+                      height="1rem"
+                      viewBox="0 -960 960 960"
+                      width="1rem"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <!---->
+                      <path
+                        d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
+                    <!---->
+                  </span>
+                  
+                  
+                  
+                </button>
+                
+                <!---->
+              </th>
+              <th
+                aria-sort="none"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
                 data-testid="header-actions"
                 scope="col"
               >
@@ -323,47 +372,30 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </td>
               <td
                 class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+                data-testid="cell-createdBy"
+              >
+                <!---->
+                <!---->
+                <!---->
+                <hr
+                  class="my-2 w-12"
+                />
+                
+                
+                
+                <!---->
+              </td>
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
                 data-testid="cell-actions"
               >
                 <!---->
                 <!---->
-                <div>
-                  <!---->
-                  <button
-                    aria-label="Delete Dummy Consultation at Analysis Stage"
-                    aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                    data-variant="default"
-                    role="button"
-                    tabindex="0"
-                  >
-                    <!---->
-                    <!---->
-                    <!---->
-                    <svg
-                      aria-hidden="true"
-                      class="fill-neutral-500"
-                      height="1rem"
-                      viewBox="0 -960 960 960"
-                      width="1rem"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <!---->
-                      <path
-                        d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
-                        xmlns="http://www.w3.org/2000/svg"
-                      />
-                      <!---->
-                    </svg>
-                    <!---->
-                     Delete
-                    
-                    
-                    
-                  </button>
-                  
-                  <!---->
-                </div>
+                <!---->
+                <hr
+                  class="my-2 w-12"
+                />
+                
                 
                 
                 <!---->
@@ -458,47 +490,30 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </td>
               <td
                 class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+                data-testid="cell-createdBy"
+              >
+                <!---->
+                <!---->
+                <!---->
+                <hr
+                  class="my-2 w-12"
+                />
+                
+                
+                
+                <!---->
+              </td>
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
                 data-testid="cell-actions"
               >
                 <!---->
                 <!---->
-                <div>
-                  <!---->
-                  <button
-                    aria-label="Delete Dummy Consultation at Finalising Themes Stage"
-                    aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-                    data-variant="default"
-                    role="button"
-                    tabindex="0"
-                  >
-                    <!---->
-                    <!---->
-                    <!---->
-                    <svg
-                      aria-hidden="true"
-                      class="fill-neutral-500"
-                      height="1rem"
-                      viewBox="0 -960 960 960"
-                      width="1rem"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <!---->
-                      <path
-                        d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
-                        xmlns="http://www.w3.org/2000/svg"
-                      />
-                      <!---->
-                    </svg>
-                    <!---->
-                     Delete
-                    
-                    
-                    
-                  </button>
-                  
-                  <!---->
-                </div>
+                <!---->
+                <hr
+                  class="my-2 w-12"
+                />
+                
                 
                 
                 <!---->
@@ -888,6 +903,55 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
               <th
                 aria-sort="none"
                 class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
+                data-testid="header-createdBy"
+                scope="col"
+              >
+                <!---->
+                <button
+                  aria-label="Sort by Created by"
+                  aria-pressed="false"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  data-variant="ghost"
+                  role="button"
+                  tabindex="0"
+                >
+                  <!---->
+                  <!---->
+                  <span>
+                    Created by
+                  </span>
+                   
+                  <span
+                    aria-hidden="true"
+                    class="text-neutral-400"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="fill-neutral-500"
+                      height="1rem"
+                      viewBox="0 -960 960 960"
+                      width="1rem"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <!---->
+                      <path
+                        d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
+                    <!---->
+                  </span>
+                  
+                  
+                  
+                </button>
+                
+                <!---->
+              </th>
+              <th
+                aria-sort="none"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
                 data-testid="header-actions"
                 scope="col"
               >
@@ -905,7 +969,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
             <tr>
               <td
                 class="px-4 py-12 text-center text-sm text-neutral-500 svelte-e9ladz"
-                colspan="3"
+                colspan="4"
               >
                 <div
                   role="status"
