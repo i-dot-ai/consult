@@ -61,6 +61,7 @@ export interface Consultation {
   code: string;
   stage: ConsultationStage;
   created_at: string;
+  created_by: string;
   running_job: RunningJob;
 }
 

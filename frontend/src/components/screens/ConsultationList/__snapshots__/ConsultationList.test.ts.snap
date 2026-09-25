@@ -2,6 +2,39 @@
 
 exports[`ConsultationList > should match snapshot after loading 1`] = `
 <div>
+  <section>
+    <!---->
+    <h2
+      class="text-neutral-700 text-lg"
+      style=""
+    >
+      <!---->
+      Consultations
+      
+      
+    </h2>
+    
+    <!---->
+     
+    <p
+      class="text-neutral-500 text-sm"
+    >
+      2 consultations
+      <!---->
+    </p>
+  </section>
+   
+  <section>
+    <div
+      class="sr-only"
+    >
+      No alerts to list
+    </div>
+    <!---->
+     
+    <!---->
+  </section>
+   
   <section
     class="mt-4"
   >
@@ -187,33 +220,60 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               <th
                 aria-sort="none"
                 class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
-                data-testid="header-evalLink"
+                data-testid="header-createdBy"
                 scope="col"
               >
-                <span>
-                  Evaluation
-                </span>
+                <!---->
+                <button
+                  aria-label="Sort by Created by"
+                  aria-pressed="false"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  data-variant="ghost"
+                  role="button"
+                  tabindex="0"
+                >
+                  <!---->
+                  <!---->
+                  <span>
+                    Created by
+                  </span>
+                   
+                  <span
+                    aria-hidden="true"
+                    class="text-neutral-400"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="fill-neutral-500"
+                      height="1rem"
+                      viewBox="0 -960 960 960"
+                      width="1rem"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <!---->
+                      <path
+                        d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
+                    <!---->
+                  </span>
+                  
+                  
+                  
+                </button>
+                
                 <!---->
               </th>
               <th
                 aria-sort="none"
                 class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
-                data-testid="header-themesLink"
+                data-testid="header-actions"
                 scope="col"
               >
                 <span>
-                  Themes
-                </span>
-                <!---->
-              </th>
-              <th
-                aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
-                data-testid="header-dashboardLink"
-                scope="col"
-              >
-                <span>
-                  Dashboard
+                  Actions
                 </span>
                 <!---->
               </th>
@@ -234,9 +294,65 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               >
                 <!---->
                 <!---->
-                <span>
-                  Dummy Consultation at Analysis Stage
-                </span>
+                <div>
+                  <p>
+                    Dummy Consultation at Analysis Stage
+                  </p>
+                   
+                  <div
+                    class="flex gap-3 mt-2"
+                  >
+                    <!---->
+                    <a
+                      aria-label="View Evaluation for Dummy Consultation at Analysis Stage"
+                      class="transition-colors duration-300 text-primary hover:underline"
+                      data-testid="View Evaluation for Dummy Consultation at Analysis Stage"
+                      href="/evaluations/95ab7567-9381-48eb-8d20-ddeb43691b58/questions/"
+                      role="button"
+                      tabindex="0"
+                      title=""
+                    >
+                      <!---->
+                      View Evaluation
+                      
+                      
+                    </a>
+                    
+                    <!---->
+                    <a
+                      aria-label="Finalise Themes for Dummy Consultation at Analysis Stage"
+                      class="transition-colors duration-300 text-primary hover:underline"
+                      data-testid="Finalise Themes for Dummy Consultation at Analysis Stage"
+                      href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58/finalising-themes"
+                      role="button"
+                      tabindex="0"
+                      title=""
+                    >
+                      <!---->
+                      Finalise Themes
+                      
+                      
+                    </a>
+                    
+                    <!---->
+                    <a
+                      aria-label="View Dashboard for Dummy Consultation at Analysis Stage"
+                      class="transition-colors duration-300 text-primary hover:underline"
+                      data-testid="View Dashboard for Dummy Consultation at Analysis Stage"
+                      href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58"
+                      role="button"
+                      tabindex="0"
+                      title=""
+                    >
+                      <!---->
+                      View Dashboard
+                      
+                      
+                    </a>
+                    
+                    
+                  </div>
+                </div>
                 
                 
                 <!---->
@@ -256,25 +372,14 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </td>
               <td
                 class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
-                data-testid="cell-evalLink"
+                data-testid="cell-createdBy"
               >
                 <!---->
                 <!---->
                 <!---->
-                <a
-                  aria-label="View Evaluation for Dummy Consultation at Analysis Stage"
-                  class="transition-colors duration-300 text-primary hover:underline"
-                  data-testid="View Evaluation for Dummy Consultation at Analysis Stage"
-                  href="/evaluations/95ab7567-9381-48eb-8d20-ddeb43691b58/questions/"
-                  role="button"
-                  tabindex="0"
-                  title=""
-                >
-                  <!---->
-                  View Evaluation
-                  
-                  
-                </a>
+                <hr
+                  class="my-2 w-12"
+                />
                 
                 
                 
@@ -282,51 +387,48 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </td>
               <td
                 class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
-                data-testid="cell-themesLink"
+                data-testid="cell-actions"
               >
                 <!---->
                 <!---->
                 <!---->
-                <a
-                  aria-label="Finalise Themes for Dummy Consultation at Analysis Stage"
-                  class="transition-colors duration-300 text-primary hover:underline"
-                  data-testid="Finalise Themes for Dummy Consultation at Analysis Stage"
-                  href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58/finalising-themes"
-                  role="button"
-                  tabindex="0"
-                  title=""
-                >
+                <div>
                   <!---->
-                  Finalise Themes
+                  <button
+                    aria-label="Delete Dummy Consultation at Analysis Stage"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="default"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <!---->
+                    <!---->
+                    <!---->
+                    <svg
+                      aria-hidden="true"
+                      class="fill-neutral-500"
+                      height="1rem"
+                      viewBox="0 -960 960 960"
+                      width="1rem"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <!---->
+                      <path
+                        d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
+                    <!---->
+                     Delete
+                    
+                    
+                    
+                  </button>
                   
-                  
-                </a>
-                
-                
-                
-                <!---->
-              </td>
-              <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
-                data-testid="cell-dashboardLink"
-              >
-                <!---->
-                <!---->
-                <!---->
-                <a
-                  aria-label="View Dashboard for Dummy Consultation at Analysis Stage"
-                  class="transition-colors duration-300 text-primary hover:underline"
-                  data-testid="View Dashboard for Dummy Consultation at Analysis Stage"
-                  href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58"
-                  role="button"
-                  tabindex="0"
-                  title=""
-                >
                   <!---->
-                  View Dashboard
-                  
-                  
-                </a>
+                </div>
                 
                 
                 
@@ -344,9 +446,65 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               >
                 <!---->
                 <!---->
-                <span>
-                  Dummy Consultation at Finalising Themes Stage
-                </span>
+                <div>
+                  <p>
+                    Dummy Consultation at Finalising Themes Stage
+                  </p>
+                   
+                  <div
+                    class="flex gap-3 mt-2"
+                  >
+                    <!---->
+                    <a
+                      aria-label="View Evaluation for Dummy Consultation at Finalising Themes Stage"
+                      class="transition-colors duration-300 text-primary hover:underline"
+                      data-testid="View Evaluation for Dummy Consultation at Finalising Themes Stage"
+                      href="/evaluations/4d1414d5-9300-447b-b788-50d0bef7e807/questions/"
+                      role="button"
+                      tabindex="0"
+                      title=""
+                    >
+                      <!---->
+                      View Evaluation
+                      
+                      
+                    </a>
+                    
+                    <!---->
+                    <a
+                      aria-label="Finalise Themes for Dummy Consultation at Finalising Themes Stage"
+                      class="transition-colors duration-300 text-primary hover:underline"
+                      data-testid="Finalise Themes for Dummy Consultation at Finalising Themes Stage"
+                      href="/consultations/4d1414d5-9300-447b-b788-50d0bef7e807/finalising-themes"
+                      role="button"
+                      tabindex="0"
+                      title=""
+                    >
+                      <!---->
+                      Finalise Themes
+                      
+                      
+                    </a>
+                    
+                    <!---->
+                    <a
+                      aria-label="View Dashboard for Dummy Consultation at Finalising Themes Stage"
+                      class="transition-colors duration-300 text-primary hover:underline"
+                      data-testid="View Dashboard for Dummy Consultation at Finalising Themes Stage"
+                      href="/consultations/4d1414d5-9300-447b-b788-50d0bef7e807"
+                      role="button"
+                      tabindex="0"
+                      title=""
+                    >
+                      <!---->
+                      View Dashboard
+                      
+                      
+                    </a>
+                    
+                    
+                  </div>
+                </div>
                 
                 
                 <!---->
@@ -366,25 +524,14 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </td>
               <td
                 class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
-                data-testid="cell-evalLink"
+                data-testid="cell-createdBy"
               >
                 <!---->
                 <!---->
                 <!---->
-                <a
-                  aria-label="View Evaluation for Dummy Consultation at Finalising Themes Stage"
-                  class="transition-colors duration-300 text-primary hover:underline"
-                  data-testid="View Evaluation for Dummy Consultation at Finalising Themes Stage"
-                  href="/evaluations/4d1414d5-9300-447b-b788-50d0bef7e807/questions/"
-                  role="button"
-                  tabindex="0"
-                  title=""
-                >
-                  <!---->
-                  View Evaluation
-                  
-                  
-                </a>
+                <hr
+                  class="my-2 w-12"
+                />
                 
                 
                 
@@ -392,51 +539,48 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </td>
               <td
                 class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
-                data-testid="cell-themesLink"
+                data-testid="cell-actions"
               >
                 <!---->
                 <!---->
                 <!---->
-                <a
-                  aria-label="Finalise Themes for Dummy Consultation at Finalising Themes Stage"
-                  class="transition-colors duration-300 text-primary hover:underline"
-                  data-testid="Finalise Themes for Dummy Consultation at Finalising Themes Stage"
-                  href="/consultations/4d1414d5-9300-447b-b788-50d0bef7e807/finalising-themes"
-                  role="button"
-                  tabindex="0"
-                  title=""
-                >
+                <div>
                   <!---->
-                  Finalise Themes
+                  <button
+                    aria-label="Delete Dummy Consultation at Finalising Themes Stage"
+                    aria-pressed="false"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    data-variant="default"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <!---->
+                    <!---->
+                    <!---->
+                    <svg
+                      aria-hidden="true"
+                      class="fill-neutral-500"
+                      height="1rem"
+                      viewBox="0 -960 960 960"
+                      width="1rem"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <!---->
+                      <path
+                        d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
+                    <!---->
+                     Delete
+                    
+                    
+                    
+                  </button>
                   
-                  
-                </a>
-                
-                
-                
-                <!---->
-              </td>
-              <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
-                data-testid="cell-dashboardLink"
-              >
-                <!---->
-                <!---->
-                <!---->
-                <a
-                  aria-label="View Dashboard for Dummy Consultation at Finalising Themes Stage"
-                  class="transition-colors duration-300 text-primary hover:underline"
-                  data-testid="View Dashboard for Dummy Consultation at Finalising Themes Stage"
-                  href="/consultations/4d1414d5-9300-447b-b788-50d0bef7e807"
-                  role="button"
-                  tabindex="0"
-                  title=""
-                >
                   <!---->
-                  View Dashboard
-                  
-                  
-                </a>
+                </div>
                 
                 
                 
@@ -477,6 +621,59 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
           2
         </span>
       </p>
+       
+      <nav
+        aria-label="Pagination"
+        class="flex items-center gap-1"
+      >
+        <!---->
+        <button
+          aria-label="Previous Page"
+          aria-pressed="false"
+          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+          data-variant="ghost"
+          disabled=""
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          Previous
+          
+          
+          
+        </button>
+        
+        <!---->
+         
+        <span
+          aria-current="page"
+          class="px-2 text-xs text-neutral-600"
+          data-testid="current-page"
+        >
+          Page 1 of 1
+        </span>
+         
+        <!---->
+        <button
+          aria-label="Next Page"
+          aria-pressed="false"
+          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+          data-variant="ghost"
+          disabled=""
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          Next
+          
+          
+          
+        </button>
+        
+        <!---->
+      </nav>
        
       <div
         class="text-xs page-size-container svelte-e9ladz"
@@ -542,69 +739,53 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
         </div>
         <!---->
       </div>
-       
-      <nav
-        aria-label="Pagination"
-        class="flex items-center gap-1"
-      >
-        <!---->
-        <button
-          aria-label="Previous Page"
-          aria-pressed="false"
-          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
-          data-variant="ghost"
-          disabled=""
-          role="button"
-          tabindex="0"
-        >
-          <!---->
-          <!---->
-          Previous
-          
-          
-          
-        </button>
-        
-        <!---->
-         
-        <span
-          aria-current="page"
-          class="px-2 text-xs text-neutral-600"
-          data-testid="current-page"
-        >
-          Page 1 of 1
-        </span>
-         
-        <!---->
-        <button
-          aria-label="Next Page"
-          aria-pressed="false"
-          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
-          data-variant="ghost"
-          disabled=""
-          role="button"
-          tabindex="0"
-        >
-          <!---->
-          <!---->
-          Next
-          
-          
-          
-        </button>
-        
-        <!---->
-      </nav>
     </div>
     <!---->
     <!---->
   </section>
+   
+  <!---->
+  
+  <!---->
   
 </div>
 `;
 
 exports[`ConsultationList > should match snapshot initially 1`] = `
 <div>
+  <section>
+    <!---->
+    <h2
+      class="text-neutral-700 text-lg"
+      style=""
+    >
+      <!---->
+      Consultations
+      
+      
+    </h2>
+    
+    <!---->
+     
+    <p
+      class="text-neutral-500 text-sm"
+    >
+      Loading consultations...
+      <!---->
+    </p>
+  </section>
+   
+  <section>
+    <div
+      class="sr-only"
+    >
+      No alerts to list
+    </div>
+    <!---->
+     
+    <!---->
+  </section>
+   
   <section
     class="mt-4"
   >
@@ -790,33 +971,60 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
               <th
                 aria-sort="none"
                 class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
-                data-testid="header-evalLink"
+                data-testid="header-createdBy"
                 scope="col"
               >
-                <span>
-                  Evaluation
-                </span>
+                <!---->
+                <button
+                  aria-label="Sort by Created by"
+                  aria-pressed="false"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  data-variant="ghost"
+                  role="button"
+                  tabindex="0"
+                >
+                  <!---->
+                  <!---->
+                  <span>
+                    Created by
+                  </span>
+                   
+                  <span
+                    aria-hidden="true"
+                    class="text-neutral-400"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="fill-neutral-500"
+                      height="1rem"
+                      viewBox="0 -960 960 960"
+                      width="1rem"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <!---->
+                      <path
+                        d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
+                    <!---->
+                  </span>
+                  
+                  
+                  
+                </button>
+                
                 <!---->
               </th>
               <th
                 aria-sort="none"
                 class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
-                data-testid="header-themesLink"
+                data-testid="header-actions"
                 scope="col"
               >
                 <span>
-                  Themes
-                </span>
-                <!---->
-              </th>
-              <th
-                aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
-                data-testid="header-dashboardLink"
-                scope="col"
-              >
-                <span>
-                  Dashboard
+                  Actions
                 </span>
                 <!---->
               </th>
@@ -829,7 +1037,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
             <tr>
               <td
                 class="px-4 py-12 text-center text-sm text-neutral-500 svelte-e9ladz"
-                colspan="5"
+                colspan="4"
               >
                 <div
                   role="status"
@@ -871,6 +1079,10 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
     <!---->
     <!---->
   </section>
+   
+  <!---->
+  
+  <!---->
   
 </div>
 `;
