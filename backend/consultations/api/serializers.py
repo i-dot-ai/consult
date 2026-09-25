@@ -107,6 +107,7 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
             "data_source",
             "users",
             "created_at",
+            "created_by",
             "running_job",
         ]
 

@@ -11,6 +11,7 @@
   import Warning from "../../svg/material/Warning.svelte";
   import Delete from "../../svg/material/Delete.svelte";
   import Button from "../../inputs/Button/Button.svelte";
+  import { type CurrentUserGetResponse } from "../../../global/queries/users/types.ts";
 
   import {
     getConsultationDetailUrl,
@@ -39,6 +40,7 @@
   interface ActionData {
     id: string;
     name: string;
+    createdBy: string;
   }
 
   interface Props {
@@ -89,9 +91,21 @@
       actions: {
         id: consultation.id,
         name: consultation.title,
+        createdBy: consultation.created_by,
       },
     })),
   );
+
+  function canDelete(userData: CurrentUserGetResponse, consultationCreatedBy: string) {
+    if (!userData || !consultationCreatedBy) {
+      return false;
+    }
+
+    const isUserStaff = userData?.is_staff;
+    const isUserCreator = userData.email === consultationCreatedBy;
+
+    return isUserStaff || isUserCreator;
+  }
 
   let alertTimeouts: ReturnType<typeof setTimeout>[] = [];
 
@@ -182,9 +196,10 @@
           </div>
         </div>
       {:else if column.key === "actions"}
-        {#if user.query?.data?.is_staff}
-          {@const { id, name } = content as ActionData}
+        {@const { id, name, createdBy } = content as ActionData}
+        {@const userData = user.query?.data as CurrentUserGetResponse}
 
+        {#if canDelete(userData, createdBy)}
           <div>
             <Button
               ariaLabel={`Delete ${name}`}
