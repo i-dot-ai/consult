@@ -499,25 +499,6 @@
       </span>
     </p>
 
-    <div class="text-xs page-size-container">
-      <Select
-        id={`${id}-page-size-select`}
-        items={pageSizes.map((option) => ({
-          value: option.toString(),
-          label: option.toString(),
-        }))}
-        value={pageSize.toString()}
-        onchange={(value) => {
-          if (value === undefined) {
-            return;
-          }
-          currentPage = 1;
-          pageSize = Number.parseInt(value);
-        }}
-        label={{ text: "Page Size", horizontal: true }}
-      />
-    </div>
-
     <nav aria-label="Pagination" class="flex items-center gap-1">
       <Button
         disabled={currentPage === 1}
@@ -547,6 +528,25 @@
         Next
       </Button>
     </nav>
+
+    <div class="text-xs page-size-container">
+      <Select
+        id={`${id}-page-size-select`}
+        items={pageSizes.map((option) => ({
+          value: option.toString(),
+          label: option.toString(),
+        }))}
+        value={pageSize.toString()}
+        onchange={(value) => {
+          if (value === undefined) {
+            return;
+          }
+          currentPage = 1;
+          pageSize = Number.parseInt(value);
+        }}
+        label={{ text: "Page Size", horizontal: true }}
+      />
+    </div>
   </div>
 {/if}
 
