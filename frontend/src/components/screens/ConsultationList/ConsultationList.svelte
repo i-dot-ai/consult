@@ -135,6 +135,7 @@
         key: "name",
         sortable: true,
         sortValue: (details) => (details.name as NameCellData).text,
+        filterValue: (details) => (details.name as NameCellData).text,
       },
       {
         label: "Date Created",
@@ -143,6 +144,10 @@
         sortValue: (item) =>
           new Date((item as { createdAt: string }).createdAt).getTime(),
         displayValue: (item) =>
+          new Date(
+            (item as { createdAt: string }).createdAt,
+          ).toLocaleDateString(),
+        filterValue: (item) =>
           new Date(
             (item as { createdAt: string }).createdAt,
           ).toLocaleDateString(),
