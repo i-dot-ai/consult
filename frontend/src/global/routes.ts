@@ -56,6 +56,7 @@ export enum Routes {
   ApiUsers = `${Prefixes.ApiV1}/users/`,
   ApiAstroSignIn = `${Prefixes.ApiV1}/astro/sign-in/`,
   ApiHealth = `${Prefixes.ApiV1}/health/`,
+  ApiCurrentUser = `${Prefixes.ApiV1}/user/`,
 
   // External Routes
   ConsultAlertsSlackChannel = "https://i-dot-ai.slack.com/archives/C0930D3DSKW",
