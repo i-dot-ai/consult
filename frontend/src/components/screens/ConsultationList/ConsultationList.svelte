@@ -111,7 +111,7 @@
 
   onDestroy(() => {
     alertTimeouts.forEach((timeout) => {
-      clearInterval(timeout);
+      clearTimeout(timeout);
     });
   });
 </script>
