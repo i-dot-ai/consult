@@ -177,9 +177,9 @@ export const buildQuery = <T>(
       if (isMutation) {
         const mutationResult = result as ReturnType<typeof createMutation>;
         if (variables) {
-          mutationResult.mutate(variables);
+          await mutationResult.mutateAsync(variables);
         } else {
-          mutationResult.mutate.apply(this, args as MutateArgs);
+          await mutationResult.mutateAsync.apply(this, args as MutateArgs);
         }
       } else {
         const queryResult = result as ReturnType<typeof createQuery>;
