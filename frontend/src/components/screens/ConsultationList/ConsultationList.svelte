@@ -101,12 +101,8 @@
     userData: CurrentUserGetResponse,
     consultationCreatedBy: string,
   ) {
-    if (!userData || !consultationCreatedBy) {
-      return false;
-    }
-
     const isUserStaff = userData?.is_staff;
-    const isUserCreator = userData.email === consultationCreatedBy;
+    const isUserCreator = userData?.email === consultationCreatedBy;
 
     return isUserStaff || isUserCreator;
   }
@@ -267,7 +263,7 @@
     const consultationToDelete = consultationsToDisplay.find(
       (consultation: Consultation) => consultation.id === deleteConsultationId,
     );
-    const newAlertText = `Consultation ${consultationToDelete.title} has been deleted.`;
+    const newAlertText = `Consultation ${consultationToDelete?.title ?? deleteConsultationId} has been deleted.`;
     alerts = [...alerts, newAlertText];
 
     // Set timeout to remove alert
