@@ -88,6 +88,7 @@
         ],
       },
       createdAt: consultation.created_at,
+      createdBy: consultation.created_by,
       actions: {
         id: consultation.id,
         name: consultation.title,
@@ -118,6 +119,10 @@
     });
   });
 </script>
+
+{#snippet nullCell()}
+  <hr class="my-2 w-12" />
+{/snippet}
 
 <section>
   <Title level={2} text="Consultations" />
@@ -170,6 +175,11 @@
           ).toLocaleDateString(),
       },
       {
+        label: "Created by",
+        key: "createdBy",
+        sortable: true,
+      },
+      {
         label: "Actions",
         key: "actions",
         sortable: false,
@@ -198,6 +208,16 @@
             {/each}
           </div>
         </div>
+      {:else if column.key === "createdBy"}
+        {@const userData = user.query?.data as CurrentUserGetResponse}
+
+        {#if !content}
+          {@render nullCell()}
+        {:else if content === userData.email}
+          <span>You</span>
+        {:else}
+          <span class="text-neutral-500">{content}</span>
+        {/if}
       {:else if column.key === "actions"}
         {@const { id, name, createdBy } = content as ActionData}
         {@const userData = user.query?.data as CurrentUserGetResponse}
@@ -218,7 +238,7 @@
             </Button>
           </div>
         {:else}
-          <hr class="my-2 w-12" />
+          {@render nullCell()}
         {/if}
       {:else}
         <span>{content}</span>
