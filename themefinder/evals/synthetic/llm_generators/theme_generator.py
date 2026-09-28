@@ -12,6 +12,7 @@ import openai
 from pydantic import BaseModel, Field, ValidationError
 
 from synthetic.config import DRAFTING_MODEL, DemographicField
+from synthetic.prompts.utils import load_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -41,72 +42,9 @@ class ThemeSet(BaseModel):
     themes: list[Theme]
 
 
-SYSTEM_PROMPT = """You are an expert analyst in UK public consultations and policy engagement.
+SYSTEM_PROMPT = load_prompt("theme_generation_system.md")
 
-Your task is to generate a COMPREHENSIVE set of themes that would realistically emerge from
-public responses to a government consultation question.
-
-## Demographic Perspectives to Consider in Your Analysis
-Think deeply about how different groups would respond differently before generating themes:
-- Age groups: Young adults (18-24) vs working age (25-54) vs retirees (65+)
-- UK nations: England, Scotland, Wales, Northern Ireland - each with distinct policy contexts
-- Urban vs rural residents
-- Socioeconomic backgrounds: Different income levels, employment situations
-- Those directly affected vs general public
-- Individuals vs organisations/professional bodies
-- People with disabilities or health conditions
-- Different ethnic and cultural backgrounds
-
-## Theme Categories to Cover
-Ensure your themes span these categories where relevant:
-- **Support themes**: Various reasons people agree with the proposal
-- **Opposition themes**: Various reasons people disagree
-- **Conditional themes**: "Yes, but..." or "Only if..." positions
-- **Practical concerns**: Implementation challenges, costs, timelines
-- **Stakeholder-specific impacts**: Effects on particular groups
-- **Alternative proposals**: Different approaches people might suggest
-- **Unintended consequences**: Concerns about knock-on effects
-- **Ideological positions**: Principled stances (fairness, freedom, responsibility)
-- **Evidence-based concerns**: Citing research, data, or precedents
-- **Personal experience themes**: Based on lived experience
-
-## Quality Requirements
-- Each theme must be DISTINCT (no significant overlaps)
-- Themes should be SPECIFIC to this policy topic
-- Cover the FULL SPECTRUM of likely opinion
-- Be REALISTIC about what UK citizens actually write in consultations
-- Consider MINORITY viewpoints that may be less common but important
-
-## Description Format
-- topic_label: 2-5 words (e.g., "Fiscal cost concerns")
-- topic_description: ONE concise sentence, 15-25 words max
-  - Good: "Opposition citing large Exchequer cost and pressure on public services"
-  - Bad: "Submissions emphasising the large direct cost to the Exchequer, potential increases in public borrowing and the opportunity cost for other public services. Critics in this theme demand robust costing..."
-
-Generate as many themes as needed to comprehensively cover the topic. For simple questions,
-this might be 10-15 themes. For complex, contentious topics, you may need 30-50+ themes.
-Do not artificially limit yourself - be thorough."""
-
-CONSOLIDATION_SYSTEM_PROMPT = """You are an expert at consolidating and deduplicating theme lists.
-
-You will receive a large list of themes generated from multiple parallel analyses of the same
-consultation question. Your task is to:
-
-1. **Remove exact or near-duplicates** - themes that express the same idea
-2. **Merge highly similar themes** - combine themes that overlap significantly into one
-3. **Preserve diversity** - keep distinct viewpoints even if only mentioned once
-4. **Maintain quality** - ensure each final theme is clear and well-described
-
-## Important Guidelines
-- Be CONSERVATIVE with merging - when in doubt, keep themes separate
-- Preserve minority/niche viewpoints - these are valuable for realistic consultation data
-- Keep the original wording where possible - don't over-edit
-- Aim for comprehensive coverage over conciseness
-
-## Output Format
-- topic_label: 2-5 words
-- topic_description: ONE concise sentence, 15-25 words max
-- Use sequential IDs: A, B, C, ... Z, AA, AB, ..."""
+CONSOLIDATION_SYSTEM_PROMPT = load_prompt("theme_consolidation_system.md")
 
 
 def _generate_topic_ids(n: int) -> list[str]:

@@ -10,6 +10,7 @@ import openai
 from pydantic import BaseModel, Field, ValidationError
 
 from synthetic.config import NoiseLevel, QuestionConfig, ResponseLength, ResponseType
+from synthetic.prompts.utils import load_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -49,40 +50,9 @@ class PreviousResponse:
     sentiment: str
 
 
-SYSTEM_PROMPT_FIRST_QUESTION = """You are simulating a member of the UK public responding to a government consultation.
+SYSTEM_PROMPT_FIRST_QUESTION = load_prompt("response_first_question_system.md")
 
-## Respondent Profile
-{persona_desc}
-
-## Response Requirements
-- Length: approximately {min_words}-{max_words} words
-- Response type: {response_type}
-- Write naturally as this person would, considering how their background and circumstances affect their perspective on this policy
-- Use vocabulary and concerns appropriate to their profile
-
-## Guidelines by Response Type
-- agree: Express clear support for the proposal with reasons
-- disagree: Express clear opposition with reasons
-- nuanced: Show conditional support with specific concerns or caveats
-- off_topic: Drift to tangentially related issues, miss the main question
-- low_quality: Be vague, very brief, or unclear
-
-Generate authentic-sounding responses. Vary sentence structure and vocabulary."""
-
-SYSTEM_PROMPT_WITH_CONTEXT = """You are simulating a member of the UK public responding to a government consultation.
-
-## Respondent Profile
-{persona_desc}
-
-## Consistency Requirement
-You have already answered previous questions in this consultation. Your responses should be CONSISTENT with your earlier answers - maintain the same general viewpoint, concerns, and tone.
-
-## Response Requirements
-- Length: approximately {min_words}-{max_words} words
-- Write naturally as this person would, considering how their background and circumstances affect their perspective
-- IMPORTANT: Stay consistent with your previous responses shown below
-
-Generate authentic-sounding responses. Vary sentence structure and vocabulary."""
+SYSTEM_PROMPT_WITH_CONTEXT = load_prompt("response_with_context_system.md")
 
 
 async def generate_respondent_survey(
