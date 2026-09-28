@@ -26,6 +26,8 @@ class UserSerializerV2(serializers.ModelSerializer):
 
 class ConsultationSerializerV2(serializers.ModelSerializer):
     users = UserSerializerV2(many=True, read_only=True)
+    is_owner = serializers.SerializerMethodField()
+    is_assigned = serializers.SerializerMethodField()
 
     class Meta:
         model = Consultation
@@ -37,8 +39,21 @@ class ConsultationSerializerV2(serializers.ModelSerializer):
             "data_source",
             "users",
             "created_at",
+            "started_at",
+            "closed_at",
+            "is_owner",
+            "is_assigned",
             "running_job",
         ]
+
+    def get_is_owner(self, obj) -> bool | None:
+        if obj.created_by_id is None:
+            return None
+        return obj.created_by_id == self.context["request"].user.id
+
+    def get_is_assigned(self, obj) -> bool:
+        user_id = self.context["request"].user.id
+        return any(user.id == user_id for user in obj.users.all())
 
 
 class ConsultationCreateSerializerV2(serializers.ModelSerializer):

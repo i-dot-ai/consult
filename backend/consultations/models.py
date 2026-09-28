@@ -62,6 +62,12 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         CITIZEN_SPACE = "citizen-space", "Citizen Space"
 
     title = models.CharField(max_length=256)
+    started_at = models.DateTimeField(
+        null=True, blank=True, help_text="When the consultation opened to responses."
+    )
+    closed_at = models.DateTimeField(
+        null=True, blank=True, help_text="When the consultation closed to responses."
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
