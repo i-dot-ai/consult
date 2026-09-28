@@ -45,20 +45,19 @@ if (findThemesFoldersError) {
 <Layout>
   <Section>
     <h1 class="mb-4 text-3xl">Consult Data Pipeline</h1>
-    <Text
-      >Processing consultation data happens across multiple stages. In this
-      page, each stage is explained and any processes that require manual
-      triggering, such as setting up the consultation and finding themes, can be
-      kicked off from here.</Text
-    >
+    <Text>
+      Processing consultation data happens across multiple stages. In this page,
+      each stage is explained and any processes that require manual triggering,
+      such as setting up the consultation and finding themes, can be kicked off
+      from here.
+    </Text>
 
     <Text>
-      You can monitor the progress of data processing tasks in the <Link
-        href={Routes.SupportQueue}>Django RQ dashboard</Link
-      > and in the <Link href={Routes.ConsultAlertsSlackChannel}
-        >#consult-alerts</Link
-      > Slack channel.</Text
-    >
+      You can monitor the progress of data processing tasks in the{" "}
+      <Link href={Routes.SupportQueue}>Django RQ dashboard</Link> and in the{" "}
+      <Link href={Routes.ConsultAlertsSlackChannel}>#consult-alerts</Link> Slack
+      channel.
+    </Text>
   </Section>
 
   <hr />
@@ -72,12 +71,12 @@ if (findThemesFoldersError) {
           a) Upload consultation data to S3
         </h3>
 
-        <Text
-          >The first step in setting up a consultation is to get the data in the
-          right format for S3. Data must be uploaded to <code
-            >{bucketName}/app_data/consultations/[CODE]/inputs</code
-          > with the structure:</Text
-        >
+        <Text>
+          The first step in setting up a consultation is to get the data in the
+          right format for S3. Data must be uploaded to{" "}
+          <code>{bucketName}/app_data/consultations/[CODE]/inputs</code> with
+          the structure:
+        </Text>
         <pre><code>inputs/
   ├── respondents.jsonl
   ├── question_part_1/
@@ -88,22 +87,21 @@ if (findThemesFoldersError) {
   │   ├── question.json
   │   ├── responses.jsonl
         </code></pre>
-        <Text
-          >As part of this, you will need to define the consultation <code
-            >CODE</code
-          >, which is the unique identifier we will use for the consultation in
-          S3.</Text
-        >
+        <Text>
+          As part of this, you will need to define the consultation{" "}
+          <code>CODE</code>, which is the unique identifier we will use for the
+          consultation in S3.
+        </Text>
       </li>
       <li>
         <h3 class="mb-4 text-lg font-bold">
           b) Create consultation in Consult app
         </h3>
-        <Text
-          >Once the consultation data has been uploaded to S3, select the folder
+        <Text>
+          Once the consultation data has been uploaded to S3, select the folder
           and set the name of the consultation to create the consultation in the
-          app.</Text
-        >
+          app.
+        </Text>
 
         <CreateConsultationForm
           client:load
@@ -122,11 +120,11 @@ if (findThemesFoldersError) {
         <div class="my-8"></div>
 
         <Details summaryText="What's happening in the background?">
-          <Text
-            >The consultation is created with the given name and all the data in <code
-              >{bucketName}/app_data/consultations/[CODE]/inputs</code
-            > is read and saved to the database.</Text
-          >
+          <Text>
+            The consultation is created with the given name and all the data in{" "}
+            <code>{bucketName}/app_data/consultations/[CODE]/inputs</code> is
+            read and saved to the database.
+          </Text>
         </Details>
       </li>
     </ol>
@@ -139,9 +137,9 @@ if (findThemesFoldersError) {
 
     <Text>
       Once the consultation is set up, and you have reviewed the data and are
-      happy with it, we can run <Link href={Routes.ThemeFinderRepository}
-        >ThemeFinder</Link
-      > to find themes for each free text question. This is a long-running batch process
+      happy with it, we can run{" "}
+      <Link href={Routes.ThemeFinderRepository}>ThemeFinder</Link> to find
+      themes for each free text question. This is a long-running batch process
       and can take up to a few hours depending on the size of the consultation.
     </Text>
 
@@ -150,10 +148,10 @@ if (findThemesFoldersError) {
     <div class="my-8"></div>
 
     <Details summaryText="What's happening in the background?">
-      <Text
-        >All the data in <code
-          >{bucketName}/app_data/consultations/[CODE]/inputs</code
-        > is read and used to find themes. These are saved in S3 with the structure:
+      <Text>
+        All the data in{" "}
+        <code>{bucketName}/app_data/consultations/[CODE]/inputs</code> is read
+        and used to find themes. These are saved in S3 with the structure:
         <pre><code>outputs/
   ├── sign_off/
   │   └── &lt;timestamp&gt;/
@@ -163,15 +161,15 @@ if (findThemesFoldersError) {
   │           └── clustered_themes.json
 
 </code></pre>
-        Then, everything which was just saved to S3 is read from S3 and saved to the
-        database as candidate themes.</Text
-      >
-      <Text
-        >Once candidate themes have been imported, an assign-themes job is
+        Then, everything which was just saved to S3 is read from S3 and saved to
+        the database as candidate themes.
+      </Text>
+      <Text>
+        Once candidate themes have been imported, an assign-themes job is
         automatically started to assign candidate themes to individual
         responses. This allows users to see representative responses for each
-        theme during the finalising stage.</Text
-      >
+        theme during the finalising stage.
+      </Text>
     </Details>
   </Section>
 
@@ -184,14 +182,14 @@ if (findThemesFoldersError) {
       This stage is completed by users. Users are able to select from a list of
       candidate themes, found by ThemeFinder in the previous stage. They can
       also add custom themes and edit the title and description of selected
-      themes.</Text
-    >
+      themes.
+    </Text>
 
     <Text>
       For each candidate theme, users can view representative responses that
       were assigned to that theme. This helps users assess whether they want to
-      select or edit the theme. Up to 50 responses are shown per theme.</Text
-    >
+      select or edit the theme. Up to 50 responses are shown per theme.
+    </Text>
 
     <img
       src="/images/finalise-themes-screenshot.png"
@@ -200,12 +198,12 @@ if (findThemesFoldersError) {
     />
 
     <Details summaryText="What's happening in the background?">
-      <Text
-        >All changes are saved in the database as selected themes. The
+      <Text>
+        All changes are saved in the database as selected themes. The
         representative responses shown alongside each candidate theme were
         assigned automatically after the find-themes stage completed (see
-        above).</Text
-      >
+        above).
+      </Text>
     </Details>
   </Section>
 
@@ -215,10 +213,11 @@ if (findThemesFoldersError) {
     <h2 class="mb-4 text-2xl">4. Assign Themes</h2>
 
     <Text>
-      When users confirm finalising their themes, <Link
-        href={Routes.ThemeFinderRepository}>ThemeFinder</Link
-      > automatically runs to assign responses to selected themes. This is a long-running
-      batch process and can take up to a few hours depending on the size of the consultation.
+      When users confirm finalising their themes,{" "}
+      <Link href={Routes.ThemeFinderRepository}>ThemeFinder</Link> automatically
+      runs to assign responses to selected themes. This is a long-running batch
+      process and can take up to a few hours depending on the size of the
+      consultation.
     </Text>
 
     <img
@@ -235,15 +234,15 @@ if (findThemesFoldersError) {
           <h4 class="mb-4 text-lg font-medium">
             a) Generic themes are saved to the database
           </h4>
-          <Text
-            >Generic themes including 'Other' and 'No Reason Given' are saved to
-            the database for each free text question.</Text
-          >
+          <Text>
+            Generic themes including 'Other' and 'No Reason Given' are saved to
+            the database for each free text question.
+          </Text>
           <h4 class="mb-4 text-lg font-medium">
             b) Finalised themes are saved to S3
           </h4>
-          <Text
-            >The finalised themes (including generic themes) for each free text
+          <Text>
+            The finalised themes (including generic themes) for each free text
             question are saved in S3 with the structure:
             <pre><code>outputs/
   ├── sign_off/
@@ -282,10 +281,10 @@ if (findThemesFoldersError) {
         </li>
         <li>
           <h4 class="mb-4 text-lg font-medium">d) Saved to the database</h4>
-          <Text
-            >Once the batch job successfully completes, the data is saved in the
-            database and the analysis dashboard is ready to review.</Text
-          >
+          <Text>
+            Once the batch job successfully completes, the data is saved in the
+            database and the analysis dashboard is ready to review.
+          </Text>
         </li>
       </ol>
     </Details>
@@ -306,8 +305,8 @@ if (findThemesFoldersError) {
     <Text>
       This stage is completed by users. Users get access to a dashboard where
       they can review each question, theme frequency, responses and do a
-      deep-dive into particular respondents or filtering by demographics.</Text
-    >
+      deep-dive into particular respondents or filtering by demographics.
+    </Text>
     <img
       src="/images/analysis-dashboard-screenshot.png"
       alt="Screenshot of the Analysis Dashboard in the Consult app"

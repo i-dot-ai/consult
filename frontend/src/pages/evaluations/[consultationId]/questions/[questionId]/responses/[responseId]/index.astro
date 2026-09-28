@@ -71,13 +71,13 @@ if (themesError) {
         </div>
 
         <div class="rounded-xl border border-gray-200 bg-gray-50 p-6">
-          <Text
-            >Response{
-              (responseData?.respondent.themefinder_id ||
-                responseData?.respondent.themefinder_id === 0) &&
-                ` ${responseData?.respondent.themefinder_id}`
-            }:</Text
-          >
+          <Text>
+            Response
+            {(responseData?.respondent.themefinder_id ||
+              responseData?.respondent.themefinder_id === 0) &&
+              ` ${responseData?.respondent.themefinder_id}`}
+            :
+          </Text>
           <div class="mt-3">
             <Text>{responseData?.free_text_answer_text}</Text>
           </div>
