@@ -29,7 +29,7 @@
 
   interface AlertData {
     text: string;
-    variant: "info" | "error";
+    variant: "success" | "error";
   }
 
   interface LinkData {
@@ -295,7 +295,7 @@
     );
     const consultationTitle = `${consultationToDelete?.title ?? deleteConsultationId}`;
     newAlertText = `Consultation ${consultationTitle} has been deleted.`;
-    newAlertVariant = "info";
+    newAlertVariant = "success";
 
     // Trigger deletion on the server
     try {
