@@ -10,6 +10,7 @@
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Warning from "../../svg/material/Warning.svelte";
   import Delete from "../../svg/material/Delete.svelte";
+  import Close from "../../svg/material/Close.svelte";
   import Button from "../../inputs/Button/Button.svelte";
   import { type CurrentUserGetResponse } from "../../../global/queries/users/types.ts";
 
@@ -158,7 +159,17 @@
         }}
         timeoutDelay={deleteAlertDuration}
       >
-        {alert.text}
+        <div class="flex justify-between items-center gap-2">
+          <span>
+            {alert.text}
+          </span>
+
+          <Button variant="ghost" handleClick={() => removeAlert(alert)}>
+            <MaterialIcon color="fill-neutral-500">
+              <Close />
+            </MaterialIcon>
+          </Button>
+        </div>
       </Alert>
     </div>
   {/each}
@@ -270,7 +281,7 @@
       deleteConsultationId = "";
     }
   }}
-  title="Delete consultation?"
+  title="Delete consultation"
   Icon={Warning}
   canCancel={true}
   confirmText="Delete consultation"
@@ -309,13 +320,12 @@
   }}
 >
   <p>
-    This deletes {consultations.query.data?.results.find(
-      (consultation: Consultation) => consultation.id === deleteConsultationId,
-    )?.title} and all its responses, themes and records. It cannot be undone.
+    Deleting removes the responses, the themes and the analysis. This cannot be undone.
 
     <Panel variant="default">
-      Large consultations can take a while to delete. You can leave this page
-      while it happens.
+      {consultations.query.data?.results.find(
+        (consultation: Consultation) => consultation.id === deleteConsultationId,
+      )?.title}
     </Panel>
   </p>
 </Modal>
