@@ -27,12 +27,10 @@ const links: NavItem[] = [
 
 <Story title="dashboard" backUrl={Routes.Design}>
   <ul class="mt-4 flex flex-col gap-2">
-    {
-      links.map((link) => (
-        <li>
-          <Link href={link.url}>{link.text}</Link>
-        </li>
-      ))
-    }
+    {links.map((link) => (
+      <li>
+        <Link href={link.url}>{link.text}</Link>
+      </li>
+    ))}
   </ul>
 </Story>

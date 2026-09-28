@@ -37,9 +37,9 @@ const HEADING_TWO_CLASS = "block text-primary text-xl mt-8 mb-2";
       <span class={HEADING_TWO_CLASS}> Set up data - Human step </span>
     </Title>
     <Text>
-      <strong>Goal of Set up data:</strong> To share the responses and choose which
-      questions to analyse using AI and how you want the questions to be displayed
-      in the Consult dashboard for analysis.
+      <strong>Goal of Set up data:</strong> To share the responses and choose
+      which questions to analyse using AI and how you want the questions to be
+      displayed in the Consult dashboard for analysis.
     </Text>
     <Text>
       This is currently done outside of the app - we’re working on building it
@@ -52,8 +52,8 @@ const HEADING_TWO_CLASS = "block text-primary text-xl mt-8 mb-2";
       </span>
     </Title>
     <Text>
-      <strong>Goal of Find themes:</strong> Use AI to generate the initial list of
-      themes. These will be reviewed by the policy team in the next step.
+      <strong>Goal of Find themes:</strong> Use AI to generate the initial list
+      of themes. These will be reviewed by the policy team in the next step.
     </Text>
     <Text>
       All responses are sent to the AI to identify themes question by question.
@@ -62,37 +62,45 @@ const HEADING_TWO_CLASS = "block text-primary text-xl mt-8 mb-2";
     <OrderedList>
       <li>
         Pass all responses through the AI in batches to identify the preliminary
-        themes - <Link
+        themes -{" "}
+        <Link
           openNewTab={true}
           href="https://github.com/i-dot-ai/themefinder/blob/main/src/themefinder/prompts/theme_generation.txt"
-          >identify themes prompt</Link
         >
+          identify themes prompt
+        </Link>
       </li>
       <li>
         These preliminary themes are passed through the AI again in batches to
         reduce the total number of themes to a more manageable number and
-        eliminate very similar duplicate themes - <Link
+        eliminate very similar duplicate themes -{" "}
+        <Link
           openNewTab={true}
           href="https://github.com/i-dot-ai/themefinder/blob/main/src/themefinder/prompts/theme_condensation.txt"
-          >condensation prompt</Link
         >
+          condensation prompt
+        </Link>
       </li>
       <li>
         The processed themes are then passed through the AI to make the wording
-        of the themes more understandable for users - <Link
+        of the themes more understandable for users -{" "}
+        <Link
           openNewTab={true}
           href="https://github.com/i-dot-ai/themefinder/blob/main/src/themefinder/prompts/theme_refinement.txt"
-          >refinement prompt</Link
         >
+          refinement prompt
+        </Link>
       </li>
       <li>
         If there are more than 20, we can pass the themes to the AI in a process
         called theme clustering to create broader parent themes (level 2) with
-        more specific child themes (level 1) - <Link
+        more specific child themes (level 1) -{" "}
+        <Link
           openNewTab={true}
           href="https://github.com/i-dot-ai/themefinder/blob/main/src/themefinder/prompts/agentic_theme_clustering.txt"
-          >theme clustering prompt</Link
         >
+          theme clustering prompt
+        </Link>
       </li>
     </OrderedList>
 
@@ -100,8 +108,8 @@ const HEADING_TWO_CLASS = "block text-primary text-xl mt-8 mb-2";
       <span class={HEADING_TWO_CLASS}> Finalise themes - Human step </span>
     </Title>
     <Text>
-      <strong>Goal of Finalise themes:</strong> The policy team will select which
-      themes they want to use question by question.
+      <strong>Goal of Finalise themes:</strong> The policy team will select
+      which themes they want to use question by question.
     </Text>
     <Text>
       The team can use an AI theme or they can edit an AI theme or create new
@@ -124,16 +132,18 @@ const HEADING_TWO_CLASS = "block text-primary text-xl mt-8 mb-2";
       </span>
     </Title>
     <Text>
-      <strong>Goal of Assign themes:</strong> Use AI to identify which theme is present
-      in each response
+      <strong>Goal of Assign themes:</strong> Use AI to identify which theme is
+      present in each response
     </Text>
     <Text>
       The AI reviews every response question by question to identify which
-      theme(s) are in the response - <Link
+      theme(s) are in the response -{" "}
+      <Link
         openNewTab={true}
         href="https://github.com/i-dot-ai/themefinder/blob/main/src/themefinder/prompts/theme_mapping.txt"
-        >assign themes prompt</Link
       >
+        assign themes prompt
+      </Link>
     </Text>
     <Text> At this point 2 additional themes are added: </Text>
     <UnorderedList>
@@ -156,8 +166,8 @@ const HEADING_TWO_CLASS = "block text-primary text-xl mt-8 mb-2";
       </span>
     </Title>
     <Text>
-      <strong>Goal of Check quality:</strong> To understand how well the AI has mapped
-      the responses to the themes.
+      <strong>Goal of Check quality:</strong> To understand how well the AI has
+      mapped the responses to the themes.
     </Text>
     <Text>
       You will work with your central assurance team and the Consult team to
@@ -175,9 +185,7 @@ const HEADING_TWO_CLASS = "block text-primary text-xl mt-8 mb-2";
     </Text>
 
     <Title level={3} context="public">
-      <span class="font-bold text-primary">
-        Prospective mapping evaluation
-      </span>
+      <span class="font-bold text-primary">Prospective mapping evaluation</span>
     </Title>
     <Text>
       To learn the difference between how two people would do the mapping and
@@ -192,22 +200,28 @@ const HEADING_TWO_CLASS = "block text-primary text-xl mt-8 mb-2";
         <Link
           openNewTab={true}
           href="https://ai.gov.uk/evaluations/consult-evaluation-dwp-s-pathways-to-work-consultation/"
-          >DWP’s Pathways to Work consultation</Link
-        > - August 2025
+        >
+          DWP’s Pathways to Work consultation
+        </Link>{" "}
+        - August 2025
       </li>
       <li>
         <Link
           openNewTab={true}
           href="https://ai.gov.uk/evaluations/consult-evaluation-independent-water-commission-call-for-evidence/"
-          >Independent Water Commission Call for Evidence</Link
-        > - April 2025
+        >
+          Independent Water Commission Call for Evidence
+        </Link>{" "}
+        - April 2025
       </li>
       <li>
         <Link
           openNewTab={true}
           href="https://ai.gov.uk/docs/Scot_Gov_NSCP_Evaluation_Report.pdf"
-          >Scottish Government’s Non-surgical cosmetic procedures consultation</Link
-        > - March 2025
+        >
+          Scottish Government’s Non-surgical cosmetic procedures consultation
+        </Link>{" "}
+        - March 2025
       </li>
     </OrderedList>
 
@@ -215,8 +229,8 @@ const HEADING_TWO_CLASS = "block text-primary text-xl mt-8 mb-2";
       <span class={HEADING_TWO_CLASS}> Analyse - Human step </span>
     </Title>
     <Text>
-      <strong>Goal of Analyse:</strong> To understand what respondents said and take
-      consultation responses into account when taking policy forward.
+      <strong>Goal of Analyse:</strong> To understand what respondents said and
+      take consultation responses into account when taking policy forward.
     </Text>
     <Text>
       You will get access to all of the open free text questions with responses
@@ -225,11 +239,13 @@ const HEADING_TWO_CLASS = "block text-primary text-xl mt-8 mb-2";
     </Text>
     <Text>
       There is one final AI step that is run to identify Evidence Rich responses
-      - <Link
+      -{" "}
+      <Link
         openNewTab={true}
         href="https://github.com/i-dot-ai/themefinder/blob/main/src/themefinder/prompts/detail_detection.txt"
-        >evidence rich response prompt</Link
       >
+        evidence rich response prompt
+      </Link>
     </Text>
 
     <Title level={2} context="public">

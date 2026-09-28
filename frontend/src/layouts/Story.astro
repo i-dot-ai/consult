@@ -16,13 +16,11 @@ const { title, description, backUrl } = Astro.props;
 
     <Title level={1} text={"Design" + (title ? ` - ${title}` : "")} />
 
-    {
-      description && (
-        <Panel bg={true} border={true}>
-          <p>{description}</p>
-        </Panel>
-      )
-    }
+    {description && (
+      <Panel bg={true} border={true}>
+        <p>{description}</p>
+      </Panel>
+    )}
 
     <div class="mt-8 flex flex-col gap-4">
       <slot />

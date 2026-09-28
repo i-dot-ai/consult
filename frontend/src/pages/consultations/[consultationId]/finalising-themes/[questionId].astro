@@ -28,20 +28,18 @@ if (questionError) {
 
 <Layout>
   <Section>
-    {
-      questionData?.theme_status === "confirmed" ? (
-        <FinalisingThemesDetailCompleted
-          client:only="svelte"
-          consultationId={consultationId || ""}
-          questionId={questionId || ""}
-        />
-      ) : (
-        <FinalisingThemesDetail
-          client:only="svelte"
-          consultationId={consultationId || ""}
-          questionId={questionId || ""}
-        />
-      )
-    }
+    {questionData?.theme_status === "confirmed" ? (
+      <FinalisingThemesDetailCompleted
+        client:only="svelte"
+        consultationId={consultationId || ""}
+        questionId={questionId || ""}
+      />
+    ) : (
+      <FinalisingThemesDetail
+        client:only="svelte"
+        consultationId={consultationId || ""}
+        questionId={questionId || ""}
+      />
+    )}
   </Section>
 </Layout>
