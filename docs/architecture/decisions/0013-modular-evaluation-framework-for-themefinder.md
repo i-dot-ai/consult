@@ -116,3 +116,8 @@ scripts onto it in place, incrementally:
   `resolve_backends`/`ArtefactStorePort` instead of calling `langfuse_utils` directly — are already scoped
   in the design doc, ready to pick up. `generate_synthetic.py` needs the equivalent de-Langfusing (its own
   `LangfuseContext` construction, trace wrap, and flush), tracked as a separate follow-up issue.
+- Note (2026-09-24): to support a mix of evaluator sources (pydantic-evals, DeepEval, custom), `EvaluatorPort`
+  stays the canonical hub — sources adapt in, runners adapt out — rather than adopting `pydantic_evals.Evaluator`
+  as the base, which would privilege one library's context model and force `sources × runners` adapters instead
+  of `sources + runners`. The cost is a reverse adapter (`EvaluatorPort → pydantic_evals.Evaluator`) plus unwrap
+  dispatch for `PydanticEvalsEvaluator` (via its `pydantic_evaluator` accessor) on the native runner.
