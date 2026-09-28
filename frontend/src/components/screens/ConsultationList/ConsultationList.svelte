@@ -109,6 +109,14 @@
 
   let alertTimeouts: ReturnType<typeof setTimeout>[] = [];
 
+  function removeAlert(alertToRemove: string) {
+    alerts = alerts.filter((alert) => alert !== alertToRemove);
+  }
+
+  function addAlert(newAlert: string) {
+    alerts = [...alerts, newAlert];
+  }
+
   onDestroy(() => {
     alertTimeouts.forEach((timeout) => {
       clearTimeout(timeout);
@@ -136,9 +144,15 @@
     <div class="sr-only">No alerts to list</div>
   {/if}
 
-  {#each alerts as alert, i (i)}
+  {#each alerts as alert, i (alert + i)}
     <div class="mt-4" transition:fade>
-      <Alert variant="info">
+      <Alert
+        variant="info"
+        onTimeout={() => {
+          removeAlert(alert);
+        }}
+        timeoutDelay={deleteAlertDuration}
+      >
         {alert}
       </Alert>
     </div>
@@ -256,22 +270,24 @@
   canCancel={true}
   confirmText="Delete consultation"
   handleConfirm={async () => {
-    // Trigger deletion on the server
-    await consultationDelete.fetch({});
-
-    // Display alert that the consultation has been deleted
+    // Prepare alert
+    let newAlertText: string;
     const consultationToDelete = consultationsToDisplay.find(
       (consultation: Consultation) => consultation.id === deleteConsultationId,
     );
-    const newAlertText = `Consultation ${consultationToDelete?.title ?? deleteConsultationId} has been deleted.`;
-    alerts = [...alerts, newAlertText];
+    const consultationTitle = `${consultationToDelete?.title ?? deleteConsultationId}`;
+    newAlertText = `Consultation ${consultationTitle} has been deleted.`;
 
-    // Set timeout to remove alert
-    const newAlertTimeout = setTimeout(() => {
-      alerts = alerts.filter((alert) => alert !== newAlertText);
-    }, deleteAlertDuration);
+    // Trigger deletion on the server
+    try {
+      await consultationDelete.fetch({});
+    } catch {
+      console.error(consultationDelete.query?.error?.message);
+      newAlertText = `Consultation ${consultationTitle} could not be deleted.`;
+    }
 
-    alertTimeouts = [...alertTimeouts, newAlertTimeout];
+    // Display alert
+    addAlert(newAlertText);
 
     // Reset consultation selected for deletion
     deleteConsultationId = "";

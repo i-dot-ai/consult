@@ -9,13 +9,10 @@ export function buildConsultationsGetQuery() {
 }
 
 export function buildConsultationDeleteQuery(consultationId: string) {
-  return buildQuery<void>(
-    consultationQueryParts.url(consultationId),
-    {
-      key: consultationQueryParts.key(consultationId),
-      method: "DELETE",
-    },
-  );
+  return buildQuery<void>(consultationQueryParts.url(consultationId), {
+    key: consultationQueryParts.key(consultationId),
+    method: "DELETE",
+  });
 }
 
 export function buildConsultationGetQuery(consultationId: string) {
