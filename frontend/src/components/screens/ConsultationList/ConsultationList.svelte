@@ -228,7 +228,7 @@
 
         {#if !content}
           {@render nullCell()}
-        {:else if content === userData.email}
+        {:else if content === userData?.email}
           <span>You</span>
         {:else}
           <span class="text-neutral-500">{content}</span>
