@@ -12,7 +12,6 @@
   import Delete from "../../svg/material/Delete.svelte";
   import Close from "../../svg/material/Close.svelte";
   import Button from "../../inputs/Button/Button.svelte";
-  import { type CurrentUserGetResponse } from "../../../global/queries/users/types.ts";
 
   import {
     getConsultationDetailUrl,
@@ -26,6 +25,7 @@
   import type { Consultation } from "../../../global/types.ts";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries.ts";
+  import { type CurrentUserGetResponse } from "../../../global/queries/users/types.ts";
 
   interface AlertData {
     text: string;
@@ -51,9 +51,10 @@
 
   interface Props {
     deleteAlertDuration?: number;
+    enableV2?: boolean;
   }
 
-  const { deleteAlertDuration = 5000 }: Props = $props();
+  const { deleteAlertDuration = 5000, enableV2 = true }: Props = $props();
 
   let deleteConsultationId = $state("");
   let alerts: AlertData[] = $state([]);
@@ -95,11 +96,15 @@
       },
       createdAt: consultation.created_at,
       createdBy: consultation.created_by,
-      actions: {
-        id: consultation.id,
-        name: consultation.title,
-        createdBy: consultation.created_by,
-      },
+      ...(enableV2
+        ? {
+            actions: {
+              id: consultation.id,
+              name: consultation.title,
+              createdBy: consultation.created_by,
+            },
+          }
+        : {}),
     })),
   );
 
@@ -205,11 +210,15 @@
         key: "createdBy",
         sortable: true,
       },
-      {
-        label: "Actions",
-        key: "actions",
-        sortable: false,
-      },
+      ...(enableV2
+        ? [
+            {
+              label: "Actions",
+              key: "actions",
+              sortable: false,
+            },
+          ]
+        : []),
     ]}
     rows={consultationRows}
     loadingCondition={consultations.query.isPending}

@@ -3,10 +3,12 @@ import Layout from "../../layouts/Layout.astro";
 import Section from "../../components/Section/Section.svelte";
 
 import ConsultationList from "../../components/screens/ConsultationList/ConsultationList.svelte";
+
+const enableV2 = import.meta.env["ENABLE_V2"] === "true" ? true : false;
 ---
 
 <Layout>
   <Section>
-    <ConsultationList client:load />
+    <ConsultationList client:load enableV2={enableV2} />
   </Section>
 </Layout>
