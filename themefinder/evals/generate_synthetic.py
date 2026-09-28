@@ -124,6 +124,8 @@ async def main() -> None:
                     break
                 if action == "regenerate_all":
                     progress = create_progress_bar()
+                    with progress:
+                        themes_by_question = await generator.generate_themes(progress)
                     continue
 
                 progress = create_progress_bar()
