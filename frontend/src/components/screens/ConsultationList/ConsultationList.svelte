@@ -26,6 +26,11 @@
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries.ts";
 
+  interface AlertData {
+    text: string;
+    variant: "info" | "error";
+  }
+
   interface LinkData {
     url: string;
     ariaLabel: string;
@@ -50,7 +55,7 @@
   const { deleteAlertDuration = 5000 }: Props = $props();
 
   let deleteConsultationId = $state("");
-  let alerts: string[] = $state([]);
+  let alerts: AlertData[] = $state([]);
 
   const user = buildCurrentUserGetQuery();
   const consultations = buildConsultationsGetQuery();
@@ -109,11 +114,11 @@
 
   let alertTimeouts: ReturnType<typeof setTimeout>[] = [];
 
-  function removeAlert(alertToRemove: string) {
-    alerts = alerts.filter((alert) => alert !== alertToRemove);
+  function removeAlert(alertToRemove: AlertData) {
+    alerts = alerts.filter((alert) => alert.text !== alertToRemove.text);
   }
 
-  function addAlert(newAlert: string) {
+  function addAlert(newAlert: AlertData) {
     alerts = [...alerts, newAlert];
   }
 
@@ -144,16 +149,16 @@
     <div class="sr-only">No alerts to list</div>
   {/if}
 
-  {#each alerts as alert, i (alert + i)}
+  {#each alerts as alert, i (alert.text + i)}
     <div class="mt-4" transition:fade>
       <Alert
-        variant="info"
+        variant={alert.variant}
         onTimeout={() => {
           removeAlert(alert);
         }}
         timeoutDelay={deleteAlertDuration}
       >
-        {alert}
+        {alert.text}
       </Alert>
     </div>
   {/each}
@@ -271,12 +276,15 @@
   confirmText="Delete consultation"
   handleConfirm={async () => {
     // Prepare alert
-    let newAlertText: string;
+    let newAlertText: AlertData["text"];
+    let newAlertVariant: AlertData["variant"];
+
     const consultationToDelete = consultationsToDisplay.find(
       (consultation: Consultation) => consultation.id === deleteConsultationId,
     );
     const consultationTitle = `${consultationToDelete?.title ?? deleteConsultationId}`;
     newAlertText = `Consultation ${consultationTitle} has been deleted.`;
+    newAlertVariant = "info";
 
     // Trigger deletion on the server
     try {
@@ -284,10 +292,14 @@
     } catch {
       console.error(consultationDelete.query?.error?.message);
       newAlertText = `Consultation ${consultationTitle} could not be deleted.`;
+      newAlertVariant = "error";
     }
 
     // Display alert
-    addAlert(newAlertText);
+    addAlert({
+      text: newAlertText,
+      variant: newAlertVariant,
+    });
 
     // Reset consultation selected for deletion
     deleteConsultationId = "";
