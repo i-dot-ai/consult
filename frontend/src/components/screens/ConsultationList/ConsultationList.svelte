@@ -320,11 +320,13 @@
   }}
 >
   <p>
-    Deleting removes the responses, the themes and the analysis. This cannot be undone.
+    Deleting removes the responses, the themes and the analysis. This cannot be
+    undone.
 
     <Panel variant="default">
       {consultations.query.data?.results.find(
-        (consultation: Consultation) => consultation.id === deleteConsultationId,
+        (consultation: Consultation) =>
+          consultation.id === deleteConsultationId,
       )?.title}
     </Panel>
   </p>
