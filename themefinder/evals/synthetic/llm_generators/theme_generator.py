@@ -42,7 +42,8 @@ class ThemeSet(BaseModel):
     themes: list[Theme]
 
 
-SYSTEM_PROMPT = load_prompt("theme_generation_system.md")
+THEME_GENERATION_BACKGROUND = load_prompt("theme_generation_system.md")
+THEME_GENERATION_TASK = load_prompt("theme_generation_user.md")
 
 CONSOLIDATION_SYSTEM_PROMPT = load_prompt("theme_consolidation_system.md")
 
@@ -150,32 +151,14 @@ async def _fan_out_theme_generation(
     """
     demographic_context = _build_demographic_context(demographic_fields)
 
-    human_prompt = f"""Analyse this UK government consultation question and generate a comprehensive theme framework.
-
-## Consultation Topic
-{topic}
-
-## Question
-{question}
-
-## Demographic Context for This Consultation
-The following demographic dimensions are being tracked for respondents. Consider how each group might respond differently:
-{demographic_context}
-
-## Your Task
-1. Reason through the policy question - what are the key tensions, trade-offs, and stakeholder interests?
-2. Consider how different demographic groups would approach this question differently
-3. Generate a COMPREHENSIVE set of themes covering all likely response patterns
-4. Ensure themes capture perspectives from across the demographic spectrum
-
-Generate as many themes as the topic requires for comprehensive coverage. Simple questions
-may need 10-15 themes; complex or contentious topics may need 30-50+. Do not artificially
-limit the number - be thorough.
-
-Use sequential IDs: A, B, C, ... Z, AA, AB, ... for themes."""
+    human_prompt = THEME_GENERATION_TASK.format(
+        topic=topic,
+        question=question,
+        demographic_context=demographic_context,
+    )
 
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": THEME_GENERATION_BACKGROUND},
         {"role": "user", "content": human_prompt},
     ]
 
