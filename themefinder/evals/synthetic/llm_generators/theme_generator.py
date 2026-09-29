@@ -42,8 +42,8 @@ class ThemeSet(BaseModel):
     themes: list[Theme]
 
 
-THEME_GENERATION_BACKGROUND = load_prompt("theme_generation_system.md")
-THEME_GENERATION_TASK = load_prompt("theme_generation_user.md")
+THEME_GENERATION_BACKGROUND = load_prompt("theme_generation_background.md")
+THEME_GENERATION_TASK = load_prompt("theme_generation_task.md")
 
 CONSOLIDATION_SYSTEM_PROMPT = load_prompt("theme_consolidation_system.md")
 
