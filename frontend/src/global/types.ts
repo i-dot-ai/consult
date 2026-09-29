@@ -63,6 +63,7 @@ export interface Consultation {
   created_at: string;
   created_by: string;
   running_job: RunningJob;
+  users: User[];
 }
 
 export interface ConsultationFolder {
