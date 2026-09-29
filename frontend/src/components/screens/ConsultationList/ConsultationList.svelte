@@ -59,7 +59,7 @@
   let deleteConsultationId = $state("");
   let alerts: AlertData[] = $state([]);
 
-  const user = buildCurrentUserGetQuery();
+  const user = $derived(enableV2 ? buildCurrentUserGetQuery() : null);
   const consultations = buildConsultationsGetQuery();
   const consultationDelete = $derived(
     buildConsultationDeleteQuery(deleteConsultationId),
@@ -244,7 +244,7 @@
           </div>
         </div>
       {:else if column.key === "createdBy"}
-        {@const userData = user.query?.data as CurrentUserGetResponse}
+        {@const userData = user?.query?.data as CurrentUserGetResponse}
 
         {#if !content}
           {@render nullCell()}
@@ -255,7 +255,7 @@
         {/if}
       {:else if column.key === "actions"}
         {@const { id, name, createdBy } = content as ActionData}
-        {@const userData = user.query?.data as CurrentUserGetResponse}
+        {@const userData = user?.query?.data as CurrentUserGetResponse}
 
         {#if canDelete(userData, createdBy)}
           <div>
