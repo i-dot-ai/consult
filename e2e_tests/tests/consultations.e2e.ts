@@ -27,7 +27,7 @@ test.describe("Consultations - List Page", () => {
   test("displays consultations user has been added to", async ({ page }) => {
     // Check the page heading
     await expect(
-      page.getByRole("heading", { name: /Your consultations/i }),
+      page.getByRole("heading", { name: /Consultations/i }),
     ).toBeVisible();
 
     // Check that at least one consultation is displayed
