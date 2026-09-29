@@ -1,7 +1,7 @@
 """PydanticEvalsEvaluator — run any pydantic-evals Evaluator behind EvaluatorPort.
 
 Wraps a native pydantic-evals evaluator so it drops into any
-`ComponentConfig.build_evaluators` list, translating its `EvaluatorOutput` into this
+`ComponentConfig.evaluators` list, translating its `EvaluatorOutput` into this
 framework's `list[Score]`:
 
     PydanticEvalsEvaluator(Contains(value="expected substring"))
@@ -22,11 +22,7 @@ class PydanticEvalsEvaluator(EvaluatorPort):
     def __init__(
         self, evaluator: Evaluator, metric_names: tuple[str, ...] | None = None
     ):
-        """Wrap `evaluator` behind `EvaluatorPort`; single-output evaluators default
-        their Score name from `get_default_evaluation_name()`, multi-output ones must
-        declare `metric_names` rather than us reconstructing pydantic-evals' internal
-        output-key naming (which would drift silently on upgrade).
-        """
+        """Wrap `evaluator` behind `EvaluatorPort`"""
         self._evaluator = evaluator
         self.metric_names = metric_names or (evaluator.get_default_evaluation_name(),)
 

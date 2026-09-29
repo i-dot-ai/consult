@@ -25,7 +25,7 @@ the orchestrator — with both sides genuinely swappable for other tools later, 
 We are introducing a ports-and-adapters layer inside `themefinder/evals/` and migrating the four component
 scripts onto it in place, incrementally:
 
-- Four ports — `DatasetPort`, `EvaluatorPort`, `EvalRunnerPort`, `ArtefactStorePort` — each defined as an
+- Four ports — `DatasetPort`, `EvaluatorPort`, `RunnerPort`, `ArtefactStorePort` — each defined as an
   explicit `abc.ABC` base class (not structural typing), so adapters must genuinely subclass the interface
   they implement.
 - One folder per port under `evals/adapters/` (`datasets/`, `evaluators/`, `runners/`, `artefact_stores/`),
@@ -35,9 +35,9 @@ scripts onto it in place, incrementally:
   (`THEMEFINDER_EVAL_ENGINE`) — the explicit seam a second engine plugs into later.
 - `EvaluatorPort` is implemented directly by each kind of evaluator, not through a generic wrapper: the
   seven custom LLM-judge/metric classes retired from `evaluators.py`, plus a new
-  `PydanticEvalsLLMJudgeAdapter` (wrapping pydantic-evals' native `LLMJudge`), built and unit-tested but not
-  yet wired into any component — the landing spot for the team's expected future migration of the custom
-  judges onto pydantic-evals' own judge primitive, per ADR-0011. `EvalRunnerPort` implementations stay
+  `PydanticEvalsEvaluator` (wrapping any native pydantic-evals evaluator, e.g. `LLMJudge`), built and
+  unit-tested but not yet wired into any component — the landing spot for the team's expected future migration
+  of the custom judges onto pydantic-evals' own judge primitive, per ADR-0011. `RunnerPort` implementations stay
   agnostic to which kind of evaluator they're invoking. `RunReport` also gains an optional `engine_report`
   field so `PydanticEvalsRunner`'s native `EvaluationReport` can reach `LangfuseArtefactStore` for a richer
   summary, without widening any port's real contract or requiring other adapters to know about it.

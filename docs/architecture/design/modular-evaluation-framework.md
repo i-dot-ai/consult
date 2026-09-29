@@ -89,7 +89,7 @@ Four ports, each an explicit `abc.ABC`, each with a default adapter:
 |---|---|---|
 | `DatasetPort` | Load `list[Case]` for a component/dataset | `LangfuseDatasetAdapter` (Langfuse-enabled runs) or `LocalJSONDatasetAdapter` (otherwise) |
 | `EvaluatorPort` | Score a case's output | seven custom evaluator classes in `evals/adapters/evaluators/` (e.g. `GroundednessEvaluator`) |
-| `EvalRunnerPort` | Orchestrate task execution + evaluation | `PydanticEvalsRunner`, wrapping `pydantic_evals.Dataset.evaluate` |
+| `RunnerPort` | Orchestrate task execution + evaluation | `PydanticEvalsRunner`, wrapping `pydantic_evals.Dataset.evaluate` |
 | `ArtefactStorePort` | Persist run/case results and scores | `LangfuseArtefactStore` (default), `LocalJSONArtefactStore` (no-Langfuse) |
 
 ```mermaid
@@ -102,7 +102,7 @@ flowchart TB
     EB["EvalBackends<br/>— a plain struct, not a port —<br/>bundles a dataset port,<br/>a runner port, and an<br/>artefact-store port"]
 
     EB -->|".dataset"| DP["DatasetPort"]
-    EB -->|".runner"| RP["EvalRunnerPort"]
+    EB -->|".runner"| RP["RunnerPort"]
     EB -->|".artefacts"| AP["ArtefactStorePort"]
     RP -->|"invokes, per case"| EP["EvaluatorPort"]
 
@@ -110,7 +110,7 @@ flowchart TB
     DP -.->|"implemented by"| LJDA["LocalJSONDatasetAdapter"]
 
     EP -.->|"implemented by"| CEA["GroundednessEvaluator, etc.<br/>(7 custom evaluators)"]
-    EP -.->|"implemented by"| PEA["PydanticEvalsLLMJudgeAdapter<br/>wraps LLMJudge — built, not wired yet"]
+    EP -.->|"implemented by"| PEA["PydanticEvalsEvaluator<br/>wraps any native Evaluator — built, not wired yet"]
 
     RP -.->|"implemented by"| PER["PydanticEvalsRunner<br/>default, via THEMEFINDER_EVAL_ENGINE"]
     RP -.->|"implemented by"| ISR["InlineSequentialRunner<br/>test-only"]
@@ -137,13 +137,13 @@ returns and `run_component()` reads, holding exactly one concrete adapter per po
 grey nodes are the four ports, each an `abc.ABC`; the dashed `implemented by`
 arrows below each one are the inheritance relationship called out above — every concrete adapter genuinely
 subclasses its port's ABC, `isinstance(adapter, DatasetPort)` holds, and instantiating an adapter missing an
-abstract method raises `TypeError`. `EvalRunnerPort` additionally invokes `EvaluatorPort` once per case while
+abstract method raises `TypeError`. `RunnerPort` additionally invokes `EvaluatorPort` once per case while
 it runs — the one edge between two ports directly, reflecting that the runner is what drives evaluation, not
 `run_component()` calling evaluators itself.
 
 Colour key: pink = Langfuse-specific, blue = local/generic, purple = pydantic-evals-specific, grey = a port
 (`abc.ABC`), yellow = `EvalBackends`. Every port has at least one adapter of each flavour except
-`EvalRunnerPort`, whose only *production* adapter (`PydanticEvalsRunner`) is pydantic-evals-specific by
+`RunnerPort`, whose only *production* adapter (`PydanticEvalsRunner`) is pydantic-evals-specific by
 design — `InlineSequentialRunner` exists purely to prove the port is swappable, not as a real alternative
 engine.
 
@@ -169,21 +169,22 @@ evals/adapters/
   evaluators/
     __init__.py
     base.py                  # EvaluatorPort(ABC) — async evaluate(case, output) -> list[Score]
-    common.py                 # shared LLM-judge helpers + LLMJudgeEvaluator(EvaluatorPort), a thin base
+    llm_judge_evaluator.py     # shared LLM-judge helpers + LLMJudgeEvaluator(EvaluatorPort), a thin base
                                 # the 5 LLM-judge evaluators below subclass for retry/parsing plumbing
-    groundedness.py             # GroundednessEvaluator(LLMJudgeEvaluator)
-    coverage.py                  # CoverageEvaluator(LLMJudgeEvaluator)
-    title_specificity.py           # TitleSpecificityEvaluator(LLMJudgeEvaluator)
-    condensation_quality.py         # CondensationQualityEvaluator(LLMJudgeEvaluator)
-    refinement_quality.py            # RefinementQualityEvaluator(LLMJudgeEvaluator)
-    mapping_f1.py                     # MappingF1Evaluator(EvaluatorPort) — deterministic, not an LLM judge
-    redundancy.py                      # RedundancyEvaluator(EvaluatorPort) — embedding-based, not an LLM judge
-    pydantic_evals_llm_judge_adapter.py  # PydanticEvalsLLMJudgeAdapter, wraps pydantic_evals.evaluators.LLMJudge
-                                            # (built + tested, not wired into any ComponentConfig yet)
+    groundedness_evaluator.py   # GroundednessEvaluator(LLMJudgeEvaluator)
+    coverage_evaluator.py        # CoverageEvaluator(LLMJudgeEvaluator)
+    title_specificity_evaluator.py  # TitleSpecificityEvaluator(LLMJudgeEvaluator)
+    condensation_quality_evaluator.py  # CondensationQualityEvaluator(LLMJudgeEvaluator)
+    refinement_quality_evaluator.py    # RefinementQualityEvaluator(LLMJudgeEvaluator)
+    mapping_f1_evaluator.py             # MappingF1Evaluator(EvaluatorPort) — deterministic, not an LLM judge
+    redundancy_evaluator.py              # RedundancyEvaluator(EvaluatorPort) — embedding-based, not an LLM judge
+    pydantic_evals_evaluator.py  # PydanticEvalsEvaluator, wraps any native pydantic_evals.evaluators.Evaluator
+                                    # (e.g. LLMJudge) — built + tested, not wired into any ComponentConfig yet
   runners/
     __init__.py
-    base.py                  # EvalRunnerPort(ABC) — async run(cases, task, evaluators, max_concurrency) -> RunReport
-    pydantic_evals_adapter.py   # PydanticEvalsRunner, wraps pydantic_evals.Dataset.evaluate
+    base.py                  # RunnerPort(ABC) — async run(config, cases, *, llm) -> RunReport
+    inline_sequential_runner.py  # InlineSequentialRunner — no native engine, test-only
+    pydantic_evals_runner.py   # PydanticEvalsRunner, wraps pydantic_evals.Dataset.evaluate
   artefact_stores/
     __init__.py
     base.py                  # ArtefactStorePort(ABC) — start_run/record_case/finish_run
@@ -208,8 +209,8 @@ not a separate top-level `evals/evaluators/` content package sitting next to `ev
 (the port). Keeping them as one directory avoids two `evaluators/` paths that would otherwise be genuinely
 confusing to tell apart, and it means every evaluator, whatever its underlying implementation strategy
 (custom Python today, pydantic-evals' native `LLMJudge`, DeepEval or another library later), is a
-first-class `EvaluatorPort` implementation in its own right — consistent with how `PydanticEvalsLLMJudgeAdapter`
-already works, a direct `EvaluatorPort` subclass with no wrapper. `EvalRunnerPort` implementations stay
+first-class `EvaluatorPort` implementation in its own right — consistent with how `PydanticEvalsEvaluator`
+already works, a direct `EvaluatorPort` subclass with no wrapper. `RunnerPort` implementations stay
 completely agnostic to which
 *kind* of `EvaluatorPort` they're invoking — that's the actual point of the port.
 
@@ -219,8 +220,8 @@ Grounded in the actual current contents of `evaluators.py`: seven public factori
 plus five shared private helpers and the `_invoke_with_retry` wrapper used by the five async ones. Retiring
 the file folds each factory's closure body directly into its new class's `evaluate()` method — which classes
 share the retry/parsing base and which subclass `EvaluatorPort` directly is covered in [Evaluator
-adapters](#evaluator-adapters) below, not repeated here. `ComponentConfig.build_evaluators` constructs these
-directly, passing the judge LLM to whichever evaluators need it — generation's set, for example, is
+adapters](#evaluator-adapters) below, not repeated here. `ComponentConfig.evaluators` holds these, already
+constructed with the judge LLM bound wherever it's needed — generation's set, for example, is
 groundedness, coverage, and title-specificity (each needing the judge LLM) plus redundancy (which doesn't).
 
 **`evals/utils/`** replaces the flat `evals/langfuse_utils.py` and the unrelated `evals/utils.py`:
@@ -258,11 +259,11 @@ handing the resulting callable to whichever runner is active. If a component gen
 ## Ports
 
 Each port is an `abc.ABC` living in its own `base.py`, with a single narrow responsibility matching its row
-in the table above — `DatasetPort` loads cases, `EvaluatorPort` scores a case, `EvalRunnerPort` orchestrates
+in the table above — `DatasetPort` loads cases, `EvaluatorPort` scores a case, `RunnerPort` orchestrates
 execution, `ArtefactStorePort` starts/records/finishes a run.
 
 Every concrete adapter — `LangfuseDatasetAdapter`, `LocalJSONDatasetAdapter`, the seven evaluator classes in
-`evals/adapters/evaluators/`, `PydanticEvalsLLMJudgeAdapter`, `PydanticEvalsRunner`, `LangfuseArtefactStore`,
+`evals/adapters/evaluators/`, `PydanticEvalsEvaluator`, `PydanticEvalsRunner`, `LangfuseArtefactStore`,
 `LocalJSONArtefactStore` — explicitly subclasses its `base.py` ABC. This is real inheritance, not structural
 typing: instantiating an incomplete subclass raises `TypeError`, and `isinstance(adapter, DatasetPort)` is a
 meaningful assertion in tests.
@@ -304,7 +305,8 @@ port's contract — regardless of whether its own body ever actually `await`s an
 and `RedundancyEvaluator` simply run synchronously inside an `async def` method, which is fine, since the
 runner already does `await evaluator.evaluate(...)` uniformly for all seven.
 
-**`PydanticEvalsLLMJudgeAdapter`** wraps `pydantic_evals.evaluators.LLMJudge` behind the same `EvaluatorPort`
+**`PydanticEvalsEvaluator`** wraps any native `pydantic_evals.evaluators.Evaluator` (e.g. `LLMJudge`) behind
+the same `EvaluatorPort`
 — the planned home for the team's expected future migration of the five custom LLM-judge classes onto
 pydantic-evals' own judge primitive, per ADR-0011's "use pydantic-evals for LAJ" mandate. Built and
 unit-tested this pass (stubbed `LLMJudge`, no network); not wired into any `ComponentConfig` yet — retiring a
@@ -320,7 +322,10 @@ step: a standalone spike confirming `EvaluatorContext(...)` can be built and pas
 outside `Dataset.evaluate()` at all**, before writing the rest of the adapter around that assumption. If it
 can't, the adapter's shape needs to change — most likely to only support native pydantic-evals evaluators
 when `PydanticEvalsRunner` is actually driving the full `Dataset.evaluate()` call, a real constraint on the
-"any evaluator, any runner" swappability claim, not just an implementation detail.)
+"any evaluator, any runner" swappability claim, not just an implementation detail.
+
+Resolved: the spike was done — `EvaluatorContext` builds standalone with no missing fields, confirmed by a
+real passing test, `test_pydantic_evals_evaluator.py::test_wraps_real_llm_judge`.)
 
 This has to go through `EvaluatorPort`, not bypass it. The shortcut of handing `LLMJudge` instances straight
 to `pydantic_evals.Dataset(evaluators=[...])` inside `PydanticEvalsRunner` only works while `PydanticEvalsRunner`
@@ -328,20 +333,24 @@ is the active runner — the moment a `ComponentConfig` mixes a bypassed-native 
 (`InlineSequentialRunner` included), that evaluator silently can't run, breaking the swappability the whole
 framework is built around for that one evaluator. Wrapping it costs one adapter file and keeps every
 evaluator — native or custom — runnable under every runner. The migration path this unlocks:
-`ComponentConfig.build_evaluators` returns `list[EvaluatorPort]`, and nothing stops that list from mixing adapter
-types — `groundedness` could move to `PydanticEvalsLLMJudgeAdapter` while `coverage` stays on
+`ComponentConfig.evaluators` is a plain `list[EvaluatorPort]`, and nothing stops that list from mixing adapter
+types — `groundedness` could move to `PydanticEvalsEvaluator` while `coverage` stays on
 `CoverageEvaluator`, one evaluator at a time, with zero change to `run_component`, either runner, or any
 artefact store.
 
 ### Runner adapter
 
 **`PydanticEvalsRunner`** wraps `pydantic_evals.Dataset.evaluate`. Internally it builds a
-`pydantic_evals.Dataset(cases=[...], evaluators=[_EvaluatorBridge(...)])` and calls `.evaluate(task,
-max_concurrency=...)`. `_EvaluatorBridge(pydantic_evals.evaluators.Evaluator)` fans a pydantic-evals
-`EvaluatorContext` (exposing `.inputs`, `.output`, `.expected_output`, `.metadata`, `.name`) out to the
-framework's own `EvaluatorPort` list, and translates the results back into pydantic-evals' expected return
-shape. It also populates `RunReport.engine_report` with the native `EvaluationReport` object `Dataset.
-evaluate()` returns — see [Surfacing pydantic-evals' native EvaluationReport](#surfacing-pydantic-evals-native-evaluationreport-without-widening-the-ports)
+`pydantic_evals.Dataset(cases=[...], evaluators=[...])`, wrapping each `config.evaluators` entry individually
+(not fanning a single bridge out over the whole list): a `PydanticEvalsEvaluator` is unwrapped back to its
+own native evaluator via its `.pydantic_evaluator` accessor (real tracing, no round-trip through a
+reconstructed context); anything else is wrapped one-for-one in `_EvaluatorPortAsNativeEvaluator(port=...)`,
+which rebuilds a framework `Case` from the native `EvaluatorContext` (`.inputs`, `.output`,
+`.expected_output`, `.metadata`, `.name`), delegates to that one `EvaluatorPort`, and translates its
+`list[Score]` back into pydantic-evals' expected return shape. `Dataset.evaluate(task, max_concurrency=...)`
+is then called once per run, not per evaluator. It also populates `RunReport.engine_report` with the native
+`EvaluationReport` object `Dataset.evaluate()` returns — see [Surfacing pydantic-evals' native
+EvaluationReport](#surfacing-pydantic-evals-native-evaluationreport-without-widening-the-ports)
 below. Every other runner (`InlineSequentialRunner` included) leaves `engine_report` at its default, `None`.
 
 ### Artefact store adapters
@@ -441,7 +450,7 @@ plugin registry; this is deliberately simple, the same pattern the two new selec
 
 ### `evals/component_runner.py::run_component`
 
-`run_component` loads cases via `backends.dataset`, builds evaluators via `ComponentConfig.build_evaluators`, runs
+`run_component` loads cases via `backends.dataset`, reads pre-built evaluators from `ComponentConfig.evaluators`, runs
 the task via `backends.runner`, records and finishes via `backends.artefacts`, and returns a flat result
 dict. Pure ports — no `langfuse` or
 `pydantic_evals` import, no conditional branching on context state. This is the one function all four component
@@ -462,7 +471,7 @@ mapping's evaluator ignores it.
 each already calls the same `evaluators.py` LLM-judge suite in both its local and Langfuse paths, so this
 plan doesn't change their local-run scoring. **Mapping is the one component this plan changes local-run
 behaviour for**: its local fallback currently calls `metrics.py::calculate_mapping_metrics`, while `run_component`
-calls `ComponentConfig.build_evaluators` — which wraps `evaluators.py::mapping_f1_evaluator` — regardless of
+reads `ComponentConfig.evaluators` — which wraps `evaluators.py::mapping_f1_evaluator` — regardless of
 dataset source. Mapping's local runs switch onto `mapping_f1_evaluator` as a direct structural consequence of
 adopting `run_component`, not a special extra step. `evals/metrics.py` is deleted outright as part of this pass:
 `eval_mapping.py::calculate_mapping_metrics` is its only remaining importer (`eval_generation.py` no longer
@@ -584,7 +593,7 @@ This work is broken down into 8 issues across five waves:
   `settings.py` + its test fixture, the `utils/` directory move, wiring `settings.py` into existing helpers.
   All additive or mechanical — nothing production-facing changes yet. There's no separate
   `evaluators.py`-split issue here, since retiring it happens directly inside the `EvaluatorPort` issue below.
-- **Wave 1 — Ports** (4 issues, parallelisable): one issue per port type — `DatasetPort`, `EvaluatorPort` (all seven evaluator classes plus `PydanticEvalsLLMJudgeAdapter`), `EvalRunnerPort`, `ArtefactStorePort` — each self-contained with its own offline tests. None of them are wired into production code yet, so a team can split these across people. The `EvaluatorPort` issue's first step is the `EvaluatorContext`-standalone-construction spike flagged under [Evaluator adapters](#evaluator-adapters) above — if it fails, `PydanticEvalsLLMJudgeAdapter` splits off into its own follow-up issue and this one narrows to the seven custom classes.
+- **Wave 1 — Ports** (4 issues, parallelisable): one issue per port type — `DatasetPort`, `EvaluatorPort` (all seven evaluator classes plus `PydanticEvalsEvaluator`), `RunnerPort`, `ArtefactStorePort` — each self-contained with its own offline tests. None of them are wired into production code yet, so a team can split these across people. The `EvaluatorPort` issue's first step is the `EvaluatorContext`-standalone-construction spike flagged under [Evaluator adapters](#evaluator-adapters) above — if it fails, `PydanticEvalsEvaluator` splits off into its own follow-up issue and this one narrows to the seven custom classes.
 - **Wave 2 — Orchestration** (1 issue): `resolve_backends` + `run_component` + the swappability proof. The
   architecture's proof point — every port comes together here for the first time.
 - **Wave 3 — Component migrations** (1 issue, though could be split if it gets too large): `eval_generation.py` (+ the `benchmark.py`
@@ -606,7 +615,7 @@ or broken intermediate state.
 ## Testing strategy
 
 - `evals/tests/fakes.py` provides `FakeDatasetPort`, `FakeEvaluatorPort`, `FakeArtefactStore` (each
-  subclassing the real ABC) and `InlineSequentialRunner` — a ~15-line loop implementing `EvalRunnerPort` with
+  subclassing the real ABC) and `InlineSequentialRunner` — a ~15-line loop implementing `RunnerPort` with
   zero pydantic-evals dependency.
 - **Swappability proof** (`test_component_runner.py`): the same fake cases, evaluators, and task run once through
   `PydanticEvalsRunner()` and once through `InlineSequentialRunner()`, asserting identical `RunReport.
@@ -614,11 +623,11 @@ or broken intermediate state.
   `None` otherwise), is asserted explicitly rather than silently ignored. This is the concrete evidence the
   abstraction isn't paper-thin — it's what would catch any accidental coupling of evaluator, dataset, or
   artefact logic to pydantic-evals internals.
-- **LAJ adapter proof** (`test_evaluator_adapters.py`): `PydanticEvalsLLMJudgeAdapter`, built against a
+- **LAJ adapter proof** (`test_evaluator_adapters.py`): `PydanticEvalsEvaluator`, built against a
   stubbed `LLMJudge`, passes the same ABC-subclass checks as every other evaluator class, and its
   `evaluate()` output matches the `list[Score]` shape a custom evaluator like `GroundednessEvaluator`
   produces — proving a native pydantic-evals judge and a custom one are genuinely interchangeable in a
-  `ComponentConfig.build_evaluators` list.
+  `ComponentConfig.evaluators` list.
 - **Dataset-source failure / independent-selection proof** (`test_dataset_adapters.py`, `test_config.py`,
   `test_artefact_store.py`): a `LangfuseDatasetAdapter` pointed at a nonexistent dataset name raises
   `DatasetNotFoundError` rather than falling back to anything; `resolve_backends()` wires `dataset=langfuse,
@@ -632,7 +641,7 @@ or broken intermediate state.
   instantiating an incomplete subclass raises `TypeError`.
 - A grep-based check enforces the zero-Langfuse-in-scripts rule directly:
   `grep -ril langfuse evals/eval_*.py evals/component_runner.py evals/eval_types.py evals/adapters/*/base.py
-  evals/adapters/evaluators/*.py` must return nothing, aside from `pydantic_evals_llm_judge_adapter.py`
+  evals/adapters/evaluators/*.py` must return nothing, aside from `pydantic_evals_evaluator.py`
   (which legitimately imports `pydantic_evals`, not `langfuse` — the grep target is `langfuse`, not
   `pydantic_evals`, so this file is expected to be clean too).
 - A second grep-based check enforces the `os.getenv()` centralisation directly: `grep -rn "os\.getenv\|os\.
@@ -661,7 +670,7 @@ or broken intermediate state.
   Langfuse dataset). Structurally similar to `benchmark.py`'s coupling but smaller, and tracked as its own
   separate follow-up issue rather than folded into the `benchmark.py` write-up, since the two scripts have no
   shared call path.
-- Actually migrating any of the five custom LLM-judge classes onto `PydanticEvalsLLMJudgeAdapter` —
+- Actually migrating any of the five custom LLM-judge classes onto `PydanticEvalsEvaluator` —
   the adapter exists and is tested this pass, but retiring a custom judge is an output-quality-parity
   decision, not a mechanical one.
 - Investigating whether pydantic-evals' native OpenTelemetry instrumentation can feed Langfuse traces more
