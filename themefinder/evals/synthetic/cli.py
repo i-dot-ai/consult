@@ -278,6 +278,7 @@ async def run_interactive_cli() -> GenerationConfig:
     # Step 7: Advanced options (noise level)
     _print_step_header(7, "Advanced Options")
     noise_level = NoiseLevel.MEDIUM
+    preview_respondent_count = 3
 
     if Confirm.ask(
         "[bold yellow]Configure noise settings?[/bold yellow]", default=False
@@ -300,6 +301,14 @@ async def run_interactive_cli() -> GenerationConfig:
             default="medium",
         )
         noise_level = NoiseLevel(noise)
+
+    preview_respondent_count = max(
+        1,
+        IntPrompt.ask(
+            "[bold yellow]How many responses would you like to preview?[/bold yellow]",
+            default=preview_respondent_count,
+        ),
+    )
 
     # Generate dataset name using LLM
     with console.status(
@@ -350,6 +359,7 @@ async def run_interactive_cli() -> GenerationConfig:
         questions=questions,
         demographic_fields=all_fields,
         noise_level=noise_level,
+        preview_respondent_count=preview_respondent_count,
     )
 
 

@@ -127,6 +127,7 @@ class GenerationConfig:
     questions: list[QuestionConfig]
     demographic_fields: list[DemographicField]
     noise_level: NoiseLevel = NoiseLevel.MEDIUM
+    preview_respondent_count: int = PREVIEW_RESPONDENT_COUNT
 
     position_distribution: dict[str, float] = field(
         default_factory=lambda: {

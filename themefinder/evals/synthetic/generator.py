@@ -12,7 +12,6 @@ from rich.progress import Progress, TaskID
 from synthetic.config import (
     GenerationConfig,
     NoiseLevel,
-    PREVIEW_RESPONDENT_COUNT,
     ResponseLength,
     ResponseType,
 )
@@ -192,9 +191,10 @@ class SyntheticDatasetGenerator:
         self,
         themes_by_question: dict[int, list[dict]],
         progress: Progress | None = None,
-        n_respondents: int = PREVIEW_RESPONDENT_COUNT,
+        n_respondents: int | None = None,
     ) -> list[dict]:
         """Generate a small preview sample without writing final dataset files."""
+        n_respondents = n_respondents or self.config.preview_respondent_count
         respondent_specs = self.build_respondent_specs(n_respondents)
         total_responses = len(respondent_specs) * len(self.config.questions)
         preview_task_id: TaskID | None = None
