@@ -1,8 +1,11 @@
+from datetime import timedelta
+
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from factories import UserFactory
+from factories import ConsultationFactory, UserFactory
 
 
 @pytest.mark.django_db
@@ -32,3 +35,78 @@ def test_v2_consultations_reject_unauthenticated(client):
     response = client.get(reverse("consultation-v2-list"))
 
     assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_v2_list_returns_dates_and_ownership(client, non_staff_user, non_staff_user_token):
+    started = timezone.now() - timedelta(days=30)
+    closed = timezone.now() - timedelta(days=1)
+    consultation = ConsultationFactory(
+        title="Owned Consultation",
+        created_by=non_staff_user,
+        started_at=started,
+        closed_at=closed,
+    )
+    consultation.users.add(non_staff_user)
+
+    response = client.get(
+        reverse("consultation-v2-list"),
+        headers={"Authorization": f"Bearer {non_staff_user_token}"},
+    )
+
+    assert response.status_code == 200
+    [result] = response.json()["results"]
+    assert result["title"] == "Owned Consultation"
+    assert result["started_at"] is not None
+    assert result["closed_at"] is not None
+    assert result["is_owner"] is True
+    assert result["is_assigned"] is True
+
+
+@pytest.mark.django_db
+def test_v2_list_marks_ownerless_consultation(client, non_staff_user_token, consultation):
+    # The consultation fixture has no creator (created_by is SET_NULL), so is_owner is None
+    # rather than False to distinguish "no owner" from "owned by someone else".
+    response = client.get(
+        reverse("consultation-v2-list"),
+        headers={"Authorization": f"Bearer {non_staff_user_token}"},
+    )
+
+    assert response.status_code == 200
+    [result] = response.json()["results"]
+    assert result["is_owner"] is None
+    assert result["is_assigned"] is True
+    assert result["closed_at"] is None
+
+
+@pytest.mark.django_db
+def test_v2_list_marks_owned_by_another_user(client, staff_user, staff_user_token):
+    other_owner = UserFactory(is_staff=False)
+    consultation = ConsultationFactory(title="Someone Else's", created_by=other_owner)
+
+    response = client.get(
+        reverse("consultation-v2-list"),
+        headers={"Authorization": f"Bearer {staff_user_token}"},
+    )
+
+    assert response.status_code == 200
+    [result] = response.json()["results"]
+    assert result["id"] == str(consultation.id)
+    assert result["is_owner"] is False
+    assert result["is_assigned"] is False
+
+
+@pytest.mark.django_db
+def test_v2_list_marks_owned_but_not_assigned(client, staff_user, staff_user_token):
+    consultation = ConsultationFactory(title="Staff Owned", created_by=staff_user)
+
+    response = client.get(
+        reverse("consultation-v2-list"),
+        headers={"Authorization": f"Bearer {staff_user_token}"},
+    )
+
+    assert response.status_code == 200
+    [result] = response.json()["results"]
+    assert result["id"] == str(consultation.id)
+    assert result["is_owner"] is True
+    assert result["is_assigned"] is False
