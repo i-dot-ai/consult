@@ -1,4 +1,6 @@
 <script lang="ts">
+  import clsx from "clsx";
+
   import { fade } from "svelte/transition";
 
   import Link from "../../Link.svelte";
@@ -16,12 +18,13 @@
     getConsultationDetailUrl,
     getConsultationEvalUrl,
     getFinaliseThemesUrl,
+    getSupportUserDetail,
   } from "../../../global/routes.ts";
   import {
     buildConsultationDeleteQuery,
     buildConsultationsGetQuery,
   } from "../../../global/queries/consultations/queries.ts";
-  import type { Consultation } from "../../../global/types.ts";
+  import type { Consultation, User } from "../../../global/types.ts";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries.ts";
   import { type CurrentUserGetResponse } from "../../../global/queries/users/types.ts";
@@ -64,7 +67,7 @@
     buildConsultationDeleteQuery(deleteConsultationId),
   );
 
-  const consultationsToDisplay = $derived(
+  const consultationsToDisplay: Consultation[] = $derived(
     consultations.query.data?.results.filter(
       (consultation: Consultation) =>
         consultation.running_job !== "delete-consultation",
@@ -97,6 +100,7 @@
       createdBy: consultation.created_by,
       ...(enableV2
         ? {
+            team: consultation.users,
             actions: {
               id: consultation.id,
               name: consultation.title,
@@ -106,6 +110,21 @@
         : {}),
     })),
   );
+
+  function getUserColor(id: number) {
+    const SCALE_AMOUNT = 10000;
+    const CLASSES = ["bg-neutral-500", "bg-neutral-300", "bg-neutral-400", "bg-neutral-700"];
+
+    const number = Number(id);
+    const sineValue = Math.sin(number);
+    const scaledValue = sineValue * SCALE_AMOUNT;
+
+    const integerPart = Math.floor(scaledValue);
+    const fractionalPart = scaledValue - integerPart;
+
+    const bucket = Math.floor(fractionalPart * CLASSES.length);
+    return CLASSES[bucket];
+  }
 
   function canDelete(
     userData: CurrentUserGetResponse | undefined,
@@ -204,11 +223,16 @@
       ...(enableV2
         ? [
             {
+              label: "Team",
+              key: "team",
+              sortable: false,
+            },
+            {
               label: "Actions",
               key: "actions",
               sortable: false,
             },
-          ]
+          ] as const
         : []),
     ]}
     rows={consultationRows}
@@ -243,6 +267,40 @@
           <span>You</span>
         {:else}
           <span class="text-neutral-500">{content}</span>
+        {/if}
+      {:else if column.key === "team"}
+        {@const users = content as Consultation["users"]}
+        {@const currentUser = user?.query?.data}
+
+        {#if !content || users?.length === 0}
+          {@render nullCell()}
+        {:else}
+          <div class="flex gap-2 items-center">
+            {#each users as teamMember}
+              <svelte:element
+                this={currentUser?.is_staff ? "a" : "div"}
+                href={currentUser?.is_staff
+                  ? getSupportUserDetail(teamMember.id.toString())
+                  : undefined
+                }
+              >
+                <div class={clsx([
+                  "flex",
+                  "justify-center",
+                  "items-center",
+                  "w-6",
+                  "h-6",
+                  "p-1",
+                  "text-white",
+                  "text-xs",
+                  "rounded-full",
+                  getUserColor(teamMember.id),
+                ])}>
+                  {teamMember.email.charAt(0).toUpperCase()}
+                </div>
+              </svelte:element>
+            {/each}
+          </div>
         {/if}
       {:else if column.key === "actions"}
         {@const { id, name, createdBy } = content as ActionData}
