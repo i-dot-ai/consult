@@ -3,8 +3,9 @@ import Layout from "../../layouts/Layout.astro";
 import Section from "../../components/Section/Section.svelte";
 
 import ConsultationList from "../../components/screens/ConsultationList/ConsultationList.svelte";
+import { getDataSetupV2Enabled } from "../../global/utils";
 
-const enableV2 = import.meta.env["ENABLE_V2"] === "true" ? true : false;
+const enableV2 = getDataSetupV2Enabled();
 ---
 
 <Layout>
