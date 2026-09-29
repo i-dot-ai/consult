@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import type { Component, Snippet } from "svelte";
+  import { onDestroy, onMount, type Component, type Snippet } from "svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
   import Info from "../svg/material/Info.svelte";
 
@@ -9,9 +9,17 @@
     children: Snippet;
     Icon?: Component;
     variant?: "info" | "warning" | "error" | "success";
+    onTimeout?: () => void;
+    timeoutDelay?: number;
   }
 
-  let { Icon = Info, children, variant = "info" }: Props = $props();
+  let {
+    Icon = Info,
+    children,
+    variant = "info",
+    onTimeout,
+    timeoutDelay = 5000,
+  }: Props = $props();
 
   const COLORS = {
     background: {
@@ -33,6 +41,21 @@
       success: "text-teal-700",
     },
   };
+
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  onMount(() => {
+    if (onTimeout) {
+      timeout = setTimeout(onTimeout, timeoutDelay);
+    }
+  });
+
+  onDestroy(() => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+  });
 </script>
 
 <div
