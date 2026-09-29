@@ -9,11 +9,13 @@ import types
 from collections import namedtuple
 
 import pytest
-from adapters.evaluators.condensation_quality import CondensationQualityEvaluator
-from adapters.evaluators.coverage import CoverageEvaluator
-from adapters.evaluators.groundedness import GroundednessEvaluator
-from adapters.evaluators.refinement_quality import RefinementQualityEvaluator
-from adapters.evaluators.title_specificity import TitleSpecificityEvaluator
+from adapters.evaluators.condensation_quality_evaluator import (
+    CondensationQualityEvaluator,
+)
+from adapters.evaluators.coverage_evaluator import CoverageEvaluator
+from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
+from adapters.evaluators.refinement_quality_evaluator import RefinementQualityEvaluator
+from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
 from conftest import make_case
 from eval_types import Score
 

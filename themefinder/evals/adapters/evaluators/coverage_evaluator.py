@@ -5,7 +5,7 @@ Sibling of GroundednessEvaluator, which scores the reverse direction.
 
 from prompts import generation_eval_prompt
 
-from .llm_judge import DecisionScoredComparisonJudge
+from .llm_judge_evaluator import DecisionScoredComparisonJudge
 
 
 class CoverageEvaluator(DecisionScoredComparisonJudge):

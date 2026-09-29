@@ -15,10 +15,13 @@ logger = get_logger(__name__)
 
 
 class EvaluatorPort(ABC):
-    #: Score names this evaluator produces. Every concrete subclass sets
-    #: this — used by the error-path fallback below to return one zero
-    #: Score per metric instead of just swallowing the failure silently.
+    #: Score names this evaluator produces. Every concrete subclass sets this
     metric_names: tuple[str, ...] = ()
+
+    @property
+    def name(self) -> str:
+        """Human-readable identifier for this evaluator; override to customise."""
+        return type(self).__name__
 
     async def evaluate(self, case: Case, output: Any) -> list[Score]:
         """Evaluate against the case and output and catch any errors.
@@ -28,7 +31,7 @@ class EvaluatorPort(ABC):
         try:
             return await self._score(case, output)
         except Exception as e:
-            logger.error(f"{type(self).__name__} evaluation failed: {e}")
+            logger.error(f"{self.name} evaluation failed: {e}")
             return [Score(name, 0.0, f"Error: {e}") for name in self.metric_names]
 
     @abstractmethod
