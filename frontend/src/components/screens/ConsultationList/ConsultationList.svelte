@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onDestroy } from "svelte";
   import { fade } from "svelte/transition";
 
   import Link from "../../Link.svelte";
@@ -109,7 +108,7 @@
   );
 
   function canDelete(
-    userData: CurrentUserGetResponse,
+    userData: CurrentUserGetResponse | undefined,
     consultationCreatedBy: string,
   ) {
     const isUserStaff = userData?.is_staff;
