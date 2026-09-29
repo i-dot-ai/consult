@@ -118,8 +118,6 @@
     return isUserStaff || isUserCreator;
   }
 
-  let alertTimeouts: ReturnType<typeof setTimeout>[] = [];
-
   function removeAlert(alertToRemove: AlertData) {
     alerts = alerts.filter((alert) => alert.text !== alertToRemove.text);
   }
@@ -127,12 +125,6 @@
   function addAlert(newAlert: AlertData) {
     alerts = [...alerts, newAlert];
   }
-
-  onDestroy(() => {
-    alertTimeouts.forEach((timeout) => {
-      clearTimeout(timeout);
-    });
-  });
 </script>
 
 {#snippet nullCell()}
