@@ -111,28 +111,13 @@ class SyntheticDatasetGenerator:
             f"({total_theme_calls} parallel fan-out calls)..."
         )
 
-        async def generate_themes_for_question(question_config):
-            """Generate themes for a single question."""
-            client, _ = self.llm
-            themes = await generate_themes(
-                client=client,
-                topic=self.config.topic,
-                question=question_config.text,
-                demographic_fields=self.config.demographic_fields,
-                on_fan_out_complete=on_fan_out_complete,
-            )
-            logger.info(
-                f"Generated {len(themes)} themes for question {question_config.number}"
-            )
-
-            question_part = f"question_part_{question_config.number}"
-            self.writer.write_themes(question_part, themes)
-            self.writer.write_question(question_part, question_config)
-
-            return question_config.number, themes
-
         theme_tasks = [
-            asyncio.create_task(generate_themes_for_question(q))
+            asyncio.create_task(
+                self.generate_themes_for_question(
+                    q,
+                    on_fan_out_complete=on_fan_out_complete,
+                )
+            )
             for q in self.config.questions
         ]
         results = await asyncio.gather(*theme_tasks, return_exceptions=True)
@@ -145,13 +130,38 @@ class SyntheticDatasetGenerator:
                 raise ThemeGenerationError(
                     f"Theme generation failed for question {q_num}"
                 ) from result
-            q_num, themes = result
+            q_num = self.config.questions[i].number
+            themes = result
             themes_by_question[q_num] = themes
 
         if progress and theme_task_id is not None:
             progress.update(theme_task_id, completed=total_theme_calls)
 
         return themes_by_question
+
+    async def generate_themes_for_question(
+        self,
+        question_config,
+        on_fan_out_complete: Callable[[], None] | None = None,
+    ) -> list[dict]:
+        """Generate and persist themes for a single question."""
+        client, _ = self.llm
+        themes = await generate_themes(
+            client=client,
+            topic=self.config.topic,
+            question=question_config.text,
+            demographic_fields=self.config.demographic_fields,
+            on_fan_out_complete=on_fan_out_complete,
+        )
+        logger.info(
+            f"Generated {len(themes)} themes for question {question_config.number}"
+        )
+
+        question_part = f"question_part_{question_config.number}"
+        self.writer.write_themes(question_part, themes)
+        self.writer.write_question(question_part, question_config)
+
+        return themes
 
     async def regenerate_themes_for_question(
         self,
@@ -172,21 +182,14 @@ class SyntheticDatasetGenerator:
 
         on_fan_out_complete = self._make_progress_callback(progress, task_id)
 
-        client, _ = self.llm
-        themes = await generate_themes(
-            client=client,
-            topic=self.config.topic,
-            question=question_config.text,
-            demographic_fields=self.config.demographic_fields,
+        themes = await self.generate_themes_for_question(
+            question_config,
             on_fan_out_complete=on_fan_out_complete,
         )
 
         if progress and task_id is not None:
             progress.update(task_id, completed=FAN_OUT_COUNT)
 
-        question_part = f"question_part_{question_config.number}"
-        self.writer.write_themes(question_part, themes)
-        self.writer.write_question(question_part, question_config)
         return themes
 
     def build_respondent_specs(
