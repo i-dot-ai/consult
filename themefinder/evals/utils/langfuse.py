@@ -3,18 +3,18 @@
 Provides graceful fallback when Langfuse is not configured.
 """
 
-import logging
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Generator
 
 from settings import EvalSettings, eval_settings
+from utils.logging_config import get_logger
 
 if TYPE_CHECKING:
     from langfuse import Langfuse
     from langfuse._client.span import LangfuseSpan
 
-logger = logging.getLogger("themefinder.evals.langfuse")
+logger = get_logger(__name__)
 
 
 def _get_version() -> str:
