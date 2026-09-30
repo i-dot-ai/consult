@@ -63,6 +63,35 @@ def _create_gateway_client() -> tuple[Any, str, str]:
     return client, base_url, api_key
 
 
+async def _review_and_finalize_themes(
+    generator: SyntheticDatasetGenerator,
+    questions: list[Any],
+    themes_by_question: dict[int, Any],
+) -> dict[int, Any]:
+    """Review generated themes and regenerate until approved."""
+    while True:
+        action, question_number = review_generated_themes(
+            questions,
+            themes_by_question,
+        )
+        if action == "approve":
+            return themes_by_question
+        if action == "regenerate_all":
+            progress = create_progress_bar()
+            with progress:
+                themes_by_question = await generator.generate_themes(progress)
+            continue
+
+        progress = create_progress_bar()
+        with progress:
+            themes_by_question[
+                question_number
+            ] = await generator.regenerate_themes_for_question(
+                question_number,
+                progress,
+            )
+
+
 async def main() -> None:
     """Main entry point for synthetic dataset generation."""
     # Collect configuration interactively
@@ -115,27 +144,11 @@ async def main() -> None:
             with progress:
                 themes_by_question = await generator.generate_themes(progress)
 
-            while True:
-                action, question_number = review_generated_themes(
-                    config.questions,
-                    themes_by_question,
-                )
-                if action == "approve":
-                    break
-                if action == "regenerate_all":
-                    progress = create_progress_bar()
-                    with progress:
-                        themes_by_question = await generator.generate_themes(progress)
-                    continue
-
-                progress = create_progress_bar()
-                with progress:
-                    themes_by_question[
-                        question_number
-                    ] = await generator.regenerate_themes_for_question(
-                        question_number,
-                        progress,
-                    )
+            themes_by_question = await _review_and_finalize_themes(
+                generator,
+                config.questions,
+                themes_by_question,
+            )
 
             while True:
                 progress = create_progress_bar()
@@ -155,29 +168,11 @@ async def main() -> None:
                 if preview_action == "regenerate_preview":
                     continue
 
-                while True:
-                    action, question_number = review_generated_themes(
-                        config.questions,
-                        themes_by_question,
-                    )
-                    if action == "approve":
-                        break
-                    if action == "regenerate_all":
-                        progress = create_progress_bar()
-                        with progress:
-                            themes_by_question = await generator.generate_themes(
-                                progress
-                            )
-                        continue
-
-                    progress = create_progress_bar()
-                    with progress:
-                        themes_by_question[
-                            question_number
-                        ] = await generator.regenerate_themes_for_question(
-                            question_number,
-                            progress,
-                        )
+                themes_by_question = await _review_and_finalize_themes(
+                    generator,
+                    config.questions,
+                    themes_by_question,
+                )
 
                 continue
 
