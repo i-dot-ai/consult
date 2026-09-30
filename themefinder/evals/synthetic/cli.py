@@ -446,7 +446,10 @@ async def _context_field_workflow(
             "Based on your consultation topic, we'll generate context questions\n"
             "that capture respondent characteristics relevant to this policy.\n\n"
             "These will shape how different respondent personas answer.\n"
-            "For example: student loan status, employment sector, etc.",
+            "For example: student loan status, employment sector, etc.\n\n"
+            "[dim]Stance modifiers show how each answer option subtly nudges a respondent\n"
+            "towards supporting or opposing the policy. They are not population percentages\n"
+            "or guaranteed outcomes.[/dim]",
             box=ROUNDED,
             border_style="blue",
             padding=(1, 2),
