@@ -11,3 +11,8 @@ override-dependencies = [
 
 [tool.uv.workspace]
 members = ["backend", "themefinder", "pipeline-common", "pipeline-sign-off", "pipeline-mapping"]
+
+[dependency-groups]
+dev = [
+    "pip-system-certs>=5.3",
+]
