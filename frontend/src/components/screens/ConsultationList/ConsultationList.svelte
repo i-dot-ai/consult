@@ -283,7 +283,8 @@
                   ? getSupportUserDetail(teamMember.id.toString())
                   : undefined
                 }
-                aria-label={`View details for ${currentUser?.email}`}
+                aria-label={`View details for ${teamMember.email}`}
+                title={teamMember.email}
               >
                 <div class={clsx([
                   "flex",
