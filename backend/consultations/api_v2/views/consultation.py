@@ -34,7 +34,11 @@ class ConsultationViewSet(CreateModelMixin, DestroyModelMixin, ReadOnlyModelView
         consultation.users.add(self.request.user)
 
     def get_queryset(self):
-        queryset = Consultation.objects.prefetch_related("users").order_by("-created_at")
+        queryset = (
+            Consultation.objects.select_related("created_by")
+            .prefetch_related("users")
+            .order_by("-created_at")
+        )
         if self.request.user.is_staff:
             return queryset
         return queryset.filter(

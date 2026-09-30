@@ -26,6 +26,7 @@ class UserSerializerV2(serializers.ModelSerializer):
 
 class ConsultationSerializerV2(serializers.ModelSerializer):
     users = UserSerializerV2(many=True, read_only=True)
+    created_by = UserSerializerV2(read_only=True)
     is_owner = serializers.SerializerMethodField()
     is_assigned = serializers.SerializerMethodField()
 
@@ -38,6 +39,7 @@ class ConsultationSerializerV2(serializers.ModelSerializer):
             "stage",
             "data_source",
             "users",
+            "created_by",
             "created_at",
             "started_at",
             "closed_at",
