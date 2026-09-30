@@ -283,7 +283,7 @@
                   ? getSupportUserDetail(teamMember.id.toString())
                   : undefined
                 }
-                aria-label={`View details for ${teamMember.email}`}
+                aria-label={currentUser?.is_staff ? `View details for ${teamMember.email}` : undefined}
                 title={teamMember.email}
               >
                 <div class={clsx([
