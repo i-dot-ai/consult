@@ -24,7 +24,7 @@
     buildConsultationDeleteQuery,
     buildConsultationsGetQuery,
   } from "../../../global/queries/consultations/queries.ts";
-  import type { Consultation, User } from "../../../global/types.ts";
+  import type { Consultation } from "../../../global/types.ts";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries.ts";
   import { type CurrentUserGetResponse } from "../../../global/queries/users/types.ts";
@@ -294,6 +294,8 @@
                   "text-white",
                   "text-xs",
                   "rounded-full",
+                  "transition-colors",
+                  "hover:bg-primary",
                   getUserColor(teamMember.id),
                 ])}>
                   {teamMember.email.charAt(0).toUpperCase()}
