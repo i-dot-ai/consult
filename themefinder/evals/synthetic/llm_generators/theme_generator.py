@@ -9,19 +9,16 @@ import logging
 from collections.abc import Callable
 
 import openai
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 
 from synthetic.config import DRAFTING_MODEL, DemographicField
+from synthetic.llm_generators.retry import parse_with_retries
 from synthetic.prompts.utils import load_prompt
 
 logger = logging.getLogger(__name__)
 
 # Number of parallel theme generation calls for diversity
 FAN_OUT_COUNT = 10
-
-# Retry configuration for transient LLM errors
-MAX_RETRIES = 3
-RETRY_DELAY_SECONDS = 2.0
 
 
 class Theme(BaseModel):
@@ -163,57 +160,25 @@ async def _fan_out_theme_generation(
     ]
 
     async def single_call(call_id: int) -> list[dict]:
-        last_error = None
-
-        for attempt in range(MAX_RETRIES):
-            try:
-                result = (
-                    (
-                        await client.beta.chat.completions.parse(
-                            model=DRAFTING_MODEL,
-                            messages=messages,
-                            response_format=ThemeSet,
-                            reasoning_effort="medium",
-                        )
-                    )
-                    .choices[0]
-                    .message.parsed
-                )
-                themes = [
-                    {
-                        "topic_label": t.topic_label,
-                        "topic_description": t.topic_description,
-                    }
-                    for t in result.themes
-                ]
-                if on_complete:
-                    on_complete()
-                return themes
-            except Exception as e:
-                last_error = e
-                error_type = type(e).__name__
-
-                is_validation_error = isinstance(e, ValidationError)
-                is_connection_error = (
-                    "ECONNRESET" in str(e)
-                    or "ENOTFOUND" in str(e)
-                    or "ECONNREFUSED" in str(e)
-                    or "DNS" in str(e)
-                    or "connection" in str(e).lower()
-                )
-
-                if is_validation_error or is_connection_error:
-                    if attempt < MAX_RETRIES - 1:
-                        delay = RETRY_DELAY_SECONDS * (2**attempt)
-                        logger.warning(
-                            f"Retryable error ({error_type}) in theme fan-out call {call_id}, "
-                            f"attempt {attempt + 1}/{MAX_RETRIES}. Retrying in {delay:.1f}s..."
-                        )
-                        await asyncio.sleep(delay)
-                        continue
-                raise
-
-        raise last_error  # type: ignore[misc]
+        result = await parse_with_retries(
+            client=client,
+            model=DRAFTING_MODEL,
+            messages=messages,
+            response_format=ThemeSet,
+            reasoning_effort="medium",
+            logger=logger,
+            operation_name=f"theme fan-out call {call_id}",
+        )
+        themes = [
+            {
+                "topic_label": t.topic_label,
+                "topic_description": t.topic_description,
+            }
+            for t in result.themes
+        ]
+        if on_complete:
+            on_complete()
+        return themes
 
     tasks = [asyncio.create_task(single_call(i)) for i in range(FAN_OUT_COUNT)]
     results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -278,50 +243,15 @@ Be CONSERVATIVE - when in doubt, keep themes separate. Diversity is valuable."""
         {"role": "user", "content": human_prompt},
     ]
 
-    result = None
-    last_error = None
-
-    for attempt in range(MAX_RETRIES):
-        try:
-            result = (
-                (
-                    await client.beta.chat.completions.parse(
-                        model=DRAFTING_MODEL,
-                        messages=messages,
-                        response_format=ThemeSet,
-                        reasoning_effort="low",
-                    )
-                )
-                .choices[0]
-                .message.parsed
-            )
-            break
-        except Exception as e:
-            last_error = e
-            error_type = type(e).__name__
-
-            is_validation_error = isinstance(e, ValidationError)
-            is_connection_error = (
-                "ECONNRESET" in str(e)
-                or "ENOTFOUND" in str(e)
-                or "ECONNREFUSED" in str(e)
-                or "DNS" in str(e)
-                or "connection" in str(e).lower()
-            )
-
-            if is_validation_error or is_connection_error:
-                if attempt < MAX_RETRIES - 1:
-                    delay = RETRY_DELAY_SECONDS * (2**attempt)
-                    logger.warning(
-                        f"Retryable error ({error_type}) in theme consolidation, "
-                        f"attempt {attempt + 1}/{MAX_RETRIES}. Retrying in {delay:.1f}s..."
-                    )
-                    await asyncio.sleep(delay)
-                    continue
-            raise
-
-    if result is None:
-        raise last_error  # type: ignore[misc]
+    result = await parse_with_retries(
+        client=client,
+        model=DRAFTING_MODEL,
+        messages=messages,
+        response_format=ThemeSet,
+        reasoning_effort="low",
+        logger=logger,
+        operation_name="theme consolidation",
+    )
 
     topic_ids = _generate_topic_ids(len(result.themes))
 

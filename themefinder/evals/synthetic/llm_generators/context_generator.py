@@ -5,19 +5,15 @@ based on the consultation topic. These complement fixed demographics with topic-
 characteristics that influence how respondents answer.
 """
 
-import asyncio
 import logging
 import openai
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 
 from synthetic.config import DRAFTING_MODEL, DemographicField, QuestionConfig
+from synthetic.llm_generators.retry import parse_with_retries
 from synthetic.prompts.utils import load_prompt
 
 logger = logging.getLogger(__name__)
-
-# Retry configuration for transient LLM errors
-MAX_RETRIES = 3
-RETRY_DELAY_SECONDS = 2.0
 
 
 class ContextFieldOption(BaseModel):
@@ -99,51 +95,15 @@ Avoid generic demographics (age, region, etc.) - those are handled separately.""
         {"role": "user", "content": human_prompt},
     ]
 
-    # Retry loop for transient LLM errors
-    result = None
-    last_error = None
-
-    for attempt in range(MAX_RETRIES):
-        try:
-            result = (
-                (
-                    await client.beta.chat.completions.parse(
-                        model=DRAFTING_MODEL,
-                        messages=messages,
-                        response_format=ContextFieldSet,
-                        reasoning_effort="medium",
-                    )
-                )
-                .choices[0]
-                .message.parsed
-            )
-            break
-        except Exception as e:
-            last_error = e
-            error_type = type(e).__name__
-
-            is_validation_error = isinstance(e, ValidationError)
-            is_connection_error = (
-                "ECONNRESET" in str(e)
-                or "ENOTFOUND" in str(e)
-                or "ECONNREFUSED" in str(e)
-                or "DNS" in str(e)
-                or "connection" in str(e).lower()
-            )
-
-            if is_validation_error or is_connection_error:
-                if attempt < MAX_RETRIES - 1:
-                    delay = RETRY_DELAY_SECONDS * (2**attempt)
-                    logger.warning(
-                        f"Retryable error ({error_type}) in context field generation, "
-                        f"attempt {attempt + 1}/{MAX_RETRIES}. Retrying in {delay:.1f}s..."
-                    )
-                    await asyncio.sleep(delay)
-                    continue
-            raise
-
-    if result is None:
-        raise last_error  # type: ignore[misc]
+    result = await parse_with_retries(
+        client=client,
+        model=DRAFTING_MODEL,
+        messages=messages,
+        response_format=ContextFieldSet,
+        reasoning_effort="medium",
+        logger=logger,
+        operation_name="context field generation",
+    )
 
     # Convert to DemographicField objects
     demographic_fields = []
@@ -211,51 +171,15 @@ Focus on characteristics directly relevant to this policy."""
         {"role": "user", "content": human_prompt},
     ]
 
-    # Retry loop
-    result = None
-    last_error = None
-
-    for attempt in range(MAX_RETRIES):
-        try:
-            result = (
-                (
-                    await client.beta.chat.completions.parse(
-                        model=DRAFTING_MODEL,
-                        messages=messages,
-                        response_format=ContextFieldSet,
-                        reasoning_effort="medium",
-                    )
-                )
-                .choices[0]
-                .message.parsed
-            )
-            break
-        except Exception as e:
-            last_error = e
-            error_type = type(e).__name__
-
-            is_validation_error = isinstance(e, ValidationError)
-            is_connection_error = (
-                "ECONNRESET" in str(e)
-                or "ENOTFOUND" in str(e)
-                or "ECONNREFUSED" in str(e)
-                or "DNS" in str(e)
-                or "connection" in str(e).lower()
-            )
-
-            if is_validation_error or is_connection_error:
-                if attempt < MAX_RETRIES - 1:
-                    delay = RETRY_DELAY_SECONDS * (2**attempt)
-                    logger.warning(
-                        f"Retryable error ({error_type}) in context regeneration, "
-                        f"attempt {attempt + 1}/{MAX_RETRIES}. Retrying in {delay:.1f}s..."
-                    )
-                    await asyncio.sleep(delay)
-                    continue
-            raise
-
-    if result is None:
-        raise last_error  # type: ignore[misc]
+    result = await parse_with_retries(
+        client=client,
+        model=DRAFTING_MODEL,
+        messages=messages,
+        response_format=ContextFieldSet,
+        reasoning_effort="medium",
+        logger=logger,
+        operation_name="context regeneration",
+    )
 
     # Convert to DemographicField objects
     demographic_fields = []

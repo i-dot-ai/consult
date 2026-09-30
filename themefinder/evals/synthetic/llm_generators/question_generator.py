@@ -4,11 +4,16 @@ Generates UK government-style consultation questions following Cabinet Office
 principles and the Gunning Principles for fair consultation.
 """
 
+import logging
+
 import openai
 from pydantic import BaseModel, Field
 
 from synthetic.config import DRAFTING_MODEL
+from synthetic.llm_generators.retry import parse_with_retries
 from synthetic.prompts.utils import load_prompt
+
+logger = logging.getLogger(__name__)
 
 
 class GeneratedQuestion(BaseModel):
@@ -104,17 +109,14 @@ For each question, provide:
         {"role": "user", "content": human_prompt},
     ]
 
-    result = (
-        (
-            await client.beta.chat.completions.parse(
-                model=DRAFTING_MODEL,
-                messages=messages,
-                response_format=QuestionSet,
-                reasoning_effort="high",
-            )
-        )
-        .choices[0]
-        .message.parsed
+    result = await parse_with_retries(
+        client=client,
+        model=DRAFTING_MODEL,
+        messages=messages,
+        response_format=QuestionSet,
+        reasoning_effort="high",
+        logger=logger,
+        operation_name="question generation",
     )
     return result.questions
 
@@ -169,17 +171,14 @@ Generate ONE new question that:
         {"role": "user", "content": human_prompt},
     ]
 
-    return (
-        (
-            await client.beta.chat.completions.parse(
-                model=DRAFTING_MODEL,
-                messages=messages,
-                response_format=GeneratedQuestion,
-                reasoning_effort="high",
-            )
-        )
-        .choices[0]
-        .message.parsed
+    return await parse_with_retries(
+        client=client,
+        model=DRAFTING_MODEL,
+        messages=messages,
+        response_format=GeneratedQuestion,
+        reasoning_effort="high",
+        logger=logger,
+        operation_name="single question regeneration",
     )
 
 
@@ -237,17 +236,14 @@ Generate ONE dataset name."""
         {"role": "user", "content": human_prompt},
     ]
 
-    result = (
-        (
-            await client.beta.chat.completions.parse(
-                model=DRAFTING_MODEL,
-                messages=messages,
-                response_format=DatasetName,
-                reasoning_effort="high",
-            )
-        )
-        .choices[0]
-        .message.parsed
+    result = await parse_with_retries(
+        client=client,
+        model=DRAFTING_MODEL,
+        messages=messages,
+        response_format=DatasetName,
+        reasoning_effort="high",
+        logger=logger,
+        operation_name="dataset name generation",
     )
 
     # Sanitise the name to ensure it's filesystem-safe
