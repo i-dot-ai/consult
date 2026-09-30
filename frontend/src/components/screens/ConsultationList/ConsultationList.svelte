@@ -338,11 +338,11 @@
         {:else if column.key === "status"}
           {@const status = content as Consultation["stage"]}
           {@const DISPLAY_TEXTS = {
-            "setup": "Setting up data",
-            "finding_themes": "Finding themes",
-            "finalising_themes": "Finalising themes",
-            "assigning_themes": "Assigning themes",
-            "analysis": "Analysis",
+            setup: "Setting up data",
+            finding_themes: "Finding themes",
+            finalising_themes: "Finalising themes",
+            assigning_themes: "Assigning themes",
+            analysis: "Analysis",
           } as const}
 
           <span>
