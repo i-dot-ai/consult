@@ -3,6 +3,7 @@
 
   import { fade } from "svelte/transition";
 
+  import Tag from "../../Tag/Tag.svelte";
   import Link from "../../Link.svelte";
   import DataTable from "../../DataTable/DataTable.svelte";
   import Modal from "../../Modal/Modal.svelte";
@@ -345,9 +346,9 @@
             analysis: "Analysis",
           } as const}
 
-          <span>
+          <Tag variant={"dark"}>
             {DISPLAY_TEXTS[status] || "Invalid status"}
-          </span>
+          </Tag>
         {:else if column.key === "actions"}
           {@const { id, name, createdBy } = content as ActionData}
           {@const userData = user?.query?.data as CurrentUserGetResponse}
