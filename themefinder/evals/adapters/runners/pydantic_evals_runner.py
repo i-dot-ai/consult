@@ -26,7 +26,13 @@ class _EvaluatorPortAsNativeEvaluator(Evaluator):
         """Use the wrapped port's name as the default evaluation name."""
         return self.port.name
 
-    async def evaluate(self, ctx: EvaluatorContext) -> dict[str, EvaluationReason]:
+    def evaluate(self, ctx: EvaluatorContext) -> dict[str, EvaluationReason]:
+        """Never called directly — pydantic_evals always calls evaluate_async below."""
+        raise NotImplementedError
+
+    async def evaluate_async(
+        self, ctx: EvaluatorContext
+    ) -> dict[str, EvaluationReason]:
         """Rebuild our Case from ctx, delegate to the port, translate scores back."""
         case = Case(
             id=ctx.name or "",
