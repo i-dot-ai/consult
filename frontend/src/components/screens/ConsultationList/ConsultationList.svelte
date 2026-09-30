@@ -104,6 +104,7 @@
       ...(enableV2
         ? {
             team: consultation.users,
+            status: consultation.stage,
             actions: {
               id: consultation.id,
               name: consultation.title,
@@ -247,6 +248,11 @@
                 sortable: false,
               },
               {
+                label: "Status",
+                key: "status",
+                sortable: true,
+              },
+              {
                 label: "Actions",
                 key: "actions",
                 sortable: false,
@@ -329,6 +335,19 @@
               {/each}
             </div>
           {/if}
+        {:else if column.key === "status"}
+          {@const status = content as Consultation["stage"]}
+          {@const DISPLAY_TEXTS = {
+            "setup": "Setting up data",
+            "finding_themes": "Finding themes",
+            "finalising_themes": "Finalising themes",
+            "assigning_themes": "Assigning themes",
+            "analysis": "Analysis",
+          } as const}
+
+          <span>
+            {DISPLAY_TEXTS[status] || "Invalid status"}
+          </span>
         {:else if column.key === "actions"}
           {@const { id, name, createdBy } = content as ActionData}
           {@const userData = user?.query?.data as CurrentUserGetResponse}
