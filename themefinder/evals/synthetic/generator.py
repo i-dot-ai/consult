@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -62,6 +63,31 @@ class SyntheticDatasetGenerator:
         self._checkpoint_path = config.output_dir / ".checkpoint.json"
         self._generated_count = 0
 
+    def _make_progress_callback(
+        self,
+        progress: Progress | None,
+        task_id: TaskID | None,
+        *,
+        initial_count: int = 0,
+        on_increment: Callable[[int], None] | None = None,
+    ) -> Callable[[], None]:
+        """Create a callback that increments and reports progress."""
+        completed = initial_count
+
+        def callback() -> None:
+            nonlocal completed
+            completed += 1
+            if on_increment is not None:
+                on_increment(completed)
+            if progress and task_id is not None:
+                progress.update(task_id, completed=completed)
+
+        return callback
+
+    def _set_generated_count(self, completed: int) -> None:
+        """Track generated response count for checkpointing."""
+        self._generated_count = completed
+
     async def generate_themes(
         self, progress: Progress | None = None
     ) -> dict[int, list[dict]]:
@@ -72,19 +98,13 @@ class SyntheticDatasetGenerator:
         total_theme_calls = n_questions * FAN_OUT_COUNT
 
         theme_task_id: TaskID | None = None
-        theme_progress_count = 0
-
         if progress:
             theme_task_id = progress.add_task(
                 "[cyan]Generating themes...",
                 total=total_theme_calls,
             )
 
-        def on_fan_out_complete() -> None:
-            nonlocal theme_progress_count
-            theme_progress_count += 1
-            if progress and theme_task_id is not None:
-                progress.update(theme_task_id, completed=theme_progress_count)
+        on_fan_out_complete = self._make_progress_callback(progress, theme_task_id)
 
         logger.info(
             f"Generating themes for {n_questions} questions "
@@ -144,19 +164,13 @@ class SyntheticDatasetGenerator:
         )
 
         task_id: TaskID | None = None
-        progress_count = 0
-
         if progress:
             task_id = progress.add_task(
                 f"[cyan]Regenerating themes for Q{question_number}...",
                 total=FAN_OUT_COUNT,
             )
 
-        def on_fan_out_complete() -> None:
-            nonlocal progress_count
-            progress_count += 1
-            if progress and task_id is not None:
-                progress.update(task_id, completed=progress_count)
+        on_fan_out_complete = self._make_progress_callback(progress, task_id)
 
         client, _ = self.llm
         themes = await generate_themes(
@@ -199,19 +213,13 @@ class SyntheticDatasetGenerator:
         respondent_specs = self.build_respondent_specs(n_respondents)
         total_responses = len(respondent_specs) * len(self.config.questions)
         preview_task_id: TaskID | None = None
-        generated_count = 0
-
         if progress:
             preview_task_id = progress.add_task(
                 "[green]Generating preview responses...",
                 total=total_responses,
             )
 
-        def on_response_complete() -> None:
-            nonlocal generated_count
-            generated_count += 1
-            if progress and preview_task_id is not None:
-                progress.update(preview_task_id, completed=generated_count)
+        on_response_complete = self._make_progress_callback(progress, preview_task_id)
 
         preview_responses = await generate_respondent_batch(
             llm=self.llm,
@@ -276,10 +284,11 @@ class SyntheticDatasetGenerator:
                 total=total_responses,
             )
 
-        def on_response_complete() -> None:
-            self._generated_count += 1
-            if progress and response_task_id is not None:
-                progress.update(response_task_id, completed=self._generated_count)
+        on_response_complete = self._make_progress_callback(
+            progress,
+            response_task_id,
+            on_increment=self._set_generated_count,
+        )
 
         logger.info(
             f"Generating {total_responses} responses "
