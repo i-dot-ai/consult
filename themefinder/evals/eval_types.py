@@ -6,7 +6,10 @@ plain data shapes every port and runner operate on.
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from adapters.evaluators.base import EvaluatorPort
 
 
 @dataclass(frozen=True)
@@ -43,9 +46,7 @@ class RunReport:
 class ComponentConfig:
     component: str  # one of datasets.VALID_COMPONENTS
     task: Callable[[dict, Any], Awaitable[dict]]  # (case.inputs, llm) -> output dict
-    evaluators: list[
-        Any
-    ]  # pre-built list of EvaluatorPorts with any judge llm already bound
+    evaluators: list["EvaluatorPort"]  # pre-built, with any judge llm already bound
     case_filter: Callable[[Case], bool] | None = None
 
 
