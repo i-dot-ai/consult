@@ -97,9 +97,10 @@
         ],
       },
       createdAt: consultation.created_at,
-      createdBy: typeof consultation.created_by === "string"
-        ? consultation.created_by // v1 will return only email as string
-        : consultation.created_by?.email, // v2 will return entire User obj
+      createdBy:
+        typeof consultation.created_by === "string"
+          ? consultation.created_by // v1 will return only email as string
+          : consultation.created_by?.email, // v2 will return entire User obj
       ...(enableV2
         ? {
             team: consultation.users,
@@ -115,7 +116,12 @@
 
   function getUserColor(id: number) {
     const SCALE_AMOUNT = 10000;
-    const CLASSES = ["bg-neutral-500", "bg-neutral-300", "bg-neutral-400", "bg-neutral-700"];
+    const CLASSES = [
+      "bg-neutral-500",
+      "bg-neutral-300",
+      "bg-neutral-400",
+      "bg-neutral-700",
+    ];
 
     const number = Number(id);
     const sineValue = Math.sin(number);
@@ -196,7 +202,9 @@
   <Panel variant="default">
     <div class="my-12">
       <p class="text-lg text-center mb-2">You have no consultations yet</p>
-      <p class="text-sm text-neutral-500 text-center">Add a consultation, then upload the responses.</p>
+      <p class="text-sm text-neutral-500 text-center">
+        Add a consultation, then upload the responses.
+      </p>
       <!-- TODO: Add create consultation button -->
     </div>
   </Panel>
@@ -232,7 +240,7 @@
           sortable: true,
         },
         ...(enableV2
-          ? [
+          ? ([
               {
                 label: "Team",
                 key: "team",
@@ -243,7 +251,7 @@
                 key: "actions",
                 sortable: false,
               },
-            ] as const
+            ] as const)
           : []),
       ]}
       rows={consultationRows}
@@ -251,7 +259,8 @@
       errorCondition={Boolean(consultations.query.error)}
       loadingText="Loading consultations..."
       emptyText="No consultations available"
-      errorText={consultations.query.error?.message || "There has been an error"}
+      errorText={consultations.query.error?.message ||
+        "There has been an error"}
       columnSelect={false}
     >
       {#snippet cellContent(content, row, column)}
@@ -287,30 +296,33 @@
             {@render nullCell()}
           {:else}
             <div class="flex gap-2 items-center">
-              {#each users as teamMember}
+              {#each users as teamMember (teamMember.id)}
                 <svelte:element
                   this={currentUser?.is_staff ? "a" : "div"}
                   href={currentUser?.is_staff
                     ? getSupportUserDetail(teamMember.id.toString())
-                    : undefined
-                  }
-                  aria-label={currentUser?.is_staff ? `View details for ${teamMember.email}` : undefined}
+                    : undefined}
+                  aria-label={currentUser?.is_staff
+                    ? `View details for ${teamMember.email}`
+                    : undefined}
                   title={teamMember.email}
                 >
-                  <div class={clsx([
-                    "flex",
-                    "justify-center",
-                    "items-center",
-                    "w-6",
-                    "h-6",
-                    "p-1",
-                    "text-white",
-                    "text-xs",
-                    "rounded-full",
-                    "transition-colors",
-                    "hover:bg-primary",
-                    getUserColor(teamMember.id),
-                  ])}>
+                  <div
+                    class={clsx([
+                      "flex",
+                      "justify-center",
+                      "items-center",
+                      "w-6",
+                      "h-6",
+                      "p-1",
+                      "text-white",
+                      "text-xs",
+                      "rounded-full",
+                      "transition-colors",
+                      "hover:bg-primary",
+                      getUserColor(teamMember.id),
+                    ])}
+                  >
                     {teamMember.email.charAt(0).toUpperCase()}
                   </div>
                 </svelte:element>
@@ -364,7 +376,8 @@
       let newAlertVariant: AlertData["variant"];
 
       const consultationToDelete = consultationsToDisplay.find(
-        (consultation: Consultation) => consultation.id === deleteConsultationId,
+        (consultation: Consultation) =>
+          consultation.id === deleteConsultationId,
       );
       const consultationTitle = `${consultationToDelete?.title ?? deleteConsultationId}`;
       newAlertText = `Consultation ${consultationTitle} has been deleted.`;
@@ -393,8 +406,8 @@
     }}
   >
     <p>
-      Deleting removes the responses, the themes and the analysis. This cannot be
-      undone.
+      Deleting removes the responses, the themes and the analysis. This cannot
+      be undone.
 
       <Panel variant="default">
         {consultations.query.data?.results.find(
