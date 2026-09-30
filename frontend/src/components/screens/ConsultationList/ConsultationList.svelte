@@ -97,7 +97,9 @@
         ],
       },
       createdAt: consultation.created_at,
-      createdBy: consultation.created_by,
+      createdBy: typeof consultation.created_by === "string"
+        ? consultation.created_by // v1 will return only email as string
+        : consultation.created_by?.email, // v2 will return entire User obj
       ...(enableV2
         ? {
             team: consultation.users,
