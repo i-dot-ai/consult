@@ -1,5 +1,6 @@
 import pytest
 import settings
+from pydantic import ValidationError
 from settings import DEFAULTS, get_settings
 
 # Test values, named once and reused both when setting env vars and when
@@ -98,6 +99,17 @@ class TestGetSettingsFieldMapping:
         assert s.environment == ENVIRONMENT
         assert s.git_sha == GITHUB_SHA_SHORT
 
+    def test_log_level_is_normalised_to_upper(self, monkeypatch):
+        monkeypatch.setenv("THEMEFINDER_EVAL_LOG_LEVEL", "debug")
+
+        assert get_settings().log_level == "DEBUG"
+
+    def test_invalid_log_level_is_rejected(self, monkeypatch):
+        monkeypatch.setenv("THEMEFINDER_EVAL_LOG_LEVEL", "verbose")
+
+        with pytest.raises(ValidationError):
+            get_settings()
+
     def test_defaults_when_unset(self, monkeypatch):
         # get_settings() calls dotenv.load_dotenv() internally, which would
         # otherwise refill any var deleted below straight back out of the
@@ -110,6 +122,7 @@ class TestGetSettingsFieldMapping:
             "GITHUB_SHA",
             "THEMEFINDER_EVAL_ENGINE",
             "AUTO_EVAL_MODEL",
+            "THEMEFINDER_EVAL_LOG_LEVEL",
         ):
             monkeypatch.delenv(var, raising=False)
         _set_sources(monkeypatch)
@@ -119,6 +132,7 @@ class TestGetSettingsFieldMapping:
         assert s.environment == DEFAULTS.environment
         assert s.git_sha == DEFAULTS.git_sha
         assert s.eval.engine == DEFAULTS.engine
+        assert s.log_level == DEFAULTS.log_level
         assert s.eval.dataset_source is None
         assert s.eval.artefact_store is None
         assert s.auto_eval_model is None
