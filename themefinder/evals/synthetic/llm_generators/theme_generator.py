@@ -9,18 +9,16 @@ import logging
 from collections.abc import Callable
 
 import openai
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 
 from synthetic.config import DRAFTING_MODEL, DemographicField
+from synthetic.llm_generators.retry import parse_with_retries
+from synthetic.prompts.utils import load_prompt
 
 logger = logging.getLogger(__name__)
 
 # Number of parallel theme generation calls for diversity
 FAN_OUT_COUNT = 10
-
-# Retry configuration for transient LLM errors
-MAX_RETRIES = 3
-RETRY_DELAY_SECONDS = 2.0
 
 
 class Theme(BaseModel):
@@ -41,72 +39,10 @@ class ThemeSet(BaseModel):
     themes: list[Theme]
 
 
-SYSTEM_PROMPT = """You are an expert analyst in UK public consultations and policy engagement.
+THEME_GENERATION_BACKGROUND = load_prompt("theme_generation_background.md")
+THEME_GENERATION_TASK = load_prompt("theme_generation_task.md")
 
-Your task is to generate a COMPREHENSIVE set of themes that would realistically emerge from
-public responses to a government consultation question.
-
-## Demographic Perspectives to Consider in Your Analysis
-Think deeply about how different groups would respond differently before generating themes:
-- Age groups: Young adults (18-24) vs working age (25-54) vs retirees (65+)
-- UK nations: England, Scotland, Wales, Northern Ireland - each with distinct policy contexts
-- Urban vs rural residents
-- Socioeconomic backgrounds: Different income levels, employment situations
-- Those directly affected vs general public
-- Individuals vs organisations/professional bodies
-- People with disabilities or health conditions
-- Different ethnic and cultural backgrounds
-
-## Theme Categories to Cover
-Ensure your themes span these categories where relevant:
-- **Support themes**: Various reasons people agree with the proposal
-- **Opposition themes**: Various reasons people disagree
-- **Conditional themes**: "Yes, but..." or "Only if..." positions
-- **Practical concerns**: Implementation challenges, costs, timelines
-- **Stakeholder-specific impacts**: Effects on particular groups
-- **Alternative proposals**: Different approaches people might suggest
-- **Unintended consequences**: Concerns about knock-on effects
-- **Ideological positions**: Principled stances (fairness, freedom, responsibility)
-- **Evidence-based concerns**: Citing research, data, or precedents
-- **Personal experience themes**: Based on lived experience
-
-## Quality Requirements
-- Each theme must be DISTINCT (no significant overlaps)
-- Themes should be SPECIFIC to this policy topic
-- Cover the FULL SPECTRUM of likely opinion
-- Be REALISTIC about what UK citizens actually write in consultations
-- Consider MINORITY viewpoints that may be less common but important
-
-## Description Format
-- topic_label: 2-5 words (e.g., "Fiscal cost concerns")
-- topic_description: ONE concise sentence, 15-25 words max
-  - Good: "Opposition citing large Exchequer cost and pressure on public services"
-  - Bad: "Submissions emphasising the large direct cost to the Exchequer, potential increases in public borrowing and the opportunity cost for other public services. Critics in this theme demand robust costing..."
-
-Generate as many themes as needed to comprehensively cover the topic. For simple questions,
-this might be 10-15 themes. For complex, contentious topics, you may need 30-50+ themes.
-Do not artificially limit yourself - be thorough."""
-
-CONSOLIDATION_SYSTEM_PROMPT = """You are an expert at consolidating and deduplicating theme lists.
-
-You will receive a large list of themes generated from multiple parallel analyses of the same
-consultation question. Your task is to:
-
-1. **Remove exact or near-duplicates** - themes that express the same idea
-2. **Merge highly similar themes** - combine themes that overlap significantly into one
-3. **Preserve diversity** - keep distinct viewpoints even if only mentioned once
-4. **Maintain quality** - ensure each final theme is clear and well-described
-
-## Important Guidelines
-- Be CONSERVATIVE with merging - when in doubt, keep themes separate
-- Preserve minority/niche viewpoints - these are valuable for realistic consultation data
-- Keep the original wording where possible - don't over-edit
-- Aim for comprehensive coverage over conciseness
-
-## Output Format
-- topic_label: 2-5 words
-- topic_description: ONE concise sentence, 15-25 words max
-- Use sequential IDs: A, B, C, ... Z, AA, AB, ..."""
+CONSOLIDATION_SYSTEM_PROMPT = load_prompt("theme_consolidation_system.md")
 
 
 def _generate_topic_ids(n: int) -> list[str]:
@@ -212,87 +148,37 @@ async def _fan_out_theme_generation(
     """
     demographic_context = _build_demographic_context(demographic_fields)
 
-    human_prompt = f"""Analyse this UK government consultation question and generate a comprehensive theme framework.
-
-## Consultation Topic
-{topic}
-
-## Question
-{question}
-
-## Demographic Context for This Consultation
-The following demographic dimensions are being tracked for respondents. Consider how each group might respond differently:
-{demographic_context}
-
-## Your Task
-1. Reason through the policy question - what are the key tensions, trade-offs, and stakeholder interests?
-2. Consider how different demographic groups would approach this question differently
-3. Generate a COMPREHENSIVE set of themes covering all likely response patterns
-4. Ensure themes capture perspectives from across the demographic spectrum
-
-Generate as many themes as the topic requires for comprehensive coverage. Simple questions
-may need 10-15 themes; complex or contentious topics may need 30-50+. Do not artificially
-limit the number - be thorough.
-
-Use sequential IDs: A, B, C, ... Z, AA, AB, ... for themes."""
+    human_prompt = THEME_GENERATION_TASK.format(
+        topic=topic,
+        question=question,
+        demographic_context=demographic_context,
+    )
 
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": THEME_GENERATION_BACKGROUND},
         {"role": "user", "content": human_prompt},
     ]
 
     async def single_call(call_id: int) -> list[dict]:
-        last_error = None
-
-        for attempt in range(MAX_RETRIES):
-            try:
-                result = (
-                    (
-                        await client.beta.chat.completions.parse(
-                            model=DRAFTING_MODEL,
-                            messages=messages,
-                            response_format=ThemeSet,
-                            reasoning_effort="medium",
-                        )
-                    )
-                    .choices[0]
-                    .message.parsed
-                )
-                themes = [
-                    {
-                        "topic_label": t.topic_label,
-                        "topic_description": t.topic_description,
-                    }
-                    for t in result.themes
-                ]
-                if on_complete:
-                    on_complete()
-                return themes
-            except Exception as e:
-                last_error = e
-                error_type = type(e).__name__
-
-                is_validation_error = isinstance(e, ValidationError)
-                is_connection_error = (
-                    "ECONNRESET" in str(e)
-                    or "ENOTFOUND" in str(e)
-                    or "ECONNREFUSED" in str(e)
-                    or "DNS" in str(e)
-                    or "connection" in str(e).lower()
-                )
-
-                if is_validation_error or is_connection_error:
-                    if attempt < MAX_RETRIES - 1:
-                        delay = RETRY_DELAY_SECONDS * (2**attempt)
-                        logger.warning(
-                            f"Retryable error ({error_type}) in theme fan-out call {call_id}, "
-                            f"attempt {attempt + 1}/{MAX_RETRIES}. Retrying in {delay:.1f}s..."
-                        )
-                        await asyncio.sleep(delay)
-                        continue
-                raise
-
-        raise last_error  # type: ignore[misc]
+        result = await parse_with_retries(
+            client=client,
+            model=DRAFTING_MODEL,
+            messages=messages,
+            response_format=ThemeSet,
+            reasoning_effort="medium",
+            logger=logger,
+            operation_name=f"theme fan-out call {call_id}",
+        )
+        themes = [
+            {
+                "topic_label": t.topic_label,
+                "topic_description": t.topic_description,
+            }
+            for t in result.themes
+        ]
+        if on_complete:
+            on_complete()
+        return themes
 
     tasks = [asyncio.create_task(single_call(i)) for i in range(FAN_OUT_COUNT)]
     results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -357,50 +243,15 @@ Be CONSERVATIVE - when in doubt, keep themes separate. Diversity is valuable."""
         {"role": "user", "content": human_prompt},
     ]
 
-    result = None
-    last_error = None
-
-    for attempt in range(MAX_RETRIES):
-        try:
-            result = (
-                (
-                    await client.beta.chat.completions.parse(
-                        model=DRAFTING_MODEL,
-                        messages=messages,
-                        response_format=ThemeSet,
-                        reasoning_effort="low",
-                    )
-                )
-                .choices[0]
-                .message.parsed
-            )
-            break
-        except Exception as e:
-            last_error = e
-            error_type = type(e).__name__
-
-            is_validation_error = isinstance(e, ValidationError)
-            is_connection_error = (
-                "ECONNRESET" in str(e)
-                or "ENOTFOUND" in str(e)
-                or "ECONNREFUSED" in str(e)
-                or "DNS" in str(e)
-                or "connection" in str(e).lower()
-            )
-
-            if is_validation_error or is_connection_error:
-                if attempt < MAX_RETRIES - 1:
-                    delay = RETRY_DELAY_SECONDS * (2**attempt)
-                    logger.warning(
-                        f"Retryable error ({error_type}) in theme consolidation, "
-                        f"attempt {attempt + 1}/{MAX_RETRIES}. Retrying in {delay:.1f}s..."
-                    )
-                    await asyncio.sleep(delay)
-                    continue
-            raise
-
-    if result is None:
-        raise last_error  # type: ignore[misc]
+    result = await parse_with_retries(
+        client=client,
+        model=DRAFTING_MODEL,
+        messages=messages,
+        response_format=ThemeSet,
+        reasoning_effort="low",
+        logger=logger,
+        operation_name="theme consolidation",
+    )
 
     topic_ids = _generate_topic_ids(len(result.themes))
 
