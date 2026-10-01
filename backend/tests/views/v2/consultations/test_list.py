@@ -57,6 +57,7 @@ def test_v2_list_returns_dates_and_ownership(client, non_staff_user, non_staff_u
     assert response.status_code == 200
     [result] = response.json()["results"]
     assert result["title"] == "Owned Consultation"
+    assert result["created_by"]["id"] == non_staff_user.id
     assert result["started_at"] is not None
     assert result["closed_at"] is not None
     assert result["is_owner"] is True
