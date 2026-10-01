@@ -178,6 +178,29 @@ class TestLangfuseLogHandler:
         assert client.events[0]["level"] == "ERROR"
         assert client.events[0]["name"] == "log:themefinder.evals.x"
 
+    def test_masks_message_and_omits_extra_fields(self, monkeypatch):
+        client = _FakeClient(trace_id="trace-1")
+        monkeypatch.setattr("langfuse.get_client", lambda: client)
+        handler = _LangfuseLogHandler()
+
+        record = logging.LogRecord(
+            name="themefinder.evals.x",
+            level=logging.WARNING,
+            pathname="f.py",
+            lineno=1,
+            msg="emailed %s",
+            args=("user@example.com",),
+            exc_info=None,
+        )
+        record.response_text = "secret response"
+
+        handler.emit(record)
+
+        status = client.events[0]["status_message"]
+        assert "user@example.com" not in status
+        assert "[redacted]" in status
+        assert "secret response" not in status
+
     def test_no_op_without_active_trace(self, monkeypatch):
         client = _FakeClient(trace_id=None)
         monkeypatch.setattr("langfuse.get_client", lambda: client)
