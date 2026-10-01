@@ -4,6 +4,7 @@ import logging
 import sys
 
 from settings import get_settings
+from utils.masking import mask_sensitive
 
 _configured = False
 
@@ -45,7 +46,7 @@ class _LangfuseLogHandler(logging.Handler):
                 return
             client.create_event(
                 name=f"log:{record.name}",
-                status_message=self.format(record),
+                status_message=mask_sensitive(record.getMessage()),
                 level=self._LEVEL_MAP.get(record.levelno, "DEFAULT"),
             )
         except Exception:

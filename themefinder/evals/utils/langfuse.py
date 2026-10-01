@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Generator
 
 from settings import EvalSettings, eval_settings
 from utils.logging_config import get_logger
+from utils.masking import mask_sensitive
 
 if TYPE_CHECKING:
     from langfuse import Langfuse
@@ -129,6 +130,7 @@ def get_langfuse_context(
             secret_key=secret_key,
             public_key=public_key,
             host=base_url,
+            mask=mask_sensitive,
         )
 
         # Build standard tags and metadata
