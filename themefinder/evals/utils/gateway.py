@@ -111,20 +111,23 @@ def _item_model_id(item: dict) -> str | None:
 
 
 def _item_supports_reasoning(item: dict) -> bool:
+    item_supported_reasoning_efforts = item.get("supported_reasoning_efforts")
+    if isinstance(item_supported_reasoning_efforts, list):
+        return bool(item_supported_reasoning_efforts)
+
     item_supports_reasoning = item.get("supports_reasoning")
-    supported_reasoning_efforts = item.get("supported_reasoning_efforts")
-    if isinstance(supported_reasoning_efforts, list):
-        return bool(supported_reasoning_efforts)
     if isinstance(item_supports_reasoning, bool):
         return item_supports_reasoning
-    model_supports_reasoning = _item_model_info(item).get("supports_reasoning")
-    supported_reasoning_efforts = _item_model_info(item).get(
-        "supported_reasoning_efforts"
-    )
-    if isinstance(supported_reasoning_efforts, list):
-        return bool(supported_reasoning_efforts)
+
+    model_info = _item_model_info(item)
+    model_supported_reasoning_efforts = model_info.get("supported_reasoning_efforts")
+    if isinstance(model_supported_reasoning_efforts, list):
+        return bool(model_supported_reasoning_efforts)
+
+    model_supports_reasoning = model_info.get("supports_reasoning")
     if isinstance(model_supports_reasoning, bool):
         return model_supports_reasoning
+
     return False
 
 
@@ -233,13 +236,26 @@ async def _fetch_model_info_pages(client: httpx.AsyncClient, path: str) -> list[
 
 async def fetch_model_info(client: httpx.AsyncClient) -> list[dict]:
     permission_errors: list[httpx.HTTPStatusError] = []
-    for path in MODEL_INFO_PATHS:
+    for index, path in enumerate(MODEL_INFO_PATHS):
         try:
             return await _fetch_model_info_pages(client, path)
         except httpx.HTTPStatusError as exc:
-            if exc.response.status_code in (401, 403, 404):
+            if exc.response.status_code in (401, 403):
                 permission_errors.append(exc)
                 continue
+
+            if exc.response.status_code == 404 and index < len(MODEL_INFO_PATHS) - 1:
+                permission_errors.append(exc)
+                continue
+
+            if exc.response.status_code == 404:
+                tried = ", ".join(MODEL_INFO_PATHS)
+                raise RuntimeError(
+                    "The gateway did not expose a usable rich model-info route. "
+                    f"Tried: {tried}. Last failure: {exc.request.url.path} "
+                    f"(HTTP {exc.response.status_code})."
+                ) from exc
+
             raise
 
     if permission_errors:
@@ -260,7 +276,13 @@ async def fetch_health(client: httpx.AsyncClient) -> dict:
     response = await client.get("/health")
     response.raise_for_status()
     body = response.json()
-    _health_snapshot_records(body)
+    try:
+        _health_snapshot_records(body)
+    except TypeError as exc:
+        raise RuntimeError(
+            "/health returned an unexpected response shape "
+            "(missing healthy_endpoints/unhealthy_endpoints lists)"
+        ) from exc
     return body
 
 

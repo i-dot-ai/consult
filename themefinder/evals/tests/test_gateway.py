@@ -204,6 +204,26 @@ class TestFetchModelInfo:
         assert result == [_model_info("gpt-4o")]
         assert [call[0] for call in client.calls] == ["/v2/model/info", "/model/info"]
 
+    async def test_final_404_raises_clear_runtime_error(self, monkeypatch):
+        class FakeClient:
+            def __init__(self):
+                self.calls = []
+
+            async def get(self, path, params=None):
+                self.calls.append((path, params))
+                request = httpx.Request("GET", f"https://gateway.example.invalid{path}")
+                response = httpx.Response(404, request=request)
+                raise httpx.HTTPStatusError(
+                    "404 Not Found", request=request, response=response
+                )
+
+        client = FakeClient()
+
+        with pytest.raises(RuntimeError, match="usable rich model-info route"):
+            await gateway.fetch_model_info(client)
+
+        assert [call[0] for call in client.calls] == ["/v2/model/info", "/model/info"]
+
 
 class TestFetchHealth:
     async def test_reads_health_snapshot_route(self):
@@ -230,6 +250,23 @@ class TestFetchHealth:
 
         assert result == health_body
         assert client.calls == ["/health"]
+
+    async def test_invalid_snapshot_shape_raises_clear_runtime_error(self):
+        class FakeClient:
+            async def get(self, path):
+                class FakeResponse:
+                    def raise_for_status(self):
+                        return None
+
+                    def json(self):
+                        return {}
+
+                return FakeResponse()
+
+        client = FakeClient()
+
+        with pytest.raises(RuntimeError, match="/health returned an unexpected"):
+            await gateway.fetch_health(client)
 
 
 class TestDiscoverChatModels:
