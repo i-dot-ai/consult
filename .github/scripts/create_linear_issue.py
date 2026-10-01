@@ -1,6 +1,6 @@
 """
 Create a Linear issue for Dependabot PR events, assigned to the GitHub-assigned
-reviewer via a username-to-Linear-email map stored in a secret.
+reviewer via a username-to-Linear-email map stored in a repo variable.
 
 Supports two issue types, selected via the ISSUE_TYPE environment variable:
 
@@ -10,7 +10,7 @@ Supports two issue types, selected via the ISSUE_TYPE environment variable:
 Required environment variables (all types):
   LINEAR_API_KEY                - Linear personal API key (lin_api_*)
   LINEAR_TEAM_KEY               - Key of the Linear team to create the issue in (e.g. "ENG")
-  DEPENDABOT_USER_MAP           - JSON secret mapping GitHub username to Linear email
+  DEPENDABOT_USER_MAP           - JSON variable mapping GitHub username to Linear email
                                   e.g. '{"octocat": "octocat@example.com"}'
   GITHUB_ASSIGNEE               - GitHub username of the PR assignee (may be empty)
   ISSUE_TYPE                    - "major-bump" or "ci-failure"
@@ -69,6 +69,7 @@ def resolve_team(api_key: str, team_key: str) -> dict:
 def resolve_assignee_id(api_key: str, github_username: str, user_map: dict) -> str | None:
     """Resolve a Linear user ID from a GitHub username via the user map."""
     if not github_username:
+        print("WARNING: no GitHub assignee provided, issue will be unassigned")
         return None
 
     email = user_map.get(github_username)
@@ -200,6 +201,8 @@ def main() -> None:
     }
     if assignee_id:
         issue_input["assigneeId"] = assignee_id
+    else:
+        print("WARNING: Linear issue will be created unassigned due to missing assignee")
 
     issue_id = create_issue(api_key, issue_input)
     attach_pr(api_key, issue_id, pr_url)
