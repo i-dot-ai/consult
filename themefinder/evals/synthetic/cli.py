@@ -456,8 +456,6 @@ async def _context_field_workflow(
         )
     )
 
-    context_fields: list[DemographicField] = []
-
     with console.status(
         "[bold magenta]🎯 Generating policy context fields...[/bold magenta]",
         spinner="dots",

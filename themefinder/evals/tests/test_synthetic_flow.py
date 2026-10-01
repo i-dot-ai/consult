@@ -71,28 +71,16 @@ class FakeParsedCompletions:
             }
         )
 
-        prompt = messages[-1]["content"]
         if response_format.__name__ == "ThemeSet":
-            if "Raw Themes to Consolidate" in prompt:
-                payload = {
-                    "themes": [
-                        {
-                            "topic_id": "A",
-                            "topic_label": "Implementation support",
-                            "topic_description": "Supports the proposal because it is practical and easier to deliver consistently.",
-                        }
-                    ]
-                }
-            else:
-                payload = {
-                    "themes": [
-                        {
-                            "topic_id": "A",
-                            "topic_label": "Implementation support",
-                            "topic_description": "Supports the proposal because it is practical and easier to deliver consistently.",
-                        }
-                    ]
-                }
+            payload = {
+                "themes": [
+                    {
+                        "topic_id": "A",
+                        "topic_label": "Implementation support",
+                        "topic_description": "Supports the proposal because it is practical and easier to deliver consistently.",
+                    }
+                ]
+            }
         else:
             self.response_count += 1
             payload = {

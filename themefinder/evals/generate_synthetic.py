@@ -15,6 +15,7 @@ including:
 """
 
 import asyncio
+import json
 import os
 import sys
 from contextlib import nullcontext
@@ -48,7 +49,7 @@ except ImportError:
     LANGFUSE_AVAILABLE = False
 
 
-def _create_gateway_client() -> tuple[Any, str, str]:
+def _create_gateway_client() -> tuple[Any, str]:
     """Create the gateway-routed OpenAI-compatible client used by the script."""
     client_class: Any = openai.AsyncOpenAI
     if LANGFUSE_AVAILABLE:
@@ -60,7 +61,7 @@ def _create_gateway_client() -> tuple[Any, str, str]:
         api_key=api_key,
         timeout=600,
     )
-    return client, base_url, api_key
+    return client, base_url
 
 
 async def _review_and_finalize_themes(
@@ -101,7 +102,7 @@ async def main() -> None:
         print(str(e))
         return
 
-    client, base_url, _ = _create_gateway_client()
+    client, base_url = _create_gateway_client()
 
     # Optional Langfuse tracking
     langfuse_ctx = None
@@ -174,8 +175,6 @@ async def main() -> None:
                     themes_by_question,
                 )
 
-                continue
-
             progress = create_progress_bar()
             with progress:
                 output_path = await generator.write_full_dataset(
@@ -199,8 +198,6 @@ async def main() -> None:
             / "themes.json"
         )
         if themes_file.exists():
-            import json
-
             with open(themes_file) as f:
                 n_themes = len(json.load(f))
 
