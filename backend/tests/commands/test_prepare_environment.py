@@ -52,7 +52,10 @@ class TestPrepareEnvironment:
         assert Consultation.objects.filter(stage=Consultation.Stage.ANALYSIS).exists()
 
         # Admin user was created
-        assert User.objects.filter(email="admin@example.com", is_staff=True).exists()
+        admin_user = User.objects.get(email="admin@example.com", is_staff=True)
+
+        for consultation in Consultation.objects.all():
+            assert admin_user in consultation.users.all()
 
     @pytest.mark.django_db(transaction=True)
     @mock_aws
