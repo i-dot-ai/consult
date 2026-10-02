@@ -18,6 +18,7 @@ from ingest.jobs import delete_consultation_job
 
 class ConsultationViewSet(CreateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet):
     permission_classes: ClassVar[list] = [IsAuthenticated, CanSeeConsultationV2 | IsAdminUser]
+    filterset_fields: ClassVar[dict] = {"title": ["iexact"]}
 
     def get_permissions(self):
         if self.action == "destroy":
