@@ -7,7 +7,7 @@ share one LLM call; splitting them per metric is deferred to ADR-0013.
 
 from prompts import refinement_eval_prompt
 
-from .llm_judge import ThemeComparisonJudgeEvaluator
+from .llm_judge_evaluator import ThemeComparisonJudgeEvaluator
 
 
 class RefinementQualityEvaluator(ThemeComparisonJudgeEvaluator):

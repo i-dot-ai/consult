@@ -10,7 +10,7 @@ import pydantic_evals.evaluators.llm_as_a_judge as laj
 from pydantic_evals.evaluators.common import LLMJudge, OutputConfig
 from pydantic_evals.evaluators.llm_as_a_judge import GradingOutput
 
-from adapters.evaluators.pydantic_evals import PydanticEvalsEvaluator
+from adapters.evaluators.pydantic_evals_evaluator import PydanticEvalsEvaluator
 
 from conftest import make_case
 from eval_types import Score
