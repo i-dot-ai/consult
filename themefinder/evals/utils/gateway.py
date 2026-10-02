@@ -1,20 +1,10 @@
-"""Discover chat-capable models available on the LLM gateway.
+"""Discover chat-capable models available on the LLM gateway."""
 
-Combines /model_group/info (which models exist and support chat) with
-/health/latest (whether they're currently reachable) into the model list
-the eval suite runs against, so it updates automatically as the gateway's
-model list changes.
-"""
-
+import asyncio
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
 
 import httpx
 from settings import eval_settings
-
-# Health checks are observed to run within ~48h; 72h gives margin before
-# treating a check as stale.
-STALE_AFTER = timedelta(hours=72)
 
 # TODO: hardcoded substring matching for a small, manually maintained subset
 # of model families. New model names (e.g. a future o-series release) won't
@@ -33,6 +23,16 @@ class GatewayModel:
     family: str | None
     health: str  # "healthy" | "unhealthy" | "unknown"
     supports_reasoning: bool = False
+
+
+# Prefer the same paginated v2 endpoint the gateway frontend uses, then fall
+# back through the alternate routes still used elsewhere.
+MODEL_INFO_PATHS = (
+    "/v2/model/info",
+    "/model/info",
+)
+
+MAX_MODEL_INFO_PAGES = 100
 
 
 def derive_family(name: str) -> str | None:
@@ -57,9 +57,9 @@ def filter_by_family(
 def split_unhealthy(
     models: list[GatewayModel],
 ) -> tuple[list[GatewayModel], list[GatewayModel]]:
-    """Split models into (kept, unhealthy) by most recent, non-stale health check.
+    """Split models into (kept, unhealthy) by current gateway health snapshot.
 
-    Models with no recent health data ("unknown") are kept — absence of
+    Models with no health data ("unknown") are kept — absence of
     evidence isn't evidence of a problem.
     """
     kept = []
@@ -88,54 +88,108 @@ def select_by_name(
 
 
 def filter_chat_models(model_group_items: list[dict]) -> list[dict]:
-    """Return model_group entries that support chat completions.
-
-    Keeps the raw dicts, not just names, so callers can still read
-    per-model fields like `supports_reasoning`.
-    """
-    return [item for item in model_group_items if item.get("mode") == "chat"]
+    """Return model entries that support chat completions."""
+    return [item for item in model_group_items if _item_mode(item) == "chat"]
 
 
-def _parse_checked_at(value: str) -> datetime:
-    """Parse a health-check timestamp, tolerating naive values and 'Z' suffixes."""
-    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
-    return parsed
+def _item_model_info(item: dict) -> dict:
+    model_info = item.get("model_info")
+    return model_info if isinstance(model_info, dict) else {}
 
 
-def latest_health_by_model(
-    health_checks: dict[str, dict],
-    now: datetime | None = None,
-    stale_after: timedelta = STALE_AFTER,
-) -> dict[str, str]:
-    """Reduce raw health-check rows to one status per model name.
+def _item_name(item: dict) -> str | None:
+    return item.get("model_name") or item.get("model_group") or item.get("id")
 
-    Keeps the most recent check per model name; a check older than
-    `stale_after` is dropped (that row, not the model) rather than trusted
-    as current status. A row missing any of the fields below is skipped the
-    same way — the model just falls back to "unknown" health rather than
-    one malformed row taking down discovery for every model.
-    """
-    now = now or datetime.now(timezone.utc)
-    latest: dict[str, tuple[datetime, str]] = {}  # name -> (checked_at, status)
 
-    for check in health_checks.values():
-        name = check.get("model_name")
-        checked_at_raw = check.get("checked_at")
-        status = check.get("status")
-        if name is None or checked_at_raw is None or status is None:
+def _item_mode(item: dict) -> str | None:
+    if "mode" in item:
+        return item.get("mode")
+    return _item_model_info(item).get("mode")
+
+
+def _item_model_id(item: dict) -> str | None:
+    model_id = _item_model_info(item).get("id") or item.get("model_id")
+    return model_id if isinstance(model_id, str) else None
+
+
+def _item_supports_reasoning(item: dict) -> bool:
+    item_supported_reasoning_efforts = item.get("supported_reasoning_efforts")
+    if isinstance(item_supported_reasoning_efforts, list):
+        return bool(item_supported_reasoning_efforts)
+
+    item_supports_reasoning = item.get("supports_reasoning")
+    if isinstance(item_supports_reasoning, bool):
+        return item_supports_reasoning
+
+    model_info = _item_model_info(item)
+    model_supported_reasoning_efforts = model_info.get("supported_reasoning_efforts")
+    if isinstance(model_supported_reasoning_efforts, list):
+        return bool(model_supported_reasoning_efforts)
+
+    model_supports_reasoning = model_info.get("supports_reasoning")
+    if isinstance(model_supports_reasoning, bool):
+        return model_supports_reasoning
+
+    return False
+
+
+def _health_snapshot_records(health_body: dict) -> list[tuple[str, dict]]:
+    if not isinstance(health_body, dict):
+        raise TypeError("Health response must be an object")
+
+    healthy = health_body.get("healthy_endpoints")
+    unhealthy = health_body.get("unhealthy_endpoints")
+    if not isinstance(healthy, list) or not isinstance(unhealthy, list):
+        raise TypeError(
+            "Health response missing healthy_endpoints/unhealthy_endpoints lists"
+        )
+
+    return [("healthy", record) for record in healthy if isinstance(record, dict)] + [
+        ("unhealthy", record) for record in unhealthy if isinstance(record, dict)
+    ]
+
+
+def health_by_model_id(health_body: dict) -> dict[str, str]:
+    """Return the current gateway health status for each health-check model id."""
+    by_model_id: dict[str, str] = {}
+    for status, record in _health_snapshot_records(health_body):
+        model_id = record.get("model_id") or record.get("id")
+        if isinstance(model_id, str):
+            by_model_id[model_id] = status
+    return by_model_id
+
+
+def _resolve_item_health(item: dict, status_by_model_id: dict[str, str]) -> str:
+    model_id = _item_model_id(item)
+    if model_id is not None and model_id in status_by_model_id:
+        return status_by_model_id[model_id]
+    return "unknown"
+
+
+def _merge_health(existing: str, new: str) -> str:
+    if "unhealthy" in {existing, new}:
+        return "unhealthy"
+    if "healthy" in {existing, new}:
+        return "healthy"
+    return "unknown"
+
+
+def _dedupe_models_by_name(models: list[GatewayModel]) -> list[GatewayModel]:
+    deduped: dict[str, GatewayModel] = {}
+    for model in models:
+        existing = deduped.get(model.name)
+        if existing is None:
+            deduped[model.name] = model
             continue
-        checked_at = _parse_checked_at(checked_at_raw)
-        if name in latest and checked_at <= latest[name][0]:
-            continue
-        latest[name] = (checked_at, status)
 
-    return {
-        name: status
-        for name, (checked_at, status) in latest.items()
-        if now - checked_at <= stale_after
-    }
+        deduped[model.name] = GatewayModel(
+            name=model.name,
+            family=existing.family or model.family,
+            health=_merge_health(existing.health, model.health),
+            supports_reasoning=existing.supports_reasoning or model.supports_reasoning,
+        )
+
+    return list(deduped.values())
 
 
 def gateway_credentials() -> tuple[str, str]:
@@ -158,58 +212,125 @@ def _gateway_client() -> httpx.AsyncClient:
     )
 
 
-async def fetch_model_group_info(client: httpx.AsyncClient) -> list[dict]:
-    response = await client.get("v1/models")
-    response.raise_for_status()
-    return response.json()["data"]
+def _parse_model_info_page(body: dict) -> tuple[list[dict], int | None, int | None]:
+    data = body.get("data")
+    if not isinstance(data, list):
+        raise TypeError("Model info response missing data list")
+    current_page = body.get("current_page")
+    total_pages = body.get("total_pages")
+    return data, current_page, total_pages
 
 
-async def fetch_health_latest(client: httpx.AsyncClient) -> dict[str, dict]:
-    response = await client.get("/health/latest")
+async def _fetch_model_info_pages(client: httpx.AsyncClient, path: str) -> list[dict]:
+    page = 1
+    items: list[dict] = []
+    while True:
+        if page > MAX_MODEL_INFO_PAGES:
+            raise RuntimeError(
+                f"Aborting model-info fetch after {MAX_MODEL_INFO_PAGES} pages from {path}"
+            )
+
+        response = await client.get(path, params={"page": str(page)})
+        response.raise_for_status()
+        page_items, current_page, total_pages = _parse_model_info_page(response.json())
+        items.extend(page_items)
+
+        if current_page is None or total_pages is None or current_page >= total_pages:
+            return items
+
+        page += 1
+
+
+async def fetch_model_info(client: httpx.AsyncClient) -> list[dict]:
+    fallback_errors: list[httpx.HTTPStatusError] = []
+    for index, path in enumerate(MODEL_INFO_PATHS):
+        try:
+            return await _fetch_model_info_pages(client, path)
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code in (401, 403):
+                fallback_errors.append(exc)
+                continue
+
+            if exc.response.status_code == 404 and index < len(MODEL_INFO_PATHS) - 1:
+                fallback_errors.append(exc)
+                continue
+
+            if exc.response.status_code == 404:
+                tried = ", ".join(MODEL_INFO_PATHS)
+                raise RuntimeError(
+                    "The gateway did not expose a usable rich model-info route. "
+                    f"Tried: {tried}. Last failure: {exc.request.url.path} "
+                    f"(HTTP {exc.response.status_code})."
+                ) from exc
+
+            raise
+
+    if fallback_errors:
+        last_error = fallback_errors[-1]
+        tried = ", ".join(MODEL_INFO_PATHS)
+        raise RuntimeError(
+            "CONSULT_EVAL_LITELLM_API_KEY lacks access to a rich model-info route. "
+            f"Tried: {tried}. Last failure: {last_error.request.url.path} "
+            f"(HTTP {last_error.response.status_code}). Please ensure that the "
+            "allowed routes for this key include at least one model-info route "
+            "and /health."
+        ) from last_error
+
+    raise RuntimeError("No model-info routes returned usable data")
+
+
+async def fetch_health(client: httpx.AsyncClient) -> dict:
+    response = await client.get("/health")
     response.raise_for_status()
-    return response.json()["latest_health_checks"]
+    body = response.json()
+    try:
+        _health_snapshot_records(body)
+    except TypeError as exc:
+        raise RuntimeError(
+            "/health returned an unexpected response shape "
+            "(missing healthy_endpoints/unhealthy_endpoints lists)"
+        ) from exc
+    return body
 
 
 async def discover_chat_models() -> list[GatewayModel]:
-    """Fetch every chat-capable gateway model with its family and health resolved.
-
-    Unfiltered by design — callers narrow the list themselves (split_unhealthy,
-    filter_by_family, or an exact-name lookup) based on how they want to select.
-    """
+    """Fetch every chat-capable gateway model with its family and health resolved."""
     async with _gateway_client() as client:
         try:
-            model_group_items = await fetch_model_group_info(client)
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code in (401, 403):
+            model_info_items, health_body = await asyncio.gather(
+                fetch_model_info(client),
+                fetch_health(client),
+            )
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code in (401, 403):
                 raise RuntimeError(
-                    f"CONSULT_EVAL_LITELLM_API_KEY lacks access to {e.request.url.path} "
-                    f"(HTTP {e.response.status_code}). Please ensure that the allowed "
+                    f"CONSULT_EVAL_LITELLM_API_KEY lacks access to {exc.request.url.path} "
+                    f"(HTTP {exc.response.status_code}). Please ensure that the allowed "
                     "paths for this key are correctly set via the LLM gateway UI."
-                ) from e
+                ) from exc
             raise
 
     # A key whose model grant is a wildcard (e.g. "all-team-models") can get
     # this route back unexpanded - a single "*" row instead of individual
     # models - rather than a real list to discover from.
-    if any(item.get("model_group") == "*" for item in model_group_items):
+    if any(_item_name(item) == "*" for item in model_info_items):
         raise RuntimeError(
-            "/model_group/info returned an unexpanded '*' entry instead of "
-            "individual model names - this requires checking the settings "
-            "in the model gateway."
+            "The gateway returned an unexpanded '*' entry instead of individual "
+            "model names - this requires checking the settings in the model gateway."
         )
 
-    # TODO (PRO-759): v1/models dropped chat-mode filtering, health, and reasoning
-    # support - needs investigation of the new gateway API (likely a per-model
-    # health endpoint) rather than a blind reimplementation. Also check whether
-    # family=item["owned_by"] below should instead be derive_family(item["id"]).
-    # chat_models = filter_chat_models(model_group_items)
-    # health_by_name = latest_health_by_model(health_checks)
-    return [
-        GatewayModel(
-            name=item["id"],
-            family=item["owned_by"],
-            health="unknown",
-            supports_reasoning=False,
-        )
-        for item in model_group_items
-    ]
+    chat_models = filter_chat_models(model_info_items)
+    status_by_model_id = health_by_model_id(health_body)
+
+    return _dedupe_models_by_name(
+        [
+            GatewayModel(
+                name=name,
+                family=derive_family(name),
+                health=_resolve_item_health(item, status_by_model_id),
+                supports_reasoning=_item_supports_reasoning(item),
+            )
+            for item in chat_models
+            if (name := _item_name(item)) is not None
+        ]
+    )
