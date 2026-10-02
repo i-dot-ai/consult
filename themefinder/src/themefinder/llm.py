@@ -9,6 +9,7 @@ import concurrent.futures
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
+import numpy as np
 import openai
 from pydantic import BaseModel
 
@@ -76,3 +77,50 @@ class OpenAILLM:
                     asyncio.run, self.ainvoke(prompt, output_model)
                 ).result()
         return asyncio.run(self.ainvoke(prompt, output_model))
+
+
+@runtime_checkable
+class Embedder(Protocol):
+    """Protocol for text embedding, kept separate from LLM so each can be swapped alone."""
+
+    async def aembed(self, texts: list[str]) -> np.ndarray:
+        """Return an array of shape (len(texts), dim), one row per text in order."""
+        ...
+
+
+class OpenAIEmbedder:
+    """OpenAI SDK implementation of the Embedder protocol."""
+
+    def __init__(
+        self,
+        model: str = "text-embedding-3-large",
+        batch_size: int = 256,
+        concurrency: int = 5,
+        **client_kwargs,
+    ):
+        self.model = model
+        self.batch_size = batch_size
+        self.concurrency = concurrency
+        self.client = openai.AsyncOpenAI(**client_kwargs)
+
+    async def aembed(self, texts: list[str]) -> np.ndarray:
+        if not texts:
+            return np.empty((0, 0), dtype=np.float32)
+
+        semaphore = asyncio.Semaphore(self.concurrency)
+
+        async def embed_batch(batch: list[str]) -> list[list[float]]:
+            async with semaphore:
+                response = await self.client.embeddings.create(
+                    input=batch, model=self.model
+                )
+            return [item.embedding for item in response.data]
+
+        batches = [
+            texts[i : i + self.batch_size]
+            for i in range(0, len(texts), self.batch_size)
+        ]
+        results = await asyncio.gather(*[embed_batch(batch) for batch in batches])
+        return np.asarray(
+            [vector for batch in results for vector in batch], dtype=np.float32
+        )

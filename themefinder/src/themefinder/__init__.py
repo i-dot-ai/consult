@@ -1,4 +1,13 @@
-from .llm import LLM, LLMResponse, OpenAILLM
+from .advanced_tasks.concept_theme_finding import (
+    ConceptClusteringConfig,
+    embed_and_cluster_concepts,
+    extract_concepts,
+    find_themes_via_concepts,
+    get_outliers,
+    refine_cluster_themes,
+    review_clusters,
+)
+from .llm import LLM, Embedder, LLMResponse, OpenAIEmbedder, OpenAILLM
 from .tasks import (
     detail_detection,
     find_themes,
@@ -19,6 +28,15 @@ __all__ = [
     "LLM",
     "LLMResponse",
     "OpenAILLM",
+    "Embedder",
+    "OpenAIEmbedder",
+    "ConceptClusteringConfig",
+    "find_themes_via_concepts",
+    "extract_concepts",
+    "embed_and_cluster_concepts",
+    "review_clusters",
+    "refine_cluster_themes",
+    "get_outliers",
     "find_themes",
     "theme_clustering",
     "theme_condensation",

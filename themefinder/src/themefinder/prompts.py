@@ -238,6 +238,96 @@ You will produce a list of CLEAR STANCE TOPICS based on the input. Each topic sh
 TOPICS:
 {responses}"""
 
+CONCEPT_EXTRACTION = """{system_prompt}
+
+Below is a question and a list of responses to that question.
+
+Your task is to break each response down into its distinct CONCEPTS. A concept is one specific idea or point of view expressed in a response.
+
+For each response:
+1. Return the response_id exactly as given.
+2. List every distinct concept the response expresses. A response making one point has one concept; a response making several separate points has several.
+3. Write each concept as a short, self-contained statement (one sentence, ideally under 25 words) that makes sense without the original response. Do not use words like "it" or "they" that refer back to the response, and do not mention "the respondent".
+4. Stay close to the respondent's own meaning and wording. Do not generalise, soften, or add anything the respondent did not say, and do not invent points.
+5. Do not split one idea into several concepts just because it is supported by several sentences or examples, and do not merge separate ideas into one concept.
+6. Set position to the stance the concept takes towards the question: "AGREEMENT", "DISAGREEMENT" or "UNCLEAR".
+7. If a response has no substantive content (for example "no comment"), return an empty concepts list for it.
+
+Here is an example of how to extract concepts.
+
+## EXAMPLE
+
+QUESTION
+What are your views on the proposed change by the government to introduce a 2% tax on fast food meat products.
+
+RESPONSES
+[
+    {{"response_id": 1, "response": "I wish the government would stop interfering in our lives. This will also hit poorer people hardest."}},
+    {{"response_id": 2, "response": "No comment."}},
+]
+
+EXAMPLE OUTPUT (showing the structure)
+- response_id 1:
+    - "The government should not interfere in citizens' lives." - DISAGREEMENT
+    - "A tax on fast food meat would affect poorer people most." - DISAGREEMENT
+- response_id 2: no concepts
+
+QUESTION:
+{question}
+
+RESPONSES:
+{responses}"""
+
+CLUSTER_REVIEW = """{system_prompt}
+
+Below is a question and a list of CLUSTERS. Each cluster is a group of CONCEPTS (short statements extracted from responses to the question) that were grouped automatically because their wording is similar. Automatic grouping makes mistakes, so each cluster needs checking.
+
+For each cluster you are given:
+- response_id: the id of the cluster
+- members: the concepts currently in the cluster, each with a concept_id, text and position
+- candidates: other concepts that are not in any cluster but might belong in this one
+
+For each cluster:
+1. Work out the main idea of the cluster from the majority of its members.
+2. Put in removed_concept_ids the concept_ids of members that do not express that main idea and do not belong.
+3. Put in added_concept_ids the concept_ids of candidates that do express that main idea and should be in the cluster.
+
+Guidelines:
+- A concept belongs if it expresses the same underlying idea AND the same stance as the main idea of the cluster. Differences in wording, detail or emphasis are fine.
+- Concepts on the same topic but taking an opposing stance belong in different clusters.
+- Only remove or add a concept when you are confident. If you are unsure, leave it as it is.
+- Only use concept_ids that appear in the cluster you are reviewing: members for removed_concept_ids, candidates for added_concept_ids.
+- Return the response_id of each cluster exactly as given, and return one entry for every cluster, using empty lists where nothing changes.
+
+QUESTION:
+{question}
+
+CLUSTERS:
+{responses}"""
+
+CLUSTER_THEME_REFINEMENT = """{system_prompt}
+
+Below is a question and a list of CLUSTERS. Each cluster is a group of CONCEPTS (short statements extracted from responses to the question) that express the same underlying idea.
+
+Your task is to write one THEME for each cluster that represents all of its concepts. Each theme has two parts, combined with a colon separator: "label: description".
+1. label: a brief, clear label of at most 10 words (ideally 3-7).
+2. description: exactly one sentence that captures the idea shared by the concepts in the cluster.
+
+Guidelines:
+- Return the response_id of each cluster exactly as given, and return one theme for every cluster.
+- Express a clear stance that can be agreed or disagreed with, as a definitive statement (for example "Increased risk of X" rather than "X"). Use each concept's position to get the stance right.
+- Only use ideas present in the concepts. Do not add detail, causes or examples that are not there.
+- If the concepts are not perfectly uniform, describe the dominant idea.
+- Do not refer to responses or respondents (avoid phrases like "many respondents said").
+- Make each theme distinct from the themes of the other clusters in this list.
+- total_concepts is the real size of the cluster; concepts may show only a sample of the most representative ones.
+
+QUESTION:
+{question}
+
+CLUSTERS:
+{responses}"""
+
 
 # TypedDict definitions for batch operation kwargs
 
@@ -272,6 +362,20 @@ class ThemeMappingKwargs(TypedDict):
 
 class DetailDetectionKwargs(TypedDict):
     """Required kwargs for detail detection batch operations."""
+
+    question: str
+    system_prompt: str
+
+
+class ConceptExtractionKwargs(TypedDict):
+    """Required kwargs for concept extraction batch operations."""
+
+    question: str
+    system_prompt: str
+
+
+class ClusterThemeRefinementKwargs(TypedDict):
+    """Required kwargs for cluster theme refinement batch operations."""
 
     question: str
     system_prompt: str
@@ -411,5 +515,71 @@ def theme_refinement_prompt(
     """
     return THEME_REFINEMENT.format(
         system_prompt=system_prompt,
+        responses=responses,
+    )
+
+
+def concept_extraction_prompt(
+    system_prompt: str,
+    question: str,
+    responses: list[dict[str, Any]],
+) -> str:
+    """Generate prompt for concept extraction.
+
+    Args:
+        system_prompt: System prompt for LLM behavior
+        question: The question being analyzed
+        responses: List of response dictionaries to break into concepts
+
+    Returns:
+        Formatted prompt string
+    """
+    return CONCEPT_EXTRACTION.format(
+        system_prompt=system_prompt,
+        question=question,
+        responses=responses,
+    )
+
+
+def cluster_review_prompt(
+    system_prompt: str,
+    question: str,
+    responses: list[dict[str, Any]],
+) -> str:
+    """Generate prompt for reviewing clusters against the leftover pool.
+
+    Args:
+        system_prompt: System prompt for LLM behavior
+        question: The question being analyzed
+        responses: List of cluster dictionaries with members and candidates
+
+    Returns:
+        Formatted prompt string
+    """
+    return CLUSTER_REVIEW.format(
+        system_prompt=system_prompt,
+        question=question,
+        responses=responses,
+    )
+
+
+def cluster_theme_refinement_prompt(
+    system_prompt: str,
+    question: str,
+    responses: list[dict[str, Any]],
+) -> str:
+    """Generate prompt for writing one theme per cluster.
+
+    Args:
+        system_prompt: System prompt for LLM behavior
+        question: The question being analyzed
+        responses: List of cluster dictionaries holding their concepts
+
+    Returns:
+        Formatted prompt string
+    """
+    return CLUSTER_THEME_REFINEMENT.format(
+        system_prompt=system_prompt,
+        question=question,
         responses=responses,
     )

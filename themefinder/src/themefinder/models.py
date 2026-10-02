@@ -237,6 +237,22 @@ class ThemeCondensationResponses(BaseModel):
         return self
 
 
+def check_topic_format(topic: str) -> None:
+    """Shared so every "label: description" theme model enforces the same rules."""
+    if ":" not in topic:
+        raise ValueError(
+            "Topic must contain a label and description separated by a colon"
+        )
+
+    label, description = topic.split(":", 1)
+    if not label.strip() or not description.strip():
+        raise ValueError("Both label and description must be non-empty")
+
+    word_count = len(label.strip().split())
+    if word_count > 10:
+        raise ValueError(f"Topic label must be under 10 words (found {word_count})")
+
+
 class RefinedTheme(ValidatedModel):
     """Model for a single refined theme"""
 
@@ -260,19 +276,7 @@ class RefinedTheme(ValidatedModel):
         """
         Validate that topic contains a label and description separated by a colon.
         """
-        if ":" not in self.topic:
-            raise ValueError(
-                "Topic must contain a label and description separated by a colon"
-            )
-
-        label, description = self.topic.split(":", 1)
-        if not label.strip() or not description.strip():
-            raise ValueError("Both label and description must be non-empty")
-
-        word_count = len(label.strip().split())
-        if word_count > 10:
-            raise ValueError(f"Topic label must be under 10 words (found {word_count})")
-
+        check_topic_format(self.topic)
         return self
 
 
@@ -289,6 +293,97 @@ class ThemeRefinementResponses(ValidatedModel):
         if len(topics) != len(set(topics)):
             raise ValueError("Duplicate topics detected")
 
+        return self
+
+
+class Concept(ValidatedModel):
+    """A single self-contained idea extracted from a response"""
+
+    text: str = Field(
+        ..., description="Self-contained statement of one idea from the response"
+    )
+    position: Position = Field(
+        ...,
+        description="Stance of this concept towards the question (AGREEMENT, DISAGREEMENT, OR UNCLEAR)",
+    )
+
+
+class ResponseConcepts(BaseModel):
+    """Concepts extracted from one response (empty if it has no substantive content)"""
+
+    response_id: int = Field(..., description="The response_id exactly as given")
+    concepts: list[Concept] = Field(
+        default_factory=list, description="Distinct concepts expressed in the response"
+    )
+
+
+class ConceptExtractionResponses(BaseModel):
+    """Container for concepts extracted from a batch of responses"""
+
+    responses: list[ResponseConcepts] = Field(
+        ..., description="One entry per input response"
+    )
+
+
+class ClusterReview(BaseModel):
+    """One cluster's review: members to eject and leftover concepts to pull in.
+
+    `response_id` holds the cluster id: batch_and_run matches outputs to inputs on that name.
+    """
+
+    response_id: int = Field(
+        ..., description="The cluster's response_id exactly as given"
+    )
+    removed_concept_ids: list[int] = Field(
+        default_factory=list,
+        description="concept_ids of cluster members that do not belong (empty if all belong)",
+    )
+    added_concept_ids: list[int] = Field(
+        default_factory=list,
+        description="concept_ids of candidate concepts that do belong (empty if none do)",
+    )
+
+
+class ClusterList(BaseModel):
+    """Container for review decisions on a batch of clusters.
+
+    The field is `responses` because batch_and_run reads that key from every output model.
+    """
+
+    responses: list[ClusterReview] = Field(
+        ..., description="One entry per input cluster"
+    )
+
+
+class ClusterTheme(ValidatedModel):
+    """A single theme written from the concepts in one cluster"""
+
+    response_id: int = Field(..., description="The cluster id exactly as given")
+    topic: str = Field(
+        ...,
+        description="Short label and one-sentence description, separated by a colon",
+    )
+
+    @model_validator(mode="after")
+    def run_validations(self) -> "ClusterTheme":
+        """Run all validations for ClusterTheme"""
+        self.validate_non_empty_fields()
+        check_topic_format(self.topic)
+        return self
+
+
+class ClusterThemeResponses(ValidatedModel):
+    """Container for themes written for a batch of clusters"""
+
+    responses: List[ClusterTheme] = Field(..., description="One theme per cluster")
+
+    @model_validator(mode="after")
+    def run_validations(self) -> "ClusterThemeResponses":
+        """Validate that cluster ids are unique."""
+        self.validate_non_empty_fields()
+        cluster_ids = [theme.response_id for theme in self.responses]
+        if len(cluster_ids) != len(set(cluster_ids)):
+            raise ValueError("Cluster IDs must be unique")
         return self
 
 
