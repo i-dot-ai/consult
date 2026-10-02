@@ -5,13 +5,13 @@ a case and the task output and returns a list of Score objects. This
 is wrapped in evaluate which handles exceptions and logging.
 """
 
-import logging
 from abc import ABC, abstractmethod
 from typing import Any
 
 from eval_types import Case, Score
+from utils.logging_config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class EvaluatorPort(ABC):

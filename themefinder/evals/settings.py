@@ -33,6 +33,7 @@ dotenv.load_dotenv()
 # Just a single valid value for THEMEFINDER_EVAL_ENGINE at the moment, but allows for future expansion.
 EvalRunnerSource = Literal["pydantic_evals"]
 EvalBackendSource = Literal["langfuse", "local"]
+LogLevel = Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
 
 
 @dataclass(frozen=True)
@@ -42,6 +43,7 @@ class _Defaults:
     environment: str = "development"
     git_sha: str = "local"
     engine: EvalRunnerSource = "pydantic_evals"
+    log_level: LogLevel = "INFO"
 
 
 DEFAULTS = _Defaults()
@@ -89,6 +91,7 @@ class EvalSettings:
     # using Langfuse" from "configured with incomplete/absent credentials".
     langfuse: LangfuseSettings | None
     eval: EvalRunSettings
+    log_level: LogLevel
 
     @property
     def active_langfuse(self) -> LangfuseSettings | None:
@@ -139,6 +142,7 @@ def get_settings() -> EvalSettings:
         ),
         langfuse=langfuse,
         eval=eval_run,
+        log_level=os.getenv("THEMEFINDER_EVAL_LOG_LEVEL", DEFAULTS.log_level).upper(),
     )
 
 
