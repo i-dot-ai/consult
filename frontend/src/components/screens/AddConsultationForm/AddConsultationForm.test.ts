@@ -17,7 +17,8 @@ const EXISTING = {
   is_owner: true,
 };
 
-const DUPLICATE_URL = `${URL}?title__iexact=${encodeURIComponent("future homes standard")}`;
+const DUPLICATE_NAME = "future homes STANDARD";
+const DUPLICATE_URL = `${URL}?${new URLSearchParams({ title__iexact: DUPLICATE_NAME })}`;
 
 const duplicateMock = {
   url: DUPLICATE_URL,
@@ -25,14 +26,20 @@ const duplicateMock = {
 };
 
 describe("AddConsultationForm", () => {
+  const originalLocation = window.location;
+
   beforeEach(() => {
     Object.defineProperty(window, "location", {
-      value: { href: "" },
+      value: { href: "", origin: originalLocation.origin },
       writable: true,
     });
   });
 
   afterEach(() => {
+    Object.defineProperty(window, "location", {
+      value: originalLocation,
+      writable: true,
+    });
     fetchMock.unmockGlobal();
     fetchMock.removeRoutes();
     queryClient.resetQueries();
@@ -69,7 +76,7 @@ describe("AddConsultationForm", () => {
     render(AddConsultationForm);
 
     await fireEvent.input(screen.getByLabelText("Consultation name"), {
-      target: { value: "future homes STANDARD" },
+      target: { value: DUPLICATE_NAME },
     });
 
     await waitFor(() => {
