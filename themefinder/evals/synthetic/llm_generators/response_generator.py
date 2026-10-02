@@ -1,21 +1,18 @@
 """Response generation using LLM for synthetic consultation datasets."""
 
-import asyncio
 import logging
 import random
 from collections.abc import Callable
 from dataclasses import dataclass
 
 import openai
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 
 from synthetic.config import NoiseLevel, QuestionConfig, ResponseLength, ResponseType
+from synthetic.llm_generators.retry import parse_with_retries
+from synthetic.prompts.utils import load_prompt
 
 logger = logging.getLogger(__name__)
-
-# Retry configuration for transient LLM errors
-MAX_RETRIES = 3
-RETRY_DELAY_SECONDS = 2.0
 
 
 class GeneratedResponse(BaseModel):
@@ -49,40 +46,9 @@ class PreviousResponse:
     sentiment: str
 
 
-SYSTEM_PROMPT_FIRST_QUESTION = """You are simulating a member of the UK public responding to a government consultation.
+SYSTEM_PROMPT_FIRST_QUESTION = load_prompt("response_first_question_system.md")
 
-## Respondent Profile
-{persona_desc}
-
-## Response Requirements
-- Length: approximately {min_words}-{max_words} words
-- Response type: {response_type}
-- Write naturally as this person would, considering how their background and circumstances affect their perspective on this policy
-- Use vocabulary and concerns appropriate to their profile
-
-## Guidelines by Response Type
-- agree: Express clear support for the proposal with reasons
-- disagree: Express clear opposition with reasons
-- nuanced: Show conditional support with specific concerns or caveats
-- off_topic: Drift to tangentially related issues, miss the main question
-- low_quality: Be vague, very brief, or unclear
-
-Generate authentic-sounding responses. Vary sentence structure and vocabulary."""
-
-SYSTEM_PROMPT_WITH_CONTEXT = """You are simulating a member of the UK public responding to a government consultation.
-
-## Respondent Profile
-{persona_desc}
-
-## Consistency Requirement
-You have already answered previous questions in this consultation. Your responses should be CONSISTENT with your earlier answers - maintain the same general viewpoint, concerns, and tone.
-
-## Response Requirements
-- Length: approximately {min_words}-{max_words} words
-- Write naturally as this person would, considering how their background and circumstances affect their perspective
-- IMPORTANT: Stay consistent with your previous responses shown below
-
-Generate authentic-sounding responses. Vary sentence structure and vocabulary."""
+SYSTEM_PROMPT_WITH_CONTEXT = load_prompt("response_with_context_system.md")
 
 
 async def generate_respondent_survey(
@@ -145,63 +111,22 @@ async def generate_respondent_survey(
             {"role": "user", "content": human_prompt},
         ]
 
-        # Retry loop for transient LLM errors (JSON parsing, connection issues, content filter)
-        response = None
-        last_error = None
-
-        for attempt in range(MAX_RETRIES):
-            try:
-                response = (
-                    (
-                        # Medium reasoning on gpt-5-nano ≈ o1 performance, at
-                        # roughly 2x the throughput of mini/low.
-                        await client.beta.chat.completions.parse(
-                            model=deployment,
-                            messages=messages,
-                            response_format=GeneratedResponse,
-                            reasoning_effort="medium",
-                        )
-                    )
-                    .choices[0]
-                    .message.parsed
-                )
-                break  # Success - exit retry loop
-            except Exception as e:
-                last_error = e
-                error_type = type(e).__name__
-                error_str = str(e)
-
-                # Check if it's a retryable error
-                is_validation_error = isinstance(e, ValidationError)
-                is_connection_error = (
-                    "ECONNRESET" in error_str
-                    or "ENOTFOUND" in error_str
-                    or "ECONNREFUSED" in error_str
-                    or "DNS" in error_str
-                    or "connection" in error_str.lower()
-                )
-                is_content_filter = (
-                    "content_filter" in error_str
-                    or "ResponsibleAIPolicyViolation" in error_str
-                )
-
-                if is_validation_error or is_connection_error or is_content_filter:
-                    if attempt < MAX_RETRIES - 1:
-                        delay = RETRY_DELAY_SECONDS * (
-                            2**attempt
-                        )  # Exponential backoff
-                        logger.warning(
-                            f"Retryable error ({error_type}) for response_id={respondent.response_id}, "
-                            f"question={question.number}, attempt {attempt + 1}/{MAX_RETRIES}. "
-                            f"Retrying in {delay:.1f}s..."
-                        )
-                        await asyncio.sleep(delay)
-                        continue
-                # Non-retryable or exhausted retries - re-raise
-                raise
-
-        if response is None:
-            raise last_error  # type: ignore[misc]
+        response = await parse_with_retries(
+            client=client,
+            model=deployment,
+            messages=messages,
+            response_format=GeneratedResponse,
+            reasoning_effort="medium",
+            logger=logger,
+            operation_name=(
+                f"response generation for response_id={respondent.response_id}, "
+                f"question={question.number}"
+            ),
+            extra_retryable_markers=(
+                "content_filter",
+                "ResponsibleAIPolicyViolation",
+            ),
+        )
 
         final_text = response.response
         if respondent.apply_noise and respondent.noise_type:

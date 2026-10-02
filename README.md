@@ -153,3 +153,65 @@ Component-level evals live in `themefinder/evals/pipelines/`, where there is one
 1. `cd` to the relevant dir
 2. Set the desired parameters in the `params.yaml` file
 3. Run `uv run --package themefinder --extra dev dvc repro` to run the pipeline in a version-aware fashion (i.e. only running the stages whose dependencies have changed since their last run). If you want to run the whole pipeline regardless of version changes, run `uv run --package themefinder --extra dev dvc repro --force`
+
+### Configuring Certificates
+
+When you run the backend or eval pipeline, you may encounter certificate errors such as:
+```python
+httpx.ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate
+```
+This indicates that you don't have the correct certificate for your VPN, or that python isn't reading it correctly.
+
+To solve this issue, follow these steps:
+
+1. Generate the chain of certificates for the URL that you are trying to access:
+    ```bash
+    openssl s_client -connect "YOUR_URL:443" -servername "YOUR_URL" -showcerts </dev/null 2>/dev/null >/tmp/cert_chain.txt
+    ```
+
+2. Split the chain into individual files, one per certificate:
+    ```bash
+    awk '
+    /-----BEGIN CERTIFICATE-----/ {
+    file=sprintf("/tmp/cert_%d.pem", n++)
+    in_cert=1
+    }
+    in_cert {
+    print > file
+    }
+    /-----END CERTIFICATE-----/ {
+    close(file)
+    in_cert=0
+    }
+    ' /tmp/cert_chain.txt
+    ```
+
+3. Knit all certificates apart from the first one (the leaf certificate) into a single pem bundle:
+    ```bash
+    cert_files=(/tmp/cert_*.pem)
+    filtered_cert_files=()
+
+    for cert_file in "${cert_files[@]}"; do
+    if [ "$cert_file" != "/tmp/cert_0.pem" ]; then
+        filtered_cert_files+=("$cert_file")
+    fi
+    done
+
+    if [ ${#filtered_cert_files[@]} -eq 0 ]; then
+    printf 'No certificate files matching cert_*.pem were found after excluding cert_0.pem.\n' >&2
+    exit 1
+    fi
+
+    printf '%s\n' "${filtered_cert_files[@]}" | sort -V | xargs cat -- > /tmp/cert_bundle.pem
+
+    printf 'Created /tmp/cert_bundle.pem from %s certificate file(s), excluding /tmp/cert_0.pem.\n' "${#filtered_cert_files[@]}"
+    ```
+    After generating the `cert_bundle.pem` file, you may wish to move it somewhere safer.
+
+4. Set the `SSL_CERT_FILE` parameter in the `.env` file to the location of your `cert_bundle.pem` file.
+
+5. Check that the `pip-system-certs` module is installed
+    ```bash
+    uv pip show pip-system-certs
+    ```
+    If this prints the details of the module, it's installed. If not, install it with `uv add pip-system-certs`.
