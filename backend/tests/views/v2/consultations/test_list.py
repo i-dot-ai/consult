@@ -111,3 +111,36 @@ def test_v2_list_marks_owned_but_not_assigned(client, staff_user, staff_user_tok
     assert result["id"] == str(consultation.id)
     assert result["is_owner"] is True
     assert result["is_assigned"] is False
+
+
+@pytest.mark.django_db
+def test_v2_list_filters_by_title_case_insensitively(client, non_staff_user, non_staff_user_token):
+    match = ConsultationFactory(title="Future Homes Standard", created_by=non_staff_user)
+    match.users.add(non_staff_user)
+    other = ConsultationFactory(title="Building Safety Levy", created_by=non_staff_user)
+    other.users.add(non_staff_user)
+
+    response = client.get(
+        reverse("consultation-v2-list"),
+        {"title__iexact": "future homes standard"},
+        headers={"Authorization": f"Bearer {non_staff_user_token}"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["count"] == 1
+    assert [c["id"] for c in body["results"]] == [str(match.id)]
+
+
+@pytest.mark.django_db
+def test_v2_list_title_filter_excludes_consultations_user_cannot_see(client, non_staff_user_token):
+    ConsultationFactory(title="Someone Elses Consultation")
+
+    response = client.get(
+        reverse("consultation-v2-list"),
+        {"title__iexact": "someone elses consultation"},
+        headers={"Authorization": f"Bearer {non_staff_user_token}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["count"] == 0
