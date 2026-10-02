@@ -1,11 +1,34 @@
 import { buildQuery } from "../../queryClient";
-import { consultationQueryParts, consultationsQueryParts } from "./parts";
-import type { ConsultationsGetResponse, UpdateConsultationBody } from "./types";
+import {
+  consultationQueryParts,
+  consultationsQueryParts,
+  consultationsV2QueryParts,
+} from "./parts";
+import type {
+  ConsultationsGetResponse,
+  ConsultationsV2GetResponse,
+  ConsultationV2CreateResponse,
+  UpdateConsultationBody,
+} from "./types";
 
 export function buildConsultationsGetQuery() {
   return buildQuery<ConsultationsGetResponse>(consultationsQueryParts.url(), {
     key: consultationsQueryParts.key(),
   });
+}
+
+export function buildConsultationV2CreateQuery(
+  onSuccess: (data: ConsultationV2CreateResponse) => Promise<void>,
+) {
+  return buildQuery<ConsultationV2CreateResponse>(
+    consultationsV2QueryParts.url(),
+    {
+      key: [...consultationsV2QueryParts.key(), "create"],
+      method: "POST",
+      errorMessage: "Failed to create consultation",
+      onSuccess: (data) => onSuccess(data as ConsultationV2CreateResponse),
+    },
+  );
 }
 
 export function buildConsultationDeleteQuery(consultationId: string) {
@@ -33,4 +56,15 @@ export const updateConsultation = async (
   });
   if (!response.ok)
     throw new Error(`Failed to update consultation: ${consultationId}`);
+};
+
+export const getConsultationsV2ByTitle = async (
+  title: string,
+): Promise<ConsultationsV2GetResponse> => {
+  const params = new URLSearchParams({ title__iexact: title });
+  const response = await fetch(
+    `${consultationsV2QueryParts.url()}?${params.toString()}`,
+  );
+  if (!response.ok) throw new Error(`Failed to look up consultation: ${title}`);
+  return response.json();
 };
