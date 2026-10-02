@@ -87,6 +87,35 @@ DECISION_SCORES = {
 }
 
 
+# Mapping fallbacks ("None of the Above", "No Reason Given"), not themes to discover
+CATCH_ALL_TOPIC_IDS = {"XX", "XY"}
+CATCH_ALL_LABELS = {"none of the above", "no reason given"}
+
+
+def _without_catch_all_themes(themes: list[dict] | dict) -> list[dict] | dict:
+    """Drop the mapping catch-alls from a ground-truth framework.
+
+    Why: no finding method should be expected to generate them, so leaving them in
+    makes coverage look worse than it is. Accepts the same formats as _shuffle_themes.
+    """
+
+    def is_catch_all(topic_id: Any, label: Any) -> bool:
+        return (
+            topic_id in CATCH_ALL_TOPIC_IDS
+            or str(label).strip().lower() in CATCH_ALL_LABELS
+        )
+
+    if isinstance(themes, list):
+        return [
+            t
+            for t in themes
+            if not is_catch_all(t.get("topic_id"), t.get("topic_label"))
+        ]
+    if isinstance(themes, dict):
+        return {k: v for k, v in themes.items() if not is_catch_all(None, k)}
+    return themes
+
+
 def _shuffle_themes(themes: list[dict] | dict) -> list[dict] | dict:
     """Shuffle theme order to reduce positional bias in LLM-as-judge.
 
@@ -211,7 +240,7 @@ async def _calculate_groundedness_scores(
         Dict with scores list, average, count below threshold, and details
     """
     shuffled_generated = _shuffle_themes(generated_themes)
-    shuffled_expected = _shuffle_themes(expected_themes)
+    shuffled_expected = _shuffle_themes(_without_catch_all_themes(expected_themes))
 
     response = await _invoke_with_retry(
         llm,
@@ -240,7 +269,7 @@ async def _calculate_coverage_scores(
         Dict with scores list, average, count below threshold, and details
     """
     shuffled_generated = _shuffle_themes(generated_themes)
-    shuffled_expected = _shuffle_themes(expected_themes)
+    shuffled_expected = _shuffle_themes(_without_catch_all_themes(expected_themes))
 
     # Reverse direction: expected -> generated
     response = await _invoke_with_retry(
