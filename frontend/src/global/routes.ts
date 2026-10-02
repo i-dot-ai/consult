@@ -44,12 +44,14 @@ export enum Routes {
   SupportQueue = "/django-rq",
   Profile = "/profile",
   Privacy = "/privacy",
+  V2ConsultationsNew = "/v2/consultations/new",
 
   // API Routes
   ApiSignOut = `${Prefixes.ApiV1}/logout/`,
   APIValidateToken = `${Prefixes.ApiV1}/validate-token/`,
   ApiResponses = `${Prefixes.ApiV1}/responses/`,
   ApiConsultations = `${Prefixes.ApiV1}/consultations/`,
+  ApiV2Consultations = `${Prefixes.ApiV2}/consultations/`,
   ApiConsultationFolders = `${Prefixes.ApiV1}/consultations/folders/`,
   ApiConsultationSetup = `${Prefixes.ApiV1}/consultations/setup/`,
   ApiConsultationQuestions = `${Prefixes.ApiV1}/questions/`,
