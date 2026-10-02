@@ -6,12 +6,14 @@
 
   import { getConsultationDetailUrl, Routes } from "../../../global/routes.ts";
   import {
-    buildConsultationsV2GetQuery,
     buildConsultationV2CreateQuery,
+    getConsultationsV2ByTitle,
   } from "../../../global/queries/consultations/queries.ts";
   import type { ConsultationV2 } from "../../../global/queries/consultations/types.ts";
   import type { FetchError } from "../../../global/queryClient.ts";
+  import { debounce } from "../../../global/utils.ts";
 
+  const DUPLICATE_CHECK_DELAY = 300;
   const INPUT_ID = "consultation-name";
   const ERROR_SUMMARY_ID = "consultation-name-error";
 
@@ -20,22 +22,32 @@
   let submitError = $state("");
   let submitting = $state(false);
 
-  const consultations = buildConsultationsV2GetQuery();
   const consultationCreate = buildConsultationV2CreateQuery(async (data) => {
     window.location.href = getConsultationDetailUrl(data.id);
   });
 
   const trimmedName = $derived(name.trim());
 
-  const duplicate: ConsultationV2 | undefined = $derived(
-    trimmedName
-      ? consultations.query.data?.results.find(
-          (consultation: ConsultationV2) =>
-            consultation.title.trim().toLowerCase() ===
-            trimmedName.toLowerCase(),
-        )
-      : undefined,
-  );
+  let duplicate: ConsultationV2 | undefined = $state(undefined);
+
+  const checkDuplicate = debounce(async () => {
+    const titleToCheck = trimmedName;
+
+    if (!titleToCheck) {
+      duplicate = undefined;
+      return;
+    }
+
+    try {
+      const { results } = await getConsultationsV2ByTitle(titleToCheck);
+      if (titleToCheck === trimmedName) {
+        duplicate = results[0];
+      }
+    } catch (error) {
+      console.error(error);
+      duplicate = undefined;
+    }
+  }, DUPLICATE_CHECK_DELAY);
 
   const showDuplicateWarning = $derived(Boolean(duplicate));
 
@@ -57,6 +69,7 @@
   function handleInput() {
     emptyError = false;
     submitError = "";
+    checkDuplicate();
   }
 
   async function handleSubmit(e: SubmitEvent) {

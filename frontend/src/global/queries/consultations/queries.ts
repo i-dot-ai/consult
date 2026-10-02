@@ -17,13 +17,6 @@ export function buildConsultationsGetQuery() {
   });
 }
 
-export function buildConsultationsV2GetQuery() {
-  return buildQuery<ConsultationsV2GetResponse>(
-    consultationsV2QueryParts.url(),
-    { key: consultationsV2QueryParts.key() },
-  );
-}
-
 export function buildConsultationV2CreateQuery(
   onSuccess: (data: ConsultationV2CreateResponse) => Promise<void>,
 ) {
@@ -63,4 +56,15 @@ export const updateConsultation = async (
   });
   if (!response.ok)
     throw new Error(`Failed to update consultation: ${consultationId}`);
+};
+
+export const getConsultationsV2ByTitle = async (
+  title: string,
+): Promise<ConsultationsV2GetResponse> => {
+  const params = new URLSearchParams({ title__iexact: title });
+  const response = await fetch(
+    `${consultationsV2QueryParts.url()}?${params.toString()}`,
+  );
+  if (!response.ok) throw new Error(`Failed to look up consultation: ${title}`);
+  return response.json();
 };
