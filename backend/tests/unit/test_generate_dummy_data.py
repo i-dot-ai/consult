@@ -5,6 +5,7 @@ import pytest
 
 from consultations import models
 from consultations.dummy_data import DUMMY_CONSULTATIONS, create_dummy_consultation
+from factories import UserFactory
 
 
 @pytest.mark.django_db
@@ -14,6 +15,17 @@ def test_a_consultation_is_generated(settings):
     create_dummy_consultation()
     assert models.Consultation.objects.count() == 1
     assert models.Question.objects.count() == 4
+
+
+@pytest.mark.django_db
+def test_generated_consultation_is_assigned_to_staff_users_only():
+    staff_user = UserFactory(is_staff=True)
+    non_staff_user = UserFactory(is_staff=False)
+
+    consultation = create_dummy_consultation()
+
+    assert staff_user in consultation.users.all()
+    assert non_staff_user not in consultation.users.all()
 
 
 @pytest.mark.django_db

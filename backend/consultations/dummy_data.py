@@ -271,7 +271,7 @@ def create_dummy_consultation(
     if consultation is None:
         logger.info("Creating consultation at stage: {stage}", stage=consultation_stage)
         consultation = create_consultation(config)
-        consultation.users.set(User.objects.all())
+        consultation.users.set(User.objects.filter(is_staff=True))
 
     logger.info("Creating {number_respondents} respondents", number_respondents=number_respondents)
     respondents = create_respondents(consultation, number_respondents)
