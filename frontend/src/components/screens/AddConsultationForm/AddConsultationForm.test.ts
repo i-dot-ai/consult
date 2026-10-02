@@ -17,8 +17,10 @@ const EXISTING = {
   is_owner: true,
 };
 
-const listMock = {
-  url: URL,
+const DUPLICATE_URL = `${URL}?title__iexact=${encodeURIComponent("future homes standard")}`;
+
+const duplicateMock = {
+  url: DUPLICATE_URL,
   body: { count: 1, next: null, previous: null, results: [EXISTING] },
 };
 
@@ -37,7 +39,6 @@ describe("AddConsultationForm", () => {
   });
 
   it("renders the name field and actions", () => {
-    mockRoute(listMock);
     render(AddConsultationForm);
 
     expect(
@@ -51,7 +52,6 @@ describe("AddConsultationForm", () => {
   });
 
   it("shows an error when submitting an empty name", async () => {
-    mockRoute(listMock);
     render(AddConsultationForm);
 
     await fireEvent.click(
@@ -65,10 +65,8 @@ describe("AddConsultationForm", () => {
   });
 
   it("warns when the name matches an existing consultation", async () => {
-    mockRoute(listMock);
+    mockRoute(duplicateMock);
     render(AddConsultationForm);
-
-    await waitFor(() => expect(fetchMock.callHistory.called(URL)).toBe(true));
 
     await fireEvent.input(screen.getByLabelText("Consultation name"), {
       target: { value: "future homes STANDARD" },
@@ -85,7 +83,6 @@ describe("AddConsultationForm", () => {
   });
 
   it("creates the consultation and redirects to its detail page", async () => {
-    mockRoute(listMock);
     mockRoute({
       url: URL,
       method: "POST",
@@ -112,7 +109,6 @@ describe("AddConsultationForm", () => {
   });
 
   it("shows an error if creation fails", async () => {
-    mockRoute(listMock);
     mockRoute({ url: URL, method: "POST", body: {}, status: 500 });
     const consoleError = vi
       .spyOn(console, "error")
