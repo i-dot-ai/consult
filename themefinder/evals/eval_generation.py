@@ -1,13 +1,15 @@
 """Theme generation evaluation with Langfuse dataset and experiment support.
 
-Evaluates the full theme generation pipeline (generation -> condensation -> refinement)
-against a ground truth theme framework.
+Evaluates a theme finding pipeline against a ground truth theme framework. The
+baseline is generation -> condensation -> refinement; "concepts" is the
+concept-based method (chunk -> cluster -> review -> refine).
 """
 
 import argparse
 import asyncio
 import logging
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 from datasets import DatasetConfig, load_local_data
@@ -18,12 +20,69 @@ from evaluators import (
     create_title_specificity_evaluator,
 )
 from settings import eval_settings
-from themefinder.llm import OpenAILLM
+from themefinder.llm import OpenAIEmbedder, OpenAILLM
 from utils import gateway, langfuse
 
-from themefinder import theme_condensation, theme_generation, theme_refinement
+from themefinder import (
+    find_themes_via_concepts,
+    theme_condensation,
+    theme_generation,
+    theme_refinement,
+)
 
 logger = logging.getLogger("themefinder.evals.generation")
+
+METHODS = ("baseline", "concepts")
+DEFAULT_EMBEDDING_MODEL = "text-embedding-3-large"
+CONCEPT_ARTEFACTS_DIR = Path(__file__).parent / "benchmark_results" / "concept_runs"
+
+
+def _save_concept_artefacts(result: dict, artefact_name: str) -> None:
+    """Keep concepts, clusters and outliers on disk so a run can be read by hand."""
+    run_dir = (
+        CONCEPT_ARTEFACTS_DIR / datetime.now().strftime("%Y%m%d_%H%M%S") / artefact_name
+    )
+    run_dir.mkdir(parents=True, exist_ok=True)
+    for name in ("themes", "concepts", "outliers"):
+        result[name].to_csv(run_dir / f"{name}.csv", index=False)
+    logger.info(f"Saved concept artefacts to {run_dir}")
+
+
+async def _run_pipeline(
+    method: str,
+    responses_df: pd.DataFrame,
+    question: str,
+    llm: OpenAILLM,
+    embedder: OpenAIEmbedder | None,
+    artefact_name: str,
+) -> pd.DataFrame:
+    """Run the chosen theme finding method and return its themes.
+
+    Shared by the Langfuse and local branches so both score the same pipeline.
+    """
+    if method == "concepts":
+        if embedder is None:
+            raise ValueError("The concepts method needs an embedder")
+        result = await find_themes_via_concepts(responses_df, llm, embedder, question)
+        _save_concept_artefacts(result, artefact_name)
+        return result["themes"]
+
+    themes_df, _ = await theme_generation(
+        responses_df=responses_df,
+        llm=llm,
+        question=question,
+    )
+    condensed_df, _ = await theme_condensation(
+        themes_df,
+        llm=llm,
+        question=question,
+    )
+    refined_df, _ = await theme_refinement(
+        condensed_df,
+        llm=llm,
+        question=question,
+    )
+    return refined_df
 
 
 def _build_output(refined_df: pd.DataFrame) -> dict:
@@ -44,6 +103,9 @@ async def evaluate_generation(
     llm: OpenAILLM | None = None,
     langfuse_ctx: langfuse.LangfuseContext | None = None,
     judge_llm: OpenAILLM | None = None,
+    method: str = "baseline",
+    embedder: OpenAIEmbedder | None = None,
+    embedding_model: str = DEFAULT_EMBEDDING_MODEL,
 ) -> dict:
     """Run generation evaluation.
 
@@ -51,10 +113,16 @@ async def evaluate_generation(
         dataset: Dataset identifier (e.g., "gambling_S", "healthcare_M")
         llm: Optional pre-configured LLM instance (for benchmark runs)
         langfuse_ctx: Optional pre-configured Langfuse context (for benchmark runs)
+        judge_llm: Optional dedicated judge LLM (defaults to task llm)
+        method: "baseline" or "concepts"
+        embedder: Optional pre-configured embedder (concepts method only)
+        embedding_model: Embedding model to create when none is passed in
 
     Returns:
         Dict containing evaluation scores
     """
+    if method not in METHODS:
+        raise ValueError(f"Unknown method '{method}'. Must be one of: {METHODS}")
     config = DatasetConfig(dataset=dataset, component="generation")
 
     # Use provided context or create new one
@@ -78,13 +146,26 @@ async def evaluate_generation(
             api_key=api_key,
         )
 
+    if method == "concepts" and embedder is None:
+        base_url, api_key = gateway.gateway_credentials()
+        embedder = OpenAIEmbedder(
+            model=embedding_model, base_url=base_url, api_key=api_key
+        )
+
     # Branch: Langfuse dataset vs local fallback
     if langfuse_ctx.is_enabled:
         result = await _run_with_langfuse(
-            langfuse_ctx, config, llm, judge_llm=judge_llm
+            langfuse_ctx,
+            config,
+            llm,
+            judge_llm=judge_llm,
+            method=method,
+            embedder=embedder,
         )
     else:
-        result = await _run_local_fallback(config, llm, judge_llm=judge_llm)
+        result = await _run_local_fallback(
+            config, llm, judge_llm=judge_llm, method=method, embedder=embedder
+        )
 
     # Only flush if we created the context
     if owns_context:
@@ -92,7 +173,14 @@ async def evaluate_generation(
     return result
 
 
-async def _run_with_langfuse(ctx, config: DatasetConfig, llm, judge_llm=None) -> dict:
+async def _run_with_langfuse(
+    ctx,
+    config: DatasetConfig,
+    llm,
+    judge_llm=None,
+    method: str = "baseline",
+    embedder=None,
+) -> dict:
     """Run evaluation with manual dataset iteration for proper trace control.
 
     Args:
@@ -100,6 +188,8 @@ async def _run_with_langfuse(ctx, config: DatasetConfig, llm, judge_llm=None) ->
         config: DatasetConfig
         llm: LLM instance
         judge_llm: Optional dedicated judge LLM (defaults to task llm)
+        method: Theme finding method, "baseline" or "concepts"
+        embedder: Embedder, required when method is "concepts"
 
     Returns:
         Dict containing evaluation scores
@@ -110,7 +200,9 @@ async def _run_with_langfuse(ctx, config: DatasetConfig, llm, judge_llm=None) ->
         print(
             f"Dataset {config.name} not found in Langfuse, falling back to local: {e}"
         )
-        return await _run_local_fallback(config, llm, judge_llm=judge_llm)
+        return await _run_local_fallback(
+            config, llm, judge_llm=judge_llm, method=method, embedder=embedder
+        )
 
     # Use dedicated judge LLM if provided, otherwise fall back to task LLM
     eval_llm = judge_llm or llm
@@ -135,20 +227,13 @@ async def _run_with_langfuse(ctx, config: DatasetConfig, llm, judge_llm=None) ->
             question = item.input["question"]
 
             # Run full pipeline
-            themes_df, _ = await theme_generation(
-                responses_df=responses_df,
-                llm=llm,
-                question=question,
-            )
-            condensed_df, _ = await theme_condensation(
-                themes_df,
-                llm=llm,
-                question=question,
-            )
-            refined_df, _ = await theme_refinement(
-                condensed_df,
-                llm=llm,
-                question=question,
+            refined_df = await _run_pipeline(
+                method,
+                responses_df,
+                question,
+                llm,
+                embedder,
+                artefact_name=f"{config.dataset}_{item.metadata.get('question_part', item.id)}",
             )
 
             output = _build_output(refined_df)
@@ -217,7 +302,13 @@ async def _run_with_langfuse(ctx, config: DatasetConfig, llm, judge_llm=None) ->
     return all_scores
 
 
-async def _run_local_fallback(config: DatasetConfig, llm, judge_llm=None) -> dict:
+async def _run_local_fallback(
+    config: DatasetConfig,
+    llm,
+    judge_llm=None,
+    method: str = "baseline",
+    embedder=None,
+) -> dict:
     """Run evaluation without Langfuse (local development).
 
     Calls the same evaluators as `_run_with_langfuse` (groundedness, coverage,
@@ -230,6 +321,8 @@ async def _run_local_fallback(config: DatasetConfig, llm, judge_llm=None) -> dic
         config: DatasetConfig
         llm: LLM instance
         judge_llm: Optional dedicated judge LLM (defaults to task llm)
+        method: Theme finding method, "baseline" or "concepts"
+        embedder: Embedder, required when method is "concepts"
 
     Returns:
         Dict containing evaluation scores
@@ -252,20 +345,13 @@ async def _run_local_fallback(config: DatasetConfig, llm, judge_llm=None) -> dic
         question = item["input"]["question"]
         expected_output = item["expected_output"]
 
-        themes_df, _ = await theme_generation(
-            responses_df=responses_df,
-            llm=llm,
-            question=question,
-        )
-        condensed_df, _ = await theme_condensation(
-            themes_df,
-            llm=llm,
-            question=question,
-        )
-        refined_df, _ = await theme_refinement(
-            condensed_df,
-            llm=llm,
-            question=question,
+        refined_df = await _run_pipeline(
+            method,
+            responses_df,
+            question,
+            llm,
+            embedder,
+            artefact_name=f"{config.dataset}_{question_part}",
         )
 
         output = _build_output(refined_df)
@@ -308,6 +394,23 @@ if __name__ == "__main__":
         default="gambling_XS",
         help="Dataset identifier (e.g., gambling_XS)",
     )
+    parser.add_argument(
+        "--method",
+        choices=METHODS,
+        default="baseline",
+        help="Theme finding method to evaluate",
+    )
+    parser.add_argument(
+        "--embedding-model",
+        default=DEFAULT_EMBEDDING_MODEL,
+        help="Embedding model for the concepts method",
+    )
     args = parser.parse_args()
 
-    asyncio.run(evaluate_generation(dataset=args.dataset))
+    asyncio.run(
+        evaluate_generation(
+            dataset=args.dataset,
+            method=args.method,
+            embedding_model=args.embedding_model,
+        )
+    )
