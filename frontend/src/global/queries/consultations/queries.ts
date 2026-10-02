@@ -1,11 +1,41 @@
 import { buildQuery } from "../../queryClient";
-import { consultationQueryParts, consultationsQueryParts } from "./parts";
-import type { ConsultationsGetResponse, UpdateConsultationBody } from "./types";
+import {
+  consultationQueryParts,
+  consultationsQueryParts,
+  consultationsV2QueryParts,
+} from "./parts";
+import type {
+  ConsultationsGetResponse,
+  ConsultationsV2GetResponse,
+  ConsultationV2CreateResponse,
+  UpdateConsultationBody,
+} from "./types";
 
 export function buildConsultationsGetQuery() {
   return buildQuery<ConsultationsGetResponse>(consultationsQueryParts.url(), {
     key: consultationsQueryParts.key(),
   });
+}
+
+export function buildConsultationsV2GetQuery() {
+  return buildQuery<ConsultationsV2GetResponse>(
+    consultationsV2QueryParts.url(),
+    { key: consultationsV2QueryParts.key() },
+  );
+}
+
+export function buildConsultationV2CreateQuery(
+  onSuccess: (data: ConsultationV2CreateResponse) => Promise<void>,
+) {
+  return buildQuery<ConsultationV2CreateResponse>(
+    consultationsV2QueryParts.url(),
+    {
+      key: [...consultationsV2QueryParts.key(), "create"],
+      method: "POST",
+      errorMessage: "Failed to create consultation",
+      onSuccess: (data) => onSuccess(data as ConsultationV2CreateResponse),
+    },
+  );
 }
 
 export function buildConsultationDeleteQuery(consultationId: string) {
