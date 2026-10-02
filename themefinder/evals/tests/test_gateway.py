@@ -224,6 +224,34 @@ class TestFetchModelInfo:
 
         assert [call[0] for call in client.calls] == ["/v2/model/info", "/model/info"]
 
+    async def test_raises_on_runaway_pagination_metadata(self):
+        class FakeClient:
+            def __init__(self):
+                self.calls = []
+
+            async def get(self, path, params=None):
+                self.calls.append((path, params))
+
+                class FakeResponse:
+                    def raise_for_status(self):
+                        return None
+
+                    def json(self):
+                        return {
+                            "data": [_model_info("gpt-4o")],
+                            "current_page": 1,
+                            "total_pages": gateway.MAX_MODEL_INFO_PAGES + 1,
+                        }
+
+                return FakeResponse()
+
+        client = FakeClient()
+
+        with pytest.raises(RuntimeError, match="Aborting model-info fetch"):
+            await gateway._fetch_model_info_pages(client, "/v2/model/info")
+
+        assert len(client.calls) == gateway.MAX_MODEL_INFO_PAGES
+
 
 class TestFetchHealth:
     async def test_reads_health_snapshot_route(self):

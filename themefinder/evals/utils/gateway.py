@@ -32,6 +32,8 @@ MODEL_INFO_PATHS = (
     "/model/info",
 )
 
+MAX_MODEL_INFO_PAGES = 100
+
 
 def derive_family(name: str) -> str | None:
     """Bucket a model name into a known vendor family (claude/gemini/locai/gpt) by substring match."""
@@ -223,6 +225,11 @@ async def _fetch_model_info_pages(client: httpx.AsyncClient, path: str) -> list[
     page = 1
     items: list[dict] = []
     while True:
+        if page > MAX_MODEL_INFO_PAGES:
+            raise RuntimeError(
+                f"Aborting model-info fetch after {MAX_MODEL_INFO_PAGES} pages from {path}"
+            )
+
         response = await client.get(path, params={"page": str(page)})
         response.raise_for_status()
         page_items, current_page, total_pages = _parse_model_info_page(response.json())
@@ -235,17 +242,17 @@ async def _fetch_model_info_pages(client: httpx.AsyncClient, path: str) -> list[
 
 
 async def fetch_model_info(client: httpx.AsyncClient) -> list[dict]:
-    permission_errors: list[httpx.HTTPStatusError] = []
+    fallback_errors: list[httpx.HTTPStatusError] = []
     for index, path in enumerate(MODEL_INFO_PATHS):
         try:
             return await _fetch_model_info_pages(client, path)
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code in (401, 403):
-                permission_errors.append(exc)
+                fallback_errors.append(exc)
                 continue
 
             if exc.response.status_code == 404 and index < len(MODEL_INFO_PATHS) - 1:
-                permission_errors.append(exc)
+                fallback_errors.append(exc)
                 continue
 
             if exc.response.status_code == 404:
@@ -258,8 +265,8 @@ async def fetch_model_info(client: httpx.AsyncClient) -> list[dict]:
 
             raise
 
-    if permission_errors:
-        last_error = permission_errors[-1]
+    if fallback_errors:
+        last_error = fallback_errors[-1]
         tried = ", ".join(MODEL_INFO_PATHS)
         raise RuntimeError(
             "CONSULT_EVAL_LITELLM_API_KEY lacks access to a rich model-info route. "
