@@ -153,6 +153,63 @@ class TestLocalJSONArtefactStore:
 
 
 class TestLangfuseArtefactStore:
+    def test_record_case_uses_sdk_v3_span_and_links_dataset_item(self):
+        client = _FakeV3LangfuseClient()
+        context = LangfuseContext(
+            client=client,
+            session_id="session-v3",
+            tags=["eval", "generation"],
+            metadata={"dataset": "demo"},
+        )
+        store = LangfuseArtefactStore(context=context, owns_context=False)
+        outcome = _make_outcome(
+            case=_make_case(
+                case_id="case-v3",
+                question_part="question_part_3",
+                langfuse_item_id="item-v3",
+            ),
+            scores=[Score("coverage", 4.0, "linked")],
+        )
+
+        store.start_run("generation", "demo")
+        store.record_case(outcome)
+
+        assert client.create_trace_id_calls == 1
+        assert client.start_span_calls == [
+            {
+                "trace_context": {"trace_id": "generated-trace-id"},
+                "name": "session-v3:question_part_3",
+                "input": {"question": "What changed?"},
+                "output": {"themes": {"A": "desc"}},
+                "metadata": {"dataset": "demo"},
+                "level": "DEFAULT",
+                "status_message": None,
+            }
+        ]
+        request = client.api.dataset_run_items.create_calls[0]
+        assert request.run_name == "session-v3"
+        assert request.dataset_item_id == "item-v3"
+        assert request.trace_id == "generated-trace-id"
+        assert request.metadata == {"dataset": "demo"}
+        assert client.last_span_trace.trace_updates == [
+            {
+                "input": {"question": "What changed?"},
+                "output": {"themes": {"A": "desc"}},
+                "metadata": {"dataset": "demo"},
+                "tags": ["eval", "generation"],
+                "session_id": "session-v3",
+            }
+        ]
+        assert client.scores == [
+            {
+                "comment": "linked",
+                "data_type": "NUMERIC",
+                "name": "coverage",
+                "trace_id": "generated-trace-id",
+                "value": 4.0,
+            }
+        ]
+
     def test_record_case_with_langfuse_item_id_creates_trace_linked_scores(self):
         client = _FakeLangfuseClient()
         client.dataset_items["item-123"] = _FakeDatasetItem("item-123")
@@ -358,3 +415,41 @@ class _FakeLangfuseClient:
 
     def flush(self):
         self.flush_calls += 1
+
+
+class _FakeDatasetRunItemsApi:
+    def __init__(self):
+        self.create_calls = []
+
+    def create(self, *, request):
+        self.create_calls.append(request)
+
+
+class _FakeV3Api:
+    def __init__(self):
+        self.dataset_run_items = _FakeDatasetRunItemsApi()
+
+
+class _FakeV3Trace(_FakeTrace):
+    def update_trace(self, **kwargs):
+        self.trace_updates.append(kwargs)
+
+
+class _FakeV3LangfuseClient(_FakeLangfuseClient):
+    def __init__(self):
+        super().__init__()
+        self.api = _FakeV3Api()
+        self.create_trace_id_calls = 0
+        self.start_span_calls = []
+        self.last_span_trace: _FakeV3Trace | None = None
+
+    def create_trace_id(self):
+        self.create_trace_id_calls += 1
+        return "generated-trace-id"
+
+    @contextmanager
+    def start_as_current_span(self, **kwargs):
+        self.start_span_calls.append(kwargs)
+        trace = _FakeV3Trace(kwargs["trace_context"]["trace_id"])
+        self.last_span_trace = trace
+        yield trace
