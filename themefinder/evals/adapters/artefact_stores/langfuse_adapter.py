@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any, Generator
+from typing import Any
 
 from eval_types import CaseOutcome, RunReport
+from httpx import RequestError
 from utils import langfuse as langfuse_utils
 from utils.langfuse import LangfuseContext
 from utils.logging_config import get_logger
@@ -77,6 +79,51 @@ class LangfuseArtefactStore(ArtefactStorePort):
         outcome: CaseOutcome,
     ) -> Generator[tuple[Any, str | None], None, None]:
         dataset_item_id = outcome.case.metadata.get("langfuse_item_id")
+        client = self.context.client
+        if client is not None and callable(
+            getattr(client, "start_as_current_span", None)
+        ):
+            from langfuse.api import CreateDatasetRunItemRequest
+            from langfuse.api.core import ApiError
+
+            inputs = json_safe(outcome.case.inputs)
+            outputs = json_safe(outcome.output)
+            with client.start_as_current_span(
+                trace_context={"trace_id": client.create_trace_id()},
+                name=f"{self._run_name}:{case_key(outcome.case)}",
+                input=inputs,
+                output=outputs,
+                metadata=self.context.metadata,
+                level="ERROR" if outcome.error is not None else "DEFAULT",
+                status_message=outcome.error if outcome.error is not None else None,
+            ) as trace:
+                trace.update_trace(
+                    input=inputs,
+                    output=outputs,
+                    metadata=self.context.metadata,
+                    tags=self.context.tags,
+                    session_id=self.context.session_id,
+                )
+                if dataset_item_id:
+                    try:
+                        client.api.dataset_run_items.create(
+                            request=CreateDatasetRunItemRequest(
+                                runName=self._run_name,
+                                datasetItemId=str(dataset_item_id),
+                                traceId=trace.trace_id,
+                                metadata=self.context.metadata,
+                            )
+                        )
+                    except (ApiError, RequestError) as exc:
+                        logger.warning(
+                            "Failed to link Langfuse dataset item %s for case %s: %s; "
+                            "recording an unlinked trace instead",
+                            dataset_item_id,
+                            outcome.case.id,
+                            exc,
+                        )
+                yield trace, trace.trace_id
+            return
         if dataset_item_id:
             with self._dataset_item_trace(outcome, str(dataset_item_id)) as trace_data:
                 yield trace_data
@@ -107,7 +154,7 @@ class LangfuseArtefactStore(ArtefactStorePort):
                 run_metadata=self.context.metadata,
             )
             trace = run_cm.__enter__()
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - third-party context managers vary
             logger.warning(
                 "Failed to create Langfuse dataset-item trace for %s: %s",
                 outcome.case.id,
