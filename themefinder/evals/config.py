@@ -4,6 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
+from uuid import uuid4
 
 from adapters.artefact_stores import (
     ArtefactStorePort,
@@ -112,7 +113,8 @@ def resolve_backends(
 
             session_id = (
                 f"{dataset_config.name.replace('/', '_')}_"
-                f"{datetime.now().astimezone().strftime('%Y%m%d_%H%M%S')}"
+                f"{datetime.now().astimezone().strftime('%Y%m%d_%H%M%S')}_"
+                f"{uuid4()}"
             )
             context = langfuse_utils.get_langfuse_context(
                 session_id=session_id,
