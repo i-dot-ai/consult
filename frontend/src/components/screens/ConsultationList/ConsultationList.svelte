@@ -76,7 +76,10 @@
     ) || [],
   );
 
-  const buildLinkData = (consultation: Consultation): LinkData[] => {
+  const buildLinkData = (
+    consultation: Consultation,
+    isStaff: boolean,
+  ): LinkData[] => {
     const viewConsultationLink = {
       url: getConsultationDetailUrl(consultation.id),
       text: "View Consultation",
@@ -98,17 +101,29 @@
       text: "Upload and check",
       ariaLabel: `Upload and check consultation: ${consultation.title}`,
     };
+    const viewEvalLink = {
+      url: getConsultationEvalUrl(consultation.id),
+      text: "View Evaluation",
+      ariaLabel: `View evaluation of consultation: ${consultation.title}`,
+    };
 
     if (consultation.stage === "finalising_themes") {
-      return [viewConsultationLink, viewFinaliseThemesLink];
+      return isStaff
+        ? [viewConsultationLink, viewFinaliseThemesLink, viewEvalLink]
+        : [viewConsultationLink, viewFinaliseThemesLink];
     }
     if (consultation.stage === "analysis") {
-      return [viewConsultationLink, viewDashboardLink];
+      return isStaff
+        ? [viewConsultationLink, viewDashboardLink, viewEvalLink]
+        : [viewConsultationLink, viewDashboardLink];
     }
     if (consultation.stage === "setup") {
+      // No eval link regardless of isStaff
       return [viewConsultationLink, viewUploadLink];
     }
-    return [viewConsultationLink];
+    return isStaff
+      ? [viewConsultationLink, viewEvalLink]
+      : [viewConsultationLink];
   };
   const getStatusTagVariant = (status: Consultation["stage"]) => {
     if (status === "analysis") {
@@ -145,7 +160,7 @@
       ...(enableV2
         ? {
             status: consultation.stage,
-            links: buildLinkData(consultation),
+            links: buildLinkData(consultation, user?.query?.data?.is_staff),
           }
         : {}),
       createdAt: consultation.created_at,
