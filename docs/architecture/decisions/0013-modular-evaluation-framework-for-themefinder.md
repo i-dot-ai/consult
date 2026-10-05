@@ -31,7 +31,7 @@ scripts onto it in place, incrementally:
 - One folder per port under `evals/adapters/` (`datasets/`, `evaluators/`, `runners/`, `artefact_stores/`),
   each holding its `base.py` plus one file per concrete implementation (e.g. `langfuse_adapter.py`,
   `local_json_adapter.py`).
-- pydantic-evals becomes the default engine behind `EvalRunnerPort`, selected via one env var
+- pydantic-evals becomes the default engine behind `RunnerPort`, selected via one env var
   (`THEMEFINDER_EVAL_ENGINE`) — the explicit seam a second engine plugs into later.
 - `EvaluatorPort` is implemented directly by each kind of evaluator, not through a generic wrapper: the
   seven custom LLM-judge/metric classes retired from `evaluators.py`, plus a new
