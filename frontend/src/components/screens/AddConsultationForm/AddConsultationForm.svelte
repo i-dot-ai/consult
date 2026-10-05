@@ -29,23 +29,27 @@
   const trimmedName = $derived(name.trim());
 
   let duplicate: ConsultationV2 | undefined = $state(undefined);
+  let duplicateCount = $state(0);
 
   const checkDuplicate = debounce(async () => {
     const titleToCheck = trimmedName;
 
     if (!titleToCheck) {
       duplicate = undefined;
+      duplicateCount = 0;
       return;
     }
 
     try {
-      const { results } = await getConsultationsV2ByTitle(titleToCheck);
+      const { count, results } = await getConsultationsV2ByTitle(titleToCheck);
       if (titleToCheck === trimmedName) {
         duplicate = results[0];
+        duplicateCount = count;
       }
     } catch (error) {
       console.error(error);
       duplicate = undefined;
+      duplicateCount = 0;
     }
   }, DUPLICATE_CHECK_DELAY);
 
@@ -117,9 +121,7 @@
 <Title level={1} text="Add a consultation" />
 
 <p class="mt-4 mb-6 text-neutral-500">
-  {showDuplicateWarning
-    ? "Give it a name to start. You upload the responses next."
-    : "Give it a name to start. You bring the responses in next."}
+  Give it a name to start. You upload the responses next.
 </p>
 
 <form class="flex max-w-2xl flex-col gap-4" onsubmit={handleSubmit} novalidate>
@@ -140,6 +142,9 @@
             duplicate.created_at,
           )}. You can use the same name, but the two will be hard to tell apart
           on the list.
+          {#if duplicateCount > 1}
+            Showing the most recent of {duplicateCount} with this name.
+          {/if}
         </p>
       </div>
     {/if}
