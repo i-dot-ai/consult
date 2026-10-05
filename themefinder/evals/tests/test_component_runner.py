@@ -1,7 +1,8 @@
 """Unit tests for the component orchestration pipeline."""
 
 import pytest
-from adapters.runners import InlineSequentialRunner, PydanticEvalsRunner
+from adapters.runners import InlineSequentialRunner
+from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from component_runner import run_component
 from config import EvalBackends
 from datasets import DatasetConfig

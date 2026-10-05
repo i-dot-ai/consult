@@ -6,7 +6,7 @@ from uuid import UUID
 import pytest
 from adapters.artefact_stores import LangfuseArtefactStore, LocalJSONArtefactStore
 from adapters.datasets import LangfuseDatasetAdapter, LocalJSONDatasetAdapter
-from adapters.runners import PydanticEvalsRunner
+from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from config import EvalBackends, resolve_backends
 from datasets import DatasetConfig
 from settings import (
@@ -40,6 +40,7 @@ def _settings(
         auto_eval_model="test-model",
         environment="test",
         git_sha="abcdef0",
+        log_level="INFO",
         gateway=GatewaySettings(url=None, api_key=None),
         langfuse=langfuse,
         eval=EvalRunSettings(
