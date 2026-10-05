@@ -34,7 +34,7 @@ describe("ConsultationList", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("No consultations available"),
+        screen.getByText("You have no consultations yet"),
       ).toBeInTheDocument();
     });
   });

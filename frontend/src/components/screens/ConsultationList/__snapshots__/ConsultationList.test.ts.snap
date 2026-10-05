@@ -171,6 +171,66 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               <th
                 aria-sort="none"
                 class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
+                data-testid="header-status"
+                scope="col"
+              >
+                <!---->
+                <button
+                  aria-label="Sort by Status"
+                  aria-pressed="false"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  data-variant="ghost"
+                  role="button"
+                  tabindex="0"
+                >
+                  <!---->
+                  <!---->
+                  <span>
+                    Status
+                  </span>
+                   
+                  <span
+                    aria-hidden="true"
+                    class="text-neutral-400"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="fill-neutral-500"
+                      height="1rem"
+                      viewBox="0 -960 960 960"
+                      width="1rem"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <!---->
+                      <path
+                        d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
+                    <!---->
+                  </span>
+                  
+                  
+                  
+                </button>
+                
+                <!---->
+              </th>
+              <th
+                aria-sort="none"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
+                data-testid="header-links"
+                scope="col"
+              >
+                <span>
+                  Links
+                </span>
+                <!---->
+              </th>
+              <th
+                aria-sort="none"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
                 data-testid="header-createdAt"
                 scope="col"
               >
@@ -269,6 +329,17 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               <th
                 aria-sort="none"
                 class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
+                data-testid="header-team"
+                scope="col"
+              >
+                <span>
+                  Team
+                </span>
+                <!---->
+              </th>
+              <th
+                aria-sort="none"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
                 data-testid="header-actions"
                 scope="col"
               >
@@ -359,6 +430,76 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </td>
               <td
                 class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+                data-testid="cell-status"
+              >
+                <!---->
+                <!---->
+                <div
+                  class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-secondary bg-teal-50 border border-teal-400"
+                >
+                  Analysis
+                  <!---->
+                </div>
+                
+                
+                <!---->
+              </td>
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+                data-testid="cell-links"
+              >
+                <!---->
+                <!---->
+                <!---->
+                <div
+                  class="flex flex-col gap-2"
+                >
+                  <!---->
+                  <a
+                    aria-label="View details of consultation: Dummy Consultation at Analysis Stage"
+                    class="transition-colors duration-300 text-primary hover:underline"
+                    data-testid="View details of consultation: Dummy Consultation at Analysis Stage"
+                    href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58"
+                    role="button"
+                    tabindex="0"
+                    title=""
+                  >
+                    <!---->
+                    View Consultation
+                    
+                    
+                  </a>
+                  
+                  <!---->
+                </div>
+                <div
+                  class="flex flex-col gap-2"
+                >
+                  <!---->
+                  <a
+                    aria-label="View dashboard for consultation: Dummy Consultation at Analysis Stage"
+                    class="transition-colors duration-300 text-primary hover:underline"
+                    data-testid="View dashboard for consultation: Dummy Consultation at Analysis Stage"
+                    href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58"
+                    role="button"
+                    tabindex="0"
+                    title=""
+                  >
+                    <!---->
+                    View dashboard
+                    
+                    
+                  </a>
+                  
+                  <!---->
+                </div>
+                
+                
+                
+                <!---->
+              </td>
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
                 data-testid="cell-createdAt"
               >
                 <!---->
@@ -380,6 +521,35 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <hr
                   class="my-2 w-12"
                 />
+                
+                
+                
+                <!---->
+              </td>
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+                data-testid="cell-team"
+              >
+                <!---->
+                <!---->
+                <!---->
+                <div
+                  class="flex gap-2 items-center"
+                >
+                  <!---->
+                  <div
+                    title="admin@example.com"
+                  >
+                    <div
+                      class="flex justify-center items-center w-6 h-6 p-1 text-white text-xs rounded-full transition-colors hover:bg-primary bg-neutral-400"
+                    >
+                      A
+                    </div>
+                    
+                  </div>
+                  
+                  
+                </div>
                 
                 
                 
@@ -511,6 +681,76 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </td>
               <td
                 class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+                data-testid="cell-status"
+              >
+                <!---->
+                <!---->
+                <div
+                  class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-yellow-700 bg-yellow-100 border border-yellow-400"
+                >
+                  Finalising themes
+                  <!---->
+                </div>
+                
+                
+                <!---->
+              </td>
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+                data-testid="cell-links"
+              >
+                <!---->
+                <!---->
+                <!---->
+                <div
+                  class="flex flex-col gap-2"
+                >
+                  <!---->
+                  <a
+                    aria-label="View details of consultation: Dummy Consultation at Finalising Themes Stage"
+                    class="transition-colors duration-300 text-primary hover:underline"
+                    data-testid="View details of consultation: Dummy Consultation at Finalising Themes Stage"
+                    href="/consultations/4d1414d5-9300-447b-b788-50d0bef7e807"
+                    role="button"
+                    tabindex="0"
+                    title=""
+                  >
+                    <!---->
+                    View Consultation
+                    
+                    
+                  </a>
+                  
+                  <!---->
+                </div>
+                <div
+                  class="flex flex-col gap-2"
+                >
+                  <!---->
+                  <a
+                    aria-label="Finalise themes for consultation: Dummy Consultation at Finalising Themes Stage"
+                    class="transition-colors duration-300 text-primary hover:underline"
+                    data-testid="Finalise themes for consultation: Dummy Consultation at Finalising Themes Stage"
+                    href="/consultations/4d1414d5-9300-447b-b788-50d0bef7e807/finalising-themes"
+                    role="button"
+                    tabindex="0"
+                    title=""
+                  >
+                    <!---->
+                    Finalise Themes
+                    
+                    
+                  </a>
+                  
+                  <!---->
+                </div>
+                
+                
+                
+                <!---->
+              </td>
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
                 data-testid="cell-createdAt"
               >
                 <!---->
@@ -532,6 +772,35 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <hr
                   class="my-2 w-12"
                 />
+                
+                
+                
+                <!---->
+              </td>
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+                data-testid="cell-team"
+              >
+                <!---->
+                <!---->
+                <!---->
+                <div
+                  class="flex gap-2 items-center"
+                >
+                  <!---->
+                  <div
+                    title="admin@example.com"
+                  >
+                    <div
+                      class="flex justify-center items-center w-6 h-6 p-1 text-white text-xs rounded-full transition-colors hover:bg-primary bg-neutral-400"
+                    >
+                      A
+                    </div>
+                    
+                  </div>
+                  
+                  
+                </div>
                 
                 
                 
@@ -747,6 +1016,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
   <!---->
   
   <!---->
+  <!---->
   
 </div>
 `;
@@ -922,6 +1192,66 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
               <th
                 aria-sort="none"
                 class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
+                data-testid="header-status"
+                scope="col"
+              >
+                <!---->
+                <button
+                  aria-label="Sort by Status"
+                  aria-pressed="false"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  data-variant="ghost"
+                  role="button"
+                  tabindex="0"
+                >
+                  <!---->
+                  <!---->
+                  <span>
+                    Status
+                  </span>
+                   
+                  <span
+                    aria-hidden="true"
+                    class="text-neutral-400"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="fill-neutral-500"
+                      height="1rem"
+                      viewBox="0 -960 960 960"
+                      width="1rem"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <!---->
+                      <path
+                        d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
+                    <!---->
+                  </span>
+                  
+                  
+                  
+                </button>
+                
+                <!---->
+              </th>
+              <th
+                aria-sort="none"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
+                data-testid="header-links"
+                scope="col"
+              >
+                <span>
+                  Links
+                </span>
+                <!---->
+              </th>
+              <th
+                aria-sort="none"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
                 data-testid="header-createdAt"
                 scope="col"
               >
@@ -1020,6 +1350,17 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
               <th
                 aria-sort="none"
                 class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
+                data-testid="header-team"
+                scope="col"
+              >
+                <span>
+                  Team
+                </span>
+                <!---->
+              </th>
+              <th
+                aria-sort="none"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
                 data-testid="header-actions"
                 scope="col"
               >
@@ -1037,7 +1378,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
             <tr>
               <td
                 class="px-4 py-12 text-center text-sm text-neutral-500 svelte-e9ladz"
-                colspan="4"
+                colspan="7"
               >
                 <div
                   role="status"
@@ -1082,6 +1423,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
    
   <!---->
   
+  <!---->
   <!---->
   
 </div>

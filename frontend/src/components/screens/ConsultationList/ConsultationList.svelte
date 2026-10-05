@@ -18,6 +18,7 @@
   import {
     getConsultationDetailUrl,
     getConsultationEvalUrl,
+    getDataUploadUrl,
     getFinaliseThemesUrl,
     getSupportUserDetail,
   } from "../../../global/routes.ts";
@@ -75,6 +76,50 @@
     ) || [],
   );
 
+  const buildLinkData = (consultation: Consultation): LinkData[] => {
+    const viewConsultationLink = {
+      url: getConsultationDetailUrl(consultation.id),
+      text: "View Consultation",
+      ariaLabel: `View details of consultation: ${consultation.title}`,
+    };
+    const viewFinaliseThemesLink = {
+      url: getFinaliseThemesUrl(consultation.id),
+      text: "Finalise Themes",
+      ariaLabel: `Finalise themes for consultation: ${consultation.title}`,
+    };
+    const viewDashboardLink = {
+      // TODO: Update after consultation detail and dashboard routes are separated
+      url: getConsultationDetailUrl(consultation.id),
+      text: "View dashboard",
+      ariaLabel: `View dashboard for consultation: ${consultation.title}`,
+    };
+    const viewUploadLink = {
+      url: getDataUploadUrl(consultation.id),
+      text: "Upload and check",
+      ariaLabel: `Upload and check consultation: ${consultation.title}`,
+    };
+
+    if (consultation.stage === "finalising_themes") {
+      return [viewConsultationLink, viewFinaliseThemesLink];
+    }
+    if (consultation.stage === "analysis") {
+      return [viewConsultationLink, viewDashboardLink];
+    }
+    if (consultation.stage === "setup") {
+      return [viewConsultationLink, viewUploadLink];
+    }
+    return [viewConsultationLink];
+  };
+  const getStatusTagVariant = (status: Consultation["stage"]) => {
+    if (status === "analysis") {
+      return "success";
+    }
+    if (status === "setup" || status === "finalising_themes") {
+      return "warning";
+    }
+    return "dark";
+  };
+
   const consultationRows = $derived(
     consultationsToDisplay.map((consultation: Consultation) => ({
       name: {
@@ -97,6 +142,12 @@
           },
         ],
       },
+      ...(enableV2
+        ? {
+            status: consultation.stage,
+            links: buildLinkData(consultation),
+          }
+        : {}),
       createdAt: consultation.created_at,
       createdBy:
         typeof consultation.created_by === "string"
@@ -105,7 +156,6 @@
       ...(enableV2
         ? {
             team: consultation.users,
-            status: consultation.stage,
             actions: {
               id: consultation.id,
               name: consultation.title,
@@ -200,7 +250,7 @@
   {/each}
 </section>
 
-{#if consultationsToDisplay.length === 0 && !consultations.query.isPending}
+{#if consultationsToDisplay.length === 0 && !consultations.query.isPending && !consultations.query.isError}
   <Panel variant="default">
     <div class="my-12">
       <p class="text-lg text-center mb-2">You have no consultations yet</p>
@@ -221,6 +271,20 @@
           sortValue: (details) => (details.name as NameCellData).text,
           filterValue: (details) => (details.name as NameCellData).text,
         },
+        ...(enableV2
+          ? ([
+              {
+                label: "Status",
+                key: "status",
+                sortable: true,
+              },
+              {
+                label: "Links",
+                key: "links",
+                sortable: false,
+              },
+            ] as const)
+          : []),
         {
           label: "Date Created",
           key: "createdAt",
@@ -247,11 +311,6 @@
                 label: "Team",
                 key: "team",
                 sortable: false,
-              },
-              {
-                label: "Status",
-                key: "status",
-                sortable: true,
               },
               {
                 label: "Actions",
@@ -285,6 +344,30 @@
               {/each}
             </div>
           </div>
+        {:else if column.key === "status"}
+          {@const status = content as Consultation["stage"]}
+          {@const DISPLAY_TEXTS = {
+            setup: "Data set-up",
+            finding_themes: "Finding themes",
+            finalising_themes: "Finalising themes",
+            assigning_themes: "Assigning themes",
+            analysis: "Analysis",
+          } as const}
+          {@const variant = getStatusTagVariant(status)}
+
+          <Tag {variant}>
+            {DISPLAY_TEXTS[status] || "Invalid status"}
+          </Tag>
+        {:else if column.key === "links"}
+          {@const links = content as LinkData[]}
+
+          {#each links as { url, text, ariaLabel }, i (i)}
+            <div class="flex flex-col gap-2">
+              <Link {ariaLabel} href={url}>
+                {text}
+              </Link>
+            </div>
+          {/each}
         {:else if column.key === "createdBy"}
           {@const userData = user?.query?.data as CurrentUserGetResponse}
 
@@ -336,19 +419,6 @@
               {/each}
             </div>
           {/if}
-        {:else if column.key === "status"}
-          {@const status = content as Consultation["stage"]}
-          {@const DISPLAY_TEXTS = {
-            setup: "Setting up data",
-            finding_themes: "Finding themes",
-            finalising_themes: "Finalising themes",
-            assigning_themes: "Assigning themes",
-            analysis: "Analysis",
-          } as const}
-
-          <Tag variant={"dark"}>
-            {DISPLAY_TEXTS[status] || "Invalid status"}
-          </Tag>
         {:else if column.key === "actions"}
           {@const { id, name, createdBy } = content as ActionData}
           {@const userData = user?.query?.data as CurrentUserGetResponse}
