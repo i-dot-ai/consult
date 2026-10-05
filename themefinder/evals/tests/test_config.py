@@ -1,6 +1,7 @@
 """Unit tests for evaluation backend resolution."""
 
 from types import SimpleNamespace
+from uuid import UUID
 
 import pytest
 from adapters.artefact_stores import LangfuseArtefactStore, LocalJSONArtefactStore
@@ -123,6 +124,9 @@ def test_creates_one_shared_langfuse_context(monkeypatch):
     assert calls[0]["metadata"] == {"dataset": "gambling_XS"}
     assert calls[0]["tags"] == ["gambling_XS"]
     assert calls[0]["settings"] is settings
+    session_prefix, session_uuid = calls[0]["session_id"].rsplit("_", maxsplit=1)
+    assert session_prefix.startswith("eval_gambling_XS_generation_")
+    assert UUID(session_uuid).version == 4
     assert backends.dataset.client is client
     assert backends.artefacts.context is context
     assert backends.artefacts.owns_context is True
