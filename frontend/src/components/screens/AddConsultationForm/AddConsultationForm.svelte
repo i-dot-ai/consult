@@ -177,11 +177,17 @@
   </div>
 
   <div class="flex items-center gap-2">
-    <Button type="submit" variant="primary" disabled={submitting}>
+    <Button
+      type="submit"
+      variant="primary"
+      disabled={submitting || !trimmedName}
+    >
       {showDuplicateWarning ? "Save anyway" : "Save and continue"}
     </Button>
     <Button href={Routes.Consultations} variant="default">Cancel</Button>
   </div>
 
-  <p class="text-neutral-500">You can add people to it once it is saved.</p>
+  <p class="text-neutral-500">
+    You can add people to the consultation once it is saved.
+  </p>
 </form>
