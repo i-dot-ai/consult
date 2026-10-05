@@ -1,11 +1,12 @@
 """Unit tests for the component orchestration pipeline."""
 
 import pytest
+from adapters.runners import InlineSequentialRunner, PydanticEvalsRunner
 from component_runner import run_component
 from config import EvalBackends
 from datasets import DatasetConfig
 from eval_types import Case, CaseOutcome, ComponentConfig, RunReport, Score
-from fakes import FakeArtefactStore, FakeDatasetPort, FakeRunnerPort
+from fakes import FakeArtefactStore, FakeDatasetPort, FakeEvaluatorPort, FakeRunnerPort
 
 
 async def _task(inputs: dict, llm) -> dict:
@@ -176,3 +177,106 @@ async def test_recording_failure_propagates_without_finishing_run():
 
     assert artefacts.started_with == ("generation", "demo")
     assert artefacts.finished_with is None
+
+
+@pytest.mark.parametrize("stage", ["start_run", "finish_run"])
+async def test_store_lifecycle_failure_propagates(monkeypatch, stage):
+    case = _case()
+    report = RunReport(outcomes=[_outcome(case)])
+    artefacts = FakeArtefactStore()
+    backends = EvalBackends(
+        dataset=FakeDatasetPort([case]),
+        runner=FakeRunnerPort(report),
+        artefacts=artefacts,
+    )
+
+    def fail(*args, **kwargs):
+        raise RuntimeError(f"{stage} failed")
+
+    monkeypatch.setattr(artefacts, stage, fail)
+
+    with pytest.raises(RuntimeError, match=f"{stage} failed"):
+        await run_component(
+            _component_config(),
+            DatasetConfig(dataset="demo", component="generation"),
+            backends,
+            llm=object(),
+        )
+
+    if stage == "start_run":
+        assert artefacts.started_with is None
+        assert artefacts.recorded == []
+        assert artefacts.finished_with is None
+    else:
+        assert artefacts.started_with == ("generation", "demo")
+        assert artefacts.recorded == report.outcomes
+        assert artefacts.finished_with is None
+
+
+async def test_real_runners_preserve_outcomes_scores_failures_and_filter():
+    async def task(inputs, llm):
+        if inputs["id"] == "bad":
+            raise RuntimeError("task failed")
+        return {"echo": inputs["id"]}
+
+    scores = [Score("quality", 1.0, "deterministic")]
+    component_config = ComponentConfig(
+        component="generation",
+        task=task,
+        evaluators=[FakeEvaluatorPort(scores)],
+        case_filter=lambda case: case.id != "excluded",
+    )
+    dataset = FakeDatasetPort(
+        [
+            _case("good"),
+            _case("bad"),
+            _case("excluded"),
+        ]
+    )
+    reports = []
+    results = []
+
+    for runner in (InlineSequentialRunner(), PydanticEvalsRunner(progress=False)):
+        artefacts = FakeArtefactStore()
+        results.append(
+            await run_component(
+                component_config,
+                DatasetConfig(dataset="demo", component="generation"),
+                EvalBackends(
+                    dataset=dataset,
+                    runner=runner,
+                    artefacts=artefacts,
+                ),
+                llm=object(),
+            )
+        )
+        assert artefacts.finished_with is not None
+        report, engine_report = artefacts.finished_with
+        assert engine_report is report.engine_report
+        assert artefacts.recorded == report.outcomes
+        reports.append(report)
+
+    assert reports[0].engine_report is None
+    assert reports[1].engine_report is not None
+    assert reports[0].outcomes == reports[1].outcomes
+    assert (
+        results[0]
+        == results[1]
+        == {
+            "good_output": {"echo": "good"},
+            "good_quality": 1.0,
+            "bad_output": None,
+        }
+    )
+
+    outcomes = reports[0].outcomes
+    assert [outcome.case.id for outcome in outcomes] == ["good", "bad"]
+
+    good, bad = outcomes
+    assert good.output == {"echo": "good"}
+    assert good.scores == scores
+    assert good.error is None
+    assert bad.output is None
+    assert bad.scores == []
+    assert bad.error is not None
+    assert "task failed" in bad.error
