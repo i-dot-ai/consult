@@ -10,7 +10,7 @@ from adapters.runners.base import RunnerPort
 from adapters.runners.inline_sequential_runner import InlineSequentialRunner
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from conftest import make_case
-from eval_types import Case, ComponentConfig, RunReport, Score
+from eval_types import Case, CaseOutcome, ComponentConfig, RunReport, Score
 
 
 class _FakeEvaluator(EvaluatorPort):
@@ -66,11 +66,18 @@ class _RunnerContractTests:
         report = await self.make_runner().run(config, [case1, case2], llm=llm_sentinel)
 
         outcomes = {o.case.id: o for o in report.outcomes}
-        assert outcomes["case-1"].output == {"echo": "a"}
-        assert outcomes["case-1"].scores == [Score("m1", 0.75, "note")]
-        assert outcomes["case-2"].output == {"echo": "b"}
-        assert outcomes["case-2"].scores == [Score("m1", 0.75, "note")]
-        assert task_calls == [({"id": "a"}, llm_sentinel), ({"id": "b"}, llm_sentinel)]
+        assert outcomes["case-1"].output == {"echo": "a"}, "case-1 output misattributed"
+        assert outcomes["case-1"].scores == [Score("m1", 0.75, "note")], (
+            "case-1 should carry the evaluator's score"
+        )
+        assert outcomes["case-2"].output == {"echo": "b"}, "case-2 output misattributed"
+        assert outcomes["case-2"].scores == [Score("m1", 0.75, "note")], (
+            "case-2 should carry the evaluator's score"
+        )
+        assert task_calls == [
+            ({"id": "a"}, llm_sentinel),
+            ({"id": "b"}, llm_sentinel),
+        ], "task should run once per case, in order, with the bound llm"
         self.check_engine_report(report, [case1, case2])
 
     async def test_raises_when_llm_missing(self):
@@ -103,7 +110,7 @@ class _RunnerContractTests:
 
         report = await self.make_runner().run(config, [], llm="llm")
 
-        assert report.outcomes == []
+        assert report.outcomes == [], "zero cases should produce zero outcomes"
 
     async def test_raises_on_duplicate_case_ids(self):
         """run() fails fast on duplicate case ids, before any case runs."""
@@ -131,9 +138,57 @@ class _RunnerContractTests:
 
         report = await self.make_runner().run(config, [kept, excluded], llm="llm")
 
-        assert [o.case.id for o in report.outcomes] == ["kept"]
-        assert task_calls == [(kept.inputs, "llm")]
+        assert [o.case.id for o in report.outcomes] == ["kept"], (
+            "only the unfiltered case should appear in outcomes"
+        )
+        assert task_calls == [(kept.inputs, "llm")], (
+            "task should not run for the filtered-out case"
+        )
         self.check_engine_report(report, [kept])
+
+    async def test_empty_case_ids_are_not_run_and_return_error_outcomes(self):
+        """Empty-id cases skip the task and come back unscored with an error, even when repeated."""
+        blank_id = ""
+        task_calls = []
+        config = ComponentConfig(
+            component="generation",
+            task=self._make_task(calls=task_calls),
+            evaluators=[_FakeEvaluator(Score("m", 1.0))],
+        )
+        good = make_case(inputs={"id": "good"}, case_id="good")
+        blank1 = make_case(inputs={"id": "b1"}, case_id=blank_id)
+        blank2 = make_case(inputs={"id": "b2"}, case_id=blank_id)
+
+        report = await self.make_runner().run(config, [blank1, good, blank2], llm="llm")
+
+        assert task_calls == [(good.inputs, "llm")], (
+            "task ran for a case with an empty id"
+        )
+        assert len(report.outcomes) == 3, "expected one outcome per non-filtered case"
+        blanks = [o for o in report.outcomes if o.case.id == blank_id]
+        assert blanks == [
+            CaseOutcome(case=blank, output=None, scores=[], error="empty case id")
+            for blank in (blank1, blank2)
+        ], "empty-id cases should be unscored outcomes with error 'empty case id'"
+        (ok,) = [o for o in report.outcomes if o.case.id == "good"]
+        assert ok.error is None, f"valid case should not have errored, got {ok.error}"
+        self.check_engine_report(report, [good])
+
+    async def test_case_filter_runs_before_empty_id_check(self):
+        """An empty-id case the filter excludes is dropped, not reported as an error."""
+        config = ComponentConfig(
+            component="generation",
+            task=self._make_task(),
+            evaluators=[],
+            case_filter=lambda case: case.id != "",
+        )
+        report = await self.make_runner().run(
+            config, [make_case(inputs={"id": "x"}, case_id="")], llm="llm"
+        )
+
+        assert report.outcomes == [], (
+            "filtered-out empty-id case should not be reported"
+        )
 
     async def test_task_error_becomes_case_outcome_error_without_aborting_run(self):
         """One case's task failure doesn't stop the other cases from succeeding."""
@@ -149,12 +204,16 @@ class _RunnerContractTests:
         report = await self.make_runner().run(config, [good1, bad, good2], llm="llm")
 
         outcomes = {o.case.id: o for o in report.outcomes}
-        assert outcomes["bad"].output is None
-        assert outcomes["bad"].scores == []
-        assert outcomes["bad"].error
-        assert outcomes["good1"].output == {"echo": "good1"}
-        assert outcomes["good1"].error is None
-        assert outcomes["good2"].output == {"echo": "good2"}
+        assert outcomes["bad"].output is None, "failed case should have no output"
+        assert outcomes["bad"].scores == [], "failed case should not be scored"
+        assert outcomes["bad"].error, "failed case should record an error message"
+        assert outcomes["good1"].output == {"echo": "good1"}, (
+            "good1 should still succeed"
+        )
+        assert outcomes["good1"].error is None, "good1 should not have errored"
+        assert outcomes["good2"].output == {"echo": "good2"}, (
+            "good2 should still succeed"
+        )
         self.check_engine_report(report, [good1, bad, good2])
 
 
@@ -167,7 +226,7 @@ class TestInlineSequentialRunner(_RunnerContractTests):
         self, report: RunReport, expected_cases: list[Case]
     ) -> None:
         """InlineSequentialRunner never has a native report."""
-        assert report.engine_report is None
+        assert report.engine_report is None, "inline runner has no native report"
 
 
 class TestPydanticEvalsRunner(_RunnerContractTests):
@@ -181,9 +240,13 @@ class TestPydanticEvalsRunner(_RunnerContractTests):
         self, report: RunReport, expected_cases: list[Case]
     ) -> None:
         """engine_report is the real native EvaluationReport, covering every case."""
-        assert isinstance(report.engine_report, EvaluationReport)
+        assert isinstance(report.engine_report, EvaluationReport), (
+            "engine_report should be the native EvaluationReport"
+        )
         seen = len(report.engine_report.cases) + len(report.engine_report.failures)
-        assert seen == len(expected_cases)
+        assert seen == len(expected_cases), (
+            "native report should cover every case that was run"
+        )
 
     async def test_runs_correctly_under_concurrency(self):
         """Each case's own output is correctly attributed when max_concurrency > 1."""
@@ -197,14 +260,16 @@ class TestPydanticEvalsRunner(_RunnerContractTests):
         )
 
         outcomes = {o.case.id: o.output for o in report.outcomes}
-        assert outcomes == {f"c{i}": {"echo": f"c{i}"} for i in range(5)}
+        assert outcomes == {f"c{i}": {"echo": f"c{i}"} for i in range(5)}, (
+            "each case's output should be attributed to its own id under concurrency"
+        )
 
     def test_to_outcome_defensive_branch_when_case_is_in_neither_list(self):
         """The engine reporting neither success nor failure degrades to a clear error, not a crash."""
-        outcome = PydanticEvalsRunner._to_outcome(
-            make_case(case_id="missing"), report_case=None, failure=None
-        )
+        case = make_case(case_id="missing")
 
-        assert outcome.error == "missing from pydantic_evals report"
-        assert outcome.output is None
-        assert outcome.scores == []
+        outcome = PydanticEvalsRunner._to_outcome(case, report_case=None, failure=None)
+
+        assert outcome == CaseOutcome(
+            case, None, [], "missing from pydantic_evals report"
+        ), "missing case should be an unscored error outcome"
