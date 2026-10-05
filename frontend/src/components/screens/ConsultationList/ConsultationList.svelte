@@ -42,11 +42,6 @@
     text: string;
   }
 
-  interface NameCellData {
-    text: string;
-    links: LinkData[];
-  }
-
   interface ActionData {
     id: string;
     name: string;
@@ -137,26 +132,7 @@
 
   const consultationRows = $derived(
     consultationsToDisplay.map((consultation: Consultation) => ({
-      name: {
-        text: consultation.title,
-        links: [
-          {
-            url: getConsultationEvalUrl(consultation.id),
-            ariaLabel: `View Evaluation for ${consultation.title}`,
-            text: "View Evaluation",
-          },
-          {
-            url: getFinaliseThemesUrl(consultation.id),
-            ariaLabel: `Finalise Themes for ${consultation.title}`,
-            text: "Finalise Themes",
-          },
-          {
-            url: getConsultationDetailUrl(consultation.id),
-            ariaLabel: `View Dashboard for ${consultation.title}`,
-            text: "View Dashboard",
-          },
-        ],
-      },
+      name: consultation.title,
       ...(enableV2
         ? {
             status: consultation.stage,
@@ -283,8 +259,6 @@
           label: "Name",
           key: "name",
           sortable: true,
-          sortValue: (details) => (details.name as NameCellData).text,
-          filterValue: (details) => (details.name as NameCellData).text,
         },
         ...(enableV2
           ? ([
@@ -344,21 +318,9 @@
         "There has been an error"}
       columnSelect={false}
     >
-      {#snippet cellContent(content, row, column)}
+      {#snippet cellContent(content, _, column)}
         {#if column.key === "name"}
-          {@const cellData = row[column.key] as NameCellData}
-
-          <div>
-            <p>{cellData.text}</p>
-
-            <div class="flex gap-3 mt-2">
-              {#each cellData.links as link, i (i)}
-                <Link href={link.url} ariaLabel={link.ariaLabel}>
-                  {link.text}
-                </Link>
-              {/each}
-            </div>
-          </div>
+          <h3 class="font-[500]">{content}</h3>
         {:else if column.key === "status"}
           {@const status = content as Consultation["stage"]}
           {@const DISPLAY_TEXTS = {
