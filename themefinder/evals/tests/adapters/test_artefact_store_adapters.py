@@ -11,6 +11,8 @@ from adapters.artefact_stores.base import ArtefactStorePort
 from adapters.artefact_stores.langfuse_adapter import LangfuseArtefactStore
 from adapters.artefact_stores.local_json_adapter import LocalJSONArtefactStore
 from eval_types import Case, CaseOutcome, RunReport, Score
+from httpx import RequestError
+from langfuse.api.core import ApiError
 from utils.langfuse import LangfuseContext
 
 
@@ -209,6 +211,38 @@ class TestLangfuseArtefactStore:
                 "value": 4.0,
             }
         ]
+
+    @pytest.mark.parametrize(
+        "link_error",
+        [
+            ApiError(status_code=503, body={"message": "unavailable"}),
+            RequestError("network unavailable"),
+        ],
+        ids=["api-error", "network-error"],
+    )
+    def test_v3_link_failure_still_records_trace_and_scores(self, caplog, link_error):
+        client = _FakeV3LangfuseClient()
+        client.api.dataset_run_items.error = link_error
+        context = LangfuseContext(client=client, session_id="session-v3")
+        store = LangfuseArtefactStore(context=context, owns_context=False)
+        outcome = _make_outcome(
+            case=_make_case(langfuse_item_id="item-v3"),
+            scores=[Score("coverage", 4.0)],
+        )
+
+        store.start_run("generation", "demo")
+        store.record_case(outcome)
+
+        assert len(client.api.dataset_run_items.create_calls) == 1
+        assert client.scores == [
+            {
+                "data_type": "NUMERIC",
+                "name": "coverage",
+                "trace_id": "generated-trace-id",
+                "value": 4.0,
+            }
+        ]
+        assert "recording an unlinked trace instead" in caplog.text
 
     def test_record_case_with_langfuse_item_id_creates_trace_linked_scores(self):
         client = _FakeLangfuseClient()
@@ -420,9 +454,12 @@ class _FakeLangfuseClient:
 class _FakeDatasetRunItemsApi:
     def __init__(self):
         self.create_calls = []
+        self.error: Exception | None = None
 
     def create(self, *, request):
         self.create_calls.append(request)
+        if self.error is not None:
+            raise self.error
 
 
 class _FakeV3Api:
