@@ -32,11 +32,7 @@ class PydanticEvalsEvaluator(EvaluatorPort):
         return self._evaluator
 
     def _build_context(self, case: Case, output: Any) -> EvaluatorContext:
-        """Build an `EvaluatorContext` from a `Case` and task `output`.
-
-        Timing/attributes/metrics/span-tree get inert placeholders, the
-        extension point for a native runner to thread real observations is here (PRO-734).
-        """
+        """Build an `EvaluatorContext` from a `Case` and task `output`."""
         return EvaluatorContext(
             name=case.id,
             inputs=case.inputs,

@@ -68,7 +68,7 @@ class LLMJudgeEvaluator(EvaluatorPort):
     def _shuffle_themes(themes: list[dict] | dict) -> list[dict] | dict:
         """Shuffle theme order to reduce positional bias, returning a copy in
         the same shape (list or label-keyed dict) as the input.
-        TODO (PRO-734): can be simplified once all themes are dicts."""
+        TODO (PRO-633): can be simplified once all themes are lists again."""
 
         if isinstance(themes, list):
             shuffled = list(themes)
