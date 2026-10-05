@@ -44,7 +44,6 @@ export enum Routes {
   SupportQueue = "/django-rq",
   Profile = "/profile",
   Privacy = "/privacy",
-  V2ConsultationsNew = "/v2/consultations/new",
 
   // API Routes
   ApiSignOut = `${Prefixes.ApiV1}/logout/`,
