@@ -95,6 +95,29 @@ describe("AddConsultationForm", () => {
     ).toBeInTheDocument();
   });
 
+  it("notes when several consultations share the name", async () => {
+    mockRoute({
+      url: DUPLICATE_URL,
+      body: {
+        count: 3,
+        next: null,
+        previous: null,
+        results: [EXISTING],
+      },
+    });
+    render(AddConsultationForm);
+
+    await fireEvent.input(screen.getByLabelText("Consultation name"), {
+      target: { value: DUPLICATE_NAME },
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Showing the most recent of 3 with this name/),
+      ).toBeInTheDocument();
+    });
+  });
+
   it("creates the consultation and redirects to its detail page", async () => {
     mockRoute({
       url: URL,
