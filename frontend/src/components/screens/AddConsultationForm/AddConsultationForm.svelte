@@ -53,8 +53,6 @@
     }
   }, DUPLICATE_CHECK_DELAY);
 
-  const showDuplicateWarning = $derived(Boolean(duplicate));
-
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString("en-GB", {
       day: "numeric",
@@ -131,7 +129,7 @@
       Use the name it was published under, so your team can find it.
     </p>
 
-    {#if showDuplicateWarning && duplicate}
+    {#if duplicate}
       <div
         id="consultation-name-warning"
         class="my-2 rounded-lg bg-neutral-100 p-4"
@@ -171,7 +169,7 @@
       ])}
       aria-describedby={clsx([
         "consultation-name-hint",
-        showDuplicateWarning && "consultation-name-warning",
+        duplicate && "consultation-name-warning",
         emptyError && ERROR_SUMMARY_ID,
       ])}
       aria-invalid={emptyError}
@@ -187,7 +185,7 @@
       variant="primary"
       disabled={submitting || !trimmedName}
     >
-      {showDuplicateWarning ? "Save anyway" : "Save and continue"}
+      {duplicate ? "Save anyway" : "Save and continue"}
     </Button>
     <Button href={Routes.Consultations} variant="default">Cancel</Button>
   </div>
