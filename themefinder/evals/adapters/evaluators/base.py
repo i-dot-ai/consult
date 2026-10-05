@@ -47,10 +47,9 @@ class EvaluatorPort(ABC):
         """Pull display titles out of a themes collection, in either shape a
         task output uses.
 
-        TODO: the label-keyed dict (`{label: description}`) is the canonical
-        theme shape going forward
-
-        This will be fixed in PRO-734.
+        TODO (PRO-633): themes will be converted back to lists of records
+        everywhere (mapping needs `topic_id`), so the label-keyed dict branch
+        can be dropped then.
         """
         if isinstance(themes, list):
             return [t.get("topic_label", t.get("topic", "")) for t in themes]
