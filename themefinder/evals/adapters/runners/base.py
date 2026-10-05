@@ -7,8 +7,9 @@ from abc import ABC, abstractmethod
 from collections import Counter
 from typing import Any
 
-from adapters.evaluators.base import EvaluatorPort
 from eval_types import Case, CaseOutcome, ComponentConfig, RunReport
+
+from adapters.evaluators.base import EvaluatorPort
 
 
 class RunnerPort(ABC):

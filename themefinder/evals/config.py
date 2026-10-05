@@ -16,10 +16,8 @@ from adapters.datasets import (
     LangfuseDatasetAdapter,
     LocalJSONDatasetAdapter,
 )
-from adapters.runners import (
-    PydanticEvalsRunner,
-    RunnerPort,
-)
+from adapters.runners import RunnerPort
+from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from datasets import DatasetConfig
 from settings import EvalSettings, get_settings
 

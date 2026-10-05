@@ -7,7 +7,7 @@ from unittest.mock import Mock
 import config as backend_config
 import pytest
 from adapters.artefact_stores import LocalJSONArtefactStore
-from adapters.runners import PydanticEvalsRunner
+from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from component_runner import run_component
 from datasets import DatasetConfig
 from eval_types import Case, ComponentConfig, Score

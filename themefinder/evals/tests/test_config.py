@@ -6,7 +6,7 @@ from uuid import UUID
 import pytest
 from adapters.artefact_stores import LangfuseArtefactStore, LocalJSONArtefactStore
 from adapters.datasets import LangfuseDatasetAdapter, LocalJSONDatasetAdapter
-from adapters.runners import PydanticEvalsRunner
+from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from config import EvalBackends, resolve_backends
 from datasets import DatasetConfig
 from settings import (
