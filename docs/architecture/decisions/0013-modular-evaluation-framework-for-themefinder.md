@@ -42,13 +42,14 @@ scripts onto it in place, incrementally:
   field so `PydanticEvalsRunner`'s native `EvaluationReport` can reach `LangfuseArtefactStore` for a richer
   summary, without widening any port's real contract or requiring other adapters to know about it.
 - Langfuse-specific code is confined to the Langfuse adapters and to `evals/config.py::resolve_backends()`,
-  the single function that constructs and owns the Langfuse context. The four component scripts contain zero
+  the single function that constructs the Langfuse context and passes its ownership to the artefact adapter.
+  The four component scripts contain zero
   Langfuse-specific code — no import, no type reference, no branding in a parameter name. This required one
   mechanical change to `benchmark.py`'s call site (renaming its `langfuse_ctx` kwarg to a generic
   `context`), since `benchmark.py` is what constructs and passes the real Langfuse context through.
 - `resolve_backends()` selects the dataset source and the artefact store independently, not as one bundled
-  "Langfuse configured" decision — each defaults to Langfuse when credentials are set but is separately
-  overridable, so a run can pull cases from Langfuse while storing results locally, or the reverse. This
+  "Langfuse configured" decision. Each defaults to local storage and can be explicitly set to Langfuse, so a
+  run can pull cases from Langfuse while storing results locally, or the reverse. This
   check is answered from settings directly, without needing to construct a Langfuse context first — a fully
   local run never touches `langfuse_utils` at all. A dataset that's missing or inaccessible in Langfuse is a
   hard failure, not a silent fall back to a local fixture.
