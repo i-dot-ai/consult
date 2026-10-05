@@ -58,17 +58,23 @@ describe("AddConsultationForm", () => {
     expect(screen.getByRole("link", { name: "Cancel" })).toBeInTheDocument();
   });
 
-  it("shows an error when submitting an empty name", async () => {
+  it("disables save until the name has non-whitespace content", async () => {
     render(AddConsultationForm);
 
-    await fireEvent.click(
-      screen.getByRole("button", { name: "Save and continue" }),
-    );
+    const saveButton = screen.getByRole("button", {
+      name: "Save and continue",
+    });
+    expect(saveButton).toBeDisabled();
 
-    expect(screen.getByText("There is a problem")).toBeInTheDocument();
-    expect(
-      screen.getAllByText("Enter the consultation name").length,
-    ).toBeGreaterThan(0);
+    await fireEvent.input(screen.getByLabelText("Consultation name"), {
+      target: { value: "   " },
+    });
+    expect(saveButton).toBeDisabled();
+
+    await fireEvent.input(screen.getByLabelText("Consultation name"), {
+      target: { value: "Brand new" },
+    });
+    expect(saveButton).toBeEnabled();
   });
 
   it("warns when the name matches an existing consultation", async () => {
