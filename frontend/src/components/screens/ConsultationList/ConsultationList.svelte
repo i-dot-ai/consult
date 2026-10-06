@@ -26,7 +26,7 @@
     buildConsultationDeleteQuery,
     buildConsultationsGetQuery,
   } from "../../../global/queries/consultations/queries.ts";
-  import type { Consultation } from "../../../global/types.ts";
+  import type { Consultation, User } from "../../../global/types.ts";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries.ts";
   import { type CurrentUserGetResponse } from "../../../global/queries/users/types.ts";
@@ -45,7 +45,7 @@
   interface ActionData {
     id: string;
     name: string;
-    createdBy: string;
+    createdBy: string | User;
   }
 
   interface Props {
@@ -179,10 +179,15 @@
 
   function canDelete(
     userData: CurrentUserGetResponse | undefined,
-    consultationCreatedBy: string,
+    consultationCreatedBy?: string | User,
   ) {
+    const createdByEmail =
+      typeof consultationCreatedBy === "string"
+        ? consultationCreatedBy
+        : consultationCreatedBy?.email;
+
     const isUserStaff = userData?.is_staff;
-    const isUserCreator = userData?.email === consultationCreatedBy;
+    const isUserCreator = userData?.email === createdByEmail;
 
     return isUserStaff || isUserCreator;
   }
@@ -388,7 +393,7 @@
                       "text-xs",
                       "rounded-full",
                       "transition-colors",
-                      "hover:bg-primary",
+                      currentUser?.is_staff && "hover:bg-primary",
                       getUserColor(teamMember.id),
                     ])}
                   >
