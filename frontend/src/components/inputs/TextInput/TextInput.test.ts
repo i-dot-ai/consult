@@ -62,4 +62,30 @@ describe("TextInput", () => {
 
     expect(setValueMock).toHaveBeenCalledWith("");
   });
+
+  it("should set disabled, aria-describedby and aria-invalid", () => {
+    render(TextInput, {
+      id: "test-input",
+      value: "",
+      label: "Test Input",
+      disabled: true,
+      invalid: true,
+      ariaDescribedby: "hint-id",
+    });
+
+    const input = screen.getByLabelText("Test Input");
+
+    expect(input).toBeDisabled();
+    expect(input).toHaveAttribute("aria-describedby", "hint-id");
+    expect(input).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("should omit aria-invalid and aria-describedby by default", () => {
+    render(TextInput, { id: "test-input", value: "", label: "Test Input" });
+
+    const input = screen.getByLabelText("Test Input");
+
+    expect(input).not.toHaveAttribute("aria-invalid");
+    expect(input).not.toHaveAttribute("aria-describedby");
+  });
 });
