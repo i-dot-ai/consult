@@ -21,7 +21,6 @@
   const HINT_ID = "consultation-name-hint";
 
   let name = $state("");
-  let emptyError = $state(false);
   let submitError = $state("");
   let submitting = $state(false);
   let checkTrigger = $state(0);
@@ -64,7 +63,6 @@
 
   function handleInput(value: string) {
     name = value.trimStart();
-    emptyError = false;
     submitError = "";
   }
 
@@ -81,11 +79,6 @@
 
   async function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
-
-    if (!trimmedName) {
-      emptyError = true;
-      return;
-    }
 
     submitting = true;
     submitError = "";
@@ -112,17 +105,11 @@
   }
 </script>
 
-{#if emptyError || submitError}
+{#if submitError}
   <div class="mb-6 max-w-2xl">
     <Alert variant="error" Icon={ErrorIcon}>
       <p class="font-bold">There is a problem</p>
-      {#if emptyError}
-        <a href={`#${INPUT_ID}`} class="underline"
-          >Enter the consultation name</a
-        >
-      {:else}
-        <p>{submitError}</p>
-      {/if}
+      <p>{submitError}</p>
     </Alert>
   </div>
 {/if}
@@ -141,7 +128,6 @@
     value={name}
     setValue={handleInput}
     disabled={submitting}
-    invalid={emptyError}
     ariaDescribedby={HINT_ID}
   />
 

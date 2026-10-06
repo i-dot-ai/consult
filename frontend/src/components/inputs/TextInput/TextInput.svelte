@@ -22,7 +22,6 @@
   export let testId: string | undefined = undefined;
   export let disabled: boolean = false;
   export let ariaDescribedby: string | undefined = undefined;
-  export let invalid: boolean = false;
 
   export let variant: "default" | "search" = "default";
 </script>
@@ -36,7 +35,7 @@
       "h-9 w-full",
       "p-1",
       "border",
-      invalid ? "border-2 border-red-700" : "border-gray-300",
+      "border-gray-300",
       "rounded-xs",
       "focus:outline-2",
       "focus:outline-yellow-300",
@@ -51,7 +50,6 @@
     {required}
     {disabled}
     aria-describedby={ariaDescribedby || undefined}
-    aria-invalid={invalid || undefined}
     data-testid={testId}
     on:input={(e) => setValue((e.target as HTMLInputElement).value)}
   />
