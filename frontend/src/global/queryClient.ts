@@ -177,16 +177,19 @@ export const buildQuery = <T>(
       if (isMutation) {
         const mutationResult = result as ReturnType<typeof createMutation>;
         if (variables) {
-          await mutationResult.mutateAsync(variables);
+          return await mutationResult.mutateAsync(variables);
         } else {
-          await mutationResult.mutateAsync.apply(this, args as MutateArgs);
+          return await mutationResult.mutateAsync.apply(
+            this,
+            args as MutateArgs,
+          );
         }
       } else {
         const queryResult = result as ReturnType<typeof createQuery>;
         if (variables) {
-          await queryResult.refetch(variables);
+          return await queryResult.refetch(variables);
         } else {
-          await queryResult.refetch.apply(this, args as RefetchArgs);
+          return await queryResult.refetch.apply(this, args as RefetchArgs);
         }
       }
     },

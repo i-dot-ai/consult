@@ -2,7 +2,8 @@
   import Title from "../../Title.svelte";
   import Alert from "../../Alert/Alert.svelte";
   import ErrorIcon from "../../svg/material/Error.svelte";
-  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import Warning from "../../svg/material/Warning.svelte";
+  import Modal from "../../Modal/Modal.svelte";
   import Button from "../../inputs/Button/Button.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
 
@@ -11,25 +12,30 @@
     buildConsultationsV2ByTitleQuery,
     buildConsultationV2CreateQuery,
   } from "../../../global/queries/consultations/queries.ts";
-  import type { ConsultationV2 } from "../../../global/queries/consultations/types.ts";
-  import { debounce } from "../../../global/utils.ts";
+  import type {
+    ConsultationsV2GetResponse,
+    ConsultationV2,
+  } from "../../../global/queries/consultations/types.ts";
 
-  const DUPLICATE_CHECK_DELAY = 300;
   const INPUT_ID = "consultation-name";
   const HINT_ID = "consultation-name-hint";
-  const WARNING_ID = "consultation-name-warning";
 
   let name = $state("");
-  let debouncedName = $state("");
   let emptyError = $state(false);
   let submitError = $state("");
   let submitting = $state(false);
+  let checkTrigger = $state(0);
+
+  let duplicate: ConsultationV2 | undefined = $state(undefined);
+  let duplicateCount = $state(0);
 
   const trimmedName = $derived(name.trim());
 
-  const updateDebouncedName = debounce(() => {
-    debouncedName = trimmedName;
-  }, DUPLICATE_CHECK_DELAY);
+  // Re-created each time checkTrigger changes, so handleSubmit can trigger a
+  // fresh lookup for the current name without reusing a stale query.
+  const titleLookup = $derived(
+    checkTrigger ? buildConsultationsV2ByTitleQuery(trimmedName) : null,
+  );
 
   const consultationCreate = buildConsultationV2CreateQuery(
     async (data) => {
@@ -39,17 +45,6 @@
       submitError = error.message || "Failed to create consultation";
       submitting = false;
     },
-  );
-
-  const titleLookup = $derived(
-    debouncedName ? buildConsultationsV2ByTitleQuery(debouncedName) : null,
-  );
-  const lookupMatchesInput = $derived(debouncedName === trimmedName);
-  const duplicate = $derived(
-    lookupMatchesInput ? titleLookup?.query.data?.results[0] : undefined,
-  );
-  const duplicateCount = $derived(
-    lookupMatchesInput ? (titleLookup?.query.data?.count ?? 0) : 0,
   );
 
   function formatDate(date: string) {
@@ -71,7 +66,17 @@
     name = value.trimStart();
     emptyError = false;
     submitError = "";
-    updateDebouncedName();
+  }
+
+  async function createConsultation() {
+    submitting = true;
+    submitError = "";
+
+    try {
+      await consultationCreate.fetch({ body: { title: trimmedName } });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async function handleSubmit(e: SubmitEvent) {
@@ -84,12 +89,26 @@
 
     submitting = true;
     submitError = "";
+    checkTrigger += 1;
 
     try {
-      await consultationCreate.fetch({ body: { title: trimmedName } });
+      const result = (await titleLookup?.fetch()) as
+        { data?: ConsultationsV2GetResponse } | undefined;
+      const match = result?.data?.results[0];
+
+      if (match) {
+        duplicate = match;
+        duplicateCount = result?.data?.count ?? 0;
+        submitting = false;
+        return;
+      }
     } catch (error) {
       console.error(error);
+      // If the duplicate check itself fails, continue to create rather than
+      // blocking the user on an unrelated error.
     }
+
+    await createConsultation();
   }
 </script>
 
@@ -123,31 +142,12 @@
     setValue={handleInput}
     disabled={submitting}
     invalid={emptyError}
-    ariaDescribedby={[HINT_ID, duplicate && WARNING_ID]
-      .filter(Boolean)
-      .join(" ")}
+    ariaDescribedby={HINT_ID}
   />
 
   <p id={HINT_ID} class="text-neutral-500">
     Use the name it was published under, so your team can find it.
   </p>
-
-  {#if duplicate}
-    <div id={WARNING_ID}>
-      <Panel variant="default" bg>
-        <p>{duplicate.title} already exists.</p>
-        <p class="text-neutral-500">
-          Created by {describeCreator(duplicate)} on {formatDate(
-            duplicate.created_at,
-          )}. You can use the same name, but the two will be hard to tell apart
-          on the list.
-          {#if duplicateCount > 1}
-            Showing the most recent of {duplicateCount} with this name.
-          {/if}
-        </p>
-      </Panel>
-    </div>
-  {/if}
 
   <div class="flex items-center gap-2">
     <Button
@@ -155,7 +155,7 @@
       variant="primary"
       disabled={submitting || !trimmedName}
     >
-      {duplicate ? "Save anyway" : "Save and continue"}
+      Save and continue
     </Button>
     <Button href={Routes.Consultations} variant="default">Cancel</Button>
   </div>
@@ -164,3 +164,34 @@
     You can add people to the consultation once it is saved.
   </p>
 </form>
+
+<Modal
+  variant="warning"
+  Icon={Warning}
+  title="This consultation name already exists"
+  open={Boolean(duplicate)}
+  setOpen={(newOpen) => {
+    if (!newOpen) {
+      duplicate = undefined;
+      submitting = false;
+    }
+  }}
+  confirmText="Save anyway"
+  handleConfirm={() => {
+    duplicate = undefined;
+    createConsultation();
+  }}
+>
+  {#if duplicate}
+    <p>{duplicate.title} already exists.</p>
+    <p class="text-neutral-500">
+      Created by {describeCreator(duplicate)} on {formatDate(
+        duplicate.created_at,
+      )}. You can use the same name, but the two will be hard to tell apart on
+      the list.
+      {#if duplicateCount > 1}
+        Showing the most recent of {duplicateCount} with this name.
+      {/if}
+    </p>
+  {/if}
+</Modal>

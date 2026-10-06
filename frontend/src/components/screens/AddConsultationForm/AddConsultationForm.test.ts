@@ -88,13 +88,20 @@ describe("AddConsultationForm", () => {
     expect(saveButton).toBeEnabled();
   });
 
-  it("warns when the name matches an existing consultation", async () => {
+  it("warns on submit when the name matches an existing consultation", async () => {
     mockRoute(duplicateMock);
     render(AddConsultationForm);
 
     await fireEvent.input(screen.getByLabelText("Consultation name"), {
       target: { value: DUPLICATE_NAME },
     });
+    expect(
+      screen.queryByText("Future homes standard already exists."),
+    ).not.toBeInTheDocument();
+
+    await fireEvent.click(
+      screen.getByRole("button", { name: "Save and continue" }),
+    );
 
     await waitFor(() => {
       expect(
@@ -121,6 +128,9 @@ describe("AddConsultationForm", () => {
     await fireEvent.input(screen.getByLabelText("Consultation name"), {
       target: { value: DUPLICATE_NAME },
     });
+    await fireEvent.click(
+      screen.getByRole("button", { name: "Save and continue" }),
+    );
 
     await waitFor(() => {
       expect(
@@ -129,7 +139,38 @@ describe("AddConsultationForm", () => {
     });
   });
 
-  it("creates the consultation and redirects to its detail page", async () => {
+  it("creates the consultation when confirming the duplicate warning", async () => {
+    mockRoute(duplicateMock);
+    mockRoute({
+      url: URL,
+      method: "POST",
+      body: { id: "new-id", title: DUPLICATE_NAME },
+      status: 201,
+    });
+    render(AddConsultationForm);
+
+    await fireEvent.input(screen.getByLabelText("Consultation name"), {
+      target: { value: DUPLICATE_NAME },
+    });
+    await fireEvent.click(
+      screen.getByRole("button", { name: "Save and continue" }),
+    );
+
+    const confirmButton = await screen.findByRole("button", {
+      name: "Save anyway",
+    });
+    await fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(window.location.href).toBe("/consultations/new-id");
+    });
+  });
+
+  it("creates the consultation directly when the name has no duplicate", async () => {
+    mockRoute({
+      url: `${URL}?${new URLSearchParams({ title__iexact: "Brand new" })}`,
+      body: { count: 0, next: null, previous: null, results: [] },
+    });
     mockRoute({
       url: URL,
       method: "POST",
@@ -156,6 +197,10 @@ describe("AddConsultationForm", () => {
   });
 
   it("shows an error if creation fails", async () => {
+    mockRoute({
+      url: `${URL}?${new URLSearchParams({ title__iexact: "Brand new" })}`,
+      body: { count: 0, next: null, previous: null, results: [] },
+    });
     mockRoute({ url: URL, method: "POST", body: {}, status: 500 });
     const consoleError = vi
       .spyOn(console, "error")
