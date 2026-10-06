@@ -1,4 +1,9 @@
-import { getApiConsultationUrl, Routes, Suffixes } from "../../routes";
+import {
+  getApiConsultationsUrl,
+  getApiConsultationUrl,
+  Routes,
+  Suffixes,
+} from "../../routes";
 
 export const consultationsQueryParts = {
   key: () => [Suffixes.Consultations],
@@ -7,7 +12,7 @@ export const consultationsQueryParts = {
 
 export const consultationsV2QueryParts = {
   key: () => [Suffixes.Consultations, "v2"],
-  url: () => Routes.ApiV2Consultations,
+  url: () => getApiConsultationsUrl(),
 };
 
 export const consultationQueryParts = {
