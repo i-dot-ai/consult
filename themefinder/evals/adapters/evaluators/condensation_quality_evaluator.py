@@ -8,7 +8,7 @@ one LLM call; splitting them per metric is deferred to PRO-642 if required.
 
 from prompts import condensation_eval_prompt
 
-from .llm_judge import ThemeComparisonJudgeEvaluator
+from .llm_judge_evaluator import ThemeComparisonJudgeEvaluator
 
 
 class CondensationQualityEvaluator(ThemeComparisonJudgeEvaluator):

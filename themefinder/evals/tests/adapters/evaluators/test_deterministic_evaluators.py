@@ -10,10 +10,10 @@ LLM, not the plain fixtures here.
 import sys
 import types
 
-import adapters.evaluators.redundancy as redundancy_module
+import adapters.evaluators.redundancy_evaluator as redundancy_module
 import pytest
-from adapters.evaluators.mapping_f1 import MappingF1Evaluator
-from adapters.evaluators.redundancy import RedundancyEvaluator
+from adapters.evaluators.mapping_f1_evaluator import MappingF1Evaluator
+from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
 from conftest import make_case
 from eval_types import Score
 

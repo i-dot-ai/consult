@@ -6,6 +6,7 @@ is wrapped in evaluate which handles exceptions and logging.
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable
 from typing import Any
 
 from eval_types import Case, Score
@@ -15,20 +16,27 @@ logger = get_logger(__name__)
 
 
 class EvaluatorPort(ABC):
-    #: Score names this evaluator produces. Every concrete subclass sets
-    #: this — used by the error-path fallback below to return one zero
-    #: Score per metric instead of just swallowing the failure silently.
+    #: Score names this evaluator produces. Every concrete subclass sets this
     metric_names: tuple[str, ...] = ()
+
+    @property
+    def name(self) -> str:
+        """Human-readable identifier for this evaluator; override to customise."""
+        return type(self).__name__
 
     async def evaluate(self, case: Case, output: Any) -> list[Score]:
         """Evaluate against the case and output and catch any errors.
 
         The concrete score functionality is implemented in _score().
         """
+        return await self._guard(self._score(case, output))
+
+    async def _guard(self, scoring: Awaitable[list[Score]]) -> list[Score]:
+        """Shared error boundary, so adapters scoring via another entry point behave alike."""
         try:
-            return await self._score(case, output)
+            return await scoring
         except Exception as e:
-            logger.error(f"{type(self).__name__} evaluation failed: {e}")
+            logger.error(f"{self.name} evaluation failed: {e}")
             return [Score(name, 0.0, f"Error: {e}") for name in self.metric_names]
 
     @abstractmethod
@@ -44,10 +52,9 @@ class EvaluatorPort(ABC):
         """Pull display titles out of a themes collection, in either shape a
         task output uses.
 
-        TODO: the label-keyed dict (`{label: description}`) is the canonical
-        theme shape going forward
-
-        This will be fixed in PRO-734.
+        TODO (PRO-633): themes will be converted back to lists of records
+        everywhere (mapping needs `topic_id`), so the label-keyed dict branch
+        can be dropped then.
         """
         if isinstance(themes, list):
             return [t.get("topic_label", t.get("topic", "")) for t in themes]
