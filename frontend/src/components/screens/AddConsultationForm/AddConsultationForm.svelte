@@ -2,6 +2,8 @@
   import clsx from "clsx";
 
   import Title from "../../Title.svelte";
+  import Alert from "../../Alert/Alert.svelte";
+  import ErrorIcon from "../../svg/material/Error.svelte";
   import Button from "../../inputs/Button/Button.svelte";
 
   import { getConsultationDetailUrl, Routes } from "../../../global/routes.ts";
@@ -97,22 +99,17 @@
 </script>
 
 {#if emptyError || submitError}
-  <div
-    role="alert"
-    class={clsx(["mb-6", "max-w-2xl", "p-4", "border-2", "border-red-700"])}
-  >
-    <p class="mb-2 text-red-700">There is a problem</p>
-    <ul class="list-disc pl-5">
-      <li>
-        {#if emptyError}
-          <a href={`#${INPUT_ID}`} class="text-red-700 underline">
-            Enter the consultation name
-          </a>
-        {:else}
-          <span class="text-red-700">{submitError}</span>
-        {/if}
-      </li>
-    </ul>
+  <div class="mb-6 max-w-2xl">
+    <Alert variant="error" Icon={ErrorIcon}>
+      <p class="font-bold">There is a problem</p>
+      {#if emptyError}
+        <a href={`#${INPUT_ID}`} class="underline"
+          >Enter the consultation name</a
+        >
+      {:else}
+        <p>{submitError}</p>
+      {/if}
+    </Alert>
   </div>
 {/if}
 
