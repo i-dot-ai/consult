@@ -3,18 +3,19 @@
 Provides graceful fallback when Langfuse is not configured.
 """
 
-import logging
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Generator
 
 from settings import EvalSettings, eval_settings
+from utils.logging_config import get_logger
+from utils.masking import mask_sensitive
 
 if TYPE_CHECKING:
     from langfuse import Langfuse
     from langfuse._client.span import LangfuseSpan
 
-logger = logging.getLogger("themefinder.evals.langfuse")
+logger = get_logger(__name__)
 
 
 def _get_version() -> str:
@@ -129,6 +130,7 @@ def get_langfuse_context(
             secret_key=secret_key,
             public_key=public_key,
             host=base_url,
+            mask=mask_sensitive,
         )
 
         # Build standard tags and metadata
