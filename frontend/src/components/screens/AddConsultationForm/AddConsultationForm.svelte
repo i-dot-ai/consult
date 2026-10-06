@@ -4,6 +4,7 @@
   import Title from "../../Title.svelte";
   import Alert from "../../Alert/Alert.svelte";
   import ErrorIcon from "../../svg/material/Error.svelte";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
 
   import { getConsultationDetailUrl, Routes } from "../../../global/routes.ts";
@@ -127,20 +128,19 @@
     </p>
 
     {#if duplicate}
-      <div
-        id="consultation-name-warning"
-        class="my-2 rounded-lg bg-neutral-100 p-4"
-      >
-        <p>{duplicate.title} already exists.</p>
-        <p class="text-neutral-500">
-          Created by {describeCreator(duplicate)} on {formatDate(
-            duplicate.created_at,
-          )}. You can use the same name, but the two will be hard to tell apart
-          on the list.
-          {#if duplicateCount > 1}
-            Showing the most recent of {duplicateCount} with this name.
-          {/if}
-        </p>
+      <div id="consultation-name-warning">
+        <Panel variant="default" bg>
+          <p>{duplicate.title} already exists.</p>
+          <p class="text-neutral-500">
+            Created by {describeCreator(duplicate)} on {formatDate(
+              duplicate.created_at,
+            )}. You can use the same name, but the two will be hard to tell
+            apart on the list.
+            {#if duplicateCount > 1}
+              Showing the most recent of {duplicateCount} with this name.
+            {/if}
+          </p>
+        </Panel>
       </div>
     {/if}
 
