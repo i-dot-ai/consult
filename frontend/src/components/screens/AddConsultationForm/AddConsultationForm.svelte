@@ -1,11 +1,10 @@
 <script lang="ts">
-  import clsx from "clsx";
-
   import Title from "../../Title.svelte";
   import Alert from "../../Alert/Alert.svelte";
   import ErrorIcon from "../../svg/material/Error.svelte";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
+  import TextInput from "../../inputs/TextInput/TextInput.svelte";
 
   import { getConsultationDetailUrl, Routes } from "../../../global/routes.ts";
   import {
@@ -18,7 +17,8 @@
 
   const DUPLICATE_CHECK_DELAY = 300;
   const INPUT_ID = "consultation-name";
-  const ERROR_SUMMARY_ID = "consultation-name-error";
+  const HINT_ID = "consultation-name-hint";
+  const WARNING_ID = "consultation-name-warning";
 
   let name = $state("");
   let emptyError = $state(false);
@@ -71,7 +71,8 @@
     return consultation.created_by?.email ?? "another user";
   }
 
-  function handleInput() {
+  function handleInput(value: string) {
+    name = value;
     emptyError = false;
     submitError = "";
     checkDuplicate();
@@ -121,60 +122,39 @@
 </p>
 
 <form class="flex max-w-2xl flex-col gap-4" onsubmit={handleSubmit} novalidate>
-  <div class="flex flex-col gap-1">
-    <label for={INPUT_ID}>Consultation name</label>
-    <p id="consultation-name-hint" class="text-neutral-500">
-      Use the name it was published under, so your team can find it.
-    </p>
+  <TextInput
+    id={INPUT_ID}
+    name="title"
+    label="Consultation name"
+    value={name}
+    setValue={handleInput}
+    disabled={submitting}
+    invalid={emptyError}
+    ariaDescribedby={[HINT_ID, duplicate && WARNING_ID]
+      .filter(Boolean)
+      .join(" ")}
+  />
 
-    {#if duplicate}
-      <div id="consultation-name-warning">
-        <Panel variant="default" bg>
-          <p>{duplicate.title} already exists.</p>
-          <p class="text-neutral-500">
-            Created by {describeCreator(duplicate)} on {formatDate(
-              duplicate.created_at,
-            )}. You can use the same name, but the two will be hard to tell
-            apart on the list.
-            {#if duplicateCount > 1}
-              Showing the most recent of {duplicateCount} with this name.
-            {/if}
-          </p>
-        </Panel>
-      </div>
-    {/if}
+  <p id={HINT_ID} class="text-neutral-500">
+    Use the name it was published under, so your team can find it.
+  </p>
 
-    {#if emptyError}
-      <p id={ERROR_SUMMARY_ID} class="text-red-700">
-        Enter the consultation name
-      </p>
-    {/if}
-
-    <input
-      id={INPUT_ID}
-      name="title"
-      type="text"
-      class={clsx([
-        "h-10",
-        "w-full",
-        "px-2",
-        "rounded-xs",
-        "border",
-        "focus:outline-2",
-        "focus:outline-yellow-300",
-        emptyError ? "border-2 border-red-700" : "border-gray-300",
-      ])}
-      aria-describedby={clsx([
-        "consultation-name-hint",
-        duplicate && "consultation-name-warning",
-        emptyError && ERROR_SUMMARY_ID,
-      ])}
-      aria-invalid={emptyError || undefined}
-      bind:value={name}
-      oninput={handleInput}
-      disabled={submitting}
-    />
-  </div>
+  {#if duplicate}
+    <div id={WARNING_ID}>
+      <Panel variant="default" bg>
+        <p>{duplicate.title} already exists.</p>
+        <p class="text-neutral-500">
+          Created by {describeCreator(duplicate)} on {formatDate(
+            duplicate.created_at,
+          )}. You can use the same name, but the two will be hard to tell apart
+          on the list.
+          {#if duplicateCount > 1}
+            Showing the most recent of {duplicateCount} with this name.
+          {/if}
+        </p>
+      </Panel>
+    </div>
+  {/if}
 
   <div class="flex items-center gap-2">
     <Button
