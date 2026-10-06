@@ -342,12 +342,14 @@ artefact store.
 
 **`PydanticEvalsRunner`** wraps `pydantic_evals.Dataset.evaluate`. Internally it builds a
 `pydantic_evals.Dataset(cases=[...], evaluators=[...])`, wrapping each `config.evaluators` entry individually
-(not fanning a single bridge out over the whole list): a `PydanticEvalsEvaluator` is unwrapped back to its
-own native evaluator via its `.pydantic_evaluator` accessor (real tracing, no round-trip through a
-reconstructed context); anything else is wrapped one-for-one in `_EvaluatorPortAsNativeEvaluator(port=...)`,
-which rebuilds a framework `Case` from the native `EvaluatorContext` (`.inputs`, `.output`,
-`.expected_output`, `.metadata`, `.name`), delegates to that one `EvaluatorPort`, and translates its
-`list[Score]` back into pydantic-evals' expected return shape. `Dataset.evaluate(task, max_concurrency=...)`
+(not fanning a single bridge out over the whole list): every entry is wrapped one-for-one in
+`_EvaluatorPortAsNativeEvaluator(port=...)`, which translates the port's `list[Score]` back into
+pydantic-evals' expected return shape. A `PydanticEvalsEvaluator` is handed the real native
+`EvaluatorContext` through `evaluate_in_context(ctx)` (real tracing, no round-trip through a reconstructed
+context), while still passing through `EvaluatorPort`'s shared error boundary and metric-name projection, so
+a failing evaluator degrades to zero scores exactly as under `InlineSequentialRunner`; any other port gets a
+framework `Case` rebuilt from the context (`.inputs`, `.output`, `.expected_output`, `.metadata`, `.name`)
+and is called through `evaluate()`. `Dataset.evaluate(task, max_concurrency=...)`
 is then called once per run, not per evaluator. It also populates `RunReport.engine_report` with the native
 `EvaluationReport` object `Dataset.evaluate()` returns — see [Surfacing pydantic-evals' native
 EvaluationReport](#surfacing-pydantic-evals-native-evaluationreport-without-widening-the-ports)

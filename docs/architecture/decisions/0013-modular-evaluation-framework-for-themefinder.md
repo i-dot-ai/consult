@@ -119,5 +119,6 @@ scripts onto it in place, incrementally:
 - Note (2026-09-24): to support a mix of evaluator sources (pydantic-evals, DeepEval, custom), `EvaluatorPort`
   stays the canonical hub — sources adapt in, runners adapt out — rather than adopting `pydantic_evals.Evaluator`
   as the base, which would privilege one library's context model and force `sources × runners` adapters instead
-  of `sources + runners`. The cost is a reverse adapter (`EvaluatorPort → pydantic_evals.Evaluator`) plus unwrap
-  dispatch for `PydanticEvalsEvaluator` (via its `pydantic_evaluator` accessor) on the native runner.
+  of `sources + runners`. The cost is a reverse adapter (`EvaluatorPort → pydantic_evals.Evaluator`) plus
+  `isinstance` dispatch for `PydanticEvalsEvaluator` on the native runner, which passes the engine's real
+  context through `evaluate_in_context` so the adapter's error handling still applies.
