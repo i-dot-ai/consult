@@ -76,6 +76,7 @@ services:
       - NODE_ENV=development
       - PUBLIC_BACKEND_URL=http://backend:8000
       - PUBLIC_ENVIRONMENT=local
+      - PUBLIC_DATA_SETUP_V2_ENABLED=true
     volumes:
       - ./frontend:/app
     depends_on:
