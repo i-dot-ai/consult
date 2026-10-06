@@ -172,7 +172,7 @@
         duplicate && "consultation-name-warning",
         emptyError && ERROR_SUMMARY_ID,
       ])}
-      aria-invalid={emptyError}
+      aria-invalid={emptyError || undefined}
       bind:value={name}
       oninput={handleInput}
       disabled={submitting}
