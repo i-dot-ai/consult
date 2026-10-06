@@ -11,6 +11,8 @@ import type {
   ConsultationV2CreateResponse,
   UpdateConsultationBody,
 } from "./types";
+import type { Consultation } from "../../types";
+
 
 export function buildConsultationsGetQuery() {
   return buildQuery<ConsultationsGetResponse>(consultationsQueryParts.url(), {
@@ -46,10 +48,9 @@ export function buildConsultationDeleteQuery(consultationId: string) {
 }
 
 export function buildConsultationGetQuery(consultationId: string) {
-  return buildQuery<ConsultationsGetResponse>(
-    consultationQueryParts.url(consultationId),
-    { key: consultationQueryParts.key(consultationId) },
-  );
+  return buildQuery<Consultation>(consultationQueryParts.url(consultationId), {
+    key: consultationQueryParts.key(consultationId),
+  });
 }
 
 export const updateConsultation = async (
