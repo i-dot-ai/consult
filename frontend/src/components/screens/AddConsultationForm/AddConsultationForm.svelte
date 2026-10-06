@@ -8,8 +8,8 @@
 
   import { getConsultationDetailUrl, Routes } from "../../../global/routes.ts";
   import {
+    buildConsultationsV2ByTitleQuery,
     buildConsultationV2CreateQuery,
-    getConsultationsV2ByTitle,
   } from "../../../global/queries/consultations/queries.ts";
   import type { ConsultationV2 } from "../../../global/queries/consultations/types.ts";
   import { debounce } from "../../../global/utils.ts";
@@ -20,9 +20,16 @@
   const WARNING_ID = "consultation-name-warning";
 
   let name = $state("");
+  let debouncedName = $state("");
   let emptyError = $state(false);
   let submitError = $state("");
   let submitting = $state(false);
+
+  const trimmedName = $derived(name.trim());
+
+  const updateDebouncedName = debounce(() => {
+    debouncedName = trimmedName;
+  }, DUPLICATE_CHECK_DELAY);
 
   const consultationCreate = buildConsultationV2CreateQuery(
     async (data) => {
@@ -34,32 +41,16 @@
     },
   );
 
-  const trimmedName = $derived(name.trim());
-
-  let duplicate: ConsultationV2 | undefined = $state(undefined);
-  let duplicateCount = $state(0);
-
-  const checkDuplicate = debounce(async () => {
-    const titleToCheck = trimmedName;
-
-    if (!titleToCheck) {
-      duplicate = undefined;
-      duplicateCount = 0;
-      return;
-    }
-
-    try {
-      const { count, results } = await getConsultationsV2ByTitle(titleToCheck);
-      if (titleToCheck === trimmedName) {
-        duplicate = results[0];
-        duplicateCount = count;
-      }
-    } catch (error) {
-      console.error(error);
-      duplicate = undefined;
-      duplicateCount = 0;
-    }
-  }, DUPLICATE_CHECK_DELAY);
+  const titleLookup = $derived(
+    debouncedName ? buildConsultationsV2ByTitleQuery(debouncedName) : null,
+  );
+  const lookupMatchesInput = $derived(debouncedName === trimmedName);
+  const duplicate = $derived(
+    lookupMatchesInput ? titleLookup?.query.data?.results[0] : undefined,
+  );
+  const duplicateCount = $derived(
+    lookupMatchesInput ? (titleLookup?.query.data?.count ?? 0) : 0,
+  );
 
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString("en-GB", {
@@ -80,7 +71,7 @@
     name = value.trimStart();
     emptyError = false;
     submitError = "";
-    checkDuplicate();
+    updateDebouncedName();
   }
 
   async function handleSubmit(e: SubmitEvent) {

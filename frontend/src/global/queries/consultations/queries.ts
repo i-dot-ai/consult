@@ -65,17 +65,18 @@ export const updateConsultation = async (
     throw new Error(`Failed to update consultation: ${consultationId}`);
 };
 
-export const getConsultationsV2ByTitle = async (
-  title: string,
-): Promise<ConsultationsV2GetResponse> => {
+export function buildConsultationsV2ByTitleQuery(title: string) {
   if (!getDataSetupV2Enabled()) {
-    return { count: 0, next: null, previous: null, results: [] };
+    throw new Error("Looking up consultations by title requires data setup v2");
   }
 
   const params = new URLSearchParams({ title__iexact: title });
-  const response = await fetch(
+
+  return buildQuery<ConsultationsV2GetResponse>(
     `${consultationsV2QueryParts.url()}?${params.toString()}`,
+    {
+      key: [...consultationsV2QueryParts.key(), "title", title],
+      errorMessage: "Failed to look up consultation",
+    },
   );
-  if (!response.ok) throw new Error(`Failed to look up consultation: ${title}`);
-  return response.json();
-};
+}
