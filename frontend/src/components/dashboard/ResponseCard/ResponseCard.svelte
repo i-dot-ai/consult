@@ -136,7 +136,7 @@
         </div>
       {/if}
 
-      <div class="flex items-center gap-2">
+      <div class="ml-auto flex items-center gap-2">
         {#if !skeleton}
           <FlagButton
             {consultationId}
