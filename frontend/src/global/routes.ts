@@ -559,5 +559,5 @@ export const getQuestionsUrl = (consultationId: string) => {
 
 export const getDataUploadUrl = (consultationId: string) => {
   // TODO: Subject to change, update accordingly
-  return urlJoin(Suffixes.Consultations, consultationId, Suffixes.DataUpload);
+  return urlJoin(Routes.Consultations, consultationId, Suffixes.DataUpload);
 };
