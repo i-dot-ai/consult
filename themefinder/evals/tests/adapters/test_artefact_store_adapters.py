@@ -347,6 +347,28 @@ class TestLangfuseArtefactStore:
         assert dataset_item.exit_calls == [(RuntimeError, "boom")]
         assert client.create_trace_calls == []
 
+    def test_record_case_exits_dataset_item_context_when_trace_update_fails(
+        self, monkeypatch
+    ):
+        client = _FakeLangfuseClient()
+        client.dataset_items["item-123"] = _FakeDatasetItem("item-123")
+        context = LangfuseContext(client=client, session_id="session-1")
+        store = LangfuseArtefactStore(context=context, owns_context=False)
+        outcome = _make_outcome(case=_make_case(langfuse_item_id="item-123"))
+
+        def raise_on_update_trace(self, **kwargs):
+            raise RuntimeError("trace update failed")
+
+        monkeypatch.setattr(_FakeTrace, "update_trace", raise_on_update_trace)
+        store.start_run("generation", "demo")
+
+        with pytest.raises(RuntimeError, match="trace update failed"):
+            store.record_case(outcome)
+
+        dataset_item = client.dataset_items["item-123"]
+        assert dataset_item.exit_calls == [(RuntimeError, "trace update failed")]
+        assert client.scores == []
+
     def test_finish_run_flushes_when_context_is_owned(self):
         client = _FakeLangfuseClient()
         context = LangfuseContext(client=client)

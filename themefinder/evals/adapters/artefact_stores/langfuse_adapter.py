@@ -163,13 +163,17 @@ class LangfuseArtefactStore(ArtefactStorePort):
             yield self._create_unlinked_trace(outcome)
             return
 
-        update_trace = getattr(trace, "update_trace", None)
-        if callable(update_trace):
-            update_trace(
-                session_id=self.context.session_id,
-                tags=self.context.tags,
-                metadata=self.context.metadata,
-            )
+        try:
+            update_trace = getattr(trace, "update_trace", None)
+            if callable(update_trace):
+                update_trace(
+                    session_id=self.context.session_id,
+                    tags=self.context.tags,
+                    metadata=self.context.metadata,
+                )
+        except BaseException as exc:
+            run_cm.__exit__(type(exc), exc, exc.__traceback__)
+            raise
 
         try:
             yield trace, self._trace_id(trace)
