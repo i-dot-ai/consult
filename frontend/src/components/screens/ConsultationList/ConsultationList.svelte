@@ -320,7 +320,9 @@
     >
       {#snippet cellContent(content, _, column)}
         {#if column.key === "name"}
-          <h3 class="font-[500]">{content}</h3>
+          <h3 class="font-[500]" data-testid="consultation-item">
+            {content}
+          </h3>
         {:else if column.key === "status"}
           {@const status = content as Consultation["stage"]}
           {@const DISPLAY_TEXTS = {
