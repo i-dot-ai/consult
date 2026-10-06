@@ -6,7 +6,10 @@ plain data shapes every port and runner operate on.
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from adapters.evaluators.base import EvaluatorPort
 
 
 @dataclass(frozen=True)
@@ -35,10 +38,7 @@ class CaseOutcome:
 @dataclass
 class RunReport:
     outcomes: list[CaseOutcome]
-    # Opaque escape hatch for a runner's own native report object, if it has
-    # one (e.g. pydantic_evals.reporting.EvaluationReport). None for runners
-    # that don't have a native report (InlineSequentialRunner and friends).
-    # Untyped deliberately: eval_types.py never imports pydantic_evals.
+    # Opaque escape hatch for a runner's own native report object, if it has one
     engine_report: Any | None = None
 
 
@@ -46,7 +46,7 @@ class RunReport:
 class ComponentConfig:
     component: str  # one of datasets.VALID_COMPONENTS
     task: Callable[[dict, Any], Awaitable[dict]]  # (case.inputs, llm) -> output dict
-    build_evaluators: Callable[[Any], list[Any]]  # (judge_llm) -> list[EvaluatorPort]
+    evaluators: list["EvaluatorPort"]  # pre-built, with any judge llm already bound
     case_filter: Callable[[Case], bool] | None = None
 
 
