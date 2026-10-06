@@ -21,9 +21,11 @@ from tenacity import (
 )
 
 from eval_types import Case, Score
+from utils.logging_config import get_logger
+
 from .base import EvaluatorPort
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class LLMJudgeEvaluator(EvaluatorPort):

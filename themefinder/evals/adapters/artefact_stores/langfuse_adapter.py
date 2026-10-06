@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-import logging
 from contextlib import contextmanager
 from typing import Any, Generator
 
 from eval_types import CaseOutcome, RunReport
 from utils import langfuse as langfuse_utils
 from utils.langfuse import LangfuseContext
+from utils.logging_config import get_logger
 
 from .base import ArtefactStorePort, case_key, flatten_run_report, json_safe
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class LangfuseArtefactStore(ArtefactStorePort):
