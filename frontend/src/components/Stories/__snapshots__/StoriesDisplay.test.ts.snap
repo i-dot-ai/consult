@@ -561,6 +561,12 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
               >
                 AddConsultationForm
               </a>
+              <a
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                href="/stories?selected=ConsultationView"
+              >
+                ConsultationView
+              </a>
               
               <!---->
             </div>
