@@ -55,13 +55,12 @@ exports[`FloatingPanel > renders correct direction 1`] = `
     </div>
      
     <div
-      class="relative mb-12 border bg-white p-2 transition-opacity shadow-lg rounded-lg, pointer-events-none opacity-0"
+      class="relative mb-12 border bg-white p-2 transition-opacity shadow-lg rounded-lg pointer-events-none opacity-0"
       data-melt-popover-content=""
       data-portal=""
       data-state="closed"
       hidden=""
       id="direction-test"
-      style="display: none;"
       tabindex="-1"
     >
       <!---->
@@ -166,13 +165,12 @@ exports[`FloatingPanel > renders correct direction 2`] = `
     </div>
      
     <div
-      class="relative mb-12 border bg-white p-2 transition-opacity shadow-lg rounded-lg, pointer-events-none opacity-0"
+      class="relative mb-12 border bg-white p-2 transition-opacity shadow-lg rounded-lg pointer-events-none opacity-0"
       data-melt-popover-content=""
       data-portal=""
       data-state="closed"
       hidden=""
       id="direction-test"
-      style="display: none;"
       tabindex="-1"
     >
       <!---->

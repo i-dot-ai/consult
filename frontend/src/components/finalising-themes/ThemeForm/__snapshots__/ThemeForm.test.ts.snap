@@ -154,11 +154,11 @@ exports[`ThemeForm > should render add variant 1`] = `
         </label>
          
         <textarea
-          class="block w-full mt-1 p-1 border border-gray-300 rounded-xs focus:outline-2 focus:outline-yellow-300"
+          class="block w-full min-h-(--textarea-min-height) mt-1 p-1 border border-gray-300 rounded-xs focus:outline-2 focus:outline-yellow-300"
           id="description-input"
           placeholder="Describe what responses should be categorised under this theme..."
           rows="3"
-          style="min-height: 3lh;"
+          style="--textarea-min-height: 3lh;"
         />
       </div>
       <!---->

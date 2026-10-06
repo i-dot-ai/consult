@@ -88,7 +88,6 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
       <!---->
       <h1
         class="text-neutral-700 text-xl"
-        style=""
       >
         <!---->
         Finalise Themes
@@ -438,7 +437,6 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
       <!---->
       <h1
         class="text-neutral-700 text-xl"
-        style=""
       >
         <!---->
         Finalise Themes

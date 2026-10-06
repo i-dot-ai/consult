@@ -6,6 +6,8 @@
   import clsx from "clsx";
   import { writable } from "svelte/store";
 
+  import { cssVars } from "../../global/actions";
+
   export let value: number = 0;
   export let thickness: 1 | 1.5 | 2 = 2;
   export let transitionDelay: number = 0;
@@ -38,20 +40,26 @@
   ])}
 >
   <div
+    use:cssVars={{
+      "progress-translate": `-${100 - (100 * ($writableValue ?? 0)) / ($max ?? 1)}%`,
+      "progress-delay": `${transitionDelay}ms`,
+      "progress-duration": `${transitionDuration}ms`,
+    }}
     class={clsx([
+      "progress-bar",
       "h-full",
       "w-full",
       "bg-primary",
       "transition-transform",
-      "duration-660",
       "ease-[cubic-bezier(0.65,0,0.35,1)]",
     ])}
-    style={`
-      transform: translateX(-${
-        100 - (100 * ($writableValue ?? 0)) / ($max ?? 1)
-      }%);
-      transition-delay: ${transitionDelay}ms;
-      transition-duration: ${transitionDuration}ms;
-    `}
   ></div>
 </div>
+
+<style>
+  .progress-bar {
+    transform: translateX(var(--progress-translate, -100%));
+    transition-delay: var(--progress-delay, 0ms);
+    transition-duration: var(--progress-duration, 0ms);
+  }
+</style>

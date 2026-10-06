@@ -13,6 +13,16 @@ export default defineConfig({
     // Disable origin check from astro v6+ due to issues with django admin passthrough
     // Django itself contains CSRF which should make this moot when combined with our infra setup
     checkOrigin: false,
+    csp: {
+      // Omit script-src/style-src here: Astro injects them with per-build hashes,
+      // and listing them drops the hashes.
+      directives: [
+        "default-src 'self'",
+        "img-src 'self' data:",
+        "font-src 'self' data:",
+        "connect-src 'self' *.ingest.de.sentry.io",
+      ],
+    },
   },
   integrations: [
     svelte(),
@@ -41,6 +51,11 @@ export default defineConfig({
     service: {
       entrypoint: "astro/assets/services/sharp",
     },
+  },
+
+  // Shiki emits inline styles the CSP rejects.
+  markdown: {
+    syntaxHighlight: false,
   },
 
   server: {

@@ -79,8 +79,10 @@
     </Button>
   </div>
 
+  <!-- Drop melt's inline style attr: strict style-src blocks it. `hidden` hides it when closed; melt positions it through the CSSOM when open. -->
   <div
     use:melt={$content}
+    style={undefined}
     class={clsx([
       "relative",
       "mb-12",
@@ -89,7 +91,7 @@
       "p-2",
       "transition-opacity",
       "shadow-lg",
-      "rounded-lg,",
+      "rounded-lg",
       !isOpen && clsx(["pointer-events-none", "opacity-0"]),
     ])}
   >
