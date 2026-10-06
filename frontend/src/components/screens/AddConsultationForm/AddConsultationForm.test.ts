@@ -1,4 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/svelte";
 import fetchMock from "fetch-mock";
 
@@ -6,6 +14,9 @@ import AddConsultationForm from "./AddConsultationForm.svelte";
 import { mockRoute } from "../../../global/utils";
 import { queryClient } from "../../../global/queryClient";
 import { consultationsV2QueryParts } from "../../../global/queries/consultations/parts";
+
+const originalV2Flag = process.env.PUBLIC_DATA_SETUP_V2_ENABLED;
+process.env.PUBLIC_DATA_SETUP_V2_ENABLED = "true";
 
 const URL = consultationsV2QueryParts.url();
 
@@ -164,5 +175,13 @@ describe("AddConsultationForm", () => {
       ).toBeInTheDocument();
     });
     consoleError.mockRestore();
+  });
+
+  afterAll(() => {
+    if (originalV2Flag === undefined) {
+      delete process.env.PUBLIC_DATA_SETUP_V2_ENABLED;
+    } else {
+      process.env.PUBLIC_DATA_SETUP_V2_ENABLED = originalV2Flag;
+    }
   });
 });
