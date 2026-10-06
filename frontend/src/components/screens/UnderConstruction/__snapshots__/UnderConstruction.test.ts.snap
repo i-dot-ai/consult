@@ -1,0 +1,52 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`UnderConstruction > should match snapshot 1`] = `
+<div>
+  <div
+    class="flex flex-col gap-2 justify-center items-center mt-36"
+  >
+    <div
+      class="mb-4"
+    >
+      <svg
+        aria-hidden="true"
+        class="fill-neutral-500"
+        height="3rem"
+        viewBox="0 -960 960 960"
+        width="3rem"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <!---->
+        <path
+          d="m40-120 440-760 440 760H40Zm138-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm-40-120h80v-200h-80v200Zm40-100Z"
+          xmlns="http://www.w3.org/2000/svg"
+        />
+        <!---->
+      </svg>
+      <!---->
+    </div>
+     
+    <!---->
+    <h2
+      class="text-neutral-700 text-lg"
+      style=""
+    >
+      <!---->
+      <!---->
+      Under Construction
+      
+      
+      
+    </h2>
+    
+    <!---->
+     
+    <p
+      class="text-neutral-500"
+    >
+      This functionality is currently under construction
+    </p>
+  </div>
+  
+</div>
+`;

@@ -42,7 +42,11 @@ export interface Question {
 }
 
 export type ConsultationStage =
-  "finalising_themes" | "assigning_themes" | "analysis";
+  | "setup"
+  | "finding_themes"
+  | "finalising_themes"
+  | "assigning_themes"
+  | "analysis";
 export interface NextResponseInfo {
   id: string;
   consultation_id: string;
@@ -61,8 +65,9 @@ export interface Consultation {
   code: string;
   stage: ConsultationStage;
   created_at: string;
-  created_by: string;
+  created_by: string | User;
   running_job: RunningJob;
+  users: User[];
 }
 
 export interface ConsultationFolder {
