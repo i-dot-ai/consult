@@ -77,7 +77,7 @@
   }
 
   function handleInput(value: string) {
-    name = value;
+    name = value.trimStart();
     emptyError = false;
     submitError = "";
     checkDuplicate();
