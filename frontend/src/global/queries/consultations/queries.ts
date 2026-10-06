@@ -1,4 +1,4 @@
-import { buildQuery } from "../../queryClient";
+import { buildQuery, type FetchError } from "../../queryClient";
 import { getDataSetupV2Enabled } from "../../utils";
 import {
   consultationQueryParts,
@@ -20,6 +20,7 @@ export function buildConsultationsGetQuery() {
 
 export function buildConsultationV2CreateQuery(
   onSuccess: (data: ConsultationV2CreateResponse) => Promise<void>,
+  onError: (error: FetchError<unknown>) => Promise<void>,
 ) {
   if (!getDataSetupV2Enabled()) {
     throw new Error("Creating consultations requires data setup v2");
@@ -32,6 +33,7 @@ export function buildConsultationV2CreateQuery(
       method: "POST",
       errorMessage: "Failed to create consultation",
       onSuccess: (data) => onSuccess(data as ConsultationV2CreateResponse),
+      onError,
     },
   );
 }

@@ -12,7 +12,6 @@
     getConsultationsV2ByTitle,
   } from "../../../global/queries/consultations/queries.ts";
   import type { ConsultationV2 } from "../../../global/queries/consultations/types.ts";
-  import type { FetchError } from "../../../global/queryClient.ts";
   import { debounce } from "../../../global/utils.ts";
 
   const DUPLICATE_CHECK_DELAY = 300;
@@ -25,9 +24,15 @@
   let submitError = $state("");
   let submitting = $state(false);
 
-  const consultationCreate = buildConsultationV2CreateQuery(async (data) => {
-    window.location.href = getConsultationDetailUrl(data.id);
-  });
+  const consultationCreate = buildConsultationV2CreateQuery(
+    async (data) => {
+      window.location.href = getConsultationDetailUrl(data.id);
+    },
+    async (error) => {
+      submitError = error.message || "Failed to create consultation";
+      submitting = false;
+    },
+  );
 
   const trimmedName = $derived(name.trim());
 
@@ -92,10 +97,7 @@
     try {
       await consultationCreate.fetch({ body: { title: trimmedName } });
     } catch (error) {
-      submitError =
-        (error as FetchError<unknown>)?.message ||
-        "Failed to create consultation";
-      submitting = false;
+      console.error(error);
     }
   }
 </script>
