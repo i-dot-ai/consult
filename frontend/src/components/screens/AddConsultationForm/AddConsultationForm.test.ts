@@ -114,13 +114,18 @@ describe("AddConsultationForm", () => {
   });
 
   it("notes when several consultations share the name", async () => {
+    const OTHER = {
+      ...EXISTING,
+      id: "f2a56a1c-5d7b-4b4c-9d4e-4a2b7d6c9f31",
+      created_at: "2026-07-01T10:00:00Z",
+    };
     mockRoute({
       url: DUPLICATE_URL,
       body: {
-        count: 3,
+        count: 2,
         next: null,
         previous: null,
-        results: [EXISTING],
+        results: [EXISTING, OTHER],
       },
     });
     render(AddConsultationForm);
@@ -134,7 +139,7 @@ describe("AddConsultationForm", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Showing the most recent of 3 with this name/),
+        screen.getByText(/Showing the most recent of 2 with this name/),
       ).toBeInTheDocument();
     });
   });
