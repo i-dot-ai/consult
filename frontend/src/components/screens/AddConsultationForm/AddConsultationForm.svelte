@@ -28,12 +28,10 @@
   let duplicate: ConsultationV2 | undefined = $state(undefined);
   let duplicateCount = $state(0);
 
-  const trimmedName = $derived(name.trim());
-
   // Re-created each time checkTrigger changes, so handleSubmit can trigger a
   // fresh lookup for the current name without reusing a stale query.
   const titleLookup = $derived(
-    checkTrigger ? buildConsultationsV2ByTitleQuery(trimmedName) : null,
+    checkTrigger ? buildConsultationsV2ByTitleQuery(name) : null,
   );
 
   const consultationCreate = buildConsultationV2CreateQuery(
@@ -62,7 +60,7 @@
   }
 
   function handleInput(value: string) {
-    name = value.trimStart();
+    name = value.trim();
     submitError = "";
   }
 
@@ -71,7 +69,7 @@
     submitError = "";
 
     try {
-      await consultationCreate.fetch({ body: { title: trimmedName } });
+      await consultationCreate.fetch({ body: { title: name } });
     } catch (error) {
       console.error(error);
     }
@@ -136,11 +134,7 @@
   </p>
 
   <div class="flex items-center gap-2">
-    <Button
-      type="submit"
-      variant="primary"
-      disabled={submitting || !trimmedName}
-    >
+    <Button type="submit" variant="primary" disabled={submitting || !name}>
       Save and continue
     </Button>
     <Button href={Routes.Consultations} variant="default">Cancel</Button>
