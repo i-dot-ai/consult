@@ -25,10 +25,11 @@ def _get_sentence_model():
 class RedundancyEvaluator(EvaluatorPort):
     metric_names = ("redundancy",)
 
-    def __init__(self, threshold: float = 0.85):
+    def __init__(self, threshold: float = 0.85, themes_key: str = "themes"):
         """Store the cosine-similarity threshold above which a title pair
-        counts as redundant."""
+        counts as redundant, and the output field holding those themes."""
         self.threshold = threshold
+        self.themes_key = themes_key
 
     def _calculate_redundancy_score(self, themes: list[dict] | dict) -> dict[str, Any]:
         """Compute pairwise cosine similarity between theme titles, flagging
@@ -90,7 +91,7 @@ class RedundancyEvaluator(EvaluatorPort):
     async def _score(self, case: Case, output: Any) -> list[Score]:
         """Score the fraction of title pairs whose similarity exceeds the
         threshold, listing the flagged pairs in the comment."""
-        result = self._calculate_redundancy_score(output.get("themes", []))
+        result = self._calculate_redundancy_score(output.get(self.themes_key, []))
 
         comment = f"{result['n_redundant_pairs']}/{result['n_total_pairs']} pairs above threshold"
         if result["flagged_pairs"]:

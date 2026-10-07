@@ -7,11 +7,13 @@ import json
 import logging
 import random
 import re
-from typing import Any, Callable
 from abc import abstractmethod
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 import openai
+from eval_types import Case, Score
 from tenacity import (
     before_sleep_log,
     retry,
@@ -19,8 +21,6 @@ from tenacity import (
     stop_after_attempt,
     wait_random_exponential,
 )
-
-from eval_types import Case, Score
 from utils.logging_config import get_logger
 
 from .base import EvaluatorPort
@@ -118,6 +118,11 @@ class ThemeComparisonJudgeEvaluator(LLMJudgeEvaluator):
     #: (ground-truth / pre-transform) themes.
     ground_truth_attr: str = "expected_output"
 
+    #: Name of the task-output field holding generated themes. Components keep
+    #: their established public output schemas while this evaluator reads the
+    #: corresponding theme collection for judging.
+    output_themes_key: str = "themes"
+
     def _topic_order(self, case_themes: Any, output_themes: Any) -> tuple[Any, Any]:
         """Order the two theme lists, case-side first by default; subclasses
         override to swap."""
@@ -128,7 +133,7 @@ class ThemeComparisonJudgeEvaluator(LLMJudgeEvaluator):
         optionally shuffle them, and pass them to `prompt_fn`."""
         case_side = getattr(case, self.ground_truth_attr) or {}
         case_themes = case_side.get("themes", [])
-        output_themes = output.get("themes", [])
+        output_themes = output.get(self.output_themes_key, [])
         topic_list_1, topic_list_2 = self._topic_order(case_themes, output_themes)
         if self.shuffle:
             topic_list_1 = self._shuffle_themes(topic_list_1)

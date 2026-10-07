@@ -4,7 +4,7 @@ import asyncio
 from dataclasses import dataclass
 
 import httpx
-from settings import eval_settings
+from settings import EvalSettings, get_settings
 
 # TODO: hardcoded substring matching for a small, manually maintained subset
 # of model families. New model names (e.g. a future o-series release) won't
@@ -192,10 +192,11 @@ def _dedupe_models_by_name(models: list[GatewayModel]) -> list[GatewayModel]:
     return list(deduped.values())
 
 
-def gateway_credentials() -> tuple[str, str]:
+def gateway_credentials(settings: EvalSettings | None = None) -> tuple[str, str]:
     """Read and validate the two required gateway env vars."""
-    base_url = eval_settings.gateway.url
-    api_key = eval_settings.gateway.api_key
+    settings = settings if settings is not None else get_settings()
+    base_url = settings.gateway.url
+    api_key = settings.gateway.api_key
     if not base_url or not api_key:
         raise RuntimeError(
             "LLM_GATEWAY_URL and CONSULT_EVAL_LITELLM_API_KEY must be set"
