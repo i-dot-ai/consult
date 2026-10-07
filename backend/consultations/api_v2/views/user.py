@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultations import models
-from consultations.api.filters import UserFilter
-from consultations.api.serializers import (
+from consultations.api_v2.filters import UserFilter
+from consultations.api_v2.serializers import (
     ConsultationSerializer,
     UserSerializer,
 )
