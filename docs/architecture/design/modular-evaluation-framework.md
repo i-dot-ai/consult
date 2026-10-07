@@ -414,29 +414,23 @@ before committing to it.
 
 ### `evals/config.py::resolve_backends`
 
-`resolve_backends` returns an `EvalBackends` bundle: the resolved dataset, artefacts, and runner ports, plus
-a `context_owned` flag marking whether it constructed the Langfuse context itself (`context` was `None`) —
-`LangfuseArtefactStore.finish_run()` flushes only when this flag is set, so a context supplied by a caller
-is never flushed twice.
-
-Deliberately just three fields, one per port — `EvalBackends` doesn't need to know anything beyond "here is
-one instance of each port." The Langfuse flush-ownership decision (whether `LangfuseArtefactStore` should
-flush the context it was given) lives entirely inside that one adapter's own constructor instead, not on
-this shared struct — see the `resolve_backends()` bullet below.
+`resolve_backends` returns an `EvalBackends` bundle with deliberately just three fields, one per port: the
+resolved dataset, runner, and artefact store. The Langfuse flush-ownership decision lives inside
+`LangfuseArtefactStore`, not on this shared struct. `resolve_backends` passes `owns_context=True` when it
+constructed the context itself and `False` for a caller-supplied context, ensuring the latter is not flushed
+twice.
 
 This is the **only** orchestration function anywhere that touches `langfuse_utils` / `LangfuseContext`
 directly (besides the Langfuse adapter modules themselves), and it does so lazily, in this order:
 
 1. **Resolve `dataset_source` and `artefact_store` first, from settings alone** — no context construction
-   needed yet. Each is an explicit override (`EvalSettings.eval_dataset_source` / `.eval_artefact_store`,
-   from `THEMEFINDER_EVAL_DATASET_SOURCE` / `THEMEFINDER_EVAL_ARTEFACT_STORE`) if set, otherwise defaulting
-   to `"langfuse"` when `settings.langfuse_secret_key`, `.langfuse_public_key`, and `.langfuse_base_url` are
-   all set, `"local"` otherwise — today's implicit behaviour, now the default rather than the only option,
-   checked straight against those three fields rather than by building a context just to ask it. Requesting
-   `"langfuse"` for either without those credentials is a hard error right here — asking for a backend you
-   have no way to reach isn't a case to degrade gracefully from. This is what lets someone deliberately run
-   `dataset=langfuse, artefacts=local` (pull cases from a curated Langfuse dataset, keep results local) or
-   the reverse, without either choice silently dragging the other along with it.
+   needed yet. Each is selected explicitly through `EvalSettings.eval.dataset_source` /
+   `.artefact_store`, populated from `THEMEFINDER_EVAL_DATASET_SOURCE` /
+   `THEMEFINDER_EVAL_ARTEFACT_STORE`, and defaults to `"local"` when unset. Requesting `"langfuse"` for
+   either without the required secret key, public key, and base URL is a hard error right here — asking for
+   a backend you have no way to reach isn't a case to degrade gracefully from. This is what lets someone
+   deliberately run `dataset=langfuse, artefacts=local` (pull cases from a curated Langfuse dataset, keep
+   results local) or the reverse, without either choice silently dragging the other along with it.
 2. **Only if at least one of the two resolved to `"langfuse"`**, build the context — using the one the
    caller supplied if there is one, otherwise constructing a default one via `get_langfuse_context` — and
    remember in a local variable whether it owns this context (i.e. none was supplied). A fully local run

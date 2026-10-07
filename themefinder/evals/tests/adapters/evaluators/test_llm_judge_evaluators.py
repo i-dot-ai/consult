@@ -5,7 +5,6 @@ RefinementQualityEvaluator (numeric-key), and TitleSpecificityEvaluator
 """
 
 import json
-import types
 from collections import namedtuple
 
 import pytest
@@ -18,19 +17,7 @@ from adapters.evaluators.refinement_quality_evaluator import RefinementQualityEv
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
 from conftest import make_case
 from eval_types import Score
-
-
-class _FakeJudge:
-    """Stands in for the injected judge LLM. Records the prompts it was asked
-    to score"""
-
-    def __init__(self, parsed: str = "{}"):
-        self.parsed = parsed
-        self.prompts: list[str] = []
-
-    async def ainvoke(self, prompt: str):
-        self.prompts.append(prompt)
-        return types.SimpleNamespace(parsed=self.parsed)
+from fakes import FakeJudge
 
 
 class _RaisingJudge:
@@ -104,7 +91,7 @@ class TestDecisionScoredJudges(_JudgeContractTests):
 
     async def test_maps_ternary_decisions_to_scores(self):
         """STRONG/PARTIAL/NO decisions map to 5/3/0 and average into the metric score."""
-        judge = _FakeJudge(
+        judge = FakeJudge(
             '{"evaluations": {'
             '"A": {"decision": "STRONG", "matched_to": "x", "reasoning": "r"},'
             '"B": {"decision": "PARTIAL", "matched_to": "y", "reasoning": "r"},'
@@ -120,7 +107,7 @@ class TestDecisionScoredJudges(_JudgeContractTests):
 
     async def test_empty_evaluations_scores_zero(self):
         """An empty evaluations dict (no themes) yields a 0.0 score and a comment"""
-        judge = _FakeJudge('{"evaluations": {}}')
+        judge = FakeJudge('{"evaluations": {}}')
         scores = await self._evaluate(judge)
 
         assert scores[0].value == 0.0
@@ -128,7 +115,7 @@ class TestDecisionScoredJudges(_JudgeContractTests):
 
     async def test_legacy_numeric_format_still_scored(self):
         """Legacy bare 0-5 numbers per theme are still averaged into the score."""
-        judge = _FakeJudge('{"evaluations": {"A": 4, "B": 2}}')
+        judge = FakeJudge('{"evaluations": {"A": 4, "B": 2}}')
         scores = await self._evaluate(judge)
 
         # mean(4, 2) = 3.0; one theme (2) below threshold. Legacy details carry
@@ -138,7 +125,7 @@ class TestDecisionScoredJudges(_JudgeContractTests):
 
     async def test_evaluations_key_optional(self):
         """With no `evaluations` wrapper, scoring falls back to the top-level dict."""
-        judge = _FakeJudge(
+        judge = FakeJudge(
             '{"A": {"decision": "STRONG", "matched_to": "x", "reasoning": "r"}}'
         )
         scores = await self._evaluate(judge)
@@ -147,7 +134,7 @@ class TestDecisionScoredJudges(_JudgeContractTests):
 
     async def test_comment_wording_and_detail_lines(self):
         """The comment carries the threshold summary plus one detail line per theme."""
-        judge = _FakeJudge(
+        judge = FakeJudge(
             '{"evaluations": {'
             '"A": {"decision": "STRONG", "matched_to": "x", "reasoning": "clear"},'
             '"B": {"decision": "NO", "reasoning": "missing"}}}'
@@ -161,7 +148,7 @@ class TestDecisionScoredJudges(_JudgeContractTests):
 
     async def test_topic_order_wiring(self):
         """`_topic_order` sets which theme list appears first in the prompt per judge."""
-        judge = _FakeJudge('{"evaluations": {}}')
+        judge = FakeJudge('{"evaluations": {}}')
 
         await self._evaluate(
             judge,
@@ -199,7 +186,7 @@ class _NumericKeyJudgeTests(_JudgeContractTests):
         ):
             response[metric] = score
             response[f"{metric}_reasoning"] = reasoning
-        judge = _FakeJudge(json.dumps(response))
+        judge = FakeJudge(json.dumps(response))
 
         scores = await self._evaluate(judge)
 
@@ -219,7 +206,7 @@ class _NumericKeyJudgeTests(_JudgeContractTests):
             pytest.skip("single-metric evaluators have no topic order to test")
 
         present, missing = self.metric_names[0], self.metric_names[1]
-        judge = _FakeJudge(json.dumps({present: 4, f"{present}_reasoning": "tight"}))
+        judge = FakeJudge(json.dumps({present: 4, f"{present}_reasoning": "tight"}))
 
         scores = await self._evaluate(judge)
 
@@ -229,7 +216,7 @@ class _NumericKeyJudgeTests(_JudgeContractTests):
         """`_parse_json_markdown` strips a ```json code fence before parsing the response."""
         first = self.metric_names[0]
         body = json.dumps({first: 4, f"{first}_reasoning": "r"})
-        judge = _FakeJudge(f"```json\n{body}\n```")
+        judge = FakeJudge(f"```json\n{body}\n```")
 
         scores = await self._evaluate(judge)
 
@@ -247,7 +234,7 @@ class TestCondensationQualityEvaluator(_NumericKeyJudgeTests):
 
     async def test_reads_case_themes_from_inputs(self):
         """Wiring: with no expected_output, case themes come from `case.inputs` themes."""
-        judge = _FakeJudge("{}")
+        judge = FakeJudge("{}")
 
         await self._evaluate(
             judge,
@@ -278,7 +265,7 @@ class TestTitleSpecificityEvaluator(_JudgeContractTests):
 
     async def test_counts_specific_vs_vague(self):
         """Specific vs vague titles produce the ratio score and a vague-title comment."""
-        judge = _FakeJudge(
+        judge = FakeJudge(
             '{"evaluations": {'
             '"Housing costs in cities": {"decision": "SPECIFIC"},'
             '"Stuff": {"decision": "VAGUE"}}}'
@@ -293,7 +280,7 @@ class TestTitleSpecificityEvaluator(_JudgeContractTests):
 
     async def test_no_titles_skips_llm_call(self):
         """No titles skips the LLM call and yields the empty-case specificity score."""
-        judge = _FakeJudge()
+        judge = FakeJudge()
 
         scores = await self._evaluate(judge, output={"themes": {}})
 

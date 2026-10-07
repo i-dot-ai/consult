@@ -1,14 +1,15 @@
 """RunnerPort — the port every eval-runner adapter implements.
 
-settings.EvalRunSettings.engine is not yet wired to a runner-selection factory.
+config.resolve_backends() selects the runner using settings.EvalRunSettings.engine.
 """
 
 from abc import ABC, abstractmethod
 from collections import Counter
 from typing import Any
 
-from adapters.evaluators.base import EvaluatorPort
 from eval_types import Case, CaseOutcome, ComponentConfig, RunReport
+
+from adapters.evaluators.base import EvaluatorPort
 
 
 class RunnerPort(ABC):
