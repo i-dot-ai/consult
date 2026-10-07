@@ -65,7 +65,7 @@ export enum Routes {
   ThemeFinderRepository = "https://github.com/i-dot-ai/themefinder",
 }
 
-export const getApiConsultationsUrl = () => {
+export const getApiConsultationsRootUrl = () => {
   const prefix = getDataSetupV2Enabled() ? Prefixes.ApiV2 : Prefixes.ApiV1;
   return urlJoin(prefix, Suffixes.Consultations, "/");
 };
