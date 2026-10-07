@@ -25,8 +25,7 @@
   let submitting = $state(false);
   let checkTrigger = $state(0);
 
-  let duplicate: ConsultationV2 | undefined = $state(undefined);
-  let duplicateCount = $state(0);
+  let duplicates: ConsultationV2[] = $state([]);
 
   // Re-created each time checkTrigger changes, so handleSubmit can trigger a
   // fresh lookup for the current name without reusing a stale query.
@@ -85,11 +84,10 @@
     try {
       const result = (await titleLookup?.fetch()) as
         { data?: ConsultationsV2GetResponse } | undefined;
-      const match = result?.data?.results[0];
+      const matches = result?.data?.results ?? [];
 
-      if (match) {
-        duplicate = match;
-        duplicateCount = result?.data?.count ?? 0;
+      if (matches.length > 0) {
+        duplicates = matches;
         submitting = false;
         return;
       }
@@ -149,28 +147,28 @@
   variant="warning"
   Icon={Warning}
   title="This consultation name already exists"
-  open={Boolean(duplicate)}
+  open={duplicates.length > 0}
   setOpen={(newOpen) => {
     if (!newOpen) {
-      duplicate = undefined;
+      duplicates = [];
       submitting = false;
     }
   }}
   confirmText="Save anyway"
   handleConfirm={() => {
-    duplicate = undefined;
+    duplicates = [];
     createConsultation();
   }}
 >
-  {#if duplicate}
-    <p>{duplicate.title} already exists.</p>
+  {#if duplicates[0]}
+    <p>{duplicates[0].title} already exists.</p>
     <p class="text-neutral-500">
-      Created by {describeCreator(duplicate)} on {formatDate(
-        duplicate.created_at,
+      Created by {describeCreator(duplicates[0])} on {formatDate(
+        duplicates[0].created_at,
       )}. You can use the same name, but the two will be hard to tell apart on
       the list.
-      {#if duplicateCount > 1}
-        Showing the most recent of {duplicateCount} with this name.
+      {#if duplicates.length > 1}
+        Showing the most recent of {duplicates.length} with this name.
       {/if}
     </p>
   {/if}
