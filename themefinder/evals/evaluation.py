@@ -9,8 +9,11 @@ from config import resolve_backends
 from datasets import DatasetConfig
 from settings import EvalSettings, get_settings
 from utils import gateway
+from utils.logging_config import get_logger
 
 from themefinder.llm import OpenAILLM
+
+logger = get_logger(__name__)
 
 
 def _create_default_llm(settings: EvalSettings) -> OpenAILLM:
@@ -42,6 +45,10 @@ async def evaluate_component(
 
     settings = settings if settings is not None else get_settings()
     task_llm = llm if llm is not None else _create_default_llm(settings)
+    if component == "mapping" and judge_llm is not None:
+        logger.warning(
+            "judge_llm is ignored for mapping because it has no judge evaluator"
+        )
     evaluator_llm = judge_llm if judge_llm is not None else task_llm
     dataset_config = DatasetConfig(dataset=dataset, component=component)
     component_config = build_component_config(

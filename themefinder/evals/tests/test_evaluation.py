@@ -83,6 +83,33 @@ async def test_uses_task_llm_as_judge_by_default(monkeypatch):
     build.assert_called_once_with("mapping", judge_llm=task_llm, question_num=None)
 
 
+async def test_warns_when_mapping_is_given_a_judge_llm(monkeypatch):
+    import evaluation
+
+    task_llm = object()
+    judge_llm = object()
+    warning = Mock()
+    monkeypatch.setattr(evaluation.logger, "warning", warning)
+    monkeypatch.setattr(
+        evaluation,
+        "build_component_config",
+        Mock(return_value=ComponentConfig("mapping", _task, [])),
+    )
+    monkeypatch.setattr(evaluation, "resolve_backends", Mock(return_value=Mock()))
+    monkeypatch.setattr(evaluation, "run_component", AsyncMock(return_value={}))
+
+    await evaluate_component(
+        "mapping",
+        llm=task_llm,
+        judge_llm=judge_llm,
+        settings=_settings(),
+    )
+
+    warning.assert_called_once_with(
+        "judge_llm is ignored for mapping because it has no judge evaluator"
+    )
+
+
 async def test_creates_default_llm_from_same_settings_snapshot(monkeypatch):
     import evaluation
 
