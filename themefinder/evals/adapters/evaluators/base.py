@@ -5,13 +5,14 @@ a case and the task output and returns a list of Score objects. This
 is wrapped in evaluate which handles exceptions and logging.
 """
 
-import logging
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable
 from typing import Any
 
 from eval_types import Case, Score
+from utils.logging_config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class EvaluatorPort(ABC):
@@ -28,8 +29,12 @@ class EvaluatorPort(ABC):
 
         The concrete score functionality is implemented in _score().
         """
+        return await self._guard(self._score(case, output))
+
+    async def _guard(self, scoring: Awaitable[list[Score]]) -> list[Score]:
+        """Shared error boundary, so adapters scoring via another entry point behave alike."""
         try:
-            return await self._score(case, output)
+            return await scoring
         except Exception as e:
             logger.error(f"{self.name} evaluation failed: {e}")
             return [Score(name, 0.0, f"Error: {e}") for name in self.metric_names]

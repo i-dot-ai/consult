@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 
 // Set required environment variables for tests
 process.env.PUBLIC_ENVIRONMENT = "local";

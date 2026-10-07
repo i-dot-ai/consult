@@ -17,6 +17,7 @@ def _settings() -> EvalSettings:
         auto_eval_model="test-model",
         environment="test",
         git_sha="abcdef0",
+        log_level="INFO",
         gateway=GatewaySettings(url="https://gateway.invalid", api_key="key"),
         langfuse=None,
         eval=EvalRunSettings(

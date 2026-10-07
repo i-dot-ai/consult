@@ -133,12 +133,22 @@ class TestPydanticEvalsEvaluator:
             Score("LLMJudge_pass", 1.0, "looks grounded"),
         ]
 
-    def test_pydantic_evaluator_exposes_wrapped_evaluator_for_a_native_runner(self):
-        """`pydantic_evaluator` hands back the wrapped native Evaluator for a native runner."""
-        evaluator = Equals(value=5)
-        adapter = PydanticEvalsEvaluator(evaluator)
+    async def test_evaluate_in_context_uses_the_given_context_and_degrades_on_failure(
+        self,
+    ):
+        """evaluate_in_context scores against the supplied ctx and shares evaluate()'s error handling."""
+        ctx = PydanticEvalsEvaluator(Equals(value=5))._build_context(make_case(), 5)
 
-        assert adapter.pydantic_evaluator is evaluator
+        ok = await PydanticEvalsEvaluator(Equals(value=5)).evaluate_in_context(ctx)
+        failed = await PydanticEvalsEvaluator(RaisingEval()).evaluate_in_context(ctx)
+
+        assert ok == [Score("Equals", 1.0, "")], "should score against the given ctx"
+        assert [(s.name, s.value) for s in failed] == [("RaisingEval", 0.0)], (
+            "a raising evaluator should degrade to a zero score"
+        )
+        assert failed[0].comment.startswith("Error:"), (
+            "failure should be reported in the comment"
+        )
 
     async def test_str_label_recorded_in_comment_with_zero_value(self):
         """A bare str label parks in the comment at value 0.0 rather than coercing."""

@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from typing import Any
 
+from eval_types import Case, CaseOutcome, ComponentConfig, RunReport, Score
 from pydantic_evals import Case as NativeCase
 from pydantic_evals import Dataset
 from pydantic_evals.evaluators import Evaluator, EvaluatorContext
@@ -11,7 +12,6 @@ from pydantic_evals.reporting import EvaluationReport, ReportCase, ReportCaseFai
 
 from adapters.evaluators.base import EvaluatorPort
 from adapters.evaluators.pydantic_evals_evaluator import PydanticEvalsEvaluator
-from eval_types import Case, CaseOutcome, ComponentConfig, RunReport, Score
 
 from .base import RunnerPort
 
@@ -33,14 +33,21 @@ class _EvaluatorPortAsNativeEvaluator(Evaluator):
     async def evaluate_async(
         self, ctx: EvaluatorContext
     ) -> dict[str, EvaluationReason]:
-        """Rebuild our Case from ctx, delegate to the port, translate scores back."""
-        case = Case(
-            id=ctx.name or "",
-            inputs=ctx.inputs,
-            expected_output=ctx.expected_output,
-            metadata=ctx.metadata or {},
-        )
-        scores = await self.port.evaluate(case, ctx.output)
+        """Delegate to the port and translate scores back.
+
+        A PydanticEvalsEvaluator gets the real native ctx (real tracing); any other port
+        gets a Case rebuilt from ctx. Both go through the port's own error handling.
+        """
+        if isinstance(self.port, PydanticEvalsEvaluator):
+            scores = await self.port.evaluate_in_context(ctx)
+        else:
+            case = Case(
+                id=ctx.name,
+                inputs=ctx.inputs,
+                expected_output=ctx.expected_output,
+                metadata=ctx.metadata or {},
+            )
+            scores = await self.port.evaluate(case, ctx.output)
         return {
             score.name: EvaluationReason(
                 value=score.value, reason=score.comment or None
@@ -65,7 +72,8 @@ class PydanticEvalsRunner(RunnerPort):
     ) -> RunReport:
         """Build a native Dataset from the selected cases and evaluators, then run it."""
         native_evaluators = tuple(
-            self._to_native_evaluator(evaluator) for evaluator in config.evaluators
+            _EvaluatorPortAsNativeEvaluator(port=evaluator)
+            for evaluator in config.evaluators
         )
         dataset = Dataset(
             name=config.component,
@@ -83,13 +91,6 @@ class PydanticEvalsRunner(RunnerPort):
             progress=self._progress,
         )
         return self._to_run_report(native_report, cases)
-
-    @staticmethod
-    def _to_native_evaluator(evaluator: EvaluatorPort) -> Evaluator:
-        """Unwrap a PydanticEvalsEvaluator to run natively (real tracing); bridge others."""
-        if isinstance(evaluator, PydanticEvalsEvaluator):
-            return evaluator.pydantic_evaluator
-        return _EvaluatorPortAsNativeEvaluator(port=evaluator)
 
     @staticmethod
     def _to_native_case(case: Case) -> NativeCase:

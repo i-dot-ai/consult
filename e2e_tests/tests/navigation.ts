@@ -56,7 +56,7 @@ export async function gotoFinaliseThemesList(
   }
 
   const finaliseThemesLink = page.getByTestId(
-    `Finalise Themes for ${consultationTitle}`,
+    `Finalise themes for consultation: ${consultationTitle}`,
   );
   // Guard against a duplicate testId regression before clicking.
   await expect(finaliseThemesLink).toHaveCount(1);

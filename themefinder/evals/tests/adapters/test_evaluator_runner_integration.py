@@ -1,12 +1,10 @@
 """Integration tests: check each RunnerPort adapter can actually run the EvaluatorPort adapters"""
 
 import types
+from dataclasses import dataclass
 from typing import Any
 
 import pydantic_evals.evaluators.llm_as_a_judge as llm_as_a_judge_module
-from pydantic_evals.evaluators.common import EqualsExpected, LLMJudge, OutputConfig
-from pydantic_evals.evaluators.llm_as_a_judge import GradingOutput
-
 from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
 from adapters.evaluators.mapping_f1_evaluator import MappingF1Evaluator
 from adapters.evaluators.pydantic_evals_evaluator import PydanticEvalsEvaluator
@@ -15,6 +13,9 @@ from adapters.runners.inline_sequential_runner import InlineSequentialRunner
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from conftest import make_case
 from eval_types import Case, ComponentConfig
+from pydantic_evals.evaluators import Evaluator, EvaluatorContext
+from pydantic_evals.evaluators.common import EqualsExpected, LLMJudge, OutputConfig
+from pydantic_evals.evaluators.llm_as_a_judge import GradingOutput
 
 
 class _FakeJudge:
@@ -103,6 +104,33 @@ class _EvaluatorRunnerIntegrationTests:
         assert scores["LLMJudge_score"].value == 0.9
         assert scores["LLMJudge_pass"].value == 1.0
         assert scores["LLMJudge_pass"].comment == "looks good"
+
+    async def test_wrapped_native_evaluator_failure_degrades_to_zero_score(self):
+        """A raising native evaluator becomes a zero score with an error comment under every runner."""
+
+        @dataclass
+        class _Raising(Evaluator):
+            def evaluate(self, ctx: EvaluatorContext) -> float:
+                raise RuntimeError("boom")
+
+        config = ComponentConfig(
+            component="mapping",
+            task=self._task,
+            evaluators=[PydanticEvalsEvaluator(_Raising())],
+        )
+
+        report = await self.make_runner().run(config, self._cases(), llm="llm")
+
+        outcome = report.outcomes[0]
+        assert outcome.error is None, (
+            "evaluator failure should not fail the case itself"
+        )
+        assert [(s.name, s.value) for s in outcome.scores] == [("_Raising", 0.0)], (
+            "failing evaluator should yield one zero score"
+        )
+        assert outcome.scores[0].comment.startswith("Error:"), (
+            "failure should be reported in the score comment"
+        )
 
 
 class TestInlineSequentialRunnerIntegration(_EvaluatorRunnerIntegrationTests):

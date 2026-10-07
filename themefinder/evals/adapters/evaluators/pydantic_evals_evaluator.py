@@ -26,10 +26,10 @@ class PydanticEvalsEvaluator(EvaluatorPort):
         self._evaluator = evaluator
         self.metric_names = metric_names or (evaluator.get_default_evaluation_name(),)
 
-    @property
-    def pydantic_evaluator(self) -> Evaluator:
-        """The wrapped native pydantic-evals evaluator, for use by certain runners."""
-        return self._evaluator
+    async def evaluate_in_context(self, ctx: EvaluatorContext) -> list[Score]:
+        """Score against a context the native engine built (real span tree and duration),
+        keeping the same error handling as `evaluate()`."""
+        return await self._guard(self._score_context(ctx))
 
     def _build_context(self, case: Case, output: Any) -> EvaluatorContext:
         """Build an `EvaluatorContext` from a `Case` and task `output`."""
@@ -47,10 +47,14 @@ class PydanticEvalsEvaluator(EvaluatorPort):
         )
 
     async def _score(self, case: Case, output: Any) -> list[Score]:
+        """Score with a context rebuilt from `case` and `output`."""
+        return await self._score_context(self._build_context(case, output))
+
+    async def _score_context(self, ctx: EvaluatorContext) -> list[Score]:
         """Run the wrapped evaluator and project its `EvaluatorOutput` onto
         `metric_names`, raising if the declared names don't match the emitted keys.
         """
-        raw = await self._evaluator.evaluate_async(self._build_context(case, output))
+        raw = await self._evaluator.evaluate_async(ctx)
         results = dict(raw) if isinstance(raw, Mapping) else {self.metric_names[0]: raw}
 
         missing = set(self.metric_names) - results.keys()

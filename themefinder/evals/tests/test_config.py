@@ -40,6 +40,7 @@ def _settings(
         auto_eval_model="test-model",
         environment="test",
         git_sha="abcdef0",
+        log_level="INFO",
         gateway=GatewaySettings(url=None, api_key=None),
         langfuse=langfuse,
         eval=EvalRunSettings(
