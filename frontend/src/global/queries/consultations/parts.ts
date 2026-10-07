@@ -1,5 +1,5 @@
 import {
-  getApiConsultationsUrl,
+  getApiConsultationsRootUrl,
   getApiConsultationUrl,
   Routes,
   Suffixes,
@@ -12,7 +12,7 @@ export const consultationsQueryParts = {
 
 export const consultationsV2QueryParts = {
   key: () => [Suffixes.Consultations, "v2"],
-  url: () => getApiConsultationsUrl(),
+  url: () => getApiConsultationsRootUrl(),
 };
 
 export const consultationQueryParts = {
