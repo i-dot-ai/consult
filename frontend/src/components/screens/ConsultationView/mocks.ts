@@ -33,6 +33,13 @@ export const defaultMock = {
   url: CONSULTAITON_URL,
   body: CONSULTATION,
 };
+export const stageFinaliseThemesMock = {
+    url: CONSULTAITON_URL,
+    body: {
+        ...CONSULTATION,
+        stage: "finalising_themes",
+    },
+}
 
 export const multipleUsersMock = {
     url: CONSULTAITON_URL,
