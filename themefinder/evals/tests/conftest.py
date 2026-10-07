@@ -31,9 +31,8 @@ def set_gateway_credentials(
 ) -> None:
     """Fake gateway credentials for code that calls gateway.gateway_credentials().
 
-    gateway_credentials() reads the eval_settings singleton directly (not
-    get_settings()), so env-var monkeypatching alone has no effect on it —
-    patch the function's return value instead.
+    Tests interested in callers rather than settings validation patch the
+    helper directly to avoid depending on a developer's environment.
     """
     monkeypatch.setattr(gateway, "gateway_credentials", lambda *a, **k: (url, api_key))
 

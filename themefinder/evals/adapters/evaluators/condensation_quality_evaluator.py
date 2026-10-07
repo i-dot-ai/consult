@@ -1,7 +1,7 @@
 """CondensationQualityEvaluator — compression quality + information retention when
 condensing a large theme set into a smaller one.
 
-Compares condensed `output["themes"]` against the pre-condensation themes on
+Compares condensed `output["condensed_themes"]` against the pre-condensation themes on
 `case.inputs` (condensation has no ground truth). Both metrics currently share
 one LLM call; splitting them per metric is deferred to PRO-642 if required.
 """
@@ -20,3 +20,4 @@ class CondensationQualityEvaluator(ThemeComparisonJudgeEvaluator):
     # None for condensation cases — so the pre-transform themes live on
     # case.inputs instead
     ground_truth_attr = "inputs"
+    output_themes_key = "condensed_themes"

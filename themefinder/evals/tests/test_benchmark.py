@@ -1,4 +1,7 @@
 import argparse
+from contextlib import nullcontext
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import benchmark
 from conftest import make_gateway_model, set_gateway_credentials
@@ -35,6 +38,62 @@ class TestModelConfigCreateLlm:
         llm = config.create_llm()
         assert llm.model == "gpt-5-mini-sweden"
         assert llm.request_kwargs == {}
+
+
+async def test_benchmark_delegates_component_execution_to_unified_api(monkeypatch):
+    task_llm = object()
+    context = SimpleNamespace(client=None)
+    model = benchmark.ModelConfig(name="test-model")
+    monkeypatch.setattr(model, "create_llm", lambda: task_llm)
+    monkeypatch.setattr(
+        benchmark.langfuse,
+        "get_langfuse_context",
+        lambda **kwargs: context,
+    )
+    monkeypatch.setattr(
+        benchmark.langfuse,
+        "trace_context",
+        lambda *args, **kwargs: nullcontext(),
+    )
+    monkeypatch.setattr(benchmark.langfuse, "flush", lambda context: None)
+    monkeypatch.setattr(
+        benchmark.langfuse,
+        "extract_session_metrics",
+        lambda **kwargs: SimpleNamespace(
+            input_tokens=0,
+            output_tokens=0,
+            total_tokens=0,
+            cost_usd=0.0,
+            latency_seconds=0.0,
+        ),
+    )
+    evaluate = AsyncMock(
+        return_value={
+            "question_part_1_f1_score": 0.75,
+            "question_part_1_output": {"labels": {"1": ["A"]}},
+        }
+    )
+    monkeypatch.setattr(benchmark, "evaluate_component", evaluate)
+    runner = benchmark.BenchmarkRunner(
+        benchmark.BenchmarkConfig(dataset="demo", models=[model])
+    )
+
+    result = await runner._execute_eval(
+        model,
+        run_number=1,
+        eval_type="mapping",
+        error_counter=benchmark.ValidationErrorCounter(),
+    )
+
+    evaluate.assert_awaited_once_with(
+        component="mapping",
+        dataset="demo",
+        llm=task_llm,
+        context=context,
+        judge_llm=None,
+    )
+    assert result.scores["question_part_1_f1_score"] == 0.75
+    assert result.outputs["question_part_1_output"] == {"labels": {"1": ["A"]}}
 
 
 class TestToModelConfigs:
