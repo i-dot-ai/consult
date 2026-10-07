@@ -149,7 +149,11 @@ You can override these settings in your User Settings if you prefer different pe
 
 ### Running Evals
 
-Component-level evals live in `themefinder/evals/pipelines/`, where there is one dir per component. Each dir holds a DVC pipeline that runs an eval for that specific component. To run a specific component's eval pipeline:
-1. `cd` to the relevant dir
-2. Set the desired parameters in the `params.yaml` file
-3. Run `uv run --package themefinder --extra dev dvc repro` to run the pipeline in a version-aware fashion (i.e. only running the stages whose dependencies have changed since their last run). If you want to run the whole pipeline regardless of version changes, run `uv run --package themefinder --extra dev dvc repro --force`
+Run one component through the shared evaluation framework from `themefinder/evals/`:
+
+```bash
+uv run --extra eval python run_eval.py --component generation --dataset gambling_XS
+```
+
+Use `make run-evals` for the quick multi-component benchmark or `make run-eval EVAL_TYPE=mapping`
+for one benchmark component.

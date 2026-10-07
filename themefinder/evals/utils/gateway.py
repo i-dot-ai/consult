@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 import httpx
-from settings import eval_settings
+from settings import EvalSettings, get_settings
 
 # Health checks are observed to run within ~48h; 72h gives margin before
 # treating a check as stale.
@@ -138,10 +138,11 @@ def latest_health_by_model(
     }
 
 
-def gateway_credentials() -> tuple[str, str]:
+def gateway_credentials(settings: EvalSettings | None = None) -> tuple[str, str]:
     """Read and validate the two required gateway env vars."""
-    base_url = eval_settings.gateway.url
-    api_key = eval_settings.gateway.api_key
+    settings = settings if settings is not None else get_settings()
+    base_url = settings.gateway.url
+    api_key = settings.gateway.api_key
     if not base_url or not api_key:
         raise RuntimeError(
             "LLM_GATEWAY_URL and CONSULT_EVAL_LITELLM_API_KEY must be set"

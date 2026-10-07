@@ -26,8 +26,7 @@ is a core, non-optional dependency of the package purely to support the duplicat
 - Langfuse is dataset + artefact storage only — not the orchestrator.
 - Both the engine and the storage backend are genuinely swappable, proven by a test, not just structurally
   possible.
-- Zero Langfuse-specific code in the four component scripts: no import, no type reference, no branding in a
-  parameter name.
+- Zero Langfuse-specific code in component definitions or the unified API/CLI.
 - Migrate in place, incrementally, with each phase independently revertible.
 - DVC drives reproducible eval runs: a `dvc.yaml` pipeline wraps the same entry points every other caller
   uses, giving dependency-aware caching (skip a component when nothing it depends on changed) and experiment
@@ -35,51 +34,37 @@ is a core, non-optional dependency of the package purely to support the duplicat
 
 ## Non-goals (this pass)
 
-- `benchmark.py` (multi-model runner) keeps calling the four component functions exactly as it does today, with
-  one single-line exception (see [Compatibility contract](#compatibility-contract-with-benchmarkpy)). It is
-  not rewritten to call the new ports directly.
+- `benchmark.py` keeps its multi-model orchestration, tracing, and cost collection. Only its component
+  dispatch changes to call the unified evaluation API.
 - `evals/synthetic/` and its CLI entry point `generate_synthetic.py` (synthetic data generation) are
   untouched. The Langfuse coupling here lives entirely in `generate_synthetic.py`'s own `LangfuseContext`
   construction, trace wrap, and flush — the `evals/synthetic/` package it wraps has no Langfuse references of
   its own.
 
-## One entry point per component, shared by every caller
+## One component entry point shared by every caller
 
 Every way an eval actually gets run converges on the same function call:
 
 ```
-python eval_generation.py --dataset X        ─┐
-benchmark.py --evals generation / --quick      ├──▶  evaluate_generation(...)
-themefinder-eval.yml (CI, workflow_dispatch)  ─┤            │
-dvc.yaml (dvc repro / dvc exp run)            ─┘            ▼
-                                              resolve_backends(...) ──▶ run_component(...)
+run_eval.py --component generation ─┐
+benchmark.py --evals generation      ├──▶ evaluate_component(...)
+themefinder-eval.yml (CI)            ┤          │
+dvc.yaml                              ┘          ▼
+                                     component factory
+                                            │
+                                            ▼
+                              resolve_backends() ──▶ run_component(...)
 ```
 
-`eval_generation.py`'s `__main__` block calls its own `evaluate_generation` wrapper with the CLI-supplied
-dataset — the same function `benchmark.py::EVAL_FUNCS["generation"]` points at, which the
-`themefinder-eval.yml` workflow
-also reaches (via `benchmark.py --evals "$EVAL_TYPE"` or `--quick`). No caller has its own copy of the
-Langfuse-vs-local branching logic. This is the property that makes the framework's swappability real for
-every caller, not just for tests: **every `eval_*.py`'s `__main__`/CLI block calls its own module's
-`evaluate_X` wrapper, never a lower-level function like `run_component` directly** — so a CLI run and a
-`benchmark.py` run of the same component are guaranteed to take the identical path through `resolve_backends` and
-`run_component`. `dvc.yaml` (see [Running via DVC](#running-via-dvc) below) is a fourth caller added this pass,
-shelling out to the same entry points.
+`evaluate_component(...)` is the only public component-execution API. It resolves the requested component
+through a registry, constructs a fresh `ComponentConfig`, and delegates to `resolve_backends()` and
+`run_component()`. The single-component CLI, benchmark, CI, and DVC therefore share the same execution path.
 
 ### Adding a new eval component
 
-Extending the framework to a new component means adding an evaluator, fixture data, and an `eval_<component>.py`
-entry point in the shape of the existing ones — but the component's *name* must not be a fact duplicated
-independently across `VALID_COMPONENTS`, `EVAL_FUNCS`, the CI workflow's `choices` list, and `params.yaml`, the
-way it is today. Those are currently four independent lists of the same component names with nothing deriving
-one from another, so missing an update to one of them means a component silently works in some entry points and
-not others (most commonly: it works locally and via `benchmark.py`, but never appears in the CI dropdown, or
-never gets a `dvc repro` stage).
-
-The component set must instead have a single source of truth that every other list either derives from or is
-validated against, so registering a new component is a one-place change. The exact mechanism for that — a shared
-constant the others read, a generation step, a test asserting the lists agree, or something else — is a
-decision for implementation time, not this document.
+Extending the framework means adding fixture data, a component task/configuration factory, and one registry
+entry. Component names live in `component_catalog.py`; runtime consumers derive from it and static configuration
+such as CI or DVC is validated against it.
 
 ## Architecture overview
 
@@ -94,10 +79,11 @@ Four ports, each an explicit `abc.ABC`, each with a default adapter:
 
 ```mermaid
 flowchart TB
-    ES["evaluate_X(...)"] -->|"① calls"| RB["resolve_backends()"]
-    RB -->|"② builds one adapter<br/>per port, bundles them"| EB
-    ES -->|"③ calls, passing backends"| RS["run_component(...)"]
-    RS -->|"④ reads backends.*"| EB
+    ES["evaluate_component(...)"] -->|"① selects a fresh component config"| CR["component registry"]
+    ES -->|"② calls"| RB["resolve_backends()"]
+    RB -->|"③ builds one adapter<br/>per port, bundles them"| EB
+    ES -->|"④ calls, passing backends"| RS["run_component(...)"]
+    RS -->|"⑤ reads backends.*"| EB
 
     EB["EvalBackends<br/>— a plain struct, not a port —<br/>bundles a dataset port,<br/>a runner port, and an<br/>artefact-store port"]
 
@@ -147,8 +133,8 @@ Colour key: pink = Langfuse-specific, blue = local/generic, purple = pydantic-ev
 design — `InlineSequentialRunner` exists purely to prove the port is swappable, not as a real alternative
 engine.
 
-`context` is deliberately untyped (`Any`) at every boundary the component scripts touch. They forward it to
-`resolve_backends` without inspecting it — they have no idea what it is, Langfuse-shaped or otherwise. The
+`context` is deliberately untyped (`Any`) at the unified API boundary. It is forwarded to `resolve_backends`
+without inspection — component definitions do not know whether it is Langfuse-shaped or otherwise. The
 runtime call sequence itself — `resolve_backends()` building `EvalBackends`, `run_component()` reading it — is
 covered in full in [Orchestration](#orchestration) below, not repeated here.
 
@@ -190,14 +176,25 @@ evals/adapters/
     base.py                  # ArtefactStorePort(ABC) — start_run/record_case/finish_run
     langfuse_adapter.py        # LangfuseArtefactStore
     local_json_adapter.py       # LocalJSONArtefactStore
+
+evals/components/
+  generation.py              # generation task + ComponentConfig factory
+  condensation.py            # condensation task + ComponentConfig factory
+  refinement.py              # refinement task + ComponentConfig factory
+  mapping.py                 # mapping task + filtered ComponentConfig factory
+  registry.py                # component name -> fresh config factory
+
+component_catalog.py         # shared component names
+evaluation.py                # evaluate_component(...) public API
+run_eval.py                  # single-component CLI
 ```
 
 No adapter file imports from a sibling adapter file — each implementation depends only on its own `base.py`.
 Filenames use an explicit `_adapter.py` suffix (rather than e.g. `langfuse.py`) so nothing in this tree
 shadows the real third-party `langfuse` / `pydantic_evals` packages by name.
 
-`eval_types.py` (shared domain dataclasses), `component_runner.py`, and `config.py` are orchestration, not
-themselves adapters, and stay at the top level of `evals/`.
+`eval_types.py` (shared domain dataclasses), `component_runner.py`, `config.py`, and `evaluation.py` are
+orchestration, not themselves adapters, and stay at the top level of `evals/`.
 
 ### Retiring `evaluators.py`, and splitting `langfuse_utils.py`
 
@@ -238,8 +235,8 @@ evals/utils/
 
 Every `import langfuse_utils` site becomes `from utils import langfuse_utils`; call sites like
 `langfuse_utils.get_langfuse_context(...)` are unchanged. `benchmark.py` and `generate_synthetic.py` keep
-this import long-term — they legitimately talk to Langfuse. The four `eval_*.py` component scripts have their
-`import langfuse_utils` line deleted entirely, not relocated.
+this import long-term — they legitimately talk to Langfuse. Component definitions and the unified API/CLI do
+not import it.
 
 ## Domain types — `evals/eval_types.py`
 
@@ -373,12 +370,9 @@ below. Every other runner (`InlineSequentialRunner` included) leaves `engine_rep
   timestamp-keyed directory (`benchmark_results/<benchmark_id>/benchmark.log`) that `visualise_benchmark.py`
   scans expecting only timestamp children. `local_eval_runs/` is a strict improvement over today's local
   fallback, which never persisted anything at all — but it's a separate, non-interchangeable output tree from
-  `benchmark.py`'s results directory. `visualise_benchmark.py` doesn't import any `eval_*.py` module today (it
-  only reads persisted Langfuse/`benchmark_results` data) and isn't updated to read `local_eval_runs/` in
-  this pass. This is the same path each CLI entry point's `__main__` block writes its result to for DVC's
-  benefit regardless of which artefact store is configured — when `LocalJSONArtefactStore` is that store,
-  the two writes coincide (same content, same path, harmless); see [Running via DVC](#running-via-dvc)
-  below for why the CLI write can't rely on `LocalJSONArtefactStore` alone.
+  `benchmark.py`'s results directory. `visualise_benchmark.py` only reads persisted
+  Langfuse/`benchmark_results` data and is not updated to read `local_eval_runs/` in this pass. DVC's separate,
+  backend-independent metrics output is covered in [Running via DVC](#running-via-dvc).
 
 Both return the same flat `dict[str, Any]` shape `benchmark.py` already parses (see below).
 
@@ -444,68 +438,53 @@ plugin registry; this is deliberately simple, the same pattern the two new selec
 
 ### `evals/component_runner.py::run_component`
 
-`run_component` loads cases via `backends.dataset`, reads pre-built evaluators from `ComponentConfig.evaluators`, runs
-the task via `backends.runner`, records and finishes via `backends.artefacts`, and returns a flat result
-dict. Pure ports — no `langfuse` or
-`pydantic_evals` import, no conditional branching on context state. This is the one function all four component
-scripts delegate to, and the function the swappability test exercises directly with fake backends.
+`run_component` loads cases via `backends.dataset`, reads pre-built evaluators from `ComponentConfig.evaluators`,
+runs the task via `backends.runner`, records and finishes via `backends.artefacts`, and returns a flat result
+dict. Pure ports — no `langfuse` or `pydantic_evals` import, no conditional branching on context state. This is
+the function the unified evaluation API delegates to and the swappability test exercises with fake backends.
 
-### The four component scripts
+### Component definitions and unified API
 
-Each script collapses to a small async task function, a module-level `ComponentConfig`, a thin
-`evaluate_<component>` wrapper that resolves backends and calls `run_component`, and the unchanged CLI/`__main__`
-block. `_run_with_langfuse` / `_run_local_fallback` are deleted, not relocated.
+Each module under `evals/components/` defines one async task and one `ComponentConfig` factory. The registry
+selects the factory, and `evaluate_component(...)` creates a fresh config for every invocation before resolving
+backends and calling `run_component()`. Fresh construction matters because LLM-judge evaluators bind the judge
+LLM at construction time and mapping's optional question filter is invocation-specific.
 
-`eval_mapping.py` keeps its optional `question_num` parameter for its `--question` CLI flag, but builds a
-filtered per-call config rather than mutating the shared module-level `ComponentConfig` — so a CLI run's filter
-can never leak into a concurrent `benchmark.py` run. All four wrappers otherwise take the same inputs; `evaluate_mapping` accepts a judge LLM too, for consistency, even though
-mapping's evaluator ignores it.
+`run_eval.py` provides the single-component CLI. Mapping keeps its optional `--question` flag, implemented as
+a per-call `case_filter`; it applies equally to local and Langfuse dataset adapters. `benchmark.py` calls
+`evaluate_component(...)` directly rather than maintaining a second component-to-function mapping.
 
 **Scoring-consistency status per component:** generation, condensation, and refinement are already consistent —
-each already calls the same `evaluators.py` LLM-judge suite in both its local and Langfuse paths, so this
-plan doesn't change their local-run scoring. **Mapping is the one component this plan changes local-run
-behaviour for**: its local fallback currently calls `metrics.py::calculate_mapping_metrics`, while `run_component`
-reads `ComponentConfig.evaluators` — which wraps `evaluators.py::mapping_f1_evaluator` — regardless of
-dataset source. Mapping's local runs switch onto `mapping_f1_evaluator` as a direct structural consequence of
-adopting `run_component`, not a special extra step. `evals/metrics.py` is deleted outright as part of this pass:
-`eval_mapping.py::calculate_mapping_metrics` is its only remaining importer (`eval_generation.py` no longer
-imports it, `eval_condensation.py`/`eval_refinement.py` never did).
+each used the same LLM-judge suite in both its local and Langfuse paths, so the migration does not change their
+scoring. **Mapping is the one component whose local-run behaviour changes**: both dataset sources now use
+`MappingF1Evaluator`, which reports `f1_score`. The old local-only confidence interval, accuracy, and overlap
+metrics are retired with `evals/metrics.py`.
 
 ## Running via DVC
 
-A fourth caller of `evaluate_X()`, alongside direct CLI, `benchmark.py`, and the CI workflow — `evals/dvc.yaml`
-defines pipeline stages that shell out to the same `eval_<component>.py` entry points every other caller uses,
-never `run_component()` directly. This buys `dvc repro`'s dependency-aware caching (skip re-running a component when
+A fourth caller of `evaluate_component()`, alongside the direct CLI, `benchmark.py`, and the CI workflow —
+`evals/dvc.yaml` defines pipeline stages that shell out to `run_eval.py --component <name>`, never
+`run_component()` directly. This buys `dvc repro`'s dependency-aware caching (skip re-running a component when
 nothing it depends on has changed) and `dvc exp run`/`dvc metrics show` for comparing intentional variations
 as tracked experiments — not strict reproducibility, since LLM evals are stochastic, but a real win for
 "nothing relevant changed, don't bother re-running" and for comparing designed variations.
 
 Full `dvc.yaml`/`params.yaml` listing lives in the working plan's "Running via DVC" section, not duplicated
 here. One point worth calling out at this level: DVC needs a concrete local `metrics` file to track for
-every component, but `LangfuseArtefactStore` doesn't write anything to disk — so each CLI entry point's
-`__main__` block writes its already-computed result (the same flat dict `evaluate_X()` already returns,
-regardless of which `ArtefactStorePort` recorded it "officially") to a stable path,
-`evals/local_eval_runs/<component>/<dataset>/results.json`, unconditionally. This is a CLI-level concern, not a
-port capability — `run_component()` and `ArtefactStorePort` stay exactly as designed, with no new abstract
-method and no query against Langfuse. Whether a component actually needs to *run* at all is entirely DVC's own
-job, via its native dependency-hash caching (`dvc repro` comparing `deps` against `dvc.lock`, backed by
-`dvc pull`/`push` to a shared remote) — unrelated to which artefact store is configured, so
-`artefact_store=local` is not required for DVC to work, and `dataset_source=langfuse` works alongside it too
-(the independent dataset-source/artefact-store selection above, not a new capability built for DVC's sake).
+every component, but `LangfuseArtefactStore` does not write anything to disk. The DVC implementation therefore
+adds a stable CLI-level metrics output independently of the configured artefact store. This remains a DVC
+concern: `run_component()` and `ArtefactStorePort` stay unchanged.
 
 ## Compatibility contract with benchmark.py
 
-`benchmark.py` calls each component's `evaluate_X` wrapper with the dataset, LLM, context, and judge LLM, and
-expects a flat dict back, which it splits by value type into `scores` vs
-`outputs`. It also owns opening the Langfuse trace context itself and later calls
+`benchmark.py` calls `evaluate_component()` with the component name, dataset, LLM, context, and optional judge
+LLM. It expects a flat dict back, which it splits by value type into `scores` vs `outputs`. It also owns opening
+the Langfuse trace context itself and later calls
 `langfuse_utils.extract_session_metrics(session_id=...)` for cost/token data.
 
-Every component function keeps this exact shape, and Langfuse traces stay queryable by `session_id`. The only
-change inside `benchmark.py` is a one-line kwarg rename at its call site: `"langfuse_ctx": langfuse_ctx`
-becomes `"context": langfuse_ctx`. The local variable name inside `benchmark.py` is unaffected — only the
-kwarg key crossing into the now-generic component function signature changes. This is what makes "zero
-Langfuse-specific code in the component scripts" achievable without touching how `benchmark.py` itself talks to
-Langfuse.
+The generic API preserves this return shape and accepts the caller-owned context through an untyped `context`
+parameter. This keeps component definitions storage-agnostic without changing how `benchmark.py` itself talks
+to Langfuse.
 
 ## Configuration strategy
 
@@ -527,7 +506,7 @@ reads — not sprawl. `lambda/*` and `pipeline-*/` are independently-deployed un
 per-file env read there carries no drift risk. The real problem is scoped to `themefinder/evals/`: one
 importable package, many modules, each independently reaching into `os.environ` for overlapping config.
 
-Grep-verified inventory (excluding `evals/metrics.py`, deleted outright in this pass — see
+Pre-migration inventory (excluding `evals/metrics.py`, deleted outright in this pass — see
 [Rollout sequencing](#rollout-sequencing) — so not worth migrating first):
 
 | Env var | Read independently in | Call sites |
@@ -565,10 +544,8 @@ five inline per-component `os.getenv("AUTO_EVAL_MODEL")` sites, and all seven ex
 calls (deleted outright, since `get_settings()` already guarantees `.env` is loaded before any field is
 read).
 
-This keeps "zero Langfuse code in the four component scripts" intact: the component scripts only ever read the
-model name off settings — no Langfuse import, no Langfuse-named field touched. `EvalSettings` bundles
-Langfuse fields alongside non-Langfuse ones; the component scripts simply never
-reach for the ones with "langfuse" in the name.
+This keeps component definitions and the unified API/CLI free of Langfuse-specific code. `EvalSettings`
+bundles Langfuse fields alongside non-Langfuse ones, but the component definitions never inspect them.
 
 ### Test impact: a real correctness risk, not just style
 
@@ -590,18 +567,14 @@ This work is broken down into 8 issues across five waves:
 - **Wave 1 — Ports** (4 issues, parallelisable): one issue per port type — `DatasetPort`, `EvaluatorPort` (all seven evaluator classes plus `PydanticEvalsEvaluator`), `RunnerPort`, `ArtefactStorePort` — each self-contained with its own offline tests. None of them are wired into production code yet, so a team can split these across people. The `EvaluatorPort` issue's first step is the `EvaluatorContext`-standalone-construction spike flagged under [Evaluator adapters](#evaluator-adapters) above — if it fails, `PydanticEvalsEvaluator` splits off into its own follow-up issue and this one narrows to the seven custom classes.
 - **Wave 2 — Orchestration** (1 issue): `resolve_backends` + `run_component` + the swappability proof. The
   architecture's proof point — every port comes together here for the first time.
-- **Wave 3 — Component migrations** (1 issue, though could be split if it gets too large): `eval_generation.py` (+ the `benchmark.py`
-  kwarg rename, landing together since they're two halves of one contract change) first — hardest case,
-  done first on purpose; then `eval_mapping.py` (+ `evals/metrics.py` deletion, the one part of this issue with
-  a real disclosed behaviour change); then `eval_condensation.py`/`eval_refinement.py`.
+- **Wave 3 — Component migrations** (1 issue): move all four component tasks and evaluator configurations into
+  `evals/components/`, add the `evaluate_component(...)` API and `run_eval.py` CLI, migrate `benchmark.py`,
+  then remove the four legacy scripts and `evals/metrics.py`.
 - **Wave 4 — DVC pipeline** (1 issue): `evals/dvc.yaml` + `evals/params.yaml` (see [Running via
   DVC](#running-via-dvc) above). Independent of the ports-and-adapters refactor — it only shells out to the
-  existing `eval_*.py` entry points — but only meaningful once Wave 3 lands, since that's what gives
-  `LocalJSONArtefactStore` a stable output for every component. `params.yaml`'s `components` list is also the fourth
-  independent list of component names (alongside `VALID_COMPONENTS`, `EVAL_FUNCS`, and the CI workflow's `choices`)
-  — this wave is where the single source of truth described under [Adding a new eval
-  component](#adding-a-new-eval-component) is designed and implemented, so `params.yaml` is generated from or
-  validated against it from the start rather than joining the duplication and getting fixed later.
+  unified `run_eval.py` entry point — but only meaningful once Wave 3 lands, since that's what gives
+  `LocalJSONArtefactStore` a stable output for every component. `params.yaml` is validated against
+  `component_catalog.py` rather than becoming another source of component names.
 
 Every issue in every wave leaves `pytest tests/` and `pytest evals/tests/` green — none of them is a partial
 or broken intermediate state.
@@ -633,8 +606,8 @@ or broken intermediate state.
 - Each adapter has its own offline unit test (`test_dataset_adapters.py`, `test_evaluator_adapters.py`,
   `test_artefact_store.py`), each asserting the concrete adapter is a genuine subclass of its ABC and that
   instantiating an incomplete subclass raises `TypeError`.
-- A grep-based check enforces the zero-Langfuse-in-scripts rule directly:
-  `grep -ril langfuse evals/eval_*.py evals/component_runner.py evals/eval_types.py evals/adapters/*/base.py
+- A grep-based check enforces the zero-Langfuse-in-component-code rule directly:
+  `grep -ril langfuse evals/components evals/evaluation.py evals/run_eval.py evals/component_runner.py evals/eval_types.py evals/adapters/*/base.py
   evals/adapters/evaluators/*.py` must return nothing, aside from `pydantic_evals_evaluator.py`
   (which legitimately imports `pydantic_evals`, not `langfuse` — the grep target is `langfuse`, not
   `pydantic_evals`, so this file is expected to be clean too).
@@ -653,8 +626,6 @@ or broken intermediate state.
 
 ## Deferred to a later pass
 
-- Adapting `benchmark.py` to call `resolve_backends`/`run_component` directly instead of the four component-script
-  wrappers.
 - Removing `benchmark.py`'s remaining *direct* Langfuse coupling (context construction, flush, and
   cost/token metrics extraction) by routing it through `resolve_backends`/`ArtefactStorePort` instead — the
   minimal-change design for this is written up in the "Follow-up (deferred)" section of the working plan, not

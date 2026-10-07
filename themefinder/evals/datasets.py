@@ -14,10 +14,11 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+from component_catalog import COMPONENT_NAMES
 
 logger = logging.getLogger("themefinder.evals.datasets")
 
-VALID_COMPONENTS = ["generation", "mapping", "condensation", "refinement"]
+VALID_COMPONENTS = list(COMPONENT_NAMES)
 
 # Data directory for local eval datasets
 DATA_DIR = Path(__file__).parent / "data"

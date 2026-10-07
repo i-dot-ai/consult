@@ -25,6 +25,7 @@ import dotenv
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from component_catalog import COMPONENT_NAMES
 from datasets import DatasetConfig, get_or_create_dataset, load_local_data
 
 
@@ -97,16 +98,14 @@ def migrate_all(dataset: str = "gambling_XS", component: str | None = None) -> N
     """
     client = get_langfuse_client()
 
-    components = ["generation", "mapping", "condensation", "refinement"]
-
     if component:
-        if component not in components:
+        if component not in COMPONENT_NAMES:
             raise ValueError(
-                f"Unknown component: {component}. Valid components: {components}"
+                f"Unknown component: {component}. Valid components: {list(COMPONENT_NAMES)}"
             )
         migrate_component(client, dataset, component)
     else:
-        for c in components:
+        for c in COMPONENT_NAMES:
             try:
                 migrate_component(client, dataset, c)
             except Exception as e:
