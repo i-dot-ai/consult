@@ -37,20 +37,12 @@ const duplicateMock = {
 };
 
 describe("AddConsultationForm", () => {
-  const originalLocation = window.location;
-
   beforeEach(() => {
-    Object.defineProperty(window, "location", {
-      value: { href: "", origin: originalLocation.origin },
-      writable: true,
-    });
+    vi.stubGlobal("location", { href: "", origin: window.location.origin });
   });
 
   afterEach(() => {
-    Object.defineProperty(window, "location", {
-      value: originalLocation,
-      writable: true,
-    });
+    vi.unstubAllGlobals();
     fetchMock.unmockGlobal();
     fetchMock.removeRoutes();
     queryClient.resetQueries();
