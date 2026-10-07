@@ -399,30 +399,30 @@ def plot_summary(
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(
-            x=axis_labels, y=g1_means, error_y=dict(type="data", array=g1_stds),
+            x=axis_labels, y=g1_means, error_y=dict(type="data", array=g1_stds, thickness=4, width=8),
             mode="lines+markers", name="Campaign",
-            line=dict(width=4), marker=dict(size=9),
+            line=dict(width=8), marker=dict(size=16),
         ))
         fig.add_trace(go.Scatter(
-            x=axis_labels, y=g2_means, error_y=dict(type="data", array=g2_stds),
+            x=axis_labels, y=g2_means, error_y=dict(type="data", array=g2_stds, thickness=4, width=8),
             mode="lines+markers", name="Non-campaign",
-            line=dict(width=4), marker=dict(size=9),
+            line=dict(width=8), marker=dict(size=16),
         ))
         fig.add_trace(go.Scatter(
-            x=axis_labels, y=overlap_means, error_y=dict(type="data", array=overlap_stds),
+            x=axis_labels, y=overlap_means, error_y=dict(type="data", array=overlap_stds, thickness=4, width=8),
             mode="lines+markers", name="Both",
-            line=dict(width=4), marker=dict(size=9),
+            line=dict(width=8), marker=dict(size=16),
         ))
 
         gt1_count = gt1_counts_by_question.get(question, 0)
         gt2_count = gt2_counts_by_question.get(question, 0)
         fig.add_hline(
-            y=gt1_count, line_dash="dash", line_width=3, annotation_text=f"{gt1_label} consensus ({gt1_count})",
-            annotation_font_size=9,
+            y=gt1_count, line_dash="dash", line_width=6, annotation_text=f"{gt1_label} consensus ({gt1_count})",
+            annotation_font_size=30,
         )
         fig.add_hline(
-            y=gt2_count, line_dash="dot", line_width=3, annotation_text=f"{gt2_label} consensus ({gt2_count})",
-            annotation_font_size=9,
+            y=gt2_count, line_dash="dot", line_width=6, annotation_text=f"{gt2_label} consensus ({gt2_count})",
+            annotation_font_size=30,
         )
 
         question_num_match = re.search(r"\d+", question)
@@ -434,11 +434,11 @@ def plot_summary(
             xaxis=dict(
                 type="category", categoryorder="array", categoryarray=axis_labels,
                 showticklabels=False,
-                title=dict(text="Non-Campaign:Campaign Ratio", font=dict(size=24)),
+                title=dict(text="Non-Campaign:Campaign Ratio", font=dict(size=34)),
             ),
-            font=dict(size=24),
-            title_font=dict(size=32),
-            legend=dict(font=dict(size=20)),
+            font=dict(size=34),
+            title_font=dict(size=44),
+            legend=dict(font=dict(size=30)),
             width=1600,
             height=900,
         )
