@@ -80,23 +80,25 @@ class LangfuseArtefactStore(ArtefactStorePort):
     ) -> Generator[tuple[Any, str | None], None, None]:
         dataset_item_id = outcome.case.metadata.get("langfuse_item_id")
         client = self.context.client
-        if client is not None and callable(
-            getattr(client, "start_as_current_span", None)
-        ):
-            from langfuse.api import CreateDatasetRunItemRequest
-            from langfuse.api.core import ApiError
+        if client is None:
+            yield None, None
+            return
 
-            inputs = json_safe(outcome.case.inputs)
-            outputs = json_safe(outcome.output)
-            with client.start_as_current_span(
-                trace_context={"trace_id": client.create_trace_id()},
-                name=f"{self._run_name}:{case_key(outcome.case)}",
-                input=inputs,
-                output=outputs,
-                metadata=self.context.metadata,
-                level="ERROR" if outcome.error is not None else "DEFAULT",
-                status_message=outcome.error if outcome.error is not None else None,
-            ) as trace:
+        inputs = json_safe(outcome.case.inputs)
+        outputs = json_safe(outcome.output)
+        trace_id = client.create_trace_id()
+        trace_name = f"{self._run_name}:{case_key(outcome.case)}"
+        trace_status = outcome.error
+        with client.start_as_current_span(
+            trace_context={"trace_id": trace_id},
+            name=trace_name,
+            input=inputs,
+            output=outputs,
+            metadata=self.context.metadata,
+            level="ERROR" if trace_status is not None else "DEFAULT",
+            status_message=trace_status,
+        ) as trace:
+            try:
                 trace.update_trace(
                     input=inputs,
                     output=outputs,
@@ -104,129 +106,52 @@ class LangfuseArtefactStore(ArtefactStorePort):
                     tags=self.context.tags,
                     session_id=self.context.session_id,
                 )
-                if dataset_item_id:
-                    try:
-                        client.api.dataset_run_items.create(
-                            request=CreateDatasetRunItemRequest(
-                                runName=self._run_name,
-                                datasetItemId=str(dataset_item_id),
-                                traceId=trace.trace_id,
-                                metadata=self.context.metadata,
-                            )
-                        )
-                    except (ApiError, RequestError) as exc:
-                        logger.warning(
-                            "Failed to link Langfuse dataset item %s for case %s: %s; "
-                            "recording an unlinked trace instead",
-                            dataset_item_id,
-                            outcome.case.id,
-                            exc,
-                        )
-                yield trace, trace.trace_id
-            return
-        if dataset_item_id:
-            with self._dataset_item_trace(outcome, str(dataset_item_id)) as trace_data:
-                yield trace_data
-                return
+            except BaseException as exc:
+                logger.error(
+                    "Failed to update Langfuse trace for case %s and run %s: %s",
+                    outcome.case.id,
+                    self._run_name,
+                    exc,
+                )
+                raise
 
-        yield self._create_unlinked_trace(outcome)
+            if dataset_item_id:
+                self._link_dataset_item_to_trace(
+                    client=client,
+                    dataset_item_id=str(dataset_item_id),
+                    trace_id=trace.trace_id,
+                    case_id=outcome.case.id,
+                )
+            yield trace, trace.trace_id
 
-    @contextmanager
-    def _dataset_item_trace(
+    def _link_dataset_item_to_trace(
         self,
-        outcome: CaseOutcome,
+        *,
+        client: Any,
         dataset_item_id: str,
-    ) -> Generator[tuple[Any, str | None], None, None]:
-        dataset_item = self._get_dataset_item(dataset_item_id)
-        if dataset_item is None or not hasattr(dataset_item, "run"):
-            logger.warning(
-                "Langfuse dataset item %s was not available for case %s; "
-                "creating an unlinked trace instead",
-                dataset_item_id,
-                outcome.case.id,
-            )
-            yield self._create_unlinked_trace(outcome)
-            return
+        trace_id: str,
+        case_id: str,
+    ) -> None:
+        from langfuse.api import CreateDatasetRunItemRequest
+        from langfuse.api.core import ApiError
 
         try:
-            run_cm = dataset_item.run(
-                run_name=self._run_name,
-                run_metadata=self.context.metadata,
-            )
-            trace = run_cm.__enter__()
-        except Exception as exc:  # noqa: BLE001 - third-party context managers vary
-            logger.warning(
-                "Failed to create Langfuse dataset-item trace for %s: %s",
-                outcome.case.id,
-                exc,
-            )
-            yield self._create_unlinked_trace(outcome)
-            return
-
-        try:
-            update_trace = getattr(trace, "update_trace", None)
-            if callable(update_trace):
-                update_trace(
-                    session_id=self.context.session_id,
-                    tags=self.context.tags,
+            client.api.dataset_run_items.create(
+                request=CreateDatasetRunItemRequest(
+                    runName=self._run_name,
+                    datasetItemId=dataset_item_id,
+                    traceId=trace_id,
                     metadata=self.context.metadata,
                 )
-        except BaseException as exc:
-            run_cm.__exit__(type(exc), exc, exc.__traceback__)
-            raise
-
-        try:
-            yield trace, self._trace_id(trace)
-        except BaseException as exc:
-            suppress = run_cm.__exit__(type(exc), exc, exc.__traceback__)
-            if not suppress:
-                raise
-        else:
-            run_cm.__exit__(None, None, None)
-
-    def _create_unlinked_trace(self, outcome: CaseOutcome) -> tuple[Any, str | None]:
-        if not self.context.client:
-            return None, None
-
-        trace_kwargs = {
-            "name": f"{self._run_name}:{case_key(outcome.case)}",
-            "input": json_safe(outcome.case.inputs),
-            "output": json_safe(outcome.output),
-            "metadata": self.context.metadata,
-            "tags": self.context.tags,
-            "session_id": self.context.session_id,
-        }
-
-        create_trace = getattr(self.context.client, "create_trace", None)
-        if callable(create_trace):
-            trace = create_trace(**trace_kwargs)
-            return trace, self._trace_id(trace)
-
-        trace_factory = getattr(self.context.client, "trace", None)
-        if callable(trace_factory):
-            trace = trace_factory(**trace_kwargs)
-            self._update_trace(trace, output=outcome.output)
-            return trace, self._trace_id(trace)
-
-        logger.warning("Langfuse client does not expose a trace creation method")
-        return None, None
-
-    def _get_dataset_item(self, dataset_item_id: str) -> Any | None:
-        if not self.context.client:
-            return None
-
-        getter = getattr(self.context.client, "get_dataset_item", None)
-        if callable(getter):
-            return getter(dataset_item_id)
-
-        api = getattr(self.context.client, "api", None)
-        if api is not None:
-            dataset_item_api = getattr(api, "dataset_item", None)
-            get_method = getattr(dataset_item_api, "get", None)
-            if callable(get_method):
-                return get_method(dataset_item_id)
-
-        return None
+            )
+        except (ApiError, RequestError) as exc:
+            logger.warning(
+                "Failed to link Langfuse dataset item %s for case %s: %s; "
+                "recording an unlinked trace instead",
+                dataset_item_id,
+                case_id,
+                exc,
+            )
 
     def _update_trace(self, trace: Any, *, output: Any) -> None:
         update = getattr(trace, "update", None)
@@ -241,12 +166,6 @@ class LangfuseArtefactStore(ArtefactStorePort):
         component = self._component or "unknown-component"
         dataset = self._dataset or "unknown-dataset"
         return f"{component}:{dataset}"
-
-    @staticmethod
-    def _trace_id(trace: Any) -> str | None:
-        if trace is None:
-            return None
-        return getattr(trace, "trace_id", None) or getattr(trace, "id", None)
 
     @staticmethod
     def _is_pydantic_evals_report(engine_report: Any) -> bool:

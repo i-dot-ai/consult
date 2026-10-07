@@ -52,8 +52,7 @@ def _local_dataset_factory(context: Any | None) -> DatasetPort:
 
 
 def _langfuse_dataset_factory(context: Any | None) -> DatasetPort:
-    langfuse_context = _require_langfuse_context(context)
-    return LangfuseDatasetAdapter(langfuse_context.client)
+    return LangfuseDatasetAdapter(context.client)
 
 
 def _local_artefact_factory(
@@ -66,8 +65,7 @@ def _local_artefact_factory(
 def _langfuse_artefact_factory(
     context: Any | None, owns_context: bool
 ) -> ArtefactStorePort:
-    langfuse_context = _require_langfuse_context(context)
-    return LangfuseArtefactStore(langfuse_context, owns_context=owns_context)
+    return LangfuseArtefactStore(context, owns_context=owns_context)
 
 
 DATASET_FACTORIES: dict[str, DatasetFactory] = {

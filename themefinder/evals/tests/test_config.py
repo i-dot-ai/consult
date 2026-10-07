@@ -3,6 +3,7 @@
 from types import SimpleNamespace
 from uuid import UUID
 
+import config as config_module
 import pytest
 from adapters.artefact_stores import LangfuseArtefactStore, LocalJSONArtefactStore
 from adapters.datasets import LangfuseDatasetAdapter, LocalJSONDatasetAdapter
@@ -155,6 +156,26 @@ def test_reuses_caller_context_without_taking_ownership(monkeypatch):
 
     assert backends.artefacts.context is context
     assert backends.artefacts.owns_context is False
+
+
+def test_validates_shared_langfuse_context_once(monkeypatch):
+    context = LangfuseContext(client=SimpleNamespace())
+    require_context = config_module._require_langfuse_context
+    calls = []
+
+    def record_validation(candidate):
+        calls.append(candidate)
+        return require_context(candidate)
+
+    monkeypatch.setattr(config_module, "_require_langfuse_context", record_validation)
+
+    resolve_backends(
+        DATASET_CONFIG,
+        settings=_settings("langfuse", "langfuse"),
+        context=context,
+    )
+
+    assert calls == [context]
 
 
 def test_rejects_langfuse_without_credentials_or_context():
