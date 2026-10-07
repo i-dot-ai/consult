@@ -7,8 +7,7 @@ export type ConsultationsGetResponse = {
   results: Consultation[];
 };
 export type ConsultationV2User = Pick<User, "id" | "email" | "is_staff">;
-export type ConsultationV2 = Omit<Consultation, "stage" | "created_by"> & {
-  stage: Consultation["stage"] | "setup" | "finding_themes";
+export type ConsultationV2 = Omit<Consultation, "created_by"> & {
   data_source: "qualtrics" | "citizen-space" | null;
   users: ConsultationV2User[];
   created_by: ConsultationV2User | null;
