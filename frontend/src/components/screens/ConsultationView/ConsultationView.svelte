@@ -3,7 +3,7 @@
 
   import { buildConsultationGetQuery } from "../../../global/queries/consultations/queries";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries";
-  import type { User } from "../../../global/types";
+  import type { ConsultationStage, User } from "../../../global/types";
   import Button from "../../inputs/Button/Button.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
@@ -13,6 +13,8 @@
   import Title from "../../Title.svelte";
   import Link from "../../Link.svelte";
   import { Routes } from "../../../global/routes";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import Tag from "../../Tag/Tag.svelte";
 
   interface Props {
     consultationId: string;
@@ -40,6 +42,27 @@
   }
   function getCreatedAtText(created_at: string) {
     return new Date(created_at).toLocaleDateString();
+  }
+  function getStatusText(stage: ConsultationStage) {
+    return (stage.charAt(0).toUpperCase() + stage.slice(1)).replaceAll("_", " ");
+  }
+  function getPanelText(stage: ConsultationStage) {
+    if (stage === "finalising_themes") {
+        return "Themes found by the AI are ready to check. No response is assigned to a theme until you finalise them.";
+    }
+    if (stage === "analysis") {
+        return "Every response is assigned to a theme. Check the assignments before you report.";
+    }
+    return "";
+  }
+  function getStatusVariant(stage: ConsultationStage) {
+    if (stage === "finalising_themes") {
+        return "warning";
+    }
+    if (stage === "analysis") {
+        return "success";
+    }
+    return "dark";
   }
 </script>
 
@@ -114,4 +137,16 @@
       ? "Only you can see it so far."
       : `${consultationData?.users.length} people can see it.`}
   </p>
+</section>
+
+<section>
+    <Panel>
+        <div class="mb-3">
+            <Tag variant={getStatusVariant(consultationData?.stage)}>{getStatusText(consultationData?.stage || "")}</Tag>
+        </div>
+
+        <p class="text-neutral-700 text-sm">
+            {getPanelText(consultationData?.stage)}
+        </p>
+    </Panel>
 </section>
