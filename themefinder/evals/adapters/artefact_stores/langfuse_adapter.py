@@ -106,7 +106,7 @@ class LangfuseArtefactStore(ArtefactStorePort):
                     tags=self.context.tags,
                     session_id=self.context.session_id,
                 )
-            except BaseException as exc:
+            except Exception as exc:
                 logger.error(
                     "Failed to update Langfuse trace for case %s and run %s: %s",
                     outcome.case.id,

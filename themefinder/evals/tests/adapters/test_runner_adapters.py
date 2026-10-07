@@ -1,27 +1,14 @@
 """Tests for RunnerPort's shared llm validation and its two concrete adapters."""
 
-from typing import Any
-
 import pytest
 from pydantic_evals.reporting import EvaluationReport
 
-from adapters.evaluators.base import EvaluatorPort
 from adapters.runners.base import RunnerPort
 from adapters.runners.inline_sequential_runner import InlineSequentialRunner
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from conftest import make_case
 from eval_types import Case, CaseOutcome, ComponentConfig, RunReport, Score
-
-
-class _FakeEvaluator(EvaluatorPort):
-    """Minimal EvaluatorPort returning one canned Score, for runner tests."""
-
-    def __init__(self, score: Score):
-        self._canned_score = score
-
-    async def _score(self, case: Case, output: Any) -> list[Score]:
-        """Ignore case/output entirely and return the canned score."""
-        return [self._canned_score]
+from fakes import FakeEvaluatorPort
 
 
 class _RunnerContractTests:
@@ -58,7 +45,7 @@ class _RunnerContractTests:
         config = ComponentConfig(
             component="generation",
             task=self._make_task(calls=task_calls),
-            evaluators=[_FakeEvaluator(Score("m1", 0.75, "note"))],
+            evaluators=[FakeEvaluatorPort([Score("m1", 0.75, "note")])],
         )
         case1 = make_case(inputs={"id": "a"}, case_id="case-1")
         case2 = make_case(inputs={"id": "b"}, case_id="case-2")
@@ -153,7 +140,7 @@ class _RunnerContractTests:
         config = ComponentConfig(
             component="generation",
             task=self._make_task(calls=task_calls),
-            evaluators=[_FakeEvaluator(Score("m", 1.0))],
+            evaluators=[FakeEvaluatorPort([Score("m", 1.0)])],
         )
         good = make_case(inputs={"id": "good"}, case_id="good")
         blank1 = make_case(inputs={"id": "b1"}, case_id=blank_id)

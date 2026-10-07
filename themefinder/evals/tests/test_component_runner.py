@@ -118,36 +118,35 @@ async def test_empty_report_is_still_finalised():
     assert artefacts.finished_with == (report, None)
 
 
-async def test_dataset_failure_propagates_without_starting_artefacts():
-    artefacts = FakeArtefactStore()
-    backends = EvalBackends(
-        dataset=FakeDatasetPort([], error=RuntimeError("dataset failed")),
-        runner=FakeRunnerPort(RunReport(outcomes=[])),
-        artefacts=artefacts,
+@pytest.mark.parametrize(
+    ("failure_stage", "expected_started_with"),
+    [
+        pytest.param("dataset", None, id="dataset"),
+        pytest.param("runner", None, id="runner"),
+        pytest.param("record", ("generation", "demo"), id="record"),
+    ],
+)
+async def test_failure_propagates_without_finishing_artefacts(
+    failure_stage, expected_started_with
+):
+    error_message = f"{failure_stage} failed"
+    error = RuntimeError(error_message)
+    case = _case()
+    report = RunReport(outcomes=[_outcome(case)])
+    artefacts = FakeArtefactStore(
+        record_error=error if failure_stage == "record" else None
     )
-
-    with pytest.raises(RuntimeError, match="dataset failed"):
-        await run_component(
-            _component_config(),
-            DatasetConfig(dataset="demo", component="generation"),
-            backends,
-            llm=object(),
-        )
-
-    assert artefacts.started_with is None
-
-
-async def test_runner_failure_propagates_without_starting_artefacts():
-    artefacts = FakeArtefactStore()
     backends = EvalBackends(
-        dataset=FakeDatasetPort([_case()]),
+        dataset=FakeDatasetPort(
+            [case], error=error if failure_stage == "dataset" else None
+        ),
         runner=FakeRunnerPort(
-            RunReport(outcomes=[]), error=RuntimeError("runner failed")
+            report, error=error if failure_stage == "runner" else None
         ),
         artefacts=artefacts,
     )
 
-    with pytest.raises(RuntimeError, match="runner failed"):
+    with pytest.raises(RuntimeError, match=error_message):
         await run_component(
             _component_config(),
             DatasetConfig(dataset="demo", component="generation"),
@@ -155,28 +154,8 @@ async def test_runner_failure_propagates_without_starting_artefacts():
             llm=object(),
         )
 
-    assert artefacts.started_with is None
-
-
-async def test_recording_failure_propagates_without_finishing_run():
-    case = _case()
-    report = RunReport(outcomes=[_outcome(case)])
-    artefacts = FakeArtefactStore(record_error=RuntimeError("record failed"))
-    backends = EvalBackends(
-        dataset=FakeDatasetPort([case]),
-        runner=FakeRunnerPort(report),
-        artefacts=artefacts,
-    )
-
-    with pytest.raises(RuntimeError, match="record failed"):
-        await run_component(
-            _component_config(),
-            DatasetConfig(dataset="demo", component="generation"),
-            backends,
-            llm=object(),
-        )
-
-    assert artefacts.started_with == ("generation", "demo")
+    assert artefacts.started_with == expected_started_with
+    assert artefacts.recorded == []
     assert artefacts.finished_with is None
 
 

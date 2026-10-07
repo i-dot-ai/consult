@@ -1,6 +1,5 @@
 """Integration tests: check each RunnerPort adapter can actually run the EvaluatorPort adapters"""
 
-import types
 from dataclasses import dataclass
 from typing import Any
 
@@ -17,16 +16,7 @@ from adapters.runners.inline_sequential_runner import InlineSequentialRunner
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from conftest import make_case
 from eval_types import Case, ComponentConfig
-
-
-class _FakeJudge:
-    """Stands in for our own judge LLM interface (an object with async ainvoke)."""
-
-    def __init__(self, parsed: str):
-        self.parsed = parsed
-
-    async def ainvoke(self, prompt: str):
-        return types.SimpleNamespace(parsed=self.parsed)
+from fakes import FakeJudge
 
 
 class _EvaluatorRunnerIntegrationTests:
@@ -63,7 +53,7 @@ class _EvaluatorRunnerIntegrationTests:
 
         monkeypatch.setattr(llm_as_a_judge_module, "judge_output", fake_judge_output)
 
-        groundedness_judge = _FakeJudge(
+        groundedness_judge = FakeJudge(
             '{"evaluations": {"A": {"decision": "STRONG", "matched_to": "A", "reasoning": "matches"}}}'
         )
         llm_judge = LLMJudge(

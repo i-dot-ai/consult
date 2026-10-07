@@ -4,15 +4,16 @@ from __future__ import annotations
 
 import json
 from abc import ABC
-from contextlib import contextmanager
 
 import pytest
+from httpx import RequestError
+from langfuse.api.core import ApiError
+
 from adapters.artefact_stores.base import ArtefactStorePort
 from adapters.artefact_stores.langfuse_adapter import LangfuseArtefactStore
 from adapters.artefact_stores.local_json_adapter import LocalJSONArtefactStore
 from eval_types import Case, CaseOutcome, RunReport, Score
-from httpx import RequestError
-from langfuse.api.core import ApiError
+from fakes import FakeLangfuseClient, FakeTrace
 from utils.langfuse import LangfuseContext
 
 
@@ -58,7 +59,7 @@ class TestArtefactStorePortContract:
         )
 
     def test_langfuse_adapter_is_artefact_store_port(self):
-        context = LangfuseContext(client=_FakeLangfuseClient())
+        context = LangfuseContext(client=FakeLangfuseClient())
         assert isinstance(
             LangfuseArtefactStore(context=context, owns_context=False),
             ArtefactStorePort,
@@ -156,7 +157,7 @@ class TestLocalJSONArtefactStore:
 
 class TestLangfuseArtefactStore:
     def test_record_case_creates_span_and_links_dataset_item(self):
-        client = _FakeLangfuseClient()
+        client = FakeLangfuseClient()
         context = LangfuseContext(
             client=client,
             session_id="session-v3",
@@ -221,7 +222,7 @@ class TestLangfuseArtefactStore:
         ids=["api-error", "network-error"],
     )
     def test_link_failure_still_records_trace_and_scores(self, caplog, link_error):
-        client = _FakeLangfuseClient()
+        client = FakeLangfuseClient()
         client.api.dataset_run_items.error = link_error
         context = LangfuseContext(client=client, session_id="session-v3")
         store = LangfuseArtefactStore(context=context, owns_context=False)
@@ -245,7 +246,7 @@ class TestLangfuseArtefactStore:
         assert "recording an unlinked trace instead" in caplog.text
 
     def test_record_case_without_langfuse_item_id_still_records_scores(self):
-        client = _FakeLangfuseClient()
+        client = FakeLangfuseClient()
         context = LangfuseContext(client=client, session_id="session-2")
         store = LangfuseArtefactStore(context=context, owns_context=False)
         outcome = _make_outcome(case=_make_case(question_part="question_part_3"))
@@ -258,7 +259,7 @@ class TestLangfuseArtefactStore:
         assert client.scores[0]["name"] == "groundedness"
 
     def test_record_case_forwards_score_comments(self):
-        client = _FakeLangfuseClient()
+        client = FakeLangfuseClient()
         context = LangfuseContext(client=client)
         store = LangfuseArtefactStore(context=context, owns_context=False)
         outcome = _make_outcome(
@@ -279,7 +280,7 @@ class TestLangfuseArtefactStore:
         ]
 
     def test_record_case_propagates_score_creation_errors(self):
-        client = _FakeLangfuseClient()
+        client = FakeLangfuseClient()
         client.raise_on_create_score = RuntimeError("boom")
         context = LangfuseContext(client=client, session_id="session-1")
         store = LangfuseArtefactStore(context=context, owns_context=False)
@@ -295,7 +296,7 @@ class TestLangfuseArtefactStore:
         assert client.span_exit_calls == [(RuntimeError, "boom")]
 
     def test_record_case_logs_trace_update_failures(self, monkeypatch, caplog):
-        client = _FakeLangfuseClient()
+        client = FakeLangfuseClient()
         context = LangfuseContext(client=client, session_id="session-1")
         store = LangfuseArtefactStore(context=context, owns_context=False)
         outcome = _make_outcome(case=_make_case(langfuse_item_id="item-123"))
@@ -303,7 +304,7 @@ class TestLangfuseArtefactStore:
         def raise_on_update_trace(self, **kwargs):
             raise RuntimeError("trace update failed")
 
-        monkeypatch.setattr(_FakeTrace, "update_trace", raise_on_update_trace)
+        monkeypatch.setattr(FakeTrace, "update_trace", raise_on_update_trace)
         store.start_run("generation", "demo")
 
         with pytest.raises(RuntimeError, match="trace update failed"):
@@ -317,7 +318,7 @@ class TestLangfuseArtefactStore:
         )
 
     def test_finish_run_flushes_when_context_is_owned(self):
-        client = _FakeLangfuseClient()
+        client = FakeLangfuseClient()
         context = LangfuseContext(client=client)
         store = LangfuseArtefactStore(context=context, owns_context=True)
         outcome = _make_outcome()
@@ -333,7 +334,7 @@ class TestLangfuseArtefactStore:
         }
 
     def test_finish_run_does_not_flush_when_context_is_not_owned(self):
-        client = _FakeLangfuseClient()
+        client = FakeLangfuseClient()
         context = LangfuseContext(client=client)
         store = LangfuseArtefactStore(context=context, owns_context=False)
 
@@ -343,7 +344,7 @@ class TestLangfuseArtefactStore:
         assert client.flush_calls == 0
 
     def test_finish_run_ignores_non_pydantic_engine_report_safely(self):
-        client = _FakeLangfuseClient()
+        client = FakeLangfuseClient()
         context = LangfuseContext(client=client)
         store = LangfuseArtefactStore(context=context, owns_context=False)
 
@@ -354,69 +355,3 @@ class TestLangfuseArtefactStore:
 
         assert client.flush_calls == 0
         assert results["question_part_1_groundedness"] == 4.5
-
-
-class _FakeTrace:
-    def __init__(self, trace_id: str):
-        self.trace_id = trace_id
-        self.updated_output = None
-        self.trace_updates: list[dict] = []
-
-    def update(self, *, output):
-        self.updated_output = output
-
-    def update_trace(self, **kwargs):
-        self.trace_updates.append(kwargs)
-
-
-class _FakeLangfuseClient:
-    def __init__(self):
-        self.api = _FakeV3Api()
-        self.create_trace_id_calls = 0
-        self.start_span_calls: list[dict] = []
-        self.last_span_trace: _FakeTrace | None = None
-        self.span_exit_calls: list[tuple[type[BaseException] | None, str | None]] = []
-        self.scores: list[dict] = []
-        self.flush_calls = 0
-        self.raise_on_create_score: BaseException | None = None
-
-    def create_trace_id(self):
-        self.create_trace_id_calls += 1
-        return "generated-trace-id"
-
-    @contextmanager
-    def start_as_current_span(self, **kwargs):
-        self.start_span_calls.append(kwargs)
-        trace = _FakeTrace(kwargs["trace_context"]["trace_id"])
-        self.last_span_trace = trace
-        try:
-            yield trace
-        except BaseException as exc:
-            self.span_exit_calls.append((type(exc), str(exc)))
-            raise
-        else:
-            self.span_exit_calls.append((None, None))
-
-    def create_score(self, **kwargs):
-        if self.raise_on_create_score is not None:
-            raise self.raise_on_create_score
-        self.scores.append(kwargs)
-
-    def flush(self):
-        self.flush_calls += 1
-
-
-class _FakeDatasetRunItemsApi:
-    def __init__(self):
-        self.create_calls = []
-        self.error: Exception | None = None
-
-    def create(self, *, request):
-        self.create_calls.append(request)
-        if self.error is not None:
-            raise self.error
-
-
-class _FakeV3Api:
-    def __init__(self):
-        self.dataset_run_items = _FakeDatasetRunItemsApi()
