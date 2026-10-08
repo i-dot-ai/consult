@@ -37,6 +37,46 @@ describe("ConsultationList", () => {
         screen.getByText("You have no consultations yet"),
       ).toBeInTheDocument();
     });
+
+    const addConsultationLinks = screen.getAllByRole("link", {
+      name: "Add consultation",
+    });
+    expect(addConsultationLinks).toHaveLength(2);
+    addConsultationLinks.forEach((link) =>
+      expect(link).toHaveAttribute("href", "/consultations/new"),
+    );
+  });
+
+  it("shows one add consultation button when consultations exist", async () => {
+    mockRoute(defaultMock);
+
+    render(ConsultationList);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(defaultMock.body.results[0].title, { exact: false }),
+      ).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByRole("link", { name: "Add consultation" }),
+    ).toHaveAttribute("href", "/consultations/new");
+  });
+
+  it("hides the add consultation button(s) when enableV2 is false", async () => {
+    mockRoute(emptyMock);
+
+    render(ConsultationList, { enableV2: false });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("You have no consultations yet"),
+      ).toBeInTheDocument();
+    });
+
+    expect(
+      screen.queryByRole("link", { name: "Add consultation" }),
+    ).not.toBeInTheDocument();
   });
 
   it("renders error message if fetch errors", async () => {

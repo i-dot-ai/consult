@@ -21,6 +21,7 @@
     getDataUploadUrl,
     getFinaliseThemesUrl,
     getSupportUserDetail,
+    Routes,
   } from "../../../global/routes.ts";
   import {
     buildConsultationDeleteQuery,
@@ -205,15 +206,23 @@
   <hr class="my-2 w-12" />
 {/snippet}
 
-<section>
-  <Title level={2} text="Consultations" />
-  <p class="text-neutral-500 text-sm">
-    {#if consultations.query.isPending}
-      Loading consultations...
-    {:else}
-      {consultationsToDisplay.length || 0} consultations
-    {/if}
-  </p>
+<section class="flex items-start justify-between gap-4">
+  <div>
+    <Title level={2} text="Consultations" />
+    <p class="text-neutral-500 text-sm">
+      {#if consultations.query.isPending}
+        Loading consultations...
+      {:else}
+        {consultationsToDisplay.length || 0} consultations
+      {/if}
+    </p>
+  </div>
+
+  {#if enableV2}
+    <Button href={Routes.ConsultationsNew} variant="primary">
+      Add consultation
+    </Button>
+  {/if}
 </section>
 
 <section>
@@ -248,12 +257,18 @@
 
 {#if consultationsToDisplay.length === 0 && !consultations.query.isPending && !consultations.query.isError}
   <Panel variant="default">
-    <div class="my-12">
+    <div class="my-12 flex flex-col items-center gap-4">
       <p class="text-lg text-center mb-2">You have no consultations yet</p>
       <p class="text-sm text-neutral-500 text-center">
         Add a consultation, then upload the responses.
       </p>
-      <!-- TODO: Add create consultation button -->
+      {#if enableV2}
+        <div class="flex justify-center">
+          <Button href={Routes.ConsultationsNew} variant="primary">
+            Add consultation
+          </Button>
+        </div>
+      {/if}
     </div>
   </Panel>
 {:else}
