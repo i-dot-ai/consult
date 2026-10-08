@@ -138,6 +138,18 @@ class TestMappingMetricsEvaluator:
         assert all(score.value == 0.0 for score in scores)
         assert all(score.comment == "No expected mappings" for score in scores)
 
+    async def test_no_scorable_responses_returns_zero_for_every_metric(self):
+        scores = await MappingMetricsEvaluator().evaluate(
+            make_case(expected_output={"mappings": {"r1": ["a"]}}),
+            {"labels": {}},
+        )
+
+        assert [score.name for score in scores] == list(
+            MappingMetricsEvaluator.metric_names
+        )
+        assert all(score.value == 0.0 for score in scores)
+        assert all(score.comment == "No scorable responses" for score in scores)
+
     async def test_bad_output_returns_zero_for_every_metric(self):
         scores = await MappingMetricsEvaluator().evaluate(
             make_case(expected_output={"mappings": {"r1": ["a"]}}), None
