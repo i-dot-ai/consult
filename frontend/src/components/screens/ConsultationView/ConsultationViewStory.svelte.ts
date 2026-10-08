@@ -1,5 +1,5 @@
 import ConsultationView from "./ConsultationView.svelte";
-import { CONSULTATION_ID, defaultMock, knownUserMock, multipleUsersMock, sameUserMock, stageFinaliseThemesMock, userMock } from "./mocks";
+import { CONSULTATION_ID, defaultMock, knownUserMock, multipleUsersMock, sameUserMock, stageFinaliseThemesMock, stageSetupMock, userMock } from "./mocks";
 
 const consultationId = $state(CONSULTATION_ID);
 
@@ -28,6 +28,11 @@ export default {
     {
         name: "Stage - Finalising Themes",
         mocks: [userMock, stageFinaliseThemesMock],
+        props: {consultationId},
+    },
+    {
+        name: "Stage - Data Setup",
+        mocks: [userMock, stageSetupMock],
         props: {consultationId},
     },
   ],

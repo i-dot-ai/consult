@@ -3,7 +3,7 @@
 
   import { buildConsultationGetQuery } from "../../../global/queries/consultations/queries";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries";
-  import type { ConsultationStage, User } from "../../../global/types";
+  import type { Consultation, ConsultationStage, User } from "../../../global/types";
   import Button from "../../inputs/Button/Button.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
@@ -26,14 +26,14 @@
 
   const user = buildCurrentUserGetQuery();
   let consultation = $derived(buildConsultationGetQuery(consultationId));
-  let consultationData = $derived(consultation.query?.data);
-  let renameValue = $derived(consultationData?.title || "");
+  let consultationData: Consultation = $derived(consultation.query?.data);
+  let renameValue: string = $derived(consultationData?.title || "");
 
-  function getCreatedByText(createdBy: User | null) {
+  function getCreatedByText(createdBy: User | string | null) {
     if (!createdBy) {
       return "an unknown user";
     }
-    const createdByEmail = createdBy?.email;
+    const createdByEmail = typeof createdBy === "string" ? createdBy : createdBy?.email;
     if (user.query?.data?.email === createdByEmail) {
       return "you";
     }
@@ -56,7 +56,7 @@
     return "";
   }
   function getStatusVariant(stage: ConsultationStage) {
-    if (stage === "finalising_themes") {
+    if (stage === "finalising_themes" || stage === "setup") {
         return "warning";
     }
     if (stage === "analysis") {
@@ -64,6 +64,36 @@
     }
     return "dark";
   }
+
+  const CONTENT = {
+    "analysis": {
+        panelText: "Every response is assigned to a theme. Check the assignments before you report.",
+        panelButtonText: "View Dashboard",
+        tagVariant: "success",
+    },
+    "assigning_themes": {
+        panelText: "Consult is assigning every response to the finalised themes. This can take more than 20 minutes. \n\n Nothing else can start until this finishes.",
+        panelButtonText: "",
+        tagVariant: "default",
+    },
+    "finalising_themes": {
+        panelText: "Themes found by the AI are ready to check. No response is assigned to a theme until you finalise them.",
+        panelButtonText: "Finalise themes",
+        tagVariant: "warning",
+    },
+    "finding_themes": {
+        panelText: "Consult is reading the responses and finding themes. This can take more than 20 minutes. \n\n Nothing else can start until this finishes.",
+        panelButtonText: "",
+        tagVariant: "default",
+    },
+    "setup": {
+        panelText: "The responses are not uploaded yet.",
+        panelButtonText: "Set up the data",
+        tagVariant: "warning",
+    },
+  } as const;
+
+  let content = $derived(CONTENT[consultationData?.stage]);
 </script>
 
 <div class="mt-8 mb-4">
@@ -142,11 +172,17 @@
 <section>
     <Panel>
         <div class="mb-3">
-            <Tag variant={getStatusVariant(consultationData?.stage)}>{getStatusText(consultationData?.stage || "")}</Tag>
+            <Tag variant={content.tagVariant}>
+                {getStatusText(consultationData?.stage || "")}
+            </Tag>
         </div>
 
         <p class="text-neutral-700 text-sm">
-            {getPanelText(consultationData?.stage)}
+            {content.panelText}
         </p>
+
+        <Button handleClick={() => {}}>
+            {content.panelButtonText}
+        </Button>
     </Panel>
 </section>

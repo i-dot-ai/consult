@@ -40,6 +40,13 @@ export const stageFinaliseThemesMock = {
         stage: "finalising_themes",
     },
 }
+export const stageSetupMock = {
+    url: CONSULTAITON_URL,
+    body: {
+        ...CONSULTATION,
+        stage: "setup",
+    },
+}
 
 export const multipleUsersMock = {
     url: CONSULTAITON_URL,
