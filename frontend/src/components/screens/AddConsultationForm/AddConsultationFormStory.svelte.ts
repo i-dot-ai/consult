@@ -1,9 +1,5 @@
 import AddConsultationForm from "./AddConsultationForm.svelte";
-import {
-  consultationsMock,
-  lookupMock,
-} from "./mocks";
-
+import { consultationsMock, lookupMock } from "./mocks";
 
 export default {
   name: "AddConsultationForm",
@@ -13,17 +9,17 @@ export default {
   props: [],
   stories: [
     {
-        name: "No Duplicate",
-        mocks: [
-            consultationsMock,
-            {
-                ...lookupMock,
-                body: {
-                    ...lookupMock.body,
-                    results: [],
-                },
-            },
-        ],
-    }
+      name: "No Duplicate",
+      mocks: [
+        consultationsMock,
+        {
+          ...lookupMock,
+          body: {
+            ...lookupMock.body,
+            results: [],
+          },
+        },
+      ],
+    },
   ],
 };
