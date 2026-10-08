@@ -16,6 +16,13 @@ export const lookupMock = {
           },
         ],
         created_at: "2026-01-29T14:23:14.719743Z",
+        is_owner: true,
+        created_by: {
+          id: 1,
+          email: "admin@example.com",
+          is_staff: true,
+          created_at: "2026-01-29T14:15:50.850685Z",
+        },
       },
     ],
   },
