@@ -5,7 +5,7 @@ from component_catalog import COMPONENT_NAMES
 from config import EvalBackends
 from datasets import DatasetConfig
 from eval_types import ComponentConfig
-from evaluation import evaluate_component
+from run_eval import evaluate_component
 from settings import EvalRunSettings, EvalSettings, GatewaySettings
 
 
@@ -31,7 +31,7 @@ def _settings() -> EvalSettings:
 
 @pytest.mark.parametrize("component", COMPONENT_NAMES)
 async def test_builds_component_resolves_backends_and_runs(monkeypatch, component):
-    import evaluation
+    import run_eval
 
     task_llm = object()
     judge_llm = object()
@@ -43,9 +43,9 @@ async def test_builds_component_resolves_backends_and_runs(monkeypatch, componen
     build = Mock(return_value=component_config)
     resolve = Mock(return_value=backends)
     run = AsyncMock(return_value=result)
-    monkeypatch.setattr(evaluation, "build_component_config", build)
-    monkeypatch.setattr(evaluation, "resolve_backends", resolve)
-    monkeypatch.setattr(evaluation, "run_component", run)
+    monkeypatch.setattr(run_eval, "build_component_config", build)
+    monkeypatch.setattr(run_eval, "resolve_backends", resolve)
+    monkeypatch.setattr(run_eval, "run_component", run)
 
     actual = await evaluate_component(
         component,
@@ -66,17 +66,17 @@ async def test_builds_component_resolves_backends_and_runs(monkeypatch, componen
 
 
 async def test_uses_task_llm_as_judge_by_default(monkeypatch):
-    import evaluation
+    import run_eval
 
     task_llm = object()
     component_config = ComponentConfig("mapping", _task, [])
     monkeypatch.setattr(
-        evaluation,
+        run_eval,
         "build_component_config",
         build := Mock(return_value=component_config),
     )
-    monkeypatch.setattr(evaluation, "resolve_backends", Mock(return_value=Mock()))
-    monkeypatch.setattr(evaluation, "run_component", AsyncMock(return_value={}))
+    monkeypatch.setattr(run_eval, "resolve_backends", Mock(return_value=Mock()))
+    monkeypatch.setattr(run_eval, "run_component", AsyncMock(return_value={}))
 
     await evaluate_component("mapping", llm=task_llm, settings=_settings())
 
@@ -84,19 +84,19 @@ async def test_uses_task_llm_as_judge_by_default(monkeypatch):
 
 
 async def test_warns_when_mapping_is_given_a_judge_llm(monkeypatch):
-    import evaluation
+    import run_eval
 
     task_llm = object()
     judge_llm = object()
     warning = Mock()
-    monkeypatch.setattr(evaluation.logger, "warning", warning)
+    monkeypatch.setattr(run_eval.logger, "warning", warning)
     monkeypatch.setattr(
-        evaluation,
+        run_eval,
         "build_component_config",
         Mock(return_value=ComponentConfig("mapping", _task, [])),
     )
-    monkeypatch.setattr(evaluation, "resolve_backends", Mock(return_value=Mock()))
-    monkeypatch.setattr(evaluation, "run_component", AsyncMock(return_value={}))
+    monkeypatch.setattr(run_eval, "resolve_backends", Mock(return_value=Mock()))
+    monkeypatch.setattr(run_eval, "run_component", AsyncMock(return_value={}))
 
     await evaluate_component(
         "mapping",
@@ -111,7 +111,7 @@ async def test_warns_when_mapping_is_given_a_judge_llm(monkeypatch):
 
 
 async def test_creates_default_llm_from_same_settings_snapshot(monkeypatch):
-    import evaluation
+    import run_eval
 
     settings = _settings()
     default_llm = object()
@@ -120,10 +120,10 @@ async def test_creates_default_llm_from_same_settings_snapshot(monkeypatch):
     build = Mock(return_value=component_config)
     resolve = Mock(return_value=Mock())
     run = AsyncMock(return_value={})
-    monkeypatch.setattr(evaluation, "_create_default_llm", create_llm)
-    monkeypatch.setattr(evaluation, "build_component_config", build)
-    monkeypatch.setattr(evaluation, "resolve_backends", resolve)
-    monkeypatch.setattr(evaluation, "run_component", run)
+    monkeypatch.setattr(run_eval, "_create_default_llm", create_llm)
+    monkeypatch.setattr(run_eval, "build_component_config", build)
+    monkeypatch.setattr(run_eval, "resolve_backends", resolve)
+    monkeypatch.setattr(run_eval, "run_component", run)
 
     await evaluate_component("generation", settings=settings)
 
@@ -136,10 +136,10 @@ async def test_creates_default_llm_from_same_settings_snapshot(monkeypatch):
 
 
 async def test_rejects_unknown_component_before_creating_llm(monkeypatch):
-    import evaluation
+    import run_eval
 
     create_llm = Mock()
-    monkeypatch.setattr(evaluation, "_create_default_llm", create_llm)
+    monkeypatch.setattr(run_eval, "_create_default_llm", create_llm)
 
     with pytest.raises(ValueError, match="Unknown component"):
         await evaluate_component("unknown", settings=_settings())

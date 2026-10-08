@@ -35,13 +35,12 @@ from typing import Any
 
 import pandas as pd
 from component_catalog import COMPONENT_NAMES
-from evaluation import evaluate_component
 from rich.console import Console
 from rich.table import Table
+from run_eval import evaluate_component
 from settings import eval_settings
-from utils import gateway, langfuse
-
 from themefinder.llm import OpenAILLM
+from utils import gateway, langfuse
 
 # Monkey-patch openai with langfuse-openai for automatic LLM call tracing.
 # Must happen before any OpenAILLM instances are created.

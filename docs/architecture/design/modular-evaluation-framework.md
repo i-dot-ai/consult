@@ -53,7 +53,7 @@ future dvc.yaml                            ─┘              ▼
                                               resolve_backends(...) ──▶ run_component(...)
 ```
 
-`run_eval.py` selects a component and calls `evaluate_component(...)`. `benchmark.py` calls the same API, and
+`run_eval.py` exposes `evaluate_component(...)` and a CLI that calls it. `benchmark.py` calls the same API, and
 the CI workflow reaches it through the benchmark Make targets. No caller owns a separate Langfuse-versus-local
 branch. Component factories create the task and evaluator configuration; `evaluate_component(...)` alone
 resolves the selected backends and delegates to `run_component(...)`.
@@ -194,8 +194,7 @@ Component-specific code lives separately from adapters:
 evals/
   component_catalog.py       # shared component names
   components/                # task + ComponentConfig factory per component
-  evaluation.py              # evaluate_component(...) API
-  run_eval.py                # unified CLI
+  run_eval.py                # evaluate_component(...) API and unified CLI
 ```
 
 ### Evaluator adapters and utility modules
@@ -591,7 +590,7 @@ or broken intermediate state.
   `test_artefact_store.py`), each asserting the concrete adapter is a genuine subclass of its ABC and that
   instantiating an incomplete subclass raises `TypeError`.
 - A grep-based check enforces the zero-Langfuse-in-component-code rule directly:
-  `grep -ril langfuse evals/components evals/evaluation.py evals/run_eval.py evals/component_runner.py evals/eval_types.py evals/adapters/*/base.py
+  `grep -ril langfuse evals/components evals/run_eval.py evals/component_runner.py evals/eval_types.py evals/adapters/*/base.py
   evals/adapters/evaluators/*.py` must return nothing, aside from `pydantic_evals_evaluator.py`
   (which legitimately imports `pydantic_evals`, not `langfuse` — the grep target is `langfuse`, not
   `pydantic_evals`, so this file is expected to be clean too).

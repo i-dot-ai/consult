@@ -24,25 +24,34 @@ where `<FILE_PATH>` is the location of your local version of `themefinder`.
 
 ## Evaluation
 
-The `evals/` directory contains our benchmarking evaluation suite used to measure system performance. When you make a change to the `themefinder` pipeline, run the evaluations to ensure you haven't reduced performance. 
+The `evals/` directory contains our benchmarking evaluation suite used to measure system performance. When you make a change to the `themefinder` pipeline, run the evaluations to ensure you haven't reduced performance.
 
-Some evaluation datasets are stored in our AWS environment and require the appropriate access and credentials. Similarly, the `make run-evals` command assumes you have AWS access configured.
+Shared evaluation datasets are stored in Langfuse and require Langfuse credentials. Local JSON datasets can also be used without Langfuse. The `make run-evals` command does not require AWS access.
 
-These evaluations use the Azure Open AI endpoint.
+These evaluations access models through the LLM gateway.
 
 ### Running the evaluations
 
-Set your environment variables: copy `.env.example` to `.env` and populate with the name of the S3 bucket, and the details for the Azure endpoint.
+Copy `themefinder/.env.example` to `themefinder/.env` and configure the LLM gateway credentials and evaluation model. To use shared datasets or store results in Langfuse, select the Langfuse backends and provide the corresponding credentials:
+
+```env
+THEMEFINDER_EVAL_DATASET_SOURCE=langfuse
+THEMEFINDER_EVAL_ARTEFACT_STORE=langfuse
+LANGFUSE_SECRET_KEY=...
+LANGFUSE_PUBLIC_KEY=...
+LANGFUSE_BASE_URL=...
+```
+
+Set either backend to `local`, or leave it unset, to use local JSON data or result storage instead.
 
 Install packages for this repo: `uv sync` from the repository root.
 
-Ensure you have AWS access set up, and assume your AWS role to allow you to access the data.
-
 These evaluations can be executed either:
+
 - By running `make run-evals` from the repo root to execute the complete evaluation suite
 - By running `uv run --extra eval python run_eval.py --component <name> --dataset <dataset>` from `themefinder/evals/`
 
-Note that the evals specifically use GPT-4o, and JSON structured output.
+The model is selected through `AUTO_EVAL_MODEL` or the benchmark command's model arguments.
 
 
 ## Releasing to PyPi
