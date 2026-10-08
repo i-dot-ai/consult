@@ -1,0 +1,31 @@
+{
+  "header": {
+    "dataset": "gambling_XS",
+    "dataset_revision": "local-2025-07-22",
+    "model": "gpt-4.1-sweden-2025-03",
+    "n_runs": 5,
+    "tolerance": "max(0.05 for 0-1 metrics or 0.5 for 1-5 judge metrics, 3.0 * stdev across runs)"
+  },
+  "metrics": {
+    "accuracy_score": {
+      "baseline": 0.279,
+      "tolerance": 0.05
+    },
+    "f1_confidence_interval_lower": {
+      "baseline": 0.617,
+      "tolerance": 0.05
+    },
+    "f1_confidence_interval_upper": {
+      "baseline": 0.731,
+      "tolerance": 0.05
+    },
+    "f1_score": {
+      "baseline": 0.6747,
+      "tolerance": 0.05
+    },
+    "overlap_rate": {
+      "baseline": 0.881,
+      "tolerance": 0.05
+    }
+  }
+}

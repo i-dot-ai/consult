@@ -180,6 +180,41 @@ current evaluation datasets are small enough that the extra cost is acceptable.
 Use `make run-evals` for the quick multi-component benchmark or
 `make run-eval EVAL_TYPE=mapping` for one benchmark component.
 
+### Evals in CI
+
+ThemeFinder evals run in GitHub Actions on every change to `themefinder/evals/**` or
+`themefinder/src/themefinder/**`, in two tiers:
+
+| Tier | Runs on | Dataset | Passes when |
+|---|---|---|---|
+| Smoke | Pull requests, manual runs | `gambling_XXS` (15 responses per question) | Every component runs end to end with no case or evaluator errors. Scores are not compared. |
+| Regression | Pushes to `main`, nightly, manual runs | `gambling_XS` | The smoke conditions hold and no metric is worse than its baseline by more than its tolerance. Failures are posted to Slack. |
+
+Both tiers run the DVC pipeline through make, so you can reproduce them locally:
+
+```bash
+make eval-smoke       # tiny dataset, checks the evals run
+make eval-regression  # full dataset, compares against baselines
+```
+
+Both need gateway credentials in your environment or `.env`. They rewrite
+`themefinder/evals/params.yaml` and `dvc.lock` in your working tree, so discard
+those changes afterwards.
+
+Regression baselines are committed in `themefinder/evals/baselines/`, one file per
+component, with a tolerance for each metric. Metrics where lower is better, such as
+redundancy, are marked `"direction": "lower"`. Baselines are only changed on purpose:
+when a change deliberately moves quality, repeat the regression run several times,
+copy each run's `themefinder/evals/local_eval_runs` directory, and rebuild them:
+
+```bash
+cd themefinder/evals
+uv run --extra eval python -m ci.build_baselines --runs /path/to/run1 /path/to/run2 ...
+```
+
+Tolerances are the larger of a fixed floor and three standard deviations across the
+runs, so use at least five. Review the baseline diff in the pull request.
+
 ### Configuring Certificates
 
 When you run the backend or eval pipeline, you may encounter certificate errors such as:

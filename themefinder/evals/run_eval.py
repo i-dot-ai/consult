@@ -14,6 +14,7 @@ from datasets import DatasetConfig
 from settings import EvalSettings, get_settings
 from utils import gateway
 from utils.logging_config import get_logger
+from utils.results_utils import count_errors
 
 from themefinder.llm import OpenAILLM
 
@@ -100,6 +101,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
+    output_path = LOCAL_EVAL_RUNS_DIR / args.component / args.dataset / "results.json"
+    # The local artefact store is the only writer of results.json. Remove any stale file so
+    # errors from an earlier run are never read back as this run's.
+    output_path.unlink(missing_ok=True)
+
     results = asyncio.run(
         evaluate_component(
             component=args.component,
@@ -107,10 +113,11 @@ def main(argv: Sequence[str] | None = None) -> None:
             question_num=args.question,
         )
     )
-    if (get_settings().eval.artefact_store or "local") != "local":
-        output_path = (
-            LOCAL_EVAL_RUNS_DIR / args.component / args.dataset / "results.json"
-        )
+
+    # If the local json file has not been written then write here for DVC's declared output.
+    # TODO(PRO-915): remove this write. It is the flat results dict, without the outcomes and
+    # errors that count_errors and the regression gate need, so it cannot be error-checked.
+    if not output_path.exists():
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(
             json.dumps(results, indent=2, sort_keys=True, default=str),
@@ -118,6 +125,12 @@ def main(argv: Sequence[str] | None = None) -> None:
         )
 
     print(json.dumps(results, indent=2, sort_keys=True, default=str))
+
+    # Case errors are recorded, not raised, so fail here or DVC and CI would call the run a success.
+    if output_path.exists() and (
+        errors := count_errors(json.loads(output_path.read_text(encoding="utf-8")))
+    ):
+        raise SystemExit(f"{errors} case or evaluator errors, see {output_path}")
 
 
 if __name__ == "__main__":

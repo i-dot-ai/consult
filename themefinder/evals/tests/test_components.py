@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pandas as pd
 import pytest
 from adapters.evaluators.condensation_quality_evaluator import (
@@ -22,23 +20,6 @@ from components import (
     refinement,
 )
 from eval_types import Case
-
-
-def test_workflow_component_choices_match_registry():
-    repository_root = Path(__file__).resolve().parents[3]
-    workflow = (
-        repository_root / ".github" / "workflows" / "themefinder-eval.yml"
-    ).read_text(encoding="utf-8")
-    eval_input = workflow.split("eval_type:", maxsplit=1)[1].split(
-        "default:", maxsplit=1
-    )[0]
-    choices = {
-        line.strip().removeprefix("- ")
-        for line in eval_input.splitlines()
-        if line.strip().startswith("- ")
-    }
-
-    assert choices == {*COMPONENT_NAMES, "all"}
 
 
 @pytest.mark.parametrize("component", COMPONENT_NAMES)

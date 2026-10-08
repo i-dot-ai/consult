@@ -1,0 +1,15 @@
+{"response_id": 1001, "labels": ["A", "D", "E"], "stances": ["POSITIVE", "NEGATIVE", "NEGATIVE"]}
+{"response_id": 1002, "labels": ["B", "C"], "stances": ["NEGATIVE", "POSITIVE"]}
+{"response_id": 1008, "labels": ["B"], "stances": ["NEGATIVE"]}
+{"response_id": 1010, "labels": ["F", "E"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1014, "labels": ["H", "G"], "stances": ["NEGATIVE", "NEGATIVE"]}
+{"response_id": 1017, "labels": ["B", "K"], "stances": ["NEGATIVE", "POSITIVE"]}
+{"response_id": 1035, "labels": ["I", "J"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1040, "labels": ["G", "I"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1045, "labels": ["B"], "stances": ["NEGATIVE"]}
+{"response_id": 1056, "labels": ["G", "B"], "stances": ["NEGATIVE", "NEGATIVE"]}
+{"response_id": 1058, "labels": ["G", "D"], "stances": ["NEGATIVE", "NEGATIVE"]}
+{"response_id": 1060, "labels": ["G"], "stances": ["NEGATIVE"]}
+{"response_id": 1068, "labels": ["K", "H"], "stances": ["NEGATIVE", "NEGATIVE"]}
+{"response_id": 1069, "labels": ["C", "I"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1072, "labels": ["E", "H"], "stances": ["NEGATIVE", "NEGATIVE"]}

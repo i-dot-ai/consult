@@ -44,11 +44,9 @@ def test_cli_runs_selected_component_prints_and_persists_langfuse_results(
     ) == {"question_part_1_f1_score": 0.75}
 
 
-@pytest.mark.parametrize("artefact_store", [None, "local"])
 def test_cli_does_not_overwrite_local_artefact_store_result(
-    monkeypatch, capsys, tmp_path, artefact_store
+    monkeypatch, capsys, tmp_path
 ):
-    evaluate = AsyncMock(return_value={"question_part_1_f1_score": 0.75})
     output_path = tmp_path / "mapping" / "demo" / "results.json"
     local_payload = {
         "component": "mapping",
@@ -56,15 +54,15 @@ def test_cli_does_not_overwrite_local_artefact_store_result(
         "outcomes": [{"case": {"id": "case-1"}}],
         "results": {"question_part_1_f1_score": 0.75},
     }
-    output_path.parent.mkdir(parents=True)
-    output_path.write_text(json.dumps(local_payload), encoding="utf-8")
+
+    async def evaluate(**_):
+        # Stands in for the local artefact store, which writes the file during the run.
+        output_path.parent.mkdir(parents=True)
+        output_path.write_text(json.dumps(local_payload), encoding="utf-8")
+        return {"question_part_1_f1_score": 0.75}
+
     monkeypatch.setattr(run_eval, "evaluate_component", evaluate)
     monkeypatch.setattr(run_eval, "LOCAL_EVAL_RUNS_DIR", tmp_path)
-    monkeypatch.setattr(
-        run_eval,
-        "get_settings",
-        lambda: _settings_with_artefact_store(artefact_store),
-    )
 
     run_eval.main(["--component", "mapping", "--dataset", "demo"])
 
