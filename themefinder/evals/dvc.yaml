@@ -29,6 +29,8 @@ stages:
         - ../pyproject.toml
         - ../../uv.lock
         - data/${item.dataset}
+      # Tracks mutable remote datasets; bump dataset_revision to rerun a stage
+      # when Langfuse data changes outside DVC's local dependency graph.
       params:
         - params.yaml:
             - evals.${key}
