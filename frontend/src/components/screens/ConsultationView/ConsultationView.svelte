@@ -93,7 +93,7 @@
     },
   } as const;
 
-  let content = $derived(CONTENT[consultationData?.stage]);
+  let content = $derived(CONTENT[consultationData?.stage] || {});
 </script>
 
 <div class="mt-8 mb-4">
