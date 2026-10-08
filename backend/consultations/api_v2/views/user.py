@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from rest_framework import status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -70,3 +70,12 @@ class UserViewSet(ModelViewSet):
         consultations = models.Consultation.objects.filter(users=user).prefetch_related("users")
         serializer = ConsultationSerializer(consultations, many=True, context={"request": request})
         return Response(serializer.data)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    """
+    Returns the current logged-in user's information
+    """
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)
