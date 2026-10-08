@@ -18,15 +18,33 @@ from consultations.models import (
 )
 
 
-class UserSerializerV2(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
+    emails = serializers.ListSerializer(child=serializers.EmailField(), required=False)
+
     class Meta:
         model = User
-        fields: ClassVar[list] = ["id", "email", "is_staff"]
+        fields: ClassVar[list] = ["id", "email", "is_staff", "created_at", "emails"]
+
+    def to_internal_value(self, data):
+        if email := data.get("email"):
+            data["email"] = email.lower()
+
+        if emails := data.get("emails"):
+            data["emails"] = [email.lower() for email in emails]
+        return super().to_internal_value(data)
+
+    def validate_is_staff(self, value):
+        request = self.context.get("request")
+
+        if self.instance and request and request.user == self.instance and value is False:
+            raise serializers.ValidationError("You cannot remove admin privileges from yourself")
+
+        return value
 
 
-class ConsultationSerializerV2(serializers.ModelSerializer):
-    users = UserSerializerV2(many=True, read_only=True)
-    created_by = UserSerializerV2(read_only=True)
+class ConsultationSerializer(serializers.ModelSerializer):
+    users = UserSerializer(many=True, read_only=True)
+    created_by = UserSerializer(read_only=True)
     is_owner = serializers.SerializerMethodField()
     is_assigned = serializers.SerializerMethodField()
 
@@ -63,45 +81,6 @@ class ConsultationCreateSerializerV2(serializers.ModelSerializer):
         model = Consultation
         fields: ClassVar[list] = ["id", "title"]
         read_only_fields: ClassVar[list] = ["id"]
-
-
-class UserCreateSerializerV2(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields: ClassVar[list] = ["id", "email", "is_staff"]
-        read_only_fields: ClassVar[list] = ["id", "is_staff"]
-
-    def to_internal_value(self, data):
-        if email := data.get("email"):
-            data = {**data, "email": email.lower()}
-        return super().to_internal_value(data)
-
-    def create(self, validated_data):
-        return User.objects.create_user(email=validated_data["email"])
-
-
-class UserSerializer(serializers.ModelSerializer):
-    emails = serializers.ListSerializer(child=serializers.EmailField(), required=False)
-
-    class Meta:
-        model = User
-        fields: ClassVar[list] = ["id", "email", "is_staff", "created_at", "emails"]
-
-    def to_internal_value(self, data):
-        if email := data.get("email"):
-            data["email"] = email.lower()
-
-        if emails := data.get("emails"):
-            data["emails"] = [email.lower() for email in emails]
-        return super().to_internal_value(data)
-
-    def validate_is_staff(self, value):
-        request = self.context.get("request")
-
-        if self.instance and request and request.user == self.instance and value is False:
-            raise serializers.ValidationError("You cannot remove admin privileges from yourself")
-
-        return value
 
 
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
@@ -152,23 +131,6 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
             "total_response_count",
             "free_text_response_count",
             "multi_choice_response_count",
-        ]
-
-
-class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
-    users = UserSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Consultation
-        fields: ClassVar[list] = [
-            "id",
-            "title",
-            "code",
-            "stage",
-            "data_source",
-            "users",
-            "created_at",
-            "running_job",
         ]
 
 

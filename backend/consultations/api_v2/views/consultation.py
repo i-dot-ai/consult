@@ -10,7 +10,7 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from consultations.api_v2.permissions import CanSeeConsultationV2, IsConsultationOwnerOrSuperuser
 from consultations.api_v2.serializers import (
     ConsultationCreateSerializerV2,
-    ConsultationSerializerV2,
+    ConsultationSerializer,
 )
 from consultations.models import Consultation
 from ingest.jobs import delete_consultation_job
@@ -28,7 +28,7 @@ class ConsultationViewSet(CreateModelMixin, DestroyModelMixin, ReadOnlyModelView
     def get_serializer_class(self):
         if self.action == "create":
             return ConsultationCreateSerializerV2
-        return ConsultationSerializerV2
+        return ConsultationSerializer
 
     def perform_create(self, serializer):
         consultation = serializer.save(code="", created_by=self.request.user)
