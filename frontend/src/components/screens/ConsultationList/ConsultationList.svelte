@@ -206,7 +206,7 @@
   <hr class="my-2 w-12" />
 {/snippet}
 
-<section class="flex items-start justify-between gap-4">
+<section class="flex flex-wrap items-start justify-between gap-4">
   <div>
     <Title level={2} text="Consultations" />
     <p class="text-neutral-500 text-sm">
