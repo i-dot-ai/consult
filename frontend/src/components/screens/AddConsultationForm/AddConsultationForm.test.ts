@@ -1,0 +1,229 @@
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/svelte";
+import fetchMock from "fetch-mock";
+
+import AddConsultationForm from "./AddConsultationForm.svelte";
+import { mockRoute } from "../../../global/utils";
+import { queryClient } from "../../../global/queryClient";
+import { consultationsV2QueryParts } from "../../../global/queries/consultations/parts";
+
+const originalV2Flag = process.env.PUBLIC_DATA_SETUP_V2_ENABLED;
+process.env.PUBLIC_DATA_SETUP_V2_ENABLED = "true";
+
+const URL = consultationsV2QueryParts.url();
+
+const EXISTING = {
+  id: "4d1414d5-9300-447b-b788-50d0bef7e807",
+  title: "Future homes standard",
+  created_at: "2026-08-18T10:00:00Z",
+  created_by: { id: 1, email: "admin@example.com", is_staff: true },
+  is_owner: true,
+};
+
+const DUPLICATE_NAME = "future homes STANDARD";
+const DUPLICATE_URL = `${URL}?${new URLSearchParams({ title__iexact: DUPLICATE_NAME })}`;
+
+const duplicateMock = {
+  url: DUPLICATE_URL,
+  body: { count: 1, next: null, previous: null, results: [EXISTING] },
+};
+
+describe("AddConsultationForm", () => {
+  beforeEach(() => {
+    vi.stubGlobal("location", { href: "", origin: window.location.origin });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    queryClient.resetQueries();
+  });
+
+  it("renders the name field and actions", () => {
+    render(AddConsultationForm);
+
+    expect(
+      screen.getByRole("heading", { name: "Add a consultation" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Consultation name")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Save and continue" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Cancel" })).toBeInTheDocument();
+  });
+
+  it("disables save until the name has non-whitespace content", async () => {
+    render(AddConsultationForm);
+
+    const saveButton = screen.getByRole("button", {
+      name: "Save and continue",
+    });
+    expect(saveButton).toBeDisabled();
+
+    await fireEvent.input(screen.getByLabelText("Consultation name"), {
+      target: { value: "   " },
+    });
+    expect(saveButton).toBeDisabled();
+
+    await fireEvent.input(screen.getByLabelText("Consultation name"), {
+      target: { value: "Brand new" },
+    });
+    expect(saveButton).toBeEnabled();
+  });
+
+  it("warns on submit when the name matches an existing consultation", async () => {
+    mockRoute(duplicateMock);
+    render(AddConsultationForm);
+
+    await fireEvent.input(screen.getByLabelText("Consultation name"), {
+      target: { value: DUPLICATE_NAME },
+    });
+    expect(
+      screen.queryByText("Future homes standard already exists."),
+    ).not.toBeInTheDocument();
+
+    await fireEvent.click(
+      screen.getByRole("button", { name: "Save and continue" }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Future homes standard already exists."),
+      ).toBeInTheDocument();
+    });
+    expect(
+      screen.getByRole("button", { name: "Save anyway" }),
+    ).toBeInTheDocument();
+  });
+
+  it("notes when several consultations share the name", async () => {
+    const OTHER = {
+      ...EXISTING,
+      id: "f2a56a1c-5d7b-4b4c-9d4e-4a2b7d6c9f31",
+      created_at: "2026-07-01T10:00:00Z",
+    };
+    mockRoute({
+      url: DUPLICATE_URL,
+      body: {
+        count: 2,
+        next: null,
+        previous: null,
+        results: [EXISTING, OTHER],
+      },
+    });
+    render(AddConsultationForm);
+
+    await fireEvent.input(screen.getByLabelText("Consultation name"), {
+      target: { value: DUPLICATE_NAME },
+    });
+    await fireEvent.click(
+      screen.getByRole("button", { name: "Save and continue" }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Showing the most recent of 2 with this name/),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("creates the consultation when confirming the duplicate warning", async () => {
+    mockRoute(duplicateMock);
+    mockRoute({
+      url: URL,
+      method: "POST",
+      body: { id: "new-id", title: DUPLICATE_NAME },
+      status: 201,
+    });
+    render(AddConsultationForm);
+
+    await fireEvent.input(screen.getByLabelText("Consultation name"), {
+      target: { value: DUPLICATE_NAME },
+    });
+    await fireEvent.click(
+      screen.getByRole("button", { name: "Save and continue" }),
+    );
+
+    const confirmButton = await screen.findByRole("button", {
+      name: "Save anyway",
+    });
+    await fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(window.location.href).toBe("/consultations/new-id");
+    });
+  });
+
+  it("creates the consultation directly when the name has no duplicate", async () => {
+    mockRoute({
+      url: `${URL}?${new URLSearchParams({ title__iexact: "Brand new" })}`,
+      body: { count: 0, next: null, previous: null, results: [] },
+    });
+    mockRoute({
+      url: URL,
+      method: "POST",
+      body: { id: "new-id", title: "Brand new" },
+      status: 201,
+    });
+    render(AddConsultationForm);
+
+    await fireEvent.input(screen.getByLabelText("Consultation name"), {
+      target: { value: "  Brand new  " },
+    });
+    await fireEvent.click(
+      screen.getByRole("button", { name: "Save and continue" }),
+    );
+
+    await waitFor(() => {
+      expect(window.location.href).toBe("/consultations/new-id");
+    });
+
+    const postCall = fetchMock.callHistory.lastCall(URL, { method: "POST" });
+    expect(JSON.parse(postCall?.options.body as string)).toEqual({
+      title: "Brand new",
+    });
+  });
+
+  it("shows an error if creation fails", async () => {
+    mockRoute({
+      url: `${URL}?${new URLSearchParams({ title__iexact: "Brand new" })}`,
+      body: { count: 0, next: null, previous: null, results: [] },
+    });
+    mockRoute({ url: URL, method: "POST", body: {}, status: 500 });
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    render(AddConsultationForm);
+
+    await fireEvent.input(screen.getByLabelText("Consultation name"), {
+      target: { value: "Brand new" },
+    });
+    await fireEvent.click(
+      screen.getByRole("button", { name: "Save and continue" }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Failed to create consultation"),
+      ).toBeInTheDocument();
+    });
+    consoleError.mockRestore();
+  });
+
+  afterAll(() => {
+    if (originalV2Flag === undefined) {
+      delete process.env.PUBLIC_DATA_SETUP_V2_ENABLED;
+    } else {
+      process.env.PUBLIC_DATA_SETUP_V2_ENABLED = originalV2Flag;
+    }
+  });
+});

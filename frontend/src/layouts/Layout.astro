@@ -10,9 +10,12 @@ import { getApiConsultationUrl, Routes, Suffixes } from "../global/routes";
 import type { AstroGlobalRuntime, Consultation } from "../global/types";
 import { getEnv, getLangfuseUrl } from "../global/utils";
 
+function isNewConsultationUrl(url: string): boolean {
+  return /^\/consultations\/new\/?$/.test(url);
+}
 function isConsultationSubUrl(url: string): boolean {
   const consultationUrlRe = /\/consultations\/.*\S.*/;
-  return consultationUrlRe.test(url);
+  return consultationUrlRe.test(url) && !isNewConsultationUrl(url);
 }
 function isFinalisingThemeUrl(url: string): boolean {
   return url.includes(Suffixes.FinaliseThemes);
@@ -21,7 +24,7 @@ function isEvaluationsUrl(url: string): boolean {
   return url.startsWith(Routes.Evaluations);
 }
 function isDashboardUrl(url: string): boolean {
-  if (url === Routes.Consultations) {
+  if (url === Routes.Consultations || isNewConsultationUrl(url)) {
     return false;
   }
   return (
