@@ -1,39 +1,81 @@
 from typing import ClassVar
 
 from rest_framework import status
-from rest_framework.mixins import CreateModelMixin
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import ModelViewSet
 
-from authentication.models import User
-from consultations.api_v2.serializers import UserCreateSerializerV2
+from consultations import models
+from consultations.api_v2.filters import UserFilter
+from consultations.api_v2.serializers import (
+    ConsultationSerializer,
+    UserSerializer,
+)
 
 
-class UserViewSet(CreateModelMixin, GenericViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserCreateSerializerV2
+class UserViewSet(ModelViewSet):
+    serializer_class = UserSerializer
     permission_classes: ClassVar[list] = [IsAuthenticated, IsAdminUser]
+    pagination_class = PageNumberPagination
+    filterset_class = UserFilter
+    http_method_names: ClassVar[list] = ["get", "post", "patch", "delete"]
 
     def create(self, request, *args, **kwargs):
-        emails = request.data.get("emails")
-        if not isinstance(emails, list):
-            return super().create(request, *args, **kwargs)
+        # Support both single and bulk creation
+        data = request.data
 
-        created = []
-        errors = []
-        for email in emails:
-            serializer = self.get_serializer(data={"email": email})
-            if serializer.is_valid():
-                created.append(serializer.save())
-            else:
-                errors.append({"email": email, "errors": serializer.errors})
-
-        if errors:
+        # If 'emails' is present and is a list, treat as bulk creation
+        if isinstance(data.get("emails"), list):
+            emails = data["emails"]
+            created_users = []
+            errors = []
+            for email in emails:
+                serializer = self.get_serializer(data={"email": email})
+                if serializer.is_valid():
+                    user = serializer.save()
+                    created_users.append(user)
+                else:
+                    errors.append({"email": email, "errors": serializer.errors})
+            if errors:
+                return Response(
+                    {"detail": "Some users not created.", "errors": errors},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             return Response(
-                {"detail": "Some users not created.", "errors": errors},
-                status=status.HTTP_400_BAD_REQUEST,
+                self.get_serializer(created_users, many=True).data,
+                status=status.HTTP_201_CREATED,
             )
-        return Response(
-            self.get_serializer(created, many=True).data, status=status.HTTP_201_CREATED
-        )
+
+        # Otherwise, treat as single user creation using default DRF behavior
+        return super().create(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = models.User.objects.all().order_by("-created_at")
+        filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
+        return filterset.qs.distinct()
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="consultations",
+        permission_classes=[IsAuthenticated, IsAdminUser],
+    )
+    def consultations(self, request, pk=None):
+        """
+        Get all consultations that a specific user belongs to.
+        """
+        user = self.get_object()
+        consultations = models.Consultation.objects.filter(users=user).prefetch_related("users")
+        serializer = ConsultationSerializer(consultations, many=True, context={"request": request})
+        return Response(serializer.data)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    """
+    Returns the current logged-in user's information
+    """
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)

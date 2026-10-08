@@ -111,3 +111,68 @@ def test_v2_create_user_rejects_unauthenticated(client):
     )
 
     assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_v2_list_users(client, staff_user_token, staff_user, non_staff_user):
+    response = client.get(
+        reverse("user-v2-list"),
+        headers={"Authorization": f"Bearer {staff_user_token}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["count"] == 2
+    assert {user["id"] for user in response.json()["results"]} == {
+        staff_user.id,
+        non_staff_user.id,
+    }
+
+
+@pytest.mark.django_db
+def test_v2_retrieve_user(client, staff_user_token, non_staff_user):
+    response = client.get(
+        reverse("user-v2-detail", kwargs={"pk": non_staff_user.pk}),
+        headers={"Authorization": f"Bearer {staff_user_token}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["id"] == non_staff_user.id
+    assert response.json()["email"] == non_staff_user.email
+
+
+@pytest.mark.django_db
+def test_v2_update_user(client, staff_user_token, non_staff_user):
+    response = client.patch(
+        reverse("user-v2-detail", kwargs={"pk": non_staff_user.pk}),
+        data={"is_staff": True},
+        content_type="application/json",
+        headers={"Authorization": f"Bearer {staff_user_token}"},
+    )
+
+    assert response.status_code == 200
+    non_staff_user.refresh_from_db()
+    assert non_staff_user.is_staff is True
+
+
+@pytest.mark.django_db
+def test_v2_delete_user(client, staff_user_token):
+    user = UserFactory()
+
+    response = client.delete(
+        reverse("user-v2-detail", kwargs={"pk": user.pk}),
+        headers={"Authorization": f"Bearer {staff_user_token}"},
+    )
+
+    assert response.status_code == 204
+    assert not User.objects.filter(pk=user.pk).exists()
+
+
+@pytest.mark.django_db
+def test_v2_list_user_consultations(client, staff_user_token, non_staff_user, consultation):
+    response = client.get(
+        reverse("user-v2-consultations", kwargs={"pk": non_staff_user.pk}),
+        headers={"Authorization": f"Bearer {staff_user_token}"},
+    )
+
+    assert response.status_code == 200
+    assert [item["id"] for item in response.json()] == [str(consultation.id)]
