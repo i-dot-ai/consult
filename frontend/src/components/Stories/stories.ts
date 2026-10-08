@@ -47,6 +47,7 @@ import ErrorScreenStory from "../screens/ErrorScreen/ErrorScreenStory.svelte";
 import ChartStory from "../Chart/ChartStory.svelte";
 import DataTableStory from "../DataTable/DataTableStory.svelte";
 import AlertStory from "../Alert/AlertStory.svelte";
+import AddConsultationFormStory from "../screens/AddConsultationForm/AddConsultationFormStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -120,4 +121,5 @@ export default [
   ChartStory,
   DataTableStory,
   AlertStory,
+  AddConsultationFormStory,
 ] as Story[];
