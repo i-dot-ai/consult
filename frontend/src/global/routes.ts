@@ -32,6 +32,7 @@ export enum Routes {
   Home = "/",
   Evaluations = "/evaluations",
   Consultations = "/consultations",
+  ConsultationsNew = "/consultations/new",
   Support = "/support",
   HowItWorks = "/guidance",
   DataSharing = "/data-sharing",
