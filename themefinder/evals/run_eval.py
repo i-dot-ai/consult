@@ -8,6 +8,7 @@ from pathlib import Path
 
 from component_catalog import COMPONENT_NAMES
 from evaluation import evaluate_component
+from settings import get_settings
 
 LOCAL_EVAL_RUNS_DIR = Path(__file__).resolve().parent / "local_eval_runs"
 
@@ -44,12 +45,15 @@ def main(argv: Sequence[str] | None = None) -> None:
         )
     )
 
-    output_path = LOCAL_EVAL_RUNS_DIR / args.component / args.dataset / "results.json"
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
-        json.dumps(results, indent=2, sort_keys=True, default=str),
-        encoding="utf-8",
-    )
+    if (get_settings().eval.artefact_store or "local") != "local":
+        output_path = (
+            LOCAL_EVAL_RUNS_DIR / args.component / args.dataset / "results.json"
+        )
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(
+            json.dumps(results, indent=2, sort_keys=True, default=str),
+            encoding="utf-8",
+        )
 
     print(json.dumps(results, indent=2, sort_keys=True, default=str))
 
