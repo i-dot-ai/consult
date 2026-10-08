@@ -4,9 +4,12 @@ import argparse
 import asyncio
 import json
 from collections.abc import Sequence
+from pathlib import Path
 
 from component_catalog import COMPONENT_NAMES
 from evaluation import evaluate_component
+
+LOCAL_EVAL_RUNS_DIR = Path(__file__).resolve().parent / "local_eval_runs"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -40,6 +43,14 @@ def main(argv: Sequence[str] | None = None) -> None:
             question_num=args.question,
         )
     )
+
+    output_path = LOCAL_EVAL_RUNS_DIR / args.component / args.dataset / "results.json"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps(results, indent=2, sort_keys=True, default=str),
+        encoding="utf-8",
+    )
+
     print(json.dumps(results, indent=2, sort_keys=True, default=str))
 
 

@@ -1,0 +1,29 @@
+# Runtime configuration for the DVC evaluation pipeline.
+#
+# Bump dataset_revision when a Langfuse dataset changes: DVC can hash the local
+# data directory but cannot detect a mutable remote dataset changing by itself.
+evals:
+  mapping:
+    dataset: gambling_XS
+    dataset_revision: local-2025-07-22
+    model: gpt-4.1-sweden-2025-03
+    dataset_source: local
+    artefact_store: local
+  generation:
+    dataset: gambling_XS
+    dataset_revision: local-2025-07-22
+    model: gpt-4.1-sweden-2025-03
+    dataset_source: local
+    artefact_store: local
+  condensation:
+    dataset: gambling_XS
+    dataset_revision: local-2025-07-22
+    model: gpt-4.1-sweden-2025-03
+    dataset_source: local
+    artefact_store: local
+  refinement:
+    dataset: gambling_XS
+    dataset_revision: local-2025-07-22
+    model: gpt-4.1-sweden-2025-03
+    dataset_source: local
+    artefact_store: local
