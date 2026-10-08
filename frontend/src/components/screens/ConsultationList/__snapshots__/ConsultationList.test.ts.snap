@@ -3,7 +3,7 @@
 exports[`ConsultationList > should match snapshot after loading 1`] = `
 <div>
   <section
-    class="flex items-start justify-between gap-4"
+    class="flex flex-wrap items-start justify-between gap-4"
   >
     <div>
       <!---->
@@ -942,7 +942,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
 exports[`ConsultationList > should match snapshot initially 1`] = `
 <div>
   <section
-    class="flex items-start justify-between gap-4"
+    class="flex flex-wrap items-start justify-between gap-4"
   >
     <div>
       <!---->
