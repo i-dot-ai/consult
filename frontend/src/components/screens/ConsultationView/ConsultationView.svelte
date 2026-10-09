@@ -166,11 +166,11 @@
 
       {#if userCanDelete && !isRenaming}
         <Button
-            variant="warning"
+            variant="danger"
             handleClick={() => console.log("about to delete:", consultationData.title)}
         >
-            <div class="flex gap-1 items-center text-xs">
-                <MaterialIcon color="fill-neutral-500">
+            <div class="flex gap-1 items-center text-xs delete-button">
+                <MaterialIcon color="fill-red-700">
                     <Delete />
                 </MaterialIcon>
 
