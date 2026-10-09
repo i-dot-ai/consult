@@ -16,7 +16,9 @@
   import { buildConsultationGetQuery } from "../../../global/queries/consultations/queries";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries";
   import {
+    getConsultationAnswersUrl,
     getConsultationDetailUrl,
+    getConsultationUsersUrl,
     getDataUploadUrl,
     getFinaliseThemesUrl,
     Routes,
@@ -88,23 +90,23 @@
     adminLinks?: ContentDataLink[];
   }
 
-  const MANAGE_PEOPLE_LINK = {
+  const MANAGE_PEOPLE_LINK = $derived({
     text: "Manage people",
     description: "Add and remove people on this consultation",
-    url: "/",
-  } as const;
+    url: getConsultationUsersUrl(consultationId),
+  });
 
-  const WHO_CAN_SEE_LINK = {
+  const WHO_CAN_SEE_LINK = $derived({
     text: "Who can see this",
     description: "Everyone on a consultation can see who else is on it",
-    url: "/",
-  };
+    url: getConsultationUsersUrl(consultationId),
+  });
 
-  const VIEW_RESPONSES_LINK = {
+  const VIEW_RESPONSES_LINK = $derived({
     text: "View all responses",
     description: "Every response, as it was uploaded",
-    url: "/",
-  };
+    url: getConsultationAnswersUrl(consultationId),
+  });
 
   const CONTENT: Record<string, ContentData> = $derived({
     analysis: {
