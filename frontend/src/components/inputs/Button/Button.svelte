@@ -78,7 +78,7 @@
       : clsx([
           variant === "warning" && "hover:bg-yellow-100",
           variant === "danger" && "hover:bg-red-800 hover:text-white",
-          (variant !== "warning" && variant !== "danger") && "hover:bg-gray-100",
+          variant !== "warning" && variant !== "danger" && "hover:bg-gray-100",
         ]),
     fixedHoverColor && "fixed-hover-color",
     variant === "primary" && "hover:border-primary hover:text-primary",

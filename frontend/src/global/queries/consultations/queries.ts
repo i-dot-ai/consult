@@ -13,7 +13,6 @@ import type {
 } from "./types";
 import type { Consultation } from "../../types";
 
-
 export function buildConsultationsGetQuery() {
   return buildQuery<ConsultationsGetResponse>(consultationsQueryParts.url(), {
     key: consultationsQueryParts.key(),
