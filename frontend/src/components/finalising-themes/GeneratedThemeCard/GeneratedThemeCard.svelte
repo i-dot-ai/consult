@@ -9,6 +9,7 @@
   } from "../../../global/types";
   import { createFetchStore } from "../../../global/stores";
   import { getApiCandidateThemeResponsesUrl } from "../../../global/routes";
+  import { cssVars } from "../../../global/actions";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
@@ -57,8 +58,8 @@
 
 <div
   transition:slide
-  style="margin-left: {level * leftPadding}rem;"
-  class={clsx(["generated-theme-card"])}
+  use:cssVars={{ "card-indent": `${level * leftPadding}rem` }}
+  class={clsx(["generated-theme-card", "ml-(--card-indent)"])}
 >
   <Panel border={true}>
     <article class="flex flex-wrap sm:flex-nowrap">

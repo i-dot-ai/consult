@@ -3,7 +3,6 @@
 from collections.abc import Callable
 from typing import Any
 
-from component_catalog import COMPONENT_NAMES
 from eval_types import ComponentConfig
 
 from .condensation import build_condensation_config
@@ -21,6 +20,8 @@ COMPONENT_FACTORIES: dict[str, ComponentFactory] = {
     "refinement": build_refinement_config,
 }
 
+COMPONENT_NAMES = tuple(COMPONENT_FACTORIES)
+
 
 def build_component_config(
     component: str,
@@ -29,10 +30,6 @@ def build_component_config(
     question_num: int | None = None,
 ) -> ComponentConfig:
     """Construct a fresh configuration for the selected component."""
-    if component not in COMPONENT_FACTORIES:
-        raise ValueError(
-            f"Unknown component '{component}'. Must be one of: {list(COMPONENT_NAMES)}"
-        )
     if question_num is not None and component != "mapping":
         raise ValueError("question_num is only supported for the mapping component")
     if question_num is not None and question_num < 1:

@@ -131,6 +131,7 @@ test.describe('Response Analysis Page', () => {
   test('demographic filters show correct response counts', async ({ page }) => {
     await expect(page.getByRole('heading', { name: /Filters/i })).toBeVisible();
 
+    await expect(getFreeTextResponses(page).first()).toBeVisible();
     const totalCount = await getFreeTextResponses(page).count();
 
     const nationFilters = ['England', 'Wales', 'Scotland', 'Northern Ireland'];
@@ -155,6 +156,7 @@ test.describe('Response Analysis Page', () => {
   test('filters on categorical question show correct response counts', async ({ page }) => {
     await expect(page.getByRole('heading', { name: /Multiple Choice Answers/i })).toBeVisible();
 
+    await expect(getFreeTextResponses(page).first()).toBeVisible();
     const totalCount = await getFreeTextResponses(page).count();
     const options = ['Yes', 'No', "Don't know", 'No answer'];
 
@@ -171,6 +173,7 @@ test.describe('Response Analysis Page', () => {
   test('select theme filters show correct response counts', async ({ page }) => {
     await expect(page.getByRole('heading', { name: /Theme analysis/i })).toBeVisible();
 
+    await expect(getFreeTextResponses(page).first()).toBeVisible();
     const totalCount = await getFreeTextResponses(page).count();
     const themes = ['Standardized framework', 'Innovation'];
 

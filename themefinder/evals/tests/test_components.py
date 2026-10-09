@@ -13,17 +13,18 @@ from adapters.evaluators.refinement_quality_evaluator import (
     RefinementQualityEvaluator,
 )
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
-from component_catalog import COMPONENT_NAMES
-from components import condensation, generation, mapping, refinement
-from components.registry import COMPONENT_FACTORIES, build_component_config
+from components import (
+    COMPONENT_NAMES,
+    build_component_config,
+    condensation,
+    generation,
+    mapping,
+    refinement,
+)
 from eval_types import Case
 
 
-def test_registry_matches_component_catalog():
-    assert tuple(COMPONENT_FACTORIES) == COMPONENT_NAMES
-
-
-def test_workflow_component_choices_match_catalog():
+def test_workflow_component_choices_match_registry():
     repository_root = Path(__file__).resolve().parents[3]
     workflow = (
         repository_root / ".github" / "workflows" / "themefinder-eval.yml"
@@ -79,7 +80,6 @@ def test_builds_expected_non_generation_evaluators():
         RedundancyEvaluator,
     ]
     assert condensation_config.evaluators[0].llm is judge_llm
-    assert condensation_config.evaluators[1].themes_key == "condensed_themes"
     assert [type(evaluator) for evaluator in refinement_config.evaluators] == [
         RefinementQualityEvaluator
     ]
@@ -154,7 +154,7 @@ async def test_generation_task_runs_full_pipeline_and_normalises_output(monkeypa
     }
 
 
-async def test_condensation_task_preserves_legacy_output_schema(monkeypatch):
+async def test_condensation_task_uses_common_output_schema(monkeypatch):
     async def fake_condensation(themes_df, *, llm, question):
         assert themes_df.to_dict("records") == [{"topic": "Original"}]
         assert question == "Question?"
@@ -166,10 +166,10 @@ async def test_condensation_task_preserves_legacy_output_schema(monkeypatch):
         {"question": "Question?", "themes": [{"topic": "Original"}]}, object()
     )
 
-    assert output == {"condensed_themes": [{"topic": "Condensed"}]}
+    assert output == {"themes": [{"topic": "Condensed"}]}
 
 
-async def test_refinement_task_preserves_legacy_output_schema(monkeypatch):
+async def test_refinement_task_uses_common_output_schema(monkeypatch):
     async def fake_refinement(themes_df, *, llm, question):
         assert themes_df.to_dict("records") == [{"topic": "Original"}]
         assert question == "Question?"
@@ -181,7 +181,7 @@ async def test_refinement_task_preserves_legacy_output_schema(monkeypatch):
         {"question": "Question?", "themes": [{"topic": "Original"}]}, object()
     )
 
-    assert output == {"refined_themes": [{"topic": "Refined"}]}
+    assert output == {"themes": [{"topic": "Refined"}]}
 
 
 async def test_mapping_task_returns_labels_and_reports_unprocessable(

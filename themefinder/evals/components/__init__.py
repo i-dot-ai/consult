@@ -1,5 +1,5 @@
-"""Component tasks and configuration factories."""
+"""Component registry and configuration factories."""
 
-from .registry import build_component_config
+from .registry import COMPONENT_NAMES, build_component_config
 
-__all__ = ["build_component_config"]
+__all__ = ["COMPONENT_NAMES", "build_component_config"]

@@ -20,6 +20,8 @@
   export let setValue: (newValue: string) => void = () => {};
   export let required: boolean = false;
   export let testId: string | undefined = undefined;
+  export let disabled: boolean = false;
+  export let ariaDescribedby: string | undefined = undefined;
 
   export let variant: "default" | "search" = "default";
 </script>
@@ -46,6 +48,8 @@
     {value}
     {autocomplete}
     {required}
+    {disabled}
+    aria-describedby={ariaDescribedby || undefined}
     data-testid={testId}
     on:input={(e) => setValue((e.target as HTMLInputElement).value)}
   />

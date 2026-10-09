@@ -1,6 +1,8 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { cssVars } from "../../../global/actions";
+
   export interface Props {
     id: string;
     label?: string;
@@ -29,10 +31,11 @@
 
   <textarea
     {id}
-    style={`min-height: ${rows}lh;`}
+    use:cssVars={{ "textarea-min-height": `${rows}lh` }}
     class={clsx([
       "block",
       "w-full",
+      "min-h-(--textarea-min-height)",
       "mt-1",
       "p-1",
       "border",

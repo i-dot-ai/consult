@@ -3,8 +3,8 @@
 exports[`GeneratedThemeCard > should render 1`] = `
 <div>
   <div
-    class="generated-theme-card svelte-ptevz"
-    style="margin-left: 0rem;"
+    class="generated-theme-card ml-(--card-indent) svelte-ptevz"
+    style="--card-indent: 0rem;"
   >
     <div
       class="h-full my-4 p-4 rounded-2xl border border-gray-200"

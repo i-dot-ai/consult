@@ -12,14 +12,14 @@ from themefinder import theme_refinement
 
 
 async def run_refinement_task(inputs: dict, llm: Any) -> dict:
-    """Refine the input themes using the established public output shape."""
+    """Refine the input themes using the shared component output shape."""
     themes_df = pd.DataFrame(inputs["themes"])
     refined_df, _ = await theme_refinement(
         themes_df,
         llm=llm,
         question=inputs.get("question", ""),
     )
-    return {"refined_themes": refined_df.to_dict(orient="records")}
+    return {"themes": refined_df.to_dict(orient="records")}
 
 
 def build_refinement_config(judge_llm: Any) -> ComponentConfig:

@@ -47,7 +47,6 @@ exports[`MultiChoice > should render data 1`] = `
           <!---->
           <h2
             class="text-neutral-700 text-lg"
-            style=""
           >
             <!---->
             Multiple Choice Answers
@@ -121,7 +120,7 @@ exports[`MultiChoice > should render data 1`] = `
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="33.3"
-                    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+                    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300 svelte-vitbtr"
                     data-max="100"
                     data-melt-progress=""
                     data-state="loading"
@@ -130,8 +129,8 @@ exports[`MultiChoice > should render data 1`] = `
                     role="meter"
                   >
                     <div
-                      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
-                      style="transform: translateX(-66.7%); transition-delay: 0ms; transition-duration: 0ms;"
+                      class="progress-bar h-full w-full bg-primary transition-transform ease-[cubic-bezier(0.65,0,0.35,1)] svelte-vitbtr"
+                      style="--progress-translate: -66.7%; --progress-delay: 0ms; --progress-duration: 0ms;"
                     />
                   </div>
                   <!---->
@@ -199,7 +198,7 @@ exports[`MultiChoice > should render data 1`] = `
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="66.7"
-                    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+                    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300 svelte-vitbtr"
                     data-max="100"
                     data-melt-progress=""
                     data-state="loading"
@@ -208,8 +207,8 @@ exports[`MultiChoice > should render data 1`] = `
                     role="meter"
                   >
                     <div
-                      class="h-full w-full bg-primary transition-transform duration-660 ease-[cubic-bezier(0.65,0,0.35,1)]"
-                      style="transform: translateX(-33.3%); transition-delay: 0ms; transition-duration: 0ms;"
+                      class="progress-bar h-full w-full bg-primary transition-transform ease-[cubic-bezier(0.65,0,0.35,1)] svelte-vitbtr"
+                      style="--progress-translate: -33.3%; --progress-delay: 0ms; --progress-duration: 0ms;"
                     />
                   </div>
                   <!---->

@@ -13,14 +13,14 @@ from themefinder import theme_condensation
 
 
 async def run_condensation_task(inputs: dict, llm: Any) -> dict:
-    """Condense the input themes using the established public output shape."""
+    """Condense the input themes using the shared component output shape."""
     themes_df = pd.DataFrame(inputs["themes"])
     condensed_df, _ = await theme_condensation(
         themes_df,
         llm=llm,
         question=inputs["question"],
     )
-    return {"condensed_themes": condensed_df.to_dict(orient="records")}
+    return {"themes": condensed_df.to_dict(orient="records")}
 
 
 def build_condensation_config(judge_llm: Any) -> ComponentConfig:
@@ -30,6 +30,6 @@ def build_condensation_config(judge_llm: Any) -> ComponentConfig:
         task=run_condensation_task,
         evaluators=[
             CondensationQualityEvaluator(judge_llm),
-            RedundancyEvaluator(themes_key="condensed_themes"),
+            RedundancyEvaluator(),
         ],
     )

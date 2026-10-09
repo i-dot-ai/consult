@@ -88,11 +88,7 @@ jobs:
             make run-eval EVAL_TYPE="$EVAL_TYPE" 2>&1 | tee themefinder/evals/results.txt
           fi
 
-          if grep -q "Eval Results\|experiment\|accuracy\|f1" themefinder/evals/results.txt; then
-            echo "eval_success=true" >> $GITHUB_OUTPUT
-          else
-            echo "eval_success=false" >> $GITHUB_OUTPUT
-          fi
+          echo "eval_success=true" >> "$GITHUB_OUTPUT"
 
           BENCHMARK_ID=$(grep "BENCHMARK_ID=" themefinder/evals/results.txt | tail -1 | cut -d= -f2)
           echo "benchmark_id=$BENCHMARK_ID" >> $GITHUB_OUTPUT

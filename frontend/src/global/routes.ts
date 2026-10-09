@@ -1,5 +1,7 @@
 import urlJoin from "url-join";
 
+import { getDataSetupV2Enabled } from "./utils";
+
 export enum Prefixes {
   ApiV1 = "/api",
   ApiV2 = "/api/v2",
@@ -30,6 +32,7 @@ export enum Routes {
   Home = "/",
   Evaluations = "/evaluations",
   Consultations = "/consultations",
+  ConsultationsNew = "/consultations/new",
   Support = "/support",
   HowItWorks = "/guidance",
   DataSharing = "/data-sharing",
@@ -62,6 +65,11 @@ export enum Routes {
   ConsultAlertsSlackChannel = "https://i-dot-ai.slack.com/archives/C0930D3DSKW",
   ThemeFinderRepository = "https://github.com/i-dot-ai/themefinder",
 }
+
+export const getApiConsultationsRootUrl = () => {
+  const prefix = getDataSetupV2Enabled() ? Prefixes.ApiV2 : Prefixes.ApiV1;
+  return urlJoin(prefix, Suffixes.Consultations, "/");
+};
 
 export const getConsultationDetailUrl = (consultationId: string) => {
   return urlJoin(Routes.Consultations, consultationId);

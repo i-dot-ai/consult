@@ -10,13 +10,10 @@ stages:
         --component ${key} --dataset ${dataset.name}
       deps:
         - run_eval.py
-        - evaluation.py
-        - component_catalog.py
         - component_runner.py
         - config.py
         - datasets.py
         - eval_types.py
-        - evaluators.py
         - metrics.py
         - settings.py
         - components/__init__.py

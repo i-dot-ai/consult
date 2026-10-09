@@ -3,16 +3,19 @@ import type { Page } from "@playwright/test";
 
 /**
  * Finds the first consultation link that points to an actual consultation detail
- * page (not the consultations list page itself).
+ * page (not the consultations list page itself, and not a static sub-route like
+ * /consultations/new).
  */
 export async function getFirstConsultationLink(page: Page) {
   const allLinks = page.locator('a[href*="/consultations/"]');
   const count = await allLinks.count();
+  const consultationDetailHref =
+    /\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 
   for (let i = 0; i < count; i++) {
     const link = allLinks.nth(i);
     const href = await link.getAttribute("href");
-    if (href && href !== "/consultations" && !href.endsWith("/consultations")) {
+    if (href && consultationDetailHref.test(href)) {
       return { link, href };
     }
   }

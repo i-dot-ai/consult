@@ -2,26 +2,49 @@
 
 exports[`ConsultationList > should match snapshot after loading 1`] = `
 <div>
-  <section>
+  <section
+    class="flex flex-wrap items-start justify-between gap-4"
+  >
+    <div>
+      <!---->
+      <h2
+        class="text-neutral-700 text-lg"
+      >
+        <!---->
+        Consultations
+        
+        
+      </h2>
+      
+      <!---->
+       
+      <p
+        class="text-neutral-500 text-sm"
+      >
+        2 consultations
+        <!---->
+      </p>
+    </div>
+     
     <!---->
-    <h2
-      class="text-neutral-700 text-lg"
-      style=""
+    <a
+      aria-pressed="false"
+      class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+      data-variant="primary"
+      disabled="false"
+      href="/consultations/new"
+      role="link"
+      tabindex="0"
     >
       <!---->
-      Consultations
+      <!---->
+      Add consultation
       
       
-    </h2>
+      
+    </a>
     
     <!---->
-     
-    <p
-      class="text-neutral-500 text-sm"
-    >
-      2 consultations
-      <!---->
-    </p>
   </section>
    
   <section>
@@ -917,26 +940,49 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
 
 exports[`ConsultationList > should match snapshot initially 1`] = `
 <div>
-  <section>
+  <section
+    class="flex flex-wrap items-start justify-between gap-4"
+  >
+    <div>
+      <!---->
+      <h2
+        class="text-neutral-700 text-lg"
+      >
+        <!---->
+        Consultations
+        
+        
+      </h2>
+      
+      <!---->
+       
+      <p
+        class="text-neutral-500 text-sm"
+      >
+        Loading consultations...
+        <!---->
+      </p>
+    </div>
+     
     <!---->
-    <h2
-      class="text-neutral-700 text-lg"
-      style=""
+    <a
+      aria-pressed="false"
+      class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+      data-variant="primary"
+      disabled="false"
+      href="/consultations/new"
+      role="link"
+      tabindex="0"
     >
       <!---->
-      Consultations
+      <!---->
+      Add consultation
       
       
-    </h2>
+      
+    </a>
     
     <!---->
-     
-    <p
-      class="text-neutral-500 text-sm"
-    >
-      Loading consultations...
-      <!---->
-    </p>
   </section>
    
   <section>
@@ -1278,9 +1324,8 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
                   role="status"
                 >
                   <div
-                    class="animate-spin ease-in-out w-max m-auto"
+                    class="animate-spin [animation-timing-function:ease-in-out] w-max m-auto"
                     data-testid="loading-indicator"
-                    style="animation-timing-function: ease-in-out;"
                   >
                     <svg
                       aria-hidden="true"
