@@ -1,6 +1,6 @@
 """RefinementQualityEvaluator — four-dimension quality assessment of theme refinement.
 
-Compares refined `output["refined_themes"]` against the pre-refinement themes on
+Compares refined `output["themes"]` against the pre-refinement themes on
 `case.inputs` (refinement has no ground truth). All four metrics currently
 share one LLM call; splitting them per metric is deferred to ADR-0013.
 """
@@ -24,4 +24,3 @@ class RefinementQualityEvaluator(ThemeComparisonJudgeEvaluator):
     # None for refinement cases — so the pre-transform themes live on
     # case.inputs instead (see datasets.py::load_local_condensation_data)
     ground_truth_attr = "inputs"
-    output_themes_key = "refined_themes"
