@@ -37,7 +37,8 @@
     return typeof createdBy === "string" ? createdBy : createdBy?.email;
   })
   let userIsOwner = $derived(user.query?.data?.email === createdByEmail);
-  let userCanDelete = $derived(user.query?.data?.is_staff || userIsOwner);
+  let userIsAdmin = $derived(user.query?.data?.is_staff);
+  let userCanDelete = $derived(user.query?.data?.is_staff || userIsOwner || userIsAdmin);
 
   function getCreatedByText(createdBy: User | string | null) {
     if (!createdByEmail) {
@@ -56,56 +57,132 @@
     return (stage.charAt(0).toUpperCase() + stage.slice(1)).replaceAll("_", " ");
   }
 
+  interface ContentDataLink { url: string, text: string, description: string };
+
   interface ContentData {
     panelText: string;
     panelButtonText?: string
     panelButtonUrl?: string;
     tagVariant: "success" | "default" | "warning";
-    links?: { url: string, text: string, description: string }[];
-}
+    ownerLinks?: ContentDataLink[];
+    userLinks?: ContentDataLink[];
+    adminLinks?: ContentDataLink[];
+  }
+
+  const MANAGE_PEOPLE_LINK = {
+    text: "Manage people",
+    description: "Add and remove people on this consultation",
+    url: "/",
+  } as const;
+
+  const WHO_CAN_SEE_LINK = {
+    text: "Who can see this",
+    description: "Everyone on a consultation can see who else is on it",
+    url: "/",
+  }
+
+  const VIEW_RESPONSES_LINK = {
+    text: "View all responses",
+    description: "Every response, as it was uploaded",
+    url: "/",
+  }
 
   const CONTENT: Record<string, ContentData> = $derived({
     "analysis": {
-        panelText: "Every response is assigned to a theme. Check the assignments before you report.",
-        panelButtonText: "View Dashboard",
-        panelButtonUrl: getConsultationDetailUrl(consultationId),
-        tagVariant: "success",
-        links: [
-            {
-                text: "Manage people",
-                description: "Add and remove people on this consultation",
-                url: "/",
-            },
-            {
-                text: "View all responses",
-                description: "Every response, as it was uploaded",
-                url: "/",
-            },
-        ]
+      panelText: "Every response is assigned to a theme. Check the assignments before you report.",
+      panelButtonText: "View Dashboard",
+      panelButtonUrl: getConsultationDetailUrl(consultationId),
+      tagVariant: "success",
+      adminLinks: [
+        MANAGE_PEOPLE_LINK,
+        VIEW_RESPONSES_LINK,
+      ],
+      ownerLinks: [
+        MANAGE_PEOPLE_LINK,
+        VIEW_RESPONSES_LINK,
+      ],
+      userLinks: [
+        WHO_CAN_SEE_LINK,
+        VIEW_RESPONSES_LINK,
+      ],
     },
     "assigning_themes": {
-        panelText: "Consult is assigning every response to the finalised themes. This can take more than 20 minutes.",
-        tagVariant: "default",
+      panelText: "Consult is assigning every response to the finalised themes. This can take more than 20 minutes.",
+      tagVariant: "default",
+      adminLinks: [
+        MANAGE_PEOPLE_LINK,
+        VIEW_RESPONSES_LINK,
+      ],
+      ownerLinks: [
+        MANAGE_PEOPLE_LINK,
+        VIEW_RESPONSES_LINK,
+      ],
+      userLinks: [
+        WHO_CAN_SEE_LINK,
+        VIEW_RESPONSES_LINK,
+      ],
     },
     "finalising_themes": {
-        panelText: "Themes found by the AI are ready to check. No response is assigned to a theme until you finalise them.",
-        panelButtonText: "Finalise themes",
-        panelButtonUrl: getFinaliseThemesUrl(consultationId),
-        tagVariant: "warning",
+      panelText: "Themes found by the AI are ready to check. No response is assigned to a theme until you finalise them.",
+      panelButtonText: "Finalise themes",
+      panelButtonUrl: getFinaliseThemesUrl(consultationId),
+      tagVariant: "warning",
+      adminLinks: [
+        MANAGE_PEOPLE_LINK,
+        VIEW_RESPONSES_LINK,
+      ],
+      ownerLinks: [
+        MANAGE_PEOPLE_LINK,
+        VIEW_RESPONSES_LINK,
+      ],
+      userLinks: [
+        WHO_CAN_SEE_LINK,
+        VIEW_RESPONSES_LINK,
+      ],
     },
     "finding_themes": {
-        panelText: "Consult is reading the responses and finding themes. This can take more than 20 minutes.",
-        tagVariant: "default",
+      panelText: "Consult is reading the responses and finding themes. This can take more than 20 minutes.",
+      tagVariant: "default",
+      adminLinks: [
+        MANAGE_PEOPLE_LINK,
+        VIEW_RESPONSES_LINK,
+      ],
+      ownerLinks: [
+        MANAGE_PEOPLE_LINK,
+        VIEW_RESPONSES_LINK,
+      ],
+      userLinks: [
+        WHO_CAN_SEE_LINK,
+        VIEW_RESPONSES_LINK,
+      ],
     },
     "setup": {
-        panelText: "The responses are not uploaded yet.",
-        panelButtonText: "Set up the data",
-        panelButtonUrl: getDataUploadUrl(consultationId),
-        tagVariant: "warning",
+      panelText: "The responses are not uploaded yet.",
+      panelButtonText: "Set up the data",
+      panelButtonUrl: getDataUploadUrl(consultationId),
+      tagVariant: "warning",
+      adminLinks: [
+        MANAGE_PEOPLE_LINK,
+      ],
+      ownerLinks: [
+        MANAGE_PEOPLE_LINK,
+      ],
+      userLinks: [
+        WHO_CAN_SEE_LINK,
+      ],
     },
   } as const);
 
   let content = $derived(CONTENT[consultationData?.stage] || {});
+  let links = $derived.by(() => {
+    if (userIsAdmin) {
+      return content.adminLinks;
+    }
+    if (userIsOwner) {
+      return content.ownerLinks;
+    }
+    return content.userLinks;
+  })
 </script>
 
 <div class="mt-8 mb-4">
@@ -233,22 +310,22 @@
     </Panel>
 </section>
 
-{#if content.links}
-    <section>
-        <Title level={3}>
-            <span class="font-[500]">This consultation</span>
-        </Title>
+{#if links}
+  <section>
+      <Title level={3}>
+          <span class="font-[500]">This consultation</span>
+      </Title>
 
-        {#each content.links || [] as link}
-            <hr class="my-2" />
+      {#each links as link}
+          <hr class="my-2" />
 
-            <div class="my-3 ml-2">
-                <Link href={link.url} ariaLabel={link.description}>
-                    {link.text}
-                </Link>
+          <div class="my-3 ml-2">
+              <Link href={link.url} ariaLabel={link.description}>
+                  {link.text}
+              </Link>
 
-                <p class="text-sm text-neutral-500">{link.description}</p>
-            </div>
-        {/each}
-    </section>
+              <p class="text-sm text-neutral-500">{link.description}</p>
+          </div>
+      {/each}
+  </section>
 {/if}
