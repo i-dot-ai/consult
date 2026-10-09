@@ -6,14 +6,13 @@
   import Tag from "../../Tag/Tag.svelte";
   import Link from "../../Link.svelte";
   import DataTable from "../../DataTable/DataTable.svelte";
-  import Modal from "../../Modal/Modal.svelte";
   import Alert from "../../Alert/Alert.svelte";
   import Title from "../../Title.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
-  import Warning from "../../svg/material/Warning.svelte";
   import Delete from "../../svg/material/Delete.svelte";
   import Close from "../../svg/material/Close.svelte";
   import Button from "../../inputs/Button/Button.svelte";
+  import DeleteConsultationModal from "../../DeleteConsultationModal/DeleteConsultationModal.svelte";
 
   import {
     getConsultationDetailUrl,
@@ -447,63 +446,30 @@
     </DataTable>
   </section>
 
-  <Modal
-    variant="warning"
-    open={Boolean(deleteConsultationId)}
-    setOpen={(newOpen: boolean) => {
-      if (newOpen === false) {
-        deleteConsultationId = "";
-      }
-    }}
-    title="Delete consultation"
-    Icon={Warning}
-    canCancel={true}
-    confirmText="Delete consultation"
-    handleConfirm={async () => {
-      // Prepare alert
-      let newAlertText: AlertData["text"];
-      let newAlertVariant: AlertData["variant"];
-
-      const consultationToDelete = consultationsToDisplay.find(
-        (consultation: Consultation) =>
-          consultation.id === deleteConsultationId,
-      );
-      const consultationTitle = `${consultationToDelete?.title ?? deleteConsultationId}`;
-      newAlertText = `Consultation ${consultationTitle} has been deleted.`;
-      newAlertVariant = "success";
-
-      // Trigger deletion on the server
-      try {
-        await consultationDelete.fetch({});
-      } catch {
-        console.error(consultationDelete.query?.error?.message);
-        newAlertText = `Consultation ${consultationTitle} could not be deleted.`;
-        newAlertVariant = "error";
-      }
-
-      // Display alert
+  <DeleteConsultationModal
+    consultation={consultationsToDisplay.find(
+      (consultation: Consultation) =>
+        consultation.id === deleteConsultationId,
+    )}
+    onClose={() => deleteConsultationId = ""}
+    onError={(consultation) => {
       addAlert({
-        text: newAlertText,
-        variant: newAlertVariant,
+        text: `Consultation ${consultation.title} could not be deleted.`,
+        variant: "error",
       });
 
-      // Reset consultation selected for deletion
+      deleteConsultationId = "";
+    }}
+    onSuccess={(consultation) => {
+      addAlert({
+        text: `Consultation ${consultation.title} has been deleted.`,
+        variant: "success",
+      });
+
       deleteConsultationId = "";
 
       // Refresh consultations as running_job should now be stale
       consultations.fetch();
     }}
-  >
-    <p>
-      Deleting removes the responses, the themes and the analysis. This cannot
-      be undone.
-
-      <Panel variant="default">
-        {consultations.query.data?.results.find(
-          (consultation: Consultation) =>
-            consultation.id === deleteConsultationId,
-        )?.title}
-      </Panel>
-    </p>
-  </Modal>
+  />
 {/if}
