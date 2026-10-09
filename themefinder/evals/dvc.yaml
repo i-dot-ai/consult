@@ -1,0 +1,38 @@
+stages:
+  evaluate:
+    foreach: ${evals}
+    do:
+      cmd: >-
+        AUTO_EVAL_MODEL=${item.model}
+        THEMEFINDER_EVAL_DATASET_SOURCE=${item.dataset_source}
+        THEMEFINDER_EVAL_ARTEFACT_STORE=${item.artefact_store}
+        uv run --extra eval python run_eval.py
+        --component ${key} --dataset ${dataset.name}
+      deps:
+        - run_eval.py
+        - component_runner.py
+        - config.py
+        - datasets.py
+        - eval_types.py
+        - metrics.py
+        - settings.py
+        - components/__init__.py
+        - components/registry.py
+        - components/${key}.py
+        - prompts/__init__.py
+        - prompts/${key}.py
+        - adapters
+        - utils
+        - ../src/themefinder
+        - ../pyproject.toml
+        - ../../uv.lock
+        - data/${dataset.name}
+      # Tracks mutable remote datasets; bump dataset.revision to rerun a stage
+      # when Langfuse data changes outside DVC's local dependency graph.
+      params:
+        - params.yaml:
+            - dataset
+            - evals.${key}
+      outs:
+        - local_eval_runs/${key}/${dataset.name}/results.json:
+            cache: false

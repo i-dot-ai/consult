@@ -5,7 +5,7 @@ Compares refined `output["themes"]` against the pre-refinement themes on
 share one LLM call; splitting them per metric is deferred to ADR-0013.
 """
 
-from prompts import refinement_eval_prompt
+from prompts.refinement import refinement_eval_prompt
 
 from .llm_judge_evaluator import ThemeComparisonJudgeEvaluator
 
