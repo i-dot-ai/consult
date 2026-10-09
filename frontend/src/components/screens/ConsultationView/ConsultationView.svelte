@@ -12,7 +12,7 @@
   import EditSquare from "../../svg/material/EditSquare.svelte";
   import Title from "../../Title.svelte";
   import Link from "../../Link.svelte";
-  import { Routes } from "../../../global/routes";
+  import { getConsultationDetailUrl, getDataUploadUrl, getFinaliseThemesUrl, Routes } from "../../../global/routes";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Tag from "../../Tag/Tag.svelte";
 
@@ -65,33 +65,41 @@
     return "dark";
   }
 
-  const CONTENT = {
+  interface ContentData {
+    panelText: string;
+    panelButtonText?: string
+    panelButtonUrl?: string;
+    tagVariant: "success" | "default" | "warning";
+}
+
+  const CONTENT: Record<string, ContentData> = $derived({
     "analysis": {
         panelText: "Every response is assigned to a theme. Check the assignments before you report.",
         panelButtonText: "View Dashboard",
+        panelButtonUrl: getConsultationDetailUrl(consultationId),
         tagVariant: "success",
     },
     "assigning_themes": {
-        panelText: "Consult is assigning every response to the finalised themes. This can take more than 20 minutes. \n\n Nothing else can start until this finishes.",
-        panelButtonText: "",
+        panelText: "Consult is assigning every response to the finalised themes. This can take more than 20 minutes.",
         tagVariant: "default",
     },
     "finalising_themes": {
         panelText: "Themes found by the AI are ready to check. No response is assigned to a theme until you finalise them.",
         panelButtonText: "Finalise themes",
+        panelButtonUrl: getFinaliseThemesUrl(consultationId),
         tagVariant: "warning",
     },
     "finding_themes": {
-        panelText: "Consult is reading the responses and finding themes. This can take more than 20 minutes. \n\n Nothing else can start until this finishes.",
-        panelButtonText: "",
+        panelText: "Consult is reading the responses and finding themes. This can take more than 20 minutes.",
         tagVariant: "default",
     },
     "setup": {
         panelText: "The responses are not uploaded yet.",
         panelButtonText: "Set up the data",
+        panelButtonUrl: getDataUploadUrl(consultationId),
         tagVariant: "warning",
     },
-  } as const;
+  } as const);
 
   let content = $derived(CONTENT[consultationData?.stage] || {});
 </script>
@@ -171,18 +179,37 @@
 
 <section>
     <Panel>
-        <div class="mb-3">
-            <Tag variant={content.tagVariant}>
-                {getStatusText(consultationData?.stage || "")}
-            </Tag>
+        <div class="pt-2 pb-8 px-2">
+            <div class="mb-3">
+                <Tag variant={content.tagVariant}>
+                    {getStatusText(consultationData?.stage || "")}
+                </Tag>
+            </div>
+
+            <p class="text-neutral-700 text-sm">
+                {content.panelText}
+            </p>
+
+            <div class="mt-4">
+                {#if content.panelButtonText}
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        handleClick={() => {
+                            if (!content.panelButtonUrl) {
+                                return;
+                            }
+                            window.location.href = content.panelButtonUrl
+                        }}
+                    >
+                        {content.panelButtonText}
+                    </Button>
+                {:else}
+                    <p class="text-neutral-700 text-sm">
+                        Nothing else can start until this finishes.
+                    </p>
+                {/if}
+            </div>
         </div>
-
-        <p class="text-neutral-700 text-sm">
-            {content.panelText}
-        </p>
-
-        <Button handleClick={() => {}}>
-            {content.panelButtonText}
-        </Button>
     </Panel>
 </section>
