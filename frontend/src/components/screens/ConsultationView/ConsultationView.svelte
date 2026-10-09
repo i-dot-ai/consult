@@ -15,9 +15,17 @@
 
   import { buildConsultationGetQuery } from "../../../global/queries/consultations/queries";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries";
-  import { getConsultationDetailUrl, getDataUploadUrl, getFinaliseThemesUrl, Routes } from "../../../global/routes";
-  import type { Consultation, ConsultationStage, User } from "../../../global/types";
-
+  import {
+    getConsultationDetailUrl,
+    getDataUploadUrl,
+    getFinaliseThemesUrl,
+    Routes,
+  } from "../../../global/routes";
+  import type {
+    Consultation,
+    ConsultationStage,
+    User,
+  } from "../../../global/types";
 
   interface Props {
     consultationId: string;
@@ -35,14 +43,16 @@
   let createdByEmail = $derived.by(() => {
     const createdBy = consultationData?.created_by;
     return typeof createdBy === "string" ? createdBy : createdBy?.email;
-  })
+  });
   let userIsOwner = $derived(user.query?.data?.email === createdByEmail);
   let userIsAdmin = $derived(user.query?.data?.is_staff);
-  let userCanDelete = $derived(user.query?.data?.is_staff || userIsOwner || userIsAdmin);
+  let userCanDelete = $derived(
+    user.query?.data?.is_staff || userIsOwner || userIsAdmin,
+  );
 
   function getCreatedByText(createdBy: User | string | null) {
     if (!createdByEmail) {
-        return "an unknown user";
+      return "an unknown user";
     }
     if (userIsOwner) {
       return "you";
@@ -54,14 +64,21 @@
     return new Date(created_at).toLocaleDateString();
   }
   function getStatusText(stage: ConsultationStage) {
-    return (stage.charAt(0).toUpperCase() + stage.slice(1)).replaceAll("_", " ");
+    return (stage.charAt(0).toUpperCase() + stage.slice(1)).replaceAll(
+      "_",
+      " ",
+    );
   }
 
-  interface ContentDataLink { url: string, text: string, description: string };
+  interface ContentDataLink {
+    url: string;
+    text: string;
+    description: string;
+  }
 
   interface ContentData {
     panelText: string;
-    panelButtonText?: string
+    panelButtonText?: string;
     panelButtonUrl?: string;
     tagVariant: "success" | "default" | "warning";
     ownerLinks?: ContentDataLink[];
@@ -79,97 +96,59 @@
     text: "Who can see this",
     description: "Everyone on a consultation can see who else is on it",
     url: "/",
-  }
+  };
 
   const VIEW_RESPONSES_LINK = {
     text: "View all responses",
     description: "Every response, as it was uploaded",
     url: "/",
-  }
+  };
 
   const CONTENT: Record<string, ContentData> = $derived({
-    "analysis": {
-      panelText: "Every response is assigned to a theme. Check the assignments before you report.",
+    analysis: {
+      panelText:
+        "Every response is assigned to a theme. Check the assignments before you report.",
       panelButtonText: "View Dashboard",
       panelButtonUrl: getConsultationDetailUrl(consultationId),
       tagVariant: "success",
-      adminLinks: [
-        MANAGE_PEOPLE_LINK,
-        VIEW_RESPONSES_LINK,
-      ],
-      ownerLinks: [
-        MANAGE_PEOPLE_LINK,
-        VIEW_RESPONSES_LINK,
-      ],
-      userLinks: [
-        WHO_CAN_SEE_LINK,
-        VIEW_RESPONSES_LINK,
-      ],
+      adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
+      ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
+      userLinks: [WHO_CAN_SEE_LINK, VIEW_RESPONSES_LINK],
     },
-    "assigning_themes": {
-      panelText: "Consult is assigning every response to the finalised themes. This can take more than 20 minutes.",
+    assigning_themes: {
+      panelText:
+        "Consult is assigning every response to the finalised themes. This can take more than 20 minutes.",
       tagVariant: "default",
-      adminLinks: [
-        MANAGE_PEOPLE_LINK,
-        VIEW_RESPONSES_LINK,
-      ],
-      ownerLinks: [
-        MANAGE_PEOPLE_LINK,
-        VIEW_RESPONSES_LINK,
-      ],
-      userLinks: [
-        WHO_CAN_SEE_LINK,
-        VIEW_RESPONSES_LINK,
-      ],
+      adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
+      ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
+      userLinks: [WHO_CAN_SEE_LINK, VIEW_RESPONSES_LINK],
     },
-    "finalising_themes": {
-      panelText: "Themes found by the AI are ready to check. No response is assigned to a theme until you finalise them.",
+    finalising_themes: {
+      panelText:
+        "Themes found by the AI are ready to check. No response is assigned to a theme until you finalise them.",
       panelButtonText: "Finalise themes",
       panelButtonUrl: getFinaliseThemesUrl(consultationId),
       tagVariant: "warning",
-      adminLinks: [
-        MANAGE_PEOPLE_LINK,
-        VIEW_RESPONSES_LINK,
-      ],
-      ownerLinks: [
-        MANAGE_PEOPLE_LINK,
-        VIEW_RESPONSES_LINK,
-      ],
-      userLinks: [
-        WHO_CAN_SEE_LINK,
-        VIEW_RESPONSES_LINK,
-      ],
+      adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
+      ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
+      userLinks: [WHO_CAN_SEE_LINK, VIEW_RESPONSES_LINK],
     },
-    "finding_themes": {
-      panelText: "Consult is reading the responses and finding themes. This can take more than 20 minutes.",
+    finding_themes: {
+      panelText:
+        "Consult is reading the responses and finding themes. This can take more than 20 minutes.",
       tagVariant: "default",
-      adminLinks: [
-        MANAGE_PEOPLE_LINK,
-        VIEW_RESPONSES_LINK,
-      ],
-      ownerLinks: [
-        MANAGE_PEOPLE_LINK,
-        VIEW_RESPONSES_LINK,
-      ],
-      userLinks: [
-        WHO_CAN_SEE_LINK,
-        VIEW_RESPONSES_LINK,
-      ],
+      adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
+      ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
+      userLinks: [WHO_CAN_SEE_LINK, VIEW_RESPONSES_LINK],
     },
-    "setup": {
+    setup: {
       panelText: "The responses are not uploaded yet.",
       panelButtonText: "Set up the data",
       panelButtonUrl: getDataUploadUrl(consultationId),
       tagVariant: "warning",
-      adminLinks: [
-        MANAGE_PEOPLE_LINK,
-      ],
-      ownerLinks: [
-        MANAGE_PEOPLE_LINK,
-      ],
-      userLinks: [
-        WHO_CAN_SEE_LINK,
-      ],
+      adminLinks: [MANAGE_PEOPLE_LINK],
+      ownerLinks: [MANAGE_PEOPLE_LINK],
+      userLinks: [WHO_CAN_SEE_LINK],
     },
   } as const);
 
@@ -182,7 +161,7 @@
       return content.ownerLinks;
     }
     return content.userLinks;
-  })
+  });
 </script>
 
 <div class="mt-8 mb-4">
@@ -243,16 +222,17 @@
 
       {#if userCanDelete && !isRenaming}
         <Button
-            variant="danger"
-            handleClick={() => console.log("about to delete:", consultationData.title)}
+          variant="danger"
+          handleClick={() =>
+            console.log("about to delete:", consultationData.title)}
         >
-            <div class="flex gap-1 items-center text-xs delete-button">
-                <MaterialIcon color="fill-red-700">
-                    <Delete />
-                </MaterialIcon>
+          <div class="flex gap-1 items-center text-xs delete-button">
+            <MaterialIcon color="fill-red-700">
+              <Delete />
+            </MaterialIcon>
 
-                Delete
-            </div>
+            Delete
+          </div>
         </Button>
       {/if}
     </div>
@@ -274,58 +254,58 @@
 </section>
 
 <section>
-    <Panel>
-        <div class="pt-2 pb-8 px-2">
-            <div class="mb-3">
-                <Tag variant={content.tagVariant}>
-                    {getStatusText(consultationData?.stage || "")}
-                </Tag>
-            </div>
+  <Panel>
+    <div class="pt-2 pb-8 px-2">
+      <div class="mb-3">
+        <Tag variant={content.tagVariant}>
+          {getStatusText(consultationData?.stage || "")}
+        </Tag>
+      </div>
 
-            <p class="text-neutral-700 text-sm">
-                {content.panelText}
-            </p>
+      <p class="text-neutral-700 text-sm">
+        {content.panelText}
+      </p>
 
-            <div class="mt-4">
-                {#if content.panelButtonText}
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        handleClick={() => {
-                            if (!content.panelButtonUrl) {
-                                return;
-                            }
-                            window.location.href = content.panelButtonUrl
-                        }}
-                    >
-                        {content.panelButtonText}
-                    </Button>
-                {:else}
-                    <p class="text-neutral-700 text-sm">
-                        Nothing else can start until this finishes.
-                    </p>
-                {/if}
-            </div>
-        </div>
-    </Panel>
+      <div class="mt-4">
+        {#if content.panelButtonText}
+          <Button
+            variant="primary"
+            size="sm"
+            handleClick={() => {
+              if (!content.panelButtonUrl) {
+                return;
+              }
+              window.location.href = content.panelButtonUrl;
+            }}
+          >
+            {content.panelButtonText}
+          </Button>
+        {:else}
+          <p class="text-neutral-700 text-sm">
+            Nothing else can start until this finishes.
+          </p>
+        {/if}
+      </div>
+    </div>
+  </Panel>
 </section>
 
 {#if links}
   <section>
-      <Title level={3}>
-          <span class="font-[500]">This consultation</span>
-      </Title>
+    <Title level={3}>
+      <span class="font-[500]">This consultation</span>
+    </Title>
 
-      {#each links as link}
-          <hr class="my-2" />
+    {#each links as link, i (i)}
+      <hr class="my-2" />
 
-          <div class="my-3 ml-2">
-              <Link href={link.url} ariaLabel={link.description}>
-                  {link.text}
-              </Link>
+      <div class="my-3 ml-2">
+        <Link href={link.url} ariaLabel={link.description}>
+          {link.text}
+        </Link>
 
-              <p class="text-sm text-neutral-500">{link.description}</p>
-          </div>
-      {/each}
+        <p class="text-sm text-neutral-500">{link.description}</p>
+      </div>
+    {/each}
   </section>
 {/if}
