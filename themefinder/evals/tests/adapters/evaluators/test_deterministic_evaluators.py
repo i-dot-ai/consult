@@ -1,5 +1,5 @@
-"""Tests for the non-LLM evaluator adapters: MappingF1Evaluator (deterministic,
-sklearn) and RedundancyEvaluator (embedding-based, sentence-transformers).
+"""Tests for the non-LLM evaluator adapters: mapping metrics (deterministic,
+sklearn) and redundancy (embedding-based, sentence-transformers).
 
 The five LLM-judge evaluators (GroundednessEvaluator, CoverageEvaluator,
 TitleSpecificityEvaluator, CondensationQualityEvaluator,
@@ -10,9 +10,11 @@ LLM, not the plain fixtures here.
 import sys
 import types
 
+import adapters.evaluators.mapping_metrics_evaluator as mapping_metrics_module
 import adapters.evaluators.redundancy_evaluator as redundancy_module
 import pytest
 from adapters.evaluators.mapping_f1_evaluator import MappingF1Evaluator
+from adapters.evaluators.mapping_metrics_evaluator import MappingMetricsEvaluator
 from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
 from conftest import make_case
 from eval_types import Score
@@ -67,6 +69,85 @@ class TestMappingF1Evaluator:
         assert scores[0].name == "f1_score"
         assert scores[0].value == 0.0
         assert scores[0].comment.startswith("Error:")
+
+
+class TestMappingMetricsEvaluator:
+    async def test_preserves_all_legacy_mapping_metrics(self, monkeypatch):
+        case = make_case(expected_output={"mappings": {"r1": ["a"], "r2": ["b"]}})
+        output = {"labels": {"r1": ["a"], "r2": ["c"]}}
+
+        def fake_metrics(df, column_one, column_two):
+            assert df.to_dict("records") == [
+                {"expected": ["a"], "predicted": ["a"]},
+                {"expected": ["b"], "predicted": ["c"]},
+            ]
+            assert (column_one, column_two) == ("expected", "predicted")
+            return {
+                "f1_score": 0.5,
+                "accuracy_score": 0.5,
+                "overlap_rate": 0.5,
+                "f1_confidence_interval": (0.1, 0.9),
+            }
+
+        monkeypatch.setattr(
+            mapping_metrics_module, "calculate_mapping_metrics", fake_metrics
+        )
+
+        scores = await MappingMetricsEvaluator().evaluate(case, output)
+
+        assert scores == [
+            Score("f1_score", 0.5, "Evaluated on 2 responses"),
+            Score("accuracy_score", 0.5, "Evaluated on 2 responses"),
+            Score("overlap_rate", 0.5, "Evaluated on 2 responses"),
+            Score("f1_confidence_interval_lower", 0.1, "Evaluated on 2 responses"),
+            Score("f1_confidence_interval_upper", 0.9, "Evaluated on 2 responses"),
+        ]
+
+    async def test_missing_prediction_is_excluded_like_the_legacy_inner_join(
+        self, monkeypatch
+    ):
+        case = make_case(expected_output={"mappings": {"r1": ["a"], "r2": ["b"]}})
+
+        def fake_metrics(df, column_one, column_two):
+            assert df.to_dict("records") == [{"expected": ["a"], "predicted": ["a"]}]
+            return {
+                "f1_score": 1.0,
+                "accuracy_score": 1.0,
+                "overlap_rate": 1.0,
+                "f1_confidence_interval": (0.0, 1.0),
+            }
+
+        monkeypatch.setattr(
+            mapping_metrics_module, "calculate_mapping_metrics", fake_metrics
+        )
+
+        scores = await MappingMetricsEvaluator().evaluate(
+            case, {"labels": {"r1": ["a"]}}
+        )
+
+        assert scores[0] == Score("f1_score", 1.0, "Evaluated on 1 responses")
+
+    async def test_no_expected_mappings_returns_zero_for_every_metric(self):
+        scores = await MappingMetricsEvaluator().evaluate(
+            make_case(expected_output=None), {"labels": {"r1": ["a"]}}
+        )
+
+        assert [score.name for score in scores] == list(
+            MappingMetricsEvaluator.metric_names
+        )
+        assert all(score.value == 0.0 for score in scores)
+        assert all(score.comment == "No expected mappings" for score in scores)
+
+    async def test_bad_output_returns_zero_for_every_metric(self):
+        scores = await MappingMetricsEvaluator().evaluate(
+            make_case(expected_output={"mappings": {"r1": ["a"]}}), None
+        )
+
+        assert [score.name for score in scores] == list(
+            MappingMetricsEvaluator.metric_names
+        )
+        assert all(score.value == 0.0 for score in scores)
+        assert all(score.comment.startswith("Error:") for score in scores)
 
 
 class TestRedundancyEvaluatorWithoutModel:

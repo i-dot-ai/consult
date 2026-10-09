@@ -33,20 +33,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-import nest_asyncio
 import pandas as pd
-from eval_condensation import evaluate_condensation
-from eval_generation import evaluate_generation
-from eval_mapping import evaluate_mapping
-from eval_refinement import evaluate_refinement
+from components import COMPONENT_NAMES
 from rich.console import Console
 from rich.table import Table
+from run_eval import evaluate_component
 from settings import eval_settings
-from themefinder.llm import OpenAILLM
 from utils import gateway, langfuse
 
-# Allow nested asyncio.run() calls (needed by eval modules)
-nest_asyncio.apply()
+from themefinder.llm import OpenAILLM
 
 # Monkey-patch openai with langfuse-openai for automatic LLM call tracing.
 # Must happen before any OpenAILLM instances are created.
@@ -65,13 +60,6 @@ os.environ.setdefault("GRPC_DNS_RESOLVER", "native")
 
 
 console = Console()
-
-EVAL_FUNCS = {
-    "mapping": evaluate_mapping,
-    "generation": evaluate_generation,
-    "condensation": evaluate_condensation,
-    "refinement": evaluate_refinement,
-}
 
 
 class ValidationErrorCounter(logging.Handler):
@@ -202,14 +190,7 @@ class BenchmarkConfig:
     dataset: str
     models: list[ModelConfig]
     runs_per_model: int = 5
-    evals: list[str] = field(
-        default_factory=lambda: [
-            "mapping",
-            "generation",
-            "condensation",
-            "refinement",
-        ]
-    )
+    evals: list[str] = field(default_factory=lambda: list(COMPONENT_NAMES))
     judge_model: str | None = (
         None  # Gateway model name for judge LLM (e.g. "gpt-4o-uk")
     )
@@ -448,10 +429,6 @@ class BenchmarkRunner:
         # Reset error counter for this run
         error_counter.reset()
 
-        eval_func = EVAL_FUNCS.get(eval_type)
-        if not eval_func:
-            raise ValueError(f"Unknown eval type: {eval_type}")
-
         # Create session ID with benchmark context
         session_id = (
             f"benchmark_{self.benchmark_id}_"
@@ -495,18 +472,14 @@ class BenchmarkRunner:
         # Run the evaluation with timing, wrapped in trace_context for v3 API
         # This ensures session_id/tags/metadata are properly attached to traces
         start_time = time.perf_counter()
-        # Only pass judge_llm to evals that use LLM-as-judge
-        evals_with_judge = {"generation", "condensation", "refinement"}
-
         with langfuse.trace_context(langfuse_ctx, name=f"{eval_type}_eval"):
-            kwargs = {
-                "dataset": self.config.dataset,
-                "llm": llm,
-                "langfuse_ctx": langfuse_ctx,
-            }
-            if judge_llm and eval_type in evals_with_judge:
-                kwargs["judge_llm"] = judge_llm
-            scores = await eval_func(**kwargs)
+            scores = await evaluate_component(
+                component=eval_type,
+                dataset=self.config.dataset,
+                llm=llm,
+                context=langfuse_ctx,
+                judge_llm=judge_llm,
+            )
         end_time = time.perf_counter()
         duration_seconds = end_time - start_time
 
@@ -998,7 +971,8 @@ Examples:
     parser.add_argument(
         "--evals",
         nargs="+",
-        default=["mapping", "generation", "condensation", "refinement"],
+        choices=COMPONENT_NAMES,
+        default=list(COMPONENT_NAMES),
         help="Evaluations to run (default: all)",
     )
     parser.add_argument(

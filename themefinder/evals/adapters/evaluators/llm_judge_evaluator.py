@@ -7,11 +7,13 @@ import json
 import logging
 import random
 import re
-from typing import Any, Callable
 from abc import abstractmethod
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 import openai
+from eval_types import Case, Score
 from tenacity import (
     before_sleep_log,
     retry,
@@ -19,8 +21,6 @@ from tenacity import (
     stop_after_attempt,
     wait_random_exponential,
 )
-
-from eval_types import Case, Score
 from utils.logging_config import get_logger
 
 from .base import EvaluatorPort

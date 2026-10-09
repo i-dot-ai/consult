@@ -255,6 +255,18 @@ class TestRefinementQualityEvaluator(_NumericKeyJudgeTests):
     evaluator_cls = RefinementQualityEvaluator
     metric_names = evaluator_cls.metric_names
 
+    async def test_reads_themes_from_common_output_schema(self):
+        judge = FakeJudge("{}")
+
+        await self._evaluate(
+            judge,
+            inputs={"themes": {"INPUT_ONLY": "desc"}},
+            output={"themes": {"OUTPUT_ONLY": "desc"}},
+        )
+
+        prompt = judge.prompts[0]
+        assert prompt.index("INPUT_ONLY") < prompt.index("OUTPUT_ONLY")
+
 
 class TestTitleSpecificityEvaluator(_JudgeContractTests):
     """TitleSpecificityEvaluator — its bespoke SPECIFIC/VAGUE ratio path,

@@ -44,7 +44,7 @@ class RunReport:
 
 @dataclass
 class ComponentConfig:
-    component: str  # one of datasets.VALID_COMPONENTS
+    component: str  # one of components.COMPONENT_NAMES
     task: Callable[[dict, Any], Awaitable[dict]]  # (case.inputs, llm) -> output dict
     evaluators: list["EvaluatorPort"]  # pre-built, with any judge llm already bound
     case_filter: Callable[[Case], bool] | None = None
