@@ -40,7 +40,6 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
       <!---->
       <h1
         class="text-neutral-700 text-2xl"
-        style=""
       >
         <!---->
         Finalise Themes
@@ -308,7 +307,6 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
           <!---->
           <h2
             class="text-neutral-700 text-lg"
-            style=""
           >
             <!---->
             All consultation questions
@@ -950,7 +948,6 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
       <!---->
       <h1
         class="text-neutral-700 text-2xl"
-        style=""
       >
         <!---->
         Finalise Themes
@@ -1027,7 +1024,6 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
           <!---->
           <h2
             class="text-neutral-700 text-lg"
-            style=""
           >
             <!---->
             All consultation questions
@@ -1067,9 +1063,8 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
         class="my-8"
       >
         <div
-          class="animate-spin ease-in-out w-max m-auto"
+          class="animate-spin [animation-timing-function:ease-in-out] w-max m-auto"
           data-testid="loading-indicator"
-          style="animation-timing-function: ease-in-out;"
         >
           <svg
             aria-hidden="true"
@@ -1194,7 +1189,6 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
       <!---->
       <h1
         class="text-neutral-700 text-2xl"
-        style=""
       >
         <!---->
         Finalise Themes
@@ -1271,7 +1265,6 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
           <!---->
           <h2
             class="text-neutral-700 text-lg"
-            style=""
           >
             <!---->
             All consultation questions
@@ -1311,9 +1304,8 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
         class="my-8"
       >
         <div
-          class="animate-spin ease-in-out w-max m-auto"
+          class="animate-spin [animation-timing-function:ease-in-out] w-max m-auto"
           data-testid="loading-indicator"
-          style="animation-timing-function: ease-in-out;"
         >
           <svg
             aria-hidden="true"

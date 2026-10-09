@@ -9,7 +9,6 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
       <!---->
       <h2
         class="text-neutral-700 text-lg"
-        style=""
       >
         <!---->
         Consultations
@@ -948,7 +947,6 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
       <!---->
       <h2
         class="text-neutral-700 text-lg"
-        style=""
       >
         <!---->
         Consultations
@@ -1326,9 +1324,8 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
                   role="status"
                 >
                   <div
-                    class="animate-spin ease-in-out w-max m-auto"
+                    class="animate-spin [animation-timing-function:ease-in-out] w-max m-auto"
                     data-testid="loading-indicator"
-                    style="animation-timing-function: ease-in-out;"
                   >
                     <svg
                       aria-hidden="true"

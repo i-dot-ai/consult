@@ -3,6 +3,7 @@
   import type { Snippet } from "svelte";
 
   import type { TitleLevels } from "../global/types";
+  import { cssVars } from "../global/actions";
 
   type Props = {
     level?: TitleLevels;
@@ -36,7 +37,7 @@
 
 <svelte:element
   this={tag}
-  style={clsx([maxChars && `max-width: ${maxChars}ch;`])}
+  use:cssVars={maxChars ? { "title-max-width": `${maxChars}ch` } : {}}
   class={clsx([
     "text-neutral-700",
     weight === "bold" && "font-bold",
@@ -51,7 +52,7 @@
       clsx(["text-3xl", "mb-5", "font-bold"]),
     maxChars &&
       clsx([
-        "max-w-[50ch]",
+        "max-w-(--title-max-width,50ch)",
         "text-ellipsis",
         "whitespace-nowrap",
         "overflow-x-hidden",

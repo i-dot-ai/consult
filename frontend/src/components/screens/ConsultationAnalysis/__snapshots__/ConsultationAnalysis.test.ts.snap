@@ -113,7 +113,6 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
           <!---->
           <h2
             class="text-neutral-700 text-lg"
-            style=""
           >
             <!---->
             Demographics Breakdown
@@ -212,7 +211,6 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
           <!---->
           <h2
             class="text-neutral-700 text-lg"
-            style=""
           >
             <!---->
             Multiple Choice Questions
@@ -529,7 +527,6 @@ exports[`ConsultationAnalysis > should match snapshot initially 1`] = `
           <!---->
           <h2
             class="text-neutral-700 text-lg"
-            style=""
           >
             <!---->
             Demographics Breakdown
@@ -555,9 +552,8 @@ exports[`ConsultationAnalysis > should match snapshot initially 1`] = `
         class="my-8"
       >
         <div
-          class="animate-spin ease-in-out w-max m-auto"
+          class="animate-spin [animation-timing-function:ease-in-out] w-max m-auto"
           data-testid="loading-indicator"
-          style="animation-timing-function: ease-in-out;"
         >
           <svg
             aria-hidden="true"
@@ -594,9 +590,8 @@ exports[`ConsultationAnalysis > should match snapshot initially 1`] = `
     class="my-8"
   >
     <div
-      class="animate-spin ease-in-out w-max m-auto"
+      class="animate-spin [animation-timing-function:ease-in-out] w-max m-auto"
       data-testid="loading-indicator"
-      style="animation-timing-function: ease-in-out;"
     >
       <svg
         aria-hidden="true"

@@ -31,7 +31,6 @@ exports[`ErrorScreen > matches snapshot 404 1`] = `
     <!---->
     <h1
       class="text-neutral-700 text-3xl mb-5 font-bold"
-      style=""
     >
       <!---->
       <!---->
@@ -94,7 +93,6 @@ exports[`ErrorScreen > matches snapshot 500 1`] = `
     <!---->
     <h1
       class="text-neutral-700 text-3xl mb-5 font-bold"
-      style=""
     >
       <!---->
       <!---->

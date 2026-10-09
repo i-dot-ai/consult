@@ -78,7 +78,8 @@
     <span class="thumb block rounded-full bg-white transition"></span>
   </button>
 
-  <input use:melt={$input} />
+  <!-- Drop melt's inline style attr: strict style-src blocks it; `hidden` still hides the input. -->
+  <input use:melt={$input} style={undefined} />
 </div>
 
 <style>

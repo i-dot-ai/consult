@@ -5,6 +5,7 @@
   import { fade } from "svelte/transition";
 
   import { OnboardingKeys } from "../../global/types";
+  import { cssVars } from "../../global/actions";
 
   import MaterialIcon from "../MaterialIcon.svelte";
   import Close from "../svg/material/Close.svelte";
@@ -137,16 +138,18 @@
 {#if targetRect && currStep >= 0 && !isOnboardingComplete()}
   <article transition:fade={{ duration: 300 }} class="absolute left-0 top-0">
     <div
-      style={clsx([
-        `top: ${targetRect.top}px;`,
-        `left: ${targetRect.left}px;`,
-        `width: ${targetRect.width}px;`,
-        `height: ${targetRect.height}px;`,
-      ])}
+      use:cssVars={{
+        "spotlight-top": `${targetRect.top}px`,
+        "spotlight-left": `${targetRect.left}px`,
+        "spotlight-width": `${targetRect.width}px`,
+        "spotlight-height": `${targetRect.height}px`,
+      }}
       class={clsx([
         "absolute",
-        "w-20",
-        "h-20",
+        "top-(--spotlight-top)",
+        "left-(--spotlight-left)",
+        "w-(--spotlight-width)",
+        "h-(--spotlight-height)",
         "p-4",
         "border",
         "border-2",
@@ -159,8 +162,14 @@
     ></div>
 
     <div
+      use:cssVars={{
+        "popover-top": `${targetRect.top + targetRect.height + overlayPadding}px`,
+        "popover-left": `${targetRect.left}px`,
+      }}
       class={clsx([
         "absolute",
+        "top-(--popover-top)",
+        "left-(--popover-left)",
         "w-auto",
         "min-w-[80vw]",
         "sm:min-w-[50vw]",
@@ -168,10 +177,6 @@
         "p-4",
         "rounded-lg",
         "bg-white",
-      ])}
-      style={clsx([
-        `top: ${targetRect.top + targetRect.height + overlayPadding}px;`,
-        `left: ${targetRect.left}px;`,
       ])}
     >
       <header class="mb-8 flex items-start justify-between">
@@ -214,15 +219,18 @@
 
       <footer>
         {#if hasMultipleSteps()}
-          <div class="flex-no-wrap mt-4 flex gap-1">
+          {@const stepWidth = `${Math.round(100 / steps.length)}%`}
+          <div
+            use:cssVars={{ "step-width": stepWidth }}
+            class="flex-no-wrap mt-4 flex gap-1"
+          >
             {#each steps as _, i (i)}
               {@const labelText = `Go to step ${i + 1}`}
 
               <button
                 title={labelText}
                 aria-label={labelText}
-                style="width: {Math.round(100 / steps.length)}%;"
-                class="hover:opacity-75"
+                class={clsx(["w-(--step-width)", "hover:opacity-75"])}
                 onclick={() => {
                   // transition only if 1 step difference
                   progressTransition = Math.abs(currStep - i) === 1;

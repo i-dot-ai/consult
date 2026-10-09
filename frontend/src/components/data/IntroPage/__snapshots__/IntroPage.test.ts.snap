@@ -6,7 +6,6 @@ exports[`IntroPage > should match snapshot 1`] = `
     <!---->
     <h2
       class="text-neutral-700 text-lg"
-      style=""
     >
       <!---->
       <!---->
@@ -38,7 +37,6 @@ exports[`IntroPage > should match snapshot 1`] = `
     <!---->
     <h3
       class="text-neutral-700 text-md"
-      style=""
     >
       <!---->
       <!---->

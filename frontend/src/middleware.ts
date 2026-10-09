@@ -8,19 +8,6 @@ import { defineMiddleware, sequence } from "astro:middleware";
 import { randomUUID } from "node:crypto";
 import logging from "./global/logging";
 
-const getCspValue = (): string => {
-  return `
-    default-src 'self';
-    style-src 'self' 'unsafe-inline';
-    script-src 'self' 'unsafe-inline';
-    img-src 'self' data:;
-    font-src 'self' data:;
-    connect-src 'self' *.ingest.de.sentry.io;
-  `
-    .replace(/\n/g, " ")
-    .trim();
-};
-
 class TokenExpiredError extends Error {}
 
 const mainMiddleware = defineMiddleware(
@@ -108,7 +95,6 @@ const mainMiddleware = defineMiddleware(
         "camera=(), microphone=(), geolocation=(), payment=()",
       "X-Frame-Options": "DENY",
       "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-      "Content-Security-Policy": getCspValue(),
     };
 
     for (const [key, value] of Object.entries(EXTRA_HEADERS)) {

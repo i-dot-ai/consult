@@ -31,7 +31,6 @@ exports[`StepsTitle > should match snapshot 1`] = `
       <!---->
       <h1
         class="text-neutral-700 text-xl"
-        style=""
       >
         <!---->
         <!---->
