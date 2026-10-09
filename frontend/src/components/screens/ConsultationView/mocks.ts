@@ -100,6 +100,14 @@ export const knownUserMock = {
     },
 }
 
+export const userNotStaffMock = {
+    url: USER_URL,
+    body: {
+        ...USER,
+        is_staff: false,
+    },
+}
+
 export const userMock = {
     url: USER_URL,
     body: USER,
