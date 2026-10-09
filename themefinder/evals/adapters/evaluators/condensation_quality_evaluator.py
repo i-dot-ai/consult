@@ -6,7 +6,7 @@ Compares condensed `output["condensed_themes"]` against the pre-condensation the
 one LLM call; splitting them per metric is deferred to PRO-642 if required.
 """
 
-from prompts import condensation_eval_prompt
+from prompts.condensation import condensation_eval_prompt
 
 from .llm_judge_evaluator import ThemeComparisonJudgeEvaluator
 
