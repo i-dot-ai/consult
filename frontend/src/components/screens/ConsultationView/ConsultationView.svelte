@@ -26,7 +26,7 @@
     ConsultationStage,
     User,
   } from "../../../global/types";
-    import DeleteConsultationModal from "../../DeleteConsultationModal/DeleteConsultationModal.svelte";
+  import DeleteConsultationModal from "../../DeleteConsultationModal/DeleteConsultationModal.svelte";
 
   interface Props {
     consultationId: string;
@@ -223,10 +223,7 @@
       </Button>
 
       {#if userCanDelete && !isRenaming}
-        <Button
-          variant="danger"
-          handleClick={() => isDeleting = true}
-        >
+        <Button variant="danger" handleClick={() => (isDeleting = true)}>
           <div class="flex gap-1 items-center text-xs delete-button">
             <MaterialIcon color="fill-red-700">
               <Delete />
@@ -313,7 +310,7 @@
 
 <DeleteConsultationModal
   consultation={isDeleting ? consultationData : undefined}
-  onClose={() => isDeleting = false}
+  onClose={() => (isDeleting = false)}
   onError={(consultation) => {
     console.log("ERROR");
     isDeleting = false;
