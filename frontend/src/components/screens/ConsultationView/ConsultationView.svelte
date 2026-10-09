@@ -26,6 +26,7 @@
     ConsultationStage,
     User,
   } from "../../../global/types";
+    import DeleteConsultationModal from "../../DeleteConsultationModal/DeleteConsultationModal.svelte";
 
   interface Props {
     consultationId: string;
@@ -34,6 +35,7 @@
   let { consultationId = "" }: Props = $props();
 
   let isRenaming = $state(false);
+  let isDeleting = $state(false);
 
   const user = buildCurrentUserGetQuery();
   let consultation = $derived(buildConsultationGetQuery(consultationId));
@@ -223,8 +225,7 @@
       {#if userCanDelete && !isRenaming}
         <Button
           variant="danger"
-          handleClick={() =>
-            console.log("about to delete:", consultationData.title)}
+          handleClick={() => isDeleting = true}
         >
           <div class="flex gap-1 items-center text-xs delete-button">
             <MaterialIcon color="fill-red-700">
@@ -309,3 +310,16 @@
     {/each}
   </section>
 {/if}
+
+<DeleteConsultationModal
+  consultation={isDeleting ? consultationData : undefined}
+  onClose={() => isDeleting = false}
+  onError={(consultation) => {
+    console.log("ERROR");
+    isDeleting = false;
+  }}
+  onSuccess={(consultation) => {
+    console.log("SUCCESS");
+    isDeleting = false;
+  }}
+/>
