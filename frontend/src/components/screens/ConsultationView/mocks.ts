@@ -4,7 +4,7 @@ import { currentUserGetQueryParts } from "../../../global/queries/users/parts";
 export const CONSULTATION_ID = "test-consultation";
 export const USER_EMAIL = "test@email.com";
 
-const CONSULTAITON_URL = consultationQueryParts.url(CONSULTATION_ID);
+const CONSULTAITON_URL = new RegExp(consultationQueryParts.url(CONSULTATION_ID).replace(CONSULTATION_ID, ".*"));
 const CONSULTATION = {
   id: "95ab7567-9381-48eb-8d20-ddeb43691b58",
   title: "Dummy Consultation at Analysis Stage",
@@ -45,6 +45,22 @@ export const stageSetupMock = {
     body: {
         ...CONSULTATION,
         stage: "setup",
+    },
+}
+
+export const stageAssigningThemesMock = {
+    url: CONSULTAITON_URL,
+    body: {
+        ...CONSULTATION,
+        stage: "assigning_themes",
+    },
+}
+
+export const stageFindingThemesMock = {
+    url: CONSULTAITON_URL,
+    body: {
+        ...CONSULTATION,
+        stage: "finding_themes",
     },
 }
 
