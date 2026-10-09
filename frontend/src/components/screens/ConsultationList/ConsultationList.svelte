@@ -23,7 +23,6 @@
     Routes,
   } from "../../../global/routes.ts";
   import {
-    buildConsultationDeleteQuery,
     buildConsultationsGetQuery,
   } from "../../../global/queries/consultations/queries.ts";
   import type { Consultation, User } from "../../../global/types.ts";

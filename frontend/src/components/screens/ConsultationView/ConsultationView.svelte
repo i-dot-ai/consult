@@ -29,6 +29,7 @@
     User,
   } from "../../../global/types";
   import DeleteConsultationModal from "../../DeleteConsultationModal/DeleteConsultationModal.svelte";
+  import Alert from "../../Alert/Alert.svelte";
 
   interface Props {
     consultationId: string;
@@ -38,6 +39,7 @@
 
   let isRenaming = $state(false);
   let isDeleting = $state(false);
+  let alertText = $state("");
 
   const user = buildCurrentUserGetQuery();
   let consultation = $derived(buildConsultationGetQuery(consultationId));
@@ -167,6 +169,24 @@
     return content.userLinks;
   });
 </script>
+
+<section>
+  {#if alertText}
+    <div transition:fade>
+      <Alert variant="error" onTimeout={() => (alertText = "")}>
+        <div class="flex justify-between gap-2">
+          {alertText}
+
+          <Button variant="ghost" handleClick={() => (alertText = "")}>
+            <MaterialIcon color="fill-neutral-500">
+              <Close />
+            </MaterialIcon>
+          </Button>
+        </div>
+      </Alert>
+    </div>
+  {/if}
+</section>
 
 <div class="mt-8 mb-4">
   <Link href={Routes.Consultations} ariaLabel="Back to all consultations">
@@ -313,12 +333,12 @@
 <DeleteConsultationModal
   consultation={isDeleting ? consultationData : undefined}
   onClose={() => (isDeleting = false)}
-  onError={(consultation) => {
-    console.log("ERROR");
+  onError={() => {
     isDeleting = false;
+    alertText = "Something went wrong while deleting this consultation.";
   }}
-  onSuccess={(consultation) => {
-    console.log("SUCCESS");
+  onSuccess={() => {
     isDeleting = false;
+    window.location.href = Routes.Consultations;
   }}
 />
