@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-from component_catalog import COMPONENT_NAMES
+from components import COMPONENT_NAMES
 
 logger = logging.getLogger("themefinder.evals.datasets")
 

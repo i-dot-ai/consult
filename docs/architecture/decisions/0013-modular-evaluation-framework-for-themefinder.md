@@ -71,8 +71,9 @@ behaviours behind one reusable API and CLI, incrementally:
   (`VALID_COMPONENTS`, `EVAL_FUNCS`, the CI workflow's `choices`, and future `evals/params.yaml`) kept in sync
   by hand — every other list
   either derives from it or is validated against it, so registering a new component is a one-place change. The
-  shared `COMPONENT_NAMES` catalogue is used by the registry, datasets, benchmark, and CLI, with a test
-  keeping the CI workflow choices aligned. The future DVC parameters must use or be validated against it too.
+  shared `COMPONENT_NAMES` tuple is derived from the registry keys and used by datasets, benchmark, and the
+  CLI, with a test keeping the CI workflow choices aligned. The future DVC parameters must use or be validated
+  against it too.
 - `evals/dvc.yaml` defines one pipeline stage per eval component (via DVC's `foreach`, driven by
   `evals/params.yaml`), each shelling out to the same `run_eval.py --component <name>` entry point every other
   caller uses.

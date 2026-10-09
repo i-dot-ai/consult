@@ -6,15 +6,15 @@ import json
 from collections.abc import Sequence
 from typing import Any
 
-from component_catalog import COMPONENT_NAMES
 from component_runner import run_component
-from components import build_component_config
+from components import COMPONENT_NAMES, build_component_config
 from config import resolve_backends
 from datasets import DatasetConfig
 from settings import EvalSettings, get_settings
-from themefinder.llm import OpenAILLM
 from utils import gateway
 from utils.logging_config import get_logger
+
+from themefinder.llm import OpenAILLM
 
 logger = get_logger(__name__)
 

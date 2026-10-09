@@ -34,13 +34,14 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-from component_catalog import COMPONENT_NAMES
+from components import COMPONENT_NAMES
 from rich.console import Console
 from rich.table import Table
 from run_eval import evaluate_component
 from settings import eval_settings
-from themefinder.llm import OpenAILLM
 from utils import gateway, langfuse
+
+from themefinder.llm import OpenAILLM
 
 # Monkey-patch openai with langfuse-openai for automatic LLM call tracing.
 # Must happen before any OpenAILLM instances are created.
@@ -427,9 +428,6 @@ class BenchmarkRunner:
         """Execute a single evaluation (called within benchmark context)."""
         # Reset error counter for this run
         error_counter.reset()
-
-        if eval_type not in COMPONENT_NAMES:
-            raise ValueError(f"Unknown eval type: {eval_type}")
 
         # Create session ID with benchmark context
         session_id = (

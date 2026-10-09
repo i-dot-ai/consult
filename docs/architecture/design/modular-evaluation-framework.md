@@ -61,10 +61,9 @@ resolves the selected backends and delegates to `run_component(...)`.
 ### Adding a new eval component
 
 Extending the framework means adding a component module with a task and `ComponentConfig` factory, then
-registering it in `components/registry.py`. Component names live in `component_catalog.py`; datasets,
-benchmark argument parsing, and the CLI derive their choices from that catalogue, while a test keeps the CI
-workflow choices aligned. The future DVC parameter list must derive from or be validated against the same
-catalogue.
+registering it in `components/registry.py`. Component names are derived from the registry keys; datasets,
+benchmark argument parsing, and the CLI use those names, while a test keeps the CI workflow choices aligned.
+The future DVC parameter list must derive from or be validated against the same registry.
 
 ## Architecture overview
 
@@ -192,8 +191,7 @@ Component-specific code lives separately from adapters:
 
 ```
 evals/
-  component_catalog.py       # shared component names
-  components/                # task + ComponentConfig factory per component
+  components/                # task + ComponentConfig factory per component, plus registry
   run_eval.py                # evaluate_component(...) API and unified CLI
 ```
 
@@ -557,7 +555,7 @@ This work is broken down into 8 issues across five waves:
 - **Wave 4 — DVC pipeline** (1 issue): `evals/dvc.yaml` + `evals/params.yaml` (see [Running via
   DVC](#running-via-dvc) above). Independent of the ports-and-adapters refactor — it only shells out to the
   unified `run_eval.py` entry point. `params.yaml` must be generated from or validated against
-  `component_catalog.py` rather than becoming another independent list of component names.
+  the component registry rather than becoming another independent list of component names.
 
 Every issue in every wave leaves `pytest tests/` and `pytest evals/tests/` green — none of them is a partial
 or broken intermediate state.

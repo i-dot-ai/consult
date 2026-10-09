@@ -13,17 +13,18 @@ from adapters.evaluators.refinement_quality_evaluator import (
     RefinementQualityEvaluator,
 )
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
-from component_catalog import COMPONENT_NAMES
-from components import condensation, generation, mapping, refinement
-from components.registry import COMPONENT_FACTORIES, build_component_config
+from components import (
+    COMPONENT_NAMES,
+    build_component_config,
+    condensation,
+    generation,
+    mapping,
+    refinement,
+)
 from eval_types import Case
 
 
-def test_registry_matches_component_catalog():
-    assert tuple(COMPONENT_FACTORIES) == COMPONENT_NAMES
-
-
-def test_workflow_component_choices_match_catalog():
+def test_workflow_component_choices_match_registry():
     repository_root = Path(__file__).resolve().parents[3]
     workflow = (
         repository_root / ".github" / "workflows" / "themefinder-eval.yml"

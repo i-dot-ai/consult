@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from component_catalog import COMPONENT_NAMES
+from components import COMPONENT_NAMES
 from config import EvalBackends
 from datasets import DatasetConfig
 from eval_types import ComponentConfig
