@@ -60,9 +60,6 @@
 
   const user = $derived(enableV2 ? buildCurrentUserGetQuery() : null);
   const consultations = buildConsultationsGetQuery();
-  const consultationDelete = $derived(
-    buildConsultationDeleteQuery(deleteConsultationId),
-  );
 
   const consultationsToDisplay: Consultation[] = $derived(
     consultations.query.data?.results.filter(
@@ -448,10 +445,9 @@
 
   <DeleteConsultationModal
     consultation={consultationsToDisplay.find(
-      (consultation: Consultation) =>
-        consultation.id === deleteConsultationId,
+      (consultation: Consultation) => consultation.id === deleteConsultationId,
     )}
-    onClose={() => deleteConsultationId = ""}
+    onClose={() => (deleteConsultationId = "")}
     onError={(consultation) => {
       addAlert({
         text: `Consultation ${consultation.title} could not be deleted.`,
