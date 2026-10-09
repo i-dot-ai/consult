@@ -1,20 +1,23 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
 
-  import { buildConsultationGetQuery } from "../../../global/queries/consultations/queries";
-  import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries";
-  import type { Consultation, ConsultationStage, User } from "../../../global/types";
   import Button from "../../inputs/Button/Button.svelte";
+  import Title from "../../Title.svelte";
+  import Link from "../../Link.svelte";
+  import Tag from "../../Tag/Tag.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Check from "../../svg/material/Check.svelte";
   import Close from "../../svg/material/Close.svelte";
   import EditSquare from "../../svg/material/EditSquare.svelte";
-  import Title from "../../Title.svelte";
-  import Link from "../../Link.svelte";
+  import Delete from "../../svg/material/Delete.svelte";
+
+  import { buildConsultationGetQuery } from "../../../global/queries/consultations/queries";
+  import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries";
   import { getConsultationDetailUrl, getDataUploadUrl, getFinaliseThemesUrl, Routes } from "../../../global/routes";
-  import Panel from "../../dashboard/Panel/Panel.svelte";
-  import Tag from "../../Tag/Tag.svelte";
+  import type { Consultation, ConsultationStage, User } from "../../../global/types";
+
 
   interface Props {
     consultationId: string;
@@ -29,12 +32,18 @@
   let consultationData: Consultation = $derived(consultation.query?.data);
   let renameValue: string = $derived(consultationData?.title || "");
 
+  let createdByEmail = $derived.by(() => {
+    const createdBy = consultationData?.created_by;
+    return typeof createdBy === "string" ? createdBy : createdBy?.email;
+  })
+  let userIsOwner = $derived(user.query?.data?.email === createdByEmail);
+  let userCanDelete = $derived(user.query?.data?.is_staff || userIsOwner);
+
   function getCreatedByText(createdBy: User | string | null) {
-    if (!createdBy) {
-      return "an unknown user";
+    if (!createdByEmail) {
+        return "an unknown user";
     }
-    const createdByEmail = typeof createdBy === "string" ? createdBy : createdBy?.email;
-    if (user.query?.data?.email === createdByEmail) {
+    if (userIsOwner) {
       return "you";
     }
     // TODO: to avoid merge conflict. Remove type cast after ConsultationList pr is merged.
@@ -46,30 +55,13 @@
   function getStatusText(stage: ConsultationStage) {
     return (stage.charAt(0).toUpperCase() + stage.slice(1)).replaceAll("_", " ");
   }
-  function getPanelText(stage: ConsultationStage) {
-    if (stage === "finalising_themes") {
-        return "Themes found by the AI are ready to check. No response is assigned to a theme until you finalise them.";
-    }
-    if (stage === "analysis") {
-        return "Every response is assigned to a theme. Check the assignments before you report.";
-    }
-    return "";
-  }
-  function getStatusVariant(stage: ConsultationStage) {
-    if (stage === "finalising_themes" || stage === "setup") {
-        return "warning";
-    }
-    if (stage === "analysis") {
-        return "success";
-    }
-    return "dark";
-  }
 
   interface ContentData {
     panelText: string;
     panelButtonText?: string
     panelButtonUrl?: string;
     tagVariant: "success" | "default" | "warning";
+    links?: { url: string, text: string, description: string }[];
 }
 
   const CONTENT: Record<string, ContentData> = $derived({
@@ -78,6 +70,18 @@
         panelButtonText: "View Dashboard",
         panelButtonUrl: getConsultationDetailUrl(consultationId),
         tagVariant: "success",
+        links: [
+            {
+                text: "Manage people",
+                description: "Add and remove people on this consultation",
+                url: "/",
+            },
+            {
+                text: "View all responses",
+                description: "Every response, as it was uploaded",
+                url: "/",
+            },
+        ]
     },
     "assigning_themes": {
         panelText: "Consult is assigning every response to the finalised themes. This can take more than 20 minutes.",
@@ -159,6 +163,21 @@
           {isRenaming ? "Cancel" : "Rename"}
         </div>
       </Button>
+
+      {#if userCanDelete && !isRenaming}
+        <Button
+            variant="warning"
+            handleClick={() => console.log("about to delete:", consultationData.title)}
+        >
+            <div class="flex gap-1 items-center text-xs">
+                <MaterialIcon color="fill-neutral-500">
+                    <Delete />
+                </MaterialIcon>
+
+                Delete
+            </div>
+        </Button>
+      {/if}
     </div>
   </div>
 
@@ -213,3 +232,23 @@
         </div>
     </Panel>
 </section>
+
+{#if content.links}
+    <section>
+        <Title level={3}>
+            <span class="font-[500]">This consultation</span>
+        </Title>
+
+        {#each content.links || [] as link}
+            <hr class="my-2" />
+
+            <div class="my-3 ml-2">
+                <Link href={link.url} ariaLabel={link.description}>
+                    {link.text}
+                </Link>
+
+                <p class="text-sm text-neutral-500">{link.description}</p>
+            </div>
+        {/each}
+    </section>
+{/if}
