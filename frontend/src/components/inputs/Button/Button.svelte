@@ -11,6 +11,7 @@
     | "approve"
     | "outline"
     | "warning"
+    | "danger"
     | "dot" = "default";
   export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
   export let highlighted: boolean = false;
@@ -58,6 +59,7 @@
     variant === "primary" && "border-gray-300 bg-primary text-white",
     variant === "approve" && "border-gray-300 bg-secondary text-white",
     variant === "warning" && "border-yellow-300 bg-yellow-50",
+    variant === "danger" && "border-red-700 bg-transparent text-red-700",
     variant === "ghost" && "border-transparent",
     variant === "dot" && "border-transparent text-neutral-400",
     variant === "outline" &&
@@ -74,7 +76,9 @@
           highlightVariant === "approve" && "hover:text-secondary",
         ])
       : clsx([
-          variant === "warning" ? "hover:bg-yellow-100" : "hover:bg-gray-100",
+          variant === "warning" && "hover:bg-yellow-100",
+          variant === "danger" && "hover:bg-red-800 hover:text-white",
+          (variant !== "warning" && variant !== "danger") && "hover:bg-gray-100",
         ]),
     fixedHoverColor && "fixed-hover-color",
     variant === "primary" && "hover:border-primary hover:text-primary",
@@ -137,6 +141,9 @@
   }
   *:is(button, a)[data-variant="primary"]:not(.disabled):hover :global(svg) {
     fill: var(--color-primary);
+  }
+  *:is(button, a)[data-variant="danger"]:not(.disabled):hover :global(svg) {
+    fill: white;
   }
   *:is(button, a)[data-variant="ghost"]:not(.disabled):not(
       .fixed-hover-color
