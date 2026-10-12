@@ -8,7 +8,7 @@
   import CheckCircle from "../../svg/material/CheckCircle.svelte";
   import Finance from "../../svg/material/Finance.svelte";
   import WandStars from "../../svg/material/WandStars.svelte";
-  import { getConsultationDetailUrl } from "../../../global/routes";
+  import { getConsultationDashboardUrl } from "../../../global/routes";
   import type { Consultation } from "../../../global/types";
 
   interface Props {
@@ -149,7 +149,7 @@
     <strong>Next:</strong> View the mapped data in the
     <a
       class="text-secondary hover:underline"
-      href={getConsultationDetailUrl(consultation.id)}
+      href={getConsultationDashboardUrl(consultation.id)}
     >
       Analysis Dashboard
     </a>

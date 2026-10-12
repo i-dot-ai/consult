@@ -15,7 +15,8 @@
   import DeleteConsultationModal from "../../DeleteConsultationModal/DeleteConsultationModal.svelte";
 
   import {
-    getConsultationDetailUrl,
+    getConsultationViewUrl,
+    getConsultationDashboardUrl,
     getConsultationEvalUrl,
     getDataUploadUrl,
     getFinaliseThemesUrl,
@@ -72,7 +73,7 @@
     isStaff: boolean,
   ): LinkData[] => {
     const viewConsultationLink = {
-      url: getConsultationDetailUrl(consultation.id),
+      url: getConsultationViewUrl(consultation.id),
       text: "View Consultation",
       ariaLabel: `View details of consultation: ${consultation.title}`,
     };
@@ -82,8 +83,7 @@
       ariaLabel: `Finalise themes for consultation: ${consultation.title}`,
     };
     const viewDashboardLink = {
-      // TODO: Update after consultation detail and dashboard routes are separated
-      url: getConsultationDetailUrl(consultation.id),
+      url: getConsultationDashboardUrl(consultation.id),
       text: "View dashboard",
       ariaLabel: `View dashboard for consultation: ${consultation.title}`,
     };

@@ -22,7 +22,7 @@
     getApiQuestionResponsesUrl,
     getApiQuestionThemesUrl,
     getApiQuestionUrl,
-    getConsultationDetailUrl,
+    getConsultationDashboardUrl,
     updateResponseReadStatus,
     updateResponsesReadStatusBulk,
   } from "../../../global/routes.ts";
@@ -315,7 +315,7 @@
   <Button
     testId="back-to-all-questions-button"
     handleClick={() => {
-      window.location.href = getConsultationDetailUrl(consultationId);
+      window.location.href = getConsultationDashboardUrl(consultationId);
     }}
   >
     <div class="flex items-center justify-between gap-2">
