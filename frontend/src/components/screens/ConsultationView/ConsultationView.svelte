@@ -59,7 +59,7 @@
   let userIsOwner = $derived(user.query?.data?.email === createdByEmail);
   let userIsAdmin = $derived(user.query?.data?.is_staff);
   let userCanDelete = $derived(
-    user.query?.data?.is_staff || userIsOwner || userIsAdmin,
+    userIsOwner || userIsAdmin,
   );
 
   function getCreatedByText(createdBy: User | string | null) {
@@ -69,7 +69,6 @@
     if (userIsOwner) {
       return "you";
     }
-    // TODO: to avoid merge conflict. Remove type cast after ConsultationList pr is merged.
     return createdByEmail || createdBy;
   }
   function getCreatedAtText(created_at: string) {
