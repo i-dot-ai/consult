@@ -113,7 +113,8 @@
 <RespondentTopbar
   title="Detailed Consultation Analysis"
   backText="Back to Overview"
-  onClickBack={() => (location.href = getConsultationDashboardUrl(consultationId))}
+  onClickBack={() =>
+    (location.href = getConsultationDashboardUrl(consultationId))}
 />
 
 <section>

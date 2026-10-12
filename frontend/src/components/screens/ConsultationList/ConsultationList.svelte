@@ -23,9 +23,7 @@
     getSupportUserDetail,
     Routes,
   } from "../../../global/routes.ts";
-  import {
-    buildConsultationsGetQuery,
-  } from "../../../global/queries/consultations/queries.ts";
+  import { buildConsultationsGetQuery } from "../../../global/queries/consultations/queries.ts";
   import type { Consultation, User } from "../../../global/types.ts";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries.ts";

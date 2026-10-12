@@ -9,7 +9,10 @@
   import Button from "../../inputs/Button/Button.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
 
-  import { getConsultationDashboardUrl, Routes } from "../../../global/routes.ts";
+  import {
+    getConsultationDashboardUrl,
+    Routes,
+  } from "../../../global/routes.ts";
   import {
     buildConsultationsV2ByTitleQuery,
     buildConsultationV2CreateQuery,

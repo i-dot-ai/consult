@@ -13,7 +13,10 @@
   import EditSquare from "../../svg/material/EditSquare.svelte";
   import Delete from "../../svg/material/Delete.svelte";
 
-  import { buildConsultationGetQuery, buildConsultationRenameQuery } from "../../../global/queries/consultations/queries";
+  import {
+    buildConsultationGetQuery,
+    buildConsultationRenameQuery,
+  } from "../../../global/queries/consultations/queries";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries";
   import {
     getConsultationAnswersUrl,
@@ -45,7 +48,9 @@
   let consultation = $derived(buildConsultationGetQuery(consultationId));
   let consultationData: Consultation = $derived(consultation.query?.data);
   let renameValue: string = $derived(consultationData?.title || "");
-  let consultationRename = $derived(buildConsultationRenameQuery(consultationId));
+  let consultationRename = $derived(
+    buildConsultationRenameQuery(consultationId),
+  );
 
   let createdByEmail = $derived.by(() => {
     const createdBy = consultationData?.created_by;
@@ -171,7 +176,7 @@
   });
 
   async function handleSubmitRename() {
-    consultationRename.fetch({ body: { title: renameValue }});
+    consultationRename.fetch({ body: { title: renameValue } });
 
     await consultation.fetch({});
 
@@ -206,7 +211,10 @@
 <section>
   <div class="flex gap-2 items-center">
     {#if isRenaming}
-      <form class="w-full flex gap-2 items-center" onsubmit={handleSubmitRename}>
+      <form
+        class="w-full flex gap-2 items-center"
+        onsubmit={handleSubmitRename}
+      >
         <div class="grow">
           <TextInput
             id="rename-input"
@@ -217,11 +225,7 @@
           />
         </div>
         <div class="my-auto" in:fade>
-          <Button
-            variant="primary"
-            size="sm"
-            handleClick={handleSubmitRename}
-          >
+          <Button variant="primary" size="sm" handleClick={handleSubmitRename}>
             <div class="text-xs flex gap-1 items-center">
               <MaterialIcon color="fill-white">
                 <Check />
