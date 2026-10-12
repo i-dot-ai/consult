@@ -86,8 +86,8 @@ NEW TOPICS:
 
 
 def refinement_eval_prompt(
-    original_topics: list[dict] | dict,
-    new_topics: list[dict] | dict,
+    original_topics: list[dict],
+    new_topics: list[dict],
 ) -> str:
     """Generate a prompt for refinement evaluation."""
     return REFINEMENT_EVAL.format(

@@ -83,8 +83,8 @@ THEME TITLES:
 
 
 def generation_eval_prompt(
-    topic_list_1: list[dict] | dict,
-    topic_list_2: list[dict] | dict,
+    topic_list_1: list[dict],
+    topic_list_2: list[dict],
 ) -> str:
     """Generate a prompt for comparing two topic lists."""
     return GENERATION_EVAL.format(

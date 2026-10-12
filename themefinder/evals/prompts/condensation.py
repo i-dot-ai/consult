@@ -60,8 +60,8 @@ CONDENSED TOPICS:
 
 
 def condensation_eval_prompt(
-    original_topics: list[dict] | dict,
-    condensed_topics: list[dict] | dict,
+    original_topics: list[dict],
+    condensed_topics: list[dict],
 ) -> str:
     """Generate a prompt for condensation evaluation."""
     return CONDENSATION_EVAL.format(
