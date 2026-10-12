@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, ClassVar
 
 from django.utils import timezone
@@ -81,6 +82,21 @@ class ConsultationCreateSerializerV2(serializers.ModelSerializer):
         model = Consultation
         fields: ClassVar[list] = ["id", "title"]
         read_only_fields: ClassVar[list] = ["id"]
+
+
+class ConsultationFileUploadSerializerV2(serializers.Serializer):
+    MAX_FILE_SIZE = 100 * 1024 * 1024
+    ALLOWED_EXTENSIONS: ClassVar[set[str]] = {".csv", ".xlsx"}
+
+    file = serializers.FileField(write_only=True)
+
+    def validate_file(self, value):
+        extension = Path(value.name).suffix.lower()
+        if extension not in self.ALLOWED_EXTENSIONS:
+            raise serializers.ValidationError("File must be a CSV or XLSX file.")
+        if value.size > self.MAX_FILE_SIZE:
+            raise serializers.ValidationError("File must not exceed 100 MiB.")
+        return value
 
 
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
