@@ -57,12 +57,12 @@
     }
   }}
 >
-  <p>
+  <div>
     Deleting removes the responses, the themes and the analysis. This cannot be
     undone.
 
     <Panel variant="default">
       {consultation?.title || "Consultation not selected"}
     </Panel>
-  </p>
+  </div>
 </Modal>
