@@ -47,6 +47,13 @@ export function buildConsultationGetQuery(consultationId: string) {
   });
 }
 
+export function buildConsultationRenameQuery(consultationId: string) {
+  return buildQuery<Consultation>(consultationQueryParts.url(consultationId), {
+    key: [...consultationQueryParts.key(consultationId), "patch"],
+    method: "PATCH",
+  });
+}
+
 export const updateConsultation = async (
   consultationId: string,
   body: UpdateConsultationBody,
