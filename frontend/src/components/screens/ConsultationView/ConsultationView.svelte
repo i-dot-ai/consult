@@ -58,9 +58,7 @@
   });
   let userIsOwner = $derived(user.query?.data?.email === createdByEmail);
   let userIsAdmin = $derived(user.query?.data?.is_staff);
-  let userCanDelete = $derived(
-    userIsOwner || userIsAdmin,
-  );
+  let userCanDelete = $derived(userIsOwner || userIsAdmin);
 
   function getCreatedByText(createdBy: User | string | null) {
     if (!createdByEmail) {
