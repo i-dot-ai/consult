@@ -6,7 +6,7 @@ Ignores `case`; scores the titles in `output["themes"]` alone.
 from typing import Any
 
 from eval_types import Case, Score
-from prompts import title_specificity_eval_prompt
+from prompts.generation import title_specificity_eval_prompt
 
 from .llm_judge_evaluator import LLMJudgeEvaluator
 

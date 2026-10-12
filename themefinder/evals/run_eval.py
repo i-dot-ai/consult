@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import json
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
 from component_runner import run_component
@@ -72,6 +73,9 @@ async def evaluate_component(
     )
 
 
+LOCAL_EVAL_RUNS_DIR = Path(__file__).resolve().parent / "local_eval_runs"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run a ThemeFinder evaluation")
     parser.add_argument(
@@ -103,6 +107,16 @@ def main(argv: Sequence[str] | None = None) -> None:
             question_num=args.question,
         )
     )
+    if (get_settings().eval.artefact_store or "local") != "local":
+        output_path = (
+            LOCAL_EVAL_RUNS_DIR / args.component / args.dataset / "results.json"
+        )
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(
+            json.dumps(results, indent=2, sort_keys=True, default=str),
+            encoding="utf-8",
+        )
+
     print(json.dumps(results, indent=2, sort_keys=True, default=str))
 
 
