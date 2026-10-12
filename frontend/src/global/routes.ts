@@ -27,6 +27,7 @@ export enum Suffixes {
   Delete = "delete",
   DataUpload = "data-upload",
   Answers = "answers",
+  Dashboard = "dashboard",
 }
 
 export enum Routes {
@@ -72,8 +73,12 @@ export const getApiConsultationsRootUrl = () => {
   return urlJoin(prefix, Suffixes.Consultations, "/");
 };
 
-export const getConsultationDetailUrl = (consultationId: string) => {
+export const getConsultationViewUrl = (consultationId: string) => {
   return urlJoin(Routes.Consultations, consultationId);
+};
+
+export const getConsultationDashboardUrl = (consultationId: string) => {
+  return urlJoin(Routes.Consultations, consultationId, Suffixes.Dashboard);
 };
 
 export const getConsultationAnalysisUrl = (consultationId: string) => {

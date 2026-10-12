@@ -1,11 +1,11 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 
-import ConsultationDetail from "../../../components/screens/ConsultationDetail/ConsultationDetail.svelte";
 import Section from "../../../components/Section/Section.svelte";
 import type { AstroGlobalRuntime } from "../../../global/types";
 import { buildResponse, fetchBackendApi } from "../../../global/api";
 import { getApiConsultationUrl } from "../../../global/routes";
+import ConsultationView from "../../../components/screens/ConsultationView/ConsultationView.svelte";
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
@@ -21,6 +21,6 @@ if (error) {
 
 <Layout>
   <Section>
-    <ConsultationDetail client:load consultationId={consultationId || ""} />
+    <ConsultationView client:load consultationId={consultationId || ""} />
   </Section>
 </Layout>

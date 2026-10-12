@@ -6,7 +6,7 @@
   import {
     getApiConsultationUrl,
     getApiQuestionsUrl,
-    getConsultationDetailUrl,
+    getConsultationDashboardUrl,
   } from "../../../global/routes";
   import {
     type ConsultationResponse,
@@ -113,7 +113,7 @@
 <RespondentTopbar
   title="Detailed Consultation Analysis"
   backText="Back to Overview"
-  onClickBack={() => (location.href = getConsultationDetailUrl(consultationId))}
+  onClickBack={() => (location.href = getConsultationDashboardUrl(consultationId))}
 />
 
 <section>

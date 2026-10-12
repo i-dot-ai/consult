@@ -17,7 +17,7 @@
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries";
   import {
     getConsultationAnswersUrl,
-    getConsultationDetailUrl,
+    getConsultationDashboardUrl,
     getConsultationUsersUrl,
     getDataUploadUrl,
     getFinaliseThemesUrl,
@@ -115,7 +115,7 @@
       panelText:
         "Every response is assigned to a theme. Check the assignments before you report.",
       panelButtonText: "View Dashboard",
-      panelButtonUrl: getConsultationDetailUrl(consultationId),
+      panelButtonUrl: getConsultationDashboardUrl(consultationId),
       tagVariant: "success",
       adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
