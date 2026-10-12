@@ -126,7 +126,7 @@ class TestPydanticEvalsEvaluator:
         )
 
         assert adapter.metric_names == ("LLMJudge_score", "LLMJudge_pass")
-        scores = await adapter.evaluate(make_case(), {"themes": {}})
+        scores = await adapter.evaluate(make_case(), {"themes": []})
 
         assert scores == [
             Score("LLMJudge_score", 0.8, ""),

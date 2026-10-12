@@ -27,6 +27,18 @@ class _RaisingJudge:
         raise RuntimeError("boom")
 
 
+def _themes(*labels: str) -> list[dict[str, str]]:
+    """Build theme records in the canonical evaluator input shape."""
+    return [
+        {
+            "topic_id": f"theme-{index}",
+            "topic_label": label,
+            "topic_description": "desc",
+        }
+        for index, label in enumerate(labels)
+    ]
+
+
 class _JudgeContractTests:
     """Base class testing the contract every LLM-judge evaluator inherits from EvaluatorPort"""
 
@@ -34,7 +46,7 @@ class _JudgeContractTests:
 
     async def _evaluate(self, judge, *, output=None, **case_kwargs):
         """Helper function to run the evaluator under test with a fake judge and a simple case."""
-        themes = {"themes": {"t": "desc"}}
+        themes = {"themes": _themes("t")}
         if not case_kwargs:
             case_kwargs = {"inputs": themes, "expected_output": themes}
         case = make_case(**case_kwargs)
@@ -152,8 +164,8 @@ class TestDecisionScoredJudges(_JudgeContractTests):
 
         await self._evaluate(
             judge,
-            expected_output={"themes": {"EXPECTED_ONLY": "desc"}},
-            output={"themes": {"OUTPUT_ONLY": "desc"}},
+            expected_output={"themes": _themes("EXPECTED_ONLY")},
+            output={"themes": _themes("OUTPUT_ONLY")},
         )
 
         prompt = judge.prompts[0]
@@ -238,8 +250,8 @@ class TestCondensationQualityEvaluator(_NumericKeyJudgeTests):
 
         await self._evaluate(
             judge,
-            inputs={"themes": {"INPUT_ONLY": "desc"}},
-            output={"themes": {"OUTPUT_ONLY": "desc"}},
+            inputs={"themes": _themes("INPUT_ONLY")},
+            output={"themes": _themes("OUTPUT_ONLY")},
         )
 
         prompt = judge.prompts[0]
@@ -260,8 +272,8 @@ class TestRefinementQualityEvaluator(_NumericKeyJudgeTests):
 
         await self._evaluate(
             judge,
-            inputs={"themes": {"INPUT_ONLY": "desc"}},
-            output={"themes": {"OUTPUT_ONLY": "desc"}},
+            inputs={"themes": _themes("INPUT_ONLY")},
+            output={"themes": _themes("OUTPUT_ONLY")},
         )
 
         prompt = judge.prompts[0]
@@ -282,7 +294,7 @@ class TestTitleSpecificityEvaluator(_JudgeContractTests):
             '"Housing costs in cities": {"decision": "SPECIFIC"},'
             '"Stuff": {"decision": "VAGUE"}}}'
         )
-        output = {"themes": {"Housing costs in cities": "desc", "Stuff": "desc"}}
+        output = {"themes": _themes("Housing costs in cities", "Stuff")}
 
         scores = await self._evaluate(judge, output=output)
 
@@ -294,7 +306,7 @@ class TestTitleSpecificityEvaluator(_JudgeContractTests):
         """No titles skips the LLM call and yields the empty-case specificity score."""
         judge = FakeJudge()
 
-        scores = await self._evaluate(judge, output={"themes": {}})
+        scores = await self._evaluate(judge, output={"themes": []})
 
         # _build_prompt returns None when there are no titles -> the LLM is
         # never invoked, and _build_scores({}) yields the empty-case comment.
