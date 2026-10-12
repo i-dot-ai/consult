@@ -16,20 +16,8 @@ import pytest
 from adapters.evaluators.mapping_f1_evaluator import MappingF1Evaluator
 from adapters.evaluators.mapping_metrics_evaluator import MappingMetricsEvaluator
 from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
-from conftest import make_case
+from conftest import _themes, make_case
 from eval_types import Score
-
-
-def _themes(*labels: str) -> list[dict[str, str]]:
-    """Build theme records in the canonical evaluator input shape."""
-    return [
-        {
-            "topic_id": f"theme-{index}",
-            "topic_label": label,
-            "topic_description": "desc",
-        }
-        for index, label in enumerate(labels)
-    ]
 
 
 class TestMappingF1Evaluator:

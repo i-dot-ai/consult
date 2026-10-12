@@ -12,20 +12,10 @@ from langfuse.api.core import ApiError
 from adapters.artefact_stores.base import ArtefactStorePort
 from adapters.artefact_stores.langfuse_adapter import LangfuseArtefactStore
 from adapters.artefact_stores.local_json_adapter import LocalJSONArtefactStore
+from conftest import _themes
 from eval_types import Case, CaseOutcome, RunReport, Score
 from fakes import FakeLangfuseClient, FakeTrace
 from utils.langfuse import LangfuseContext
-
-
-def _themes(label: str, description: str = "desc") -> list[dict[str, str]]:
-    """Build a theme collection in the canonical evaluation output shape."""
-    return [
-        {
-            "topic_id": "theme-1",
-            "topic_label": label,
-            "topic_description": description,
-        }
-    ]
 
 
 def _make_case(
@@ -137,12 +127,12 @@ class TestLocalJSONArtefactStore:
 
         first = _make_outcome(
             case=_make_case(question_part="question_part_1"),
-            output={"themes": _themes("A", "first")},
+            output={"themes": _themes("A", description="first")},
             scores=[Score("coverage", 1.0, "first run")],
         )
         second = _make_outcome(
             case=_make_case(question_part="question_part_1"),
-            output={"themes": _themes("B", "second")},
+            output={"themes": _themes("B", description="second")},
             scores=[Score("coverage", 2.0, "second run")],
         )
 
@@ -161,7 +151,7 @@ class TestLocalJSONArtefactStore:
         )
         assert payload["results"] == {
             "question_part_1_coverage": 2.0,
-            "question_part_1_output": {"themes": _themes("B", "second")},
+            "question_part_1_output": {"themes": _themes("B", description="second")},
         }
         assert payload["outcomes"][0]["scores"][0]["comment"] == "second run"
 

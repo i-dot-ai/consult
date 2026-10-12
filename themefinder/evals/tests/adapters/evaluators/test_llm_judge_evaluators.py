@@ -15,7 +15,7 @@ from adapters.evaluators.coverage_evaluator import CoverageEvaluator
 from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
 from adapters.evaluators.refinement_quality_evaluator import RefinementQualityEvaluator
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
-from conftest import make_case
+from conftest import _themes, make_case
 from eval_types import Score
 from fakes import FakeJudge
 
@@ -25,18 +25,6 @@ class _RaisingJudge:
 
     async def ainvoke(self, prompt: str):
         raise RuntimeError("boom")
-
-
-def _themes(*labels: str) -> list[dict[str, str]]:
-    """Build theme records in the canonical evaluator input shape."""
-    return [
-        {
-            "topic_id": f"theme-{index}",
-            "topic_label": label,
-            "topic_description": "desc",
-        }
-        for index, label in enumerate(labels)
-    ]
 
 
 class _JudgeContractTests:
