@@ -173,7 +173,7 @@
   });
 
   async function handleSubmitRename() {
-    consultationRename.fetch({ body: { title: renameValue } });
+    await consultationRename.fetch({ body: { title: renameValue } });
 
     await consultation.fetch({});
 
