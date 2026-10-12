@@ -1,5 +1,5 @@
 from io import BytesIO
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -87,6 +87,52 @@ def test_v2_upload_rejects_invalid_xlsx_without_persisting_data(
     assert not FileUpload.objects.exists()
     assert not Question.objects.filter(consultation=consultation).exists()
     assert not Respondent.objects.filter(consultation=consultation).exists()
+
+
+@pytest.mark.django_db
+def test_v2_upload_rejects_xlsx_without_visible_worksheet(
+    client, consultation, non_staff_user_token
+):
+    workbook = MagicMock(active=None)
+    with patch("ingest.consultation_file.load_workbook", return_value=workbook):
+        response = client.post(
+            reverse("consultation-v2-upload", kwargs={"pk": consultation.id}),
+            data={"file": SimpleUploadedFile("responses.xlsx", b"workbook")},
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 400
+    assert response.json()["file"] == "XLSX file has no visible worksheet."
+    workbook.close.assert_called_once_with()
+    assert not FileUpload.objects.exists()
+
+
+@pytest.mark.django_db
+def test_v2_upload_preserves_import_error_when_storage_cleanup_fails(
+    client, consultation, non_staff_user_token
+):
+    import_error = RuntimeError("Import failed")
+    with (
+        patch(
+            "consultations.api_v2.views.consultation.import_consultation_data",
+            side_effect=import_error,
+        ),
+        patch(
+            "consultations.api_v2.views.consultation.default_storage.delete",
+            side_effect=RuntimeError("Cleanup failed"),
+        ),
+        patch("consultations.api_v2.views.consultation.logger.warning") as warning,
+        pytest.raises(RuntimeError, match="Import failed") as raised,
+    ):
+        client.post(
+            reverse("consultation-v2-upload", kwargs={"pk": consultation.id}),
+            data={"file": SimpleUploadedFile("responses.csv", b"Question\nAnswer")},
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert raised.value is import_error
+    warning.assert_called_once()
+    assert not FileUpload.objects.exists()
 
 
 @pytest.mark.django_db

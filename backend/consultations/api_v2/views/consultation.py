@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import ClassVar
 from zipfile import BadZipFile
 
+from django.conf import settings
 from django.core.files.storage import default_storage
 from django.db import transaction
 from django.db.models import Q
@@ -24,6 +25,8 @@ from consultations.api_v2.serializers import (
 from consultations.models import Consultation, FileUpload
 from ingest.consultation_file import import_consultation_data, read_consultation_file
 from ingest.jobs import delete_consultation_job
+
+logger = settings.LOGGER
 
 
 class ConsultationViewSet(CreateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet):
@@ -103,7 +106,13 @@ class ConsultationViewSet(CreateModelMixin, DestroyModelMixin, ReadOnlyModelView
                     consultation, question_texts, response_rows
                 )
         except Exception:
-            default_storage.delete(file_upload.s3_key)
+            try:
+                default_storage.delete(file_upload.s3_key)
+            except Exception:  # noqa: BLE001 - cleanup must not mask the import error
+                logger.warning(
+                    "Failed to clean up uploaded file {s3_key}",
+                    s3_key=file_upload.s3_key,
+                )
             raise
 
         return Response(

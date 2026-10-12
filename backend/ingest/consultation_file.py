@@ -24,7 +24,10 @@ def read_consultation_file(
     else:
         workbook = load_workbook(file, read_only=True, data_only=True)
         try:
-            rows = [list(row) for row in workbook.active.iter_rows(values_only=True)]
+            sheet = workbook.active
+            if sheet is None:
+                raise ValueError("XLSX file has no visible worksheet.")
+            rows = [list(row) for row in sheet.iter_rows(values_only=True)]
         finally:
             workbook.close()
 
