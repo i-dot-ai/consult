@@ -6,8 +6,8 @@ import type { Page } from "@playwright/test";
  * page (not the consultations list page itself, and not a static sub-route like
  * /consultations/new).
  */
-export async function getFirstConsultationLink(page: Page) {
-  const allLinks = page.locator('a[href*="/dashboard"]');
+export async function getFirstConsultationLink(page: Page, isSupport?: boolean) {
+  const allLinks = page.locator(`a[href*="/${isSupport ? "consultations/" : "dashboard"}"]`);
   const count = await allLinks.count();
   const consultationDetailHref =
     /\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
