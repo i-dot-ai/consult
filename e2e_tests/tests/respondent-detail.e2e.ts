@@ -25,7 +25,7 @@ test.describe("Respondent Detail Page", () => {
     questionIds = testData.question_ids!;
     const questionId = questionIds[0];
 
-    await page.goto(`/consultations/${consultationId}`);
+    await page.goto(`/consultations/${consultationId}/dashboard`);
     await page.waitForLoadState("networkidle");
 
     const questionCard = page.getByTestId(`question-link-${questionId}`);
