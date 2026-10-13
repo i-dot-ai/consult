@@ -99,6 +99,21 @@ class ConsultationFileUploadSerializerV2(serializers.Serializer):
         return value
 
 
+class ConsultationUpdateSerializerV2(serializers.ModelSerializer):
+    class Meta:
+        model = Consultation
+        fields: ClassVar[list] = ["id", "title", "data_source"]
+        read_only_fields: ClassVar[list] = ["id"]
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        # Pipeline jobs write stage and running_job concurrently; a full save would revert them.
+        if validated_data:
+            instance.save(update_fields=[*validated_data, "modified_at"])
+        return instance
+
+
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
 
