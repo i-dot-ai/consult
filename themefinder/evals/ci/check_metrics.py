@@ -62,9 +62,9 @@ def check_component(
 ) -> ComponentVerdict:
     verdict = ComponentVerdict(component)
     if baseline is None:
-        verdict.invalid.append("no baseline file")
+        verdict.invalid.append("cannot read baseline file")
     if payload is None:
-        verdict.invalid.append("no results file")
+        verdict.invalid.append("cannot read results file")
     if verdict.invalid:
         return verdict
     if not {"outcomes", "errors"} <= payload.keys():

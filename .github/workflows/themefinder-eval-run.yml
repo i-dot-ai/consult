@@ -1,6 +1,6 @@
 name: themefinder LLM evaluation (reusable)
 
-# Runs one eval tier on a temporary EC2 runner. Called by themefinder-eval.yml (smoke)
+# Runs one eval tier on a temporary EC2 runner. Called by themefinder-eval-smoke.yml (smoke)
 # and themefinder-eval-regression.yml (regression).
 
 on:

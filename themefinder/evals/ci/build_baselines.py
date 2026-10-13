@@ -16,6 +16,8 @@ from ci.check_metrics import summarise_payload
 from components import COMPONENT_NAMES
 
 EVALS_DIR = Path(__file__).resolve().parents[1]
+# Needs to be kept up to date with the metrics where a lower score is better.
+# Could maybe look at reading this directly from evaluators.
 LOWER_IS_BETTER = frozenset({"redundancy"})
 REQUIRED_RUNS = 3
 

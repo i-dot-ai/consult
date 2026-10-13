@@ -127,9 +127,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     print(json.dumps(results, indent=2, sort_keys=True, default=str))
 
     # Case errors are recorded, not raised, so fail here or DVC and CI would call the run a success.
-    if output_path.exists() and (
-        errors := count_errors(json.loads(output_path.read_text(encoding="utf-8")))
-    ):
+    errors = count_errors(results)
+    if errors > 0:
         raise SystemExit(f"{errors} case or evaluator errors, see {output_path}")
 
 
