@@ -24,7 +24,7 @@
     "@codemirror/lang-json": "^6.0.0",
     "@i-dot-ai-npm/utilities-observability": "^1.0.0",
     "@melt-ui/svelte": "^0.86.0",
-    "@sentry/astro": "^10.75.0",
+    "@sentry/astro": "^11.1.0",
     "@sveltestack/svelte-query": "^1.6.0",
     "@tanstack/svelte-query": "^6.3.0",
     "astro": "^7.3.5",
