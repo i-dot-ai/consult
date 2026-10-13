@@ -1,6 +1,16 @@
+from uuid import uuid4
+
 import pytest
 from django.test import override_settings
-from django.urls import NoReverseMatch, reverse
+from django.urls import NoReverseMatch, resolve, reverse
+
+
+def test_v2_upload_route_is_registered():
+    consultation_id = uuid4()
+    url = reverse("consultation-v2-upload", kwargs={"pk": consultation_id})
+
+    assert url == f"/api/v2/consultations/{consultation_id}/upload/"
+    assert resolve(url).view_name == "consultation-v2-upload"
 
 
 @pytest.mark.django_db
