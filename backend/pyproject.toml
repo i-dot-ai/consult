@@ -28,7 +28,7 @@ dependencies = [
   "pytest-random-order>=1.2.0",
   "sentry-sdk[django,redis,rq]>=2.70.0",
   "themefinder",
-  "werkzeug==3.1.8",
+  "werkzeug==3.1.9",
 ]
 
 [dependency-groups]
