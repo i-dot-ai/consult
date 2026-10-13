@@ -21,12 +21,12 @@ dependencies = [
   "factory_boy>=3.3.3",
   "gunicorn>=26.2.0",
   "i-dot-ai-utilities[auth,otel-django]>=0.7.1rc1",
-  "openai>=3.16.2",
+  "openai>=3.19.2",
   "pgvector>=0.5.0",
   "psycopg>=3.3.6",
   "pydantic>=2.13.5",
   "pytest-random-order>=1.2.0",
-  "sentry-sdk[django,redis,rq]>=2.69.2",
+  "sentry-sdk[django,redis,rq]>=2.70.0",
   "themefinder",
   "werkzeug==3.1.8",
 ]
@@ -43,7 +43,7 @@ dev = [
   "mypy>=2.3.1",
   "pre-commit>=4.6.2",
   "pytest-lazy-fixtures>=1.4.1",
-  "ruff>=0.16.7",
+  "ruff>=0.16.9",
   "pytest-django>=4.14.0",
   "django-webtest>=1.9.14",
 ]
