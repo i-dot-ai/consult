@@ -19,7 +19,7 @@ stages:
       - ../../utils_gateway.py
       - ../../evaluators.py
       - ../../metrics.py
-      - ../../prompts.py
+      - ../../prompts
       - ../../../src/themefinder
       - ../../data/${dataset}
     params:

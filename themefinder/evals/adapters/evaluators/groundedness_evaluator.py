@@ -5,7 +5,7 @@ Sibling of CoverageEvaluator, which scores the reverse direction.
 
 from typing import Any
 
-from prompts import generation_eval_prompt
+from prompts.generation import generation_eval_prompt
 
 from .llm_judge_evaluator import DecisionScoredComparisonJudge
 

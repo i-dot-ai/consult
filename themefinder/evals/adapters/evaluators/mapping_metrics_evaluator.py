@@ -38,6 +38,11 @@ class MappingMetricsEvaluator(EvaluatorPort):
             for response_id in expected_mappings
             if response_id in output_labels
         ]
+        if not response_ids:
+            return [
+                Score(name, 0.0, "No scorable responses") for name in self.metric_names
+            ]
+
         comparison = pd.DataFrame(
             {
                 "expected": [expected_mappings.get(rid, []) for rid in response_ids],

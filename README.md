@@ -149,11 +149,33 @@ You can override these settings in your User Settings if you prefer different pe
 
 ### Running Evals
 
-Run one component through the shared evaluation framework from `themefinder/evals/`:
+Run a DVC-tracked evaluation pipeline from the repository root:
 
 ```bash
+uv run dvc repro themefinder/evals/dvc.yaml
+```
+
+The default dataset and component configuration live in
+`themefinder/evals/params.yaml`. To evaluate another dataset as a tracked DVC
+experiment—for example, a smaller CI smoke-test dataset—override its name:
+
+```bash
+uv run dvc exp run themefinder/evals/dvc.yaml \
+  -S themefinder/evals/params.yaml:dataset.name=gambling_XS
+```
+
+For an untracked, one-off component run, use the shared CLI directly:
+
+```bash
+cd themefinder/evals
 uv run --extra eval python run_eval.py --component generation --dataset gambling_XS
 ```
+
+Each DVC component stage intentionally generates responses and evaluates them
+together. Changing an evaluator prompt therefore reruns that component's task
+as well as its evaluation. Splitting those steps would avoid regeneration, but
+would substantially duplicate the pipeline and parameter configuration; the
+current evaluation datasets are small enough that the extra cost is acceptable.
 
 Use `make run-evals` for the quick multi-component benchmark or
 `make run-eval EVAL_TYPE=mapping` for one benchmark component.
