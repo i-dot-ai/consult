@@ -9,7 +9,7 @@ from django.db.models import Q
 from openpyxl.utils.exceptions import InvalidFileException
 from rest_framework import serializers, status
 from rest_framework.decorators import action
-from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
+from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, UpdateModelMixin
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -20,6 +20,7 @@ from consultations.api_v2.serializers import (
     ConsultationCreateSerializerV2,
     ConsultationFileUploadSerializerV2,
     ConsultationSerializer,
+    ConsultationUpdateSerializerV2,
 )
 from consultations.models import Consultation, FileUpload
 from ingest.consultation_file import import_consultation_data, read_consultation_file
@@ -28,8 +29,11 @@ from ingest.jobs import delete_consultation_job
 logger = settings.LOGGER
 
 
-class ConsultationViewSet(CreateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet):
+class ConsultationViewSet(
+    CreateModelMixin, UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet
+):
     permission_classes: ClassVar[list] = [IsAuthenticated, CanSeeConsultationV2 | IsAdminUser]
+    http_method_names: ClassVar[list] = ["get", "post", "patch", "delete"]
     filterset_fields: ClassVar[dict] = {"title": ["iexact"]}
 
     def get_permissions(self):
@@ -42,6 +46,8 @@ class ConsultationViewSet(CreateModelMixin, DestroyModelMixin, ReadOnlyModelView
             return ConsultationCreateSerializerV2
         if self.action == "upload":
             return ConsultationFileUploadSerializerV2
+        if self.action == "partial_update":
+            return ConsultationUpdateSerializerV2
         return ConsultationSerializer
 
     def perform_create(self, serializer):
