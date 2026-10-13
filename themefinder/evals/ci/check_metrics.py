@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from components import COMPONENT_NAMES
-from utils.results_utils import count_errors
+from utils.results import count_errors
 
 PASS, REGRESSION, INVALID = 0, 1, 2
 EPSILON = (

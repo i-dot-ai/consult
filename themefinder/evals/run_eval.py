@@ -14,7 +14,7 @@ from datasets import DatasetConfig
 from settings import EvalSettings, get_settings
 from utils import gateway
 from utils.logging_config import get_logger
-from utils.results_utils import count_errors
+from utils.results import count_errors
 
 from themefinder.llm import OpenAILLM
 
