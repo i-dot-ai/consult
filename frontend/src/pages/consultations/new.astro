@@ -5,7 +5,9 @@ import AddConsultationForm from "../../components/screens/AddConsultationForm/Ad
 
 import { getDataSetupV2Enabled } from "../../global/utils";
 
-if (!getDataSetupV2Enabled()) {
+const enableV2 = getDataSetupV2Enabled();
+
+if (!enableV2) {
   return Astro.rewrite("/404");
 }
 ---
