@@ -56,7 +56,8 @@ jobs:
           CONSULT_EVAL_LITELLM_API_KEY: ${{ secrets.CONSULT_EVAL_LITELLM_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           ENVIRONMENT: production
-        run: make eval-${{ inputs.tier }}
+          TIER: ${{ inputs.tier }}
+        run: make eval-$TIER
 
       - name: Upload results
         if: always()
