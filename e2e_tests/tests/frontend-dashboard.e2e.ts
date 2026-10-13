@@ -20,7 +20,7 @@ test.describe("Dashboard Page", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`/consultations/${consultationId}`);
+    await page.goto(`/consultations/${consultationId}/dashboard`);
     await page.waitForLoadState("networkidle");
   });
 
