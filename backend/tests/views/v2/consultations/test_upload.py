@@ -94,7 +94,10 @@ def test_v2_upload_rejects_xlsx_without_visible_worksheet(
     client, consultation, non_staff_user_token
 ):
     workbook = MagicMock(active=None)
-    with patch("ingest.consultation_file.load_workbook", return_value=workbook):
+    with (
+        patch("ingest.consultation_file.load_workbook", return_value=workbook),
+        patch("consultations.api_v2.views.consultation.logger.exception") as log_exception,
+    ):
         response = client.post(
             reverse("consultation-v2-upload", kwargs={"pk": consultation.id}),
             data={"file": SimpleUploadedFile("responses.xlsx", b"workbook")},
@@ -104,13 +107,15 @@ def test_v2_upload_rejects_xlsx_without_visible_worksheet(
     assert response.status_code == 400
     assert response.json()["file"] == "XLSX file has no visible worksheet."
     workbook.close.assert_called_once_with()
+    log_exception.assert_called_once_with(
+        "Error uploading file {file_name}",
+        file_name="responses.xlsx",
+    )
     assert not FileUpload.objects.exists()
 
 
 @pytest.mark.django_db
-def test_v2_upload_preserves_import_error_when_storage_cleanup_fails(
-    client, consultation, non_staff_user_token
-):
+def test_v2_upload_retains_file_when_import_fails(client, consultation, non_staff_user_token):
     import_error = RuntimeError("Import failed")
     with (
         patch(
@@ -119,9 +124,7 @@ def test_v2_upload_preserves_import_error_when_storage_cleanup_fails(
         ),
         patch(
             "consultations.api_v2.views.consultation.default_storage.delete",
-            side_effect=RuntimeError("Cleanup failed"),
-        ),
-        patch("consultations.api_v2.views.consultation.logger.warning") as warning,
+        ) as delete,
         pytest.raises(RuntimeError, match="Import failed") as raised,
     ):
         client.post(
@@ -131,7 +134,7 @@ def test_v2_upload_preserves_import_error_when_storage_cleanup_fails(
         )
 
     assert raised.value is import_error
-    warning.assert_called_once()
+    delete.assert_not_called()
     assert not FileUpload.objects.exists()
 
 

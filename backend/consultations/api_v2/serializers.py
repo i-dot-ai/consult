@@ -85,7 +85,7 @@ class ConsultationCreateSerializerV2(serializers.ModelSerializer):
 
 
 class ConsultationFileUploadSerializerV2(serializers.Serializer):
-    MAX_FILE_SIZE = 100 * 1024 * 1024
+    MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MiB
     ALLOWED_EXTENSIONS: ClassVar[set[str]] = {".csv", ".xlsx"}
 
     file = serializers.FileField(write_only=True)

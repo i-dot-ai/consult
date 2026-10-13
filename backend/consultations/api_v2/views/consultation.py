@@ -93,27 +93,21 @@ class ConsultationViewSet(CreateModelMixin, DestroyModelMixin, ReadOnlyModelView
             ValueError,
             BadZipFile,
         ) as error:
+            logger.exception(
+                "Error uploading file {file_name}",
+                file_name=uploaded_file.name,
+            )
             raise serializers.ValidationError({"file": str(error)}) from error
 
         file_upload = FileUpload(consultation=consultation, uploaded_by=request.user)
         extension = Path(uploaded_file.name).suffix.lower()
         requested_key = f"consultations/uploads/{consultation.id}/{file_upload.id}{extension}"
         file_upload.s3_key = default_storage.save(requested_key, uploaded_file)
-        try:
-            with transaction.atomic():
-                file_upload.save()
-                question_count, response_count = import_consultation_data(
-                    consultation, question_texts, response_rows
-                )
-        except Exception:
-            try:
-                default_storage.delete(file_upload.s3_key)
-            except Exception:  # noqa: BLE001 - cleanup must not mask the import error
-                logger.warning(
-                    "Failed to clean up uploaded file {s3_key}",
-                    s3_key=file_upload.s3_key,
-                )
-            raise
+        with transaction.atomic():
+            file_upload.save()
+            question_count, response_count = import_consultation_data(
+                consultation, question_texts, response_rows
+            )
 
         return Response(
             {
