@@ -92,7 +92,7 @@ class ConsultationViewSet(CreateModelMixin, DestroyModelMixin, ReadOnlyModelView
             ValueError,
             BadZipFile,
         ) as error:
-            logger.warning(
+            logger.exception(
                 "Error uploading file {file_name}",
                 file_name=uploaded_file.name,
             )

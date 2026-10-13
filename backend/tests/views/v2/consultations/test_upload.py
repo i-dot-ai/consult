@@ -96,7 +96,7 @@ def test_v2_upload_rejects_xlsx_without_visible_worksheet(
     workbook = MagicMock(active=None)
     with (
         patch("ingest.consultation_file.load_workbook", return_value=workbook),
-        patch("consultations.api_v2.views.consultation.logger.warning") as log_warning,
+        patch("consultations.api_v2.views.consultation.logger.exception") as log_exception,
     ):
         response = client.post(
             reverse("consultation-v2-upload", kwargs={"pk": consultation.id}),
@@ -107,7 +107,7 @@ def test_v2_upload_rejects_xlsx_without_visible_worksheet(
     assert response.status_code == 400
     assert response.json()["file"] == "XLSX file has no visible worksheet."
     workbook.close.assert_called_once_with()
-    log_warning.assert_called_once_with(
+    log_exception.assert_called_once_with(
         "Error uploading file {file_name}",
         file_name="responses.xlsx",
     )
