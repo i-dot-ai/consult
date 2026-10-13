@@ -96,7 +96,7 @@ def test_v2_upload_rejects_xlsx_without_visible_worksheet(
     workbook = MagicMock(active=None)
     with (
         patch("ingest.consultation_file.load_workbook", return_value=workbook),
-        patch("consultations.api_v2.views.consultation.logger.exception") as log_exception,
+        patch("consultations.api_v2.views.consultation.logger.warning") as log_warning,
     ):
         response = client.post(
             reverse("consultation-v2-upload", kwargs={"pk": consultation.id}),
@@ -107,7 +107,7 @@ def test_v2_upload_rejects_xlsx_without_visible_worksheet(
     assert response.status_code == 400
     assert response.json()["file"] == "XLSX file has no visible worksheet."
     workbook.close.assert_called_once_with()
-    log_exception.assert_called_once_with(
+    log_warning.assert_called_once_with(
         "Error uploading file {file_name}",
         file_name="responses.xlsx",
     )
@@ -135,7 +135,11 @@ def test_v2_upload_retains_file_when_import_fails(client, consultation, non_staf
 
     assert raised.value is import_error
     delete.assert_not_called()
-    assert not FileUpload.objects.exists()
+    file_upload = FileUpload.objects.get(consultation=consultation)
+    assert file_upload.uploaded_by_id is not None
+    assert file_upload.s3_key.endswith(".csv")
+    assert not Question.objects.filter(consultation=consultation).exists()
+    assert not Respondent.objects.filter(consultation=consultation).exists()
 
 
 @pytest.mark.django_db
@@ -167,7 +171,7 @@ def test_v2_upload_rejects_file_over_size_limit(client, consultation, non_staff_
         )
 
     assert response.status_code == 400
-    assert response.json()["file"] == ["File must not exceed 100 MiB."]
+    assert response.json()["file"] == ["File must not exceed 200 MiB."]
     assert not FileUpload.objects.exists()
 
 

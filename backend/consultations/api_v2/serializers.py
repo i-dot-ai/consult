@@ -85,7 +85,7 @@ class ConsultationCreateSerializerV2(serializers.ModelSerializer):
 
 
 class ConsultationFileUploadSerializerV2(serializers.Serializer):
-    MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MiB
+    MAX_FILE_SIZE = 200 * 1024 * 1024  # 200 MiB
     ALLOWED_EXTENSIONS: ClassVar[set[str]] = {".csv", ".xlsx"}
 
     file = serializers.FileField(write_only=True)
@@ -95,7 +95,7 @@ class ConsultationFileUploadSerializerV2(serializers.Serializer):
         if extension not in self.ALLOWED_EXTENSIONS:
             raise serializers.ValidationError("File must be a CSV or XLSX file.")
         if value.size > self.MAX_FILE_SIZE:
-            raise serializers.ValidationError("File must not exceed 100 MiB.")
+            raise serializers.ValidationError("File must not exceed 200 MiB.")
         return value
 
 

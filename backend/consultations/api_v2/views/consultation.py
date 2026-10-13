@@ -5,7 +5,6 @@ from zipfile import BadZipFile
 
 from django.conf import settings
 from django.core.files.storage import default_storage
-from django.db import transaction
 from django.db.models import Q
 from openpyxl.utils.exceptions import InvalidFileException
 from rest_framework import serializers, status
@@ -93,7 +92,7 @@ class ConsultationViewSet(CreateModelMixin, DestroyModelMixin, ReadOnlyModelView
             ValueError,
             BadZipFile,
         ) as error:
-            logger.exception(
+            logger.warning(
                 "Error uploading file {file_name}",
                 file_name=uploaded_file.name,
             )
@@ -103,11 +102,10 @@ class ConsultationViewSet(CreateModelMixin, DestroyModelMixin, ReadOnlyModelView
         extension = Path(uploaded_file.name).suffix.lower()
         requested_key = f"consultations/uploads/{consultation.id}/{file_upload.id}{extension}"
         file_upload.s3_key = default_storage.save(requested_key, uploaded_file)
-        with transaction.atomic():
-            file_upload.save()
-            question_count, response_count = import_consultation_data(
-                consultation, question_texts, response_rows
-            )
+        file_upload.save()
+        question_count, response_count = import_consultation_data(
+            consultation, question_texts, response_rows
+        )
 
         return Response(
             {
