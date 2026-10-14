@@ -9,6 +9,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Awaitable
 from typing import Any
 
+from constants import EVALUATOR_ERROR_PREFIX
 from eval_types import Case, Score
 from utils.logging_config import get_logger
 
@@ -37,7 +38,10 @@ class EvaluatorPort(ABC):
             return await scoring
         except Exception as e:
             logger.error(f"{self.name} evaluation failed: {e}")
-            return [Score(name, 0.0, f"Error: {e}") for name in self.metric_names]
+            return [
+                Score(name, 0.0, f"{EVALUATOR_ERROR_PREFIX} {e}")
+                for name in self.metric_names
+            ]
 
     @abstractmethod
     async def _score(self, case: Case, output: Any) -> list[Score]:

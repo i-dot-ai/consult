@@ -68,6 +68,17 @@ run-evals: ## Run themefinder LLM evals (quick mode)
 run-eval: ## Args e.g.: EVAL_TYPE=generation|mapping|condensation|refinement
 	cd themefinder/evals && uv run --extra eval python benchmark.py --quick --evals "$(EVAL_TYPE)"
 
+.PHONY: eval-smoke
+eval-smoke: ## Run every eval on the tiny gambling_XXS dataset via DVC; passes if the run succeeds
+	# The smoke- prefix tells these runs apart from other DVC experiments (dvc exp list/remove).
+	$(eval EVAL_SMOKE_NAME := smoke-$(or $(GITHUB_SHA),$(shell git rev-parse HEAD)))
+	cd themefinder/evals && uv run --extra eval dvc exp run -f -n $(EVAL_SMOKE_NAME) -S params.yaml:dataset.name=gambling_XXS
+
+.PHONY: eval-regression
+eval-regression: ## Run every eval on gambling_XS via DVC and fail if metrics drop below baseline
+	cd themefinder/evals && uv run --extra eval dvc repro -f
+	cd themefinder/evals && uv run --extra eval python -m ci.check_metrics --dataset gambling_XS $(if $(GITHUB_STEP_SUMMARY),--summary-file $(GITHUB_STEP_SUMMARY))
+
 .PHONY: run-benchmark
 run-benchmark: ## Run full themefinder benchmark (housing_S, 5 runs, all providers)
 	cd themefinder/evals && uv run --extra eval python benchmark.py --dataset housing_S --runs 5 --provider all --judge-model gpt-4.1
