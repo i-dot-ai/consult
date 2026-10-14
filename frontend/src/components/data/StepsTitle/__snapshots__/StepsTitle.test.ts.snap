@@ -46,6 +46,8 @@ exports[`StepsTitle > should match snapshot 1`] = `
       
       <!---->
        
+      <!---->
+       
       <div
         class="flex gap-2 items-center ml-1 mt-1.5 flex-wrap"
       >
