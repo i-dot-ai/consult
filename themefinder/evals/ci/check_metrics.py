@@ -98,7 +98,7 @@ def check_component(
         if abs(worse) < tol:
             result = "OK"
         else:
-            result = "REGRESSED" if worse > tol else "IMPROVED"
+            result = "REGRESSED" if worse >= tol else "IMPROVED"
 
         verdict.rows.append(Row(component, metric, score, base, tol, result))
 
