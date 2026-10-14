@@ -93,7 +93,8 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
   test("consultation dashboard displays key metrics and questions", async ({
     page,
   }) => {
-    if (!getDataSetupV2Enabled()) {
+    if (getDataSetupV2Enabled()) {
+      console.log(`Skipping: "consultation dashboard displays key metrics and questions"`);
       return;
     }
 
