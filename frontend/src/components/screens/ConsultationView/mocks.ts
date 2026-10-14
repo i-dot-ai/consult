@@ -114,3 +114,20 @@ export const userMock = {
   url: USER_URL,
   body: USER,
 };
+
+export const renameMock = {
+  url: CONSULTAITON_URL,
+  method: "PATCH",
+};
+
+export const renameThrowsMock = {
+  url: CONSULTAITON_URL,
+  method: "PATCH",
+  throws: new Error("Renaming has failed"),
+};
+
+export const renameErrorMock = {
+  url: CONSULTAITON_URL,
+  method: "PATCH",
+  status: 400,
+};

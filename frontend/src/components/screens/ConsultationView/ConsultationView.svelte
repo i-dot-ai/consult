@@ -38,6 +38,8 @@
     consultationId: string;
   }
 
+  type RenameInvalidReason = "" | "empty";
+
   let { consultationId = "" }: Props = $props();
 
   let isRenaming = $state(false);
@@ -59,6 +61,7 @@
   let userIsOwner = $derived(user.query?.data?.email === createdByEmail);
   let userIsAdmin = $derived(user.query?.data?.is_staff);
   let userCanDelete = $derived(userIsOwner || userIsAdmin);
+  let isRenameSaving = $derived(consultationRename.query.isPending);
 
   function getCreatedByText(createdBy: User | string | null) {
     if (!createdByEmail) {
@@ -172,11 +175,45 @@
     return content.userLinks;
   });
 
-  async function handleSubmitRename() {
-    await consultationRename.fetch({ body: { title: renameValue } });
+  function validateRenameValue(value: string): RenameInvalidReason {
+    if (!value) {
+      return "empty";
+    }
+    return "";
+  }
 
+  async function handleSubmitRename(event: Event) {
+    event.preventDefault();
+
+    const ERROR_TEXT = "Something went wrong while renaming this consultation.";
+
+    // Validate new consultation title value
+    const invalidReason = validateRenameValue(renameValue);
+    if (invalidReason) {
+      if (invalidReason === "empty") {
+        alertText = "New consultation name cannot be empty";
+      } else {
+        alertText = "New consultation name is invalid";
+      }
+      return;
+    }
+
+    // Handle if server returns an error status code
+    try {
+      await consultationRename.fetch({ body: { title: renameValue } });
+    } catch {
+      alertText = ERROR_TEXT;
+    }
+
+    // Handle if fetch itself errors
+    if (consultationRename.query.isError) {
+      alertText = ERROR_TEXT;
+    }
+
+    // Refresh consultation
     await consultation.fetch({});
 
+    // Toggle off renaming state
     isRenaming = false;
   }
 </script>
@@ -222,13 +259,17 @@
           />
         </div>
         <div class="my-auto" in:fade>
-          <Button variant="primary" size="sm" handleClick={handleSubmitRename}>
+          <Button variant="primary" size="sm" handleClick={handleSubmitRename} disabled={isRenameSaving}>
             <div class="text-xs flex gap-1 items-center">
               <MaterialIcon color="fill-white">
                 <Check />
               </MaterialIcon>
 
-              Save
+              {#if isRenameSaving}
+                Saving
+              {:else}
+                Save
+              {/if}
             </div>
           </Button>
         </div>
@@ -246,6 +287,7 @@
         size="sm"
         highlighted={isRenaming}
         highlightVariant="none"
+        disabled={isRenameSaving}
       >
         <div class="flex gap-1 items-center text-xs">
           <MaterialIcon color="fill-neutral-500">
