@@ -259,7 +259,12 @@
           />
         </div>
         <div class="my-auto" in:fade>
-          <Button variant="primary" size="sm" handleClick={handleSubmitRename} disabled={isRenameSaving}>
+          <Button
+            variant="primary"
+            size="sm"
+            handleClick={handleSubmitRename}
+            disabled={isRenameSaving}
+          >
             <div class="text-xs flex gap-1 items-center">
               <MaterialIcon color="fill-white">
                 <Check />
