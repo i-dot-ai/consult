@@ -67,22 +67,11 @@ class LLMJudgeEvaluator(EvaluatorPort):
         return json.loads(match.group(1) if match else text)
 
     @staticmethod
-    def _shuffle_themes(themes: list[dict] | dict) -> list[dict] | dict:
-        """Shuffle theme order to reduce positional bias, returning a copy in
-        the same shape (list or label-keyed dict) as the input.
-        TODO (PRO-633): can be simplified once all themes are lists again."""
-
-        if isinstance(themes, list):
-            shuffled = list(themes)
-            random.shuffle(shuffled)
-            return shuffled
-
-        if isinstance(themes, dict):
-            keys = list(themes.keys())
-            random.shuffle(keys)
-            return {k: themes[k] for k in keys}
-
-        return themes
+    def _shuffle_themes(themes: list[dict]) -> list[dict]:
+        """Shuffle a copy of theme records to reduce positional bias."""
+        shuffled = list(themes)
+        random.shuffle(shuffled)
+        return shuffled
 
     @abstractmethod
     def _build_prompt(self, case: Case, output: Any) -> str | None:

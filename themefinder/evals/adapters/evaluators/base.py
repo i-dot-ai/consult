@@ -48,16 +48,6 @@ class EvaluatorPort(ABC):
         """
 
     @staticmethod
-    def extract_theme_titles(themes: list[dict] | dict) -> list[str]:
-        """Pull display titles out of a themes collection, in either shape a
-        task output uses.
-
-        TODO (PRO-633): themes will be converted back to lists of records
-        everywhere (mapping needs `topic_id`), so the label-keyed dict branch
-        can be dropped then.
-        """
-        if isinstance(themes, list):
-            return [t.get("topic_label", t.get("topic", "")) for t in themes]
-        if isinstance(themes, dict):
-            return list(themes.keys())
-        return []
+    def extract_theme_titles(themes: list[dict]) -> list[str]:
+        """Pull display titles from a list of theme records."""
+        return [theme.get("topic_label", theme.get("topic", "")) for theme in themes]

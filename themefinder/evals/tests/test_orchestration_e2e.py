@@ -9,6 +9,7 @@ import pytest
 from adapters.artefact_stores import LocalJSONArtefactStore
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from component_runner import run_component
+from conftest import _themes
 from datasets import DatasetConfig
 from eval_types import Case, ComponentConfig, Score
 from fakes import FakeArtefactStore, FakeDatasetPort, FakeEvaluatorPort
@@ -37,7 +38,7 @@ async def test_environment_configuration_runs_complete_local_pipeline(
 
     async def task(inputs, llm):
         task_calls.append((inputs, llm))
-        return {"themes": {"Summary": inputs["question"]}}
+        return {"themes": _themes("Summary", description=inputs["question"])}
 
     evaluator = FakeEvaluatorPort([Score("quality", 1.0, "deterministic")])
     component_config = ComponentConfig(
@@ -125,7 +126,7 @@ async def test_environment_configuration_runs_langfuse_backend_combinations(
     )
 
     async def task(inputs, llm):
-        return {"themes": {"Summary": inputs["question"]}}
+        return {"themes": _themes("Summary", description=inputs["question"])}
 
     dataset_config = DatasetConfig(dataset="gambling_XS", component="generation")
     backends = backend_config.resolve_backends(
@@ -154,7 +155,7 @@ async def test_environment_configuration_runs_langfuse_backend_combinations(
     assert artefacts.recorded == artefacts.finished_with[0].outcomes
     assert results == {
         "question_part_1_output": {
-            "themes": {"Summary": "What changed?"},
+            "themes": _themes("Summary", description="What changed?"),
         },
         "question_part_1_quality": 1.0,
     }

@@ -56,3 +56,15 @@ def make_case(
 ) -> Case:
     """Shared Case test fixture builder for evaluator adapter tests."""
     return Case(id=case_id, inputs=inputs or {}, expected_output=expected_output)
+
+
+def _themes(*labels: str, description: str = "desc") -> list[dict[str, str]]:
+    """Build theme records in the canonical evaluator input shape."""
+    return [
+        {
+            "topic_id": f"theme-{index}",
+            "topic_label": label,
+            "topic_description": description,
+        }
+        for index, label in enumerate(labels)
+    ]

@@ -16,7 +16,7 @@ import pytest
 from adapters.evaluators.mapping_f1_evaluator import MappingF1Evaluator
 from adapters.evaluators.mapping_metrics_evaluator import MappingMetricsEvaluator
 from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
-from conftest import make_case
+from conftest import _themes, make_case
 from eval_types import Score
 
 
@@ -169,7 +169,7 @@ class TestRedundancyEvaluatorWithoutModel:
     async def test_fewer_than_two_titles_short_circuits(self):
         """Fewer than two themes means no pairs to compare, so redundancy is 0.0."""
         case = make_case()
-        output = {"themes": {"Only one theme": "desc"}}
+        output = {"themes": _themes("Only one theme")}
 
         scores = await RedundancyEvaluator().evaluate(case, output)
 
@@ -179,7 +179,7 @@ class TestRedundancyEvaluatorWithoutModel:
         """No themes short-circuits to a 0.0 redundancy score."""
         case = make_case()
 
-        scores = await RedundancyEvaluator().evaluate(case, {"themes": {}})
+        scores = await RedundancyEvaluator().evaluate(case, {"themes": []})
 
         assert scores == [Score("redundancy", 0.0, "0/0 pairs above threshold")]
 
@@ -193,7 +193,7 @@ class TestRedundancyEvaluatorWithoutModel:
             redundancy_module, "_get_sentence_model", _raise_import_error
         )
         case = make_case()
-        output = {"themes": {"A": "desc", "B": "desc"}}
+        output = {"themes": _themes("A", "B")}
 
         scores = await RedundancyEvaluator().evaluate(case, output)
 
@@ -258,7 +258,7 @@ class TestRedundancyEvaluatorWithModel:
             ]
         )
         case = make_case()
-        output = {"themes": {"A": "desc", "B": "desc", "C": "desc"}}
+        output = {"themes": _themes("A", "B", "C")}
 
         scores = await RedundancyEvaluator(threshold=0.85).evaluate(case, output)
 
@@ -273,7 +273,7 @@ class TestRedundancyEvaluatorWithModel:
         """No pair above the threshold scores 0.0."""
         patched_similarity.set_matrix([[1.0, 0.1], [0.1, 1.0]])
         case = make_case()
-        output = {"themes": {"A": "desc", "B": "desc"}}
+        output = {"themes": _themes("A", "B")}
 
         scores = await RedundancyEvaluator(threshold=0.85).evaluate(case, output)
 
@@ -283,7 +283,7 @@ class TestRedundancyEvaluatorWithModel:
         """A custom threshold changes which pairs count as redundant."""
         patched_similarity.set_matrix([[1.0, 0.5], [0.5, 1.0]])
         case = make_case()
-        output = {"themes": {"A": "desc", "B": "desc"}}
+        output = {"themes": _themes("A", "B")}
 
         scores = await RedundancyEvaluator(threshold=0.4).evaluate(case, output)
 
@@ -294,7 +294,7 @@ class TestRedundancyEvaluatorWithModel:
         """Wiring: the titles extracted from the output themes are what reach `.encode()`."""
         patched_similarity.set_matrix([[1.0, 0.1], [0.1, 1.0]])
         case = make_case()
-        output = {"themes": {"A": "desc", "B": "desc"}}
+        output = {"themes": _themes("A", "B")}
 
         await RedundancyEvaluator().evaluate(case, output)
 
