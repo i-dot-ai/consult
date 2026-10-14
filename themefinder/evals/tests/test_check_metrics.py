@@ -42,7 +42,7 @@ class TestCheckComponent:
     def test_within_tolerance_passes(self):
         v = self.run_component(payload([{"f1": 0.75}, {"f1": 0.77}]))
         assert not v.invalid and not v.regressions
-        assert v.rows[0].status == "ok"
+        assert v.rows[0].status == "OK"
 
     def test_mean_across_cases_is_used(self):
         v = self.run_component(payload([{"f1": 0.9}, {"f1": 0.5}]))  # mean 0.7

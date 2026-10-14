@@ -35,7 +35,7 @@ class Row:
 class ComponentVerdict:
     component: str
     rows: list[Row] = field(default_factory=list)
-    invalid: list[str] = field(default_factory=list)
+    invalid: str | None = None
     regressions: list[str] = field(default_factory=list)
 
 
@@ -57,50 +57,54 @@ def summarise_payload(payload: dict) -> tuple[dict[str, float], int, int]:
     return means, len(outcomes), count_errors(payload)
 
 
+def metric_means(payload: dict | None, baseline: dict | None) -> dict[str, float]:
+    """Return per-metric means, or raise ValueError with the first reason the run can't be judged."""
+    if payload is None or baseline is None:
+        raise ValueError("cannot read results or baseline file")
+    try:
+        means, n_cases, n_errors = summarise_payload(payload)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError(
+            f"malformed results, {exc!r} (was the local artefact store used?)"
+        ) from exc
+    if n_errors or not n_cases:
+        raise ValueError(
+            f"{n_cases} cases evaluated, {n_errors} case or evaluator errors"
+        )
+    return means
+
+
 def check_component(
     component: str, payload: dict | None, baseline: dict | None
 ) -> ComponentVerdict:
     verdict = ComponentVerdict(component)
-    if baseline is None:
-        verdict.invalid.append("cannot read baseline file")
-    if payload is None:
-        verdict.invalid.append("cannot read results file")
-    if verdict.invalid:
-        return verdict
-    if not {"outcomes", "errors"} <= payload.keys():
-        verdict.invalid.append(
-            "results file lacks 'outcomes'/'errors' (was the local artefact store used?)"
-        )
-        return verdict
-
     try:
-        means, n_cases, n_errors = summarise_payload(payload)
-    except (KeyError, TypeError, ValueError) as exc:
-        verdict.invalid.append(f"malformed results: {exc}")
+        means = metric_means(payload, baseline)
+    except ValueError as exc:
+        verdict.invalid = str(exc)
         return verdict
-    if n_cases == 0:
-        verdict.invalid.append("no cases were evaluated")
-    if n_errors:
-        verdict.invalid.append(f"{n_errors} case or evaluator errors")
 
     for metric, spec in sorted(baseline["metrics"].items()):
         score = means.get(metric)
-        base, tol = spec["baseline"], spec["tolerance"]
+        base, tol = spec["baseline"], spec["tolerance"] + EPSILON
         if score is None:
             verdict.rows.append(Row(component, metric, None, base, tol, "MISSING"))
             verdict.regressions.append(f"{component}.{metric} missing from results")
             continue
+
         # How much worse than baseline; metrics like redundancy are worse when they rise.
         worse = score - base if spec.get("direction") == "lower" else base - score
-        if worse > tol + EPSILON:
-            verdict.rows.append(Row(component, metric, score, base, tol, "REGRESSED"))
-            verdict.regressions.append(
-                f"{component}.{metric} {score:.3f} vs baseline {base:.3f} (tolerance {tol:.3f})"
-            )
-        elif -worse > tol + EPSILON:
-            verdict.rows.append(Row(component, metric, score, base, tol, "IMPROVED"))
+
+        if abs(worse) < tol:
+            result = "OK"
         else:
-            verdict.rows.append(Row(component, metric, score, base, tol, "ok"))
+            result = "REGRESSED" if worse > tol else "IMPROVED"
+
+        verdict.rows.append(Row(component, metric, score, base, tol, result))
+
+        if result == "REGRESSED":
+            verdict.regressions.append(f"{component}.{metric} regressed by {worse:.3f}")
+
     return verdict
 
 
@@ -118,7 +122,7 @@ def render_summary(verdicts: Sequence[ComponentVerdict], dataset: str) -> str:
                 f"| {r.component} | {r.metric} | {score} | {r.baseline:.3f} "
                 f"| {r.tolerance:.3f} | {r.status} |"
             )
-    problems = [f"- **{v.component}**: {msg}" for v in verdicts for msg in v.invalid]
+    problems = [f"- **{v.component}**: {v.invalid}" for v in verdicts if v.invalid]
     if problems:
         lines += ["", "Invalid results:", *problems]
     if any(r.status == "IMPROVED" for v in verdicts for r in v.rows):
