@@ -14,7 +14,9 @@ class GroundednessEvaluator(DecisionScoredComparisonJudge):
     prompt_fn = staticmethod(generation_eval_prompt)
     metric_names = ("groundedness",)
     threshold_label = "themes below threshold"
-    shuffle = True
+
+    def __init__(self, *args, shuffle: bool = True, **kwargs):
+        super().__init__(*args, **kwargs, shuffle=shuffle)
 
     def _topic_order(self, case_themes: Any, output_themes: Any) -> tuple[Any, Any]:
         """Score generated (output) themes against expected (case) themes, so
