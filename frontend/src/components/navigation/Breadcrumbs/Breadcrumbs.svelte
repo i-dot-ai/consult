@@ -2,7 +2,7 @@
   import clsx from "clsx";
 
   import {
-    getConsultationDetailUrl,
+    getConsultationDashboardUrl,
     getFinaliseThemesUrl,
     Routes,
   } from "../../../global/routes";
@@ -63,7 +63,7 @@
     },
     {
       text: "Analyse",
-      url: getConsultationDetailUrl(consultationId),
+      url: getConsultationDashboardUrl(consultationId),
     },
   ]);
 </script>

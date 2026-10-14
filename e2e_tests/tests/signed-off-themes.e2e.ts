@@ -57,7 +57,7 @@ test.describe("Signed Off Themes", () => {
   });
 
   test("consultation should be in analysis stage", async ({ page }) => {
-    await page.goto(`/consultations/${consultationId}`);
+    await page.goto(`/consultations/${consultationId}/dashboard`);
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText(signedOffConsultation.title).first()).toBeVisible();

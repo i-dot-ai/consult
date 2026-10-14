@@ -299,7 +299,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
               <a
                 aria-label="View Consultation 4"
                 class="transition-colors duration-300 text-primary hover:underline"
-                data-testid="View Consultation 4"
+                data-testid="consultation-link"
                 href="/support/consultations/c-four"
                 role="button"
                 tabindex="0"
@@ -335,7 +335,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
               <a
                 aria-label="View Consultation 1"
                 class="transition-colors duration-300 text-primary hover:underline"
-                data-testid="View Consultation 1"
+                data-testid="consultation-link"
                 href="/support/consultations/c-one"
                 role="button"
                 tabindex="0"
@@ -371,7 +371,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
               <a
                 aria-label="View Consultation 3"
                 class="transition-colors duration-300 text-primary hover:underline"
-                data-testid="View Consultation 3"
+                data-testid="consultation-link"
                 href="/support/consultations/c-three"
                 role="button"
                 tabindex="0"
@@ -407,7 +407,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
               <a
                 aria-label="View Consultation 2"
                 class="transition-colors duration-300 text-primary hover:underline"
-                data-testid="View Consultation 2"
+                data-testid="consultation-link"
                 href="/support/consultations/c-two"
                 role="button"
                 tabindex="0"

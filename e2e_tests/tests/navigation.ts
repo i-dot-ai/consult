@@ -1,25 +1,25 @@
 import { expect } from "@playwright/test";
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
+
+interface LinkItem {
+  link: Locator;
+  href: string;
+}
 
 /**
  * Finds the first consultation link that points to an actual consultation detail
  * page (not the consultations list page itself, and not a static sub-route like
  * /consultations/new).
  */
-export async function getFirstConsultationLink(page: Page) {
-  const allLinks = page.locator('a[href*="/consultations/"]');
-  const count = await allLinks.count();
-  const consultationDetailHref =
-    /\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+export async function getFirstConsultationLink(page: Page): Promise<LinkItem | null> {
+  const allLinks = await page.locator(`a[data-testid*="consultation-link"]`).all();
 
-  for (let i = 0; i < count; i++) {
-    const link = allLinks.nth(i);
-    const href = await link.getAttribute("href");
-    if (href && consultationDetailHref.test(href)) {
-      return { link, href };
-    }
-  }
-  return null;
+  const processedLinks = allLinks.map(async (linkEl) => ({
+    link: linkEl,
+    href: await linkEl.getAttribute("href") || "",
+  }));
+
+  return processedLinks.length > 0 ? processedLinks[0] : null;
 }
 
 /**
@@ -58,7 +58,7 @@ export async function gotoFinaliseThemesList(
     );
   }
 
-  const finaliseThemesLink = page.getByTestId(
+  const finaliseThemesLink = page.getByLabel(
     `Finalise themes for consultation: ${consultationTitle}`,
   );
   // Guard against a duplicate testId regression before clicking.

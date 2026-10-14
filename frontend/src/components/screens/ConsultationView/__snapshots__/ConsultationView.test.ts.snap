@@ -1,0 +1,471 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ConsultationView > should match snapshot after loading 1`] = `
+<div>
+  <section>
+    <!---->
+  </section>
+   
+  <div
+    class="mt-8 mb-4"
+  >
+    <!---->
+    <a
+      aria-label="Back to all consultations"
+      class="transition-colors duration-300 text-primary hover:underline"
+      data-testid="Back to all consultations"
+      href="/consultations"
+      role="button"
+      tabindex="0"
+      title=""
+    >
+      <!---->
+      Back to Consultations
+      
+      
+    </a>
+    
+    <!---->
+  </div>
+   
+  <section>
+    <div
+      class="flex gap-2 items-center"
+    >
+      <!---->
+      <h2
+        class="text-neutral-700 text-lg"
+      >
+        <!---->
+        <!---->
+        Dummy Consultation at Analysis Stage
+        
+        
+        
+      </h2>
+      
+      <!---->
+       
+      <div
+        class="my-auto flex gap-2"
+      >
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          data-variant="gray"
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          <div
+            class="flex gap-1 items-center text-xs"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="1rem"
+              viewBox="0 -960 960 960"
+              width="1rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+             Rename
+          </div>
+          
+          
+          
+        </button>
+        
+        <!---->
+         
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border border-red-700 bg-transparent text-red-700 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-red-800 hover:text-white svelte-1d0mdzt"
+          data-variant="danger"
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          <div
+            class="flex gap-1 items-center text-xs delete-button"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-red-700"
+              height="1rem"
+              viewBox="0 -960 960 960"
+              width="1rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <path
+                d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              <!---->
+            </svg>
+            <!---->
+             Delete
+          </div>
+          
+          
+          
+        </button>
+        
+        <!---->
+      </div>
+    </div>
+     
+    <!---->
+     
+    <p
+      class="text-neutral-500 text-sm mt-2"
+    >
+      Created by an unknown user on 1/29/2026. Only you can see it so far.
+    </p>
+  </section>
+   
+  <section>
+    <div
+      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      data-testid="panel-component"
+    >
+      <div
+        class="pt-2 pb-8 px-2"
+      >
+        <div
+          class="mb-3"
+        >
+          <div
+            class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-secondary bg-teal-50 border border-teal-400"
+          >
+            Analysis
+            <!---->
+          </div>
+          <!---->
+        </div>
+         
+        <p
+          class="text-neutral-700 text-sm"
+        >
+          Every response is assigned to a theme. Check the assignments before you report.
+        </p>
+         
+        <div
+          class="mt-4"
+        >
+          <!---->
+          <button
+            aria-pressed="false"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+            data-variant="primary"
+            role="button"
+            tabindex="0"
+          >
+            <!---->
+            <!---->
+            View Dashboard
+            
+            
+            
+          </button>
+          
+          <!---->
+        </div>
+      </div>
+      <!---->
+    </div>
+    <!---->
+  </section>
+   
+  <section>
+    <!---->
+    <h3
+      class="text-neutral-700 text-md"
+    >
+      <!---->
+      <!---->
+      <span
+        class="font-[500]"
+      >
+        This consultation
+      </span>
+      
+      
+      
+    </h3>
+    
+    <!---->
+     
+    <hr
+      class="my-2"
+    />
+     
+    <div
+      class="my-3 ml-2"
+    >
+      <!---->
+      <a
+        aria-label="Add and remove people on this consultation"
+        class="transition-colors duration-300 text-primary hover:underline"
+        data-testid="Add and remove people on this consultation"
+        href="/consultations/test-consultation/users"
+        role="button"
+        tabindex="0"
+        title=""
+      >
+        <!---->
+        Manage people
+        
+        
+      </a>
+      
+      <!---->
+       
+      <p
+        class="text-sm text-neutral-500"
+      >
+        Add and remove people on this consultation
+      </p>
+    </div>
+    <hr
+      class="my-2"
+    />
+     
+    <div
+      class="my-3 ml-2"
+    >
+      <!---->
+      <a
+        aria-label="Every response, as it was uploaded"
+        class="transition-colors duration-300 text-primary hover:underline"
+        data-testid="Every response, as it was uploaded"
+        href="/consultations/test-consultation/answers"
+        role="button"
+        tabindex="0"
+        title=""
+      >
+        <!---->
+        View all responses
+        
+        
+      </a>
+      
+      <!---->
+       
+      <p
+        class="text-sm text-neutral-500"
+      >
+        Every response, as it was uploaded
+      </p>
+    </div>
+    <!---->
+  </section>
+  <!---->
+   
+  <!---->
+  
+  <!---->
+  
+</div>
+`;
+
+exports[`ConsultationView > should match snapshot initially 1`] = `
+<div>
+  <section>
+    <!---->
+  </section>
+   
+  <div
+    class="mt-8 mb-4"
+  >
+    <!---->
+    <a
+      aria-label="Back to all consultations"
+      class="transition-colors duration-300 text-primary hover:underline"
+      data-testid="Back to all consultations"
+      href="/consultations"
+      role="button"
+      tabindex="0"
+      title=""
+    >
+      <!---->
+      Back to Consultations
+      
+      
+    </a>
+    
+    <!---->
+  </div>
+   
+  <section>
+    <div
+      class="flex gap-2 items-center"
+    >
+      <!---->
+      <h2
+        class="text-neutral-700 text-lg"
+      >
+        <!---->
+        <!---->
+        
+        
+        
+        
+      </h2>
+      
+      <!---->
+       
+      <div
+        class="my-auto flex gap-2"
+      >
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          data-variant="gray"
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          <div
+            class="flex gap-1 items-center text-xs"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="1rem"
+              viewBox="0 -960 960 960"
+              width="1rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+             Rename
+          </div>
+          
+          
+          
+        </button>
+        
+        <!---->
+         
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border border-red-700 bg-transparent text-red-700 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-red-800 hover:text-white svelte-1d0mdzt"
+          data-variant="danger"
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          <div
+            class="flex gap-1 items-center text-xs delete-button"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-red-700"
+              height="1rem"
+              viewBox="0 -960 960 960"
+              width="1rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <path
+                d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              <!---->
+            </svg>
+            <!---->
+             Delete
+          </div>
+          
+          
+          
+        </button>
+        
+        <!---->
+      </div>
+    </div>
+     
+    <!---->
+     
+    <p
+      class="text-neutral-500 text-sm mt-2"
+    >
+      Created by an unknown user on Invalid Date. undefined people can see it.
+    </p>
+  </section>
+   
+  <section>
+    <div
+      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      data-testid="panel-component"
+    >
+      <div
+        class="pt-2 pb-8 px-2"
+      >
+        <div
+          class="mb-3"
+        >
+          <div
+            class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800"
+          >
+            
+            <!---->
+          </div>
+          <!---->
+        </div>
+         
+        <p
+          class="text-neutral-700 text-sm"
+        >
+          
+        </p>
+         
+        <div
+          class="mt-4"
+        >
+          <p
+            class="text-neutral-700 text-sm"
+          >
+            Nothing else can start until this finishes.
+          </p>
+          <!---->
+        </div>
+      </div>
+      <!---->
+    </div>
+    <!---->
+  </section>
+   
+  <!---->
+   
+  <!---->
+  
+  <!---->
+  
+</div>
+`;
