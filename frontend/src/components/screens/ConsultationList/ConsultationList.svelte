@@ -358,7 +358,7 @@
               <Link
                 {ariaLabel}
                 href={url}
-                testId={`consultation-link ${ariaLabel}`}
+                testId={`${text === "View Consultation" ? "consultation-link" : ""}${ariaLabel}`}
               >
                 {text}
               </Link>
