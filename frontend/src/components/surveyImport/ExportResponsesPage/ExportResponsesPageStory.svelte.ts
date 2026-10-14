@@ -2,7 +2,7 @@ import ExportResponsesPage from "./ExportResponsesPage.svelte";
 import { CONSULTATION_ID, updateErrorMock, updateMock } from "./mocks";
 
 const consultationId = $state(CONSULTATION_ID);
-const dataSource = $state("qualtrics");
+const dataSource = $state("citizen-space");
 
 export default {
   name: "ExportResponsesPage",
@@ -24,11 +24,13 @@ export default {
   stories: [
     {
       name: "Nothing Saved Yet",
+      mocks: [updateMock],
       props: { consultationId: CONSULTATION_ID, dataSource: null },
     },
     {
-      name: "Citizen Space Saved",
-      props: { consultationId: CONSULTATION_ID, dataSource: "citizen-space" },
+      name: "Qualtrics Saved",
+      mocks: [updateMock],
+      props: { consultationId: CONSULTATION_ID, dataSource: "qualtrics" },
     },
     {
       name: "Save Fails",

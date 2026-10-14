@@ -2,27 +2,32 @@
 
 exports[`OutsideConsultTag > matches snapshot 1`] = `
 <div>
-  <span
-    class="inline-flex items-center gap-[5px] rounded-[5px] border border-[#b1b4b6] bg-[#f2f2f2] px-[7px] py-0.5 text-[13px] text-[#505a5f]"
+  <div
+    class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800 border border-neutral-300"
   >
-    <svg
-      aria-hidden="true"
-      class="fill-[#505a5f]"
-      height="11px"
-      viewBox="0 -960 960 960"
-      width="11px"
-      xmlns="http://www.w3.org/2000/svg"
+    <span
+      class="flex items-center gap-1"
     >
-      <!---->
-      <path
-        d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"
+      <svg
+        aria-hidden="true"
+        class="fill-neutral-500"
+        height="0.8rem"
+        viewBox="0 -960 960 960"
+        width="0.8rem"
         xmlns="http://www.w3.org/2000/svg"
-      />
+      >
+        <!---->
+        <path
+          d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"
+          xmlns="http://www.w3.org/2000/svg"
+        />
+        <!---->
+      </svg>
       <!---->
-    </svg>
+       Happens outside Consult
+    </span>
     <!---->
-     Happens outside Consult
-  </span>
+  </div>
   
 </div>
 `;
