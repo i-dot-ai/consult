@@ -130,9 +130,9 @@
       ...(enableV2
         ? {
             status: consultation.stage,
-            links: buildLinkData(consultation, user?.query?.data?.is_staff),
           }
         : {}),
+      links: buildLinkData(consultation, user?.query?.data?.is_staff),
       createdAt: consultation.created_at,
       createdBy:
         typeof consultation.created_by === "string"
@@ -280,13 +280,13 @@
                 key: "status",
                 sortable: true,
               },
-              {
-                label: "Links",
-                key: "links",
-                sortable: false,
-              },
             ] as const)
           : []),
+        {
+          label: "Links",
+          key: "links",
+          sortable: false,
+        },
         {
           label: "Date Created",
           key: "createdAt",
