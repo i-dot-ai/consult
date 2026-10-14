@@ -58,7 +58,7 @@ export async function gotoFinaliseThemesList(
     );
   }
 
-  const finaliseThemesLink = page.getByTestId(
+  const finaliseThemesLink = page.getByLabel(
     `Finalise themes for consultation: ${consultationTitle}`,
   );
   // Guard against a duplicate testId regression before clicking.

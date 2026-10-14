@@ -199,3 +199,7 @@ export async function goToConsultationQuestion(page: Page, consultationId: strin
     await page.goto(`consultations/${consultationId}/questions/${questionID}`);
     await page.waitForLoadState('networkidle');
 }
+
+export function getDataSetupV2Enabled() {
+  return process.env.PUBLIC_DATA_SETUP_V2_ENABLED === 'true';
+}
