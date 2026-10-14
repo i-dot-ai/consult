@@ -93,7 +93,7 @@
     {#if column.key === "name"}
       {@const linkData = row[column.key] as LinkData}
 
-      <Link href={linkData.url} ariaLabel={linkData.ariaLabel}>
+      <Link href={linkData.url} ariaLabel={linkData.ariaLabel} testId="consultation-link">
         {linkData.text}
       </Link>
     {:else}

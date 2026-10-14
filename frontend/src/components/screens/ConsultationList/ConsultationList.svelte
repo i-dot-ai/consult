@@ -355,7 +355,7 @@
 
           {#each links as { url, text, ariaLabel }, i (i)}
             <div class="flex flex-col gap-2">
-              <Link {ariaLabel} href={url} testId={ariaLabel}>
+              <Link {ariaLabel} href={url} testId={`consultation-link ${ariaLabel}`}>
                 {text}
               </Link>
             </div>

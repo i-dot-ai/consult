@@ -101,7 +101,7 @@ test.describe('Consultation Details - Adding Users', () => {
 
   test('Ensure that adding a user to a consultation persists and shows up in the consultation details', async ({ page }) => {
     // Navigate to the consultation details page
-    const result = await getFirstConsultationLink(page, true);
+    const result = await getFirstConsultationLink(page);
     expect(result).toBeTruthy();
     const consultationId = getConsultationId(result!.href);
     await page.goto(`/support/consultations/${consultationId}/users/new`);
@@ -119,7 +119,7 @@ test.describe('Consultation Details - Adding Users', () => {
   });
 
   test('Ensure that deleted user is removed from consultation details', async ({ page }) => {
-    const result = await getFirstConsultationLink(page, true);
+    const result = await getFirstConsultationLink(page);
     expect(result).toBeTruthy();
     const consultationId = getConsultationId(result!.href);
     // First create a user and add to the consultation
