@@ -8,10 +8,10 @@ from typing import Any
 from eval_types import Case, Score
 from prompts.generation import title_specificity_eval_prompt
 
-from .llm_judge_evaluator import LLMJudgeEvaluator
+from .llm_judge_evaluator import SinglePromptJudgeEvaluator
 
 
-class TitleSpecificityEvaluator(LLMJudgeEvaluator):
+class TitleSpecificityEvaluator(SinglePromptJudgeEvaluator):
     prompt_fn = staticmethod(title_specificity_eval_prompt)
     metric_names = ("specificity",)
 
