@@ -51,6 +51,9 @@ import AddConsultationFormStory from "../screens/AddConsultationForm/AddConsulta
 import ConsultationViewStory from "../screens/ConsultationView/ConsultationViewStory.svelte";
 import StepTitleStory from "../surveyImport/StepTitle/StepTitleStory.svelte";
 import OverviewStory from "../screens/surveyImport/Overview/OverviewStory.svelte";
+import OutsideConsultTagStory from "../surveyImport/OutsideConsultTag/OutsideConsultTagStory.svelte";
+import RadioCardsStory from "../inputs/RadioCards/RadioCardsStory.svelte";
+import ExportResponsesPageStory from "../surveyImport/ExportResponsesPage/ExportResponsesPageStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -128,4 +131,7 @@ export default [
   ConsultationViewStory,
   StepTitleStory,
   OverviewStory,
+  OutsideConsultTagStory,
+  RadioCardsStory,
+  ExportResponsesPageStory,
 ] as Story[];

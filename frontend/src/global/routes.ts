@@ -30,7 +30,7 @@ export enum Suffixes {
   DeleteQuestions = "delete-questions",
   Answers = "answers",
   Dashboard = "dashboard",
-  StepOne = "step-1",
+  SelectProvider = "select-provider",
 }
 
 export enum Routes {
@@ -74,6 +74,10 @@ export enum Routes {
 export const getApiConsultationsRootUrl = () => {
   const prefix = getDataSetupV2Enabled() ? Prefixes.ApiV2 : Prefixes.ApiV1;
   return urlJoin(prefix, Suffixes.Consultations, "/");
+};
+
+export const getApiConsultationV2Url = (consultationId: string) => {
+  return urlJoin(getApiConsultationsRootUrl(), consultationId, "/");
 };
 
 export const getConsultationViewUrl = (consultationId: string) => {
@@ -578,15 +582,6 @@ export const getDataUploadUrl = (consultationId: string) => {
   // TODO: Subject to change, update accordingly
   return urlJoin(Routes.Consultations, consultationId, Suffixes.DataUpload);
 };
-export const getDataUploadStepOneUrl = (consultationId: string) => {
-  // TODO: Subject to change, update accordingly
-  return urlJoin(
-    Routes.Consultations,
-    consultationId,
-    Suffixes.DataUpload,
-    Suffixes.StepOne,
-  );
-};
 
 export const getDataUploadFinaliseUrl = (consultationId: string) => {
   return urlJoin(
@@ -614,4 +609,13 @@ export const getConsultationUsersUrl = (consultationId: string) => {
 export const getConsultationAnswersUrl = (consultationId: string) => {
   // TODO: Subject to change, update accordingly
   return urlJoin(Routes.Consultations, consultationId, Suffixes.Answers);
+};
+
+export const getDataUploadSelectProviderUrl = (consultationId: string) => {
+  return urlJoin(
+    Routes.Consultations,
+    consultationId,
+    Suffixes.DataUpload,
+    Suffixes.SelectProvider,
+  );
 };
