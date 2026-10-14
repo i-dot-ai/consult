@@ -1,5 +1,4 @@
 import { buildQuery, type FetchError } from "../../queryClient";
-import { getDataSetupV2Enabled } from "../../utils";
 import {
   consultationQueryParts,
   consultationsQueryParts,
@@ -22,10 +21,6 @@ export function buildConsultationV2CreateQuery(
   onSuccess: (data: ConsultationV2CreateResponse) => Promise<void>,
   onError: (error: FetchError<unknown>) => Promise<void>,
 ) {
-  if (!getDataSetupV2Enabled()) {
-    throw new Error("Creating consultations requires data setup v2");
-  }
-
   return buildQuery<ConsultationV2CreateResponse>(
     consultationsV2QueryParts.url(),
     {
@@ -66,10 +61,6 @@ export const updateConsultation = async (
 };
 
 export function buildConsultationsV2ByTitleQuery(title: string) {
-  if (!getDataSetupV2Enabled()) {
-    throw new Error("Looking up consultations by title requires data setup v2");
-  }
-
   const params = new URLSearchParams({ title__iexact: title });
 
   return buildQuery<ConsultationsV2GetResponse>(

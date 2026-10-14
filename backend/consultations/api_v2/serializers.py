@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, ClassVar
 
 from django.utils import timezone
@@ -81,6 +82,36 @@ class ConsultationCreateSerializerV2(serializers.ModelSerializer):
         model = Consultation
         fields: ClassVar[list] = ["id", "title"]
         read_only_fields: ClassVar[list] = ["id"]
+
+
+class ConsultationFileUploadSerializerV2(serializers.Serializer):
+    MAX_FILE_SIZE = 200 * 1024 * 1024  # 200 MiB
+    ALLOWED_EXTENSIONS: ClassVar[set[str]] = {".csv", ".xlsx"}
+
+    file = serializers.FileField(write_only=True)
+
+    def validate_file(self, value):
+        extension = Path(value.name).suffix.lower()
+        if extension not in self.ALLOWED_EXTENSIONS:
+            raise serializers.ValidationError("File must be a CSV or XLSX file.")
+        if value.size > self.MAX_FILE_SIZE:
+            raise serializers.ValidationError("File must not exceed 200 MiB.")
+        return value
+
+
+class ConsultationUpdateSerializerV2(serializers.ModelSerializer):
+    class Meta:
+        model = Consultation
+        fields: ClassVar[list] = ["id", "title", "data_source"]
+        read_only_fields: ClassVar[list] = ["id"]
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        # Pipeline jobs write stage and running_job concurrently; a full save would revert them.
+        if validated_data:
+            instance.save(update_fields=[*validated_data, "modified_at"])
+        return instance
 
 
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
