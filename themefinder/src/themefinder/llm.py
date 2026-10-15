@@ -27,7 +27,11 @@ class LLMResponse:
 
 
 class GatewayMetricsError(RuntimeError):
-    """Raised when the LLM gateway does not return its required metric headers."""
+    """Raised when the LLM gateway does not return required metric headers.
+
+    Metric-collecting evaluation runs fail fast rather than persisting partial
+    or zero-valued metrics. All supported evaluation models use the gateway.
+    """
 
 
 @dataclass(frozen=True)
@@ -201,7 +205,7 @@ class OpenAILLM:
 
     def __init__(
         self,
-        model,
+        model: str,
         request_kwargs: dict | None = None,
         **client_kwargs,
     ):

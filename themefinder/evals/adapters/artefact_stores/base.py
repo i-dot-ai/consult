@@ -104,7 +104,7 @@ def build_results_payload(
         serialise_outcome(outcome) for outcome in report.outcomes
     ]
 
-    payload = {
+    return {
         "component": component,
         "dataset": dataset,
         "results": flatten_run_report(report),
@@ -115,6 +115,3 @@ def build_results_payload(
             if outcome.error is not None
         },
     }
-    if report.metrics is not None:
-        payload["metrics"] = json_safe(report.metrics)
-    return payload

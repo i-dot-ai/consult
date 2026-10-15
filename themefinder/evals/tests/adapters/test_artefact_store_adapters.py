@@ -186,7 +186,8 @@ class TestLocalJSONArtefactStore:
             "output_tokens": 25,
             "total_tokens": 125,
         }
-        assert payload["metrics"] == expected_metrics
+        assert payload["results"]["metrics"] == expected_metrics
+        assert "metrics" not in payload
         assert results["metrics"] == expected_metrics
 
 
