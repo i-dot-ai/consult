@@ -12,13 +12,6 @@ class InformationEquivalenceEvaluator(BinaryMatchJudgeEvaluator):
 
     metric_names = ("information_equivalence",)
 
-    @staticmethod
-    def _format_theme(theme: dict[str, str]) -> str:
-        """Combine the canonical theme label and description for the judge."""
-        label = theme["topic_label"].strip()
-        description = theme["topic_description"].strip()
-        return f"{label}: {description}" if description else label
-
     def _get_lists(self, case: Case, output: Any) -> tuple[list[str], list[str]]:
         original_themes = case.inputs.get("themes", [])
         refined_themes = output.get("themes", [])
