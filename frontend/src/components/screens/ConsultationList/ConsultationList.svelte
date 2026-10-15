@@ -6,27 +6,24 @@
   import Tag from "../../Tag/Tag.svelte";
   import Link from "../../Link.svelte";
   import DataTable from "../../DataTable/DataTable.svelte";
-  import Modal from "../../Modal/Modal.svelte";
   import Alert from "../../Alert/Alert.svelte";
   import Title from "../../Title.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
-  import Warning from "../../svg/material/Warning.svelte";
   import Delete from "../../svg/material/Delete.svelte";
   import Close from "../../svg/material/Close.svelte";
   import Button from "../../inputs/Button/Button.svelte";
+  import DeleteConsultationModal from "../../DeleteConsultationModal/DeleteConsultationModal.svelte";
 
   import {
-    getConsultationDetailUrl,
+    getConsultationViewUrl,
+    getConsultationDashboardUrl,
     getConsultationEvalUrl,
     getDataUploadUrl,
     getFinaliseThemesUrl,
     getSupportUserDetail,
     Routes,
   } from "../../../global/routes.ts";
-  import {
-    buildConsultationDeleteQuery,
-    buildConsultationsGetQuery,
-  } from "../../../global/queries/consultations/queries.ts";
+  import { buildConsultationsGetQuery } from "../../../global/queries/consultations/queries.ts";
   import type { Consultation, User } from "../../../global/types.ts";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries.ts";
@@ -61,9 +58,6 @@
 
   const user = $derived(enableV2 ? buildCurrentUserGetQuery() : null);
   const consultations = buildConsultationsGetQuery();
-  const consultationDelete = $derived(
-    buildConsultationDeleteQuery(deleteConsultationId),
-  );
 
   const consultationsToDisplay: Consultation[] = $derived(
     consultations.query.data?.results.filter(
@@ -77,7 +71,7 @@
     isStaff: boolean,
   ): LinkData[] => {
     const viewConsultationLink = {
-      url: getConsultationDetailUrl(consultation.id),
+      url: getConsultationViewUrl(consultation.id),
       text: "View Consultation",
       ariaLabel: `View details of consultation: ${consultation.title}`,
     };
@@ -87,8 +81,7 @@
       ariaLabel: `Finalise themes for consultation: ${consultation.title}`,
     };
     const viewDashboardLink = {
-      // TODO: Update after consultation detail and dashboard routes are separated
-      url: getConsultationDetailUrl(consultation.id),
+      url: getConsultationDashboardUrl(consultation.id),
       text: "View dashboard",
       ariaLabel: `View dashboard for consultation: ${consultation.title}`,
     };
@@ -137,9 +130,9 @@
       ...(enableV2
         ? {
             status: consultation.stage,
-            links: buildLinkData(consultation, user?.query?.data?.is_staff),
           }
         : {}),
+      links: buildLinkData(consultation, user?.query?.data?.is_staff),
       createdAt: consultation.created_at,
       createdBy:
         typeof consultation.created_by === "string"
@@ -287,13 +280,13 @@
                 key: "status",
                 sortable: true,
               },
-              {
-                label: "Links",
-                key: "links",
-                sortable: false,
-              },
             ] as const)
           : []),
+        {
+          label: "Links",
+          key: "links",
+          sortable: false,
+        },
         {
           label: "Date Created",
           key: "createdAt",
@@ -362,7 +355,11 @@
 
           {#each links as { url, text, ariaLabel }, i (i)}
             <div class="flex flex-col gap-2">
-              <Link {ariaLabel} href={url} testId={ariaLabel}>
+              <Link
+                {ariaLabel}
+                href={url}
+                testId={`${text === "View Consultation" ? "consultation-link" : ""}${ariaLabel}`}
+              >
                 {text}
               </Link>
             </div>
@@ -447,63 +444,29 @@
     </DataTable>
   </section>
 
-  <Modal
-    variant="warning"
-    open={Boolean(deleteConsultationId)}
-    setOpen={(newOpen: boolean) => {
-      if (newOpen === false) {
-        deleteConsultationId = "";
-      }
-    }}
-    title="Delete consultation"
-    Icon={Warning}
-    canCancel={true}
-    confirmText="Delete consultation"
-    handleConfirm={async () => {
-      // Prepare alert
-      let newAlertText: AlertData["text"];
-      let newAlertVariant: AlertData["variant"];
-
-      const consultationToDelete = consultationsToDisplay.find(
-        (consultation: Consultation) =>
-          consultation.id === deleteConsultationId,
-      );
-      const consultationTitle = `${consultationToDelete?.title ?? deleteConsultationId}`;
-      newAlertText = `Consultation ${consultationTitle} has been deleted.`;
-      newAlertVariant = "success";
-
-      // Trigger deletion on the server
-      try {
-        await consultationDelete.fetch({});
-      } catch {
-        console.error(consultationDelete.query?.error?.message);
-        newAlertText = `Consultation ${consultationTitle} could not be deleted.`;
-        newAlertVariant = "error";
-      }
-
-      // Display alert
+  <DeleteConsultationModal
+    consultation={consultationsToDisplay.find(
+      (consultation: Consultation) => consultation.id === deleteConsultationId,
+    )}
+    onClose={() => (deleteConsultationId = "")}
+    onError={(consultation) => {
       addAlert({
-        text: newAlertText,
-        variant: newAlertVariant,
+        text: `Consultation ${consultation.title} could not be deleted.`,
+        variant: "error",
       });
 
-      // Reset consultation selected for deletion
+      deleteConsultationId = "";
+    }}
+    onSuccess={(consultation) => {
+      addAlert({
+        text: `Consultation ${consultation.title} has been deleted.`,
+        variant: "success",
+      });
+
       deleteConsultationId = "";
 
       // Refresh consultations as running_job should now be stale
       consultations.fetch();
     }}
-  >
-    <p>
-      Deleting removes the responses, the themes and the analysis. This cannot
-      be undone.
-
-      <Panel variant="default">
-        {consultations.query.data?.results.find(
-          (consultation: Consultation) =>
-            consultation.id === deleteConsultationId,
-        )?.title}
-      </Panel>
-    </p>
-  </Modal>
+  />
 {/if}

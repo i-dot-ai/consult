@@ -255,7 +255,7 @@ test.describe("Question Summary Page", () => {
     await page.waitForLoadState("networkidle");
 
     await expect(page).toHaveURL(
-      new RegExp(`/consultations/${consultationId}/?$`),
+      new RegExp(`/consultations/${consultationId}/dashboard`),
     );
   });
 

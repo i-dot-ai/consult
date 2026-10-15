@@ -6,13 +6,15 @@ import json
 from abc import ABC
 
 import pytest
+from httpx import RequestError
+from langfuse.api.core import ApiError
+
 from adapters.artefact_stores.base import ArtefactStorePort
 from adapters.artefact_stores.langfuse_adapter import LangfuseArtefactStore
 from adapters.artefact_stores.local_json_adapter import LocalJSONArtefactStore
+from conftest import _themes
 from eval_types import Case, CaseOutcome, RunMetrics, RunReport, Score
 from fakes import FakeLangfuseClient, FakeTrace
-from httpx import RequestError
-from langfuse.api.core import ApiError
 from utils.langfuse import LangfuseContext
 
 
@@ -31,7 +33,7 @@ def _make_case(
     return Case(
         id=case_id,
         inputs={"question": "What changed?"},
-        expected_output={"themes": {"A": "desc"}},
+        expected_output={"themes": _themes("A")},
         metadata=metadata,
     )
 
@@ -45,7 +47,7 @@ def _make_outcome(
 ) -> CaseOutcome:
     return CaseOutcome(
         case=case or _make_case(question_part="question_part_1"),
-        output=output or {"themes": {"A": "desc"}},
+        output=output or {"themes": _themes("A")},
         scores=scores or [Score("groundedness", 4.5, "solid")],
         error=error,
     )
@@ -102,7 +104,7 @@ class TestLocalJSONArtefactStore:
         assert payload["outcomes"] == [
             {
                 "case": {
-                    "expected_output": {"themes": {"A": "desc"}},
+                    "expected_output": {"themes": _themes("A")},
                     "id": "case-1",
                     "inputs": {"question": "What changed?"},
                     "metadata": {"question_part": "question_part_2"},
@@ -125,12 +127,12 @@ class TestLocalJSONArtefactStore:
 
         first = _make_outcome(
             case=_make_case(question_part="question_part_1"),
-            output={"themes": {"A": "first"}},
+            output={"themes": _themes("A", description="first")},
             scores=[Score("coverage", 1.0, "first run")],
         )
         second = _make_outcome(
             case=_make_case(question_part="question_part_1"),
-            output={"themes": {"B": "second"}},
+            output={"themes": _themes("B", description="second")},
             scores=[Score("coverage", 2.0, "second run")],
         )
 
@@ -149,7 +151,7 @@ class TestLocalJSONArtefactStore:
         )
         assert payload["results"] == {
             "question_part_1_coverage": 2.0,
-            "question_part_1_output": {"themes": {"B": "second"}},
+            "question_part_1_output": {"themes": _themes("B", description="second")},
         }
         assert payload["outcomes"][0]["scores"][0]["comment"] == "second run"
 
@@ -216,7 +218,7 @@ class TestLangfuseArtefactStore:
                 "trace_context": {"trace_id": "generated-trace-id"},
                 "name": "session-v3:question_part_3",
                 "input": {"question": "What changed?"},
-                "output": {"themes": {"A": "desc"}},
+                "output": {"themes": _themes("A")},
                 "metadata": {"dataset": "demo"},
                 "level": "DEFAULT",
                 "status_message": None,
@@ -230,7 +232,7 @@ class TestLangfuseArtefactStore:
         assert client.last_span_trace.trace_updates == [
             {
                 "input": {"question": "What changed?"},
-                "output": {"themes": {"A": "desc"}},
+                "output": {"themes": _themes("A")},
                 "metadata": {"dataset": "demo"},
                 "tags": ["eval", "generation"],
                 "session_id": "session-v3",
@@ -363,7 +365,7 @@ class TestLangfuseArtefactStore:
         assert client.flush_calls == 1
         assert results == {
             "question_part_1_groundedness": 4.5,
-            "question_part_1_output": {"themes": {"A": "desc"}},
+            "question_part_1_output": {"themes": _themes("A")},
         }
 
     def test_finish_run_does_not_flush_when_context_is_not_owned(self):

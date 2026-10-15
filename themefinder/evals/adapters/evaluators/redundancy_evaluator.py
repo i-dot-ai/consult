@@ -30,7 +30,7 @@ class RedundancyEvaluator(EvaluatorPort):
         counts as redundant."""
         self.threshold = threshold
 
-    def _calculate_redundancy_score(self, themes: list[dict] | dict) -> dict[str, Any]:
+    def _calculate_redundancy_score(self, themes: list[dict]) -> dict[str, Any]:
         """Compute pairwise cosine similarity between theme titles, flagging
         pairs above `self.threshold`."""
         try:

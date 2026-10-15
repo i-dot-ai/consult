@@ -194,8 +194,12 @@ export class CleanupManager {
   * Goes to a specific question in a consultation
  */
 export async function goToConsultationQuestion(page: Page, consultationId: string, questionID: string) {
-    await page.goto(`/consultations/${consultationId}`);
+    await page.goto(`/consultations/${consultationId}/dashboard`);
     await page.waitForLoadState('networkidle');
     await page.goto(`consultations/${consultationId}/questions/${questionID}`);
     await page.waitForLoadState('networkidle');
+}
+
+export function getDataSetupV2Enabled() {
+  return process.env.PUBLIC_DATA_SETUP_V2_ENABLED === 'true';
 }

@@ -13,5 +13,8 @@
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.1141.0",
     "@playwright/test": "^1.63.0"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.4"
   }
 }

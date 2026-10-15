@@ -1,0 +1,23 @@
+name: themefinder evaluation smoke test
+
+# Checks every eval component still runs end to end on the tiny gambling_XXS dataset.
+# Scores are not compared; see themefinder-eval-regression.yml for that.
+
+on:
+  pull_request:
+    paths:
+      - 'themefinder/evals/**'
+      - 'themefinder/src/themefinder/**'
+  workflow_dispatch:
+
+concurrency:
+  group: themefinder-eval-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    uses: ./.github/workflows/themefinder-eval-run.yml
+    permissions: write-all
+    with:
+      tier: smoke
+    secrets: inherit

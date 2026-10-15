@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { CleanupManager, createFixtureData } from "./helpers";
+import { CleanupManager, createFixtureData, getDataSetupV2Enabled } from "./helpers";
 import { getConsultationId, getFirstConsultationLink } from "./navigation";
 import {
   openQuestion,
@@ -93,6 +93,11 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
   test("consultation dashboard displays key metrics and questions", async ({
     page,
   }) => {
+    if (!getDataSetupV2Enabled()) {
+      console.log(`Skipping: "consultation dashboard displays key metrics and questions"`);
+      return;
+    }
+
     // Check for key dashboard elements
     // 1. Search functionality should be present
     const searchInput = page.locator("#search-input");

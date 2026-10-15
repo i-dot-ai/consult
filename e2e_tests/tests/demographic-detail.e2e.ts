@@ -19,7 +19,7 @@ test.describe("Demographic Detail Page", () => {
   test.beforeEach(async ({ page }) => {
     consultationId = testData.consultation_ids![0];
 
-    await page.goto(`/consultations/${consultationId}`);
+    await page.goto(`/consultations/${consultationId}/dashboard`);
     await page.waitForLoadState("networkidle");
 
     const demographicButton = page.getByRole("button", { name: "View All" })

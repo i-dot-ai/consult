@@ -21,7 +21,7 @@ Brewfile.lock.json
 # Terraform lock files
 */.terraform.lock.hcl
 .terraform.lock.hcl
-*.terraform.lock.hcl 
+*.terraform.lock.hcl
 
 # Data
 *.csv
@@ -85,11 +85,13 @@ site/
 !package-lock.json
 !tsconfig.json
 !evals/data/**/*.json
+!evals/baselines/*.json
 
 # Synthetic datasets (generated locally, not committed)
 # Keep gambling_XS as reference dataset
 evals/data/*
 !evals/data/gambling_XS/
+!evals/data/gambling_XXS/
 !evals/data/generation/
 !evals/data/condensation/
 
