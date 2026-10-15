@@ -13,7 +13,7 @@ from adapters.artefact_stores.base import ArtefactStorePort
 from adapters.artefact_stores.langfuse_adapter import LangfuseArtefactStore
 from adapters.artefact_stores.local_json_adapter import LocalJSONArtefactStore
 from conftest import _themes
-from eval_types import Case, CaseOutcome, RunReport, Score
+from eval_types import Case, CaseOutcome, RunMetrics, RunReport, Score
 from fakes import FakeLangfuseClient, FakeTrace
 from utils.langfuse import LangfuseContext
 
@@ -154,6 +154,41 @@ class TestLocalJSONArtefactStore:
             "question_part_1_output": {"themes": _themes("B", description="second")},
         }
         assert payload["outcomes"][0]["scores"][0]["comment"] == "second run"
+
+    def test_persists_run_metrics_separately_from_evaluation_scores(self, tmp_path):
+        store = LocalJSONArtefactStore(output_dir=tmp_path)
+        outcome = _make_outcome()
+        metrics = RunMetrics(
+            cost_usd=0.0123,
+            latency_seconds=4.5,
+            processing_time_seconds=5.25,
+            llm_call_count=3,
+            input_tokens=100,
+            output_tokens=25,
+            total_tokens=125,
+        )
+
+        store.start_run("generation", "demo_dataset")
+        store.record_case(outcome)
+        results = store.finish_run(RunReport(outcomes=[outcome], metrics=metrics))
+
+        payload = json.loads(
+            (tmp_path / "generation" / "demo_dataset" / "results.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        expected_metrics = {
+            "cost_usd": 0.0123,
+            "latency_seconds": 4.5,
+            "processing_time_seconds": 5.25,
+            "llm_call_count": 3,
+            "input_tokens": 100,
+            "output_tokens": 25,
+            "total_tokens": 125,
+        }
+        assert payload["results"]["metrics"] == expected_metrics
+        assert "metrics" not in payload
+        assert results["metrics"] == expected_metrics
 
 
 class TestLangfuseArtefactStore:
