@@ -49,29 +49,6 @@ class LangfuseContext:
         return self.client is not None
 
 
-def enable_openai_tracing(context: LangfuseContext | None) -> bool:
-    """Enable Langfuse OpenAI tracing for subsequently created SDK clients.
-
-    This preserves optional generation-level observability for benchmark runs.
-    It must be called before creating an ``OpenAILLM`` because the Langfuse
-    integration instruments the OpenAI SDK client class. Gateway response
-    headers, not Langfuse, remain the source of evaluation metrics.
-    """
-    if not getattr(context, "is_enabled", False):
-        return False
-
-    try:
-        import openai
-        from langfuse.openai import openai as langfuse_openai
-    except ImportError:
-        logger.warning("Langfuse OpenAI instrumentation is not available")
-        return False
-
-    openai.OpenAI = langfuse_openai.OpenAI
-    openai.AsyncOpenAI = langfuse_openai.AsyncOpenAI
-    return True
-
-
 @contextmanager
 def trace_context(
     context: LangfuseContext, name: str = "eval_task"

@@ -1,7 +1,8 @@
 """Tests for evaluation metrics collected from LLM gateway responses."""
 
+from contextlib import nullcontext
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from pydantic import BaseModel
@@ -151,3 +152,31 @@ async def test_uses_one_sdk_client_with_an_inactive_metrics_hook(monkeypatch):
     http_client = created_clients[0]["http_client"]
     assert _capture_gateway_response_headers in http_client.event_hooks["response"]
     await http_client.aclose()
+
+
+async def test_langfuse_tracing_is_scoped_to_the_supplied_llm_instance():
+    response = (
+        _response(
+            usage=SimpleNamespace(prompt_tokens=3, completion_tokens=2, total_tokens=5)
+        ),
+        _headers(),
+    )
+    generation = MagicMock()
+    langfuse_client = MagicMock()
+    langfuse_client.start_as_current_observation.return_value = nullcontext(generation)
+    llm = _llm(create=response)
+    llm.langfuse_client = langfuse_client
+
+    await llm.ainvoke("prompt")
+    await _llm(create=response).ainvoke("untraced prompt")
+
+    langfuse_client.start_as_current_observation.assert_called_once_with(
+        name="OpenAI-generation",
+        as_type="generation",
+        input=[{"role": "user", "content": "prompt"}],
+        model="gateway-model",
+    )
+    generation.update.assert_called_once_with(
+        output={"role": "assistant", "content": "answer"},
+        usage_details={"input": 3, "output": 2, "total": 5},
+    )

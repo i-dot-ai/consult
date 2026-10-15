@@ -207,10 +207,12 @@ class OpenAILLM:
         self,
         model: str,
         request_kwargs: dict | None = None,
+        langfuse_client: Any | None = None,
         **client_kwargs,
     ):
         self.model = model
         self.request_kwargs = request_kwargs or {}
+        self.langfuse_client = langfuse_client
         sdk_client_kwargs = dict(client_kwargs)
         supplied_http_client = sdk_client_kwargs.get("http_client")
         if supplied_http_client is not None:
@@ -221,9 +223,57 @@ class OpenAILLM:
             )
 
         # The hook is inactive unless collect_gateway_metrics() is active, so
-        # one client serves both regular and metric-collecting calls. This also
-        # preserves Langfuse's normal OpenAI SDK instrumentation.
+        # one client serves both regular and metric-collecting calls.
         self.client = openai.AsyncOpenAI(**sdk_client_kwargs)
+
+    @contextmanager
+    def _langfuse_generation(
+        self, messages: list[dict]
+    ) -> Generator[Any | None, None, None]:
+        """Create an optional, instance-scoped Langfuse generation observation.
+
+        Langfuse's ``langfuse.openai`` integration patches the global OpenAI SDK
+        module. Using the core client directly keeps tracing limited to this LLM
+        instance, so untraced evals in the same process remain uninstrumented.
+        """
+        if self.langfuse_client is None:
+            yield None
+            return
+
+        with self.langfuse_client.start_as_current_observation(
+            name="OpenAI-generation",
+            as_type="generation",
+            input=messages,
+            model=self.model,
+        ) as generation:
+            try:
+                yield generation
+            except Exception as exc:
+                generation.update(level="ERROR", status_message=str(exc))
+                raise
+
+    @staticmethod
+    def _update_langfuse_generation(generation: Any | None, response: Any) -> None:
+        """Attach the OpenAI-compatible response data to a Langfuse generation."""
+        if generation is None:
+            return
+
+        message = response.choices[0].message
+        usage = getattr(response, "usage", None)
+        usage_details = None
+        if usage is not None:
+            usage_details = {
+                "input": getattr(usage, "prompt_tokens", 0) or 0,
+                "output": getattr(usage, "completion_tokens", 0) or 0,
+                "total": getattr(usage, "total_tokens", 0) or 0,
+            }
+        generation.update(
+            output={
+                "role": getattr(message, "role", "assistant"),
+                "content": getattr(message, "content", None),
+            },
+            usage_details=usage_details,
+        )
 
     @staticmethod
     def _record_gateway_metrics(
@@ -249,18 +299,22 @@ class OpenAILLM:
         if output_model:
             kwargs["response_format"] = output_model
             try:
-                response = await self.client.chat.completions.parse(**kwargs)
-                if collector is not None:
-                    self._record_gateway_metrics(collector, response)
-                return LLMResponse(parsed=response.choices[0].message.parsed)
+                with self._langfuse_generation(kwargs["messages"]) as generation:
+                    response = await self.client.chat.completions.parse(**kwargs)
+                    if collector is not None:
+                        self._record_gateway_metrics(collector, response)
+                    self._update_langfuse_generation(generation, response)
+                    return LLMResponse(parsed=response.choices[0].message.parsed)
             finally:
                 if headers_token is not None:
                     _gateway_response_headers.reset(headers_token)
         try:
-            response = await self.client.chat.completions.create(**kwargs)
-            if collector is not None:
-                self._record_gateway_metrics(collector, response)
-            return LLMResponse(parsed=response.choices[0].message.content)
+            with self._langfuse_generation(kwargs["messages"]) as generation:
+                response = await self.client.chat.completions.create(**kwargs)
+                if collector is not None:
+                    self._record_gateway_metrics(collector, response)
+                self._update_langfuse_generation(generation, response)
+                return LLMResponse(parsed=response.choices[0].message.content)
         finally:
             if headers_token is not None:
                 _gateway_response_headers.reset(headers_token)

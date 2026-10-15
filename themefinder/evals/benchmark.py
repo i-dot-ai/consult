@@ -133,7 +133,7 @@ class ModelConfig:
     temperature: float = 0.0
     timeout: int = 600  # 10 min default
 
-    def create_llm(self) -> OpenAILLM:
+    def create_llm(self, *, langfuse_client: Any | None = None) -> OpenAILLM:
         """Create an OpenAILLM instance via the LLM gateway."""
         request_kwargs: dict[str, Any] = {}
         if not self.reasoning_effort:
@@ -145,6 +145,7 @@ class ModelConfig:
             base_url=base_url,
             api_key=api_key,
             timeout=self.timeout,
+            langfuse_client=langfuse_client,
         )
 
     @property
@@ -466,11 +467,10 @@ class BenchmarkRunner:
             ],
         )
 
-        # Keep optional Langfuse generation tracing for configured runs. This
-        # only instruments subsequently created clients; gateway response
-        # headers remain the source of the recorded metrics.
-        langfuse.enable_openai_tracing(langfuse_ctx)
-        llm = model_config.create_llm()
+        # Keep optional Langfuse generation tracing scoped to these LLM
+        # instances. Gateway response headers remain the source of the
+        # recorded metrics.
+        llm = model_config.create_llm(langfuse_client=langfuse_ctx.client)
 
         # Create dedicated judge LLM if configured (separates judge from task model)
         judge_llm = None
@@ -482,6 +482,7 @@ class BenchmarkRunner:
                 base_url=base_url,
                 api_key=api_key,
                 timeout=600,
+                langfuse_client=langfuse_ctx.client,
             )
 
         # Preserve the timing scope of the former duration_seconds metric.

@@ -44,17 +44,16 @@ async def test_benchmark_delegates_component_execution_to_unified_api(monkeypatc
     task_llm = object()
     context = SimpleNamespace(client=None)
     model = benchmark.ModelConfig(name="test-model")
-    monkeypatch.setattr(model, "create_llm", lambda: task_llm)
+    create_llm_calls = []
+    monkeypatch.setattr(
+        model,
+        "create_llm",
+        lambda **kwargs: create_llm_calls.append(kwargs) or task_llm,
+    )
     monkeypatch.setattr(
         benchmark.langfuse,
         "get_langfuse_context",
         lambda **kwargs: context,
-    )
-    enable_tracing = []
-    monkeypatch.setattr(
-        benchmark.langfuse,
-        "enable_openai_tracing",
-        lambda tracing_context: enable_tracing.append(tracing_context),
     )
     trace_contexts = []
     monkeypatch.setattr(
@@ -108,7 +107,7 @@ async def test_benchmark_delegates_component_execution_to_unified_api(monkeypatc
     assert result.duration_seconds == 7.5
     assert result.processing_time_seconds == 5.25
     assert result.llm_call_count == 3
-    assert enable_tracing == [context]
+    assert create_llm_calls == [{"langfuse_client": None}]
     assert trace_contexts == [(context, "mapping_eval")]
 
 
