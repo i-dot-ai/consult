@@ -64,3 +64,17 @@ def test_uses_legacy_duration_as_processing_time_when_loading_results(
     results = load_local_results("legacy")
 
     assert results.loc[0, "processing_time_seconds"] == 4.5
+
+
+def test_charts_render_missing_model_metrics_as_null():
+    html = _html_cost_latency_processing_charts(
+        ["model-a", "model-b"],
+        [0.01, float("nan")],
+        [2.0, float("nan")],
+        [3.0, float("nan")],
+        ["mapping"],
+        [0.01],
+    )
+
+    assert "null" in html
+    assert "$nan" not in html

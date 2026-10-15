@@ -240,12 +240,18 @@ class OpenAILLM:
             yield None
             return
 
-        with self.langfuse_client.start_as_current_observation(
-            name="OpenAI-generation",
-            as_type="generation",
-            input=messages,
-            model=self.model,
-        ) as generation:
+        try:
+            observation = self.langfuse_client.start_as_current_observation(
+                name="OpenAI-generation",
+                as_type="generation",
+                input=messages,
+                model=self.model,
+            )
+        except Exception:
+            yield None
+            return
+
+        with observation as generation:
             try:
                 yield generation
             except Exception as exc:

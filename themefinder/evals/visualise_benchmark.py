@@ -1243,17 +1243,24 @@ def _html_model_summary_table(data: BenchmarkData) -> str:
 
 def _html_cost_latency_processing_charts(
     models: list[str],
-    model_costs: list[float],
-    model_latencies: list[float],
-    model_processing_times: list[float],
+    model_costs: list[float | None],
+    model_latencies: list[float | None],
+    model_processing_times: list[float | None],
     eval_types: list[str],
     eval_costs: list[float],
 ) -> str:
     """Generate compact cost, summed-latency and processing-time charts."""
-    has_cost = model_costs and any(c > 0 for c in model_costs)
-    has_latency = model_latencies and any(latency > 0 for latency in model_latencies)
-    has_processing_time = model_processing_times and any(
-        processing_time > 0 for processing_time in model_processing_times
+    model_costs, model_latencies, model_processing_times = (
+        [value if pd.notna(value) else None for value in values]
+        for values in (model_costs, model_latencies, model_processing_times)
+    )
+    has_cost = any(cost is not None and cost > 0 for cost in model_costs)
+    has_latency = any(
+        latency is not None and latency > 0 for latency in model_latencies
+    )
+    has_processing_time = any(
+        processing_time is not None and processing_time > 0
+        for processing_time in model_processing_times
     )
 
     if not has_cost and not has_latency and not has_processing_time:
@@ -1310,7 +1317,7 @@ def _html_cost_latency_processing_charts(
             y: {json.dumps(model_costs)},
             type: 'bar',
             marker: {{color: '#f472b6'}},
-            text: {json.dumps([f"${c:.3f}" for c in model_costs])},
+            text: {json.dumps([f"${c:.3f}" if c is not None else "" for c in model_costs])},
             textposition: 'outside',
             textfont: {{size: 10, family: 'Roboto Mono'}}
         }}], Object.assign({{}}, chartLayout, {{yaxis: Object.assign({{}}, chartLayout.yaxis, {{title: 'USD'}})}}), chartConfig);
@@ -1323,7 +1330,7 @@ def _html_cost_latency_processing_charts(
             y: {json.dumps(model_latencies)},
             type: 'bar',
             marker: {{color: '#38bdf8'}},
-            text: {json.dumps([f"{latency:.0f}s" for latency in model_latencies])},
+            text: {json.dumps([f"{latency:.0f}s" if latency is not None else "" for latency in model_latencies])},
             textposition: 'outside',
             textfont: {{size: 10, family: 'Roboto Mono'}}
         }}], Object.assign({{}}, chartLayout, {{yaxis: Object.assign({{}}, chartLayout.yaxis, {{title: 'Seconds'}})}}), chartConfig);
@@ -1336,7 +1343,7 @@ def _html_cost_latency_processing_charts(
             y: {json.dumps(model_processing_times)},
             type: 'bar',
             marker: {{color: '#a78bfa'}},
-            text: {json.dumps([f"{processing_time:.0f}s" for processing_time in model_processing_times])},
+            text: {json.dumps([f"{processing_time:.0f}s" if processing_time is not None else "" for processing_time in model_processing_times])},
             textposition: 'outside',
             textfont: {{size: 10, family: 'Roboto Mono'}}
         }}], Object.assign({{}}, chartLayout, {{yaxis: Object.assign({{}}, chartLayout.yaxis, {{title: 'Seconds'}})}}), chartConfig);

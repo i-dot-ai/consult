@@ -180,3 +180,13 @@ async def test_langfuse_tracing_is_scoped_to_the_supplied_llm_instance():
         output={"role": "assistant", "content": "answer"},
         usage_details={"input": 3, "output": 2, "total": 5},
     )
+
+
+async def test_langfuse_observation_setup_failure_does_not_fail_llm_call():
+    llm = _llm(create=(_response(), _headers()))
+    llm.langfuse_client = MagicMock()
+    llm.langfuse_client.start_as_current_observation.side_effect = RuntimeError()
+
+    result = await llm.ainvoke("prompt")
+
+    assert result.parsed == "answer"
