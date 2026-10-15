@@ -33,6 +33,7 @@
   } from "../../../global/types";
   import DeleteConsultationModal from "../../DeleteConsultationModal/DeleteConsultationModal.svelte";
   import Alert from "../../Alert/Alert.svelte";
+  import { createUserState } from "../../../global/state.svelte";
 
   interface Props {
     consultationId: string;
@@ -47,34 +48,21 @@
   let alertText = $state("");
 
   const user = buildCurrentUserGetQuery();
+  let userData: User = $derived(user.query?.data);
+
   let consultation = $derived(buildConsultationGetQuery(consultationId));
   let consultationData: Consultation = $derived(consultation.query?.data);
+
+  let userState = $derived(createUserState(userData, consultationData));
+  let userCanDelete = $derived(userState?.isOwner || userState?.isAdmin);
+
   let renameValue: string = $derived(consultationData?.title || "");
   let consultationRename = $derived(
     buildConsultationRenameQuery(consultationId),
   );
 
-  let createdByEmail = $derived.by(() => {
-    const createdBy = consultationData?.created_by;
-    return typeof createdBy === "string" ? createdBy : createdBy?.email;
-  });
-  let userIsOwner = $derived(user.query?.data?.email === createdByEmail);
-  let userIsAdmin = $derived(user.query?.data?.is_staff);
-  let userCanDelete = $derived(userIsOwner || userIsAdmin);
   let isRenameSaving = $derived(consultationRename.query.isPending);
 
-  function getCreatedByText(createdBy: User | string | null) {
-    if (!createdByEmail) {
-      return "an unknown user";
-    }
-    if (userIsOwner) {
-      return "you";
-    }
-    return createdByEmail || createdBy;
-  }
-  function getCreatedAtText(created_at: string) {
-    return new Date(created_at).toLocaleDateString();
-  }
   function getStatusText(stage: ConsultationStage) {
     return (stage.charAt(0).toUpperCase() + stage.slice(1)).replaceAll(
       "_",
@@ -166,10 +154,10 @@
 
   let content = $derived(CONTENT[consultationData?.stage] || {});
   let links = $derived.by(() => {
-    if (userIsAdmin) {
+    if (userState?.isAdmin) {
       return content.adminLinks;
     }
-    if (userIsOwner) {
+    if (userState?.isOwner) {
       return content.ownerLinks;
     }
     return content.userLinks;
@@ -328,9 +316,7 @@
   {/if}
 
   <p class="text-neutral-500 text-sm mt-2">
-    Created by {getCreatedByText(consultationData?.created_by)} on {getCreatedAtText(
-      consultationData?.created_at,
-    )}. {consultationData?.users.length === 1
+    Created by {userState?.createdByText} on {userState?.createdAtText}. {consultationData?.users.length === 1
       ? "Only you can see it so far."
       : `${consultationData?.users.length} people can see it.`}
   </p>
