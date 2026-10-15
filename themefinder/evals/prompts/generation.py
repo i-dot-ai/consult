@@ -81,6 +81,10 @@ Return strict JSON in this format:
 THEME TITLES:
 {theme_titles}"""
 
+GENERATION_GROUNDEDNESS_EVAL = """You are an expert in natural language processing and topic modelling. Your task is to evaluate how well a generated theme is grounded in a set of responses. For each response in the input, determine whether it supports the generated theme. Assign one of two decisions:
+- **YES**: The response clearly supports or relates to the generated theme.
+- **NO**: The response does not support or relate to the generated theme."""
+
 
 def generation_eval_prompt(
     topic_list_1: list[dict],
@@ -90,6 +94,17 @@ def generation_eval_prompt(
     return GENERATION_EVAL.format(
         topic_list_1=topic_list_1,
         topic_list_2=topic_list_2,
+    )
+
+
+def generation_groundedness_eval_prompt(
+    generated_theme: str,
+    expected_responses: list[str],
+) -> str:
+    """Generate a prompt for groundedness evaluation."""
+    return GENERATION_GROUNDEDNESS_EVAL.format(
+        generated_theme=generated_theme,
+        expected_responses=expected_responses,
     )
 
 
