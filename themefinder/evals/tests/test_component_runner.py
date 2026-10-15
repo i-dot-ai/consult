@@ -239,15 +239,32 @@ async def test_real_runners_preserve_outcomes_scores_failures_and_filter():
     assert reports[0].engine_report is None
     assert reports[1].engine_report is not None
     assert reports[0].outcomes == reports[1].outcomes
-    assert (
-        results[0]
-        == results[1]
-        == {
-            "good_output": {"echo": "good"},
-            "good_quality": 1.0,
-            "bad_output": None,
-        }
+    expected_results = {
+        "good_output": {"echo": "good"},
+        "good_quality": 1.0,
+        "bad_output": None,
+    }
+    assert {key: value for key, value in results[0].items() if key != "metrics"} == (
+        expected_results
     )
+    assert {key: value for key, value in results[1].items() if key != "metrics"} == (
+        expected_results
+    )
+    for result in results:
+        metrics = result["metrics"]
+        assert {
+            key: value
+            for key, value in metrics.items()
+            if key != "processing_time_seconds"
+        } == {
+            "cost_usd": None,
+            "latency_seconds": None,
+            "llm_call_count": 0,
+            "input_tokens": None,
+            "output_tokens": None,
+            "total_tokens": None,
+        }
+        assert metrics["processing_time_seconds"] >= 0
 
     outcomes = reports[0].outcomes
     assert [outcome.case.id for outcome in outcomes] == ["good", "bad"]

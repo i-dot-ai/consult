@@ -2,8 +2,8 @@
 """Multi-model benchmark runner for ThemeFinder evaluations.
 
 Runs evaluations across chat models discovered dynamically from the LLM
-gateway, with configurable hyperparameters, tracks results in Langfuse, and
-generates summary tables.
+gateway, with configurable hyperparameters and local, gateway-supplied metric
+collection.
 
 Usage:
     # Every healthy chat model on the gateway
@@ -38,21 +38,9 @@ from components import COMPONENT_NAMES
 from rich.console import Console
 from rich.table import Table
 from run_eval import evaluate_component
-from settings import eval_settings
 from utils import gateway, langfuse
 
 from themefinder.llm import OpenAILLM
-
-# Monkey-patch openai with langfuse-openai for automatic LLM call tracing.
-# Must happen before any OpenAILLM instances are created.
-try:
-    import openai
-    from langfuse.openai import openai as _langfuse_openai
-
-    openai.OpenAI = _langfuse_openai.OpenAI
-    openai.AsyncOpenAI = _langfuse_openai.AsyncOpenAI
-except ImportError:
-    pass  # langfuse not installed, tracing disabled
 
 # Fix DNS resolution issues with gRPC 1.58.0+ (must be set before gRPC imports)
 # Switches from buggy C-ares resolver to native resolver
@@ -208,19 +196,40 @@ class RunResult:
     session_id: str
     scores: dict[str, float]
     timestamp: datetime
-    duration_seconds: float = 0.0  # Wall-clock duration of eval
     outputs: dict[str, Any] = field(
         default_factory=dict
     )  # Non-numeric pipeline outputs
 
-    # Token metrics (from Langfuse)
-    input_tokens: int = 0
-    output_tokens: int = 0
-    total_tokens: int = 0
+    # Metrics aggregated from each gateway response in this evaluation run.
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    total_tokens: int | None = None
+    cost_usd: float | None = None
+    latency_seconds: float | None = None
+    # Deprecated end-to-end duration retained for existing CSV consumers.
+    duration_seconds: float | None = None
+    processing_time_seconds: float | None = None
+    llm_call_count: int = 0
 
-    # Cost and latency (from Langfuse)
-    cost_usd: float = 0.0
-    latency_seconds: float = 0.0
+
+def _metric_float(metrics: dict[str, Any] | None, key: str) -> float | None:
+    """Read one optional floating-point metric from an evaluation result."""
+    if metrics is None or metrics.get(key) is None:
+        return None
+    value = metrics[key]
+    if isinstance(value, bool):
+        raise TypeError(f"Evaluation metric {key!r} must be a number or null")
+    return float(value)
+
+
+def _metric_int(metrics: dict[str, Any] | None, key: str) -> int | None:
+    """Read one optional integer metric from an evaluation result."""
+    if metrics is None or metrics.get(key) is None:
+        return None
+    value = metrics[key]
+    if isinstance(value, bool) or int(value) != value:
+        raise TypeError(f"Evaluation metric {key!r} must be an integer or null")
+    return int(value)
 
 
 class BenchmarkRunner:
@@ -435,7 +444,9 @@ class BenchmarkRunner:
             f"{model_config.tag}_{eval_type}_run{run_number}"
         )
 
-        # Set up Langfuse context with benchmark metadata
+        # Langfuse remains an optional dataset/artefact backend. It is not used
+        # to calculate run metrics: those are collected from gateway responses
+        # inside evaluate_component().
         langfuse_ctx = langfuse.get_langfuse_context(
             session_id=session_id,
             eval_type=eval_type,
@@ -455,6 +466,10 @@ class BenchmarkRunner:
             ],
         )
 
+        # Keep optional Langfuse generation tracing for configured runs. This
+        # only instruments subsequently created clients; gateway response
+        # headers remain the source of the recorded metrics.
+        langfuse.enable_openai_tracing(langfuse_ctx)
         llm = model_config.create_llm()
 
         # Create dedicated judge LLM if configured (separates judge from task model)
@@ -469,9 +484,11 @@ class BenchmarkRunner:
                 timeout=600,
             )
 
-        # Run the evaluation with timing, wrapped in trace_context for v3 API
-        # This ensures session_id/tags/metadata are properly attached to traces
-        start_time = time.perf_counter()
+        # Preserve the timing scope of the former duration_seconds metric.
+        # It includes the entire evaluate_component() call, including artefact
+        # finalisation. The new processing_time_seconds comes from the shared
+        # component runner and deliberately has its own explicit scope.
+        started_at = time.perf_counter()
         with langfuse.trace_context(langfuse_ctx, name=f"{eval_type}_eval"):
             scores = await evaluate_component(
                 component=eval_type,
@@ -480,22 +497,21 @@ class BenchmarkRunner:
                 context=langfuse_ctx,
                 judge_llm=judge_llm,
             )
-        end_time = time.perf_counter()
-        duration_seconds = end_time - start_time
+        duration_seconds = time.perf_counter() - started_at
 
+        # Flush only optional Langfuse artefacts; metric values are already in
+        # ``scores`` and do not depend on this asynchronous service.
         langfuse.flush(langfuse_ctx)
-
-        # Extract token/cost metrics from Langfuse
-        metrics = langfuse.extract_session_metrics(
-            client=langfuse_ctx.client,
-            session_id=session_id,
-            benchmark_tag=f"benchmark:{self.benchmark_id}",
-        )
 
         # Split returned dict into numeric scores and non-numeric outputs
         all_scores = {}
         all_outputs = {}
+        metrics = (scores or {}).get("metrics")
+        if metrics is not None and not isinstance(metrics, dict):
+            raise TypeError("Evaluation metrics must be returned as a dictionary")
         for key, value in (scores or {}).items():
+            if key == "metrics":
+                continue
             if isinstance(value, (int, float)):
                 all_scores[key] = value
             else:
@@ -505,6 +521,7 @@ class BenchmarkRunner:
         all_scores["validation_errors"] = error_counter.validation_errors
         all_scores["total_warnings"] = error_counter.total_warnings
 
+        processing_time_seconds = _metric_float(metrics, "processing_time_seconds")
         return RunResult(
             model=model_config.name,
             model_tag=model_config.tag,
@@ -515,12 +532,14 @@ class BenchmarkRunner:
             scores=all_scores,
             outputs=all_outputs,
             timestamp=datetime.now(),
+            input_tokens=_metric_int(metrics, "input_tokens"),
+            output_tokens=_metric_int(metrics, "output_tokens"),
+            total_tokens=_metric_int(metrics, "total_tokens"),
+            cost_usd=_metric_float(metrics, "cost_usd"),
+            latency_seconds=_metric_float(metrics, "latency_seconds"),
             duration_seconds=duration_seconds,
-            input_tokens=metrics.input_tokens,
-            output_tokens=metrics.output_tokens,
-            total_tokens=metrics.total_tokens,
-            cost_usd=metrics.cost_usd,
-            latency_seconds=metrics.latency_seconds,
+            processing_time_seconds=processing_time_seconds,
+            llm_call_count=_metric_int(metrics, "llm_call_count") or 0,
         )
 
     def _print_scores(self, scores: dict[str, float]) -> None:
@@ -605,14 +624,17 @@ class BenchmarkRunner:
                 "run": result.run_number,
                 "eval": result.eval_type,
                 "session_id": result.session_id,
+                # Kept for consumers of the former benchmark CSV schema.
                 "duration_seconds": result.duration_seconds,
                 # Token metrics
                 "input_tokens": result.input_tokens,
                 "output_tokens": result.output_tokens,
                 "total_tokens": result.total_tokens,
-                # Cost and latency
+                # Gateway and processing metrics
                 "cost_usd": result.cost_usd,
                 "latency_seconds": result.latency_seconds,
+                "processing_time_seconds": result.processing_time_seconds,
+                "llm_call_count": result.llm_call_count,
             }
             # Flatten scores into columns
             for score_name, score_value in result.scores.items():
@@ -704,161 +726,35 @@ class BenchmarkRunner:
         console.print(f"[green]Results saved to {output_path}[/green]")
 
 
-def _fetch_langfuse_cost_rows(client, benchmark_id: str) -> pd.DataFrame:
-    """Fetch one snapshot of cost/token data for a benchmark from Langfuse.
-
-    Returns:
-        DataFrame with cost data per model/eval, sorted for stable comparison
-        across repeated calls (see query_langfuse_costs).
-    """
-    traces = client.api.trace.list(
-        tags=[f"benchmark:{benchmark_id}"],
-        limit=100,
-    )
-
-    rows = []
-    for trace in traces.data:
-        metadata = trace.metadata or {}
-
-        # TODO: this re-fetches every trace on every poll, even ones already
-        # confirmed stable - inefficient for a full eval sweep with many
-        # traces. Left as-is since this fix was about getting cost tracking
-        # working correctly, not optimising it; revisit alongside a broader
-        # refactor of the evals code.
-        full_trace = client.api.trace.get(trace.id)
-        input_tokens = 0
-        output_tokens = 0
-        total_tokens = 0
-        for obs in full_trace.observations:
-            if obs.usage:
-                input_tokens += obs.usage.input or 0
-                output_tokens += obs.usage.output or 0
-                total_tokens += obs.usage.total or 0
-
-        rows.append(
-            {
-                "model_tag": metadata.get("model_tag", "unknown"),
-                "eval": metadata.get("eval_type", "unknown"),
-                "run": metadata.get("run_number", 0),
-                "input_tokens": input_tokens,
-                "output_tokens": output_tokens,
-                "total_tokens": total_tokens,
-                "cost_usd": trace.total_cost or 0,
-            }
-        )
-
-    if not rows:
-        return pd.DataFrame()
-    return (
-        pd.DataFrame(rows)
-        .sort_values(["model_tag", "eval", "run"])
-        .reset_index(drop=True)
-    )
-
-
-def query_langfuse_costs(
-    benchmark_id: str,
-    poll_interval_seconds: float = 4.0,
-    max_wait_seconds: float = 60.0,
-    stable_reads_required: int = 3,
-) -> pd.DataFrame:
-    """Query Langfuse for cost data from benchmark runs.
-
-    Langfuse ingests traces asynchronously, so querying immediately after a
-    run can undercount tokens/cost. Token and cost figures only ever grow as
-    ingestion completes (never shrink or change once landed), so polling
-    until a read repeats unchanged `stable_reads_required` times in a row is
-    a reliable "ingestion has caught up" signal. Capped at max_wait_seconds
-    so a genuinely stuck observation can't hang the benchmark indefinitely -
-    whatever was last read is returned when the cap is hit.
-
-    Args:
-        benchmark_id: The benchmark ID to query.
-        poll_interval_seconds: Delay between polls.
-        max_wait_seconds: Give up and return the latest read after this long.
-        stable_reads_required: Consecutive identical reads needed to trust
-            the result.
-
-    Returns:
-        DataFrame with cost data per model/eval.
-    """
-    try:
-        from langfuse import Langfuse
-
-        langfuse_settings = eval_settings.active_langfuse
-
-        if langfuse_settings is None:
-            return pd.DataFrame()
-
-        secret_key = langfuse_settings.secret_key
-        public_key = langfuse_settings.public_key
-        base_url = langfuse_settings.base_url
-
-        client = Langfuse(
-            secret_key=secret_key,
-            public_key=public_key,
-            host=base_url,
-        )
-
-        deadline = time.monotonic() + max_wait_seconds
-        previous: pd.DataFrame | None = None
-        stable_count = 0
-        result = pd.DataFrame()
-
-        while True:
-            result = _fetch_langfuse_cost_rows(client, benchmark_id)
-
-            if result.empty:
-                stable_count = 0
-            else:
-                stable_count = (
-                    stable_count + 1
-                    if previous is not None and result.equals(previous)
-                    else 1
-                )
-            previous = result
-
-            if stable_count >= stable_reads_required:
-                break
-            if time.monotonic() >= deadline:
-                console.print(
-                    f"[yellow]Gave up waiting for Langfuse ingestion to "
-                    f"settle after {max_wait_seconds}s - cost/token figures "
-                    f"below may be incomplete[/yellow]"
-                )
-                break
-            time.sleep(poll_interval_seconds)
-
-        if result.empty:
-            console.print("[yellow]No traces found for benchmark[/yellow]")
-
-        return result
-
-    except Exception as e:
-        console.print(f"[red]Failed to query Langfuse costs: {e}[/red]")
-        return pd.DataFrame()
-
-
-def print_cost_summary(cost_df: pd.DataFrame) -> None:
-    """Print cost summary table."""
-    if cost_df.empty:
+def print_cost_summary(results_df: pd.DataFrame) -> None:
+    """Print gateway-supplied cost and timing totals by model."""
+    if results_df.empty:
         return
 
-    console.print("\n[bold cyan]Cost Summary[/bold cyan]\n")
+    console.print("\n[bold cyan]Gateway Metrics Summary[/bold cyan]\n")
 
-    # Aggregate by model
+    metric_columns = [
+        "input_tokens",
+        "output_tokens",
+        "total_tokens",
+        "cost_usd",
+        "latency_seconds",
+        "processing_time_seconds",
+    ]
     agg = (
-        cost_df.groupby("model_tag")
-        .agg(
-            {
-                "input_tokens": "sum",
-                "output_tokens": "sum",
-                "total_tokens": "sum",
-                "cost_usd": "sum",
-            }
-        )
+        results_df.groupby("model_tag")[metric_columns]
+        .agg(lambda values: values.sum(min_count=1))
         .reset_index()
     )
+
+    def format_count(value: float) -> str:
+        return "-" if pd.isna(value) else f"{int(value):,}"
+
+    def format_decimal(value: float, prefix: str = "") -> str:
+        return "-" if pd.isna(value) else f"{prefix}{value:.4f}"
+
+    def format_seconds(value: float) -> str:
+        return "-" if pd.isna(value) else f"{value:.1f}s"
 
     table = Table(title="Total Costs by Model")
     table.add_column("Model", style="cyan")
@@ -866,23 +762,29 @@ def print_cost_summary(cost_df: pd.DataFrame) -> None:
     table.add_column("Output Tokens", justify="right")
     table.add_column("Total Tokens", justify="right")
     table.add_column("Cost (USD)", justify="right", style="green")
+    table.add_column("Summed Gateway Latency", justify="right")
+    table.add_column("Processing Time", justify="right")
 
     for _, row in agg.iterrows():
         table.add_row(
             row["model_tag"],
-            f"{row['input_tokens']:,}",
-            f"{row['output_tokens']:,}",
-            f"{row['total_tokens']:,}",
-            f"${row['cost_usd']:.4f}",
+            format_count(row["input_tokens"]),
+            format_count(row["output_tokens"]),
+            format_count(row["total_tokens"]),
+            format_decimal(row["cost_usd"], "$"),
+            format_seconds(row["latency_seconds"]),
+            format_seconds(row["processing_time_seconds"]),
         )
 
     # Add total row
     table.add_row(
         "[bold]TOTAL[/bold]",
-        f"[bold]{agg['input_tokens'].sum():,}[/bold]",
-        f"[bold]{agg['output_tokens'].sum():,}[/bold]",
-        f"[bold]{agg['total_tokens'].sum():,}[/bold]",
-        f"[bold green]${agg['cost_usd'].sum():.4f}[/bold green]",
+        f"[bold]{format_count(agg['input_tokens'].sum(min_count=1))}[/bold]",
+        f"[bold]{format_count(agg['output_tokens'].sum(min_count=1))}[/bold]",
+        f"[bold]{format_count(agg['total_tokens'].sum(min_count=1))}[/bold]",
+        f"[bold green]{format_decimal(agg['cost_usd'].sum(min_count=1), '$')}[/bold green]",
+        f"[bold]{format_seconds(agg['latency_seconds'].sum(min_count=1))}[/bold]",
+        f"[bold]{format_seconds(agg['processing_time_seconds'].sum(min_count=1))}[/bold]",
     )
 
     console.print(table)
@@ -1087,9 +989,9 @@ Examples:
         )
         sys.exit(1)
 
-    # Query and print costs
-    cost_df = query_langfuse_costs(runner.benchmark_id)
-    print_cost_summary(cost_df)
+    # Metrics are available immediately from the gateway responses, with no
+    # Langfuse polling or post-hoc reconciliation.
+    print_cost_summary(runner.generate_summary_table())
 
     # Save results
     runner.save_results()
@@ -1098,7 +1000,7 @@ Examples:
     try:
         from visualise_benchmark import generate_html_report, load_benchmark_data
 
-        data = load_benchmark_data(runner.benchmark_id, skip_langfuse=True)
+        data = load_benchmark_data(runner.benchmark_id)
         report_path = str(runner._get_output_path() / "report.html")
         generate_html_report(data, report_path)
         console.print(f"[green]HTML report: {report_path}[/green]")

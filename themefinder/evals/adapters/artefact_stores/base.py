@@ -87,6 +87,9 @@ def flatten_run_report(report: RunReport) -> dict[str, Any]:
         for score in outcome.scores:
             results[f"{key}_{score.name}"] = score.value
 
+    if report.metrics is not None:
+        results["metrics"] = json_safe(report.metrics)
+
     return results
 
 
@@ -101,7 +104,7 @@ def build_results_payload(
         serialise_outcome(outcome) for outcome in report.outcomes
     ]
 
-    return {
+    payload = {
         "component": component,
         "dataset": dataset,
         "results": flatten_run_report(report),
@@ -112,3 +115,6 @@ def build_results_payload(
             if outcome.error is not None
         },
     }
+    if report.metrics is not None:
+        payload["metrics"] = json_safe(report.metrics)
+    return payload
