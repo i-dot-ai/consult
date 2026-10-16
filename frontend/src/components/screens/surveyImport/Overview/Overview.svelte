@@ -67,7 +67,9 @@
               {#if user.query.isPending || consultation.query.isPending}
                 <SkeletonText length={2} />
               {:else if user.query.isError || consultation.query.isError}
-                <Alert variant="error">Error while loading consultation data</Alert>
+                <Alert variant="error"
+                  >Error while loading consultation data</Alert
+                >
               {:else}
                 <span in:fade>{consultation.query.data?.title}</span>
               {/if}
@@ -79,7 +81,9 @@
             {:else if user.query.isError || consultation.query.isError}
               <!-- Do not render anything -->
             {:else}
-              <span in:fade>Created by {userState?.createdByText} on {userState?.createdAtText}.</span>
+              <span in:fade
+                >Created by {userState?.createdByText} on {userState?.createdAtText}.</span
+              >
             {/if}
           </p>
         </div>
@@ -92,7 +96,9 @@
             ariaLabel="View who can see this consultation"
             title="View who can see this consultation"
           >
-            {userState?.isOwner || userState?.isAdmin ? "Manage people" : "Who can see this"}
+            {userState?.isOwner || userState?.isAdmin
+              ? "Manage people"
+              : "Who can see this"}
           </Button>
         </div>
       </div>
