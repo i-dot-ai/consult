@@ -6,6 +6,7 @@
   import Panel from "../../../dashboard/Panel/Panel.svelte";
   import Button from "../../../inputs/Button/Button.svelte";
   import Title from "../../../Title.svelte";
+  import Alert from "../../../Alert/Alert.svelte";
   import Timeline from "../../../Timeline/Timeline.svelte";
   import MaterialIcon from "../../../MaterialIcon.svelte";
   import Check from "../../../svg/material/Check.svelte";
@@ -65,14 +66,18 @@
             <span class="text-md">
               {#if user.query.isPending || consultation.query.isPending}
                 <SkeletonText length={2} />
+              {:else if user.query.isError || consultation.query.isError}
+                <Alert variant="error">Error while loading consultation data</Alert>
               {:else}
-                <span in:fade>{consultation.query.data?.title || "Heat network zoning"}</span>
+                <span in:fade>{consultation.query.data?.title}</span>
               {/if}
             </span>
           </Title>
           <p class="text-md text-neutral-500">
             {#if user.query.isPending || consultation.query.isPending}
               <SkeletonText length={5} />
+            {:else if user.query.isError || consultation.query.isError}
+              <!-- Do not render anything -->
             {:else}
               <span in:fade>Created by {userState?.createdByText} on {userState?.createdAtText}.</span>
             {/if}
