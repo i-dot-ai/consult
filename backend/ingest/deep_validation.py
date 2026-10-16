@@ -61,12 +61,12 @@ def _hard_rejection(code: str, message: str, cell: str | None = None) -> dict:
 
 
 def _read_and_validate_csv(content: bytes) -> list[list[str]] | None:
-    if not content or content.startswith(BINARY_SIGNATURES):
+    if content.startswith(BINARY_SIGNATURES):
         return None
 
     rows = list(csv.reader(StringIO(content.decode("utf-8-sig"), newline="")))
     populated_row_lengths = {len(row) for row in rows if row}
-    if not rows or len(populated_row_lengths) > 1:
+    if len(populated_row_lengths) > 1:
         return None
     return rows
 
@@ -196,6 +196,9 @@ def _validate_rows(rows: Sequence[Sequence[object]], data_source: str) -> dict:
             "rejection_type": "soft",
             "message": "File failed deep validation with a list of following soft rejection errors.",
             "errors": soft_errors,
+            "question_count": question_count,
+            "response_count": response_count,
+            "blank_cell_count": blank_cell_count,
         }
     return {
         "valid": True,

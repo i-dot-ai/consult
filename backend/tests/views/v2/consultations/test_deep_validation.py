@@ -207,6 +207,9 @@ def test_formula_cells_are_collected_as_soft_rejections(client, consultation, no
             "cell": "A4",
         },
     ]
+    assert response.json()["question_count"] == 2
+    assert response.json()["response_count"] == 2
+    assert response.json()["blank_cell_count"] == 0
 
 
 @pytest.mark.django_db
@@ -256,6 +259,7 @@ def test_xlsx_control_character_reports_the_cell(client, consultation, non_staff
 @pytest.mark.parametrize(
     ("content", "expected_code"),
     [
+        (b"", "empty_questions"),
         (b"Question\n", "empty_responses"),
         (b"\nAnswer", "empty_questions"),
     ],
