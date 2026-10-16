@@ -269,7 +269,13 @@
       </form>
     {:else}
       <Title level={2}>
-        {consultationData?.title}
+        {#if consultation.query.isPending}
+          <div class="blink w-max select-none bg-neutral-200 text-neutral-200">
+            {"SKELETON ".repeat(3)}
+          </div>
+        {:else}
+          {consultationData?.title}
+        {/if}
       </Title>
     {/if}
 
@@ -316,9 +322,15 @@
   {/if}
 
   <p class="text-neutral-500 text-sm mt-2">
-    Created by {userState?.createdByText} on {userState?.createdAtText}. {consultationData?.users.length === 1
-      ? "Only you can see it so far."
-      : `${consultationData?.users.length} people can see it.`}
+    {#if user.query.isPending || consultation.query.isPending}
+      <span class="blink w-max select-none bg-neutral-200 text-neutral-200">
+        {"SKELETON ".repeat(7)}
+      </span>
+    {:else}
+      Created by {userState?.createdByText} on {userState?.createdAtText}. {consultationData?.users.length === 1
+        ? "Only you can see it so far."
+        : `${consultationData?.users.length} people can see it.`}
+    {/if}
   </p>
 </section>
 
