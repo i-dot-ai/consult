@@ -12,4 +12,6 @@ class CoverageEvaluator(DecisionScoredComparisonJudge):
     prompt_fn = staticmethod(generation_eval_prompt)
     metric_names = ("coverage",)
     threshold_label = "themes not captured"
-    shuffle = True
+
+    def __init__(self, *args, shuffle: bool = True, **kwargs):
+        super().__init__(*args, **kwargs, shuffle=shuffle)
