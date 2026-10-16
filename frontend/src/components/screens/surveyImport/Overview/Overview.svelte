@@ -147,7 +147,7 @@
 
 <section class="mb-6">
   <Panel>
-    <Title level={2}>The five steps</Title>
+    <Title level={2}>The six steps</Title>
 
     <p class="text-neutral-500 text-sm mt-4 mb-8">
       The first two happen in your survey tool and your spreadsheet. They are
