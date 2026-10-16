@@ -27,6 +27,27 @@ class Score:
     comment: str = ""
 
 
+@dataclass(frozen=True)
+class RunMetrics:
+    """Gateway and wall-clock metrics for one completed evaluation run.
+
+    ``cost_usd`` and ``latency_seconds`` are summed from gateway response
+    headers; latency is therefore not end-to-end run latency. The local
+    ``processing_time_seconds`` covers case loading, evaluation and per-case
+    artefact recording, but excludes final artefact finalisation. A value of
+    ``None`` means that no compatible LLM calls were made, or token usage was
+    not returned; it is never a stand-in zero.
+    """
+
+    cost_usd: float | None
+    latency_seconds: float | None
+    processing_time_seconds: float
+    llm_call_count: int
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    total_tokens: int | None = None
+
+
 @dataclass
 class CaseOutcome:
     case: Case
@@ -40,6 +61,7 @@ class RunReport:
     outcomes: list[CaseOutcome]
     # Opaque escape hatch for a runner's own native report object, if it has one
     engine_report: Any | None = None
+    metrics: RunMetrics | None = None
 
 
 @dataclass

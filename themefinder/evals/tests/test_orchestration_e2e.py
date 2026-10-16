@@ -153,9 +153,16 @@ async def test_environment_configuration_runs_langfuse_backend_combinations(
         artefact_factory.assert_called_once_with(context, True)
     assert artefacts.finished_with is not None
     assert artefacts.recorded == artefacts.finished_with[0].outcomes
-    assert results == {
+    expected_results = {
         "question_part_1_output": {
             "themes": _themes("Summary", description="What changed?"),
         },
         "question_part_1_quality": 1.0,
     }
+    assert {key: value for key, value in results.items() if key != "metrics"} == (
+        expected_results
+    )
+    assert results["metrics"]["cost_usd"] is None
+    assert results["metrics"]["latency_seconds"] is None
+    assert results["metrics"]["llm_call_count"] == 0
+    assert results["metrics"]["processing_time_seconds"] >= 0

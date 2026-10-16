@@ -87,6 +87,9 @@ def flatten_run_report(report: RunReport) -> dict[str, Any]:
         for score in outcome.scores:
             results[f"{key}_{score.name}"] = score.value
 
+    if report.metrics is not None:
+        results["metrics"] = json_safe(report.metrics)
+
     return results
 
 
