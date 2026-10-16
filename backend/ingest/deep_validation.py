@@ -66,7 +66,12 @@ def _read_csv(content: bytes) -> list[list[object]]:
 
 
 def _is_csv(content: bytes) -> bool:
-    return bool(content) and not content.startswith(BINARY_SIGNATURES)
+    if not content or content.startswith(BINARY_SIGNATURES):
+        return False
+
+    rows = list(csv.reader(StringIO(content.decode("utf-8-sig"), newline="")))
+    populated_row_lengths = {len(row) for row in rows if row}
+    return bool(rows) and len(populated_row_lengths) <= 1
 
 
 def _is_xlsx(content: bytes) -> bool:
@@ -157,7 +162,6 @@ def _validate_rows(rows: Sequence[Sequence[object]], data_source: str) -> dict:
             return _hard_rejection(
                 f"empty_{row_type}",
                 f"The {row_type} row is empty.",
-                str(row_number),
             )
 
         for column_number, cell in enumerate(row, start=1):
@@ -168,7 +172,7 @@ def _validate_rows(rows: Sequence[Sequence[object]], data_source: str) -> dict:
             ):
                 return _hard_rejection(
                     "illegal_control_character",
-                    "The cell contains a non-printing ASCII control character.",
+                    "The cell contains an unreadable character.",
                     reference,
                 )
             if _is_formula(cell):
@@ -184,7 +188,7 @@ def _validate_rows(rows: Sequence[Sequence[object]], data_source: str) -> dict:
         return {
             "valid": False,
             "rejection_type": "soft",
-            "message": "File failed deep validation with a soft rejection.",
+            "message": "File failed deep validation with a list of following soft rejection errors.",
             "errors": soft_errors,
         }
     return {

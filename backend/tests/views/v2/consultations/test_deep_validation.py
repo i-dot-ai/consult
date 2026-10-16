@@ -62,6 +62,41 @@ def test_citizen_space_csv_passes_deep_validation(client, consultation, non_staf
 
 
 @pytest.mark.django_db
+def test_csv_with_quoted_commas_passes_deep_validation(client, consultation, non_staff_user_token):
+    consultation.data_source = Consultation.DataSource.CITIZEN_SPACE
+    consultation.save(update_fields=["data_source"])
+
+    response = validate(
+        client,
+        consultation,
+        non_staff_user_token,
+        SimpleUploadedFile("responses.csv", b'Question one,Question two\n"London, UK",Answer two'),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["valid"] is True
+
+
+@pytest.mark.django_db
+def test_csv_with_inconsistent_column_counts_is_rejected(
+    client, consultation, non_staff_user_token
+):
+    consultation.data_source = Consultation.DataSource.CITIZEN_SPACE
+    consultation.save(update_fields=["data_source"])
+
+    response = validate(
+        client,
+        consultation,
+        non_staff_user_token,
+        SimpleUploadedFile("responses.csv", b"Question one,Question two\nAnswer one"),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["rejection_type"] == "hard"
+    assert response.json()["errors"][0]["code"] == "invalid_file_type"
+
+
+@pytest.mark.django_db
 def test_qualtrics_xlsx_uses_second_row_for_questions_and_rows_four_onwards_for_responses(
     client, consultation, non_staff_user_token
 ):
@@ -142,7 +177,7 @@ def test_control_character_is_an_immediate_hard_rejection(
     assert response.json()["errors"] == [
         {
             "code": "illegal_control_character",
-            "message": "The cell contains a non-printing ASCII control character.",
+            "message": "The cell contains an unreadable character.",
             "cell": "A2",
         }
     ]

@@ -99,7 +99,11 @@ class ConsultationFileUploadSerializerV2(serializers.Serializer):
         return value
 
 
-class ConsultationDeepValidationSerializerV2(ConsultationFileUploadSerializerV2):
+class ConsultationDeepValidationSerializerV2(serializers.Serializer):
+    MAX_FILE_SIZE = 200 * 1024 * 1024
+
+    file = serializers.FileField(write_only=True)
+
     def validate_file(self, value):
         if value.size > self.MAX_FILE_SIZE:
             raise serializers.ValidationError("File must not exceed 200 MiB.")
