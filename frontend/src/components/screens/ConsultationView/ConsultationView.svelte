@@ -12,6 +12,9 @@
   import Close from "../../svg/material/Close.svelte";
   import EditSquare from "../../svg/material/EditSquare.svelte";
   import Delete from "../../svg/material/Delete.svelte";
+  import Alert from "../../Alert/Alert.svelte";
+  import SkeletonText from "../../SkeletonText/SkeletonText.svelte";
+  import DeleteConsultationModal from "../../DeleteConsultationModal/DeleteConsultationModal.svelte";
 
   import {
     buildConsultationGetQuery,
@@ -31,8 +34,6 @@
     ConsultationStage,
     User,
   } from "../../../global/types";
-  import DeleteConsultationModal from "../../DeleteConsultationModal/DeleteConsultationModal.svelte";
-  import Alert from "../../Alert/Alert.svelte";
   import { createUserState } from "../../../global/state.svelte";
 
   interface Props {
@@ -270,9 +271,7 @@
     {:else}
       <Title level={2}>
         {#if consultation.query.isPending}
-          <div class="blink w-max select-none bg-neutral-200 text-neutral-200">
-            {"SKELETON ".repeat(3)}
-          </div>
+          <SkeletonText length={3} />
         {:else}
           {consultationData?.title}
         {/if}
@@ -323,9 +322,7 @@
 
   <p class="text-neutral-500 text-sm mt-2">
     {#if user.query.isPending || consultation.query.isPending}
-      <span class="blink w-max select-none bg-neutral-200 text-neutral-200">
-        {"SKELETON ".repeat(7)}
-      </span>
+      <SkeletonText length={7} />
     {:else}
       Created by {userState?.createdByText} on {userState?.createdAtText}. {consultationData?.users.length === 1
         ? "Only you can see it so far."

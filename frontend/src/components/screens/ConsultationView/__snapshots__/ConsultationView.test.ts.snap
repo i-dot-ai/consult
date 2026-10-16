@@ -324,11 +324,11 @@ exports[`ConsultationView > should match snapshot initially 1`] = `
         <!---->
         <!---->
         <!---->
-        <div
+        <span
           class="blink w-max select-none bg-neutral-200 text-neutral-200"
         >
           SKELETON SKELETON SKELETON 
-        </div>
+        </span>
         
         
         
