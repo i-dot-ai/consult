@@ -16,6 +16,7 @@
   import Tune from "../../../svg/material/Tune.svelte";
   import Download from "../../../svg/material/Download.svelte";
   import OpenInNew from "../../../svg/material/OpenInNew.svelte";
+  import Delete from "../../../svg/material/Delete.svelte";
   import SkeletonText from "../../../SkeletonText/SkeletonText.svelte";
 
   import { buildConsultationGetQuery } from "../../../../global/queries/consultations/queries";
@@ -180,14 +181,21 @@
             "Provided data is in the correct format, Consult uploads it into the app",
         },
         {
-          Icon: SelectCheckBox,
+          Icon: Delete,
           smallText: "Step 4",
+          titleText: "Delete questions",
+          bodyText:
+            "Delete any that are not questions, such as response IDs or dates",
+        },
+        {
+          Icon: SelectCheckBox,
+          smallText: "Step 5",
           titleText: "Review your questions",
           bodyText: "Confirm whether each question is open, closed or hybrid",
         },
         {
           Icon: Tune,
-          smallText: "Step 5",
+          smallText: "Step 6",
           titleText: "Set up your closed questions",
           bodyText: "Choose which ones become filters on your dashboard",
         },
@@ -219,7 +227,18 @@
       createRawSnippet(() => ({
         render: () => `
           <p>
-            Nothing is analysed until step 5 is completed.
+            Nothing is analysed until step 6 is completed.
+          </p>
+        `,
+      })),
+      Check,
+    )}
+
+    {@render infoItem(
+      createRawSnippet(() => ({
+        render: () => `
+          <p>
+            Adding the responses after step 3 can take a few hours. You can leave and come back to it from the consultation page.
           </p>
         `,
       })),
