@@ -117,25 +117,25 @@ export function createUserState(
     return;
   }
 
-  const createdByEmail = $derived.by(() => {
-    const createdBy = consultationData?.created_by;
-    return typeof createdBy === "string" ? createdBy : createdBy?.email;
-  });
-  const userIsOwner = $derived(userData?.email === createdByEmail);
-  const userIsAdmin = $derived(userData?.is_staff);
-  const createdAtText = $derived(
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    new Date(consultationData?.created_at).toLocaleDateString(),
-  );
-  const createdByText = $derived.by(() => {
-    if (!createdByEmail) {
-      return "an unknown user";
-    }
-    if (userIsOwner) {
-      return "you";
-    }
-    return createdByEmail || createdByEmail;
-  });
+  const createdBy = consultationData?.created_by;
+  const createdByEmail =
+    typeof createdBy === "string" ? createdBy : createdBy?.email;
+
+  const userIsOwner = userData?.email === createdByEmail;
+  const userIsAdmin = userData?.is_staff;
+
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
+  const createdAtText = new Date(
+    consultationData?.created_at,
+  ).toLocaleDateString();
+
+  let createdByText = createdByEmail;
+  if (!createdByEmail) {
+    createdByText = "an unknown user";
+  }
+  if (userIsOwner) {
+    createdByText = "you";
+  }
 
   return {
     get createdByEmail() {
