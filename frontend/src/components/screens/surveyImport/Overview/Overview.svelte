@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createRawSnippet } from "svelte";
   import type { Component, Snippet } from "svelte";
+  import { fade } from "svelte/transition";
 
   import Panel from "../../../dashboard/Panel/Panel.svelte";
   import Button from "../../../inputs/Button/Button.svelte";
@@ -65,7 +66,7 @@
               {#if user.query.isPending || consultation.query.isPending}
                 <SkeletonText length={2} />
               {:else}
-                {consultation.query.data?.title || "Heat network zoning"}
+                <span in:fade>{consultation.query.data?.title || "Heat network zoning"}</span>
               {/if}
             </span>
           </Title>
@@ -73,7 +74,7 @@
             {#if user.query.isPending || consultation.query.isPending}
               <SkeletonText length={5} />
             {:else}
-              Created by {userState?.createdByText} on {userState?.createdAtText}.
+              <span in:fade>Created by {userState?.createdByText} on {userState?.createdAtText}.</span>
             {/if}
           </p>
         </div>
