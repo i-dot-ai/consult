@@ -4,7 +4,8 @@
   import { type Snippet } from "svelte";
 
   interface Props {
-    variant?: "default" | "primary" | "approve" | "approve-dark" | "white" | "gray";
+    variant?:
+      "default" | "primary" | "approve" | "approve-dark" | "white" | "gray";
     border?: boolean;
     bg?: boolean;
     level?: number;

@@ -111,20 +111,23 @@ export const multiAnswerFilters = createMultiAnswerFiltersState();
 
 export function createUserState(
   userData: User | undefined,
-  consultationData: Consultation | undefined
+  consultationData: Consultation | undefined,
 ) {
   if (!userData || !consultationData) {
     return;
   }
 
-  let createdByEmail = $derived.by(() => {
+  const createdByEmail = $derived.by(() => {
     const createdBy = consultationData?.created_by;
     return typeof createdBy === "string" ? createdBy : createdBy?.email;
   });
-  let userIsOwner = $derived(userData?.email === createdByEmail);
-  let userIsAdmin = $derived(userData?.is_staff);
-  let createdAtText = $derived(new Date(consultationData?.created_at).toLocaleDateString());
-  let createdByText = $derived.by(() => {
+  const userIsOwner = $derived(userData?.email === createdByEmail);
+  const userIsAdmin = $derived(userData?.is_staff);
+  const createdAtText = $derived(
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    new Date(consultationData?.created_at).toLocaleDateString(),
+  );
+  const createdByText = $derived.by(() => {
     if (!createdByEmail) {
       return "an unknown user";
     }
@@ -132,13 +135,23 @@ export function createUserState(
       return "you";
     }
     return createdByEmail || createdByEmail;
-  })
+  });
 
   return {
-    get createdByEmail() { return createdByEmail; },
-    get isOwner() { return userIsOwner },
-    get isAdmin() { return userIsAdmin },
-    get createdAtText() { return createdAtText },
-    get createdByText() { return createdByText },
+    get createdByEmail() {
+      return createdByEmail;
+    },
+    get isOwner() {
+      return userIsOwner;
+    },
+    get isAdmin() {
+      return userIsAdmin;
+    },
+    get createdAtText() {
+      return createdAtText;
+    },
+    get createdByText() {
+      return createdByText;
+    },
   };
 }

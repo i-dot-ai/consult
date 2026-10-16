@@ -6,7 +6,6 @@
   import MaterialIcon from "../MaterialIcon.svelte";
   import Tag from "../Tag/Tag.svelte";
 
-
   export interface TimelineItem {
     Icon: Component;
     TagIcon?: Component;
@@ -20,51 +19,46 @@
     items: TimelineItem[];
   }
 
-  let {
-    items = [],
-  }: Props = $props();
+  let { items = [] }: Props = $props();
 </script>
 
 {#snippet itemCard(
   { Icon, TagIcon, smallText, titleText, bodyText, tagText }: TimelineItem,
   isLast: boolean,
 )}
-  <div class={clsx([
-    "flex",
-    "gap-4",
-    "relative",
-    "mb-8",
-    "-ml-10",
-    "pl-4",
-  ])}>
-    <div class={clsx([
-      "flex",
-      "justify-center",
-      "items-center",
-      "w-12",
-      "h-12",
-      "p-2",
-      "rounded-full",
-      "border",
-      "border-neutral-300",
-      "bg-white"
-    ])}>
+  <div class={clsx(["flex", "gap-4", "relative", "mb-8", "-ml-10", "pl-4"])}>
+    <div
+      class={clsx([
+        "flex",
+        "justify-center",
+        "items-center",
+        "w-12",
+        "h-12",
+        "p-2",
+        "rounded-full",
+        "border",
+        "border-neutral-300",
+        "bg-white",
+      ])}
+    >
       <MaterialIcon size="2rem" color="fill-neutral-500">
         <Icon />
       </MaterialIcon>
     </div>
-    <div class={clsx([
-      isLast && [
-        "before:content-['']",
-        "before:w-3",
-        "before:h-10",
-        "before:block",
-        "before:bg-white",
-        "before:absolute",
-        "before:left-8",
-        "before:top-12",
-      ]
-    ])}>
+    <div
+      class={clsx([
+        isLast && [
+          "before:content-['']",
+          "before:w-3",
+          "before:h-10",
+          "before:block",
+          "before:bg-white",
+          "before:absolute",
+          "before:left-8",
+          "before:top-12",
+        ],
+      ])}
+    >
       <small>{smallText}</small>
 
       <h3>{titleText}</h3>
@@ -76,7 +70,7 @@
               {#if TagIcon}
                 <MaterialIcon color="fill-neutral-500" size="0.8rem">
                   <TagIcon />
-                </MaterialIcon>  
+                </MaterialIcon>
               {/if}
 
               {tagText}
@@ -84,7 +78,7 @@
           </Tag>
         </div>
       {/if}
-      
+
       <p class="text-neutral-500 text-sm">
         {bodyText}
       </p>
