@@ -245,7 +245,7 @@ class DecisionScoredComparisonJudge(ThemeComparisonJudgeEvaluator):
 class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
     """Base for judges that ask, once per item in the first list, whether it
     matches any item in the second list, yielding one YES/NO decision per item.
-    Subclasses implement `_get_lists`, `_build_item_prompt` and `_build_scores`.
+    Subclasses implement `_get_lists`, and `_build_scores` and set the prompt_fn.
     """
 
     def __init__(self, *args, concurrency: int = 5, **kwargs):
@@ -258,9 +258,9 @@ class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
         """Return (items to judge, candidate list) from the case and output;
         subclasses choose which lists and in which direction."""
 
-    @abstractmethod
     def _build_item_prompt(self, single_item: str, item_list: list[str]) -> str:
         """Build the prompt asking whether `single_item` matches any of `item_list`."""
+        return self.prompt_fn(single_item=single_item, candidate_list=item_list)
 
     async def _single_item_decision(
         self, single_item: str, item_list: list[str], sem: asyncio.Semaphore
@@ -273,7 +273,7 @@ class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
             prompt = self._build_item_prompt(single_item, item_list)
             response = await self.invoke_with_retry(prompt)
             parsed = self._parse_json_markdown(response.parsed)
-            return {**parsed, "item": single_item}
+            return {**parsed, "item": single_item, "item_list": item_list}
 
     async def _llm_decision_loop(
         self, items: list[str], comparison_items: list[str]
