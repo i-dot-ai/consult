@@ -14,6 +14,7 @@
   import Tune from "../../../svg/material/Tune.svelte";
   import Download from "../../../svg/material/Download.svelte";
   import OpenInNew from "../../../svg/material/OpenInNew.svelte";
+  import SkeletonText from "../../../SkeletonText/SkeletonText.svelte";
 
   import { buildConsultationGetQuery } from "../../../../global/queries/consultations/queries";
   import { buildCurrentUserGetQuery } from "../../../../global/queries/users/queries";
@@ -60,12 +61,20 @@
       <div class="flex justify-between items-center gap-4">
         <div>
           <Title level={2}>
-            <span class="text-md"
-              >{consultation.query.data?.title || "Heat network zoning"}</span
-            >
+            <span class="text-md">
+              {#if user.query.isPending || consultation.query.isPending}
+                <SkeletonText length={2} />
+              {:else}
+                {consultation.query.data?.title || "Heat network zoning"}
+              {/if}
+            </span>
           </Title>
           <p class="text-md text-neutral-500">
-            Created by {userState?.createdByText} on {userState?.createdAtText}.
+            {#if user.query.isPending || consultation.query.isPending}
+              <SkeletonText length={5} />
+            {:else}
+              Created by {userState?.createdByText} on {userState?.createdAtText}.
+            {/if}
           </p>
         </div>
 
