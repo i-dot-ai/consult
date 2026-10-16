@@ -31,9 +31,14 @@ const USER = {
   created_at: "2026-07-15T08:42:02.852525+01:00",
 };
 
-export const defaultMock = {
+export const consultationMock = {
   url: CONSULTAITON_URL,
   body: CONSULTATION,
+};
+export const consultationErrorMock = {
+  url: CONSULTAITON_URL,
+  body: CONSULTATION,
+  throws: new Error("Fetch failed"),
 };
 export const stageFinaliseThemesMock = {
   url: CONSULTAITON_URL,

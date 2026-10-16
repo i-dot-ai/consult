@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { render, screen, waitFor } from "@testing-library/svelte";
 
 import Overview from "./Overview.svelte";
-import { CONSULTATION_ID, defaultMock, userMock } from "./mocks";
+import { CONSULTATION_ID, consultationMock, userMock } from "./mocks";
 import fetchMock from "fetch-mock";
 import { mockRoute } from "../../../../global/utils";
 import { queryClient } from "../../../../global/queryClient";
@@ -19,20 +19,20 @@ describe("Overview", () => {
   });
 
   it("should render consultation title", async () => {
-    mockRoute(defaultMock);
+    mockRoute(consultationMock);
     mockRoute(userMock);
 
     render(Overview, TEST_DATA);
 
     await waitFor(() => {
       expect(
-        screen.getByText(defaultMock.body.title, { exact: false }),
+        screen.getByText(consultationMock.body.title, { exact: false }),
       ).toBeInTheDocument();
     });
   });
 
   it("should match snapshot initially", () => {
-    mockRoute(defaultMock);
+    mockRoute(consultationMock);
     mockRoute(userMock);
 
     const { container } = render(Overview, TEST_DATA);
@@ -40,14 +40,14 @@ describe("Overview", () => {
   });
 
   it("should match snapshot after loading", async () => {
-    mockRoute(defaultMock);
+    mockRoute(consultationMock);
     mockRoute(userMock);
 
     const { container } = render(Overview, TEST_DATA);
 
     await waitFor(() => {
       expect(
-        screen.getByText(defaultMock.body.title, { exact: false }),
+        screen.getByText(consultationMock.body.title, { exact: false }),
       ).toBeInTheDocument();
     });
     expect(container).toMatchSnapshot();
