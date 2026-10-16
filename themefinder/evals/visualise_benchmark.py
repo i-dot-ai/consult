@@ -344,7 +344,7 @@ def detect_eval_metrics(df: pd.DataFrame, eval_type: str) -> dict[str, list[str]
             "redundancy": r"^question_part_\d+_redundancy$",
         },
         "refinement": {
-            "information_retention": r"^question_part_\d+_information_retention$",
+            "information_equivalence": r"^question_part_\d+_information_equivalence$",
             "response_references": r"^question_part_\d+_response_references$",
             "distinctiveness": r"^question_part_\d+_distinctiveness$",
             "fluency": r"^question_part_\d+_fluency$",
@@ -555,12 +555,17 @@ CONDENSATION_SCALE = {
 }
 
 REFINEMENT_WEIGHTS = {
-    "information_retention": 0.25,
+    "information_equivalence": 0.25,
     "response_references": 0.25,
     "distinctiveness": 0.25,
     "fluency": 0.25,
 }
-REFINEMENT_SCALE = {k: 5.0 for k in REFINEMENT_WEIGHTS}
+REFINEMENT_SCALE = {
+    "information_equivalence": 1.0,
+    "response_references": 5.0,
+    "distinctiveness": 5.0,
+    "fluency": 5.0,
+}
 
 
 def _weighted_component_score(
@@ -1156,7 +1161,7 @@ def _html_model_summary_table(data: BenchmarkData) -> str:
     primary_metrics = {
         "generation": "groundedness",
         "condensation": "compression_quality",
-        "refinement": "information_retention",
+        "refinement": "information_equivalence",
         "mapping": "f1",
     }
 
