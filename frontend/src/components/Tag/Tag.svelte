@@ -6,9 +6,10 @@
   interface Props {
     variant?:
       "default" | "dark" | "warning" | "primary" | "primary-light" | "success";
+    border?: boolean;
     children: Snippet;
   }
-  let { variant = "default", children }: Props = $props();
+  let { variant = "default", border, children }: Props = $props();
 </script>
 
 <div
@@ -22,7 +23,9 @@
     "py-0.5",
     "px-2",
     "text-xs",
-    variant === "default" && clsx(["bg-neutral-100", "text-neutral-800"]),
+    variant === "default" && clsx([
+      "bg-neutral-100", "text-neutral-800", border && "border border-neutral-300",
+    ]),
     variant === "dark" && clsx(["bg-neutral-200", "text-neutral-800"]),
     variant === "primary" && clsx(["bg-primary", "text-white"]),
     variant === "primary-light" &&
