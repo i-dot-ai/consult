@@ -188,6 +188,22 @@
   .qt th:last-child, .qt td:last-child { padding-right: 28px; }
   .qt .qtext .show-ans { display: block; margin-top: 8px; padding: 0; }
   .qt tr:last-child td { border-bottom: none; }
+  /* PRO-835: delete questions */
+  .qt.dq .qsel { width: 66px; }
+  .qt.dq td.qsel { padding-top: 15px; }
+  .qt.dq .qtext label { cursor: pointer; }
+  .qt.dq tr.dq-on td { background: var(--surface-1); }
+  .dq-bar-wrap { position: sticky; top: 8px; z-index: 5; }
+  .dq-bar-wrap:empty { display: none; }
+  .dq-names { max-height: 220px; overflow: auto; font-weight: 400; font-size: var(--t-hint); line-height: 1.6; }
+  .dq-names b { font-weight: 500; color: var(--text-secondary); margin-right: 6px; }
+  .up-file { font-size: var(--t-body); margin: 0; }
+  .up-file strong { font-weight: 500; }
+  .up-chosen-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .up-next { border-top: 1px solid var(--border); margin-top: 18px; padding-top: 16px; }
+  .up-next p { font-size: var(--t-body); margin-bottom: 6px; }
+  .up-next p strong { font-weight: 500; }
+  .up-next .btn-quiet { padding: 0; margin-top: 4px; font-size: var(--t-hint); }
   .qnum { color: var(--text-secondary); font-size: var(--t-hint); width: 72px; white-space: nowrap; }
   .qtext { width: auto; }
   .qtype { width: 206px; }
@@ -457,6 +473,23 @@
   .notice-fail { background: var(--bg-danger); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 18px; font-size: var(--t-body); }
   /* ── PRO-834 / PRO-832: the consultation page ── */
   .cp-back { display: inline-block; margin-bottom: 14px; }
+  /* PRO-830: people on a consultation, in the Consultations list's look */
+  #pp-head, #pp-rows .home-row { grid-template-columns: minmax(260px,1fr) 100px; min-width: 520px; }
+  #pp-list.view-only #pp-head, #pp-list.view-only #pp-rows .home-row { grid-template-columns: minmax(260px,1fr); }
+  #pp-rows .home-row { cursor: auto; background: transparent; }
+  #pp-rows .home-row:nth-child(even) { background: #f7f7f7; }
+  #pp-rows .home-row:hover { background: transparent; }
+  #pp-rows .home-row:nth-child(even):hover { background: #f7f7f7; }
+  .pp-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+  .pp-count { font-size: var(--t-body); margin: 0; }
+  .pp-table { width: 100%; border-collapse: collapse; margin-top: 6px; table-layout: fixed; }
+  .pp-table th { text-align: left; font-size: var(--t-label); font-weight: 500; color: var(--text-secondary); padding: 0 10px 10px 0; border-bottom: 1px solid var(--border); }
+  .pp-table td { padding: 12px 10px 12px 0; border-bottom: 1px solid var(--border); font-size: var(--t-body); vertical-align: middle; }
+  .pp-table td .btn-quiet { padding: 0; }
+  .pp-tag { margin-left: 8px; }
+  .pp-table .pp-act { width: 110px; text-align: right; }
+  .pp-tag { display: inline-block; font-size: var(--t-label); color: var(--text-secondary); background: var(--surface-1); border-radius: 4px; padding: 2px 8px; }
+  .pp-emails { width: 100%; max-width: 100%; box-sizing: border-box; font-size: var(--t-body); padding: 9px 10px; border: 1px solid var(--border-strong); border-radius: 4px; resize: vertical; }
   .cp-head { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
   .cp-head h1 { font-size: var(--t-heading-l); margin: 0 0 4px; }
   .cp-meta { font-size: var(--t-hint); color: var(--text-secondary); margin: 0 0 22px; }
@@ -616,7 +649,7 @@
     <text x="30" y="22.5" font-family="'GDS Transport', Arial, sans-serif" font-size="17" font-weight="700" fill="var(--text-primary)">Consult<tspan fill="var(--brand)">.</tspan></text>
   </svg>
   <nav class="topnav">
-    <a onclick="go(1)">Consultations</a><a>Process</a><a>Support</a><a class="role-sa-only" onclick="go(11)">Manage</a>
+    <a onclick="go(1)">Consultations</a><a>Process</a><a>Support</a><a class="role-sa-only" onclick="go(12)">Manage</a>
     <div class="avatar">FF</div>
   </nav>
 </header>
@@ -737,7 +770,7 @@
     <button class="btn btn-sm" id="people-btn" onclick="peopleAction()">Manage people</button>
   </div>
 
-  <p class="intro" style="font-size:var(--t-body);">Consult analyses files of consultation responses. These five steps upload the file, check it and confirm the question type.</p>
+  <p class="intro" style="font-size:var(--t-body);">Consult analyses files of consultation responses. These six steps upload the file, check it and confirm the question type.</p>
 
   <div class="panel">
     <div class="panel-label">Importance of getting this set up right</div>
@@ -747,21 +780,23 @@
   </div>
 
   <div class="panel">
-    <div class="panel-label">The five steps</div>
+    <div class="panel-label">The six steps</div>
     <p class="hint" style="margin:-6px 0 12px;">The first two happen in your survey tool and your spreadsheet. They are part of the job, so they are listed here with the rest.</p>
     <ol class="step-list">
       <li><span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><div><span class="sn">Step 1</span><b>Export the responses</b><span class="where-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Happens outside Consult</span><span class="sd">Get your data out of Qualtrics or Citizen Space</span></div></li>
       <li><span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span><div><span class="sn">Step 2</span><b>Prepare your file</b><span class="where-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Happens outside Consult</span><span class="sd">Set it up in the right way for Consult, and remove personal information if needed</span></div></li>
       <li><span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span><div><span class="sn">Step 3</span><b>Upload your file</b><span class="sd">Provided data is in the correct format, Consult uploads it into the app</span></div></li>
-      <li><span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><div><span class="sn">Step 4</span><b>Review your questions</b><span class="sd">Confirm whether each question is open, closed or hybrid</span></div></li>
-      <li><span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><div><span class="sn">Step 5</span><b>Set up your closed questions</b><span class="sd">Choose which ones become filters on your dashboard</span></div></li>
+      <li><span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span><div><span class="sn">Step 4</span><b>Delete questions</b><span class="sd">Delete any that are not questions, such as response IDs or dates</span></div></li>
+      <li><span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><div><span class="sn">Step 5</span><b>Review your questions</b><span class="sd">Confirm whether each question is open, closed or hybrid</span></div></li>
+      <li><span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><div><span class="sn">Step 6</span><b>Set up your closed questions</b><span class="sd">Choose which ones become filters on your dashboard</span></div></li>
     </ol>
   </div>
 
   <div class="panel">
     <div class="panel-label">Before you start</div>
     <div class="result-line"><svg class="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><div>Responses should be in a single <strong>.xlsx</strong> or <strong>.csv</strong> file. Step 1 shows how to export.</div></div>
-    <div class="result-line"><svg class="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><div>Nothing is analysed until step 5 is completed.</div></div>
+    <div class="result-line"><svg class="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><div>Nothing is analysed until step 6 is completed.</div></div>
+    <div class="result-line"><svg class="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><div>Adding the responses after step 3 can take a few hours. You can leave and come back to it from the consultation page.</div></div>
 
     <div class="callout callout-info" style="margin-top:18px;">
       <strong style="color:var(--text-primary);font-weight:500;">Still collecting responses?</strong>&nbsp; Start anyway. Steps 1 and 2 tell you what a usable file looks like, which is far easier to act on before your consultation closes than after.
@@ -781,7 +816,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     </div>
     <div>
-      <div class="eyebrow">Step 1 of 5</div>
+      <div class="eyebrow">Step 1 of 6</div>
       <h1>Export the responses<span class="where-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Happens outside Consult</span></h1>
     </div>
   </div>
@@ -851,7 +886,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
     </div>
     <div>
-      <div class="eyebrow">Step 2 of 5</div>
+      <div class="eyebrow">Step 2 of 6</div>
       <h1>Prepare your file<span class="where-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Happens outside Consult</span></h1>
     </div>
   </div>
@@ -984,7 +1019,7 @@
     <div class="result-line"><svg class="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><div>No merged cells. If there are any, the upload stops and says where</div></div>
     <div class="result-line"><svg class="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><div>The file is a .csv or .xlsx</div></div>
     <div class="result-line"><svg class="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><div>No characters Consult cannot read</div></div>
-    <div class="result-line"><svg class="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><div>Responses with every answer empty are removed, and you are told how many</div></div>
+    <div class="result-line"><svg class="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><div>Responses with only demographic answers, or none, are removed and counted</div></div>
   </div>
 
   <div class="checklist-foot">
@@ -1005,7 +1040,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
     </div>
     <div>
-      <div class="eyebrow">Step 3 of 5</div>
+      <div class="eyebrow">Step 3 of 6</div>
       <h1>Upload your file</h1>
     </div>
   </div>
@@ -1014,7 +1049,7 @@
   <div class="panel" id="up-idle">
     <div class="drop">
       <p style="font-size:var(--t-hint);margin-bottom:4px;">Drop your file here</p>
-      <p class="hint" style="margin-bottom:14px;">.xlsx or .csv, up to 50MB</p>
+      <p class="hint" style="margin-bottom:14px;">.xlsx or .csv, up to 200MB</p>
       <input type="file" id="realfile" accept=".xlsx,.csv" style="position:absolute;width:1px;height:1px;opacity:0;" onchange="handleFile(this)">
       <button class="btn" onclick="document.getElementById('realfile').click()">Choose a file</button>
           </div>
@@ -1022,11 +1057,22 @@
     <!-- Staged upload results live in the States panel, under Upload your file, so the page shows only what a user sees. -->
   </div>
 
+  <!-- PRO-920: a file is chosen, nothing is sent yet. Check the file is the first agreement. -->
+  <div class="panel hide" id="up-chosen">
+    <p class="up-file"><strong id="up-chosen-name">consultation-responses.xlsx</strong></p>
+    <p class="hint" style="margin:4px 0 16px;">Checking sends the file to Consult. Nothing is added to the consultation yet.</p>
+    <div class="up-chosen-actions" id="up-chosen-actions">
+      <button class="btn btn-accent" onclick="checkFile()">Check the file</button>
+      <button class="btn-quiet" onclick="resetUpload()">Choose a different file</button>
+    </div>
+    <p class="hint hide" id="up-checking" role="status">Checking the file…</p>
+  </div>
+
   <!-- Success -->
   <div class="panel hide" id="up-ok" aria-live="polite">
     <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px;">
       <svg class="tick" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0;"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>
-      <h2 style="margin:0;">consultation-responses.xlsx is ready</h2>
+      <h2 style="margin:0;">consultation-responses.xlsx passed the checks</h2>
     </div>
     <p class="hint" style="margin-bottom:14px;">The file can be read and is laid out for Consult.</p>
     <div class="result-line"><svg class="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><div>The file opens and every row can be read</div></div>
@@ -1037,8 +1083,15 @@
       <div class="stat"><b>1,206</b><span>cells left blank</span></div>
     </div>
 
+    <!-- PRO-920: nothing is sent until the person selects Upload responses -->
+    <div class="up-next" id="up-next">
+      <p><strong>Uploading adds the responses to Consult. This can take a few hours.</strong> You can leave once the file is uploaded. The consultation page shows when the responses are added.</p>
+      <p class="hint">One file per consultation. It cannot be replaced after it is uploaded.</p>
+      <button class="btn-quiet" onclick="resetUpload()">Choose a different file</button>
+    </div>
+
     <div class="callout callout-info" style="margin-top:18px;">
-      The content of the responses has not been read. Whether personal information has been removed, and whether the wording is right, is still yours to confirm. You'll see every question in the next step.
+      The content of the responses has not been read. Whether personal information has been removed, and whether the wording is right, is still yours to confirm. You'll see every question once the responses are added.
     </div>
   </div>
 
@@ -1082,18 +1135,50 @@
 
   <div class="footer-nav">
     <button class="btn" onclick="go(5)">Back</button>
-    <button class="btn btn-accent hide" id="s6-next" onclick="go(7)">Continue to your questions</button>
+    <button class="btn btn-accent hide" id="s6-next" onclick="uploadResponses()">Upload responses</button>
   </div>
 </section>
 
-<!-- ════════ STEP 4 ════════ -->
+<!-- ════════ STEP 4 · DELETE QUESTIONS · PRO-835 ════════ -->
 <section id="s7" class="hide">
+  <div class="step-head">
+    <div class="step-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+    </div>
+    <div>
+      <div class="eyebrow">Step 4 of 6</div>
+      <h1>Delete questions</h1>
+    </div>
+  </div>
+  <p class="intro">Consult reads every column in the file as a question. Delete any that are not questions, such as response IDs or dates. If every one is a question, continue.</p>
+
+  <div id="dq-notice"></div>
+
+  <div class="panel">
+    <div class="qsum">
+      <div class="count-line" id="dq-summary"></div>
+    </div>
+    <div id="dq-bar" class="dq-bar-wrap"></div>
+    <table class="qt dq">
+      <thead><tr><th class="qsel"><span class="sr-only">Select</span></th><th class="qnum">No.</th><th class="qtext">Question</th></tr></thead>
+      <tbody id="dqbody"></tbody>
+    </table>
+  </div>
+
+  <div class="footer-nav">
+    <button class="btn" onclick="openConsultation(currentCon.name)">Back</button>
+    <button class="btn btn-accent" onclick="go(8)">Continue to review your questions</button>
+  </div>
+</section>
+
+<!-- ════════ STEP 5 ════════ -->
+<section id="s8" class="hide">
   <div class="step-head">
     <div class="step-icon">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     </div>
     <div>
-      <div class="eyebrow">Step 4 of 5</div>
+      <div class="eyebrow">Step 5 of 6</div>
       <h1>Review your questions</h1>
     </div>
   </div>
@@ -1139,19 +1224,19 @@
   </div>
 
   <div class="footer-nav">
-    <button class="btn" onclick="go(6)">Back</button>
+    <button class="btn" onclick="go(7)">Back</button>
     <button class="btn btn-accent" onclick="validateStep4()">Continue to closed questions</button>
   </div>
 </section>
 
-<!-- ════════ STEP 5 ════════ -->
-<section id="s8" class="hide">
+<!-- ════════ STEP 6 ════════ -->
+<section id="s9" class="hide">
   <div class="step-head">
     <div class="step-icon">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
     </div>
     <div>
-      <div class="eyebrow">Step 5 of 5</div>
+      <div class="eyebrow">Step 6 of 6</div>
       <h1>Set up your charts and filters</h1>
     </div>
   </div>
@@ -1162,13 +1247,13 @@
   <div class="panel" id="cqbody"></div>
 
   <div class="footer-nav">
-    <button class="btn" onclick="go(7)">Back</button>
+    <button class="btn" onclick="go(8)">Back</button>
     <button class="btn btn-accent" onclick="validateStep5()">Finish set-up</button>
   </div>
 </section>
 
 <!-- ════════ DONE ════════ -->
-<section id="s9" class="hide">
+<section id="s10" class="hide">
   <div class="panel" style="padding:36px 28px;">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--text-success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>
     <h1 style="margin:14px 0 8px;">Your data is set up</h1>
@@ -1184,7 +1269,7 @@
 </section>
 
 <!-- ════════ CONSULTATION PAGE · PRO-834, with job status PRO-832 ════════ -->
-<section id="s10" class="hide">
+<section id="s11" class="hide">
   <div class="page-narrow" style="max-width:none;">
     <button class="btn-quiet cp-back" onclick="go(1)">Back to Consultations</button>
 
@@ -1215,7 +1300,7 @@
 </section>
 
 <!-- ════════ DELETE A USER · PRO-838 · superadmin only ════════ -->
-<section id="s11" class="hide">
+<section id="s12" class="hide">
   <div class="role-sa-only" id="du-wrap">
     <p class="hint" style="margin-bottom:6px;">Manage</p>
 
@@ -1245,6 +1330,29 @@
   </div>
 </section>
 
+<!-- ════════ PEOPLE ON A CONSULTATION · PRO-830 ════════ -->
+<section id="s13" class="hide">
+  <div class="page-narrow" style="max-width:none;">
+    <button class="btn-quiet cp-back" id="pp-back" onclick="peopleBack()">Back to the consultation</button>
+    <!-- Same list as Consultations and Users: header, count, bordered list,
+         a header row, zebra rows, actions on the right. -->
+    <div class="home-head">
+      <h1>People on this consultation</h1>
+      <button class="btn btn-accent" id="pp-add-btn" onclick="openAddPeople()">Add people</button>
+    </div>
+    <div class="home-sub" id="pp-sub"></div>
+    <p class="hint hide" id="pp-readonly" style="margin:-12px 0 16px;">The person who created this consultation adds and removes people.</p>
+    <div id="pp-notice"></div>
+    <div class="home-list" id="pp-list">
+      <div class="home-scroll">
+        <div class="home-row-head" id="pp-head"></div>
+        <div id="pp-rows"></div>
+      </div>
+    </div>
+    <div class="pager" id="pp-pager"></div>
+  </div>
+</section>
+
 </main>
 
 <!-- ── Lock modal ── -->
@@ -1255,7 +1363,49 @@
     <div id="lock-changes"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeLock()">Keep editing</button>
-      <button class="btn btn-accent" onclick="closeLock();go(9)">Start looking for themes</button>
+      <button class="btn btn-accent" onclick="closeLock();go(10)">Start looking for themes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete questions, in data set-up · PRO-835 ── -->
+<div class="modal-bg" id="dq-modal">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="dq-t">
+    <h3 id="dq-t">Delete questions</h3>
+    <p id="dq-lead">Deleting removes the questions and their answers from Consult. This cannot be undone.</p>
+    <div class="del-name dq-names" id="dq-names"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeDQ()">Cancel</button>
+      <button class="btn btn-warning" id="dq-confirm" onclick="confirmDQ()">Delete questions</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── People on a consultation · PRO-830 ── -->
+<div class="modal-bg" id="pp-add-modal">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pp-add-t">
+    <h3 id="pp-add-t">Add people</h3>
+    <p id="pp-add-lead"></p>
+    <div id="err-summary-pp"></div>
+    <div class="form-field" style="margin:0;">
+      <label for="pp-emails">Email addresses</label>
+      <span class="hint" id="pp-emails-hint">Enter one or more, separated by commas, spaces or new lines.</span>
+      <span class="field-err hide" id="pp-emails-err"></span>
+      <textarea class="txt pp-emails" id="pp-emails" rows="4" aria-describedby="pp-emails-hint"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeAddPeople()">Cancel</button>
+      <button class="btn btn-accent" onclick="confirmAddPeople()">Add people</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="pp-rm-modal">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pp-rm-t">
+    <h3 id="pp-rm-t">Remove from consultation</h3>
+    <p id="pp-rm-lead"></p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeRemovePerson()">Cancel</button>
+      <button class="btn btn-warning" id="pp-rm-confirm" onclick="confirmRemovePerson()">Remove</button>
     </div>
   </div>
 </div>
@@ -2227,6 +2377,95 @@
   </ul>
   <p class="idr-meta">RECORDED 25 September 2026</p>
 </article>
+<article class="idr" id="IDR-090" data-status="active" data-marker="D">
+  <div class="idr-head">
+    <span class="idr-id">IDR-090</span>
+    <span class="idr-marker" title="Decision">D</span>
+    <span class="idr-status s-active">Active</span>
+  </div>
+  <h4 class="idr-title">People on a consultation is one page, with adding and removing in modals · PRO-830</h4>
+  <ul>
+    <li><strong>One page, “People on this consultation”,</strong> opened from Manage people or Who can see this, on the consultation page and on the data set-up overview. Back returns to whichever it was opened from.</li>
+    <li><strong>Who does what.</strong> The person who set it up and superadmin add and remove. Anyone invited sees the list only, with one line saying who adds and removes people. The controls are absent, not greyed (IDR-068). Permissions tables, section III rows 2 and 3. Seeing who else is on it is for everyone, as closed in the roles scope.</li>
+    <li><strong>Superadmin is not listed,</strong> permissions tables, section III row 4.</li>
+    <li><strong>The person who created it is listed first, tagged “Creator”, and cannot be removed,</strong> so a consultation always has someone in charge of it. Handing it over stays with superadmin. “Creator” matches “Created by” on Consultations and reads next to an email address. “Set it up” was rejected: “set up” clashes with data set-up, the reason the list says “Created by”. After a handover the tag follows Created by, as noted in IDR-052.</li>
+    <li><strong>The list looks like Consultations and Users:</strong> header with the button on the right, the count under it, a bordered list with a header row, zebra rows, and Remove in the same place and style as Delete. Only the content comes from the live product.</li>
+    <li><strong>People are shown by email address.</strong> The live product holds accounts by email, with no names.</li>
+    <li><strong>Kept from the live product:</strong> one box for several email addresses, separated by commas, spaces or new lines, and a confirmation before removing someone.</li>
+    <li><strong>Changed from the live product:</strong> adding and removing are modals on the list, not separate pages, so the person appears or goes in front of you. Messages follow the tone of voice: “2 people added.”, not “Successfully added 2 users”. Errors use the error summary and the field (IDR-056, IDR-061). The removal title has no question mark (IDR-060) and states the consequence: “[email] can no longer see [consultation]. They can be added again.” “Can access support console & dashboards” and “Created at” are dropped: the first is superadmin information, the second is when the account was made, not when the person joined.</li>
+    <li><strong>“People”, not “users”,</strong> to match Manage people and Who can see this.</li>
+    <li><strong>Ten a page, with 25 or 50 to choose,</strong> the same pager as Consultations. Most consultations will have a handful of people, but every table follows the same default.</li>
+    <li><strong>No sorting.</strong> One column, and the order is meaningful: the creator first, then in the order people were added.</li>
+    <li><strong>For the copy review:</strong> one page, three names. Manage people for the creator, Who can see this for anyone invited, and the page title People on this consultation. The two buttons say what each person can do there, so they stay different.</li>
+    <li><strong>Not built, an idea:</strong> letting someone invited take themselves off a consultation. Only the creator and superadmin remove people today.</li>
+    <li><strong>The whole box is checked before anything is added,</strong> so a list is never half added: empty, wrong format, and addresses with no Consult account each stop it. Addresses already on the consultation are skipped and named in the message.</li>
+    <li><strong>Assumed, not confirmed:</strong> an address with no Consult account shows an error, and no account is created. For engineering, on PRO-830.</li>
+    <li><strong>Not in V1:</strong> telling the person they have been added. The product has no notifications.</li>
+  </ul>
+  <p class="idr-meta">RECORDED 15 October 2026</p>
+</article>
+<article class="idr" id="IDR-089" data-status="active" data-marker="D">
+  <div class="idr-head">
+    <span class="idr-id">IDR-089</span>
+    <span class="idr-marker" title="Decision">D</span>
+    <span class="idr-status s-active">Active</span>
+  </div>
+  <h4 class="idr-title">The responses are added in the background, and nobody waits on step 3 · PRO-920</h4>
+  <ul>
+    <li><strong>Why.</strong> Sending the file takes seconds. Adding the responses to Consult can take from 20 minutes to a few hours. Agreed with engineering on 13 October; the thread is linked on PRO-908.</li>
+    <li><strong>Step 3 asks the person to agree twice.</strong> Choosing a file sends nothing. <strong>Check the file</strong> sends it to Consult to be checked, which takes seconds. The line beside the button says so: “Checking sends the file to Consult. Nothing is added to the consultation yet.” Problems show on the page, as before. Once the file passes, the heading says it passed the checks, not that it is uploaded.</li>
+    <li><strong>Wrong file type and file too large show straight away,</strong> because they are known before anything is sent.</li>
+    <li><strong>Upload responses is the second agreement:</strong> it adds the responses to the consultation. The button replaces “Continue to your questions”. Above it, the page says what uploading does, that it can take a few hours, and that the file cannot be replaced afterwards. “Choose a different file” is there until then.</li>
+    <li><strong>After uploading, the person lands on the consultation page</strong> and can leave.</li>
+    <li><strong>No sixth status.</strong> Still Data set-up, with three situations on the consultation page:
+      <ul>
+        <li>Not uploaded yet: “The responses are not uploaded yet.” Button: Set up the data.</li>
+        <li>Being added: “Consult is adding the responses. This can take a few hours. You can leave this page.” No button. Grey tag, like the other running jobs.</li>
+        <li>Added: “The responses are added. Continue set-up to check the questions.” Button: Continue set-up, which opens step 4, Delete questions.</li>
+      </ul></li>
+    <li><strong>Consultations list, Links column:</strong> Upload and check when nothing is uploaded, nothing extra while the responses are being added, Continue set-up once they are.</li>
+    <li><strong>Back on step 4 goes to the consultation page,</strong> which is where the person came back in. Step 3 is not reachable again, because the file cannot be replaced.</li>
+    <li><strong>The limit is 200MB</strong>, raised from 100MB on PRO-770. The prototype said 50MB; corrected.</li>
+    <li><strong>One upload per consultation.</strong> Replacing the file is not in scope.</li>
+    <li><strong>If adding the responses stops, nothing says so in V1.</strong> Covered by IDR-083: Failed is not in V1, and in V2 a failed job points to contact support. The cost is higher here, because this job can take hours.</li>
+    <li><strong>Not decided:</strong> how the person finds out the responses are added. There is no notification in the product today.</li>
+    <li><strong>Engineering's consultation page ticket</strong> for the new situations is still to come. It should follow the three situations above.</li>
+    <li><strong>Empty responses, 14 October:</strong> the wording follows the engineering ticket for the checks (PRO-771). A response with only demographic answers, or none, is removed and counted. The prototype said “every answer empty”; changed on step 2 and on the file with problems, worded to match the other notes on that screen.</li>
+    <li><strong>Corrected 14 October.</strong> The first version of this record said the checks ran as soon as the file was added, and that nothing was sent before Upload responses. Both cannot be true: the checks run on Consult's side, so the file has to be sent for them. Caught by engineering on PRO-908. Check the file was added as the first agreement.</li>
+      <li><strong>The checks run twice,</strong> 14 October, on PRO-771: when the person selects Check the file, and again when the background job picks up the file. Nothing changes on screen. If the second check fails, IDR-083 applies.</li>
+  </ul>
+  <p class="idr-meta">RECORDED 13 October 2026</p>
+</article>
+<article class="idr" id="IDR-088" data-status="active" data-marker="D">
+  <div class="idr-head">
+    <span class="idr-id">IDR-088</span>
+    <span class="idr-marker" title="Decision">D</span>
+    <span class="idr-status s-active">Active</span>
+  </div>
+  <h4 class="idr-title">Delete questions is its own step, after the upload · PRO-835</h4>
+  <ul>
+    <li>Step 4 of 6, called <strong>Delete questions</strong>. It sits between Upload your file and Review your questions. Data set-up is now six steps.</li>
+    <li><strong>Source:</strong> the roles scope, section III row 30: “Its own step, straight after the upload”. The engineering ticket PRO-842: “after file upload and before question review”.</li>
+    <li><strong>Why its own step.</strong> What gets deleted is mostly not a question at all, such as a response ID or a date. Deleting those first means nobody has to sort them into open or closed at the next step.</li>
+    <li><strong>The name.</strong> Verb first, like the other step names, and the same word Consult uses for consultations and accounts.</li>
+    <li><strong>Tick several, delete them together, with one confirmation.</strong> Ticking shows a bar with the count and the button. It is the shape drawn for selecting consultations in IDR-016, which is switched off there (IDR-051). Ticking changes the bar only, so focus stays put.</li>
+    <li><strong>A hard delete.</strong> The question and its answers are removed and cannot be brought back. Confirmed by engineering at stand-up, 13 October, with bulk delete.</li>
+    <li><strong>The confirmation follows deleting a consultation.</strong> The title has no question mark (IDR-060). The consequence comes first, then “This cannot be undone.” (IDR-059). The questions being deleted are listed in the body.</li>
+    <li><strong>The step can be skipped.</strong> Continue works with nothing ticked.</li>
+    <li><strong>Consult does not pre-tick anything.</strong> That would be guessing. Suggesting likely non-questions is an idea for later.</li>
+    <li><strong>Every question is on one page, with no paging,</strong> so a selection is never split across pages. Each question has Show answers, because the answers are usually what show a column is not a question.</li>
+    <li><strong>Every user on the consultation can do it.</strong> Permissions tables, section IV row 4, “Delete a question”: yes for all three. Nothing is hidden by role.</li>
+    <li><strong>“Only before themes are found” holds by itself.</strong> The step only exists inside data set-up.</li>
+    <li><strong>Assumed, not confirmed:</strong> that Consult reads every column in the file as a question. The step's opening line says so.</li>
+    <li><strong>Not decided:</strong> whether the set-up record lists the deleted questions. That is for PRO-872.</li>
+    <li><strong>Step numbers</strong> in records before this one refer to the five-step flow. Their step 4 is now step 5, and their step 5 is now step 6.</li>
+    <li><strong>In the prototype,</strong> the demo file now starts with three columns that are not questions: Response ID, Start date and End date. So the step has something to do. After deleting them, the 38 questions are as before.</li>
+      <li><strong>Under review, 13 October.</strong> Engineering proposed deleting on the existing pages instead: on Review your questions, and on Set up your charts and filters. Both options are mocked up on PRO-835. Design position: keep the own step. Deleting cannot be undone, while everything on Review your questions can, so keeping them apart avoids mixing the two. Every question is on one page, so ticking many columns that are not questions is quick; Review your questions shows 10 per page. And there is one place to delete, not two. If build time decides it: delete on Review your questions only, not on charts and filters. Waiting on how much build time the other option saves.</li>
+      <li><strong>Correction, 13 October.</strong> The “why its own step” point above is weaker than it reads. Consult suggests the types itself, so a column that is not a question would arrive labelled, not waiting to be sorted. The reasons in the review note above carry the decision.</li>
+      <li><strong>Settled, 14 October: Option A, its own step.</strong> Engineering reviewed both options on PRO-835 and leans to Option A as the simplest, without making the steps complicated again. The review note above is closed.</li>
+  </ul>
+  <p class="idr-meta">RECORDED 13 October 2026</p>
+</article>
 <article class="idr" id="IDR-087" data-status="active" data-marker="D">
   <div class="idr-head">
     <span class="idr-id">IDR-087</span>
@@ -2313,6 +2552,7 @@
     <li><strong>Supersedes IDR-076.</strong> Run again for every user is no longer the design, for V1 or V2.</li>
     <li><strong>Goes against two documents:</strong> the roles scope, section II row 26, “Every user can see it and re-run a failed job”, and the permissions tables, section VI row 1, “Run or re-run a pipeline job”. Both need a note that this is V2, and the V2 answer changes section VI row 1 rather than following it. For the PM.</li>
     <li><strong>Cost:</strong> in V1 a job that stops shows the status it stopped on, so it looks as though it is still working.</li>
+      <li><strong>Applies to adding the responses too, 13 October.</strong> See IDR-089. Engineering plans to run the checks again when the background job picks up the file. If that fails, it is a failed job, and nothing in V1 says so. The cost is higher for this job, because it can take hours, so a stuck one is hard to spot. Raised on PRO-920. If that is not acceptable for V1, this record needs reopening with the PM.</li>
   </ul>
   <p class="idr-meta">RECORDED 1 October 2026</p>
 </article>
@@ -2331,6 +2571,7 @@
     <li>While a job runs: “This can take more than 20 minutes”, and “Nothing else can start until this finishes.”</li>
     <li>The sentence is in the primary text colour. With no heading it is the main thing in the box.</li>
     <li><strong>Known issue:</strong> the tone of voice says “Sign off”, not “Finalise”, and “Stage”, not “status”. The settled words use Finalise and status. For the copy review.</li>
+      <li><strong>Updated 13 October.</strong> Data set-up now has three sentences, one for each situation. See IDR-089. While the responses are added the sentence says “This can take a few hours”, not “more than 20 minutes”, because that job runs longer.</li>
   </ul>
   <p class="idr-meta">RECORDED 1 October 2026</p>
 </article>
@@ -2378,6 +2619,7 @@
     <li>Rejected: chips for the links, because they all go to a page and should look like links; and icons, because the words already say where each goes and the row is less noisy without them.</li>
     <li><strong>Supersedes IDR-074</strong>, the name as the link to the page. <strong>Supersedes in part IDR-018</strong>: the links are no longer under the name, and the list now has a Status column.</li>
     <li><strong>Open:</strong> one step has three names. Status “Data set-up”, link “Upload and check”, button “Set up the data”. For the copy review.</li>
+      <li><strong>Updated 13 October.</strong> On Data set-up the Links column shows Upload and check before upload, nothing extra while the responses are being added, and Continue set-up once they are. See IDR-089.</li>
   </ul>
   <p class="idr-meta">RECORDED 1 October 2026</p>
 </article>
@@ -2394,6 +2636,7 @@
     <li>Finding themes and Assigning themes are running, with no button. Data set-up, Finalising themes and Analysis each have one next step: Set up the data, Finalise themes, View dashboard.</li>
     <li><strong>Supersedes in part IDR-075.</strong> The six states and the case for “Mapping responses” are replaced. Job status as states of the consultation, not a separate component, and one job at a time, both still hold.</li>
     <li>Failed is not one of the five. See IDR-083.</li>
+      <li><strong>Updated 13 October.</strong> While the responses are being added, and once they are added, the status is still Data set-up. Its next step is Set up the data before upload, nothing while the responses are added, and Continue set-up once they are. See IDR-089.</li>
   </ul>
   <p class="idr-meta">RECORDED 1 October 2026</p>
 </article>
@@ -2411,6 +2654,7 @@
     <li><strong>Superadmin and the user who set it up only.</strong> Permissions tables, section II row 3. Hidden for anyone invited to it, per IDR-068.</li>
     <li><strong>Two lines in the roles scope say otherwise.</strong> Section II row 27, “Everyone on the consultation can edit it”, and section X item 3, where invited users can do everything except manage people and delete. The tables are the source of truth for who, so the scope is to be corrected once the PM confirms.</li>
     <li>The engineering ticket plans a separate page for editing the consultation’s details, with only the title on it for now. Whether that page is still needed while there is one field is not decided here.</li>
+    <li><strong>Updated 13 October:</strong> the separate page is not needed. Rename on the title does the job, so the engineering ticket for that page (PRO-841) has nothing left to do. If more details than the name become editable later, whether they need a page is decided then.</li>
   </ul>
   <p class="idr-meta">RECORDED 28 September 2026</p>
 </article>
@@ -2893,25 +3137,48 @@ const CLOSED_SAMPLES = [
 ];
 function samplesFor(i, type){
   const wantDistinct = type !== "open";
-  if (REAL && REAL.cols[i]) {
-    const v = REAL.cols[i].vals;
+  const q0 = state[i];
+  if (q0 && q0.meta) return q0.meta;
+  const si = qiOf(i);
+  if (REAL && REAL.cols[si]) {
+    const v = REAL.cols[si].vals;
     if (v.length) return wantDistinct ? [...new Set(v)].slice(0, 8) : v.slice(0, 3);
   }
   const pool = type === "open" ? OPEN_SAMPLES : CLOSED_SAMPLES;
-  const s = pool[i % pool.length];
+  const s = pool[(typeof si === "number" ? si : i) % pool.length];
   return wantDistinct ? [...new Set(s)] : s;
 }
 
 function samplesLabel(i, q){
-  const rows = REAL ? REAL.cols[i].vals.length : RESPONSE_COUNT;
+  const rows = REAL && REAL.cols[qiOf(i)] ? REAL.cols[qiOf(i)].vals.length : RESPONSE_COUNT;
   const shown = samplesFor(i, q.type).length;
   return q.type === "open"
     ? `A sample. ${Math.min(3, shown)} of ${rows.toLocaleString()} answers to this question`
     : `The different answers people gave. ${shown} of them, across ${rows.toLocaleString()} responses`;
 }
 
-const mkState = ([text, type]) => ({ text, origText: text, type, suggested: type, changed: false, links: [], proposed: null, rejected: [] });
-const state = QUESTIONS.map(mkState);
+const mkState = ([text, type], qi) => ({ text, origText: text, type, suggested: type, changed: false, links: [], proposed: null, rejected: [], qi });
+
+/* PRO-835. A real export carries columns that are not questions. The demo file
+   starts with three, so the delete step has something to do. They read as open
+   questions, because that is what Consult would make of them. */
+const META_COLS = [
+  ["Response ID", ["R_1Fz8kQp2LmXa9Tb", "R_3kD9xQwN7vYpE2c", "R_2aB7cD4eF6gH8iJ"]],
+  ["Start date",  ["2026-03-04 09:12:44", "2026-03-04 11:40:02", "2026-03-05 16:03:19"]],
+  ["End date",    ["2026-03-04 09:31:10", "2026-03-04 12:02:57", "2026-03-05 16:20:41"]]
+];
+const mkMeta = ([text, samples], k) => ({ text, origText: text, type: "open", suggested: "open", changed: false, links: [], proposed: null, rejected: [], qi: "m" + k, meta: samples });
+function fillDemo(){
+  state.length = 0;
+  META_COLS.forEach((m, k) => state.push(mkMeta(m, k)));
+  QUESTIONS.forEach((q, i) => state.push(mkState(q, i)));
+}
+/* Where a question's own data lives. Indexes into state move when questions are
+   deleted; this does not. */
+function qiOf(i){ return state[i] && state[i].qi !== undefined ? state[i].qi : i; }
+
+const state = [];
+fillDemo();
 
 /* A consultation that has just been named has no data. Clearing here keeps the
    prototype honest; the States panel loads the demo set back in one click. */
@@ -2926,8 +3193,9 @@ function clearSetup(){
   resetUpload();
 }
 function loadDemoData(){
-  state.length = 0;
-  QUESTIONS.forEach(q => state.push(mkState(q)));
+  fillDemo();
+  dqSel.clear();
+  document.getElementById("dq-notice").innerHTML = "";
   REAL = null;
   page = 1;
   openSamples.clear();
@@ -3020,21 +3288,23 @@ function typeCounts(){
 function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
 /* Screens are numbered in the order someone walks through them.
-    0 Sign in                 6 Data set-up: upload
-    1 Consultations, the list 7 Data set-up: questions
-    2 Add a consultation      8 Data set-up: charts and filters
-    3 Data set-up: overview   9 Data set-up: finished
-    4 Data set-up: export    10 The consultation page
-    5 Data set-up: prepare   11 Users, under Manage (a side branch, not the journey) */
+    0 Sign in                 7 Data set-up: delete questions
+    1 Consultations, the list 8 Data set-up: review questions
+    2 Add a consultation      9 Data set-up: charts and filters
+    3 Data set-up: overview  10 Data set-up: finished
+    4 Data set-up: export    11 The consultation page
+    5 Data set-up: prepare   12 Users, under Manage (a side branch, not the journey)
+    6 Data set-up: upload    13 People on a consultation (a side branch, off the consultation page) */
 function go(n){
-  for (let i = 0; i <= 11; i++) document.getElementById("s" + i).classList.add("hide");
+  for (let i = 0; i <= 13; i++) document.getElementById("s" + i).classList.add("hide");
   document.body.classList.toggle("page-wide", n === 1);
   /* Signed out: the GOV.UK bar and the Consult wordmark stay, the nav goes. */
   document.body.classList.toggle("page-signin", n === 0);
   document.getElementById("s" + n).classList.remove("hide");
   if (n === 5) renderPrepare();
-  if (n === 7) renderQ();
-  if (n === 8) renderCQ();
+  if (n === 7) renderDQ();
+  if (n === 8) renderQ();
+  if (n === 9) renderCQ();
   window.scrollTo({ top: 0, behavior: "instant" });
 }
 
@@ -3100,6 +3370,24 @@ const STATES = [
     on: v => { routeSkip = v; }, is: () => routeSkip },
   { id: "jump-cp-nodata", kind: "jump", screen: "The consultation page", label: "Data set-up",
     run: () => cpJump("nodata") },
+  { id: "jump-cp-adding", kind: "jump", screen: "The consultation page", label: "Data set-up, responses being added",
+    run: () => cpJump("adding") },
+  { id: "jump-cp-added", kind: "jump", screen: "The consultation page", label: "Data set-up, responses added",
+    note: "Moves the consultation open now on, if its responses are being added",
+    run: () => cpJump("added", openCon && cpState(openCon) === "adding" ? openCon.name : undefined) },
+  { id: "pp-mine", kind: "jump", screen: "People on a consultation", label: "One you set up",
+    note: "Add people and Remove",
+    run: () => { document.getElementById("stp").classList.remove("open"); openPeople(CONS.find(c => c.createdBy === "You" && (c.team || []).length > 1) || CONS[0], 11); } },
+  { id: "pp-theirs", kind: "jump", screen: "People on a consultation", label: "One you were invited to",
+    note: "The list only",
+    run: () => { document.getElementById("stp").classList.remove("open"); openPeople(CONS.find(c => c.createdBy !== "You" && (c.team || []).includes("FF")) || CONS[0], 11); } },
+  { id: "pp-many", kind: "jump", screen: "People on a consultation", label: "A consultation with 14 people",
+    note: "Shows paging after 10",
+    run: () => { document.getElementById("stp").classList.remove("open");
+      const extra = ["a.hughes","b.osei","c.walsh","d.nguyen","e.brennan","f.karim","g.lindqvist","h.mensah","i.costa","j.rahman","k.doyle"].map(n => n + "@example.gov.uk");
+      openPeople({ name: "Future homes standard (long list)", createdBy: "You", created: "18 Aug 2026", team: ["FF","SK","ML"].concat(extra) }, 11); } },
+  { id: "pp-noacct", kind: "jump", screen: "People on a consultation", label: "Adding an address with no account",
+    run: () => { document.getElementById("stp").classList.remove("open"); openPeople(CONS.find(c => c.createdBy === "You") || CONS[0], 11); openAddPeople("priya.raghunathan@example.gov.uk, a.nother@example.gov.uk"); confirmAddPeople(); } },
   { id: "jump-cp-finding", kind: "jump", screen: "The consultation page", label: "Finding themes",
     run: () => cpJump("finding") },
   { id: "jump-cp-themes", kind: "jump", screen: "The consultation page", label: "Finalising themes",
@@ -3115,6 +3403,9 @@ const STATES = [
     run: () => jumpToSetup(true) },
   { id: "jump-theirs", kind: "jump", screen: "Data set-up", label: "One you did not create",
     run: () => jumpToSetup(false) },
+  { id: "up-chosen", kind: "jump", screen: "Upload your file", label: "File chosen, not checked yet",
+    note: "Check the file runs the checks and passes",
+    run: () => { go(6); resetUpload(); showChosen("consultation-responses.xlsx"); } },
   { id: "up-ok", kind: "jump", screen: "Upload your file", label: "Valid file",
     run: () => { go(6); resetUpload(); fakeUpload("ok"); } },
   { id: "up-err", kind: "jump", screen: "Upload your file", label: "File with problems",
@@ -3127,11 +3418,15 @@ const STATES = [
     run: () => { go(6); resetUpload(); fakeUpload("type"); } },
   { id: "up-fail", kind: "jump", screen: "Upload your file", label: "Upload failed",
     run: () => { go(6); resetUpload(); fakeUpload("fail"); } },
+  { id: "jump-dq", kind: "jump", screen: "Data set-up", label: "Delete questions",
+    note: "Step 4, with the demo file's three columns that are not questions",
+    run: () => { loadDemoData(); go(7); } },
   { id: "jump-merge", kind: "jump", screen: "Data set-up", label: "Charts and filters, answers to merge",
     run: () => {
       /* PRO-720. Step 5 with question 1 open, where the spellings arrive grouped. */
       if (!state.length) loadDemoData();
-      go(8);
+      deleteQuestions(new Set(state.map((q, i) => q.meta ? i : -1).filter(i => i > -1)));
+      go(9);
       const b = document.querySelector("#cqbody .cq-body");
       if (b) { b.classList.remove("hide"); b.previousElementSibling.setAttribute("aria-expanded", "true"); b.parentElement.scrollIntoView(); }
     } },
@@ -3161,7 +3456,7 @@ let stFilter = "all";
 /* Groups follow the journey, the same order as the screen numbers in go().
    A screen not listed here still shows, after the listed ones. */
 const ST_JOURNEY = ["Every screen", "Sign in", "Consultations", "Add a consultation",
-                    "Data set-up", "Upload your file", "The consultation page"];
+                    "Data set-up", "Upload your file", "The consultation page", "People on a consultation"];
 function stScreens(){
   const out = [];
   STATES.forEach(st => { if (!out.includes(st.screen)) out.push(st.screen); });
@@ -3264,14 +3559,179 @@ function applyConsultation(){
   if (b) b.textContent = currentCon.createdBy === "You" ? "Manage people" : "Who can see this";
 }
 
-/* Takes the consultation it is about. Data set-up passes nothing and uses the
-   one being set up; the consultation page passes the one open. */
-function peopleAction(c){
-  c = c || currentCon;
-  alert(c.createdBy === "You" || role === "sa"
-    ? "Adding and removing people on a consultation is its own page, and is not in this prototype."
-    : "Anyone on a consultation can see who else is on it. The page itself is not in this prototype.");
+
+/* ── PRO-830: people on a consultation ──
+   One page for everyone on the consultation. The person who set it up, and
+   superadmin, add and remove; anyone invited sees the list only, with the
+   controls absent rather than greyed (IDR-068). People are shown by email
+   address, as the live product does: accounts carry no name there.
+   Superadmin is never listed (permissions tables, section III row 4). */
+const PP_EMAIL = {
+  FF: "f.fisher@example.gov.uk", SK: "sam.kaur@example.gov.uk", ML: "maya.lund@example.gov.uk",
+  PR: "priya.raghunathan@example.gov.uk", JP: "jo.patel@example.gov.uk", LO: "lee.okafor@example.gov.uk"
+};
+const PP_BY_NAME = { "You": "FF", "Sam Kaur": "SK", "Maya Lund": "ML", "Priya Raghunathan": "PR" };
+/* Every address with a Consult account. Anything else is refused: the live
+   page only adds existing accounts. To confirm with engineering. */
+const PP_ACCOUNTS = Object.values(PP_EMAIL);
+let ppCon = null, ppFrom = 11, ppRemoving = null;
+
+function ppSetter(c){ return PP_BY_NAME[c.createdBy] || null; }
+function ppPeople(c){
+  const s = ppSetter(c), t = (c.team || []).slice();
+  if (s && !t.includes(s)) t.unshift(s);
+  /* The person who set it up first, then in the order they were added. */
+  return s ? [s].concat(t.filter(x => x !== s)) : t;
 }
+function ppCanManage(c){ return c.createdBy === "You" || role === "sa"; }
+
+/* Opened from the consultation page or the data set-up overview. Back returns
+   to whichever it was. */
+function peopleAction(c){
+  const from = document.getElementById("s11").classList.contains("hide") ? 3 : 11;
+  c = c || currentCon;
+  let con = CONS.find(x => x.name === c.name);
+  if (!con) {
+    con = { name: c.name, createdBy: c.createdBy || "You", created: "today", team: ["FF", "SK", "ML"], hasData: false, state: "nodata" };
+    CONS.push(con);
+  }
+  openPeople(con, from);
+}
+function openPeople(con, from){
+  ppCon = con; ppFrom = from || 11; ppPage = 1;
+  document.getElementById("pp-notice").innerHTML = "";
+  document.getElementById("pp-back").textContent = ppFrom === 3 ? "Back to data set-up" : "Back to the consultation";
+  renderPeople();
+  go(13);
+}
+function peopleBack(){
+  if (ppFrom === 3) { go(3); return; }
+  openConsultation(ppCon.name);
+}
+
+function renderPeople(){
+  const c = ppCon, can = ppCanManage(c), people = ppPeople(c), setter = ppSetter(c);
+  document.getElementById("pp-sub").textContent = c.name + " · " + (people.length === 1 ? "1 person" : people.length + " people");
+  document.getElementById("pp-add-btn").classList.toggle("hide", !can);
+  document.getElementById("pp-readonly").classList.toggle("hide", can);
+  document.getElementById("pp-list").classList.toggle("view-only", !can);
+  document.getElementById("pp-head").innerHTML = "<span>Email address</span>" + (can ? "<span>Actions</span>" : "");
+  const pages = Math.max(1, Math.ceil(people.length / ppSize));
+  if (ppPage > pages) ppPage = pages;
+  const start = (ppPage - 1) * ppSize, end = Math.min(start + ppSize, people.length);
+  renderPeoplePager(people.length, start, end, pages);
+  document.getElementById("pp-rows").innerHTML = people.slice(start, end).map(k => {
+    const email = PP_EMAIL[k] || k;
+    const you = k === "FF" ? " (you)" : "";
+    const tag = k === setter ? '<span class="pp-tag">Creator</span>' : "";
+    const act = !can ? "" : `<span class="home-action">${k === setter ? "" :
+      `<button class="home-del" onclick="openRemovePerson('${k}')">Remove<span class="sr-only"> ${esc(email)}</span></button>`}</span>`;
+    return `<div class="home-row"><span class="home-con-name">${esc(email)}${you}${tag}</span>${act}</div>`;
+  }).join("");
+}
+
+/* The same pager as Consultations: ten a page by default, per IDR on table
+   defaults, with the choice of 25 or 50. */
+let ppPage = 1, ppSize = 10;
+function renderPeoplePager(total, start, end, pages){
+  const nums = [];
+  for (let i = 1; i <= pages; i++) {
+    if (i === 1 || i === pages || Math.abs(i - ppPage) <= 1) nums.push(i);
+    else if (nums[nums.length - 1] !== "gap") nums.push("gap");
+  }
+  document.getElementById("pp-pager").innerHTML = `<span class="hint">Showing ${start + 1} to ${end} of ${total}</span>
+    <nav class="pager-pages" aria-label="People pages">
+      <button class="pg" onclick="ppGo(${ppPage - 1})" ${ppPage === 1 ? "disabled" : ""} aria-label="Previous page">‹</button>
+      ${nums.map(i => i === "gap" ? '<span class="pg-gap" aria-hidden="true">…</span>'
+        : `<button class="pg" onclick="ppGo(${i})" ${i === ppPage ? 'aria-current="page"' : ""} aria-label="Page ${i}">${i}</button>`).join("")}
+      <button class="pg" onclick="ppGo(${ppPage + 1})" ${ppPage === pages ? "disabled" : ""} aria-label="Next page">›</button>
+    </nav>
+    <label class="page-size">Per page
+      <select onchange="ppSize=parseInt(this.value,10);ppPage=1;renderPeople();">
+        <option value="10"${ppSize === 10 ? " selected" : ""}>10</option>
+        <option value="25"${ppSize === 25 ? " selected" : ""}>25</option>
+        <option value="50"${ppSize === 50 ? " selected" : ""}>50</option>
+      </select>
+    </label>`;
+}
+function ppGo(n){ ppPage = n; renderPeople(); }
+
+function ppNotice(msg){
+  const box = document.getElementById("pp-notice");
+  box.innerHTML = `<div class="notice-ok" role="status" tabindex="-1"><button class="notice-close" onclick="document.getElementById('pp-notice').innerHTML=''" aria-label="Dismiss this message">&times;</button>${msg}</div>`;
+  box.firstChild.focus();
+}
+
+function openAddPeople(prefill){
+  document.getElementById("pp-add-lead").textContent = "They can see " + ppCon.name + " and work on it.";
+  const t = document.getElementById("pp-emails");
+  t.value = prefill || "";
+  ppClearErrors();
+  document.getElementById("pp-add-modal").classList.add("open");
+  t.focus();
+}
+function closeAddPeople(){ document.getElementById("pp-add-modal").classList.remove("open"); }
+function ppClearErrors(){
+  clearSummary("err-summary-pp");
+  const e = document.getElementById("pp-emails-err"), t = document.getElementById("pp-emails");
+  e.classList.add("hide"); e.textContent = "";
+  t.removeAttribute("aria-invalid");
+  t.setAttribute("aria-describedby", "pp-emails-hint");
+}
+function ppError(msg){
+  const e = document.getElementById("pp-emails-err"), t = document.getElementById("pp-emails");
+  e.textContent = msg; e.classList.remove("hide");
+  t.setAttribute("aria-invalid", "true");
+  t.setAttribute("aria-describedby", "pp-emails-hint pp-emails-err");
+  errSummary("err-summary-pp", [{ href: "pp-emails", text: msg }], "");
+}
+
+/* The whole box is checked before anything is added, so a list is never half
+   added. Addresses already on the consultation are skipped and said so. */
+function confirmAddPeople(){
+  const raw = document.getElementById("pp-emails").value;
+  const list = [...new Set(raw.split(/[\s,;]+/).map(s => s.trim().toLowerCase()).filter(Boolean))];
+  if (!list.length) { ppError("Enter at least one email address"); return; }
+  const bad = list.filter(s => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s));
+  if (bad.length) { ppError("Enter email addresses in the right format, like name@example.gov.uk. Check " + bad.join(", ")); return; }
+  const none = list.filter(s => !PP_ACCOUNTS.includes(s));
+  if (none.length) {
+    ppError((none.length === 1 ? "No Consult account for " : "No Consult accounts for ") + none.join(", ") + ". Check the address, or take it out of the list");
+    return;
+  }
+  const on = ppPeople(ppCon).map(k => PP_EMAIL[k] || k);
+  const already = list.filter(s => on.includes(s));
+  const fresh = list.filter(s => !on.includes(s));
+  fresh.forEach(s => {
+    const k = Object.keys(PP_EMAIL).find(x => PP_EMAIL[x] === s) || s;
+    ppCon.team = (ppCon.team || []).concat([k]);
+  });
+  closeAddPeople();
+  renderPeople();
+  let msg = fresh.length === 1 ? "1 person added." : fresh.length + " people added.";
+  if (!fresh.length) msg = "Nobody added.";
+  if (already.length) msg += " " + already.map(esc).join(", ") + (already.length === 1 ? " is" : " are") + " already on this consultation.";
+  ppNotice(msg);
+}
+
+/* Removing cuts off someone else's access straight away, so it asks first, as
+   the live product does. Not destructive: they can be added again. */
+function openRemovePerson(k){
+  ppRemoving = k;
+  document.getElementById("pp-rm-lead").textContent =
+    (PP_EMAIL[k] || k) + " can no longer see " + ppCon.name + ". They can be added again.";
+  document.getElementById("pp-rm-modal").classList.add("open");
+  document.getElementById("pp-rm-confirm").focus();
+}
+function closeRemovePerson(){ document.getElementById("pp-rm-modal").classList.remove("open"); }
+function confirmRemovePerson(){
+  const k = ppRemoving;
+  ppCon.team = (ppCon.team || []).filter(x => x !== k);
+  closeRemovePerson();
+  renderPeople();
+  ppNotice(esc(PP_EMAIL[k] || k) + " removed.");
+}
+
 
 /* ── consultations, as data ── */
 let CONS = [
@@ -3295,7 +3755,7 @@ let CONS = [
   { createdBy: "You", name: "DCMS C4 (Clone)", created: "15 Sep 2026", team: ["FF"], hasData: true },
   { createdBy: "You", name: "Permitted development rights review (Clone)", created: "3 Sep 2026", team: ["FF"], hasData: true }
 ];
-const AV = { FF: ["you", "You"], SK: ["tm-s", "Sam Kaur"], ML: ["tm-m", "Maya Lund"] };
+const AV = { FF: ["you", "You"], SK: ["tm-s", "Sam Kaur"], ML: ["tm-m", "Maya Lund"], PR: ["tm-s", "Priya Raghunathan"], JP: ["tm-m", "Jo Patel"], LO: ["tm-s", "Lee Okafor"] };
 let currentCon = { name: "Future homes standard", createdBy: "You", meta: "Created by you on 18 August 2026. Three people can see it." };
 let openCon = null;
 
@@ -3380,7 +3840,8 @@ function sortCons(list){
 /* ── The links under a consultation's name ──
    Only what works in its state, and View evaluation for superadmin only, as the
    live product does. The consultation page carries the same next step.
-     Data set-up        Upload and check
+     Data set-up        Upload and check, nothing while the responses are
+                        being added, Continue set-up once they are
      Finalising themes  Finalise themes
      Analysis           View dashboard
      anything else    nothing, the Status column says why                      */
@@ -3394,6 +3855,7 @@ const ICONS = {
 const ROW_LINKS = {
   open:      { label: "View consultation", run: k => openConsultation(CONS[k].name), icon: "file" },
   upload:    { label: "Upload and check", run: k => resumeSetup(CONS[k].name),   icon: "upload" },
+  resume:    { label: "Continue set-up",  run: k => continueSetup(CONS[k].name), icon: "upload" },
   evaluate:  { label: "View evaluation",  run: () => notBuilt("Evaluation"),      icon: "search" },
   finalise:  { label: "Finalise themes",  run: () => notBuilt("Finalise themes"), icon: "check" },
   dashboard: { label: "View dashboard",   run: () => notBuilt("Dashboard"),       icon: "chart" }
@@ -3401,8 +3863,10 @@ const ROW_LINKS = {
 function rowLinkKeys(c){
   const st = cpState(c), keys = [];
   /* Same order as the live product: evaluation, themes, dashboard. */
-  if (role === "sa" && st !== "nodata") keys.push("evaluate");
+  const setup = st === "nodata" || st === "adding" || st === "added";
+  if (role === "sa" && !setup) keys.push("evaluate");
   if (st === "nodata") keys.push("upload");
+  if (st === "added") keys.push("resume");
   if (st === "themes") keys.push("finalise");
   if (st === "done") keys.push("dashboard");
   return keys;
@@ -3460,7 +3924,7 @@ function renderHome(notice){
         <span class="home-go">${rowChips(c, k)}</span>
         <span class="home-date">${esc(c.created)}</span>
         <span class="home-date${c.createdBy === "You" ? "" : " home-other"}">${esc(c.createdBy || "")}</span>
-        <span class="home-team">${c.team.length ? `<span class="avs" aria-label="Team">${c.team.map(t => `<span class="av ${AV[t][0]}" title="${AV[t][1]}">${t}</span>`).join("")}</span>` : `<span class="dash">—</span>`}</span>
+        <span class="home-team">${c.team.length ? `<span class="avs" aria-label="Team">${c.team.map(t => `<span class="av ${(AV[t] || ["tm-s"])[0]}" title="${(AV[t] || [0, t])[1]}">${AV[t] ? t : "?"}</span>`).join("")}</span>` : `<span class="dash">—</span>`}</span>
         <span class="home-action">${(ownedByMe(c) || role === "sa")
             ? `<button class="home-del" onclick="askDelete([CONS[${k}].name])">Delete</button>`
             : `<span class="dash">—</span>`}</span>
@@ -3519,6 +3983,30 @@ function setHandedOver(on){
   go(1);
 }
 function dismissUserNotice(){ document.getElementById("du-notice").innerHTML = ""; }
+
+/* PRO-920. The person agrees to the upload. The file is sent, which takes
+   seconds, and the consultation moves to "being added". They land on the
+   consultation page and can leave. */
+function uploadResponses(){
+  const name = currentCon && currentCon.name;
+  let c = CONS.find(x => x.name === name);
+  if (!c) {
+    c = { name: name || "New consultation", createdBy: "You", created: "today", team: ["FF"], hasData: false };
+    CONS.unshift(c);
+  }
+  c.state = "adding";
+  openConsultation(c.name);
+}
+
+/* Back into set-up once the responses are added: step 4, Delete questions. */
+function continueSetup(name){
+  const c = CONS.find(x => x.name === name) || openCon;
+  currentCon = { name: c.name, createdBy: c.createdBy,
+    meta: (c.createdBy === "You" ? "Created by you on " : "Created by " + c.createdBy + " on ") + c.created + "." };
+  applyConsultation();
+  if (!REAL) loadDemoData();
+  go(7);
+}
 
 function resumeSetup(name){
   const c = CONS.find(x => x.name === name);
@@ -3660,6 +4148,21 @@ const CP_STATES = {
     p: "The responses are not uploaded yet.",
     action: { label: "Set up the data", run: n => resumeSetup(n) }
   },
+  /* PRO-920. Still the Data set-up status: no sixth status. Sending the file
+     takes seconds; adding the responses can take hours, so the person is not
+     kept on step 3. If the job stops, nothing says so in V1 (IDR-083). */
+  adding: {
+    tag: "Data set-up", tone: "work",
+    h: "Data set-up",
+    p: "Consult is adding the responses. This can take a few hours. You can leave this page.",
+    busy: "Consult is adding the responses"
+  },
+  added: {
+    tag: "Data set-up", tone: "wait",
+    h: "Data set-up",
+    p: "The responses are added. Continue set-up to check the questions.",
+    action: { label: "Continue set-up", run: n => continueSetup(n) }
+  },
   finding: {
     tag: "Finding themes", tone: "work",
     h: "Consult is finding themes",
@@ -3694,7 +4197,7 @@ function openConsultation(name){
   openCon = CONS.find(c => c.name === name) || { name, state: "nodata", createdBy: "You", created: "today", team: ["FF"] };
   cpRenameCancel();
   renderConsultation();
-  go(10);
+  go(11);
 }
 
 function cpSetState(name, st){
@@ -3757,7 +4260,7 @@ function renderConsultation(){
     mine ? "Add and remove people on this consultation" : "Everyone on a consultation can see who else is on it",
     "peopleAction(openCon)", false));
 
-  if (st !== "nodata")
+  if (st !== "nodata" && st !== "adding")
     rows.push(cpRow("View all responses", "Every response, as it was uploaded", "notBuilt('Viewing all responses')", false));
 
 
@@ -4219,7 +4722,7 @@ const PROBLEMS = [
     detail: "The upload stops until they are unmerged. Unmerge them and put one question in each column." },
   { id: "p7", check: null, block: true, title: "Row 31 has characters Consult cannot read",
     detail: "This usually comes from text copied out of another program. Retype the answer, or delete the characters." },
-  { id: "p3", check: null, block: false, title: "2 responses had every answer empty and were removed",
+  { id: "p3", check: null, block: false, title: "2 responses had only demographic answers or none. They were removed.",
     detail: "Rows 9 and 14. They are not counted." },
   { id: "p5", check: "c10", block: false, title: "Column B looks like email addresses",
     detail: "Flagging it in case it was not intended. What happens to it is your department's decision, not ours." },
@@ -4275,7 +4778,7 @@ function jumpTo(id){
 function clearSummary(id){ document.getElementById(id).innerHTML = ""; }
 
 const SYS = {
-  big: { t: "This file is too large", b: "consultation-responses.xlsx is 78MB. The limit is 50MB.",
+  big: { t: "This file is too large", b: "consultation-responses.xlsx is 240MB. The limit is 200MB.",
          x: "<p class='hint'>If your consultation is large, splitting by question will not help. Consult needs one file. Remove any columns that are not responses, and delete unused sheets, which are often most of the size.</p>" },
   type: { t: "Consult cannot read this file type", b: "You uploaded responses.pdf. Consult reads .xlsx and .csv only.",
           x: "<p class='hint'>If the responses are in a document rather than a spreadsheet, they need to be laid out with question wording in row 1 first. The template on step 2 has that structure.</p>" },
@@ -4308,11 +4811,40 @@ function handleFile(input){
   if (!file) return;
   const name = file.name, ext = name.split(".").pop().toLowerCase();
   if (!["csv", "xlsx"].includes(ext)) { fakeUpload("type"); return; }
-  if (file.size > 50 * 1024 * 1024) { fakeUpload("big"); return; }
+  if (file.size > 200 * 1024 * 1024) { fakeUpload("big"); return; }
   if (ext === "xlsx" && typeof XLSX === "undefined") {
     showParseMsg("This viewer could not load the spreadsheet reader, so .xlsx files can't be opened here. Upload the same data as .csv, or use a scenario in the States panel.");
     return;
   }
+  /* PRO-920. File type and size are known before anything is sent, so those
+     show straight away. Everything else waits for Check the file. */
+  pendingFile = file;
+  showChosen(name);
+}
+
+let pendingFile = null;
+function showChosen(name){
+  document.getElementById("up-idle").classList.add("hide");
+  ["up-ok","up-err","up-empty","up-sys"].forEach(i => document.getElementById(i).classList.add("hide"));
+  document.getElementById("up-chosen-name").textContent = name;
+  document.getElementById("up-chosen-actions").classList.remove("hide");
+  document.getElementById("up-checking").classList.add("hide");
+  document.getElementById("up-chosen").classList.remove("hide");
+  document.getElementById("s6-next").classList.add("hide");
+}
+/* The first agreement: the file is sent and checked. Seconds, not minutes. */
+function checkFile(){
+  document.getElementById("up-chosen-actions").classList.add("hide");
+  document.getElementById("up-checking").classList.remove("hide");
+  setTimeout(() => {
+    document.getElementById("up-chosen").classList.add("hide");
+    if (pendingFile) readFile(pendingFile);
+    else fakeUpload("ok");
+  }, 900);
+}
+
+function readFile(file){
+  const name = file.name, ext = name.split(".").pop().toLowerCase();
   const reader = new FileReader();
   reader.onerror = () => fakeUpload("fail");
   reader.onload = e => {
@@ -4367,7 +4899,7 @@ function ingest(grid, filename){
      Duplicate question wording is no longer checked at upload: it is not one
      of the agreed checks, and step 4 still flags it (IDR-041). */
   if (emptyRows) advis.push({ id: "d5", check: null, block: false,
-    title: `${emptyRows} response${emptyRows > 1 ? "s" : ""} had every answer empty and ${emptyRows > 1 ? "were" : "was"} removed`,
+    title: `${emptyRows} response${emptyRows > 1 ? "s" : ""} had only demographic answers or none. ${emptyRows > 1 ? "They were" : "It was"} removed.`,
     detail: "They are not counted." });
 
   const longHeaders = header.filter(c => c.length > 180).length;
@@ -4423,7 +4955,7 @@ function ingest(grid, filename){
   applyReal();
 
   document.getElementById("up-idle").classList.add("hide");
-  ["up-ok","up-err","up-empty","up-sys"].forEach(i => document.getElementById(i).classList.add("hide"));
+  ["up-ok","up-err","up-empty","up-sys","up-chosen"].forEach(i => document.getElementById(i).classList.add("hide"));
   if (probs.length) { renderProblemsFrom(probs, advis, filename); document.getElementById("up-err").classList.remove("hide"); document.getElementById("s6-next").classList.add("hide"); }
   else { renderOk(filename, advis); document.getElementById("up-ok").classList.remove("hide"); document.getElementById("s6-next").classList.remove("hide"); }
 }
@@ -4432,7 +4964,9 @@ function colName(j){ let s = ""; j++; while (j > 0) { const m = (j - 1) % 26; s 
 
 function applyReal(){
   state.length = 0;
-  REAL.cols.forEach(c => state.push({ text: c.text, origText: c.text, type: c.type, suggested: c.type, changed: false, links: [], proposed: null, rejected: [] }));
+  REAL.cols.forEach((c, n) => state.push({ text: c.text, origText: c.text, type: c.type, suggested: c.type, changed: false, links: [], proposed: null, rejected: [], qi: n }));
+  dqSel.clear();
+  document.getElementById("dq-notice").innerHTML = "";
   for (const k in catState) delete catState[k];
   for (const k in catSel) delete catSel[k];
   for (const k in cqLabel) delete cqLabel[k];
@@ -4447,7 +4981,7 @@ function applyReal(){
 
 function renderOk(filename, advis){
   const p = document.getElementById("up-ok");
-  p.querySelector("h2").textContent = `${filename} is ready`;
+  p.querySelector("h2").textContent = `${filename} passed the checks`;
   p.querySelectorAll(".stat b")[0].textContent = REAL.header.length;
   p.querySelectorAll(".stat b")[1].textContent = REAL.body.length.toLocaleString();
   p.querySelectorAll(".stat b")[2].textContent = REAL.blanks.toLocaleString();
@@ -4475,7 +5009,7 @@ function renderProblemsFrom(probs, advis, filename){
 function fakeUpload(kind){
   document.getElementById("up-idle").classList.add("hide");
   document.getElementById("parse-msg").className = "hide";
-  ["up-ok","up-err","up-empty","up-sys"].forEach(i => document.getElementById(i).classList.add("hide"));
+  ["up-ok","up-err","up-empty","up-sys","up-chosen"].forEach(i => document.getElementById(i).classList.add("hide"));
   if (SYS[kind]) {
     const s = SYS[kind];
     document.getElementById("sys-title").textContent = s.t;
@@ -4485,14 +5019,127 @@ function fakeUpload(kind){
     document.getElementById("up-sys").classList.remove("hide");
   } else {
     const map = { ok: "up-ok", err: "up-err", empty: "up-empty" };
+    if (kind === "ok" && !REAL) {
+      if (!state.length) fillDemo();
+      document.querySelector("#up-ok .stat b").textContent = state.length;
+    }
     document.getElementById(map[kind]).classList.remove("hide");
     if (kind === "err") renderProblems();
   }
   document.getElementById("s6-next").classList.toggle("hide", kind !== "ok");
 }
 
+/* ── PRO-835: delete questions, step 4 of data set-up ──
+   Its own step, straight after the upload and before the questions are reviewed.
+   Tick several, delete them together, one confirmation. A hard delete: the
+   question and its answers are removed and cannot be brought back. Every user on
+   the consultation can do it, so nothing here changes by role. */
+const dqSel = new Set();
+const dqOpen = new Set();
+
+function renderDQ(){
+  const total = state.length;
+  document.getElementById("dq-summary").textContent = total === 1 ? "1 question" : total + " questions";
+  document.getElementById("dqbody").innerHTML = state.map((q, i) => {
+    const on = dqSel.has(i), open = dqOpen.has(i);
+    const s = samplesFor(i, q.type);
+    return `<tr id="dqrow${i}" class="${on ? "dq-on" : ""}">
+      <td class="qsel"><input type="checkbox" id="dq${i}" ${on ? "checked" : ""} onchange="dqTick(${i}, this.checked)"></td>
+      <td class="qnum">Q${i + 1}</td>
+      <td class="qtext"><label for="dq${i}">${esc(q.text)}</label>
+        <button class="btn-quiet show-ans" onclick="dqToggle(${i}, this)" aria-expanded="${open}" aria-controls="dqs${i}">${open ? "Hide" : "Show"} answers</button>
+        <div class="samples ${open ? "" : "hide"}" id="dqs${i}">
+          <p class="samples-lbl">${samplesLabel(i, q)}</p>
+          ${q.type === "open" ? s.map(x => `<p>${esc(x)}</p>`).join("") : `<p class="samples-list">${s.map(esc).join(" · ")}</p>`}
+        </div></td>
+    </tr>`;
+  }).join("");
+  dqBar();
+}
+
+/* Ticking changes the row shade and the bar only, so focus and scroll stay put. */
+function dqTick(i, on){
+  if (on) dqSel.add(i); else dqSel.delete(i);
+  document.getElementById("dqrow" + i).classList.toggle("dq-on", on);
+  dqBar();
+}
+function dqToggle(i, btn){
+  const open = !dqOpen.has(i);
+  if (open) dqOpen.add(i); else dqOpen.delete(i);
+  document.getElementById("dqs" + i).classList.toggle("hide", !open);
+  btn.setAttribute("aria-expanded", open);
+  btn.textContent = (open ? "Hide" : "Show") + " answers";
+}
+function dqBar(){
+  const n = dqSel.size;
+  document.getElementById("dq-bar").innerHTML = n
+    ? `<div class="sel-bar"><span class="n">${n} selected</span>
+         <button class="btn btn-warning btn-sm" onclick="openDQ()">Delete selected questions</button>
+         <button class="btn-quiet" style="font-size:var(--t-hint);" onclick="dqClear()">Clear selection</button></div>`
+    : "";
+}
+function dqClear(){ dqSel.clear(); renderDQ(); }
+
+/* Same shape as deleting a consultation: imperative title with no question mark,
+   the consequence and then that it cannot be undone, the names in the body. */
+function openDQ(){
+  const idx = [...dqSel].sort((a, b) => a - b);
+  if (!idx.length) return;
+  const one = idx.length === 1;
+  document.getElementById("dq-t").textContent = one ? "Delete question" : "Delete questions";
+  document.getElementById("dq-lead").textContent = one
+    ? "Deleting removes the question and its answers from Consult. This cannot be undone."
+    : "Deleting removes the questions and their answers from Consult. This cannot be undone.";
+  document.getElementById("dq-names").innerHTML =
+    idx.map(i => `<div><b>Q${i + 1}</b>${esc(state[i].text)}</div>`).join("");
+  document.getElementById("dq-confirm").textContent = one ? "Delete question" : "Delete questions";
+  document.getElementById("dq-modal").classList.add("open");
+  document.getElementById("dq-confirm").focus();
+}
+function closeDQ(){ document.getElementById("dq-modal").classList.remove("open"); }
+
+function confirmDQ(){
+  const n = dqSel.size;
+  deleteQuestions(new Set(dqSel));
+  dqSel.clear(); dqOpen.clear();
+  closeDQ();
+  renderDQ();
+  const box = document.getElementById("dq-notice");
+  box.innerHTML = `<div class="notice-ok" role="status" tabindex="-1">${n === 1 ? "1 question has been deleted." : n + " questions have been deleted."}</div>`;
+  box.firstChild.focus();
+}
+
+/* Removes questions and keeps everything that points at a question by its place
+   in the list pointing at the same question afterwards. */
+function deleteQuestions(del){
+  const map = {};
+  let k = 0;
+  state.forEach((q, i) => { if (!del.has(i)) map[i] = k++; });
+  const kept = state.filter((q, i) => !del.has(i));
+  const move = list => (list || []).filter(j => map[j] !== undefined).map(j => map[j]);
+  kept.forEach(q => {
+    q.links = move(q.links);
+    q.rejected = move(q.rejected);
+    q.proposed = null;
+    if (q.type === "hybrid" && !q.links.length) q.type = "closed";
+  });
+  state.length = 0;
+  kept.forEach(q => state.push(q));
+  [catState, catSel, cqLabel].forEach(o => {
+    const copy = Object.assign({}, o);
+    for (const key in o) delete o[key];
+    for (const key in copy) if (map[key] !== undefined) o[map[key]] = copy[key];
+  });
+  const os = [...openSamples];
+  openSamples.clear();
+  os.forEach(i => { if (map[i] !== undefined) openSamples.add(map[i]); });
+  page = 1;
+}
+
 function resetUpload(){
-  ["up-ok","up-err","up-empty","up-sys"].forEach(i => document.getElementById(i).classList.add("hide"));
+  pendingFile = null;
+  const rf = document.getElementById("realfile"); if (rf) rf.value = "";
+  ["up-ok","up-err","up-empty","up-sys","up-chosen"].forEach(i => document.getElementById(i).classList.add("hide"));
   clearSummary("err-summary-3");
   document.getElementById("up-idle").classList.remove("hide");
   document.getElementById("s6-next").classList.add("hide");
@@ -4581,7 +5228,7 @@ function renderPager(){
 function goPage(n){
   page = Math.min(Math.max(1, n), pageCount());
   renderQ();
-  document.querySelector("#s7 .panel").scrollIntoView({ block: "start", behavior: "instant" });
+  document.querySelector("#s8 .panel").scrollIntoView({ block: "start", behavior: "instant" });
 }
 
 function setPageSize(v){
@@ -4680,7 +5327,7 @@ function validateStep4(){
     errs.push({ href: "qbody", text: "No question is set to open, so there will be no themes to sign off" });
   if (errs.length) { errSummary("err-summary-4", errs, ""); return; }
   clearSummary("err-summary-4");
-  go(8);
+  go(9);
 }
 
 function validateStep5(){
@@ -4764,7 +5411,7 @@ function fallbackCats(i){
    because people accept defaults. We suggest only where we are confident,
    and otherwise ask. */
 const cqLabel = {};   /* question index -> short name the user has given it */
-function labelFor(i){ return cqLabel[i] !== undefined ? cqLabel[i] : (CQ_LABELS[i] || ""); }
+function labelFor(i){ return cqLabel[i] !== undefined ? cqLabel[i] : (CQ_LABELS[qiOf(i)] || ""); }
 
 const catState = {};
 const catSel = {};          /* question index -> Set of selected row keys */
@@ -4815,7 +5462,7 @@ function confirmMerge(i){
 function clearSel(i){ catSel[i] = new Set(); renderCQ(); }
 function catsFor(i){
   if (!catState[i]) {
-    const src = CATEGORIES[i] || fallbackCats(i);
+    const src = CATEGORIES[qiOf(i)] || fallbackCats(i);
     catState[i] = src.map(c => ({ name: c[0], orig: c[0], from: c[1].slice(), n: c[2] }));
   }
   return catState[i];
@@ -4876,7 +5523,7 @@ function renderCQ(){
   const nD = closed.filter(q => q.type === "demographic").length,
         nH = closed.filter(q => q.type === "hybrid").length,
         nC = closed.length - nD - nH;
-  document.getElementById("s8").querySelector("h1").textContent = "Set up your charts and filters";
+  document.getElementById("s9").querySelector("h1").textContent = "Set up your charts and filters";
   document.getElementById("s8-intro").textContent = closed.length
     ? `Your ${[nC ? nC + " closed" : null, nH ? nH + " hybrid" : null, nD ? nD + " demographic" : null].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1")} question${closed.length === 1 ? "" : "s"} each become a chart or a filter on your dashboard. They are set up from the data in the file. ${closed.filter(q => !labelFor(q.i).trim()).length ? `Open each one to give it a short name.` : `Open any that need changing.`}`
     : "Every question is open, so there are no charts or filters to set up.";
@@ -4886,7 +5533,7 @@ function renderCQ(){
   const wasOpen = new Set([...document.querySelectorAll("#cqbody .cq-body:not(.hide)")].map(e => e.id));
   const focusId = document.activeElement && document.activeElement.id;
   document.getElementById("cqbody").innerHTML = closed.map((q, n) => {
-    const f = CQ_FILTER[q.i] || "demographic";
+    const f = CQ_FILTER[qiOf(q.i)] || "demographic";
     const label = labelFor(q.i);
     const ord = orderedCats(q.i), cats = ord.cats;
     const merged = cats.filter(c => c.from.length > 1).length;
@@ -4947,7 +5594,7 @@ function renderCQ(){
               ${c.name !== c.orig ? `<button class="btn btn-sm" onclick="revertCat(${q.i},${k})">Revert</button>` : ""}
             </td></tr>`).join("")}
         </table>
-        ${cats.some(c => c.name !== c.orig) || cats.length !== (CATEGORIES[q.i] || fallbackCats(q.i)).length
+        ${cats.some(c => c.name !== c.orig) || cats.length !== (CATEGORIES[qiOf(q.i)] || fallbackCats(q.i)).length
           ? `<button class="btn-quiet" onclick="resetCats(${q.i})">Reset all answers for this question to their original names</button>` : ""}
 
         <label class="field-label" style="margin-top:18px;">How it will look on your dashboard</label>
