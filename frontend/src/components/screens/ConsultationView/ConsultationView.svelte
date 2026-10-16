@@ -324,7 +324,8 @@
     {#if user.query.isPending || consultation.query.isPending}
       <SkeletonText length={7} />
     {:else}
-      Created by {userState?.createdByText} on {userState?.createdAtText}. {consultationData?.users.length === 1
+      Created by {userState?.createdByText} on {userState?.createdAtText}. {consultationData
+        ?.users.length === 1
         ? "Only you can see it so far."
         : `${consultationData?.users.length} people can see it.`}
     {/if}

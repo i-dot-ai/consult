@@ -5,7 +5,7 @@ import UnderConstruction from "../../../../components/screens/UnderConstruction/
 import Section from "../../../../components/Section/Section.svelte";
 import Overview from "../../../../components/screens/surveyImport/Overview/Overview.svelte";
 import type { AstroGlobalRuntime } from "../../../../global/types";
-import { fetchBackendApi } from "../../../../global/api";
+import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import { getApiConsultationUrl } from "../../../../global/routes";
 import { getDataSetupV2Enabled } from "../../../../global/utils";
 
@@ -25,9 +25,10 @@ const enableV2 = getDataSetupV2Enabled();
 
 <Layout>
   <Section>
-    {enableV2
-      ? <Overview client:load consultationId={consultationId || ""} />
-      : <UnderConstruction />
-    }    
+    {enableV2 ? (
+      <Overview client:load consultationId={consultationId || ""} />
+    ) : (
+      <UnderConstruction />
+    )}
   </Section>
 </Layout>

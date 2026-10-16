@@ -580,7 +580,12 @@ export const getDataUploadUrl = (consultationId: string) => {
 };
 export const getDataUploadStepOneUrl = (consultationId: string) => {
   // TODO: Subject to change, update accordingly
-  return urlJoin(Routes.Consultations, consultationId, Suffixes.DataUpload, Suffixes.StepOne);
+  return urlJoin(
+    Routes.Consultations,
+    consultationId,
+    Suffixes.DataUpload,
+    Suffixes.StepOne,
+  );
 };
 
 export const getDataUploadFinaliseUrl = (consultationId: string) => {
