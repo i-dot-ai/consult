@@ -86,7 +86,7 @@
             ariaLabel="View who can see this consultation"
             title="View who can see this consultation"
           >
-            Who can see this
+            {userState?.isOwner || userState?.isAdmin ? "Manage people" : "Who can see this"}
           </Button>
         </div>
       </div>
