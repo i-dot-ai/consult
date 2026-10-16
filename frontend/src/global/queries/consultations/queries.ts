@@ -3,11 +3,13 @@ import {
   consultationQueryParts,
   consultationsQueryParts,
   consultationsV2QueryParts,
+  consultationV2QueryParts,
 } from "./parts";
 import type {
   ConsultationsGetResponse,
   ConsultationsV2GetResponse,
   ConsultationV2CreateResponse,
+  ConsultationV2UpdateResponse,
   UpdateConsultationBody,
 } from "./types";
 import type { Consultation } from "../../types";
@@ -29,6 +31,23 @@ export function buildConsultationV2CreateQuery(
       method: "POST",
       errorMessage: "Failed to create consultation",
       onSuccess: (data) => onSuccess(data as ConsultationV2CreateResponse),
+      onError,
+    },
+  );
+}
+
+export function buildConsultationV2UpdateQuery(
+  consultationId: string,
+  onSuccess: (data: ConsultationV2UpdateResponse) => Promise<void>,
+  onError: (error: FetchError<unknown>) => Promise<void>,
+) {
+  return buildQuery<ConsultationV2UpdateResponse>(
+    consultationV2QueryParts.url(consultationId),
+    {
+      key: [...consultationV2QueryParts.key(consultationId), "update"],
+      method: "PATCH",
+      errorMessage: "Failed to update consultation",
+      onSuccess: (data) => onSuccess(data as ConsultationV2UpdateResponse),
       onError,
     },
   );

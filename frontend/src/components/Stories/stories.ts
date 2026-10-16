@@ -49,6 +49,8 @@ import DataTableStory from "../DataTable/DataTableStory.svelte";
 import AlertStory from "../Alert/AlertStory.svelte";
 import AddConsultationFormStory from "../screens/AddConsultationForm/AddConsultationFormStory.svelte";
 import ConsultationViewStory from "../screens/ConsultationView/ConsultationViewStory.svelte";
+import RadioCardsStory from "../inputs/RadioCards/RadioCardsStory.svelte";
+import ExportResponsesPageStory from "../data/ExportResponsesPage/ExportResponsesPageStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -124,4 +126,6 @@ export default [
   AlertStory,
   AddConsultationFormStory,
   ConsultationViewStory,
+  RadioCardsStory,
+  ExportResponsesPageStory,
 ] as Story[];

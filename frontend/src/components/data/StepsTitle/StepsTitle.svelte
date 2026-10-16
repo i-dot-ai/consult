@@ -5,15 +5,18 @@
 
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Title from "../../Title.svelte";
+  import Tag from "../../Tag/Tag.svelte";
+  import OpenInNew from "../../svg/material/OpenInNew.svelte";
 
   interface Props {
     text: string;
     currentStep: number;
     totalSteps: number;
     Icon: Component;
+    tag?: string;
   }
 
-  let { text = "", currentStep, totalSteps, Icon }: Props = $props();
+  let { text = "", currentStep, totalSteps, Icon, tag }: Props = $props();
 
   let stepsIndeces = $derived([...Array(totalSteps).keys()]);
 
@@ -58,6 +61,17 @@
         Step {currentStep} of {totalSteps}: {text}
       </span>
     </Title>
+
+    {#if tag}
+      <div class="mt-1.5 ml-1">
+        <Tag>
+          <MaterialIcon size="0.8rem" color="fill-neutral-600">
+            <OpenInNew />
+          </MaterialIcon>
+          {tag}
+        </Tag>
+      </div>
+    {/if}
 
     <div
       class={clsx([

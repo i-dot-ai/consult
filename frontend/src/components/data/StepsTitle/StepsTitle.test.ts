@@ -53,4 +53,18 @@ describe("StepsTitle", () => {
     const { container } = render(StepsTitle, testData);
     expect(container).toMatchSnapshot();
   });
+
+  it("should render tag when provided", () => {
+    render(StepsTitle, { ...testData, tag: "Happens outside Consult" });
+
+    expect(screen.getByText("Happens outside Consult")).toBeInTheDocument();
+  });
+
+  it("should not render tag by default", () => {
+    render(StepsTitle, testData);
+
+    expect(
+      screen.queryByText("Happens outside Consult"),
+    ).not.toBeInTheDocument();
+  });
 });
