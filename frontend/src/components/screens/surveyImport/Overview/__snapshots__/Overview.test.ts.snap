@@ -1,0 +1,1463 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Overview > should match snapshot after loading 1`] = `
+<div>
+  <section
+    class="mb-6"
+  >
+    <!---->
+    <h1
+      class="text-neutral-700 text-xl"
+    >
+      <!---->
+      <!---->
+      <span
+        class="text-2xl"
+      >
+        Upload and check the responses
+      </span>
+      
+      
+      
+    </h1>
+    
+    <!---->
+     
+    <div
+      class="-mt-2"
+    >
+      <div
+        class="h-full my-4 p-4 rounded-2xl border border-gray-300 bg-neutral-100"
+        data-testid="panel-component"
+      >
+        <div
+          class="flex justify-between items-center gap-4"
+        >
+          <div>
+            <!---->
+            <h2
+              class="text-neutral-700 text-lg"
+            >
+              <!---->
+              <!---->
+              <span
+                class="text-md"
+              >
+                <span>
+                  Dummy Consultation at Analysis Stage
+                </span>
+                <!---->
+              </span>
+              
+              
+              
+            </h2>
+            
+            <!---->
+             
+            <p
+              class="text-md text-neutral-500"
+            >
+              <span>
+                Created by an unknown user on 1/29/2026.
+              </span>
+              <!---->
+            </p>
+          </div>
+           
+          <div
+            class="my-auto"
+          >
+            <!---->
+            <button
+              aria-label="View who can see this consultation"
+              aria-pressed="false"
+              class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              data-variant="default"
+              role="button"
+              tabindex="0"
+              title="View who can see this consultation"
+            >
+              <!---->
+              <!---->
+              Manage people
+              
+              
+              
+            </button>
+            
+            <!---->
+          </div>
+        </div>
+        <!---->
+      </div>
+      <!---->
+    </div>
+     
+    <p
+      class="text-neutral-500 text-md my-6"
+    >
+      Consult analyses files of consultation responses. These five steps upload
+    the file, check it and confirm the question type.
+    </p>
+     
+    <div
+      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      data-testid="panel-component"
+    >
+      <!---->
+      <!---->
+      <h2
+        class="text-neutral-700 text-lg"
+      >
+        <!---->
+        <!---->
+        <span
+          class="text-lg"
+        >
+          Importance of getting this set up right
+        </span>
+        
+        
+        
+      </h2>
+      
+      <!---->
+       
+      <p
+        class="text-neutral-500 text-md my-6"
+      >
+        Every question is either open, closed or hybrid and that impacts the
+      format in the app
+      </p>
+       
+      <div
+        class="flex items-start gap-4 mb-6"
+      >
+        <div
+          class="shrink-0"
+        >
+          <svg
+            aria-hidden="true"
+            class="fill-secondary"
+            height="1.5rem"
+            viewBox="0 -960 960 960"
+            width="1.5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!---->
+            <!---->
+            <path
+              d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         
+        <p
+          class="text-md text-neutral-700"
+        >
+          <p>
+            
+            
+            <strong>
+              Open questions
+            </strong>
+             are free text. Consult reads every answer and groups them into themes, which can then be edited, merged and signed off. Those themes allow for analysis.
+          
+          </p>
+          <!---->
+        </p>
+      </div>
+      <!---->
+       
+      <div
+        class="flex items-start gap-4 mb-6"
+      >
+        <div
+          class="shrink-0"
+        >
+          <svg
+            aria-hidden="true"
+            class="fill-secondary"
+            height="1.5rem"
+            viewBox="0 -960 960 960"
+            width="1.5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!---->
+            <!---->
+            <path
+              d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         
+        <p
+          class="text-md text-neutral-700"
+        >
+          <p>
+            
+            
+            <strong>
+              Closed questions
+            </strong>
+             have a fixed set of answers. Consult enables these answers to act as filters, so you can read the themes for one sector, region or respondent type at a time.
+          
+          </p>
+          <!---->
+        </p>
+      </div>
+      <!---->
+      <!---->
+    </div>
+    <!---->
+  </section>
+   
+  <section
+    class="mb-6"
+  >
+    <div
+      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      data-testid="panel-component"
+    >
+      <!---->
+      <!---->
+      <h2
+        class="text-neutral-700 text-lg"
+      >
+        <!---->
+        <!---->
+        The five steps
+        
+        
+        
+      </h2>
+      
+      <!---->
+       
+      <p
+        class="text-neutral-500 text-sm mt-4 mb-8"
+      >
+        The first two happen in your survey tool and your spreadsheet. They are
+      part of the job, so they are listed here with the rest.
+      </p>
+       
+      <div
+        class="ml-8 border-l"
+      >
+        <div
+          class="flex gap-4 relative mb-8 -ml-10 pl-4"
+        >
+          <div
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="2rem"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <div>
+            <small>
+              Step 1
+            </small>
+             
+            <h3>
+              Export the responses
+            </h3>
+             
+            <div
+              class="my-2"
+            >
+              <div
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800 border border-neutral-300"
+              >
+                <span
+                  class="flex items-center gap-2"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="fill-neutral-500"
+                    height="0.8rem"
+                    viewBox="0 -960 960 960"
+                    width="0.8rem"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <!---->
+                    <!---->
+                    <path
+                      d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"
+                      xmlns="http://www.w3.org/2000/svg"
+                    />
+                    
+                    <!---->
+                  </svg>
+                  <!---->
+                   Happens outside Consult
+                </span>
+                <!---->
+              </div>
+              <!---->
+            </div>
+            <!---->
+             
+            <p
+              class="text-neutral-500 text-sm"
+            >
+              Get your data out of Qualtrics or Citizen Space
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex gap-4 relative mb-8 -ml-10 pl-4"
+        >
+          <div
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="2rem"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <div>
+            <small>
+              Step 2
+            </small>
+             
+            <h3>
+              Prepare your file
+            </h3>
+             
+            <div
+              class="my-2"
+            >
+              <div
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800 border border-neutral-300"
+              >
+                <span
+                  class="flex items-center gap-2"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="fill-neutral-500"
+                    height="0.8rem"
+                    viewBox="0 -960 960 960"
+                    width="0.8rem"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <!---->
+                    <!---->
+                    <path
+                      d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"
+                      xmlns="http://www.w3.org/2000/svg"
+                    />
+                    
+                    <!---->
+                  </svg>
+                  <!---->
+                   Happens outside Consult
+                </span>
+                <!---->
+              </div>
+              <!---->
+            </div>
+            <!---->
+             
+            <p
+              class="text-neutral-500 text-sm"
+            >
+              Set it up in the right way for Consult, and remove personal information if needed
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex gap-4 relative mb-8 -ml-10 pl-4"
+        >
+          <div
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="2rem"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <div>
+            <small>
+              Step 3
+            </small>
+             
+            <h3>
+              Upload your file
+            </h3>
+             
+            <!---->
+             
+            <p
+              class="text-neutral-500 text-sm"
+            >
+              Provided data is in the correct format, Consult uploads it into the app
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex gap-4 relative mb-8 -ml-10 pl-4"
+        >
+          <div
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="2rem"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q8 0 15 1.5t14 4.5l-74 74H200v560h560v-266l80-80v346q0 33-23.5 56.5T760-120H200Zm261-160L235-506l56-56 170 170 367-367 57 55-424 424Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <div>
+            <small>
+              Step 4
+            </small>
+             
+            <h3>
+              Review your questions
+            </h3>
+             
+            <!---->
+             
+            <p
+              class="text-neutral-500 text-sm"
+            >
+              Confirm whether each question is open, closed or hybrid
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex gap-4 relative mb-8 -ml-10 pl-4"
+        >
+          <div
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="2rem"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M440-120v-240h80v80h320v80H520v80h-80Zm-320-80v-80h240v80H120Zm160-160v-80H120v-80h160v-80h80v240h-80Zm160-80v-80h400v80H440Zm160-160v-240h80v80h160v80H680v80h-80Zm-480-80v-80h400v80H120Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <div
+            class="before:content-[''] before:w-3 before:h-10 before:block before:bg-white before:absolute before:left-8 before:top-12"
+          >
+            <small>
+              Step 5
+            </small>
+             
+            <h3>
+              Set up your closed questions
+            </h3>
+             
+            <!---->
+             
+            <p
+              class="text-neutral-500 text-sm"
+            >
+              Choose which ones become filters on your dashboard
+            </p>
+          </div>
+        </div>
+        
+      </div>
+      <!---->
+      <!---->
+    </div>
+    <!---->
+  </section>
+   
+  <section
+    class="mb-6"
+  >
+    <div
+      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      data-testid="panel-component"
+    >
+      <div
+        class="mb-6"
+      >
+        <!---->
+        <h2
+          class="text-neutral-700 text-lg"
+        >
+          <!---->
+          <!---->
+          <span
+            class="text-lg"
+          >
+            Before you start
+          </span>
+          
+          
+          
+        </h2>
+        
+        <!---->
+      </div>
+       
+      <div
+        class="flex items-start gap-4 mb-6"
+      >
+        <div
+          class="shrink-0"
+        >
+          <svg
+            aria-hidden="true"
+            class="fill-secondary"
+            height="1.5rem"
+            viewBox="0 -960 960 960"
+            width="1.5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!---->
+            <!---->
+            <path
+              d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         
+        <p
+          class="text-md text-neutral-700"
+        >
+          <p>
+            
+            Responses should be in a single 
+            <strong>
+              .xlsx
+            </strong>
+             or 
+            <strong>
+              .csv
+            </strong>
+             file. Step 1 shows how to export.
+          
+          </p>
+          <!---->
+        </p>
+      </div>
+      <!---->
+       
+      <div
+        class="flex items-start gap-4 mb-6"
+      >
+        <div
+          class="shrink-0"
+        >
+          <svg
+            aria-hidden="true"
+            class="fill-secondary"
+            height="1.5rem"
+            viewBox="0 -960 960 960"
+            width="1.5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!---->
+            <!---->
+            <path
+              d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         
+        <p
+          class="text-md text-neutral-700"
+        >
+          <p>
+            
+            Nothing is analysed until step 5 is completed.
+          
+          </p>
+          <!---->
+        </p>
+      </div>
+      <!---->
+       
+      <div
+        class="h-full my-4 p-4 rounded-2xl border border-gray-300 bg-neutral-100"
+        data-testid="panel-component"
+      >
+        <div
+          class="flex gap-4 flex-wrap sm:flex-nowrap"
+        >
+          <!---->
+          <h4
+            class="text-neutral-700 text-sm"
+          >
+            <!---->
+            <!---->
+            Still collecting responses?
+            
+            
+            
+          </h4>
+          
+          <!---->
+           
+          <p
+            class="text-sm text-neutral-500"
+          >
+            Start anyway. Steps 1 and 2 tell you what a usable file looks like,
+          which is far easier to act on before your consultation closes than
+          after.
+          </p>
+        </div>
+        <!---->
+      </div>
+      <!---->
+      <!---->
+    </div>
+    <!---->
+  </section>
+   
+  <section>
+    <div
+      class="flex justify-end"
+    >
+      <!---->
+      <button
+        aria-label="Go to Step 1 of Survey Import"
+        aria-pressed="false"
+        class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+        data-variant="primary"
+        role="button"
+        tabindex="0"
+        title="Go to Step 1 of Survey Import"
+      >
+        <!---->
+        <!---->
+        Start step 1: export the responses
+        
+        
+        
+      </button>
+      
+      <!---->
+    </div>
+  </section>
+  
+</div>
+`;
+
+exports[`Overview > should match snapshot initially 1`] = `
+<div>
+  <section
+    class="mb-6"
+  >
+    <!---->
+    <h1
+      class="text-neutral-700 text-xl"
+    >
+      <!---->
+      <!---->
+      <span
+        class="text-2xl"
+      >
+        Upload and check the responses
+      </span>
+      
+      
+      
+    </h1>
+    
+    <!---->
+     
+    <div
+      class="-mt-2"
+    >
+      <div
+        class="h-full my-4 p-4 rounded-2xl border border-gray-300 bg-neutral-100"
+        data-testid="panel-component"
+      >
+        <div
+          class="flex justify-between items-center gap-4"
+        >
+          <div>
+            <!---->
+            <h2
+              class="text-neutral-700 text-lg"
+            >
+              <!---->
+              <!---->
+              <span
+                class="text-md"
+              >
+                <span
+                  class="blink w-max select-none bg-neutral-200 text-neutral-200"
+                >
+                  SKELETON SKELETON 
+                </span>
+                <!---->
+              </span>
+              
+              
+              
+            </h2>
+            
+            <!---->
+             
+            <p
+              class="text-md text-neutral-500"
+            >
+              <span
+                class="blink w-max select-none bg-neutral-200 text-neutral-200"
+              >
+                SKELETON SKELETON SKELETON SKELETON SKELETON 
+              </span>
+              <!---->
+            </p>
+          </div>
+           
+          <div
+            class="my-auto"
+          >
+            <!---->
+            <button
+              aria-label="View who can see this consultation"
+              aria-pressed="false"
+              class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              data-variant="default"
+              role="button"
+              tabindex="0"
+              title="View who can see this consultation"
+            >
+              <!---->
+              <!---->
+              Who can see this
+              
+              
+              
+            </button>
+            
+            <!---->
+          </div>
+        </div>
+        <!---->
+      </div>
+      <!---->
+    </div>
+     
+    <p
+      class="text-neutral-500 text-md my-6"
+    >
+      Consult analyses files of consultation responses. These five steps upload
+    the file, check it and confirm the question type.
+    </p>
+     
+    <div
+      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      data-testid="panel-component"
+    >
+      <!---->
+      <!---->
+      <h2
+        class="text-neutral-700 text-lg"
+      >
+        <!---->
+        <!---->
+        <span
+          class="text-lg"
+        >
+          Importance of getting this set up right
+        </span>
+        
+        
+        
+      </h2>
+      
+      <!---->
+       
+      <p
+        class="text-neutral-500 text-md my-6"
+      >
+        Every question is either open, closed or hybrid and that impacts the
+      format in the app
+      </p>
+       
+      <div
+        class="flex items-start gap-4 mb-6"
+      >
+        <div
+          class="shrink-0"
+        >
+          <svg
+            aria-hidden="true"
+            class="fill-secondary"
+            height="1.5rem"
+            viewBox="0 -960 960 960"
+            width="1.5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!---->
+            <!---->
+            <path
+              d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         
+        <p
+          class="text-md text-neutral-700"
+        >
+          <p>
+            
+            
+            <strong>
+              Open questions
+            </strong>
+             are free text. Consult reads every answer and groups them into themes, which can then be edited, merged and signed off. Those themes allow for analysis.
+          
+          </p>
+          <!---->
+        </p>
+      </div>
+      <!---->
+       
+      <div
+        class="flex items-start gap-4 mb-6"
+      >
+        <div
+          class="shrink-0"
+        >
+          <svg
+            aria-hidden="true"
+            class="fill-secondary"
+            height="1.5rem"
+            viewBox="0 -960 960 960"
+            width="1.5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!---->
+            <!---->
+            <path
+              d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         
+        <p
+          class="text-md text-neutral-700"
+        >
+          <p>
+            
+            
+            <strong>
+              Closed questions
+            </strong>
+             have a fixed set of answers. Consult enables these answers to act as filters, so you can read the themes for one sector, region or respondent type at a time.
+          
+          </p>
+          <!---->
+        </p>
+      </div>
+      <!---->
+      <!---->
+    </div>
+    <!---->
+  </section>
+   
+  <section
+    class="mb-6"
+  >
+    <div
+      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      data-testid="panel-component"
+    >
+      <!---->
+      <!---->
+      <h2
+        class="text-neutral-700 text-lg"
+      >
+        <!---->
+        <!---->
+        The five steps
+        
+        
+        
+      </h2>
+      
+      <!---->
+       
+      <p
+        class="text-neutral-500 text-sm mt-4 mb-8"
+      >
+        The first two happen in your survey tool and your spreadsheet. They are
+      part of the job, so they are listed here with the rest.
+      </p>
+       
+      <div
+        class="ml-8 border-l"
+      >
+        <div
+          class="flex gap-4 relative mb-8 -ml-10 pl-4"
+        >
+          <div
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="2rem"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <div>
+            <small>
+              Step 1
+            </small>
+             
+            <h3>
+              Export the responses
+            </h3>
+             
+            <div
+              class="my-2"
+            >
+              <div
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800 border border-neutral-300"
+              >
+                <span
+                  class="flex items-center gap-2"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="fill-neutral-500"
+                    height="0.8rem"
+                    viewBox="0 -960 960 960"
+                    width="0.8rem"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <!---->
+                    <!---->
+                    <path
+                      d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"
+                      xmlns="http://www.w3.org/2000/svg"
+                    />
+                    
+                    <!---->
+                  </svg>
+                  <!---->
+                   Happens outside Consult
+                </span>
+                <!---->
+              </div>
+              <!---->
+            </div>
+            <!---->
+             
+            <p
+              class="text-neutral-500 text-sm"
+            >
+              Get your data out of Qualtrics or Citizen Space
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex gap-4 relative mb-8 -ml-10 pl-4"
+        >
+          <div
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="2rem"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <div>
+            <small>
+              Step 2
+            </small>
+             
+            <h3>
+              Prepare your file
+            </h3>
+             
+            <div
+              class="my-2"
+            >
+              <div
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800 border border-neutral-300"
+              >
+                <span
+                  class="flex items-center gap-2"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="fill-neutral-500"
+                    height="0.8rem"
+                    viewBox="0 -960 960 960"
+                    width="0.8rem"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <!---->
+                    <!---->
+                    <path
+                      d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"
+                      xmlns="http://www.w3.org/2000/svg"
+                    />
+                    
+                    <!---->
+                  </svg>
+                  <!---->
+                   Happens outside Consult
+                </span>
+                <!---->
+              </div>
+              <!---->
+            </div>
+            <!---->
+             
+            <p
+              class="text-neutral-500 text-sm"
+            >
+              Set it up in the right way for Consult, and remove personal information if needed
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex gap-4 relative mb-8 -ml-10 pl-4"
+        >
+          <div
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="2rem"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <div>
+            <small>
+              Step 3
+            </small>
+             
+            <h3>
+              Upload your file
+            </h3>
+             
+            <!---->
+             
+            <p
+              class="text-neutral-500 text-sm"
+            >
+              Provided data is in the correct format, Consult uploads it into the app
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex gap-4 relative mb-8 -ml-10 pl-4"
+        >
+          <div
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="2rem"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q8 0 15 1.5t14 4.5l-74 74H200v560h560v-266l80-80v346q0 33-23.5 56.5T760-120H200Zm261-160L235-506l56-56 170 170 367-367 57 55-424 424Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <div>
+            <small>
+              Step 4
+            </small>
+             
+            <h3>
+              Review your questions
+            </h3>
+             
+            <!---->
+             
+            <p
+              class="text-neutral-500 text-sm"
+            >
+              Confirm whether each question is open, closed or hybrid
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex gap-4 relative mb-8 -ml-10 pl-4"
+        >
+          <div
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="2rem"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M440-120v-240h80v80h320v80H520v80h-80Zm-320-80v-80h240v80H120Zm160-160v-80H120v-80h160v-80h80v240h-80Zm160-80v-80h400v80H440Zm160-160v-240h80v80h160v80H680v80h-80Zm-480-80v-80h400v80H120Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <div
+            class="before:content-[''] before:w-3 before:h-10 before:block before:bg-white before:absolute before:left-8 before:top-12"
+          >
+            <small>
+              Step 5
+            </small>
+             
+            <h3>
+              Set up your closed questions
+            </h3>
+             
+            <!---->
+             
+            <p
+              class="text-neutral-500 text-sm"
+            >
+              Choose which ones become filters on your dashboard
+            </p>
+          </div>
+        </div>
+        
+      </div>
+      <!---->
+      <!---->
+    </div>
+    <!---->
+  </section>
+   
+  <section
+    class="mb-6"
+  >
+    <div
+      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      data-testid="panel-component"
+    >
+      <div
+        class="mb-6"
+      >
+        <!---->
+        <h2
+          class="text-neutral-700 text-lg"
+        >
+          <!---->
+          <!---->
+          <span
+            class="text-lg"
+          >
+            Before you start
+          </span>
+          
+          
+          
+        </h2>
+        
+        <!---->
+      </div>
+       
+      <div
+        class="flex items-start gap-4 mb-6"
+      >
+        <div
+          class="shrink-0"
+        >
+          <svg
+            aria-hidden="true"
+            class="fill-secondary"
+            height="1.5rem"
+            viewBox="0 -960 960 960"
+            width="1.5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!---->
+            <!---->
+            <path
+              d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         
+        <p
+          class="text-md text-neutral-700"
+        >
+          <p>
+            
+            Responses should be in a single 
+            <strong>
+              .xlsx
+            </strong>
+             or 
+            <strong>
+              .csv
+            </strong>
+             file. Step 1 shows how to export.
+          
+          </p>
+          <!---->
+        </p>
+      </div>
+      <!---->
+       
+      <div
+        class="flex items-start gap-4 mb-6"
+      >
+        <div
+          class="shrink-0"
+        >
+          <svg
+            aria-hidden="true"
+            class="fill-secondary"
+            height="1.5rem"
+            viewBox="0 -960 960 960"
+            width="1.5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!---->
+            <!---->
+            <path
+              d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         
+        <p
+          class="text-md text-neutral-700"
+        >
+          <p>
+            
+            Nothing is analysed until step 5 is completed.
+          
+          </p>
+          <!---->
+        </p>
+      </div>
+      <!---->
+       
+      <div
+        class="h-full my-4 p-4 rounded-2xl border border-gray-300 bg-neutral-100"
+        data-testid="panel-component"
+      >
+        <div
+          class="flex gap-4 flex-wrap sm:flex-nowrap"
+        >
+          <!---->
+          <h4
+            class="text-neutral-700 text-sm"
+          >
+            <!---->
+            <!---->
+            Still collecting responses?
+            
+            
+            
+          </h4>
+          
+          <!---->
+           
+          <p
+            class="text-sm text-neutral-500"
+          >
+            Start anyway. Steps 1 and 2 tell you what a usable file looks like,
+          which is far easier to act on before your consultation closes than
+          after.
+          </p>
+        </div>
+        <!---->
+      </div>
+      <!---->
+      <!---->
+    </div>
+    <!---->
+  </section>
+   
+  <section>
+    <div
+      class="flex justify-end"
+    >
+      <!---->
+      <button
+        aria-label="Go to Step 1 of Survey Import"
+        aria-pressed="false"
+        class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+        data-variant="primary"
+        role="button"
+        tabindex="0"
+        title="Go to Step 1 of Survey Import"
+      >
+        <!---->
+        <!---->
+        Start step 1: export the responses
+        
+        
+        
+      </button>
+      
+      <!---->
+    </div>
+  </section>
+  
+</div>
+`;
