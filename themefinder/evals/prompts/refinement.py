@@ -1,5 +1,7 @@
 """Prompt template for refinement evaluation."""
 
+import json
+
 REFINEMENT_EVAL = """You are an expert in natural language processing and topic modelling. Your task is to evaluate how well a model refines topic labels and descriptions. You will be shown:
 
 1. ORIGINAL TOPICS: The topics before refinement.
@@ -80,4 +82,48 @@ def refinement_eval_prompt(
     return REFINEMENT_EVAL.format(
         original_topics=original_topics,
         new_topics=new_topics,
+    )
+
+
+INFORMATION_EQUIVALENCE_MATCH_EVAL = """You are evaluating whether two
+consultation themes express the same information.
+
+Compare the THEME TO MATCH with the CANDIDATE THEMES. Return YES only if
+exactly one candidate theme preserves all material information in the theme to
+match, including its subject, claim, scope, qualifiers, and sentiment or
+position. Different wording is acceptable.
+
+Return NO if no candidate matches, if more than one candidate matches, if the
+candidate is only related, broader, narrower, or contradictory, or if the
+information is split across multiple candidates.
+
+Return only the following JSON, with no other text:
+
+{{
+  "decision": "YES",
+  "matched_candidate_id": 1
+}}
+
+For a NO decision, set `matched_candidate_id` to null.
+
+THEME TO MATCH:
+{theme_to_match}
+
+CANDIDATE THEMES:
+{candidate_themes}
+"""
+
+
+def information_equivalence_match_prompt(
+    theme_to_match: str,
+    candidate_themes: list[str],
+) -> str:
+    """Generate a binary element-to-list information-equivalence prompt."""
+    numbered_candidate_themes = [
+        {"id": index, "theme": theme}
+        for index, theme in enumerate(candidate_themes, start=1)
+    ]
+    return INFORMATION_EQUIVALENCE_MATCH_EVAL.format(
+        theme_to_match=theme_to_match,
+        candidate_themes=json.dumps(numbered_candidate_themes, ensure_ascii=False),
     )

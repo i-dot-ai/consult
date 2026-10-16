@@ -3,6 +3,9 @@
 from typing import Any
 
 import pandas as pd
+from adapters.evaluators.information_equivalence_evaluator import (
+    InformationEquivalenceEvaluator,
+)
 from adapters.evaluators.refinement_quality_evaluator import (
     RefinementQualityEvaluator,
 )
@@ -27,5 +30,8 @@ def build_refinement_config(judge_llm: Any) -> ComponentConfig:
     return ComponentConfig(
         component="refinement",
         task=run_refinement_task,
-        evaluators=[RefinementQualityEvaluator(judge_llm)],
+        evaluators=[
+            RefinementQualityEvaluator(judge_llm),
+            InformationEquivalenceEvaluator(judge_llm),
+        ],
     )
