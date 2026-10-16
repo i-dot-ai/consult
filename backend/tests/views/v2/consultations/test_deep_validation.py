@@ -57,6 +57,9 @@ def test_citizen_space_csv_passes_deep_validation(client, consultation, non_staf
         "rejection_type": None,
         "message": "File passed deep validation.",
         "errors": [],
+        "question_count": 2,
+        "response_count": 2,
+        "blank_cell_count": 0,
     }
     assert not FileUpload.objects.exists()
 
@@ -74,7 +77,15 @@ def test_csv_with_quoted_commas_passes_deep_validation(client, consultation, non
     )
 
     assert response.status_code == 200
-    assert response.json()["valid"] is True
+    assert response.json() == {
+        "valid": True,
+        "rejection_type": None,
+        "message": "File passed deep validation.",
+        "errors": [],
+        "question_count": 2,
+        "response_count": 2,
+        "blank_cell_count": 0,
+    }
 
 
 @pytest.mark.django_db
@@ -119,7 +130,47 @@ def test_qualtrics_xlsx_uses_second_row_for_questions_and_rows_four_onwards_for_
     )
 
     assert response.status_code == 200
-    assert response.json()["valid"] is True
+    assert response.json() == {
+        "valid": True,
+        "rejection_type": None,
+        "message": "File passed deep validation.",
+        "errors": [],
+        "question_count": 2,
+        "response_count": 4,
+        "blank_cell_count": 0,
+    }
+
+
+@pytest.mark.django_db
+def test_successful_validation_counts_blank_cells(client, consultation, non_staff_user_token):
+    consultation.data_source = Consultation.DataSource.QUALTRICS
+    consultation.save(update_fields=["data_source"])
+
+    response = validate(
+        client,
+        consultation,
+        non_staff_user_token,
+        xlsx_file(
+            [
+                ["Ignored", "Ignored", "Ignored"],
+                ["Question one", "Question two", "Question three"],
+                ["Ignored", "Ignored", "Ignored"],
+                ["Answer one", None, "Answer three"],
+                [None, "Answer five", "Answer six"],
+            ]
+        ),
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "valid": True,
+        "rejection_type": None,
+        "message": "File passed deep validation.",
+        "errors": [],
+        "question_count": 3,
+        "response_count": 4,
+        "blank_cell_count": 2,
+    }
 
 
 @pytest.mark.django_db
