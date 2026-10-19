@@ -1,0 +1,59 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`StepTitle > should match snapshot 1`] = `
+<div>
+  <div
+    class="flex gap-4 items-center flex-wrap"
+  >
+    <div
+      class="rounded-full border border-neutral-300 bg-neutral-100 w-12 h-12 flex justify-center items-center"
+    >
+      <div
+        class="shrink-0"
+      >
+        <svg
+          aria-hidden="true"
+          class="fill-neutral-500"
+          height="1.6rem"
+          viewBox="0 -960 960 960"
+          width="1.6rem"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <!---->
+          <!---->
+          <path
+            d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+          
+          <!---->
+        </svg>
+        <!---->
+      </div>
+    </div>
+     
+    <div>
+      <small
+        class="text-neutral-500"
+      >
+        Step 1 of 6
+      </small>
+       
+      <!---->
+      <h1
+        class="text-neutral-700 text-xl"
+      >
+        <!---->
+        <!---->
+        Test title
+        
+        
+        
+      </h1>
+      
+      <!---->
+    </div>
+  </div>
+  
+</div>
+`;
