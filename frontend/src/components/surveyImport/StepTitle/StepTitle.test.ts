@@ -19,6 +19,22 @@ describe("StepTitle", () => {
     });
   });
 
+  it("should render isExternal if is external", async () => {
+    render(StepTitle, { ...TEST_DATA, isExternal: true });
+    await waitFor(() => {
+      expect(screen.getByText("Happens outside Consult")).toBeInTheDocument();
+    });
+  });
+
+  it("should not render isExternal if is not external", async () => {
+    render(StepTitle, { ...TEST_DATA, isExternal: false });
+    await waitFor(() => {
+      expect(
+        screen.queryByText("Happens outside Consult"),
+      ).not.toBeInTheDocument();
+    });
+  });
+
   it("should match snapshot", () => {
     const { container } = render(StepTitle, TEST_DATA);
     expect(container).toMatchSnapshot();

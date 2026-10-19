@@ -4,5 +4,6 @@ export const TEST_DATA = {
   stepNo: 1,
   maxStepNo: 6,
   title: "Test title",
+  isExternal: true,
   Icon: Upload,
 };

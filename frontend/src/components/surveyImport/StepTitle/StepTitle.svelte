@@ -1,17 +1,26 @@
 <script lang="ts">
   import type { Component } from "svelte";
 
-  import MaterialIcon from "../../MaterialIcon.svelte";
   import Title from "../../Title.svelte";
+  import Tag from "../../Tag/Tag.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import OpenInNew from "../../svg/material/OpenInNew.svelte";
 
   interface Props {
     stepNo: number;
     title: string;
     Icon: Component;
     maxStepNo?: number;
+    isExternal?: boolean;
   }
 
-  const { stepNo, title, Icon, maxStepNo = 6 }: Props = $props();
+  const {
+    stepNo,
+    title,
+    Icon,
+    maxStepNo = 6,
+    isExternal = false,
+  }: Props = $props();
 
   function clampStepNumberText(stepNo: number, maxStepNo: number) {
     if (stepNo < 1) {
@@ -37,6 +46,18 @@
     <small class="text-neutral-500"
       >Step {clampStepNumberText(stepNo, maxStepNo)} of {maxStepNo}</small
     >
-    <Title>{title}</Title>
+    <div class="flex gap-2 items-center flex-wrap">
+      <Title>{title}</Title>
+      {#if isExternal}
+        <Tag>
+          <span class="flex gap-1 items-center">
+            <MaterialIcon color="fill-neutral-500">
+              <OpenInNew />
+            </MaterialIcon>
+            Happens outside Consult
+          </span>
+        </Tag>
+      {/if}
+    </div>
   </div>
 </div>
