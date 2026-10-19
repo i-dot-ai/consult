@@ -6,13 +6,13 @@ Compares condensed `output["themes"]` against the pre-condensation themes on
 one LLM call; splitting them per metric is deferred to PRO-642 if required.
 """
 
-from prompts.condensation import condensation_eval_prompt
+from .prompts import load_prompt_fn
 
 from .llm_judge_evaluator import ThemeComparisonJudgeEvaluator
 
 
 class CondensationQualityEvaluator(ThemeComparisonJudgeEvaluator):
-    prompt_fn = staticmethod(condensation_eval_prompt)
+    prompt_fn = staticmethod(load_prompt_fn("condensation"))
     first_kwarg = "original_topics"
     second_kwarg = "condensed_topics"
     metric_names = ("compression_quality", "information_retention")

@@ -4,11 +4,11 @@ You are evaluating whether one source item expresses the same substantive theme 
 
 ## Source item
 
-{item}
+{single_item}
 
 ## Candidate items
 
-{candidates}
+{candidate_list}
 
 ## Instructions
 
