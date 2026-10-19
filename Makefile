@@ -136,12 +136,13 @@ build-consultation-template: ## Generate scripts/consult_data_template.xlsx (opi
 	cd scripts && uv run python build_consult_data_template.py
 
 .PHONY: setup-consultation
-setup-consultation: ## Set up a new ThemeFinder consultation: validate, build inputs, upload to S3. Args: name=<slug> [until=validate|build|upload] [responses=<path>] [qu=<path>]
-	@if [ -z "$(name)" ]; then echo "Usage: make setup-consultation name=<slug> [until=validate|build|upload]"; exit 1; fi
+setup-consultation: ## Set up a new ThemeFinder consultation: validate, build inputs, upload to S3. Args: name=<slug> [until=validate|build|upload] [responses=<path>] [qu=<path>] [bucket=<s3-bucket>, default i-dot-ai-dev-consult-data]
+	@if [ -z "$(name)" ]; then echo "Usage: make setup-consultation name=<slug> [until=validate|build|upload] [bucket=<s3-bucket>]"; exit 1; fi
 	cd scripts && uv run python setup_consultation.py "$(name)" \
 		$(if $(until),--until $(until)) \
 		$(if $(responses),--responses $(responses)) \
-		$(if $(qu),--qu $(qu))
+		$(if $(qu),--qu $(qu)) \
+		$(if $(bucket),--bucket $(bucket))
 
 .PHONY: test-consultation-scripts
 test-consultation-scripts: ## Run tests for the consultation setup scripts

@@ -24,9 +24,11 @@ Understanding (Q.U.) workbook, this script:
      ``<consultation>/inputs/``: ``respondents.jsonl`` plus a
      ``question_part_<n>/`` per question with ``question.json``,
      ``responses.jsonl`` and/or ``multi_choice.jsonl``.
-  6. **Uploads** the inputs to ``s3://i-dot-ai-prod-consult-data/
-     app_data/consultations/<name>/inputs/`` (gated by an interactive
-     "proceed?" prompt; warns if data already exists at that prefix).
+  6. **Uploads** the inputs to ``s3://<bucket>/app_data/consultations/
+     <name>/inputs/`` (gated by an interactive "proceed?" prompt; warns if
+     data already exists at that prefix). The bucket defaults to
+     ``i-dot-ai-dev-consult-data``; pass ``--bucket`` to target preprod or
+     prod explicitly.
 
 Usage
 -----
@@ -40,7 +42,8 @@ or directly::
 
 Stop early with ``--until validate`` (skip build + upload) or
 ``--until build`` (skip upload only). Pass ``--responses`` and ``--qu``
-to bypass interactive file selection.
+to bypass interactive file selection, and ``--bucket`` (or
+``make ... bucket=<name>``) to upload somewhere other than the dev bucket.
 """
 
 import argparse
@@ -1115,7 +1118,9 @@ def run_pipeline(
     print(f"\nAll input files written to: {output_dir}")
 
 
-DEFAULT_S3_BUCKET = "i-dot-ai-prod-consult-data"
+# Defaults to dev so that an accidental run without --bucket cannot write to
+# production. Pass --bucket i-dot-ai-prod-consult-data explicitly for prod.
+DEFAULT_S3_BUCKET = "i-dot-ai-dev-consult-data"
 
 
 def upload_inputs_to_s3(local_dir: Path, bucket: str, s3_prefix: str) -> None:

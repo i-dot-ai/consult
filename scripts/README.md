@@ -30,8 +30,13 @@ make setup-consultation name=my_consultation
 
 Stop early with `until=validate` (just print the validation report) or
 `until=build` (build inputs locally, skip the S3 upload). Pass
-`--dry-run` to list what would be uploaded without contacting S3,
-and `--bucket` to point at a non-default bucket.
+`--dry-run` to list what would be uploaded without contacting S3.
+
+Uploads go to `i-dot-ai-dev-consult-data` by default. To upload to
+preprod or production, name the bucket explicitly with
+`bucket=i-dot-ai-preprod-consult-data` (or `--bucket` when running the
+script directly). The default is dev so that a run without `bucket=`
+can never write to production by accident.
 
 To run the scripts directly:
 
