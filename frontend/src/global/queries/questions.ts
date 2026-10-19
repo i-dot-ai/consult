@@ -65,17 +65,6 @@ export function buildListQuestionsQuery(consultationId: string) {
   });
 }
 
-export function buildDeleteQuestionQuery(
-  consultationId: string,
-  questionId: string,
-) {
-  return buildQuery<void>(questions.detail.url(consultationId, questionId), {
-    key: [...questions.detail.key(questionId), "delete"],
-    method: "DELETE",
-    errorMessage: "Failed to delete question",
-  });
-}
-
 // ============================================================
 // Mutation Functions
 // ============================================================

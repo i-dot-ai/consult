@@ -37,6 +37,10 @@
     questions.filter((q) => selectedIds.has(q.id)),
   );
 
+  let questionIndexMap = $derived(
+    new Map(questions.map((q, i) => [q.id, i + 1])),
+  );
+
   function toggleSelected(id: string, checked: boolean) {
     const next = new Set(selectedIds);
     if (checked) {
@@ -64,22 +68,25 @@
   async function handleConfirmDelete() {
     deleting = true;
     deleteError = "";
-    const count = selectedQuestions.length;
 
-    try {
-      await Promise.all(
-        selectedQuestions.map((q) => deleteQuestion(consultationId, q.id)),
-      );
-      successMessage = `${count} ${count === 1 ? "question has" : "questions have"} been deleted.`;
-      clearSelection();
-      confirmOpen = false;
+    const results = await Promise.allSettled(
+      selectedQuestions.map((q) => deleteQuestion(consultationId, q.id)),
+    );
+
+    const failed = results.filter((r) => r.status === "rejected");
+    const succeeded = results.length - failed.length;
+
+    if (succeeded > 0) {
+      successMessage = `${succeeded} ${succeeded === 1 ? "question has" : "questions have"} been deleted.`;
       await questionsQuery.fetch();
-    } catch {
-      deleteError = "Something went wrong while deleting the questions.";
-      confirmOpen = false;
-    } finally {
-      deleting = false;
     }
+    if (failed.length > 0) {
+      deleteError = `${failed.length} ${failed.length === 1 ? "question" : "questions"} could not be deleted.`;
+    }
+
+    clearSelection();
+    confirmOpen = false;
+    deleting = false;
   }
 </script>
 
@@ -224,7 +231,7 @@
   <div class="mb-4 max-h-48 overflow-y-auto rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
     {#each selectedQuestions as q (q.id)}
       <p class="py-1.5 text-[15px] text-neutral-900">
-        <span class="text-neutral-500">Q{questions.indexOf(q) + 1}</span>
+        <span class="text-neutral-500">Q{questionIndexMap.get(q.id)}</span>
         {q.question_text}
       </p>
     {/each}
