@@ -6,13 +6,13 @@ Ignores `case`; scores the titles in `output["themes"]` alone.
 from typing import Any
 
 from eval_types import Case, Score
-from prompts.generation import title_specificity_eval_prompt
+from .prompts import load_prompt_fn
 
 from .llm_judge_evaluator import SinglePromptJudgeEvaluator
 
 
 class TitleSpecificityEvaluator(SinglePromptJudgeEvaluator):
-    prompt_fn = staticmethod(title_specificity_eval_prompt)
+    prompt_fn = staticmethod(load_prompt_fn("title_specificity"))
     metric_names = ("specificity",)
 
     def _build_prompt(self, case: Case, output: Any) -> str | None:

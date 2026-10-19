@@ -5,13 +5,13 @@ Sibling of CoverageEvaluator, which scores the reverse direction.
 
 from typing import Any
 
-from prompts.generation import generation_eval_prompt
+from .prompts import load_prompt_fn
 
 from .llm_judge_evaluator import DecisionScoredComparisonJudge
 
 
 class GroundednessEvaluator(DecisionScoredComparisonJudge):
-    prompt_fn = staticmethod(generation_eval_prompt)
+    prompt_fn = staticmethod(load_prompt_fn("generation"))
     metric_names = ("groundedness",)
     threshold_label = "themes below threshold"
 
