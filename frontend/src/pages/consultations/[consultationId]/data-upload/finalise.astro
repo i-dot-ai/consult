@@ -1,0 +1,31 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section/Section.svelte";
+import Finalisation from "../../../../components/surveyImport/Finalisation/Finalisation.svelte";
+
+import type { AstroGlobalRuntime } from "../../../../global/types";
+import { buildResponse, fetchBackendApi } from "../../../../global/api";
+import { getApiConsultationUrl } from "../../../../global/routes";
+import { getDataSetupV2Enabled } from "../../../../global/utils";
+
+if (!getDataSetupV2Enabled()) {
+  return Astro.rewrite("/404");
+}
+
+const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
+
+const { error, status } = await fetchBackendApi(
+  Astro,
+  getApiConsultationUrl(consultationId || ""),
+);
+
+if (error) {
+  return buildResponse(status);
+}
+---
+
+<Layout>
+  <Section narrow={true}>
+    <Finalisation client:load consultationId={consultationId || ""} />
+  </Section>
+</Layout>
