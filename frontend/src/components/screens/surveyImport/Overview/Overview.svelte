@@ -107,7 +107,7 @@
   </div>
 
   <p class="text-neutral-500 text-md my-6">
-    Consult analyses files of consultation responses. These five steps upload
+    Consult analyses files of consultation responses. These six steps upload
     the file, check it and confirm the question type.
   </p>
 

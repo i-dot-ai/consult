@@ -325,6 +325,7 @@ exports[`ConsultationView > should match snapshot initially 1`] = `
         <!---->
         <!---->
         <span
+          aria-hidden="true"
           class="blink w-max select-none bg-neutral-200 text-neutral-200"
         >
           SKELETON SKELETON SKELETON 
@@ -389,6 +390,7 @@ exports[`ConsultationView > should match snapshot initially 1`] = `
       class="text-neutral-500 text-sm mt-2"
     >
       <span
+        aria-hidden="true"
         class="blink w-max select-none bg-neutral-200 text-neutral-200"
       >
         SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON 

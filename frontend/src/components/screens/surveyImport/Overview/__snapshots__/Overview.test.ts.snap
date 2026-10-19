@@ -97,7 +97,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
     <p
       class="text-neutral-500 text-md my-6"
     >
-      Consult analyses files of consultation responses. These five steps upload
+      Consult analyses files of consultation responses. These six steps upload
     the file, check it and confirm the question type.
     </p>
      
@@ -235,7 +235,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
       >
         <!---->
         <!---->
-        The five steps
+        The six steps
         
         
         
@@ -467,7 +467,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
               <!---->
               <!---->
               <path
-                d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q8 0 15 1.5t14 4.5l-74 74H200v560h560v-266l80-80v346q0 33-23.5 56.5T760-120H200Zm261-160L235-506l56-56 170 170 367-367 57 55-424 424Z"
+                d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
                 xmlns="http://www.w3.org/2000/svg"
               />
               
@@ -479,6 +479,50 @@ exports[`Overview > should match snapshot after loading 1`] = `
           <div>
             <small>
               Step 4
+            </small>
+             
+            <h3>
+              Delete questions
+            </h3>
+             
+            <!---->
+             
+            <p
+              class="text-neutral-500 text-sm"
+            >
+              Delete any that are not questions, such as response IDs or dates
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex gap-4 relative mb-8 -ml-10 pl-4"
+        >
+          <div
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="2rem"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q8 0 15 1.5t14 4.5l-74 74H200v560h560v-266l80-80v346q0 33-23.5 56.5T760-120H200Zm261-160L235-506l56-56 170 170 367-367 57 55-424 424Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <div>
+            <small>
+              Step 5
             </small>
              
             <h3>
@@ -524,7 +568,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
             class="before:content-[''] before:w-3 before:h-10 before:block before:bg-white before:absolute before:left-8 before:top-12"
           >
             <small>
-              Step 5
+              Step 6
             </small>
              
             <h3>
@@ -655,7 +699,46 @@ exports[`Overview > should match snapshot after loading 1`] = `
         >
           <p>
             
-            Nothing is analysed until step 5 is completed.
+            Nothing is analysed until step 6 is completed.
+          
+          </p>
+          <!---->
+        </p>
+      </div>
+      <!---->
+       
+      <div
+        class="flex items-start gap-4 mb-6"
+      >
+        <div
+          class="shrink-0"
+        >
+          <svg
+            aria-hidden="true"
+            class="fill-secondary"
+            height="1.5rem"
+            viewBox="0 -960 960 960"
+            width="1.5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!---->
+            <!---->
+            <path
+              d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         
+        <p
+          class="text-md text-neutral-700"
+        >
+          <p>
+            
+            Adding the responses after step 3 can take a few hours. You can leave and come back to it from the consultation page.
           
           </p>
           <!---->
@@ -773,6 +856,7 @@ exports[`Overview > should match snapshot initially 1`] = `
                 class="text-md"
               >
                 <span
+                  aria-hidden="true"
                   class="blink w-max select-none bg-neutral-200 text-neutral-200"
                 >
                   SKELETON SKELETON 
@@ -790,6 +874,7 @@ exports[`Overview > should match snapshot initially 1`] = `
               class="text-md text-neutral-500"
             >
               <span
+                aria-hidden="true"
                 class="blink w-max select-none bg-neutral-200 text-neutral-200"
               >
                 SKELETON SKELETON SKELETON SKELETON SKELETON 
@@ -830,7 +915,7 @@ exports[`Overview > should match snapshot initially 1`] = `
     <p
       class="text-neutral-500 text-md my-6"
     >
-      Consult analyses files of consultation responses. These five steps upload
+      Consult analyses files of consultation responses. These six steps upload
     the file, check it and confirm the question type.
     </p>
      
@@ -968,7 +1053,7 @@ exports[`Overview > should match snapshot initially 1`] = `
       >
         <!---->
         <!---->
-        The five steps
+        The six steps
         
         
         
@@ -1200,7 +1285,7 @@ exports[`Overview > should match snapshot initially 1`] = `
               <!---->
               <!---->
               <path
-                d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q8 0 15 1.5t14 4.5l-74 74H200v560h560v-266l80-80v346q0 33-23.5 56.5T760-120H200Zm261-160L235-506l56-56 170 170 367-367 57 55-424 424Z"
+                d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
                 xmlns="http://www.w3.org/2000/svg"
               />
               
@@ -1212,6 +1297,50 @@ exports[`Overview > should match snapshot initially 1`] = `
           <div>
             <small>
               Step 4
+            </small>
+             
+            <h3>
+              Delete questions
+            </h3>
+             
+            <!---->
+             
+            <p
+              class="text-neutral-500 text-sm"
+            >
+              Delete any that are not questions, such as response IDs or dates
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex gap-4 relative mb-8 -ml-10 pl-4"
+        >
+          <div
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+          >
+            <svg
+              aria-hidden="true"
+              class="fill-neutral-500"
+              height="2rem"
+              viewBox="0 -960 960 960"
+              width="2rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <!---->
+              <path
+                d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q8 0 15 1.5t14 4.5l-74 74H200v560h560v-266l80-80v346q0 33-23.5 56.5T760-120H200Zm261-160L235-506l56-56 170 170 367-367 57 55-424 424Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+           
+          <div>
+            <small>
+              Step 5
             </small>
              
             <h3>
@@ -1257,7 +1386,7 @@ exports[`Overview > should match snapshot initially 1`] = `
             class="before:content-[''] before:w-3 before:h-10 before:block before:bg-white before:absolute before:left-8 before:top-12"
           >
             <small>
-              Step 5
+              Step 6
             </small>
              
             <h3>
@@ -1388,7 +1517,46 @@ exports[`Overview > should match snapshot initially 1`] = `
         >
           <p>
             
-            Nothing is analysed until step 5 is completed.
+            Nothing is analysed until step 6 is completed.
+          
+          </p>
+          <!---->
+        </p>
+      </div>
+      <!---->
+       
+      <div
+        class="flex items-start gap-4 mb-6"
+      >
+        <div
+          class="shrink-0"
+        >
+          <svg
+            aria-hidden="true"
+            class="fill-secondary"
+            height="1.5rem"
+            viewBox="0 -960 960 960"
+            width="1.5rem"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!---->
+            <!---->
+            <path
+              d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+              xmlns="http://www.w3.org/2000/svg"
+            />
+            
+            <!---->
+          </svg>
+          <!---->
+        </div>
+         
+        <p
+          class="text-md text-neutral-700"
+        >
+          <p>
+            
+            Adding the responses after step 3 can take a few hours. You can leave and come back to it from the consultation page.
           
           </p>
           <!---->
