@@ -18,12 +18,14 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from consultations.api_v2.permissions import CanSeeConsultationV2, IsConsultationOwnerOrSuperuser
 from consultations.api_v2.serializers import (
     ConsultationCreateSerializerV2,
+    ConsultationDeepValidationSerializerV2,
     ConsultationFileUploadSerializerV2,
     ConsultationSerializer,
     ConsultationUpdateSerializerV2,
 )
 from consultations.models import Consultation, FileUpload
 from ingest.consultation_file import import_consultation_data, read_consultation_file
+from ingest.deep_validation import deep_validate_file
 from ingest.jobs import delete_consultation_job
 
 logger = settings.LOGGER
@@ -46,6 +48,8 @@ class ConsultationViewSet(
             return ConsultationCreateSerializerV2
         if self.action == "upload":
             return ConsultationFileUploadSerializerV2
+        if self.action == "deep_validation":
+            return ConsultationDeepValidationSerializerV2
         if self.action == "partial_update":
             return ConsultationUpdateSerializerV2
         return ConsultationSerializer
@@ -78,6 +82,17 @@ class ConsultationViewSet(
                 "consultation_id": str(instance.id),
             },
             status=status.HTTP_202_ACCEPTED,
+        )
+
+    @action(detail=True, methods=["post"], parser_classes=[MultiPartParser])
+    def deep_validation(self, request, *args, **kwargs):
+        consultation = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        uploaded_file = serializer.validated_data["file"]
+
+        return Response(
+            deep_validate_file(uploaded_file.read(), uploaded_file.name, consultation.data_source)
         )
 
     @action(detail=True, methods=["post"], parser_classes=[MultiPartParser])

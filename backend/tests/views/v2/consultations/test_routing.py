@@ -13,6 +13,14 @@ def test_v2_upload_route_is_registered():
     assert resolve(url).view_name == "consultation-v2-upload"
 
 
+def test_v2_deep_validation_route_is_registered():
+    consultation_id = uuid4()
+    url = reverse("consultation-v2-deep-validation", kwargs={"pk": consultation_id})
+
+    assert url == f"/api/v2/consultations/{consultation_id}/deep_validation/"
+    assert resolve(url).view_name == "consultation-v2-deep-validation"
+
+
 @pytest.mark.django_db
 def test_v2_routes_absent_when_flag_off(client, reload_urlconf):
     with override_settings(DATA_SETUP_V2_ENABLED=False):
