@@ -8,7 +8,10 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
-from adapters.evaluators.llm_judge_evaluator import BinaryMatchJudgeEvaluator
+from adapters.evaluators.llm_judge_evaluator import (
+    BinaryMatchDecisions,
+    BinaryMatchJudgeEvaluator,
+)
 from conftest import make_case
 from eval_types import Case, Score
 from fakes import FakeJudge
@@ -26,10 +29,11 @@ class _StubBinaryJudge(BinaryMatchJudgeEvaluator):
     def _build_item_prompt(self, single_item: str, item_list: list[str]) -> str:
         return f"{single_item} || {','.join(item_list)}"
 
-    def _build_scores(self, decisions: Any) -> list[Score]:
+    def _build_scores(self, decisions: BinaryMatchDecisions) -> list[Score]:
         self.seen = decisions
-        n_yes = sum(d.get("decision") == "YES" for d in decisions)
-        ratio = n_yes / len(decisions) if decisions else 0.0
+        forward = decisions.forward
+        n_pass = sum(d.get("decision") == "PASS" for d in forward)
+        ratio = n_pass / len(forward) if forward else 0.0
         return [Score("match_rate", ratio, "")]
 
 
@@ -37,7 +41,7 @@ class _InFlightJudge(FakeJudge):
     """Judge that records the peak number of concurrent `ainvoke` calls."""
 
     def __init__(self):
-        super().__init__('{"decision": "YES"}')
+        super().__init__('{"decision": "PASS"}')
         self.in_flight = 0
         self.peak = 0
 
@@ -74,42 +78,68 @@ class TestBinaryMatchJudgeEvaluator:
         scores = await evaluator.evaluate(case, {"themes": items})
         return evaluator, scores
 
-    async def test_one_call_per_item_in_order(self):
-        """Each item gets one prompt holding it plus every candidate; decisions
-        reach `_build_scores` in input order, tagged with the item they judged."""
-        judge = FakeJudge('{"decision": "YES"}')
+    async def test_one_call_per_item_in_each_direction_in_order(self):
+        """Each item gets one prompt holding it plus every candidate, then each
+        candidate gets one holding it plus every item; decisions reach
+        `_build_scores` in input order, tagged with the item they judged."""
+        judge = FakeJudge('{"decision": "PASS"}')
 
         evaluator, scores = await self._run(judge, ["A", "B", "C"], ["X", "Y"])
 
-        assert judge.prompts == ["A || X,Y", "B || X,Y", "C || X,Y"]
-        assert [d["item"] for d in evaluator.seen] == ["A", "B", "C"]
+        assert judge.prompts == [
+            "A || X,Y",
+            "B || X,Y",
+            "C || X,Y",
+            "X || A,B,C",
+            "Y || A,B,C",
+        ]
+        assert evaluator.seen.items == ["A", "B", "C"]
+        assert evaluator.seen.candidates == ["X", "Y"]
+        assert [d["item"] for d in evaluator.seen.forward] == ["A", "B", "C"]
+        assert [d["item"] for d in evaluator.seen.backward] == ["X", "Y"]
         assert scores == [Score("match_rate", 1.0, "")]
 
     async def test_judged_item_overrides_judge_supplied_item(self):
         """The base class sets `item` from what it sent, so a judge that echoes
         a wrong or paraphrased item cannot misattribute its decision."""
-        judge = FakeJudge('{"item": "WRONG", "decision": "YES"}')
+        judge = FakeJudge('{"item": "WRONG", "decision": "PASS"}')
 
         evaluator, _ = await self._run(judge, ["A", "B"], ["X"])
 
-        assert [d["item"] for d in evaluator.seen] == ["A", "B"]
+        assert [d["item"] for d in evaluator.seen.forward] == ["A", "B"]
 
     @pytest.mark.parametrize(
         ("items", "candidates"),
-        [([], ["X"]), (["A"], [])],
+        [([], ["X"]), (["A", "B"], [])],
         ids=["no-items", "no-candidates"],
     )
-    async def test_empty_lists_error_without_calling_llm(self, items, candidates):
-        """Either list empty is an error: no judge calls are made and the case
-        degrades to a zero score carrying the error comment."""
-        judge = FakeJudge()
+    async def test_one_empty_list_is_decided_without_calling_llm(
+        self, items, candidates
+    ):
+        """One empty list is a valid case answered without the judge: the
+        direction with no items has no decisions, the direction with no
+        candidates fails every item."""
+        judge = FakeJudge('{"decision": "PASS"}')
 
-        _, scores = await self._run(judge, items, candidates)
+        evaluator, scores = await self._run(judge, items, candidates)
 
         assert judge.prompts == []
-        assert len(scores) == 1
-        assert scores[0].value == 0.0
-        assert scores[0].comment.startswith("Error: No items or comparison items")
+        assert [d["item"] for d in evaluator.seen.forward] == items
+        assert [d["item"] for d in evaluator.seen.backward] == candidates
+        decisions = evaluator.seen.forward + evaluator.seen.backward
+        assert all(d["decision"] == "FAIL" for d in decisions)
+        assert scores == [Score("match_rate", 0.0, "")]
+
+    async def test_both_lists_empty_skips_llm_and_defers_to_child(self):
+        """Both empty is the special case: no judge calls, and the child decides
+        the score from empty decision lists."""
+        judge = FakeJudge()
+
+        evaluator, scores = await self._run(judge, [], [])
+
+        assert judge.prompts == []
+        assert evaluator.seen == BinaryMatchDecisions([], [], [], [])
+        assert scores == [Score("match_rate", 0.0, "")]
 
     @pytest.mark.parametrize(("concurrency", "expected_peak"), [(2, 2), (5, 5)])
     async def test_concurrency_cap(self, concurrency, expected_peak):
@@ -130,7 +160,7 @@ class TestBinaryMatchJudgeEvaluator:
     async def test_failure_cancels_remaining_calls(self):
         """One failing item errors the case and stops the rest of the loop,
         rather than leaving queued calls running with discarded results."""
-        judge = _FailOnBJudge('{"decision": "YES"}')
+        judge = _FailOnBJudge('{"decision": "PASS"}')
 
         # concurrency=1 queues C-F behind B, so they are still pending when B fails
         _, scores = await self._run(judge, list("ABCDEF"), ["X"], concurrency=1)

@@ -11,7 +11,7 @@ import random
 import re
 from abc import abstractmethod
 from collections.abc import Callable
-from typing import Any
+from typing import Any, NamedTuple
 
 import numpy as np
 import openai
@@ -243,18 +243,32 @@ class DecisionScoredComparisonJudge(ThemeComparisonJudgeEvaluator):
         return f"{summary}\n" + "\n".join(decision_parts)
 
 
+class BinaryMatchDecisions(NamedTuple):
+    """Both directions of a binary match, so subclasses can score precision
+    (`forward`) and recall (`backward`) without re-deriving which list was which.
+    `backward` is empty when the evaluator is not bidirectional."""
+
+    items: list[str]
+    candidates: list[str]
+    forward: list[dict[str, Any]]  # each of `items` judged against `candidates`
+    backward: list[dict[str, Any]]  # each of `candidates` judged against `items`
+
+
 class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
     """Base for judges that ask, once per item in the first list, whether it
-    matches any item in the second list, yielding one YES/NO decision per item.
+    matches any item in the second list, yielding one PASS/FAIL decision per item.
+    Optionally repeats the other way round for judges that need both directions.
     Subclasses implement `_get_lists`, and `_build_scores` and set the prompt_fn.
     """
 
     prompt_fn = staticmethod(load_prompt_fn("binary_match"))
 
-    def __init__(self, *args, concurrency: int = 5, **kwargs):
-        """Store the injected judge LLM and the concurrency limit for LLM calls."""
+    def __init__(
+        self, *args, concurrency: int = 5, bidirectional: bool = True, **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self.concurrency = concurrency
+        self.bidirectional = bidirectional
 
     @abstractmethod
     def _get_lists(self, case: Case, output: Any) -> tuple[list[str], list[str]]:
@@ -281,8 +295,22 @@ class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
     async def _llm_decision_loop(
         self, items: list[str], comparison_items: list[str]
     ) -> list[dict[str, Any]]:
-        """Judge every item against `comparison_items` concurrently; Any failure
-        raises and aborts the whole loop."""
+        """Judge every item against `comparison_items` concurrently"""
+        if not comparison_items:
+            logger.warning(
+                "No comparison items; returning FAIL decisions for all items"
+            )
+            return [
+                {
+                    "decision": "FAIL",
+                    "matched_items": "None",
+                    "reasoning": "No candidate items to match against.",
+                    "item": item,
+                    "item_list": comparison_items,
+                }
+                for item in items
+            ]
+
         sem = asyncio.Semaphore(self.concurrency)
         tasks = [
             asyncio.create_task(self._single_item_decision(item, comparison_items, sem))
@@ -300,20 +328,17 @@ class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
             raise
 
     async def _score(self, case: Case, output: Any) -> list[Score]:
-        """Get the two lists, judge each item in the first against the second,
-        and hand the per-item decisions to `_build_scores`."""
+        """Run the decision loops on the two lists and pass result to _build_scores"""
         list1, list2 = self._get_lists(case, output)
 
-        if not list1 and not list2:
-            logger.warning("Both lists are empty; skipping LLM decision loop.")
-            # Child classes should handle the empty decision case appropriately.
-            scores = self._build_scores([])
-            return scores
-
         # Get the LLM's decisions for each item in list1 as compared to list2
-        decisions = await self._llm_decision_loop(list1, list2)
+        forward_decisions = await self._llm_decision_loop(list1, list2)
+        backward_decisions = (
+            await self._llm_decision_loop(list2, list1) if self.bidirectional else []
+        )
 
         # Implemented in subclasses: convert the LLM's decisions into scores
-        scores = self._build_scores(decisions)
-
+        scores = self._build_scores(
+            BinaryMatchDecisions(list1, list2, forward_decisions, backward_decisions)
+        )
         return scores
