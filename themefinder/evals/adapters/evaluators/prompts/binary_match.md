@@ -21,10 +21,8 @@ You are evaluating whether one source item expresses the same substantive theme 
 
 Return only a JSON object in this exact shape, with no Markdown fences or other text:
 
-```json
 {
   "decision": "PASS" | "FAIL",
-  "matched_item": ["candidate match 1", "candidate match 2", ...] | "None",
+  "matched_items": ["candidate match 1", "candidate match 2", ...] | "None",
   "reasoning": "A concise explanation of the decision."
 }
-```
