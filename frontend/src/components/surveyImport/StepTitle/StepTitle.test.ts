@@ -19,6 +19,18 @@ describe("StepTitle", () => {
     });
   });
 
+  it.each([0, -1, -10])(
+    "should render step 1 if step no is lower than 1",
+    async (stepNo) => {
+      render(StepTitle, { ...TEST_DATA, stepNo: stepNo });
+      await waitFor(() => {
+        expect(
+          screen.getByText(`Step 1 of ${TEST_DATA.maxStepNo}`),
+        ).toBeInTheDocument();
+      });
+    },
+  );
+
   it("should render isExternal if is external", async () => {
     render(StepTitle, { ...TEST_DATA, isExternal: true });
     await waitFor(() => {
