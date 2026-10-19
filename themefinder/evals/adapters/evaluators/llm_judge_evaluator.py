@@ -25,6 +25,7 @@ from tenacity import (
 )
 from utils.logging_config import get_logger
 
+from .prompts import load_prompt_fn
 from .base import EvaluatorPort
 
 logger = get_logger(__name__)
@@ -247,6 +248,8 @@ class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
     matches any item in the second list, yielding one YES/NO decision per item.
     Subclasses implement `_get_lists`, and `_build_scores` and set the prompt_fn.
     """
+
+    prompt_fn = staticmethod(load_prompt_fn("binary_match"))
 
     def __init__(self, *args, concurrency: int = 5, **kwargs):
         """Store the injected judge LLM and the concurrency limit for LLM calls."""
