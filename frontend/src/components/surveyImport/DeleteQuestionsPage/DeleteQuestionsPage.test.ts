@@ -1,21 +1,9 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/svelte";
 import fetchMock from "fetch-mock";
 
 import DeleteQuestionsPage from "./DeleteQuestionsPage.svelte";
-import {
-  CONSULTATION_ID,
-  QUESTIONS,
-  deleteMock,
-  questionsMock,
-} from "./mocks";
+import { CONSULTATION_ID, QUESTIONS, deleteMock, questionsMock } from "./mocks";
 import { mockRoute } from "../../../global/utils";
 import { queryClient } from "../../../global/queryClient";
 
@@ -52,7 +40,9 @@ describe("DeleteQuestionsPage", () => {
     });
 
     expect(screen.getByText("Start date")).toBeInTheDocument();
-    expect(screen.getByText("What is your respondent type?")).toBeInTheDocument();
+    expect(
+      screen.getByText("What is your respondent type?"),
+    ).toBeInTheDocument();
     expect(screen.getByText("3 questions")).toBeInTheDocument();
   });
 
@@ -119,7 +109,9 @@ describe("DeleteQuestionsPage", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Deleting removes the questions and their answers from Consult. This cannot be undone."),
+        screen.getByText(
+          "Deleting removes the questions and their answers from Consult. This cannot be undone.",
+        ),
       ).toBeInTheDocument();
     });
     expect(screen.getAllByText("Response ID").length).toBeGreaterThanOrEqual(2);

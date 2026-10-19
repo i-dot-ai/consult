@@ -7,6 +7,8 @@
   import Delete from "../../svg/material/Delete.svelte";
   import Warning from "../../svg/material/Warning.svelte";
 
+  import { SvelteSet } from "svelte/reactivity";
+
   import {
     buildListQuestionsQuery,
     deleteQuestion,
@@ -26,8 +28,8 @@
     questionsQuery.query.data?.results ?? [],
   );
 
-  let selectedIds = $state<Set<string>>(new Set());
-  let expandedIds = $state<Set<string>>(new Set());
+  let selectedIds = new SvelteSet<string>();
+  let expandedIds = new SvelteSet<string>();
   let confirmOpen = $state(false);
   let deleting = $state(false);
   let deleteError = $state("");
@@ -42,27 +44,23 @@
   );
 
   function toggleSelected(id: string, checked: boolean) {
-    const next = new Set(selectedIds);
     if (checked) {
-      next.add(id);
+      selectedIds.add(id);
     } else {
-      next.delete(id);
+      selectedIds.delete(id);
     }
-    selectedIds = next;
   }
 
   function clearSelection() {
-    selectedIds = new Set();
+    selectedIds.clear();
   }
 
   function toggleExpanded(id: string) {
-    const next = new Set(expandedIds);
-    if (next.has(id)) {
-      next.delete(id);
+    if (expandedIds.has(id)) {
+      expandedIds.delete(id);
     } else {
-      next.add(id);
+      expandedIds.add(id);
     }
-    expandedIds = next;
   }
 
   async function handleConfirmDelete() {
@@ -148,7 +146,9 @@
 
   {#if !questionsQuery.query.isPending && !questionsQuery.query.isError}
     <div class="border-t border-neutral-200">
-      <div class="grid grid-cols-[3rem_4rem_1fr] px-7 py-2 text-sm text-neutral-500">
+      <div
+        class="grid grid-cols-[3rem_4rem_1fr] px-7 py-2 text-sm text-neutral-500"
+      >
         <span></span>
         <span>No.</span>
         <span>Question</span>
@@ -184,7 +184,8 @@
                   {#if question.total_response_count === 0}
                     No answers for this question.
                   {:else}
-                    {@const sample = question.multiple_choice_answer?.slice(0, 3) ?? []}
+                    {@const sample =
+                      question.multiple_choice_answer?.slice(0, 3) ?? []}
                     <p class="mb-2">
                       A sample. {Math.min(3, question.total_response_count)} of {question.total_response_count}
                       answers to this question
@@ -228,7 +229,9 @@
     Deleting removes the questions and their answers from Consult. This cannot
     be undone.
   </p>
-  <div class="mb-4 max-h-48 overflow-y-auto rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
+  <div
+    class="mb-4 max-h-48 overflow-y-auto rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3"
+  >
     {#each selectedQuestions as q (q.id)}
       <p class="py-1.5 text-[15px] text-neutral-900">
         <span class="text-neutral-500">Q{questionIndexMap.get(q.id)}</span>

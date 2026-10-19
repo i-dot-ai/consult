@@ -1,5 +1,11 @@
 import DeleteQuestionsPage from "./DeleteQuestionsPage.svelte";
-import { CONSULTATION_ID, deleteMock, questionsErrorMock, questionsMock, QUESTIONS } from "./mocks";
+import {
+  CONSULTATION_ID,
+  deleteMock,
+  questionsErrorMock,
+  questionsMock,
+  QUESTIONS,
+} from "./mocks";
 
 const consultationId = $state(CONSULTATION_ID);
 

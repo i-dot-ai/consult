@@ -63,7 +63,12 @@ export const QUESTIONS = [
 
 export const questionsMock = {
   url: QUESTIONS_URL,
-  body: { count: QUESTIONS.length, next: null, previous: null, results: QUESTIONS },
+  body: {
+    count: QUESTIONS.length,
+    next: null,
+    previous: null,
+    results: QUESTIONS,
+  },
 };
 
 export const questionsErrorMock = {
