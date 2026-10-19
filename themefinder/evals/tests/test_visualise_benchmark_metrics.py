@@ -2,10 +2,14 @@
 
 import pandas as pd
 import pytest
+
 from visualise_benchmark import (
+    REFINEMENT_SCALE,
+    REFINEMENT_WEIGHTS,
     BenchmarkData,
     _html_cost_latency_processing_charts,
     aggregate_by_model,
+    detect_eval_metrics,
     load_local_results,
 )
 
@@ -78,3 +82,22 @@ def test_charts_render_missing_model_metrics_as_null():
 
     assert "null" in html
     assert "$nan" not in html
+
+
+def test_refinement_detects_clarity_and_scales_it_as_a_proportion():
+    metrics = detect_eval_metrics(
+        pd.DataFrame(
+            [
+                {
+                    "eval": "refinement",
+                    "question_part_1_clarity": 0.5,
+                    "question_part_1_fluency": 5.0,
+                }
+            ]
+        ),
+        "refinement",
+    )
+
+    assert metrics == {"clarity": ["question_part_1_clarity"]}
+    assert "fluency" not in REFINEMENT_WEIGHTS
+    assert REFINEMENT_SCALE["clarity"] == 1.0

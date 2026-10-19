@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+
 from adapters.evaluators.condensation_quality_evaluator import (
     CondensationQualityEvaluator,
 )
@@ -8,6 +9,7 @@ from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
 from adapters.evaluators.mapping_metrics_evaluator import MappingMetricsEvaluator
 from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
 from adapters.evaluators.refinement_quality_evaluator import (
+    ClarityEvaluator,
     RefinementQualityEvaluator,
 )
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
@@ -62,9 +64,11 @@ def test_builds_expected_non_generation_evaluators():
     ]
     assert condensation_config.evaluators[0].llm is judge_llm
     assert [type(evaluator) for evaluator in refinement_config.evaluators] == [
-        RefinementQualityEvaluator
+        RefinementQualityEvaluator,
+        ClarityEvaluator,
     ]
     assert refinement_config.evaluators[0].llm is judge_llm
+    assert refinement_config.evaluators[1].llm is judge_llm
     assert [type(evaluator) for evaluator in mapping_config.evaluators] == [
         MappingMetricsEvaluator
     ]

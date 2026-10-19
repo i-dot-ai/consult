@@ -1,23 +1,27 @@
-"""Tests for the five LLM-as-a-judge evaluator adapters: GroundednessEvaluator,
+"""Tests for the six LLM-as-a-judge evaluator adapters: GroundednessEvaluator,
 CoverageEvaluator (decision-scored), CondensationQualityEvaluator,
-RefinementQualityEvaluator (numeric-key), and TitleSpecificityEvaluator
-(bespoke ratio).
+RefinementQualityEvaluator (numeric-key), ClarityEvaluator, and
+TitleSpecificityEvaluator (bespoke ratio).
 """
 
 import json
 from collections import namedtuple
 
 import pytest
+from conftest import _themes, make_case
+from fakes import FakeJudge
+
 from adapters.evaluators.condensation_quality_evaluator import (
     CondensationQualityEvaluator,
 )
 from adapters.evaluators.coverage_evaluator import CoverageEvaluator
 from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
-from adapters.evaluators.refinement_quality_evaluator import RefinementQualityEvaluator
+from adapters.evaluators.refinement_quality_evaluator import (
+    ClarityEvaluator,
+    RefinementQualityEvaluator,
+)
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
-from conftest import _themes, make_case
 from eval_types import Score
-from fakes import FakeJudge
 
 
 class _RaisingJudge:
@@ -25,6 +29,21 @@ class _RaisingJudge:
 
     async def ainvoke(self, prompt: str):
         raise RuntimeError("boom")
+
+
+class _LabelledClarityJudge:
+    """Judge double that returns one configured decision for each theme label."""
+
+    def __init__(self, decisions: dict[str, str]):
+        self.decisions = decisions
+        self.prompts: list[str] = []
+
+    async def ainvoke(self, prompt: str):
+        self.prompts.append(prompt)
+        for label, decision in self.decisions.items():
+            if f"Label: {label}\n" in prompt:
+                return type("Response", (), {"parsed": decision})()
+        raise AssertionError(f"No decision configured for prompt: {prompt}")
 
 
 class _JudgeContractTests:
@@ -161,17 +180,17 @@ class TestDecisionScoredJudges(_JudgeContractTests):
 
 
 class _NumericKeyJudgeTests(_JudgeContractTests):
-    """Shared contract for the numeric-key judges (condensation, refinement),
-    which both extract one numeric value plus a `{metric}_reasoning` string per
-    metric via `ThemeComparisonJudgeEvaluator._build_scores` — the *same*
-    inherited method. Rather than test that method twice and let the two copies
-    drift, both classes inherit these tests and differ only in their
-    `evaluator_cls` / `metric_names`. Responses and expected Scores are built
-    from the evaluator's own `metric_names`, so nothing is hard-coded."""
+    """Shared contract for numeric-key judges.
+
+    Each evaluator extracts one numeric value plus a `{metric}_reasoning`
+    string per metric via `ThemeComparisonJudgeEvaluator._build_scores`.
+    Responses and expected Scores are built from the evaluator's own
+    `metric_names`, so nothing is hard-coded.
+    """
 
     #: Reasoning strings zipped onto the metrics (one per metric) — arbitrary,
     #: just needs enough entries to cover the widest evaluator's metric_names.
-    options = ["tight", "loose", "kept", "lost"]
+    options = ("tight", "loose", "kept", "lost")
 
     async def test_extracts_named_metrics(self):
         """Each metric and its `{metric}_reasoning` are extracted into a named Score."""
@@ -247,10 +266,7 @@ class TestCondensationQualityEvaluator(_NumericKeyJudgeTests):
 
 
 class TestRefinementQualityEvaluator(_NumericKeyJudgeTests):
-    """RefinementQualityEvaluator — the numeric-key path over its own four
-    metrics (information_retention, response_references, distinctiveness,
-    fluency). Same inherited `_build_scores` as condensation, so it inherits the
-    full numeric-key contract and only pins its own `metric_names`."""
+    """RefinementQualityEvaluator scores the three list-comparison metrics."""
 
     evaluator_cls = RefinementQualityEvaluator
     metric_names = evaluator_cls.metric_names
@@ -266,6 +282,94 @@ class TestRefinementQualityEvaluator(_NumericKeyJudgeTests):
 
         prompt = judge.prompts[0]
         assert prompt.index("INPUT_ONLY") < prompt.index("OUTPUT_ONLY")
+
+
+class TestClarityEvaluator(_JudgeContractTests):
+    """ClarityEvaluator judges each refined theme independently as PASS or FAIL."""
+
+    evaluator_cls = ClarityEvaluator
+
+    async def test_scores_pass_and_fail_with_actionable_failure_detail(self):
+        judge = _LabelledClarityJudge(
+            {
+                "Plain language": '{"decision": "PASS", "reasoning": "Direct wording."}',
+                "Obscure language": (
+                    '{"decision": "FAIL", '
+                    '"reasoning": "The description uses unexplained jargon."}'
+                ),
+            }
+        )
+        output = {
+            "themes": [
+                {
+                    "topic_label": "Plain language",
+                    "topic_description": "A straightforward description.",
+                },
+                {
+                    "topic_label": "Obscure language",
+                    "topic_description": "An overly technical description.",
+                },
+            ]
+        }
+
+        scores = await self._evaluate(
+            judge,
+            inputs={"themes": _themes("ORIGINAL_ONLY")},
+            output=output,
+        )
+
+        assert scores == [
+            Score(
+                "clarity",
+                0.5,
+                "1/2 themes clear\n"
+                "FAIL: Obscure language — The description uses unexplained jargon.",
+            )
+        ]
+        assert len(judge.prompts) == 2
+        assert all("ORIGINAL_ONLY" not in prompt for prompt in judge.prompts)
+        plain_prompt = next(
+            prompt for prompt in judge.prompts if "Plain language" in prompt
+        )
+        obscure_prompt = next(
+            prompt for prompt in judge.prompts if "Obscure language" in prompt
+        )
+        assert "Obscure language" not in plain_prompt
+        assert "Plain language" not in obscure_prompt
+
+    async def test_scores_a_single_refined_theme(self):
+        judge = _LabelledClarityJudge(
+            {
+                "Clear label": (
+                    '{"decision": "PASS", "reasoning": "Easy to understand."}'
+                )
+            }
+        )
+        output = {"themes": _themes("Clear label", description="Clear description.")}
+
+        scores = await self._evaluate(judge, output=output)
+
+        assert scores == [Score("clarity", 1.0, "1/1 themes clear")]
+        assert len(judge.prompts) == 1
+        assert "Clear label" in judge.prompts[0]
+        assert "Clear description." in judge.prompts[0]
+
+    async def test_empty_theme_list_skips_llm_call(self):
+        judge = FakeJudge()
+
+        scores = await self._evaluate(judge, output={"themes": []})
+
+        assert judge.prompts == []
+        assert scores == [Score("clarity", 0.0, "0/0 themes clear")]
+
+    async def test_rejects_decisions_other_than_pass_or_fail(self):
+        judge = FakeJudge('{"decision": "YES", "reasoning": "Looks fine."}')
+
+        scores = await self._evaluate(judge)
+
+        assert scores[0].name == "clarity"
+        assert scores[0].value == 0.0
+        assert scores[0].comment.startswith("Error: Clarity decision must be exactly")
 
 
 class TestTitleSpecificityEvaluator(_JudgeContractTests):
