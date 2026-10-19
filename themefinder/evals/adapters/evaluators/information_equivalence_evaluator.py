@@ -88,9 +88,7 @@ class InformationEquivalenceEvaluator(BinaryMatchJudgeEvaluator):
         original_to_refined = self._matching_pairs(
             decisions.forward, decisions.candidates
         )
-        refined_to_original = self._matching_pairs(
-            decisions.backward, decisions.items
-        )
+        refined_to_original = self._matching_pairs(decisions.backward, decisions.items)
         reciprocal_pairs = self._reciprocal_pairs(
             original_to_refined, refined_to_original
         )
