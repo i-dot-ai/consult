@@ -283,12 +283,6 @@ class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
     ) -> list[dict[str, Any]]:
         """Judge every item against `comparison_items` concurrently; Any failure
         raises and aborts the whole loop."""
-        if not items or not comparison_items:
-            logger.error("No items or comparison items provided for LLM decision loop.")
-            raise ValueError(
-                "No items or comparison items provided for LLM decision loop."
-            )
-
         sem = asyncio.Semaphore(self.concurrency)
         tasks = [
             asyncio.create_task(self._single_item_decision(item, comparison_items, sem))
@@ -309,6 +303,12 @@ class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
         """Get the two lists, judge each item in the first against the second,
         and hand the per-item decisions to `_build_scores`."""
         list1, list2 = self._get_lists(case, output)
+
+        if not list1 and not list2:
+            logger.warning("Both lists are empty; skipping LLM decision loop.")
+            # Child classes should handle the empty decision case appropriately.
+            scores = self._build_scores([])
+            return scores
 
         # Get the LLM's decisions for each item in list1 as compared to list2
         decisions = await self._llm_decision_loop(list1, list2)
