@@ -59,6 +59,7 @@ def merge_demographic_options(
         .values_list("respondent_id", flat=True)
         .distinct()
     )
+    DemographicOption.objects.filter(id__in=discarded_ids).delete()
     respondent_demographics.objects.bulk_create(
         [
             respondent_demographics(
@@ -70,7 +71,6 @@ def merge_demographic_options(
         ignore_conflicts=True,
     )
 
-    DemographicOption.objects.filter(id__in=discarded_ids).delete()
     retained.field_value = new_value
     retained.response_count = respondent_demographics.objects.filter(
         demographicoption_id=retained.id
