@@ -10,6 +10,7 @@ from consultations.models import (
     CandidateTheme,
     CandidateThemeResponse,
     Consultation,
+    DemographicOption,
     MultiChoiceAnswer,
     Question,
     Respondent,
@@ -123,6 +124,32 @@ class ConsultationUpdateSerializerV2(serializers.ModelSerializer):
         if validated_data:
             instance.save(update_fields=[*validated_data, "modified_at"])
         return instance
+
+
+class DemographicOptionRenameSerializer(serializers.Serializer):
+    new_value = serializers.CharField(allow_blank=False, trim_whitespace=True)
+
+
+class DemographicOptionMergeSerializer(DemographicOptionRenameSerializer):
+    demographic_options = serializers.ListField(
+        child=serializers.UUIDField(),
+        min_length=2,
+    )
+
+    def validate_demographic_options(self, value):
+        if len(value) != len(set(value)):
+            raise serializers.ValidationError("Demographic option IDs must be unique.")
+        return value
+
+
+class DemographicOptionMutationSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source="field_name")
+    value = serializers.JSONField(source="field_value")
+    count = serializers.IntegerField(source="response_count")
+
+    class Meta:
+        model = DemographicOption
+        fields: ClassVar[list] = ["id", "name", "value", "count"]
 
 
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
