@@ -1,4 +1,4 @@
-FROM public.ecr.aws/docker/library/python:3.12-slim AS uv-packages
+FROM python:3.12-slim AS uv-packages
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.21 /uv /uvx /bin/
 
@@ -17,7 +17,7 @@ ENV UV_PROJECT_ENVIRONMENT=/src/pipeline-sign-off/venv
 RUN uv sync --frozen --package pipeline-sign-off
 
 
-FROM public.ecr.aws/docker/library/python:3.12-slim
+FROM python:3.12-slim
 
 RUN groupadd --system nonroot && useradd --system --gid nonroot nonroot
 
