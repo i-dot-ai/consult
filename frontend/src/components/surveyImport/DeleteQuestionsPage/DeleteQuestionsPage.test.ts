@@ -3,7 +3,13 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/svelte";
 import fetchMock from "fetch-mock";
 
 import DeleteQuestionsPage from "./DeleteQuestionsPage.svelte";
-import { CONSULTATION_ID, QUESTIONS, deleteMock, questionsMock } from "./mocks";
+import {
+  CONSULTATION_ID,
+  QUESTIONS,
+  deleteMock,
+  freeTextResponsesMock,
+  questionsMock,
+} from "./mocks";
 import { mockRoute } from "../../../global/utils";
 import { queryClient } from "../../../global/queryClient";
 
@@ -43,7 +49,7 @@ describe("DeleteQuestionsPage", () => {
     expect(
       screen.getByText("What is your respondent type?"),
     ).toBeInTheDocument();
-    expect(screen.getByText("3 questions")).toBeInTheDocument();
+    expect(screen.getByText("4 questions")).toBeInTheDocument();
   });
 
   it("shows loading state initially", () => {
@@ -158,6 +164,30 @@ describe("DeleteQuestionsPage", () => {
         screen.getByText("1 question has been deleted."),
       ).toBeInTheDocument();
     });
+  });
+
+  it("fetches and shows free-text sample answers when expanded", async () => {
+    mockRoute(questionsMock);
+    mockRoute(freeTextResponsesMock);
+    render(DeleteQuestionsPage, TEST_DATA);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("What factors should be considered?"),
+      ).toBeInTheDocument();
+    });
+
+    const showButtons = screen.getAllByText("Show answers");
+    await fireEvent.click(showButtons[showButtons.length - 1]);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Consider the environmental impact."),
+      ).toBeInTheDocument();
+    });
+    expect(
+      screen.getByText("Focus on economic feasibility."),
+    ).toBeInTheDocument();
   });
 
   it("matches snapshot", async () => {

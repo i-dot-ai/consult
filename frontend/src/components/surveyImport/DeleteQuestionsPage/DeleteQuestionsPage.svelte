@@ -7,13 +7,16 @@
   import Delete from "../../svg/material/Delete.svelte";
   import Warning from "../../svg/material/Warning.svelte";
 
-  import { SvelteSet } from "svelte/reactivity";
+  import { SvelteMap, SvelteSet } from "svelte/reactivity";
 
   import {
     buildListQuestionsQuery,
     deleteQuestion,
   } from "../../../global/queries/questions";
-  import { getDataUploadUrl } from "../../../global/routes";
+  import {
+    getDataUploadUrl,
+    getApiQuestionResponsesUrl,
+  } from "../../../global/routes";
   import type { Question } from "../../../global/types";
 
   interface Props {
@@ -43,6 +46,26 @@
     new Map(questions.map((q, i) => [q.id, i + 1])),
   );
 
+  const freeTextSamples = new SvelteMap<string, string[]>();
+
+  async function fetchFreeTextSample(questionId: string) {
+    if (freeTextSamples.has(questionId)) return;
+    const url = `${getApiQuestionResponsesUrl(consultationId, questionId)}?page_size=3`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const data = await res.json();
+      freeTextSamples.set(
+        questionId,
+        (data.results ?? []).map(
+          (r: { free_text_answer_text: string }) => r.free_text_answer_text,
+        ),
+      );
+    } catch {
+      // leave as undefined so loading state persists on error
+    }
+  }
+
   function toggleSelected(id: string, checked: boolean) {
     if (checked) {
       selectedIds.add(id);
@@ -55,11 +78,14 @@
     selectedIds.clear();
   }
 
-  function toggleExpanded(id: string) {
-    if (expandedIds.has(id)) {
-      expandedIds.delete(id);
+  function toggleExpanded(question: Question) {
+    if (expandedIds.has(question.id)) {
+      expandedIds.delete(question.id);
     } else {
-      expandedIds.add(id);
+      expandedIds.add(question.id);
+      if (question.has_free_text && !question.has_multiple_choice) {
+        fetchFreeTextSample(question.id);
+      }
     }
   }
 
@@ -174,14 +200,28 @@
               <Button
                 size="sm"
                 variant="ghost"
-                handleClick={() => toggleExpanded(question.id)}
+                handleClick={() => toggleExpanded(question)}
               >
                 {expandedIds.has(question.id) ? "Hide answers" : "Show answers"}
               </Button>
 
               {#if expandedIds.has(question.id)}
                 <div class="mt-3 text-sm text-neutral-500">
-                  {#if question.total_response_count === 0}
+                  {#if question.has_free_text && !question.has_multiple_choice}
+                    {#if !freeTextSamples.has(question.id)}
+                      Loading answers...
+                    {:else if freeTextSamples.get(question.id)!.length === 0}
+                      No answers for this question.
+                    {:else}
+                      <p class="mb-2">
+                        A sample. {freeTextSamples.get(question.id)!.length} of {question.free_text_response_count}
+                        answers to this question
+                      </p>
+                      {#each freeTextSamples.get(question.id)! as text, i (i)}
+                        <p>{text}</p>
+                      {/each}
+                    {/if}
+                  {:else if question.total_response_count === 0}
                     No answers for this question.
                   {:else}
                     {@const sample =

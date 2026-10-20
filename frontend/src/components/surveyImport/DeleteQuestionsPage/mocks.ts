@@ -1,14 +1,11 @@
-import { questions } from "../../../global/queries/questions";
-
 export const CONSULTATION_ID = "95ab7567-9381-48eb-8d20-ddeb43691b58";
 
-const QUESTIONS_URL = new RegExp(
-  questions.list.url(CONSULTATION_ID).replace(CONSULTATION_ID, ".*"),
-);
+const QUESTIONS_URL = /\/api\/consultations\/[^/]+\/questions\/([\?]|$)/; // eslint-disable-line no-useless-escape
 
 const QUESTION_1_ID = "q1-uuid";
 const QUESTION_2_ID = "q2-uuid";
 const QUESTION_3_ID = "q3-uuid";
+export const FREE_TEXT_QUESTION_ID = "q4-uuid";
 
 export const QUESTIONS = [
   {
@@ -59,6 +56,19 @@ export const QUESTIONS = [
     proportion_of_audited_answers: 0,
     theme_status: "pending",
   },
+  {
+    id: FREE_TEXT_QUESTION_ID,
+    number: 4,
+    question_text: "What factors should be considered?",
+    total_response_count: 150,
+    free_text_response_count: 150,
+    multi_choice_response_count: 0,
+    has_free_text: true,
+    has_multiple_choice: false,
+    multiple_choice_answer: [],
+    proportion_of_audited_answers: 0,
+    theme_status: "pending",
+  },
 ];
 
 export const questionsMock = {
@@ -75,6 +85,20 @@ export const questionsErrorMock = {
   url: QUESTIONS_URL,
   body: {},
   throws: new Error("Fetch failed"),
+};
+
+export const freeTextResponsesMock = {
+  url: /\/questions\/q4-uuid\/responses\//,
+  body: {
+    count: 150,
+    next: null,
+    previous: null,
+    results: [
+      { free_text_answer_text: "Consider the environmental impact." },
+      { free_text_answer_text: "Focus on economic feasibility." },
+      { free_text_answer_text: "Ensure public consultation is thorough." },
+    ],
+  },
 };
 
 export const deleteMock = (questionId: string) => ({
