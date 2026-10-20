@@ -24,6 +24,7 @@ def test_langfuse_dataset_adapter_is_dataset_port():
     ("component", "expected_input_keys", "expects_output"),
     [
         pytest.param("generation", {"question", "responses"}, True, id="generation"),
+        pytest.param("find_themes", {"question", "responses"}, True, id="find_themes"),
         pytest.param(
             "mapping", {"question", "topics", "responses"}, True, id="mapping"
         ),

@@ -8,42 +8,38 @@ stages:
     deps:
     - path: ../../uv.lock
       hash: md5
-      md5: ed621fd52bfef974988f9b7c719cde82
-      size: 360199
+      md5: d8ed91ccd70286adabf64a430e29cabd
+      size: 360285
     - path: ../pyproject.toml
       hash: md5
       md5: 04b64909b7fc51288b78444e54b138a0
       size: 1854
     - path: ../src/themefinder
       hash: md5
-      md5: 35351c35a8208a0839c0593c155e308b.dir
-      size: 84412
+      md5: 71ad538aaa9fa2ca1945ca57f8a253f1.dir
+      size: 94462
       nfiles: 10
     - path: adapters
       hash: md5
-      md5: 3574316b5407e4411df2ddd14a67e91e.dir
-      size: 52597
+      md5: 36f74f37fe4be44db3e80fead1c3bc4b.dir
+      size: 51557
       nfiles: 25
-    - path: component_catalog.py
-      hash: md5
-      md5: 927e383ab9753da6d9ba47faaf5a5f70
-      size: 156
     - path: component_runner.py
       hash: md5
-      md5: 9756c48004ccf06530b47c9f7a1589ca
-      size: 1299
+      md5: 60f95a18316c6f033c043f078ae06a70
+      size: 1991
     - path: components/__init__.py
       hash: md5
-      md5: fc3e2ba06ca58b688e3887106b7f2025
-      size: 135
+      md5: 668e07952bfa54f1121a41127daf3c47
+      size: 174
     - path: components/mapping.py
       hash: md5
       md5: 7cc52f48417f89b9b19cf2c2cf54dc4a
       size: 1803
     - path: components/registry.py
       hash: md5
-      md5: 447384f388409826a5f5c82911c7f388
-      size: 1483
+      md5: c02e0db50eb78624676906bf7a8e438d
+      size: 1409
     - path: config.py
       hash: md5
       md5: 65e430096de394d5d4efdc5b5f074ad1
@@ -55,45 +51,38 @@ stages:
       nfiles: 14
     - path: datasets.py
       hash: md5
-      md5: dfaa06e2e72743f74bc9460ddb66e9ba
-      size: 10690
+      md5: 62e28b8bed63a053ef744c2ef20f0804
+      size: 10900
     - path: eval_types.py
       hash: md5
-      md5: 1e197baefeca5e131b01b590913ca52b
-      size: 1417
-    - path: evaluation.py
-      hash: md5
-      md5: 31805837153842df8ce42e761f1d6275
-      size: 2233
-    - path: evaluators.py
-      hash: md5
-      md5: f68bd5eab9bf57534c0e4449508322e1
-      size: 22599
+      md5: ecaf0d2a02f5709646b25569d2ee7dc3
+      size: 2228
     - path: metrics.py
       hash: md5
       md5: 293e3e0574be1dde147b8ec467faec1b
       size: 3346
+    - path: prompts
+      hash: md5
+      md5: 0ecaeda543d43fdb22beae6584ceb2e0.dir
+      size: 11629
+      nfiles: 5
     - path: prompts/__init__.py
       hash: md5
       md5: b745d48d24ec007068e7b3795beb1fe0
       size: 56
-    - path: prompts/mapping.py
-      hash: md5
-      md5: 6e8a0104c102a09c7f340371136a0b4e
-      size: 77
     - path: run_eval.py
       hash: md5
-      md5: 5148e5838c42786ae2924dd43331e25f
-      size: 1758
+      md5: 347ac9c747f6a01a6818c10f9f8e1221
+      size: 4464
     - path: settings.py
       hash: md5
       md5: 8e8ce42fcb18f08883d39976bfb217b3
       size: 5304
     - path: utils
       hash: md5
-      md5: 7880f7823d5c1da0b122bb2f3582862c.dir
-      size: 27919
-      nfiles: 6
+      md5: 28cb34c53a9aad7d77783211bd4964ff.dir
+      size: 26083
+      nfiles: 7
     params:
       params.yaml:
         dataset:
@@ -106,8 +95,8 @@ stages:
     outs:
     - path: local_eval_runs/mapping/gambling_XS/results.json
       hash: md5
-      md5: 728e11acc61672294f9abe22b68d65e8
-      size: 63495
+      md5: 2940d1a66001a8bc4d30389ed6428d39
+      size: 84961
   evaluate@generation:
     cmd: AUTO_EVAL_MODEL=gpt-4.1-sweden-2025-03 
       THEMEFINDER_EVAL_DATASET_SOURCE=local 
@@ -116,42 +105,38 @@ stages:
     deps:
     - path: ../../uv.lock
       hash: md5
-      md5: ed621fd52bfef974988f9b7c719cde82
-      size: 360199
+      md5: d8ed91ccd70286adabf64a430e29cabd
+      size: 360285
     - path: ../pyproject.toml
       hash: md5
       md5: 04b64909b7fc51288b78444e54b138a0
       size: 1854
     - path: ../src/themefinder
       hash: md5
-      md5: 35351c35a8208a0839c0593c155e308b.dir
-      size: 84412
+      md5: 71ad538aaa9fa2ca1945ca57f8a253f1.dir
+      size: 94462
       nfiles: 10
     - path: adapters
       hash: md5
-      md5: 3574316b5407e4411df2ddd14a67e91e.dir
-      size: 52597
+      md5: 36f74f37fe4be44db3e80fead1c3bc4b.dir
+      size: 51557
       nfiles: 25
-    - path: component_catalog.py
-      hash: md5
-      md5: 927e383ab9753da6d9ba47faaf5a5f70
-      size: 156
     - path: component_runner.py
       hash: md5
-      md5: 9756c48004ccf06530b47c9f7a1589ca
-      size: 1299
+      md5: 60f95a18316c6f033c043f078ae06a70
+      size: 1991
     - path: components/__init__.py
       hash: md5
-      md5: fc3e2ba06ca58b688e3887106b7f2025
-      size: 135
+      md5: 668e07952bfa54f1121a41127daf3c47
+      size: 174
     - path: components/generation.py
       hash: md5
-      md5: 225aa093576ceb87dec8547ee29b042a
-      size: 2128
+      md5: cecef0c0cff455b6293f4ec21c2d8085
+      size: 1304
     - path: components/registry.py
       hash: md5
-      md5: 447384f388409826a5f5c82911c7f388
-      size: 1483
+      md5: c02e0db50eb78624676906bf7a8e438d
+      size: 1409
     - path: config.py
       hash: md5
       md5: 65e430096de394d5d4efdc5b5f074ad1
@@ -163,45 +148,38 @@ stages:
       nfiles: 14
     - path: datasets.py
       hash: md5
-      md5: dfaa06e2e72743f74bc9460ddb66e9ba
-      size: 10690
+      md5: 62e28b8bed63a053ef744c2ef20f0804
+      size: 10900
     - path: eval_types.py
       hash: md5
-      md5: 1e197baefeca5e131b01b590913ca52b
-      size: 1417
-    - path: evaluation.py
-      hash: md5
-      md5: 31805837153842df8ce42e761f1d6275
-      size: 2233
-    - path: evaluators.py
-      hash: md5
-      md5: f68bd5eab9bf57534c0e4449508322e1
-      size: 22599
+      md5: ecaf0d2a02f5709646b25569d2ee7dc3
+      size: 2228
     - path: metrics.py
       hash: md5
       md5: 293e3e0574be1dde147b8ec467faec1b
       size: 3346
+    - path: prompts
+      hash: md5
+      md5: 0ecaeda543d43fdb22beae6584ceb2e0.dir
+      size: 11629
+      nfiles: 5
     - path: prompts/__init__.py
       hash: md5
       md5: b745d48d24ec007068e7b3795beb1fe0
       size: 56
-    - path: prompts/generation.py
-      hash: md5
-      md5: 663d3c4305508214961136d67be000ce
-      size: 3740
     - path: run_eval.py
       hash: md5
-      md5: 5148e5838c42786ae2924dd43331e25f
-      size: 1758
+      md5: 347ac9c747f6a01a6818c10f9f8e1221
+      size: 4464
     - path: settings.py
       hash: md5
       md5: 8e8ce42fcb18f08883d39976bfb217b3
       size: 5304
     - path: utils
       hash: md5
-      md5: 7880f7823d5c1da0b122bb2f3582862c.dir
-      size: 27919
-      nfiles: 6
+      md5: 28cb34c53a9aad7d77783211bd4964ff.dir
+      size: 26083
+      nfiles: 7
     params:
       params.yaml:
         dataset:
@@ -214,8 +192,8 @@ stages:
     outs:
     - path: local_eval_runs/generation/gambling_XS/results.json
       hash: md5
-      md5: 2f880786de11c8dacf34e28c11ca1910
-      size: 49367
+      md5: 5393fe630dcb8f0ce3675eb8d26fdab9
+      size: 141022
   evaluate@condensation:
     cmd: AUTO_EVAL_MODEL=gpt-4.1-sweden-2025-03 
       THEMEFINDER_EVAL_DATASET_SOURCE=local 
@@ -224,42 +202,38 @@ stages:
     deps:
     - path: ../../uv.lock
       hash: md5
-      md5: ed621fd52bfef974988f9b7c719cde82
-      size: 360199
+      md5: d8ed91ccd70286adabf64a430e29cabd
+      size: 360285
     - path: ../pyproject.toml
       hash: md5
       md5: 04b64909b7fc51288b78444e54b138a0
       size: 1854
     - path: ../src/themefinder
       hash: md5
-      md5: 35351c35a8208a0839c0593c155e308b.dir
-      size: 84412
+      md5: 71ad538aaa9fa2ca1945ca57f8a253f1.dir
+      size: 94462
       nfiles: 10
     - path: adapters
       hash: md5
-      md5: 3574316b5407e4411df2ddd14a67e91e.dir
-      size: 52597
+      md5: 36f74f37fe4be44db3e80fead1c3bc4b.dir
+      size: 51557
       nfiles: 25
-    - path: component_catalog.py
-      hash: md5
-      md5: 927e383ab9753da6d9ba47faaf5a5f70
-      size: 156
     - path: component_runner.py
       hash: md5
-      md5: 9756c48004ccf06530b47c9f7a1589ca
-      size: 1299
+      md5: 60f95a18316c6f033c043f078ae06a70
+      size: 1991
     - path: components/__init__.py
       hash: md5
-      md5: fc3e2ba06ca58b688e3887106b7f2025
-      size: 135
+      md5: 668e07952bfa54f1121a41127daf3c47
+      size: 174
     - path: components/condensation.py
       hash: md5
-      md5: c5a5ae03061ad421573241eef90f6e58
-      size: 1153
+      md5: 882b088e2a9a5e3a024328f2a9ab431f
+      size: 1112
     - path: components/registry.py
       hash: md5
-      md5: 447384f388409826a5f5c82911c7f388
-      size: 1483
+      md5: c02e0db50eb78624676906bf7a8e438d
+      size: 1409
     - path: config.py
       hash: md5
       md5: 65e430096de394d5d4efdc5b5f074ad1
@@ -271,45 +245,38 @@ stages:
       nfiles: 14
     - path: datasets.py
       hash: md5
-      md5: dfaa06e2e72743f74bc9460ddb66e9ba
-      size: 10690
+      md5: 62e28b8bed63a053ef744c2ef20f0804
+      size: 10900
     - path: eval_types.py
       hash: md5
-      md5: 1e197baefeca5e131b01b590913ca52b
-      size: 1417
-    - path: evaluation.py
-      hash: md5
-      md5: 31805837153842df8ce42e761f1d6275
-      size: 2233
-    - path: evaluators.py
-      hash: md5
-      md5: f68bd5eab9bf57534c0e4449508322e1
-      size: 22599
+      md5: ecaf0d2a02f5709646b25569d2ee7dc3
+      size: 2228
     - path: metrics.py
       hash: md5
       md5: 293e3e0574be1dde147b8ec467faec1b
       size: 3346
+    - path: prompts
+      hash: md5
+      md5: 0ecaeda543d43fdb22beae6584ceb2e0.dir
+      size: 11629
+      nfiles: 5
     - path: prompts/__init__.py
       hash: md5
       md5: b745d48d24ec007068e7b3795beb1fe0
       size: 56
-    - path: prompts/condensation.py
-      hash: md5
-      md5: 21944ed9eced6c413734188f5364a2df
-      size: 3272
     - path: run_eval.py
       hash: md5
-      md5: 5148e5838c42786ae2924dd43331e25f
-      size: 1758
+      md5: 347ac9c747f6a01a6818c10f9f8e1221
+      size: 4464
     - path: settings.py
       hash: md5
       md5: 8e8ce42fcb18f08883d39976bfb217b3
       size: 5304
     - path: utils
       hash: md5
-      md5: 7880f7823d5c1da0b122bb2f3582862c.dir
-      size: 27919
-      nfiles: 6
+      md5: 28cb34c53a9aad7d77783211bd4964ff.dir
+      size: 26083
+      nfiles: 7
     params:
       params.yaml:
         dataset:
@@ -322,8 +289,8 @@ stages:
     outs:
     - path: local_eval_runs/condensation/gambling_XS/results.json
       hash: md5
-      md5: 51faa2e94a6a26be49a0f866843adecf
-      size: 7664
+      md5: 0482b4b1e2818735d34d8cc46d25a393
+      size: 18382
   evaluate@refinement:
     cmd: AUTO_EVAL_MODEL=gpt-4.1-sweden-2025-03 
       THEMEFINDER_EVAL_DATASET_SOURCE=local 
@@ -332,42 +299,38 @@ stages:
     deps:
     - path: ../../uv.lock
       hash: md5
-      md5: ed621fd52bfef974988f9b7c719cde82
-      size: 360199
+      md5: d8ed91ccd70286adabf64a430e29cabd
+      size: 360285
     - path: ../pyproject.toml
       hash: md5
       md5: 04b64909b7fc51288b78444e54b138a0
       size: 1854
     - path: ../src/themefinder
       hash: md5
-      md5: 35351c35a8208a0839c0593c155e308b.dir
-      size: 84412
+      md5: 71ad538aaa9fa2ca1945ca57f8a253f1.dir
+      size: 94462
       nfiles: 10
     - path: adapters
       hash: md5
-      md5: 3574316b5407e4411df2ddd14a67e91e.dir
-      size: 52597
+      md5: 36f74f37fe4be44db3e80fead1c3bc4b.dir
+      size: 51557
       nfiles: 25
-    - path: component_catalog.py
-      hash: md5
-      md5: 927e383ab9753da6d9ba47faaf5a5f70
-      size: 156
     - path: component_runner.py
       hash: md5
-      md5: 9756c48004ccf06530b47c9f7a1589ca
-      size: 1299
+      md5: 60f95a18316c6f033c043f078ae06a70
+      size: 1991
     - path: components/__init__.py
       hash: md5
-      md5: fc3e2ba06ca58b688e3887106b7f2025
-      size: 135
+      md5: 668e07952bfa54f1121a41127daf3c47
+      size: 174
     - path: components/refinement.py
       hash: md5
-      md5: 153d6873e523a5d365b7716cc2d38e38
-      size: 971
+      md5: f4fa0591dc41480db1c9efaf79972641
+      size: 961
     - path: components/registry.py
       hash: md5
-      md5: 447384f388409826a5f5c82911c7f388
-      size: 1483
+      md5: c02e0db50eb78624676906bf7a8e438d
+      size: 1409
     - path: config.py
       hash: md5
       md5: 65e430096de394d5d4efdc5b5f074ad1
@@ -379,45 +342,38 @@ stages:
       nfiles: 14
     - path: datasets.py
       hash: md5
-      md5: dfaa06e2e72743f74bc9460ddb66e9ba
-      size: 10690
+      md5: 62e28b8bed63a053ef744c2ef20f0804
+      size: 10900
     - path: eval_types.py
       hash: md5
-      md5: 1e197baefeca5e131b01b590913ca52b
-      size: 1417
-    - path: evaluation.py
-      hash: md5
-      md5: 31805837153842df8ce42e761f1d6275
-      size: 2233
-    - path: evaluators.py
-      hash: md5
-      md5: f68bd5eab9bf57534c0e4449508322e1
-      size: 22599
+      md5: ecaf0d2a02f5709646b25569d2ee7dc3
+      size: 2228
     - path: metrics.py
       hash: md5
       md5: 293e3e0574be1dde147b8ec467faec1b
       size: 3346
+    - path: prompts
+      hash: md5
+      md5: 0ecaeda543d43fdb22beae6584ceb2e0.dir
+      size: 11629
+      nfiles: 5
     - path: prompts/__init__.py
       hash: md5
       md5: b745d48d24ec007068e7b3795beb1fe0
       size: 56
-    - path: prompts/refinement.py
-      hash: md5
-      md5: 31e07fa36196f16d3be176fa123ab8b7
-      size: 4526
     - path: run_eval.py
       hash: md5
-      md5: 5148e5838c42786ae2924dd43331e25f
-      size: 1758
+      md5: 347ac9c747f6a01a6818c10f9f8e1221
+      size: 4464
     - path: settings.py
       hash: md5
       md5: 8e8ce42fcb18f08883d39976bfb217b3
       size: 5304
     - path: utils
       hash: md5
-      md5: 7880f7823d5c1da0b122bb2f3582862c.dir
-      size: 27919
-      nfiles: 6
+      md5: 28cb34c53a9aad7d77783211bd4964ff.dir
+      size: 26083
+      nfiles: 7
     params:
       params.yaml:
         dataset:
@@ -430,5 +386,102 @@ stages:
     outs:
     - path: local_eval_runs/refinement/gambling_XS/results.json
       hash: md5
-      md5: bf59107c3e58372dfa4926e759a465b6
-      size: 7662
+      md5: afc034ab3c06103f910be9e707626cd1
+      size: 24250
+  evaluate@find_themes:
+    cmd: AUTO_EVAL_MODEL=gpt-4.1-sweden-2025-03
+      THEMEFINDER_EVAL_DATASET_SOURCE=local
+      THEMEFINDER_EVAL_ARTEFACT_STORE=local uv run --extra eval python
+      run_eval.py --component find_themes --dataset gambling_XS
+    deps:
+    - path: ../../uv.lock
+      hash: md5
+      md5: d8ed91ccd70286adabf64a430e29cabd
+      size: 360285
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 04b64909b7fc51288b78444e54b138a0
+      size: 1854
+    - path: ../src/themefinder
+      hash: md5
+      md5: 71ad538aaa9fa2ca1945ca57f8a253f1.dir
+      size: 94462
+      nfiles: 10
+    - path: adapters
+      hash: md5
+      md5: 36f74f37fe4be44db3e80fead1c3bc4b.dir
+      size: 51557
+      nfiles: 25
+    - path: component_runner.py
+      hash: md5
+      md5: 60f95a18316c6f033c043f078ae06a70
+      size: 1991
+    - path: components/__init__.py
+      hash: md5
+      md5: 668e07952bfa54f1121a41127daf3c47
+      size: 174
+    - path: components/find_themes.py
+      hash: md5
+      md5: b1525d282cb089559ca8cfeffc69b8e8
+      size: 2163
+    - path: components/registry.py
+      hash: md5
+      md5: c02e0db50eb78624676906bf7a8e438d
+      size: 1409
+    - path: config.py
+      hash: md5
+      md5: 65e430096de394d5d4efdc5b5f074ad1
+      size: 4138
+    - path: data/gambling_XS
+      hash: md5
+      md5: fa9e5ec4da70240c587b819719770c0c.dir
+      size: 86949
+      nfiles: 14
+    - path: datasets.py
+      hash: md5
+      md5: 62e28b8bed63a053ef744c2ef20f0804
+      size: 10900
+    - path: eval_types.py
+      hash: md5
+      md5: ecaf0d2a02f5709646b25569d2ee7dc3
+      size: 2228
+    - path: metrics.py
+      hash: md5
+      md5: 293e3e0574be1dde147b8ec467faec1b
+      size: 3346
+    - path: prompts
+      hash: md5
+      md5: 0ecaeda543d43fdb22beae6584ceb2e0.dir
+      size: 11629
+      nfiles: 5
+    - path: prompts/__init__.py
+      hash: md5
+      md5: b745d48d24ec007068e7b3795beb1fe0
+      size: 56
+    - path: run_eval.py
+      hash: md5
+      md5: 347ac9c747f6a01a6818c10f9f8e1221
+      size: 4464
+    - path: settings.py
+      hash: md5
+      md5: 8e8ce42fcb18f08883d39976bfb217b3
+      size: 5304
+    - path: utils
+      hash: md5
+      md5: 28cb34c53a9aad7d77783211bd4964ff.dir
+      size: 26083
+      nfiles: 7
+    params:
+      params.yaml:
+        dataset:
+          name: gambling_XS
+          revision: local-2025-07-22
+        evals.find_themes:
+          model: gpt-4.1-sweden-2025-03
+          dataset_source: local
+          artefact_store: local
+    outs:
+    - path: local_eval_runs/find_themes/gambling_XS/results.json
+      hash: md5
+      md5: 8db806aa91366acd986f05747e20247b
+      size: 85847
