@@ -19,8 +19,6 @@ stages:
         - components/__init__.py
         - components/registry.py
         - components/${key}.py
-        - prompts/__init__.py
-        - prompts/${key}.py
         - adapters
         - utils
         - ../src/themefinder

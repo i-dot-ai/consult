@@ -1,6 +1,4 @@
-"""Prompt template for refinement evaluation."""
-
-REFINEMENT_EVAL = """You are an expert in natural language processing and topic modelling. Your task is to evaluate how well a model refines topic labels and descriptions. You will be shown:
+You are an expert in natural language processing and topic modelling. Your task is to evaluate how well a model refines topic labels and descriptions. You will be shown:
 
 1. ORIGINAL TOPICS: The topics before refinement.
 2. NEW TOPICS: The topics after a refinement step that improves labels and descriptions.
@@ -66,7 +64,7 @@ Original topic: "Concerns about environmental regulations being too strict". Ref
 
 Return only the following JSON, no other text:
 
-{{
+{
   "information_retention": <score 0-5>,
   "information_retention_reasoning": "1-2 sentence explanation",
   "response_references": <score 0-5>,
@@ -75,22 +73,10 @@ Return only the following JSON, no other text:
   "distinctiveness_reasoning": "1-2 sentence explanation",
   "fluency": <score 0-5>,
   "fluency_reasoning": "1-2 sentence explanation"
-}}
+}
 
 ORIGINAL TOPICS:
 {original_topics}
 
 NEW TOPICS:
 {new_topics}
-"""
-
-
-def refinement_eval_prompt(
-    original_topics: list[dict],
-    new_topics: list[dict],
-) -> str:
-    """Generate a prompt for refinement evaluation."""
-    return REFINEMENT_EVAL.format(
-        original_topics=original_topics,
-        new_topics=new_topics,
-    )

@@ -13,9 +13,7 @@ from typing import Any
 
 import numpy as np
 import openai
-from prompts.condensation import condensation_eval_prompt
-from prompts.generation import generation_eval_prompt, title_specificity_eval_prompt
-from prompts.refinement import refinement_eval_prompt
+from adapters.evaluators.prompts import load_prompt_fn
 from sklearn import metrics
 from sklearn.preprocessing import MultiLabelBinarizer
 from tenacity import (
@@ -27,6 +25,11 @@ from tenacity import (
 )
 
 logger = logging.getLogger("themefinder.evals.evaluators")
+
+generation_eval_prompt = load_prompt_fn("generation")
+title_specificity_eval_prompt = load_prompt_fn("title_specificity")
+condensation_eval_prompt = load_prompt_fn("condensation")
+refinement_eval_prompt = load_prompt_fn("refinement")
 
 
 @retry(
