@@ -92,14 +92,14 @@
         <div class="my-auto">
           <Button
             size="sm"
-            handleClick={() =>
-              (window.location.href = getConsultationUsersUrl(consultationId))}
-            ariaLabel="View who can see this consultation"
+            href={getConsultationUsersUrl(consultationId)}
             title="View who can see this consultation"
           >
-            {userState?.isOwner || userState?.isAdmin
-              ? "Manage people"
-              : "Who can see this"}
+            <span class="text-center">
+              {userState?.isOwner || userState?.isAdmin
+                ? "Manage people"
+                : "Who can see this"}
+              </span>
           </Button>
         </div>
       </div>
@@ -263,10 +263,8 @@
     <Button
       size="sm"
       variant="primary"
-      handleClick={() =>
-        (window.location.href = getDataUploadStepOneUrl(consultationId))}
+      href={getDataUploadStepOneUrl(consultationId)}
       title="Go to Step 1 of Survey Import"
-      ariaLabel="Go to Step 1 of Survey Import"
     >
       Start step 1: export the responses
     </Button>
