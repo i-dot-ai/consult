@@ -54,6 +54,8 @@ class CaseOutcome:
     output: Any
     scores: list[Score]
     error: str | None = None
+    # Which repeat of the case this is, so repeats don't overwrite each other downstream
+    run_index: int = 0
 
 
 @dataclass

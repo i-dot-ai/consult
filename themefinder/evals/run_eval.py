@@ -41,8 +41,12 @@ async def evaluate_component(
     context: Any | None = None,
     question_num: int | None = None,
     settings: EvalSettings | None = None,
+    runs: int = 1,
 ) -> dict[str, Any]:
-    """Build and run one component through the configured framework backends."""
+    """Build and run one component through the configured framework backends.
+
+    ``runs`` repeats every case so each metric gets a mean and stddev across runs.
+    """
     if component not in COMPONENT_NAMES:
         raise ValueError(
             f"Unknown component '{component}'. Must be one of: {list(COMPONENT_NAMES)}"
@@ -65,6 +69,7 @@ async def evaluate_component(
         dataset_config,
         settings=settings,
         context=context,
+        repeat=runs,
     )
     return await run_component(
         component_config,
@@ -96,6 +101,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Question number to evaluate (mapping only)",
     )
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=1,
+        help="Times to run every case, for mean/stddev per metric (default: 1)",
+    )
     return parser
 
 
@@ -111,6 +122,7 @@ def main(argv: Sequence[str] | None = None) -> None:
             component=args.component,
             dataset=args.dataset,
             question_num=args.question,
+            runs=args.runs,
         )
     )
 

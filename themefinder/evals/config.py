@@ -33,7 +33,7 @@ class EvalBackends:
 
 DatasetFactory = Callable[[Any | None], DatasetPort]
 ArtefactFactory = Callable[[Any | None, bool], ArtefactStorePort]
-RunnerFactory = Callable[[], RunnerPort]
+RunnerFactory = Callable[..., RunnerPort]  # called as factory(repeat=N)
 
 
 def _require_langfuse_context(context: Any | None) -> Any:
@@ -86,8 +86,11 @@ def resolve_backends(
     *,
     settings: EvalSettings | None = None,
     context: Any | None = None,
+    repeat: int = 1,
 ) -> EvalBackends:
     """Resolve each backend independently, defaulting to local storage.
+
+    ``repeat`` is how many times the runner runs every case.
 
     Langfuse is opt-in. Its adapters share one context, created here only when
     needed. A caller-supplied context remains the caller's responsibility to flush.
@@ -124,6 +127,6 @@ def resolve_backends(
 
     return EvalBackends(
         dataset=DATASET_FACTORIES[dataset_source](context),
-        runner=RUNNER_FACTORIES[settings.eval.engine](),
+        runner=RUNNER_FACTORIES[settings.eval.engine](repeat=repeat),
         artefacts=ARTEFACT_FACTORIES[artefact_store_source](context, owns_context),
     )
