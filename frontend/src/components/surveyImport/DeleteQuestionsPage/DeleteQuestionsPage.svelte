@@ -47,13 +47,18 @@
   );
 
   const freeTextSamples = new SvelteMap<string, string[]>();
+  const freeTextFailed = new SvelteSet<string>();
 
   async function fetchFreeTextSample(questionId: string) {
     if (freeTextSamples.has(questionId)) return;
+    freeTextFailed.delete(questionId);
     const url = `${getApiQuestionResponsesUrl(consultationId, questionId)}?page_size=3`;
     try {
       const res = await fetch(url);
-      if (!res.ok) return;
+      if (!res.ok) {
+        freeTextFailed.add(questionId);
+        return;
+      }
       const data = await res.json();
       freeTextSamples.set(
         questionId,
@@ -62,7 +67,7 @@
         ),
       );
     } catch {
-      // leave as undefined so loading state persists on error
+      freeTextFailed.add(questionId);
     }
   }
 
@@ -208,7 +213,9 @@
               {#if expandedIds.has(question.id)}
                 <div class="mt-3 text-sm text-neutral-500">
                   {#if question.has_free_text && !question.has_multiple_choice}
-                    {#if !freeTextSamples.has(question.id)}
+                    {#if freeTextFailed.has(question.id)}
+                      No answers for this question.
+                    {:else if !freeTextSamples.has(question.id)}
                       Loading answers...
                     {:else if freeTextSamples.get(question.id)!.length === 0}
                       No answers for this question.
