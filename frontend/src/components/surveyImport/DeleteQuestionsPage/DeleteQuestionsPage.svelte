@@ -209,6 +209,7 @@
     Back to overview
   </Button>
   <Button size="sm" variant="primary" href="step-5">
+    <!-- TODO: Replace with getDataUploadReviewQuestionsUrl(consultationId) once step 5 is built -->
     Continue to review questions
   </Button>
 </div>
