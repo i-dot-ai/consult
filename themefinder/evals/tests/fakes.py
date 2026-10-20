@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from types import SimpleNamespace
 from typing import Any
 
-from adapters.artefact_stores.base import ArtefactStorePort, flatten_run_report
+from adapters.artefact_stores.base import ArtefactStorePort
 from adapters.datasets.base import DatasetPort
 from adapters.evaluators.base import EvaluatorPort
 from adapters.runners.base import RunnerPort
@@ -87,6 +87,7 @@ class FakeRunnerPort(RunnerPort):
         events: list[str] | None = None,
         error: Exception | None = None,
     ):
+        super().__init__()
         self.report = report
         self.events = events
         self.error = error
@@ -143,7 +144,9 @@ class FakeArtefactStore(ArtefactStorePort):
         if self.events is not None:
             self.events.append("finish_run")
         self.finished_with = (report, engine_report)
-        return self.result if self.result is not None else flatten_run_report(report)
+        return (
+            self.result if self.result is not None else self.flatten_run_report(report)
+        )
 
 
 class FakeTrace:

@@ -75,6 +75,101 @@ class TestArtefactStorePortContract:
             _IncompleteArtefactStore()
 
 
+def _repeat_outcome(
+    case_id: str, run_index: int, value: float = 1.0, output=None
+) -> CaseOutcome:
+    return CaseOutcome(
+        case=_make_case(case_id=case_id),
+        output=output,
+        scores=[Score("m", value)],
+        run_index=run_index,
+    )
+
+
+class TestArtefactStorePortRunStats:
+    """Mean/stdev across repeated runs and output consistency, shared by every store."""
+
+    def test_summarise_runs_takes_case_mean_per_run_then_stdev_across_runs(self):
+        """Run 0 averages 0.5, run 1 averages 0.7, so the spread is between runs, not cases."""
+        outcomes = [
+            _repeat_outcome("a", 0, 0.0),
+            _repeat_outcome("b", 0, 1.0),
+            _repeat_outcome("a", 1, 0.4),
+            _repeat_outcome("b", 1, 1.0),
+        ]
+
+        summary = ArtefactStorePort.summarise_runs(outcomes)["m"]
+
+        assert summary["mean"] == pytest.approx(0.6)
+        assert summary["stdev"] == pytest.approx(0.1414213, rel=1e-4)
+        assert summary["n"] == 2
+
+    def test_summarise_runs_single_run_has_no_stdev(self):
+        """A sample stdev needs at least two runs."""
+        summary = ArtefactStorePort.summarise_runs([_repeat_outcome("a", 0)])
+        assert summary["m"]["stdev"] is None
+
+    def test_output_consistency_identical_themes_is_one(self):
+        outputs = [
+            {"themes": [{"topic_label": "Cost"}]},
+            {"themes": [{"topic": " cost "}]},
+        ]
+        assert ArtefactStorePort.output_consistency(outputs) == 1.0
+
+    def test_output_consistency_disjoint_themes_is_zero(self):
+        outputs = [
+            {"themes": [{"topic_label": "A"}]},
+            {"themes": [{"topic_label": "B"}]},
+        ]
+        assert ArtefactStorePort.output_consistency(outputs) == 0.0
+
+    def test_output_consistency_mapping_labels(self):
+        """One of two distinct (response, label) pairs shared: Jaccard 0.5."""
+        outputs = [{"labels": {"r1": ["A", "B"]}}, {"labels": {"r1": ["A"]}}]
+        assert ArtefactStorePort.output_consistency(outputs) == pytest.approx(0.5)
+
+    def test_output_consistency_needs_two_outputs(self):
+        assert ArtefactStorePort.output_consistency([{"themes": []}]) is None
+
+    def test_consistency_by_case_skips_errors(self):
+        errored = CaseOutcome(
+            case=_make_case(case_id="a"),
+            output=None,
+            scores=[],
+            error="boom",
+            run_index=1,
+        )
+        outcomes = [_repeat_outcome("a", 0, output={"themes": []}), errored]
+        assert ArtefactStorePort.consistency_by_case(outcomes) == {}
+
+    def test_flatten_run_report_keeps_each_repeat_and_adds_aggregate(self):
+        """Repeats must not overwrite each other, and the aggregate carries mean/stdev."""
+        outputs = [
+            {"themes": [{"topic_label": "A"}]},
+            {"themes": [{"topic_label": "B"}]},
+        ]
+        report = RunReport(
+            outcomes=[
+                _repeat_outcome("a", 0, 0.0, outputs[0]),
+                _repeat_outcome("a", 1, 1.0, outputs[1]),
+            ]
+        )
+
+        results = ArtefactStorePort.flatten_run_report(report)
+
+        assert results["a_r0_m"] == 0.0
+        assert results["a_r1_m"] == 1.0
+        assert results["aggregate"]["metrics"]["m"]["mean"] == pytest.approx(0.5)
+        assert results["aggregate"]["output_consistency"]["by_case"] == {"a": 0.0}
+
+    def test_flatten_run_report_without_repeats_is_unchanged(self):
+        """A single run keeps the original keys and has no aggregate block."""
+        results = ArtefactStorePort.flatten_run_report(
+            RunReport(outcomes=[_repeat_outcome("a", 0, 0.5)])
+        )
+        assert results == {"a_output": None, "a_m": 0.5}
+
+
 class TestLocalJSONArtefactStore:
     def test_writes_results_to_component_dataset_path(self, tmp_path):
         store = LocalJSONArtefactStore(output_dir=tmp_path)
@@ -111,6 +206,7 @@ class TestLocalJSONArtefactStore:
                 },
                 "error": "row-7 missing field",
                 "output": {"labels": {"r1": ["A"]}},
+                "run_index": 0,
                 "scores": [
                     {
                         "comment": "three of four",
