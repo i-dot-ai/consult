@@ -1,5 +1,6 @@
 """MappingMetricsEvaluator — deterministic multi-label mapping metrics."""
 
+from math import nan
 from typing import Any
 
 import pandas as pd
@@ -26,7 +27,7 @@ class MappingMetricsEvaluator(EvaluatorPort):
 
         if not expected_mappings:
             return [
-                Score(name, 0.0, "No expected mappings") for name in self.metric_names
+                Score(name, nan, "No expected mappings") for name in self.metric_names
             ]
 
         # Preserve the legacy local evaluation behaviour: mapping metrics are
