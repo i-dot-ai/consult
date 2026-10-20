@@ -1,3 +1,4 @@
+import { buildQuery } from "../queryClient";
 import { getApiQuestionsUrl, getApiQuestionUrl, Suffixes } from "../routes";
 import type { Question } from "../types";
 
@@ -54,11 +55,33 @@ export const detailQuestionQueryOptions = (
 });
 
 // ============================================================
+// Query Builders
+// ============================================================
+
+export function buildListQuestionsQuery(consultationId: string) {
+  return buildQuery<ListQuestionsResponse>(questions.list.url(consultationId), {
+    key: [...questions.list.key(consultationId)],
+    errorMessage: "Failed to fetch questions",
+  });
+}
+
+// ============================================================
 // Mutation Functions
 // ============================================================
 
 export type UpdateQuestionBody = {
   theme_status?: "confirmed" | "pending";
+};
+
+export const deleteQuestion = async (
+  consultationId: string,
+  questionId: string,
+): Promise<void> => {
+  const response = await fetch(
+    questions.detail.url(consultationId, questionId),
+    { method: "DELETE" },
+  );
+  if (!response.ok) throw new Error(`Failed to delete question: ${questionId}`);
 };
 
 export const updateQuestion = async (
