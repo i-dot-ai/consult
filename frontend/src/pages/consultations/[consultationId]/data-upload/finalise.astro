@@ -25,7 +25,9 @@ if (error) {
 ---
 
 <Layout>
-  <Section narrow>
-    <Finalisation client:load consultationId={consultationId || ""} />
+  <Section>
+    <div class="mx-auto max-w-4xl">
+      <Finalisation client:load consultationId={consultationId || ""} />
+    </div>
   </Section>
 </Layout>
