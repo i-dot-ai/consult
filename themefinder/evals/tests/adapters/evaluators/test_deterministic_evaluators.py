@@ -9,6 +9,7 @@ LLM, not the plain fixtures here.
 
 import sys
 import types
+from math import isnan
 
 import adapters.evaluators.mapping_metrics_evaluator as mapping_metrics_module
 import adapters.evaluators.redundancy_evaluator as redundancy_module
@@ -72,36 +73,34 @@ class TestMappingF1Evaluator:
 
 
 class TestMappingMetricsEvaluator:
-    async def test_preserves_all_legacy_mapping_metrics(self, monkeypatch):
+    async def test_calculates_mapping_metrics(self):
         case = make_case(expected_output={"mappings": {"r1": ["a"], "r2": ["b"]}})
         output = {"labels": {"r1": ["a"], "r2": ["c"]}}
 
-        def fake_metrics(df, column_one, column_two):
-            assert df.to_dict("records") == [
-                {"expected": ["a"], "predicted": ["a"]},
-                {"expected": ["b"], "predicted": ["c"]},
-            ]
-            assert (column_one, column_two) == ("expected", "predicted")
-            return {
-                "f1_score": 0.5,
-                "accuracy_score": 0.5,
-                "overlap_rate": 0.5,
-                "f1_confidence_interval": (0.1, 0.9),
-            }
-
-        monkeypatch.setattr(
-            mapping_metrics_module, "calculate_mapping_metrics", fake_metrics
-        )
-
         scores = await MappingMetricsEvaluator().evaluate(case, output)
 
-        assert scores == [
-            Score("f1_score", 0.5, "Evaluated on 2 responses"),
-            Score("accuracy_score", 0.5, "Evaluated on 2 responses"),
-            Score("overlap_rate", 0.5, "Evaluated on 2 responses"),
-            Score("f1_confidence_interval_lower", 0.1, "Evaluated on 2 responses"),
-            Score("f1_confidence_interval_upper", 0.9, "Evaluated on 2 responses"),
-        ]
+        values = {score.name: score.value for score in scores}
+        assert values["f1_score"] == 0.5
+        assert values["accuracy_score"] == 0.5
+        assert values["overlap_rate"] == 0.5
+        assert values["f1_confidence_interval_lower"] <= values["f1_score"]
+        assert values["f1_confidence_interval_upper"] >= values["f1_score"]
+
+    async def test_single_label_mapping_scores_perfectly(self):
+        case = make_case(expected_output={"mappings": {"r1": ["a"]}})
+
+        scores = await MappingMetricsEvaluator().evaluate(
+            case, {"labels": {"r1": ["a"]}}
+        )
+
+        assert all(score.value == 1.0 for score in scores[:3])
+
+    async def test_empty_predictions_score_zero(self):
+        case = make_case(expected_output={"mappings": {"r1": ["a"]}})
+
+        scores = await MappingMetricsEvaluator().evaluate(case, {"labels": {"r1": []}})
+
+        assert all(score.value == 0.0 for score in scores[:3])
 
     async def test_missing_prediction_is_excluded_like_the_legacy_inner_join(
         self, monkeypatch
@@ -127,7 +126,7 @@ class TestMappingMetricsEvaluator:
 
         assert scores[0] == Score("f1_score", 1.0, "Evaluated on 1 responses")
 
-    async def test_no_expected_mappings_returns_zero_for_every_metric(self):
+    async def test_no_expected_mappings_returns_nan_for_every_metric(self):
         scores = await MappingMetricsEvaluator().evaluate(
             make_case(expected_output=None), {"labels": {"r1": ["a"]}}
         )
@@ -135,7 +134,7 @@ class TestMappingMetricsEvaluator:
         assert [score.name for score in scores] == list(
             MappingMetricsEvaluator.metric_names
         )
-        assert all(score.value == 0.0 for score in scores)
+        assert all(isnan(score.value) for score in scores)
         assert all(score.comment == "No expected mappings" for score in scores)
 
     async def test_no_scorable_responses_returns_zero_for_every_metric(self):
@@ -247,13 +246,13 @@ def patched_similarity(monkeypatch):
 
 
 class TestRedundancyEvaluatorWithModel:
-    async def test_flags_pairs_above_threshold(self, patched_similarity):
-        """Pairs above the similarity threshold are counted and named in the comment."""
-        # A~B similar (0.9, flagged), A~C and B~C dissimilar (0.1)
+    async def test_flags_pairs_at_threshold(self, patched_similarity):
+        """Pairs at the similarity threshold are counted and named in the comment."""
+        # A~B at the threshold (0.85, flagged), A~C and B~C dissimilar (0.1)
         patched_similarity.set_matrix(
             [
-                [1.0, 0.9, 0.1],
-                [0.9, 1.0, 0.1],
+                [1.0, 0.85, 0.1],
+                [0.85, 1.0, 0.1],
                 [0.1, 0.1, 1.0],
             ]
         )
@@ -267,7 +266,7 @@ class TestRedundancyEvaluatorWithModel:
         assert score.name == "redundancy"
         assert score.value == round(1 / 3, 2)
         assert "1/3 pairs above threshold" in score.comment
-        assert "A ↔ B (0.9)" in score.comment
+        assert "A ↔ B (0.85)" in score.comment
 
     async def test_no_pairs_above_threshold(self, patched_similarity):
         """No pair above the threshold scores 0.0."""

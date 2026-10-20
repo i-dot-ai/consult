@@ -5,10 +5,10 @@ description = "Consult backend application"
 license = {text = "MIT"}
 requires-python = ">=3.12,<3.13"
 dependencies = [
-  "boto3>=1.43.103",
+  "boto3>=1.43.108",
   "django>=6.1.1",
   "django-environ>=0.14.0",
-  "django-filter>=26.1",
+  "django-filter>=26.2",
   "django-redis>=7.0.0",
   "django-rq>=4.2.0",
   "django-simple-history>=3.13.0",
@@ -21,13 +21,13 @@ dependencies = [
   "factory_boy>=3.3.3",
   "gunicorn>=26.2.0",
   "i-dot-ai-utilities[auth,otel-django]>=0.7.1rc1",
-  "openai>=3.19.2",
+  "openai>=3.24.0",
   "openpyxl>=3.1.5",
   "pgvector>=0.5.0",
   "psycopg>=3.3.6",
   "pydantic>=2.13.5",
   "pytest-random-order>=1.2.0",
-  "sentry-sdk[django,redis,rq]>=2.70.0",
+  "sentry-sdk[django,redis,rq]>=2.71.0",
   "themefinder",
   "werkzeug==3.1.9",
 ]
@@ -36,12 +36,12 @@ dependencies = [
 dev = [
   "django-extensions>=4.1",
   "pydot>=4.0.1",
-  "django-test-migrations>=1.6.0",
+  "django-test-migrations>=1.7.0",
   "django-types>=0.24.0",
   "freezegun>=1.5.5",
   "honcho>=2.0.0",
   "moto>=5.2.3",
-  "mypy>=2.3.1",
+  "mypy>=2.4.0",
   "pre-commit>=4.6.2",
   "pytest-lazy-fixtures>=1.4.1",
   "ruff>=0.16.9",

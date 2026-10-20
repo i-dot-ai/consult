@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from scipy import sparse
 from sklearn import metrics, utils
 from sklearn.preprocessing import MultiLabelBinarizer
 
@@ -31,7 +32,7 @@ def calculate_mapping_metrics(
     no_valid_columns_error_message = "Input columns contain no valid labels"
     source_one_lol = df[column_one].apply(lambda row: list(set(row))).tolist()
     source_two_lol = df[column_two].apply(lambda row: list(set(row))).tolist()
-    if not any(source_one_lol) or not any(source_two_lol):
+    if not any(source_one_lol):
         raise ValueError(no_valid_columns_error_message)
     # Create and fit MultiLabelBinarizer
     mlb = MultiLabelBinarizer(sparse_output=True)
@@ -42,6 +43,13 @@ def calculate_mapping_metrics(
     # Transform to sparse matrices
     source_one_sparse = mlb.transform(source_one_lol)
     source_two_sparse = mlb.transform(source_two_lol)
+    # sklearn treats a single sparse label column as binary rather than
+    # multilabel. A zero-only padding column preserves the assignments while
+    # retaining multilabel semantics for the metrics below.
+    if source_one_sparse.shape[1] == 1:
+        padding = sparse.csr_matrix((source_one_sparse.shape[0], 1))
+        source_one_sparse = sparse.hstack((source_one_sparse, padding), format="csr")
+        source_two_sparse = sparse.hstack((source_two_sparse, padding), format="csr")
     # Calculate observed F1 score
     observed_f1 = metrics.f1_score(
         source_one_sparse, source_two_sparse, average="samples"

@@ -20,7 +20,7 @@ class _SequenceJudge:
 
 
 class TestInformationEquivalenceEvaluator:
-    async def test_scores_empty_lists_as_equivalent_without_judging(self):
+    async def test_empty_lists_return_the_base_error_without_judging(self):
         judge = _SequenceJudge()
         evaluator = InformationEquivalenceEvaluator(judge)
         case = make_case(inputs={"themes": []})
@@ -31,8 +31,8 @@ class TestInformationEquivalenceEvaluator:
         assert scores == [
             Score(
                 "information_equivalence",
-                1.0,
-                "Both theme lists are empty; information equivalence: 1.0",
+                0.0,
+                "Error: Both lists are empty; nothing to judge",
             )
         ]
 

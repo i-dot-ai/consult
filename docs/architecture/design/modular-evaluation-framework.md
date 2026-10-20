@@ -34,8 +34,8 @@ is a core, non-optional dependency of the package purely to support the duplicat
 
 ## Non-goals (this pass)
 
-- `benchmark.py` keeps its Langfuse tracing and cost collection. Only component execution moves to the unified
-  API; it is not rewritten to manage the ports directly.
+- `benchmark.py` keeps its Langfuse tracing. Cost and latency are collected from gateway response headers,
+  while component execution continues to use the unified API rather than managing ports directly.
 - `evals/synthetic/` and its CLI entry point `generate_synthetic.py` (synthetic data generation) are
   untouched. The Langfuse coupling here lives entirely in `generate_synthetic.py`'s own `LangfuseContext`
   construction, trace wrap, and flush — the `evals/synthetic/` package it wraps has no Langfuse references of
@@ -208,8 +208,7 @@ its established mapping metric calculation to the evaluator port.
 ```
 evals/utils/
   __init__.py
-  langfuse.py                   # Langfuse context, tracing, flush, and metrics helpers
-                                 # flush, extract_session_metrics, ...)
+  langfuse.py                   # Langfuse context, tracing, and flush helpers
   prompt_utils.py                # moved verbatim from evals/utils.py (read_and_render) — renamed only
                                   # because a `utils.py` module and a `utils/` package can't coexist at the
                                   # same directory level; nothing in evals/ imports read_and_render today
@@ -460,9 +459,9 @@ concern: `run_component()` and `ArtefactStorePort` stay unchanged.
 ## Compatibility contract with benchmark.py
 
 `benchmark.py` calls `evaluate_component()` with the component name, dataset, LLM, context, and optional judge
-LLM. It expects a flat dict back, which it splits by value type into `scores` vs `outputs`. It also owns opening
-the Langfuse trace context itself and later calls
-`langfuse_utils.extract_session_metrics(session_id=...)` for cost/token data.
+LLM. It expects a flat dict back, which it splits into scores, outputs, and run metrics. It owns opening the
+Langfuse trace context for optional observability, while cost, latency, and token metrics come directly from
+the LLM gateway response headers.
 
 The generic API preserves this return shape and accepts the caller-owned context through an untyped `context`
 parameter. This keeps component definitions storage-agnostic without changing how `benchmark.py` itself talks
@@ -493,8 +492,8 @@ Pre-migration inventory:
 | Env var | Read independently in | Call sites |
 |---|---|---|
 | `AUTO_EVAL_MODEL` (prev `AUTO_EVAL_4_1_SWEDEN_DEPLOYMENT`) | `eval_generation.py`, `eval_condensation.py`, `eval_mapping.py`, `eval_refinement.py`, `langfuse_utils.py` | 5 |
-| `LANGFUSE_SECRET_KEY` / `PUBLIC_KEY` / `BASE_URL` | `langfuse_utils.py`, `benchmark.py::query_langfuse_costs()` (builds its own `Langfuse` client from a second, independent read) | 2 |
-| `LANGFUSE_BASE_URL` / `LANGFUSE_PROJECT_ID` | `visualise_benchmark.py` | adds a 3rd site for `LANGFUSE_BASE_URL` |
+| `LANGFUSE_SECRET_KEY` / `PUBLIC_KEY` / `BASE_URL` | `langfuse_utils.py` and a former benchmark-specific client | 2 |
+| `LANGFUSE_BASE_URL` / `LANGFUSE_PROJECT_ID` | a former `visualise_benchmark.py` reader | adds a 3rd site for `LANGFUSE_BASE_URL` |
 | `LLM_GATEWAY_URL` / `CONSULT_EVAL_LITELLM_API_KEY` | `utils_gateway.py` | 1 (already fine) |
 | `ENVIRONMENT`, `GITHUB_SHA` | `langfuse_utils.py` | 1 (already fine) |
 | `THEMEFINDER_EVAL_ENGINE` (new) | `config.py::resolve_backends` | 1 (new, single-sited by construction) |
@@ -520,10 +519,9 @@ can mutate the result afterwards.
 two existing shared helper functions (`get_langfuse_context`, `gateway_credentials`) each grow an optional
 settings parameter, defaulting to `get_settings()`, the same optional-with-a-default pattern `context`
 already uses; no existing call site changes. `get_settings()` then replaces every other scattered read this
-pass found — `query_langfuse_costs()`'s and `visualise_benchmark.py`'s independent credential reads, the
-five inline per-component `os.getenv("AUTO_EVAL_MODEL")` sites, and all seven explicit `dotenv.load_dotenv()`
-calls (deleted outright, since `get_settings()` already guarantees `.env` is loaded before any field is
-read).
+pass found — the former benchmark and visualisation credential readers, the five inline per-component
+`os.getenv("AUTO_EVAL_MODEL")` sites, and all seven explicit `dotenv.load_dotenv()` calls (deleted outright,
+since `get_settings()` already guarantees `.env` is loaded before any field is read).
 
 This keeps component definitions and the unified API/CLI free of Langfuse-specific code. `EvalSettings`
 bundles Langfuse fields alongside non-Langfuse ones, but component definitions never inspect them.

@@ -1,0 +1,142 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DeleteQuestionsPage > matches snapshot 1`] = `
+<div>
+  <!---->
+  <div
+    class="flex gap-4 items-center flex-wrap"
+  >
+    <div
+      class="rounded-full border border-neutral-300 bg-neutral-100 w-12 h-12 flex justify-center items-center"
+    >
+      <div
+        class="shrink-0"
+      >
+        <svg
+          aria-hidden="true"
+          class="fill-neutral-500"
+          height="1.6rem"
+          viewBox="0 -960 960 960"
+          width="1.6rem"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <!---->
+          <!---->
+          <path
+            d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+          
+          <!---->
+        </svg>
+        <!---->
+      </div>
+    </div>
+     
+    <div>
+      <small
+        class="text-neutral-500"
+      >
+        Step 4 of 6
+      </small>
+       
+      <div
+        class="flex gap-2 items-center flex-wrap"
+      >
+        <!---->
+        <h1
+          class="text-neutral-700 text-xl"
+        >
+          <!---->
+          <!---->
+          Delete questions
+          
+          
+          
+        </h1>
+        
+        <!---->
+         
+        <!---->
+      </div>
+    </div>
+  </div>
+  <!---->
+   
+  <p
+    class="mt-3.5 mb-[26px] text-[15px] leading-relaxed text-neutral-500"
+  >
+    Consult reads every column in the file as a question. Delete any that are not
+  questions, such as response IDs or dates. If every one is a question,
+  continue.
+  </p>
+   
+  <!---->
+   
+  <!---->
+   
+  <div
+    class="rounded-xl border border-neutral-300 bg-white"
+  >
+    <div
+      class="px-7 py-4 text-[15px] text-neutral-500"
+    >
+      Loading questions...
+      <!---->
+    </div>
+     
+    <!---->
+     
+    <!---->
+  </div>
+   
+  <div
+    class="mt-7 flex flex-wrap justify-between gap-2"
+  >
+    <!---->
+    <a
+      aria-pressed="false"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+      data-variant="default"
+      disabled="false"
+      href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58/data-upload"
+      role="link"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      Back to overview
+      
+      
+      
+    </a>
+    
+    <!---->
+     
+    <!---->
+    <a
+      aria-pressed="false"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+      data-variant="primary"
+      disabled="false"
+      href="step-5"
+      role="link"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      Continue to review questions
+      
+      
+      
+    </a>
+    
+    <!---->
+  </div>
+   
+  <!---->
+  
+  <!---->
+  
+</div>
+`;

@@ -44,36 +44,44 @@ async def test_benchmark_delegates_component_execution_to_unified_api(monkeypatc
     task_llm = object()
     context = SimpleNamespace(client=None)
     model = benchmark.ModelConfig(name="test-model")
-    monkeypatch.setattr(model, "create_llm", lambda: task_llm)
+    create_llm_calls = []
+    monkeypatch.setattr(
+        model,
+        "create_llm",
+        lambda **kwargs: create_llm_calls.append(kwargs) or task_llm,
+    )
     monkeypatch.setattr(
         benchmark.langfuse,
         "get_langfuse_context",
         lambda **kwargs: context,
     )
+    trace_contexts = []
     monkeypatch.setattr(
         benchmark.langfuse,
         "trace_context",
-        lambda *args, **kwargs: nullcontext(),
-    )
-    monkeypatch.setattr(benchmark.langfuse, "flush", lambda context: None)
-    monkeypatch.setattr(
-        benchmark.langfuse,
-        "extract_session_metrics",
-        lambda **kwargs: SimpleNamespace(
-            input_tokens=0,
-            output_tokens=0,
-            total_tokens=0,
-            cost_usd=0.0,
-            latency_seconds=0.0,
+        lambda tracing_context, name: (
+            trace_contexts.append((tracing_context, name)) or nullcontext()
         ),
     )
+    monkeypatch.setattr(benchmark.langfuse, "flush", lambda context: None)
+    monkeypatch.setattr(benchmark.time, "perf_counter", lambda: next(timings))
     evaluate = AsyncMock(
         return_value={
             "question_part_1_f1_score": 0.75,
             "question_part_1_output": {"labels": {"1": ["A"]}},
+            "metrics": {
+                "cost_usd": 0.0123,
+                "latency_seconds": 4.5,
+                "processing_time_seconds": 5.25,
+                "llm_call_count": 3,
+                "input_tokens": 100,
+                "output_tokens": 25,
+                "total_tokens": 125,
+            },
         }
     )
     monkeypatch.setattr(benchmark, "evaluate_component", evaluate)
+    timings = iter([100.0, 107.5])
     runner = benchmark.BenchmarkRunner(
         benchmark.BenchmarkConfig(dataset="demo", models=[model])
     )
@@ -94,6 +102,38 @@ async def test_benchmark_delegates_component_execution_to_unified_api(monkeypatc
     )
     assert result.scores["question_part_1_f1_score"] == 0.75
     assert result.outputs["question_part_1_output"] == {"labels": {"1": ["A"]}}
+    assert result.cost_usd == 0.0123
+    assert result.latency_seconds == 4.5
+    assert result.duration_seconds == 7.5
+    assert result.processing_time_seconds == 5.25
+    assert result.llm_call_count == 3
+    assert create_llm_calls == [{"langfuse_client": None}]
+    assert trace_contexts == [(context, "mapping_eval")]
+
+
+def test_benchmark_keeps_legacy_duration_column():
+    runner = benchmark.BenchmarkRunner(
+        benchmark.BenchmarkConfig(dataset="demo", models=[])
+    )
+    runner.results = [
+        benchmark.RunResult(
+            model="test-model",
+            model_tag="test-model",
+            run_number=1,
+            eval_type="mapping",
+            dataset="demo",
+            session_id="session",
+            scores={},
+            timestamp=benchmark.datetime.now(),
+            duration_seconds=5.25,
+            processing_time_seconds=5.25,
+        )
+    ]
+
+    summary = runner.generate_summary_table()
+
+    assert summary.loc[0, "duration_seconds"] == 5.25
+    assert summary.loc[0, "processing_time_seconds"] == 5.25
 
 
 class TestToModelConfigs:

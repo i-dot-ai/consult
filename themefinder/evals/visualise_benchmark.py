@@ -1,21 +1,21 @@
 #!/usr/bin/env python
-"""Visualise benchmark results from local files and Langfuse.
+"""Visualise benchmark results from local files.
 
 A generalised benchmark visualisation system that:
 - Auto-detects available metrics from column names
 - Adapts to any dataset size (2, 3, 32+ questions)
-- Combines local CSV data with Langfuse-derived information
+- Uses gateway-supplied metrics persisted in the local benchmark CSV
 - Generates adaptive HTML reports with interactive charts
 
 Usage:
     uv run python visualise_benchmark.py --benchmark 20260202_134824
     uv run python visualise_benchmark.py --benchmark 20260202_134824 --output report.html
-    uv run python visualise_benchmark.py --benchmark 20260202_134824 --no-langfuse
 """
 
 import argparse
 import json
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -57,7 +57,6 @@ class BenchmarkData:
     benchmark_id: str
     config: dict = field(default_factory=dict)
     results_df: pd.DataFrame = field(default_factory=pd.DataFrame)
-    langfuse_traces: list[dict] = field(default_factory=list)
     detected_metrics: dict[str, dict[str, list[str]]] = field(default_factory=dict)
     questions: dict[int, str] = field(
         default_factory=dict
@@ -88,7 +87,7 @@ class BenchmarkData:
         """Get total cost from local CSV data."""
         if self.results_df.empty or "cost_usd" not in self.results_df.columns:
             return 0.0
-        return self.results_df["cost_usd"].sum()
+        return self.results_df["cost_usd"].sum(min_count=1)
 
     @property
     def total_traces(self) -> int:
@@ -97,10 +96,20 @@ class BenchmarkData:
 
     @property
     def avg_latency(self) -> float:
-        """Get average latency from local CSV data."""
-        if self.results_df.empty or "duration_seconds" not in self.results_df.columns:
+        """Get the average summed gateway latency per evaluation run."""
+        if self.results_df.empty or "latency_seconds" not in self.results_df.columns:
             return 0.0
-        return self.results_df["duration_seconds"].mean()
+        return self.results_df["latency_seconds"].mean()
+
+    @property
+    def avg_processing_time(self) -> float:
+        """Get average processing time, excluding final artefact finalisation."""
+        if (
+            self.results_df.empty
+            or "processing_time_seconds" not in self.results_df.columns
+        ):
+            return 0.0
+        return self.results_df["processing_time_seconds"].mean()
 
 
 # =============================================================================
@@ -118,6 +127,10 @@ def load_local_results(benchmark_id: str) -> pd.DataFrame:
         return pd.DataFrame()
 
     df = pd.read_csv(raw_results_path)
+    # Benchmark results written before processing_time_seconds was introduced
+    # used duration_seconds for the same end-to-end wall-clock measurement.
+    if "processing_time_seconds" not in df.columns and "duration_seconds" in df.columns:
+        df["processing_time_seconds"] = df["duration_seconds"]
     console.print(f"[green]Loaded {len(df)} results from {raw_results_path}[/green]")
     return df
 
@@ -223,68 +236,10 @@ def load_dataset_metadata(dataset_name: str) -> DatasetMetadata | None:
     )
 
 
-def fetch_langfuse_traces(benchmark_id: str) -> list[dict]:
-    """Fetch all traces for a benchmark from Langfuse with pagination."""
-    try:
-        from langfuse import Langfuse
-
-        client = Langfuse(timeout=30)  # Increased from default 5s
-
-        results = []
-        page = 1
-        batch_size = 100
-
-        while True:
-            traces = client.api.trace.list(
-                tags=[f"benchmark:{benchmark_id}"],
-                limit=batch_size,
-                page=page,
-            )
-
-            if not traces.data:
-                break
-
-            for trace in traces.data:
-                metadata = trace.metadata or {}
-                results.append(
-                    {
-                        "id": trace.id,
-                        "name": trace.name,
-                        "session_id": trace.session_id,
-                        "model": metadata.get("model", "unknown"),
-                        "model_tag": metadata.get("model_tag", "unknown"),
-                        "eval_type": metadata.get("eval_type", "unknown"),
-                        "run_number": metadata.get("run_number", 0),
-                        "cost_usd": trace.total_cost or 0,
-                        "latency_s": trace.latency or 0,
-                        "tags": trace.tags or [],
-                    }
-                )
-
-            if len(traces.data) < batch_size:
-                break  # Last page
-
-            page += 1
-
-        console.print(f"[green]Fetched {len(results)} traces from Langfuse[/green]")
-        return results
-
-    except Exception as e:
-        console.print(f"[yellow]Could not fetch Langfuse data: {e}[/yellow]")
-        return []
-
-
-def load_benchmark_data(
-    benchmark_id: str, skip_langfuse: bool = False
-) -> BenchmarkData:
-    """Load all data for a benchmark from local files and Langfuse."""
-    # Load local data
+def load_benchmark_data(benchmark_id: str) -> BenchmarkData:
+    """Load a benchmark and its gateway metrics from local result files."""
     results_df = load_local_results(benchmark_id)
     config = load_config(benchmark_id)
-
-    # Load Langfuse data (optional) - use langfuse_benchmark_id if different from directory
-    langfuse_id = config.get("langfuse_benchmark_id", benchmark_id)
-    langfuse_traces = [] if skip_langfuse else fetch_langfuse_traces(langfuse_id)
 
     # Detect available metrics
     detected_metrics = detect_all_metrics(results_df) if not results_df.empty else {}
@@ -298,7 +253,6 @@ def load_benchmark_data(
         benchmark_id=benchmark_id,
         config=config,
         results_df=results_df,
-        langfuse_traces=langfuse_traces,
         detected_metrics=detected_metrics,
         questions=questions,
         dataset_metadata=dataset_metadata,
@@ -380,13 +334,20 @@ def detect_all_metrics(df: pd.DataFrame) -> dict[str, dict[str, list[str]]]:
 # =============================================================================
 
 
-def _build_agg_dict(df: pd.DataFrame) -> dict[str, str]:
+def _sum_available(values: pd.Series) -> float:
+    """Sum a metric without turning an entirely missing column into zero."""
+    return values.sum(min_count=1)
+
+
+def _build_agg_dict(df: pd.DataFrame) -> dict[str, str | Callable]:
     """Build aggregation dict based on available columns."""
     agg_dict = {}
     if "cost_usd" in df.columns:
-        agg_dict["cost_usd"] = "sum"
-    if "duration_seconds" in df.columns:
-        agg_dict["duration_seconds"] = "mean"
+        agg_dict["cost_usd"] = _sum_available
+    if "latency_seconds" in df.columns:
+        agg_dict["latency_seconds"] = "mean"
+    if "processing_time_seconds" in df.columns:
+        agg_dict["processing_time_seconds"] = "mean"
     if "input_tokens" in df.columns:
         agg_dict["input_tokens"] = "sum"
     if "output_tokens" in df.columns:
@@ -722,12 +683,13 @@ def print_summary(data: BenchmarkData) -> None:
     console.print(f"Eval types: {', '.join(data.eval_types)}")
     console.print(f"Total runs: {data.total_traces}")
     console.print(f"Total cost: ${data.total_cost:.4f}")
-    console.print(f"Avg latency: {data.avg_latency:.1f}s")
+    console.print(f"Avg summed gateway latency: {data.avg_latency:.1f}s")
+    console.print(f"Avg processing time: {data.avg_processing_time:.1f}s")
     console.print()
 
 
 def print_model_table(data: BenchmarkData) -> None:
-    """Print cost and latency by model."""
+    """Print cost, summed gateway latency and processing time by model."""
     agg = aggregate_by_model(data)
     if agg.empty:
         return
@@ -738,13 +700,16 @@ def print_model_table(data: BenchmarkData) -> None:
 
     # Conditionally add columns
     has_cost = "cost_usd" in agg.columns
-    has_latency = "duration_seconds" in agg.columns
+    has_latency = "latency_seconds" in agg.columns
+    has_processing_time = "processing_time_seconds" in agg.columns
     has_tokens = "total_tokens" in agg.columns
 
     if has_cost:
         table.add_column("Total Cost", justify="right", style="green")
     if has_latency:
-        table.add_column("Avg Latency", justify="right")
+        table.add_column("Avg Summed Gateway Latency", justify="right")
+    if has_processing_time:
+        table.add_column("Avg Processing Time", justify="right")
     if has_tokens:
         table.add_column("Total Tokens", justify="right")
 
@@ -753,7 +718,9 @@ def print_model_table(data: BenchmarkData) -> None:
         if has_cost:
             row_values.append(f"${row['cost_usd']:.4f}")
         if has_latency:
-            row_values.append(f"{row['duration_seconds']:.1f}s")
+            row_values.append(f"{row['latency_seconds']:.1f}s")
+        if has_processing_time:
+            row_values.append(f"{row['processing_time_seconds']:.1f}s")
         if has_tokens:
             row_values.append(f"{int(row['total_tokens']):,}")
         table.add_row(*row_values)
@@ -763,7 +730,7 @@ def print_model_table(data: BenchmarkData) -> None:
 
 
 def print_eval_table(data: BenchmarkData) -> None:
-    """Print cost and latency by eval type."""
+    """Print cost, summed gateway latency and processing time by eval type."""
     agg = aggregate_by_eval(data)
     if agg.empty:
         return
@@ -774,13 +741,16 @@ def print_eval_table(data: BenchmarkData) -> None:
 
     # Conditionally add columns
     has_cost = "cost_usd" in agg.columns
-    has_latency = "duration_seconds" in agg.columns
+    has_latency = "latency_seconds" in agg.columns
+    has_processing_time = "processing_time_seconds" in agg.columns
     has_tokens = "total_tokens" in agg.columns
 
     if has_cost:
         table.add_column("Total Cost", justify="right", style="green")
     if has_latency:
-        table.add_column("Avg Latency", justify="right")
+        table.add_column("Avg Summed Gateway Latency", justify="right")
+    if has_processing_time:
+        table.add_column("Avg Processing Time", justify="right")
     if has_tokens:
         table.add_column("Total Tokens", justify="right")
 
@@ -789,7 +759,9 @@ def print_eval_table(data: BenchmarkData) -> None:
         if has_cost:
             row_values.append(f"${row['cost_usd']:.4f}")
         if has_latency:
-            row_values.append(f"{row['duration_seconds']:.1f}s")
+            row_values.append(f"{row['latency_seconds']:.1f}s")
+        if has_processing_time:
+            row_values.append(f"{row['processing_time_seconds']:.1f}s")
         if has_tokens:
             row_values.append(f"{int(row['total_tokens']):,}")
         table.add_row(*row_values)
@@ -941,8 +913,13 @@ def generate_html_report(data: BenchmarkData, output_path: str) -> None:
         else []
     )
     model_latencies = (
-        by_model["duration_seconds"].tolist()
-        if not by_model.empty and "duration_seconds" in by_model.columns
+        by_model["latency_seconds"].tolist()
+        if not by_model.empty and "latency_seconds" in by_model.columns
+        else []
+    )
+    model_processing_times = (
+        by_model["processing_time_seconds"].tolist()
+        if not by_model.empty and "processing_time_seconds" in by_model.columns
         else []
     )
 
@@ -958,8 +935,13 @@ def generate_html_report(data: BenchmarkData, output_path: str) -> None:
         _html_header(data),
         _html_summary_cards(data),
         _html_model_summary_table(data),
-        _html_cost_latency_charts(
-            models, model_costs, model_latencies, eval_types, eval_costs
+        _html_cost_latency_processing_charts(
+            models,
+            model_costs,
+            model_latencies,
+            model_processing_times,
+            eval_types,
+            eval_costs,
         ),
         _html_performance_section(data),
         _html_composite_section(data),
@@ -1116,17 +1098,6 @@ def _html_header(data: BenchmarkData) -> str:
 
 def _html_summary_cards(data: BenchmarkData) -> str:
     """Generate compact stat pills."""
-    lf_cost = (
-        sum(t["cost_usd"] for t in data.langfuse_traces)
-        if data.langfuse_traces
-        else data.total_cost
-    )
-    lf_latency = (
-        sum(t["latency_s"] for t in data.langfuse_traces) / len(data.langfuse_traces)
-        if data.langfuse_traces
-        else data.avg_latency
-    )
-
     # Dataset metadata pills (if available)
     dataset_pills = ""
     if data.dataset_metadata:
@@ -1142,14 +1113,15 @@ def _html_summary_cards(data: BenchmarkData) -> str:
             <div class="stat-pill"><span class="value">{len(data.models)}</span><span class="label">Models</span></div>
             <div class="stat-pill"><span class="value">{len(data.eval_types)}</span><span class="label">Evals</span></div>
             <div class="stat-pill"><span class="value">{data.total_traces}</span><span class="label">Runs</span></div>
-            <div class="stat-pill"><span class="value">${lf_cost:.2f}</span><span class="label">Cost</span></div>
-            <div class="stat-pill"><span class="value">{lf_latency:.0f}s</span><span class="label">Avg Latency</span></div>
+            <div class="stat-pill"><span class="value">${data.total_cost:.2f}</span><span class="label">Cost</span></div>
+            <div class="stat-pill"><span class="value">{data.avg_latency:.0f}s</span><span class="label">Avg Summed Gateway Latency</span></div>
+            <div class="stat-pill"><span class="value">{data.avg_processing_time:.0f}s</span><span class="label">Avg Processing Time</span></div>
         </div>
 """
 
 
 def _html_model_summary_table(data: BenchmarkData) -> str:
-    """Generate the main model summary table with performance by eval, cost, latency."""
+    """Generate the main model summary table with performance and run metrics."""
     if data.results_df.empty:
         return ""
 
@@ -1177,7 +1149,8 @@ def _html_model_summary_table(data: BenchmarkData) -> str:
         if et in primary_metrics:
             header_cells.append(f"<th class='num'>{et.title()}</th>")
     header_cells.append("<th class='num'>Cost</th>")
-    header_cells.append("<th class='num'>Latency</th>")
+    header_cells.append("<th class='num'>Avg Summed Gateway Latency</th>")
+    header_cells.append("<th class='num'>Processing</th>")
     header_cells.append("<th class='num'>Tokens</th>")
 
     # Build rows
@@ -1234,15 +1207,22 @@ def _html_model_summary_table(data: BenchmarkData) -> str:
 
         # Cost
         if "cost_usd" in model_df.columns:
-            cost = model_df["cost_usd"].sum()
+            cost = model_df["cost_usd"].sum(min_count=1)
             cells.append(f"<td class='num'>${cost:.3f}</td>")
         else:
             cells.append("<td class='num'>-</td>")
 
-        # Latency
-        if "duration_seconds" in model_df.columns:
-            latency = model_df["duration_seconds"].mean()
+        # Summed gateway latency per evaluation run
+        if "latency_seconds" in model_df.columns:
+            latency = model_df["latency_seconds"].mean()
             cells.append(f"<td class='num'>{latency:.0f}s</td>")
+        else:
+            cells.append("<td class='num'>-</td>")
+
+        # Processing time
+        if "processing_time_seconds" in model_df.columns:
+            processing_time = model_df["processing_time_seconds"].mean()
+            cells.append(f"<td class='num'>{processing_time:.0f}s</td>")
         else:
             cells.append("<td class='num'>-</td>")
 
@@ -1266,22 +1246,33 @@ def _html_model_summary_table(data: BenchmarkData) -> str:
 """
 
 
-def _html_cost_latency_charts(
+def _html_cost_latency_processing_charts(
     models: list[str],
-    model_costs: list[float],
-    model_latencies: list[float],
+    model_costs: list[float | None],
+    model_latencies: list[float | None],
+    model_processing_times: list[float | None],
     eval_types: list[str],
     eval_costs: list[float],
 ) -> str:
-    """Generate compact cost and latency charts in a grid."""
-    has_cost = model_costs and any(c > 0 for c in model_costs)
-    has_latency = model_latencies and any(latency > 0 for latency in model_latencies)
+    """Generate compact cost, summed-latency and processing-time charts."""
+    model_costs, model_latencies, model_processing_times = (
+        [value if pd.notna(value) else None for value in values]
+        for values in (model_costs, model_latencies, model_processing_times)
+    )
+    has_cost = any(cost is not None and cost > 0 for cost in model_costs)
+    has_latency = any(
+        latency is not None and latency > 0 for latency in model_latencies
+    )
+    has_processing_time = any(
+        processing_time is not None and processing_time > 0
+        for processing_time in model_processing_times
+    )
 
-    if not has_cost and not has_latency:
+    if not has_cost and not has_latency and not has_processing_time:
         return ""
 
     sections = [
-        '<div class="section-header">Cost & Latency</div><div class="chart-row">'
+        '<div class="section-header">Cost, Summed Gateway Latency & Processing Time</div><div class="chart-row">'
     ]
 
     if has_cost:
@@ -1295,8 +1286,16 @@ def _html_cost_latency_charts(
     if has_latency:
         sections.append("""
         <div class="card">
-            <div class="card-title">Latency by Model</div>
+            <div class="card-title">Summed Gateway Latency by Model</div>
             <div class="chart" id="latency-model"></div>
+        </div>
+""")
+
+    if has_processing_time:
+        sections.append("""
+        <div class="card">
+            <div class="card-title">Processing Time by Model</div>
+            <div class="chart" id="processing-time-model"></div>
         </div>
 """)
 
@@ -1323,7 +1322,7 @@ def _html_cost_latency_charts(
             y: {json.dumps(model_costs)},
             type: 'bar',
             marker: {{color: '#f472b6'}},
-            text: {json.dumps([f"${c:.3f}" for c in model_costs])},
+            text: {json.dumps([f"${c:.3f}" if c is not None else "" for c in model_costs])},
             textposition: 'outside',
             textfont: {{size: 10, family: 'Roboto Mono'}}
         }}], Object.assign({{}}, chartLayout, {{yaxis: Object.assign({{}}, chartLayout.yaxis, {{title: 'USD'}})}}), chartConfig);
@@ -1336,7 +1335,20 @@ def _html_cost_latency_charts(
             y: {json.dumps(model_latencies)},
             type: 'bar',
             marker: {{color: '#38bdf8'}},
-            text: {json.dumps([f"{latency:.0f}s" for latency in model_latencies])},
+            text: {json.dumps([f"{latency:.0f}s" if latency is not None else "" for latency in model_latencies])},
+            textposition: 'outside',
+            textfont: {{size: 10, family: 'Roboto Mono'}}
+        }}], Object.assign({{}}, chartLayout, {{yaxis: Object.assign({{}}, chartLayout.yaxis, {{title: 'Seconds'}})}}), chartConfig);
+""")
+
+    if has_processing_time:
+        sections.append(f"""
+        Plotly.newPlot('processing-time-model', [{{
+            x: {json.dumps(models)},
+            y: {json.dumps(model_processing_times)},
+            type: 'bar',
+            marker: {{color: '#a78bfa'}},
+            text: {json.dumps([f"{processing_time:.0f}s" if processing_time is not None else "" for processing_time in model_processing_times])},
             textposition: 'outside',
             textfont: {{size: 10, family: 'Roboto Mono'}}
         }}], Object.assign({{}}, chartLayout, {{yaxis: Object.assign({{}}, chartLayout.yaxis, {{title: 'Seconds'}})}}), chartConfig);
@@ -1850,11 +1862,6 @@ def main():
         help="Output HTML report path (default: benchmark_report_{id}.html)",
     )
     parser.add_argument(
-        "--no-langfuse",
-        action="store_true",
-        help="Skip fetching data from Langfuse",
-    )
-    parser.add_argument(
         "--json",
         action="store_true",
         help="Output raw data as JSON instead of tables/report",
@@ -1864,7 +1871,7 @@ def main():
     console.print(f"\n[bold cyan]Loading benchmark: {args.benchmark}[/bold cyan]\n")
 
     # Load all data
-    data = load_benchmark_data(args.benchmark, skip_langfuse=args.no_langfuse)
+    data = load_benchmark_data(args.benchmark)
 
     if data.results_df.empty:
         console.print(f"[red]No data found for benchmark: {args.benchmark}[/red]")
@@ -1880,8 +1887,8 @@ def main():
             "eval_types": data.eval_types,
             "total_cost": data.total_cost,
             "avg_latency": data.avg_latency,
+            "avg_processing_time": data.avg_processing_time,
             "trace_count": data.total_traces,
-            "langfuse_traces": data.langfuse_traces,
         }
         print(json.dumps(output, indent=2, default=str))
         return
