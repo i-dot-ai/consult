@@ -57,7 +57,7 @@
       const data = await res.json();
       freeTextSamples.set(
         questionId,
-        (data.results ?? []).map(
+        (data.all_respondents ?? []).map(
           (r: { free_text_answer_text: string }) => r.free_text_answer_text,
         ),
       );

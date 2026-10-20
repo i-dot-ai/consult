@@ -90,10 +90,10 @@ export const questionsErrorMock = {
 export const freeTextResponsesMock = {
   url: /\/questions\/q4-uuid\/responses\//,
   body: {
-    count: 150,
-    next: null,
-    previous: null,
-    results: [
+    has_more_pages: false,
+    next_cursor: null,
+    total_count: 3,
+    all_respondents: [
       { free_text_answer_text: "Consider the environmental impact." },
       { free_text_answer_text: "Focus on economic feasibility." },
       { free_text_answer_text: "Ensure public consultation is thorough." },
