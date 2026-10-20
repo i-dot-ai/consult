@@ -99,7 +99,7 @@
               {userState?.isOwner || userState?.isAdmin
                 ? "Manage people"
                 : "Who can see this"}
-              </span>
+            </span>
           </Button>
         </div>
       </div>
