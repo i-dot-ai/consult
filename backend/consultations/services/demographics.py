@@ -53,15 +53,18 @@ def merge_demographic_options(
     discarded_ids = option_ids[1:]
     _validate_target_value(retained, option_ids, new_value)
 
-    through_model = Respondent.demographics.through
+    respondent_demographics = Respondent.demographics.through
     respondent_ids = list(
-        through_model.objects.filter(demographicoption_id__in=option_ids)
+        respondent_demographics.objects.filter(demographicoption_id__in=option_ids)
         .values_list("respondent_id", flat=True)
         .distinct()
     )
-    through_model.objects.bulk_create(
+    respondent_demographics.objects.bulk_create(
         [
-            through_model(respondent_id=respondent_id, demographicoption_id=retained.id)
+            respondent_demographics(
+                respondent_id=respondent_id,
+                demographicoption_id=retained.id,
+            )
             for respondent_id in respondent_ids
         ],
         ignore_conflicts=True,
@@ -69,7 +72,9 @@ def merge_demographic_options(
 
     DemographicOption.objects.filter(id__in=discarded_ids).delete()
     retained.field_value = new_value
-    retained.response_count = through_model.objects.filter(demographicoption_id=retained.id).count()
+    retained.response_count = respondent_demographics.objects.filter(
+        demographicoption_id=retained.id
+    ).count()
     retained.save(update_fields=["field_value", "response_count", "modified_at"])
     return retained
 
