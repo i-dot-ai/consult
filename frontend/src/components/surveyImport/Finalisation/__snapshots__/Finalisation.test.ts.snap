@@ -71,7 +71,8 @@ exports[`Finalisation > matches snapshot 1`] = `
   </p>
    
   <div
-    class="rounded-xl border border-neutral-300 bg-white p-7"
+    class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+    data-testid="panel-component"
   >
     <p
       class="text-md leading-relaxed text-neutral-900"
@@ -81,7 +82,9 @@ exports[`Finalisation > matches snapshot 1`] = `
     consultation page at any time. Your consultation status will be updated when
     the themes are ready.
     </p>
+    <!---->
   </div>
+  <!---->
    
   <div
     class="mt-7 flex justify-end"
