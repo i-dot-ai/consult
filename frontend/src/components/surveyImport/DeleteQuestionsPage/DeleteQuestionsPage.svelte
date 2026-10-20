@@ -234,7 +234,7 @@
                     {@const sample =
                       question.multiple_choice_answer?.slice(0, 3) ?? []}
                     <p class="mb-2">
-                      A sample. {Math.min(3, question.total_response_count)} of {question.total_response_count}
+                      A sample. {sample.length} of {question.total_response_count}
                       answers to this question
                     </p>
                     {#each sample as answer (answer.id)}
