@@ -13,6 +13,12 @@ from adapters.evaluators.base import EvaluatorPort
 
 
 class RunnerPort(ABC):
+    def __init__(self, *, repeat: int = 1):
+        """Set how many times every case is run, so run-to-run variance can be measured."""
+        if repeat < 1:
+            raise ValueError(f"repeat must be >= 1, got {repeat}")
+        self.repeat = repeat
+
     async def run(
         self,
         config: ComponentConfig,
@@ -44,7 +50,10 @@ class RunnerPort(ABC):
         *,
         llm: Any,
     ) -> RunReport:
-        """Run config.task and score with config.evaluators over the already-filtered cases."""
+        """Run config.task and score with config.evaluators over the already-filtered cases.
+
+        Each case yields ``self.repeat`` outcomes, numbered by ``CaseOutcome.run_index``.
+        """
 
     @staticmethod
     def _select_cases(

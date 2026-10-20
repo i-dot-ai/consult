@@ -7,7 +7,7 @@ stages:
         THEMEFINDER_EVAL_DATASET_SOURCE=${item.dataset_source}
         THEMEFINDER_EVAL_ARTEFACT_STORE=${item.artefact_store}
         uv run --extra eval python run_eval.py
-        --component ${key} --dataset ${dataset.name}
+        --component ${key} --dataset ${dataset.name} --runs ${runs}
       deps:
         - run_eval.py
         - component_runner.py
@@ -31,6 +31,7 @@ stages:
       params:
         - params.yaml:
             - dataset
+            - runs
             - evals.${key}
       outs:
         - local_eval_runs/${key}/${dataset.name}/results.json:

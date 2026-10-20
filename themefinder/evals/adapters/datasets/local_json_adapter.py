@@ -7,7 +7,7 @@ from .base import DatasetPort
 
 
 class LocalJSONDatasetAdapter(DatasetPort):
-    def load_cases(self, config: DatasetConfig) -> list[Case]:
+    def _load_cases(self, config: DatasetConfig) -> list[Case]:
         """Load local fixture items and normalise them into `Case` objects."""
         try:
             return [

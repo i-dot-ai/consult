@@ -1,5 +1,7 @@
 """Tests for RunnerPort's shared llm validation and its two concrete adapters."""
 
+from types import SimpleNamespace
+
 import pytest
 from pydantic_evals.reporting import EvaluationReport
 
@@ -14,9 +16,49 @@ from fakes import FakeEvaluatorPort
 class _RunnerContractTests:
     """Shared behaviour every RunnerPort adapter must satisfy."""
 
-    def make_runner(self) -> RunnerPort:
+    def make_runner(self, repeat: int = 1) -> RunnerPort:
         """Build the concrete runner under test; overridden per adapter."""
         raise NotImplementedError
+
+    async def test_repeat_gives_each_case_that_many_indexed_outcomes(self):
+        """repeat=3 yields three outcomes per case, numbered 0-2, each with its scores."""
+        config = ComponentConfig(
+            component="generation",
+            task=self._make_task(),
+            evaluators=[FakeEvaluatorPort([Score("m1", 0.5)])],
+        )
+        cases = [
+            make_case(inputs={"id": "a"}, case_id="case-1"),
+            make_case(inputs={"id": "b"}, case_id="case-2"),
+        ]
+
+        report = await self.make_runner(repeat=3).run(config, cases, llm=object())
+
+        assert len(report.outcomes) == 6, "2 cases x 3 repeats"
+        for case in cases:
+            runs = [o for o in report.outcomes if o.case.id == case.id]
+            assert sorted(o.run_index for o in runs) == [0, 1, 2]
+            assert all(o.scores == [Score("m1", 0.5)] for o in runs)
+            assert all(o.output == {"echo": case.inputs["id"]} for o in runs)
+
+    async def test_repeat_records_failed_repeats_as_errors(self):
+        """A task that always fails still gets `repeat` error outcomes, not a missing case."""
+        config = ComponentConfig(
+            component="generation",
+            task=self._make_task(raise_for_id="bad"),
+            evaluators=[FakeEvaluatorPort([Score("m1", 1.0)])],
+        )
+        case = make_case(inputs={"id": "bad"}, case_id="bad")
+
+        report = await self.make_runner(repeat=2).run(config, [case], llm=object())
+
+        assert [o.run_index for o in report.outcomes] == [0, 1]
+        assert all(o.error for o in report.outcomes)
+
+    def test_rejects_repeat_below_one(self):
+        """repeat=0 would silently run nothing."""
+        with pytest.raises(ValueError, match="repeat"):
+            self.make_runner(repeat=0)
 
     def check_engine_report(
         self, report: RunReport, expected_cases: list[Case]
@@ -205,9 +247,9 @@ class _RunnerContractTests:
 
 
 class TestInlineSequentialRunner(_RunnerContractTests):
-    def make_runner(self) -> RunnerPort:
+    def make_runner(self, repeat: int = 1) -> RunnerPort:
         """Build the runner under test."""
-        return InlineSequentialRunner()
+        return InlineSequentialRunner(repeat=repeat)
 
     def check_engine_report(
         self, report: RunReport, expected_cases: list[Case]
@@ -219,9 +261,9 @@ class TestInlineSequentialRunner(_RunnerContractTests):
 class TestPydanticEvalsRunner(_RunnerContractTests):
     """Uses the real pydantic_evals.Dataset.evaluate() engine, progress=False, no network."""
 
-    def make_runner(self) -> RunnerPort:
+    def make_runner(self, repeat: int = 1) -> RunnerPort:
         """Build the runner under test."""
-        return PydanticEvalsRunner(progress=False)
+        return PydanticEvalsRunner(progress=False, repeat=repeat)
 
     def check_engine_report(
         self, report: RunReport, expected_cases: list[Case]
@@ -251,11 +293,34 @@ class TestPydanticEvalsRunner(_RunnerContractTests):
             "each case's output should be attributed to its own id under concurrency"
         )
 
+    def test_failed_repeat_keeps_its_own_run_index(self, monkeypatch):
+        """Failures are reported apart from successes, so a failed middle repeat must
+        not be shifted to the end."""
+        case = make_case(case_id="q1")
+
+        def _run(number: int) -> SimpleNamespace:
+            return SimpleNamespace(name=f"q1 [{number}/3]", source_case_name="q1")
+
+        native_report = SimpleNamespace(cases=[_run(1), _run(3)], failures=[_run(2)])
+        monkeypatch.setattr(
+            PydanticEvalsRunner,
+            "_to_outcome",
+            staticmethod(lambda case, run: CaseOutcome(case, run.name, [])),
+        )
+
+        report = PydanticEvalsRunner._to_run_report(native_report, [case], repeat=3)
+
+        assert [(o.run_index, o.output) for o in report.outcomes] == [
+            (0, "q1 [1/3]"),
+            (1, "q1 [2/3]"),
+            (2, "q1 [3/3]"),
+        ]
+
     def test_to_outcome_defensive_branch_when_case_is_in_neither_list(self):
         """The engine reporting neither success nor failure degrades to a clear error, not a crash."""
         case = make_case(case_id="missing")
 
-        outcome = PydanticEvalsRunner._to_outcome(case, report_case=None, failure=None)
+        outcome = PydanticEvalsRunner._to_outcome(case, None)
 
         assert outcome == CaseOutcome(
             case, None, [], "missing from pydantic_evals report"

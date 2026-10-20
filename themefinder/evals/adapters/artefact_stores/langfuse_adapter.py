@@ -8,10 +8,11 @@ from typing import Any
 
 from eval_types import CaseOutcome, RunReport
 from httpx import RequestError
+from utils import stats
 from utils.langfuse import LangfuseContext
 from utils.logging_config import get_logger
 
-from .base import ArtefactStorePort, case_key, flatten_run_report, json_safe
+from .base import ArtefactStorePort, flatten_run_report, json_safe
 
 logger = get_logger(__name__)
 
@@ -66,7 +67,48 @@ class LangfuseArtefactStore(ArtefactStorePort):
             if callable(printer):
                 printer()
 
-        return flatten_run_report(report)
+        results = flatten_run_report(report)
+        if "aggregate" in results:
+            self._record_aggregate_scores(results["aggregate"])
+
+        return results
+
+    def _record_aggregate_scores(self, aggregate: dict[str, Any]) -> None:
+        """Write cross-run statistics as scores on one trace for the whole run."""
+        client = self.context.client
+        if client is None:
+            return
+
+        scores: dict[str, float | None] = {}
+        for metric, summary in aggregate["metrics"].items():
+            scores[f"{metric}_mean"] = summary["mean"]
+            scores[f"{metric}_stdev"] = summary["stdev"]
+        consistency = aggregate[stats.CONSISTENCY_METRIC]
+        for metric in stats.PAIR_METRICS:
+            scores[f"{stats.CONSISTENCY_METRIC}_{metric}"] = consistency[metric]
+
+        trace_id = client.create_trace_id()
+        with client.start_as_current_span(
+            trace_context={"trace_id": trace_id},
+            name=f"{self._run_name}:aggregate",
+            output=json_safe(aggregate),
+            metadata=self.context.metadata,
+        ) as trace:
+            trace.update_trace(
+                output=json_safe(aggregate),
+                metadata=self.context.metadata,
+                tags=self.context.tags,
+                session_id=self.context.session_id,
+            )
+            for name, value in scores.items():
+                # None means not computable (e.g. stdev of one run), not zero
+                if value is not None:
+                    client.create_score(
+                        trace_id=trace.trace_id,
+                        name=name,
+                        value=value,
+                        data_type="NUMERIC",
+                    )
 
     @contextmanager
     def _trace_for_outcome(
@@ -82,7 +124,9 @@ class LangfuseArtefactStore(ArtefactStorePort):
         inputs = json_safe(outcome.case.inputs)
         outputs = json_safe(outcome.output)
         trace_id = client.create_trace_id()
-        trace_name = f"{self._run_name}:{case_key(outcome.case)}"
+        trace_name = f"{self._run_name}:{outcome.case.key}"
+        if outcome.run_index:
+            trace_name += f":r{outcome.run_index}"
         trace_status = outcome.error
         with client.start_as_current_span(
             trace_context={"trace_id": trace_id},

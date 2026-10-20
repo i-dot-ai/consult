@@ -16,7 +16,10 @@ from utils.logging_config import (
 
 
 @pytest.fixture(autouse=True)
-def _reset_logging():
+def _reset_logging(monkeypatch):
+    # settings.py loads .env on import, so a local Langfuse selection would add its handler
+    monkeypatch.delenv("THEMEFINDER_EVAL_DATASET_SOURCE", raising=False)
+    monkeypatch.delenv("THEMEFINDER_EVAL_ARTEFACT_STORE", raising=False)
     logging_config._configured = False
     logging.getLogger("themefinder.evals").handlers.clear()
     yield

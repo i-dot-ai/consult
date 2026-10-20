@@ -9,6 +9,7 @@ from adapters import context_providers
 from adapters.artefact_stores import LangfuseArtefactStore, LocalJSONArtefactStore
 from adapters.context_providers import ProvidedContext
 from adapters.datasets import LangfuseDatasetAdapter, LocalJSONDatasetAdapter
+from adapters.runners.inline_sequential_runner import InlineSequentialRunner
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from config import EvalBackends, resolve_backends
 from datasets import DatasetConfig
@@ -30,6 +31,7 @@ def _settings(
     artefact_store: str | None,
     *,
     langfuse: LangfuseSettings | None = None,
+    engine: str = "pydantic_evals",
 ) -> EvalSettings:
     if langfuse is None and "langfuse" in (dataset_source, artefact_store):
         langfuse = LangfuseSettings(
@@ -47,7 +49,7 @@ def _settings(
         gateway=GatewaySettings(url=None, api_key=None),
         langfuse=langfuse,
         eval=EvalRunSettings(
-            engine="pydantic_evals",
+            engine=engine,
             dataset_source=dataset_source,
             artefact_store=artefact_store,
         ),
@@ -96,6 +98,22 @@ def test_resolves_dataset_and_artefact_sources_independently(
         assert backends.dataset.client is client
     if isinstance(backends.artefacts, LangfuseArtefactStore):
         assert backends.artefacts.context is context
+
+
+@pytest.mark.parametrize(
+    ("engine", "runner_type"),
+    [
+        ("pydantic_evals", PydanticEvalsRunner),
+        ("local", InlineSequentialRunner),
+    ],
+)
+def test_resolves_runner_for_each_engine_with_repeat(engine, runner_type):
+    backends = resolve_backends(
+        DATASET_CONFIG, settings=_settings(None, None, engine=engine), repeat=3
+    )
+
+    assert isinstance(backends.runner, runner_type)
+    assert backends.runner.repeat == 3
 
 
 def test_unset_sources_default_to_local(monkeypatch):
