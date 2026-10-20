@@ -70,7 +70,7 @@ class LLMJudgeEvaluator(EvaluatorPort):
         return json.loads(match.group(1) if match else text)
 
     @staticmethod
-    def _shuffle_themes(themes: list[dict]) -> list[dict]:
+    def _shuffle_themes(themes: list[Any]) -> list[Any]:
         """Shuffle a copy of theme records to reduce positional bias."""
         shuffled = list(themes)
         random.shuffle(shuffled)
@@ -338,7 +338,6 @@ class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
         )
 
         # Implemented in subclasses: convert the LLM's decisions into scores
-        scores = self._build_scores(
+        return self._build_scores(
             BinaryMatchDecisions(list1, list2, forward_decisions, backward_decisions)
         )
-        return scores
