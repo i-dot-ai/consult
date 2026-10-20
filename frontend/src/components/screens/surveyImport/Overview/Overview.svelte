@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { createRawSnippet } from "svelte";
   import type { Component, Snippet } from "svelte";
   import { fade } from "svelte/transition";
 
@@ -22,6 +21,7 @@
   import { buildConsultationGetQuery } from "../../../../global/queries/consultations/queries";
   import { buildCurrentUserGetQuery } from "../../../../global/queries/users/queries";
   import { createUserState } from "../../../../global/state.svelte";
+  import { makeSnippet } from "../../../../global/utils";
   import {
     getConsultationUsersUrl,
     getDataUploadStepOneUrl,
@@ -122,24 +122,20 @@
     </p>
 
     {@render infoItem(
-      createRawSnippet(() => ({
-        render: () => `
-          <p>
-            <strong>Open questions</strong> are free text. Consult reads every answer and groups them into themes, which can then be edited, merged and signed off. Those themes allow for analysis.
-          </p>
-        `,
-      })),
+      makeSnippet(`
+        <p>
+          <strong>Open questions</strong> are free text. Consult reads every answer and groups them into themes, which can then be edited, merged and signed off. Those themes allow for analysis.
+        </p>
+      `),
       Check,
     )}
 
     {@render infoItem(
-      createRawSnippet(() => ({
-        render: () => `
-          <p>
-            <strong>Closed questions</strong> have a fixed set of answers. Consult enables these answers to act as filters, so you can read the themes for one sector, region or respondent type at a time.
-          </p>
-        `,
-      })),
+      makeSnippet(`
+        <p>
+          <strong>Closed questions</strong> have a fixed set of answers. Consult enables these answers to act as filters, so you can read the themes for one sector, region or respondent type at a time.
+        </p>
+      `),
       Check,
     )}
   </Panel>
@@ -213,35 +209,29 @@
     </div>
 
     {@render infoItem(
-      createRawSnippet(() => ({
-        render: () => `
-          <p>
-            Responses should be in a single <strong>.xlsx</strong> or <strong>.csv</strong> file. Step 1 shows how to export.
-          </p>
-        `,
-      })),
+      makeSnippet(`
+        <p>
+          Responses should be in a single <strong>.xlsx</strong> or <strong>.csv</strong> file. Step 1 shows how to export.
+        </p>
+      `),
       Check,
     )}
 
     {@render infoItem(
-      createRawSnippet(() => ({
-        render: () => `
-          <p>
-            Nothing is analysed until step 6 is completed.
-          </p>
-        `,
-      })),
+      makeSnippet(`
+        <p>
+          Nothing is analysed until step 6 is completed.
+        </p>
+      `),
       Check,
     )}
 
     {@render infoItem(
-      createRawSnippet(() => ({
-        render: () => `
-          <p>
-            Adding the responses after step 3 can take a few hours. You can leave and come back to it from the consultation page.
-          </p>
-        `,
-      })),
+      makeSnippet(`
+        <p>
+          Adding the responses after step 3 can take a few hours. You can leave and come back to it from the consultation page.
+        </p>
+      `),
       Check,
     )}
 
