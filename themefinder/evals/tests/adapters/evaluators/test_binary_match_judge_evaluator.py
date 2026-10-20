@@ -130,16 +130,18 @@ class TestBinaryMatchJudgeEvaluator:
         assert all(d["decision"] == "FAIL" for d in decisions)
         assert scores == [Score("match_rate", 0.0, "")]
 
-    async def test_both_lists_empty_skips_llm_and_defers_to_child(self):
-        """Both empty is the special case: no judge calls, and the child decides
-        the score from empty decision lists."""
+    async def test_both_lists_empty_errors_without_calling_llm(self):
+        """Both empty leaves nothing to judge: no judge calls, and the case
+        degrades to a zero Score carrying the error, via EvaluatorPort."""
         judge = FakeJudge()
 
         evaluator, scores = await self._run(judge, [], [])
 
         assert judge.prompts == []
-        assert evaluator.seen == BinaryMatchDecisions([], [], [], [])
-        assert scores == [Score("match_rate", 0.0, "")]
+        assert not hasattr(evaluator, "seen")
+        assert scores == [
+            Score("match_rate", 0.0, "Error: Both lists are empty; nothing to judge")
+        ]
 
     @pytest.mark.parametrize(("concurrency", "expected_peak"), [(2, 2), (5, 5)])
     async def test_concurrency_cap(self, concurrency, expected_peak):
