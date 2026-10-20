@@ -1,6 +1,7 @@
 """PydanticEvalsRunner — RunnerPort backed by the native pydantic_evals.Dataset engine."""
 
-from dataclasses import dataclass
+from collections import defaultdict
+from dataclasses import dataclass, replace
 from typing import Any
 
 from pydantic_evals import Case as NativeCase
@@ -59,7 +60,14 @@ class _EvaluatorPortAsNativeEvaluator(Evaluator):
 class PydanticEvalsRunner(RunnerPort):
     """Runs cases through the native pydantic_evals engine and reports back via RunReport."""
 
-    def __init__(self, *, max_concurrency: int | None = None, progress: bool = True):
+    def __init__(
+        self,
+        *,
+        max_concurrency: int | None = None,
+        progress: bool = True,
+        repeat: int = 1,
+    ):
+        super().__init__(repeat=repeat)
         self._max_concurrency = max_concurrency
         self._progress = progress
 
@@ -89,8 +97,9 @@ class PydanticEvalsRunner(RunnerPort):
             name=config.component,
             max_concurrency=self._max_concurrency,
             progress=self._progress,
+            repeat=self.repeat,
         )
-        return self._to_run_report(native_report, cases)
+        return self._to_run_report(native_report, cases, self.repeat)
 
     @staticmethod
     def _to_native_case(case: Case) -> NativeCase:
@@ -103,18 +112,40 @@ class PydanticEvalsRunner(RunnerPort):
         )
 
     @staticmethod
-    def _to_run_report(native_report: EvaluationReport, cases: list[Case]) -> RunReport:
-        """Translate a native EvaluationReport back into our RunReport, keeping it as engine_report."""
-        report_cases = {
-            report_case.name: report_case for report_case in native_report.cases
-        }
-        failures = {failure.name: failure for failure in native_report.failures}
-        outcomes = [
-            PydanticEvalsRunner._to_outcome(
-                case, report_cases.get(case.id), failures.get(case.id)
+    def _to_run_report(
+        native_report: EvaluationReport, cases: list[Case], repeat: int = 1
+    ) -> RunReport:
+        """Translate a native EvaluationReport back into our RunReport, keeping it as engine_report.
+
+        With repeat > 1 pydantic_evals renames each run "<id> [i/N]" and keeps the id in
+        source_case_name, so group on that to get back to one set of runs per case.
+        """
+        report_cases: dict[str, list[ReportCase]] = defaultdict(list)
+        for report_case in native_report.cases:
+            report_cases[report_case.source_case_name or report_case.name].append(
+                report_case
             )
-            for case in cases
-        ]
+        failures: dict[str, list[ReportCaseFailure]] = defaultdict(list)
+        for failure in native_report.failures:
+            failures[failure.source_case_name or failure.name].append(failure)
+
+        outcomes = []
+        for case in cases:
+            # Repeats are exchangeable, so run_index is just position within the group.
+            # A run missing from the report is filled in as an error so every case has
+            # exactly `repeat` outcomes.
+            case_runs = [
+                *((run, None) for run in report_cases.get(case.id, [])),
+                *((None, failure) for failure in failures.get(case.id, [])),
+            ]
+            case_runs += [(None, None)] * (repeat - len(case_runs))
+            outcomes.extend(
+                replace(
+                    PydanticEvalsRunner._to_outcome(case, report_case, failure),
+                    run_index=run_index,
+                )
+                for run_index, (report_case, failure) in enumerate(case_runs)
+            )
         return RunReport(outcomes=outcomes, engine_report=native_report)
 
     @staticmethod
