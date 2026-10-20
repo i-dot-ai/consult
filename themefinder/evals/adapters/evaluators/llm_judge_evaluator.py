@@ -331,6 +331,9 @@ class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
         """Run the decision loops on the two lists and pass result to _build_scores"""
         list1, list2 = self._get_lists(case, output)
 
+        if not list1 and not list2:
+            raise ValueError("Both lists are empty; nothing to judge")
+
         # Get the LLM's decisions for each item in list1 as compared to list2
         forward_decisions = await self._llm_decision_loop(list1, list2)
         backward_decisions = (
