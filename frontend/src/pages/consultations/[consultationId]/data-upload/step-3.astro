@@ -1,0 +1,13 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+
+import Section from "../../../../components/Section/Section.svelte";
+import UnderConstruction from "../../../../components/screens/UnderConstruction/UnderConstruction.svelte";
+import FileUpload from "../../../../components/screens/surveyImport/FileUpload/FileUpload.svelte";
+---
+
+<Layout>
+  <Section>
+    <FileUpload client:load />
+  </Section>
+</Layout>
