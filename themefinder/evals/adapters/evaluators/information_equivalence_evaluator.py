@@ -58,15 +58,6 @@ class InformationEquivalenceEvaluator(BinaryMatchJudgeEvaluator):
 
     def _build_scores(self, decisions: BinaryMatchDecisions) -> list[Score]:
         """Use mutually confirmed exact-one pairings as information equivalence."""
-        if not decisions.items and not decisions.candidates:
-            return [
-                Score(
-                    "information_equivalence",
-                    1.0,
-                    "Both theme lists are empty; information equivalence: 1.0",
-                )
-            ]
-
         original_to_refined = self._matching_pairs(
             decisions.forward, decisions.candidates
         )
