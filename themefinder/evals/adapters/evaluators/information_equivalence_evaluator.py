@@ -5,14 +5,12 @@ from typing import Any
 from eval_types import Case, Score
 
 from .llm_judge_evaluator import BinaryMatchDecisions, BinaryMatchJudgeEvaluator
-from .prompts import load_prompt_fn
 
 
 class InformationEquivalenceEvaluator(BinaryMatchJudgeEvaluator):
     """Score reciprocal one-to-one correspondence between original and refined themes."""
 
     metric_names = ("information_equivalence",)
-    prompt_fn = staticmethod(load_prompt_fn("information_equivalence_match"))
 
     @staticmethod
     def _format_theme(theme: dict[str, str]) -> str:
@@ -58,22 +56,6 @@ class InformationEquivalenceEvaluator(BinaryMatchJudgeEvaluator):
             ", ".join(f"{source}→{candidate}" for source, candidate in pairs) or "none"
         )
 
-    @staticmethod
-    def _reciprocal_pairs(
-        original_to_refined: list[tuple[int, int]],
-        refined_to_original: list[tuple[int, int]],
-    ) -> list[tuple[int, int]]:
-        """Keep only pairings confirmed by both directional judge calls."""
-        reverse_pairs = {
-            (original_index, refined_index)
-            for refined_index, original_index in refined_to_original
-        }
-        return [
-            (original_index, refined_index)
-            for original_index, refined_index in original_to_refined
-            if (original_index, refined_index) in reverse_pairs
-        ]
-
     def _build_scores(self, decisions: BinaryMatchDecisions) -> list[Score]:
         """Use mutually confirmed exact-one pairings as information equivalence."""
         if not decisions.items and not decisions.candidates:
@@ -89,9 +71,13 @@ class InformationEquivalenceEvaluator(BinaryMatchJudgeEvaluator):
             decisions.forward, decisions.candidates
         )
         refined_to_original = self._matching_pairs(decisions.backward, decisions.items)
-        reciprocal_pairs = self._reciprocal_pairs(
-            original_to_refined, refined_to_original
-        )
+        confirmed_pairs = {
+            (original_index, refined_index)
+            for refined_index, original_index in refined_to_original
+        }
+        reciprocal_pairs = [
+            pair for pair in original_to_refined if pair in confirmed_pairs
+        ]
         list_size = max(len(decisions.items), len(decisions.candidates))
         score = len(reciprocal_pairs) / list_size
         absolute_difference = abs(len(decisions.items) - len(decisions.candidates))
