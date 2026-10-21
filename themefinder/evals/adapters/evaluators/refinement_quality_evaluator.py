@@ -10,13 +10,13 @@ import asyncio
 from typing import Any
 
 from eval_types import Case, Score
-from prompts.refinement import clarity_eval_prompt, refinement_eval_prompt
 
 from .llm_judge_evaluator import LLMJudgeEvaluator, ThemeComparisonJudgeEvaluator
+from .prompts import load_prompt_fn
 
 
 class RefinementQualityEvaluator(ThemeComparisonJudgeEvaluator):
-    prompt_fn = staticmethod(refinement_eval_prompt)
+    prompt_fn = staticmethod(load_prompt_fn("refinement"))
     first_kwarg = "original_topics"
     second_kwarg = "new_topics"
     metric_names = (
@@ -33,6 +33,7 @@ class RefinementQualityEvaluator(ThemeComparisonJudgeEvaluator):
 class ClarityEvaluator(LLMJudgeEvaluator):
     """Evaluate each refined theme independently for simple, clear wording."""
 
+    prompt_fn = staticmethod(load_prompt_fn("clarity"))
     metric_names = ("clarity",)
 
     def __init__(self, *args, concurrency: int = 5, **kwargs):
@@ -52,7 +53,10 @@ class ClarityEvaluator(LLMJudgeEvaluator):
 
         async with sem:
             response = await self.invoke_with_retry(
-                clarity_eval_prompt(label, description)
+                self.prompt_fn(
+                    topic_label=label,
+                    topic_description=description,
+                )
             )
 
         parsed = self._parse_json_markdown(response.parsed)

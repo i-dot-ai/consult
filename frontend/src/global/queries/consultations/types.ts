@@ -7,8 +7,9 @@ export type ConsultationsGetResponse = {
   results: Consultation[];
 };
 export type ConsultationV2User = Pick<User, "id" | "email" | "is_staff">;
+export type DataSource = "qualtrics" | "citizen-space";
 export type ConsultationV2 = Omit<Consultation, "created_by"> & {
-  data_source: "qualtrics" | "citizen-space" | null;
+  data_source: DataSource | null;
   users: ConsultationV2User[];
   created_by: ConsultationV2User | null;
   started_at: string | null;
@@ -21,6 +22,14 @@ export type ConsultationsV2GetResponse = Omit<
   "results"
 > & { results: ConsultationV2[] };
 export type ConsultationV2CreateResponse = Pick<ConsultationV2, "id" | "title">;
+export type ConsultationV2UpdateBody = {
+  title?: string;
+  data_source?: DataSource | null;
+};
+export type ConsultationV2UpdateResponse = Pick<
+  ConsultationV2,
+  "id" | "title" | "data_source"
+>;
 export type UpdateConsultationBody = {
   stage?: ConsultationStage;
 };

@@ -1,6 +1,4 @@
-"""Prompt template for refinement evaluation."""
-
-REFINEMENT_EVAL = """You are an expert in natural language processing and topic modelling. Your task is to evaluate how well a model refines topic labels and descriptions. You will be shown:
+You are an expert in natural language processing and topic modelling. Your task is to evaluate how well a model refines topic labels and descriptions. You will be shown:
 
 1. ORIGINAL TOPICS: The topics before refinement.
 2. NEW TOPICS: The topics after a refinement step that improves labels and descriptions.
@@ -55,61 +53,17 @@ Original topic: "Concerns about environmental regulations being too strict". Ref
 
 Return only the following JSON, no other text:
 
-{{
+{
   "information_retention": <score 0-5>,
   "information_retention_reasoning": "1-2 sentence explanation",
   "response_references": <score 0-5>,
   "response_references_reasoning": "1-2 sentence explanation",
   "distinctiveness": <score 0-5>,
   "distinctiveness_reasoning": "1-2 sentence explanation"
-}}
+}
 
 ORIGINAL TOPICS:
 {original_topics}
 
 NEW TOPICS:
 {new_topics}
-"""
-
-
-def refinement_eval_prompt(
-    original_topics: list[dict],
-    new_topics: list[dict],
-) -> str:
-    """Generate a prompt for refinement evaluation."""
-    return REFINEMENT_EVAL.format(
-        original_topics=original_topics,
-        new_topics=new_topics,
-    )
-
-
-CLARITY_EVAL = """You are evaluating whether one refined theme is simple and clear.
-
-Assess only the wording of the theme label and description. PASS when together they
-communicate the theme's meaning in simple, clear language that is easy to understand.
-FAIL when the wording is confusing, unnecessarily complex, ambiguous, or otherwise
-difficult to understand.
-
-Do not assess information retention, response references, distinctiveness, length, or
-whether this theme is better than any other theme.
-
-## Refined theme
-
-Label: {topic_label}
-Description: {topic_description}
-
-Return only a JSON object in exactly this shape, with no Markdown fences or other text:
-
-{{
-  "decision": "PASS" | "FAIL",
-  "reasoning": "A brief explanation of the decision."
-}}
-"""
-
-
-def clarity_eval_prompt(topic_label: str, topic_description: str) -> str:
-    """Generate a clarity-evaluation prompt for one refined theme."""
-    return CLARITY_EVAL.format(
-        topic_label=topic_label,
-        topic_description=topic_description,
-    )

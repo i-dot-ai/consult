@@ -1,6 +1,4 @@
-"""Prompt template for condensation evaluation."""
-
-CONDENSATION_EVAL = """You are an expert in natural language processing and topic modelling. Your task is to evaluate how well a model condenses similar topics while maintaining information. You will be shown:
+You are an expert in natural language processing and topic modelling. Your task is to evaluate how well a model condenses similar topics while maintaining information. You will be shown:
 
 1. The ORIGINAL list of topics (before condensation)
 2. The CONDENSED list of topics (after condensation)
@@ -44,27 +42,15 @@ Original topics included "Environmental impact of packaging", "Carbon emissions 
 
 Return only the following JSON, no other text:
 
-{{
+{
   "compression_quality": <score 0-5>,
   "compression_quality_reasoning": "1-2 sentence explanation",
   "information_retention": <score 0-5>,
   "information_retention_reasoning": "1-2 sentence explanation"
-}}
+}
 
 ORIGINAL TOPICS:
 {original_topics}
 
 CONDENSED TOPICS:
 {condensed_topics}
-"""
-
-
-def condensation_eval_prompt(
-    original_topics: list[dict],
-    condensed_topics: list[dict],
-) -> str:
-    """Generate a prompt for condensation evaluation."""
-    return CONDENSATION_EVAL.format(
-        original_topics=original_topics,
-        condensed_topics=condensed_topics,
-    )

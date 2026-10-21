@@ -789,6 +789,12 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
               >
                 StepsTitle
               </a>
+              <a
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                href="/stories?selected=ExportResponsesPage"
+              >
+                ExportResponsesPage
+              </a>
               
               <!---->
             </div>
@@ -866,6 +872,12 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
                 href="/stories?selected=FileInput"
               >
                 FileInput
+              </a>
+              <a
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                href="/stories?selected=RadioCards"
+              >
+                RadioCards
               </a>
               
               <!---->
@@ -986,6 +998,168 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
                 href="/stories?selected=ManageConsultationsArchive"
               >
                 ManageConsultationsArchive
+              </a>
+              
+              <!---->
+            </div>
+            <!---->
+            <!---->
+          </li>
+          <li>
+            <!---->
+            <!---->
+            <button
+              aria-pressed="false"
+              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              data-variant="gray"
+              role="button"
+              tabindex="0"
+            >
+              <!---->
+              <!---->
+              <div
+                class="flex w-full items-center justify-between gap-2"
+              >
+                <div
+                  class="flex gap-1 items-center"
+                >
+                  <!---->
+                   
+                  <h2
+                    class="font-medium"
+                  >
+                    Survey Import
+                  </h2>
+                  <!---->
+                </div>
+                 
+                <div
+                  class="flex items-center gap-0.5 shrink-0 mx-1"
+                >
+                  <div
+                    class="transition-transform rotate-90"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="fill-neutral-500"
+                      height="1rem"
+                      viewBox="0 -960 960 960"
+                      width="1rem"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <!---->
+                      <path
+                        d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
+                    <!---->
+                  </div>
+                   
+                  <!---->
+                </div>
+              </div>
+              
+              
+              
+            </button>
+            
+            <!---->
+             
+            <div
+              class="bg-transparent border-transparent p-0 pt-2 rounded-b-lg border border-t-0"
+            >
+              <!---->
+              <a
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                href="/stories?selected=StepTitle"
+              >
+                StepTitle
+              </a>
+              <a
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                href="/stories?selected=OutsideConsultTag"
+              >
+                OutsideConsultTag
+              </a>
+              
+              <!---->
+            </div>
+            <!---->
+            <!---->
+          </li>
+          <li>
+            <!---->
+            <!---->
+            <button
+              aria-pressed="false"
+              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              data-variant="gray"
+              role="button"
+              tabindex="0"
+            >
+              <!---->
+              <!---->
+              <div
+                class="flex w-full items-center justify-between gap-2"
+              >
+                <div
+                  class="flex gap-1 items-center"
+                >
+                  <!---->
+                   
+                  <h2
+                    class="font-medium"
+                  >
+                    Screens / Survey Import
+                  </h2>
+                  <!---->
+                </div>
+                 
+                <div
+                  class="flex items-center gap-0.5 shrink-0 mx-1"
+                >
+                  <div
+                    class="transition-transform rotate-90"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="fill-neutral-500"
+                      height="1rem"
+                      viewBox="0 -960 960 960"
+                      width="1rem"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <!---->
+                      <path
+                        d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"
+                        xmlns="http://www.w3.org/2000/svg"
+                      />
+                      <!---->
+                    </svg>
+                    <!---->
+                  </div>
+                   
+                  <!---->
+                </div>
+              </div>
+              
+              
+              
+            </button>
+            
+            <!---->
+             
+            <div
+              class="bg-transparent border-transparent p-0 pt-2 rounded-b-lg border border-t-0"
+            >
+              <!---->
+              <a
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                href="/stories?selected=Overview"
+              >
+                Overview
               </a>
               
               <!---->
