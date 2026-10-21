@@ -1,0 +1,114 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Finalisation > matches snapshot 1`] = `
+<div>
+  <!---->
+  <div
+    class="flex gap-4 items-center flex-wrap"
+  >
+    <div
+      class="rounded-full border border-neutral-300 bg-neutral-100 w-12 h-12 flex justify-center items-center"
+    >
+      <div
+        class="shrink-0"
+      >
+        <svg
+          aria-hidden="true"
+          class="fill-neutral-500"
+          height="1.6rem"
+          viewBox="0 -960 960 960"
+          width="1.6rem"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <!---->
+          <!---->
+          <path
+            d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+          
+          <!---->
+        </svg>
+        <!---->
+      </div>
+    </div>
+     
+    <div>
+      <small
+        class="text-neutral-500"
+      >
+        Step 6 of 6
+      </small>
+       
+      <div
+        class="flex gap-2 items-center flex-wrap"
+      >
+        <!---->
+        <h1
+          class="text-neutral-700 text-xl"
+        >
+          <!---->
+          <!---->
+          Setup complete
+          
+          
+          
+        </h1>
+        
+        <!---->
+         
+        <!---->
+      </div>
+    </div>
+  </div>
+  <!---->
+   
+  <p
+    class="mt-3.5 mb-6 text-md leading-relaxed text-neutral-500"
+  >
+    The responses have been uploaded and all questions configured. Consult will
+  now find themes across the open question responses.
+  </p>
+   
+  <div
+    class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+    data-testid="panel-component"
+  >
+    <p
+      class="text-md leading-relaxed text-neutral-900"
+    >
+      Finding themes can take more than 20 minutes, but can take longer depending
+    on the size of your consultation. You can leave and come back from the
+    consultation page at any time. Your consultation status will be updated when
+    the themes are ready.
+    </p>
+    <!---->
+  </div>
+  <!---->
+   
+  <div
+    class="mt-7 flex justify-end"
+  >
+    <!---->
+    <a
+      aria-pressed="false"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+      data-variant="primary"
+      disabled="false"
+      href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58"
+      role="link"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      Go to consultation page
+      
+      
+      
+    </a>
+    
+    <!---->
+  </div>
+  
+</div>
+`;

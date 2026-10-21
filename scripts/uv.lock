@@ -10,6 +10,17 @@ resolution-markers = [
     "python_full_version < '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
+[options]
+exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for backwards compatibility when using relative exclude-newer values.
+exclude-newer-span = "P14D"
+
+[options.exclude-newer-package]
+i-dot-ai-utilities = "2026-09-08T00:00:00Z"
+langsmith = "2026-07-01T00:00:00Z"
+cryptography = "2026-07-01T00:00:00Z"
+langchain = "2026-07-01T00:00:00Z"
+pydantic-settings = "2026-07-01T00:00:00Z"
+
 [[package]]
 name = "boto3"
 version = "1.43.6"
