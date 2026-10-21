@@ -2,9 +2,8 @@
   import type { Component } from "svelte";
 
   import Title from "../../Title.svelte";
-  import Tag from "../../Tag/Tag.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
-  import OpenInNew from "../../svg/material/OpenInNew.svelte";
+  import OutsideConsultTag from "../OutsideConsultTag/OutsideConsultTag.svelte";
 
   interface Props {
     stepNo: number;
@@ -49,14 +48,7 @@
     <div class="flex gap-2 items-center flex-wrap">
       <Title>{title}</Title>
       {#if isExternal}
-        <Tag>
-          <span class="flex gap-1 items-center">
-            <MaterialIcon color="fill-neutral-500">
-              <OpenInNew />
-            </MaterialIcon>
-            Happens outside Consult
-          </span>
-        </Tag>
+        <OutsideConsultTag />
       {/if}
     </div>
   </div>

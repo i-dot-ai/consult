@@ -24,7 +24,7 @@
   import { makeSnippet } from "../../../../global/utils";
   import {
     getConsultationUsersUrl,
-    getDataUploadStepOneUrl,
+    getDataUploadSelectProviderUrl,
   } from "../../../../global/routes";
 
   interface Props {
@@ -253,7 +253,7 @@
     <Button
       size="sm"
       variant="primary"
-      href={getDataUploadStepOneUrl(consultationId)}
+      href={getDataUploadSelectProviderUrl(consultationId)}
       title="Go to Step 1 of Survey Import"
     >
       Start step 1: export the responses
