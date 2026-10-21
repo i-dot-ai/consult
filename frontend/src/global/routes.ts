@@ -30,6 +30,7 @@ export enum Suffixes {
   DeleteQuestions = "delete-questions",
   Answers = "answers",
   Dashboard = "dashboard",
+  StepOne = "step-1",
 }
 
 export enum Routes {
@@ -576,6 +577,15 @@ export const getQuestionsUrl = (consultationId: string) => {
 export const getDataUploadUrl = (consultationId: string) => {
   // TODO: Subject to change, update accordingly
   return urlJoin(Routes.Consultations, consultationId, Suffixes.DataUpload);
+};
+export const getDataUploadStepOneUrl = (consultationId: string) => {
+  // TODO: Subject to change, update accordingly
+  return urlJoin(
+    Routes.Consultations,
+    consultationId,
+    Suffixes.DataUpload,
+    Suffixes.StepOne,
+  );
 };
 
 export const getDataUploadFinaliseUrl = (consultationId: string) => {
