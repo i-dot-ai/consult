@@ -1,0 +1,606 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ChecksPage > matches snapshot 1`] = `
+<div>
+  <!---->
+  <div
+    class="flex gap-4 items-center flex-wrap"
+  >
+    <div
+      class="rounded-full border border-neutral-300 bg-neutral-100 w-12 h-12 flex justify-center items-center"
+    >
+      <div
+        class="shrink-0"
+      >
+        <svg
+          aria-hidden="true"
+          class="fill-neutral-500"
+          height="1.6rem"
+          viewBox="0 -960 960 960"
+          width="1.6rem"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <!---->
+          <!---->
+          <path
+            d="M222-200 80-342l56-56 85 85 170-170 56 57-225 226Zm0-320L80-662l56-56 85 85 170-170 56 57-225 226Zm298 240v-80h360v80H520Zm0-320v-80h360v80H520Z"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+          
+          <!---->
+        </svg>
+        <!---->
+      </div>
+    </div>
+     
+    <div>
+      <small
+        class="text-neutral-500"
+      >
+        Step 3 of 6
+      </small>
+       
+      <div
+        class="flex gap-2 items-center flex-wrap"
+      >
+        <!---->
+        <h1
+          class="text-neutral-700 text-xl"
+        >
+          <!---->
+          <!---->
+          Check your data
+          
+          
+          
+        </h1>
+        
+        <!---->
+         
+        <!---->
+      </div>
+    </div>
+  </div>
+  <!---->
+   
+  <p
+    class="mt-3.5 mb-6 text-md leading-relaxed text-neutral-500"
+  >
+    Before uploading, work through the checklist below. You can still upload
+  without ticking every box, but skipping items may cause the upload to fail or
+  produce inaccurate results.
+  </p>
+   
+  <div
+    class="flex flex-col gap-6"
+  >
+    <div
+      class="rounded-xl border border-neutral-300 bg-white"
+    >
+      <div
+        class="border-b border-neutral-200 px-7 py-5"
+      >
+        <h2
+          class="text-sm font-medium text-neutral-900"
+        >
+          User checks
+        </h2>
+         
+        <!---->
+      </div>
+       
+      <div
+        class="divide-y divide-neutral-200"
+      >
+        <div
+          class="px-7 py-4"
+        >
+          <div>
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="qualtrics-row-structure"
+                name="qualtrics-row-structure"
+                type="checkbox"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="qualtrics-row-structure"
+              >
+                Rows 1–3 contain question and metadata headers, row 4 onwards contains one response per row
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <p
+            class="mt-1 pl-8 text-sm leading-relaxed text-neutral-500"
+          >
+            Qualtrics exports include three header rows: question text, question ID, and ImportId.
+          </p>
+          <!---->
+        </div>
+        <div
+          class="px-7 py-4"
+        >
+          <div>
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="user-one-question-per-column"
+                name="user-one-question-per-column"
+                type="checkbox"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="user-one-question-per-column"
+              >
+                Each column contains one question, each row contains one set of responses
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <!---->
+        </div>
+        <div
+          class="px-7 py-4"
+        >
+          <div>
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="user-pii-removed"
+                name="user-pii-removed"
+                type="checkbox"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="user-pii-removed"
+              >
+                All personally identifiable information (PII) has been removed
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <p
+            class="mt-1 pl-8 text-sm leading-relaxed text-neutral-500"
+          >
+            This includes names, email addresses, phone numbers, home addresses, IP addresses, and any other data that could identify an individual.
+          </p>
+          <!---->
+        </div>
+        <div
+          class="px-7 py-4"
+        >
+          <div>
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="user-responses-merged"
+                name="user-responses-merged"
+                type="checkbox"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="user-responses-merged"
+              >
+                Responses from other sources (e.g. emails) have been merged into a single file
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <!---->
+        </div>
+        <div
+          class="px-7 py-4"
+        >
+          <div>
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="user-file-type"
+                name="user-file-type"
+                type="checkbox"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="user-file-type"
+              >
+                The file is .xlsx or .csv
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <!---->
+        </div>
+        <div
+          class="px-7 py-4"
+        >
+          <div>
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="user-no-merged-cells"
+                name="user-no-merged-cells"
+                type="checkbox"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="user-no-merged-cells"
+              >
+                There are no merged cells in the file
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <p
+            class="mt-1 pl-8 text-sm leading-relaxed text-neutral-500"
+          >
+            Merged cells will be split during processing — only the top-left cell retains its value.
+          </p>
+          <!---->
+        </div>
+        <div
+          class="px-7 py-4"
+        >
+          <div>
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="user-demographic-columns"
+                name="user-demographic-columns"
+                type="checkbox"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="user-demographic-columns"
+              >
+                Demographic columns have not been removed
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <!---->
+        </div>
+        
+      </div>
+    </div>
+    <!---->
+     
+    <div
+      class="rounded-xl border border-neutral-300 bg-white"
+    >
+      <div
+        class="border-b border-neutral-200 px-7 py-5"
+      >
+        <h2
+          class="text-sm font-medium text-neutral-900"
+        >
+          Technical checks
+        </h2>
+         
+        <p
+          class="mt-1 text-sm leading-relaxed text-neutral-500"
+        >
+          Consult will check these automatically when you upload — if anything needs attention, we'll let you know.
+        </p>
+        <!---->
+      </div>
+       
+      <div
+        class="divide-y divide-neutral-200"
+      >
+        <div
+          class="px-7 py-4"
+        >
+          <div>
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="tech-headers-complete"
+                name="tech-headers-complete"
+                type="checkbox"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="tech-headers-complete"
+              >
+                Row 1 contains text in every column that has data in the rows below
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <!---->
+        </div>
+        <div
+          class="px-7 py-4"
+        >
+          <div>
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="tech-no-formulas"
+                name="tech-no-formulas"
+                type="checkbox"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="tech-no-formulas"
+              >
+                No calculations or formulas exist in the file
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <p
+            class="mt-1 pl-8 text-sm leading-relaxed text-neutral-500"
+          >
+            Cells should contain plain values only. Convert any Excel formulas to their static results before uploading.
+          </p>
+          <!---->
+        </div>
+        <div
+          class="px-7 py-4"
+        >
+          <div>
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="tech-no-merged-cells"
+                name="tech-no-merged-cells"
+                type="checkbox"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="tech-no-merged-cells"
+              >
+                No merged cells exist in the file
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <!---->
+        </div>
+        <div
+          class="px-7 py-4"
+        >
+          <div>
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="tech-file-type"
+                name="tech-file-type"
+                type="checkbox"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="tech-file-type"
+              >
+                The file is .xlsx or .csv
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <!---->
+        </div>
+        <div
+          class="px-7 py-4"
+        >
+          <div>
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="tech-no-special-characters"
+                name="tech-no-special-characters"
+                type="checkbox"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="tech-no-special-characters"
+              >
+                No special non-printing characters are present
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <p
+            class="mt-1 pl-8 text-sm leading-relaxed text-neutral-500"
+          >
+            This refers to ASCII control characters (e.g. null bytes, escape characters). Standard symbols like & are fine.
+          </p>
+          <!---->
+        </div>
+        <div
+          class="px-7 py-4"
+        >
+          <div>
+            <!---->
+             
+            <!---->
+             
+            <div
+              class="flex items-center gap-3"
+            >
+              <input
+                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                id="tech-no-empty-rows"
+                name="tech-no-empty-rows"
+                type="checkbox"
+              />
+               
+              <label
+                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                for="tech-no-empty-rows"
+              >
+                No entirely empty rows exist within the response data
+              </label>
+              <!---->
+            </div>
+          </div>
+          <!---->
+           
+          <p
+            class="mt-1 pl-8 text-sm leading-relaxed text-neutral-500"
+          >
+            Blank rows between responses can disrupt processing. Rows at the very end of the file are fine.
+          </p>
+          <!---->
+        </div>
+        
+      </div>
+    </div>
+    <!---->
+  </div>
+   
+  <div
+    class="mt-7 flex justify-between"
+  >
+    <!---->
+    <a
+      aria-pressed="false"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+      data-variant="default"
+      disabled="false"
+      href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58/data-upload/select-provider"
+      role="link"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      Back
+      
+      
+      
+    </a>
+    
+    <!---->
+     
+    <!---->
+    <button
+      aria-pressed="false"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+      data-variant="primary"
+      disabled=""
+      role="button"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      Continue to upload
+      
+      
+      
+    </button>
+    
+    <!---->
+  </div>
+  
+</div>
+`;

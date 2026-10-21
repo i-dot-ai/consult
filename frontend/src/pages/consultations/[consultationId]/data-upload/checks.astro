@@ -1,0 +1,43 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section/Section.svelte";
+import ChecksPage from "../../../../components/surveyImport/ChecksPage/ChecksPage.svelte";
+
+import type { AstroGlobalRuntime } from "../../../../global/types";
+import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
+import { PROVIDER_CHECKS } from "../../../../components/surveyImport/ChecksPage/checks";
+import { buildResponse, fetchBackendApi } from "../../../../global/api";
+import { consultationV2QueryParts } from "../../../../global/queries/consultations/parts";
+import { getDataSetupV2Enabled } from "../../../../global/utils";
+
+if (!getDataSetupV2Enabled()) {
+  return Astro.rewrite("/404");
+}
+
+const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
+
+const { data, error, status } = await fetchBackendApi<ConsultationV2>(
+  Astro,
+  consultationV2QueryParts.url(consultationId || ""),
+);
+
+if (error) {
+  return buildResponse(status);
+}
+
+const dataSource = data?.data_source;
+
+if (!dataSource || !(dataSource in PROVIDER_CHECKS)) {
+  return Astro.rewrite("/404");
+}
+---
+
+<Layout>
+  <Section narrow>
+    <ChecksPage
+      client:load
+      consultationId={consultationId || ""}
+      dataSource={dataSource}
+    />
+  </Section>
+</Layout>
