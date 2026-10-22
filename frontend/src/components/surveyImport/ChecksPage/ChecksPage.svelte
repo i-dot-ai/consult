@@ -20,13 +20,8 @@
   let { consultationId, dataSource }: Props = $props();
 
   // svelte-ignore state_referenced_locally
-  const providerChecks = PROVIDER_CHECKS[dataSource];
-
-  const allChecks = [
-    ...providerChecks.checks,
-    ...USER_CHECKS,
-    ...TECHNICAL_CHECKS,
-  ];
+  const userChecks = [...PROVIDER_CHECKS[dataSource].checks, ...USER_CHECKS];
+  const allChecks = [...userChecks, ...TECHNICAL_CHECKS];
 
   let checked = $state<Record<string, boolean>>({});
 
@@ -78,7 +73,7 @@
 </p>
 
 <div class="flex flex-col gap-6">
-  {@render section("User checks", [...providerChecks.checks, ...USER_CHECKS])}
+  {@render section("User checks", userChecks)}
   {@render section(
     "Technical checks",
     TECHNICAL_CHECKS,

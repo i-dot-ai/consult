@@ -7,15 +7,11 @@ export interface Check {
 }
 
 export interface ProviderChecks {
-  dataSource: DataSource;
-  displayName: string;
   checks: Check[];
 }
 
 export const PROVIDER_CHECKS: Record<DataSource, ProviderChecks> = {
   "citizen-space": {
-    dataSource: "citizen-space",
-    displayName: "Citizen Space",
     checks: [
       {
         id: "cs-row-structure",
@@ -25,8 +21,6 @@ export const PROVIDER_CHECKS: Record<DataSource, ProviderChecks> = {
     ],
   },
   qualtrics: {
-    dataSource: "qualtrics",
-    displayName: "Qualtrics",
     checks: [
       {
         id: "qualtrics-row-structure",
