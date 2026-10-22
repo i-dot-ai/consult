@@ -6,7 +6,6 @@ RefinementQualityEvaluator (numeric-key), and TitleSpecificityEvaluator
 
 import json
 from collections import namedtuple
-from types import SimpleNamespace
 
 import pytest
 from adapters.evaluators.condensation_quality_evaluator import (
@@ -18,7 +17,7 @@ from adapters.evaluators.refinement_quality_evaluator import RefinementQualityEv
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
 from conftest import _themes, make_case
 from eval_types import Score
-from fakes import FakeJudge
+from fakes import FakeJudge, SequenceFakeJudge
 
 
 class _RaisingJudge:
@@ -26,27 +25,6 @@ class _RaisingJudge:
 
     async def ainvoke(self, prompt: str):
         raise RuntimeError("boom")
-
-
-class _SequentialJudge:
-    """Judge double returning one configured response per prompt."""
-
-    def __init__(self, *parsed_responses: str):
-        self._responses = list(parsed_responses)
-        self._response_index = 0
-        self.prompts: list[str] = []
-
-    async def ainvoke(self, prompt: str) -> SimpleNamespace:
-        self.prompts.append(prompt)
-        if self._response_index >= len(self._responses):
-            raise AssertionError(
-                "No configured response for "
-                f"judge call {len(self.prompts)}; expected at most "
-                f"{len(self._responses)} call(s)."
-            )
-        response = self._responses[self._response_index]
-        self._response_index += 1
-        return SimpleNamespace(parsed=response)
 
 
 class _JudgeContractTests:
@@ -296,7 +274,7 @@ class TestTitleSpecificityEvaluator(_JudgeContractTests):
 
     async def test_scores_pass_and_fail_titles_independently(self):
         """Each title gets its own PASS/FAIL decision and contributes to the ratio."""
-        judge = _SequentialJudge(
+        judge = SequenceFakeJudge(
             '{"decision": "PASS", "reasoning": "Concrete issue and context."}',
             '{"decision": "FAIL", "reasoning": "Too generic."}',
         )

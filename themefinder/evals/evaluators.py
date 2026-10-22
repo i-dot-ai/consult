@@ -14,7 +14,6 @@ from typing import Any
 import numpy as np
 import openai
 from adapters.evaluators.prompts import load_prompt_fn
-from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
 from sklearn import metrics
 from sklearn.preprocessing import MultiLabelBinarizer
 from tenacity import (
@@ -360,7 +359,7 @@ async def _calculate_title_specificity(
         llm: LangChain LLM instance.
 
     Returns:
-        Dict with ratio of titles that pass and per-theme details.
+        Dict with ratio of specific titles and per-theme details.
     """
     # Extract just the titles for evaluation
     if isinstance(themes, list):
@@ -371,24 +370,40 @@ async def _calculate_title_specificity(
         titles = []
 
     if not titles:
-        return {"ratio": 0.0, "n_pass": 0, "n_total": 0, "details": []}
+        return {"ratio": 0.0, "n_specific": 0, "n_total": 0, "details": []}
 
+    response = await _invoke_with_retry(
+        llm,
+        title_specificity_eval_prompt(
+            theme_titles=titles,
+        ),
+    )
+
+    parsed = _parse_json_markdown(response.parsed)
+    evaluations = parsed.get("evaluations", parsed)
+
+    n_specific = 0
     details = []
-    for title in titles:
-        response = await _invoke_with_retry(
-            llm,
-            title_specificity_eval_prompt(theme_title=title),
-        )
-        parsed = _parse_json_markdown(response.parsed)
-        details.append(TitleSpecificityEvaluator._parse_decision(title, parsed))
 
-    n_pass = sum(detail["decision"] == "PASS" for detail in details)
-    n_total = len(details)
-    ratio = n_pass / n_total if n_total else 0.0
+    for title, evaluation in evaluations.items():
+        decision = evaluation.get("decision", "VAGUE").upper()
+        is_specific = decision == "SPECIFIC"
+        if is_specific:
+            n_specific += 1
+        details.append(
+            {
+                "title": title,
+                "decision": decision,
+                "reasoning": evaluation.get("reasoning", ""),
+            }
+        )
+
+    n_total = len(evaluations)
+    ratio = n_specific / n_total if n_total > 0 else 0.0
 
     return {
         "ratio": ratio,
-        "n_pass": n_pass,
+        "n_specific": n_specific,
         "n_total": n_total,
         "details": details,
     }
@@ -414,12 +429,14 @@ def create_title_specificity_evaluator(llm: Any):
                 llm,
             )
 
-            comment = f"{result['n_pass']}/{result['n_total']} titles passed"
-            failed_titles = [
-                d["title"] for d in result.get("details", []) if d["decision"] == "FAIL"
+            comment = f"{result['n_specific']}/{result['n_total']} titles specific"
+            vague_titles = [
+                d["title"]
+                for d in result.get("details", [])
+                if d["decision"] == "VAGUE"
             ]
-            if failed_titles:
-                comment += f"\nFailed: {', '.join(failed_titles)}"
+            if vague_titles:
+                comment += f"\nVague: {', '.join(vague_titles)}"
 
             return _make_evaluation("specificity", round(result["ratio"], 2), comment)
         except Exception as e:
