@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/svelte";
+import userEvent from "@testing-library/user-event";
 
 import ChecksPage from "./ChecksPage.svelte";
 import { CONSULTATION_ID } from "./mocks";
@@ -43,6 +44,26 @@ describe("ChecksPage", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText("No need to check these yourself."),
+    ).toBeInTheDocument();
+  });
+
+  it("shows Show example buttons for user checks", () => {
+    render(ChecksPage, TEST_DATA);
+
+    const showButtons = screen.getAllByRole("button", { name: "Show example" });
+    expect(showButtons.length).toBeGreaterThan(0);
+  });
+
+  it("toggles example content on Show example click", async () => {
+    render(ChecksPage, TEST_DATA);
+
+    const showButton = screen.getAllByRole("button", {
+      name: "Show example",
+    })[0];
+    await userEvent.click(showButton);
+
+    expect(
+      screen.getByRole("button", { name: "Hide example" }),
     ).toBeInTheDocument();
   });
 

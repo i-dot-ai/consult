@@ -101,217 +101,301 @@ exports[`ChecksPage > matches snapshot 1`] = `
         <div
           class="py-3"
         >
-          <div>
-            <!---->
-             
-            <!---->
-             
-            <div
-              class="flex items-center gap-3"
-            >
-              <input
-                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
-                id="qualtrics-row-structure"
-                name="qualtrics-row-structure"
-                type="checkbox"
-              />
-               
-              <label
-                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
-                for="qualtrics-row-structure"
-              >
-                Rows 1 to 3 hold the question details, as Qualtrics exports them
-              </label>
+          <div
+            class="flex items-start justify-between gap-4"
+          >
+            <div>
               <!---->
+               
+              <!---->
+               
+              <div
+                class="flex items-center gap-3"
+              >
+                <input
+                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                  id="qualtrics-row-structure"
+                  name="qualtrics-row-structure"
+                  type="checkbox"
+                />
+                 
+                <label
+                  class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                  for="qualtrics-row-structure"
+                >
+                  Rows 1 to 3 hold the question details, as Qualtrics exports them
+                </label>
+                <!---->
+              </div>
             </div>
+            <!---->
+             
+            <button
+              class="shrink-0 text-sm text-primary hover:underline"
+              type="button"
+            >
+              Show example
+            </button>
+            <!---->
           </div>
-          <!---->
            
           <!---->
         </div>
         <div
           class="py-3"
         >
-          <div>
-            <!---->
-             
-            <!---->
-             
-            <div
-              class="flex items-center gap-3"
-            >
-              <input
-                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
-                id="user-row-structure"
-                name="user-row-structure"
-                type="checkbox"
-              />
-               
-              <label
-                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
-                for="user-row-structure"
-              >
-                From row 2, each row is one person's complete response, with one question per column
-              </label>
+          <div
+            class="flex items-start justify-between gap-4"
+          >
+            <div>
               <!---->
+               
+              <!---->
+               
+              <div
+                class="flex items-center gap-3"
+              >
+                <input
+                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                  id="user-row-structure"
+                  name="user-row-structure"
+                  type="checkbox"
+                />
+                 
+                <label
+                  class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                  for="user-row-structure"
+                >
+                  From row 4, each row is one person's complete response, with one question per column
+                </label>
+                <!---->
+              </div>
             </div>
+            <!---->
+             
+            <button
+              class="shrink-0 text-sm text-primary hover:underline"
+              type="button"
+            >
+              Show example
+            </button>
+            <!---->
           </div>
-          <!---->
            
           <!---->
         </div>
         <div
           class="py-3"
         >
-          <div>
-            <!---->
-             
-            <!---->
-             
-            <div
-              class="flex items-center gap-3"
-            >
-              <input
-                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
-                id="user-no-merged-cells"
-                name="user-no-merged-cells"
-                type="checkbox"
-              />
-               
-              <label
-                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
-                for="user-no-merged-cells"
-              >
-                No merged cells
-              </label>
+          <div
+            class="flex items-start justify-between gap-4"
+          >
+            <div>
               <!---->
+               
+              <!---->
+               
+              <div
+                class="flex items-center gap-3"
+              >
+                <input
+                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                  id="user-no-merged-cells"
+                  name="user-no-merged-cells"
+                  type="checkbox"
+                />
+                 
+                <label
+                  class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                  for="user-no-merged-cells"
+                >
+                  No merged cells
+                </label>
+                <!---->
+              </div>
             </div>
+            <!---->
+             
+            <button
+              class="shrink-0 text-sm text-primary hover:underline"
+              type="button"
+            >
+              Show example
+            </button>
+            <!---->
           </div>
-          <!---->
            
           <!---->
         </div>
         <div
           class="py-3"
         >
-          <div>
-            <!---->
-             
-            <!---->
-             
-            <div
-              class="flex items-center gap-3"
-            >
-              <input
-                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
-                id="user-file-type"
-                name="user-file-type"
-                type="checkbox"
-              />
-               
-              <label
-                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
-                for="user-file-type"
-              >
-                The file is a .csv or .xlsx
-              </label>
+          <div
+            class="flex items-start justify-between gap-4"
+          >
+            <div>
               <!---->
+               
+              <!---->
+               
+              <div
+                class="flex items-center gap-3"
+              >
+                <input
+                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                  id="user-file-type"
+                  name="user-file-type"
+                  type="checkbox"
+                />
+                 
+                <label
+                  class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                  for="user-file-type"
+                >
+                  The file is a .csv or .xlsx
+                </label>
+                <!---->
+              </div>
             </div>
+            <!---->
+             
+            <button
+              class="shrink-0 text-sm text-primary hover:underline"
+              type="button"
+            >
+              Show example
+            </button>
+            <!---->
           </div>
-          <!---->
            
           <!---->
         </div>
         <div
           class="py-3"
         >
-          <div>
-            <!---->
-             
-            <!---->
-             
-            <div
-              class="flex items-center gap-3"
-            >
-              <input
-                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
-                id="user-responses-merged"
-                name="user-responses-merged"
-                type="checkbox"
-              />
-               
-              <label
-                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
-                for="user-responses-merged"
-              >
-                Responses from email and other channels are in this one file
-              </label>
+          <div
+            class="flex items-start justify-between gap-4"
+          >
+            <div>
               <!---->
+               
+              <!---->
+               
+              <div
+                class="flex items-center gap-3"
+              >
+                <input
+                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                  id="user-responses-merged"
+                  name="user-responses-merged"
+                  type="checkbox"
+                />
+                 
+                <label
+                  class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                  for="user-responses-merged"
+                >
+                  Responses from email and other channels are in this one file
+                </label>
+                <!---->
+              </div>
             </div>
+            <!---->
+             
+            <button
+              class="shrink-0 text-sm text-primary hover:underline"
+              type="button"
+            >
+              Show example
+            </button>
+            <!---->
           </div>
-          <!---->
            
           <!---->
         </div>
         <div
           class="py-3"
         >
-          <div>
-            <!---->
-             
-            <!---->
-             
-            <div
-              class="flex items-center gap-3"
-            >
-              <input
-                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
-                id="user-demographic-columns"
-                name="user-demographic-columns"
-                type="checkbox"
-              />
-               
-              <label
-                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
-                for="user-demographic-columns"
-              >
-                Demographic columns are kept, not deleted
-              </label>
+          <div
+            class="flex items-start justify-between gap-4"
+          >
+            <div>
               <!---->
+               
+              <!---->
+               
+              <div
+                class="flex items-center gap-3"
+              >
+                <input
+                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                  id="user-demographic-columns"
+                  name="user-demographic-columns"
+                  type="checkbox"
+                />
+                 
+                <label
+                  class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                  for="user-demographic-columns"
+                >
+                  Demographic columns are kept, not deleted
+                </label>
+                <!---->
+              </div>
             </div>
+            <!---->
+             
+            <button
+              class="shrink-0 text-sm text-primary hover:underline"
+              type="button"
+            >
+              Show example
+            </button>
+            <!---->
           </div>
-          <!---->
            
           <!---->
         </div>
         <div
           class="py-3"
         >
-          <div>
-            <!---->
-             
-            <!---->
-             
-            <div
-              class="flex items-center gap-3"
-            >
-              <input
-                class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
-                id="user-pii-removed"
-                name="user-pii-removed"
-                type="checkbox"
-              />
-               
-              <label
-                class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
-                for="user-pii-removed"
-              >
-                Personal information is removed, where your department needs it removed
-              </label>
+          <div
+            class="flex items-start justify-between gap-4"
+          >
+            <div>
               <!---->
+               
+              <!---->
+               
+              <div
+                class="flex items-center gap-3"
+              >
+                <input
+                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                  id="user-pii-removed"
+                  name="user-pii-removed"
+                  type="checkbox"
+                />
+                 
+                <label
+                  class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6 cursor-pointer select-none"
+                  for="user-pii-removed"
+                >
+                  Personal information is removed, where your department needs it removed
+                </label>
+                <!---->
+              </div>
             </div>
+            <!---->
+             
+            <button
+              class="shrink-0 text-sm text-primary hover:underline"
+              type="button"
+            >
+              Show example
+            </button>
+            <!---->
           </div>
-          <!---->
            
           <!---->
         </div>
