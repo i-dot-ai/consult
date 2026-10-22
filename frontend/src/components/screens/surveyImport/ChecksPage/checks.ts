@@ -1,4 +1,4 @@
-import type { DataSource } from "../../../global/queries/consultations/types";
+import type { DataSource } from "../../../../global/queries/consultations/types";
 
 export interface Check {
   id: string;

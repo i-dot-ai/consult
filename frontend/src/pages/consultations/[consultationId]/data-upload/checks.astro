@@ -1,11 +1,11 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
 import Section from "../../../../components/Section/Section.svelte";
-import ChecksPage from "../../../../components/surveyImport/ChecksPage/ChecksPage.svelte";
+import ChecksPage from "../../../../components/screens/surveyImport/ChecksPage/ChecksPage.svelte";
 
 import type { AstroGlobalRuntime } from "../../../../global/types";
 import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
-import { PROVIDER_CHECKS } from "../../../../components/surveyImport/ChecksPage/checks";
+import { PROVIDER_CHECK_LABELS } from "../../../../components/screens/surveyImport/ChecksPage/checks";
 import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import { consultationV2QueryParts } from "../../../../global/queries/consultations/parts";
 import { getDataSetupV2Enabled } from "../../../../global/utils";
@@ -27,17 +27,19 @@ if (error) {
 
 const dataSource = data?.data_source;
 
-if (!dataSource || !(dataSource in PROVIDER_CHECKS)) {
+if (!dataSource || !(dataSource in PROVIDER_CHECK_LABELS)) {
   return Astro.rewrite("/404");
 }
 ---
 
 <Layout>
-  <Section narrow>
-    <ChecksPage
-      client:load
-      consultationId={consultationId || ""}
-      dataSource={dataSource}
-    />
+  <Section>
+    <div class="mx-auto max-w-4xl">
+      <ChecksPage
+        client:load
+        consultationId={consultationId || ""}
+        dataSource={dataSource}
+      />
+    </div>
   </Section>
 </Layout>

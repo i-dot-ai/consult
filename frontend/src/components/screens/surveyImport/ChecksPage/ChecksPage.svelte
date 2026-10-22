@@ -1,16 +1,16 @@
 <script lang="ts">
-  import Checklist from "../../svg/material/Checklist.svelte";
-  import Button from "../../inputs/Button/Button.svelte";
-  import Checkbox from "../../inputs/Checkbox/Checkbox.svelte";
-  import StepTitle from "../StepTitle/StepTitle.svelte";
+  import Checklist from "../../../svg/material/Checklist.svelte";
+  import Button from "../../../inputs/Button/Button.svelte";
+  import Checkbox from "../../../inputs/Checkbox/Checkbox.svelte";
+  import StepTitle from "../../../surveyImport/StepTitle/StepTitle.svelte";
 
-  import type { DataSource } from "../../../global/queries/consultations/types";
+  import type { DataSource } from "../../../../global/queries/consultations/types";
   import { PROVIDER_CHECKS, USER_CHECKS, TECHNICAL_CHECKS } from "./checks";
   import type { Check } from "./checks";
   import {
     getDataUploadSelectProviderUrl,
     getConsultationViewUrl,
-  } from "../../../global/routes";
+  } from "../../../../global/routes";
 
   interface Props {
     consultationId: string;
