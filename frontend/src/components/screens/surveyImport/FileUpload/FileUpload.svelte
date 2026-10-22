@@ -35,6 +35,8 @@
         accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         multiple={false}
         maxSize={MB_200}
+        confirmHint="Checking sends the file to Consult. Nothing is added to the consultation yet."
+        confirmButtonText="Check the file"
         onConfirm={(files: File[]) => {
           console.log(files);
 
