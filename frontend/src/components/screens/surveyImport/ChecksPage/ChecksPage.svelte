@@ -47,11 +47,31 @@
     { id: USER_CHECK_IDS.piiRemoved, label: USER_CHECK_LABELS.piiRemoved, example: piiRemovedExample },
   ]);
 
-  let checked = $state<Record<string, boolean>>({});
+  const storageKey = `checks-progress-${consultationId}`;
+
+  function loadFromStorage(): Record<string, boolean> {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function saveToStorage(value: Record<string, boolean>) {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(value));
+    } catch {
+      // storage unavailable — continue silently
+    }
+  }
+
+  let checked = $state<Record<string, boolean>>(loadFromStorage());
   let exampleOpen = $state<Record<string, boolean>>({});
 
   function setChecked(id: string, value: boolean) {
     checked[id] = value;
+    saveToStorage(checked);
   }
 
   function toggleExample(id: string) {
@@ -62,6 +82,7 @@
     for (const check of userChecks) {
       checked[check.id] = true;
     }
+    saveToStorage(checked);
   }
 </script>
 
