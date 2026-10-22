@@ -62,12 +62,10 @@ class InformationEquivalenceEvaluator(BinaryMatchJudgeEvaluator):
             decisions.forward, decisions.candidates
         )
         refined_to_original = self._matching_pairs(decisions.backward, decisions.items)
-        confirmed_pairs = {
-            (original_index, refined_index)
-            for refined_index, original_index in refined_to_original
-        }
         reciprocal_pairs = [
-            pair for pair in original_to_refined if pair in confirmed_pairs
+            (original_index, refined_index)
+            for original_index, refined_index in original_to_refined
+            if (refined_index, original_index) in refined_to_original
         ]
         list_size = max(len(decisions.items), len(decisions.candidates))
         score = len(reciprocal_pairs) / list_size
