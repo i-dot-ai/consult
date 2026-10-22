@@ -6,30 +6,22 @@ export interface Check {
   hint?: string;
 }
 
-export interface ProviderChecks {
-  checks: Check[];
-}
-
-export const PROVIDER_CHECKS: Record<DataSource, ProviderChecks> = {
-  "citizen-space": {
-    checks: [
-      {
-        id: "cs-row-structure",
-        label:
-          "Row 1 contains question text, row 2 onwards contains one response per row",
-      },
-    ],
-  },
-  qualtrics: {
-    checks: [
-      {
-        id: "qualtrics-row-structure",
-        label:
-          "Rows 1–3 contain question and metadata headers, row 4 onwards contains one response per row",
-        hint: "Qualtrics exports include three header rows: question text, question ID, and ImportId.",
-      },
-    ],
-  },
+export const PROVIDER_CHECKS: Record<DataSource, Check[]> = {
+  "citizen-space": [
+    {
+      id: "cs-row-structure",
+      label:
+        "Row 1 contains question text, row 2 onwards contains one response per row",
+    },
+  ],
+  qualtrics: [
+    {
+      id: "qualtrics-row-structure",
+      label:
+        "Rows 1–3 contain question and metadata headers, row 4 onwards contains one response per row",
+      hint: "Qualtrics exports include three header rows: question text, question ID, and ImportId.",
+    },
+  ],
 };
 
 export const USER_CHECKS: Check[] = [
