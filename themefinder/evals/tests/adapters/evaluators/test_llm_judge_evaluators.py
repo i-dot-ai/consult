@@ -247,10 +247,9 @@ class TestCondensationQualityEvaluator(_NumericKeyJudgeTests):
 
 
 class TestRefinementQualityEvaluator(_NumericKeyJudgeTests):
-    """RefinementQualityEvaluator — the numeric-key path over its own four
-    metrics (information_retention, response_references, distinctiveness,
-    fluency). Same inherited `_build_scores` as condensation, so it inherits the
-    full numeric-key contract and only pins its own `metric_names`."""
+    """RefinementQualityEvaluator — the numeric-key path over its three
+    quality metrics. Same inherited `_build_scores` as condensation, so it
+    inherits the full numeric-key contract and only pins its own `metric_names`."""
 
     evaluator_cls = RefinementQualityEvaluator
     metric_names = evaluator_cls.metric_names

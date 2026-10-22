@@ -5,6 +5,9 @@ from adapters.evaluators.condensation_quality_evaluator import (
 )
 from adapters.evaluators.coverage_evaluator import CoverageEvaluator
 from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
+from adapters.evaluators.information_equivalence_evaluator import (
+    InformationEquivalenceEvaluator,
+)
 from adapters.evaluators.mapping_metrics_evaluator import MappingMetricsEvaluator
 from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
 from adapters.evaluators.refinement_quality_evaluator import (
@@ -62,9 +65,10 @@ def test_builds_expected_non_generation_evaluators():
     ]
     assert condensation_config.evaluators[0].llm is judge_llm
     assert [type(evaluator) for evaluator in refinement_config.evaluators] == [
-        RefinementQualityEvaluator
+        RefinementQualityEvaluator,
+        InformationEquivalenceEvaluator,
     ]
-    assert refinement_config.evaluators[0].llm is judge_llm
+    assert all(evaluator.llm is judge_llm for evaluator in refinement_config.evaluators)
     assert [type(evaluator) for evaluator in mapping_config.evaluators] == [
         MappingMetricsEvaluator
     ]

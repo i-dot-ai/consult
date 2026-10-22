@@ -58,6 +58,18 @@ class FakeJudge:
         return SimpleNamespace(parsed=self.parsed)
 
 
+class SequenceFakeJudge(FakeJudge):
+    """Judge test double that returns successive parsed responses in call order."""
+
+    def __init__(self, *responses: str):
+        super().__init__()
+        self._responses = iter(responses)
+
+    async def ainvoke(self, prompt: str) -> SimpleNamespace:
+        self.prompts.append(prompt)
+        return SimpleNamespace(parsed=next(self._responses))
+
+
 class FakeRunnerPort(RunnerPort):
     def __init__(
         self,
