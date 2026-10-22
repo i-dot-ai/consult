@@ -1,15 +1,17 @@
-"""Shared LLM-judge machinery: `LLMJudgeEvaluator`, `ThemeComparisonJudgeEvaluator`
-and `DecisionScoredComparisonJudge`, the bases for the concrete judge adapters
-in the sibling files.
+"""Shared LLM-judge machinery
+`LLMJudgeEvaluator` - base
+`SinglePromptJudgeEvaluator`, `BinaryMatchJudgeEvaluator` - single-prompt and per-item judges
+`ThemeComparisonJudgeEvaluator`, `DecisionScoredComparisonJudge`, the bases for concrete theme-comparison judges
 """
 
+import asyncio
 import json
 import logging
 import random
 import re
 from abc import abstractmethod
 from collections.abc import Callable
-from typing import Any
+from typing import Any, NamedTuple
 
 import numpy as np
 import openai
@@ -23,6 +25,7 @@ from tenacity import (
 )
 from utils.logging_config import get_logger
 
+from .prompts import load_prompt_fn
 from .base import EvaluatorPort
 
 logger = get_logger(__name__)
@@ -30,17 +33,17 @@ logger = get_logger(__name__)
 
 class LLMJudgeEvaluator(EvaluatorPort):
     """Base for the LLM-as-judge evaluators: carries the judge LLM and the
-    shared retry/parsing plumbing. Subclasses implement `_build_prompt` and
+    shared retry/parsing plumbing. Subclasses implement `_score` and
     `_build_scores`.
     """
 
-    shuffle: bool = False
     prompt_fn: Callable = None
 
-    def __init__(self, llm: Any):
+    def __init__(self, llm: Any, shuffle: bool = False):
         """Store the injected judge LLM — any object with an async `ainvoke`
         returning a response with a `.parsed` string."""
         self.llm = llm
+        self.shuffle = shuffle
 
     @retry(
         wait=wait_random_exponential(min=1, max=20),
@@ -67,20 +70,32 @@ class LLMJudgeEvaluator(EvaluatorPort):
         return json.loads(match.group(1) if match else text)
 
     @staticmethod
-    def _shuffle_themes(themes: list[dict]) -> list[dict]:
+    def _shuffle_themes(themes: list[Any]) -> list[Any]:
         """Shuffle a copy of theme records to reduce positional bias."""
         shuffled = list(themes)
         random.shuffle(shuffled)
         return shuffled
 
+    @staticmethod
+    def _format_theme(theme: dict[str, str]) -> str:
+        """Combine the canonical theme label and description for the judge."""
+        label = theme.get("topic_label", "").strip()
+        description = theme.get("topic_description", "").strip()
+        return f"{label}: {description}" if description else label
+
+    @abstractmethod
+    def _build_scores(self, decisions: Any) -> list[Score]:
+        """Turn the parsed judge response into Scores."""
+
+
+class SinglePromptJudgeEvaluator(LLMJudgeEvaluator):
+    """Base for judges that build a single prompt per case/output and score the
+    response by extracting one named numeric key per metric."""
+
     @abstractmethod
     def _build_prompt(self, case: Case, output: Any) -> str | None:
         """Build the judge prompt, or return None to skip the LLM call when
         there's nothing to evaluate."""
-
-    @abstractmethod
-    def _build_scores(self, parsed: dict) -> list[Score]:
-        """Turn the parsed judge response into Scores."""
 
     async def _score(self, case: Case, output: Any) -> list[Score]:
         """Build the prompt, invoke the judge (skipping the call when
@@ -95,7 +110,7 @@ class LLMJudgeEvaluator(EvaluatorPort):
         return self._build_scores(parsed)
 
 
-class ThemeComparisonJudgeEvaluator(LLMJudgeEvaluator):
+class ThemeComparisonJudgeEvaluator(SinglePromptJudgeEvaluator):
     """Base for judges that compare two theme lists in one LLM call, scoring
     the response by extracting one named numeric key per metric.
     """
@@ -126,14 +141,14 @@ class ThemeComparisonJudgeEvaluator(LLMJudgeEvaluator):
             **{self.first_kwarg: topic_list_1, self.second_kwarg: topic_list_2}
         )
 
-    def _build_scores(self, parsed: dict) -> list[Score]:
+    def _build_scores(self, decisions: Any) -> list[Score]:
         """Extract one Score per metric from the parsed response, reading its
         numeric value and `{metric}_reasoning` comment."""
         return [
             Score(
                 metric,
-                round(float(parsed.get(metric, 0)), 2),
-                parsed.get(f"{metric}_reasoning", ""),
+                round(float(decisions.get(metric, 0)), 2),
+                decisions.get(f"{metric}_reasoning", ""),
             )
             for metric in self.metric_names
         ]
@@ -159,10 +174,10 @@ class DecisionScoredComparisonJudge(ThemeComparisonJudgeEvaluator):
     #: Phrase used in the comment summary, e.g. "themes below threshold".
     threshold_label: str = ""
 
-    def _build_scores(self, parsed: dict) -> list[Score]:
+    def _build_scores(self, decisions: Any) -> list[Score]:
         """Map the parsed per-theme STRONG/PARTIAL/NO decisions to a single
         averaged 0-5 metric with an enriched comment."""
-        result = self._decision_score(parsed)
+        result = self._decision_score(decisions)
         metric_name = self.metric_names[0]
         comment = self._build_comment(result)
         return [Score(metric_name, round(result["average"], 2), comment)]
@@ -233,3 +248,106 @@ class DecisionScoredComparisonJudge(ThemeComparisonJudgeEvaluator):
                 )
 
         return f"{summary}\n" + "\n".join(decision_parts)
+
+
+class BinaryMatchDecisions(NamedTuple):
+    """Both directions of a binary match, so subclasses can score precision
+    (`forward`) and recall (`backward`) without re-deriving which list was which.
+    `backward` is empty when the evaluator is not bidirectional."""
+
+    items: list[str]
+    candidates: list[str]
+    forward: list[dict[str, Any]]  # each of `items` judged against `candidates`
+    backward: list[dict[str, Any]]  # each of `candidates` judged against `items`
+
+
+class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
+    """Base for judges that ask, once per item in the first list, whether it
+    matches any item in the second list, yielding one PASS/FAIL decision per item.
+    Optionally repeats the other way round for judges that need both directions.
+    Subclasses implement `_get_lists`, and `_build_scores` and set the prompt_fn.
+    """
+
+    prompt_fn = staticmethod(load_prompt_fn("binary_match"))
+
+    def __init__(
+        self, *args, concurrency: int = 5, bidirectional: bool = True, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self.concurrency = concurrency
+        self.bidirectional = bidirectional
+
+    @abstractmethod
+    def _get_lists(self, case: Case, output: Any) -> tuple[list[str], list[str]]:
+        """Return (items to judge, candidate list) from the case and output;
+        subclasses choose which lists and in which direction."""
+
+    def _build_item_prompt(self, single_item: str, item_list: list[str]) -> str:
+        """Build the prompt asking whether `single_item` matches any of `item_list`."""
+        return self.prompt_fn(single_item=single_item, candidate_list=item_list)
+
+    async def _single_item_decision(
+        self, single_item: str, item_list: list[str], sem: asyncio.Semaphore
+    ) -> dict[str, Any]:
+        """Ask the judge once whether `single_item` matches any of `item_list`,
+        under the shared semaphore so the loop stays within rate limits."""
+        async with sem:
+            if self.shuffle:
+                item_list = self._shuffle_themes(item_list)
+            prompt = self._build_item_prompt(single_item, item_list)
+            response = await self.invoke_with_retry(prompt)
+            parsed = self._parse_json_markdown(response.parsed)
+            return {**parsed, "item": single_item, "item_list": item_list}
+
+    async def _llm_decision_loop(
+        self, items: list[str], comparison_items: list[str]
+    ) -> list[dict[str, Any]]:
+        """Judge every item against `comparison_items` concurrently"""
+        if not comparison_items:
+            logger.warning(
+                "No comparison items; returning FAIL decisions for all items"
+            )
+            return [
+                {
+                    "decision": "FAIL",
+                    "matched_items": "None",
+                    "reasoning": "No candidate items to match against.",
+                    "item": item,
+                    "item_list": comparison_items,
+                }
+                for item in items
+            ]
+
+        sem = asyncio.Semaphore(self.concurrency)
+        tasks = [
+            asyncio.create_task(self._single_item_decision(item, comparison_items, sem))
+            for item in items
+        ]
+        try:
+            return await asyncio.gather(*tasks)
+        except Exception:
+            # gather re-raises the first failure but leaves its siblings running;
+            # cancel them and wait so none are orphaned. TODO: TaskGroup
+            # does this natively, use it once the package floor is Python 3.11.
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            raise
+
+    async def _score(self, case: Case, output: Any) -> list[Score]:
+        """Run the decision loops on the two lists and pass result to _build_scores"""
+        list1, list2 = self._get_lists(case, output)
+
+        if not list1 and not list2:
+            raise ValueError("Both lists are empty; nothing to judge")
+
+        # Get the LLM's decisions for each item in list1 as compared to list2
+        forward_decisions = await self._llm_decision_loop(list1, list2)
+        backward_decisions = (
+            await self._llm_decision_loop(list2, list1) if self.bidirectional else []
+        )
+
+        # Implemented in subclasses: convert the LLM's decisions into scores
+        return self._build_scores(
+            BinaryMatchDecisions(list1, list2, forward_decisions, backward_decisions)
+        )

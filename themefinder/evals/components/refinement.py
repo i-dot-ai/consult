@@ -3,11 +3,15 @@
 from typing import Any
 
 import pandas as pd
+from adapters.evaluators.information_equivalence_evaluator import (
+    InformationEquivalenceEvaluator,
+)
 from adapters.evaluators.refinement_quality_evaluator import (
     RefinementQualityEvaluator,
 )
 from eval_types import ComponentConfig
 
+from components._utils import build_themes_output
 from themefinder import theme_refinement
 
 
@@ -19,7 +23,7 @@ async def run_refinement_task(inputs: dict, llm: Any) -> dict:
         llm=llm,
         question=inputs.get("question", ""),
     )
-    return {"themes": refined_df.to_dict(orient="records")}
+    return build_themes_output(refined_df)
 
 
 def build_refinement_config(judge_llm: Any) -> ComponentConfig:
@@ -27,5 +31,8 @@ def build_refinement_config(judge_llm: Any) -> ComponentConfig:
     return ComponentConfig(
         component="refinement",
         task=run_refinement_task,
-        evaluators=[RefinementQualityEvaluator(judge_llm)],
+        evaluators=[
+            RefinementQualityEvaluator(judge_llm),
+            InformationEquivalenceEvaluator(judge_llm),
+        ],
     )

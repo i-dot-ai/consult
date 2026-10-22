@@ -5,6 +5,9 @@ from adapters.evaluators.condensation_quality_evaluator import (
 )
 from adapters.evaluators.coverage_evaluator import CoverageEvaluator
 from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
+from adapters.evaluators.information_equivalence_evaluator import (
+    InformationEquivalenceEvaluator,
+)
 from adapters.evaluators.mapping_metrics_evaluator import MappingMetricsEvaluator
 from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
 from adapters.evaluators.refinement_quality_evaluator import (
@@ -15,6 +18,7 @@ from components import (
     COMPONENT_NAMES,
     build_component_config,
     condensation,
+    find_themes,
     generation,
     mapping,
     refinement,
@@ -49,6 +53,20 @@ def test_builds_fresh_generation_config_with_bound_judge():
     assert all(evaluator.llm is judge_llm for evaluator in config.evaluators[:3])
 
 
+def test_builds_fresh_find_themes_config_with_bound_judge():
+    judge_llm = object()
+
+    config = build_component_config("find_themes", judge_llm=judge_llm)
+
+    assert [type(evaluator) for evaluator in config.evaluators] == [
+        GroundednessEvaluator,
+        CoverageEvaluator,
+        TitleSpecificityEvaluator,
+        RedundancyEvaluator,
+    ]
+    assert all(evaluator.llm is judge_llm for evaluator in config.evaluators[:3])
+
+
 def test_builds_expected_non_generation_evaluators():
     judge_llm = object()
 
@@ -62,9 +80,10 @@ def test_builds_expected_non_generation_evaluators():
     ]
     assert condensation_config.evaluators[0].llm is judge_llm
     assert [type(evaluator) for evaluator in refinement_config.evaluators] == [
-        RefinementQualityEvaluator
+        RefinementQualityEvaluator,
+        InformationEquivalenceEvaluator,
     ]
-    assert refinement_config.evaluators[0].llm is judge_llm
+    assert all(evaluator.llm is judge_llm for evaluator in refinement_config.evaluators)
     assert [type(evaluator) for evaluator in mapping_config.evaluators] == [
         MappingMetricsEvaluator
     ]
@@ -82,7 +101,9 @@ def test_mapping_question_filter_is_exact_and_per_config():
     assert unfiltered.case_filter is None
 
 
-@pytest.mark.parametrize("component", ["generation", "condensation", "refinement"])
+@pytest.mark.parametrize(
+    "component", ["generation", "find_themes", "condensation", "refinement"]
+)
 def test_rejects_mapping_question_filter_for_other_components(component):
     with pytest.raises(ValueError, match="only supported for the mapping"):
         build_component_config(component, judge_llm=object(), question_num=1)
@@ -93,7 +114,44 @@ def test_rejects_invalid_question_number():
         build_component_config("mapping", judge_llm=object(), question_num=0)
 
 
-async def test_generation_task_runs_full_pipeline_and_normalises_output(monkeypatch):
+async def test_generation_task_runs_only_generation(monkeypatch):
+    llm = object()
+    calls = []
+
+    async def fake_generation(*, responses_df, llm, question):
+        calls.append(("generation", responses_df.to_dict("records"), llm, question))
+        return pd.DataFrame([{"topic": "Initial: Description"}]), None
+
+    monkeypatch.setattr(generation, "theme_generation", fake_generation)
+
+    output = await generation.run_generation_task(
+        {
+            "question": "Question?",
+            "responses": [{"response_id": "1", "response": "Answer"}],
+        },
+        llm,
+    )
+
+    assert calls == [
+        (
+            "generation",
+            [{"response_id": "1", "response": "Answer"}],
+            llm,
+            "Question?",
+        )
+    ]
+    assert output == {
+        "themes": [
+            {
+                "topic": "Initial: Description",
+                "topic_label": "Initial",
+                "topic_description": "Description",
+            }
+        ]
+    }
+
+
+async def test_find_themes_task_runs_full_pipeline_and_normalises_output(monkeypatch):
     llm = object()
     calls = []
 
@@ -109,11 +167,11 @@ async def test_generation_task_runs_full_pipeline_and_normalises_output(monkeypa
         calls.append(("refinement", themes_df.to_dict("records"), llm, question))
         return pd.DataFrame([{"topic_id": "A", "topic": "Label: Description"}]), None
 
-    monkeypatch.setattr(generation, "theme_generation", fake_generation)
-    monkeypatch.setattr(generation, "theme_condensation", fake_condensation)
-    monkeypatch.setattr(generation, "theme_refinement", fake_refinement)
+    monkeypatch.setattr(find_themes, "theme_generation", fake_generation)
+    monkeypatch.setattr(find_themes, "theme_condensation", fake_condensation)
+    monkeypatch.setattr(find_themes, "theme_refinement", fake_refinement)
 
-    output = await generation.run_generation_task(
+    output = await find_themes.run_find_themes_task(
         {
             "question": "Question?",
             "responses": [{"response_id": "1", "response": "Answer"}],
@@ -154,7 +212,7 @@ async def test_refinement_task_uses_common_output_schema(monkeypatch):
     async def fake_refinement(themes_df, *, llm, question):
         assert themes_df.to_dict("records") == [{"topic": "Original"}]
         assert question == "Question?"
-        return pd.DataFrame([{"topic": "Refined"}]), None
+        return pd.DataFrame([{"topic": "Refined: Description"}]), None
 
     monkeypatch.setattr(refinement, "theme_refinement", fake_refinement)
 
@@ -162,7 +220,15 @@ async def test_refinement_task_uses_common_output_schema(monkeypatch):
         {"question": "Question?", "themes": [{"topic": "Original"}]}, object()
     )
 
-    assert output == {"themes": [{"topic": "Refined"}]}
+    assert output == {
+        "themes": [
+            {
+                "topic": "Refined: Description",
+                "topic_label": "Refined",
+                "topic_description": "Description",
+            }
+        ]
+    }
 
 
 async def test_mapping_task_returns_labels_and_reports_unprocessable(

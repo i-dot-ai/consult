@@ -12,12 +12,15 @@ from adapters.evaluators.condensation_quality_evaluator import (
     CondensationQualityEvaluator,
 )
 from adapters.evaluators.coverage_evaluator import CoverageEvaluator
+from adapters.evaluators.ground_information_evaluator import (
+    GroundednessInformationRetentionEvaluator,
+)
 from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
 from adapters.evaluators.refinement_quality_evaluator import RefinementQualityEvaluator
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
 from conftest import _themes, make_case
 from eval_types import Score
-from fakes import FakeJudge
+from fakes import FakeJudge, SequenceFakeJudge
 
 
 class _RaisingJudge:
@@ -247,10 +250,9 @@ class TestCondensationQualityEvaluator(_NumericKeyJudgeTests):
 
 
 class TestRefinementQualityEvaluator(_NumericKeyJudgeTests):
-    """RefinementQualityEvaluator — the numeric-key path over its own four
-    metrics (information_retention, response_references, distinctiveness,
-    fluency). Same inherited `_build_scores` as condensation, so it inherits the
-    full numeric-key contract and only pins its own `metric_names`."""
+    """RefinementQualityEvaluator — the numeric-key path over its three
+    quality metrics. Same inherited `_build_scores` as condensation, so it
+    inherits the full numeric-key contract and only pins its own `metric_names`."""
 
     evaluator_cls = RefinementQualityEvaluator
     metric_names = evaluator_cls.metric_names
@@ -269,18 +271,15 @@ class TestRefinementQualityEvaluator(_NumericKeyJudgeTests):
 
 
 class TestTitleSpecificityEvaluator(_JudgeContractTests):
-    """TitleSpecificityEvaluator — its bespoke SPECIFIC/VAGUE ratio path,
-    scoring `output["themes"]`'s titles alone and skipping the LLM call when
-    there are no titles."""
+    """TitleSpecificityEvaluator — one binary judgement per output title."""
 
     evaluator_cls = TitleSpecificityEvaluator
 
-    async def test_counts_specific_vs_vague(self):
-        """Specific vs vague titles produce the ratio score and a vague-title comment."""
-        judge = FakeJudge(
-            '{"evaluations": {'
-            '"Housing costs in cities": {"decision": "SPECIFIC"},'
-            '"Stuff": {"decision": "VAGUE"}}}'
+    async def test_scores_pass_and_fail_titles_independently(self):
+        """Each title gets its own PASS/FAIL decision and contributes to the ratio."""
+        judge = SequenceFakeJudge(
+            '{"decision": "PASS", "reasoning": "Concrete issue and context."}',
+            '{"decision": "FAIL", "reasoning": "Too generic."}',
         )
         output = {"themes": _themes("Housing costs in cities", "Stuff")}
 
@@ -288,7 +287,31 @@ class TestTitleSpecificityEvaluator(_JudgeContractTests):
 
         assert scores[0].name == "specificity"
         assert scores[0].value == 0.5
-        assert scores[0].comment == "1/2 titles specific\nVague: Stuff"
+        assert scores[0].comment == "1/2 titles passed\nFailed: Stuff"
+        assert len(judge.prompts) == 2
+
+    async def test_prompts_contain_only_the_title_being_judged(self):
+        """Peer titles are not supplied as specificity context."""
+        judge = FakeJudge('{"decision": "PASS", "reasoning": "Concrete."}')
+        output = {"themes": _themes("TARGET_ALPHA", "PEER_OMEGA")}
+
+        await self._evaluate(judge, output=output)
+
+        assert len(judge.prompts) == 2
+        assert "TARGET_ALPHA" in judge.prompts[0]
+        assert "PEER_OMEGA" not in judge.prompts[0]
+        assert "PEER_OMEGA" in judge.prompts[1]
+        assert "TARGET_ALPHA" not in judge.prompts[1]
+
+    async def test_scores_a_single_title(self):
+        """A singleton output still produces one binary judgement."""
+        judge = FakeJudge('{"decision": "PASS", "reasoning": "Concrete."}')
+        output = {"themes": _themes("Housing costs in cities")}
+
+        scores = await self._evaluate(judge, output=output)
+
+        assert scores == [Score("specificity", 1.0, "1/1 titles passed")]
+        assert len(judge.prompts) == 1
 
     async def test_no_titles_skips_llm_call(self):
         """No titles skips the LLM call and yields the empty-case specificity score."""
@@ -296,7 +319,83 @@ class TestTitleSpecificityEvaluator(_JudgeContractTests):
 
         scores = await self._evaluate(judge, output={"themes": []})
 
-        # _build_prompt returns None when there are no titles -> the LLM is
-        # never invoked, and _build_scores({}) yields the empty-case comment.
         assert judge.prompts == []
-        assert scores == [Score("specificity", 0.0, "0/0 titles specific")]
+        assert scores == [Score("specificity", 0.0, "0/0 titles passed")]
+
+    async def test_malformed_judge_output_degrades_to_zero_score(self):
+        """Malformed JSON follows the standard evaluator error path."""
+        judge = FakeJudge("not JSON")
+
+        scores = await self._evaluate(judge)
+
+        assert scores[0].name == "specificity"
+        assert scores[0].value == 0.0
+        assert scores[0].comment.startswith("Error:")
+
+
+class _PassOnJudge(FakeJudge):
+    """Judge that passes an item only if it is the pass_on item, in either direction"""
+
+    def __init__(self, pass_on, **kwargs):
+        self.pass_on = pass_on
+        super().__init__(**kwargs)
+
+    async def ainvoke(self, prompt: str):
+        source_items = prompt.split("## Source item")[1].split("## Candidate items")[0]
+        decision = "PASS" if self.pass_on in source_items else "FAIL"
+        self.parsed = json.dumps({"decision": decision})
+        return await super().ainvoke(prompt)
+
+
+class TestGroundInformationEvaluator(_JudgeContractTests):
+    """GroundednessInformationRetentionEvaluator — original themes judged against
+    refined ones gives retention, the reverse gives groundedness, F1 combines them."""
+
+    evaluator_cls = GroundednessInformationRetentionEvaluator
+
+    async def test_dropped_theme_lowers_retention_not_groundedness(self):
+        """Every refined theme has an original, but one original was lost."""
+        scores = await self._evaluate(
+            _PassOnJudge("Ban"),
+            expected_output={"themes": _themes("Ban", "Age")},
+            output={"themes": _themes("Ban")},
+        )
+        by_name = {s.name: s for s in scores}
+
+        assert by_name["groundedness"].value == 1.0
+        assert by_name["information_retention"].value == 0.5
+        assert by_name["f1_score"].value == 0.67
+        assert "Lost: Age" in by_name["information_retention"].comment
+
+    async def test_invented_theme_lowers_groundedness_not_retention(self):
+        """No original is lost, but one refined theme has no original behind it."""
+        scores = await self._evaluate(
+            _PassOnJudge("Ban"),
+            expected_output={"themes": _themes("Ban")},
+            output={"themes": _themes("Ban", "Tax")},
+        )
+        by_name = {s.name: s for s in scores}
+
+        assert by_name["groundedness"].value == 0.5
+        assert by_name["information_retention"].value == 1.0
+        assert "Ungrounded: Tax" in by_name["groundedness"].comment
+
+    async def test_f1_is_zero_when_nothing_matches(self):
+        scores = await self._evaluate(
+            _PassOnJudge("Ban"),
+            expected_output={"themes": _themes("Age")},
+            output={"themes": _themes("Tax")},
+        )
+
+        assert [s.value for s in scores] == [0.0, 0.0, 0.0]
+
+    async def test_empty_refined_themes_scores_zero_without_judge_calls(self):
+        judge = FakeJudge()
+        case = make_case(expected_output={"themes": _themes("Ban")})
+
+        scores = await GroundednessInformationRetentionEvaluator(judge).evaluate(
+            case, {"themes": []}
+        )
+
+        assert judge.prompts == []
+        assert [s.value for s in scores] == [0.0, 0.0, 0.0]

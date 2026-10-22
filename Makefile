@@ -65,7 +65,7 @@ run-evals: ## Run themefinder LLM evals (quick mode)
 	cd themefinder/evals && uv run --extra eval python benchmark.py --quick
 
 .PHONY: run-eval
-run-eval: ## Args e.g.: EVAL_TYPE=generation|mapping|condensation|refinement
+run-eval: ## Args e.g.: EVAL_TYPE=find_themes|generation|mapping|condensation|refinement
 	cd themefinder/evals && uv run --extra eval python benchmark.py --quick --evals "$(EVAL_TYPE)"
 
 .PHONY: eval-smoke

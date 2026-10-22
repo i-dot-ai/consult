@@ -1,3 +1,5 @@
+import type { Consultation, User } from "./types";
+
 function createThemeFiltersState() {
   const MAX_THEME_FILTERS = Infinity;
 
@@ -106,3 +108,50 @@ function createMultiAnswerFiltersState() {
   };
 }
 export const multiAnswerFilters = createMultiAnswerFiltersState();
+
+export function createUserState(
+  userData: User | undefined,
+  consultationData: Consultation | undefined,
+) {
+  if (!userData || !consultationData) {
+    return;
+  }
+
+  const createdBy = consultationData?.created_by;
+  const createdByEmail =
+    typeof createdBy === "string" ? createdBy : createdBy?.email;
+
+  const userIsOwner = userData?.email === createdByEmail;
+  const userIsAdmin = userData?.is_staff;
+
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
+  const createdAtText = new Date(
+    consultationData?.created_at,
+  ).toLocaleDateString();
+
+  let createdByText = createdByEmail;
+  if (!createdByEmail) {
+    createdByText = "an unknown user";
+  }
+  if (userIsOwner) {
+    createdByText = "you";
+  }
+
+  return {
+    get createdByEmail() {
+      return createdByEmail;
+    },
+    get isOwner() {
+      return userIsOwner;
+    },
+    get isAdmin() {
+      return userIsAdmin;
+    },
+    get createdAtText() {
+      return createdAtText;
+    },
+    get createdByText() {
+      return createdByText;
+    },
+  };
+}

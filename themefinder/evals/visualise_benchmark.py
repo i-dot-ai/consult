@@ -280,25 +280,27 @@ def detect_eval_metrics(df: pd.DataFrame, eval_type: str) -> dict[str, list[str]
 
     # Patterns for each eval type's metrics
     # Support both old naming (f1_score) and new naming (f1)
+    theme_finding_patterns = {
+        "groundedness": r"^question_part_\d+_(groundedness|Precision Average Groundedness)$",
+        "coverage": r"^question_part_\d+_(coverage|Recall Average topic Representation)$",
+        "specificity": r"^question_part_\d+_specificity$",
+        "redundancy": r"^question_part_\d+_redundancy$",
+    }
     patterns = {
         "mapping": {
             "f1": r"^question_part_\d+_f1(_score)?$",  # Match f1 or f1_score
             "accuracy_score": r"^question_part_\d+_accuracy_score$",
             "overlap_rate": r"^question_part_\d+_overlap_rate$",
         },
-        "generation": {
-            "groundedness": r"^question_part_\d+_(groundedness|Precision Average Groundedness)$",
-            "coverage": r"^question_part_\d+_(coverage|Recall Average topic Representation)$",
-            "specificity": r"^question_part_\d+_specificity$",
-            "redundancy": r"^question_part_\d+_redundancy$",
-        },
+        "generation": theme_finding_patterns,
+        "find_themes": theme_finding_patterns,
         "condensation": {
             "compression_quality": r"^question_part_\d+_compression_quality$",
             "information_retention": r"^question_part_\d+_information_retention$",
             "redundancy": r"^question_part_\d+_redundancy$",
         },
         "refinement": {
-            "information_retention": r"^question_part_\d+_information_retention$",
+            "information_equivalence": r"^question_part_\d+_information_equivalence$",
             "response_references": r"^question_part_\d+_response_references$",
             "distinctiveness": r"^question_part_\d+_distinctiveness$",
             "fluency": r"^question_part_\d+_fluency$",
@@ -516,12 +518,17 @@ CONDENSATION_SCALE = {
 }
 
 REFINEMENT_WEIGHTS = {
-    "information_retention": 0.25,
+    "information_equivalence": 0.25,
     "response_references": 0.25,
     "distinctiveness": 0.25,
     "fluency": 0.25,
 }
-REFINEMENT_SCALE = {k: 5.0 for k in REFINEMENT_WEIGHTS}
+REFINEMENT_SCALE = {
+    "information_equivalence": 1.0,
+    "response_references": 5.0,
+    "distinctiveness": 5.0,
+    "fluency": 5.0,
+}
 
 
 def _weighted_component_score(
@@ -1127,8 +1134,9 @@ def _html_model_summary_table(data: BenchmarkData) -> str:
     # Get primary metric for each eval type
     primary_metrics = {
         "generation": "groundedness",
+        "find_themes": "groundedness",
         "condensation": "compression_quality",
-        "refinement": "information_retention",
+        "refinement": "information_equivalence",
         "mapping": "f1",
     }
 

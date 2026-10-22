@@ -1,22 +1,9 @@
-"""Prompt template for refinement evaluation."""
-
-REFINEMENT_EVAL = """You are an expert in natural language processing and topic modelling. Your task is to evaluate how well a model refines topic labels and descriptions. You will be shown:
+You are an expert in natural language processing and topic modelling. Your task is to evaluate how well a model refines topic labels and descriptions. You will be shown:
 
 1. ORIGINAL TOPICS: The topics before refinement.
 2. NEW TOPICS: The topics after a refinement step that improves labels and descriptions.
 
-Evaluate the NEW TOPICS based on the ORIGINAL TOPICS on four criteria, each scored from 0 to 5:
-
-## Information Retention
-
-How well do the NEW TOPICS preserve key information from the ORIGINAL TOPICS?
-
-- 5: All important details retained, nothing meaningful lost
-- 4: Most important information preserved, only minor details lost
-- 3: Core concepts preserved but significant details lost
-- 2: Important information missing from refined topics
-- 1: Most key information lost during refinement
-- 0: Essential information completely lost
+Evaluate the NEW TOPICS based on the ORIGINAL TOPICS on three criteria, each scored from 0 to 5:
 
 ## Response References
 
@@ -53,11 +40,11 @@ Are the NEW TOPICS well structured with clear labels and informative description
 
 ## Calibration Examples
 
-**High quality refinement** (information_retention: 5, response_references: 5, distinctiveness: 4, fluency: 5):
+**High quality refinement** (response_references: 5, distinctiveness: 4, fluency: 5):
 Original topic: "People saying they want better access to services". Refined to: "Service accessibility gaps: Limited availability of essential services in rural and underserved areas creates barriers to healthcare, education, and social support." The refined version removes the response reference ("people saying"), adds a specific label, and expands the description with concrete detail. One minor overlap exists with another topic about healthcare specifically.
 
-**Poor refinement** (information_retention: 2, response_references: 1, distinctiveness: 3, fluency: 2):
-Original topic: "Concerns about environmental regulations being too strict". Refined to: "Many respondents feel regulations are problematic: The majority of responses indicate that current rules are seen as excessive by participants." The refined version loses the environmental specificity, introduces multiple response references, and the description merely restates the label.
+**Poor refinement** (response_references: 1, distinctiveness: 3, fluency: 2):
+Original topic: "Concerns about environmental regulations being too strict". Refined to: "Many respondents feel regulations are problematic: The majority of responses indicate that current rules are seen as excessive by participants." The refined version introduces multiple response references, and the description merely restates the label.
 
 ## Instructions
 
@@ -66,31 +53,17 @@ Original topic: "Concerns about environmental regulations being too strict". Ref
 
 Return only the following JSON, no other text:
 
-{{
-  "information_retention": <score 0-5>,
-  "information_retention_reasoning": "1-2 sentence explanation",
+{
   "response_references": <score 0-5>,
   "response_references_reasoning": "1-2 sentence explanation",
   "distinctiveness": <score 0-5>,
   "distinctiveness_reasoning": "1-2 sentence explanation",
   "fluency": <score 0-5>,
   "fluency_reasoning": "1-2 sentence explanation"
-}}
+}
 
 ORIGINAL TOPICS:
 {original_topics}
 
 NEW TOPICS:
 {new_topics}
-"""
-
-
-def refinement_eval_prompt(
-    original_topics: list[dict],
-    new_topics: list[dict],
-) -> str:
-    """Generate a prompt for refinement evaluation."""
-    return REFINEMENT_EVAL.format(
-        original_topics=original_topics,
-        new_topics=new_topics,
-    )

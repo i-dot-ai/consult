@@ -413,7 +413,7 @@ async def test_generate_round_trip(monkeypatch, tmp_path):
     objects, the test performs no network calls and consumes no tokens.
 
     After generation, the test confirms the dataset round-trips through the
-    `generation`, `mapping`, `condensation`, and `refinement` local dataset
+    `generation`, `find_themes`, `mapping`, `condensation`, and `refinement` local dataset
     loaders, and that the returned structures contain the expected question,
     responses, mappings, and condensed theme payloads.
     """
@@ -454,6 +454,9 @@ async def test_generate_round_trip(monkeypatch, tmp_path):
     generation_items = load_local_data(
         DatasetConfig(dataset=config.dataset_name, component="generation")
     )
+    find_themes_items = load_local_data(
+        DatasetConfig(dataset=config.dataset_name, component="find_themes")
+    )
     mapping_items = load_local_data(
         DatasetConfig(dataset=config.dataset_name, component="mapping")
     )
@@ -465,6 +468,7 @@ async def test_generate_round_trip(monkeypatch, tmp_path):
     )
 
     assert len(generation_items) == 1
+    assert len(find_themes_items) == 1
     assert len(mapping_items) == 1
     assert len(condensation_items) == 1
     assert len(refinement_items) == 1
@@ -475,6 +479,7 @@ async def test_generate_round_trip(monkeypatch, tmp_path):
     )
     assert len(generation_items[0]["input"]["responses"]) == 2
     assert generation_items[0]["expected_output"]["themes"][0]["topic_id"] == "A"
+    assert find_themes_items == generation_items
 
     assert (
         mapping_items[0]["input"]["topics"][0]["topic_label"]
@@ -532,8 +537,9 @@ def test_publish_local_dataset_to_langfuse_skips_existing_items(monkeypatch):
     uploaded = publish_local_dataset_to_langfuse(client, "synthetic_test")
 
     assert uploaded["generation"] == 0
+    assert uploaded["find_themes"] == 1
     assert uploaded["mapping"] == 1
     assert uploaded["condensation"] == 1
     assert uploaded["refinement"] == 1
     assert client.flushed is True
-    assert len(client.created_items) == 3
+    assert len(client.created_items) == 4

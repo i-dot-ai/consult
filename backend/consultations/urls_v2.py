@@ -4,6 +4,7 @@ from rest_framework_nested.routers import NestedDefaultRouter
 
 from consultations.api_v2.views.consultation import ConsultationViewSet
 from consultations.api_v2.views.demographic_option import DemographicOptionViewSet
+from consultations.api_v2.views.question import QuestionViewSet
 from consultations.api_v2.views.user import UserViewSet, get_current_user
 
 router = routers.DefaultRouter()
@@ -16,6 +17,7 @@ consultations_router.register(
     DemographicOptionViewSet,
     basename="demographic-option-v2",
 )
+consultations_router.register("questions", QuestionViewSet, basename="question-v2")
 
 urlpatterns = [
     path("api/v2/", include(router.urls)),

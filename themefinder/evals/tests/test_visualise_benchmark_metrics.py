@@ -5,7 +5,10 @@ import pytest
 from visualise_benchmark import (
     BenchmarkData,
     _html_cost_latency_processing_charts,
+    _html_model_summary_table,
     aggregate_by_model,
+    detect_all_metrics,
+    detect_eval_metrics,
     load_local_results,
 )
 
@@ -78,3 +81,46 @@ def test_charts_render_missing_model_metrics_as_null():
 
     assert "null" in html
     assert "$nan" not in html
+
+
+def test_detects_find_themes_metrics():
+    results = pd.DataFrame(
+        [
+            {
+                "eval": "find_themes",
+                "question_part_1_groundedness": 4.0,
+                "question_part_1_coverage": 3.0,
+                "question_part_1_specificity": 0.8,
+                "question_part_1_redundancy": 0.1,
+            }
+        ]
+    )
+
+    assert set(detect_eval_metrics(results, "find_themes")) == {
+        "groundedness",
+        "coverage",
+        "specificity",
+        "redundancy",
+    }
+
+
+def test_model_summary_includes_find_themes_primary_metric():
+    results = pd.DataFrame(
+        [
+            {
+                "model_tag": "model-a",
+                "eval": "find_themes",
+                "question_part_1_groundedness": 4.0,
+            }
+        ]
+    )
+    data = BenchmarkData(
+        benchmark_id="demo",
+        results_df=results,
+        detected_metrics=detect_all_metrics(results),
+    )
+
+    summary = _html_model_summary_table(data)
+
+    assert "Find_Themes" in summary
+    assert ">4.00<" in summary

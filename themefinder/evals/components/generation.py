@@ -9,42 +9,20 @@ from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
 from eval_types import ComponentConfig
 
-from themefinder import theme_condensation, theme_generation, theme_refinement
-
-
-def _build_output(refined_df: pd.DataFrame) -> dict[str, list[dict[str, Any]]]:
-    """Normalise generated themes into the shape consumed by the evaluators."""
-    themes = []
-    for record in refined_df.to_dict(orient="records"):
-        if "topic" in record and ":" in record["topic"]:
-            label, description = record["topic"].split(":", 1)
-            record["topic_label"] = label.strip()
-            record["topic_description"] = description.strip()
-        themes.append(record)
-    return {"themes": themes}
+from components._utils import build_themes_output
+from themefinder import theme_generation
 
 
 async def run_generation_task(inputs: dict, llm: Any) -> dict:
-    """Run the complete generation, condensation and refinement pipeline."""
+    """Generate candidate themes from responses."""
     responses_df = pd.DataFrame(inputs["responses"])
-    question = inputs["question"]
 
     themes_df, _ = await theme_generation(
         responses_df=responses_df,
         llm=llm,
-        question=question,
+        question=inputs["question"],
     )
-    condensed_df, _ = await theme_condensation(
-        themes_df,
-        llm=llm,
-        question=question,
-    )
-    refined_df, _ = await theme_refinement(
-        condensed_df,
-        llm=llm,
-        question=question,
-    )
-    return _build_output(refined_df)
+    return build_themes_output(themes_df)
 
 
 def build_generation_config(judge_llm: Any) -> ComponentConfig:
