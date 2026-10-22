@@ -19,9 +19,8 @@
 
   let { consultationId, dataSource }: Props = $props();
 
-  // svelte-ignore state_referenced_locally
-  const userChecks = [...PROVIDER_CHECKS[dataSource], ...USER_CHECKS];
-  const allChecks = [...userChecks, ...TECHNICAL_CHECKS];
+  const userChecks = $derived([...PROVIDER_CHECKS[dataSource], ...USER_CHECKS]);
+  const allChecks = $derived([...userChecks, ...TECHNICAL_CHECKS]);
 
   let checked = $state<Record<string, boolean>>({});
 
