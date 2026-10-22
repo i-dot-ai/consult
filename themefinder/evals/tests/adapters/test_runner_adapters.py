@@ -295,7 +295,7 @@ class TestPydanticEvalsRunner(_RunnerContractTests):
         """The engine reporting neither success nor failure degrades to a clear error, not a crash."""
         case = make_case(case_id="missing")
 
-        outcome = PydanticEvalsRunner._to_outcome(case, report_case=None, failure=None)
+        outcome = PydanticEvalsRunner._to_outcome(case, None)
 
         assert outcome == CaseOutcome(
             case, None, [], "missing from pydantic_evals report"
