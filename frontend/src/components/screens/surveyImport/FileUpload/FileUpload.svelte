@@ -7,6 +7,9 @@
   import CheckCircle from "../../../svg/material/CheckCircle.svelte";
   import Upload from "../../../svg/material/Upload.svelte";
 
+
+  const MB_200 = 209715200;
+
   let fileChosen: null | File = $state(null);
 
   function verifyFile(file: File) {
@@ -28,10 +31,10 @@
       <FileInput
         id="file-upload"
         title="Drop your file here"
-        subtitle=".xlsx or .csv, up to 50MB"
+        subtitle=".xlsx or .csv, up to 200MB"
         accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         multiple={false}
-        maxSize={52428800}
+        maxSize={MB_200}
         onConfirm={(files: File[]) => {
           console.log(files);
 
