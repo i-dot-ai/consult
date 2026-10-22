@@ -8,7 +8,11 @@ from typing import Any
 
 from eval_types import CaseOutcome, RunReport
 
-from .base import ArtefactStorePort
+from .base import (
+    ArtefactStorePort,
+    build_results_payload,
+    serialise_outcome,
+)
 
 
 class LocalJSONArtefactStore(ArtefactStorePort):
@@ -28,7 +32,7 @@ class LocalJSONArtefactStore(ArtefactStorePort):
         self._recorded_outcomes = []
 
     def record_case(self, outcome: CaseOutcome) -> None:
-        self._recorded_outcomes.append(self.serialise_outcome(outcome))
+        self._recorded_outcomes.append(serialise_outcome(outcome))
 
     def finish_run(
         self,
@@ -43,7 +47,7 @@ class LocalJSONArtefactStore(ArtefactStorePort):
         output_path = self.output_dir / component / dataset / "results.json"
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        payload = self.build_results_payload(
+        payload = build_results_payload(
             component,
             dataset,
             report,
@@ -54,7 +58,8 @@ class LocalJSONArtefactStore(ArtefactStorePort):
             encoding="utf-8",
         )
 
-        return self.flatten_run_report(report)
+        # Reuse the payload's results: rebuilding them would re-embed every repeat's themes
+        return payload["results"]
 
     def _require_run_metadata(self, field: str) -> str:
         value = getattr(self, f"_{field}")

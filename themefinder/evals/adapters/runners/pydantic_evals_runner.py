@@ -120,55 +120,40 @@ class PydanticEvalsRunner(RunnerPort):
         With repeat > 1 pydantic_evals renames each run "<id> [i/N]" and keeps the id in
         source_case_name, so group on that to get back to one set of runs per case.
         """
-        report_cases: dict[str, list[ReportCase]] = defaultdict(list)
-        for report_case in native_report.cases:
-            report_cases[report_case.source_case_name or report_case.name].append(
-                report_case
-            )
-        failures: dict[str, list[ReportCaseFailure]] = defaultdict(list)
-        for failure in native_report.failures:
-            failures[failure.source_case_name or failure.name].append(failure)
+        runs: dict[str, list[ReportCase | ReportCaseFailure]] = defaultdict(list)
+        for run in [*native_report.cases, *native_report.failures]:
+            runs[run.source_case_name or run.name].append(run)
 
         outcomes = []
         for case in cases:
-            # Repeats are exchangeable, so run_index is just position within the group.
-            # A run missing from the report is filled in as an error so every case has
-            # exactly `repeat` outcomes.
-            case_runs = [
-                *((run, None) for run in report_cases.get(case.id, [])),
-                *((None, failure) for failure in failures.get(case.id, [])),
-            ]
-            case_runs += [(None, None)] * (repeat - len(case_runs))
+            # Repeats are exchangeable, so run_index is just position in the list. Any run
+            # missing from the report becomes None, so every case has `repeat` outcomes.
+            case_runs = runs.get(case.id, [])
+            case_runs = case_runs + [None] * (repeat - len(case_runs))
             outcomes.extend(
-                replace(
-                    PydanticEvalsRunner._to_outcome(case, report_case, failure),
-                    run_index=run_index,
-                )
-                for run_index, (report_case, failure) in enumerate(case_runs)
+                replace(PydanticEvalsRunner._to_outcome(case, run), run_index=run_index)
+                for run_index, run in enumerate(case_runs)
             )
         return RunReport(outcomes=outcomes, engine_report=native_report)
 
     @staticmethod
     def _to_outcome(
         case: Case,
-        report_case: ReportCase | None,
-        failure: ReportCaseFailure | None,
+        run: ReportCase | ReportCaseFailure | None,
     ) -> CaseOutcome:
-        """Build one CaseOutcome from its matching native report case or failure."""
-        if report_case is not None:
+        """Build one CaseOutcome from a native run, or a missing-run error for None."""
+        if isinstance(run, ReportCase):
             scores = [
                 Score(name, float(result.value), result.reason or "")
                 for name, result in {
-                    **report_case.scores,
-                    **report_case.assertions,
+                    **run.scores,
+                    **run.assertions,
                 }.items()
             ]
+            return CaseOutcome(case=case, output=run.output, scores=scores, error=None)
+        if isinstance(run, ReportCaseFailure):
             return CaseOutcome(
-                case=case, output=report_case.output, scores=scores, error=None
-            )
-        if failure is not None:
-            return CaseOutcome(
-                case=case, output=None, scores=[], error=failure.error_message
+                case=case, output=None, scores=[], error=run.error_message
             )
         return CaseOutcome(
             case=case,

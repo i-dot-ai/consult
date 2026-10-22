@@ -12,7 +12,7 @@ from utils import langfuse as langfuse_utils
 from utils.langfuse import LangfuseContext
 from utils.logging_config import get_logger
 
-from .base import ArtefactStorePort
+from .base import ArtefactStorePort, case_key, flatten_run_report, json_safe
 
 logger = get_logger(__name__)
 
@@ -71,7 +71,7 @@ class LangfuseArtefactStore(ArtefactStorePort):
         if self.owns_context:
             langfuse_utils.flush(self.context)
 
-        return self.flatten_run_report(report)
+        return flatten_run_report(report)
 
     @contextmanager
     def _trace_for_outcome(
@@ -84,10 +84,10 @@ class LangfuseArtefactStore(ArtefactStorePort):
             yield None, None
             return
 
-        inputs = self.json_safe(outcome.case.inputs)
-        outputs = self.json_safe(outcome.output)
+        inputs = json_safe(outcome.case.inputs)
+        outputs = json_safe(outcome.output)
         trace_id = client.create_trace_id()
-        trace_name = f"{self._run_name}:{self.case_key(outcome.case)}"
+        trace_name = f"{self._run_name}:{case_key(outcome.case)}"
         if outcome.run_index:
             trace_name += f":r{outcome.run_index}"
         trace_status = outcome.error
@@ -158,7 +158,7 @@ class LangfuseArtefactStore(ArtefactStorePort):
     def _update_trace(self, trace: Any, *, output: Any) -> None:
         update = getattr(trace, "update", None)
         if callable(update):
-            update(output=self.json_safe(output))
+            update(output=json_safe(output))
 
     @property
     def _run_name(self) -> str:
