@@ -1,7 +1,7 @@
 import ChecksPage from "./ChecksPage.svelte";
 import { CONSULTATION_ID } from "./mocks";
 
-const consultationId = $state(CONSULTATION_ID);
+const consultationId = CONSULTATION_ID;
 
 export default {
   name: "ChecksPage",
