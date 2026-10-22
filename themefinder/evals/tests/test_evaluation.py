@@ -58,7 +58,9 @@ async def test_builds_component_resolves_backends_and_runs(monkeypatch, componen
 
     dataset_config = DatasetConfig(dataset="demo", component=component)
     build.assert_called_once_with(component, judge_llm=judge_llm, question_num=None)
-    resolve.assert_called_once_with(dataset_config, settings=settings, context=context)
+    resolve.assert_called_once_with(
+        dataset_config, settings=settings, context=context, repeat=1
+    )
     run.assert_awaited_once_with(
         component_config, dataset_config, backends, llm=task_llm
     )

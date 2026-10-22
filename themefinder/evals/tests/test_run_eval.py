@@ -37,6 +37,7 @@ def test_cli_runs_selected_component_prints_and_persists_langfuse_results(
         component="mapping",
         dataset="demo",
         question_num=2,
+        runs=1,
     )
     assert json.loads(capsys.readouterr().out) == {"question_part_1_f1_score": 0.75}
     assert json.loads(
