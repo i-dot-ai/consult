@@ -76,6 +76,13 @@ class LLMJudgeEvaluator(EvaluatorPort):
         random.shuffle(shuffled)
         return shuffled
 
+    @staticmethod
+    def _format_theme(theme: dict[str, str]) -> str:
+        """Combine the canonical theme label and description for the judge."""
+        label = theme.get("topic_label", "").strip()
+        description = theme.get("topic_description", "").strip()
+        return f"{label}: {description}" if description else label
+
     @abstractmethod
     def _build_scores(self, decisions: Any) -> list[Score]:
         """Turn the parsed judge response into Scores."""
