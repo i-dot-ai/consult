@@ -25,6 +25,7 @@ import dotenv
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from components import COMPONENT_NAMES
 from datasets import DatasetConfig, get_or_create_dataset, load_local_data
 
 
@@ -57,7 +58,7 @@ def migrate_component(client, dataset: str, component: str) -> None:
     Args:
         client: Langfuse client
         dataset: Dataset identifier (e.g., "gambling_XS")
-        component: Eval component (generation, mapping, condensation, refinement)
+        component: Registered evaluation component
     """
     config = DatasetConfig(dataset=dataset, component=component)
     print(f"Migrating {config.name}...")
@@ -97,7 +98,7 @@ def migrate_all(dataset: str = "gambling_XS", component: str | None = None) -> N
     """
     client = get_langfuse_client()
 
-    components = ["generation", "mapping", "condensation", "refinement"]
+    components = list(COMPONENT_NAMES)
 
     if component:
         if component not in components:

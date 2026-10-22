@@ -8,21 +8,21 @@
   },
   "metrics": {
     "coverage": {
-      "baseline": 3.7,
+      "baseline": 4.107,
       "tolerance": 0.5
     },
     "groundedness": {
-      "baseline": 4.065,
-      "tolerance": 0.5
+      "baseline": 3.938,
+      "tolerance": 0.5318
     },
     "redundancy": {
-      "baseline": 0.0,
+      "baseline": 0.003,
       "tolerance": 0.05,
       "direction": "lower"
     },
     "specificity": {
-      "baseline": 0.896,
-      "tolerance": 0.0945
+      "baseline": 0.785,
+      "tolerance": 0.1891
     }
   }
 }

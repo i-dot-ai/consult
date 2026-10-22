@@ -18,6 +18,10 @@ evals:
     model: gpt-4.1-sweden-2025-03
     dataset_source: local
     artefact_store: local
+  find_themes:
+    model: gpt-4.1-sweden-2025-03
+    dataset_source: local
+    artefact_store: local
   condensation:
     model: gpt-4.1-sweden-2025-03
     dataset_source: local

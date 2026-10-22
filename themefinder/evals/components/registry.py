@@ -6,6 +6,7 @@ from typing import Any
 from eval_types import ComponentConfig
 
 from .condensation import build_condensation_config
+from .find_themes import build_find_themes_config
 from .generation import build_generation_config
 from .mapping import build_mapping_config
 from .refinement import build_refinement_config
@@ -16,6 +17,7 @@ ComponentFactory = Callable[..., ComponentConfig]
 COMPONENT_FACTORIES: dict[str, ComponentFactory] = {
     "mapping": build_mapping_config,
     "generation": build_generation_config,
+    "find_themes": build_find_themes_config,
     "condensation": build_condensation_config,
     "refinement": build_refinement_config,
 }

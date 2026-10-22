@@ -214,6 +214,11 @@ def load_local_generation_data(config: DatasetConfig) -> list[dict]:
     return items
 
 
+def load_local_find_themes_data(config: DatasetConfig) -> list[dict]:
+    """Load end-to-end theme-finding data using the generation data shape."""
+    return load_local_generation_data(config)
+
+
 def load_local_mapping_data(config: DatasetConfig) -> list[dict]:
     """Load mapping eval data from local files.
 
@@ -296,6 +301,7 @@ def load_local_data(config: DatasetConfig) -> list[dict]:
     """
     loaders = {
         "generation": load_local_generation_data,
+        "find_themes": load_local_find_themes_data,
         "mapping": load_local_mapping_data,
         "condensation": load_local_condensation_data,
         "refinement": load_local_refinement_data,
