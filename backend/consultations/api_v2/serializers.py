@@ -125,6 +125,73 @@ class ConsultationUpdateSerializerV2(serializers.ModelSerializer):
         return instance
 
 
+class QuestionSetupSerializer(serializers.ModelSerializer):
+    # Blank is a model-level default, not a type a question can be set to.
+    type = serializers.ChoiceField(
+        choices=Question.QuestionType.choices, allow_null=True, allow_blank=False, required=False
+    )
+    # Hybrid is this link, not a type (ADR-0006).
+    closed_question = serializers.PrimaryKeyRelatedField(
+        queryset=Question.objects.all(), allow_null=True, required=False
+    )
+    response_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Question
+        fields: ClassVar[list] = [
+            "id",
+            "number",
+            "text",
+            "type",
+            "closed_question",
+            "status",
+            "response_count",
+        ]
+        read_only_fields: ClassVar[list] = ["id", "number", "status", "response_count"]
+
+    def validate_text(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Question wording cannot be blank.")
+        return value
+
+    def validate_closed_question(self, value):
+        if value is None:
+            return value
+        if value.pk == self.instance.pk:
+            raise serializers.ValidationError("A question cannot be linked to itself.")
+        if value.consultation_id != self.instance.consultation_id:
+            raise serializers.ValidationError(
+                "The closed question must belong to the same consultation."
+            )
+        if value.type != Question.QuestionType.CLOSED:
+            raise serializers.ValidationError("Only a closed question can be linked.")
+        return value
+
+    def validate(self, attrs):
+        question_type = attrs.get("type", self.instance.type)
+        closed_question = attrs.get("closed_question", self.instance.closed_question)
+        if closed_question is not None and question_type != Question.QuestionType.OPEN:
+            raise serializers.ValidationError(
+                {"closed_question": "Only an open question can be linked to a closed question."}
+            )
+        return attrs
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        update_fields = list(validated_data)
+        if "type" in validated_data:
+            instance.status = (
+                Question.ThemeStatus.DRAFT
+                if instance.type is None
+                else Question.ThemeStatus.CONFIGURED
+            )
+            update_fields.append("status")
+        if update_fields:
+            instance.save(update_fields=[*update_fields, "modified_at"])
+        return instance
+
+
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
 
