@@ -31,7 +31,7 @@ class InformationEquivalenceEvaluator(BinaryMatchJudgeEvaluator):
     def _matching_pairs(
         decisions: list[dict[str, Any]], candidate_themes: list[str]
     ) -> list[tuple[int, int]]:
-        """Return unambiguous source/candidate index pairs from PASS decisions."""
+        """Return unambiguous pairs, ignoring surrounding whitespace in returned text."""
         pairs = []
         for source_index, decision in enumerate(decisions, start=1):
             if str(decision.get("decision", "")).upper() != "PASS":
@@ -44,7 +44,7 @@ class InformationEquivalenceEvaluator(BinaryMatchJudgeEvaluator):
             candidate_indices = [
                 index
                 for index, candidate in enumerate(candidate_themes, start=1)
-                if candidate == matched_items[0]
+                if candidate.strip() == matched_items[0].strip()
             ]
             if len(candidate_indices) == 1:
                 pairs.append((source_index, candidate_indices[0]))
