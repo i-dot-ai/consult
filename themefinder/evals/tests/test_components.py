@@ -212,7 +212,7 @@ async def test_refinement_task_uses_common_output_schema(monkeypatch):
     async def fake_refinement(themes_df, *, llm, question):
         assert themes_df.to_dict("records") == [{"topic": "Original"}]
         assert question == "Question?"
-        return pd.DataFrame([{"topic": "Refined"}]), None
+        return pd.DataFrame([{"topic": "Refined: Description"}]), None
 
     monkeypatch.setattr(refinement, "theme_refinement", fake_refinement)
 
@@ -220,7 +220,15 @@ async def test_refinement_task_uses_common_output_schema(monkeypatch):
         {"question": "Question?", "themes": [{"topic": "Original"}]}, object()
     )
 
-    assert output == {"themes": [{"topic": "Refined"}]}
+    assert output == {
+        "themes": [
+            {
+                "topic": "Refined: Description",
+                "topic_label": "Refined",
+                "topic_description": "Description",
+            }
+        ]
+    }
 
 
 async def test_mapping_task_returns_labels_and_reports_unprocessable(

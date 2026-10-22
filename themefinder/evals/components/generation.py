@@ -9,19 +9,8 @@ from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
 from eval_types import ComponentConfig
 
+from components._utils import build_themes_output
 from themefinder import theme_generation
-
-
-def _build_output(themes_df: pd.DataFrame) -> dict[str, list[dict[str, Any]]]:
-    """Normalise themes into the shape consumed by the evaluators."""
-    themes = []
-    for record in themes_df.to_dict(orient="records"):
-        if "topic" in record and ":" in record["topic"]:
-            label, description = record["topic"].split(":", 1)
-            record["topic_label"] = label.strip()
-            record["topic_description"] = description.strip()
-        themes.append(record)
-    return {"themes": themes}
 
 
 async def run_generation_task(inputs: dict, llm: Any) -> dict:
@@ -33,7 +22,7 @@ async def run_generation_task(inputs: dict, llm: Any) -> dict:
         llm=llm,
         question=inputs["question"],
     )
-    return _build_output(themes_df)
+    return build_themes_output(themes_df)
 
 
 def build_generation_config(judge_llm: Any) -> ComponentConfig:
