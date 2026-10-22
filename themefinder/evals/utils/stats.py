@@ -16,7 +16,7 @@ from utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 CONSISTENCY_METRIC = "output_consistency"
-PAIR_METRICS = ("overall", "content", "count")
+PAIR_METRICS = ("f1", "count")
 TRACK_STATUSES = ("stable", "reworded", "intermittent")
 # shortcut: untuned guess at "same theme, reworded"; tune on real repeated runs.
 MATCH_THRESHOLD = 0.75
@@ -75,17 +75,18 @@ def _match(emb_a: np.ndarray, emb_b: np.ndarray) -> list[tuple[int, int, float]]
     ]
 
 
-def _pair_scores(n_a: int, n_b: int, matched: int | None) -> dict[str, float | None]:
-    """content: share of the shorter list found in the longer; count: how close the list
-    lengths are; overall = content * count = matched / longer list."""
-    shorter, longer = min(n_a, n_b), max(n_a, n_b)
-    if longer == 0:
-        return {"overall": 1.0, "content": 1.0, "count": 1.0}
-    count = shorter / longer
-    if matched is None:
-        return {"overall": None, "content": None, "count": count}
-    content = matched / shorter if shorter else 0.0
-    return {"overall": content * count, "content": content, "count": count}
+def _pair_scores(n_a: int, n_b: int, shared: int | None) -> dict[str, float | None]:
+    """f1: items both runs share, symmetric so neither run is the reference;
+    count: how close the two list lengths are. Two empty runs agree completely."""
+    if n_a + n_b == 0:
+        return {"f1": 1.0, "count": 1.0}
+    count = min(n_a, n_b) / max(n_a, n_b)
+    f1 = None if shared is None else 2 * shared / (n_a + n_b)
+    return {"f1": f1, "count": count}
+
+
+def _mean_pair_scores(pairs: list[dict[str, float | None]]) -> dict[str, float | None]:
+    return {m: _mean_or_none([pair[m] for pair in pairs]) for m in PAIR_METRICS}
 
 
 def _mean_or_none(values: list[float | None]) -> float | None:
@@ -105,10 +106,7 @@ def _label_consistency(outputs: list[dict]) -> dict[str, Any]:
         for output in outputs
     ]
     pairs = [_pair_scores(len(a), len(b), len(a & b)) for a, b in combinations(sets, 2)]
-    return {
-        **{m: _mean_or_none([p[m] for p in pairs]) for m in PAIR_METRICS},
-        "n_items": _spread([len(s) for s in sets]),
-    }
+    return {**_mean_pair_scores(pairs), "n_items": _spread([len(s) for s in sets])}
 
 
 def _spread(counts: list[int]) -> dict[str, float | None]:
@@ -118,14 +116,15 @@ def _spread(counts: list[int]) -> dict[str, float | None]:
     }
 
 
-def track_themes(
+def _assign_tracks(
     themes_per_run: list[list[dict]], embeddings: list[np.ndarray]
-) -> dict[str, Any]:
-    """Follow each theme across runs, so rewordings are told apart from themes that
-    were dropped or newly appeared.
+) -> np.ndarray:
+    """Group themes across runs into tracks, one track per distinct theme.
 
-    Runs are taken in order: each run is matched one-to-one against the open tracks,
-    a matched theme extends its track and an unmatched one starts a new track.
+    Returns assignment[track, run]: the index of that track's theme in that run, or -1
+    if absent. Runs are taken in order: each run is matched one-to-one against the
+    existing tracks, a matched theme extends its track and an unmatched one starts a
+    new track.
     """
     n_runs = len(themes_per_run)
     # assignment[track, run]: index of the track's theme in that run, or -1 if absent
@@ -154,6 +153,27 @@ def track_themes(
         new_latest = run_embeddings[new_themes]
         latest = new_latest if latest is None else np.vstack([latest, new_latest])
 
+    return assignment
+
+
+def _track_f1(present: np.ndarray) -> list[dict[str, float | None]]:
+    """Pairwise scores for every pair of runs: tracks present in both runs are the
+    themes those runs share."""
+    as_int = present.astype(int)
+    shared = as_int.T @ as_int  # shared[i, j]: tracks present in both run i and run j
+    n_themes = present.sum(axis=0)
+    return [
+        _pair_scores(int(n_themes[i]), int(n_themes[j]), int(shared[i, j]))
+        for i, j in combinations(range(present.shape[1]), 2)
+    ]
+
+
+def _describe_tracks(
+    themes_per_run: list[list[dict]], assignment: np.ndarray
+) -> dict[str, Any]:
+    """Each track's status and labels per run, plus what changed between consecutive
+    runs, so the consistency score can be traced back to individual themes."""
+    n_runs = len(themes_per_run)
     present = assignment >= 0
     labels = np.full(assignment.shape, None, dtype=object)
     texts = np.full(assignment.shape, None, dtype=object)
@@ -209,23 +229,13 @@ def _theme_consistency(outputs: list[dict], embed: Embed) -> dict[str, Any]:
             "sentence-transformers not installed, theme content consistency skipped"
         )
         pairs = [_pair_scores(a, b, None) for a, b in combinations(counts, 2)]
-        return {
-            **{m: _mean_or_none([p[m] for p in pairs]) for m in PAIR_METRICS},
-            **result,
-        }
+        return {**_mean_pair_scores(pairs), **result}
 
-    pairs = [
-        _pair_scores(
-            len(embeddings[i]),
-            len(embeddings[j]),
-            len(_match(embeddings[i], embeddings[j])),
-        )
-        for i, j in combinations(range(len(embeddings)), 2)
-    ]
+    assignment = _assign_tracks(themes_per_run, embeddings)
     return {
-        **{m: _mean_or_none([p[m] for p in pairs]) for m in PAIR_METRICS},
+        **_mean_pair_scores(_track_f1(assignment >= 0)),
         **result,
-        "tracks": track_themes(themes_per_run, embeddings),
+        "tracks": _describe_tracks(themes_per_run, assignment),
     }
 
 
@@ -234,9 +244,9 @@ def output_consistency(
 ) -> dict[str, Any] | None:
     """How alike a case's outputs are across runs, scored over every pair of runs.
 
-    `content` asks whether the same themes appear (matched by meaning, so rewordings
-    count as the same), `count` whether the same number appear, and `overall` combines
-    both. None when fewer than two runs produced an output.
+    `f1` asks whether the same themes appear (matched by meaning, so rewordings count
+    as the same) and `count` whether the same number appear. None when fewer than two
+    runs produced an output.
     """
     present = [output for output in outputs if isinstance(output, dict)]
     if len(present) < 2:
@@ -276,10 +286,7 @@ def aggregate(
     return {
         "metrics": summarise_runs(outcomes),
         CONSISTENCY_METRIC: {
-            **{
-                m: _mean_or_none([case[m] for case in consistency.values()])
-                for m in PAIR_METRICS
-            },
+            **_mean_pair_scores(list(consistency.values())),
             "by_case": consistency,
         },
     }
