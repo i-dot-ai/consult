@@ -32,12 +32,21 @@ class _SequentialJudge:
     """Judge double returning one configured response per prompt."""
 
     def __init__(self, *parsed_responses: str):
-        self._responses = iter(parsed_responses)
+        self._responses = list(parsed_responses)
+        self._response_index = 0
         self.prompts: list[str] = []
 
     async def ainvoke(self, prompt: str) -> SimpleNamespace:
         self.prompts.append(prompt)
-        return SimpleNamespace(parsed=next(self._responses))
+        if self._response_index >= len(self._responses):
+            raise AssertionError(
+                "No configured response for "
+                f"judge call {len(self.prompts)}; expected at most "
+                f"{len(self._responses)} call(s)."
+            )
+        response = self._responses[self._response_index]
+        self._response_index += 1
+        return SimpleNamespace(parsed=response)
 
 
 class _JudgeContractTests:

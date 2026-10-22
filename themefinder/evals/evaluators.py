@@ -14,6 +14,7 @@ from typing import Any
 import numpy as np
 import openai
 from adapters.evaluators.prompts import load_prompt_fn
+from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
 from sklearn import metrics
 from sklearn.preprocessing import MultiLabelBinarizer
 from tenacity import (
@@ -379,22 +380,7 @@ async def _calculate_title_specificity(
             title_specificity_eval_prompt(theme_title=title),
         )
         parsed = _parse_json_markdown(response.parsed)
-        if not isinstance(parsed, dict):
-            raise TypeError("Specificity judge response must be a JSON object")
-
-        decision = parsed.get("decision")
-        reasoning = parsed.get("reasoning")
-        if decision not in {"PASS", "FAIL"}:
-            raise ValueError(f"Specificity decision for {title!r} must be PASS or FAIL")
-        if not isinstance(reasoning, str):
-            raise TypeError(f"Specificity reasoning for {title!r} must be a string")
-        details.append(
-            {
-                "title": title,
-                "decision": decision,
-                "reasoning": reasoning,
-            }
-        )
+        details.append(TitleSpecificityEvaluator._parse_decision(title, parsed))
 
     n_pass = sum(detail["decision"] == "PASS" for detail in details)
     n_total = len(details)
