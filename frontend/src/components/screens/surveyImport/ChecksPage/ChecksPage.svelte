@@ -1,12 +1,15 @@
 <script lang="ts">
+  import Check from "../../../svg/material/Check.svelte";
   import Checklist from "../../../svg/material/Checklist.svelte";
   import Button from "../../../inputs/Button/Button.svelte";
   import Checkbox from "../../../inputs/Checkbox/Checkbox.svelte";
+  import MaterialIcon from "../../../MaterialIcon.svelte";
   import StepTitle from "../../../surveyImport/StepTitle/StepTitle.svelte";
+  import Title from "../../../Title.svelte";
 
   import type { DataSource } from "../../../../global/queries/consultations/types";
   import { PROVIDER_CHECKS, USER_CHECKS, TECHNICAL_CHECKS } from "./checks";
-  import type { Check } from "./checks";
+  import type { Check as CheckItem } from "./checks";
   import {
     getDataUploadSelectProviderUrl,
     getConsultationViewUrl,
@@ -20,24 +23,27 @@
   let { consultationId, dataSource }: Props = $props();
 
   const userChecks = $derived([...PROVIDER_CHECKS[dataSource], ...USER_CHECKS]);
-  const allChecks = $derived([...userChecks, ...TECHNICAL_CHECKS]);
 
   let checked = $state<Record<string, boolean>>({});
 
-  let allChecked = $derived(allChecks.every((c) => checked[c.id]));
-
-  function toggle(id: string, value: boolean) {
+  function setChecked(id: string, value: boolean) {
     checked[id] = value;
+  }
+
+  function tickAll() {
+    for (const check of userChecks) {
+      checked[check.id] = true;
+    }
   }
 </script>
 
-{#snippet checkItem(check: Check)}
-  <div class="px-7 py-4">
+{#snippet checkItem(check: CheckItem)}
+  <div class="py-3">
     <Checkbox
       id={check.id}
       checked={checked[check.id] ?? false}
       label={check.label}
-      onchange={(value) => toggle(check.id, value)}
+      onchange={(value) => setChecked(check.id, value)}
     />
     {#if check.hint}
       <p class="mt-1 pl-8 text-sm leading-relaxed text-neutral-500">
@@ -47,49 +53,73 @@
   </div>
 {/snippet}
 
-{#snippet section(title: string, checks: Check[], subtitle?: string)}
-  <div class="rounded-xl border border-neutral-300 bg-white">
-    <div class="border-b border-neutral-200 px-7 py-5">
-      <h2 class="text-sm font-medium text-neutral-900">{title}</h2>
-      {#if subtitle}
-        <p class="mt-1 text-sm leading-relaxed text-neutral-500">{subtitle}</p>
-      {/if}
+{#snippet tickItem(label: string)}
+  <div class="flex items-start gap-3 py-3">
+    <div class="mt-0.5 shrink-0">
+      <MaterialIcon color="fill-secondary" size="1.1rem">
+        <Check />
+      </MaterialIcon>
     </div>
-    <div class="divide-y divide-neutral-200">
-      {#each checks as check (check.id)}
+    <span class="text-base leading-relaxed text-neutral-900">{label}</span>
+  </div>
+{/snippet}
+
+<StepTitle stepNo={2} maxStepNo={6} title="Prepare your file" Icon={Checklist} />
+
+<p class="mt-3.5 mb-6 text-base leading-relaxed text-neutral-500">
+  Work through your file against this list before uploading. Reading the
+  responses now is time well spent, because you'll start the analysis knowing
+  what's in your data.
+</p>
+
+<div class="flex flex-col gap-5">
+  <div class="rounded-xl border border-neutral-300 bg-white p-7">
+    <Title level={2}>
+      <span class="text-base font-medium text-neutral-900">Structure</span>
+    </Title>
+    <div class="mt-4 flex flex-col divide-y divide-neutral-200">
+      {#each userChecks as check (check.id)}
         {@render checkItem(check)}
       {/each}
     </div>
   </div>
-{/snippet}
 
-<StepTitle stepNo={3} maxStepNo={6} title="Check your data" Icon={Checklist} />
-
-<p class="mt-3.5 mb-6 text-md leading-relaxed text-neutral-500">
-  Before uploading, work through the checklist below. You can still upload
-  without ticking every box, but skipping items may cause the upload to fail or
-  produce inaccurate results.
-</p>
-
-<div class="flex flex-col gap-6">
-  {@render section("User checks", userChecks)}
-  {@render section(
-    "Technical checks",
-    TECHNICAL_CHECKS,
-    "Consult will check these automatically when you upload — if anything needs attention, we'll let you know.",
-  )}
+  <div class="rounded-xl border border-neutral-300 bg-white p-7">
+    <Title level={2}>
+      <span class="text-base font-medium text-neutral-900"
+        >Consult checks these when you upload</span
+      >
+    </Title>
+    <p class="mt-1 text-sm leading-relaxed text-neutral-500">
+      No need to check these yourself.
+    </p>
+    <div class="mt-4 flex flex-col divide-y divide-neutral-200">
+      {#each TECHNICAL_CHECKS as check (check.id)}
+        {@render tickItem(check.label)}
+      {/each}
+    </div>
+  </div>
 </div>
 
-<div class="mt-7 flex justify-between">
+<div
+  class="mt-5 rounded-xl border border-neutral-300 bg-neutral-100 px-4 py-3.5 text-sm leading-relaxed text-neutral-500"
+>
+  Ticking is for your own tracking. Nothing is submitted, and you can continue
+  without it.
+</div>
+
+<div class="mt-5 flex flex-wrap justify-between gap-2">
   <Button size="sm" href={getDataUploadSelectProviderUrl(consultationId)}>
     Back
   </Button>
-  <Button
-    size="sm"
-    variant="primary"
-    disabled={!allChecked}
-    href={allChecked ? getConsultationViewUrl(consultationId) : undefined}
-  >
-    Continue to upload
-  </Button>
+  <div class="flex items-center gap-2">
+    <Button size="sm" handleClick={tickAll}>Tick everything</Button>
+    <Button
+      size="sm"
+      variant="primary"
+      href={getConsultationViewUrl(consultationId)}
+    >
+      Continue to upload
+    </Button>
+  </div>
 </div>

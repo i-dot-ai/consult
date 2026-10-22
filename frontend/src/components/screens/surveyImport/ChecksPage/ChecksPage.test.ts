@@ -13,23 +13,17 @@ describe("ChecksPage", () => {
   it("renders the step title", () => {
     render(ChecksPage, TEST_DATA);
 
-    expect(screen.getByText("Step 3 of 6")).toBeInTheDocument();
+    expect(screen.getByText("Step 2 of 6")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { level: 1, name: "Check your data" }),
+      screen.getByRole("heading", { level: 1, name: "Prepare your file" }),
     ).toBeInTheDocument();
   });
 
-  it("renders the user checks section", () => {
-    render(ChecksPage, TEST_DATA);
-
-    expect(screen.getByText("User checks")).toBeInTheDocument();
-  });
-
-  it("includes provider-specific checks within the user checks section", () => {
+  it("renders the structure section with provider-specific checks", () => {
     render(ChecksPage, TEST_DATA);
 
     expect(
-      screen.getByText(/Rows 1–3 contain question and metadata headers/),
+      screen.getByText(/Rows 1 to 3 hold the question details/),
     ).toBeInTheDocument();
   });
 
@@ -37,14 +31,27 @@ describe("ChecksPage", () => {
     render(ChecksPage, { ...TEST_DATA, dataSource: "citizen-space" as const });
 
     expect(
-      screen.getByText(/Row 1 contains question text, row 2 onwards/),
+      screen.getByText(/Row 1 holds the question wording/),
     ).toBeInTheDocument();
   });
 
-  it("renders the technical checks section", () => {
+  it("renders the technical checks section without checkboxes", () => {
     render(ChecksPage, TEST_DATA);
 
-    expect(screen.getByText("Technical checks")).toBeInTheDocument();
+    expect(
+      screen.getByText("Consult checks these when you upload"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("No need to check these yourself."),
+    ).toBeInTheDocument();
+  });
+
+  it("renders the Tick everything button", () => {
+    render(ChecksPage, TEST_DATA);
+
+    expect(
+      screen.getByRole("button", { name: "Tick everything" }),
+    ).toBeInTheDocument();
   });
 
   it("links back to the select provider page", () => {
@@ -56,21 +63,16 @@ describe("ChecksPage", () => {
     );
   });
 
-  it("has the continue button disabled when no boxes are checked", () => {
+  it("continue button is always enabled", () => {
     render(ChecksPage, TEST_DATA);
 
     expect(
-      screen.getByRole("button", { name: "Continue to upload" }),
-    ).toBeDisabled();
+      screen.getByRole("link", { name: "Continue to upload" }),
+    ).not.toBeDisabled();
   });
 
-  it("links forward to the consultation page when all boxes are checked", async () => {
+  it("links forward to the consultation page", () => {
     render(ChecksPage, TEST_DATA);
-
-    const checkboxes = screen.getAllByRole("checkbox");
-    for (const checkbox of checkboxes) {
-      await checkbox.click();
-    }
 
     expect(
       screen.getByRole("link", { name: "Continue to upload" }),

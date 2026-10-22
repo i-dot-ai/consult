@@ -10,78 +10,70 @@ export const PROVIDER_CHECKS: Record<DataSource, Check[]> = {
   "citizen-space": [
     {
       id: "cs-row-structure",
-      label:
-        "Row 1 contains question text, row 2 onwards contains one response per row",
+      label: "Row 1 holds the question wording, as Citizen Space exports it",
     },
   ],
   qualtrics: [
     {
       id: "qualtrics-row-structure",
-      label:
-        "Rows 1–3 contain question and metadata headers, row 4 onwards contains one response per row",
-      hint: "Qualtrics exports include three header rows: question text, question ID, and ImportId.",
+      label: "Rows 1 to 3 hold the question details, as Qualtrics exports them",
     },
   ],
 };
 
 export const USER_CHECKS: Check[] = [
   {
-    id: "user-one-question-per-column",
+    id: "user-row-structure",
     label:
-      "Each column contains one question, each row contains one set of responses",
-  },
-  {
-    id: "user-pii-removed",
-    label: "All personally identifiable information (PII) has been removed",
-    hint: "This includes names, email addresses, phone numbers, home addresses, IP addresses, and any other data that could identify an individual.",
-  },
-  {
-    id: "user-responses-merged",
-    label:
-      "Responses from other sources (e.g. emails) have been merged into a single file",
-  },
-  {
-    id: "user-file-type",
-    label: "The file is .xlsx or .csv",
+      "From row 2, each row is one person's complete response, with one question per column",
   },
   {
     id: "user-no-merged-cells",
-    label: "There are no merged cells in the file",
-    hint: "Merged cells will be split during processing — only the top-left cell retains its value.",
+    label: "No merged cells",
+  },
+  {
+    id: "user-file-type",
+    label: "The file is a .csv or .xlsx",
+  },
+  {
+    id: "user-responses-merged",
+    label: "Responses from email and other channels are in this one file",
   },
   {
     id: "user-demographic-columns",
-    label: "Demographic columns have not been removed",
+    label: "Demographic columns are kept, not deleted",
+  },
+  {
+    id: "user-pii-removed",
+    label:
+      "Personal information is removed, where your department needs it removed",
   },
 ];
 
 export const TECHNICAL_CHECKS: Check[] = [
   {
     id: "tech-headers-complete",
-    label:
-      "Row 1 contains text in every column that has data in the rows below",
+    label: "Every column with answers has a question",
   },
   {
     id: "tech-no-formulas",
-    label: "No calculations or formulas exist in the file",
-    hint: "Cells should contain plain values only. Convert any Excel formulas to their static results before uploading.",
+    label: "No cell holds a formula or calculation",
   },
   {
     id: "tech-no-merged-cells",
-    label: "No merged cells exist in the file",
+    label: "No merged cells. If there are any, the upload stops and says where",
   },
   {
     id: "tech-file-type",
-    label: "The file is .xlsx or .csv",
+    label: "The file is a .csv or .xlsx",
   },
   {
     id: "tech-no-special-characters",
-    label: "No special non-printing characters are present",
-    hint: "This refers to ASCII control characters (e.g. null bytes, escape characters). Standard symbols like & are fine.",
+    label: "No characters Consult cannot read",
   },
   {
     id: "tech-no-empty-rows",
-    label: "No entirely empty rows exist within the response data",
-    hint: "Blank rows between responses can disrupt processing. Rows at the very end of the file are fine.",
+    label:
+      "Responses with only demographic answers, or none, are removed and counted",
   },
 ];
