@@ -21,8 +21,8 @@ stages:
       nfiles: 10
     - path: adapters
       hash: md5
-      md5: 36f74f37fe4be44db3e80fead1c3bc4b.dir
-      size: 51557
+      md5: bce6fea59ca14d63d4414bdd8006e42d.dir
+      size: 51578
       nfiles: 25
     - path: component_runner.py
       hash: md5
@@ -51,25 +51,24 @@ stages:
       nfiles: 14
     - path: datasets.py
       hash: md5
-      md5: 62e28b8bed63a053ef744c2ef20f0804
-      size: 10900
+      md5: 0c10edfa6a2e166075ede65cea64b9e3
+      size: 10931
     - path: eval_types.py
       hash: md5
       md5: ecaf0d2a02f5709646b25569d2ee7dc3
       size: 2228
     - path: metrics.py
       hash: md5
-      md5: 293e3e0574be1dde147b8ec467faec1b
-      size: 3346
-    - path: prompts
-      hash: md5
-      md5: 0ecaeda543d43fdb22beae6584ceb2e0.dir
-      size: 11629
-      nfiles: 5
+      md5: a931d7327eab05542e2e7f59ca7b5736
+      size: 3834
     - path: prompts/__init__.py
       hash: md5
       md5: b745d48d24ec007068e7b3795beb1fe0
       size: 56
+    - path: prompts/mapping.py
+      hash: md5
+      md5: 6e8a0104c102a09c7f340371136a0b4e
+      size: 77
     - path: run_eval.py
       hash: md5
       md5: 347ac9c747f6a01a6818c10f9f8e1221
@@ -92,11 +91,12 @@ stages:
           model: gpt-4.1-sweden-2025-03
           dataset_source: local
           artefact_store: local
+          evaluator_prompt: prompts/mapping.py
     outs:
     - path: local_eval_runs/mapping/gambling_XS/results.json
       hash: md5
-      md5: 2940d1a66001a8bc4d30389ed6428d39
-      size: 84961
+      md5: 113f8d8219a2d764b0645b541d049587
+      size: 84887
   evaluate@generation:
     cmd: AUTO_EVAL_MODEL=gpt-4.1-sweden-2025-03 
       THEMEFINDER_EVAL_DATASET_SOURCE=local 
@@ -118,8 +118,8 @@ stages:
       nfiles: 10
     - path: adapters
       hash: md5
-      md5: 36f74f37fe4be44db3e80fead1c3bc4b.dir
-      size: 51557
+      md5: bce6fea59ca14d63d4414bdd8006e42d.dir
+      size: 51578
       nfiles: 25
     - path: component_runner.py
       hash: md5
@@ -131,8 +131,8 @@ stages:
       size: 174
     - path: components/generation.py
       hash: md5
-      md5: cecef0c0cff455b6293f4ec21c2d8085
-      size: 1304
+      md5: 36da068a3baff34b99afe7c4fbaab950
+      size: 1795
     - path: components/registry.py
       hash: md5
       md5: c02e0db50eb78624676906bf7a8e438d
@@ -148,25 +148,24 @@ stages:
       nfiles: 14
     - path: datasets.py
       hash: md5
-      md5: 62e28b8bed63a053ef744c2ef20f0804
-      size: 10900
+      md5: 0c10edfa6a2e166075ede65cea64b9e3
+      size: 10931
     - path: eval_types.py
       hash: md5
       md5: ecaf0d2a02f5709646b25569d2ee7dc3
       size: 2228
     - path: metrics.py
       hash: md5
-      md5: 293e3e0574be1dde147b8ec467faec1b
-      size: 3346
-    - path: prompts
-      hash: md5
-      md5: 0ecaeda543d43fdb22beae6584ceb2e0.dir
-      size: 11629
-      nfiles: 5
+      md5: a931d7327eab05542e2e7f59ca7b5736
+      size: 3834
     - path: prompts/__init__.py
       hash: md5
       md5: b745d48d24ec007068e7b3795beb1fe0
       size: 56
+    - path: prompts/generation.py
+      hash: md5
+      md5: dba1ab7216974233370ae6b3c4185f87
+      size: 3726
     - path: run_eval.py
       hash: md5
       md5: 347ac9c747f6a01a6818c10f9f8e1221
@@ -189,11 +188,12 @@ stages:
           model: gpt-4.1-sweden-2025-03
           dataset_source: local
           artefact_store: local
+          evaluator_prompt: prompts/generation.py
     outs:
     - path: local_eval_runs/generation/gambling_XS/results.json
       hash: md5
-      md5: 5393fe630dcb8f0ce3675eb8d26fdab9
-      size: 141022
+      md5: c62f7ff31a550bdadb266bcd4684817a
+      size: 122568
   evaluate@condensation:
     cmd: AUTO_EVAL_MODEL=gpt-4.1-sweden-2025-03 
       THEMEFINDER_EVAL_DATASET_SOURCE=local 
@@ -215,8 +215,8 @@ stages:
       nfiles: 10
     - path: adapters
       hash: md5
-      md5: 36f74f37fe4be44db3e80fead1c3bc4b.dir
-      size: 51557
+      md5: bce6fea59ca14d63d4414bdd8006e42d.dir
+      size: 51578
       nfiles: 25
     - path: component_runner.py
       hash: md5
@@ -245,25 +245,24 @@ stages:
       nfiles: 14
     - path: datasets.py
       hash: md5
-      md5: 62e28b8bed63a053ef744c2ef20f0804
-      size: 10900
+      md5: 0c10edfa6a2e166075ede65cea64b9e3
+      size: 10931
     - path: eval_types.py
       hash: md5
       md5: ecaf0d2a02f5709646b25569d2ee7dc3
       size: 2228
     - path: metrics.py
       hash: md5
-      md5: 293e3e0574be1dde147b8ec467faec1b
-      size: 3346
-    - path: prompts
-      hash: md5
-      md5: 0ecaeda543d43fdb22beae6584ceb2e0.dir
-      size: 11629
-      nfiles: 5
+      md5: a931d7327eab05542e2e7f59ca7b5736
+      size: 3834
     - path: prompts/__init__.py
       hash: md5
       md5: b745d48d24ec007068e7b3795beb1fe0
       size: 56
+    - path: prompts/condensation.py
+      hash: md5
+      md5: 3b5e31d01dbc67c284fc177b2ab4f29a
+      size: 3258
     - path: run_eval.py
       hash: md5
       md5: 347ac9c747f6a01a6818c10f9f8e1221
@@ -286,11 +285,12 @@ stages:
           model: gpt-4.1-sweden-2025-03
           dataset_source: local
           artefact_store: local
+          evaluator_prompt: prompts/condensation.py
     outs:
     - path: local_eval_runs/condensation/gambling_XS/results.json
       hash: md5
-      md5: 0482b4b1e2818735d34d8cc46d25a393
-      size: 18382
+      md5: 805714b534f97431971817d319cf8456
+      size: 19722
   evaluate@refinement:
     cmd: AUTO_EVAL_MODEL=gpt-4.1-sweden-2025-03 
       THEMEFINDER_EVAL_DATASET_SOURCE=local 
@@ -312,8 +312,8 @@ stages:
       nfiles: 10
     - path: adapters
       hash: md5
-      md5: 36f74f37fe4be44db3e80fead1c3bc4b.dir
-      size: 51557
+      md5: bce6fea59ca14d63d4414bdd8006e42d.dir
+      size: 51578
       nfiles: 25
     - path: component_runner.py
       hash: md5
@@ -342,25 +342,24 @@ stages:
       nfiles: 14
     - path: datasets.py
       hash: md5
-      md5: 62e28b8bed63a053ef744c2ef20f0804
-      size: 10900
+      md5: 0c10edfa6a2e166075ede65cea64b9e3
+      size: 10931
     - path: eval_types.py
       hash: md5
       md5: ecaf0d2a02f5709646b25569d2ee7dc3
       size: 2228
     - path: metrics.py
       hash: md5
-      md5: 293e3e0574be1dde147b8ec467faec1b
-      size: 3346
-    - path: prompts
-      hash: md5
-      md5: 0ecaeda543d43fdb22beae6584ceb2e0.dir
-      size: 11629
-      nfiles: 5
+      md5: a931d7327eab05542e2e7f59ca7b5736
+      size: 3834
     - path: prompts/__init__.py
       hash: md5
       md5: b745d48d24ec007068e7b3795beb1fe0
       size: 56
+    - path: prompts/refinement.py
+      hash: md5
+      md5: 0afb7db1bfffbadba27d8cdfce8f0a38
+      size: 4512
     - path: run_eval.py
       hash: md5
       md5: 347ac9c747f6a01a6818c10f9f8e1221
@@ -383,11 +382,12 @@ stages:
           model: gpt-4.1-sweden-2025-03
           dataset_source: local
           artefact_store: local
+          evaluator_prompt: prompts/refinement.py
     outs:
     - path: local_eval_runs/refinement/gambling_XS/results.json
       hash: md5
-      md5: afc034ab3c06103f910be9e707626cd1
-      size: 24250
+      md5: e9f0880b9241d8decacf60c3f5ebc5ee
+      size: 24788
   evaluate@find_themes:
     cmd: AUTO_EVAL_MODEL=gpt-4.1-sweden-2025-03
       THEMEFINDER_EVAL_DATASET_SOURCE=local
@@ -409,8 +409,8 @@ stages:
       nfiles: 10
     - path: adapters
       hash: md5
-      md5: 36f74f37fe4be44db3e80fead1c3bc4b.dir
-      size: 51557
+      md5: bce6fea59ca14d63d4414bdd8006e42d.dir
+      size: 51578
       nfiles: 25
     - path: component_runner.py
       hash: md5
@@ -439,25 +439,24 @@ stages:
       nfiles: 14
     - path: datasets.py
       hash: md5
-      md5: 62e28b8bed63a053ef744c2ef20f0804
-      size: 10900
+      md5: 0c10edfa6a2e166075ede65cea64b9e3
+      size: 10931
     - path: eval_types.py
       hash: md5
       md5: ecaf0d2a02f5709646b25569d2ee7dc3
       size: 2228
     - path: metrics.py
       hash: md5
-      md5: 293e3e0574be1dde147b8ec467faec1b
-      size: 3346
-    - path: prompts
-      hash: md5
-      md5: 0ecaeda543d43fdb22beae6584ceb2e0.dir
-      size: 11629
-      nfiles: 5
+      md5: a931d7327eab05542e2e7f59ca7b5736
+      size: 3834
     - path: prompts/__init__.py
       hash: md5
       md5: b745d48d24ec007068e7b3795beb1fe0
       size: 56
+    - path: prompts/generation.py
+      hash: md5
+      md5: dba1ab7216974233370ae6b3c4185f87
+      size: 3726
     - path: run_eval.py
       hash: md5
       md5: 347ac9c747f6a01a6818c10f9f8e1221
@@ -480,8 +479,9 @@ stages:
           model: gpt-4.1-sweden-2025-03
           dataset_source: local
           artefact_store: local
+          evaluator_prompt: prompts/generation.py
     outs:
     - path: local_eval_runs/find_themes/gambling_XS/results.json
       hash: md5
-      md5: 8db806aa91366acd986f05747e20247b
-      size: 85847
+      md5: 1fbe6830b7c338ad91404e24fa862196
+      size: 92157

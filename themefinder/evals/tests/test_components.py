@@ -120,7 +120,7 @@ async def test_generation_task_runs_only_generation(monkeypatch):
 
     async def fake_generation(*, responses_df, llm, question):
         calls.append(("generation", responses_df.to_dict("records"), llm, question))
-        return pd.DataFrame([{"topic_label": "Initial"}]), None
+        return pd.DataFrame([{"topic": "Initial: Description"}]), None
 
     monkeypatch.setattr(generation, "theme_generation", fake_generation)
 
@@ -140,7 +140,15 @@ async def test_generation_task_runs_only_generation(monkeypatch):
             "Question?",
         )
     ]
-    assert output == {"themes": [{"topic_label": "Initial"}]}
+    assert output == {
+        "themes": [
+            {
+                "topic": "Initial: Description",
+                "topic_label": "Initial",
+                "topic_description": "Description",
+            }
+        ]
+    }
 
 
 async def test_find_themes_task_runs_full_pipeline_and_normalises_output(monkeypatch):

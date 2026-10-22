@@ -214,9 +214,9 @@ def load_local_generation_data(config: DatasetConfig) -> list[dict]:
     return items
 
 
-# The end-to-end task consumes the same responses and ground-truth final themes
-# as the generation task.
-load_local_find_themes_data = load_local_generation_data
+def load_local_find_themes_data(config: DatasetConfig) -> list[dict]:
+    """Load end-to-end theme-finding data using the generation data shape."""
+    return load_local_generation_data(config)
 
 
 def load_local_mapping_data(config: DatasetConfig) -> list[dict]:
