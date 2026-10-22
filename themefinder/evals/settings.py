@@ -31,7 +31,7 @@ from pydantic.dataclasses import dataclass
 dotenv.load_dotenv()
 
 # Just a single valid value for THEMEFINDER_EVAL_ENGINE at the moment, but allows for future expansion.
-EvalRunnerSource = Literal["pydantic_evals"]
+EvalRunnerSource = Literal["pydantic_evals", "local"]
 EvalBackendSource = Literal["langfuse", "local"]
 LogLevel = Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
 

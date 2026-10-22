@@ -42,6 +42,7 @@ dev = [
 ]
 eval = [
     "scikit-learn>=1.7.2",
+    "scipy>=1.18.0",
     "sentence-transformers>=5.2.0",
     # <2.46: 2.46 routes LLMJudge through a private helper our evaluator tests
     # stub, so a floating resolve breaks CI. Bump once the tests target the new seam.
