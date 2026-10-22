@@ -77,15 +77,3 @@ def merge_demographic_options(
     ).count()
     retained.save(update_fields=["field_value", "response_count", "modified_at"])
     return retained
-
-
-@transaction.atomic
-def update_demographic_option(
-    consultation: Consultation, option_id: UUID, new_value: str
-) -> DemographicOption:
-    consultation = Consultation.objects.select_for_update().get(pk=consultation.pk)
-    option = _get_options_by_id(consultation, [option_id])[option_id]
-    _validate_target_value(option, [option_id], new_value)
-    option.field_value = new_value
-    option.save(update_fields=["field_value", "modified_at"])
-    return option

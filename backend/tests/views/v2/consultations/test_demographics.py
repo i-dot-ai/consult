@@ -9,13 +9,23 @@ from factories import ConsultationFactory, RespondentFactory, UserFactory
 
 
 def merge_url(consultation):
-    return reverse("consultation-v2-merge-demographics", kwargs={"pk": consultation.id})
+    return reverse(
+        "demographic-option-v2-merge",
+        kwargs={"consultation_pk": consultation.id},
+    )
 
 
 def update_url(consultation, option):
     return reverse(
-        "consultation-v2-update-demographic-option",
-        kwargs={"pk": consultation.id, "option_id": option.id},
+        "demographic-option-v2-detail",
+        kwargs={"consultation_pk": consultation.id, "pk": option.id},
+    )
+
+
+def list_url(consultation):
+    return reverse(
+        "demographic-option-v2-list",
+        kwargs={"consultation_pk": consultation.id},
     )
 
 
@@ -25,6 +35,40 @@ def option(consultation, field_name, field_value):
         field_name=field_name,
         field_value=field_value,
     )
+
+
+@pytest.mark.django_db
+def test_demographic_option_crud_is_scoped_to_consultation(
+    client, consultation, non_staff_user_token
+):
+    existing = option(consultation, "Region", "North")
+    option(ConsultationFactory(), "Region", "South")
+
+    list_response = client.get(
+        list_url(consultation),
+        headers={"Authorization": f"Bearer {non_staff_user_token}"},
+    )
+    create_response = client.post(
+        list_url(consultation),
+        data={"name": "Age", "value": "18-35"},
+        content_type="application/json",
+        headers={"Authorization": f"Bearer {non_staff_user_token}"},
+    )
+
+    assert list_response.status_code == 200
+    assert [item["id"] for item in list_response.json()["results"]] == [str(existing.id)]
+    assert create_response.status_code == 201
+    assert create_response.json()["name"] == "Age"
+    created = DemographicOption.objects.get(id=create_response.json()["id"])
+    assert created.consultation == consultation
+
+    delete_response = client.delete(
+        update_url(consultation, created),
+        headers={"Authorization": f"Bearer {non_staff_user_token}"},
+    )
+
+    assert delete_response.status_code == 204
+    assert not DemographicOption.objects.filter(id=created.id).exists()
 
 
 @pytest.mark.django_db
@@ -280,7 +324,7 @@ def test_update_demographic_option_rejects_option_from_another_consultation(
         headers={"Authorization": f"Bearer {non_staff_user_token}"},
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 404
     assert DemographicOption.objects.filter(id=other.id, field_value="North").exists()
 
 

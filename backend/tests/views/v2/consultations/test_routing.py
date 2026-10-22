@@ -24,16 +24,19 @@ def test_v2_deep_validation_route_is_registered():
 def test_v2_demographic_routes_are_registered():
     consultation_id = uuid4()
     option_id = uuid4()
-    merge_url = reverse("consultation-v2-merge-demographics", kwargs={"pk": consultation_id})
+    merge_url = reverse(
+        "demographic-option-v2-merge",
+        kwargs={"consultation_pk": consultation_id},
+    )
     update_url = reverse(
-        "consultation-v2-update-demographic-option",
-        kwargs={"pk": consultation_id, "option_id": option_id},
+        "demographic-option-v2-detail",
+        kwargs={"consultation_pk": consultation_id, "pk": option_id},
     )
 
     assert merge_url == f"/api/v2/consultations/{consultation_id}/demographics/merge/"
-    assert resolve(merge_url).view_name == "consultation-v2-merge-demographics"
+    assert resolve(merge_url).view_name == "demographic-option-v2-merge"
     assert update_url == f"/api/v2/consultations/{consultation_id}/demographics/{option_id}/"
-    assert resolve(update_url).view_name == "consultation-v2-update-demographic-option"
+    assert resolve(update_url).view_name == "demographic-option-v2-detail"
 
 
 @pytest.mark.django_db

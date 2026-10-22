@@ -1,7 +1,6 @@
 import csv
 from pathlib import Path
 from typing import ClassVar
-from uuid import UUID
 from zipfile import BadZipFile
 
 from django.conf import settings
@@ -23,16 +22,8 @@ from consultations.api_v2.serializers import (
     ConsultationFileUploadSerializerV2,
     ConsultationSerializer,
     ConsultationUpdateSerializerV2,
-    DemographicOptionMergeSerializer,
-    DemographicOptionMutationSerializer,
-    DemographicOptionRenameSerializer,
 )
 from consultations.models import Consultation, FileUpload
-from consultations.services.demographics import (
-    DemographicOptionError,
-    merge_demographic_options,
-    update_demographic_option,
-)
 from ingest.consultation_file import import_consultation_data, read_consultation_file
 from ingest.deep_validation import deep_validate_file
 from ingest.jobs import delete_consultation_job
@@ -61,10 +52,6 @@ class ConsultationViewSet(
             return ConsultationDeepValidationSerializerV2
         if self.action == "partial_update":
             return ConsultationUpdateSerializerV2
-        if self.action == "merge_demographics":
-            return DemographicOptionMergeSerializer
-        if self.action == "update_demographic_option":
-            return DemographicOptionRenameSerializer
         return ConsultationSerializer
 
     def perform_create(self, serializer):
@@ -96,40 +83,6 @@ class ConsultationViewSet(
             },
             status=status.HTTP_202_ACCEPTED,
         )
-
-    @action(detail=True, methods=["post"], url_path="demographics/merge")
-    def merge_demographics(self, request, *args, **kwargs):
-        consultation = self.get_object()
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        try:
-            option = merge_demographic_options(
-                consultation,
-                serializer.validated_data["demographic_options"],
-                serializer.validated_data["new_value"],
-            )
-        except DemographicOptionError as error:
-            raise serializers.ValidationError({"demographic_options": [str(error)]}) from error
-        return Response(DemographicOptionMutationSerializer(option).data)
-
-    @action(
-        detail=True,
-        methods=["patch"],
-        url_path=r"demographics/(?P<option_id>[^/.]+)",
-    )
-    def update_demographic_option(self, request, option_id: str, *args, **kwargs):
-        consultation = self.get_object()
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        try:
-            option = update_demographic_option(
-                consultation,
-                UUID(option_id),
-                serializer.validated_data["new_value"],
-            )
-        except (DemographicOptionError, ValueError) as error:
-            raise serializers.ValidationError({"demographic_option": [str(error)]}) from error
-        return Response(DemographicOptionMutationSerializer(option).data)
 
     @action(detail=True, methods=["post"], parser_classes=[MultiPartParser])
     def deep_validation(self, request, *args, **kwargs):
