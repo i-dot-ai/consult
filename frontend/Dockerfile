@@ -1,5 +1,5 @@
-# Using Node 26.6.0 to match development environment (.nvmrc) and ci (.github/workflows/frontend-ci.yml)
-FROM node:26.6.0-slim
+# Using Node 26.12.1 to match development environment (.nvmrc) and ci (.github/workflows/frontend-ci.yml)
+FROM node:26.12.1-slim
 
 # Set working directory in container
 WORKDIR /app
