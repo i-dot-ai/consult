@@ -31,6 +31,7 @@ export enum Suffixes {
   Answers = "answers",
   Dashboard = "dashboard",
   SelectProvider = "select-provider",
+  FileUpload = "upload-file",
 }
 
 export enum Routes {
@@ -589,6 +590,15 @@ export const getDataUploadFinaliseUrl = (consultationId: string) => {
     consultationId,
     Suffixes.DataUpload,
     Suffixes.Finalise,
+  );
+};
+
+export const getDataUploadFileUploadUrl = (consultationId: string) => {
+  return urlJoin(
+    Routes.Consultations,
+    consultationId,
+    Suffixes.DataUpload,
+    Suffixes.FileUpload,
   );
 };
 
