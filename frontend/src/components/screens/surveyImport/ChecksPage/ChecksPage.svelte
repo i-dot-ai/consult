@@ -47,7 +47,7 @@
       example: providerExample,
     },
     {
-      id: STRUCTURE_CHECK_IDS.rowStructure,
+      id: "user-row-structure",
       label: ROW_STRUCTURE_LABEL[dataSource],
       example: rowStructureExample,
     },

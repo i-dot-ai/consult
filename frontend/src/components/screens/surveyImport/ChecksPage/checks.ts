@@ -13,7 +13,6 @@ export const PROVIDER_CHECK_IDS = {
 } as const;
 
 export const STRUCTURE_CHECK_IDS = {
-  rowStructure: "user-row-structure",
   noMergedCells: "user-no-merged-cells",
 } as const;
 
@@ -40,7 +39,6 @@ export const STRUCTURE_CHECK_LABELS: Record<
   keyof typeof STRUCTURE_CHECK_IDS,
   string
 > = {
-  rowStructure: "", // resolved per-provider in the component via ROW_STRUCTURE_LABEL
   noMergedCells: "No merged cells",
 };
 
