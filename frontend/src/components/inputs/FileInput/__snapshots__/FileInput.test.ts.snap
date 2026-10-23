@@ -6,6 +6,7 @@ exports[`FileInput Component > should match snapshot 1`] = `
     class="flex flex-col items-center gap-2 p-4 border border-dashed border-neutral-300 hover:border-secondary rounded-lg transition-colors cursor-pointer text-md text-neutral-800"
     id="file-input"
   >
+    <!---->
     <svg
       aria-hidden="true"
       class="fill-neutral-400"
@@ -32,6 +33,7 @@ exports[`FileInput Component > should match snapshot 1`] = `
     >
       
     </small>
+    <!---->
      
     <!---->
      
@@ -50,6 +52,12 @@ exports[`FileInput Component > should match snapshot 1`] = `
     </ul>
      
     <div
+      class="my-2"
+    >
+      <!---->
+    </div>
+     
+    <div
       class="w-full flex items-center justify-center gap-1 my-2"
     >
       <!---->
@@ -62,7 +70,11 @@ exports[`FileInput Component > should match snapshot 1`] = `
       >
         <!---->
         <!---->
-        Choose different file
+        <!---->
+        <!---->
+        Choose files
+        
+        
         
         
         

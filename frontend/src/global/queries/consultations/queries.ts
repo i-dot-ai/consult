@@ -3,7 +3,9 @@ import {
   consultationQueryParts,
   consultationsQueryParts,
   consultationsV2QueryParts,
+  consultationV2DeepValidationQueryParts,
   consultationV2QueryParts,
+  consultationV2UploadQueryParts,
 } from "./parts";
 import type {
   ConsultationsGetResponse,
@@ -98,4 +100,20 @@ export function buildConsultationsV2ByTitleQuery(title: string) {
       errorMessage: "Failed to look up consultation",
     },
   );
+}
+
+export function buildConsultationDeepValidationQuery(consultationId: string) {
+  return buildQuery<Consultation>(consultationV2DeepValidationQueryParts.url(consultationId), {
+    key: [...consultationV2DeepValidationQueryParts.key(consultationId)],
+    method: "POST",
+    stringifyBody: false,
+  });
+}
+
+export function buildConsultationUploadQuery(consultationId: string) {
+  return buildQuery<Consultation>(consultationV2UploadQueryParts.url(consultationId), {
+    key: [...consultationV2UploadQueryParts.key(consultationId)],
+    method: "POST",
+    stringifyBody: false,
+  });
 }
