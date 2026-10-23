@@ -15,7 +15,6 @@ export const PROVIDER_CHECK_IDS = {
 export const STRUCTURE_CHECK_IDS = {
   rowStructure: "user-row-structure",
   noMergedCells: "user-no-merged-cells",
-  fileType: "user-file-type",
 } as const;
 
 export const CONTENT_CHECK_IDS = {
@@ -37,7 +36,6 @@ export const ROW_STRUCTURE_LABEL: Record<DataSource, string> = {
 export const STRUCTURE_CHECK_LABELS: Record<keyof typeof STRUCTURE_CHECK_IDS, string> = {
   rowStructure: "", // resolved per-provider in the component via ROW_STRUCTURE_LABEL
   noMergedCells: "No merged cells",
-  fileType: "The file is a .csv or .xlsx",
 };
 
 export const CONTENT_CHECK_LABELS: Record<keyof typeof CONTENT_CHECK_IDS, string> = {
@@ -58,6 +56,10 @@ export const TECHNICAL_CHECKS: Omit<Check, "example">[] = [
   {
     id: "tech-no-merged-cells",
     label: "No merged cells. If there are any, the upload stops and says where",
+  },
+  {
+    id: "tech-file-type",
+    label: "The file is a .csv or .xlsx",
   },
   {
     id: "tech-no-special-characters",

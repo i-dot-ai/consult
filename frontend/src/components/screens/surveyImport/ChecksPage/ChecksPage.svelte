@@ -44,7 +44,6 @@
     { id: providerCheckId, label: PROVIDER_CHECK_LABELS[dataSource], example: providerExample },
     { id: STRUCTURE_CHECK_IDS.rowStructure, label: ROW_STRUCTURE_LABEL[dataSource], example: rowStructureExample },
     { id: STRUCTURE_CHECK_IDS.noMergedCells, label: STRUCTURE_CHECK_LABELS.noMergedCells, example: noMergedCellsExample },
-    { id: STRUCTURE_CHECK_IDS.fileType, label: STRUCTURE_CHECK_LABELS.fileType, example: fileTypeExample },
   ]);
 
   const contentChecks: CheckItem[] = [
@@ -150,14 +149,6 @@
     Merged cells are common in headers where one question covers several
     columns. Unmerge them and repeat the wording in each column instead. If
     the upload finds any, it stops and says where they are.
-  </p>
-{/snippet}
-
-{#snippet fileTypeExample()}
-  <p>
-    Qualtrics and Citizen Space both export .csv. If you reshaped the file in
-    a spreadsheet, save it as .csv or .xlsx, not .xls, .numbers or a Google
-    Sheets link.
   </p>
 {/snippet}
 
