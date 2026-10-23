@@ -37,8 +37,7 @@ async def run_mapping_task(inputs: dict, llm: Any) -> dict:
 
 
 def _matches_question(case: Case, question_num: int) -> bool:
-    question_part = case.metadata.get("question_part", case.id)
-    return question_part == f"question_part_{question_num}"
+    return case.key == f"question_part_{question_num}"
 
 
 def build_mapping_config(*, question_num: int | None = None) -> ComponentConfig:
