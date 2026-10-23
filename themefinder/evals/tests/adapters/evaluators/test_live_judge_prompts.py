@@ -1,10 +1,11 @@
-"""Live checks that the binary-match judge prompts work against a real LLM.
+"""Live checks that LLM-judge prompts work against a real LLM.
 
 The fake-judge tests prove the plumbing; only a real model can show the prompt
 actually separates a valid rewording from an unrelated theme. Skipped unless
 gateway credentials are set.
 
-Both tests share one scenario: two original themes are refined into two new ones.
+The binary-match tests share one scenario: two original themes are refined into
+two new ones. The clarity test separately checks clear and opaque wording.
 
     original                  refined
     ORIGINAL_BAN_ADVERTS  ->  REWORDED_BAN_ADVERTS   valid rewording, same information
@@ -13,13 +14,15 @@ Both tests share one scenario: two original themes are refined into two new ones
 """
 
 import pytest
+from conftest import make_case
+
+from adapters.evaluators.clarity_evaluator import ClarityEvaluator
 from adapters.evaluators.ground_information_evaluator import (
     GroundednessInformationRetentionEvaluator,
 )
 from adapters.evaluators.information_equivalence_evaluator import (
     InformationEquivalenceEvaluator,
 )
-from conftest import make_case
 from run_eval import _create_default_llm
 from settings import get_settings
 
@@ -41,6 +44,17 @@ REWORDED_BAN_ADVERTS = _theme(
 )
 # Unrelated to either original: should match nothing.
 INVENTED_RAISE_TAX = _theme("Raise betting tax", "Betting duty should be increased.")
+
+CLEAR_THEME = _theme(
+    "Ban gambling adverts", "Gambling adverts should be banned to reduce their harm."
+)
+UNCLEAR_THEME = _theme(
+    "Quasifractual operationalisation",
+    (
+        "The ontological and epistemic ramifications of policy-related modalities "
+        "constitute a nontrivially ambiguous, semantically indeterminate constellation."
+    ),
+)
 
 ORIGINAL_THEMES = [ORIGINAL_KEPT_BAN_ADVERTS, ORIGINAL_LOST_AGE_CHECKS]
 REFINED_THEMES = [REWORDED_BAN_ADVERTS, INVENTED_RAISE_TAX]
@@ -94,3 +108,18 @@ async def test_information_equivalence_pairs_only_the_reworded_theme(judge):
     assert not score.comment.startswith("Error:")
     # 1 reciprocal pair (ban adverts <-> advertising restrictions) out of 2.
     assert score.comment.startswith("1/2 reciprocal one-to-one pairs")
+
+
+async def test_clarity_distinguishes_clear_and_unclear_theme_wording(judge):
+    """The live judge accepts simple wording and rejects opaque jargon."""
+    case = make_case(inputs={"themes": ORIGINAL_THEMES})
+
+    (score,) = await ClarityEvaluator(judge).evaluate(
+        case, {"themes": [CLEAR_THEME, UNCLEAR_THEME]}
+    )
+
+    assert score.name == "clarity"
+    assert score.value == 0.5
+    assert score.comment.startswith(
+        "1/2 themes passed\nFailed:\n  Quasifractual operationalisation — "
+    )
