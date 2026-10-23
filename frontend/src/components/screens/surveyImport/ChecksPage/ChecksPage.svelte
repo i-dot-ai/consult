@@ -72,7 +72,7 @@
 
   const allUserChecks = $derived([...structureChecks, ...contentChecks]);
 
-  const storageKey = `checks-progress-${consultationId}`;
+  const storageKey = `checks-progress-${consultationId}-${dataSource}`;
 
   function loadFromStorage(): Record<string, boolean> {
     try {

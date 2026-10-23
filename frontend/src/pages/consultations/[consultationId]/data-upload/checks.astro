@@ -5,7 +5,7 @@ import ChecksPage from "../../../../components/screens/surveyImport/ChecksPage/C
 
 import type { AstroGlobalRuntime } from "../../../../global/types";
 import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
-import { PROVIDER_CHECK_LABELS } from "../../../../components/screens/surveyImport/ChecksPage/checks";
+import { PROVIDER_CHECK_ID } from "../../../../components/screens/surveyImport/ChecksPage/checks";
 import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import { consultationV2QueryParts } from "../../../../global/queries/consultations/parts";
 import { getDataSetupV2Enabled } from "../../../../global/utils";
@@ -28,7 +28,7 @@ if (error) {
 
 const dataSource = data?.data_source;
 
-if (!dataSource || !(dataSource in PROVIDER_CHECK_LABELS)) {
+if (!dataSource || !(dataSource in PROVIDER_CHECK_ID)) {
   return Astro.redirect(getDataUploadSelectProviderUrl(consultationId || ""));
 }
 ---
