@@ -296,11 +296,11 @@
           displayValue: (item) =>
             new Date(
               (item as { createdAt: string }).createdAt,
-            ).toLocaleDateString(),
+            ).toLocaleDateString("en-GB"),
           filterValue: (item) =>
             new Date(
               (item as { createdAt: string }).createdAt,
-            ).toLocaleDateString(),
+            ).toLocaleDateString("en-GB"),
         },
         {
           label: "Created by",
