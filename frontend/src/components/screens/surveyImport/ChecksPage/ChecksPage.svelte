@@ -12,7 +12,7 @@
 
   import type { DataSource } from "../../../../global/queries/consultations/types";
   import {
-    PROVIDER_CHECK_IDS,
+    PROVIDER_CHECK_ID,
     PROVIDER_CHECK_LABELS,
     ROW_STRUCTURE_LABEL,
     STRUCTURE_CHECK_IDS,
@@ -34,15 +34,9 @@
 
   let { consultationId, dataSource }: Props = $props();
 
-  const providerCheckId = $derived(
-    dataSource === "citizen-space"
-      ? PROVIDER_CHECK_IDS.citizenSpaceRowStructure
-      : PROVIDER_CHECK_IDS.qualtricsRowStructure,
-  );
-
   const structureChecks = $derived<CheckItem[]>([
     {
-      id: providerCheckId,
+      id: PROVIDER_CHECK_ID[dataSource],
       label: PROVIDER_CHECK_LABELS[dataSource],
       example: providerExample,
     },

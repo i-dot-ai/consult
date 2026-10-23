@@ -7,10 +7,10 @@ export interface Check {
   example?: Snippet;
 }
 
-export const PROVIDER_CHECK_IDS = {
-  citizenSpaceRowStructure: "cs-row-structure",
-  qualtricsRowStructure: "qualtrics-row-structure",
-} as const;
+export const PROVIDER_CHECK_ID: Record<DataSource, string> = {
+  "citizen-space": "cs-row-structure",
+  qualtrics: "qualtrics-row-structure",
+};
 
 export const STRUCTURE_CHECK_IDS = {
   noMergedCells: "user-no-merged-cells",
