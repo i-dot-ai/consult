@@ -14,8 +14,11 @@
   import {
     PROVIDER_CHECK_IDS,
     PROVIDER_CHECK_LABELS,
-    USER_CHECK_IDS,
-    USER_CHECK_LABELS,
+    ROW_STRUCTURE_LABEL,
+    STRUCTURE_CHECK_IDS,
+    STRUCTURE_CHECK_LABELS,
+    CONTENT_CHECK_IDS,
+    CONTENT_CHECK_LABELS,
     TECHNICAL_CHECKS,
   } from "./checks";
   import type { Check as CheckItem } from "./checks";
@@ -37,15 +40,20 @@
       : PROVIDER_CHECK_IDS.qualtricsRowStructure,
   );
 
-  const userChecks = $derived<CheckItem[]>([
+  const structureChecks = $derived<CheckItem[]>([
     { id: providerCheckId, label: PROVIDER_CHECK_LABELS[dataSource], example: providerExample },
-    { id: USER_CHECK_IDS.rowStructure, label: USER_CHECK_LABELS.rowStructure, example: rowStructureExample },
-    { id: USER_CHECK_IDS.noMergedCells, label: USER_CHECK_LABELS.noMergedCells, example: noMergedCellsExample },
-    { id: USER_CHECK_IDS.fileType, label: USER_CHECK_LABELS.fileType, example: fileTypeExample },
-    { id: USER_CHECK_IDS.responsesMerged, label: USER_CHECK_LABELS.responsesMerged, example: responsesMergedExample },
-    { id: USER_CHECK_IDS.demographicColumns, label: USER_CHECK_LABELS.demographicColumns, example: demographicColumnsExample },
-    { id: USER_CHECK_IDS.piiRemoved, label: USER_CHECK_LABELS.piiRemoved, example: piiRemovedExample },
+    { id: STRUCTURE_CHECK_IDS.rowStructure, label: ROW_STRUCTURE_LABEL[dataSource], example: rowStructureExample },
+    { id: STRUCTURE_CHECK_IDS.noMergedCells, label: STRUCTURE_CHECK_LABELS.noMergedCells, example: noMergedCellsExample },
+    { id: STRUCTURE_CHECK_IDS.fileType, label: STRUCTURE_CHECK_LABELS.fileType, example: fileTypeExample },
   ]);
+
+  const contentChecks: CheckItem[] = [
+    { id: CONTENT_CHECK_IDS.responsesMerged, label: CONTENT_CHECK_LABELS.responsesMerged, example: responsesMergedExample },
+    { id: CONTENT_CHECK_IDS.demographicColumns, label: CONTENT_CHECK_LABELS.demographicColumns, example: demographicColumnsExample },
+    { id: CONTENT_CHECK_IDS.piiRemoved, label: CONTENT_CHECK_LABELS.piiRemoved, example: piiRemovedExample },
+  ];
+
+  const allUserChecks = $derived([...structureChecks, ...contentChecks]);
 
   const storageKey = `checks-progress-${consultationId}`;
 
@@ -79,7 +87,7 @@
   }
 
   function tickAll() {
-    for (const check of userChecks) {
+    for (const check of allUserChecks) {
       checked[check.id] = true;
     }
     saveToStorage(checked);
@@ -221,7 +229,7 @@ Addresses → delete, or keep the area name only</pre>
   </div>
 {/snippet}
 
-<StepTitle stepNo={2} maxStepNo={6} title="Prepare your file" Icon={Checklist} />
+<StepTitle stepNo={2} maxStepNo={6} title="Prepare your file" Icon={Checklist} isExternal={true} />
 
 <p class="mt-3.5 mb-6 text-base leading-relaxed text-neutral-500">
   Work through your file against this list before uploading. Reading the
@@ -235,7 +243,18 @@ Addresses → delete, or keep the area name only</pre>
       <span class="text-base font-medium text-neutral-900">Structure</span>
     </Title>
     <div class="mt-4 flex flex-col divide-y divide-neutral-200">
-      {#each userChecks as check (check.id)}
+      {#each structureChecks as check (check.id)}
+        {@render checkItem(check)}
+      {/each}
+    </div>
+  </div>
+
+  <div class="rounded-xl border border-neutral-300 bg-white p-7">
+    <Title level={2}>
+      <span class="text-base font-medium text-neutral-900">Content</span>
+    </Title>
+    <div class="mt-4 flex flex-col divide-y divide-neutral-200">
+      {#each contentChecks as check (check.id)}
         {@render checkItem(check)}
       {/each}
     </div>

@@ -36,6 +36,29 @@ describe("ChecksPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("uses 'From row 2' for citizen-space row structure", () => {
+    render(ChecksPage, { ...TEST_DATA, dataSource: "citizen-space" as const });
+
+    expect(
+      screen.getByText(/From row 2, each row is one person/),
+    ).toBeInTheDocument();
+  });
+
+  it("uses 'From row 4' for qualtrics row structure", () => {
+    render(ChecksPage, TEST_DATA);
+
+    expect(
+      screen.getByText(/From row 4, each row is one person/),
+    ).toBeInTheDocument();
+  });
+
+  it("renders both Structure and Content sections", () => {
+    render(ChecksPage, TEST_DATA);
+
+    expect(screen.getByRole("heading", { level: 2, name: "Structure" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Content" })).toBeInTheDocument();
+  });
+
   it("renders the technical checks section without checkboxes", () => {
     render(ChecksPage, TEST_DATA);
 

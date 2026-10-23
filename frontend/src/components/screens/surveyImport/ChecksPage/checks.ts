@@ -12,10 +12,13 @@ export const PROVIDER_CHECK_IDS = {
   qualtricsRowStructure: "qualtrics-row-structure",
 } as const;
 
-export const USER_CHECK_IDS = {
+export const STRUCTURE_CHECK_IDS = {
   rowStructure: "user-row-structure",
   noMergedCells: "user-no-merged-cells",
   fileType: "user-file-type",
+} as const;
+
+export const CONTENT_CHECK_IDS = {
   responsesMerged: "user-responses-merged",
   demographicColumns: "user-demographic-columns",
   piiRemoved: "user-pii-removed",
@@ -26,10 +29,18 @@ export const PROVIDER_CHECK_LABELS: Record<DataSource, string> = {
   qualtrics: "Rows 1 to 3 hold the question details, as Qualtrics exports them",
 };
 
-export const USER_CHECK_LABELS: Record<keyof typeof USER_CHECK_IDS, string> = {
-  rowStructure: "From row 4, each row is one person's complete response, with one question per column",
+export const ROW_STRUCTURE_LABEL: Record<DataSource, string> = {
+  "citizen-space": "From row 2, each row is one person's complete response, with one question per column",
+  qualtrics: "From row 4, each row is one person's complete response, with one question per column",
+};
+
+export const STRUCTURE_CHECK_LABELS: Record<keyof typeof STRUCTURE_CHECK_IDS, string> = {
+  rowStructure: "", // resolved per-provider in the component via ROW_STRUCTURE_LABEL
   noMergedCells: "No merged cells",
   fileType: "The file is a .csv or .xlsx",
+};
+
+export const CONTENT_CHECK_LABELS: Record<keyof typeof CONTENT_CHECK_IDS, string> = {
   responsesMerged: "Responses from email and other channels are in this one file",
   demographicColumns: "Demographic columns are kept, not deleted",
   piiRemoved: "Personal information is removed, where your department needs it removed",
@@ -47,10 +58,6 @@ export const TECHNICAL_CHECKS: Omit<Check, "example">[] = [
   {
     id: "tech-no-merged-cells",
     label: "No merged cells. If there are any, the upload stops and says where",
-  },
-  {
-    id: "tech-file-type",
-    label: "The file is a .csv or .xlsx",
   },
   {
     id: "tech-no-special-characters",
