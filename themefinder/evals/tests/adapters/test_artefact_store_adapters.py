@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from abc import ABC
+from dataclasses import replace
 
 import pytest
 from httpx import RequestError
@@ -458,6 +459,81 @@ class TestLangfuseArtefactStore:
             "question_part_1_groundedness": 4.5,
             "question_part_1_output": {"themes": _themes("A")},
         }
+
+    @staticmethod
+    def _repeated_report() -> RunReport:
+        # Mapping outputs, so consistency uses exact labels and no embedding model loads.
+        # No langfuse_item_id: aggregates must work for local datasets too.
+        case = _make_case(question_part="question_part_1")
+        return RunReport(
+            outcomes=[
+                CaseOutcome(case, {"labels": {"r1": ["A"]}}, [Score("f1_score", 0.5)]),
+                CaseOutcome(
+                    case,
+                    {"labels": {"r1": ["A"]}},
+                    [Score("f1_score", 0.7)],
+                    run_index=1,
+                ),
+            ]
+        )
+
+    def test_finish_run_writes_aggregate_scores_on_one_run_trace(self):
+        client = FakeLangfuseClient()
+        store = LangfuseArtefactStore(
+            context=LangfuseContext(
+                client=client, session_id="session-1", tags=["eval"]
+            ),
+            owns_context=False,
+        )
+
+        store.start_run("mapping", "demo")
+        store.finish_run(self._repeated_report())
+
+        assert [call["name"] for call in client.start_span_calls] == [
+            "session-1:aggregate"
+        ]
+        assert client.last_span_trace.trace_updates[0]["session_id"] == "session-1"
+        assert client.last_span_trace.trace_updates[0]["tags"] == ["eval"]
+        by_name = {score["name"]: score for score in client.scores}
+        assert {s["trace_id"] for s in client.scores} == {"generated-trace-id"}
+        assert by_name["f1_score_mean"]["value"] == pytest.approx(0.6)
+        assert by_name["f1_score_stdev"]["value"] == pytest.approx(0.1414, rel=1e-3)
+        assert by_name["output_consistency_f1"]["value"] == 1.0
+        assert by_name["output_consistency_count"]["value"] == 1.0
+
+    def test_finish_run_omits_aggregate_scores_that_cannot_be_computed(self):
+        """A metric scored in only one run has no stdev; it is left out, not zeroed."""
+        client = FakeLangfuseClient()
+        store = LangfuseArtefactStore(
+            context=LangfuseContext(client=client), owns_context=False
+        )
+        report = self._repeated_report()
+        report.outcomes[1] = replace(report.outcomes[1], scores=[])
+
+        store.start_run("mapping", "demo")
+        store.finish_run(report)
+
+        names = {score["name"] for score in client.scores}
+        assert "f1_score_mean" in names
+        assert "f1_score_stdev" not in names
+
+    def test_finish_run_writes_no_aggregate_scores_for_a_single_run(self):
+        client = FakeLangfuseClient()
+        store = LangfuseArtefactStore(
+            context=LangfuseContext(client=client), owns_context=False
+        )
+        outcome = _make_outcome(
+            case=_make_case(question_part="question_part_1", langfuse_item_id="item-1")
+        )
+
+        store.start_run("generation", "demo")
+        store.record_case(outcome)
+        client.scores.clear()
+        client.start_span_calls.clear()
+        store.finish_run(RunReport(outcomes=[outcome]))
+
+        assert client.scores == []
+        assert client.start_span_calls == []
 
     def test_finish_run_does_not_flush_when_context_is_not_owned(self):
         client = FakeLangfuseClient()

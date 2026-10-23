@@ -9,6 +9,7 @@ from typing import Any
 from eval_types import CaseOutcome, RunReport
 from httpx import RequestError
 from utils import langfuse as langfuse_utils
+from utils import stats
 from utils.langfuse import LangfuseContext
 from utils.logging_config import get_logger
 
@@ -68,10 +69,55 @@ class LangfuseArtefactStore(ArtefactStorePort):
             if callable(printer):
                 printer()
 
+        results = flatten_run_report(report)
+        if "aggregate" in results:
+            self._record_aggregate_scores(results["aggregate"])
+
         if self.owns_context:
             langfuse_utils.flush(self.context)
 
-        return flatten_run_report(report)
+        return results
+
+    def _record_aggregate_scores(self, aggregate: dict[str, Any]) -> None:
+        """Write cross-run statistics as scores on one trace for the whole run.
+
+        A trace rather than a dataset run, so the scores show in the Scores view and
+        work for local datasets that have no Langfuse dataset run.
+        """
+        client = self.context.client
+        if client is None:
+            return
+
+        scores: dict[str, float | None] = {}
+        for metric, summary in aggregate["metrics"].items():
+            scores[f"{metric}_mean"] = summary["mean"]
+            scores[f"{metric}_stdev"] = summary["stdev"]
+        consistency = aggregate[stats.CONSISTENCY_METRIC]
+        for metric in stats.PAIR_METRICS:
+            scores[f"{stats.CONSISTENCY_METRIC}_{metric}"] = consistency[metric]
+
+        trace_id = client.create_trace_id()
+        with client.start_as_current_span(
+            trace_context={"trace_id": trace_id},
+            name=f"{self._run_name}:aggregate",
+            output=json_safe(aggregate),
+            metadata=self.context.metadata,
+        ) as trace:
+            trace.update_trace(
+                output=json_safe(aggregate),
+                metadata=self.context.metadata,
+                tags=self.context.tags,
+                session_id=self.context.session_id,
+            )
+            for name, value in scores.items():
+                # None means not computable (e.g. stdev of one run), not zero
+                if value is not None:
+                    client.create_score(
+                        trace_id=trace.trace_id,
+                        name=name,
+                        value=value,
+                        data_type="NUMERIC",
+                    )
 
     @contextmanager
     def _trace_for_outcome(
