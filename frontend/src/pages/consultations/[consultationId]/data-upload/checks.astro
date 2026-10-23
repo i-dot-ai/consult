@@ -9,6 +9,7 @@ import { PROVIDER_CHECK_LABELS } from "../../../../components/screens/surveyImpo
 import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import { consultationV2QueryParts } from "../../../../global/queries/consultations/parts";
 import { getDataSetupV2Enabled } from "../../../../global/utils";
+import { getDataUploadSelectProviderUrl } from "../../../../global/routes";
 
 if (!getDataSetupV2Enabled()) {
   return Astro.rewrite("/404");
@@ -28,7 +29,7 @@ if (error) {
 const dataSource = data?.data_source;
 
 if (!dataSource || !(dataSource in PROVIDER_CHECK_LABELS)) {
-  return Astro.rewrite("/404");
+  return Astro.redirect(getDataUploadSelectProviderUrl(consultationId || ""));
 }
 ---
 
