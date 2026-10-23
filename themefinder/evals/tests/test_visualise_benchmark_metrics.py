@@ -2,7 +2,10 @@
 
 import pandas as pd
 import pytest
+
 from visualise_benchmark import (
+    REFINEMENT_SCALE,
+    REFINEMENT_WEIGHTS,
     BenchmarkData,
     _html_cost_latency_processing_charts,
     _html_model_summary_table,
@@ -124,3 +127,21 @@ def test_model_summary_includes_find_themes_primary_metric():
 
     assert "Find_Themes" in summary
     assert ">4.00<" in summary
+
+
+def test_refinement_detects_clarity_and_scales_it_as_a_proportion():
+    results = pd.DataFrame(
+        [
+            {
+                "eval": "refinement",
+                "question_part_1_clarity": 0.5,
+                "question_part_1_fluency": 5.0,
+            }
+        ]
+    )
+
+    assert detect_eval_metrics(results, "refinement") == {
+        "clarity": ["question_part_1_clarity"]
+    }
+    assert "fluency" not in REFINEMENT_WEIGHTS
+    assert REFINEMENT_SCALE["clarity"] == 1.0
