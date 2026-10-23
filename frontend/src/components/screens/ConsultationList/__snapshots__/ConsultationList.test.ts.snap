@@ -475,7 +475,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
                 <!---->
                 <span>
-                  1/29/2026
+                  29/01/2026
                 </span>
                 
                 
@@ -673,7 +673,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
                 <!---->
                 <span>
-                  1/29/2026
+                  29/01/2026
                 </span>
                 
                 

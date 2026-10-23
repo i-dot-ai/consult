@@ -135,7 +135,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
     <p
       class="text-neutral-500 text-sm mt-2"
     >
-      Created by an unknown user on 1/29/2026. Only you can see it so far.
+      Created by an unknown user on 29/01/2026. Only you can see it so far.
       <!---->
     </p>
   </section>
