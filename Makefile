@@ -355,7 +355,7 @@ build_lambda_artifacts/ci: ## Build all Lambda artifacts for CI
 .PHONY: build_lambda_artifacts/local
 build_lambda_artifacts/local: ## Build all Lambda artifacts locally (wraps in Docker for non-Linux, in case you're building from an arm64 chip)
 	docker run --rm -v "${PWD}:/var/task" -w /var/task --platform linux/amd64 python:3.12 \
-		sh -c "pip install uv && make build_lambda_artifacts/ci"
+		sh -c "pip install \"pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70\" && pip install \"uv>=0.13.5\" && make build_lambda_artifacts/ci"
 
 .PHONY: build_lambda/callable
 build_lambda/callable:
