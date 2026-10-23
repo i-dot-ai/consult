@@ -9,9 +9,9 @@ Do not assess information equivalence, response references, distinctiveness, len
 
 ## Output Format
 
-Return strict JSON in this format:
+Return strict JSON in this format. `decision` must be exactly `PASS` or `FAIL`.
 {
-    "decision": "PASS or FAIL",
+    "decision": "PASS",
     "reasoning": "Brief explanation"
 }
 
