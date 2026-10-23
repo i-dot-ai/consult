@@ -630,53 +630,61 @@ exports[`ChecksPage > matches snapshot 1`] = `
   </div>
    
   <div
-    class="mt-5 rounded-xl border border-neutral-300 bg-neutral-100 px-4 py-3.5 text-sm leading-relaxed text-neutral-500"
+    class="mt-5 flex flex-col gap-3"
   >
-    Ticking is for your own tracking. Nothing is submitted, and you can continue
-  without it.
-  </div>
-   
-  <div
-    class="mt-5 flex flex-wrap justify-between gap-2"
-  >
-    <!---->
-    <a
-      aria-pressed="false"
-      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
-      data-variant="default"
-      disabled="false"
-      href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58/data-upload/select-provider"
-      role="link"
-      tabindex="0"
+    <div
+      class="rounded-xl border border-neutral-300 bg-neutral-50 px-4 py-3.5 text-sm leading-relaxed"
     >
-      <!---->
-      <!---->
-      Back
-      
-      
-      
-    </a>
-    
-    <!---->
+      <div
+        class="flex items-center gap-3"
+      >
+        <!---->
+        <button
+          aria-pressed="false"
+          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          data-variant="default"
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          Tick everything
+          
+          
+          
+        </button>
+        
+        <!---->
+         
+        <p
+          class="text-neutral-500"
+        >
+          Ticking is for your own tracking. Nothing is submitted, and you can continue
+        without it.
+        </p>
+      </div>
+    </div>
      
     <div
-      class="flex items-center gap-2"
+      class="flex items-center justify-between"
     >
       <!---->
-      <button
+      <a
         aria-pressed="false"
         class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
         data-variant="default"
-        role="button"
+        disabled="false"
+        href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58/data-upload/select-provider"
+        role="link"
         tabindex="0"
       >
         <!---->
         <!---->
-        Tick everything
+        Back
         
         
         
-      </button>
+      </a>
       
       <!---->
        

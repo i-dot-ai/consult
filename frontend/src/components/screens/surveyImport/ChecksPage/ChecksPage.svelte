@@ -268,19 +268,22 @@ Addresses → delete, or keep the area name only</pre>
   </div>
 </div>
 
-<div
-  class="mt-5 rounded-xl border border-neutral-300 bg-neutral-100 px-4 py-3.5 text-sm leading-relaxed text-neutral-500"
->
-  Ticking is for your own tracking. Nothing is submitted, and you can continue
-  without it.
-</div>
-
-<div class="mt-5 flex flex-wrap justify-between gap-2">
-  <Button size="sm" href={getDataUploadSelectProviderUrl(consultationId)}>
-    Back
-  </Button>
-  <div class="flex items-center gap-2">
-    <Button size="sm" handleClick={tickAll}>Tick everything</Button>
+<div class="mt-5 flex flex-col gap-3">
+  <div
+    class="rounded-xl border border-neutral-300 bg-neutral-50 px-4 py-3.5 text-sm leading-relaxed"
+  >
+    <div class="flex items-center gap-3">
+      <Button size="sm" handleClick={tickAll}>Tick everything</Button>
+      <p class="text-neutral-500">
+        Ticking is for your own tracking. Nothing is submitted, and you can continue
+        without it.
+      </p>
+    </div>
+  </div>
+  <div class="flex items-center justify-between">
+    <Button size="sm" href={getDataUploadSelectProviderUrl(consultationId)}>
+      Back
+    </Button>
     <Button
       size="sm"
       variant="primary"
