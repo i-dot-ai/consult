@@ -1,5 +1,7 @@
 import pandas as pd
 import pytest
+
+from adapters.evaluators.clarity_evaluator import ClarityEvaluator
 from adapters.evaluators.condensation_quality_evaluator import (
     CondensationQualityEvaluator,
 )
@@ -82,6 +84,7 @@ def test_builds_expected_non_generation_evaluators():
     assert [type(evaluator) for evaluator in refinement_config.evaluators] == [
         RefinementQualityEvaluator,
         InformationEquivalenceEvaluator,
+        ClarityEvaluator,
     ]
     assert all(evaluator.llm is judge_llm for evaluator in refinement_config.evaluators)
     assert [type(evaluator) for evaluator in mapping_config.evaluators] == [
