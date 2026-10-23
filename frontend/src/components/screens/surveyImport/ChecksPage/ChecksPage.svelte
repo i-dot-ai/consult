@@ -41,15 +41,39 @@
   );
 
   const structureChecks = $derived<CheckItem[]>([
-    { id: providerCheckId, label: PROVIDER_CHECK_LABELS[dataSource], example: providerExample },
-    { id: STRUCTURE_CHECK_IDS.rowStructure, label: ROW_STRUCTURE_LABEL[dataSource], example: rowStructureExample },
-    { id: STRUCTURE_CHECK_IDS.noMergedCells, label: STRUCTURE_CHECK_LABELS.noMergedCells, example: noMergedCellsExample },
+    {
+      id: providerCheckId,
+      label: PROVIDER_CHECK_LABELS[dataSource],
+      example: providerExample,
+    },
+    {
+      id: STRUCTURE_CHECK_IDS.rowStructure,
+      label: ROW_STRUCTURE_LABEL[dataSource],
+      example: rowStructureExample,
+    },
+    {
+      id: STRUCTURE_CHECK_IDS.noMergedCells,
+      label: STRUCTURE_CHECK_LABELS.noMergedCells,
+      example: noMergedCellsExample,
+    },
   ]);
 
   const contentChecks: CheckItem[] = [
-    { id: CONTENT_CHECK_IDS.responsesMerged, label: CONTENT_CHECK_LABELS.responsesMerged, example: responsesMergedExample },
-    { id: CONTENT_CHECK_IDS.demographicColumns, label: CONTENT_CHECK_LABELS.demographicColumns, example: demographicColumnsExample },
-    { id: CONTENT_CHECK_IDS.piiRemoved, label: CONTENT_CHECK_LABELS.piiRemoved, example: piiRemovedExample },
+    {
+      id: CONTENT_CHECK_IDS.responsesMerged,
+      label: CONTENT_CHECK_LABELS.responsesMerged,
+      example: responsesMergedExample,
+    },
+    {
+      id: CONTENT_CHECK_IDS.demographicColumns,
+      label: CONTENT_CHECK_LABELS.demographicColumns,
+      example: demographicColumnsExample,
+    },
+    {
+      id: CONTENT_CHECK_IDS.piiRemoved,
+      label: CONTENT_CHECK_LABELS.piiRemoved,
+      example: piiRemovedExample,
+    },
   ];
 
   const allUserChecks = $derived([...structureChecks, ...contentChecks]);
@@ -105,15 +129,21 @@
 <!-- Provider-specific example -->
 {#snippet providerExample()}
   <p class="mb-3">
-    Leave these rows as your tool exported them. Consult knows where each
-    tool's questions end.
+    Leave these rows as your tool exported them. Consult knows where each tool's
+    questions end.
   </p>
   <table class="text-sm">
     <thead>
       <tr class="border-b border-neutral-300">
-        <th class="pb-1 pr-8 text-left font-normal text-neutral-500">Exported from</th>
-        <th class="pb-1 pr-8 text-left font-normal text-neutral-500">Questions</th>
-        <th class="pb-1 text-left font-normal text-neutral-500">Responses start</th>
+        <th class="pb-1 pr-8 text-left font-normal text-neutral-500"
+          >Exported from</th
+        >
+        <th class="pb-1 pr-8 text-left font-normal text-neutral-500"
+          >Questions</th
+        >
+        <th class="pb-1 text-left font-normal text-neutral-500"
+          >Responses start</th
+        >
       </tr>
     </thead>
     <tbody>
@@ -139,45 +169,47 @@
 {#snippet rowStructureExample()}
   <p>
     One row holds everything one person said. One person never spreads across
-    two rows, and two people never share one. Each question keeps its own
-    column all the way down.
+    two rows, and two people never share one. Each question keeps its own column
+    all the way down.
   </p>
 {/snippet}
 
 {#snippet noMergedCellsExample()}
   <p>
     Merged cells are common in headers where one question covers several
-    columns. Unmerge them and repeat the wording in each column instead. If
-    the upload finds any, it stops and says where they are.
+    columns. Unmerge them and repeat the wording in each column instead. If the
+    upload finds any, it stops and says where they are.
   </p>
 {/snippet}
 
 {#snippet responsesMergedExample()}
   <p class="mb-3">
-    If some responses arrived by email or on paper, add them as extra rows
-    here rather than uploading a second file. The preparation checklist on
-    this page has a tab with the right structure to reshape them into.
+    If some responses arrived by email or on paper, add them as extra rows here
+    rather than uploading a second file. The preparation checklist on this page
+    has a tab with the right structure to reshape them into.
   </p>
-  <pre class="text-xs leading-relaxed">Put the same question in the same column in every batch
+  <pre
+    class="text-xs leading-relaxed">Put the same question in the same column in every batch
 Use the same question wording in every batch
 Leave a cell empty where someone skipped a question</pre>
 {/snippet}
 
 {#snippet demographicColumnsExample()}
   <p>
-    Sector, region, organisation size and similar are not personal
-    information. They become the filters on your dashboard, so keep them even
-    while you are removing names and contact details.
+    Sector, region, organisation size and similar are not personal information.
+    They become the filters on your dashboard, so keep them even while you are
+    removing names and contact details.
   </p>
 {/snippet}
 
 {#snippet piiRemovedExample()}
   <p class="mb-3">
-    What to remove, and how far to go, is your department's decision, because
-    it is the data controller. Free-text answers are worth checking as well as
-    the columns, because people often name themselves mid-response.
+    What to remove, and how far to go, is your department's decision, because it
+    is the data controller. Free-text answers are worth checking as well as the
+    columns, because people often name themselves mid-response.
   </p>
-  <pre class="text-xs leading-relaxed">Full names → replace with Respondent 1, Respondent 2
+  <pre
+    class="text-xs leading-relaxed">Full names → replace with Respondent 1, Respondent 2
 Email addresses → delete the column
 Postcodes → keep the first part only, SW1 rather than SW1A 2AA
 Phone numbers → delete
@@ -220,7 +252,13 @@ Addresses → delete, or keep the area name only</pre>
   </div>
 {/snippet}
 
-<StepTitle stepNo={2} maxStepNo={6} title="Prepare your file" Icon={Checklist} isExternal={true} />
+<StepTitle
+  stepNo={2}
+  maxStepNo={6}
+  title="Prepare your file"
+  Icon={Checklist}
+  isExternal={true}
+/>
 
 <p class="mt-3.5 mb-6 text-base leading-relaxed text-neutral-500">
   Work through your file against this list before uploading. Reading the
@@ -275,8 +313,8 @@ Addresses → delete, or keep the area name only</pre>
     <div class="flex items-center gap-3">
       <Button size="sm" handleClick={tickAll}>Tick everything</Button>
       <p class="text-neutral-500">
-        Ticking is for your own tracking. Nothing is submitted, and you can continue
-        without it.
+        Ticking is for your own tracking. Nothing is submitted, and you can
+        continue without it.
       </p>
     </div>
   </div>

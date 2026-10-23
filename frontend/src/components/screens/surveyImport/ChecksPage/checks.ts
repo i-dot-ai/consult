@@ -24,24 +24,35 @@ export const CONTENT_CHECK_IDS = {
 } as const;
 
 export const PROVIDER_CHECK_LABELS: Record<DataSource, string> = {
-  "citizen-space": "Row 1 holds the question wording, as Citizen Space exports it",
+  "citizen-space":
+    "Row 1 holds the question wording, as Citizen Space exports it",
   qualtrics: "Rows 1 to 3 hold the question details, as Qualtrics exports them",
 };
 
 export const ROW_STRUCTURE_LABEL: Record<DataSource, string> = {
-  "citizen-space": "From row 2, each row is one person's complete response, with one question per column",
-  qualtrics: "From row 4, each row is one person's complete response, with one question per column",
+  "citizen-space":
+    "From row 2, each row is one person's complete response, with one question per column",
+  qualtrics:
+    "From row 4, each row is one person's complete response, with one question per column",
 };
 
-export const STRUCTURE_CHECK_LABELS: Record<keyof typeof STRUCTURE_CHECK_IDS, string> = {
+export const STRUCTURE_CHECK_LABELS: Record<
+  keyof typeof STRUCTURE_CHECK_IDS,
+  string
+> = {
   rowStructure: "", // resolved per-provider in the component via ROW_STRUCTURE_LABEL
   noMergedCells: "No merged cells",
 };
 
-export const CONTENT_CHECK_LABELS: Record<keyof typeof CONTENT_CHECK_IDS, string> = {
-  responsesMerged: "Responses from email and other channels are in this one file",
+export const CONTENT_CHECK_LABELS: Record<
+  keyof typeof CONTENT_CHECK_IDS,
+  string
+> = {
+  responsesMerged:
+    "Responses from email and other channels are in this one file",
   demographicColumns: "Demographic columns are kept, not deleted",
-  piiRemoved: "Personal information is removed, where your department needs it removed",
+  piiRemoved:
+    "Personal information is removed, where your department needs it removed",
 };
 
 export const TECHNICAL_CHECKS: Omit<Check, "example">[] = [
@@ -67,6 +78,7 @@ export const TECHNICAL_CHECKS: Omit<Check, "example">[] = [
   },
   {
     id: "tech-no-empty-rows",
-    label: "Responses with only demographic answers, or none, are removed and counted",
+    label:
+      "Responses with only demographic answers, or none, are removed and counted",
   },
 ];

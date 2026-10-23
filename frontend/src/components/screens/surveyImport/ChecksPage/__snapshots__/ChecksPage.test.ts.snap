@@ -659,8 +659,8 @@ exports[`ChecksPage > matches snapshot 1`] = `
         <p
           class="text-neutral-500"
         >
-          Ticking is for your own tracking. Nothing is submitted, and you can continue
-        without it.
+          Ticking is for your own tracking. Nothing is submitted, and you can
+        continue without it.
         </p>
       </div>
     </div>

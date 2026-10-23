@@ -55,8 +55,12 @@ describe("ChecksPage", () => {
   it("renders both Structure and Content sections", () => {
     render(ChecksPage, TEST_DATA);
 
-    expect(screen.getByRole("heading", { level: 2, name: "Structure" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 2, name: "Content" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Structure" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Content" }),
+    ).toBeInTheDocument();
   });
 
   it("renders the technical checks section without checkboxes", () => {
