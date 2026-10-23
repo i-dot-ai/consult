@@ -125,6 +125,19 @@ class ConsultationUpdateSerializerV2(serializers.ModelSerializer):
         return instance
 
 
+class DemographicResponseMergeSerializer(serializers.Serializer):
+    new_value = serializers.CharField(allow_blank=False, trim_whitespace=True)
+    responses = serializers.ListField(
+        child=serializers.UUIDField(),
+        min_length=2,
+    )
+
+    def validate_responses(self, value):
+        if len(value) != len(set(value)):
+            raise serializers.ValidationError("Response IDs must be unique.")
+        return value
+
+
 class QuestionSetupSerializer(serializers.ModelSerializer):
     # Blank is a model-level default, not a type a question can be set to.
     type = serializers.ChoiceField(
