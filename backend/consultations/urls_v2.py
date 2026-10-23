@@ -3,7 +3,6 @@ from rest_framework import routers
 from rest_framework_nested.routers import NestedDefaultRouter
 
 from consultations.api_v2.views.consultation import ConsultationViewSet
-from consultations.api_v2.views.demographic_option import DemographicOptionViewSet
 from consultations.api_v2.views.question import QuestionViewSet
 from consultations.api_v2.views.user import UserViewSet, get_current_user
 
@@ -12,11 +11,6 @@ router.register("consultations", ConsultationViewSet, basename="consultation-v2"
 router.register("users", UserViewSet, basename="user-v2")
 
 consultations_router = NestedDefaultRouter(router, "consultations", lookup="consultation")
-consultations_router.register(
-    "demographics",
-    DemographicOptionViewSet,
-    basename="demographic-option-v2",
-)
 consultations_router.register("questions", QuestionViewSet, basename="question-v2")
 
 urlpatterns = [

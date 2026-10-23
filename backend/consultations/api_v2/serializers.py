@@ -10,7 +10,6 @@ from consultations.models import (
     CandidateTheme,
     CandidateThemeResponse,
     Consultation,
-    DemographicOption,
     MultiChoiceAnswer,
     Question,
     Respondent,
@@ -137,54 +136,6 @@ class DemographicResponseMergeSerializer(serializers.Serializer):
         if len(value) != len(set(value)):
             raise serializers.ValidationError("Response IDs must be unique.")
         return value
-
-
-class DemographicOptionMutationSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source="field_name")
-    value = serializers.JSONField(source="field_value", required=False)
-    new_value = serializers.CharField(write_only=True, required=False, allow_blank=False)
-    count = serializers.IntegerField(source="response_count", read_only=True)
-
-    def validate(self, attrs):
-        new_value = attrs.pop("new_value", None)
-        if new_value is not None:
-            if "field_value" in attrs:
-                raise serializers.ValidationError("Use either 'value' or 'new_value', not both.")
-            attrs["field_value"] = new_value
-
-        if self.instance is None and "field_value" not in attrs:
-            raise serializers.ValidationError({"value": "This field is required."})
-
-        consultation = (
-            self.instance.consultation
-            if self.instance is not None
-            else self.context["consultation"]
-        )
-        field_name = attrs.get(
-            "field_name",
-            self.instance.field_name if self.instance is not None else None,
-        )
-        field_value = attrs.get(
-            "field_value",
-            self.instance.field_value if self.instance is not None else None,
-        )
-        matching_options = DemographicOption.objects.filter(
-            consultation=consultation,
-            field_name=field_name,
-            field_value=field_value,
-        )
-        if self.instance is not None:
-            matching_options = matching_options.exclude(pk=self.instance.pk)
-        if matching_options.exists():
-            raise serializers.ValidationError(
-                {"value": "A demographic option with this value already exists."}
-            )
-        return attrs
-
-    class Meta:
-        model = DemographicOption
-        fields: ClassVar[list] = ["id", "name", "value", "new_value", "count"]
-        read_only_fields: ClassVar[list] = ["id", "count"]
 
 
 class QuestionSetupSerializer(serializers.ModelSerializer):
