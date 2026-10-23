@@ -12,10 +12,12 @@ export interface BuildQueryOptions {
   errorMessage?: string;
   method?: HttpMethod;
   headers?: HeadersInit;
+  contentType?: string | null | undefined;
   onSuccess?: (data?: unknown, variables?: MutationArgs) => Promise<void>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onError?: (error: FetchError<any>) => Promise<void>;
   getVariables?: <T>(...args: T[]) => unknown;
+  stringifyBody?: boolean;
 }
 
 interface MutationArgs {
@@ -35,6 +37,8 @@ interface DoFetchArgs {
   errorMessage: BuildQueryOptions["errorMessage"];
   body?: BodyInit;
   headers?: HeadersInit;
+  contentType?: string | null | undefined;
+  stringifyBody?: boolean;
 }
 
 export type FetchError<T> = {
@@ -57,14 +61,23 @@ const doFetch = async ({
   errorMessage,
   body,
   headers,
+  contentType,
+  stringifyBody = true,
 }: DoFetchArgs) => {
+  let contentTypeValue;
+  if (Boolean(contentType)) {
+    contentTypeValue = contentType;
+  } else if (contentType === undefined) {
+    contentTypeValue = "application/json";
+  }
+
   const response = await fetch(url, {
     method: method,
-    body: JSON.stringify(body),
-    headers: {
-      "Content-Type": "application/json",
+    body: stringifyBody ? JSON.stringify(body) : body,
+    ...((contentTypeValue || headers) && {
+      ...(contentTypeValue && {"Content-Type": contentTypeValue}),
       ...headers,
-    },
+    }),
   });
   if (!response.ok) {
     let errorData: unknown = null;
@@ -110,6 +123,8 @@ export const buildQuery = <T>(
     onSuccess,
     onError,
     getVariables,
+    contentType,
+    stringifyBody,
   }: BuildQueryOptions,
 ) => {
   let result;
@@ -130,6 +145,8 @@ export const buildQuery = <T>(
             errorMessage: errorMessage,
             body: body,
             headers: headers,
+            contentType,
+            stringifyBody,
           });
         },
         onSuccess: (data, variables) => {

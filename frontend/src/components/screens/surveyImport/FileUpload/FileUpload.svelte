@@ -1,12 +1,33 @@
 <script lang="ts">
-  import Panel from "../../../dashboard/Panel/Panel.svelte";
-  import FileInput from "../../../inputs/FileInput/FileInput.svelte";
   import MaterialIcon from "../../../MaterialIcon.svelte";
-  import StepTitle from "../../../surveyImport/StepTitle/StepTitle.svelte";
   import Check from "../../../svg/material/Check.svelte";
   import CheckCircle from "../../../svg/material/CheckCircle.svelte";
   import Upload from "../../../svg/material/Upload.svelte";
+  import Panel from "../../../dashboard/Panel/Panel.svelte";
+  import Button from "../../../inputs/Button/Button.svelte";
+  import FileInput from "../../../inputs/FileInput/FileInput.svelte";
+  import StepTitle from "../../../surveyImport/StepTitle/StepTitle.svelte";
 
+  import {
+    buildConsultationDeepValidationQuery,
+    buildConsultationUploadQuery
+  } from "../../../../global/queries/consultations/queries";
+
+  interface Props {
+    consultationId: string;
+  };
+
+  let {
+    consultationId,
+  }: Props = $props();
+
+  let deepValidation = $derived(
+    buildConsultationDeepValidationQuery(consultationId),
+  );
+
+  let upload = $derived(
+    buildConsultationUploadQuery(consultationId),
+  );
 
   const MB_200 = 209715200;
 
@@ -37,14 +58,21 @@
         maxSize={MB_200}
         confirmHint="Checking sends the file to Consult. Nothing is added to the consultation yet."
         confirmButtonText="Check the file"
-        onConfirm={(files: File[]) => {
-          console.log(files);
+        onConfirm={async (files: File[]) => {
+          // There should only be 1 file selected as multiple is set to false
+          // but in case there are more, use only the first one
+          const file = files[0];
 
-          files.forEach(file => {
-            verifyFile(file);
-            fileChosen = file;
-          });
+          const formData = new FormData();
+          formData.append("file", file);
 
+          let response;
+          try {
+            response = await deepValidation.fetch({ body: formData });
+          } catch (e) {
+            console.error(e);
+            return;
+          }
         }}
       />
     {/if}

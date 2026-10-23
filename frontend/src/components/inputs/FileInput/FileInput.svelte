@@ -144,13 +144,15 @@
     handleFileDrop(e.dataTransfer!);
   }}
 >
-  <MaterialIcon color="fill-neutral-400" size="3rem">
-    <Upload />
-  </MaterialIcon>
+  {#if files.length === 0}
+    <MaterialIcon color="fill-neutral-400" size="3rem">
+      <Upload />
+    </MaterialIcon>
 
-  <span>{title}</span>
+    <span>{title}</span>
 
-  <small class={clsx(["text-neutral-500", "text-xs"])}>{subtitle}</small>
+    <small class={clsx(["text-neutral-500", "text-xs"])}>{subtitle}</small>
+  {/if}
 
   {#if errorMessage}
     <small transition:slide class="text-red-500">{errorMessage}</small>
@@ -185,6 +187,7 @@
               removeFile(i);
             }}
             ariaLabel={`Remove file ${file.name}`}
+            title={`Remove file ${file.name}`}
           >
             <MaterialIcon color="fill-neutral-500" size="0.8rem">
               <Close />
