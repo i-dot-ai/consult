@@ -12,7 +12,6 @@ from langfuse.api.core import ApiError
 from adapters.artefact_stores.base import (
     ArtefactStorePort,
     build_results_payload,
-    case_key,
     flatten_run_report,
 )
 from adapters.artefact_stores.langfuse_adapter import LangfuseArtefactStore
@@ -124,7 +123,7 @@ class TestRepeatedRunResults:
             run_index=1,
         )
         outcomes = [_repeat_outcome("a", 0, output={"themes": []}), errored]
-        assert stats.consistency_by_case(outcomes, case_key) == {}
+        assert stats.consistency_by_case(outcomes) == {}
 
     def test_flatten_run_report_keeps_each_repeat_and_adds_aggregate(self):
         """Repeats must not overwrite each other, and the aggregate carries mean/stdev."""

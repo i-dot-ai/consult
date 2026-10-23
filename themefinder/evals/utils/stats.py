@@ -8,7 +8,7 @@ from statistics import mean, stdev
 from typing import Any
 
 import numpy as np
-from eval_types import Case, CaseOutcome
+from eval_types import CaseOutcome
 from scipy.optimize import linear_sum_assignment
 from utils.embeddings import get_sentence_model
 from utils.logging_config import get_logger
@@ -257,18 +257,13 @@ def output_consistency(
 
 
 def consistency_by_case(
-    outcomes: list[CaseOutcome],
-    key: Callable[[Case], str],
-    embed: Embed | None = None,
+    outcomes: list[CaseOutcome], embed: Embed | None = None
 ) -> dict[str, dict[str, Any]]:
-    """output_consistency per case, for cases with at least two successful runs.
-
-    `key` names each case, so the result lines up with the caller's other result keys.
-    """
+    """output_consistency per case key, for cases with at least two successful runs."""
     outputs: dict[str, list[Any]] = defaultdict(list)
     for outcome in outcomes:
         if outcome.error is None:
-            outputs[key(outcome.case)].append(outcome.output)
+            outputs[outcome.case.key].append(outcome.output)
     return {
         case_key: value
         for case_key, case_outputs in outputs.items()
@@ -277,12 +272,10 @@ def consistency_by_case(
 
 
 def aggregate(
-    outcomes: list[CaseOutcome],
-    key: Callable[[Case], str],
-    embed: Embed | None = None,
+    outcomes: list[CaseOutcome], embed: Embed | None = None
 ) -> dict[str, Any]:
     """The per-metric summary plus output consistency, as one block for the results."""
-    consistency = consistency_by_case(outcomes, key, embed)
+    consistency = consistency_by_case(outcomes, embed)
     return {
         "metrics": summarise_runs(outcomes),
         CONSISTENCY_METRIC: {

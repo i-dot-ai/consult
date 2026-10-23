@@ -29,23 +29,6 @@ class ArtefactStorePort(ABC):
         """Finalise the run and return the flat benchmark-compatible result dict."""
 
 
-def case_key(case: Case) -> str:
-    question_part = case.metadata.get("question_part")
-    if question_part:
-        return str(question_part)
-    return case.id
-
-
-def is_repeated(report: RunReport) -> bool:
-    return any(outcome.run_index > 0 for outcome in report.outcomes)
-
-
-def outcome_key(outcome: CaseOutcome, repeated: bool) -> str:
-    """Repeats of one case share a case key, so suffix the run to stop them overwriting."""
-    key = case_key(outcome.case)
-    return f"{key}_r{outcome.run_index}" if repeated else key
-
-
 def json_safe(value: Any) -> Any:
     if value is None or isinstance(value, bool | int | float | str):
         return value
@@ -91,17 +74,16 @@ def serialise_outcome(outcome: CaseOutcome) -> dict[str, Any]:
 
 def flatten_run_report(report: RunReport) -> dict[str, Any]:
     results: dict[str, Any] = {}
-    repeated = is_repeated(report)
 
     for outcome in report.outcomes:
-        key = outcome_key(outcome, repeated)
+        key = report.outcome_key(outcome)
         results[f"{key}_output"] = json_safe(outcome.output)
 
         for score in outcome.scores:
             results[f"{key}_{score.name}"] = score.value
 
-    if repeated:
-        results["aggregate"] = stats.aggregate(report.outcomes, case_key)
+    if report.repeated:
+        results["aggregate"] = stats.aggregate(report.outcomes)
 
     if report.metrics is not None:
         results["metrics"] = json_safe(report.metrics)
@@ -119,7 +101,6 @@ def build_results_payload(
     outcomes = recorded_outcomes or [
         serialise_outcome(outcome) for outcome in report.outcomes
     ]
-    repeated = is_repeated(report)
 
     return {
         "component": component,
@@ -127,7 +108,7 @@ def build_results_payload(
         "results": flatten_run_report(report),
         "outcomes": outcomes,
         "errors": {
-            outcome_key(outcome, repeated): outcome.error
+            report.outcome_key(outcome): outcome.error
             for outcome in report.outcomes
             if outcome.error is not None
         },
