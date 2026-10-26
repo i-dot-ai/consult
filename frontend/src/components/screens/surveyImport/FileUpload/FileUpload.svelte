@@ -55,37 +55,35 @@
 <section>
   <Panel>
     {#if !fileUploadedForValidation}
-      {#if !fileChosen}
-        <FileInput
-          id="file-upload"
-          title="Drop your file here"
-          subtitle=".xlsx or .csv, up to 200MB"
-          accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          multiple={false}
-          maxSize={MB_200}
-          confirmHint="Checking sends the file to Consult. Nothing is added to the consultation yet."
-          confirmButtonText="Check the file"
-          onConfirm={async (files: File[]) => {
-            // There should only be 1 file selected as multiple is set to false
-            // but in case there are more, use only the first one
-            const file = files[0];
-            fileChosen = file;
+      <FileInput
+        id="file-upload"
+        title="Drop your file here"
+        subtitle=".xlsx or .csv, up to 200MB"
+        accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        multiple={false}
+        maxSize={MB_200}
+        confirmHint="Checking sends the file to Consult. Nothing is added to the consultation yet."
+        confirmButtonText="Check the file"
+        onConfirm={async (files: File[]) => {
+          // There should only be 1 file selected as multiple is set to false
+          // but in case there are more, use only the first one
+          const file = files[0];
+          fileChosen = file;
 
-            const formData = new FormData();
-            formData.append("file", file);
+          const formData = new FormData();
+          formData.append("file", file);
 
-            let response;
-            try {
-              response = await deepValidation.fetch({ body: formData });
-            } catch (e) {
-              console.error(e);
-              return;
-            }
+          let response;
+          try {
+            response = await deepValidation.fetch({ body: formData });
+          } catch (e) {
+            console.error(e);
+            return;
+          }
 
-            console.log("r", response)
-          }}
-        />
-      {/if}
+          console.log("r", response)
+        }}
+      />
     {:else}
       {#if !deepValidation.query.data?.valid}
         <div class="p-2">
@@ -102,6 +100,20 @@
             <p class="text-neutral-500 text-md my-4">
               The file {(fileChosen! as File).name} does not meet the requirements.
             </p>
+
+            {#if deepValidation.query.data?.errors}
+              <ul class="list-disc">
+                {#each deepValidation.query.data?.errors as error, i (i)}
+                  <li class="text-red-500 text-sm ml-8 mt-4 mb-8">
+                    {#if error.cell}
+                      <span>Cell {error.cell}:</span>
+                    {/if}
+
+                    {error.message}
+                  </li>
+                {/each}
+              </ul>
+            {/if}
           </div>
 
           <div>
