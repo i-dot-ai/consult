@@ -119,12 +119,14 @@
           <div>
             <Button
               variant="primary"
+              size="sm"
               handleClick={resetFileChosen}
             >
               Choose a different file
             </Button>
             <Button
               variant="outline"
+              size="sm"
               href="/"
             >
               Back to the checklist
@@ -198,12 +200,14 @@
           <div class="flex justify-between mt-8">
             <Button
               variant="outline"
+              size="sm"
               href="/"
             >
               Back
             </Button>
             <Button
               variant="primary"
+              size="sm"
               href="/"
             >
               Upload Responses
