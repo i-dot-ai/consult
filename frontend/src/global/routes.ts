@@ -35,6 +35,7 @@ export enum Suffixes {
   FileUpload = "upload-file",
   DeepValidation = "deep_validation",
   ApiUpload = "upload",
+  ReviewQuestions = "review-questions",
 }
 
 export enum Routes {
@@ -82,6 +83,30 @@ export const getApiConsultationsRootUrl = () => {
 
 export const getApiConsultationV2Url = (consultationId: string) => {
   return urlJoin(getApiConsultationsRootUrl(), consultationId, "/");
+};
+
+export const getApiQuestionsV2Url = (consultationId: string) => {
+  return urlJoin(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Questions,
+    "/",
+  );
+};
+
+export const getApiQuestionV2Url = (
+  consultationId: string,
+  questionId: string,
+) => {
+  return urlJoin(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    "/",
+  );
 };
 
 export const getConsultationViewUrl = (consultationId: string) => {
@@ -659,5 +684,14 @@ export const getDataUploadSelectProviderUrl = (consultationId: string) => {
     consultationId,
     Suffixes.DataUpload,
     Suffixes.SelectProvider,
+  );
+};
+
+export const getDataUploadReviewQuestionsUrl = (consultationId: string) => {
+  return urlJoin(
+    Routes.Consultations,
+    consultationId,
+    Suffixes.DataUpload,
+    Suffixes.ReviewQuestions,
   );
 };
