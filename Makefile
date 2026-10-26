@@ -233,13 +233,14 @@ docker_clean_volumes: ## DESTRUCTIVE: prune unused Docker volumes (wipes local p
 
 .PHONY: docker_build
 docker_build: ## Build the docker container for the specified service when running in CI/CD
+# TODO: remove ignore-error=true once the runners can write to the EFS build cache (cache.lock: permission denied).
 ifeq ($(service),consult)
 	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
-	--cache-to type=local,dest=$(APP_CACHE_DIR) \
+	--cache-to type=local,dest=$(APP_CACHE_DIR),ignore-error=true \
 	--cache-from type=local,src=$(APP_CACHE_DIR) .
 else
 	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
-	--cache-to type=local,dest=$(APP_CACHE_DIR) \
+	--cache-to type=local,dest=$(APP_CACHE_DIR),ignore-error=true \
 	--cache-from type=local,src=$(APP_CACHE_DIR) -f $(service)/Dockerfile .
 endif
 
