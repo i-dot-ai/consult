@@ -1,0 +1,31 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section/Section.svelte";
+import ReviewQuestionsPage from "../../../../components/surveyImport/ReviewQuestionsPage/ReviewQuestionsPage.svelte";
+
+import type { AstroGlobalRuntime } from "../../../../global/types";
+import { buildResponse, fetchBackendApi } from "../../../../global/api";
+import { consultationV2QueryParts } from "../../../../global/queries/consultations/parts";
+import { getDataSetupV2Enabled } from "../../../../global/utils";
+
+if (!getDataSetupV2Enabled()) {
+  return Astro.rewrite("/404");
+}
+
+const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
+
+const { error, status } = await fetchBackendApi(
+  Astro,
+  consultationV2QueryParts.url(consultationId || ""),
+);
+
+if (error) {
+  return buildResponse(status);
+}
+---
+
+<Layout>
+  <Section narrow={true}>
+    <ReviewQuestionsPage client:load consultationId={consultationId || ""} />
+  </Section>
+</Layout>
