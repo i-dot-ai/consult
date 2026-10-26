@@ -25,7 +25,7 @@ dependencies = [
   "openpyxl>=3.1.5",
   "pgvector>=0.5.0",
   "psycopg>=3.3.6",
-  "pydantic>=2.13.5",
+  "pydantic>=2.14.1",
   "pytest-random-order>=1.2.0",
   "sentry-sdk[django,redis,rq]>=2.71.0",
   "themefinder",
