@@ -127,7 +127,7 @@ export function createUserState(
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
   const createdAtText = new Date(
     consultationData?.created_at,
-  ).toLocaleDateString();
+  ).toLocaleDateString("en-GB");
 
   let createdByText = createdByEmail;
   if (!createdByEmail) {

@@ -10,7 +10,11 @@
   } from "../../inputs/RadioCards/RadioCards.svelte";
   import StepTitle from "../StepTitle/StepTitle.svelte";
 
-  import { getDataUploadUrl, Routes } from "../../../global/routes.ts";
+  import {
+    getDataUploadUrl,
+    getDataUploadChecksUrl,
+    Routes,
+  } from "../../../global/routes.ts";
   import { makeSnippet } from "../../../global/utils.ts";
   import { buildConsultationV2UpdateQuery } from "../../../global/queries/consultations/queries.ts";
   import type {
@@ -64,7 +68,7 @@
   const consultationUpdate = buildConsultationV2UpdateQuery(
     consultationId,
     async () => {
-      window.location.href = getDataUploadUrl(consultationId);
+      window.location.href = getDataUploadChecksUrl(consultationId);
     },
     async () => {
       saveFailed = true;

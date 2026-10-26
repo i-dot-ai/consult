@@ -5,15 +5,15 @@ description = "Consult backend application"
 license = {text = "MIT"}
 requires-python = ">=3.12,<3.13"
 dependencies = [
-  "boto3>=1.43.108",
-  "django>=6.1.1",
+  "boto3>=1.43.111",
+  "django>=6.1.2",
   "django-environ>=0.14.0",
   "django-filter>=26.2",
   "django-redis>=7.0.0",
   "django-rq>=4.2.0",
   "django-simple-history>=3.13.0",
   "django-storages>=1.14.6",
-  "djangorestframework>=3.18.1",
+  "djangorestframework>=3.18.3",
   "djangorestframework-simplejwt[crypto]>=5.5.1",
   "drf-nested-routers>=0.95.3",
   "drf-orjson-renderer>=1.8.0",
@@ -25,7 +25,7 @@ dependencies = [
   "openpyxl>=3.1.5",
   "pgvector>=0.5.0",
   "psycopg>=3.3.6",
-  "pydantic>=2.13.5",
+  "pydantic>=2.14.1",
   "pytest-random-order>=1.2.0",
   "sentry-sdk[django,redis,rq]>=2.71.0",
   "themefinder",
@@ -44,7 +44,7 @@ dev = [
   "mypy>=2.4.0",
   "pre-commit>=4.6.2",
   "pytest-lazy-fixtures>=1.4.1",
-  "ruff>=0.16.9",
+  "ruff>=0.17.0",
   "pytest-django>=4.14.0",
   "django-webtest>=1.9.14",
 ]

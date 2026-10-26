@@ -111,7 +111,7 @@ describe("ExportResponsesPage", () => {
 
     await waitFor(() => {
       expect(window.location.href).toBe(
-        `/consultations/${CONSULTATION_ID}/data-upload`,
+        `/consultations/${CONSULTATION_ID}/data-upload/checks`,
       );
     });
     const [call] = fetchMock.callHistory.calls();
@@ -161,7 +161,7 @@ describe("ExportResponsesPage", () => {
     await fireEvent.click(continueButton);
     await waitFor(() => {
       expect(window.location.href).toBe(
-        `/consultations/${CONSULTATION_ID}/data-upload`,
+        `/consultations/${CONSULTATION_ID}/data-upload/checks`,
       );
     });
     expect(continueButton).toBeDisabled();

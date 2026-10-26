@@ -1,0 +1,46 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section/Section.svelte";
+import ChecksPage from "../../../../components/screens/surveyImport/ChecksPage/ChecksPage.svelte";
+
+import type { AstroGlobalRuntime } from "../../../../global/types";
+import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
+import { PROVIDER_CHECK_ID } from "../../../../components/screens/surveyImport/ChecksPage/checks";
+import { buildResponse, fetchBackendApi } from "../../../../global/api";
+import { consultationV2QueryParts } from "../../../../global/queries/consultations/parts";
+import { getDataSetupV2Enabled } from "../../../../global/utils";
+import { getDataUploadSelectProviderUrl } from "../../../../global/routes";
+
+if (!getDataSetupV2Enabled()) {
+  return Astro.rewrite("/404");
+}
+
+const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
+
+const { data, error, status } = await fetchBackendApi<ConsultationV2>(
+  Astro,
+  consultationV2QueryParts.url(consultationId || ""),
+);
+
+if (error) {
+  return buildResponse(status);
+}
+
+const dataSource = data?.data_source;
+
+if (!dataSource || !(dataSource in PROVIDER_CHECK_ID)) {
+  return Astro.redirect(getDataUploadSelectProviderUrl(consultationId || ""));
+}
+---
+
+<Layout>
+  <Section>
+    <div class="mx-auto max-w-4xl">
+      <ChecksPage
+        client:load
+        consultationId={consultationId || ""}
+        dataSource={dataSource}
+      />
+    </div>
+  </Section>
+</Layout>
