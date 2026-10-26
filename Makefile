@@ -233,6 +233,7 @@ docker_clean_volumes: ## DESTRUCTIVE: prune unused Docker volumes (wipes local p
 
 .PHONY: docker_build
 docker_build: ## Build the docker container for the specified service when running in CI/CD
+	mkdir -p $(APP_CACHE_DIR)
 ifeq ($(service),consult)
 	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
 	--cache-to type=local,dest=$(APP_CACHE_DIR) \
