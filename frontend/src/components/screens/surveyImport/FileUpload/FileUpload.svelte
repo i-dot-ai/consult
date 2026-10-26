@@ -14,7 +14,7 @@
     buildConsultationDeepValidationQuery,
     buildConsultationUploadQuery
   } from "../../../../global/queries/consultations/queries";
-  import { Routes } from "../../../../global/routes";
+  import { getDataUploadChecksUrl } from "../../../../global/routes";
 
   interface Props {
     consultationId: string;
@@ -102,17 +102,21 @@
             </p>
 
             {#if deepValidation.query.data?.errors}
-              <ul class="list-disc">
-                {#each deepValidation.query.data?.errors as error, i (i)}
-                  <li class="text-red-500 text-sm ml-8 mt-4 mb-8">
-                    {#if error.cell}
-                      <span>Cell {error.cell}:</span>
-                    {/if}
+              <div class="border border-2 border-red-500 p-4 rounded-lg mt-4 mb-8">
+                <p class="text-sm text-red-500 mb-4">There is a problem</p>
 
-                    {error.message}
-                  </li>
-                {/each}
-              </ul>
+                <ul class="list-disc">
+                  {#each deepValidation.query.data?.errors as error, i (i)}
+                    <li class="text-red-500 text-sm ml-8">
+                      {#if error.cell}
+                        <span>Cell {error.cell}:</span>
+                      {/if}
+
+                      {error.message}
+                    </li>
+                  {/each}
+                </ul>
+              </div>
             {/if}
           </div>
 
@@ -127,7 +131,7 @@
             <Button
               variant="outline"
               size="sm"
-              href="/"
+              href={getDataUploadChecksUrl(consultationId)}
             >
               Back to the checklist
             </Button>
@@ -196,25 +200,29 @@
               The content of the responses has not been read. Whether personal information has been removed, and whether the wording is right, is still yours to confirm. You'll see every question once the responses are added.
             </p>
           </Panel>
-
-          <div class="flex justify-between mt-8">
-            <Button
-              variant="outline"
-              size="sm"
-              href="/"
-            >
-              Back
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              href="/"
-            >
-              Upload Responses
-            </Button>
-          </div>
         </div>
       {/if}
     {/if}
   </Panel>
+</section>
+
+<section>
+  <div class="flex justify-between mt-8">
+    <Button
+      variant="default"
+      size="sm"
+      href={getDataUploadChecksUrl(consultationId)}
+    >
+      Back
+    </Button>
+    {#if deepValidation.query.data?.valid}
+      <Button
+        variant="primary"
+        size="sm"
+        href="/"
+      >
+        Upload Responses
+      </Button>
+    {/if}
+  </div>
 </section>

@@ -25,6 +25,7 @@
   import {
     getDataUploadSelectProviderUrl,
     getConsultationViewUrl,
+    getDataUploadFileUploadUrl,
   } from "../../../../global/routes";
 
   interface Props {
@@ -319,7 +320,7 @@ Addresses → delete, or keep the area name only</pre>
     <Button
       size="sm"
       variant="primary"
-      href={getConsultationViewUrl(consultationId)}
+      href={getDataUploadFileUploadUrl(consultationId)}
     >
       Continue to upload
     </Button>
