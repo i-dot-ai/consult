@@ -2,8 +2,10 @@
   import Title from "../../../Title.svelte";
   import Panel from "../../../dashboard/Panel/Panel.svelte";
   import Button from "../../../inputs/Button/Button.svelte";
+  import Alert from "../../../Alert/Alert.svelte";
   import FileInput from "../../../inputs/FileInput/FileInput.svelte";
   import StepTitle from "../../../surveyImport/StepTitle/StepTitle.svelte";
+  import LoadingIndicator from "../../../LoadingIndicator/LoadingIndicator.svelte";
   import MaterialIcon from "../../../MaterialIcon.svelte";
   import Check from "../../../svg/material/Check.svelte";
   import CheckCircle from "../../../svg/material/CheckCircle.svelte";
@@ -55,35 +57,50 @@
 <section>
   <Panel>
     {#if !fileUploadedForValidation}
-      <FileInput
-        id="file-upload"
-        title="Drop your file here"
-        subtitle=".xlsx or .csv, up to 200MB"
-        accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        multiple={false}
-        maxSize={MB_200}
-        confirmHint="Checking sends the file to Consult. Nothing is added to the consultation yet."
-        confirmButtonText="Check the file"
-        onConfirm={async (files: File[]) => {
-          // There should only be 1 file selected as multiple is set to false
-          // but in case there are more, use only the first one
-          const file = files[0];
-          fileChosen = file;
+      {#if deepValidation.query.isPending}
+        <div class="my-4">
+          <LoadingIndicator size="3rem" />
+          <p class="text-center text-neutral-500 text-sm">Checking your file...</p>
+        </div>
+      {:else}
+        {#if deepValidation.query.isError}
+          <div class="mb-4">
+            <Alert variant="error">
+              File could not be uploaded for validation.
+            </Alert>
+          </div>
+        {/if}
 
-          const formData = new FormData();
-          formData.append("file", file);
+        <FileInput
+          id="file-upload"
+          title="Drop your file here"
+          subtitle=".xlsx or .csv, up to 200MB"
+          accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          multiple={false}
+          maxSize={MB_200}
+          confirmHint="Checking sends the file to Consult. Nothing is added to the consultation yet."
+          confirmButtonText="Check the file"
+          onConfirm={async (files: File[]) => {
+            // There should only be 1 file selected as multiple is set to false
+            // but in case there are more, use only the first one
+            const file = files[0];
+            fileChosen = file;
 
-          let response;
-          try {
-            response = await deepValidation.fetch({ body: formData });
-          } catch (e) {
-            console.error(e);
-            return;
-          }
+            const formData = new FormData();
+            formData.append("file", file);
 
-          console.log("r", response)
-        }}
-      />
+            let response;
+            try {
+              response = await deepValidation.fetch({ body: formData });
+            } catch (e) {
+              console.error(e);
+              return;
+            }
+
+            console.log("r", response)
+          }}
+        />
+      {/if}
     {:else}
       {#if !deepValidation.query.data?.valid}
         <div class="p-2">
