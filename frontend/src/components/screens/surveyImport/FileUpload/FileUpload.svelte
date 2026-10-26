@@ -27,7 +27,12 @@
   }: Props = $props();
 
   let deepValidation = $derived(
-    buildConsultationDeepValidationQuery(consultationId),
+    buildConsultationDeepValidationQuery(
+      consultationId,
+      async () => {
+        showDeepValidationError = true;
+      }
+    ),
   );
 
   let upload = $derived(
@@ -39,10 +44,12 @@
   const MB_200 = 209715200;
 
   let fileChosen: null | File = $state(null);
+  let showDeepValidationError = $state(false);
 
   function resetFileChosen() {
     fileUploadedForValidation = null;
     fileChosen = null;
+    showDeepValidationError = false;
   }
 </script>
 
@@ -63,7 +70,7 @@
           <p class="text-center text-neutral-500 text-sm">Checking your file...</p>
         </div>
       {:else}
-        {#if deepValidation.query.isError}
+        {#if showDeepValidationError}
           <div class="mb-4">
             <Alert variant="error">
               File could not be uploaded for validation.
@@ -81,6 +88,9 @@
           confirmHint="Checking sends the file to Consult. Nothing is added to the consultation yet."
           confirmButtonText="Check the file"
           onConfirm={async (files: File[]) => {
+            // reset error displayed if any
+            showDeepValidationError = false;
+
             // There should only be 1 file selected as multiple is set to false
             // but in case there are more, use only the first one
             const file = files[0];
