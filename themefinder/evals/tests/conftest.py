@@ -24,6 +24,32 @@ def _reset_eval_settings_cache():
     get_settings.cache_clear()
 
 
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "real_env: run against the real process env and .env, unisolated"
+    )
+
+
+@pytest.fixture(autouse=True)
+def _isolate_from_local_env(request, monkeypatch):
+    """Stop a developer's .env from switching tests onto Langfuse.
+
+    `settings` calls `load_dotenv()` on import, so a local .env selecting
+    Langfuse would otherwise change the default every test assumes.
+    """
+    if request.node.get_closest_marker("real_env"):
+        return
+    for name in (
+        "THEMEFINDER_EVAL_DATASET_SOURCE",
+        "THEMEFINDER_EVAL_ARTEFACT_STORE",
+        "LANGFUSE_SECRET_KEY",
+        "LANGFUSE_PUBLIC_KEY",
+        "LANGFUSE_BASE_URL",
+        "LANGFUSE_PROJECT_ID",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+
 def set_gateway_credentials(
     monkeypatch,
     url: str = "https://gateway.example.invalid",

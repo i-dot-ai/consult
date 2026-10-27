@@ -97,7 +97,7 @@ async def test_benchmark_delegates_component_execution_to_unified_api(monkeypatc
         component="mapping",
         dataset="demo",
         llm=task_llm,
-        context=context,
+        context={"langfuse": context},
         judge_llm=None,
     )
     assert result.scores["question_part_1_f1_score"] == 0.75

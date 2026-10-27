@@ -26,7 +26,7 @@ async def test_environment_configuration_runs_complete_local_pipeline(
     monkeypatch.setitem(
         backend_config.ARTEFACT_FACTORIES,
         "local",
-        lambda context, owns_context: LocalJSONArtefactStore(output_dir=tmp_path),
+        lambda context: LocalJSONArtefactStore(output_dir=tmp_path),
     )
     monkeypatch.setitem(
         backend_config.RUNNER_FACTORIES,
@@ -150,7 +150,7 @@ async def test_environment_configuration_runs_langfuse_backend_combinations(
     if dataset_source == "langfuse":
         assert dataset_factory.call_args.args[0] is context
     if artefact_store == "langfuse":
-        artefact_factory.assert_called_once_with(context, True)
+        artefact_factory.assert_called_once_with(context)
     assert artefacts.finished_with is not None
     assert artefacts.recorded == artefacts.finished_with[0].outcomes
     expected_results = {

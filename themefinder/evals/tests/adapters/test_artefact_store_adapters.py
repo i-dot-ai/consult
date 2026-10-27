@@ -62,7 +62,7 @@ class TestArtefactStorePortContract:
     def test_langfuse_adapter_is_artefact_store_port(self):
         context = LangfuseContext(client=FakeLangfuseClient())
         assert isinstance(
-            LangfuseArtefactStore(context=context, owns_context=False),
+            LangfuseArtefactStore(context=context),
             ArtefactStorePort,
         )
 
@@ -200,7 +200,7 @@ class TestLangfuseArtefactStore:
             tags=["eval", "generation"],
             metadata={"dataset": "demo"},
         )
-        store = LangfuseArtefactStore(context=context, owns_context=False)
+        store = LangfuseArtefactStore(context=context)
         outcome = _make_outcome(
             case=_make_case(
                 case_id="case-v3",
@@ -261,7 +261,7 @@ class TestLangfuseArtefactStore:
         client = FakeLangfuseClient()
         client.api.dataset_run_items.error = link_error
         context = LangfuseContext(client=client, session_id="session-v3")
-        store = LangfuseArtefactStore(context=context, owns_context=False)
+        store = LangfuseArtefactStore(context=context)
         outcome = _make_outcome(
             case=_make_case(langfuse_item_id="item-v3"),
             scores=[Score("coverage", 4.0)],
@@ -284,7 +284,7 @@ class TestLangfuseArtefactStore:
     def test_record_case_without_langfuse_item_id_still_records_scores(self):
         client = FakeLangfuseClient()
         context = LangfuseContext(client=client, session_id="session-2")
-        store = LangfuseArtefactStore(context=context, owns_context=False)
+        store = LangfuseArtefactStore(context=context)
         outcome = _make_outcome(case=_make_case(question_part="question_part_3"))
 
         store.start_run("generation", "demo")
@@ -297,7 +297,7 @@ class TestLangfuseArtefactStore:
     def test_record_case_forwards_score_comments(self):
         client = FakeLangfuseClient()
         context = LangfuseContext(client=client)
-        store = LangfuseArtefactStore(context=context, owns_context=False)
+        store = LangfuseArtefactStore(context=context)
         outcome = _make_outcome(
             scores=[Score("specificity", 1.2, "comment from evaluator")]
         )
@@ -319,7 +319,7 @@ class TestLangfuseArtefactStore:
         client = FakeLangfuseClient()
         client.raise_on_create_score = RuntimeError("boom")
         context = LangfuseContext(client=client, session_id="session-1")
-        store = LangfuseArtefactStore(context=context, owns_context=False)
+        store = LangfuseArtefactStore(context=context)
         outcome = _make_outcome(
             case=_make_case(case_id="case-9", question_part="question_part_9")
         )
@@ -334,7 +334,7 @@ class TestLangfuseArtefactStore:
     def test_record_case_logs_trace_update_failures(self, monkeypatch, caplog):
         client = FakeLangfuseClient()
         context = LangfuseContext(client=client, session_id="session-1")
-        store = LangfuseArtefactStore(context=context, owns_context=False)
+        store = LangfuseArtefactStore(context=context)
         outcome = _make_outcome(case=_make_case(langfuse_item_id="item-123"))
 
         def raise_on_update_trace(self, **kwargs):
@@ -353,36 +353,25 @@ class TestLangfuseArtefactStore:
             "trace update failed" in caplog.text
         )
 
-    def test_finish_run_flushes_when_context_is_owned(self):
+    def test_finish_run_returns_flattened_results_without_flushing(self):
         client = FakeLangfuseClient()
         context = LangfuseContext(client=client)
-        store = LangfuseArtefactStore(context=context, owns_context=True)
-        outcome = _make_outcome()
-        report = RunReport(outcomes=[outcome])
+        store = LangfuseArtefactStore(context=context)
 
         store.start_run("generation", "demo")
-        results = store.finish_run(report)
+        results = store.finish_run(RunReport(outcomes=[_make_outcome()]))
 
-        assert client.flush_calls == 1
+        # Flushing is the owner's job (EvalBackends.close), not the store's.
+        assert client.flush_calls == 0
         assert results == {
             "question_part_1_groundedness": 4.5,
             "question_part_1_output": {"themes": _themes("A")},
         }
 
-    def test_finish_run_does_not_flush_when_context_is_not_owned(self):
-        client = FakeLangfuseClient()
-        context = LangfuseContext(client=client)
-        store = LangfuseArtefactStore(context=context, owns_context=False)
-
-        store.start_run("generation", "demo")
-        store.finish_run(RunReport(outcomes=[_make_outcome()]))
-
-        assert client.flush_calls == 0
-
     def test_finish_run_ignores_non_pydantic_engine_report_safely(self):
         client = FakeLangfuseClient()
         context = LangfuseContext(client=client)
-        store = LangfuseArtefactStore(context=context, owns_context=False)
+        store = LangfuseArtefactStore(context=context)
 
         store.start_run("generation", "demo")
         results = store.finish_run(

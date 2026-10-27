@@ -217,6 +217,7 @@ class TestGetSettingsCaching:
 
 
 class TestEvalSettingsSingleton:
+    @pytest.mark.real_env
     def test_matches_get_settings_for_the_real_environment(self):
         """`settings.eval_settings` was computed once, via get_settings(), at
         import time. Every other test in this file monkeypatches env vars to

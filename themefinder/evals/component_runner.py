@@ -33,22 +33,30 @@ async def run_component(
         )
 
     started_at = time.perf_counter()
-    with collect_gateway_metrics() as gateway_metrics:
-        cases = backends.dataset.load_cases(dataset_config)
-        report = await backends.runner.run(component_config, cases, llm=llm)
+    try:
+        with collect_gateway_metrics() as gateway_metrics:
+            cases = backends.dataset.load_cases(dataset_config)
+            report = await backends.runner.run(component_config, cases, llm=llm)
 
-        backends.artefacts.start_run(component_config.component, dataset_config.dataset)
-        for outcome in report.outcomes:
-            backends.artefacts.record_case(outcome)
+            backends.artefacts.start_run(
+                component_config.component, dataset_config.dataset
+            )
+            for outcome in report.outcomes:
+                backends.artefacts.record_case(outcome)
 
-        gateway_summary = gateway_metrics.summary()
-        report.metrics = RunMetrics(
-            cost_usd=gateway_summary.cost_usd,
-            latency_seconds=gateway_summary.latency_seconds,
-            processing_time_seconds=time.perf_counter() - started_at,
-            llm_call_count=gateway_summary.call_count,
-            input_tokens=gateway_summary.input_tokens,
-            output_tokens=gateway_summary.output_tokens,
-            total_tokens=gateway_summary.total_tokens,
-        )
-        return backends.artefacts.finish_run(report, engine_report=report.engine_report)
+            gateway_summary = gateway_metrics.summary()
+            report.metrics = RunMetrics(
+                cost_usd=gateway_summary.cost_usd,
+                latency_seconds=gateway_summary.latency_seconds,
+                processing_time_seconds=time.perf_counter() - started_at,
+                llm_call_count=gateway_summary.call_count,
+                input_tokens=gateway_summary.input_tokens,
+                output_tokens=gateway_summary.output_tokens,
+                total_tokens=gateway_summary.total_tokens,
+            )
+            return backends.artefacts.finish_run(
+                report, engine_report=report.engine_report
+            )
+    finally:
+        # Flush contexts we created, including when Langfuse is only the dataset.
+        backends.close()

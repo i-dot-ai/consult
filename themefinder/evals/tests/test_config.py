@@ -1,11 +1,13 @@
 """Unit tests for evaluation backend resolution."""
 
 from types import SimpleNamespace
+from unittest.mock import Mock
 from uuid import UUID
 
-import config as config_module
 import pytest
+from adapters import context_providers
 from adapters.artefact_stores import LangfuseArtefactStore, LocalJSONArtefactStore
+from adapters.context_providers import ProvidedContext
 from adapters.datasets import LangfuseDatasetAdapter, LocalJSONDatasetAdapter
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from config import EvalBackends, resolve_backends
@@ -78,7 +80,11 @@ def test_resolves_dataset_and_artefact_sources_independently(
     backends = resolve_backends(
         DATASET_CONFIG,
         settings=_settings(dataset_source, artefact_store),
-        context=context if "langfuse" in (dataset_source, artefact_store) else None,
+        context=(
+            {"langfuse": context}
+            if "langfuse" in (dataset_source, artefact_store)
+            else None
+        ),
     )
 
     assert isinstance(backends, EvalBackends)
@@ -90,7 +96,6 @@ def test_resolves_dataset_and_artefact_sources_independently(
         assert backends.dataset.client is client
     if isinstance(backends.artefacts, LangfuseArtefactStore):
         assert backends.artefacts.context is context
-        assert backends.artefacts.owns_context is False
 
 
 def test_unset_sources_default_to_local(monkeypatch):
@@ -103,10 +108,11 @@ def test_unset_sources_default_to_local(monkeypatch):
 
     assert isinstance(backends.dataset, LocalJSONDatasetAdapter)
     assert isinstance(backends.artefacts, LocalJSONArtefactStore)
+    assert backends.contexts == {}
 
 
 def test_creates_one_shared_langfuse_context(monkeypatch):
-    client = SimpleNamespace()
+    client = SimpleNamespace(flush=Mock())
     context = LangfuseContext(client=client, session_id="shared-session")
     calls = []
 
@@ -131,11 +137,15 @@ def test_creates_one_shared_langfuse_context(monkeypatch):
     assert UUID(session_uuid).version == 4
     assert backends.dataset.client is client
     assert backends.artefacts.context is context
-    assert backends.artefacts.owns_context is True
+
+    client.flush.assert_not_called()
+    backends.close()
+    client.flush.assert_called_once_with()
 
 
 def test_reuses_caller_context_without_taking_ownership(monkeypatch):
-    context = LangfuseContext(client=SimpleNamespace(), session_id="caller-session")
+    client = SimpleNamespace(flush=Mock())
+    context = LangfuseContext(client=client, session_id="caller-session")
 
     def fail_if_called(**kwargs):
         pytest.fail(f"Caller context should have been reused: {kwargs}")
@@ -151,31 +161,56 @@ def test_reuses_caller_context_without_taking_ownership(monkeypatch):
     backends = resolve_backends(
         DATASET_CONFIG,
         settings=_settings("local", "langfuse", langfuse=incomplete),
-        context=context,
+        context={"langfuse": context},
     )
 
     assert backends.artefacts.context is context
-    assert backends.artefacts.owns_context is False
+    backends.close()
+    client.flush.assert_not_called()
 
 
 def test_validates_shared_langfuse_context_once(monkeypatch):
     context = LangfuseContext(client=SimpleNamespace())
-    require_context = config_module._require_langfuse_context
+    require_context = context_providers._require_langfuse_context
     calls = []
 
     def record_validation(candidate):
         calls.append(candidate)
         return require_context(candidate)
 
-    monkeypatch.setattr(config_module, "_require_langfuse_context", record_validation)
+    monkeypatch.setattr(
+        context_providers, "_require_langfuse_context", record_validation
+    )
 
     resolve_backends(
         DATASET_CONFIG,
         settings=_settings("langfuse", "langfuse"),
-        context=context,
+        context={"langfuse": context},
     )
 
     assert calls == [context]
+
+
+def test_close_runs_every_context_and_logs_failures(caplog):
+    closed = []
+
+    def failing():
+        raise RuntimeError("flush failed")
+
+    backends = EvalBackends(
+        dataset=Mock(),
+        runner=Mock(),
+        artefacts=Mock(),
+        contexts={
+            "first": ProvidedContext(object(), failing),
+            "second": ProvidedContext(object(), lambda: closed.append("second")),
+        },
+    )
+
+    backends.close()
+
+    assert closed == ["second"]
+    assert "Failed to close first context" in caplog.text
 
 
 def test_rejects_langfuse_without_credentials_or_context():
