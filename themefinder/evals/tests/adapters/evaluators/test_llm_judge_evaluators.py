@@ -322,16 +322,21 @@ class TestClarityEvaluator(_JudgeContractTests):
         )
 
         assert len(judge.prompts) == 2
-        assert "TARGET_ALPHA" in judge.prompts[0]
-        assert "TARGET_DESCRIPTION" in judge.prompts[0]
-        assert "PEER_OMEGA" not in judge.prompts[0]
-        assert "PEER_DESCRIPTION" not in judge.prompts[0]
-        assert "ORIGINAL_ONLY" not in judge.prompts[0]
-        assert "PEER_OMEGA" in judge.prompts[1]
-        assert "PEER_DESCRIPTION" in judge.prompts[1]
-        assert "TARGET_ALPHA" not in judge.prompts[1]
-        assert "TARGET_DESCRIPTION" not in judge.prompts[1]
-        assert "ORIGINAL_ONLY" not in judge.prompts[1]
+        assert all(
+            marker in judge.prompts[0]
+            for marker in ("TARGET_ALPHA", "TARGET_DESCRIPTION")
+        )
+        assert all(
+            marker not in judge.prompts[0]
+            for marker in ("PEER_OMEGA", "PEER_DESCRIPTION", "ORIGINAL_ONLY")
+        )
+        assert all(
+            marker in judge.prompts[1] for marker in ("PEER_OMEGA", "PEER_DESCRIPTION")
+        )
+        assert all(
+            marker not in judge.prompts[1]
+            for marker in ("TARGET_ALPHA", "TARGET_DESCRIPTION", "ORIGINAL_ONLY")
+        )
 
     async def test_scores_a_single_theme(self):
         judge = FakeJudge('{"decision": "PASS", "reasoning": "Clear."}')
