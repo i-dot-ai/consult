@@ -13,7 +13,7 @@ decisions taken over time.
 
 ## Decision
 
-We will use Iterative Design Records (saved in the style of ADRs), as [described by Michael Nygard](http://thinkrelevance.com/blog/2011/11/15/documenting-architecture-decisions).
+We will use Interaction Design Records (saved in the style of ADRs), as [described by Michael Nygard](http://thinkrelevance.com/blog/2011/11/15/documenting-architecture-decisions).
 
 ## Consequences
 
