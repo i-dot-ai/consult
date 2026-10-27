@@ -112,6 +112,7 @@ export function buildConsultationDeepValidationQuery(
       key: [...consultationV2DeepValidationQueryParts.key(consultationId)],
       method: "POST",
       stringifyBody: false,
+      omitContentType: true,
       onError: onError,
     },
   );
@@ -127,6 +128,7 @@ export function buildConsultationUploadQuery(
       key: [...consultationV2UploadQueryParts.key(consultationId)],
       method: "POST",
       stringifyBody: false,
+      omitContentType: true,
       onError: onError,
     },
   );

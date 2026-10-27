@@ -12,7 +12,8 @@ export interface BuildQueryOptions {
   errorMessage?: string;
   method?: HttpMethod;
   headers?: HeadersInit;
-  contentType?: string | null | undefined;
+  contentType?: string;
+  omitContentType?: boolean;
   onSuccess?: (data?: unknown, variables?: MutationArgs) => Promise<void>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onError?: (error: FetchError<any>) => Promise<void>;
@@ -37,7 +38,8 @@ interface DoFetchArgs {
   errorMessage: BuildQueryOptions["errorMessage"];
   body?: BodyInit;
   headers?: HeadersInit;
-  contentType?: string | null | undefined;
+  contentType?: string;
+  omitContentType?: boolean;
   stringifyBody?: boolean;
 }
 
@@ -61,23 +63,17 @@ const doFetch = async ({
   errorMessage,
   body,
   headers,
-  contentType,
+  contentType = "application/json",
+  omitContentType = false,
   stringifyBody = true,
 }: DoFetchArgs) => {
-  let contentTypeValue;
-  if (contentType) {
-    contentTypeValue = contentType;
-  } else if (contentType === undefined) {
-    contentTypeValue = "application/json";
-  }
-
   const response = await fetch(url, {
     method: method,
     body: stringifyBody ? JSON.stringify(body) : body,
-    ...((contentTypeValue || headers) && {
-      ...(contentTypeValue && { "Content-Type": contentTypeValue }),
+    headers: {
+      ...(!omitContentType && { "Content-Type": contentType }),
       ...headers,
-    }),
+    },
   });
   if (!response.ok) {
     let errorData: unknown = null;
@@ -123,8 +119,9 @@ export const buildQuery = <T>(
     onSuccess,
     onError,
     getVariables,
-    contentType,
-    stringifyBody,
+    contentType = "application/json",
+    omitContentType = false,
+    stringifyBody = true,
   }: BuildQueryOptions,
 ) => {
   let result;
@@ -146,6 +143,7 @@ export const buildQuery = <T>(
             body: body,
             headers: headers,
             contentType,
+            omitContentType,
             stringifyBody,
           });
         },
