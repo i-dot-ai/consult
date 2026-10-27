@@ -16,7 +16,7 @@
     buildConsultationDeepValidationQuery,
     buildConsultationUploadQuery
   } from "../../../../global/queries/consultations/queries";
-  import { getDataUploadChecksUrl } from "../../../../global/routes";
+  import { getConsultationViewUrl, getDataUploadChecksUrl } from "../../../../global/routes";
 
   interface Props {
     consultationId: string;
@@ -36,7 +36,12 @@
   );
 
   let upload = $derived(
-    buildConsultationUploadQuery(consultationId),
+    buildConsultationUploadQuery(
+      consultationId,
+      async () => {
+        showUploadError = true;
+      }
+    ),
   );
 
   let fileUploadedForValidation = $derived(deepValidation.query.data);
@@ -45,6 +50,7 @@
 
   let fileChosen: null | File = $state(null);
   let showDeepValidationError = $state(false);
+  let showUploadError = $state(false);
 
   function resetFileChosen() {
     fileUploadedForValidation = null;
@@ -99,15 +105,11 @@
             const formData = new FormData();
             formData.append("file", file);
 
-            let response;
             try {
-              response = await deepValidation.fetch({ body: formData });
+              await deepValidation.fetch({ body: formData });
             } catch (e) {
               console.error(e);
-              return;
             }
-
-            console.log("r", response)
           }}
         />
       {/if}
@@ -152,6 +154,7 @@
               variant="primary"
               size="sm"
               handleClick={resetFileChosen}
+              title="Select another file to validate"
             >
               Choose a different file
             </Button>
@@ -159,6 +162,7 @@
               variant="outline"
               size="sm"
               href={getDataUploadChecksUrl(consultationId)}
+              title="Go back to the upload checklist"
             >
               Back to the checklist
             </Button>
@@ -166,6 +170,14 @@
         </div>
       {:else}
         {@const fileName = (fileChosen! as File).name}
+
+        {#if showUploadError}
+          <div class="mb-4">
+            <Alert variant="error">
+              File could not be uploaded.
+            </Alert>
+          </div>
+        {/if}
 
         <div class="p-2">
           <div class="flex items-center gap-2">
@@ -239,6 +251,7 @@
       variant="default"
       size="sm"
       href={getDataUploadChecksUrl(consultationId)}
+      title="Back to checklist"
     >
       Back
     </Button>
@@ -246,7 +259,29 @@
       <Button
         variant="primary"
         size="sm"
-        href="/"
+        title="Upload your chosen file"
+        handleClick={async () => {
+          // reset upload error alert
+          showUploadError = false;
+
+          // there must be a file chosen
+          if (!fileChosen) {
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append("file", fileChosen);
+
+          try {
+            await upload.fetch({ body: formData });
+          } catch (e) {
+            console.error(e);
+            return;
+          }
+
+          // redirect when upload is done
+          window.location.href = getConsultationViewUrl(consultationId);
+       }}
       >
         Upload Responses
       </Button>

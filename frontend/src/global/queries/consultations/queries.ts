@@ -111,10 +111,11 @@ export function buildConsultationDeepValidationQuery(consultationId: string, onE
   });
 }
 
-export function buildConsultationUploadQuery(consultationId: string) {
+export function buildConsultationUploadQuery(consultationId: string, onError?: () => Promise<void>) {
   return buildQuery<Consultation>(consultationV2UploadQueryParts.url(consultationId), {
     key: [...consultationV2UploadQueryParts.key(consultationId)],
     method: "POST",
     stringifyBody: false,
+    onError: onError,
   });
 }
