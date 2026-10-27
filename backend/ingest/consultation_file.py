@@ -66,7 +66,10 @@ def import_consultation_data(
         ]
     )
     respondents = Respondent.objects.bulk_create(
-        [Respondent(consultation=consultation) for _ in response_rows]
+        [
+            Respondent(consultation=consultation, themefinder_id=index)
+            for index, _ in enumerate(response_rows, start=1)
+        ]
     )
     responses = Response.objects.bulk_create(
         [

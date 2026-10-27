@@ -24,9 +24,9 @@ from consultations.api_v2.serializers import (
     ConsultationUpdateSerializerV2,
 )
 from consultations.models import Consultation, FileUpload
-from ingest.consultation_file import import_consultation_data, read_consultation_file
+from ingest.consultation_file import read_consultation_file
 from ingest.deep_validation import deep_validate_file
-from ingest.jobs import delete_consultation_job
+from ingest.jobs import add_consultation_job, delete_consultation_job
 
 logger = settings.LOGGER
 
@@ -61,7 +61,7 @@ class ConsultationViewSet(
     def get_queryset(self):
         queryset = (
             Consultation.objects.select_related("created_by")
-            .prefetch_related("users")
+            .prefetch_related("users", "fileupload_set")
             .order_by("-created_at")
         )
         if self.request.user.is_staff:
@@ -98,14 +98,17 @@ class ConsultationViewSet(
     @action(detail=True, methods=["post"], parser_classes=[MultiPartParser])
     def upload(self, request, *args, **kwargs):
         consultation = self.get_object()
+        if FileUpload.objects.filter(consultation=consultation).exists():
+            raise serializers.ValidationError(
+                {"file": "A file has already been uploaded for this consultation."}
+            )
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         uploaded_file = serializer.validated_data["file"]
         try:
-            question_texts, response_rows = read_consultation_file(
-                uploaded_file, uploaded_file.name
-            )
+            read_consultation_file(uploaded_file, uploaded_file.name)
         except (
             csv.Error,
             InvalidFileException,
@@ -124,16 +127,24 @@ class ConsultationViewSet(
         requested_key = f"consultations/uploads/{consultation.id}/{file_upload.id}{extension}"
         file_upload.s3_key = default_storage.save(requested_key, uploaded_file)
         file_upload.save()
-        question_count, response_count = import_consultation_data(
-            consultation, question_texts, response_rows
-        )
+        consultation.upload_status = Consultation.UploadStatus.FILE_UPLOADING
+        consultation.save(update_fields=["upload_status", "modified_at"])
+        try:
+            add_consultation_job.delay(file_upload.id)
+        except Exception as error:
+            file_upload.status = FileUpload.Status.FAILED
+            file_upload.error_message = str(error)
+            file_upload.save(update_fields=["status", "error_message", "modified_at"])
+            consultation.upload_status = Consultation.UploadStatus.IMPORT_FAILED
+            consultation.save(update_fields=["upload_status", "modified_at"])
+            raise
 
         return Response(
             {
                 "id": str(file_upload.id),
                 "s3_key": file_upload.s3_key,
-                "question_count": question_count,
-                "response_count": response_count,
+                "status": file_upload.status,
+                "upload_status": consultation.upload_status,
             },
-            status=status.HTTP_201_CREATED,
+            status=status.HTTP_202_ACCEPTED,
         )

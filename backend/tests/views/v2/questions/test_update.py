@@ -1,6 +1,6 @@
 import pytest
 
-from consultations.models import Question
+from consultations.models import Consultation, Question
 from factories import ConsultationFactory, QuestionFactory
 
 
@@ -29,6 +29,24 @@ def test_v2_update_sets_type_and_marks_question_configured(
     question.refresh_from_db()
     assert question.type == Question.QuestionType.CLOSED
     assert question.status == Question.ThemeStatus.CONFIGURED
+    consultation.refresh_from_db()
+    assert consultation.upload_status == Consultation.UploadStatus.READY
+
+
+@pytest.mark.django_db
+def test_v2_update_keeps_consultation_pending_until_all_questions_configured(
+    client, question_detail_url, consultation, non_staff_user_token
+):
+    question = QuestionFactory(consultation=consultation, number=1, type=None)
+    QuestionFactory(consultation=consultation, number=2, type=None)
+
+    response = _patch(
+        client, question_detail_url, question, non_staff_user_token, {"type": "closed"}
+    )
+
+    assert response.status_code == 200
+    consultation.refresh_from_db()
+    assert consultation.upload_status == Consultation.UploadStatus.QUESTIONS_PENDING
 
 
 @pytest.mark.django_db
@@ -96,6 +114,8 @@ def test_v2_update_clears_type_with_null(
     question.refresh_from_db()
     assert question.type is None
     assert question.status == Question.ThemeStatus.DRAFT
+    consultation.refresh_from_db()
+    assert consultation.upload_status == Consultation.UploadStatus.QUESTIONS_PENDING
 
 
 @pytest.mark.django_db

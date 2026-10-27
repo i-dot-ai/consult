@@ -10,6 +10,7 @@ from consultations.models import (
     CandidateTheme,
     CandidateThemeResponse,
     Consultation,
+    FileUpload,
     MultiChoiceAnswer,
     Question,
     Respondent,
@@ -17,6 +18,7 @@ from consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
+from consultations.services.setup_status import update_upload_status_for_questions
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -43,11 +45,18 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
 
+class FileUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileUpload
+        fields: ClassVar[list] = ["id", "status", "error_message"]
+
+
 class ConsultationSerializer(serializers.ModelSerializer):
     users = UserSerializer(many=True, read_only=True)
     created_by = UserSerializer(read_only=True)
     is_owner = serializers.SerializerMethodField()
     is_assigned = serializers.SerializerMethodField()
+    file_upload = serializers.SerializerMethodField()
 
     class Meta:
         model = Consultation
@@ -56,6 +65,7 @@ class ConsultationSerializer(serializers.ModelSerializer):
             "title",
             "code",
             "stage",
+            "upload_status",
             "data_source",
             "users",
             "created_by",
@@ -65,6 +75,7 @@ class ConsultationSerializer(serializers.ModelSerializer):
             "is_owner",
             "is_assigned",
             "running_job",
+            "file_upload",
         ]
 
     def get_is_owner(self, obj) -> bool | None:
@@ -75,6 +86,12 @@ class ConsultationSerializer(serializers.ModelSerializer):
     def get_is_assigned(self, obj) -> bool:
         user_id = self.context["request"].user.id
         return any(user.id == user_id for user in obj.users.all())
+
+    def get_file_upload(self, obj) -> dict | None:
+        file_upload = obj.fileupload_set.first()
+        if file_upload is None:
+            return None
+        return FileUploadSerializer(file_upload).data
 
 
 class ConsultationCreateSerializerV2(serializers.ModelSerializer):
@@ -205,6 +222,8 @@ class QuestionSetupSerializer(serializers.ModelSerializer):
         # A hybrid link is only valid while its target is closed.
         if "type" in validated_data and instance.type != Question.QuestionType.CLOSED:
             instance.question_set.update(closed_question=None)
+        if "type" in validated_data:
+            update_upload_status_for_questions(instance.consultation)
         return instance
 
 
