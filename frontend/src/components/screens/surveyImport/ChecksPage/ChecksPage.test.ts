@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 
 import ChecksPage from "./ChecksPage.svelte";
 import { CONSULTATION_ID } from "./mocks";
+import { getDataUploadFileUploadUrl } from "../../../../global/routes";
 
 describe("ChecksPage", () => {
   const TEST_DATA = {
@@ -119,12 +120,12 @@ describe("ChecksPage", () => {
     ).not.toBeDisabled();
   });
 
-  it("links forward to the consultation page", () => {
+  it("links forward to the file upload page", () => {
     render(ChecksPage, TEST_DATA);
 
     expect(
       screen.getByRole("link", { name: "Continue to upload" }),
-    ).toHaveAttribute("href", `/consultations/${CONSULTATION_ID}`);
+    ).toHaveAttribute("href", getDataUploadFileUploadUrl(CONSULTATION_ID));
   });
 
   it("matches snapshot", () => {

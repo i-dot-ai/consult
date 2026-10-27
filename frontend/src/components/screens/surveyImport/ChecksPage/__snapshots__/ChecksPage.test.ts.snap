@@ -694,7 +694,7 @@ exports[`ChecksPage > matches snapshot 1`] = `
         class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
         data-variant="primary"
         disabled="false"
-        href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58"
+        href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58/data-upload/upload-file"
         role="link"
         tabindex="0"
       >
