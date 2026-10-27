@@ -303,7 +303,7 @@ def detect_eval_metrics(df: pd.DataFrame, eval_type: str) -> dict[str, list[str]
             "information_equivalence": r"^question_part_\d+_information_equivalence$",
             "response_references": r"^question_part_\d+_response_references$",
             "distinctiveness": r"^question_part_\d+_distinctiveness$",
-            "fluency": r"^question_part_\d+_fluency$",
+            "clarity": r"^question_part_\d+_clarity$",
         },
     }
 
@@ -521,13 +521,13 @@ REFINEMENT_WEIGHTS = {
     "information_equivalence": 0.25,
     "response_references": 0.25,
     "distinctiveness": 0.25,
-    "fluency": 0.25,
+    "clarity": 0.25,
 }
 REFINEMENT_SCALE = {
     "information_equivalence": 1.0,
     "response_references": 5.0,
     "distinctiveness": 5.0,
-    "fluency": 5.0,
+    "clarity": 1.0,
 }
 
 

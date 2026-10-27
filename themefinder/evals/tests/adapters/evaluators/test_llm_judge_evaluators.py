@@ -1,13 +1,13 @@
-"""Tests for the five LLM-as-a-judge evaluator adapters: GroundednessEvaluator,
-CoverageEvaluator (decision-scored), CondensationQualityEvaluator,
-RefinementQualityEvaluator (numeric-key), and TitleSpecificityEvaluator
-(bespoke ratio).
-"""
+"""Tests for LLM-as-a-judge evaluator adapters."""
 
 import json
 from collections import namedtuple
 
 import pytest
+from conftest import _themes, make_case
+from fakes import FakeJudge, SequenceFakeJudge
+
+from adapters.evaluators.clarity_evaluator import ClarityEvaluator
 from adapters.evaluators.condensation_quality_evaluator import (
     CondensationQualityEvaluator,
 )
@@ -18,9 +18,7 @@ from adapters.evaluators.ground_information_evaluator import (
 from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
 from adapters.evaluators.refinement_quality_evaluator import RefinementQualityEvaluator
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
-from conftest import _themes, make_case
 from eval_types import Score
-from fakes import FakeJudge, SequenceFakeJudge
 
 
 class _RaisingJudge:
@@ -174,7 +172,7 @@ class _NumericKeyJudgeTests(_JudgeContractTests):
 
     #: Reasoning strings zipped onto the metrics (one per metric) — arbitrary,
     #: just needs enough entries to cover the widest evaluator's metric_names.
-    options = ["tight", "loose", "kept", "lost"]
+    options = ("tight", "loose", "kept", "lost")
 
     async def test_extracts_named_metrics(self):
         """Each metric and its `{metric}_reasoning` are extracted into a named Score."""
@@ -250,7 +248,7 @@ class TestCondensationQualityEvaluator(_NumericKeyJudgeTests):
 
 
 class TestRefinementQualityEvaluator(_NumericKeyJudgeTests):
-    """RefinementQualityEvaluator — the numeric-key path over its three
+    """RefinementQualityEvaluator — the numeric-key path over its two
     quality metrics. Same inherited `_build_scores` as condensation, so it
     inherits the full numeric-key contract and only pins its own `metric_names`."""
 
@@ -268,6 +266,103 @@ class TestRefinementQualityEvaluator(_NumericKeyJudgeTests):
 
         prompt = judge.prompts[0]
         assert prompt.index("INPUT_ONLY") < prompt.index("OUTPUT_ONLY")
+
+    async def test_prompt_no_longer_evaluates_fluency(self):
+        judge = FakeJudge("{}")
+
+        await self._evaluate(judge)
+
+        assert "fluency" not in judge.prompts[0].lower()
+
+
+class TestClarityEvaluator(_JudgeContractTests):
+    """ClarityEvaluator — one binary judgement per refined theme."""
+
+    evaluator_cls = ClarityEvaluator
+
+    async def test_scores_pass_and_fail_themes_with_failure_reasoning(self):
+        judge = SequenceFakeJudge(
+            '{"decision": "PASS", "reasoning": "Simple and direct."}',
+            '{"decision": "FAIL", "reasoning": "Uses unexplained jargon."}',
+        )
+        output = {"themes": _themes("Clear theme", "Unclear theme")}
+
+        scores = await self._evaluate(judge, output=output)
+
+        assert scores == [
+            Score(
+                "clarity",
+                0.5,
+                "1/2 themes passed\n"
+                "Failed:\n"
+                "  Unclear theme — Uses unexplained jargon.",
+            )
+        ]
+        assert len(judge.prompts) == 2
+
+    async def test_prompts_contain_only_the_theme_being_judged(self):
+        judge = FakeJudge('{"decision": "PASS", "reasoning": "Clear."}')
+        output = {
+            "themes": [
+                {
+                    "topic_label": "TARGET_ALPHA",
+                    "topic_description": "TARGET_DESCRIPTION",
+                },
+                {
+                    "topic_label": "PEER_OMEGA",
+                    "topic_description": "PEER_DESCRIPTION",
+                },
+            ]
+        }
+
+        await self._evaluate(
+            judge,
+            inputs={"themes": _themes("ORIGINAL_ONLY")},
+            output=output,
+        )
+
+        assert len(judge.prompts) == 2
+        assert all(
+            marker in judge.prompts[0]
+            for marker in ("TARGET_ALPHA", "TARGET_DESCRIPTION")
+        )
+        assert all(
+            marker not in judge.prompts[0]
+            for marker in ("PEER_OMEGA", "PEER_DESCRIPTION", "ORIGINAL_ONLY")
+        )
+        assert all(
+            marker in judge.prompts[1] for marker in ("PEER_OMEGA", "PEER_DESCRIPTION")
+        )
+        assert all(
+            marker not in judge.prompts[1]
+            for marker in ("TARGET_ALPHA", "TARGET_DESCRIPTION", "ORIGINAL_ONLY")
+        )
+
+    async def test_scores_a_single_theme(self):
+        judge = FakeJudge('{"decision": "PASS", "reasoning": "Clear."}')
+        output = {"themes": _themes("Clear theme", description="Plain description.")}
+
+        scores = await self._evaluate(judge, output=output)
+
+        assert scores == [Score("clarity", 1.0, "1/1 themes passed")]
+        assert len(judge.prompts) == 1
+
+    async def test_no_themes_skips_llm_call(self):
+        judge = FakeJudge()
+
+        scores = await self._evaluate(judge, output={"themes": []})
+
+        assert judge.prompts == []
+        assert scores == [Score("clarity", 0.0, "0/0 themes passed")]
+
+    async def test_malformed_judge_output_degrades_to_zero_score(self):
+        judge = FakeJudge("not JSON")
+
+        scores = await self._evaluate(judge)
+
+        assert scores[0].name == "clarity"
+        assert scores[0].value == 0.0
+        assert scores[0].comment.startswith("Error:")
 
 
 class TestTitleSpecificityEvaluator(_JudgeContractTests):

@@ -11,10 +11,6 @@
       "baseline": 5.0,
       "tolerance": 0.5
     },
-    "fluency": {
-      "baseline": 4.8,
-      "tolerance": 0.8216
-    },
     "information_retention": {
       "baseline": 5.0,
       "tolerance": 0.5

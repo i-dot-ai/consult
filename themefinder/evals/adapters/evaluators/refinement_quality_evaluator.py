@@ -1,13 +1,12 @@
-"""RefinementQualityEvaluator — three-dimension quality assessment of theme refinement.
+"""RefinementQualityEvaluator — two-dimension quality assessment of theme refinement.
 
 Compares refined `output["themes"]` against the pre-refinement themes on
-`case.inputs` (refinement has no ground truth). All three metrics currently
+`case.inputs` (refinement has no ground truth). Both metrics currently
 share one LLM call; splitting them per metric is deferred to ADR-0013.
 """
 
-from .prompts import load_prompt_fn
-
 from .llm_judge_evaluator import ThemeComparisonJudgeEvaluator
+from .prompts import load_prompt_fn
 
 
 class RefinementQualityEvaluator(ThemeComparisonJudgeEvaluator):
@@ -17,7 +16,6 @@ class RefinementQualityEvaluator(ThemeComparisonJudgeEvaluator):
     metric_names = (
         "response_references",
         "distinctiveness",
-        "fluency",
     )
     # No ground truth to compare against — case.expected_output is always
     # None for refinement cases — so the pre-transform themes live on
