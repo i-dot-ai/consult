@@ -368,7 +368,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-aa"
                     name="checklist-aa"
                     type="checkbox"
@@ -449,7 +449,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-ab"
                     name="checklist-ab"
                     type="checkbox"
@@ -530,7 +530,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-ac"
                     name="checklist-ac"
                     type="checkbox"
@@ -611,7 +611,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-ad"
                     name="checklist-ad"
                     type="checkbox"
@@ -692,7 +692,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-ae"
                     name="checklist-ae"
                     type="checkbox"
@@ -773,7 +773,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-af"
                     name="checklist-af"
                     type="checkbox"
@@ -854,7 +854,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-ag"
                     name="checklist-ag"
                     type="checkbox"
@@ -968,7 +968,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-ba"
                     name="checklist-ba"
                     type="checkbox"
@@ -1049,7 +1049,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-bb"
                     name="checklist-bb"
                     type="checkbox"
@@ -1130,7 +1130,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-bc"
                     name="checklist-bc"
                     type="checkbox"

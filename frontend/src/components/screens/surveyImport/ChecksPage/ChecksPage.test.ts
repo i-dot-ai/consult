@@ -95,11 +95,11 @@ describe("ChecksPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the Tick everything button", () => {
+  it("renders the Tick/Untick everything button", () => {
     render(ChecksPage, TEST_DATA);
 
     expect(
-      screen.getByRole("button", { name: "Tick everything" }),
+      screen.getByRole("button", { name: /(Unt|T)ick everything/ }),
     ).toBeInTheDocument();
   });
 
