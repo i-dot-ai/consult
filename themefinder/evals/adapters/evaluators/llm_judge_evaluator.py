@@ -1,6 +1,6 @@
 """Shared LLM-judge machinery
 `LLMJudgeEvaluator` - base
-`SinglePromptJudgeEvaluator`, `BinaryMatchJudgeEvaluator` - single-prompt and per-item judges
+`SinglePromptJudgeEvaluator`, `PerItemBinaryEvaluator`, `BinaryMatchJudgeEvaluator` - single-prompt and per-item judges
 `ThemeComparisonJudgeEvaluator`, `DecisionScoredComparisonJudge`, the bases for concrete theme-comparison judges
 """
 
@@ -15,7 +15,6 @@ from typing import Any, NamedTuple
 
 import numpy as np
 import openai
-from eval_types import Case, Score
 from tenacity import (
     before_sleep_log,
     retry,
@@ -23,10 +22,12 @@ from tenacity import (
     stop_after_attempt,
     wait_random_exponential,
 )
+
+from eval_types import Case, Score
 from utils.logging_config import get_logger
 
-from .prompts import load_prompt_fn
 from .base import EvaluatorPort
+from .prompts import load_prompt_fn
 
 logger = get_logger(__name__)
 
@@ -86,6 +87,102 @@ class LLMJudgeEvaluator(EvaluatorPort):
     @abstractmethod
     def _build_scores(self, decisions: Any) -> list[Score]:
         """Turn the parsed judge response into Scores."""
+
+
+class PerItemBinaryEvaluator(LLMJudgeEvaluator):
+    """Base for judges that assess each output item independently as PASS or FAIL.
+
+    Subclasses extract output items and render the item-specific prompt. They can
+    override ``_failure_details`` when their score comment needs more than the
+    default list of failed item labels.
+    """
+
+    item_plural: str = "items"
+    decision_name: str = "Binary"
+
+    def __init__(self, *args, concurrency: int = 5, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.concurrency = concurrency
+
+    @abstractmethod
+    def _get_items(self, output: Any) -> list[Any]:
+        """Return the output items to judge independently."""
+
+    @abstractmethod
+    def _item_label(self, item: Any) -> str:
+        """Return the human-readable label for an item."""
+
+    @abstractmethod
+    def _build_item_prompt(self, item: Any) -> str:
+        """Build the prompt that judges one item without peer-item context."""
+
+    async def _single_item_decision(
+        self, item: Any, sem: asyncio.Semaphore
+    ) -> dict[str, str]:
+        """Judge one item while respecting the evaluator's concurrency limit."""
+        label = self._item_label(item)
+        async with sem:
+            response = await self.invoke_with_retry(self._build_item_prompt(item))
+        parsed = self._parse_json_markdown(response.parsed)
+        return {"label": label, **self._parse_decision(label, parsed)}
+
+    async def _score(self, case: Case, output: Any) -> list[Score]:
+        """Judge every output item independently and aggregate its decisions."""
+        del case
+        items = self._get_items(output)
+        sem = asyncio.Semaphore(self.concurrency)
+        tasks = [
+            asyncio.create_task(self._single_item_decision(item, sem)) for item in items
+        ]
+        try:
+            decisions = await asyncio.gather(*tasks)
+        except Exception:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            raise
+
+        return self._build_scores(decisions)
+
+    def _parse_decision(self, label: str, parsed: Any) -> dict[str, str]:
+        """Validate a single binary decision from the item judge."""
+        if not isinstance(parsed, dict):
+            raise TypeError(
+                f"{self.decision_name} judge response must be a JSON object"
+            )
+
+        decision = parsed.get("decision")
+        reasoning = parsed.get("reasoning")
+        if decision not in {"PASS", "FAIL"}:
+            raise ValueError(
+                f"{self.decision_name} decision for {label!r} must be PASS or FAIL"
+            )
+        if not isinstance(reasoning, str):
+            raise TypeError(
+                f"{self.decision_name} reasoning for {label!r} must be a string"
+            )
+
+        return {"decision": decision, "reasoning": reasoning}
+
+    def _build_scores(self, decisions: list[dict[str, str]]) -> list[Score]:
+        """Return the proportion of independently judged items that pass."""
+        n_pass = sum(decision["decision"] == "PASS" for decision in decisions)
+        n_total = len(decisions)
+        ratio = n_pass / n_total if n_total else 0.0
+
+        comment = f"{n_pass}/{n_total} {self.item_plural} passed"
+        failures = [
+            decision for decision in decisions if decision["decision"] == "FAIL"
+        ]
+        if failures:
+            comment += self._failure_details(failures)
+
+        return [Score(self.metric_names[0], round(ratio, 2), comment)]
+
+    @staticmethod
+    def _failure_details(failures: list[dict[str, str]]) -> str:
+        """Return the default failure comment: a comma-separated label list."""
+        return f"\nFailed: {', '.join(failure['label'] for failure in failures)}"
 
 
 class SinglePromptJudgeEvaluator(LLMJudgeEvaluator):
