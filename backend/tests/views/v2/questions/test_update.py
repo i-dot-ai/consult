@@ -226,6 +226,55 @@ def test_v2_update_rejects_turning_linked_open_question_closed(
 
 
 @pytest.mark.django_db
+def test_v2_update_retyping_closed_question_clears_links_to_it(
+    client, question_detail_url, consultation, non_staff_user_token
+):
+    closed = QuestionFactory(consultation=consultation, number=1, type=Question.QuestionType.CLOSED)
+    linked = QuestionFactory(
+        consultation=consultation,
+        number=2,
+        type=Question.QuestionType.OPEN,
+        closed_question=closed,
+    )
+    other = QuestionFactory(consultation=consultation, number=3, type=Question.QuestionType.CLOSED)
+    linked_to_other = QuestionFactory(
+        consultation=consultation,
+        number=4,
+        type=Question.QuestionType.OPEN,
+        closed_question=other,
+    )
+
+    response = _patch(client, question_detail_url, closed, non_staff_user_token, {"type": "open"})
+
+    assert response.status_code == 200
+    linked.refresh_from_db()
+    assert linked.closed_question is None
+    linked_to_other.refresh_from_db()
+    assert linked_to_other.closed_question == other
+
+
+@pytest.mark.django_db
+def test_v2_update_rewording_closed_question_keeps_links_to_it(
+    client, question_detail_url, consultation, non_staff_user_token
+):
+    closed = QuestionFactory(consultation=consultation, number=1, type=Question.QuestionType.CLOSED)
+    linked = QuestionFactory(
+        consultation=consultation,
+        number=2,
+        type=Question.QuestionType.OPEN,
+        closed_question=closed,
+    )
+
+    response = _patch(
+        client, question_detail_url, closed, non_staff_user_token, {"text": "Reworded"}
+    )
+
+    assert response.status_code == 200
+    linked.refresh_from_db()
+    assert linked.closed_question == closed
+
+
+@pytest.mark.django_db
 def test_v2_update_rejects_link_across_consultations(
     client, question_detail_url, consultation, non_staff_user_token
 ):

@@ -202,6 +202,9 @@ class QuestionSetupSerializer(serializers.ModelSerializer):
             update_fields.append("status")
         if update_fields:
             instance.save(update_fields=[*update_fields, "modified_at"])
+        # A hybrid link is only valid while its target is closed.
+        if "type" in validated_data and instance.type != Question.QuestionType.CLOSED:
+            instance.question_set.update(closed_question=None)
         return instance
 
 
