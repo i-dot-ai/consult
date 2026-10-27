@@ -102,20 +102,32 @@ export function buildConsultationsV2ByTitleQuery(title: string) {
   );
 }
 
-export function buildConsultationDeepValidationQuery(consultationId: string, onError?: () => Promise<void>) {
-  return buildQuery<Consultation>(consultationV2DeepValidationQueryParts.url(consultationId), {
-    key: [...consultationV2DeepValidationQueryParts.key(consultationId)],
-    method: "POST",
-    stringifyBody: false,
-    onError: onError,
-  });
+export function buildConsultationDeepValidationQuery(
+  consultationId: string,
+  onError?: () => Promise<void>,
+) {
+  return buildQuery<Consultation>(
+    consultationV2DeepValidationQueryParts.url(consultationId),
+    {
+      key: [...consultationV2DeepValidationQueryParts.key(consultationId)],
+      method: "POST",
+      stringifyBody: false,
+      onError: onError,
+    },
+  );
 }
 
-export function buildConsultationUploadQuery(consultationId: string, onError?: () => Promise<void>) {
-  return buildQuery<Consultation>(consultationV2UploadQueryParts.url(consultationId), {
-    key: [...consultationV2UploadQueryParts.key(consultationId)],
-    method: "POST",
-    stringifyBody: false,
-    onError: onError,
-  });
+export function buildConsultationUploadQuery(
+  consultationId: string,
+  onError?: () => Promise<void>,
+) {
+  return buildQuery<Consultation>(
+    consultationV2UploadQueryParts.url(consultationId),
+    {
+      key: [...consultationV2UploadQueryParts.key(consultationId)],
+      method: "POST",
+      stringifyBody: false,
+      onError: onError,
+    },
+  );
 }

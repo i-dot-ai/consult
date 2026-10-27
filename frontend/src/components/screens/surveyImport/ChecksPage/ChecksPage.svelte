@@ -24,7 +24,6 @@
   import type { Check as CheckItem } from "./checks";
   import {
     getDataUploadSelectProviderUrl,
-    getConsultationViewUrl,
     getDataUploadFileUploadUrl,
   } from "../../../../global/routes";
 

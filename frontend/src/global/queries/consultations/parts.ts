@@ -33,11 +33,20 @@ export const consultationV2QueryParts = {
 };
 
 export const consultationV2DeepValidationQueryParts = {
-  key: (consultationId: string) => [Suffixes.Consultations, consultationId, "deep_validation"],
-  url: (consultationId: string) => getApiConsultationDeepValidationUrl(consultationId),
+  key: (consultationId: string) => [
+    Suffixes.Consultations,
+    consultationId,
+    "deep_validation",
+  ],
+  url: (consultationId: string) =>
+    getApiConsultationDeepValidationUrl(consultationId),
 };
 
 export const consultationV2UploadQueryParts = {
-  key: (consultationId: string) => [Suffixes.Consultations, consultationId, "upload"],
+  key: (consultationId: string) => [
+    Suffixes.Consultations,
+    consultationId,
+    "upload",
+  ],
   url: (consultationId: string) => getApiConsultationUploadUrl(consultationId),
 };

@@ -9,14 +9,13 @@ import type { ConsultationV2 } from "../../../../global/queries/consultations/ty
 import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import { consultationV2QueryParts } from "../../../../global/queries/consultations/parts";
 
-
 if (!getDataSetupV2Enabled()) {
   return Astro.rewrite("/404");
 }
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
-const { data, error, status } = await fetchBackendApi<ConsultationV2>(
+const { error, status } = await fetchBackendApi<ConsultationV2>(
   Astro,
   consultationV2QueryParts.url(consultationId || ""),
 );

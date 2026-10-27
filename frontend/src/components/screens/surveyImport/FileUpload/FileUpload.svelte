@@ -14,34 +14,29 @@
 
   import {
     buildConsultationDeepValidationQuery,
-    buildConsultationUploadQuery
+    buildConsultationUploadQuery,
   } from "../../../../global/queries/consultations/queries";
-  import { getConsultationViewUrl, getDataUploadChecksUrl } from "../../../../global/routes";
+  import {
+    getConsultationViewUrl,
+    getDataUploadChecksUrl,
+  } from "../../../../global/routes";
 
   interface Props {
     consultationId: string;
-  };
+  }
 
-  let {
-    consultationId,
-  }: Props = $props();
+  let { consultationId }: Props = $props();
 
   let deepValidation = $derived(
-    buildConsultationDeepValidationQuery(
-      consultationId,
-      async () => {
-        showDeepValidationError = true;
-      }
-    ),
+    buildConsultationDeepValidationQuery(consultationId, async () => {
+      showDeepValidationError = true;
+    }),
   );
 
   let upload = $derived(
-    buildConsultationUploadQuery(
-      consultationId,
-      async () => {
-        showUploadError = true;
-      }
-    ),
+    buildConsultationUploadQuery(consultationId, async () => {
+      showUploadError = true;
+    }),
   );
 
   let fileUploadedForValidation = $derived(deepValidation.query.data);
@@ -73,7 +68,9 @@
       {#if deepValidation.query.isPending}
         <div class="my-4">
           <LoadingIndicator size="3rem" />
-          <p class="text-center text-neutral-500 text-sm">Checking your file...</p>
+          <p class="text-center text-neutral-500 text-sm">
+            Checking your file...
+          </p>
         </div>
       {:else}
         {#if showDeepValidationError}
@@ -131,7 +128,9 @@
             </p>
 
             {#if deepValidation.query.data?.errors}
-              <div class="border border-2 border-red-500 p-4 rounded-lg mt-4 mb-8">
+              <div
+                class="border border-2 border-red-500 p-4 rounded-lg mt-4 mb-8"
+              >
                 <p class="text-sm text-red-500 mb-4">There is a problem</p>
 
                 <ul class="list-disc">
@@ -173,9 +172,7 @@
 
         {#if showUploadError}
           <div class="mb-4">
-            <Alert variant="error">
-              File could not be uploaded.
-            </Alert>
+            <Alert variant="error">File could not be uploaded.</Alert>
           </div>
         {/if}
 
@@ -209,18 +206,30 @@
               </p>
             {/snippet}
 
-            {@render infoItem(deepValidation.query.data?.question_count, "questions found")}
-            {@render infoItem(deepValidation.query.data?.response_count, "responses found")}
-            {@render infoItem(deepValidation.query.data?.blank_cell_count, "cells left blank")}
+            {@render infoItem(
+              deepValidation.query.data?.question_count,
+              "questions found",
+            )}
+            {@render infoItem(
+              deepValidation.query.data?.response_count,
+              "responses found",
+            )}
+            {@render infoItem(
+              deepValidation.query.data?.blank_cell_count,
+              "cells left blank",
+            )}
           </div>
 
           <div>
             <p class="text-neutral-800 my-4">
-              Uploading adds the responses to Consult. This can take a few hours. You can leave once the file is uploaded. The consultation page shows when the responses are added.
+              Uploading adds the responses to Consult. This can take a few
+              hours. You can leave once the file is uploaded. The consultation
+              page shows when the responses are added.
             </p>
 
             <p class="text-neutral-500">
-              One file per consultation. It cannot be replaced after it is uploaded.
+              One file per consultation. It cannot be replaced after it is
+              uploaded.
             </p>
 
             <div class="my-4">
@@ -236,7 +245,10 @@
 
           <Panel bg={true} border={true}>
             <p class="text-neutral-500">
-              The content of the responses has not been read. Whether personal information has been removed, and whether the wording is right, is still yours to confirm. You'll see every question once the responses are added.
+              The content of the responses has not been read. Whether personal
+              information has been removed, and whether the wording is right, is
+              still yours to confirm. You'll see every question once the
+              responses are added.
             </p>
           </Panel>
         </div>
@@ -281,7 +293,7 @@
 
           // redirect when upload is done
           window.location.href = getConsultationViewUrl(consultationId);
-       }}
+        }}
       >
         Upload Responses
       </Button>

@@ -65,7 +65,7 @@ const doFetch = async ({
   stringifyBody = true,
 }: DoFetchArgs) => {
   let contentTypeValue;
-  if (Boolean(contentType)) {
+  if (contentType) {
     contentTypeValue = contentType;
   } else if (contentType === undefined) {
     contentTypeValue = "application/json";
@@ -75,7 +75,7 @@ const doFetch = async ({
     method: method,
     body: stringifyBody ? JSON.stringify(body) : body,
     ...((contentTypeValue || headers) && {
-      ...(contentTypeValue && {"Content-Type": contentTypeValue}),
+      ...(contentTypeValue && { "Content-Type": contentTypeValue }),
       ...headers,
     }),
   });

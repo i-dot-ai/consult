@@ -174,11 +174,23 @@ export const getApiConsultationUrl = (consultationId: string) => {
 };
 
 export const getApiConsultationDeepValidationUrl = (consultationId: string) => {
-  return urlJoin(Prefixes.ApiV2, Suffixes.Consultations, consultationId, Suffixes.DeepValidation, "/");
+  return urlJoin(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.DeepValidation,
+    "/",
+  );
 };
 
 export const getApiConsultationUploadUrl = (consultationId: string) => {
-  return urlJoin(Prefixes.ApiV2, Suffixes.Consultations, consultationId, Suffixes.ApiUpload, "/");
+  return urlJoin(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.ApiUpload,
+    "/",
+  );
 };
 
 export const getApiConsultationEvaluationUrl = (consultationId: string) => {
