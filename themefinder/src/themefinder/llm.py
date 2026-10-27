@@ -158,6 +158,16 @@ def _sum_metric(
     return sum(values)
 
 
+def _json_schema_is_unsupported(error: openai.BadRequestError) -> bool:
+    """Whether the gateway rejected only the native structured-output format."""
+    message = str(error).lower()
+    return (
+        "response_format" in message
+        and "json_schema" in message
+        and ("not supported" in message or "unsupported" in message)
+    )
+
+
 async def _capture_gateway_response_headers(response: httpx.Response) -> None:
     """Keep the current task's gateway response headers for metric collection.
 
@@ -310,7 +320,67 @@ class OpenAILLM:
                     if collector is not None:
                         self._record_gateway_metrics(collector, response)
                     self._update_langfuse_generation(generation, response)
-                    return LLMResponse(parsed=response.choices[0].message.parsed)
+                    parsed = response.choices[0].message.parsed
+                    if parsed is None:
+                        raise ValueError(
+                            f"{self.model} did not return valid structured output"
+                        )
+                    return LLMResponse(parsed=parsed)
+            except openai.BadRequestError as error:
+                if not _json_schema_is_unsupported(error):
+                    raise
+
+                fallback_kwargs = {
+                    **kwargs,
+                    "messages": [
+                        *kwargs["messages"],
+                        {
+                            "role": "user",
+                            "content": (
+                                "Use the submit_structured_output tool for your final "
+                                "answer. Do not return it as message text."
+                            ),
+                        },
+                    ],
+                    "tools": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "submit_structured_output",
+                                "description": "Submit the structured output.",
+                                "parameters": output_model.model_json_schema(),
+                            },
+                        }
+                    ],
+                }
+                del fallback_kwargs["response_format"]
+                with self._langfuse_generation(
+                    fallback_kwargs["messages"]
+                ) as generation:
+                    response = await self.client.chat.completions.create(
+                        **fallback_kwargs
+                    )
+                    if collector is not None:
+                        self._record_gateway_metrics(collector, response)
+                    self._update_langfuse_generation(generation, response)
+
+                    tool_calls = response.choices[0].message.tool_calls or []
+                    if (
+                        len(tool_calls) != 1
+                        or tool_calls[0].function.name != "submit_structured_output"
+                    ):
+                        raise ValueError(
+                            f"{self.model} did not return a submit_structured_output tool call"
+                        )
+                    try:
+                        parsed = output_model.model_validate_json(
+                            tool_calls[0].function.arguments
+                        )
+                    except ValueError as validation_error:
+                        raise ValueError(
+                            f"{self.model} returned invalid structured-output tool arguments"
+                        ) from validation_error
+                    return LLMResponse(parsed=parsed)
             finally:
                 if headers_token is not None:
                     _gateway_response_headers.reset(headers_token)

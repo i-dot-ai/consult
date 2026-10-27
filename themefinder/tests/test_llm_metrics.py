@@ -4,6 +4,8 @@ from contextlib import nullcontext
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
+import httpx
+import openai
 import pytest
 from pydantic import BaseModel
 
@@ -15,8 +17,8 @@ from themefinder.llm import (
 )
 
 
-def _response(*, content: str = "answer", parsed=None, usage=None):
-    message = SimpleNamespace(content=content, parsed=parsed)
+def _response(*, content: str = "answer", parsed=None, tool_calls=None, usage=None):
+    message = SimpleNamespace(content=content, parsed=parsed, tool_calls=tool_calls)
     return SimpleNamespace(choices=[SimpleNamespace(message=message)], usage=usage)
 
 
@@ -48,6 +50,16 @@ def _headers(*, cost: str = "0.0015", duration_ms: str = "125") -> dict[str, str
         "x-litellm-response-cost": cost,
         "x-litellm-response-duration-ms": duration_ms,
     }
+
+
+def _json_schema_unsupported_error() -> openai.BadRequestError:
+    request = httpx.Request("POST", "https://gateway.example.invalid/chat/completions")
+    response = httpx.Response(status_code=400, request=request)
+    return openai.BadRequestError(
+        "response_format.type json_schema is not supported",
+        response=response,
+        body=None,
+    )
 
 
 async def test_collects_and_sums_gateway_metrics_for_each_regular_call():
@@ -102,6 +114,94 @@ async def test_collects_metrics_for_structured_calls():
     assert collector.summary().call_count == 1
     assert collector.summary().cost_usd == 0.001
     assert collector.summary().latency_seconds == 0.05
+
+
+async def test_rejects_unparsed_structured_output():
+    class Output(BaseModel):
+        answer: str
+
+    llm = _llm(parse=(_response(parsed=None), _headers()))
+
+    with pytest.raises(ValueError, match="did not return valid structured output"):
+        await llm.ainvoke("prompt", Output)
+
+
+async def test_retries_schema_rejection_with_a_validated_tool_call():
+    class Output(BaseModel):
+        answer: str
+
+    tool_call = SimpleNamespace(
+        function=SimpleNamespace(
+            name="submit_structured_output", arguments='{"answer": "fallback"}'
+        )
+    )
+    response = (
+        _response(
+            tool_calls=[tool_call],
+            usage=SimpleNamespace(prompt_tokens=3, completion_tokens=2, total_tokens=5),
+        ),
+        _headers(cost="0.001", duration_ms="50"),
+    )
+    llm = _llm(create=response)
+    llm.client.chat.completions.parse = AsyncMock(
+        side_effect=_json_schema_unsupported_error()
+    )
+
+    with collect_gateway_metrics() as collector:
+        result = await llm.ainvoke("prompt", Output)
+
+    assert result.parsed == Output(answer="fallback")
+    fallback_kwargs = llm.client.chat.completions.create.await_args.kwargs
+    assert "response_format" not in fallback_kwargs
+    assert (
+        fallback_kwargs["tools"][0]["function"]["parameters"]
+        == Output.model_json_schema()
+    )
+    assert collector.summary().call_count == 1
+
+
+async def test_schema_fallback_rejects_invalid_tool_arguments():
+    class Output(BaseModel):
+        answer: str
+
+    response = (
+        _response(
+            tool_calls=[
+                SimpleNamespace(
+                    function=SimpleNamespace(
+                        name="submit_structured_output", arguments="not json"
+                    )
+                )
+            ]
+        ),
+        _headers(),
+    )
+    llm = _llm(create=response)
+    llm.client.chat.completions.parse = AsyncMock(
+        side_effect=_json_schema_unsupported_error()
+    )
+
+    with pytest.raises(ValueError, match="invalid structured-output tool arguments"):
+        await llm.ainvoke("prompt", Output)
+
+
+async def test_does_not_retry_unrelated_bad_requests():
+    class Output(BaseModel):
+        answer: str
+
+    request = httpx.Request("POST", "https://gateway.example.invalid/chat/completions")
+    response = httpx.Response(status_code=400, request=request)
+    llm = _llm()
+    llm.client.chat.completions.parse = AsyncMock(
+        side_effect=openai.BadRequestError(
+            "model does not support this parameter", response=response, body=None
+        )
+    )
+
+    with pytest.raises(openai.BadRequestError):
+        await llm.ainvoke("prompt", Output)
+
+    llm.client.chat.completions.create.assert_not_awaited()
 
 
 async def test_sync_invoke_copies_metric_context_to_its_worker_thread():
