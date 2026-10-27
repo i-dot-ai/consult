@@ -6,7 +6,7 @@ const consultationId = CONSULTATION_ID;
 export default {
   name: "ChecksPage",
   component: ChecksPage,
-  category: "Data",
+  category: "Screens / Survey Import",
   props: [{ name: "consultationId", value: consultationId, type: "text" }],
   stories: [
     {

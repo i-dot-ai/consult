@@ -54,6 +54,8 @@ import OverviewStory from "../screens/surveyImport/Overview/OverviewStory.svelte
 import OutsideConsultTagStory from "../surveyImport/OutsideConsultTag/OutsideConsultTagStory.svelte";
 import RadioCardsStory from "../inputs/RadioCards/RadioCardsStory.svelte";
 import ExportResponsesPageStory from "../surveyImport/ExportResponsesPage/ExportResponsesPageStory.svelte";
+import FileUploadStory from "../screens/surveyImport/FileUpload/FileUploadStory.svelte";
+import ChecksPageStory from "../screens/surveyImport/ChecksPage/ChecksPageStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -134,4 +136,6 @@ export default [
   OutsideConsultTagStory,
   RadioCardsStory,
   ExportResponsesPageStory,
+  FileUploadStory,
+  ChecksPageStory,
 ] as Story[];

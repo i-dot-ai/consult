@@ -87,6 +87,7 @@
         "focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400",
         "shrink-0 disabled:cursor-not-allowed disabled:opacity-50",
         "checked:border-primary checked:bg-primary",
+        "cursor-pointer",
         size === "xs" && "h-3 w-3",
         size === "sm" && "h-4 w-4",
         size === "md" && "h-5 w-5",
