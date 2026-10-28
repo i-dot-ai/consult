@@ -5,24 +5,24 @@ from typing import ClassVar
 from django.db import migrations, models
 
 
-def set_existing_servey_import_statuses(apps, schema_editor):
+def set_existing_survey_import_statuses(apps, schema_editor):
     FileUpload = apps.get_model("consultations", "FileUpload")
 
     for file_upload in FileUpload.objects.select_related("consultation"):
         consultation = file_upload.consultation
         questions = consultation.question_set.all()
         if not questions.exists():
-            consultation.servey_import_status = "import_failed"
+            consultation.survey_import_status = "import_failed"
             file_upload.status = "failed"
             file_upload.error_message = "The previous file upload did not import any questions."
         else:
-            consultation.servey_import_status = (
+            consultation.survey_import_status = (
                 "pending_questions"
                 if questions.filter(type__isnull=True).exists()
                 else "import_complete"
             )
             file_upload.status = "completed"
-        consultation.save(update_fields=["servey_import_status"])
+        consultation.save(update_fields=["survey_import_status"])
         file_upload.save(update_fields=["status", "error_message"])
 
 
@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
     operations: ClassVar[list] = [
         migrations.AddField(
             model_name="consultation",
-            name="servey_import_status",
+            name="survey_import_status",
             field=models.CharField(
                 choices=[
                     ("not_started", "Not started"),
@@ -71,5 +71,5 @@ class Migration(migrations.Migration):
                 max_length=32,
             ),
         ),
-        migrations.RunPython(set_existing_servey_import_statuses, migrations.RunPython.noop),
+        migrations.RunPython(set_existing_survey_import_statuses, migrations.RunPython.noop),
     ]

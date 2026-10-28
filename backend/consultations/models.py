@@ -61,7 +61,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         QUALTRICS = "qualtrics", "Qualtrics"
         CITIZEN_SPACE = "citizen-space", "Citizen Space"
 
-    class ServeyImportStatus(models.TextChoices):
+    class SurveyImportStatus(models.TextChoices):
         NOT_STARTED = "not_started", "Not started"
         VIEWED_OVERVIEW = "viewed_overview", "Viewed overview"
         VIEWED_PROVIDER = "viewed_provider", "Viewed provider"
@@ -106,10 +106,10 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         null=True,
         default=None,
     )
-    servey_import_status = models.CharField(
+    survey_import_status = models.CharField(
         max_length=32,
-        choices=ServeyImportStatus,
-        default=ServeyImportStatus.NOT_STARTED,
+        choices=SurveyImportStatus,
+        default=SurveyImportStatus.NOT_STARTED,
     )
     code = models.SlugField(max_length=256)
     timestamp = models.SlugField(max_length=256, null=True, blank=True)

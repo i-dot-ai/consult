@@ -42,10 +42,10 @@ def test_v2_upload_consultation_file(client, consultation, non_staff_user_token)
     assert file_upload.s3_key == f"consultations/uploads/{consultation.id}/{file_upload.id}.csv"
     assert response.json()["s3_key"] == file_upload.s3_key
     assert response.json()["status"] == FileUpload.Status.PENDING
-    assert response.json()["servey_import_status"] == Consultation.ServeyImportStatus.FILE_UPLOADING
+    assert response.json()["survey_import_status"] == Consultation.SurveyImportStatus.FILE_UPLOADING
     delay.assert_called_once_with(file_upload.id)
     consultation.refresh_from_db()
-    assert consultation.servey_import_status == Consultation.ServeyImportStatus.FILE_UPLOADING
+    assert consultation.survey_import_status == Consultation.SurveyImportStatus.FILE_UPLOADING
     assert not Question.objects.filter(consultation=consultation).exists()
     assert not Respondent.objects.filter(consultation=consultation).exists()
 
@@ -145,7 +145,7 @@ def test_v2_upload_records_queue_failure(client, consultation, non_staff_user_to
     assert file_upload.status == FileUpload.Status.FAILED
     assert file_upload.error_message == "Queue unavailable"
     consultation.refresh_from_db()
-    assert consultation.servey_import_status == Consultation.ServeyImportStatus.IMPORT_FAILED
+    assert consultation.survey_import_status == Consultation.SurveyImportStatus.IMPORT_FAILED
 
 
 @pytest.mark.django_db

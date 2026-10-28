@@ -36,14 +36,14 @@ def add_consultation_job(file_upload_id: UUID) -> None:
         file_upload.status = models.FileUpload.Status.FAILED
         file_upload.error_message = str(error)
         file_upload.save(update_fields=["status", "error_message"])
-        consultation.servey_import_status = models.Consultation.ServeyImportStatus.IMPORT_FAILED
-        consultation.save(update_fields=["servey_import_status"])
+        consultation.survey_import_status = models.Consultation.SurveyImportStatus.IMPORT_FAILED
+        consultation.save(update_fields=["survey_import_status"])
         raise
 
     file_upload.status = models.FileUpload.Status.COMPLETED
     file_upload.save(update_fields=["status"])
-    consultation.servey_import_status = models.Consultation.ServeyImportStatus.PENDING_QUESTIONS
-    consultation.save(update_fields=["servey_import_status"])
+    consultation.survey_import_status = models.Consultation.SurveyImportStatus.PENDING_QUESTIONS
+    consultation.save(update_fields=["survey_import_status"])
 
 
 def delete_question_related_table(table: str, consultation_id: UUID):

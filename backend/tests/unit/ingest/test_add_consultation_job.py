@@ -26,7 +26,7 @@ def test_add_consultation_job_imports_raw_file(consultation, non_staff_user):
     consultation.refresh_from_db()
     assert file_upload.status == FileUpload.Status.COMPLETED
     assert file_upload.error_message == ""
-    assert consultation.servey_import_status == Consultation.ServeyImportStatus.PENDING_QUESTIONS
+    assert consultation.survey_import_status == Consultation.SurveyImportStatus.PENDING_QUESTIONS
     questions = list(Question.objects.filter(consultation=consultation).order_by("number"))
     assert [question.text for question in questions] == ["Name", "Feedback"]
     assert [question.type for question in questions] == [None, None]
@@ -56,5 +56,5 @@ def test_add_consultation_job_records_failure(consultation, non_staff_user):
     consultation.refresh_from_db()
     assert file_upload.status == FileUpload.Status.FAILED
     assert file_upload.error_message
-    assert consultation.servey_import_status == Consultation.ServeyImportStatus.IMPORT_FAILED
+    assert consultation.survey_import_status == Consultation.SurveyImportStatus.IMPORT_FAILED
     log_exception.assert_called_once()
