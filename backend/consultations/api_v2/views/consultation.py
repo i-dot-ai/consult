@@ -5,7 +5,7 @@ from zipfile import BadZipFile
 
 from django.conf import settings
 from django.core.files.storage import default_storage
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from openpyxl.utils.exceptions import InvalidFileException
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -61,7 +61,10 @@ class ConsultationViewSet(
     def get_queryset(self):
         queryset = (
             Consultation.objects.select_related("created_by")
-            .prefetch_related("users", "fileupload_set")
+            .prefetch_related(
+                "users",
+                Prefetch("fileupload_set", queryset=FileUpload.objects.order_by("created_at")),
+            )
             .order_by("-created_at")
         )
         if self.request.user.is_staff:
@@ -134,7 +137,7 @@ class ConsultationViewSet(
         except Exception as error:
             file_upload.status = FileUpload.Status.FAILED
             file_upload.error_message = str(error)
-            file_upload.save(update_fields=["status", "error_message", "modified_at"])
+            file_upload.save(update_fields=["status", "error_message"])
             consultation.survey_import_status = Consultation.SurveyImportStatus.IMPORT_FAILED
             consultation.save(update_fields=["survey_import_status"])
             raise
