@@ -19,6 +19,18 @@ def test_v2_question_routes_are_registered():
     assert resolve(detail_url).view_name == "question-v2-detail"
 
 
+def test_v2_demographics_route_is_registered():
+    consultation_id, question_id = uuid4(), uuid4()
+
+    url = reverse(
+        "question-v2-demographics",
+        kwargs={"consultation_pk": consultation_id, "pk": question_id},
+    )
+
+    assert url == f"/api/v2/consultations/{consultation_id}/questions/{question_id}/demographics/"
+    assert resolve(url).view_name == "question-v2-demographics"
+
+
 @pytest.mark.django_db
 def test_v2_question_routes_absent_when_flag_off(client, reload_urlconf):
     with override_settings(DATA_SETUP_V2_ENABLED=False):

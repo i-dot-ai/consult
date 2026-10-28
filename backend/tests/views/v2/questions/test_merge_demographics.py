@@ -1,29 +1,13 @@
 import pytest
-from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from consultations.models import Question, Response
-from factories import ConsultationFactory, QuestionFactory, RespondentFactory, UserFactory
-
-
-def merge_url(consultation, question):
-    return reverse(
-        "question-v2-merge-demographics",
-        kwargs={"consultation_pk": consultation.id, "pk": question.id},
-    )
-
-
-def demographic_response(question, text):
-    return Response.objects.create(
-        question=question,
-        respondent=RespondentFactory(consultation=question.consultation),
-        text=text,
-    )
+from factories import ConsultationFactory, QuestionFactory, UserFactory
 
 
 @pytest.mark.django_db
 def test_merge_demographics_updates_selected_response_text_only(
-    client, consultation, non_staff_user_token
+    client, consultation, merge_url, demographic_response, non_staff_user_token
 ):
     question = QuestionFactory(
         consultation=consultation,
@@ -61,7 +45,7 @@ def test_merge_demographics_updates_selected_response_text_only(
 
 @pytest.mark.django_db
 def test_merge_demographics_rejects_response_from_another_question(
-    client, consultation, non_staff_user_token
+    client, consultation, merge_url, demographic_response, non_staff_user_token
 ):
     question = QuestionFactory(
         consultation=consultation,
@@ -90,7 +74,7 @@ def test_merge_demographics_rejects_response_from_another_question(
 
 @pytest.mark.django_db
 def test_merge_demographics_rejects_non_demographic_question(
-    client, consultation, non_staff_user_token
+    client, consultation, merge_url, demographic_response, non_staff_user_token
 ):
     question = QuestionFactory(
         consultation=consultation,
@@ -119,7 +103,7 @@ def test_merge_demographics_rejects_non_demographic_question(
 @pytest.mark.django_db
 @pytest.mark.parametrize("responses", [[], ["one"], ["duplicate", "duplicate"]])
 def test_merge_demographics_rejects_invalid_response_lists(
-    client, consultation, non_staff_user_token, responses
+    client, consultation, merge_url, demographic_response, non_staff_user_token, responses
 ):
     question = QuestionFactory(
         consultation=consultation,
@@ -144,7 +128,7 @@ def test_merge_demographics_rejects_invalid_response_lists(
 
 @pytest.mark.django_db
 def test_merge_demographics_rejects_question_from_another_consultation(
-    client, consultation, non_staff_user_token
+    client, consultation, merge_url, demographic_response, non_staff_user_token
 ):
     question = QuestionFactory(
         consultation=ConsultationFactory(),
@@ -166,7 +150,9 @@ def test_merge_demographics_rejects_question_from_another_consultation(
 
 
 @pytest.mark.django_db
-def test_merge_demographics_rejects_unassigned_user(client, consultation):
+def test_merge_demographics_rejects_unassigned_user(
+    client, consultation, merge_url, demographic_response
+):
     question = QuestionFactory(
         consultation=consultation,
         type=Question.QuestionType.DEMOGRAPHIC,
