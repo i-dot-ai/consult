@@ -30,7 +30,7 @@ def test_v2_update_sets_type_and_marks_question_configured(
     assert question.type == Question.QuestionType.CLOSED
     assert question.status == Question.ThemeStatus.CONFIGURED
     consultation.refresh_from_db()
-    assert consultation.upload_status == Consultation.UploadStatus.READY
+    assert consultation.servey_import_status == Consultation.ServeyImportStatus.IMPORT_COMPLETE
 
 
 @pytest.mark.django_db
@@ -46,7 +46,7 @@ def test_v2_update_keeps_consultation_pending_until_all_questions_configured(
 
     assert response.status_code == 200
     consultation.refresh_from_db()
-    assert consultation.upload_status == Consultation.UploadStatus.QUESTIONS_PENDING
+    assert consultation.servey_import_status == Consultation.ServeyImportStatus.PENDING_QUESTIONS
 
 
 @pytest.mark.django_db
@@ -115,7 +115,7 @@ def test_v2_update_clears_type_with_null(
     assert question.type is None
     assert question.status == Question.ThemeStatus.DRAFT
     consultation.refresh_from_db()
-    assert consultation.upload_status == Consultation.UploadStatus.QUESTIONS_PENDING
+    assert consultation.servey_import_status == Consultation.ServeyImportStatus.PENDING_QUESTIONS
 
 
 @pytest.mark.django_db

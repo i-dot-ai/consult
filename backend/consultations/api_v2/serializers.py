@@ -18,7 +18,7 @@ from consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
-from consultations.services.setup_status import update_upload_status_for_questions
+from consultations.services.setup_status import update_servey_import_status_for_questions
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -65,7 +65,7 @@ class ConsultationSerializer(serializers.ModelSerializer):
             "title",
             "code",
             "stage",
-            "upload_status",
+            "servey_import_status",
             "data_source",
             "users",
             "created_by",
@@ -223,7 +223,7 @@ class QuestionSetupSerializer(serializers.ModelSerializer):
         if "type" in validated_data and instance.type != Question.QuestionType.CLOSED:
             instance.question_set.update(closed_question=None)
         if "type" in validated_data:
-            update_upload_status_for_questions(instance.consultation)
+            update_servey_import_status_for_questions(instance.consultation)
         return instance
 
 

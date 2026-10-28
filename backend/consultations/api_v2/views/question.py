@@ -15,7 +15,7 @@ from consultations.api_v2.serializers import (
 )
 from consultations.models import Question
 from consultations.models import Response as ConsultationResponse
-from consultations.services.setup_status import update_upload_status_for_questions
+from consultations.services.setup_status import update_servey_import_status_for_questions
 
 
 class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet):
@@ -43,7 +43,7 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
     def perform_destroy(self, instance):
         consultation = instance.consultation
         instance.delete()
-        update_upload_status_for_questions(consultation)
+        update_servey_import_status_for_questions(consultation)
 
     @action(detail=True, methods=["post"], url_path="demographics/merge")
     def merge_demographics(self, request, *args, **kwargs):

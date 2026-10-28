@@ -61,12 +61,17 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         QUALTRICS = "qualtrics", "Qualtrics"
         CITIZEN_SPACE = "citizen-space", "Citizen Space"
 
-    class UploadStatus(models.TextChoices):
-        DATA_SETUP = "data_setup", "Data setup"
+    class ServeyImportStatus(models.TextChoices):
+        NOT_STARTED = "not_started", "Not started"
+        VIEWED_OVERVIEW = "viewed_overview", "Viewed overview"
+        VIEWED_PROVIDER = "viewed_provider", "Viewed provider"
+        VIEWED_CHECKLIST = "viewed_checklist", "Viewed checklist"
+        VIEWED_UPLOAD = "viewed_upload", "Viewed upload"
         FILE_UPLOADING = "file_uploading", "File uploading"
-        QUESTIONS_PENDING = "questions_pending", "File uploaded but questions not answered"
-        READY = "ready", "Ready for finding themes"
-        IMPORT_FAILED = "import_failed", "File import failed"
+        PENDING_QUESTIONS = "pending_questions", "Pending questions"
+        PENDING_DEMOGRAPHICS = "pending_demographics", "Pending demographics"
+        IMPORT_COMPLETE = "import_complete", "Import complete"
+        IMPORT_FAILED = "import_failed", "Import failed"
 
     title = models.CharField(max_length=256)
     started_at = models.DateTimeField(
@@ -101,10 +106,10 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         null=True,
         default=None,
     )
-    upload_status = models.CharField(
+    servey_import_status = models.CharField(
         max_length=32,
-        choices=UploadStatus,
-        default=UploadStatus.DATA_SETUP,
+        choices=ServeyImportStatus,
+        default=ServeyImportStatus.NOT_STARTED,
     )
     code = models.SlugField(max_length=256)
     timestamp = models.SlugField(max_length=256, null=True, blank=True)

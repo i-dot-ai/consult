@@ -127,16 +127,16 @@ class ConsultationViewSet(
         requested_key = f"consultations/uploads/{consultation.id}/{file_upload.id}{extension}"
         file_upload.s3_key = default_storage.save(requested_key, uploaded_file)
         file_upload.save()
-        consultation.upload_status = Consultation.UploadStatus.FILE_UPLOADING
-        consultation.save(update_fields=["upload_status", "modified_at"])
+        consultation.servey_import_status = Consultation.ServeyImportStatus.FILE_UPLOADING
+        consultation.save(update_fields=["servey_import_status", "modified_at"])
         try:
             add_consultation_job.delay(file_upload.id)
         except Exception as error:
             file_upload.status = FileUpload.Status.FAILED
             file_upload.error_message = str(error)
             file_upload.save(update_fields=["status", "error_message", "modified_at"])
-            consultation.upload_status = Consultation.UploadStatus.IMPORT_FAILED
-            consultation.save(update_fields=["upload_status", "modified_at"])
+            consultation.servey_import_status = Consultation.ServeyImportStatus.IMPORT_FAILED
+            consultation.save(update_fields=["servey_import_status", "modified_at"])
             raise
 
         return Response(
@@ -144,7 +144,7 @@ class ConsultationViewSet(
                 "id": str(file_upload.id),
                 "s3_key": file_upload.s3_key,
                 "status": file_upload.status,
-                "upload_status": consultation.upload_status,
+                "servey_import_status": consultation.servey_import_status,
             },
             status=status.HTTP_202_ACCEPTED,
         )

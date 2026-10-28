@@ -5,22 +5,24 @@ from typing import ClassVar
 from django.db import migrations, models
 
 
-def set_existing_upload_statuses(apps, schema_editor):
+def set_existing_servey_import_statuses(apps, schema_editor):
     FileUpload = apps.get_model("consultations", "FileUpload")
 
     for file_upload in FileUpload.objects.select_related("consultation"):
         consultation = file_upload.consultation
         questions = consultation.question_set.all()
         if not questions.exists():
-            consultation.upload_status = "import_failed"
+            consultation.servey_import_status = "import_failed"
             file_upload.status = "failed"
             file_upload.error_message = "The previous file upload did not import any questions."
         else:
-            consultation.upload_status = (
-                "questions_pending" if questions.filter(type__isnull=True).exists() else "ready"
+            consultation.servey_import_status = (
+                "pending_questions"
+                if questions.filter(type__isnull=True).exists()
+                else "import_complete"
             )
             file_upload.status = "completed"
-        consultation.save(update_fields=["upload_status"])
+        consultation.save(update_fields=["servey_import_status"])
         file_upload.save(update_fields=["status", "error_message"])
 
 
@@ -32,16 +34,21 @@ class Migration(migrations.Migration):
     operations: ClassVar[list] = [
         migrations.AddField(
             model_name="consultation",
-            name="upload_status",
+            name="servey_import_status",
             field=models.CharField(
                 choices=[
-                    ("data_setup", "Data setup"),
+                    ("not_started", "Not started"),
+                    ("viewed_overview", "Viewed overview"),
+                    ("viewed_provider", "Viewed provider"),
+                    ("viewed_checklist", "Viewed checklist"),
+                    ("viewed_upload", "Viewed upload"),
                     ("file_uploading", "File uploading"),
-                    ("questions_pending", "File uploaded but questions not answered"),
-                    ("ready", "Ready for finding themes"),
-                    ("import_failed", "File import failed"),
+                    ("pending_questions", "Pending questions"),
+                    ("pending_demographics", "Pending demographics"),
+                    ("import_complete", "Import complete"),
+                    ("import_failed", "Import failed"),
                 ],
-                default="data_setup",
+                default="not_started",
                 max_length=32,
             ),
         ),
@@ -64,5 +71,5 @@ class Migration(migrations.Migration):
                 max_length=32,
             ),
         ),
-        migrations.RunPython(set_existing_upload_statuses, migrations.RunPython.noop),
+        migrations.RunPython(set_existing_servey_import_statuses, migrations.RunPython.noop),
     ]
