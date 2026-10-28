@@ -27,7 +27,7 @@ BINARY_SIGNATURES = (
 
 
 def _citizen_space_rows(rows: Sequence[Sequence[object]]) -> tuple[int, list[int]]:
-    return 1, [2]
+    return 1, list(range(2, len(rows) + 1))
 
 
 def _qualtrics_rows(rows: Sequence[Sequence[object]]) -> tuple[int, list[int]]:
@@ -164,6 +164,9 @@ def _validate_rows(rows: Sequence[Sequence[object]], data_source: str) -> dict:
                 f"The {row_type} row is empty.",
             )
 
+        if selected_index > 0:
+            response_count += 1
+
         for column_number, cell in enumerate(row, start=1):
             value = _cell_value(cell)
             reference = _cell_reference(cell, row_number, column_number)
@@ -171,8 +174,6 @@ def _validate_rows(rows: Sequence[Sequence[object]], data_source: str) -> dict:
                 blank_cell_count += 1
             elif selected_index == 0:
                 question_count += 1
-            else:
-                response_count += 1
             if isinstance(value, str) and (
                 ILLEGAL_CONTROL_CHARACTERS.search(value) or ILLEGAL_CONTROL_MARKER in value
             ):
