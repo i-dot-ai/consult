@@ -39,6 +39,10 @@
     }),
   );
 
+  // There's a moment between query succeeding and redirect occuring
+  // including isSuccess therefore prevents user from clicking inbetween the two
+  let finalUploadInProgress = $derived(upload.query.isPending || upload.query.isSuccess);
+
   let fileUploadedForValidation = $derived(deepValidation.query.data);
 
   const MB_200 = 209715200;
@@ -272,6 +276,7 @@
         variant="primary"
         size="sm"
         title="Upload your chosen file"
+        disabled={finalUploadInProgress}
         handleClick={async () => {
           // reset upload error alert
           showUploadError = false;
@@ -295,7 +300,11 @@
           window.location.href = getConsultationViewUrl(consultationId);
         }}
       >
-        Upload Responses
+        {#if finalUploadInProgress}
+          <LoadingIndicator size="1rem" /> Uploading...
+        {:else}
+          Upload Responses
+        {/if}
       </Button>
     {/if}
   </div>
