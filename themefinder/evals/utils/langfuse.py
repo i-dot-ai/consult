@@ -113,7 +113,7 @@ def get_langfuse_context(
     Returns:
         LangfuseContext with client and handler (or None values if not configured)
     """
-    settings = settings or eval_settings
+    settings = settings if settings is not None else eval_settings
     langfuse_settings = settings.active_langfuse
 
     if langfuse_settings is None:

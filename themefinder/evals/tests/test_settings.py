@@ -25,6 +25,14 @@ GITHUB_SHA_SHORT = GITHUB_SHA[:7]
 EXPLICIT_ENGINE = DEFAULTS.engine
 
 
+@pytest.fixture(autouse=True)
+def _reset_settings_factory_cache():
+    """Isolate tests for the environment-reading settings factory itself."""
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
+
+
 def _set_langfuse_creds(
     monkeypatch,
     secret=LANGFUSE_SECRET_KEY,
@@ -111,12 +119,9 @@ class TestGetSettingsFieldMapping:
             get_settings()
 
     def test_defaults_when_unset(self, monkeypatch):
-        # get_settings() calls dotenv.load_dotenv() internally, which would
-        # otherwise refill any var deleted below straight back out of the
-        # real .env file on disk (dotenv only fills in *missing* vars, so a
-        # deleted-then-reloaded var looks "unset" to monkeypatch but isn't).
-        # Neutralise it so this test exercises the code's actual defaults.
-        monkeypatch.setattr(settings.dotenv, "load_dotenv", lambda *a, **k: None)
+        # dotenv was loaded when the settings module was imported. Removing
+        # the corresponding process variables below therefore exercises the
+        # code defaults without re-reading a real local .env file.
         for var in (
             "ENVIRONMENT",
             "GITHUB_SHA",
