@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { slide } from "svelte/transition";
+  import { fade, slide } from "svelte/transition";
 
   import Button from "../Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
@@ -16,6 +16,8 @@
     accept: string;
     maxSize?: number;
     multiple?: boolean;
+    confirmHint?: string;
+    confirmButtonText?: string;
     onConfirm: (files: File[]) => void;
   }
 
@@ -26,6 +28,8 @@
     accept,
     maxSize = Infinity,
     multiple = true,
+    confirmHint,
+    confirmButtonText,
     onConfirm = () => {},
   }: Props = $props();
 
@@ -140,13 +144,15 @@
     handleFileDrop(e.dataTransfer!);
   }}
 >
-  <MaterialIcon color="fill-neutral-400" size="3rem">
-    <Upload />
-  </MaterialIcon>
+  {#if files.length === 0}
+    <MaterialIcon color="fill-neutral-400" size="3rem">
+      <Upload />
+    </MaterialIcon>
 
-  <span>{title}</span>
+    <span>{title}</span>
 
-  <small class={clsx(["text-neutral-500", "text-xs"])}>{subtitle}</small>
+    <small class={clsx(["text-neutral-500", "text-xs"])}>{subtitle}</small>
+  {/if}
 
   {#if errorMessage}
     <small transition:slide class="text-red-500">{errorMessage}</small>
@@ -181,6 +187,7 @@
               removeFile(i);
             }}
             ariaLabel={`Remove file ${file.name}`}
+            title={`Remove file ${file.name}`}
           >
             <MaterialIcon color="fill-neutral-500" size="0.8rem">
               <Close />
@@ -194,6 +201,14 @@
       </li>
     {/each}
   </ul>
+
+  <div class="my-2">
+    {#if files.length > 0 && confirmHint}
+      <small class="text-neutral-500 text-sm" transition:fade>
+        {confirmHint}
+      </small>
+    {/if}
+  </div>
 
   <div
     class={clsx([
@@ -213,13 +228,30 @@
         (e.target as HTMLElement)!.closest("label")!.dispatchEvent(newEvent);
       }}
     >
-      Choose different file
+      {#if files.length > 0}
+        {#if multiple}
+          Choose different files
+        {:else}
+          Choose a different file
+        {/if}
+      {:else}
+        {#if multiple}
+          Choose files
+        {:else}
+          Choose file
+        {/if}
+      {/if}
     </Button>
 
     {#if files.length > 0}
       <Button variant="approve" handleClick={() => onConfirm(files)} size="sm">
         <div class="flex items-center gap-2">
-          {files.length > 1 ? "Use these files" : "Use this file"}
+          {#if confirmButtonText}
+            {confirmButtonText}
+          {:else}
+            {files.length > 1 ? "Use these files" : "Use this file"}
+          {/if}
+
           <MaterialIcon>
             <ArrowForward />
           </MaterialIcon>

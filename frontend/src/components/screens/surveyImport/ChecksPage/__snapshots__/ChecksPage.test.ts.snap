@@ -139,7 +139,7 @@ exports[`ChecksPage > matches snapshot 1`] = `
                 class="flex items-center gap-3"
               >
                 <input
-                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-5 w-5"
                   id="qualtrics-row-structure"
                   name="qualtrics-row-structure"
                   type="checkbox"
@@ -182,7 +182,7 @@ exports[`ChecksPage > matches snapshot 1`] = `
                 class="flex items-center gap-3"
               >
                 <input
-                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-5 w-5"
                   id="user-row-structure"
                   name="user-row-structure"
                   type="checkbox"
@@ -225,7 +225,7 @@ exports[`ChecksPage > matches snapshot 1`] = `
                 class="flex items-center gap-3"
               >
                 <input
-                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-5 w-5"
                   id="user-no-merged-cells"
                   name="user-no-merged-cells"
                   type="checkbox"
@@ -296,7 +296,7 @@ exports[`ChecksPage > matches snapshot 1`] = `
                 class="flex items-center gap-3"
               >
                 <input
-                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-5 w-5"
                   id="user-responses-merged"
                   name="user-responses-merged"
                   type="checkbox"
@@ -339,7 +339,7 @@ exports[`ChecksPage > matches snapshot 1`] = `
                 class="flex items-center gap-3"
               >
                 <input
-                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-5 w-5"
                   id="user-demographic-columns"
                   name="user-demographic-columns"
                   type="checkbox"
@@ -382,7 +382,7 @@ exports[`ChecksPage > matches snapshot 1`] = `
                 class="flex items-center gap-3"
               >
                 <input
-                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary h-5 w-5"
+                  class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-5 w-5"
                   id="user-pii-removed"
                   name="user-pii-removed"
                   type="checkbox"
@@ -648,7 +648,7 @@ exports[`ChecksPage > matches snapshot 1`] = `
         >
           <!---->
           <!---->
-          Tick everything
+          Untick everything
           
           
           
@@ -694,7 +694,7 @@ exports[`ChecksPage > matches snapshot 1`] = `
         class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
         data-variant="primary"
         disabled="false"
-        href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58"
+        href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58/data-upload/upload-file"
         role="link"
         tabindex="0"
       >

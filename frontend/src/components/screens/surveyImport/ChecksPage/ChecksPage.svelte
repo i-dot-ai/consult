@@ -24,7 +24,7 @@
   import type { Check as CheckItem } from "./checks";
   import {
     getDataUploadSelectProviderUrl,
-    getConsultationViewUrl,
+    getDataUploadFileUploadUrl,
   } from "../../../../global/routes";
 
   interface Props {
@@ -93,6 +93,9 @@
 
   let checked = $state<Record<string, boolean>>(loadFromStorage());
   let exampleOpen = $state<Record<string, boolean>>({});
+  let allTicked = $derived(
+    Object.values(checked).every((item) => item === true),
+  );
 
   function setChecked(id: string, value: boolean) {
     checked[id] = value;
@@ -103,9 +106,9 @@
     exampleOpen[id] = !exampleOpen[id];
   }
 
-  function tickAll() {
+  function setAllTicks(value: boolean = false) {
     for (const check of allUserChecks) {
-      checked[check.id] = true;
+      checked[check.id] = value;
     }
     saveToStorage(checked);
   }
@@ -305,7 +308,12 @@ Addresses → delete, or keep the area name only</pre>
     class="rounded-xl border border-neutral-300 bg-neutral-50 px-4 py-3.5 text-sm leading-relaxed"
   >
     <div class="flex items-center gap-3">
-      <Button size="sm" handleClick={tickAll}>Tick everything</Button>
+      <Button
+        size="sm"
+        handleClick={() => setAllTicks(allTicked ? false : true)}
+      >
+        {allTicked ? "Untick" : "Tick"} everything
+      </Button>
       <p class="text-neutral-500">
         Ticking is for your own tracking. Nothing is submitted, and you can
         continue without it.
@@ -319,7 +327,7 @@ Addresses → delete, or keep the area name only</pre>
     <Button
       size="sm"
       variant="primary"
-      href={getConsultationViewUrl(consultationId)}
+      href={getDataUploadFileUploadUrl(consultationId)}
     >
       Continue to upload
     </Button>

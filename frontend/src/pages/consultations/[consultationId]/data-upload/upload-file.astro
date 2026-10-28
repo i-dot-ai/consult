@@ -1,0 +1,32 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+
+import Section from "../../../../components/Section/Section.svelte";
+import FileUpload from "../../../../components/screens/surveyImport/FileUpload/FileUpload.svelte";
+import { getDataSetupV2Enabled } from "../../../../global/utils";
+import type { AstroGlobalRuntime } from "../../../../global/types";
+import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
+import { buildResponse, fetchBackendApi } from "../../../../global/api";
+import { consultationV2QueryParts } from "../../../../global/queries/consultations/parts";
+
+if (!getDataSetupV2Enabled()) {
+  return Astro.rewrite("/404");
+}
+
+const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
+
+const { error, status } = await fetchBackendApi<ConsultationV2>(
+  Astro,
+  consultationV2QueryParts.url(consultationId || ""),
+);
+
+if (error) {
+  return buildResponse(status);
+}
+---
+
+<Layout>
+  <Section>
+    <FileUpload client:load consultationId={consultationId || ""} />
+  </Section>
+</Layout>
