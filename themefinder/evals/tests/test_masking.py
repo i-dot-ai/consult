@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from settings import get_settings
+from conftest import make_eval_settings
+from settings import LangfuseSettings
 from utils.langfuse import get_langfuse_context
 from utils.masking import mask_sensitive
 
@@ -43,12 +44,6 @@ class TestMaskSensitive:
 
 class TestClientMaskWiring:
     def test_get_langfuse_context_passes_mask_to_client(self, monkeypatch):
-        monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-test")  # pragma: allowlist secret
-        monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-test")
-        monkeypatch.setenv("LANGFUSE_BASE_URL", "https://langfuse.example.invalid")
-        monkeypatch.setenv("THEMEFINDER_EVAL_DATASET_SOURCE", "langfuse")
-        get_settings.cache_clear()
-
         captured: dict = {}
 
         class _FakeLangfuse:
@@ -58,7 +53,17 @@ class TestClientMaskWiring:
         monkeypatch.setattr("langfuse.Langfuse", _FakeLangfuse)
 
         get_langfuse_context(
-            session_id="s", eval_type="generation", settings=get_settings()
+            session_id="s",
+            eval_type="generation",
+            settings=make_eval_settings(
+                dataset_source="langfuse",
+                langfuse=LangfuseSettings(
+                    secret_key="sk-test",  # pragma: allowlist secret
+                    public_key="pk-test",
+                    base_url="https://langfuse.example.invalid",
+                    project_id=None,
+                ),
+            ),
         )
 
         assert captured["mask"] is mask_sensitive

@@ -2,7 +2,7 @@ from typing import ClassVar
 
 import httpx
 import pytest
-from conftest import make_gateway_model, set_gateway_credentials
+from conftest import make_eval_settings, make_gateway_model, set_gateway_credentials
 from utils import gateway
 
 
@@ -53,6 +53,20 @@ class TestFilterChatModels:
             _model_info("text-embedding-3", mode="embedding"),
         ]
         assert gateway.filter_chat_models(items) == [items[0]]
+
+
+class TestGatewayCredentials:
+    def test_uses_patched_eval_settings_by_default(self, monkeypatch):
+        settings = make_eval_settings(
+            gateway_url="https://gateway.example.invalid",
+            gateway_api_key="test-key",  # pragma: allowlist secret
+        )
+        monkeypatch.setattr(gateway, "eval_settings", settings)
+
+        assert gateway.gateway_credentials() == (
+            "https://gateway.example.invalid",
+            "test-key",
+        )
 
 
 class TestHealthMappings:

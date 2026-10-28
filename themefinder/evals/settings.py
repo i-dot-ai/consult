@@ -3,11 +3,10 @@
 Deliberately not named `config.py`, to avoid confusion with `evals/config.py`
 (which wires adapters together; this module just reads env vars).
 
-Every module that used to call `os.getenv(...)` / `os.environ.get(...)`
-directly for one of these settings should instead call `get_settings()` and
-read the matching field. `get_settings()` is a process-wide cached singleton:
-env vars are read once, `.env` is loaded once, regardless of how many modules
-ask.
+Runtime modules read the matching field from `eval_settings`, the process-wide
+settings snapshot created below. `get_settings()` constructs that snapshot and
+is retained for focused settings tests; application code must not call it as a
+hidden dependency.
 
 The settings dataclasses below use `pydantic.dataclasses.dataclass`, not the
 stdlib one — plain stdlib dataclasses don't validate their fields against

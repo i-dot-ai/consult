@@ -19,7 +19,7 @@ from adapters.datasets import (
 from adapters.runners import RunnerPort
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from datasets import DatasetConfig
-from settings import EvalSettings, get_settings
+from settings import EvalSettings, eval_settings
 
 
 @dataclass(frozen=True)
@@ -93,7 +93,7 @@ def resolve_backends(
     needed. A caller-supplied context remains the caller's responsibility to flush.
     """
 
-    settings = settings if settings is not None else get_settings()
+    settings = settings if settings is not None else eval_settings
     dataset_source = settings.eval.dataset_source or "local"
     artefact_store_source = settings.eval.artefact_store or "local"
     owns_context = False

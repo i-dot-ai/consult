@@ -3,25 +3,50 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import pytest  # noqa: E402
-from eval_types import Case  # noqa: E402
-from settings import get_settings  # noqa: E402
-from utils import gateway  # noqa: E402
+from eval_types import Case
+from settings import (
+    EvalRunnerSource,
+    EvalRunSettings,
+    EvalSettings,
+    GatewaySettings,
+    LangfuseSettings,
+    LogLevel,
+)
+from utils import gateway
 
 
-@pytest.fixture(autouse=True)
-def _reset_eval_settings_cache():
-    """Clear the `get_settings()` singleton around every test.
+def make_eval_settings(
+    *,
+    auto_eval_model: str | None = "test-model",
+    environment: str = "test",
+    git_sha: str = "abcdef0",
+    gateway_url: str | None = "https://gateway.example.invalid",
+    gateway_api_key: str | None = "test-key",  # pragma: allowlist secret
+    langfuse: LangfuseSettings | None = None,
+    engine: EvalRunnerSource = "pydantic_evals",
+    dataset_source: str | None = "local",
+    artefact_store: str | None = "local",
+    log_level: LogLevel = "INFO",
+) -> EvalSettings:
+    """Build explicit eval settings for consumers under test.
 
-    Without this, the first test to call `get_settings()` would poison the
-    cache for every subsequent test expecting a different env var value,
-    since `lru_cache` never re-reads after the first call — silently
-    breaking the existing `monkeypatch.setenv(...)` usage elsewhere in this
-    test suite.
+    Runtime modules use the process-wide ``eval_settings`` snapshot. Tests
+    patch that dependency with this helper rather than reconfiguring process
+    environment variables and clearing the settings factory cache.
     """
-    get_settings.cache_clear()
-    yield
-    get_settings.cache_clear()
+    return EvalSettings(
+        auto_eval_model=auto_eval_model,
+        environment=environment,
+        git_sha=git_sha,
+        gateway=GatewaySettings(url=gateway_url, api_key=gateway_api_key),
+        langfuse=langfuse,
+        eval=EvalRunSettings(
+            engine=engine,
+            dataset_source=dataset_source,
+            artefact_store=artefact_store,
+        ),
+        log_level=log_level,
+    )
 
 
 def set_gateway_credentials(

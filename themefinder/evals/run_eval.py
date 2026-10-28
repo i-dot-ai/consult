@@ -11,12 +11,11 @@ from component_runner import run_component
 from components import COMPONENT_NAMES, build_component_config
 from config import resolve_backends
 from datasets import DatasetConfig
-from settings import EvalSettings, get_settings
+from settings import EvalSettings, eval_settings
+from themefinder.llm import OpenAILLM
 from utils import gateway
 from utils.logging_config import get_logger
 from utils.results import count_errors
-
-from themefinder.llm import OpenAILLM
 
 logger = get_logger(__name__)
 
@@ -48,7 +47,7 @@ async def evaluate_component(
             f"Unknown component '{component}'. Must be one of: {list(COMPONENT_NAMES)}"
         )
 
-    settings = settings if settings is not None else get_settings()
+    settings = settings if settings is not None else eval_settings
     task_llm = llm if llm is not None else _create_default_llm(settings)
     if component == "mapping" and judge_llm is not None:
         logger.warning(
