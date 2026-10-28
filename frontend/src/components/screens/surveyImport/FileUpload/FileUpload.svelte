@@ -41,7 +41,9 @@
 
   // There's a moment between query succeeding and redirect occuring
   // including isSuccess therefore prevents user from clicking inbetween the two
-  let finalUploadInProgress = $derived(upload.query.isPending || upload.query.isSuccess);
+  let finalUploadInProgress = $derived(
+    upload.query.isPending || upload.query.isSuccess,
+  );
 
   let fileUploadedForValidation = $derived(deepValidation.query.data);
 
