@@ -12,7 +12,7 @@ from components import COMPONENT_NAMES, build_component_config
 from config import resolve_backends
 from datasets import DatasetConfig
 from settings import EvalSettings, get_settings
-from utils import gateway
+from utils import gateway, stats
 from utils.logging_config import get_logger
 from utils.results import count_errors
 
@@ -41,8 +41,12 @@ async def evaluate_component(
     context: dict[str, Any] | None = None,
     question_num: int | None = None,
     settings: EvalSettings | None = None,
+    runs: int = 1,
 ) -> dict[str, Any]:
-    """Build and run one component through the configured framework backends."""
+    """Build and run one component through the configured framework backends.
+
+    ``runs`` repeats every case so each metric gets a mean and stddev across runs.
+    """
     if component not in COMPONENT_NAMES:
         raise ValueError(
             f"Unknown component '{component}'. Must be one of: {list(COMPONENT_NAMES)}"
@@ -65,6 +69,7 @@ async def evaluate_component(
         dataset_config,
         settings=settings,
         context=context,
+        repeat=runs,
     )
     return await run_component(
         component_config,
@@ -96,7 +101,39 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Question number to evaluate (mapping only)",
     )
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=1,
+        help="Times to run every case, for mean/stddev per metric (default: 1)",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Also print each case's task output and theme tracks (always saved in results.json)",
+    )
     return parser
+
+
+def _scores_only(results: dict[str, Any]) -> dict[str, Any]:
+    """Drop per-case task outputs and theme tracks, which bury the scores on the
+    terminal. Works on copies so the caller's results are untouched."""
+    printed = {
+        key: value for key, value in results.items() if not key.endswith("_output")
+    }
+    consistency = printed.get("aggregate", {}).get(stats.CONSISTENCY_METRIC)
+    if consistency:
+        printed["aggregate"] = {
+            **printed["aggregate"],
+            stats.CONSISTENCY_METRIC: {
+                **consistency,
+                "by_case": {
+                    case: {k: v for k, v in scores.items() if k != "tracks"}
+                    for case, scores in consistency["by_case"].items()
+                },
+            },
+        }
+    return printed
 
 
 def main(argv: Sequence[str] | None = None) -> None:
@@ -111,6 +148,7 @@ def main(argv: Sequence[str] | None = None) -> None:
             component=args.component,
             dataset=args.dataset,
             question_num=args.question,
+            runs=args.runs,
         )
     )
 
@@ -124,7 +162,8 @@ def main(argv: Sequence[str] | None = None) -> None:
             encoding="utf-8",
         )
 
-    print(json.dumps(results, indent=2, sort_keys=True, default=str))
+    printed = results if args.verbose else _scores_only(results)
+    print(json.dumps(printed, indent=2, sort_keys=True, default=str))
 
     # Case errors are recorded, not raised, so fail here or DVC and CI would call the run a success.
     errors = count_errors(results)

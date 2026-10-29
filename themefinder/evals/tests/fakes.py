@@ -27,7 +27,7 @@ class FakeDatasetPort(DatasetPort):
         self.error = error
         self.loaded_configs: list[DatasetConfig] = []
 
-    def load_cases(self, config: DatasetConfig) -> list[Case]:
+    def _load_cases(self, config: DatasetConfig) -> list[Case]:
         if self.events is not None:
             self.events.append("load_cases")
         self.loaded_configs.append(config)
@@ -87,6 +87,7 @@ class FakeRunnerPort(RunnerPort):
         events: list[str] | None = None,
         error: Exception | None = None,
     ):
+        super().__init__()
         self.report = report
         self.events = events
         self.error = error

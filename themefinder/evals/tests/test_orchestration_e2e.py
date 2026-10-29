@@ -31,7 +31,7 @@ async def test_environment_configuration_runs_complete_local_pipeline(
     monkeypatch.setitem(
         backend_config.RUNNER_FACTORIES,
         "pydantic_evals",
-        lambda: PydanticEvalsRunner(progress=False),
+        lambda repeat: PydanticEvalsRunner(progress=False),
     )
 
     task_calls = []
@@ -122,7 +122,7 @@ async def test_environment_configuration_runs_langfuse_backend_combinations(
     monkeypatch.setitem(
         backend_config.RUNNER_FACTORIES,
         "pydantic_evals",
-        lambda: PydanticEvalsRunner(progress=False),
+        lambda repeat: PydanticEvalsRunner(progress=False),
     )
 
     async def task(inputs, llm):

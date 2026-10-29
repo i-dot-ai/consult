@@ -4,17 +4,23 @@ from __future__ import annotations
 
 import json
 from abc import ABC
+from dataclasses import replace
 
 import pytest
 from httpx import RequestError
 from langfuse.api.core import ApiError
 
-from adapters.artefact_stores.base import ArtefactStorePort
+from adapters.artefact_stores.base import (
+    ArtefactStorePort,
+    build_results_payload,
+    flatten_run_report,
+)
 from adapters.artefact_stores.langfuse_adapter import LangfuseArtefactStore
 from adapters.artefact_stores.local_json_adapter import LocalJSONArtefactStore
 from conftest import _themes
 from eval_types import Case, CaseOutcome, RunMetrics, RunReport, Score
 from fakes import FakeLangfuseClient, FakeTrace
+from utils import stats
 from utils.langfuse import LangfuseContext
 
 
@@ -61,10 +67,7 @@ class TestArtefactStorePortContract:
 
     def test_langfuse_adapter_is_artefact_store_port(self):
         context = LangfuseContext(client=FakeLangfuseClient())
-        assert isinstance(
-            LangfuseArtefactStore(context=context),
-            ArtefactStorePort,
-        )
+        assert isinstance(LangfuseArtefactStore(context=context), ArtefactStorePort)
 
     def test_incomplete_subclass_cannot_be_instantiated(self):
         class _IncompleteArtefactStore(ArtefactStorePort, ABC):
@@ -73,6 +76,90 @@ class TestArtefactStorePortContract:
 
         with pytest.raises(TypeError):
             _IncompleteArtefactStore()
+
+
+def _repeat_outcome(
+    case_id: str, run_index: int, value: float = 1.0, output=None
+) -> CaseOutcome:
+    return CaseOutcome(
+        case=_make_case(case_id=case_id),
+        output=output,
+        scores=[Score("m", value)],
+        run_index=run_index,
+    )
+
+
+class TestRepeatedRunResults:
+    """Mean/stdev across repeated runs and output consistency, shared by every store."""
+
+    def test_summarise_runs_takes_case_mean_per_run_then_stdev_across_runs(self):
+        """Run 0 averages 0.5, run 1 averages 0.7, so the spread is between runs, not cases."""
+        outcomes = [
+            _repeat_outcome("a", 0, 0.0),
+            _repeat_outcome("b", 0, 1.0),
+            _repeat_outcome("a", 1, 0.4),
+            _repeat_outcome("b", 1, 1.0),
+        ]
+
+        summary = stats.summarise_runs(outcomes)["m"]
+
+        assert summary["mean"] == pytest.approx(0.6)
+        assert summary["stdev"] == pytest.approx(0.1414213, rel=1e-4)
+        assert summary["n"] == 2
+
+    def test_summarise_runs_single_run_has_no_stdev(self):
+        """A sample stdev needs at least two runs."""
+        summary = stats.summarise_runs([_repeat_outcome("a", 0)])
+        assert summary["m"]["stdev"] is None
+
+    def test_consistency_by_case_skips_errors(self):
+        errored = CaseOutcome(
+            case=_make_case(case_id="a"),
+            output=None,
+            scores=[],
+            error="boom",
+            run_index=1,
+        )
+        outcomes = [_repeat_outcome("a", 0, output={"themes": []}), errored]
+        assert stats.consistency_by_case(outcomes) == {}
+
+    def test_flatten_run_report_keeps_each_repeat_and_adds_aggregate(self):
+        """Repeats must not overwrite each other, and the aggregate carries mean/stdev."""
+        # Mapping outputs use exact label matching, so no embedding model is loaded
+        outputs = [{"labels": {"r1": ["A"]}}, {"labels": {"r1": ["B"]}}]
+        report = RunReport(
+            outcomes=[
+                _repeat_outcome("a", 0, 0.0, outputs[0]),
+                _repeat_outcome("a", 1, 1.0, outputs[1]),
+            ]
+        )
+
+        results = flatten_run_report(report)
+
+        assert results["a_r0_m"] == 0.0
+        assert results["a_r1_m"] == 1.0
+        assert results["aggregate"]["metrics"]["m"]["mean"] == pytest.approx(0.5)
+        consistency = results["aggregate"]["output_consistency"]
+        assert consistency["f1"] == 0.0
+        assert set(consistency["by_case"]) == {"a"}
+
+    def test_build_results_payload_keeps_each_failed_repeat(self):
+        """Two failed repeats of one case must both appear in errors, not overwrite."""
+        report = RunReport(
+            outcomes=[
+                CaseOutcome(_make_case(case_id="a"), None, [], "first", run_index=0),
+                CaseOutcome(_make_case(case_id="a"), None, [], "second", run_index=1),
+            ]
+        )
+
+        payload = build_results_payload("generation", "demo", report)
+
+        assert payload["errors"] == {"a_r0": "first", "a_r1": "second"}
+
+    def test_flatten_run_report_without_repeats_is_unchanged(self):
+        """A single run keeps the original keys and has no aggregate block."""
+        results = flatten_run_report(RunReport(outcomes=[_repeat_outcome("a", 0, 0.5)]))
+        assert results == {"a_output": None, "a_m": 0.5}
 
 
 class TestLocalJSONArtefactStore:
@@ -111,6 +198,7 @@ class TestLocalJSONArtefactStore:
                 },
                 "error": "row-7 missing field",
                 "output": {"labels": {"r1": ["A"]}},
+                "run_index": 0,
                 "scores": [
                     {
                         "comment": "three of four",
@@ -185,6 +273,7 @@ class TestLocalJSONArtefactStore:
             "input_tokens": 100,
             "output_tokens": 25,
             "total_tokens": 125,
+            "n_runs": 1,
         }
         assert payload["results"]["metrics"] == expected_metrics
         assert "metrics" not in payload
@@ -367,6 +456,86 @@ class TestLangfuseArtefactStore:
             "question_part_1_groundedness": 4.5,
             "question_part_1_output": {"themes": _themes("A")},
         }
+
+    @staticmethod
+    def _repeated_report() -> RunReport:
+        # Mapping outputs, so consistency uses exact labels and no embedding model loads.
+        # No langfuse_item_id: aggregates must work for local datasets too.
+        case = _make_case(question_part="question_part_1")
+        return RunReport(
+            outcomes=[
+                CaseOutcome(case, {"labels": {"r1": ["A"]}}, [Score("f1_score", 0.5)]),
+                CaseOutcome(
+                    case,
+                    {"labels": {"r1": ["A"]}},
+                    [Score("f1_score", 0.7)],
+                    run_index=1,
+                ),
+            ]
+        )
+
+    def test_finish_run_writes_aggregate_scores_on_one_run_trace(self):
+        client = FakeLangfuseClient()
+        store = LangfuseArtefactStore(
+            context=LangfuseContext(
+                client=client, session_id="session-1", tags=["eval"]
+            )
+        )
+
+        store.start_run("mapping", "demo")
+        store.finish_run(self._repeated_report())
+
+        assert [call["name"] for call in client.start_span_calls] == [
+            "session-1:aggregate"
+        ]
+        assert client.last_span_trace.trace_updates[0]["session_id"] == "session-1"
+        assert client.last_span_trace.trace_updates[0]["tags"] == ["eval"]
+        by_name = {score["name"]: score for score in client.scores}
+        assert {s["trace_id"] for s in client.scores} == {"generated-trace-id"}
+        assert by_name["f1_score_mean"]["value"] == pytest.approx(0.6)
+        assert by_name["f1_score_stdev"]["value"] == pytest.approx(0.1414, rel=1e-3)
+        assert by_name["output_consistency_f1"]["value"] == 1.0
+        assert by_name["output_consistency_count"]["value"] == 1.0
+
+    def test_finish_run_omits_aggregate_scores_that_cannot_be_computed(self):
+        """A metric scored in only one run has no stdev; it is left out, not zeroed."""
+        client = FakeLangfuseClient()
+        store = LangfuseArtefactStore(context=LangfuseContext(client=client))
+        report = self._repeated_report()
+        report.outcomes[1] = replace(report.outcomes[1], scores=[])
+
+        store.start_run("mapping", "demo")
+        store.finish_run(report)
+
+        names = {score["name"] for score in client.scores}
+        assert "f1_score_mean" in names
+        assert "f1_score_stdev" not in names
+
+    def test_finish_run_writes_no_aggregate_scores_for_a_single_run(self):
+        client = FakeLangfuseClient()
+        store = LangfuseArtefactStore(context=LangfuseContext(client=client))
+        outcome = _make_outcome(
+            case=_make_case(question_part="question_part_1", langfuse_item_id="item-1")
+        )
+
+        store.start_run("generation", "demo")
+        store.record_case(outcome)
+        client.scores.clear()
+        client.start_span_calls.clear()
+        store.finish_run(RunReport(outcomes=[outcome]))
+
+        assert client.scores == []
+        assert client.start_span_calls == []
+
+    def test_finish_run_does_not_flush_when_context_is_not_owned(self):
+        client = FakeLangfuseClient()
+        context = LangfuseContext(client=client)
+        store = LangfuseArtefactStore(context=context)
+
+        store.start_run("generation", "demo")
+        store.finish_run(RunReport(outcomes=[_make_outcome()]))
+
+        assert client.flush_calls == 0
 
     def test_finish_run_ignores_non_pydantic_engine_report_safely(self):
         client = FakeLangfuseClient()

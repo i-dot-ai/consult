@@ -16,6 +16,7 @@ from adapters.datasets import (
     LocalJSONDatasetAdapter,
 )
 from adapters.runners import RunnerPort
+from adapters.runners.inline_sequential_runner import InlineSequentialRunner
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from datasets import DatasetConfig
 from settings import EvalSettings, get_settings
@@ -44,7 +45,7 @@ class EvalBackends:
 
 DatasetFactory = Callable[[Any | None], DatasetPort]
 ArtefactFactory = Callable[[Any | None], ArtefactStorePort]
-RunnerFactory = Callable[[], RunnerPort]
+RunnerFactory = Callable[..., RunnerPort]  # called as factory(repeat=N)
 
 
 def _local_dataset_factory(context: Any | None) -> DatasetPort:
@@ -75,6 +76,7 @@ ARTEFACT_FACTORIES: dict[str, ArtefactFactory] = {
 }
 RUNNER_FACTORIES: dict[str, RunnerFactory] = {
     "pydantic_evals": PydanticEvalsRunner,
+    "local": InlineSequentialRunner,
 }
 
 
@@ -83,9 +85,11 @@ def resolve_backends(
     *,
     settings: EvalSettings | None = None,
     context: dict[str, Any] | None = None,
+    repeat: int = 1,
 ) -> EvalBackends:
     """Resolve each backend independently, defaulting to local storage.
     Contexts created here are released by ``EvalBackends.close()``.
+    ``repeat`` is how many times the runner runs every case.
     """
 
     settings = settings if settings is not None else get_settings()
@@ -112,7 +116,7 @@ def resolve_backends(
     artefact_context = context_for(artefact_store_source)
     return EvalBackends(
         dataset=DATASET_FACTORIES[dataset_source](dataset_context),
-        runner=RUNNER_FACTORIES[settings.eval.engine](),
+        runner=RUNNER_FACTORIES[settings.eval.engine](repeat=repeat),
         artefacts=ARTEFACT_FACTORIES[artefact_store_source](artefact_context),
         contexts=provided,
     )

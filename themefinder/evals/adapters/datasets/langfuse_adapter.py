@@ -14,7 +14,7 @@ class LangfuseDatasetAdapter(DatasetPort):
     def __init__(self, client: Langfuse):
         self.client = client
 
-    def load_cases(self, config: DatasetConfig) -> list[Case]:
+    def _load_cases(self, config: DatasetConfig) -> list[Case]:
         """Load a Langfuse dataset and normalise its items into `Case` objects."""
         try:
             dataset = self.client.get_dataset(config.name)

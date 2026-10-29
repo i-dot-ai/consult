@@ -11,7 +11,6 @@ from eval_types import CaseOutcome, RunReport
 from .base import (
     ArtefactStorePort,
     build_results_payload,
-    flatten_run_report,
     serialise_outcome,
 )
 
@@ -59,7 +58,8 @@ class LocalJSONArtefactStore(ArtefactStorePort):
             encoding="utf-8",
         )
 
-        return flatten_run_report(report)
+        # Reuse the payload's results: rebuilding them would re-embed every repeat's themes
+        return payload["results"]
 
     def _require_run_metadata(self, field: str) -> str:
         value = getattr(self, f"_{field}")

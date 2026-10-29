@@ -3,23 +3,15 @@
 Embedding-based (sentence-transformers), no LLM call; ignores `case`.
 """
 
-from functools import lru_cache
 from typing import Any
 
 from eval_types import Case, Score
+from utils.embeddings import get_sentence_model as _get_sentence_model
 from utils.logging_config import get_logger
 
 from .base import EvaluatorPort
 
 logger = get_logger(__name__)
-
-
-@lru_cache(maxsize=1)
-def _get_sentence_model():
-    """Load and cache the sentence-transformers model (loaded once per process)."""
-    from sentence_transformers import SentenceTransformer
-
-    return SentenceTransformer("all-MiniLM-L6-v2")
 
 
 class RedundancyEvaluator(EvaluatorPort):

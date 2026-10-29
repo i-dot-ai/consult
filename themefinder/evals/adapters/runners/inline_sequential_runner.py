@@ -1,5 +1,6 @@
 """InlineSequentialRunner — RunnerPort with no native engine."""
 
+from dataclasses import replace
 from typing import Any
 
 from adapters.evaluators.base import EvaluatorPort
@@ -20,8 +21,12 @@ class InlineSequentialRunner(RunnerPort):
     ) -> RunReport:
         """Run every selected case sequentially; engine_report is always None."""
         outcomes = [
-            await self._run_case(case, config.task, config.evaluators, llm)
+            replace(
+                await self._run_case(case, config.task, config.evaluators, llm),
+                run_index=run_index,
+            )
             for case in cases
+            for run_index in range(self.repeat)
         ]
         return RunReport(outcomes=outcomes, engine_report=None)
 
