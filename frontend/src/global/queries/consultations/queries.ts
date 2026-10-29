@@ -10,6 +10,7 @@ import {
 import type {
   ConsultationsGetResponse,
   ConsultationsV2GetResponse,
+  ConsultationV2,
   ConsultationV2CreateResponse,
   ConsultationV2UpdateResponse,
   UpdateConsultationBody,
@@ -65,7 +66,7 @@ export function buildConsultationDeleteQuery(consultationId: string) {
 }
 
 export function buildConsultationGetQuery(consultationId: string) {
-  return buildQuery<Consultation>(consultationQueryParts.url(consultationId), {
+  return buildQuery<ConsultationV2>(consultationQueryParts.url(consultationId), {
     key: consultationQueryParts.key(consultationId),
   });
 }
