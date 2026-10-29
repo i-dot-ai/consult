@@ -5,6 +5,8 @@ import { match, pathToRegexp } from "path-to-regexp";
 import { createRawSnippet } from "svelte";
 
 import type { Mock } from "./types";
+import { getConsultationViewUrl } from "./routes";
+import type { ConsultationV2 } from "./queries/consultations/types";
 
 export const getEnvironment = (): string | undefined => {
   if (typeof process !== "undefined" && process.env?.PUBLIC_ENVIRONMENT) {
@@ -106,6 +108,16 @@ export const getDataSetupV2Enabled = (): boolean => {
 
   return import.meta.env.PUBLIC_DATA_SETUP_V2_ENABLED === "true";
 };
+
+export function assertSurveyImportState(astroContext: Astro, consultation?: ConsultationV2) {
+  if (!consultation || !astroContext) {
+    return;
+  }
+
+  if (consultation.stage !== "setup") {
+    return astroContext.redirect(getConsultationViewUrl(consultation.id || ""));
+  }
+}
 
 export const applyHighlight = (
   fullText: string,
