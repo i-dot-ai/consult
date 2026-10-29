@@ -51,3 +51,22 @@ class IsConsultationOwnerOrSuperuser(permissions.BasePermission):
         return models.Consultation.objects.filter(
             id=consultation_pk, created_by=request.user
         ).exists()
+
+
+class CanAssignConsultationUsers(permissions.BasePermission):
+    """Allow consultation owners and superusers to manage assignments."""
+
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
+        if request.user.is_superuser:
+            return True
+
+        consultation_pk = view.kwargs.get("consultation_pk") or view.kwargs.get("pk")
+        if not consultation_pk:
+            return False
+
+        return models.Consultation.objects.filter(
+            id=consultation_pk, created_by=request.user
+        ).exists()

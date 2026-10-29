@@ -101,6 +101,22 @@ class ConsultationCreateSerializerV2(serializers.ModelSerializer):
         read_only_fields: ClassVar[list] = ["id"]
 
 
+class ConsultationUserAssignmentSerializerV2(serializers.Serializer):
+    email = serializers.EmailField(required=False)
+    emails = serializers.ListField(
+        child=serializers.EmailField(), required=False, allow_empty=False
+    )
+
+    def validate(self, attrs):
+        if ("email" in attrs) == ("emails" in attrs):
+            raise serializers.ValidationError("Provide exactly one of email or emails.")
+
+        emails = [attrs["email"]] if "email" in attrs else attrs["emails"]
+        attrs["emails"] = list(dict.fromkeys(email.lower() for email in emails))
+        attrs.pop("email", None)
+        return attrs
+
+
 class ConsultationFileUploadSerializerV2(serializers.Serializer):
     MAX_FILE_SIZE = 200 * 1024 * 1024  # 200 MiB
     ALLOWED_EXTENSIONS: ClassVar[set[str]] = {".csv", ".xlsx"}
