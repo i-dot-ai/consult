@@ -7,9 +7,10 @@
     variant?:
       "default" | "dark" | "warning" | "primary" | "primary-light" | "success";
     border?: boolean;
+    wrap?: boolean;
     children: Snippet;
   }
-  let { variant = "default", border, children }: Props = $props();
+  let { variant = "default", border, wrap = false, children }: Props = $props();
 </script>
 
 <div
@@ -19,7 +20,7 @@
     "items-center",
     "gap-2",
     "rounded-md",
-    "w-max",
+    wrap ? "max-w-full" : "w-max",
     "py-0.5",
     "px-2",
     "text-xs",
