@@ -19,8 +19,11 @@ from utils import langfuse as langfuse_utils
 class ProvidedContext:
     """A platform context plus the action that releases it.
 
-    ``close`` is a no-op for caller-supplied contexts, which stay the caller's
-    responsibility to flush.
+    The provider cannot know when the run ends, so it owns the decision (real
+    flush or no-op) and ``EvalBackends.close()`` owns the timing. ``close``
+    flushes rather than shuts down, so it is safe to call repeatedly, e.g. by
+    several components run off one ``resolve_backends``. It is a no-op for
+    caller-supplied contexts, which stay the caller's responsibility to flush.
     """
 
     context: Any

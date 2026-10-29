@@ -99,7 +99,12 @@ def resolve_backends(
     provided: dict[str, ProvidedContext] = {}
 
     def context_for(source: str) -> Any | None:
-        """Create a source's context on first use so sources on one platform share it."""
+        """Create a source's context on first use so sources on one platform share it.
+
+        Source names double as platform names: a source with no entry in
+        ``CONTEXT_PROVIDERS`` (e.g. ``"local"``) gets ``None``, so a new
+        platform-backed source must register a provider under the same name.
+        """
         provider = CONTEXT_PROVIDERS.get(source)
         if provider is None:
             return None
@@ -107,11 +112,11 @@ def resolve_backends(
             provided[source] = provider(dataset_config, settings, supplied.get(source))
         return provided[source].context
 
+    dataset_context = context_for(dataset_source)
+    artefact_context = context_for(artefact_store_source)
     return EvalBackends(
-        dataset=DATASET_FACTORIES[dataset_source](context_for(dataset_source)),
+        dataset=DATASET_FACTORIES[dataset_source](dataset_context),
         runner=RUNNER_FACTORIES[settings.eval.engine](),
-        artefacts=ARTEFACT_FACTORIES[artefact_store_source](
-            context_for(artefact_store_source)
-        ),
+        artefacts=ARTEFACT_FACTORIES[artefact_store_source](artefact_context),
         contexts=provided,
     )
