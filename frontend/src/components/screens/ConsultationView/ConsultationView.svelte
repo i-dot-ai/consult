@@ -113,16 +113,22 @@
   });
 
   function getDataSetupPanelText(surveyImportStatus?: SurveyImportStatus) {
-    let text = "The responses are not uploaded yet.";
     if (surveyImportStatus === "import_failed") {
-      text = "There has been an error while importing your data.";
+      return "There has been an error while importing your data.";
     } else if (surveyImportStatus === "file_uploading") {
-      text = "Consult is adding the responses. This can take a few hours. You can leave this page.\n\nNothing else can start until this finishes."
+      return "Consult is adding the responses. This can take a few hours. You can leave this page. Nothing else can start until this finishes.";
+    } else if (surveyImportStatus === "pending_questions" || surveyImportStatus === "pending_demographics") {
+      return "Your file has been successfully uploaded. Please proceed with setting up your data.";
+    } else if (surveyImportStatus === "import_complete") {
+      return "The data import has been completed.";
     }
-    return text;
+    return "The responses are not uploaded yet.";
   }
   function getDataSetupButtonText(surveyImportStatus?: SurveyImportStatus) {
-    if (surveyImportStatus !== "not_started") {
+    if (surveyImportStatus === "file_uploading") {
+      // do not render button if file upload is in progress
+      return "";
+    } else if (surveyImportStatus !== "not_started") {
       return "Continue setting up data";
     }
     return "Set up the data";
@@ -192,7 +198,7 @@
       panelText: getDataSetupPanelText(consultationData?.survey_import_status),
       panelButtonText: getDataSetupButtonText(consultationData?.survey_import_status),
       panelButtonUrl: getDataSetupButtonUrl(consultationId, consultationData?.survey_import_status),
-      tagVariant: "warning",
+      tagVariant: consultationData?.survey_import_status === "file_uploading" ? "default" : "warning",
       adminLinks: [MANAGE_PEOPLE_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK],
       userLinks: [WHO_CAN_SEE_LINK],
