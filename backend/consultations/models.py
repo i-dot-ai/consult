@@ -146,6 +146,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         OPEN = "open", "Open"
 
     closed_question = models.ForeignKey("self", on_delete=models.SET_NULL, blank=True, null=True)
+    short_name = models.CharField(max_length=40, blank=True, default="")
     order = models.PositiveSmallIntegerField(blank=True, null=True)
     identifier = models.CharField(blank=True, null=True, max_length=8)
     type = models.CharField(
