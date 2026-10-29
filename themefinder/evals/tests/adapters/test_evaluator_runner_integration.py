@@ -1,15 +1,12 @@
-"""Integration tests: check each RunnerPort adapter can actually run the EvaluatorPort adapters"""
+"""Integration tests for supported evaluator adapters under each runner."""
 
 from dataclasses import dataclass
 from typing import Any
 
 import pydantic_evals.evaluators.llm_as_a_judge as llm_as_a_judge_module
-from pydantic_evals.evaluators import Evaluator, EvaluatorContext
-from pydantic_evals.evaluators.common import EqualsExpected, LLMJudge, OutputConfig
-from pydantic_evals.evaluators.llm_as_a_judge import GradingOutput
-
+from adapters.evaluators.base import EvaluatorPort
 from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
-from adapters.evaluators.mapping_f1_evaluator import MappingF1Evaluator
+from adapters.evaluators.mapping_metrics_evaluator import MappingMetricsEvaluator
 from adapters.evaluators.pydantic_evals_evaluator import PydanticEvalsEvaluator
 from adapters.runners.base import RunnerPort
 from adapters.runners.inline_sequential_runner import InlineSequentialRunner
@@ -17,10 +14,13 @@ from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from conftest import make_case
 from eval_types import Case, ComponentConfig
 from fakes import FakeJudge
+from pydantic_evals.evaluators import Evaluator, EvaluatorContext
+from pydantic_evals.evaluators.common import EqualsExpected, LLMJudge, OutputConfig
+from pydantic_evals.evaluators.llm_as_a_judge import GradingOutput
 
 
 class _EvaluatorRunnerIntegrationTests:
-    """One shared case/task/evaluator-set; subclasses provide make_runner()."""
+    """One shared case/task/evaluator set; subclasses provide a runner."""
 
     def make_runner(self) -> RunnerPort:
         raise NotImplementedError
@@ -31,9 +31,6 @@ class _EvaluatorRunnerIntegrationTests:
 
     @staticmethod
     def _cases() -> list[Case]:
-        # MappingF1Evaluator's sklearn f1_score(average="samples") needs at
-        # least two distinct labels to be treated as multilabel-indicator,
-        # hence two responses/labels here rather than one.
         themes = [{"topic_label": "A", "topic_description": "desc a"}]
         return [
             make_case(
@@ -47,12 +44,11 @@ class _EvaluatorRunnerIntegrationTests:
         ]
 
     @staticmethod
-    def _evaluators(monkeypatch) -> list:
+    def _evaluators(monkeypatch) -> list[EvaluatorPort]:
         async def fake_judge_output(output, rubric, model, model_settings):
             return GradingOutput(reason="looks good", pass_=True, score=0.9)
 
         monkeypatch.setattr(llm_as_a_judge_module, "judge_output", fake_judge_output)
-
         groundedness_judge = FakeJudge(
             '{"evaluations": {"A": {"decision": "STRONG", "matched_to": "A", "reasoning": "matches"}}}'
         )
@@ -61,9 +57,8 @@ class _EvaluatorRunnerIntegrationTests:
             score=OutputConfig(),
             assertion=OutputConfig(include_reason=True),
         )
-
         return [
-            MappingF1Evaluator(),
+            MappingMetricsEvaluator(),
             GroundednessEvaluator(groundedness_judge),
             PydanticEvalsEvaluator(EqualsExpected()),
             PydanticEvalsEvaluator(
@@ -71,7 +66,7 @@ class _EvaluatorRunnerIntegrationTests:
             ),
         ]
 
-    async def test_runner_runs_every_kind_of_evaluator(self, monkeypatch):
+    async def test_runner_runs_supported_evaluators(self, monkeypatch):
         config = ComponentConfig(
             component="mapping",
             task=self._task,
@@ -83,25 +78,18 @@ class _EvaluatorRunnerIntegrationTests:
         outcome = report.outcomes[0]
         assert outcome.error is None
         scores = {score.name: score for score in outcome.scores}
-
-        # Deterministic (MappingF1Evaluator): labels exactly match mappings.
         assert scores["f1_score"].value == 1.0
-        # Our own LLM-judge evaluator (GroundednessEvaluator): fake judge said STRONG.
         assert scores["groundedness"].value == 5.0
-        # Native pydantic_evals evaluator wrapped, non-LLM (EqualsExpected):
-        # output != expected_output (different keys), so this deterministically fails.
         assert scores["EqualsExpected"].value == 0.0
-        # Native pydantic_evals evaluator wrapped, LLM-based (LLMJudge, stubbed).
         assert scores["LLMJudge_score"].value == 0.9
         assert scores["LLMJudge_pass"].value == 1.0
         assert scores["LLMJudge_pass"].comment == "looks good"
 
-    async def test_wrapped_native_evaluator_failure_degrades_to_zero_score(self):
-        """A raising native evaluator becomes a zero score with an error comment under every runner."""
-
+    async def test_native_evaluator_failure_degrades_to_zero_score(self):
         @dataclass
         class _Raising(Evaluator):
             def evaluate(self, ctx: EvaluatorContext) -> float:
+                del ctx
                 raise RuntimeError("boom")
 
         config = ComponentConfig(
@@ -116,9 +104,9 @@ class _EvaluatorRunnerIntegrationTests:
         assert outcome.error is None, (
             "evaluator failure should not fail the case itself"
         )
-        assert [(s.name, s.value) for s in outcome.scores] == [("_Raising", 0.0)], (
-            "failing evaluator should yield one zero score"
-        )
+        assert [(score.name, score.value) for score in outcome.scores] == [
+            ("_Raising", 0.0)
+        ]
         assert outcome.scores[0].comment.startswith("Error:"), (
             "failure should be reported in the score comment"
         )
