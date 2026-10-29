@@ -154,3 +154,9 @@ export const updateMock = (questionId: string) => ({
   method: "PATCH",
   body: QUESTIONS.find((question) => question.id === questionId),
 });
+
+export const updateErrorMock = (questionId: string) => ({
+  ...updateMock(questionId),
+  status: 500,
+  body: {},
+});

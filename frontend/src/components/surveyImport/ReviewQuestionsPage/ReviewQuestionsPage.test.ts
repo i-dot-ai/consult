@@ -699,7 +699,7 @@ describe("ReviewQuestionsPage", () => {
       screen.getByRole("button", { name: "Continue to closed questions" }),
     );
     expect(window.location.href).toBe(
-      `/consultations/${CONSULTATION_ID}/data-upload/finalise`,
+      `/consultations/${CONSULTATION_ID}/data-upload/charts-and-filters`,
     );
   });
 
