@@ -1,5 +1,6 @@
 from typing import ClassVar
 
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import Count, Q
 from rest_framework import serializers
 from rest_framework.decorators import action
@@ -10,6 +11,7 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from consultations.api_v2.permissions import CanSeeConsultationV2
 from consultations.api_v2.serializers import (
+    DemographicAnswerSerializer,
     DemographicResponseMergeSerializer,
     QuestionSetupSerializer,
 )
@@ -25,6 +27,8 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
     pagination_class = None
 
     def get_serializer_class(self):
+        if self.action == "demographics":
+            return DemographicAnswerSerializer
         if self.action == "merge_demographics":
             return DemographicResponseMergeSerializer
         return super().get_serializer_class()
@@ -44,6 +48,23 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
         consultation = instance.consultation
         instance.delete()
         update_survey_import_status_for_questions(consultation)
+
+    @action(detail=True, methods=["get"], url_path="demographics")
+    def demographics(self, request, *args, **kwargs):
+        question = self.get_object()
+        if question.type != Question.QuestionType.DEMOGRAPHIC:
+            raise serializers.ValidationError(
+                {"question": "Answers can only be listed for a demographic question."}
+            )
+
+        answers = (
+            ConsultationResponse.objects.filter(question=question)
+            .exclude(Q(text__isnull=True) | Q(text=""))
+            .values("text")
+            .annotate(count=Count("id"), responses=ArrayAgg("id", ordering="id"))
+            .order_by("-count", "text")
+        )
+        return Response(self.get_serializer(answers, many=True).data)
 
     @action(detail=True, methods=["post"], url_path="demographics/merge")
     def merge_demographics(self, request, *args, **kwargs):

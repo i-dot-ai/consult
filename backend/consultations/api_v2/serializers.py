@@ -142,6 +142,12 @@ class ConsultationUpdateSerializerV2(serializers.ModelSerializer):
         return instance
 
 
+class DemographicAnswerSerializer(serializers.Serializer):
+    text = serializers.CharField(read_only=True)
+    count = serializers.IntegerField(read_only=True)
+    responses = serializers.ListField(child=serializers.UUIDField(), read_only=True)
+
+
 class DemographicResponseMergeSerializer(serializers.Serializer):
     new_value = serializers.CharField(allow_blank=False, trim_whitespace=True)
     responses = serializers.ListField(
