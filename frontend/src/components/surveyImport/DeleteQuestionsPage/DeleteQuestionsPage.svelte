@@ -13,9 +13,10 @@
     buildListQuestionsQuery,
     deleteQuestion,
   } from "../../../global/queries/questions";
+  import { fetchSampleAnswers } from "../../../global/queries/responses";
   import {
     getDataUploadUrl,
-    getApiQuestionResponsesUrl,
+    getDataUploadReviewQuestionsUrl,
   } from "../../../global/routes";
   import type { Question } from "../../../global/types";
 
@@ -52,20 +53,9 @@
   async function fetchFreeTextSample(questionId: string) {
     if (freeTextSamples.has(questionId)) return;
     freeTextFailed.delete(questionId);
-    const url = `${getApiQuestionResponsesUrl(consultationId, questionId)}?page_size=3`;
     try {
-      const res = await fetch(url);
-      if (!res.ok) {
-        freeTextFailed.add(questionId);
-        return;
-      }
-      const data = await res.json();
-      freeTextSamples.set(
-        questionId,
-        (data.all_respondents ?? []).map(
-          (r: { free_text_answer_text: string }) => r.free_text_answer_text,
-        ),
-      );
+      const answers = await fetchSampleAnswers(consultationId, questionId);
+      freeTextSamples.set(questionId, answers);
     } catch {
       freeTextFailed.add(questionId);
     }
@@ -202,16 +192,24 @@
               <p class="text-[15px] text-neutral-900">
                 {question.question_text}
               </p>
-              <Button
-                size="sm"
-                variant="ghost"
-                handleClick={() => toggleExpanded(question)}
-              >
-                {expandedIds.has(question.id) ? "Hide answers" : "Show answers"}
-              </Button>
+              <div class="mt-2">
+                <Button
+                  variant="text"
+                  size="sm"
+                  noPadding={true}
+                  ariaExpanded={expandedIds.has(question.id)}
+                  handleClick={() => toggleExpanded(question)}
+                >
+                  {expandedIds.has(question.id)
+                    ? "Hide answers"
+                    : "Show answers"}
+                </Button>
+              </div>
 
               {#if expandedIds.has(question.id)}
-                <div class="mt-3 text-sm text-neutral-500">
+                <div
+                  class="mt-3 rounded-lg bg-neutral-100 p-3 text-sm text-neutral-500"
+                >
                   {#if question.has_free_text && !question.has_multiple_choice}
                     {#if freeTextFailed.has(question.id)}
                       No answers for this question.
@@ -220,12 +218,16 @@
                     {:else if freeTextSamples.get(question.id)!.length === 0}
                       No answers for this question.
                     {:else}
-                      <p class="mb-2">
+                      <p class="mb-1.5 text-xs">
                         A sample. {freeTextSamples.get(question.id)!.length} of {question.free_text_response_count}
                         answers to this question
                       </p>
                       {#each freeTextSamples.get(question.id)! as text, i (i)}
-                        <p>{text}</p>
+                        <p
+                          class="leading-relaxed text-neutral-900 not-last:mb-2"
+                        >
+                          {text}
+                        </p>
                       {/each}
                     {/if}
                   {:else if question.total_response_count === 0}
@@ -233,12 +235,14 @@
                   {:else}
                     {@const sample =
                       question.multiple_choice_answer?.slice(0, 3) ?? []}
-                    <p class="mb-2">
+                    <p class="mb-1.5 text-xs">
                       A sample. {sample.length} of {question.total_response_count}
                       answers to this question
                     </p>
                     {#each sample as answer (answer.id)}
-                      <p>{answer.text}</p>
+                      <p class="leading-relaxed text-neutral-900 not-last:mb-2">
+                        {answer.text}
+                      </p>
                     {/each}
                   {/if}
                 </div>
@@ -255,8 +259,11 @@
   <Button size="sm" href={getDataUploadUrl(consultationId)}>
     Back to overview
   </Button>
-  <Button size="sm" variant="primary" href="step-5">
-    <!-- TODO: Replace with getDataUploadReviewQuestionsUrl(consultationId) once step 5 is built -->
+  <Button
+    size="sm"
+    variant="primary"
+    href={getDataUploadReviewQuestionsUrl(consultationId)}
+  >
     Continue to review questions
   </Button>
 </div>

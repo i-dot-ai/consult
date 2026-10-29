@@ -1,5 +1,28 @@
-import { getApiAnswersUrl, Suffixes } from "../routes";
+import {
+  getApiAnswersUrl,
+  getApiQuestionResponsesUrl,
+  Suffixes,
+} from "../routes";
 import type { ResponsesBody } from "../types";
+
+const SAMPLE_ANSWER_COUNT = 3;
+
+export async function fetchSampleAnswers(
+  consultationId: string,
+  questionId: string,
+): Promise<string[]> {
+  const url = `${getApiQuestionResponsesUrl(consultationId, questionId)}?page_size=${SAMPLE_ANSWER_COUNT}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch sample answers for question ${questionId}`,
+    );
+  }
+  const data = await response.json();
+  const respondents: { free_text_answer_text: string }[] =
+    data.all_respondents ?? [];
+  return respondents.map((respondent) => respondent.free_text_answer_text);
+}
 
 // ============================================================
 // Query Keys and API URLs

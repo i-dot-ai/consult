@@ -1,0 +1,1155 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ReviewQuestionsPage > matches snapshot 1`] = `
+<div>
+  <!---->
+  <div
+    class="flex gap-4 items-center flex-wrap"
+  >
+    <div
+      class="rounded-full border border-neutral-300 bg-neutral-100 w-12 h-12 flex justify-center items-center"
+    >
+      <div
+        class="shrink-0"
+      >
+        <svg
+          aria-hidden="true"
+          class="fill-neutral-500"
+          height="1.6rem"
+          viewBox="0 -960 960 960"
+          width="1.6rem"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <!---->
+          <!---->
+          <path
+            d="M222-200 80-342l56-56 85 85 170-170 56 57-225 226Zm0-320L80-662l56-56 85 85 170-170 56 57-225 226Zm298 240v-80h360v80H520Zm0-320v-80h360v80H520Z"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+          
+          <!---->
+        </svg>
+        <!---->
+      </div>
+    </div>
+     
+    <div>
+      <small
+        class="text-neutral-500"
+      >
+        Step 5 of 6
+      </small>
+       
+      <div
+        class="flex gap-2 items-center flex-wrap"
+      >
+        <!---->
+        <h1
+          class="text-neutral-700 text-xl"
+        >
+          <!---->
+          <!---->
+          Review your questions
+          
+          
+          
+        </h1>
+        
+        <!---->
+         
+        <!---->
+      </div>
+    </div>
+  </div>
+  <!---->
+   
+  <p
+    class="mt-3.5 mb-6 text-md leading-relaxed text-neutral-500"
+  >
+    There are 6 questions and each has been categorised as either closed,
+  open or hybrid. Open questions will have themes assigned and closed questions have
+  fixed answers. Double check that the questions have been categorised correctly.
+  </p>
+   
+  <!---->
+   
+  <!---->
+   
+  <div
+    class="questions-panel rounded-xl border border-neutral-300 bg-white svelte-92tnkh"
+  >
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-3 px-7 pt-4 pb-3"
+    >
+      <p
+        class="text-md text-neutral-500"
+      >
+        6 questions · 3 open · 1 closed · 1 hybrid
+      </p>
+       
+      <div
+        class="flex flex-wrap items-center gap-4"
+      >
+        <p
+          aria-live="polite"
+          class="text-sm text-neutral-500"
+        >
+          Nothing changed yet
+        </p>
+         
+        <div
+          class="sort-select svelte-92tnkh"
+        >
+          <div
+            class="flex items-center gap-4"
+          >
+            <label
+              class="mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6 min-w-max"
+              for="review-questions-sort"
+            >
+              Sort
+            </label>
+            <!---->
+             
+            <!---->
+             
+            <!---->
+             
+            <select
+              class="h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700 focus:outline-2 focus:outline-yellow-300 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50"
+              id="review-questions-sort"
+              name="review-questions-sort"
+            >
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="review-questions-sort-option"
+                selected=""
+                value="file"
+              >
+                File order
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="review-questions-sort-option"
+                value="changed"
+              >
+                Changed first
+              </option>
+              
+            </select>
+          </div>
+          <!---->
+        </div>
+      </div>
+    </div>
+     
+    <p
+      class="px-7 pb-4 text-sm text-neutral-500"
+    >
+      Every change made here is tracked, listed before the analysis starts, and
+      saved to the consultation afterwards. There is no need to keep note of
+      them.
+    </p>
+    <!---->
+     
+    <div
+      class="border-t border-neutral-200"
+    >
+      <div
+        class="hidden gap-4 px-7 py-2 text-sm text-neutral-500 sm:flex"
+      >
+        <span
+          class="w-16 shrink-0"
+        >
+          No.
+        </span>
+         
+        <span
+          class="flex-1"
+        >
+          Question
+        </span>
+         
+        <span
+          class="w-48 shrink-0"
+        >
+          What kind of question it is
+        </span>
+         
+        <span
+          class="w-16 shrink-0"
+        >
+          <span
+            class="sr-only"
+          >
+            Actions
+          </span>
+        </span>
+      </div>
+       
+      <div
+        class="flex flex-wrap items-start gap-4 border-t border-neutral-200 px-7 py-4 svelte-5oxuv7"
+      >
+        <span
+          class="w-16 shrink-0 pt-1.5 text-md text-neutral-500"
+        >
+          Q1
+        </span>
+         
+        <div
+          class="min-w-48 flex-1 pt-1.5"
+        >
+          <p
+            class="text-md text-neutral-900"
+          >
+            Do you agree with the proposed zoning approach?
+          </p>
+          <!---->
+           
+          <!---->
+           
+          <div
+            class="mt-2"
+          >
+            <!---->
+            <button
+              aria-expanded="false"
+              aria-pressed="false"
+              class="text-sm cursor-pointer rounded-md border underline border-0 p-0 transition-colors duration-300 self-start block gap-1 items-center hover:text-primary svelte-1d0mdzt"
+              data-variant="text"
+              role="button"
+              tabindex="0"
+            >
+              <!---->
+              <!---->
+              Show answers
+              
+              
+              
+            </button>
+            
+            <!---->
+          </div>
+           
+          <!---->
+           
+          <!---->
+          <div
+            class="mt-2 flex flex-wrap gap-2"
+          >
+            <div
+              class="flex justify-between items-center gap-2 rounded-md max-w-full py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800 border border-neutral-300"
+            >
+              <span
+                class="flex flex-wrap items-center gap-1"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="fill-neutral-500"
+                  height="0.8rem"
+                  viewBox="0 -960 960 960"
+                  width="0.8rem"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <!---->
+                  <path
+                    d="M440-280H280q-83 0-141.5-58.5T80-480q0-83 58.5-141.5T280-680h160v80H280q-50 0-85 35t-35 85q0 50 35 85t85 35h160v80ZM320-440v-80h320v80H320Zm200 160v-80h160q50 0 85-35t35-85q0-50-35-85t-85-35H520v-80h160q83 0 141.5 58.5T880-480q0 83-58.5 141.5T680-280H520Z"
+                    xmlns="http://www.w3.org/2000/svg"
+                  />
+                  <!---->
+                </svg>
+                <!---->
+                 Explains Q2. Its answers can be filtered by this
+                one. 
+                <span
+                  class="ml-2"
+                >
+                  <!---->
+                  <button
+                    aria-label="Remove link to Q2"
+                    aria-pressed="false"
+                    class="text-sm cursor-pointer rounded-md border underline border-0 p-0 transition-colors duration-300 self-start block gap-1 items-center hover:text-primary svelte-1d0mdzt"
+                    data-variant="text"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <!---->
+                    <!---->
+                    remove
+                    
+                    
+                    
+                  </button>
+                  
+                  <!---->
+                </span>
+              </span>
+              <!---->
+            </div>
+            
+          </div>
+          
+          <!---->
+        </div>
+         
+        <div
+          class="type-cell min-w-48 flex-1 sm:w-48 sm:flex-none svelte-5oxuv7"
+        >
+          <div>
+            <label
+              class="mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6"
+              for="type-q1-uuid"
+            >
+              This question is
+            </label>
+            <!---->
+             
+            <!---->
+             
+            <!---->
+             
+            <select
+              class="h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700 focus:outline-2 focus:outline-yellow-300 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50"
+              id="type-q1-uuid"
+              name="type-q1-uuid"
+            >
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q1-uuid-option"
+                value=""
+              >
+                Choose a type
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q1-uuid-option"
+                value="open"
+              >
+                Open
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q1-uuid-option"
+                value="closed"
+              >
+                Closed
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q1-uuid-option"
+                selected=""
+                value="hybrid"
+              >
+                Hybrid
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q1-uuid-option"
+                value="demographic"
+              >
+                Demographic
+              </option>
+              
+            </select>
+          </div>
+          <!---->
+        </div>
+         
+        <div
+          class="w-16 shrink-0 pt-1.5"
+        >
+          <!---->
+          <button
+            aria-label="Edit wording of question 1"
+            aria-pressed="false"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-variant="default"
+            role="button"
+            tabindex="0"
+          >
+            <!---->
+            <!---->
+            Edit
+            
+            
+            
+          </button>
+          
+          <!---->
+        </div>
+      </div>
+      <div
+        class="flex flex-wrap items-start gap-4 border-t border-neutral-200 px-7 py-4 svelte-5oxuv7"
+      >
+        <span
+          class="w-16 shrink-0 pt-1.5 text-md text-neutral-500"
+        >
+          Q2
+        </span>
+         
+        <div
+          class="min-w-48 flex-1 pt-1.5"
+        >
+          <p
+            class="text-md text-neutral-900"
+          >
+            Please explain your answer.
+          </p>
+          <!---->
+           
+          <!---->
+           
+          <div
+            class="mt-2"
+          >
+            <!---->
+            <button
+              aria-expanded="false"
+              aria-pressed="false"
+              class="text-sm cursor-pointer rounded-md border underline border-0 p-0 transition-colors duration-300 self-start block gap-1 items-center hover:text-primary svelte-1d0mdzt"
+              data-variant="text"
+              role="button"
+              tabindex="0"
+            >
+              <!---->
+              <!---->
+              Show answers
+              
+              
+              
+            </button>
+            
+            <!---->
+          </div>
+           
+          <!---->
+           
+          <!---->
+        </div>
+         
+        <div
+          class="type-cell min-w-48 flex-1 sm:w-48 sm:flex-none svelte-5oxuv7"
+        >
+          <div>
+            <label
+              class="mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6"
+              for="type-q2-uuid"
+            >
+              This question is
+            </label>
+            <!---->
+             
+            <!---->
+             
+            <!---->
+             
+            <select
+              class="h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700 focus:outline-2 focus:outline-yellow-300 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50"
+              id="type-q2-uuid"
+              name="type-q2-uuid"
+            >
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q2-uuid-option"
+                value=""
+              >
+                Choose a type
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q2-uuid-option"
+                selected=""
+                value="open"
+              >
+                Open
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q2-uuid-option"
+                value="closed"
+              >
+                Closed
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q2-uuid-option"
+                value="hybrid"
+              >
+                Hybrid
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q2-uuid-option"
+                value="demographic"
+              >
+                Demographic
+              </option>
+              
+            </select>
+          </div>
+          <!---->
+        </div>
+         
+        <div
+          class="w-16 shrink-0 pt-1.5"
+        >
+          <!---->
+          <button
+            aria-label="Edit wording of question 2"
+            aria-pressed="false"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-variant="default"
+            role="button"
+            tabindex="0"
+          >
+            <!---->
+            <!---->
+            Edit
+            
+            
+            
+          </button>
+          
+          <!---->
+        </div>
+      </div>
+      <div
+        class="flex flex-wrap items-start gap-4 border-t border-neutral-200 px-7 py-4 svelte-5oxuv7"
+      >
+        <span
+          class="w-16 shrink-0 pt-1.5 text-md text-neutral-500"
+        >
+          Q3
+        </span>
+         
+        <div
+          class="min-w-48 flex-1 pt-1.5"
+        >
+          <p
+            class="text-md text-neutral-900"
+          >
+            Which region are you responding from?
+          </p>
+          <!---->
+           
+          <!---->
+           
+          <div
+            class="mt-2"
+          >
+            <!---->
+            <button
+              aria-expanded="false"
+              aria-pressed="false"
+              class="text-sm cursor-pointer rounded-md border underline border-0 p-0 transition-colors duration-300 self-start block gap-1 items-center hover:text-primary svelte-1d0mdzt"
+              data-variant="text"
+              role="button"
+              tabindex="0"
+            >
+              <!---->
+              <!---->
+              Show answers
+              
+              
+              
+            </button>
+            
+            <!---->
+          </div>
+           
+          <!---->
+           
+          <!---->
+        </div>
+         
+        <div
+          class="type-cell min-w-48 flex-1 sm:w-48 sm:flex-none svelte-5oxuv7"
+        >
+          <div>
+            <label
+              class="mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6"
+              for="type-q3-uuid"
+            >
+              This question is
+            </label>
+            <!---->
+             
+            <!---->
+             
+            <!---->
+             
+            <select
+              class="h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700 focus:outline-2 focus:outline-yellow-300 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50"
+              id="type-q3-uuid"
+              name="type-q3-uuid"
+            >
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q3-uuid-option"
+                selected=""
+                value=""
+              >
+                Choose a type
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q3-uuid-option"
+                value="open"
+              >
+                Open
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q3-uuid-option"
+                value="closed"
+              >
+                Closed
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q3-uuid-option"
+                value="hybrid"
+              >
+                Hybrid
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q3-uuid-option"
+                value="demographic"
+              >
+                Demographic
+              </option>
+              
+            </select>
+          </div>
+          <!---->
+        </div>
+         
+        <div
+          class="w-16 shrink-0 pt-1.5"
+        >
+          <!---->
+          <button
+            aria-label="Edit wording of question 3"
+            aria-pressed="false"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-variant="default"
+            role="button"
+            tabindex="0"
+          >
+            <!---->
+            <!---->
+            Edit
+            
+            
+            
+          </button>
+          
+          <!---->
+        </div>
+      </div>
+      <div
+        class="flex flex-wrap items-start gap-4 border-t border-neutral-200 px-7 py-4 svelte-5oxuv7"
+      >
+        <span
+          class="w-16 shrink-0 pt-1.5 text-md text-neutral-500"
+        >
+          Q4
+        </span>
+         
+        <div
+          class="min-w-48 flex-1 pt-1.5"
+        >
+          <p
+            class="text-md text-neutral-900"
+          >
+            What else should the framework cover?
+          </p>
+          <!---->
+           
+          <!---->
+           
+          <div
+            class="mt-2"
+          >
+            <!---->
+            <button
+              aria-expanded="false"
+              aria-pressed="false"
+              class="text-sm cursor-pointer rounded-md border underline border-0 p-0 transition-colors duration-300 self-start block gap-1 items-center hover:text-primary svelte-1d0mdzt"
+              data-variant="text"
+              role="button"
+              tabindex="0"
+            >
+              <!---->
+              <!---->
+              Show answers
+              
+              
+              
+            </button>
+            
+            <!---->
+          </div>
+           
+          <!---->
+           
+          <!---->
+        </div>
+         
+        <div
+          class="type-cell min-w-48 flex-1 sm:w-48 sm:flex-none svelte-5oxuv7"
+        >
+          <div>
+            <label
+              class="mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6"
+              for="type-q4-uuid"
+            >
+              This question is
+            </label>
+            <!---->
+             
+            <!---->
+             
+            <!---->
+             
+            <select
+              class="h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700 focus:outline-2 focus:outline-yellow-300 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50"
+              id="type-q4-uuid"
+              name="type-q4-uuid"
+            >
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q4-uuid-option"
+                value=""
+              >
+                Choose a type
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q4-uuid-option"
+                selected=""
+                value="open"
+              >
+                Open
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q4-uuid-option"
+                value="closed"
+              >
+                Closed
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q4-uuid-option"
+                value="hybrid"
+              >
+                Hybrid
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q4-uuid-option"
+                value="demographic"
+              >
+                Demographic
+              </option>
+              
+            </select>
+          </div>
+          <!---->
+        </div>
+         
+        <div
+          class="w-16 shrink-0 pt-1.5"
+        >
+          <!---->
+          <button
+            aria-label="Edit wording of question 4"
+            aria-pressed="false"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-variant="default"
+            role="button"
+            tabindex="0"
+          >
+            <!---->
+            <!---->
+            Edit
+            
+            
+            
+          </button>
+          
+          <!---->
+        </div>
+      </div>
+      <div
+        class="flex flex-wrap items-start gap-4 border-t border-neutral-200 px-7 py-4 svelte-5oxuv7"
+      >
+        <span
+          class="w-16 shrink-0 pt-1.5 text-md text-neutral-500"
+        >
+          Q5
+        </span>
+         
+        <div
+          class="min-w-48 flex-1 pt-1.5"
+        >
+          <p
+            class="text-md text-neutral-900"
+          >
+            Should penalties be linked to turnover?
+          </p>
+          <!---->
+           
+          <!---->
+           
+          <div
+            class="mt-2"
+          >
+            <!---->
+            <button
+              aria-expanded="false"
+              aria-pressed="false"
+              class="text-sm cursor-pointer rounded-md border underline border-0 p-0 transition-colors duration-300 self-start block gap-1 items-center hover:text-primary svelte-1d0mdzt"
+              data-variant="text"
+              role="button"
+              tabindex="0"
+            >
+              <!---->
+              <!---->
+              Show answers
+              
+              
+              
+            </button>
+            
+            <!---->
+          </div>
+           
+          <!---->
+           
+          <!---->
+          <div
+            aria-label="Suggested link for question 5"
+            class="mt-2 rounded-lg bg-neutral-100 p-3 text-sm leading-relaxed text-neutral-500"
+            role="group"
+          >
+            This looks like a hybrid pair. Q6 asks people to explain
+          this answer, so its answers could be read by how people answered here. 
+            <div
+              class="mt-2 flex gap-2"
+            >
+              <!---->
+              <button
+                aria-pressed="false"
+                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+                data-variant="primary"
+                role="button"
+                tabindex="0"
+              >
+                <!---->
+                <!---->
+                Yes, they are a pair
+                
+                
+                
+              </button>
+              
+              <!---->
+               
+              <!---->
+              <button
+                aria-pressed="false"
+                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                data-variant="default"
+                role="button"
+                tabindex="0"
+              >
+                <!---->
+                <!---->
+                No, separate questions
+                
+                
+                
+              </button>
+              
+              <!---->
+            </div>
+          </div>
+          
+          <!---->
+        </div>
+         
+        <div
+          class="type-cell min-w-48 flex-1 sm:w-48 sm:flex-none svelte-5oxuv7"
+        >
+          <div>
+            <label
+              class="mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6"
+              for="type-q5-uuid"
+            >
+              This question is
+            </label>
+            <!---->
+             
+            <!---->
+             
+            <!---->
+             
+            <select
+              class="h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700 focus:outline-2 focus:outline-yellow-300 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50"
+              id="type-q5-uuid"
+              name="type-q5-uuid"
+            >
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q5-uuid-option"
+                value=""
+              >
+                Choose a type
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q5-uuid-option"
+                value="open"
+              >
+                Open
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q5-uuid-option"
+                selected=""
+                value="closed"
+              >
+                Closed
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q5-uuid-option"
+                value="hybrid"
+              >
+                Hybrid
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q5-uuid-option"
+                value="demographic"
+              >
+                Demographic
+              </option>
+              
+            </select>
+          </div>
+          <!---->
+        </div>
+         
+        <div
+          class="w-16 shrink-0 pt-1.5"
+        >
+          <!---->
+          <button
+            aria-label="Edit wording of question 5"
+            aria-pressed="false"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-variant="default"
+            role="button"
+            tabindex="0"
+          >
+            <!---->
+            <!---->
+            Edit
+            
+            
+            
+          </button>
+          
+          <!---->
+        </div>
+      </div>
+      <div
+        class="flex flex-wrap items-start gap-4 border-t border-neutral-200 px-7 py-4 svelte-5oxuv7"
+      >
+        <span
+          class="w-16 shrink-0 pt-1.5 text-md text-neutral-500"
+        >
+          Q6
+        </span>
+         
+        <div
+          class="min-w-48 flex-1 pt-1.5"
+        >
+          <p
+            class="text-md text-neutral-900"
+          >
+            If not, please explain why
+          </p>
+          <!---->
+           
+          <!---->
+           
+          <div
+            class="mt-2"
+          >
+            <!---->
+            <button
+              aria-expanded="false"
+              aria-pressed="false"
+              class="text-sm cursor-pointer rounded-md border underline border-0 p-0 transition-colors duration-300 self-start block gap-1 items-center hover:text-primary svelte-1d0mdzt"
+              data-variant="text"
+              role="button"
+              tabindex="0"
+            >
+              <!---->
+              <!---->
+              Show answers
+              
+              
+              
+            </button>
+            
+            <!---->
+          </div>
+           
+          <!---->
+           
+          <!---->
+        </div>
+         
+        <div
+          class="type-cell min-w-48 flex-1 sm:w-48 sm:flex-none svelte-5oxuv7"
+        >
+          <div>
+            <label
+              class="mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6"
+              for="type-q6-uuid"
+            >
+              This question is
+            </label>
+            <!---->
+             
+            <!---->
+             
+            <!---->
+             
+            <select
+              class="h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700 focus:outline-2 focus:outline-yellow-300 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50"
+              id="type-q6-uuid"
+              name="type-q6-uuid"
+            >
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q6-uuid-option"
+                value=""
+              >
+                Choose a type
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q6-uuid-option"
+                selected=""
+                value="open"
+              >
+                Open
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q6-uuid-option"
+                value="closed"
+              >
+                Closed
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q6-uuid-option"
+                value="hybrid"
+              >
+                Hybrid
+              </option>
+              <option
+                class="bg-white text-neutral-900"
+                data-testid="type-q6-uuid-option"
+                value="demographic"
+              >
+                Demographic
+              </option>
+              
+            </select>
+          </div>
+          <!---->
+        </div>
+         
+        <div
+          class="w-16 shrink-0 pt-1.5"
+        >
+          <!---->
+          <button
+            aria-label="Edit wording of question 6"
+            aria-pressed="false"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-variant="default"
+            role="button"
+            tabindex="0"
+          >
+            <!---->
+            <!---->
+            Edit
+            
+            
+            
+          </button>
+          
+          <!---->
+        </div>
+      </div>
+      <!---->
+    </div>
+     
+    <!---->
+    <!---->
+  </div>
+   
+  <div
+    class="mt-7 flex flex-wrap justify-between gap-2"
+  >
+    <!---->
+    <a
+      aria-pressed="false"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+      data-variant="default"
+      disabled="false"
+      href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58/data-upload/delete-questions"
+      role="link"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      Back
+      
+      
+      
+    </a>
+    
+    <!---->
+     
+    <!---->
+    <button
+      aria-pressed="false"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+      data-variant="primary"
+      role="button"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      Continue to closed questions
+      
+      
+      
+    </button>
+    
+    <!---->
+  </div>
+  
+</div>
+`;
