@@ -7,7 +7,7 @@ from django.urls import reverse
 from openpyxl import Workbook
 
 from consultations.api_v2.serializers import ConsultationFileUploadSerializerV2
-from consultations.models import FileUpload, Question, Respondent, Response
+from consultations.models import Consultation, FileUpload, Question, Respondent
 
 
 def xlsx_file(rows, filename="responses.xlsx"):
@@ -28,49 +28,40 @@ def test_v2_upload_consultation_file(client, consultation, non_staff_user_token)
         b"What is your name?,What do you think?\nAlice,Very useful\nBob,Needs work",
     )
 
-    response = client.post(
-        url,
-        data={"file": uploaded_file},
-        headers={"Authorization": f"Bearer {non_staff_user_token}"},
-    )
+    with patch("consultations.api_v2.views.consultation.add_consultation_job.delay") as delay:
+        response = client.post(
+            url,
+            data={"file": uploaded_file},
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
 
-    assert response.status_code == 201
-    assert response.json()["question_count"] == 2
-    assert response.json()["response_count"] == 4
+    assert response.status_code == 202
     file_upload = FileUpload.objects.get(id=response.json()["id"])
     assert file_upload.consultation == consultation
     assert file_upload.uploaded_by_id is not None
     assert file_upload.s3_key == f"consultations/uploads/{consultation.id}/{file_upload.id}.csv"
     assert response.json()["s3_key"] == file_upload.s3_key
-
-    questions = list(Question.objects.filter(consultation=consultation).order_by("number"))
-    assert [question.text for question in questions] == [
-        "What is your name?",
-        "What do you think?",
-    ]
-    assert [question.type for question in questions] == [None, None]
-    assert Respondent.objects.filter(consultation=consultation).count() == 2
-    assert list(
-        Response.objects.filter(question=questions[1])
-        .order_by("respondent__created_at")
-        .values_list("text", flat=True)
-    ) == ["Very useful", "Needs work"]
+    assert response.json()["status"] == FileUpload.Status.PENDING
+    assert response.json()["survey_import_status"] == Consultation.SurveyImportStatus.FILE_UPLOADING
+    delay.assert_called_once_with(file_upload.id)
+    consultation.refresh_from_db()
+    assert consultation.survey_import_status == Consultation.SurveyImportStatus.FILE_UPLOADING
+    assert not Question.objects.filter(consultation=consultation).exists()
+    assert not Respondent.objects.filter(consultation=consultation).exists()
 
 
 @pytest.mark.django_db
 def test_v2_upload_accepts_xlsx_case_insensitively(client, consultation, non_staff_user_token):
-    response = client.post(
-        reverse("consultation-v2-upload", kwargs={"pk": consultation.id}),
-        data={"file": xlsx_file([["Question"], ["Answer"]], "responses.XLSX")},
-        headers={"Authorization": f"Bearer {non_staff_user_token}"},
-    )
+    with patch("consultations.api_v2.views.consultation.add_consultation_job.delay"):
+        response = client.post(
+            reverse("consultation-v2-upload", kwargs={"pk": consultation.id}),
+            data={"file": xlsx_file([["Question"], ["Answer"]], "responses.XLSX")},
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
 
-    assert response.status_code == 201
+    assert response.status_code == 202
     assert response.json()["s3_key"].endswith(".xlsx")
-    question = Question.objects.get(consultation=consultation)
-    assert question.text == "Question"
-    assert question.type is None
-    assert Response.objects.get(question=question).text == "Answer"
+    assert not Question.objects.filter(consultation=consultation).exists()
 
 
 @pytest.mark.django_db
@@ -115,17 +106,34 @@ def test_v2_upload_rejects_xlsx_without_visible_worksheet(
 
 
 @pytest.mark.django_db
-def test_v2_upload_retains_file_when_import_fails(client, consultation, non_staff_user_token):
-    import_error = RuntimeError("Import failed")
+def test_v2_upload_rejects_second_file(client, consultation, non_staff_user_token):
+    FileUpload.objects.create(
+        consultation=consultation,
+        uploaded_by=consultation.created_by,
+        s3_key="consultations/uploads/existing.csv",
+    )
+
+    with patch("consultations.api_v2.views.consultation.add_consultation_job.delay") as delay:
+        response = client.post(
+            reverse("consultation-v2-upload", kwargs={"pk": consultation.id}),
+            data={"file": SimpleUploadedFile("responses.csv", b"Question\nAnswer")},
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 400
+    assert response.json()["file"] == "A file has already been uploaded for this consultation."
+    assert FileUpload.objects.filter(consultation=consultation).count() == 1
+    delay.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_v2_upload_records_queue_failure(client, consultation, non_staff_user_token):
     with (
         patch(
-            "consultations.api_v2.views.consultation.import_consultation_data",
-            side_effect=import_error,
+            "consultations.api_v2.views.consultation.add_consultation_job.delay",
+            side_effect=RuntimeError("Queue unavailable"),
         ),
-        patch(
-            "consultations.api_v2.views.consultation.default_storage.delete",
-        ) as delete,
-        pytest.raises(RuntimeError, match="Import failed") as raised,
+        pytest.raises(RuntimeError, match="Queue unavailable"),
     ):
         client.post(
             reverse("consultation-v2-upload", kwargs={"pk": consultation.id}),
@@ -133,13 +141,11 @@ def test_v2_upload_retains_file_when_import_fails(client, consultation, non_staf
             headers={"Authorization": f"Bearer {non_staff_user_token}"},
         )
 
-    assert raised.value is import_error
-    delete.assert_not_called()
     file_upload = FileUpload.objects.get(consultation=consultation)
-    assert file_upload.uploaded_by_id is not None
-    assert file_upload.s3_key.endswith(".csv")
-    assert not Question.objects.filter(consultation=consultation).exists()
-    assert not Respondent.objects.filter(consultation=consultation).exists()
+    assert file_upload.status == FileUpload.Status.FAILED
+    assert file_upload.error_message == "Queue unavailable"
+    consultation.refresh_from_db()
+    assert consultation.survey_import_status == Consultation.SurveyImportStatus.IMPORT_FAILED
 
 
 @pytest.mark.django_db

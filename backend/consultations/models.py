@@ -61,6 +61,18 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         QUALTRICS = "qualtrics", "Qualtrics"
         CITIZEN_SPACE = "citizen-space", "Citizen Space"
 
+    class SurveyImportStatus(models.TextChoices):
+        NOT_STARTED = "not_started", "Not started"
+        VIEWED_OVERVIEW = "viewed_overview", "Viewed overview"
+        VIEWED_PROVIDER = "viewed_provider", "Viewed provider"
+        VIEWED_CHECKLIST = "viewed_checklist", "Viewed checklist"
+        VIEWED_UPLOAD = "viewed_upload", "Viewed upload"
+        FILE_UPLOADING = "file_uploading", "File uploading"
+        PENDING_QUESTIONS = "pending_questions", "Pending questions"
+        PENDING_DEMOGRAPHICS = "pending_demographics", "Pending demographics"
+        IMPORT_COMPLETE = "import_complete", "Import complete"
+        IMPORT_FAILED = "import_failed", "Import failed"
+
     title = models.CharField(max_length=256)
     started_at = models.DateTimeField(
         null=True, blank=True, help_text="When the consultation opened to responses."
@@ -93,6 +105,11 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         choices=DataSource,
         null=True,
         default=None,
+    )
+    survey_import_status = models.CharField(
+        max_length=32,
+        choices=SurveyImportStatus,
+        default=SurveyImportStatus.NOT_STARTED,
     )
     code = models.SlugField(max_length=256)
     timestamp = models.SlugField(max_length=256, null=True, blank=True)
@@ -610,6 +627,14 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
 
 
 class FileUpload(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        PROCESSING = "processing", "Processing"
+        COMPLETED = "completed", "Completed"
+        FAILED = "failed", "Failed"
+
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, editable=False)
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     s3_key = models.TextField(null=False, blank=False)
+    status = models.CharField(max_length=32, choices=Status, default=Status.PENDING)
+    error_message = models.TextField(blank=True, default="")

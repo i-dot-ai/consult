@@ -1,12 +1,49 @@
 from uuid import UUID
 
 from django.conf import settings
+from django.core.files.storage import default_storage
 from django.db import connection
 
 from consultations import models
+from ingest.consultation_file import import_consultation_data, read_consultation_file
 from rq_context import job
 
 logger = settings.LOGGER
+
+
+@job("default", timeout=86400)
+def add_consultation_job(file_upload_id: UUID) -> None:
+    """Import consultation data from a raw file uploaded to storage."""
+    file_upload = models.FileUpload.objects.select_related("consultation").get(id=file_upload_id)
+    consultation = file_upload.consultation
+    file_upload.status = models.FileUpload.Status.PROCESSING
+    file_upload.error_message = ""
+    file_upload.save(update_fields=["status", "error_message"])
+
+    try:
+        with default_storage.open(file_upload.s3_key, "rb") as uploaded_file:
+            question_texts, response_rows = read_consultation_file(
+                uploaded_file, file_upload.s3_key
+            )
+        import_consultation_data(consultation, question_texts, response_rows)
+    except Exception as error:
+        logger.exception(
+            "add_consultation job failed for consultation_id={consultation_id}, "
+            "file_upload_id={file_upload_id}",
+            consultation_id=consultation.id,
+            file_upload_id=file_upload.id,
+        )
+        file_upload.status = models.FileUpload.Status.FAILED
+        file_upload.error_message = str(error)
+        file_upload.save(update_fields=["status", "error_message"])
+        consultation.survey_import_status = models.Consultation.SurveyImportStatus.IMPORT_FAILED
+        consultation.save(update_fields=["survey_import_status"])
+        raise
+
+    file_upload.status = models.FileUpload.Status.COMPLETED
+    file_upload.save(update_fields=["status"])
+    consultation.survey_import_status = models.Consultation.SurveyImportStatus.PENDING_QUESTIONS
+    consultation.save(update_fields=["survey_import_status"])
 
 
 def delete_question_related_table(table: str, consultation_id: UUID):
