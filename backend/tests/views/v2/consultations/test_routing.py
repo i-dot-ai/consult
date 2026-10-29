@@ -21,6 +21,14 @@ def test_v2_deep_validation_route_is_registered():
     assert resolve(url).view_name == "consultation-v2-deep-validation"
 
 
+def test_v2_consultation_assign_users_route_is_registered():
+    consultation_id = uuid4()
+    url = reverse("consultation-v2-assign-users", kwargs={"pk": consultation_id})
+
+    assert url == f"/api/v2/consultations/{consultation_id}/assign-users/"
+    assert resolve(url).view_name == "consultation-v2-assign-users"
+
+
 def test_v2_demographic_merge_route_is_registered():
     consultation_id = uuid4()
     question_id = uuid4()
