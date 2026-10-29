@@ -8,6 +8,7 @@ import type { AstroGlobalRuntime } from "../../../../global/types";
 import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
 import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import { consultationV2QueryParts } from "../../../../global/queries/consultations/parts";
+import { getConsultationViewUrl, getDataUploadDeleteQuestionsUrl } from "../../../../global/routes";
 
 if (!getDataSetupV2Enabled()) {
   return Astro.rewrite("/404");
@@ -29,6 +30,18 @@ const redirect = assertSurveyImportState(Astro, data);
 if (redirect) {
   return redirect;
 }
+
+if (data?.survey_import_status === "file_uploading") {
+  return Astro.redirect(getConsultationViewUrl(consultationId || ""));
+}
+
+if (data?.survey_import_status === "pending_questions") {
+  return Astro.redirect(getDataUploadDeleteQuestionsUrl(consultationId || ""));
+}
+// TODO: Add once demographics url is decided on
+// if (data?.survey_import_status === "pending_demographics") {
+//   Astro.redirect(getDataUploadDemographicsUrl(consultationId || ""));
+// }
 ---
 
 <Layout>

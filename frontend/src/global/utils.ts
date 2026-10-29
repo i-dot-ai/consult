@@ -114,7 +114,12 @@ export function assertSurveyImportState(astroContext: Astro, consultation?: Cons
     return;
   }
 
-  if (consultation.stage !== "setup") {
+  // if survey import has concluded one way or another
+  if (
+    consultation.stage !== "setup" ||
+    consultation.survey_import_status === "import_complete" ||
+    consultation.survey_import_status === "import_failed"
+  ) {
     return astroContext.redirect(getConsultationViewUrl(consultation.id || ""));
   }
 }
