@@ -38,7 +38,7 @@ async def evaluate_component(
     *,
     llm: Any | None = None,
     judge_llm: Any | None = None,
-    context: Any | None = None,
+    context: dict[str, Any] | None = None,
     question_num: int | None = None,
     settings: EvalSettings | None = None,
 ) -> dict[str, Any]:

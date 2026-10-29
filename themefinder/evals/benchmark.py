@@ -495,7 +495,7 @@ class BenchmarkRunner:
                 component=eval_type,
                 dataset=self.config.dataset,
                 llm=llm,
-                context=langfuse_ctx,
+                context={"langfuse": langfuse_ctx},
                 judge_llm=judge_llm,
             )
         duration_seconds = time.perf_counter() - started_at

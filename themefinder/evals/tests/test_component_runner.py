@@ -1,6 +1,7 @@
 """Unit tests for the component orchestration pipeline."""
 
 import pytest
+from adapters.context_providers import ProvidedContext
 from adapters.runners import InlineSequentialRunner
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from component_runner import run_component
@@ -277,3 +278,34 @@ async def test_real_runners_preserve_outcomes_scores_failures_and_filter():
     assert bad.scores == []
     assert bad.error is not None
     assert "task failed" in bad.error
+
+
+@pytest.mark.parametrize("run_fails", [False, True])
+async def test_closes_backend_contexts_after_run_even_when_it_fails(run_fails):
+    """Created contexts must be flushed whichever adapters used them."""
+    case = _case()
+    closed = []
+    runner = FakeRunnerPort(
+        RunReport(outcomes=[_outcome(case)]),
+        error=RuntimeError("run failed") if run_fails else None,
+    )
+    backends = EvalBackends(
+        dataset=FakeDatasetPort([case]),
+        runner=runner,
+        artefacts=FakeArtefactStore(),
+        contexts={"langfuse": ProvidedContext(object(), lambda: closed.append(True))},
+    )
+
+    run = run_component(
+        _component_config(),
+        DatasetConfig(dataset="demo", component="generation"),
+        backends,
+        llm=object(),
+    )
+    if run_fails:
+        with pytest.raises(RuntimeError, match="run failed"):
+            await run
+    else:
+        await run
+
+    assert closed == [True]

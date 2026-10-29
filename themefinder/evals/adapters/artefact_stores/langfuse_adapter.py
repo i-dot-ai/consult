@@ -8,7 +8,6 @@ from typing import Any
 
 from eval_types import CaseOutcome, RunReport
 from httpx import RequestError
-from utils import langfuse as langfuse_utils
 from utils.langfuse import LangfuseContext
 from utils.logging_config import get_logger
 
@@ -18,9 +17,8 @@ logger = get_logger(__name__)
 
 
 class LangfuseArtefactStore(ArtefactStorePort):
-    def __init__(self, context: LangfuseContext, owns_context: bool):
+    def __init__(self, context: LangfuseContext):
         self.context = context
-        self.owns_context = owns_context
         self._component: str | None = None
         self._dataset: str | None = None
 
@@ -67,9 +65,6 @@ class LangfuseArtefactStore(ArtefactStorePort):
             printer = getattr(native_report, "print", None)
             if callable(printer):
                 printer()
-
-        if self.owns_context:
-            langfuse_utils.flush(self.context)
 
         return flatten_run_report(report)
 
