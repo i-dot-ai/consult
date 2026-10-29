@@ -31,6 +31,7 @@ def test_v2_question_list_returns_every_question_in_file_order(
         "type",
         "closed_question",
         "short_name",
+        "dashboard_role",
         "status",
         "response_count",
     }

@@ -73,7 +73,7 @@ def test_merge_demographics_rejects_response_from_another_question(
 
 
 @pytest.mark.django_db
-def test_merge_demographics_rejects_non_demographic_question(
+def test_merge_demographics_rejects_open_question(
     client, consultation, merge_url, demographic_response, non_staff_user_token
 ):
     question = QuestionFactory(
@@ -172,3 +172,25 @@ def test_merge_demographics_rejects_unassigned_user(
     )
 
     assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_merge_demographics_merges_answers_to_a_closed_question(
+    client, consultation, non_staff_user_token, merge_url, demographic_response
+):
+    question = QuestionFactory(consultation=consultation, type=Question.QuestionType.CLOSED)
+    selected = [demographic_response(question, text) for text in ["yes", "Y"]]
+
+    response = client.post(
+        merge_url(consultation, question),
+        data={"new_value": "Yes", "responses": [str(item.id) for item in selected]},
+        content_type="application/json",
+        headers={"Authorization": f"Bearer {non_staff_user_token}"},
+    )
+
+    assert response.status_code == 200
+    assert set(
+        Response.objects.filter(id__in=[item.id for item in selected]).values_list(
+            "text", flat=True
+        )
+    ) == {"Yes"}
