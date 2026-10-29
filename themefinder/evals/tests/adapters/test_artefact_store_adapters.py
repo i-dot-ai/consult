@@ -67,10 +67,7 @@ class TestArtefactStorePortContract:
 
     def test_langfuse_adapter_is_artefact_store_port(self):
         context = LangfuseContext(client=FakeLangfuseClient())
-        assert isinstance(
-            LangfuseArtefactStore(context=context),
-            ArtefactStorePort
-        )
+        assert isinstance(LangfuseArtefactStore(context=context), ArtefactStorePort)
 
     def test_incomplete_subclass_cannot_be_instantiated(self):
         class _IncompleteArtefactStore(ArtefactStorePort, ABC):
