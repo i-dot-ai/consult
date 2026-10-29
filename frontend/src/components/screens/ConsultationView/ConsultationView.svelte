@@ -25,16 +25,20 @@
     getConsultationAnswersUrl,
     getConsultationDashboardUrl,
     getConsultationUsersUrl,
+    getDataUploadChecksUrl,
+    getDataUploadDeleteQuestionsUrl,
+    getDataUploadFileUploadUrl,
+    getDataUploadSelectProviderUrl,
     getDataUploadUrl,
     getFinaliseThemesUrl,
     Routes,
   } from "../../../global/routes";
   import type {
-    Consultation,
     ConsultationStage,
     User,
   } from "../../../global/types";
   import { createUserState } from "../../../global/state.svelte";
+  import type { ConsultationV2, SurveyImportStatus } from "../../../global/queries/consultations/types";
 
   interface Props {
     consultationId: string;
@@ -52,7 +56,7 @@
   let userData: User = $derived(user.query?.data);
 
   let consultation = $derived(buildConsultationGetQuery(consultationId));
-  let consultationData: Consultation = $derived(consultation.query?.data);
+  let consultationData: ConsultationV2 | undefined = $derived(consultation.query.data);
 
   let userState = $derived(createUserState(userData, consultationData));
   let userCanDelete = $derived(userState?.isOwner || userState?.isAdmin);
@@ -64,7 +68,10 @@
 
   let isRenameSaving = $derived(consultationRename.query.isPending);
 
-  function getStatusText(stage: ConsultationStage) {
+  function getStatusText(stage: ConsultationStage | undefined) {
+    if (!stage) {
+      return "";
+    }
     return (stage.charAt(0).toUpperCase() + stage.slice(1)).replaceAll(
       "_",
       " ",
@@ -104,6 +111,29 @@
     description: "Every response, as it was uploaded",
     url: getConsultationAnswersUrl(consultationId),
   });
+
+  function getDataSetupUrl(consultationId: string, surveyImportStatus: SurveyImportStatus | undefined) {
+    if (surveyImportStatus === "not_started" || surveyImportStatus === "viewed_overview") {
+      return getDataUploadUrl(consultationId);
+    }
+    if (surveyImportStatus === "viewed_provider") {
+      return getDataUploadSelectProviderUrl(consultationId);
+    }
+    if (surveyImportStatus === "viewed_checklist") {
+      return getDataUploadChecksUrl(consultationId);
+    }
+    if (surveyImportStatus === "viewed_upload") {
+      return getDataUploadFileUploadUrl(consultationId);
+    }
+    if (surveyImportStatus === "pending_questions") {
+      return getDataUploadDeleteQuestionsUrl(consultationId);
+    }
+    // TODO: Add once url is decided on
+    // if (surveyImportStatus === "pending_demographics") {
+    //   return getDataUploadDemographicsUrl(consultationId);
+    // }
+    return getDataUploadUrl(consultationId);
+  }
 
   const CONTENT: Record<string, ContentData> = $derived({
     analysis: {
@@ -145,7 +175,7 @@
     setup: {
       panelText: "The responses are not uploaded yet.",
       panelButtonText: "Set up the data",
-      panelButtonUrl: getDataUploadUrl(consultationId),
+      panelButtonUrl: getDataSetupUrl(consultationId, consultationData?.survey_import_status),
       tagVariant: "warning",
       adminLinks: [MANAGE_PEOPLE_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK],
@@ -153,7 +183,7 @@
     },
   } as const);
 
-  let content = $derived(CONTENT[consultationData?.stage] || {});
+  let content = $derived(CONTENT[consultationData?.stage || 0] || {});
   let links = $derived.by(() => {
     if (userState?.isAdmin) {
       return content.adminLinks;
@@ -337,7 +367,7 @@
     <div class="pt-2 pb-8 px-2">
       <div class="mb-3">
         <Tag variant={content.tagVariant}>
-          {getStatusText(consultationData?.stage || "")}
+          {getStatusText(consultationData?.stage)}
         </Tag>
       </div>
 
@@ -350,12 +380,7 @@
           <Button
             variant="primary"
             size="sm"
-            handleClick={() => {
-              if (!content.panelButtonUrl) {
-                return;
-              }
-              window.location.href = content.panelButtonUrl;
-            }}
+            href={content.panelButtonUrl || "#"}
           >
             {content.panelButtonText}
           </Button>

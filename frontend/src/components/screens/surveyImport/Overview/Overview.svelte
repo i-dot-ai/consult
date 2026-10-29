@@ -26,6 +26,7 @@
     getConsultationUsersUrl,
     getDataUploadSelectProviderUrl,
   } from "../../../../global/routes";
+  import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
 
   interface Props {
     consultationId: string;
@@ -34,7 +35,7 @@
   let { consultationId }: Props = $props();
 
   const consultation = $derived(buildConsultationGetQuery(consultationId));
-  const consultationData = $derived(consultation.query.data);
+  const consultationData: ConsultationV2 = $derived(consultation.query.data);
   const user = buildCurrentUserGetQuery();
   const userData = $derived(user.query?.data);
 

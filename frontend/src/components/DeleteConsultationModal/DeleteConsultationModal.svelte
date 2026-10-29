@@ -1,15 +1,16 @@
 <script lang="ts">
   import { buildConsultationDeleteQuery } from "../../global/queries/consultations/queries";
+  import type { ConsultationV2 } from "../../global/queries/consultations/types";
   import type { Consultation } from "../../global/types";
   import Panel from "../dashboard/Panel/Panel.svelte";
   import Modal from "../Modal/Modal.svelte";
   import Warning from "../svg/material/Warning.svelte";
 
   interface Props {
-    consultation?: Consultation;
+    consultation?: Consultation | ConsultationV2;
     onClose?: () => void;
-    onError?: (consultation: Consultation) => void;
-    onSuccess?: (consultation: Consultation) => void;
+    onError?: (consultation: Consultation | ConsultationV2) => void;
+    onSuccess?: (consultationV2: Consultation | ConsultationV2) => void;
   }
 
   let { consultation, onClose, onError, onSuccess }: Props = $props();

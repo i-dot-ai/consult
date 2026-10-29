@@ -1,3 +1,4 @@
+import type { ConsultationV2 } from "./queries/consultations/types";
 import type { Consultation, User } from "./types";
 
 function createThemeFiltersState() {
@@ -111,7 +112,7 @@ export const multiAnswerFilters = createMultiAnswerFiltersState();
 
 export function createUserState(
   userData: User | undefined,
-  consultationData: Consultation | undefined,
+  consultationData: Consultation | ConsultationV2 | undefined,
 ) {
   if (!userData || !consultationData) {
     return;

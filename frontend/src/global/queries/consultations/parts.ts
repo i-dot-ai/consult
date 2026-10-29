@@ -20,7 +20,7 @@ export const consultationsV2QueryParts = {
 
 export const consultationQueryParts = {
   key: (consultationId: string) => [Suffixes.Consultations, consultationId],
-  url: (consultationId: string) => getApiConsultationUrl(consultationId),
+  url: (consultationId: string) => getApiConsultationV2Url(consultationId),
 };
 
 export const consultationV2QueryParts = {
