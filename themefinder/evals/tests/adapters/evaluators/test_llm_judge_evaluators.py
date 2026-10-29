@@ -9,6 +9,9 @@ from adapters.evaluators.condensation_quality_evaluator import (
     CondensationQualityEvaluator,
 )
 from adapters.evaluators.coverage_evaluator import CoverageEvaluator
+from adapters.evaluators.ground_information_evaluator import (
+    GroundednessInformationRetentionEvaluator,
+)
 from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
 from adapters.evaluators.refinement_quality_evaluator import RefinementQualityEvaluator
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
@@ -422,3 +425,71 @@ class TestTitleSpecificityEvaluator(_JudgeContractTests):
         assert scores[0].name == "specificity"
         assert scores[0].value == 0.0
         assert scores[0].comment.startswith("Error:")
+
+
+class _PassOnJudge(FakeJudge):
+    """Judge that passes an item only if it is the pass_on item, in either direction"""
+
+    def __init__(self, pass_on, **kwargs):
+        self.pass_on = pass_on
+        super().__init__(**kwargs)
+
+    async def ainvoke(self, prompt: str):
+        source_items = prompt.split("## Source item")[1].split("## Candidate items")[0]
+        decision = "PASS" if self.pass_on in source_items else "FAIL"
+        self.parsed = json.dumps({"decision": decision})
+        return await super().ainvoke(prompt)
+
+
+class TestGroundInformationEvaluator(_JudgeContractTests):
+    """GroundednessInformationRetentionEvaluator — original themes judged against
+    refined ones gives retention, the reverse gives groundedness, F1 combines them."""
+
+    evaluator_cls = GroundednessInformationRetentionEvaluator
+
+    async def test_dropped_theme_lowers_retention_not_groundedness(self):
+        """Every refined theme has an original, but one original was lost."""
+        scores = await self._evaluate(
+            _PassOnJudge("Ban"),
+            expected_output={"themes": _themes("Ban", "Age")},
+            output={"themes": _themes("Ban")},
+        )
+        by_name = {score.name: score for score in scores}
+
+        assert by_name["groundedness"].value == 1.0
+        assert by_name["information_retention"].value == 0.5
+        assert by_name["f1_score"].value == 0.67
+        assert "Lost: Age" in by_name["information_retention"].comment
+
+    async def test_invented_theme_lowers_groundedness_not_retention(self):
+        """No original is lost, but one refined theme has no original behind it."""
+        scores = await self._evaluate(
+            _PassOnJudge("Ban"),
+            expected_output={"themes": _themes("Ban")},
+            output={"themes": _themes("Ban", "Tax")},
+        )
+        by_name = {score.name: score for score in scores}
+
+        assert by_name["groundedness"].value == 0.5
+        assert by_name["information_retention"].value == 1.0
+        assert "Ungrounded: Tax" in by_name["groundedness"].comment
+
+    async def test_f1_is_zero_when_nothing_matches(self):
+        scores = await self._evaluate(
+            _PassOnJudge("Ban"),
+            expected_output={"themes": _themes("Age")},
+            output={"themes": _themes("Tax")},
+        )
+
+        assert [score.value for score in scores] == [0.0, 0.0, 0.0]
+
+    async def test_empty_refined_themes_scores_zero_without_judge_calls(self):
+        judge = FakeJudge()
+        case = make_case(expected_output={"themes": _themes("Ban")})
+
+        scores = await GroundednessInformationRetentionEvaluator(judge).evaluate(
+            case, {"themes": []}
+        )
+
+        assert judge.prompts == []
+        assert [score.value for score in scores] == [0.0, 0.0, 0.0]

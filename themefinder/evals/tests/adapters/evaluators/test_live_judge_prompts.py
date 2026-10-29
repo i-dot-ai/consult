@@ -15,6 +15,9 @@ two new ones. The clarity test separately checks clear and opaque wording.
 
 import pytest
 from adapters.evaluators.clarity_evaluator import ClarityEvaluator
+from adapters.evaluators.ground_information_evaluator import (
+    GroundednessInformationRetentionEvaluator,
+)
 from adapters.evaluators.information_equivalence_evaluator import (
     InformationEquivalenceEvaluator,
 )
@@ -62,6 +65,32 @@ def judge():
     if not eval_settings.gateway.url or not eval_settings.gateway.api_key:
         pytest.skip("LLM gateway credentials not set")
     return _create_default_llm(eval_settings)
+
+
+async def test_ground_information_flags_invented_and_lost_themes(judge):
+    """The reworded theme counts as grounded and retained; the invented theme is
+    reported ungrounded and the dropped original is reported lost."""
+    case = make_case(expected_output={"themes": ORIGINAL_THEMES})
+
+    scores = {
+        score.name: score
+        for score in await GroundednessInformationRetentionEvaluator(judge).evaluate(
+            case, {"themes": REFINED_THEMES}
+        )
+    }
+
+    # Groundedness: 1 of 2 refined themes has an original (the rewording).
+    assert scores["groundedness"].value == 0.5
+    assert (
+        f"Ungrounded: {INVENTED_RAISE_TAX['topic_label']}"
+        in scores["groundedness"].comment
+    )
+    # Retention: 1 of 2 originals survives (the rewording's original).
+    assert scores["information_retention"].value == 0.5
+    assert (
+        f"Lost: {ORIGINAL_LOST_AGE_CHECKS['topic_label']}"
+        in scores["information_retention"].comment
+    )
 
 
 async def test_information_equivalence_pairs_only_the_reworded_theme(judge):
