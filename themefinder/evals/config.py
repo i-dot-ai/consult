@@ -85,11 +85,7 @@ def resolve_backends(
     context: dict[str, Any] | None = None,
 ) -> EvalBackends:
     """Resolve each backend independently, defaulting to local storage.
-
-    Each platform a source needs gets one context, shared by the sources that
-    use it. ``context`` maps platform name to a caller-supplied context, which
-    stays the caller's responsibility to flush; contexts created here are
-    released by ``EvalBackends.close()``.
+    Contexts created here are released by ``EvalBackends.close()``.
     """
 
     settings = settings if settings is not None else get_settings()
