@@ -8,7 +8,7 @@ import type { ConsultationV2 } from "../../../../global/queries/consultations/ty
 import { PROVIDER_CHECK_ID } from "../../../../components/screens/surveyImport/ChecksPage/checks";
 import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import { consultationV2QueryParts } from "../../../../global/queries/consultations/parts";
-import { getDataSetupV2Enabled } from "../../../../global/utils";
+import { assertSurveyImportState, getDataSetupV2Enabled } from "../../../../global/utils";
 import { getDataUploadSelectProviderUrl } from "../../../../global/routes";
 
 if (!getDataSetupV2Enabled()) {
@@ -30,6 +30,12 @@ const dataSource = data?.data_source;
 
 if (!dataSource || !(dataSource in PROVIDER_CHECK_ID)) {
   return Astro.redirect(getDataUploadSelectProviderUrl(consultationId || ""));
+}
+
+const redirect = assertSurveyImportState(Astro, data);
+
+if (redirect) {
+  return redirect;
 }
 ---
 

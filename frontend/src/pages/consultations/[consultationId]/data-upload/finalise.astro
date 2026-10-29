@@ -6,7 +6,8 @@ import Finalisation from "../../../../components/surveyImport/Finalisation/Final
 import type { AstroGlobalRuntime } from "../../../../global/types";
 import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import { getApiConsultationUrl } from "../../../../global/routes";
-import { getDataSetupV2Enabled } from "../../../../global/utils";
+import { assertSurveyImportState, getDataSetupV2Enabled } from "../../../../global/utils";
+import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
 
 if (!getDataSetupV2Enabled()) {
   return Astro.rewrite("/404");
@@ -14,13 +15,19 @@ if (!getDataSetupV2Enabled()) {
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
-const { error, status } = await fetchBackendApi(
+const { data, error, status } = await fetchBackendApi<ConsultationV2>(
   Astro,
   getApiConsultationUrl(consultationId || ""),
 );
 
 if (error) {
   return buildResponse(status);
+}
+
+const redirect = assertSurveyImportState(Astro, data);
+
+if (redirect) {
+  return redirect;
 }
 ---
 
