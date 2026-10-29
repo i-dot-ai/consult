@@ -112,7 +112,23 @@
     url: getConsultationAnswersUrl(consultationId),
   });
 
-  function getDataSetupUrl(consultationId: string, surveyImportStatus?: SurveyImportStatus) {
+  function getDataSetupPanelText(surveyImportStatus?: SurveyImportStatus) {
+    let text = "The responses are not uploaded yet.";
+    if (surveyImportStatus === "import_failed") {
+      text = "There has been an error while importing your data.";
+    } else if (surveyImportStatus === "file_uploading") {
+      text = "Consult is adding the responses. This can take a few hours. You can leave this page.\n\nNothing else can start until this finishes."
+    }
+    return text;
+  }
+  function getDataSetupButtonText(surveyImportStatus?: SurveyImportStatus) {
+    if (surveyImportStatus !== "not_started") {
+      return "Continue setting up data";
+    }
+    return "Set up the data";
+  }
+
+  function getDataSetupButtonUrl(consultationId: string, surveyImportStatus?: SurveyImportStatus) {
     if (surveyImportStatus === "not_started" || surveyImportStatus === "viewed_overview") {
       return getDataUploadUrl(consultationId);
     }
@@ -173,9 +189,9 @@
       userLinks: [WHO_CAN_SEE_LINK, VIEW_RESPONSES_LINK],
     },
     setup: {
-      panelText: "The responses are not uploaded yet.",
-      panelButtonText: "Set up the data",
-      panelButtonUrl: getDataSetupUrl(consultationId, consultationData?.survey_import_status),
+      panelText: getDataSetupPanelText(consultationData?.survey_import_status),
+      panelButtonText: getDataSetupButtonText(consultationData?.survey_import_status),
+      panelButtonUrl: getDataSetupButtonUrl(consultationId, consultationData?.survey_import_status),
       tagVariant: "warning",
       adminLinks: [MANAGE_PEOPLE_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK],
