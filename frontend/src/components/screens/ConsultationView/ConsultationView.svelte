@@ -112,7 +112,7 @@
     url: getConsultationAnswersUrl(consultationId),
   });
 
-  function getDataSetupUrl(consultationId: string, surveyImportStatus: SurveyImportStatus | undefined) {
+  function getDataSetupUrl(consultationId: string, surveyImportStatus?: SurveyImportStatus) {
     if (surveyImportStatus === "not_started" || surveyImportStatus === "viewed_overview") {
       return getDataUploadUrl(consultationId);
     }
