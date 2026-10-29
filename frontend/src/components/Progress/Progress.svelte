@@ -10,6 +10,7 @@
 
   export let value: number = 0;
   export let thickness: 1 | 1.5 | 2 = 2;
+  export let variant: "primary" | "neutral" = "primary";
   export let transitionDelay: number = 0;
   export let transitionDuration: number = 0;
 
@@ -49,7 +50,8 @@
       "progress-bar",
       "h-full",
       "w-full",
-      "bg-primary",
+      variant === "primary" && "bg-primary",
+      variant === "neutral" && "bg-neutral-500",
       "transition-transform",
       "ease-[cubic-bezier(0.65,0,0.35,1)]",
     ])}
