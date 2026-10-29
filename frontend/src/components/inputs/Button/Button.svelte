@@ -27,6 +27,7 @@
   export let rel: string | undefined = undefined;
   export let ariaControls: string | undefined = undefined;
   export let ariaLabel: string | undefined = undefined;
+  export let ariaExpanded: boolean | undefined = undefined;
   export let noPadding: boolean = false;
   export let fixedHoverColor: boolean = false;
   export let tabindex: number | undefined = undefined;
@@ -93,11 +94,11 @@
     disabled &&
       clsx([
         "disabled",
-        "disabled:bg-gray-200",
+        variant !== "text" && "disabled:bg-gray-200",
         "disabled:text-gray-400",
         "disabled:cursor-not-allowed",
-        "disabled:hover:bg-gray-200",
-        "disabled:hover:border-gray-300",
+        variant !== "text" && "disabled:hover:bg-gray-200",
+        variant !== "text" && "disabled:hover:border-gray-300",
         "disabled:hover:text-gray-400",
       ]),
 
@@ -131,6 +132,7 @@
       : "false"
     : undefined}
   aria-label={ariaLabel}
+  aria-expanded={ariaExpanded}
   aria-controls={ariaControls}
   data-testid={testId ? testId : undefined}
 >
