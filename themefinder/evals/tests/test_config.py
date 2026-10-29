@@ -105,6 +105,16 @@ def test_unset_sources_default_to_local(monkeypatch):
     assert isinstance(backends.artefacts, LocalJSONArtefactStore)
 
 
+def test_uses_patched_eval_settings_by_default(monkeypatch):
+    settings = _settings("local", "local")
+    monkeypatch.setattr(config_module, "eval_settings", settings)
+
+    backends = resolve_backends(DATASET_CONFIG)
+
+    assert isinstance(backends.dataset, LocalJSONDatasetAdapter)
+    assert isinstance(backends.artefacts, LocalJSONArtefactStore)
+
+
 def test_creates_one_shared_langfuse_context(monkeypatch):
     client = SimpleNamespace()
     context = LangfuseContext(client=client, session_id="shared-session")

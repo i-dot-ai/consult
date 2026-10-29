@@ -9,20 +9,15 @@ import pytest
 from adapters.artefact_stores import LocalJSONArtefactStore
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from component_runner import run_component
-from conftest import _themes
+from conftest import _themes, make_eval_settings
 from datasets import DatasetConfig
 from eval_types import Case, ComponentConfig, Score
 from fakes import FakeArtefactStore, FakeDatasetPort, FakeEvaluatorPort
-from settings import get_settings
+from settings import LangfuseSettings
 from utils import langfuse as langfuse_utils
 
 
-async def test_environment_configuration_runs_complete_local_pipeline(
-    monkeypatch, tmp_path
-):
-    monkeypatch.setenv("THEMEFINDER_EVAL_ENGINE", "pydantic_evals")
-    monkeypatch.setenv("THEMEFINDER_EVAL_DATASET_SOURCE", "local")
-    monkeypatch.setenv("THEMEFINDER_EVAL_ARTEFACT_STORE", "local")
+async def test_configured_settings_run_complete_local_pipeline(monkeypatch, tmp_path):
     monkeypatch.setitem(
         backend_config.ARTEFACT_FACTORIES,
         "local",
@@ -47,7 +42,7 @@ async def test_environment_configuration_runs_complete_local_pipeline(
         evaluators=[evaluator],
     )
     dataset_config = DatasetConfig(dataset="gambling_XS", component="generation")
-    settings = get_settings()
+    settings = make_eval_settings()
     backends = backend_config.resolve_backends(dataset_config, settings=settings)
     llm = object()
 
@@ -83,18 +78,11 @@ async def test_environment_configuration_runs_complete_local_pipeline(
         ("langfuse", "langfuse"),
     ],
 )
-async def test_environment_configuration_runs_langfuse_backend_combinations(
+async def test_configured_settings_run_langfuse_backend_combinations(
     monkeypatch,
     dataset_source,
     artefact_store,
 ):
-    monkeypatch.setenv("THEMEFINDER_EVAL_ENGINE", "pydantic_evals")
-    monkeypatch.setenv("THEMEFINDER_EVAL_DATASET_SOURCE", dataset_source)
-    monkeypatch.setenv("THEMEFINDER_EVAL_ARTEFACT_STORE", artefact_store)
-    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "secret")
-    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "public")
-    monkeypatch.setenv("LANGFUSE_BASE_URL", "https://langfuse.example.invalid")
-
     context = SimpleNamespace(is_enabled=True, client=object())
     context_factory = Mock(return_value=context)
 
@@ -129,9 +117,19 @@ async def test_environment_configuration_runs_langfuse_backend_combinations(
         return {"themes": _themes("Summary", description=inputs["question"])}
 
     dataset_config = DatasetConfig(dataset="gambling_XS", component="generation")
+    settings = make_eval_settings(
+        dataset_source=dataset_source,
+        artefact_store=artefact_store,
+        langfuse=LangfuseSettings(
+            secret_key="secret",  # pragma: allowlist secret
+            public_key="public",
+            base_url="https://langfuse.example.invalid",
+            project_id=None,
+        ),
+    )
     backends = backend_config.resolve_backends(
         dataset_config,
-        settings=get_settings(),
+        settings=settings,
     )
     results = await run_component(
         ComponentConfig(

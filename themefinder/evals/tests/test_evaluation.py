@@ -83,6 +83,26 @@ async def test_uses_task_llm_as_judge_by_default(monkeypatch):
     build.assert_called_once_with("mapping", judge_llm=task_llm, question_num=None)
 
 
+async def test_uses_patched_eval_settings_by_default(monkeypatch):
+    import run_eval
+
+    settings = _settings()
+    task_llm = object()
+    resolve = Mock(return_value=Mock())
+    monkeypatch.setattr(run_eval, "eval_settings", settings)
+    monkeypatch.setattr(
+        run_eval,
+        "build_component_config",
+        Mock(return_value=ComponentConfig("generation", _task, [])),
+    )
+    monkeypatch.setattr(run_eval, "resolve_backends", resolve)
+    monkeypatch.setattr(run_eval, "run_component", AsyncMock(return_value={}))
+
+    await evaluate_component("generation", llm=task_llm)
+
+    assert resolve.call_args.kwargs["settings"] is settings
+
+
 async def test_warns_when_mapping_is_given_a_judge_llm(monkeypatch):
     import run_eval
 

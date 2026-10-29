@@ -1,27 +1,14 @@
 import json
-from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
 import run_eval
 
 
-def _settings_with_artefact_store(artefact_store: str | None) -> SimpleNamespace:
-    return SimpleNamespace(eval=SimpleNamespace(artefact_store=artefact_store))
-
-
-def test_cli_runs_selected_component_prints_and_persists_langfuse_results(
-    monkeypatch, capsys, tmp_path
-):
+def test_cli_runs_component_prints_and_persists_results(monkeypatch, capsys, tmp_path):
     evaluate = AsyncMock(return_value={"question_part_1_f1_score": 0.75})
     monkeypatch.setattr(run_eval, "evaluate_component", evaluate)
     monkeypatch.setattr(run_eval, "LOCAL_EVAL_RUNS_DIR", tmp_path)
-    monkeypatch.setattr(
-        run_eval,
-        "get_settings",
-        lambda: _settings_with_artefact_store("langfuse"),
-    )
-
     run_eval.main(
         [
             "--component",

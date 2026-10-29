@@ -3,7 +3,8 @@
 import logging
 import sys
 
-from settings import get_settings
+from settings import eval_settings
+
 from utils.masking import mask_sensitive
 
 _configured = False
@@ -59,7 +60,7 @@ def configure_logging(*, force: bool = False) -> None:
     if _configured and not force:
         return
 
-    settings = get_settings()
+    settings = eval_settings
     logger = logging.getLogger("themefinder.evals")
     logger.handlers.clear()
     logger.setLevel(settings.log_level)

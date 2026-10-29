@@ -5,8 +5,9 @@ from __future__ import annotations
 import logging
 
 import pytest
-import utils.logging_config as logging_config
-from settings import get_settings
+from conftest import make_eval_settings
+from settings import LangfuseSettings
+from utils import logging_config
 from utils.logging_config import (
     _HumanFormatter,
     _LangfuseLogHandler,
@@ -16,7 +17,8 @@ from utils.logging_config import (
 
 
 @pytest.fixture(autouse=True)
-def _reset_logging():
+def _reset_logging(monkeypatch):
+    monkeypatch.setattr(logging_config, "eval_settings", make_eval_settings())
     logging_config._configured = False
     logging.getLogger("themefinder.evals").handlers.clear()
     yield
@@ -24,11 +26,21 @@ def _reset_logging():
     logging.getLogger("themefinder.evals").handlers.clear()
 
 
-def _enable_langfuse(monkeypatch):
-    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-test")  # pragma: allowlist secret
-    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-test")
-    monkeypatch.setenv("LANGFUSE_BASE_URL", "https://langfuse.example.invalid")
-    monkeypatch.setenv("THEMEFINDER_EVAL_DATASET_SOURCE", "langfuse")
+def _enable_langfuse(monkeypatch, *, log_level: str = "INFO"):
+    monkeypatch.setattr(
+        logging_config,
+        "eval_settings",
+        make_eval_settings(
+            dataset_source="langfuse",
+            langfuse=LangfuseSettings(
+                secret_key="sk-test",  # pragma: allowlist secret
+                public_key="pk-test",
+                base_url="https://langfuse.example.invalid",
+                project_id=None,
+            ),
+            log_level=log_level,
+        ),
+    )
 
 
 class _FakeClient:
@@ -77,7 +89,11 @@ class TestConfigure:
         assert len(evals_logger.handlers) == 1
 
     def test_reads_level_from_settings(self, monkeypatch):
-        monkeypatch.setenv("THEMEFINDER_EVAL_LOG_LEVEL", "DEBUG")
+        monkeypatch.setattr(
+            logging_config,
+            "eval_settings",
+            make_eval_settings(log_level="DEBUG"),
+        )
 
         configure_logging()
 
@@ -93,7 +109,6 @@ class TestConfigure:
         logging_config._configured = False
         logging.getLogger("themefinder.evals").handlers.clear()
         _enable_langfuse(monkeypatch)
-        get_settings.cache_clear()
 
         configure_logging()
 
@@ -112,9 +127,7 @@ class TestConfigure:
     ):
         client = _FakeClient(trace_id="trace-1")
         monkeypatch.setattr("langfuse.get_client", lambda: client)
-        _enable_langfuse(monkeypatch)
-        monkeypatch.setenv("THEMEFINDER_EVAL_LOG_LEVEL", "DEBUG")
-        get_settings.cache_clear()
+        _enable_langfuse(monkeypatch, log_level="DEBUG")
 
         configure_logging()
         logging.getLogger("themefinder.evals").debug("verbose detail")
@@ -124,9 +137,7 @@ class TestConfigure:
     def test_langfuse_drops_records_below_the_configured_level(self, monkeypatch):
         client = _FakeClient(trace_id="trace-1")
         monkeypatch.setattr("langfuse.get_client", lambda: client)
-        _enable_langfuse(monkeypatch)
-        monkeypatch.setenv("THEMEFINDER_EVAL_LOG_LEVEL", "WARNING")
-        get_settings.cache_clear()
+        _enable_langfuse(monkeypatch, log_level="WARNING")
 
         configure_logging()
         logging.getLogger("themefinder.evals").info("routine")
