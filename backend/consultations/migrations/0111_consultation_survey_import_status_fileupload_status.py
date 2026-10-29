@@ -8,7 +8,7 @@ from django.db import migrations, models
 def set_existing_survey_import_statuses(apps, schema_editor):
     FileUpload = apps.get_model("consultations", "FileUpload")
 
-    for file_upload in FileUpload.objects.select_related("consultation"):
+    for file_upload in FileUpload.objects.select_related("consultation").iterator():
         consultation = file_upload.consultation
         questions = consultation.question_set.all()
         if not questions.exists():
