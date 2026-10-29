@@ -38,6 +38,9 @@ export enum Suffixes {
   DeepValidation = "deep_validation",
   ApiUpload = "upload",
   ReviewQuestions = "review-questions",
+  ChartsAndFilters = "charts-and-filters",
+  Demographics = "demographics",
+  Merge = "merge",
 }
 
 export enum Routes {
@@ -106,6 +109,35 @@ export const getApiQuestionV2Url = (
     consultationId,
     Suffixes.Questions,
     questionId,
+  );
+};
+
+export const getApiQuestionDemographicsV2Url = (
+  consultationId: string,
+  questionId: string,
+) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.Demographics,
+  );
+};
+
+export const getApiQuestionDemographicsMergeV2Url = (
+  consultationId: string,
+  questionId: string,
+) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.Demographics,
+    Suffixes.Merge,
   );
 };
 
@@ -685,5 +717,14 @@ export const getDataUploadReviewQuestionsUrl = (consultationId: string) => {
     consultationId,
     Suffixes.DataUpload,
     Suffixes.ReviewQuestions,
+  );
+};
+
+export const getDataUploadChartsAndFiltersUrl = (consultationId: string) => {
+  return urlJoin(
+    Routes.Consultations,
+    consultationId,
+    Suffixes.DataUpload,
+    Suffixes.ChartsAndFilters,
   );
 };
