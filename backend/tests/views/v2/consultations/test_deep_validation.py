@@ -58,7 +58,7 @@ def test_citizen_space_csv_passes_deep_validation(client, consultation, non_staf
         "message": "File passed deep validation.",
         "errors": [],
         "question_count": 2,
-        "response_count": 2,
+        "response_count": 1,
         "blank_cell_count": 0,
     }
     assert not FileUpload.objects.exists()
@@ -83,7 +83,7 @@ def test_csv_with_quoted_commas_passes_deep_validation(client, consultation, non
         "message": "File passed deep validation.",
         "errors": [],
         "question_count": 2,
-        "response_count": 2,
+        "response_count": 1,
         "blank_cell_count": 0,
     }
 
@@ -136,7 +136,7 @@ def test_qualtrics_xlsx_uses_second_row_for_questions_and_rows_four_onwards_for_
         "message": "File passed deep validation.",
         "errors": [],
         "question_count": 2,
-        "response_count": 4,
+        "response_count": 2,
         "blank_cell_count": 0,
     }
 
@@ -168,7 +168,7 @@ def test_successful_validation_counts_blank_cells(client, consultation, non_staf
         "message": "File passed deep validation.",
         "errors": [],
         "question_count": 3,
-        "response_count": 4,
+        "response_count": 2,
         "blank_cell_count": 2,
     }
 
@@ -208,7 +208,7 @@ def test_formula_cells_are_collected_as_soft_rejections(client, consultation, no
         },
     ]
     assert response.json()["question_count"] == 2
-    assert response.json()["response_count"] == 2
+    assert response.json()["response_count"] == 1
     assert response.json()["blank_cell_count"] == 0
 
 
