@@ -102,19 +102,12 @@ class ConsultationCreateSerializerV2(serializers.ModelSerializer):
 
 
 class ConsultationUserAssignmentSerializerV2(serializers.Serializer):
-    email = serializers.EmailField(required=False)
     emails = serializers.ListField(
-        child=serializers.EmailField(), required=False, allow_empty=False
+        child=serializers.EmailField(), min_length=1
     )
 
-    def validate(self, attrs):
-        if ("email" in attrs) == ("emails" in attrs):
-            raise serializers.ValidationError("Provide exactly one of email or emails.")
-
-        emails = [attrs["email"]] if "email" in attrs else attrs["emails"]
-        attrs["emails"] = list(dict.fromkeys(email.lower() for email in emails))
-        attrs.pop("email", None)
-        return attrs
+    def validate_emails(self, emails):
+        return list(dict.fromkeys(email.lower() for email in emails))
 
 
 class ConsultationFileUploadSerializerV2(serializers.Serializer):

@@ -20,7 +20,7 @@ def test_v2_owner_assigns_single_user_by_email(client, non_staff_user, non_staff
 
     response = client.post(
         _url(consultation),
-        data={"email": "NEW.USER@EXAMPLE.COM"},
+        data={"emails": ["NEW.USER@EXAMPLE.COM"]},
         content_type="application/json",
         headers=_auth(non_staff_user_token),
     )
@@ -77,7 +77,7 @@ def test_v2_superuser_assigns_user(client):
 
     response = client.post(
         _url(consultation),
-        data={"email": user.email},
+        data={"emails": [user.email]},
         content_type="application/json",
         headers=_auth(token),
     )
@@ -97,7 +97,7 @@ def test_v2_non_owner_cannot_assign_users(client, is_staff):
 
     response = client.post(
         _url(consultation),
-        data={"email": user_to_assign.email},
+        data={"emails": [user_to_assign.email]},
         content_type="application/json",
         headers=_auth(token),
     )
@@ -112,7 +112,7 @@ def test_v2_unauthenticated_user_cannot_assign_users(client):
 
     response = client.post(
         _url(consultation),
-        data={"email": UserFactory().email},
+        data={"emails": [UserFactory().email]},
         content_type="application/json",
     )
 
@@ -125,8 +125,8 @@ def test_v2_unauthenticated_user_cannot_assign_users(client):
     [
         {},
         {"emails": []},
-        {"email": "not-an-email"},
-        {"email": "one@example.com", "emails": ["two@example.com"]},
+        {"emails": ["not-an-email"]},
+        {"email": "one@example.com"},
     ],
 )
 def test_v2_assign_users_rejects_invalid_payload(
