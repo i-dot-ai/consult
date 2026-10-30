@@ -5,7 +5,13 @@
 
   interface Props {
     variant?:
-      "default" | "dark" | "warning" | "primary" | "primary-light" | "success" | "error";
+      | "default"
+      | "dark"
+      | "warning"
+      | "primary"
+      | "primary-light"
+      | "success"
+      | "error";
     border?: boolean;
     wrap?: boolean;
     children: Snippet;
