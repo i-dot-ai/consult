@@ -15,6 +15,7 @@ GATEWAY_URL = "https://gateway.example.invalid"
 GATEWAY_API_KEY = "test-key"  # pragma: allowlist secret
 
 AUTO_EVAL_MODEL = "gpt-4.1-test"
+AUTO_EVAL_JUDGE_MODEL = "gpt-4.1-judge-test"
 ENVIRONMENT = "production"
 GITHUB_SHA = "abcdef1234567890"  # pragma: allowlist secret
 GITHUB_SHA_SHORT = GITHUB_SHA[:7]
@@ -98,12 +99,14 @@ class TestGetSettingsFieldMapping:
 
     def test_flat_fields(self, monkeypatch):
         monkeypatch.setenv("AUTO_EVAL_MODEL", AUTO_EVAL_MODEL)
+        monkeypatch.setenv("AUTO_EVAL_JUDGE_MODEL", AUTO_EVAL_JUDGE_MODEL)
         monkeypatch.setenv("ENVIRONMENT", ENVIRONMENT)
         monkeypatch.setenv("GITHUB_SHA", GITHUB_SHA)
 
         s = get_settings()
 
         assert s.auto_eval_model == AUTO_EVAL_MODEL
+        assert s.judge_model == AUTO_EVAL_JUDGE_MODEL
         assert s.environment == ENVIRONMENT
         assert s.git_sha == GITHUB_SHA_SHORT
 
@@ -127,6 +130,7 @@ class TestGetSettingsFieldMapping:
             "GITHUB_SHA",
             "THEMEFINDER_EVAL_ENGINE",
             "AUTO_EVAL_MODEL",
+            "AUTO_EVAL_JUDGE_MODEL",
             "THEMEFINDER_EVAL_LOG_LEVEL",
         ):
             monkeypatch.delenv(var, raising=False)
@@ -141,6 +145,7 @@ class TestGetSettingsFieldMapping:
         assert s.eval.dataset_source is None
         assert s.eval.artefact_store is None
         assert s.auto_eval_model is None
+        assert s.judge_model is None
         assert s.langfuse is None
         assert s.active_langfuse is None
 

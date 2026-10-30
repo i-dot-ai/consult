@@ -32,7 +32,7 @@ These evaluations access models through the LLM gateway.
 
 ### Running the evaluations
 
-Copy `themefinder/.env.example` to `themefinder/.env` and configure the LLM gateway credentials and evaluation model. To use shared datasets or store results in Langfuse, select the Langfuse backends and provide the corresponding credentials:
+The evals read the repo's top-level `.env`. Run `make sync` from the repo root to add any missing eval variables from the `.env.test` template, then configure the LLM gateway credentials and evaluation models. Don't create a `themefinder/.env`: it would be loaded instead of the top-level file, so it would hide every variable set there. If you already have one, merge it into the top-level `.env` and delete it. To use shared datasets or store results in Langfuse, select the Langfuse backends and provide the corresponding credentials:
 
 ```env
 THEMEFINDER_EVAL_DATASET_SOURCE=langfuse
@@ -51,7 +51,7 @@ These evaluations can be executed either:
 - By running `make run-evals` from the repo root to execute the complete evaluation suite
 - By running `uv run --extra eval python run_eval.py --component <name> --dataset <dataset>` from `themefinder/evals/`
 
-The model is selected through `AUTO_EVAL_MODEL` or the benchmark command's model arguments.
+The model is selected through `AUTO_EVAL_MODEL` or the benchmark command's model arguments. Every component except mapping also needs a judge model, set through `AUTO_EVAL_JUDGE_MODEL` or the benchmark's `--judge-model`; the judge never falls back to the task model.
 
 
 ## Releasing to PyPi

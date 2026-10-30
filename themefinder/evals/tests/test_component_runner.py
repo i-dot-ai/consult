@@ -265,7 +265,6 @@ async def test_real_runners_preserve_outcomes_scores_failures_and_filter():
             "input_tokens": None,
             "output_tokens": None,
             "total_tokens": None,
-            "n_runs": 1,
         }
         assert metrics["processing_time_seconds"] >= 0
 
@@ -333,19 +332,21 @@ async def test_run_metrics_are_averaged_over_repeats():
         )
         return {}
 
+    artefacts = FakeArtefactStore()
     result = await run_component(
         ComponentConfig(component="generation", task=_task_with_call, evaluators=[]),
         DatasetConfig(dataset="demo", component="generation"),
         EvalBackends(
             dataset=FakeDatasetPort([_case()]),
             runner=InlineSequentialRunner(repeat=3),
-            artefacts=FakeArtefactStore(),
+            artefacts=artefacts,
         ),
         llm=object(),
     )
 
     metrics = result["metrics"]
-    assert metrics["n_runs"] == 3
+    assert "n_runs" not in metrics
+    assert artefacts.finished_with[0].n_runs == 3
     assert metrics["llm_call_count"] == 1
     assert metrics["cost_usd"] == pytest.approx(0.5)
     assert metrics["latency_seconds"] == pytest.approx(2.0)

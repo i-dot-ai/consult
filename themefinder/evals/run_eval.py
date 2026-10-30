@@ -23,12 +23,12 @@ logger = get_logger(__name__)
 LOCAL_EVAL_RUNS_DIR = Path(__file__).resolve().parent / "local_eval_runs"
 
 
-def _create_default_llm(settings: EvalSettings) -> OpenAILLM:
-    """Build the default task model from one consistent settings snapshot."""
+def _create_llm(settings: EvalSettings, model: str | None) -> OpenAILLM:
+    """Build a gateway model from one consistent settings snapshot."""
     base_url, api_key = gateway.gateway_credentials(settings=settings)
     return OpenAILLM(
-        model=settings.auto_eval_model,
-        request_kwargs={"temperature": 0},
+        model=model,
+        request_kwargs={"temperature": 1},
         base_url=base_url,
         api_key=api_key,
     )
@@ -55,16 +55,23 @@ async def evaluate_component(
         )
 
     settings = settings if settings is not None else eval_settings
-    task_llm = llm if llm is not None else _create_default_llm(settings)
-    if component == "mapping" and judge_llm is not None:
-        logger.warning(
-            "judge_llm is ignored for mapping because it has no judge evaluator"
-        )
-    evaluator_llm = judge_llm if judge_llm is not None else task_llm
+    if component == "mapping":
+        if judge_llm is not None:
+            logger.warning(
+                "judge_llm is ignored for mapping because it has no judge evaluator"
+            )
+    elif judge_llm is None:
+        # Never fall back to the task model: judge should be independant and consistent
+        if not settings.judge_model:
+            raise ValueError(f"AUTO_EVAL_JUDGE_MODEL must be set for {component}")
+        judge_llm = _create_llm(settings, settings.judge_model)
+    task_llm = (
+        llm if llm is not None else _create_llm(settings, settings.auto_eval_model)
+    )
     dataset_config = DatasetConfig(dataset=dataset, component=component)
     component_config = build_component_config(
         component,
-        judge_llm=evaluator_llm,
+        judge_llm=judge_llm,
         question_num=question_num,
     )
     backends = resolve_backends(

@@ -41,8 +41,9 @@ def test_local_json_dataset_adapter_loads_gambling_xs_cases(
 
     assert cases
     assert all(isinstance(case, Case) for case in cases)
-    assert all(case.id.startswith("question_part_") for case in cases)
-    assert all(case.metadata.get("question_part") == case.id for case in cases)
+    assert all(
+        case.id == f"gambling_XS:{case.metadata['question_part']}" for case in cases
+    )
     assert all("langfuse_item_id" not in case.metadata for case in cases)
 
     first_case = cases[0]
@@ -85,7 +86,8 @@ def test_langfuse_dataset_adapter_converts_items_to_cases():
 
     assert len(cases) == len(fake_items)
     assert all(isinstance(case, Case) for case in cases)
-    assert cases[0].id == "lf-item-1"
+    # Readable in run output, while the opaque item id stays in metadata for linking
+    assert cases[0].id == f"gambling_XS:{fake_items[0].metadata['question_part']}"
     assert cases[0].inputs == fake_items[0].input
     assert cases[0].expected_output == fake_items[0].expected_output
     assert cases[0].metadata["question_part"] == fake_items[0].metadata["question_part"]

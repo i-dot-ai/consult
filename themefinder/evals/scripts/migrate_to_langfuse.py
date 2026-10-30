@@ -19,6 +19,7 @@ import argparse
 import os
 import sys
 from pathlib import Path
+from uuid import NAMESPACE_URL, uuid5
 
 import dotenv
 
@@ -48,7 +49,7 @@ def get_langfuse_client():
     return Langfuse(
         secret_key=secret_key,
         public_key=public_key,
-        host=base_url,
+        base_url=base_url,
     )
 
 
@@ -75,7 +76,11 @@ def migrate_component(client, dataset: str, component: str) -> None:
 
     # Create items
     for item in items:
+        # Langfuse upserts on id, so a rerun updates items instead of duplicating them.
+        # Ids are project-wide, hence the dataset name; uuid5 keeps "/" out of API paths.
+        item_key = f"{config.name}:{item['metadata']['question_part']}"
         client.create_dataset_item(
+            id=str(uuid5(NAMESPACE_URL, item_key)),
             dataset_name=config.name,
             input=item["input"],
             expected_output=item.get("expected_output"),

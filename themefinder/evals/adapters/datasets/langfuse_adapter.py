@@ -7,7 +7,7 @@ from eval_types import Case, DatasetNotFoundError
 from langfuse import Langfuse
 from langfuse.api import NotFoundError
 
-from .base import DatasetPort
+from .base import DatasetPort, readable_case_id
 
 
 class LangfuseDatasetAdapter(DatasetPort):
@@ -23,14 +23,14 @@ class LangfuseDatasetAdapter(DatasetPort):
                 f"Langfuse dataset {config.name} not found or inaccessible"
             ) from exc
 
-        return [self._to_case(item) for item in dataset.items]
+        return [self._to_case(item, config) for item in dataset.items]
 
     @staticmethod
-    def _to_case(item: Any) -> Case:
+    def _to_case(item: Any, config: DatasetConfig) -> Case:
         metadata = dict(getattr(item, "metadata", None) or {})
         metadata["langfuse_item_id"] = item.id
         return Case(
-            id=item.id,
+            id=readable_case_id(config, metadata, fallback=item.id),
             inputs=item.input,
             expected_output=item.expected_output,
             metadata=metadata,
