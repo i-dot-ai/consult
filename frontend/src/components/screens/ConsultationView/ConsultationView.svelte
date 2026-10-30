@@ -25,16 +25,16 @@
     getConsultationAnswersUrl,
     getConsultationDashboardUrl,
     getConsultationUsersUrl,
-    getDataUploadUrl,
     getFinaliseThemesUrl,
     Routes,
   } from "../../../global/routes";
-  import type {
-    Consultation,
-    ConsultationStage,
-    User,
-  } from "../../../global/types";
+  import type { ConsultationStage, User } from "../../../global/types";
   import { createUserState } from "../../../global/state.svelte";
+  import type {
+    ConsultationV2,
+    SurveyImportStatus,
+  } from "../../../global/queries/consultations/types";
+  import { getDataSetupActiveUrl } from "../../../global/utils";
 
   interface Props {
     consultationId: string;
@@ -52,7 +52,9 @@
   let userData: User = $derived(user.query?.data);
 
   let consultation = $derived(buildConsultationGetQuery(consultationId));
-  let consultationData: Consultation = $derived(consultation.query?.data);
+  let consultationData: ConsultationV2 | undefined = $derived(
+    consultation.query.data,
+  );
 
   let userState = $derived(createUserState(userData, consultationData));
   let userCanDelete = $derived(userState?.isOwner || userState?.isAdmin);
@@ -64,7 +66,10 @@
 
   let isRenameSaving = $derived(consultationRename.query.isPending);
 
-  function getStatusText(stage: ConsultationStage) {
+  function getStatusText(stage: ConsultationStage | undefined) {
+    if (!stage) {
+      return "";
+    }
     return (stage.charAt(0).toUpperCase() + stage.slice(1)).replaceAll(
       "_",
       " ",
@@ -81,7 +86,7 @@
     panelText: string;
     panelButtonText?: string;
     panelButtonUrl?: string;
-    tagVariant: "success" | "default" | "warning";
+    tagVariant: "success" | "default" | "warning" | "error";
     ownerLinks?: ContentDataLink[];
     userLinks?: ContentDataLink[];
     adminLinks?: ContentDataLink[];
@@ -105,6 +110,46 @@
     url: getConsultationAnswersUrl(consultationId),
   });
 
+  function getDataSetupPanelText(surveyImportStatus?: SurveyImportStatus) {
+    if (surveyImportStatus === "import_failed") {
+      return "There has been an error while importing your data.";
+    } else if (surveyImportStatus === "file_uploading") {
+      return "Consult is adding the responses. This can take a few hours. You can leave this page. Nothing else can start until this finishes.";
+    } else if (
+      surveyImportStatus === "pending_questions" ||
+      surveyImportStatus === "pending_demographics"
+    ) {
+      return "Your file has been successfully uploaded. Please proceed with setting up your data.";
+    } else if (surveyImportStatus === "import_complete") {
+      return "The data import has been completed.";
+    }
+    return "The responses are not uploaded yet.";
+  }
+  function getDataSetupButtonText(surveyImportStatus?: SurveyImportStatus) {
+    if (
+      surveyImportStatus === "file_uploading" ||
+      surveyImportStatus === "import_failed" ||
+      surveyImportStatus === "import_complete"
+    ) {
+      // do not render button for certain statuses
+      return "";
+    } else if (surveyImportStatus !== "not_started") {
+      return "Continue setting up data";
+    }
+    return "Set up the data";
+  }
+  function getDataSetupTagVariant(surveyImportStatus?: SurveyImportStatus) {
+    if (
+      surveyImportStatus === "file_uploading" ||
+      surveyImportStatus === "import_complete"
+    ) {
+      return "default";
+    } else if (surveyImportStatus === "import_failed") {
+      return "error";
+    }
+    return "warning";
+  }
+
   const CONTENT: Record<string, ContentData> = $derived({
     analysis: {
       panelText:
@@ -118,7 +163,7 @@
     },
     assigning_themes: {
       panelText:
-        "Consult is assigning every response to the finalised themes. This can take more than 20 minutes.",
+        "Consult is assigning every response to the finalised themes. This can take more than 20 minutes. Nothing else can start until this finishes.",
       tagVariant: "default",
       adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
@@ -136,24 +181,31 @@
     },
     finding_themes: {
       panelText:
-        "Consult is reading the responses and finding themes. This can take more than 20 minutes.",
+        "Consult is reading the responses and finding themes. This can take more than 20 minutes. Nothing else can start until this finishes.",
       tagVariant: "default",
       adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
       userLinks: [WHO_CAN_SEE_LINK, VIEW_RESPONSES_LINK],
     },
     setup: {
-      panelText: "The responses are not uploaded yet.",
-      panelButtonText: "Set up the data",
-      panelButtonUrl: getDataUploadUrl(consultationId),
-      tagVariant: "warning",
+      panelText: getDataSetupPanelText(consultationData?.survey_import_status),
+      panelButtonText: getDataSetupButtonText(
+        consultationData?.survey_import_status,
+      ),
+      panelButtonUrl: getDataSetupActiveUrl(
+        consultationId,
+        consultationData?.survey_import_status,
+      ),
+      tagVariant: getDataSetupTagVariant(
+        consultationData?.survey_import_status,
+      ),
       adminLinks: [MANAGE_PEOPLE_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK],
       userLinks: [WHO_CAN_SEE_LINK],
     },
   } as const);
 
-  let content = $derived(CONTENT[consultationData?.stage] || {});
+  let content = $derived(CONTENT[consultationData?.stage || 0] || {});
   let links = $derived.by(() => {
     if (userState?.isAdmin) {
       return content.adminLinks;
@@ -337,7 +389,7 @@
     <div class="pt-2 pb-8 px-2">
       <div class="mb-3">
         <Tag variant={content.tagVariant}>
-          {getStatusText(consultationData?.stage || "")}
+          {getStatusText(consultationData?.stage)}
         </Tag>
       </div>
 
@@ -350,19 +402,10 @@
           <Button
             variant="primary"
             size="sm"
-            handleClick={() => {
-              if (!content.panelButtonUrl) {
-                return;
-              }
-              window.location.href = content.panelButtonUrl;
-            }}
+            href={content.panelButtonUrl || "#"}
           >
             {content.panelButtonText}
           </Button>
-        {:else}
-          <p class="text-neutral-700 text-sm">
-            Nothing else can start until this finishes.
-          </p>
         {/if}
       </div>
     </div>

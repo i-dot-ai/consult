@@ -1,3 +1,4 @@
+import { consultationV2QueryParts } from "../../../global/queries/consultations/parts";
 import {
   questionsV2QueryParts,
   questionV2QueryParts,
@@ -118,3 +119,8 @@ export const updateErrorMock = (questionId: string) => ({
   status: 400,
   body: { type: ['"hybrid" is not a valid choice.'] },
 });
+
+export const updateConsultationMock = {
+  url: consultationV2QueryParts.url(CONSULTATION_ID),
+  method: "PATCH",
+};

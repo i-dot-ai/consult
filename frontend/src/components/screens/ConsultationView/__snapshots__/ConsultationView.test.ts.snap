@@ -170,11 +170,13 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
           class="mt-4"
         >
           <!---->
-          <button
+          <a
             aria-pressed="false"
             class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
             data-variant="primary"
-            role="button"
+            disabled="false"
+            href="/consultations/test-consultation/dashboard"
+            role="link"
             tabindex="0"
           >
             <!---->
@@ -183,7 +185,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
             
             
             
-          </button>
+          </a>
           
           <!---->
         </div>
@@ -428,11 +430,6 @@ exports[`ConsultationView > should match snapshot initially 1`] = `
         <div
           class="mt-4"
         >
-          <p
-            class="text-neutral-700 text-sm"
-          >
-            Nothing else can start until this finishes.
-          </p>
           <!---->
         </div>
       </div>

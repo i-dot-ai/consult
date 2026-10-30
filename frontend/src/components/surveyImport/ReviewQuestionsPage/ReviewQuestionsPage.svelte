@@ -14,6 +14,7 @@
     buildQuestionsV2Query,
     buildQuestionV2UpdateQuery,
   } from "../../../global/queries/questions/queries";
+  import { buildConsultationV2UpdateQuery } from "../../../global/queries/consultations/queries";
   import type {
     QuestionV2,
     QuestionV2UpdateBody,
@@ -23,6 +24,7 @@
     getDataUploadDeleteQuestionsUrl,
     getDataUploadFinaliseUrl,
   } from "../../../global/routes";
+  import type { SurveyImportStatus } from "../../../global/queries/consultations/types";
 
   interface Props {
     consultationId: string;
@@ -33,6 +35,9 @@
   const PAGE_SIZES = [10, 20, 50];
 
   const questionsQuery = buildQuestionsV2Query(untrack(() => consultationId));
+  const consultationUpdate = $derived(
+    buildConsultationV2UpdateQuery(consultationId),
+  );
 
   let questions: QuestionV2[] = $derived(questionsQuery.query.data ?? []);
   let openQuestions = $derived(
@@ -246,6 +251,13 @@
       continueErrorEl?.focus();
       return;
     }
+
+    consultationUpdate.fetch({
+      body: {
+        survey_import_status: "pending_demographics" as SurveyImportStatus,
+      },
+    });
+
     window.location.href = getDataUploadFinaliseUrl(consultationId);
   }
 </script>

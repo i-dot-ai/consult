@@ -5,7 +5,13 @@
 
   interface Props {
     variant?:
-      "default" | "dark" | "warning" | "primary" | "primary-light" | "success";
+      | "default"
+      | "dark"
+      | "warning"
+      | "primary"
+      | "primary-light"
+      | "success"
+      | "error";
     border?: boolean;
     wrap?: boolean;
     children: Snippet;
@@ -38,6 +44,8 @@
       clsx(["text-yellow-700", "bg-yellow-100", "border border-yellow-400"]),
     variant === "success" &&
       clsx(["text-secondary", "bg-teal-50", "border border-teal-400"]),
+    variant === "error" &&
+      clsx(["text-red-500", "bg-red-50", "border border-red-400"]),
   ])}
 >
   {@render children()}

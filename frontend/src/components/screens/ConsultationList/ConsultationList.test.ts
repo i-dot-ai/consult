@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { render, screen, waitFor } from "@testing-library/svelte";
 
 import ConsultationList from "./ConsultationList.svelte";
-import { defaultMock, emptyMock } from "./mocks";
+import { defaultMock, emptyMock, emptyV2Mock } from "./mocks";
 import fetchMock from "fetch-mock";
 import { mockRoute } from "../../../global/utils";
 import { queryClient } from "../../../global/queryClient";
@@ -64,7 +64,7 @@ describe("ConsultationList", () => {
   });
 
   it("hides the add consultation button(s) when enableV2 is false", async () => {
-    mockRoute(emptyMock);
+    mockRoute(emptyV2Mock);
 
     render(ConsultationList, { enableV2: false });
 

@@ -1,34 +1,44 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
 
-import UnderConstruction from "../../../../components/screens/UnderConstruction/UnderConstruction.svelte";
 import Section from "../../../../components/Section/Section.svelte";
 import Overview from "../../../../components/screens/surveyImport/Overview/Overview.svelte";
 import type { AstroGlobalRuntime } from "../../../../global/types";
 import { buildResponse, fetchBackendApi } from "../../../../global/api";
-import { getApiConsultationUrl } from "../../../../global/routes";
-import { getDataSetupV2Enabled } from "../../../../global/utils";
+import { getApiConsultationV2Url } from "../../../../global/routes";
+import {
+  assertSurveyImportState,
+  setSurveyImportStatus,
+} from "../../../../global/utils";
+import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
-const { error, status } = await fetchBackendApi(
+const { data, error, status } = await fetchBackendApi<ConsultationV2>(
   Astro,
-  getApiConsultationUrl(consultationId || ""),
+  getApiConsultationV2Url(consultationId || ""),
 );
 
 if (error) {
   return buildResponse(status);
 }
 
-const enableV2 = getDataSetupV2Enabled();
+const redirect = assertSurveyImportState(Astro, data);
+
+if (redirect) {
+  return redirect;
+}
+
+await setSurveyImportStatus(
+  Astro,
+  consultationId || "",
+  "viewed_overview",
+  data?.survey_import_status,
+);
 ---
 
 <Layout>
   <Section>
-    {enableV2 ? (
-      <Overview client:load consultationId={consultationId || ""} />
-    ) : (
-      <UnderConstruction />
-    )}
+    <Overview client:load consultationId={consultationId || ""} />
   </Section>
 </Layout>

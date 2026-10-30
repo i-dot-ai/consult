@@ -130,7 +130,7 @@ class ConsultationDeepValidationSerializerV2(serializers.Serializer):
 class ConsultationUpdateSerializerV2(serializers.ModelSerializer):
     class Meta:
         model = Consultation
-        fields: ClassVar[list] = ["id", "title", "data_source"]
+        fields: ClassVar[list] = ["id", "title", "data_source", "survey_import_status"]
         read_only_fields: ClassVar[list] = ["id"]
 
     def update(self, instance, validated_data):
