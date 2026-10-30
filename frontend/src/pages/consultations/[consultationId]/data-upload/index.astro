@@ -6,8 +6,8 @@ import Overview from "../../../../components/screens/surveyImport/Overview/Overv
 import type { AstroGlobalRuntime } from "../../../../global/types";
 import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import { getApiConsultationV2Url } from "../../../../global/routes";
-import { assertSurveyImportState } from "../../../../global/utils";
-import type { ConsultationV2, SurveyImportStatus } from "../../../../global/queries/consultations/types";
+import { assertSurveyImportState, setSurveyImportStatus } from "../../../../global/utils";
+import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
 
 const { consultationId } = (Astro as unknown as AstroGlobalRuntime).params;
 
@@ -26,12 +26,7 @@ if (redirect) {
   return redirect;
 }
 
-await fetchBackendApi(Astro, getApiConsultationV2Url(consultationId || ""), {
-  method: "PATCH",
-  body: JSON.stringify({
-    survey_import_status: "viewed_overview" as SurveyImportStatus,
-  }),
-});
+await setSurveyImportStatus(Astro, consultationId || "", "viewed_overview");
 ---
 
 <Layout>
