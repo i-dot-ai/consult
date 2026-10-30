@@ -38,7 +38,7 @@ if (redirect) {
   return redirect;
 }
 
-await setSurveyImportStatus(Astro, consultationId || "", "viewed_checklist");
+await setSurveyImportStatus(Astro, consultationId || "", "viewed_checklist", data?.survey_import_status);
 ---
 
 <Layout>

@@ -30,7 +30,7 @@ if (redirect) {
   return redirect;
 }
 
-await setSurveyImportStatus(Astro, consultationId || "", "viewed_provider");
+await setSurveyImportStatus(Astro, consultationId || "", "viewed_provider", data?.survey_import_status);
 ---
 
 <Layout>
