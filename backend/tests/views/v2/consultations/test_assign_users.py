@@ -87,9 +87,8 @@ def test_v2_superuser_assigns_user(client):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("is_staff", [False, True])
-def test_v2_non_owner_cannot_assign_users(client, is_staff):
-    user = UserFactory(is_staff=is_staff, is_superuser=False)
+def test_v2_non_owner_cannot_assign_users(client):
+    user = UserFactory(is_staff=False, is_superuser=False)
     token = str(RefreshToken.for_user(user).access_token)
     consultation = ConsultationFactory()
     consultation.users.add(user)
@@ -104,6 +103,24 @@ def test_v2_non_owner_cannot_assign_users(client, is_staff):
 
     assert response.status_code == 403
     assert not consultation.users.filter(pk=user_to_assign.pk).exists()
+
+
+@pytest.mark.django_db
+def test_v2_staff_user_assigns_user(client):
+    staff_user = UserFactory(is_staff=True, is_superuser=False)
+    token = str(RefreshToken.for_user(staff_user).access_token)
+    consultation = ConsultationFactory()
+    user_to_assign = UserFactory()
+
+    response = client.post(
+        _url(consultation),
+        data={"emails": [user_to_assign.email]},
+        content_type="application/json",
+        headers=_auth(token),
+    )
+
+    assert response.status_code == 201
+    assert consultation.users.filter(pk=user_to_assign.pk).exists()
 
 
 @pytest.mark.django_db
