@@ -6,7 +6,10 @@ import DeleteQuestionsPage from "../../../../components/surveyImport/DeleteQuest
 import type { AstroGlobalRuntime } from "../../../../global/types";
 import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import { getApiConsultationUrl } from "../../../../global/routes";
-import { assertSurveyImportState, getDataSetupV2Enabled } from "../../../../global/utils";
+import {
+  assertSurveyImportState,
+  getDataSetupV2Enabled,
+} from "../../../../global/utils";
 import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
 
 if (!getDataSetupV2Enabled()) {

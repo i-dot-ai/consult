@@ -1,4 +1,7 @@
-import { consultationsQueryParts, consultationsV2QueryParts } from "../../../global/queries/consultations/parts";
+import {
+  consultationsQueryParts,
+  consultationsV2QueryParts,
+} from "../../../global/queries/consultations/parts";
 
 const URL = consultationsV2QueryParts.url();
 const URL_V1 = consultationsQueryParts.url();
@@ -59,7 +62,7 @@ export const emptyMock = {
 export const emptyV2Mock = {
   ...emptyMock,
   url: URL_V1,
-}
+};
 
 export const longMock = {
   url: URL,

@@ -72,9 +72,12 @@ export function buildConsultationDeleteQuery(consultationId: string) {
 }
 
 export function buildConsultationGetQuery(consultationId: string) {
-  return buildQuery<ConsultationV2>(consultationQueryParts.url(consultationId), {
-    key: consultationQueryParts.key(consultationId),
-  });
+  return buildQuery<ConsultationV2>(
+    consultationQueryParts.url(consultationId),
+    {
+      key: consultationQueryParts.key(consultationId),
+    },
+  );
 }
 
 export function buildConsultationRenameQuery(consultationId: string) {

@@ -35,7 +35,9 @@
   const PAGE_SIZES = [10, 20, 50];
 
   const questionsQuery = buildQuestionsV2Query(untrack(() => consultationId));
-  const consultationUpdate = $derived(buildConsultationV2UpdateQuery(consultationId));
+  const consultationUpdate = $derived(
+    buildConsultationV2UpdateQuery(consultationId),
+  );
 
   let questions: QuestionV2[] = $derived(questionsQuery.query.data ?? []);
   let openQuestions = $derived(
@@ -250,7 +252,11 @@
       return;
     }
 
-    consultationUpdate.fetch({ body: { survey_import_status: "pending_demographics" as SurveyImportStatus } });
+    consultationUpdate.fetch({
+      body: {
+        survey_import_status: "pending_demographics" as SurveyImportStatus,
+      },
+    });
 
     window.location.href = getDataUploadFinaliseUrl(consultationId);
   }
