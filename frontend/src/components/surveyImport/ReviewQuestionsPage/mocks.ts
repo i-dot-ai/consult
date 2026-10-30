@@ -137,4 +137,4 @@ export const updateErrorMock = (questionId: string) => ({
 export const updateConsultationMock = {
   url: consultationV2QueryParts.url(CONSULTATION_ID),
   method: "PATCH",
-}
+};
