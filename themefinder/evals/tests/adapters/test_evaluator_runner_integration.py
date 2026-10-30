@@ -80,6 +80,7 @@ class _EvaluatorRunnerIntegrationTests:
         scores = {score.name: score for score in outcome.scores}
         assert scores["f1_score"].value == 1.0
         assert scores["groundedness"].value == 5.0
+        # The task returns labels while the expected output has mappings, so this fails by design.
         assert scores["EqualsExpected"].value == 0.0
         assert scores["LLMJudge_score"].value == 0.9
         assert scores["LLMJudge_pass"].value == 1.0
