@@ -126,13 +126,21 @@
     return "The responses are not uploaded yet.";
   }
   function getDataSetupButtonText(surveyImportStatus?: SurveyImportStatus) {
-    if (surveyImportStatus === "file_uploading") {
-      // do not render button if file upload is in progress
+    if (surveyImportStatus === "file_uploading" || surveyImportStatus === "import_failed" || surveyImportStatus === "import_complete") {
+      // do not render button for certain statuses
       return "";
     } else if (surveyImportStatus !== "not_started") {
       return "Continue setting up data";
     }
     return "Set up the data";
+  }
+  function getDataSetupTagVariant(surveyImportStatus?: SurveyImportStatus) {
+    if (surveyImportStatus === "file_uploading" || surveyImportStatus === "import_complete"){
+      return "default";
+    } else if (surveyImportStatus === "import_failed") {
+      return "error";
+    }
+    return "warning";
   }
 
   const CONTENT: Record<string, ContentData> = $derived({
@@ -148,7 +156,7 @@
     },
     assigning_themes: {
       panelText:
-        "Consult is assigning every response to the finalised themes. This can take more than 20 minutes.",
+        "Consult is assigning every response to the finalised themes. This can take more than 20 minutes. Nothing else can start until this finishes.",
       tagVariant: "default",
       adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
@@ -166,7 +174,7 @@
     },
     finding_themes: {
       panelText:
-        "Consult is reading the responses and finding themes. This can take more than 20 minutes.",
+        "Consult is reading the responses and finding themes. This can take more than 20 minutes. Nothing else can start until this finishes.",
       tagVariant: "default",
       adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
@@ -181,10 +189,7 @@
         consultationId,
         consultationData?.survey_import_status,
       ),
-      tagVariant:
-        consultationData?.survey_import_status === "file_uploading"
-          ? "default"
-          : "warning",
+      tagVariant: getDataSetupTagVariant(consultationData?.survey_import_status),
       adminLinks: [MANAGE_PEOPLE_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK],
       userLinks: [WHO_CAN_SEE_LINK],
@@ -392,10 +397,6 @@
           >
             {content.panelButtonText}
           </Button>
-        {:else}
-          <p class="text-neutral-700 text-sm">
-            Nothing else can start until this finishes.
-          </p>
         {/if}
       </div>
     </div>
