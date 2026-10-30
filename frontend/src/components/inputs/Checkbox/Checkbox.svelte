@@ -99,6 +99,7 @@
       {value}
       {checked}
       {disabled}
+      aria-label={hideLabel ? labelText : undefined}
       aria-describedby={[hint && `${id}-hint`, errorMessage && `${id}-error`]
         .filter(Boolean)
         .join(" ") || undefined}

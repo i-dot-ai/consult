@@ -20,8 +20,8 @@
   } from "../../../global/queries/questions/types";
   import { fetchSampleAnswers } from "../../../global/queries/responses";
   import {
+    getDataUploadChartsAndFiltersUrl,
     getDataUploadDeleteQuestionsUrl,
-    getDataUploadFinaliseUrl,
   } from "../../../global/routes";
 
   interface Props {
@@ -246,7 +246,7 @@
       continueErrorEl?.focus();
       return;
     }
-    window.location.href = getDataUploadFinaliseUrl(consultationId);
+    window.location.href = getDataUploadChartsAndFiltersUrl(consultationId);
   }
 </script>
 

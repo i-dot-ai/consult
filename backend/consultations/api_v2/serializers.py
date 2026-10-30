@@ -180,6 +180,8 @@ class QuestionSetupSerializer(serializers.ModelSerializer):
             "text",
             "type",
             "closed_question",
+            "short_name",
+            "dashboard_role",
             "status",
             "response_count",
         ]

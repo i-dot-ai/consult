@@ -52,9 +52,9 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
     @action(detail=True, methods=["get"], url_path="demographics")
     def demographics(self, request, *args, **kwargs):
         question = self.get_object()
-        if question.type != Question.QuestionType.DEMOGRAPHIC:
+        if not question.is_chartable:
             raise serializers.ValidationError(
-                {"question": "Answers can only be listed for a demographic question."}
+                {"question": "Answers can only be listed for a closed or demographic question."}
             )
 
         answers = (
@@ -69,9 +69,9 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
     @action(detail=True, methods=["post"], url_path="demographics/merge")
     def merge_demographics(self, request, *args, **kwargs):
         question = self.get_object()
-        if question.type != Question.QuestionType.DEMOGRAPHIC:
+        if not question.is_chartable:
             raise serializers.ValidationError(
-                {"question": "Responses can only be merged for a demographic question."}
+                {"question": "Responses can only be merged for a closed or demographic question."}
             )
 
         serializer = self.get_serializer(data=request.data)
