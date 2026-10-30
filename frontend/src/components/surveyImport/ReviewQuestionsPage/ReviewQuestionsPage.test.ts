@@ -15,6 +15,7 @@ import {
   QUESTIONS,
   answersMock,
   questionsMock,
+  updateConsultationMock,
   updateErrorMock,
   updateMock,
 } from "./mocks";
@@ -51,6 +52,8 @@ function patchCalls() {
 describe("ReviewQuestionsPage", () => {
   beforeEach(() => {
     vi.stubGlobal("location", { href: "", origin: window.location.origin });
+
+    mockRoute(updateConsultationMock);
   });
 
   afterEach(() => {
