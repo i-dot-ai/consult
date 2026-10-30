@@ -43,7 +43,7 @@ if (data?.survey_import_status === "pending_questions") {
 //   Astro.redirect(getDataUploadDemographicsUrl(consultationId || ""));
 // }
 
-await setSurveyImportStatus(Astro, consultationId || "", "viewed_upload");
+await setSurveyImportStatus(Astro, consultationId || "", "viewed_upload", data?.survey_import_status);
 ---
 
 <Layout>
