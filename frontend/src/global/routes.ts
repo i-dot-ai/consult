@@ -36,6 +36,7 @@ export enum Suffixes {
   DeepValidation = "deep_validation",
   ApiUpload = "upload",
   ReviewQuestions = "review-questions",
+  Demographics = "charts-and-filters",
 }
 
 export enum Routes {
@@ -665,6 +666,15 @@ export const getDataUploadDeleteQuestionsUrl = (consultationId: string) => {
     consultationId,
     Suffixes.DataUpload,
     Suffixes.DeleteQuestions,
+  );
+};
+
+export const getDataUploadDemographicsUrl = (consultationId: string) => {
+  return urlJoin(
+    Routes.Consultations,
+    consultationId,
+    Suffixes.DataUpload,
+    Suffixes.Demographics,
   );
 };
 
