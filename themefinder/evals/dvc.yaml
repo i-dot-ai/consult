@@ -19,7 +19,7 @@ stages:
         - components/__init__.py
         - components/registry.py
         - components/${key}.py
-        - components/_utils.py
+        - components/theme_output.py
         - adapters
         - utils
         - ../src/themefinder

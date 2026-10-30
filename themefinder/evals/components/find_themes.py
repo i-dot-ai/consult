@@ -9,7 +9,7 @@ from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
 from eval_types import ComponentConfig
 
-from components._utils import build_themes_output
+from components.theme_output import build_themes_output
 from themefinder import theme_condensation, theme_generation, theme_refinement
 
 

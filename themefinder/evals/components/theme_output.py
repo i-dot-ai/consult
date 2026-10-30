@@ -1,4 +1,4 @@
-"""Shared utilities for evaluation components."""
+"""Normalise component theme output for evaluator consumption."""
 
 from typing import Any
 

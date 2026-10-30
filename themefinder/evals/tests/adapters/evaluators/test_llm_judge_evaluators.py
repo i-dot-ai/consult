@@ -4,9 +4,6 @@ import json
 from collections import namedtuple
 
 import pytest
-from conftest import _themes, make_case
-from fakes import FakeJudge, SequenceFakeJudge
-
 from adapters.evaluators.clarity_evaluator import ClarityEvaluator
 from adapters.evaluators.condensation_quality_evaluator import (
     CondensationQualityEvaluator,
@@ -18,7 +15,9 @@ from adapters.evaluators.ground_information_evaluator import (
 from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
 from adapters.evaluators.refinement_quality_evaluator import RefinementQualityEvaluator
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
+from conftest import _themes, make_case
 from eval_types import Score
+from fakes import FakeJudge, SequenceFakeJudge
 
 
 class _RaisingJudge:
@@ -455,7 +454,7 @@ class TestGroundInformationEvaluator(_JudgeContractTests):
             expected_output={"themes": _themes("Ban", "Age")},
             output={"themes": _themes("Ban")},
         )
-        by_name = {s.name: s for s in scores}
+        by_name = {score.name: score for score in scores}
 
         assert by_name["groundedness"].value == 1.0
         assert by_name["information_retention"].value == 0.5
@@ -469,7 +468,7 @@ class TestGroundInformationEvaluator(_JudgeContractTests):
             expected_output={"themes": _themes("Ban")},
             output={"themes": _themes("Ban", "Tax")},
         )
-        by_name = {s.name: s for s in scores}
+        by_name = {score.name: score for score in scores}
 
         assert by_name["groundedness"].value == 0.5
         assert by_name["information_retention"].value == 1.0
@@ -482,7 +481,7 @@ class TestGroundInformationEvaluator(_JudgeContractTests):
             output={"themes": _themes("Tax")},
         )
 
-        assert [s.value for s in scores] == [0.0, 0.0, 0.0]
+        assert [score.value for score in scores] == [0.0, 0.0, 0.0]
 
     async def test_empty_refined_themes_scores_zero_without_judge_calls(self):
         judge = FakeJudge()
@@ -493,4 +492,4 @@ class TestGroundInformationEvaluator(_JudgeContractTests):
         )
 
         assert judge.prompts == []
-        assert [s.value for s in scores] == [0.0, 0.0, 0.0]
+        assert [score.value for score in scores] == [0.0, 0.0, 0.0]

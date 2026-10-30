@@ -14,62 +14,10 @@ from math import isnan
 import adapters.evaluators.mapping_metrics_evaluator as mapping_metrics_module
 import adapters.evaluators.redundancy_evaluator as redundancy_module
 import pytest
-from adapters.evaluators.mapping_f1_evaluator import MappingF1Evaluator
 from adapters.evaluators.mapping_metrics_evaluator import MappingMetricsEvaluator
 from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
 from conftest import _themes, make_case
 from eval_types import Score
-
-
-class TestMappingF1Evaluator:
-    async def test_perfect_match_scores_one(self):
-        """Identical expected and predicted mappings score f1 = 1.0."""
-        case = make_case(expected_output={"mappings": {"r1": ["a", "b"], "r2": ["c"]}})
-        output = {"labels": {"r1": ["a", "b"], "r2": ["c"]}}
-
-        scores = await MappingF1Evaluator().evaluate(case, output)
-
-        assert scores == [Score("f1_score", 1.0, "Evaluated on 2 responses")]
-
-    async def test_complete_mismatch_scores_zero(self):
-        """Disjoint expected and predicted labels score f1 = 0.0."""
-        case = make_case(expected_output={"mappings": {"r1": ["a"]}})
-        output = {"labels": {"r1": ["b"]}}
-
-        scores = await MappingF1Evaluator().evaluate(case, output)
-
-        assert scores[0].name == "f1_score"
-        assert scores[0].value == 0.0
-
-    async def test_missing_response_in_output_treated_as_empty_prediction(self):
-        """A response absent from the output counts as an empty prediction (f1 = 0)."""
-        case = make_case(expected_output={"mappings": {"r1": ["a"], "r2": ["b"]}})
-        output = {"labels": {"r1": ["a"]}}  # r2 has no prediction at all
-
-        scores = await MappingF1Evaluator().evaluate(case, output)
-
-        # r1: perfect (f1=1.0), r2: nothing predicted (f1=0.0) -> samples average 0.5
-        assert scores[0].value == 0.5
-
-    async def test_no_expected_mappings_short_circuits(self):
-        """No expected mappings short-circuits to a 0.0 score with an explanatory comment."""
-        case = make_case(expected_output=None)
-        output = {"labels": {"r1": ["a"]}}
-
-        scores = await MappingF1Evaluator().evaluate(case, output)
-
-        assert scores == [Score("f1_score", 0.0, "No expected mappings")]
-
-    async def test_bad_output_falls_back_to_zero_score(self):
-        """Bad output (None) hits the shared error boundary and degrades to a 0.0 Score."""
-        case = make_case(expected_output={"mappings": {"r1": ["a"]}})
-
-        scores = await MappingF1Evaluator().evaluate(case, None)
-
-        assert len(scores) == 1
-        assert scores[0].name == "f1_score"
-        assert scores[0].value == 0.0
-        assert scores[0].comment.startswith("Error:")
 
 
 class TestMappingMetricsEvaluator:

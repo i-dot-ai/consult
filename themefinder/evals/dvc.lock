@@ -32,7 +32,7 @@ stages:
       hash: md5
       md5: 668e07952bfa54f1121a41127daf3c47
       size: 174
-    - path: components/_utils.py
+    - path: components/theme_output.py
       hash: md5
       md5: b02fa3fc41ab29bf7c4fade187a30432
       size: 615
@@ -124,7 +124,7 @@ stages:
       hash: md5
       md5: 668e07952bfa54f1121a41127daf3c47
       size: 174
-    - path: components/_utils.py
+    - path: components/theme_output.py
       hash: md5
       md5: b02fa3fc41ab29bf7c4fade187a30432
       size: 615
@@ -216,7 +216,7 @@ stages:
       hash: md5
       md5: 668e07952bfa54f1121a41127daf3c47
       size: 174
-    - path: components/_utils.py
+    - path: components/theme_output.py
       hash: md5
       md5: b02fa3fc41ab29bf7c4fade187a30432
       size: 615
@@ -308,7 +308,7 @@ stages:
       hash: md5
       md5: 668e07952bfa54f1121a41127daf3c47
       size: 174
-    - path: components/_utils.py
+    - path: components/theme_output.py
       hash: md5
       md5: b02fa3fc41ab29bf7c4fade187a30432
       size: 615
@@ -400,7 +400,7 @@ stages:
       hash: md5
       md5: 668e07952bfa54f1121a41127daf3c47
       size: 174
-    - path: components/_utils.py
+    - path: components/theme_output.py
       hash: md5
       md5: b02fa3fc41ab29bf7c4fade187a30432
       size: 615

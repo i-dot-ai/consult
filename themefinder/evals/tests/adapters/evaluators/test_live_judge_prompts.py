@@ -14,8 +14,6 @@ two new ones. The clarity test separately checks clear and opaque wording.
 """
 
 import pytest
-from conftest import make_case
-
 from adapters.evaluators.clarity_evaluator import ClarityEvaluator
 from adapters.evaluators.ground_information_evaluator import (
     GroundednessInformationRetentionEvaluator,
@@ -23,8 +21,9 @@ from adapters.evaluators.ground_information_evaluator import (
 from adapters.evaluators.information_equivalence_evaluator import (
     InformationEquivalenceEvaluator,
 )
+from conftest import make_case
 from run_eval import _create_default_llm
-from settings import get_settings
+from settings import eval_settings
 
 
 def _theme(label: str, description: str) -> dict[str, str]:
@@ -63,10 +62,9 @@ REFINED_THEMES = [REWORDED_BAN_ADVERTS, INVENTED_RAISE_TAX]
 @pytest.fixture
 def judge():
     """The default gateway model, or a skip when credentials are not configured."""
-    settings = get_settings()
-    if not settings.gateway.url or not settings.gateway.api_key:
+    if not eval_settings.gateway.url or not eval_settings.gateway.api_key:
         pytest.skip("LLM gateway credentials not set")
-    return _create_default_llm(settings)
+    return _create_default_llm(eval_settings)
 
 
 async def test_ground_information_flags_invented_and_lost_themes(judge):
@@ -75,8 +73,8 @@ async def test_ground_information_flags_invented_and_lost_themes(judge):
     case = make_case(expected_output={"themes": ORIGINAL_THEMES})
 
     scores = {
-        s.name: s
-        for s in await GroundednessInformationRetentionEvaluator(judge).evaluate(
+        score.name: score
+        for score in await GroundednessInformationRetentionEvaluator(judge).evaluate(
             case, {"themes": REFINED_THEMES}
         )
     }
