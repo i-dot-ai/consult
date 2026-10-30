@@ -3,12 +3,19 @@ import Layout from "../../../../layouts/Layout.astro";
 
 import Section from "../../../../components/Section/Section.svelte";
 import FileUpload from "../../../../components/screens/surveyImport/FileUpload/FileUpload.svelte";
-import { assertSurveyImportState, getDataSetupV2Enabled, setSurveyImportStatus } from "../../../../global/utils";
+import {
+  assertSurveyImportState,
+  getDataSetupV2Enabled,
+  setSurveyImportStatus,
+} from "../../../../global/utils";
 import type { AstroGlobalRuntime } from "../../../../global/types";
 import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
 import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import { consultationV2QueryParts } from "../../../../global/queries/consultations/parts";
-import { getConsultationViewUrl, getDataUploadDeleteQuestionsUrl } from "../../../../global/routes";
+import {
+  getConsultationViewUrl,
+  getDataUploadDeleteQuestionsUrl,
+} from "../../../../global/routes";
 
 if (!getDataSetupV2Enabled()) {
   return Astro.rewrite("/404");
@@ -43,7 +50,12 @@ if (data?.survey_import_status === "pending_questions") {
 //   Astro.redirect(getDataUploadDemographicsUrl(consultationId || ""));
 // }
 
-await setSurveyImportStatus(Astro, consultationId || "", "viewed_upload", data?.survey_import_status);
+await setSurveyImportStatus(
+  Astro,
+  consultationId || "",
+  "viewed_upload",
+  data?.survey_import_status,
+);
 ---
 
 <Layout>

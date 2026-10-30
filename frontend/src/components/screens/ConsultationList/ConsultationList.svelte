@@ -22,7 +22,10 @@
     getSupportUserDetail,
     Routes,
   } from "../../../global/routes.ts";
-  import { buildConsultationsGetQuery, buildConsultationsV2GetQuery } from "../../../global/queries/consultations/queries.ts";
+  import {
+    buildConsultationsGetQuery,
+    buildConsultationsV2GetQuery,
+  } from "../../../global/queries/consultations/queries.ts";
   import type { Consultation, User } from "../../../global/types.ts";
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries.ts";
@@ -58,7 +61,9 @@
   let alerts: AlertData[] = $state([]);
 
   const user = $derived(enableV2 ? buildCurrentUserGetQuery() : null);
-  const consultations = $derived(enableV2 ? buildConsultationsV2GetQuery() : buildConsultationsGetQuery());
+  const consultations = $derived(
+    enableV2 ? buildConsultationsV2GetQuery() : buildConsultationsGetQuery(),
+  );
 
   const consultationsToDisplay: Consultation[] | ConsultationV2[] = $derived(
     consultations.query.data?.results.filter(
@@ -91,7 +96,7 @@
         consultation.id,
         enableV2
           ? (consultation as ConsultationV2).survey_import_status
-          : undefined
+          : undefined,
       ),
       text: "Upload and check",
       ariaLabel: `Upload and check consultation: ${consultation.title}`,
@@ -131,30 +136,32 @@
   };
 
   const consultationRows = $derived(
-    consultationsToDisplay.map((consultation: Consultation | ConsultationV2) => ({
-      name: consultation.title,
-      ...(enableV2
-        ? {
-            status: consultation.stage,
-          }
-        : {}),
-      links: buildLinkData(consultation, user?.query?.data?.is_staff),
-      createdAt: consultation.created_at,
-      createdBy:
-        typeof consultation.created_by === "string"
-          ? consultation.created_by // v1 will return only email as string
-          : consultation.created_by?.email, // v2 will return entire User obj
-      ...(enableV2
-        ? {
-            team: consultation.users,
-            actions: {
-              id: consultation.id,
-              name: consultation.title,
-              createdBy: consultation.created_by,
-            },
-          }
-        : {}),
-    })),
+    consultationsToDisplay.map(
+      (consultation: Consultation | ConsultationV2) => ({
+        name: consultation.title,
+        ...(enableV2
+          ? {
+              status: consultation.stage,
+            }
+          : {}),
+        links: buildLinkData(consultation, user?.query?.data?.is_staff),
+        createdAt: consultation.created_at,
+        createdBy:
+          typeof consultation.created_by === "string"
+            ? consultation.created_by // v1 will return only email as string
+            : consultation.created_by?.email, // v2 will return entire User obj
+        ...(enableV2
+          ? {
+              team: consultation.users,
+              actions: {
+                id: consultation.id,
+                name: consultation.title,
+                createdBy: consultation.created_by,
+              },
+            }
+          : {}),
+      }),
+    ),
   );
 
   function getUserColor(id: number) {
@@ -452,7 +459,8 @@
 
   <DeleteConsultationModal
     consultation={consultationsToDisplay.find(
-      (consultation: Consultation | ConsultationV2) => consultation.id === deleteConsultationId,
+      (consultation: Consultation | ConsultationV2) =>
+        consultation.id === deleteConsultationId,
     )}
     onClose={() => (deleteConsultationId = "")}
     onError={(consultation) => {

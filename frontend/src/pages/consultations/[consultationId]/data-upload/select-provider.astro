@@ -7,7 +7,11 @@ import type { AstroGlobalRuntime } from "../../../../global/types";
 import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
 import { buildResponse, fetchBackendApi } from "../../../../global/api";
 import { consultationV2QueryParts } from "../../../../global/queries/consultations/parts";
-import { assertSurveyImportState, getDataSetupV2Enabled, setSurveyImportStatus } from "../../../../global/utils";
+import {
+  assertSurveyImportState,
+  getDataSetupV2Enabled,
+  setSurveyImportStatus,
+} from "../../../../global/utils";
 
 if (!getDataSetupV2Enabled()) {
   return Astro.rewrite("/404");
@@ -30,7 +34,12 @@ if (redirect) {
   return redirect;
 }
 
-await setSurveyImportStatus(Astro, consultationId || "", "viewed_provider", data?.survey_import_status);
+await setSurveyImportStatus(
+  Astro,
+  consultationId || "",
+  "viewed_provider",
+  data?.survey_import_status,
+);
 ---
 
 <Layout>

@@ -28,12 +28,12 @@
     getFinaliseThemesUrl,
     Routes,
   } from "../../../global/routes";
-  import type {
-    ConsultationStage,
-    User,
-  } from "../../../global/types";
+  import type { ConsultationStage, User } from "../../../global/types";
   import { createUserState } from "../../../global/state.svelte";
-  import type { ConsultationV2, SurveyImportStatus } from "../../../global/queries/consultations/types";
+  import type {
+    ConsultationV2,
+    SurveyImportStatus,
+  } from "../../../global/queries/consultations/types";
   import { getDataSetupActiveUrl } from "../../../global/utils";
 
   interface Props {
@@ -52,7 +52,9 @@
   let userData: User = $derived(user.query?.data);
 
   let consultation = $derived(buildConsultationGetQuery(consultationId));
-  let consultationData: ConsultationV2 | undefined = $derived(consultation.query.data);
+  let consultationData: ConsultationV2 | undefined = $derived(
+    consultation.query.data,
+  );
 
   let userState = $derived(createUserState(userData, consultationData));
   let userCanDelete = $derived(userState?.isOwner || userState?.isAdmin);
@@ -113,7 +115,10 @@
       return "There has been an error while importing your data.";
     } else if (surveyImportStatus === "file_uploading") {
       return "Consult is adding the responses. This can take a few hours. You can leave this page. Nothing else can start until this finishes.";
-    } else if (surveyImportStatus === "pending_questions" || surveyImportStatus === "pending_demographics") {
+    } else if (
+      surveyImportStatus === "pending_questions" ||
+      surveyImportStatus === "pending_demographics"
+    ) {
       return "Your file has been successfully uploaded. Please proceed with setting up your data.";
     } else if (surveyImportStatus === "import_complete") {
       return "The data import has been completed.";
@@ -169,9 +174,17 @@
     },
     setup: {
       panelText: getDataSetupPanelText(consultationData?.survey_import_status),
-      panelButtonText: getDataSetupButtonText(consultationData?.survey_import_status),
-      panelButtonUrl: getDataSetupActiveUrl(consultationId, consultationData?.survey_import_status),
-      tagVariant: consultationData?.survey_import_status === "file_uploading" ? "default" : "warning",
+      panelButtonText: getDataSetupButtonText(
+        consultationData?.survey_import_status,
+      ),
+      panelButtonUrl: getDataSetupActiveUrl(
+        consultationId,
+        consultationData?.survey_import_status,
+      ),
+      tagVariant:
+        consultationData?.survey_import_status === "file_uploading"
+          ? "default"
+          : "warning",
       adminLinks: [MANAGE_PEOPLE_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK],
       userLinks: [WHO_CAN_SEE_LINK],

@@ -2,7 +2,6 @@ import {
   getApiConsultationDeepValidationUrl,
   getApiConsultationsRootUrl,
   getApiConsultationUploadUrl,
-  getApiConsultationUrl,
   getApiConsultationV2Url,
   Routes,
   Suffixes,

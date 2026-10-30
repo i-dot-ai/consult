@@ -5,8 +5,21 @@ import { match, pathToRegexp } from "path-to-regexp";
 import { createRawSnippet } from "svelte";
 
 import type { Mock } from "./types";
-import { getApiConsultationV2Url, getConsultationViewUrl, getDataUploadChecksUrl, getDataUploadDeleteQuestionsUrl, getDataUploadDemographicsUrl, getDataUploadFileUploadUrl, getDataUploadSelectProviderUrl, getDataUploadUrl } from "./routes";
-import { surveyImportStatuses, type ConsultationV2, type SurveyImportStatus } from "./queries/consultations/types";
+import {
+  getApiConsultationV2Url,
+  getConsultationViewUrl,
+  getDataUploadChecksUrl,
+  getDataUploadDeleteQuestionsUrl,
+  getDataUploadDemographicsUrl,
+  getDataUploadFileUploadUrl,
+  getDataUploadSelectProviderUrl,
+  getDataUploadUrl,
+} from "./routes";
+import {
+  surveyImportStatuses,
+  type ConsultationV2,
+  type SurveyImportStatus,
+} from "./queries/consultations/types";
 import { fetchBackendApi } from "./api";
 
 export const getEnvironment = (): string | undefined => {
@@ -110,7 +123,10 @@ export const getDataSetupV2Enabled = (): boolean => {
   return import.meta.env.PUBLIC_DATA_SETUP_V2_ENABLED === "true";
 };
 
-export function assertSurveyImportState(astroContext: Astro, consultation?: ConsultationV2) {
+export function assertSurveyImportState(
+  astroContext: Astro,
+  consultation?: ConsultationV2,
+) {
   if (!consultation || !astroContext) {
     return;
   }
@@ -125,7 +141,12 @@ export function assertSurveyImportState(astroContext: Astro, consultation?: Cons
   }
 }
 
-export async function setSurveyImportStatus(astroContext: Astro, consultationId: string, newStatus: SurveyImportStatus, currentStatus?: SurveyImportStatus) {
+export async function setSurveyImportStatus(
+  astroContext: Astro,
+  consultationId: string,
+  newStatus: SurveyImportStatus,
+  currentStatus?: SurveyImportStatus,
+) {
   if (currentStatus) {
     const currentStatusIndex = surveyImportStatuses.indexOf(currentStatus);
     const newStatusIndex = surveyImportStatuses.indexOf(newStatus);
@@ -135,38 +156,48 @@ export async function setSurveyImportStatus(astroContext: Astro, consultationId:
     }
   }
 
-  await fetchBackendApi(astroContext, getApiConsultationV2Url(consultationId || ""), {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
+  await fetchBackendApi(
+    astroContext,
+    getApiConsultationV2Url(consultationId || ""),
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        survey_import_status: newStatus,
+      }),
     },
-    body: JSON.stringify({
-      survey_import_status: newStatus,
-    }),
-  });
+  );
 }
 
-export function getDataSetupActiveUrl(consultationId: string, surveyImportStatus?: SurveyImportStatus) {
-    if (surveyImportStatus === "not_started" || surveyImportStatus === "viewed_overview") {
-      return getDataUploadUrl(consultationId);
-    }
-    if (surveyImportStatus === "viewed_provider") {
-      return getDataUploadSelectProviderUrl(consultationId);
-    }
-    if (surveyImportStatus === "viewed_checklist") {
-      return getDataUploadChecksUrl(consultationId);
-    }
-    if (surveyImportStatus === "viewed_upload") {
-      return getDataUploadFileUploadUrl(consultationId);
-    }
-    if (surveyImportStatus === "pending_questions") {
-      return getDataUploadDeleteQuestionsUrl(consultationId);
-    }
-    if (surveyImportStatus === "pending_demographics") {
-      return getDataUploadDemographicsUrl(consultationId);
-    }
+export function getDataSetupActiveUrl(
+  consultationId: string,
+  surveyImportStatus?: SurveyImportStatus,
+) {
+  if (
+    surveyImportStatus === "not_started" ||
+    surveyImportStatus === "viewed_overview"
+  ) {
     return getDataUploadUrl(consultationId);
   }
+  if (surveyImportStatus === "viewed_provider") {
+    return getDataUploadSelectProviderUrl(consultationId);
+  }
+  if (surveyImportStatus === "viewed_checklist") {
+    return getDataUploadChecksUrl(consultationId);
+  }
+  if (surveyImportStatus === "viewed_upload") {
+    return getDataUploadFileUploadUrl(consultationId);
+  }
+  if (surveyImportStatus === "pending_questions") {
+    return getDataUploadDeleteQuestionsUrl(consultationId);
+  }
+  if (surveyImportStatus === "pending_demographics") {
+    return getDataUploadDemographicsUrl(consultationId);
+  }
+  return getDataUploadUrl(consultationId);
+}
 
 export const applyHighlight = (
   fullText: string,
