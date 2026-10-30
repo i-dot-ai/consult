@@ -109,13 +109,14 @@ class ConsultationViewSet(
         if users:
             consultation.users.add(*users)
 
+        response_status = status.HTTP_201_CREATED if users else status.HTTP_200_OK
         return Response(
             {
                 "added_count": len(users),
                 "non_existent_emails": missing_emails,
                 "total_requested": len(emails),
             },
-            status=status.HTTP_201_CREATED,
+            status=response_status,
         )
 
     @action(detail=True, methods=["post"], parser_classes=[MultiPartParser])
