@@ -21,6 +21,7 @@ import {
   type SurveyImportStatus,
 } from "./queries/consultations/types";
 import { fetchBackendApi } from "./api";
+import type { AstroGlobal } from "astro";
 
 export const getEnvironment = (): string | undefined => {
   if (typeof process !== "undefined" && process.env?.PUBLIC_ENVIRONMENT) {
@@ -124,7 +125,7 @@ export const getDataSetupV2Enabled = (): boolean => {
 };
 
 export function assertSurveyImportState(
-  astroContext: Astro,
+  astroContext: AstroGlobal,
   consultation?: ConsultationV2,
 ) {
   if (!consultation || !astroContext) {
@@ -142,7 +143,7 @@ export function assertSurveyImportState(
 }
 
 export async function setSurveyImportStatus(
-  astroContext: Astro,
+  astroContext: AstroGlobal,
   consultationId: string,
   newStatus: SurveyImportStatus,
   currentStatus?: SurveyImportStatus,
