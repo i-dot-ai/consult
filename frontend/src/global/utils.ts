@@ -5,7 +5,7 @@ import { match, pathToRegexp } from "path-to-regexp";
 import { createRawSnippet } from "svelte";
 
 import type { Mock } from "./types";
-import { getApiConsultationV2Url, getConsultationViewUrl, getDataUploadChecksUrl, getDataUploadDeleteQuestionsUrl, getDataUploadFileUploadUrl, getDataUploadSelectProviderUrl, getDataUploadUrl } from "./routes";
+import { getApiConsultationV2Url, getConsultationViewUrl, getDataUploadChecksUrl, getDataUploadDeleteQuestionsUrl, getDataUploadDemographicsUrl, getDataUploadFileUploadUrl, getDataUploadSelectProviderUrl, getDataUploadUrl } from "./routes";
 import { surveyImportStatuses, type ConsultationV2, type SurveyImportStatus } from "./queries/consultations/types";
 import { fetchBackendApi } from "./api";
 
@@ -162,10 +162,9 @@ export function getDataSetupActiveUrl(consultationId: string, surveyImportStatus
     if (surveyImportStatus === "pending_questions") {
       return getDataUploadDeleteQuestionsUrl(consultationId);
     }
-    // TODO: Add once url is decided on
-    // if (surveyImportStatus === "pending_demographics") {
-    //   return getDataUploadDemographicsUrl(consultationId);
-    // }
+    if (surveyImportStatus === "pending_demographics") {
+      return getDataUploadDemographicsUrl(consultationId);
+    }
     return getDataUploadUrl(consultationId);
   }
 

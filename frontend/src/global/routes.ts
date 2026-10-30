@@ -692,6 +692,15 @@ export const getDataUploadDeleteQuestionsUrl = (consultationId: string) => {
   );
 };
 
+export const getDataUploadDemographicsUrl = (consultationId: string) => {
+  return urlJoin(
+    Routes.Consultations,
+    consultationId,
+    Suffixes.DataUpload,
+    Suffixes.Demographics,
+  );
+};
+
 export const getConsultationUsersUrl = (consultationId: string) => {
   // TODO: Subject to change, update accordingly
   return urlJoin(Routes.Consultations, consultationId, Suffixes.Users);
