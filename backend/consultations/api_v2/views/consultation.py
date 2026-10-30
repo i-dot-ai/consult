@@ -17,7 +17,6 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from authentication.models import User
 from consultations.api_v2.permissions import (
-    CanAssignConsultationUsers,
     CanSeeConsultationV2,
     IsConsultationOwnerOrSuperuser,
 )
@@ -46,7 +45,10 @@ class ConsultationViewSet(
 
     def get_permissions(self):
         if self.action == "assign_users":
-            return [IsAuthenticated(), CanAssignConsultationUsers()]
+            return [
+                IsAuthenticated(),
+                IsConsultationOwnerOrSuperuser(privileged_user_attribute="is_superuser"),
+            ]
         if self.action == "destroy":
             return [IsAuthenticated(), IsConsultationOwnerOrSuperuser()]
         return super().get_permissions()
@@ -104,15 +106,16 @@ class ConsultationViewSet(
         serializer.is_valid(raise_exception=True)
         emails = serializer.validated_data["emails"]
 
-        users_by_email = {user.email: user for user in User.objects.filter(email__in=emails)}
-        users = [users_by_email[email] for email in emails if email in users_by_email]
+        users = list(User.objects.filter(email__in=emails))
+        existing_emails = {user.email for user in users}
+        missing_emails = [email for email in emails if email not in existing_emails]
         if users:
             consultation.users.add(*users)
 
         return Response(
             {
                 "added_count": len(users),
-                "non_existent_emails": [email for email in emails if email not in users_by_email],
+                "non_existent_emails": missing_emails,
                 "total_requested": len(emails),
             },
             status=status.HTTP_201_CREATED,
