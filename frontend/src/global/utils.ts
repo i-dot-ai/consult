@@ -6,7 +6,7 @@ import { createRawSnippet } from "svelte";
 
 import type { Mock } from "./types";
 import { getApiConsultationV2Url, getConsultationViewUrl } from "./routes";
-import type { ConsultationV2, SurveyImportStatus } from "./queries/consultations/types";
+import { surveyImportStatuses, type ConsultationV2, type SurveyImportStatus } from "./queries/consultations/types";
 import { fetchBackendApi } from "./api";
 
 export const getEnvironment = (): string | undefined => {
@@ -125,7 +125,16 @@ export function assertSurveyImportState(astroContext: Astro, consultation?: Cons
   }
 }
 
-export async function setSurveyImportStatus(astroContext: Astro, consultationId: string, newStatus: SurveyImportStatus) {
+export async function setSurveyImportStatus(astroContext: Astro, consultationId: string, newStatus: SurveyImportStatus, currentStatus?: SurveyImportStatus) {
+  if (currentStatus) {
+    const currentStatusIndex = surveyImportStatuses.indexOf(currentStatus);
+    const newStatusIndex = surveyImportStatuses.indexOf(newStatus);
+
+    if (newStatusIndex <= currentStatusIndex) {
+      return;
+    }
+  }
+
   await fetchBackendApi(astroContext, getApiConsultationV2Url(consultationId || ""), {
     method: "PATCH",
     headers: {
