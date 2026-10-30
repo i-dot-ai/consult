@@ -15,13 +15,18 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from consultations.api_v2.permissions import CanSeeConsultationV2, IsConsultationOwnerOrSuperuser
+from authentication.models import User
+from consultations.api_v2.permissions import (
+    CanSeeConsultationV2,
+    IsConsultationOwnerOrSuperuser,
+)
 from consultations.api_v2.serializers import (
     ConsultationCreateSerializerV2,
     ConsultationDeepValidationSerializerV2,
     ConsultationFileUploadSerializerV2,
     ConsultationSerializer,
     ConsultationUpdateSerializerV2,
+    ConsultationUserAssignmentSerializerV2,
 )
 from consultations.models import Consultation, FileUpload
 from ingest.consultation_file import read_consultation_file
@@ -39,6 +44,8 @@ class ConsultationViewSet(
     filterset_fields: ClassVar[dict] = {"title": ["iexact"]}
 
     def get_permissions(self):
+        if self.action == "assign_users":
+            return [IsAuthenticated(), IsConsultationOwnerOrSuperuser()]
         if self.action == "destroy":
             return [IsAuthenticated(), IsConsultationOwnerOrSuperuser()]
         return super().get_permissions()
@@ -52,6 +59,8 @@ class ConsultationViewSet(
             return ConsultationDeepValidationSerializerV2
         if self.action == "partial_update":
             return ConsultationUpdateSerializerV2
+        if self.action == "assign_users":
+            return ConsultationUserAssignmentSerializerV2
         return ConsultationSerializer
 
     def perform_create(self, serializer):
@@ -85,6 +94,29 @@ class ConsultationViewSet(
                 "consultation_id": str(instance.id),
             },
             status=status.HTTP_202_ACCEPTED,
+        )
+
+    @action(detail=True, methods=["post"], url_path="assign-users", url_name="assign-users")
+    def assign_users(self, request, *args, **kwargs):
+        consultation = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        emails = serializer.validated_data["emails"]
+
+        users = list(User.objects.filter(email__in=emails))
+        existing_emails = {user.email for user in users}
+        missing_emails = [email for email in emails if email not in existing_emails]
+        if users:
+            consultation.users.add(*users)
+
+        response_status = status.HTTP_201_CREATED if users else status.HTTP_200_OK
+        return Response(
+            {
+                "added_count": len(users),
+                "non_existent_emails": missing_emails,
+                "total_requested": len(emails),
+            },
+            status=response_status,
         )
 
     @action(detail=True, methods=["post"], parser_classes=[MultiPartParser])
