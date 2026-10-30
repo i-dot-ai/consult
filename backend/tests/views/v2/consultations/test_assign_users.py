@@ -69,6 +69,28 @@ def test_v2_owner_assigns_multiple_users_and_reports_unknown_emails(
 
 
 @pytest.mark.django_db
+def test_v2_owner_gets_ok_when_all_emails_are_unknown(
+    client, non_staff_user, non_staff_user_token
+):
+    consultation = ConsultationFactory(created_by=non_staff_user)
+
+    response = client.post(
+        _url(consultation),
+        data={"emails": ["missing@example.com"]},
+        content_type="application/json",
+        headers=_auth(non_staff_user_token),
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "added_count": 0,
+        "non_existent_emails": ["missing@example.com"],
+        "total_requested": 1,
+    }
+    assert not consultation.users.exists()
+
+
+@pytest.mark.django_db
 def test_v2_superuser_assigns_user(client):
     superuser = UserFactory(is_staff=True, is_superuser=True)
     token = str(RefreshToken.for_user(superuser).access_token)
