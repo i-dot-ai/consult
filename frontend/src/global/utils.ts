@@ -5,7 +5,7 @@ import { match, pathToRegexp } from "path-to-regexp";
 import { createRawSnippet } from "svelte";
 
 import type { Mock } from "./types";
-import { getApiConsultationV2Url, getConsultationViewUrl } from "./routes";
+import { getApiConsultationV2Url, getConsultationViewUrl, getDataUploadChecksUrl, getDataUploadDeleteQuestionsUrl, getDataUploadFileUploadUrl, getDataUploadSelectProviderUrl, getDataUploadUrl } from "./routes";
 import { surveyImportStatuses, type ConsultationV2, type SurveyImportStatus } from "./queries/consultations/types";
 import { fetchBackendApi } from "./api";
 
@@ -145,6 +145,29 @@ export async function setSurveyImportStatus(astroContext: Astro, consultationId:
     }),
   });
 }
+
+export function getDataSetupActiveUrl(consultationId: string, surveyImportStatus?: SurveyImportStatus) {
+    if (surveyImportStatus === "not_started" || surveyImportStatus === "viewed_overview") {
+      return getDataUploadUrl(consultationId);
+    }
+    if (surveyImportStatus === "viewed_provider") {
+      return getDataUploadSelectProviderUrl(consultationId);
+    }
+    if (surveyImportStatus === "viewed_checklist") {
+      return getDataUploadChecksUrl(consultationId);
+    }
+    if (surveyImportStatus === "viewed_upload") {
+      return getDataUploadFileUploadUrl(consultationId);
+    }
+    if (surveyImportStatus === "pending_questions") {
+      return getDataUploadDeleteQuestionsUrl(consultationId);
+    }
+    // TODO: Add once url is decided on
+    // if (surveyImportStatus === "pending_demographics") {
+    //   return getDataUploadDemographicsUrl(consultationId);
+    // }
+    return getDataUploadUrl(consultationId);
+  }
 
 export const applyHighlight = (
   fullText: string,

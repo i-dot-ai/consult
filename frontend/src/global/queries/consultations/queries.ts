@@ -23,6 +23,12 @@ export function buildConsultationsGetQuery() {
   });
 }
 
+export function buildConsultationsV2GetQuery() {
+  return buildQuery<ConsultationsGetResponse>(consultationsV2QueryParts.url(), {
+    key: consultationsV2QueryParts.key(),
+  });
+}
+
 export function buildConsultationV2CreateQuery(
   onSuccess: (data: ConsultationV2CreateResponse) => Promise<void>,
   onError: (error: FetchError<unknown>) => Promise<void>,

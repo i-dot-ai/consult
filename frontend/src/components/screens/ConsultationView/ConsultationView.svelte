@@ -25,11 +25,6 @@
     getConsultationAnswersUrl,
     getConsultationDashboardUrl,
     getConsultationUsersUrl,
-    getDataUploadChecksUrl,
-    getDataUploadDeleteQuestionsUrl,
-    getDataUploadFileUploadUrl,
-    getDataUploadSelectProviderUrl,
-    getDataUploadUrl,
     getFinaliseThemesUrl,
     Routes,
   } from "../../../global/routes";
@@ -39,6 +34,7 @@
   } from "../../../global/types";
   import { createUserState } from "../../../global/state.svelte";
   import type { ConsultationV2, SurveyImportStatus } from "../../../global/queries/consultations/types";
+  import { getDataSetupActiveUrl } from "../../../global/utils";
 
   interface Props {
     consultationId: string;
@@ -134,29 +130,6 @@
     return "Set up the data";
   }
 
-  function getDataSetupButtonUrl(consultationId: string, surveyImportStatus?: SurveyImportStatus) {
-    if (surveyImportStatus === "not_started" || surveyImportStatus === "viewed_overview") {
-      return getDataUploadUrl(consultationId);
-    }
-    if (surveyImportStatus === "viewed_provider") {
-      return getDataUploadSelectProviderUrl(consultationId);
-    }
-    if (surveyImportStatus === "viewed_checklist") {
-      return getDataUploadChecksUrl(consultationId);
-    }
-    if (surveyImportStatus === "viewed_upload") {
-      return getDataUploadFileUploadUrl(consultationId);
-    }
-    if (surveyImportStatus === "pending_questions") {
-      return getDataUploadDeleteQuestionsUrl(consultationId);
-    }
-    // TODO: Add once url is decided on
-    // if (surveyImportStatus === "pending_demographics") {
-    //   return getDataUploadDemographicsUrl(consultationId);
-    // }
-    return getDataUploadUrl(consultationId);
-  }
-
   const CONTENT: Record<string, ContentData> = $derived({
     analysis: {
       panelText:
@@ -197,7 +170,7 @@
     setup: {
       panelText: getDataSetupPanelText(consultationData?.survey_import_status),
       panelButtonText: getDataSetupButtonText(consultationData?.survey_import_status),
-      panelButtonUrl: getDataSetupButtonUrl(consultationId, consultationData?.survey_import_status),
+      panelButtonUrl: getDataSetupActiveUrl(consultationId, consultationData?.survey_import_status),
       tagVariant: consultationData?.survey_import_status === "file_uploading" ? "default" : "warning",
       adminLinks: [MANAGE_PEOPLE_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK],
