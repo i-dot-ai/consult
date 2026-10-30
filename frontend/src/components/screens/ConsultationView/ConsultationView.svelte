@@ -86,7 +86,7 @@
     panelText: string;
     panelButtonText?: string;
     panelButtonUrl?: string;
-    tagVariant: "success" | "default" | "warning";
+    tagVariant: "success" | "default" | "warning" | "error";
     ownerLinks?: ContentDataLink[];
     userLinks?: ContentDataLink[];
     adminLinks?: ContentDataLink[];
