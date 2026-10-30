@@ -430,11 +430,6 @@ exports[`ConsultationView > should match snapshot initially 1`] = `
         <div
           class="mt-4"
         >
-          <p
-            class="text-neutral-700 text-sm"
-          >
-            Nothing else can start until this finishes.
-          </p>
           <!---->
         </div>
       </div>
