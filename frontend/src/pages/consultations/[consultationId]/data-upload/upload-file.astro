@@ -15,6 +15,7 @@ import { consultationV2QueryParts } from "../../../../global/queries/consultatio
 import {
   getConsultationViewUrl,
   getDataUploadDeleteQuestionsUrl,
+  getDataUploadDemographicsUrl,
 } from "../../../../global/routes";
 
 if (!getDataSetupV2Enabled()) {
@@ -45,10 +46,9 @@ if (data?.survey_import_status === "file_uploading") {
 if (data?.survey_import_status === "pending_questions") {
   return Astro.redirect(getDataUploadDeleteQuestionsUrl(consultationId || ""));
 }
-// TODO: Add once demographics url is decided on
-// if (data?.survey_import_status === "pending_demographics") {
-//   Astro.redirect(getDataUploadDemographicsUrl(consultationId || ""));
-// }
+if (data?.survey_import_status === "pending_demographics") {
+  return Astro.redirect(getDataUploadDemographicsUrl(consultationId || ""));
+}
 
 await setSurveyImportStatus(
   Astro,
