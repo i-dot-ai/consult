@@ -5,8 +5,9 @@ import { match, pathToRegexp } from "path-to-regexp";
 import { createRawSnippet } from "svelte";
 
 import type { Mock } from "./types";
-import { getConsultationViewUrl } from "./routes";
-import type { ConsultationV2 } from "./queries/consultations/types";
+import { getApiConsultationV2Url, getConsultationViewUrl } from "./routes";
+import type { ConsultationV2, SurveyImportStatus } from "./queries/consultations/types";
+import { fetchBackendApi } from "./api";
 
 export const getEnvironment = (): string | undefined => {
   if (typeof process !== "undefined" && process.env?.PUBLIC_ENVIRONMENT) {
@@ -122,6 +123,18 @@ export function assertSurveyImportState(astroContext: Astro, consultation?: Cons
   ) {
     return astroContext.redirect(getConsultationViewUrl(consultation.id || ""));
   }
+}
+
+export async function setSurveyImportStatus(astroContext: Astro, consultationId: string, newStatus: SurveyImportStatus) {
+  await fetchBackendApi(astroContext, getApiConsultationV2Url(consultationId || ""), {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      survey_import_status: newStatus,
+    }),
+  });
 }
 
 export const applyHighlight = (
