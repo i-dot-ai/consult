@@ -126,7 +126,11 @@
     return "The responses are not uploaded yet.";
   }
   function getDataSetupButtonText(surveyImportStatus?: SurveyImportStatus) {
-    if (surveyImportStatus === "file_uploading" || surveyImportStatus === "import_failed" || surveyImportStatus === "import_complete") {
+    if (
+      surveyImportStatus === "file_uploading" ||
+      surveyImportStatus === "import_failed" ||
+      surveyImportStatus === "import_complete"
+    ) {
       // do not render button for certain statuses
       return "";
     } else if (surveyImportStatus !== "not_started") {
@@ -135,7 +139,10 @@
     return "Set up the data";
   }
   function getDataSetupTagVariant(surveyImportStatus?: SurveyImportStatus) {
-    if (surveyImportStatus === "file_uploading" || surveyImportStatus === "import_complete"){
+    if (
+      surveyImportStatus === "file_uploading" ||
+      surveyImportStatus === "import_complete"
+    ) {
       return "default";
     } else if (surveyImportStatus === "import_failed") {
       return "error";
@@ -189,7 +196,9 @@
         consultationId,
         consultationData?.survey_import_status,
       ),
-      tagVariant: getDataSetupTagVariant(consultationData?.survey_import_status),
+      tagVariant: getDataSetupTagVariant(
+        consultationData?.survey_import_status,
+      ),
       adminLinks: [MANAGE_PEOPLE_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK],
       userLinks: [WHO_CAN_SEE_LINK],
