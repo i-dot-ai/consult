@@ -37,14 +37,11 @@ class IsConsultationOwnerOrSuperuser(permissions.BasePermission):
     users should not be able to access, such as deletion or configuration.
     """
 
-    def __init__(self, privileged_user_attribute="is_staff"):
-        self.privileged_user_attribute = privileged_user_attribute
-
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
 
-        if getattr(request.user, self.privileged_user_attribute, False):
+        if getattr(request.user, "is_staff", False):
             return True
 
         consultation_pk = view.kwargs.get("consultation_pk") or view.kwargs.get("pk")

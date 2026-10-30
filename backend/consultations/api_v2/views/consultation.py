@@ -45,10 +45,7 @@ class ConsultationViewSet(
 
     def get_permissions(self):
         if self.action == "assign_users":
-            return [
-                IsAuthenticated(),
-                IsConsultationOwnerOrSuperuser(privileged_user_attribute="is_superuser"),
-            ]
+            return [IsAuthenticated(), IsConsultationOwnerOrSuperuser()]
         if self.action == "destroy":
             return [IsAuthenticated(), IsConsultationOwnerOrSuperuser()]
         return super().get_permissions()
