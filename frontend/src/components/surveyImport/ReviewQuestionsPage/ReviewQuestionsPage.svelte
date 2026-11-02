@@ -414,18 +414,17 @@
 </div>
 
 <style>
+  @reference "../../../styles/global.css";
+
   .page-size :global(label) {
-    font-size: 0.75rem;
-    line-height: 1rem;
+    @apply text-xs;
   }
 
   .sort-select :global(label) {
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    color: var(--color-neutral-500);
+    @apply text-sm text-neutral-500 md:text-sm;
   }
 
   .questions-panel :global(select) {
-    border-radius: 0.375rem;
+    @apply rounded-md;
   }
 </style>

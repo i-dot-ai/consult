@@ -26,7 +26,7 @@
 
   let { consultationId }: Props = $props();
 
-  const questionsQuery = $derived(buildListQuestionsQuery(consultationId));
+  const questionsQuery = buildListQuestionsQuery(consultationId);
 
   let questions: Question[] = $derived(
     questionsQuery.query.data?.results ?? [],
