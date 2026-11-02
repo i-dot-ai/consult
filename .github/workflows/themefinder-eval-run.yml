@@ -29,6 +29,9 @@ jobs:
     needs: start-runner
     runs-on: ${{ needs.start-runner.outputs.label }}
     timeout-minutes: 60
+    permissions:
+        contents: read
+        id-token: write
 
     steps:
       - uses: actions/checkout@v7
@@ -52,10 +55,27 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: AWS Authentication
+        uses: i-dot-ai/i-dot-ai-core-github-actions/.github/actions/authenticate-aws@main
+        with:
+          APP_NAME: consult
+          ENVIRONMENT: prod
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
+      - name: Read eval gateway key from SSM
+        run: |
+          key=$(aws ssm get-parameter \
+            --name "/i-dot-ai-prod-core-llm-gateway/env_secrets/consult/eval-key-api-key" \
+            --with-decryption \
+            --query "Parameter.Value" \
+            --output text)
+          echo "::add-mask::${key}"
+          echo "CONSULT_EVAL_LITELLM_API_KEY=${key}" >> "$GITHUB_ENV"
+
       - name: Run ${{ inputs.tier }} eval
         env:
           LLM_GATEWAY_URL: ${{ secrets.LLM_GATEWAY_URL }}
-          CONSULT_EVAL_LITELLM_API_KEY: ${{ secrets.CONSULT_EVAL_LITELLM_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           ENVIRONMENT: production
           TIER: ${{ inputs.tier }}
