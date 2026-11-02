@@ -7,21 +7,23 @@ from abc import ABC
 from dataclasses import replace
 
 import pytest
+from conftest import _themes
+from fakes import FakeLangfuseClient, FakeTrace
 from httpx import RequestError
 from langfuse.api.core import ApiError
 
 from adapters.artefact_stores.base import (
     ArtefactStorePort,
-    build_results_payload,
-    flatten_run_report,
 )
 from adapters.artefact_stores.langfuse_adapter import LangfuseArtefactStore
-from adapters.artefact_stores.local_json_adapter import LocalJSONArtefactStore
-from conftest import _themes
+from adapters.artefact_stores.local_json_adapter import (
+    LocalJSONArtefactStore,
+    build_results_payload,
+)
 from eval_types import Case, CaseOutcome, RunMetrics, RunReport, Score
-from fakes import FakeLangfuseClient, FakeTrace
 from utils import stats
 from utils.langfuse import LangfuseContext
+from utils.results import flatten_run_report
 
 
 def _make_case(
@@ -281,6 +283,25 @@ class TestLocalJSONArtefactStore:
 
 
 class TestLangfuseArtefactStore:
+    def test_persists_local_results_when_configured(self, tmp_path):
+        store = LangfuseArtefactStore(
+            context=LangfuseContext(client=FakeLangfuseClient()),
+            local_store=LocalJSONArtefactStore(output_dir=tmp_path),
+        )
+        outcome = _make_outcome(error="task failed")
+
+        store.start_run("generation", "demo")
+        store.record_case(outcome)
+        results = store.finish_run(RunReport(outcomes=[outcome]))
+
+        payload = json.loads(
+            (tmp_path / "generation" / "demo" / "results.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        assert payload["results"] == results
+        assert payload["errors"] == {"question_part_1": "task failed"}
+
     def test_record_case_creates_span_and_links_dataset_item(self):
         client = FakeLangfuseClient()
         context = LangfuseContext(

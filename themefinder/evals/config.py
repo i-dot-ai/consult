@@ -63,7 +63,7 @@ def _local_artefact_factory(context: Any | None) -> ArtefactStorePort:
 
 
 def _langfuse_artefact_factory(context: Any | None) -> ArtefactStorePort:
-    return LangfuseArtefactStore(context)
+    return LangfuseArtefactStore(context, local_store=LocalJSONArtefactStore())
 
 
 DATASET_FACTORIES: dict[str, DatasetFactory] = {

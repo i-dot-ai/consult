@@ -4,8 +4,9 @@ import argparse
 import asyncio
 import json
 from collections.abc import Sequence
-from pathlib import Path
 from typing import Any
+
+from themefinder.llm import OpenAILLM
 
 from component_runner import run_component
 from components import COMPONENT_NAMES, build_component_config
@@ -15,8 +16,6 @@ from settings import EvalSettings, eval_settings
 from utils import gateway, stats
 from utils.logging_config import get_logger
 from utils.results import count_errors
-
-from themefinder.llm import OpenAILLM
 
 logger = get_logger(__name__)
 
@@ -79,9 +78,6 @@ async def evaluate_component(
     )
 
 
-LOCAL_EVAL_RUNS_DIR = Path(__file__).resolve().parent / "local_eval_runs"
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run a ThemeFinder evaluation")
     parser.add_argument(
@@ -138,10 +134,6 @@ def _scores_only(results: dict[str, Any]) -> dict[str, Any]:
 
 def main(argv: Sequence[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
-    output_path = LOCAL_EVAL_RUNS_DIR / args.component / args.dataset / "results.json"
-    # The local artefact store is the only writer of results.json. Remove any stale file so
-    # errors from an earlier run are never read back as this run's.
-    output_path.unlink(missing_ok=True)
 
     results = asyncio.run(
         evaluate_component(
@@ -152,23 +144,13 @@ def main(argv: Sequence[str] | None = None) -> None:
         )
     )
 
-    # If the local json file has not been written then write here for DVC's declared output.
-    # TODO(PRO-915): remove this write. It is the flat results dict, without the outcomes and
-    # errors that count_errors and the regression gate need, so it cannot be error-checked.
-    if not output_path.exists():
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(
-            json.dumps(results, indent=2, sort_keys=True, default=str),
-            encoding="utf-8",
-        )
-
     printed = results if args.verbose else _scores_only(results)
     print(json.dumps(printed, indent=2, sort_keys=True, default=str))
 
     # Case errors are recorded, not raised, so fail here or DVC and CI would call the run a success.
     errors = count_errors(results)
     if errors > 0:
-        raise SystemExit(f"{errors} case or evaluator errors, see {output_path}")
+        raise SystemExit(f"{errors} case or evaluator errors")
 
 
 if __name__ == "__main__":

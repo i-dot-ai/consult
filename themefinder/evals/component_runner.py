@@ -5,10 +5,10 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING, Any
 
+from themefinder.llm import collect_gateway_metrics
+
 from datasets import DatasetConfig
 from eval_types import ComponentConfig, RunMetrics
-
-from themefinder.llm import collect_gateway_metrics
 
 if TYPE_CHECKING:
     from config import EvalBackends
@@ -44,14 +44,12 @@ async def run_component(
 
     started_at = time.perf_counter()
     try:
+        backends.artefacts.start_run(component_config.component, dataset_config.dataset)
         with collect_gateway_metrics() as gateway_metrics:
             cases = backends.dataset.load_cases(dataset_config)
             report = await backends.runner.run(component_config, cases, llm=llm)
             loaded_at = time.perf_counter()
 
-            backends.artefacts.start_run(
-                component_config.component, dataset_config.dataset
-            )
             for outcome in report.outcomes:
                 backends.artefacts.record_case(outcome)
 

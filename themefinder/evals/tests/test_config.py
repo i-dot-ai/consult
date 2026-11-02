@@ -6,6 +6,7 @@ from uuid import UUID
 
 import config as config_module
 import pytest
+
 from adapters import context_providers
 from adapters.artefact_stores import LangfuseArtefactStore, LocalJSONArtefactStore
 from adapters.context_providers import ProvidedContext
@@ -99,6 +100,7 @@ def test_resolves_dataset_and_artefact_sources_independently(
         assert backends.dataset.client is client
     if isinstance(backends.artefacts, LangfuseArtefactStore):
         assert backends.artefacts.context is context
+        assert isinstance(backends.artefacts.local_store, LocalJSONArtefactStore)
 
 
 @pytest.mark.parametrize(
