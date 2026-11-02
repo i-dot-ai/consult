@@ -87,7 +87,7 @@ export const getApiConsultationsRootUrl = () => {
 };
 
 export const getApiConsultationV2Url = (consultationId: string) => {
-  return urlJoinTrailing(getApiConsultationsRootUrl(), consultationId);
+  return urlJoinTrailing(Prefixes.ApiV2, Suffixes.Consultations, consultationId);
 };
 
 export const getApiQuestionsV2Url = (consultationId: string) => {
