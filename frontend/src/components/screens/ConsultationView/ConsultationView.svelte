@@ -205,7 +205,7 @@
     },
   } as const);
 
-  let content = $derived(CONTENT[consultationData?.stage || 0] || {});
+  let content = $derived(CONTENT[consultationData?.stage || ""] || {});
   let links = $derived.by(() => {
     if (userState?.isAdmin) {
       return content.adminLinks;
