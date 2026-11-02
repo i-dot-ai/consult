@@ -14,7 +14,7 @@ exclude-newer-span = "P14D"
 [options.exclude-newer-package]
 certifi = "2026-10-21T00:00:00Z"
 cryptography = "2026-07-01T00:00:00Z"
-i-dot-ai-utilities = "2026-09-08T00:00:00Z"
+i-dot-ai-utilities = "2026-10-23T00:00:00Z"
 langchain = "2026-07-01T00:00:00Z"
 langsmith = "2026-07-01T00:00:00Z"
 pip = "2026-10-21T00:00:00Z"
@@ -532,7 +532,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "boto3", specifier = ">=1.43.111" },
+    { name = "boto3", specifier = ">=1.43.114" },
     { name = "django", specifier = ">=6.1.2" },
     { name = "django-environ", specifier = ">=0.14.0" },
     { name = "django-filter", specifier = ">=26.2" },
@@ -547,14 +547,14 @@ requires-dist = [
     { name = "drf-spectacular", specifier = "==0.30.0" },
     { name = "factory-boy", specifier = ">=3.3.3" },
     { name = "gunicorn", specifier = ">=26.2.0" },
-    { name = "i-dot-ai-utilities", extras = ["auth", "otel-django"], specifier = ">=0.7.1rc1" },
+    { name = "i-dot-ai-utilities", extras = ["auth", "otel-django"], specifier = ">=0.7.1rc2,<0.8" },
     { name = "openai", specifier = ">=3.24.0" },
     { name = "openpyxl", specifier = ">=3.1.5" },
-    { name = "pgvector", specifier = ">=0.5.0" },
+    { name = "pgvector", specifier = ">=0.5.1" },
     { name = "psycopg", specifier = ">=3.3.6" },
     { name = "pydantic", specifier = ">=2.14.1" },
     { name = "pytest-random-order", specifier = ">=1.2.0" },
-    { name = "sentry-sdk", extras = ["django", "redis", "rq"], specifier = ">=2.71.0" },
+    { name = "sentry-sdk", extras = ["django", "redis", "rq"], specifier = ">=2.72.0" },
     { name = "themefinder", editable = "themefinder" },
     { name = "werkzeug", specifier = "==3.1.9" },
 ]
@@ -564,7 +564,7 @@ dev = [
     { name = "django-extensions", specifier = ">=4.1" },
     { name = "django-test-migrations", specifier = ">=1.7.0" },
     { name = "django-types", specifier = ">=0.24.0" },
-    { name = "django-webtest", specifier = ">=1.9.14" },
+    { name = "django-webtest", specifier = ">=1.9.15" },
     { name = "freezegun", specifier = ">=1.5.5" },
     { name = "honcho", specifier = ">=2.0.0" },
     { name = "moto", specifier = ">=5.2.3" },
@@ -867,14 +867,14 @@ wheels = [
 
 [[package]]
 name = "django-webtest"
-version = "1.9.14"
+version = "1.9.15"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "webtest" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e4/4c/2c6f4dc32c785b4ed760878f972e0934dba3a4d4cedbfdf4fbce24225808/django_webtest-1.9.14.tar.gz", hash = "sha256:edbdc62f74b84e53ad3b49821e839669c812fafabb54ede713b45209bf732aeb", size = 29289, upload-time = "2025-10-06T21:08:10.761Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/21/60/1a245bbc85fd6858bf0a3b8a7a4a05233bc2ff4afd48dcb8a395a5ed11ed/django_webtest-1.9.15.tar.gz", hash = "sha256:154bd234df491c466cacec9b79b8af6774223828501a452d30f825343d0f486b", size = 29152, upload-time = "2026-10-10T14:43:56.45Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2f/02/b623ee3b64879ac36d1c82f779997a9d7a98265b9254e45edd3e33ccd57b/django_webtest-1.9.14-py3-none-any.whl", hash = "sha256:1385ec303b766765413e7caa87f2be14c54826c0178050b00dc8746816d9fa1b", size = 16795, upload-time = "2025-10-06T21:08:09.155Z" },
+    { url = "https://files.pythonhosted.org/packages/24/91/ef9223a3195f8ffe8d8ffd46dc205beba469026ab87c136d057998b3ae1f/django_webtest-1.9.15-py3-none-any.whl", hash = "sha256:28bfc40def80db9d72ff75aa3ee9b77044f5d0f23d063707671cd67139f86f31", size = 16817, upload-time = "2026-10-10T14:43:54.844Z" },
 ]
 
 [[package]]
@@ -1505,17 +1505,18 @@ wheels = [
 
 [[package]]
 name = "i-dot-ai-utilities"
-version = "0.7.1rc1"
+version = "0.7.1rc2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "certifi" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "structlog" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/73/2a/5c138bf82bf213df6295074ca38fbbe4b116f1ffe18f02d37c8704ee0ed1/i_dot_ai_utilities-0.7.1rc1.tar.gz", hash = "sha256:594a4f54fb387e356d0ddcbaf30b94b759b425399edac2bceca13ec07e6c9033", size = 256418, upload-time = "2026-09-07T11:01:27.286Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/aa/69/2a830ff74e11522cdc799925fb088d0fd92af8486a36924ca3bd9881f7d3/i_dot_ai_utilities-0.7.1rc2.tar.gz", hash = "sha256:2daf07c05fd146170b25e71bc66f2f76101217f38094c745e1c3d3f23abaccf1", size = 256528, upload-time = "2026-10-22T16:24:57.405Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f3/5e/00c1bf60dc673ae2479f8e43dde1618f547d6ede8640c3ac27afa437b71c/i_dot_ai_utilities-0.7.1rc1-py3-none-any.whl", hash = "sha256:9379e55e174403571175db3ccedcb6dbdfa6272557a144d4e88ca73f727d582a", size = 91317, upload-time = "2026-09-07T11:01:25.911Z" },
+    { url = "https://files.pythonhosted.org/packages/ce/76/2ab498d5cb30b7114eec57bdc977bfd9242ed3ed60e55a2b19d16ffaf2e0/i_dot_ai_utilities-0.7.1rc2-py3-none-any.whl", hash = "sha256:27d3785f8666d9ad1ace89b27986955f8e4c8ec2657eda25ddd8bf7ce455ed94", size = 91332, upload-time = "2026-10-22T16:24:55.688Z" },
 ]
 
 [package.optional-dependencies]
@@ -2484,11 +2485,11 @@ wheels = [
 
 [[package]]
 name = "pgvector"
-version = "0.5.0"
+version = "0.5.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a7/ec/6eb80aebc728200f95229219882994c1b0585b956ca47da5edb9d062627a/pgvector-0.5.0.tar.gz", hash = "sha256:07a9dcf735696879406983afc6eba9a787cef7c0cf6c367ca1a5779f036dee74", size = 35170, upload-time = "2026-07-06T18:27:27.767Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f8/23/96aa38899fbf8e103766db608d6e42acac269a96e08f3003fe9da3396fed/pgvector-0.5.1.tar.gz", hash = "sha256:94998a54b801b1075d623b8fa677fcb8210a7977b88f8e2203ab115c155af2e4", size = 35714, upload-time = "2026-10-09T01:50:22.779Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5c/e4/a5573f2c579ca9ad133293bfb624148ba0893674ca4a6eeec85ced9a6a09/pgvector-0.5.0-py3-none-any.whl", hash = "sha256:fedc9800894e6da2be51358d7b7c574bf34f247ca741a5a09513622135f5964f", size = 30958, upload-time = "2026-07-06T18:27:26.797Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/8d/a9c2a531da0ebb54b4a7174450e8534a39db112a141ae3a437de28420111/pgvector-0.5.1-py3-none-any.whl", hash = "sha256:ec5bcd5ffaefe6ecb2dcc9564ca921d284564b969183bc837a144604773af8ea", size = 31056, upload-time = "2026-10-09T01:50:21.614Z" },
 ]
 
 [[package]]
@@ -3340,15 +3341,15 @@ wheels = [
 
 [[package]]
 name = "sentry-sdk"
-version = "2.71.0"
+version = "2.72.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/67/93/9ef70bfb7346c778caf09b7cd10c17c33f601f2d17019fa1aedcda738b5f/sentry_sdk-2.71.0.tar.gz", hash = "sha256:7beb27a22f06396f3a05510c3da6ea10e1c79e02e859993c27ce4ff074e296d6", size = 1052358, upload-time = "2026-09-28T14:04:00.645Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/26/c1/d2bbb2b03bdc2ef14b35e02b647b8489156c50b6e0b8bacc5fa303902e23/sentry_sdk-2.72.0.tar.gz", hash = "sha256:0d2ffbc28ee2e63cbaf3d015e93b448cffcc3ef3be03a44704ad36ade72faa95", size = 1069699, upload-time = "2026-10-12T13:08:11.195Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a4/f6/b3e68b2e08e9a52e6c8a279ca2fc0d3a535f3886222375f54ef9efbd694d/sentry_sdk-2.71.0-py3-none-any.whl", hash = "sha256:9ed36b4c206048aa67b5ddba0a6e28d59fc55cf10d60f5f7aea2c3917184bf4a", size = 534254, upload-time = "2026-09-28T14:03:58.668Z" },
+    { url = "https://files.pythonhosted.org/packages/d0/0b/0dd9686842d9dc49c3ee84cced31c54bceb0fb52a826be7d3d4fe30d882a/sentry_sdk-2.72.0-py3-none-any.whl", hash = "sha256:3e13ace4ffd0b3cc78288236edfc4e4bd90eb12a396cc5845fa10a58ff289f50", size = 544754, upload-time = "2026-10-12T13:08:01.619Z" },
 ]
 
 [package.optional-dependencies]
