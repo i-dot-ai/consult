@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.db.models import Prefetch, Q
 from django.db.models.functions import Lower
+from django.shortcuts import get_object_or_404
 from openpyxl.utils.exceptions import InvalidFileException
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -46,9 +47,7 @@ class ConsultationViewSet(
     filterset_fields: ClassVar[dict] = {"title": ["iexact"]}
 
     def get_permissions(self):
-        if self.action == "assign_users":
-            return [IsAuthenticated(), IsConsultationOwnerOrSuperuser()]
-        if self.action == "destroy":
+        if self.action in ("assign_users", "remove_user", "destroy"):
             return [IsAuthenticated(), IsConsultationOwnerOrSuperuser()]
         return super().get_permissions()
 
@@ -132,6 +131,29 @@ class ConsultationViewSet(
         return Response(
             {"added_count": len(users) + len(created_users)}, status=status.HTTP_201_CREATED
         )
+
+    @action(detail=True, methods=["delete"], url_path="users", url_name="remove-user")
+    def remove_user(self, request, *args, **kwargs):
+        consultation = self.get_object()
+        user_id = request.query_params.get("user_id", "")
+        if not user_id.isdigit():
+            raise serializers.ValidationError(
+                {"user_id": "Give the id of the person to remove as ?user_id=<id>."}
+            )
+        user = get_object_or_404(consultation.users, pk=int(user_id))
+        if user == consultation.created_by:
+            raise serializers.ValidationError(
+                {"user": "The person who created the consultation cannot be removed."}
+            )
+
+        consultation.users.remove(user)
+        logger.info(
+            "Removed {removed_email} from consultation {consultation_id} by {actor}",
+            removed_email=user.email,
+            consultation_id=str(consultation.id),
+            actor=request.user.email,
+        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post"], parser_classes=[MultiPartParser])
     def deep_validation(self, request, *args, **kwargs):
