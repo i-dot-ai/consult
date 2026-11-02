@@ -88,24 +88,28 @@
     deleting = true;
     deleteError = "";
 
-    const results = await Promise.allSettled(
-      selectedQuestions.map((q) => deleteQuestion(consultationId, q.id)),
-    );
+    try {
+      const results = await Promise.allSettled(
+        selectedQuestions.map((question) =>
+          deleteQuestion(consultationId, question.id),
+        ),
+      );
 
-    const failed = results.filter((r) => r.status === "rejected");
-    const succeeded = results.length - failed.length;
+      const failed = results.filter((result) => result.status === "rejected");
+      const succeeded = results.length - failed.length;
 
-    if (succeeded > 0) {
-      successMessage = `${succeeded} ${succeeded === 1 ? "question has" : "questions have"} been deleted.`;
-      await questionsQuery.fetch();
+      if (succeeded > 0) {
+        successMessage = `${succeeded} ${succeeded === 1 ? "question has" : "questions have"} been deleted.`;
+        await questionsQuery.fetch();
+      }
+      if (failed.length > 0) {
+        deleteError = `${failed.length} ${failed.length === 1 ? "question" : "questions"} could not be deleted.`;
+      }
+    } finally {
+      clearSelection();
+      confirmOpen = false;
+      deleting = false;
     }
-    if (failed.length > 0) {
-      deleteError = `${failed.length} ${failed.length === 1 ? "question" : "questions"} could not be deleted.`;
-    }
-
-    clearSelection();
-    confirmOpen = false;
-    deleting = false;
   }
 </script>
 
