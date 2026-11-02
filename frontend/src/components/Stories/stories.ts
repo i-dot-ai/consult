@@ -46,6 +46,7 @@ import ManageConsultationsArchiveStory from "../screens/ManageConsultationsArchi
 import ErrorScreenStory from "../screens/ErrorScreen/ErrorScreenStory.svelte";
 import ChartStory from "../Chart/ChartStory.svelte";
 import DataTableStory from "../DataTable/DataTableStory.svelte";
+import PaginationStory from "../Pagination/PaginationStory.svelte";
 import AlertStory from "../Alert/AlertStory.svelte";
 import AddConsultationFormStory from "../screens/AddConsultationForm/AddConsultationFormStory.svelte";
 import ConsultationViewStory from "../screens/ConsultationView/ConsultationViewStory.svelte";
@@ -130,6 +131,7 @@ export default [
   ErrorScreenStory,
   ChartStory,
   DataTableStory,
+  PaginationStory,
   AlertStory,
   AddConsultationFormStory,
   ConsultationViewStory,
