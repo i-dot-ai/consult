@@ -124,14 +124,15 @@ export const applyHighlight = (
 export const getPercentage = (
   partialValue: number,
   totalValue: number,
+  decimalPlaces: number = 1,
 ): number => {
   if (!totalValue) {
     return 0;
   }
   const percentage = (partialValue / totalValue) * 100;
+  const scale = 10 ** decimalPlaces;
 
-  // Round to 1 decimal point
-  return Math.round(percentage * 10) / 10;
+  return Math.round(percentage * scale) / scale;
 };
 
 export const toTitleCase = (text: string): string => {
