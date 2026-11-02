@@ -31,13 +31,18 @@
       selectedUserIds.length > 0
         ? `?user_ids=${selectedUserIds.join(",")}`
         : "";
-    const response = await fetch(`${baseUrl}${params}`);
-    if (response.ok) {
-      data = await response.json();
-    } else {
+    try {
+      const response = await fetch(`${baseUrl}${params}`);
+      if (response.ok) {
+        data = await response.json();
+      } else {
+        error = "Failed to load evaluation data. Please try again.";
+      }
+    } catch {
       error = "Failed to load evaluation data. Please try again.";
+    } finally {
+      isLoading = false;
     }
-    isLoading = false;
   }
 
   const formatPercent = (numerator: number, denominator: number): string => {
