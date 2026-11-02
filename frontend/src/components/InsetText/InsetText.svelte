@@ -1,15 +1,14 @@
 <script lang="ts">
   import clsx from "clsx";
+  import type { Snippet } from "svelte";
 
-  let {
-    variant = "default",
-    className = "",
-    children,
-  } = $props<{
+  interface Props {
     variant?: "default" | "info" | "warning" | "success" | "error";
     className?: string;
-    children: unknown;
-  }>();
+    children: Snippet;
+  }
+
+  let { variant = "default", className = "", children }: Props = $props();
 
   const validVariant = $derived(variant as keyof typeof variantClasses);
 
