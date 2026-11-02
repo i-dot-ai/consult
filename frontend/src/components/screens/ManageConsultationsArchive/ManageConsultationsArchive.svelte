@@ -91,7 +91,7 @@
 >
   {#snippet cellContent(content, row, column)}
     {#if column.key === "name"}
-      {@const linkData = row[column.key] as LinkData}
+      {@const linkData = row.name}
 
       <Link
         href={linkData.url}
