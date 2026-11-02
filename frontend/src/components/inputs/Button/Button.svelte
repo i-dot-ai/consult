@@ -28,6 +28,7 @@
   export let ariaControls: string | undefined = undefined;
   export let ariaLabel: string | undefined = undefined;
   export let ariaExpanded: boolean | undefined = undefined;
+  export let ariaCurrent: "page" | undefined = undefined;
   export let noPadding: boolean = false;
   export let fixedHoverColor: boolean = false;
   export let tabindex: number | undefined = undefined;
@@ -133,6 +134,7 @@
     : undefined}
   aria-label={ariaLabel}
   aria-expanded={ariaExpanded}
+  aria-current={ariaCurrent}
   aria-controls={ariaControls}
   data-testid={testId ? testId : undefined}
 >
