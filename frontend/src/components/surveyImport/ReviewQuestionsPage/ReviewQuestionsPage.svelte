@@ -4,6 +4,7 @@
 
   import Alert from "../../Alert/Alert.svelte";
   import Button from "../../inputs/Button/Button.svelte";
+  import Pagination from "../../Pagination/Pagination.svelte";
   import Select from "../../inputs/Select/Select.svelte";
   import StepTitle from "../StepTitle/StepTitle.svelte";
   import Checklist from "../../svg/material/Checklist.svelte";
@@ -364,53 +365,20 @@
     </div>
 
     {#if questions.length > PAGE_SIZES[0]}
-      <div
-        class="flex flex-wrap items-center justify-between gap-4 border-t border-neutral-200 px-7 py-4"
-      >
-        <p class="text-sm text-neutral-500" aria-live="polite">
-          Showing {pageStart + 1} to {pageEnd} of {questions.length}
-        </p>
-        <nav aria-label="Question pages" class="flex items-center gap-1">
-          <Button
-            size="xs"
-            variant="ghost"
-            disabled={currentPage === 1}
-            ariaLabel="Previous page"
-            handleClick={() => setPage(currentPage - 1)}
-          >
-            Previous
-          </Button>
-          <span class="px-2 text-xs text-neutral-600" aria-current="page">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            size="xs"
-            variant="ghost"
-            disabled={currentPage === totalPages}
-            ariaLabel="Next page"
-            handleClick={() => setPage(currentPage + 1)}
-          >
-            Next
-          </Button>
-        </nav>
-        <div class="page-size text-xs">
-          <Select
-            id="review-questions-page-size"
-            label={{ text: "Per page", horizontal: true }}
-            items={PAGE_SIZES.map((size) => ({
-              value: size.toString(),
-              label: size.toString(),
-            }))}
-            value={pageSize.toString()}
-            onchange={(value) => {
-              if (value === undefined) {
-                return;
-              }
-              pageSize = Number.parseInt(value);
-              currentPage = 1;
-            }}
-          />
-        </div>
+      <div class="px-7 pb-4">
+        <Pagination
+          id="review-questions"
+          totalItems={questions.length}
+          {currentPage}
+          {pageSize}
+          pageSizes={PAGE_SIZES}
+          label="Question pages"
+          onPageChange={setPage}
+          onPageSizeChange={(size) => {
+            pageSize = size;
+            currentPage = 1;
+          }}
+        />
       </div>
     {/if}
   {/if}
@@ -427,10 +395,6 @@
 
 <style>
   @reference "../../../styles/global.css";
-
-  .page-size :global(label) {
-    @apply text-xs;
-  }
 
   .sort-select :global(label) {
     @apply text-sm text-neutral-500 md:text-sm;
