@@ -49,7 +49,6 @@ Sentry.init({
     graphQL: { document: false, variables: false },
     genAI: { inputs: false, outputs: false },
     databaseQueryData: false,
-    queues: false,
   },
   environment,
   release: getRelease(),
