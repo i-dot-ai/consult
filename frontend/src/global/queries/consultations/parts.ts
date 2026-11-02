@@ -1,7 +1,9 @@
 import {
+  getApiConsultationAssignUsersV2Url,
   getApiConsultationDeepValidationUrl,
   getApiConsultationsRootUrl,
   getApiConsultationUploadUrl,
+  getApiConsultationUserV2Url,
   getApiConsultationV2Url,
   Routes,
   Suffixes,
@@ -48,4 +50,26 @@ export const consultationV2UploadQueryParts = {
     "upload",
   ],
   url: (consultationId: string) => getApiConsultationUploadUrl(consultationId),
+};
+
+export const consultationV2AssignUsersQueryParts = {
+  key: (consultationId: string) => [
+    Suffixes.Consultations,
+    "v2",
+    consultationId,
+    "assign-users",
+  ],
+  url: (consultationId: string) =>
+    getApiConsultationAssignUsersV2Url(consultationId),
+};
+
+export const consultationV2UserQueryParts = {
+  key: (consultationId: string) => [
+    Suffixes.Consultations,
+    "v2",
+    consultationId,
+    "users",
+  ],
+  url: (consultationId: string, userId: string) =>
+    getApiConsultationUserV2Url(consultationId, userId),
 };

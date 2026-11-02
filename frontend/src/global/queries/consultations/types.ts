@@ -49,3 +49,5 @@ export type ConsultationV2UpdateResponse = Pick<
 export type UpdateConsultationBody = {
   stage?: ConsultationStage;
 };
+export type ConsultationV2AssignUsersBody = { emails: string[] };
+export type ConsultationV2AssignUsersResponse = { added_count: number };
