@@ -29,6 +29,14 @@ def test_v2_consultation_assign_users_route_is_registered():
     assert resolve(url).view_name == "consultation-v2-assign-users"
 
 
+def test_v2_consultation_remove_user_route_is_registered():
+    consultation_id = uuid4()
+    url = reverse("consultation-v2-remove-user", kwargs={"pk": consultation_id})
+
+    assert url == f"/api/v2/consultations/{consultation_id}/users/"
+    assert resolve(url).view_name == "consultation-v2-remove-user"
+
+
 def test_v2_demographic_merge_route_is_registered():
     consultation_id = uuid4()
     question_id = uuid4()
