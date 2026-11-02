@@ -47,6 +47,19 @@ describe("DataTable", () => {
     expect(screen.getByText(row.createdAt)).toBeInTheDocument();
   });
 
+  it("stripes every other row when asked to", () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      striped: true,
+    } as Record<string, unknown>);
+
+    const rows = screen.getAllByTestId("datatable-row");
+    expect(rows.length).toBeGreaterThan(1);
+    rows.forEach((row) => {
+      expect(row).toHaveClass("even:bg-neutral-50");
+    });
+  });
+
   it("should call callback when a row is clicked", async () => {
     const onRowClickCallback = vi.fn();
     render(DataTable, {
