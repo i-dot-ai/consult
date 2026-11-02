@@ -1,6 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { untrack } from "svelte";
   import { slide } from "svelte/transition";
   import { type Component, type Snippet } from "svelte";
 
@@ -31,7 +32,7 @@
     initialExpanded,
   }: Props = $props();
 
-  let expanded = $state(initialExpanded);
+  let expanded = $state(untrack(() => initialExpanded));
 
   function getButtonVariant() {
     if (variant === "gray") {

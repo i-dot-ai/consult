@@ -551,9 +551,8 @@
 {/if}
 
 <style>
-  @reference "../../styles/global.css";
-
   .page-size-container :global(label) {
-    @apply text-xs;
+    font-size: 0.75rem;
+    line-height: 1rem;
   }
 </style>

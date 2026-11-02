@@ -396,13 +396,21 @@
 </div>
 
 <style>
-  @reference "../../../styles/global.css";
-
   .type-cell :global(label) {
-    @apply text-sm text-neutral-500 md:text-sm;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--color-neutral-500);
   }
 
   .link-picker :global(label) {
-    @apply sr-only;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 </style>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from "svelte";
   import { getApiConsultationEvaluationUrl } from "../../../global/routes";
   import type { SearchableSelectOption } from "../../../global/types";
   import SearchableSelect from "../../inputs/SearchableSelect.svelte";
@@ -17,8 +18,8 @@
 
   let { consultationId, initialData, questionDetailBaseUrl }: Props = $props();
 
-  const availableUsers: EvalUser[] = initialData.users;
-  let data: ConsultationEval = $state(initialData);
+  const availableUsers: EvalUser[] = untrack(() => initialData.users);
+  let data: ConsultationEval = $state(untrack(() => initialData));
   let selectedUserIds: string[] = $state([]);
   let isLoading = $state(false);
   let error: string | null = $state(null);
