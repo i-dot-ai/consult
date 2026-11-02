@@ -23,7 +23,7 @@
 <script lang="ts" generics="T extends Record<string, unknown>">
   import clsx from "clsx";
 
-  import { type Snippet } from "svelte";
+  import { type Snippet, untrack } from "svelte";
 
   import MaterialIcon from "../MaterialIcon.svelte";
   import ArrowForward from "../svg/material/ArrowForward.svelte";
@@ -31,8 +31,8 @@
   import Error from "../svg/material/Error.svelte";
   import LoadingIndicator from "../LoadingIndicator/LoadingIndicator.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
-  import Select from "../inputs/Select/Select.svelte";
   import Button from "../inputs/Button/Button.svelte";
+  import Pagination from "../Pagination/Pagination.svelte";
   import SearchableSelect from "../inputs/SearchableSelect.svelte";
 
   type Props = {
@@ -91,14 +91,9 @@
 
   let searchQuery = $state("");
 
-  let currentPage = $derived.by(() => {
-    // set currentPage back to 1 if pageSizes or searchQuery change
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    pageSizes && searchQuery && rows;
-    return 1;
-  });
+  let requestedPage = $state(1);
 
-  let pageSize = $derived(pageSizes[0]);
+  let pageSize = $state(untrack(() => pageSizes[0]));
 
   const visibleColumns = $derived(columns.filter((column) => !column.hidden));
 
@@ -142,6 +137,8 @@
   const totalPages = $derived(
     paginated ? Math.max(1, Math.ceil(totalRows / pageSize)) : 1,
   );
+  // A shorter result set keeps the page in range rather than showing an empty one.
+  const currentPage = $derived(Math.min(requestedPage, totalPages));
   const paginatedRows = $derived(
     paginated
       ? filteredRows.slice((currentPage - 1) * pageSize, currentPage * pageSize)
@@ -149,7 +146,7 @@
   );
 
   function setPage(page: number) {
-    currentPage = Math.min(Math.max(page, 1), totalPages);
+    requestedPage = Math.min(Math.max(page, 1), totalPages);
     announcement = `Page ${currentPage} of ${totalPages}`;
   }
 
@@ -185,6 +182,11 @@
     });
   }
 
+  function search(query: string) {
+    searchQuery = query;
+    requestedPage = 1;
+  }
+
   function isSortable(column: DataTableColumn<T>) {
     return sortable && column.sortable === true;
   }
@@ -215,6 +217,7 @@
       sort = null;
     }
 
+    requestedPage = 1;
     onSortChange?.(sort);
 
     announcement =
@@ -291,7 +294,7 @@
           hideLabel={true}
           variant="search"
           value={searchQuery}
-          setValue={(newValue) => (searchQuery = newValue)}
+          setValue={search}
           placeholder={searchPlaceholder || "Search..."}
         />
       </div>
@@ -474,89 +477,18 @@
 </div>
 
 {#if paginated && !loadingCondition && !errorCondition}
-  <div
-    class={clsx([
-      "mt-4",
-      "flex",
-      "flex-wrap",
-      "items-center",
-      "justify-between",
-      "gap-4",
-    ])}
-  >
-    <p
-      class={clsx(["text-sm", "text-neutral-600"])}
-      data-testid="visible-items-text"
-    >
-      Showing
-      <span class="font-medium text-neutral-900">
-        {totalRows === 0 ? 0 : (currentPage - 1) * pageSize + 1}
-      </span>
-      -
-      <span class={clsx(["font-medium", "text-gray-900"])}>
-        {Math.min(currentPage * pageSize, totalRows)}
-      </span>
-      of
-      <span class="font-medium text-neutral-900">
-        {totalRows}
-      </span>
-    </p>
-
-    <nav aria-label="Pagination" class="flex items-center gap-1">
-      <Button
-        disabled={currentPage === 1}
-        ariaLabel="Previous Page"
-        handleClick={() => setPage(currentPage - 1)}
-        variant="ghost"
-        size="xs"
-      >
-        Previous
-      </Button>
-
-      <span
-        class="px-2 text-xs text-neutral-600"
-        aria-current="page"
-        data-testid="current-page"
-      >
-        Page {currentPage} of {totalPages}
-      </span>
-
-      <Button
-        disabled={currentPage === totalPages}
-        ariaLabel="Next Page"
-        variant="ghost"
-        size="xs"
-        handleClick={() => setPage(currentPage + 1)}
-      >
-        Next
-      </Button>
-    </nav>
-
-    <div class="text-xs page-size-container">
-      <Select
-        id={`${id}-page-size-select`}
-        items={pageSizes.map((option) => ({
-          value: option.toString(),
-          label: option.toString(),
-        }))}
-        value={pageSize.toString()}
-        onchange={(value) => {
-          if (value === undefined) {
-            return;
-          }
-          currentPage = 1;
-          pageSize = Number.parseInt(value);
-        }}
-        label={{ text: "Page Size", horizontal: true }}
-      />
-    </div>
+  <div class="mt-4">
+    <Pagination
+      {id}
+      totalItems={totalRows}
+      {currentPage}
+      {pageSize}
+      {pageSizes}
+      onPageChange={setPage}
+      onPageSizeChange={(size) => {
+        requestedPage = 1;
+        pageSize = size;
+      }}
+    />
   </div>
 {/if}
-
-<style>
-  @reference "../../styles/global.css";
-
-  .page-size-container :global(label) {
-    @apply text-xs;
-  }
-</style>
