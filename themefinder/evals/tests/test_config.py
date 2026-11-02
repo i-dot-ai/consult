@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 from uuid import UUID
 
+import config as config_module
 import pytest
 from adapters import context_providers
 from adapters.artefact_stores import LangfuseArtefactStore, LocalJSONArtefactStore
@@ -127,6 +128,16 @@ def test_unset_sources_default_to_local(monkeypatch):
     assert isinstance(backends.dataset, LocalJSONDatasetAdapter)
     assert isinstance(backends.artefacts, LocalJSONArtefactStore)
     assert backends.contexts == {}
+
+
+def test_uses_patched_eval_settings_by_default(monkeypatch):
+    settings = _settings("local", "local")
+    monkeypatch.setattr(config_module, "eval_settings", settings)
+
+    backends = resolve_backends(DATASET_CONFIG)
+
+    assert isinstance(backends.dataset, LocalJSONDatasetAdapter)
+    assert isinstance(backends.artefacts, LocalJSONArtefactStore)
 
 
 def test_creates_one_shared_langfuse_context(monkeypatch):

@@ -19,7 +19,7 @@ from adapters.runners import RunnerPort
 from adapters.runners.inline_sequential_runner import InlineSequentialRunner
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from datasets import DatasetConfig
-from settings import EvalSettings, get_settings
+from settings import EvalSettings, eval_settings
 from utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -92,7 +92,7 @@ def resolve_backends(
     ``repeat`` is how many times the runner runs every case.
     """
 
-    settings = settings if settings is not None else get_settings()
+    settings = settings if settings is not None else eval_settings
     dataset_source = settings.eval.dataset_source or "local"
     artefact_store_source = settings.eval.artefact_store or "local"
     supplied = context or {}
