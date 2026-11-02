@@ -101,6 +101,15 @@ class ConsultationCreateSerializerV2(serializers.ModelSerializer):
         read_only_fields: ClassVar[list] = ["id"]
 
 
+class ConsultationUserAssignmentSerializerV2(serializers.Serializer):
+    emails = serializers.ListField(
+        child=serializers.EmailField(), min_length=1
+    )
+
+    def validate_emails(self, emails):
+        return list(dict.fromkeys(email.lower() for email in emails))
+
+
 class ConsultationFileUploadSerializerV2(serializers.Serializer):
     MAX_FILE_SIZE = 200 * 1024 * 1024  # 200 MiB
     ALLOWED_EXTENSIONS: ClassVar[set[str]] = {".csv", ".xlsx"}
