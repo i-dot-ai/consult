@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 from uuid import UUID
 
+import config as config_module
 import pytest
 from adapters import context_providers
 from adapters.artefact_stores import LangfuseArtefactStore, LocalJSONArtefactStore

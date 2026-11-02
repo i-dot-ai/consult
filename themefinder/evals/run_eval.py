@@ -12,10 +12,11 @@ from components import COMPONENT_NAMES, build_component_config
 from config import resolve_backends
 from datasets import DatasetConfig
 from settings import EvalSettings, eval_settings
-from themefinder.llm import OpenAILLM
 from utils import gateway, stats
 from utils.logging_config import get_logger
 from utils.results import count_errors
+
+from themefinder.llm import OpenAILLM
 
 logger = get_logger(__name__)
 
