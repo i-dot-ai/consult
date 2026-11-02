@@ -127,17 +127,17 @@ describe("DataTable", () => {
     const lastRow = TEST_DATA.rows[TEST_DATA.rows.length - 1];
     expect(screen.queryByText(lastRow.name)).not.toBeInTheDocument();
     expect(screen.getByTestId("visible-items-text")).toHaveTextContent(
-      "Showing 1 - 1 of 3",
+      "Showing 1 to 1 of 3",
     );
 
-    const pageSizeSelect = screen.getByLabelText("Page Size");
+    const pageSizeSelect = screen.getByLabelText("Per page");
 
     const user = userEvent.setup();
     await user.selectOptions(pageSizeSelect, "3");
 
     expect(screen.getByText(lastRow.name)).toBeInTheDocument();
     expect(screen.getByTestId("visible-items-text")).toHaveTextContent(
-      "Showing 1 - 3 of 3",
+      "Showing 1 to 3 of 3",
     );
   });
 
@@ -149,8 +149,8 @@ describe("DataTable", () => {
       pageSizes: PAGE_SIZES,
     } as Record<string, unknown>);
 
-    const pageSizeSelect = screen.getByLabelText("Page Size");
-    const nextButton = screen.getByLabelText("Next Page");
+    const pageSizeSelect = screen.getByLabelText("Per page");
+    const nextButton = screen.getByLabelText("Next page");
     const user = userEvent.setup();
 
     // go to page 2
@@ -177,10 +177,10 @@ describe("DataTable", () => {
     } as Record<string, unknown>);
 
     expect(screen.getByTestId("current-page")).toBeInTheDocument();
-    expect(screen.getByLabelText("Page Size")).toBeInTheDocument();
+    expect(screen.getByLabelText("Per page")).toBeInTheDocument();
     expect(screen.getByTestId("visible-items-text")).toBeInTheDocument();
-    expect(screen.getByLabelText("Previous Page")).toBeInTheDocument();
-    expect(screen.getByLabelText("Next Page")).toBeInTheDocument();
+    expect(screen.getByLabelText("Previous page")).toBeInTheDocument();
+    expect(screen.getByLabelText("Next page")).toBeInTheDocument();
   });
 
   it("should change items displayed when navinagated to other pages", async () => {
@@ -193,8 +193,8 @@ describe("DataTable", () => {
 
     let currentPage = 1;
     const user = userEvent.setup();
-    const nextButton = screen.getByLabelText("Next Page");
-    const prevButton = screen.getByLabelText("Previous Page");
+    const nextButton = screen.getByLabelText("Next page");
+    const prevButton = screen.getByLabelText("Previous page");
 
     const assertVisibleItems = (currentPage: number) => {
       for (let pageIndex = 0; pageIndex < TEST_DATA.rows.length; pageIndex++) {
@@ -211,10 +211,14 @@ describe("DataTable", () => {
         }
       }
       expect(screen.getByTestId("visible-items-text")).toHaveTextContent(
-        `Showing ${currentPage} - ${currentPage} of ${TEST_DATA.rows.length}`,
+        `Showing ${currentPage} to ${currentPage} of ${TEST_DATA.rows.length}`,
       );
       expect(screen.getByTestId("current-page")).toHaveTextContent(
-        `Page ${currentPage} of ${TEST_DATA.rows.length}`,
+        `${currentPage}`,
+      );
+      expect(screen.getByTestId("current-page")).toHaveAttribute(
+        "aria-current",
+        "page",
       );
     };
 
@@ -243,10 +247,42 @@ describe("DataTable", () => {
     assertVisibleItems(currentPage);
   });
 
+  it("numbers the pages and jumps straight to one", async () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      pageSizes: [1],
+    } as Record<string, unknown>);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Page 3" }));
+
+    expect(screen.getByText(TEST_DATA.rows[2].name)).toBeInTheDocument();
+    expect(screen.getByTestId("current-page")).toHaveTextContent("3");
+    expect(screen.getByTestId("visible-items-text")).toHaveTextContent(
+      "Showing 3 to 3 of 3",
+    );
+  });
+
+  it("returns to the first page when the search changes", async () => {
+    render(DataTable, {
+      ...TEST_DATA,
+      pageSizes: [1],
+    } as Record<string, unknown>);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: "Page 3" }));
+    expect(screen.getByTestId("current-page")).toHaveTextContent("3");
+
+    await user.type(screen.getByLabelText("Search"), TEST_DATA.rows[1].name);
+
+    expect(screen.getByTestId("current-page")).toHaveTextContent("1");
+    expect(screen.getByText(TEST_DATA.rows[1].name)).toBeInTheDocument();
+  });
+
   it("should disable prev button if on first page", async () => {
     render(DataTable, TEST_DATA as Record<string, unknown>);
 
-    const prevButton = screen.getByLabelText("Previous Page");
+    const prevButton = screen.getByLabelText("Previous page");
     expect(prevButton).toBeDisabled();
   });
 
@@ -256,7 +292,7 @@ describe("DataTable", () => {
       pageSizes: [1],
     } as Record<string, unknown>);
 
-    const nextButton = screen.getByLabelText("Next Page");
+    const nextButton = screen.getByLabelText("Next page");
     const user = userEvent.setup();
 
     // navigate to last page
@@ -271,7 +307,7 @@ describe("DataTable", () => {
   it("should initially show 10 items", () => {
     render(DataTable, TEST_DATA as Record<string, unknown>);
 
-    const pageSizeSelect = screen.getByLabelText("Page Size");
+    const pageSizeSelect = screen.getByLabelText("Per page");
 
     expect(pageSizeSelect).toHaveValue("10");
   });
@@ -440,10 +476,10 @@ describe("DataTable", () => {
 
     // Assert that page related elements are hidden
     expect(screen.queryByTestId("current-page")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Page Size")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Per page")).not.toBeInTheDocument();
     expect(screen.queryByTestId("visible-items-text")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Previous Page")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Next Page")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Previous page")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Next page")).not.toBeInTheDocument();
   });
 
   it("should toggle visibility of columns via column select", async () => {

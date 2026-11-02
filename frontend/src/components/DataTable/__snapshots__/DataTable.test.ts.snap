@@ -14,7 +14,7 @@ exports[`DataTable > should match snapshot 1`] = `
     </div>
      
     <div
-      class="flex justify-between items-center gap-2 pb-4 pt-2 svelte-e9ladz"
+      class="flex justify-between items-center gap-2 pb-4 pt-2"
     >
       <div
         class="flex flex-col gap-1"
@@ -98,7 +98,7 @@ exports[`DataTable > should match snapshot 1`] = `
       <!---->
        
       <div
-        class="w-1/3 ml-auto text-sm svelte-e9ladz"
+        class="w-1/3 ml-auto text-sm"
       >
         <div
           class="relative"
@@ -147,10 +147,10 @@ exports[`DataTable > should match snapshot 1`] = `
     </div>
      
     <div
-      class="max-h-[50rem] overflow-x-auto rounded-lg border border-neutral-200 bg-white svelte-e9ladz"
+      class="max-h-[50rem] overflow-x-auto rounded-lg border border-neutral-200 bg-white"
     >
       <table
-        class="min-w-full divide-y divide-neutral-200 svelte-e9ladz"
+        class="min-w-full divide-y divide-neutral-200"
       >
         <caption
           class="sr-only"
@@ -164,7 +164,7 @@ exports[`DataTable > should match snapshot 1`] = `
           <tr>
             <th
               aria-sort="ascending"
-              class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
+              class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
               data-testid="header-name"
               scope="col"
             >
@@ -218,7 +218,7 @@ exports[`DataTable > should match snapshot 1`] = `
             </th>
             <th
               aria-sort="none"
-              class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 svelte-e9ladz"
+              class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
               data-testid="header-createdAt"
               scope="col"
             >
@@ -273,11 +273,11 @@ exports[`DataTable > should match snapshot 1`] = `
         >
           <!---->
           <tr
-            class="transition-colors hover:bg-neutral-50 cursor-pointer svelte-e9ladz"
+            class="transition-colors hover:bg-neutral-50 cursor-pointer"
             data-testid="datatable-row"
           >
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
               data-testid="cell-name"
             >
               <!---->
@@ -286,7 +286,7 @@ exports[`DataTable > should match snapshot 1`] = `
               <!---->
             </td>
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
               data-testid="cell-createdAt"
             >
               <!---->
@@ -297,11 +297,11 @@ exports[`DataTable > should match snapshot 1`] = `
             
           </tr>
           <tr
-            class="transition-colors hover:bg-neutral-50 cursor-pointer svelte-e9ladz"
+            class="transition-colors hover:bg-neutral-50 cursor-pointer"
             data-testid="datatable-row"
           >
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
               data-testid="cell-name"
             >
               <!---->
@@ -310,7 +310,7 @@ exports[`DataTable > should match snapshot 1`] = `
               <!---->
             </td>
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
               data-testid="cell-createdAt"
             >
               <!---->
@@ -321,11 +321,11 @@ exports[`DataTable > should match snapshot 1`] = `
             
           </tr>
           <tr
-            class="transition-colors hover:bg-neutral-50 cursor-pointer svelte-e9ladz"
+            class="transition-colors hover:bg-neutral-50 cursor-pointer"
             data-testid="datatable-row"
           >
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
               data-testid="cell-name"
             >
               <!---->
@@ -334,7 +334,7 @@ exports[`DataTable > should match snapshot 1`] = `
               <!---->
             </td>
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 svelte-e9ladz"
+              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
               data-testid="cell-createdAt"
             >
               <!---->
@@ -352,135 +352,139 @@ exports[`DataTable > should match snapshot 1`] = `
   </div>
    
   <div
-    class="mt-4 flex flex-wrap items-center justify-between gap-4 svelte-e9ladz"
+    class="mt-4"
   >
-    <p
-      class="text-sm text-neutral-600 svelte-e9ladz"
-      data-testid="visible-items-text"
-    >
-      Showing 
-      <span
-        class="font-medium text-neutral-900"
-      >
-        1
-      </span>
-       - 
-      <span
-        class="font-medium text-gray-900 svelte-e9ladz"
-      >
-        3
-      </span>
-       of 
-      <span
-        class="font-medium text-neutral-900"
-      >
-        3
-      </span>
-    </p>
-     
-    <nav
-      aria-label="Pagination"
-      class="flex items-center gap-1"
-    >
-      <!---->
-      <button
-        aria-label="Previous Page"
-        aria-pressed="false"
-        class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
-        data-variant="ghost"
-        disabled=""
-        role="button"
-        tabindex="0"
-      >
-        <!---->
-        <!---->
-        Previous
-        
-        
-        
-      </button>
-      
-      <!---->
-       
-      <span
-        aria-current="page"
-        class="px-2 text-xs text-neutral-600"
-        data-testid="current-page"
-      >
-        Page 1 of 1
-      </span>
-       
-      <!---->
-      <button
-        aria-label="Next Page"
-        aria-pressed="false"
-        class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
-        data-variant="ghost"
-        disabled=""
-        role="button"
-        tabindex="0"
-      >
-        <!---->
-        <!---->
-        Next
-        
-        
-        
-      </button>
-      
-      <!---->
-    </nav>
-     
     <div
-      class="text-xs page-size-container svelte-e9ladz"
+      class="pagination flex flex-wrap items-center justify-between gap-4 border-t border-neutral-200 pt-4 svelte-1iv1had"
     >
-      <div
-        class="flex items-center gap-4"
+      <p
+        aria-live="polite"
+        class="text-sm text-neutral-500"
+        data-testid="visible-items-text"
       >
-        <label
-          class="mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6 min-w-max"
-          for="data-table-page-size-select"
+        Showing 1 to 3 of 3
+      </p>
+       
+      <nav
+        aria-label="Pagination"
+        class="flex flex-wrap items-center gap-1"
+      >
+        <!---->
+        <button
+          aria-label="Previous page"
+          aria-pressed="false"
+          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+          data-variant="ghost"
+          disabled=""
+          role="button"
+          tabindex="0"
         >
-          Page Size
-        </label>
-        <!---->
-         
-        <!---->
-         
-        <!---->
-         
-        <select
-          class="h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700 focus:outline-2 focus:outline-yellow-300 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50"
-          id="data-table-page-size-select"
-          name="data-table-page-size-select"
-        >
-          <option
-            class="bg-white text-neutral-900"
-            data-testid="data-table-page-size-select-option"
-            selected=""
-            value="10"
-          >
-            10
-          </option>
-          <option
-            class="bg-white text-neutral-900"
-            data-testid="data-table-page-size-select-option"
-            value="100"
-          >
-            100
-          </option>
-          <option
-            class="bg-white text-neutral-900"
-            data-testid="data-table-page-size-select-option"
-            value="1000"
-          >
-            1000
-          </option>
+          <!---->
+          <!---->
+          ‹
           
-        </select>
+          
+          
+        </button>
+        
+        <!---->
+         
+        <!---->
+        <!---->
+        <button
+          aria-current="page"
+          aria-label="Page 1"
+          aria-pressed="false"
+          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          data-testid="current-page"
+          data-variant="gray"
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          1
+          
+          
+          
+        </button>
+        
+        
+        <!---->
+         
+        <!---->
+        <button
+          aria-label="Next page"
+          aria-pressed="false"
+          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+          data-variant="ghost"
+          disabled=""
+          role="button"
+          tabindex="0"
+        >
+          <!---->
+          <!---->
+          ›
+          
+          
+          
+        </button>
+        
+        <!---->
+      </nav>
+       
+      <div
+        class="page-size svelte-1iv1had"
+      >
+        <div
+          class="flex items-center gap-4"
+        >
+          <label
+            class="mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6 min-w-max"
+            for="data-table-page-size-select"
+          >
+            Per page
+          </label>
+          <!---->
+           
+          <!---->
+           
+          <!---->
+           
+          <select
+            class="h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700 focus:outline-2 focus:outline-yellow-300 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50"
+            id="data-table-page-size-select"
+            name="data-table-page-size-select"
+          >
+            <option
+              class="bg-white text-neutral-900"
+              data-testid="data-table-page-size-select-option"
+              selected=""
+              value="10"
+            >
+              10
+            </option>
+            <option
+              class="bg-white text-neutral-900"
+              data-testid="data-table-page-size-select-option"
+              value="100"
+            >
+              100
+            </option>
+            <option
+              class="bg-white text-neutral-900"
+              data-testid="data-table-page-size-select-option"
+              value="1000"
+            >
+              1000
+            </option>
+            
+          </select>
+        </div>
+        <!---->
       </div>
-      <!---->
     </div>
+    <!---->
   </div>
   <!---->
   
