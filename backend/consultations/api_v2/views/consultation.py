@@ -4,8 +4,10 @@ from typing import ClassVar
 from zipfile import BadZipFile
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.db.models import Prefetch, Q
+from django.db.models.functions import Lower
 from openpyxl.utils.exceptions import InvalidFileException
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -103,20 +105,32 @@ class ConsultationViewSet(
         serializer.is_valid(raise_exception=True)
         emails = serializer.validated_data["emails"]
 
-        users = list(User.objects.filter(email__in=emails))
-        existing_emails = {user.email for user in users}
-        missing_emails = [email for email in emails if email not in existing_emails]
-        if users:
-            consultation.users.add(*users)
+        users = list(
+            User.objects.annotate(lower_email=Lower("email")).filter(lower_email__in=emails)
+        )
+        existing_emails = {user.email.lower() for user in users}
+        created_users = []
+        for email in emails:
+            if email in existing_emails:
+                continue
+            try:
+                created_users.append(User.objects.create_user(email))
+            except ValidationError:
+                # Another request created this account between the lookup and now;
+                # it is still new from this request's point of view.
+                created_users.append(User.objects.get(email=email))
 
-        response_status = status.HTTP_201_CREATED if users else status.HTTP_200_OK
+        consultation.users.add(*users, *created_users)
+        logger.info(
+            "Added {added_emails} to consultation {consultation_id} by {actor}, "
+            "creating accounts for {created_emails}",
+            added_emails=[user.email for user in [*users, *created_users]],
+            created_emails=[user.email for user in created_users],
+            consultation_id=str(consultation.id),
+            actor=request.user.email,
+        )
         return Response(
-            {
-                "added_count": len(users),
-                "non_existent_emails": missing_emails,
-                "total_requested": len(emails),
-            },
-            status=response_status,
+            {"added_count": len(users) + len(created_users)}, status=status.HTTP_201_CREATED
         )
 
     @action(detail=True, methods=["post"], parser_classes=[MultiPartParser])
