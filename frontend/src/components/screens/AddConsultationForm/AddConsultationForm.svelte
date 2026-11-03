@@ -9,10 +9,7 @@
   import Button from "../../inputs/Button/Button.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
 
-  import {
-    getConsultationDashboardUrl,
-    Routes,
-  } from "../../../global/routes.ts";
+  import { getConsultationViewUrl, Routes } from "../../../global/routes.ts";
   import {
     buildConsultationsV2ByTitleQuery,
     buildConsultationV2CreateQuery,
@@ -45,7 +42,7 @@
 
   const consultationCreate = buildConsultationV2CreateQuery(
     async (data) => {
-      window.location.href = getConsultationDashboardUrl(data.id);
+      window.location.href = getConsultationViewUrl(data.id);
     },
     async (error) => {
       submitError = error.message || "Failed to create consultation";
