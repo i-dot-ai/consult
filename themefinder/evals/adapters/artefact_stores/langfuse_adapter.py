@@ -15,31 +15,21 @@ from utils.logging_config import get_logger
 from utils.results import flatten_run_report, json_safe
 
 from .base import ArtefactStorePort
-from .local_json_adapter import LocalJSONArtefactStore
 
 logger = get_logger(__name__)
 
 
 class LangfuseArtefactStore(ArtefactStorePort):
-    def __init__(
-        self,
-        context: LangfuseContext,
-        local_store: LocalJSONArtefactStore | None = None,
-    ):
+    def __init__(self, context: LangfuseContext):
         self.context = context
-        self.local_store = local_store
         self._component: str | None = None
         self._dataset: str | None = None
 
     def start_run(self, component: str, dataset: str) -> None:
-        if self.local_store is not None:
-            self.local_store.start_run(component, dataset)
         self._component = component
         self._dataset = dataset
 
     def record_case(self, outcome: CaseOutcome) -> None:
-        if self.local_store is not None:
-            self.local_store.record_case(outcome)
         if not self.context.client:
             return
 
@@ -71,11 +61,6 @@ class LangfuseArtefactStore(ArtefactStorePort):
         *,
         engine_report: Any | None = None,
     ) -> dict[str, Any]:
-        local_results = (
-            self.local_store.finish_run(report, engine_report=engine_report)
-            if self.local_store is not None
-            else None
-        )
         native_report = (
             engine_report if engine_report is not None else report.engine_report
         )
@@ -88,7 +73,7 @@ class LangfuseArtefactStore(ArtefactStorePort):
         if "aggregate" in results:
             self._record_aggregate_scores(results["aggregate"])
 
-        return local_results if local_results is not None else results
+        return results
 
     def _record_aggregate_scores(self, aggregate: dict[str, Any]) -> None:
         """Write cross-run statistics as scores on one trace for the whole run."""

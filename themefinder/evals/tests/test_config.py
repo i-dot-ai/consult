@@ -8,7 +8,11 @@ import config as config_module
 import pytest
 
 from adapters import context_providers
-from adapters.artefact_stores import LangfuseArtefactStore, LocalJSONArtefactStore
+from adapters.artefact_stores import (
+    CompositeArtefactStore,
+    LangfuseArtefactStore,
+    LocalJSONArtefactStore,
+)
 from adapters.context_providers import ProvidedContext
 from adapters.datasets import LangfuseDatasetAdapter, LocalJSONDatasetAdapter
 from adapters.runners.inline_sequential_runner import InlineSequentialRunner
@@ -68,8 +72,8 @@ def _settings(
     [
         ("local", "local", LocalJSONDatasetAdapter, LocalJSONArtefactStore),
         ("langfuse", "local", LangfuseDatasetAdapter, LocalJSONArtefactStore),
-        ("local", "langfuse", LocalJSONDatasetAdapter, LangfuseArtefactStore),
-        ("langfuse", "langfuse", LangfuseDatasetAdapter, LangfuseArtefactStore),
+        ("local", "langfuse", LocalJSONDatasetAdapter, CompositeArtefactStore),
+        ("langfuse", "langfuse", LangfuseDatasetAdapter, CompositeArtefactStore),
     ],
 )
 def test_resolves_dataset_and_artefact_sources_independently(
@@ -98,9 +102,11 @@ def test_resolves_dataset_and_artefact_sources_independently(
 
     if isinstance(backends.dataset, LangfuseDatasetAdapter):
         assert backends.dataset.client is client
-    if isinstance(backends.artefacts, LangfuseArtefactStore):
-        assert backends.artefacts.context is context
-        assert isinstance(backends.artefacts.local_store, LocalJSONArtefactStore)
+    if isinstance(backends.artefacts, CompositeArtefactStore):
+        assert isinstance(backends.artefacts.primary, LocalJSONArtefactStore)
+        assert len(backends.artefacts.secondary) == 1
+        assert isinstance(backends.artefacts.secondary[0], LangfuseArtefactStore)
+        assert backends.artefacts.secondary[0].context is context
 
 
 @pytest.mark.parametrize(
@@ -167,7 +173,7 @@ def test_creates_one_shared_langfuse_context(monkeypatch):
     assert session_prefix.startswith("eval_gambling_XS_generation_")
     assert UUID(session_uuid).version == 4
     assert backends.dataset.client is client
-    assert backends.artefacts.context is context
+    assert backends.artefacts.secondary[0].context is context
 
     client.flush.assert_not_called()
     backends.close()
@@ -195,7 +201,7 @@ def test_reuses_caller_context_without_taking_ownership(monkeypatch):
         context={"langfuse": context},
     )
 
-    assert backends.artefacts.context is context
+    assert backends.artefacts.secondary[0].context is context
     backends.close()
     client.flush.assert_not_called()
 

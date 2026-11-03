@@ -6,6 +6,7 @@ from typing import Any
 
 from adapters.artefact_stores import (
     ArtefactStorePort,
+    CompositeArtefactStore,
     LangfuseArtefactStore,
     LocalJSONArtefactStore,
 )
@@ -63,7 +64,10 @@ def _local_artefact_factory(context: Any | None) -> ArtefactStorePort:
 
 
 def _langfuse_artefact_factory(context: Any | None) -> ArtefactStorePort:
-    return LangfuseArtefactStore(context, local_store=LocalJSONArtefactStore())
+    return CompositeArtefactStore(
+        LocalJSONArtefactStore(),
+        LangfuseArtefactStore(context),
+    )
 
 
 DATASET_FACTORIES: dict[str, DatasetFactory] = {

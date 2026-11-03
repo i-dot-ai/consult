@@ -15,6 +15,7 @@ from langfuse.api.core import ApiError
 from adapters.artefact_stores.base import (
     ArtefactStorePort,
 )
+from adapters.artefact_stores.composite import CompositeArtefactStore
 from adapters.artefact_stores.langfuse_adapter import LangfuseArtefactStore
 from adapters.artefact_stores.local_json_adapter import (
     LocalJSONArtefactStore,
@@ -282,11 +283,12 @@ class TestLocalJSONArtefactStore:
         assert results["metrics"] == expected_metrics
 
 
-class TestLangfuseArtefactStore:
-    def test_persists_local_results_when_configured(self, tmp_path):
-        store = LangfuseArtefactStore(
-            context=LangfuseContext(client=FakeLangfuseClient()),
-            local_store=LocalJSONArtefactStore(output_dir=tmp_path),
+class TestCompositeArtefactStore:
+    def test_persists_local_results_and_langfuse_scores(self, tmp_path):
+        client = FakeLangfuseClient()
+        store = CompositeArtefactStore(
+            LocalJSONArtefactStore(output_dir=tmp_path),
+            LangfuseArtefactStore(context=LangfuseContext(client=client)),
         )
         outcome = _make_outcome(error="task failed")
 
@@ -301,7 +303,10 @@ class TestLangfuseArtefactStore:
         )
         assert payload["results"] == results
         assert payload["errors"] == {"question_part_1": "task failed"}
+        assert client.scores[0]["name"] == "groundedness"
 
+
+class TestLangfuseArtefactStore:
     def test_record_case_creates_span_and_links_dataset_item(self):
         client = FakeLangfuseClient()
         context = LangfuseContext(
