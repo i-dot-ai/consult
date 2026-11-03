@@ -44,33 +44,38 @@ async def run_component(
 
     started_at = time.perf_counter()
     try:
-        backends.artefacts.start_run(component_config.component, dataset_config.dataset)
-        with collect_gateway_metrics() as gateway_metrics:
-            cases = backends.dataset.load_cases(dataset_config)
-            report = await backends.runner.run(component_config, cases, llm=llm)
-            loaded_at = time.perf_counter()
+        with backends.tracer.span(f"{component_config.component}_eval"):
+            backends.artefacts.start_run(
+                component_config.component, dataset_config.dataset
+            )
+            with collect_gateway_metrics() as gateway_metrics:
+                cases = backends.dataset.load_cases(dataset_config)
+                report = await backends.runner.run(component_config, cases, llm=llm)
+                loaded_at = time.perf_counter()
 
-            for outcome in report.outcomes:
-                backends.artefacts.record_case(outcome)
+                for outcome in report.outcomes:
+                    backends.artefacts.record_case(outcome)
 
-            gateway_summary = gateway_metrics.summary()
+                gateway_summary = gateway_metrics.summary()
 
-        # Totals cover every repeat, so divide to report what one run costs
-        n_runs = backends.runner.repeat
-        # Loading happens once however many repeats, so only the repeated part is divided
-        load_seconds = loaded_at - started_at
-        repeated_seconds = time.perf_counter() - loaded_at
-        report.metrics = RunMetrics(
-            cost_usd=_per_run(gateway_summary.cost_usd, n_runs),
-            latency_seconds=_per_run(gateway_summary.latency_seconds, n_runs),
-            processing_time_seconds=load_seconds + repeated_seconds / n_runs,
-            llm_call_count=_per_run_count(gateway_summary.call_count, n_runs),
-            input_tokens=_per_run_count(gateway_summary.input_tokens, n_runs),
-            output_tokens=_per_run_count(gateway_summary.output_tokens, n_runs),
-            total_tokens=_per_run_count(gateway_summary.total_tokens, n_runs),
-        )
-        report.n_runs = n_runs
-        return backends.artefacts.finish_run(report, engine_report=report.engine_report)
+            # Totals cover every repeat, so divide to report what one run costs
+            n_runs = backends.runner.repeat
+            # Loading happens once however many repeats, so only the repeated part is divided
+            load_seconds = loaded_at - started_at
+            repeated_seconds = time.perf_counter() - loaded_at
+            report.metrics = RunMetrics(
+                cost_usd=_per_run(gateway_summary.cost_usd, n_runs),
+                latency_seconds=_per_run(gateway_summary.latency_seconds, n_runs),
+                processing_time_seconds=load_seconds + repeated_seconds / n_runs,
+                llm_call_count=_per_run_count(gateway_summary.call_count, n_runs),
+                input_tokens=_per_run_count(gateway_summary.input_tokens, n_runs),
+                output_tokens=_per_run_count(gateway_summary.output_tokens, n_runs),
+                total_tokens=_per_run_count(gateway_summary.total_tokens, n_runs),
+            )
+            report.n_runs = n_runs
+            return backends.artefacts.finish_run(
+                report, engine_report=report.engine_report
+            )
     finally:
-        # Flush contexts we created, including when Langfuse is only the dataset.
+        # Flush contexts we created, including one that exists only because tracing is on.
         backends.close()

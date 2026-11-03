@@ -80,6 +80,9 @@ async def evaluate_component(
         context=context,
         repeat=runs,
     )
+    backends.tracer.observe(task_llm)
+    if judge_llm is not None:
+        backends.tracer.observe(judge_llm)
     return await run_component(
         component_config,
         dataset_config,
