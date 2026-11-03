@@ -84,11 +84,7 @@ class EvalSettings:
     environment: str
     git_sha: str
     gateway: GatewaySettings
-    # None when this run has explicitly ruled Langfuse out (both
-    # THEMEFINDER_EVAL_DATASET_SOURCE and THEMEFINDER_EVAL_ARTEFACT_STORE set
-    # to something other than "langfuse") — distinguishes "deliberately not
-    # using Langfuse" from "configured with incomplete/absent credentials".
-    langfuse: LangfuseSettings | None
+    langfuse: LangfuseSettings
     eval: EvalRunSettings
     log_level: LogLevel
     # Separate from auto_eval_model so judge calls never reuse the model under test
@@ -96,24 +92,15 @@ class EvalSettings:
 
     @property
     def active_langfuse(self) -> LangfuseSettings | None:
-        """The Langfuse settings, if this run has them and they're complete; else None.
+        """The Langfuse settings when the credentials are complete; else None.
 
-        Checks langfuse settings are available and correctly configured
+        Tracing follows this alone, so a run traces whenever a Langfuse
+        connection is available. The dataset and artefact selectors only
+        decide where cases are read from and results written to.
         """
-        if self.langfuse is not None and self.langfuse.configured:
+        if self.langfuse.configured:
             return self.langfuse
         return None
-
-
-def _wants_langfuse(
-    dataset_source: EvalBackendSource | None, artefact_store: EvalBackendSource | None
-) -> bool:
-    """Whether this run might use Langfuse, from the two selectors alone.
-
-    Populate `EvalSettings.langfuse` whenever either selector explicitly asks
-    for "langfuse".
-    """
-    return dataset_source == "langfuse" or artefact_store == "langfuse"
 
 
 @lru_cache(maxsize=1)
@@ -124,15 +111,6 @@ def get_settings() -> EvalSettings:
         artefact_store=os.getenv("THEMEFINDER_EVAL_ARTEFACT_STORE"),
     )
 
-    langfuse = None
-    if _wants_langfuse(eval_run.dataset_source, eval_run.artefact_store):
-        langfuse = LangfuseSettings(
-            secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
-            public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
-            base_url=os.getenv("LANGFUSE_BASE_URL"),
-            project_id=os.getenv("LANGFUSE_PROJECT_ID"),
-        )
-
     return EvalSettings(
         auto_eval_model=os.getenv("AUTO_EVAL_MODEL"),
         judge_model=os.getenv("AUTO_EVAL_JUDGE_MODEL"),
@@ -142,7 +120,12 @@ def get_settings() -> EvalSettings:
             url=os.getenv("LLM_GATEWAY_URL"),
             api_key=os.getenv("CONSULT_EVAL_LITELLM_API_KEY"),
         ),
-        langfuse=langfuse,
+        langfuse=LangfuseSettings(
+            secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+            public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+            base_url=os.getenv("LANGFUSE_BASE_URL"),
+            project_id=os.getenv("LANGFUSE_PROJECT_ID"),
+        ),
         eval=eval_run,
         log_level=os.getenv("THEMEFINDER_EVAL_LOG_LEVEL", DEFAULTS.log_level).upper(),
     )
