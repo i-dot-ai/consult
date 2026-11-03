@@ -21,6 +21,7 @@ from adapters.runners.inline_sequential_runner import InlineSequentialRunner
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from adapters.tracing import TRACER_FACTORIES, NoopTracer, TracerPort
 from datasets import DatasetConfig
+from eval_types import RunLabels
 from settings import EvalSettings, eval_settings
 from utils.logging_config import get_logger
 
@@ -117,10 +118,12 @@ def resolve_backends(
     *,
     settings: EvalSettings | None = None,
     context: dict[str, Any] | None = None,
+    labels: RunLabels | None = None,
     repeat: int = 1,
 ) -> EvalBackends:
     """Resolve each backend independently, defaulting to local storage.
     Contexts created here are released by ``EvalBackends.close()``.
+    ``labels`` name and tag the run wherever a platform records it.
     ``repeat`` is how many times the runner runs every case. Tracing is on
     whenever a platform has a connection, whatever the two sources are.
     """
@@ -142,7 +145,9 @@ def resolve_backends(
         if provider is None:
             return None
         if source not in provided:
-            provided[source] = provider(dataset_config, settings, supplied.get(source))
+            provided[source] = provider(
+                dataset_config, settings, supplied.get(source), labels
+            )
         return provided[source].context
 
     dataset_context = context_for(dataset_source)

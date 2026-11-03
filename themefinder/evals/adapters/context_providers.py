@@ -11,6 +11,7 @@ from typing import Any
 from uuid import uuid4
 
 from datasets import DatasetConfig
+from eval_types import RunLabels
 from settings import EvalSettings
 from utils import langfuse as langfuse_utils
 
@@ -30,7 +31,9 @@ class ProvidedContext:
     close: Callable[[], None]
 
 
-ContextProvider = Callable[[DatasetConfig, EvalSettings, Any | None], ProvidedContext]
+ContextProvider = Callable[
+    [DatasetConfig, EvalSettings, Any | None, RunLabels | None], ProvidedContext
+]
 
 
 def _require_langfuse_context(context: Any | None) -> Any:
@@ -47,6 +50,7 @@ def build_langfuse_context(
     dataset_config: DatasetConfig,
     settings: EvalSettings,
     context: Any | None,
+    labels: RunLabels | None = None,
 ) -> ProvidedContext:
     """Reuse a caller-supplied context, or create one from settings and own it."""
     if context is not None:
@@ -57,7 +61,8 @@ def build_langfuse_context(
             "Langfuse requires LANGFUSE_SECRET_KEY, LANGFUSE_PUBLIC_KEY "
             "and LANGFUSE_BASE_URL, or an enabled caller-supplied context."
         )
-    session_id = (
+    labels = labels if labels is not None else RunLabels()
+    session_id = labels.name or (
         f"{dataset_config.name.replace('/', '_')}_"
         f"{datetime.now().astimezone().strftime('%Y%m%d_%H%M%S')}_"
         f"{uuid4()}"
@@ -66,8 +71,8 @@ def build_langfuse_context(
         langfuse_utils.get_langfuse_context(
             session_id=session_id,
             eval_type=dataset_config.component,
-            metadata={"dataset": dataset_config.dataset},
-            tags=[dataset_config.dataset],
+            metadata={"dataset": dataset_config.dataset, **labels.metadata},
+            tags=[dataset_config.dataset, *labels.tags],
             settings=settings,
         )
     )
