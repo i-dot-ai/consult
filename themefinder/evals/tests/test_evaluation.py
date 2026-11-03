@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 from components import COMPONENT_NAMES
+from conftest import UNCONFIGURED_LANGFUSE
 from config import EvalBackends
 from datasets import DatasetConfig
 from eval_types import ComponentConfig
@@ -20,7 +21,7 @@ def _settings() -> EvalSettings:
         environment="test",
         git_sha="abcdef0",
         gateway=GatewaySettings(url="https://gateway.invalid", api_key="key"),
-        langfuse=None,
+        langfuse=UNCONFIGURED_LANGFUSE,
         eval=EvalRunSettings(
             engine="pydantic_evals",
             dataset_source="local",

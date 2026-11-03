@@ -16,6 +16,10 @@ from settings import (
 )
 from utils import gateway
 
+UNCONFIGURED_LANGFUSE = LangfuseSettings(
+    secret_key=None, public_key=None, base_url=None, project_id=None
+)
+
 
 def make_eval_settings(
     *,
@@ -24,7 +28,7 @@ def make_eval_settings(
     git_sha: str = "abcdef0",
     gateway_url: str | None = "https://gateway.example.invalid",
     gateway_api_key: str | None = "test-key",  # pragma: allowlist secret
-    langfuse: LangfuseSettings | None = None,
+    langfuse: LangfuseSettings = UNCONFIGURED_LANGFUSE,
     engine: EvalRunnerSource = "pydantic_evals",
     dataset_source: str | None = "local",
     artefact_store: str | None = "local",

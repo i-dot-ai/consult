@@ -4,9 +4,8 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 from uuid import UUID
 
-import pytest
-
 import config as config_module
+import pytest
 from adapters import context_providers
 from adapters.artefact_stores import (
     CompositeArtefactStore,
@@ -18,6 +17,7 @@ from adapters.datasets import LangfuseDatasetAdapter, LocalJSONDatasetAdapter
 from adapters.runners.inline_sequential_runner import InlineSequentialRunner
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from config import EvalBackends, resolve_backends
+from conftest import UNCONFIGURED_LANGFUSE
 from datasets import DatasetConfig
 from settings import (
     EvalRunSettings,
@@ -46,6 +46,8 @@ def _settings(
             base_url="https://langfuse.example.invalid",
             project_id=None,
         )
+    if langfuse is None:
+        langfuse = UNCONFIGURED_LANGFUSE
 
     return EvalSettings(
         auto_eval_model="test-model",
@@ -188,16 +190,9 @@ def test_reuses_caller_context_without_taking_ownership(monkeypatch):
         pytest.fail(f"Caller context should have been reused: {kwargs}")
 
     monkeypatch.setattr(langfuse_utils, "get_langfuse_context", fail_if_called)
-    incomplete = LangfuseSettings(
-        secret_key=None,
-        public_key=None,
-        base_url=None,
-        project_id=None,
-    )
-
     backends = resolve_backends(
         DATASET_CONFIG,
-        settings=_settings("local", "langfuse", langfuse=incomplete),
+        settings=_settings("local", "langfuse", langfuse=UNCONFIGURED_LANGFUSE),
         context={"langfuse": context},
     )
 
