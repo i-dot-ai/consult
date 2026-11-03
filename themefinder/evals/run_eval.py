@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import json
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
 from themefinder.llm import OpenAILLM
@@ -18,6 +19,8 @@ from utils.logging_config import get_logger
 from utils.results import count_errors
 
 logger = get_logger(__name__)
+
+LOCAL_EVAL_RUNS_DIR = Path(__file__).resolve().parent / "local_eval_runs"
 
 
 def _create_default_llm(settings: EvalSettings) -> OpenAILLM:
@@ -148,7 +151,9 @@ def main(argv: Sequence[str] | None = None) -> None:
     print(json.dumps(printed, indent=2, sort_keys=True, default=str))
 
     # Case errors are recorded, not raised, so fail here or DVC and CI would call the run a success.
-    errors = count_errors(results)
+    results_path = LOCAL_EVAL_RUNS_DIR / args.component / args.dataset / "results.json"
+    payload = json.loads(results_path.read_text(encoding="utf-8"))
+    errors = count_errors(payload)
     if errors > 0:
         raise SystemExit(f"{errors} case or evaluator errors")
 

@@ -6,9 +6,25 @@ import pytest
 import run_eval
 
 
-def test_cli_runs_selected_component_and_prints_results(monkeypatch, capsys):
+def _write_results_payload(output_dir, component, dataset, results, outcomes=None):
+    path = output_dir / component / dataset / "results.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        json.dumps({"results": results, "outcomes": outcomes or []}),
+        encoding="utf-8",
+    )
+
+
+def test_cli_runs_selected_component_and_prints_results(monkeypatch, capsys, tmp_path):
     evaluate = AsyncMock(return_value={"question_part_1_f1_score": 0.75})
     monkeypatch.setattr(run_eval, "evaluate_component", evaluate)
+    monkeypatch.setattr(run_eval, "LOCAL_EVAL_RUNS_DIR", tmp_path)
+    _write_results_payload(
+        tmp_path,
+        "mapping",
+        "demo",
+        {"question_part_1_f1_score": 0.75},
+    )
 
     run_eval.main(
         [
@@ -28,6 +44,28 @@ def test_cli_runs_selected_component_and_prints_results(monkeypatch, capsys):
         runs=1,
     )
     assert json.loads(capsys.readouterr().out) == {"question_part_1_f1_score": 0.75}
+
+
+def test_cli_exits_nonzero_for_recorded_errors(monkeypatch, capsys, tmp_path):
+    results = {"question_part_1_f1_score": 0.0}
+
+    async def evaluate(**_):
+        _write_results_payload(
+            tmp_path,
+            "mapping",
+            "demo",
+            results,
+            outcomes=[{"error": "task failed", "scores": []}],
+        )
+        return results
+
+    monkeypatch.setattr(run_eval, "evaluate_component", evaluate)
+    monkeypatch.setattr(run_eval, "LOCAL_EVAL_RUNS_DIR", tmp_path)
+
+    with pytest.raises(SystemExit, match="1 case or evaluator errors"):
+        run_eval.main(["--component", "mapping", "--dataset", "demo"])
+
+    assert json.loads(capsys.readouterr().out) == results
 
 
 def _repeated_results(*, with_detail: bool) -> dict:
@@ -60,10 +98,12 @@ def _repeated_results(*, with_detail: bool) -> dict:
     ids=["default-hides-detail", "verbose-shows-detail"],
 )
 def test_cli_prints_case_outputs_and_tracks_only_when_verbose(
-    monkeypatch, capsys, flags, expected
+    monkeypatch, capsys, tmp_path, flags, expected
 ):
     results = _repeated_results(with_detail=True)
     monkeypatch.setattr(run_eval, "evaluate_component", AsyncMock(return_value=results))
+    monkeypatch.setattr(run_eval, "LOCAL_EVAL_RUNS_DIR", tmp_path)
+    _write_results_payload(tmp_path, "mapping", "demo", results)
 
     run_eval.main(["--component", "mapping", "--dataset", "demo", *flags])
 
