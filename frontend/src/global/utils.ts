@@ -5,6 +5,24 @@ import { match, pathToRegexp } from "path-to-regexp";
 import { createRawSnippet } from "svelte";
 
 import type { Mock } from "./types";
+import {
+  getApiConsultationV2Url,
+  getConsultationViewUrl,
+  getDataUploadChartsAndFiltersUrl,
+  getDataUploadChecksUrl,
+  getDataUploadDeleteQuestionsUrl,
+  getDataUploadDemographicsUrl,
+  getDataUploadFileUploadUrl,
+  getDataUploadSelectProviderUrl,
+  getDataUploadUrl,
+} from "./routes";
+import {
+  surveyImportStatuses,
+  type ConsultationV2,
+  type SurveyImportStatus,
+} from "./queries/consultations/types";
+import { fetchBackendApi } from "./api";
+import type { AstroGlobal } from "astro";
 
 export const getEnvironment = (): string | undefined => {
   if (typeof process !== "undefined" && process.env?.PUBLIC_ENVIRONMENT) {
@@ -106,6 +124,130 @@ export const getDataSetupV2Enabled = (): boolean => {
 
   return import.meta.env.PUBLIC_DATA_SETUP_V2_ENABLED === "true";
 };
+
+export function assertSurveyImportState(
+  astroContext: AstroGlobal,
+  consultation?: ConsultationV2,
+  currentPage?:
+    | "review-questions"
+    | "delete-questions"
+    | "upload-file"
+    | "overview"
+    | "select-provider"
+    | "charts-and-filters",
+) {
+  if (!consultation || !astroContext) {
+    return;
+  }
+
+  // if survey import has concluded one way or another
+  if (
+    consultation.stage !== "setup" ||
+    consultation.survey_import_status === "import_complete" ||
+    consultation.survey_import_status === "import_failed"
+  ) {
+    return astroContext.redirect(getConsultationViewUrl(consultation.id || ""));
+  }
+
+  // ensure a data source (provider) is selected
+  if (
+    !consultation.data_source &&
+    currentPage !== "overview" &&
+    currentPage !== "select-provider"
+  ) {
+    return astroContext.redirect(
+      getDataUploadSelectProviderUrl(consultation.id),
+    );
+  }
+
+  // redirect away if on question review but import status is not pending questions
+  if (
+    (currentPage === "delete-questions" ||
+      currentPage === "review-questions" ||
+      currentPage === "charts-and-filters") &&
+    consultation?.survey_import_status !== "pending_questions" &&
+    consultation?.survey_import_status !== "pending_demographics"
+  ) {
+    return astroContext.redirect(getConsultationViewUrl(consultation.id || ""));
+  }
+
+  // redirect accordingly on upload file step to avoid repeated uploads
+  if (currentPage === "upload-file") {
+    if (consultation?.survey_import_status === "file_uploading") {
+      return astroContext.redirect(
+        getConsultationViewUrl(consultation.id || ""),
+      );
+    }
+    if (consultation?.survey_import_status === "pending_questions") {
+      return astroContext.redirect(
+        getDataUploadDeleteQuestionsUrl(consultation.id || ""),
+      );
+    }
+    if (consultation?.survey_import_status === "pending_demographics") {
+      return astroContext.redirect(
+        getDataUploadChartsAndFiltersUrl(consultation.id || ""),
+      );
+    }
+  }
+}
+
+export async function setSurveyImportStatus(
+  astroContext: AstroGlobal,
+  consultationId: string,
+  newStatus: SurveyImportStatus,
+  currentStatus?: SurveyImportStatus,
+) {
+  if (currentStatus) {
+    const currentStatusIndex = surveyImportStatuses.indexOf(currentStatus);
+    const newStatusIndex = surveyImportStatuses.indexOf(newStatus);
+
+    if (newStatusIndex <= currentStatusIndex) {
+      return;
+    }
+  }
+
+  await fetchBackendApi(
+    astroContext,
+    getApiConsultationV2Url(consultationId || ""),
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        survey_import_status: newStatus,
+      }),
+    },
+  );
+}
+
+export function getDataSetupActiveUrl(
+  consultationId: string,
+  surveyImportStatus?: SurveyImportStatus,
+) {
+  if (
+    surveyImportStatus === "not_started" ||
+    surveyImportStatus === "viewed_overview"
+  ) {
+    return getDataUploadUrl(consultationId);
+  }
+  if (surveyImportStatus === "viewed_provider") {
+    return getDataUploadSelectProviderUrl(consultationId);
+  }
+  if (surveyImportStatus === "viewed_checklist") {
+    return getDataUploadChecksUrl(consultationId);
+  }
+  if (surveyImportStatus === "viewed_upload") {
+    return getDataUploadFileUploadUrl(consultationId);
+  }
+  if (surveyImportStatus === "pending_questions") {
+    return getDataUploadDeleteQuestionsUrl(consultationId);
+  }
+  if (surveyImportStatus === "pending_demographics") {
+    return getDataUploadDemographicsUrl(consultationId);
+  }
+  return getDataUploadUrl(consultationId);
+}
 
 export const applyHighlight = (
   fullText: string,

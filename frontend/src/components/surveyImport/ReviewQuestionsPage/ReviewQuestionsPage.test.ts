@@ -15,6 +15,7 @@ import {
   QUESTIONS,
   answersMock,
   questionsMock,
+  updateConsultationMock,
   updateErrorMock,
   updateMock,
 } from "./mocks";
@@ -51,6 +52,8 @@ function patchCalls() {
 describe("ReviewQuestionsPage", () => {
   beforeEach(() => {
     vi.stubGlobal("location", { href: "", origin: window.location.origin });
+
+    mockRoute(updateConsultationMock);
   });
 
   afterEach(() => {
@@ -698,9 +701,11 @@ describe("ReviewQuestionsPage", () => {
     await fireEvent.click(
       screen.getByRole("button", { name: "Continue to closed questions" }),
     );
-    expect(window.location.href).toBe(
-      `/consultations/${CONSULTATION_ID}/data-upload/charts-and-filters`,
-    );
+    await waitFor(() => {
+      expect(window.location.href).toBe(
+        `/consultations/${CONSULTATION_ID}/data-upload/charts-and-filters`,
+      );
+    });
   });
 
   it("matches snapshot", async () => {

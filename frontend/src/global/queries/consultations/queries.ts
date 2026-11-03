@@ -10,6 +10,7 @@ import {
 import type {
   ConsultationsGetResponse,
   ConsultationsV2GetResponse,
+  ConsultationV2,
   ConsultationV2CreateResponse,
   ConsultationV2UpdateResponse,
   UpdateConsultationBody,
@@ -19,6 +20,12 @@ import type { Consultation } from "../../types";
 export function buildConsultationsGetQuery() {
   return buildQuery<ConsultationsGetResponse>(consultationsQueryParts.url(), {
     key: consultationsQueryParts.key(),
+  });
+}
+
+export function buildConsultationsV2GetQuery() {
+  return buildQuery<ConsultationsGetResponse>(consultationsV2QueryParts.url(), {
+    key: consultationsV2QueryParts.key(),
   });
 }
 
@@ -65,9 +72,12 @@ export function buildConsultationDeleteQuery(consultationId: string) {
 }
 
 export function buildConsultationGetQuery(consultationId: string) {
-  return buildQuery<Consultation>(consultationQueryParts.url(consultationId), {
-    key: consultationQueryParts.key(consultationId),
-  });
+  return buildQuery<ConsultationV2>(
+    consultationQueryParts.url(consultationId),
+    {
+      key: consultationQueryParts.key(consultationId),
+    },
+  );
 }
 
 export function buildConsultationRenameQuery(consultationId: string) {

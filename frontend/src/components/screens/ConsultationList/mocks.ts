@@ -1,6 +1,11 @@
-import { consultationsQueryParts } from "../../../global/queries/consultations/parts";
+import {
+  consultationsQueryParts,
+  consultationsV2QueryParts,
+} from "../../../global/queries/consultations/parts";
 
-const URL = consultationsQueryParts.url();
+const URL = consultationsV2QueryParts.url();
+const URL_V1 = consultationsQueryParts.url();
+
 const CONSULTATIONS = [
   {
     id: "95ab7567-9381-48eb-8d20-ddeb43691b58",
@@ -52,6 +57,11 @@ export const emptyMock = {
     previous: null,
     results: [],
   },
+};
+
+export const emptyV2Mock = {
+  ...emptyMock,
+  url: URL_V1,
 };
 
 export const longMock = {
