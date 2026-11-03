@@ -108,6 +108,19 @@ describe("Modal", () => {
     expect(handleConfirmMock).not.toHaveBeenCalled();
   });
 
+  it("keeps the existing card unless asked for the compact one", () => {
+    const { unmount } = render(Modal, { ...testData, open: true });
+    const card = screen.getByRole("dialog");
+    expect(card).toHaveClass("md:max-w-[50vw]", "p-6");
+    expect(card).not.toHaveClass("max-w-md");
+    unmount();
+
+    render(Modal, { ...testData, open: true, compact: true });
+    const compactCard = screen.getByRole("dialog");
+    expect(compactCard).toHaveClass("max-w-md", "p-7", "gap-3");
+    expect(compactCard).not.toHaveClass("md:max-w-[50vw]");
+  });
+
   it("matches snapshot", () => {
     const { container } = render(Modal, testData);
 
