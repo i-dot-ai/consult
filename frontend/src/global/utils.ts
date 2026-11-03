@@ -127,6 +127,12 @@ export const getDataSetupV2Enabled = (): boolean => {
 export function assertSurveyImportState(
   astroContext: AstroGlobal,
   consultation?: ConsultationV2,
+  currentPage?:
+    | "review-questions"
+    | "delete-questions"
+    | "upload-file"
+    | "overview"
+    | "select-provider",
 ) {
   if (!consultation || !astroContext) {
     return;
@@ -139,6 +145,51 @@ export function assertSurveyImportState(
     consultation.survey_import_status === "import_failed"
   ) {
     return astroContext.redirect(getConsultationViewUrl(consultation.id || ""));
+  }
+
+  // ensure a data source (provider) is selected
+  if (
+    !consultation.data_source &&
+    currentPage !== "overview" &&
+    currentPage !== "select-provider"
+  ) {
+    return astroContext.redirect(
+      getDataUploadSelectProviderUrl(consultation.id),
+    );
+  }
+
+  // redirect away if on question review but import status is not pending questions
+  if (
+    currentPage === "delete-questions" ||
+    currentPage === "review-questions"
+  ) {
+    if (
+      consultation?.survey_import_status !== "pending_questions" &&
+      consultation?.survey_import_status !== "pending_demographics"
+    ) {
+      return astroContext.redirect(
+        getConsultationViewUrl(consultation.id || ""),
+      );
+    }
+  }
+
+  // redirect accordingly on upload file step to avoid repeated uploads
+  if (currentPage === "upload-file") {
+    if (consultation?.survey_import_status === "file_uploading") {
+      return astroContext.redirect(
+        getConsultationViewUrl(consultation.id || ""),
+      );
+    }
+    if (consultation?.survey_import_status === "pending_questions") {
+      return astroContext.redirect(
+        getDataUploadDeleteQuestionsUrl(consultation.id || ""),
+      );
+    }
+    if (consultation?.survey_import_status === "pending_demographics") {
+      return astroContext.redirect(
+        getDataUploadDemographicsUrl(consultation.id || ""),
+      );
+    }
   }
 }
 

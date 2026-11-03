@@ -23,7 +23,7 @@ if (error) {
   return buildResponse(status);
 }
 
-const redirect = assertSurveyImportState(Astro, data);
+const redirect = assertSurveyImportState(Astro, data, "overview");
 
 if (redirect) {
   return redirect;

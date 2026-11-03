@@ -27,7 +27,7 @@ if (error) {
   return buildResponse(status);
 }
 
-const redirect = assertSurveyImportState(Astro, data);
+const redirect = assertSurveyImportState(Astro, data, "delete-questions");
 
 if (redirect) {
   return redirect;
