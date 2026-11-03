@@ -160,17 +160,12 @@ export function assertSurveyImportState(
 
   // redirect away if on question review but import status is not pending questions
   if (
-    currentPage === "delete-questions" ||
-    currentPage === "review-questions"
+    (currentPage === "delete-questions" ||
+      currentPage === "review-questions") &&
+    consultation?.survey_import_status !== "pending_questions" &&
+    consultation?.survey_import_status !== "pending_demographics"
   ) {
-    if (
-      consultation?.survey_import_status !== "pending_questions" &&
-      consultation?.survey_import_status !== "pending_demographics"
-    ) {
-      return astroContext.redirect(
-        getConsultationViewUrl(consultation.id || ""),
-      );
-    }
+    return astroContext.redirect(getConsultationViewUrl(consultation.id || ""));
   }
 
   // redirect accordingly on upload file step to avoid repeated uploads
