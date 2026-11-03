@@ -42,6 +42,7 @@ async def test_builds_component_resolves_backends_and_runs(monkeypatch, componen
     settings = _settings()
     component_config = ComponentConfig(component, _task, [])
     backends = Mock(spec=EvalBackends)
+    backends.tracer = Mock()
     result = {"question_part_1_quality": 1.0}
     build = Mock(return_value=component_config)
     resolve = Mock(return_value=backends)
@@ -67,6 +68,10 @@ async def test_builds_component_resolves_backends_and_runs(monkeypatch, componen
     run.assert_awaited_once_with(
         component_config, dataset_config, backends, llm=task_llm
     )
+    assert [call.args for call in backends.tracer.observe.call_args_list] == [
+        (task_llm,),
+        (judge_llm,),
+    ]
     assert actual is result
 
 
