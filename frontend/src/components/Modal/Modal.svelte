@@ -19,6 +19,7 @@
     canCancel?: boolean;
     canConfirm?: boolean;
     Icon?: Component;
+    compact?: boolean;
     open?: boolean;
     setOpen?: (newValue: boolean) => void;
     handleConfirm?: MouseEventHandler<HTMLElement>;
@@ -34,6 +35,7 @@
     canCancel = true,
     canConfirm = true,
     Icon,
+    compact = false,
     setOpen = () => {},
     handleConfirm = () => {},
     children,
@@ -52,6 +54,12 @@
   $effect(() => {
     meltOpen.set(open);
   });
+
+  const CONFIRM_VARIANTS = {
+    primary: "primary",
+    secondary: "approve",
+    warning: "danger",
+  } as const;
 
   export const getIconColor = () => {
     if (variant === "primary") {
@@ -85,8 +93,17 @@
         "-translate-x-1/2",
         "-translate-y-1/2",
         "w-[90vw]",
-        "md:max-w-[50vw]",
-        "p-6",
+        compact
+          ? [
+              "max-w-md",
+              "max-h-[86vh]",
+              "overflow-y-auto",
+              "flex",
+              "flex-col",
+              "gap-3",
+              "p-7",
+            ]
+          : ["md:max-w-[50vw]", "p-6"],
         "rounded-xl",
         "bg-white",
         "shadow-lg",
@@ -96,19 +113,23 @@
         y: 8,
       }}
     >
-      <div class="mb-2 flex items-center gap-2">
+      <div class={clsx(["flex", "items-center", "gap-2", !compact && "mb-2"])}>
         {#if Icon}
           <MaterialIcon color={getIconColor()} size="1.3rem">
             <Icon />
           </MaterialIcon>
         {/if}
         <h3
-          use:titleMelt
-          class={clsx([
-            "text-lg",
-            variant === "secondary" && "text-secondary",
-            variant === "warning" && "text-orange-600",
-          ])}
+          use:melt={$titleMelt}
+          class={clsx(
+            compact
+              ? ["text-base", "font-medium", "text-neutral-900"]
+              : [
+                  "text-lg",
+                  variant === "secondary" && "text-secondary",
+                  variant === "warning" && "text-orange-600",
+                ],
+          )}
         >
           {title}
         </h3>
@@ -128,7 +149,7 @@
         {#if canConfirm}
           <Button
             size="sm"
-            variant={variant === "secondary" ? "approve" : "primary"}
+            variant={CONFIRM_VARIANTS[variant]}
             handleClick={handleConfirm as () => void}
             disabled={confirmDisabled}
           >
