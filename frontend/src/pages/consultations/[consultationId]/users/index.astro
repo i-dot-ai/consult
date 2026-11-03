@@ -1,12 +1,44 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
-
-import UnderConstruction from "../../../../components/screens/UnderConstruction/UnderConstruction.svelte";
 import Section from "../../../../components/Section/Section.svelte";
+import ConsultationPeople from "../../../../components/screens/ConsultationPeople/ConsultationPeople.svelte";
+
+import type { AstroGlobalRuntime } from "../../../../global/types";
+import { buildResponse, fetchBackendApi } from "../../../../global/api";
+import { consultationV2QueryParts } from "../../../../global/queries/consultations/parts";
+import {
+  getConsultationViewUrl,
+  getDataUploadUrl,
+  Suffixes,
+} from "../../../../global/routes";
+import { getDataSetupV2Enabled } from "../../../../global/utils";
+
+if (!getDataSetupV2Enabled()) {
+  return Astro.rewrite("/404");
+}
+
+const { params, url } = Astro as unknown as AstroGlobalRuntime;
+const consultationId = params.consultationId || "";
+const fromDataUpload = url.searchParams.get("from") === Suffixes.DataUpload;
+const backHref = fromDataUpload
+  ? getDataUploadUrl(consultationId)
+  : getConsultationViewUrl(consultationId);
+const backText = fromDataUpload
+  ? "Back to data set-up"
+  : "Back to the consultation";
+
+const { error, status } = await fetchBackendApi(
+  Astro,
+  consultationV2QueryParts.url(consultationId),
+);
+
+if (error) {
+  return buildResponse(status);
+}
 ---
 
 <Layout>
-  <Section>
-    <UnderConstruction />
+  <Section narrow={true} gutters={true}>
+    <ConsultationPeople client:load {consultationId} {backHref} {backText} />
   </Section>
 </Layout>
