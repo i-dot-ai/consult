@@ -1,9 +1,11 @@
 import json
+from dataclasses import replace
 from unittest.mock import AsyncMock
 
 import pytest
 
 import run_eval
+from comparison import QUICK_MODEL
 
 
 def _write_results_payload(output_dir, component, dataset, results, outcomes=None):
@@ -113,3 +115,127 @@ def test_cli_prints_case_outputs_and_tracks_only_when_verbose(
 def test_cli_rejects_unknown_component():
     with pytest.raises(SystemExit):
         run_eval.main(["--component", "unknown"])
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        [],
+        ["--component", "mapping", "generation"],
+        ["--component", "mapping", "--judge-model", "gpt-4o-uk"],
+        ["--component", "mapping", "--reasoning-effort", "high"],
+    ],
+    ids=["no-component", "two-components", "judge-model", "reasoning-effort"],
+)
+def test_single_run_rejects_comparison_only_shapes(monkeypatch, argv):
+    evaluate = AsyncMock(return_value={})
+    monkeypatch.setattr(run_eval, "evaluate_component", evaluate)
+
+    with pytest.raises(SystemExit):
+        run_eval.main(argv)
+
+    evaluate.assert_not_awaited()
+
+
+def test_model_selector_runs_a_comparison_with_the_shared_primitive(monkeypatch):
+    run_comparison = AsyncMock()
+    monkeypatch.setattr(run_eval.comparison, "run_comparison", run_comparison)
+
+    run_eval.main(
+        [
+            "--models",
+            "gpt-4o-uk",
+            "gemini-flash",
+            "--component",
+            "mapping",
+            "generation",
+            "--dataset",
+            "housing_S",
+            "--runs",
+            "2",
+            "--judge-model",
+            "gpt-4.1",
+        ]
+    )
+
+    run_comparison.assert_awaited_once()
+    args, evaluate = run_comparison.await_args.args
+    assert evaluate is run_eval.evaluate_component
+    assert args.models == ["gpt-4o-uk", "gemini-flash"]
+    assert args.component == ["mapping", "generation"]
+    assert args.dataset == "housing_S"
+    assert args.runs == 2
+    assert args.judge_model == "gpt-4.1"
+    assert args.reasoning_effort == ["low"]
+
+
+def test_comparison_takes_the_judge_from_settings_by_default(monkeypatch):
+    run_comparison = AsyncMock()
+    monkeypatch.setattr(run_eval.comparison, "run_comparison", run_comparison)
+    monkeypatch.setattr(
+        run_eval,
+        "eval_settings",
+        replace(run_eval.eval_settings, judge_model="judge-from-env"),
+    )
+
+    run_eval.main(["--all", "--component", "generation"])
+
+    args, _ = run_comparison.await_args.args
+    assert args.judge_model == "judge-from-env"
+
+
+def test_comparison_of_judged_components_needs_a_judge(monkeypatch):
+    run_comparison = AsyncMock()
+    monkeypatch.setattr(run_eval.comparison, "run_comparison", run_comparison)
+    monkeypatch.setattr(
+        run_eval, "eval_settings", replace(run_eval.eval_settings, judge_model=None)
+    )
+
+    with pytest.raises(SystemExit):
+        run_eval.main(["--all", "--component", "generation"])
+
+    run_comparison.assert_not_awaited()
+
+
+def test_mapping_only_comparison_needs_no_judge(monkeypatch):
+    run_comparison = AsyncMock()
+    monkeypatch.setattr(run_eval.comparison, "run_comparison", run_comparison)
+    monkeypatch.setattr(
+        run_eval, "eval_settings", replace(run_eval.eval_settings, judge_model=None)
+    )
+
+    run_eval.main(["--all", "--component", "mapping"])
+
+    run_comparison.assert_awaited_once()
+
+
+def test_quick_preset_is_a_comparison_of_the_smoke_model(monkeypatch):
+    run_comparison = AsyncMock()
+    monkeypatch.setattr(run_eval.comparison, "run_comparison", run_comparison)
+
+    run_eval.main(["--quick", "--component", "mapping"])
+
+    args, _ = run_comparison.await_args.args
+    assert args.models == [QUICK_MODEL]
+    assert args.dataset == "gambling_XS"
+    assert args.runs == 1
+    assert args.component == ["mapping"]
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["--models", "gpt-4o-uk", "--all"],
+        ["--all", "--question", "2"],
+        ["--all", "--verbose"],
+    ],
+    ids=["two-selectors", "question-in-comparison", "verbose-in-comparison"],
+)
+def test_comparison_rejects_conflicting_flags(monkeypatch, argv):
+    run_comparison = AsyncMock()
+    monkeypatch.setattr(run_eval.comparison, "run_comparison", run_comparison)
+
+    with pytest.raises(SystemExit):
+        run_eval.main(argv)
+
+    run_comparison.assert_not_awaited()
