@@ -148,7 +148,7 @@ describe("AddConsultationForm", () => {
     await fireEvent.click(confirmButton);
 
     await waitFor(() => {
-      expect(window.location.href).toBe("/consultations/new-id/dashboard");
+      expect(window.location.href).toBe("/consultations/new-id");
     });
   });
 
@@ -173,7 +173,7 @@ describe("AddConsultationForm", () => {
     );
 
     await waitFor(() => {
-      expect(window.location.href).toBe("/consultations/new-id/dashboard");
+      expect(window.location.href).toBe("/consultations/new-id");
     });
 
     const postCall = fetchMock.callHistory.lastCall(URL, { method: "POST" });
