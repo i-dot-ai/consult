@@ -62,11 +62,11 @@ test-all: test-backend test-frontend test-themefinder test-pipeline-common ## Ru
 
 .PHONY: run-evals
 run-evals: ## Run themefinder LLM evals (quick mode)
-	cd themefinder/evals && uv run --extra eval python benchmark.py --quick
+	cd themefinder/evals && uv run --extra eval python run_eval.py --quick
 
 .PHONY: run-eval
 run-eval: ## Args e.g.: EVAL_TYPE=find_themes|generation|mapping|condensation|refinement
-	cd themefinder/evals && uv run --extra eval python benchmark.py --quick --evals "$(EVAL_TYPE)"
+	cd themefinder/evals && uv run --extra eval python run_eval.py --quick --component "$(EVAL_TYPE)"
 
 .PHONY: eval-smoke
 eval-smoke: ## Run every eval on the tiny gambling_XXS dataset via DVC; passes if the run succeeds
@@ -79,9 +79,12 @@ eval-regression: ## Run every eval on gambling_XS via DVC and fail if metrics dr
 	cd themefinder/evals && uv run --extra eval dvc repro -f
 	cd themefinder/evals && uv run --extra eval python -m ci.check_metrics --dataset gambling_XS $(if $(GITHUB_STEP_SUMMARY),--summary-file $(GITHUB_STEP_SUMMARY))
 
+BENCHMARK_DATASET ?= housing_S
+BENCHMARK_RUNS ?= 5
+
 .PHONY: run-benchmark
-run-benchmark: ## Run full themefinder benchmark (housing_S, 5 runs, all providers)
-	cd themefinder/evals && uv run --extra eval python benchmark.py --dataset housing_S --runs 5 --provider all --judge-model gpt-4.1
+run-benchmark: ## Compare every healthy gateway model; override with BENCHMARK_DATASET=gambling_XS BENCHMARK_RUNS=1
+	cd themefinder/evals && uv run --extra eval python run_eval.py --all --dataset $(BENCHMARK_DATASET) --runs $(BENCHMARK_RUNS) --judge-model gpt-4.1
 
 .PHONY: test-end-to-end
 test-end-to-end: ## Run end-to-end tests with Playwright

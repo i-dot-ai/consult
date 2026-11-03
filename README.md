@@ -179,8 +179,17 @@ as well as its evaluation. Splitting those steps would avoid regeneration, but
 would substantially duplicate the pipeline and parameter configuration; the
 current evaluation datasets are small enough that the extra cost is acceptable.
 
-Use `make run-evals` for the quick multi-component benchmark or
-`make run-eval EVAL_TYPE=mapping` for one benchmark component.
+The same CLI compares models: any model selector (`--models`, `--family`,
+`--all`) runs the chosen components for every selected model and writes the
+aggregated results under `themefinder/evals/benchmark_results/<id>/`.
+
+```bash
+uv run --extra eval python run_eval.py --models gpt-4o-uk gemini-3.5-flash-uk --component mapping --runs 3
+```
+
+Use `make run-evals` for the quick multi-component smoke comparison,
+`make run-eval EVAL_TYPE=mapping` for one component, or `make run-benchmark`
+for the full comparison across every healthy gateway model.
 
 #### Evals in CI
 
