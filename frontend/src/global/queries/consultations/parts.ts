@@ -1,5 +1,6 @@
 import {
   getApiConsultationDeepValidationUrl,
+  getApiConsultationsByTitleUrl,
   getApiConsultationsRootUrl,
   getApiConsultationUploadUrl,
   getApiConsultationV2Url,
@@ -48,4 +49,9 @@ export const consultationV2UploadQueryParts = {
     "upload",
   ],
   url: (consultationId: string) => getApiConsultationUploadUrl(consultationId),
+};
+
+export const consultationsV2ByTitleQueryParts = {
+  key: (title: string) => [Suffixes.Consultations, "v2", "title", title],
+  url: (title: string) => getApiConsultationsByTitleUrl(title),
 };

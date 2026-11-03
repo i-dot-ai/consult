@@ -250,6 +250,11 @@ export const getApiConsultationDeepValidationUrl = (consultationId: string) => {
   );
 };
 
+export const getApiConsultationsByTitleUrl = (title: string) => {
+  const params = new URLSearchParams({ title__iexact: title });
+  return `${getApiConsultationsRootUrl()}?${params.toString()}`;
+};
+
 export const getApiConsultationUploadUrl = (consultationId: string) => {
   return urlJoinTrailing(
     Prefixes.ApiV2,

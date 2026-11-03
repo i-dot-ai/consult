@@ -3,6 +3,7 @@ import {
   consultationQueryParts,
   consultationsQueryParts,
   consultationsV2QueryParts,
+  consultationsV2ByTitleQueryParts,
   consultationV2DeepValidationQueryParts,
   consultationV2QueryParts,
   consultationV2UploadQueryParts,
@@ -101,15 +102,23 @@ export const updateConsultation = async (
 };
 
 export function buildConsultationsV2ByTitleQuery(title: string) {
-  const params = new URLSearchParams({ title__iexact: title });
-
   return buildQuery<ConsultationsV2GetResponse>(
-    `${consultationsV2QueryParts.url()}?${params.toString()}`,
+    consultationsV2ByTitleQueryParts.url(title),
     {
-      key: [...consultationsV2QueryParts.key(), "title", title],
+      key: consultationsV2ByTitleQueryParts.key(title),
       errorMessage: "Failed to look up consultation",
     },
   );
+}
+
+export async function fetchConsultationsByTitle(
+  title: string,
+): Promise<ConsultationsV2GetResponse> {
+  const response = await fetch(consultationsV2ByTitleQueryParts.url(title));
+  if (!response.ok) {
+    throw new Error(`Failed to look up consultation by title`);
+  }
+  return response.json();
 }
 
 export function buildConsultationDeepValidationQuery(

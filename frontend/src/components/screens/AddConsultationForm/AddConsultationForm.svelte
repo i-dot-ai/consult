@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { tick } from "svelte";
-
   import Title from "../../Title.svelte";
   import Alert from "../../Alert/Alert.svelte";
   import ErrorIcon from "../../svg/material/Error.svelte";
@@ -11,13 +9,10 @@
 
   import { getConsultationViewUrl, Routes } from "../../../global/routes.ts";
   import {
-    buildConsultationsV2ByTitleQuery,
+    fetchConsultationsByTitle,
     buildConsultationV2CreateQuery,
   } from "../../../global/queries/consultations/queries.ts";
-  import type {
-    ConsultationsV2GetResponse,
-    ConsultationV2,
-  } from "../../../global/queries/consultations/types.ts";
+  import type { ConsultationV2 } from "../../../global/queries/consultations/types.ts";
 
   const INPUT_ID = "consultation-name";
   const HINT_ID = "consultation-name-hint";
@@ -25,20 +20,8 @@
   let name = $state("");
   let submitError = $state("");
   let submitting = $state(false);
-  let checkName = $state("");
 
   let duplicates: ConsultationV2[] = $state([]);
-
-  let titleLookup: ReturnType<typeof buildConsultationsV2ByTitleQuery> | null =
-    $state(null);
-
-  // Re-created whenever checkName changes, so handleSubmit can trigger a
-  // fresh lookup for the current name without reusing a stale query.
-  $effect(() => {
-    if (checkName) {
-      titleLookup = buildConsultationsV2ByTitleQuery(checkName);
-    }
-  });
 
   const consultationCreate = buildConsultationV2CreateQuery(
     async (data) => {
@@ -86,13 +69,10 @@
 
     submitting = true;
     submitError = "";
-    checkName = name;
-    await tick();
 
     try {
-      const result = (await titleLookup?.fetch()) as
-        { data?: ConsultationsV2GetResponse } | undefined;
-      const matches = result?.data?.results ?? [];
+      const result = await fetchConsultationsByTitle(name);
+      const matches = result?.results ?? [];
 
       if (matches.length > 0) {
         duplicates = matches;
