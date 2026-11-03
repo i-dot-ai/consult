@@ -6,12 +6,13 @@ from contextlib import contextmanager
 from types import SimpleNamespace
 from typing import Any
 
-from adapters.artefact_stores.base import ArtefactStorePort, flatten_run_report
+from adapters.artefact_stores.base import ArtefactStorePort
 from adapters.datasets.base import DatasetPort
 from adapters.evaluators.base import EvaluatorPort
 from adapters.runners.base import RunnerPort
 from datasets import DatasetConfig
 from eval_types import Case, CaseOutcome, ComponentConfig, RunReport, Score
+from utils.results import flatten_run_report
 
 
 class FakeDatasetPort(DatasetPort):

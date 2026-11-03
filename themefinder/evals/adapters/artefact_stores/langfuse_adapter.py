@@ -6,13 +6,15 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Any
 
-from eval_types import CaseOutcome, RunReport
 from httpx import RequestError
+
+from eval_types import CaseOutcome, RunReport
 from utils import stats
 from utils.langfuse import LangfuseContext
 from utils.logging_config import get_logger
+from utils.results import flatten_run_report, json_safe
 
-from .base import ArtefactStorePort, flatten_run_report, json_safe
+from .base import ArtefactStorePort
 
 logger = get_logger(__name__)
 

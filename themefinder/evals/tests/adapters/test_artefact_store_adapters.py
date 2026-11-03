@@ -7,21 +7,24 @@ from abc import ABC
 from dataclasses import replace
 
 import pytest
+from conftest import _themes
+from fakes import FakeLangfuseClient, FakeTrace
 from httpx import RequestError
 from langfuse.api.core import ApiError
 
 from adapters.artefact_stores.base import (
     ArtefactStorePort,
-    build_results_payload,
-    flatten_run_report,
 )
+from adapters.artefact_stores.composite import CompositeArtefactStore
 from adapters.artefact_stores.langfuse_adapter import LangfuseArtefactStore
-from adapters.artefact_stores.local_json_adapter import LocalJSONArtefactStore
-from conftest import _themes
+from adapters.artefact_stores.local_json_adapter import (
+    LocalJSONArtefactStore,
+    build_results_payload,
+)
 from eval_types import Case, CaseOutcome, RunMetrics, RunReport, Score
-from fakes import FakeLangfuseClient, FakeTrace
 from utils import stats
 from utils.langfuse import LangfuseContext
+from utils.results import flatten_run_report
 
 
 def _make_case(
@@ -278,6 +281,29 @@ class TestLocalJSONArtefactStore:
         assert payload["results"]["metrics"] == expected_metrics
         assert "metrics" not in payload
         assert results["metrics"] == expected_metrics
+
+
+class TestCompositeArtefactStore:
+    def test_persists_local_results_and_langfuse_scores(self, tmp_path):
+        client = FakeLangfuseClient()
+        store = CompositeArtefactStore(
+            LocalJSONArtefactStore(output_dir=tmp_path),
+            LangfuseArtefactStore(context=LangfuseContext(client=client)),
+        )
+        outcome = _make_outcome(error="task failed")
+
+        store.start_run("generation", "demo")
+        store.record_case(outcome)
+        results = store.finish_run(RunReport(outcomes=[outcome]))
+
+        payload = json.loads(
+            (tmp_path / "generation" / "demo" / "results.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        assert payload["results"] == results
+        assert payload["errors"] == {"question_part_1": "task failed"}
+        assert client.scores[0]["name"] == "groundedness"
 
 
 class TestLangfuseArtefactStore:

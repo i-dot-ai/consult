@@ -7,12 +7,33 @@ from pathlib import Path
 from typing import Any
 
 from eval_types import CaseOutcome, RunReport
+from utils.results import flatten_run_report, serialise_outcome
 
-from .base import (
-    ArtefactStorePort,
-    build_results_payload,
-    serialise_outcome,
-)
+from .base import ArtefactStorePort
+
+
+def build_results_payload(
+    component: str,
+    dataset: str,
+    report: RunReport,
+    *,
+    recorded_outcomes: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    outcomes = recorded_outcomes or [
+        serialise_outcome(outcome) for outcome in report.outcomes
+    ]
+
+    return {
+        "component": component,
+        "dataset": dataset,
+        "results": flatten_run_report(report),
+        "outcomes": outcomes,
+        "errors": {
+            report.outcome_key(outcome): outcome.error
+            for outcome in report.outcomes
+            if outcome.error is not None
+        },
+    }
 
 
 class LocalJSONArtefactStore(ArtefactStorePort):
@@ -30,6 +51,7 @@ class LocalJSONArtefactStore(ArtefactStorePort):
         self._component = component
         self._dataset = dataset
         self._recorded_outcomes = []
+        (self.output_dir / component / dataset / "results.json").unlink(missing_ok=True)
 
     def record_case(self, outcome: CaseOutcome) -> None:
         self._recorded_outcomes.append(serialise_outcome(outcome))

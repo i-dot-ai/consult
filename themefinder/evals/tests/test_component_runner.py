@@ -1,6 +1,8 @@
 """Unit tests for the component orchestration pipeline."""
 
 import pytest
+from fakes import FakeArtefactStore, FakeDatasetPort, FakeEvaluatorPort, FakeRunnerPort
+
 from adapters.context_providers import ProvidedContext
 from adapters.runners import InlineSequentialRunner
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
@@ -8,7 +10,6 @@ from component_runner import run_component
 from config import EvalBackends
 from datasets import DatasetConfig
 from eval_types import Case, CaseOutcome, ComponentConfig, RunReport, Score
-from fakes import FakeArtefactStore, FakeDatasetPort, FakeEvaluatorPort, FakeRunnerPort
 
 
 async def _task(inputs: dict, llm) -> dict:
@@ -70,9 +71,9 @@ async def test_runs_full_component_pipeline_and_returns_store_result():
     assert artefacts.recorded == report.outcomes
     assert artefacts.finished_with == (report, report.engine_report)
     assert events == [
+        "start_run",
         "load_cases",
         "run",
-        "start_run",
         "record_case:question_part_1",
         "record_case:question_part_2",
         "finish_run",
@@ -122,8 +123,8 @@ async def test_empty_report_is_still_finalised():
 @pytest.mark.parametrize(
     ("failure_stage", "expected_started_with"),
     [
-        pytest.param("dataset", None, id="dataset"),
-        pytest.param("runner", None, id="runner"),
+        pytest.param("dataset", ("generation", "demo"), id="dataset"),
+        pytest.param("runner", ("generation", "demo"), id="runner"),
         pytest.param("record", ("generation", "demo"), id="record"),
     ],
 )
