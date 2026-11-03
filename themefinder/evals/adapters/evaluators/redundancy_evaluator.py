@@ -16,6 +16,7 @@ logger = get_logger(__name__)
 
 class RedundancyEvaluator(EvaluatorPort):
     metric_names = ("redundancy",)
+    lower_is_better_metrics = metric_names
 
     def __init__(self, threshold: float = 0.85):
         """Store the cosine-similarity threshold above which a title pair

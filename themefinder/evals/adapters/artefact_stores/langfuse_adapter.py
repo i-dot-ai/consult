@@ -61,13 +61,7 @@ class LangfuseArtefactStore(ArtefactStorePort):
         *,
         engine_report: Any | None = None,
     ) -> dict[str, Any]:
-        native_report = (
-            engine_report if engine_report is not None else report.engine_report
-        )
-        if self._is_pydantic_evals_report(native_report):
-            printer = getattr(native_report, "print", None)
-            if callable(printer):
-                printer()
+        del engine_report
 
         results = flatten_run_report(report)
         if "aggregate" in results:
@@ -207,15 +201,3 @@ class LangfuseArtefactStore(ArtefactStorePort):
         component = self._component or "unknown-component"
         dataset = self._dataset or "unknown-dataset"
         return f"{component}:{dataset}"
-
-    @staticmethod
-    def _is_pydantic_evals_report(engine_report: Any) -> bool:
-        if engine_report is None:
-            return False
-
-        try:
-            from pydantic_evals.reporting import EvaluationReport
-        except ImportError:
-            return False
-
-        return isinstance(engine_report, EvaluationReport)
