@@ -144,7 +144,7 @@ def get_langfuse_context(
         model = settings.auto_eval_model or "unknown"
 
         # Build standard tags - note: model tag is only added if not provided
-        # by caller (benchmark.py provides its own model tag)
+        # by caller (a model comparison labels each run with its own model tag)
         has_model_tag = any(t.startswith("model:") for t in (tags or []))
         standard_tags = [
             "eval",

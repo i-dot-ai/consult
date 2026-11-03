@@ -50,8 +50,10 @@ These evaluations can be executed either:
 
 - By running `make run-evals` from the repo root to execute the complete evaluation suite
 - By running `uv run --extra eval python run_eval.py --component <name> --dataset <dataset>` from `themefinder/evals/`
+- By running `uv run --extra eval python run_eval.py --models <name> [<name> ...]` (or `--family`, `--all`) from `themefinder/evals/` to compare models
 
-The model is selected through `AUTO_EVAL_MODEL` or the benchmark command's model arguments. Every component except mapping also needs a judge model, set through `AUTO_EVAL_JUDGE_MODEL` or the benchmark's `--judge-model`; the judge never falls back to the task model.
+The model is selected through `AUTO_EVAL_MODEL`, or through `--models`, `--family` and `--all` for a comparison. Every component except mapping also needs a judge model, set through `AUTO_EVAL_JUDGE_MODEL` or `--judge-model`; the judge never falls back to the task model.
+Langfuse tracing switches on by itself whenever the `LANGFUSE_*` credentials are set.
 
 
 ## Releasing to PyPi

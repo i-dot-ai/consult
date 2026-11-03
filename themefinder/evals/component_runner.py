@@ -20,7 +20,7 @@ def _per_run(total: float | None, n_runs: int) -> float | None:
 
 def _per_run_count(total: int | None, n_runs: int) -> int | None:
     """Rounded, since a fractional call or token count reads as nonsense and
-    benchmark.py rejects non-integer counts."""
+    the model comparison rejects non-integer counts."""
     return None if total is None else round(total / n_runs)
 
 
