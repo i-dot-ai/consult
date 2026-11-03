@@ -87,6 +87,19 @@ class RunReport:
         return f"{key}_r{outcome.run_index}" if self.repeated else key
 
 
+@dataclass(frozen=True)
+class RunLabels:
+    """How a caller wants one run identified wherever it is recorded.
+
+    ``name`` replaces the generated session name; ``tags`` and ``metadata``
+    are added to the ones the platform sets itself.
+    """
+
+    name: str | None = None
+    tags: tuple[str, ...] = ()
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
 @dataclass
 class ComponentConfig:
     component: str  # one of components.COMPONENT_NAMES
