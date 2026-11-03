@@ -20,6 +20,7 @@ from adapters.tracing import LangfuseTracer, NoopTracer
 from config import EvalBackends, resolve_backends
 from conftest import UNCONFIGURED_LANGFUSE
 from datasets import DatasetConfig
+from eval_types import RunLabels
 from settings import (
     EvalRunSettings,
     EvalSettings,
@@ -217,6 +218,28 @@ def test_creates_one_shared_langfuse_context(monkeypatch):
     client.flush.assert_not_called()
     backends.close()
     client.flush.assert_called_once_with()
+
+
+def test_labels_reach_the_created_context(monkeypatch):
+    calls = []
+
+    def fake_get_langfuse_context(**kwargs):
+        calls.append(kwargs)
+        return LangfuseContext(client=SimpleNamespace())
+
+    monkeypatch.setattr(
+        langfuse_utils, "get_langfuse_context", fake_get_langfuse_context
+    )
+
+    resolve_backends(
+        DATASET_CONFIG,
+        settings=_settings("langfuse", "langfuse"),
+        labels=RunLabels(name="named-run", tags=("model:gpt",), metadata={"run": 1}),
+    )
+
+    assert calls[0]["session_id"] == "named-run"
+    assert calls[0]["tags"] == ["gambling_XS", "model:gpt"]
+    assert calls[0]["metadata"] == {"dataset": "gambling_XS", "run": 1}
 
 
 def test_reuses_caller_context_without_taking_ownership(monkeypatch):
