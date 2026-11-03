@@ -8,6 +8,7 @@ import type { Mock } from "./types";
 import {
   getApiConsultationV2Url,
   getConsultationViewUrl,
+  getDataUploadChartsAndFiltersUrl,
   getDataUploadChecksUrl,
   getDataUploadDeleteQuestionsUrl,
   getDataUploadDemographicsUrl,
@@ -132,7 +133,8 @@ export function assertSurveyImportState(
     | "delete-questions"
     | "upload-file"
     | "overview"
-    | "select-provider",
+    | "select-provider"
+    | "charts-and-filters",
 ) {
   if (!consultation || !astroContext) {
     return;
@@ -161,7 +163,8 @@ export function assertSurveyImportState(
   // redirect away if on question review but import status is not pending questions
   if (
     (currentPage === "delete-questions" ||
-      currentPage === "review-questions") &&
+      currentPage === "review-questions" ||
+      currentPage === "charts-and-filters") &&
     consultation?.survey_import_status !== "pending_questions" &&
     consultation?.survey_import_status !== "pending_demographics"
   ) {
@@ -182,7 +185,7 @@ export function assertSurveyImportState(
     }
     if (consultation?.survey_import_status === "pending_demographics") {
       return astroContext.redirect(
-        getDataUploadDemographicsUrl(consultation.id || ""),
+        getDataUploadChartsAndFiltersUrl(consultation.id || ""),
       );
     }
   }
