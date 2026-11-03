@@ -376,3 +376,75 @@ def test_v2_update_put_not_allowed(client, question_detail_url, consultation, no
     )
 
     assert response.status_code == 405
+
+
+@pytest.mark.django_db
+def test_v2_update_sets_short_name(client, consultation, non_staff_user_token, question_detail_url):
+    question = QuestionFactory(consultation=consultation, type=Question.QuestionType.DEMOGRAPHIC)
+
+    response = client.patch(
+        question_detail_url(question),
+        data={"short_name": "  Region  "},
+        content_type="application/json",
+        headers={"Authorization": f"Bearer {non_staff_user_token}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["short_name"] == "Region"
+    question.refresh_from_db()
+    assert question.short_name == "Region"
+
+
+@pytest.mark.django_db
+def test_v2_update_rejects_short_name_over_forty_characters(
+    client, consultation, non_staff_user_token, question_detail_url
+):
+    question = QuestionFactory(consultation=consultation, type=Question.QuestionType.DEMOGRAPHIC)
+
+    response = client.patch(
+        question_detail_url(question),
+        data={"short_name": "x" * 41},
+        content_type="application/json",
+        headers={"Authorization": f"Bearer {non_staff_user_token}"},
+    )
+
+    assert response.status_code == 400
+    assert "short_name" in response.json()
+    question.refresh_from_db()
+    assert question.short_name == ""
+
+
+@pytest.mark.django_db
+def test_v2_update_sets_dashboard_role(
+    client, consultation, non_staff_user_token, question_detail_url
+):
+    question = QuestionFactory(consultation=consultation, type=Question.QuestionType.CLOSED)
+
+    response = client.patch(
+        question_detail_url(question),
+        data={"dashboard_role": "standalone"},
+        content_type="application/json",
+        headers={"Authorization": f"Bearer {non_staff_user_token}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["dashboard_role"] == "standalone"
+    question.refresh_from_db()
+    assert question.dashboard_role == Question.DashboardRole.STANDALONE
+
+
+@pytest.mark.django_db
+def test_v2_update_rejects_unknown_dashboard_role(
+    client, consultation, non_staff_user_token, question_detail_url
+):
+    question = QuestionFactory(consultation=consultation, type=Question.QuestionType.CLOSED)
+
+    response = client.patch(
+        question_detail_url(question),
+        data={"dashboard_role": "chart"},
+        content_type="application/json",
+        headers={"Authorization": f"Bearer {non_staff_user_token}"},
+    )
+
+    assert response.status_code == 400
+    assert "dashboard_role" in response.json()

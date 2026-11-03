@@ -78,7 +78,7 @@ def test_demographics_returns_empty_list_for_unanswered_question(
 
 
 @pytest.mark.django_db
-def test_demographics_rejects_non_demographic_question(
+def test_demographics_rejects_open_question(
     client, consultation, non_staff_user_token, demographics_url, demographic_response
 ):
     question = QuestionFactory(consultation=consultation, type=Question.QuestionType.OPEN)
@@ -176,3 +176,18 @@ def test_demographics_response_ids_are_accepted_by_merge(
         ("North", 2),
         ("South", 1),
     ]
+
+
+@pytest.mark.django_db
+def test_demographics_lists_answers_to_a_closed_question(
+    client, consultation, non_staff_user_token, demographics_url, demographic_response
+):
+    question = QuestionFactory(consultation=consultation, type=Question.QuestionType.CLOSED)
+    answered = demographic_response(question, "Yes")
+
+    response = client.get(
+        demographics_url(consultation, question), headers=auth(non_staff_user_token)
+    )
+
+    assert response.status_code == 200
+    assert response.json() == [{"text": "Yes", "count": 1, "responses": [str(answered.id)]}]

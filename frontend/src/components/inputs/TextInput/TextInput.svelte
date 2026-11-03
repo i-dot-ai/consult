@@ -22,6 +22,7 @@
   export let testId: string | undefined = undefined;
   export let disabled: boolean = false;
   export let ariaDescribedby: string | undefined = undefined;
+  export let ariaInvalid: boolean = false;
 
   export let variant: "default" | "search" = "default";
 </script>
@@ -50,6 +51,7 @@
     {required}
     {disabled}
     aria-describedby={ariaDescribedby || undefined}
+    aria-invalid={ariaInvalid || undefined}
     data-testid={testId}
     on:input={(e) => setValue((e.target as HTMLInputElement).value)}
   />

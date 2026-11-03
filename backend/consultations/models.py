@@ -145,7 +145,16 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         CLOSED = "closed", "Closed"
         OPEN = "open", "Open"
 
+    class DashboardRole(models.TextChoices):
+        FILTER = "filter", "Filter across all questions"
+        STANDALONE = "standalone", "Show on its own"
+
     closed_question = models.ForeignKey("self", on_delete=models.SET_NULL, blank=True, null=True)
+    short_name = models.CharField(max_length=40, blank=True, default="")
+    # How a closed question appears on the dashboard; demographic questions always filter.
+    dashboard_role = models.CharField(
+        max_length=16, choices=DashboardRole.choices, default=DashboardRole.FILTER
+    )
     order = models.PositiveSmallIntegerField(blank=True, null=True)
     identifier = models.CharField(blank=True, null=True, max_length=8)
     type = models.CharField(
@@ -189,6 +198,10 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     def multiple_choice_options(self) -> list:
         """List of options when has_multiple_choice=True"""
         return list(self.multichoiceanswer_set.all())
+
+    @property
+    def is_chartable(self) -> bool:
+        return self.type in (self.QuestionType.CLOSED, self.QuestionType.DEMOGRAPHIC)
 
     @property
     def proportion_of_audited_answers(self) -> float:

@@ -38,6 +38,13 @@ describe("getPercentage", () => {
     const result = getPercentage(0, 0);
     expect(result).toEqual(0);
   });
+  it("rounds to one decimal place by default", () => {
+    expect(getPercentage(1, 3)).toEqual(33.3);
+  });
+  it("rounds to the decimal places asked for", () => {
+    expect(getPercentage(1, 3, 0)).toEqual(33);
+    expect(getPercentage(1, 3, 2)).toEqual(33.33);
+  });
 });
 
 describe("toTitleCase", () => {
