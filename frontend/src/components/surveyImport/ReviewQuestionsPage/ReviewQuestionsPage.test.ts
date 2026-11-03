@@ -705,7 +705,7 @@ describe("ReviewQuestionsPage", () => {
       expect(window.location.href).toBe(
         `/consultations/${CONSULTATION_ID}/data-upload/charts-and-filters`,
       );
-    })
+    });
   });
 
   it("matches snapshot", async () => {
