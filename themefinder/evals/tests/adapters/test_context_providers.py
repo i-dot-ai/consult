@@ -7,6 +7,7 @@ import pytest
 from adapters import context_providers
 from adapters.context_providers import build_langfuse_context
 from datasets import DatasetConfig
+from eval_types import RunLabels
 from settings import (
     EvalRunSettings,
     EvalSettings,
@@ -60,6 +61,37 @@ def test_created_context_is_flushed_on_close(monkeypatch):
 
     assert provided.context is context
     flush.assert_called_once_with(context)
+
+
+def test_labels_name_and_tag_the_created_context(monkeypatch):
+    calls = []
+
+    def fake_get_langfuse_context(**kwargs):
+        calls.append(kwargs)
+        return LangfuseContext(client=SimpleNamespace())
+
+    monkeypatch.setattr(
+        context_providers.langfuse_utils,
+        "get_langfuse_context",
+        fake_get_langfuse_context,
+    )
+    labels = RunLabels(
+        name="comparison_1_gpt_generation_run2",
+        tags=("model:gpt", "run:2"),
+        metadata={"run_number": 2},
+    )
+
+    build_langfuse_context(DATASET_CONFIG, _settings(), None, labels)
+
+    assert calls == [
+        {
+            "session_id": "comparison_1_gpt_generation_run2",
+            "eval_type": "generation",
+            "metadata": {"dataset": "gambling_XS", "run_number": 2},
+            "tags": ["gambling_XS", "model:gpt", "run:2"],
+            "settings": calls[0]["settings"],
+        }
+    ]
 
 
 def test_supplied_context_is_not_flushed_on_close(monkeypatch):
