@@ -117,7 +117,6 @@ def resolve_backends(
     dataset_config: DatasetConfig,
     *,
     settings: EvalSettings | None = None,
-    context: dict[str, Any] | None = None,
     labels: RunLabels | None = None,
     repeat: int = 1,
 ) -> EvalBackends:
@@ -131,7 +130,6 @@ def resolve_backends(
     settings = settings if settings is not None else eval_settings
     dataset_source = settings.eval.dataset_source or "local"
     artefact_store_source = settings.eval.artefact_store or "local"
-    supplied = context or {}
     provided: dict[str, ProvidedContext] = {}
 
     def context_for(source: str) -> Any | None:
@@ -145,9 +143,7 @@ def resolve_backends(
         if provider is None:
             return None
         if source not in provided:
-            provided[source] = provider(
-                dataset_config, settings, supplied.get(source), labels
-            )
+            provided[source] = provider(dataset_config, settings, labels)
         return provided[source].context
 
     dataset_context = context_for(dataset_source)
