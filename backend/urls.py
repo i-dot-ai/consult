@@ -17,6 +17,7 @@ Including another URLconf
 
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path
 
 from consultations import urls, urls_v2
@@ -29,3 +30,6 @@ urlpatterns = [
 
 if settings.DATA_SETUP_V2_ENABLED:
     urlpatterns.insert(0, path("", include(urls_v2)))
+
+if settings.DEBUG:
+    urlpatterns += staticfiles_urlpatterns()
