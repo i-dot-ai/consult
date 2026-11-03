@@ -47,7 +47,6 @@ async def evaluate_component(
     *,
     llm: Any | None = None,
     judge_llm: Any | None = None,
-    context: dict[str, Any] | None = None,
     labels: RunLabels | None = None,
     question_num: int | None = None,
     settings: EvalSettings | None = None,
@@ -86,7 +85,6 @@ async def evaluate_component(
     backends = resolve_backends(
         dataset_config,
         settings=settings,
-        context=context,
         labels=labels,
         repeat=runs,
     )
