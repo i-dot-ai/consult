@@ -39,12 +39,11 @@
 
   const questionsQuery = $derived(buildQuestionsV2Query(consultationId));
   const merge = $derived(buildDemographicMergeQuery(consultationId));
-  const updateQuestion = $derived(buildQuestionV2UpdateQuery(
-    consultationId,
-    async () => {
+  const updateQuestion = $derived(
+    buildQuestionV2UpdateQuery(consultationId, async () => {
       await questionsQuery.fetch();
-    },
-  ));
+    }),
+  );
   const findThemes = $derived(buildFindingThemesQuery(consultationId));
 
   let allQuestions: QuestionV2[] = $derived(questionsQuery.query.data ?? []);

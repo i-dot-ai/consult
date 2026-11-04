@@ -38,7 +38,7 @@
     errorMessage = "";
     try {
       await findThemes.fetch({});
-    } catch (err) {
+    } catch {
       errorMessage = "Fetch failed";
     }
   };
@@ -57,7 +57,9 @@
       transition:slide={{ duration: 200 }}
       role="alert"
     >
-      {findThemes.query.error?.message || errorMessage || `An error occurred: ${findThemes.query.status}`}
+      {findThemes.query.error?.message ||
+        errorMessage ||
+        `An error occurred: ${findThemes.query.status}`}
     </div>
   {/if}
 

@@ -20,7 +20,6 @@ import type {
   UpdateConsultationBody,
 } from "./types";
 import type { Consultation } from "../../types";
-import { getApiFindThemesUrl } from "../../routes";
 
 export function buildConsultationsGetQuery() {
   return buildQuery<ConsultationsGetResponse>(consultationsQueryParts.url(), {
