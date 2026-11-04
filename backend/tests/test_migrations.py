@@ -24,6 +24,22 @@ def test_0004_dashboard_permission(migrator):
 
 
 @pytest.mark.django_db()
+def test_0008_lowercase_email_field(migrator):
+    old_state = migrator.apply_initial_migration(
+        ("authentication", "0007_remove_user_has_dashboard_access")
+    )
+    User = old_state.apps.get_model("authentication", "User")
+    user = User.objects.create(email="Mixed.Case@example.com", password="")
+
+    new_state = migrator.apply_tested_migration(("authentication", "0008_lowercase_email_field"))
+
+    User = new_state.apps.get_model("authentication", "User")
+    assert User.objects.get(pk=user.pk).email == "mixed.case@example.com"
+
+    migrator.reset()
+
+
+@pytest.mark.django_db()
 def test_0043_convert_jsonfield_data_to_json(migrator):
     old_state = migrator.apply_initial_migration(
         ("consultations", "0042_respondent_themefinder_respondent_id")
