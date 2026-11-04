@@ -4,8 +4,10 @@ from typing import ClassVar
 from zipfile import BadZipFile
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.db.models import Prefetch, Q
+from django.shortcuts import get_object_or_404
 from openpyxl.utils.exceptions import InvalidFileException
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -44,9 +46,7 @@ class ConsultationViewSet(
     filterset_fields: ClassVar[dict] = {"title": ["iexact"]}
 
     def get_permissions(self):
-        if self.action == "assign_users":
-            return [IsAuthenticated(), IsConsultationOwnerOrSuperuser()]
-        if self.action == "destroy":
+        if self.action in ("assign_users", "remove_user", "destroy"):
             return [IsAuthenticated(), IsConsultationOwnerOrSuperuser()]
         return super().get_permissions()
 
@@ -105,19 +105,52 @@ class ConsultationViewSet(
 
         users = list(User.objects.filter(email__in=emails))
         existing_emails = {user.email for user in users}
-        missing_emails = [email for email in emails if email not in existing_emails]
-        if users:
-            consultation.users.add(*users)
+        created_users = []
+        for email in emails:
+            if email in existing_emails:
+                continue
+            try:
+                created_users.append(User.objects.create_user(email))
+            except ValidationError:
+                # Another request created this account between the lookup and now;
+                # it is still new from this request's point of view.
+                created_users.append(User.objects.get(email=email))
 
-        response_status = status.HTTP_201_CREATED if users else status.HTTP_200_OK
-        return Response(
-            {
-                "added_count": len(users),
-                "non_existent_emails": missing_emails,
-                "total_requested": len(emails),
-            },
-            status=response_status,
+        consultation.users.add(*users, *created_users)
+        logger.info(
+            "Added {added_emails} to consultation {consultation_id} by {actor}, "
+            "creating accounts for {created_emails}",
+            added_emails=[user.email for user in [*users, *created_users]],
+            created_emails=[user.email for user in created_users],
+            consultation_id=str(consultation.id),
+            actor=request.user.email,
         )
+        return Response(
+            {"added_count": len(users) + len(created_users)}, status=status.HTTP_201_CREATED
+        )
+
+    @action(detail=True, methods=["delete"], url_path="users", url_name="remove-user")
+    def remove_user(self, request, *args, **kwargs):
+        consultation = self.get_object()
+        user_id = request.query_params.get("user_id", "")
+        if not user_id.isdecimal():
+            raise serializers.ValidationError(
+                {"user_id": "Give the id of the person to remove as ?user_id=<id>."}
+            )
+        user = get_object_or_404(consultation.users, pk=int(user_id))
+        if user == consultation.created_by:
+            raise serializers.ValidationError(
+                {"user": "The person who created the consultation cannot be removed."}
+            )
+
+        consultation.users.remove(user)
+        logger.info(
+            "Removed {removed_email} from consultation {consultation_id} by {actor}",
+            removed_email=user.email,
+            consultation_id=str(consultation.id),
+            actor=request.user.email,
+        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post"], parser_classes=[MultiPartParser])
     def deep_validation(self, request, *args, **kwargs):
