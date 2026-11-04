@@ -7,6 +7,7 @@
   export let title: string = "";
   export let ariaLabel: string = "";
   export let variant: "inline" | "block" = "inline";
+  export let role: "button" | "link" = "button";
   export let openNewTab: boolean = false;
   export let testId: string = "";
 </script>
@@ -31,7 +32,7 @@
   data-testid={testId || ariaLabel}
   {title}
   tabindex="0"
-  role="button"
+  {role}
   onclick={variant === "block" ? () => (window.location.href = href) : null}
   onkeypress={(e: KeyboardEvent) =>
     handleEnterOrSpacePress(e, () => (window.location.href = href))}
