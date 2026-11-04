@@ -25,6 +25,7 @@
   import {
     getConsultationUsersUrl,
     getDataUploadSelectProviderUrl,
+    Suffixes,
   } from "../../../../global/routes";
   import type { ConsultationV2 } from "../../../../global/queries/consultations/types";
 
@@ -93,7 +94,7 @@
         <div class="my-auto">
           <Button
             size="sm"
-            href={getConsultationUsersUrl(consultationId)}
+            href={`${getConsultationUsersUrl(consultationId)}?from=${Suffixes.DataUpload}`}
             title="View who can see this consultation"
           >
             <span class="text-center">

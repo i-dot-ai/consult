@@ -1,0 +1,304 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ConsultationPeople > matches snapshot 1`] = `
+<div>
+  <div
+    class="mt-8 mb-4"
+  >
+    <!---->
+    <a
+      aria-label="Back to the consultation"
+      class="transition-colors duration-300 text-primary hover:underline"
+      data-testid="Back to the consultation"
+      href="/consultations/95ab7567-9381-48eb-8d20-ddeb43691b58"
+      role="link"
+      tabindex="0"
+      title=""
+    >
+      <!---->
+      Back to the consultation
+      
+      
+    </a>
+    
+    <!---->
+  </div>
+   
+  <div
+    class="flex flex-wrap items-start justify-between gap-4"
+  >
+    <!---->
+    <h2
+      class="text-neutral-700 text-lg"
+    >
+      <!---->
+      <!---->
+      People on this consultation
+      
+      
+      
+    </h2>
+    
+    <!---->
+     
+    <!---->
+    <button
+      aria-pressed="false"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+      data-variant="primary"
+      role="button"
+      tabindex="0"
+    >
+      <!---->
+      <!---->
+      Add people
+      
+      
+      
+    </button>
+    
+    <!---->
+  </div>
+   
+  <p
+    class="mt-2 text-sm text-neutral-500"
+  >
+    Future homes standard · 3 people
+    <!---->
+  </p>
+   
+  <!---->
+   
+  <!---->
+   
+  <!---->
+   
+  <div
+    class="people-table mt-4 svelte-gowcun"
+  >
+    <div
+      class="w-full"
+    >
+      <div
+        aria-atomic="true"
+        aria-live="polite"
+        class="sr-only"
+      >
+        
+      </div>
+       
+      <div
+        class="flex justify-between items-center gap-2 pb-4 pt-2"
+      >
+        <!---->
+         
+        <!---->
+      </div>
+       
+      <div
+        class="max-h-[50rem] overflow-x-auto rounded-lg border border-neutral-200 bg-white"
+      >
+        <table
+          class="min-w-full divide-y divide-neutral-200"
+        >
+          <caption
+            class="sr-only"
+          >
+            People on Future homes standard
+          </caption>
+          <!---->
+          <thead
+            class="bg-neutral-50"
+          >
+            <tr>
+              <th
+                aria-sort="none"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                data-testid="header-email"
+                scope="col"
+              >
+                <span>
+                  Email address
+                </span>
+                <!---->
+              </th>
+              <th
+                aria-sort="none"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 text-right"
+                data-testid="header-user"
+                scope="col"
+              >
+                <span>
+                  Actions
+                </span>
+                <!---->
+              </th>
+              
+            </tr>
+          </thead>
+          <tbody
+            class="divide-y divide-neutral-200"
+          >
+            <!---->
+            <tr
+              class="transition-colors even:bg-neutral-50 hover:bg-neutral-100"
+              data-testid="datatable-row"
+            >
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                data-testid="cell-email"
+              >
+                <!---->
+                <!---->
+                <span
+                  class="flex flex-wrap items-center gap-2 text-neutral-900"
+                >
+                  <span>
+                    f.fisher@example.gov.uk (you)
+                  </span>
+                   
+                  <div
+                    class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800"
+                  >
+                    Creator
+                    <!---->
+                  </div>
+                  <!---->
+                </span>
+                
+                
+                <!---->
+              </td>
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 text-right"
+                data-testid="cell-user"
+              >
+                <!---->
+                <!---->
+                
+                
+                <!---->
+              </td>
+              
+            </tr>
+            <tr
+              class="transition-colors even:bg-neutral-50 hover:bg-neutral-100"
+              data-testid="datatable-row"
+            >
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                data-testid="cell-email"
+              >
+                <!---->
+                <!---->
+                <span
+                  class="flex flex-wrap items-center gap-2 text-neutral-900"
+                >
+                  <span>
+                    sam.kaur@example.gov.uk
+                  </span>
+                   
+                  <!---->
+                </span>
+                
+                
+                <!---->
+              </td>
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 text-right"
+                data-testid="cell-user"
+              >
+                <!---->
+                <!---->
+                <!---->
+                <button
+                  aria-label="Remove sam.kaur@example.gov.uk"
+                  aria-pressed="false"
+                  class="text-sm cursor-pointer rounded-md py-1 px-2 border border-red-700 bg-transparent text-red-700 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-red-800 hover:text-white svelte-1d0mdzt"
+                  data-variant="danger"
+                  role="button"
+                  tabindex="0"
+                >
+                  <!---->
+                  <!---->
+                  Remove
+                  
+                  
+                  
+                </button>
+                
+                
+                
+                <!---->
+              </td>
+              
+            </tr>
+            <tr
+              class="transition-colors even:bg-neutral-50 hover:bg-neutral-100"
+              data-testid="datatable-row"
+            >
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                data-testid="cell-email"
+              >
+                <!---->
+                <!---->
+                <span
+                  class="flex flex-wrap items-center gap-2 text-neutral-900"
+                >
+                  <span>
+                    priya.raghunathan@example.gov.uk
+                  </span>
+                   
+                  <!---->
+                </span>
+                
+                
+                <!---->
+              </td>
+              <td
+                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 text-right"
+                data-testid="cell-user"
+              >
+                <!---->
+                <!---->
+                <!---->
+                <button
+                  aria-label="Remove priya.raghunathan@example.gov.uk"
+                  aria-pressed="false"
+                  class="text-sm cursor-pointer rounded-md py-1 px-2 border border-red-700 bg-transparent text-red-700 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-red-800 hover:text-white svelte-1d0mdzt"
+                  data-variant="danger"
+                  role="button"
+                  tabindex="0"
+                >
+                  <!---->
+                  <!---->
+                  Remove
+                  
+                  
+                  
+                </button>
+                
+                
+                
+                <!---->
+              </td>
+              
+            </tr>
+            
+            <!---->
+          </tbody>
+        </table>
+      </div>
+    </div>
+     
+    <!---->
+    <!---->
+  </div>
+   
+  <!---->
+   
+  <!---->
+  
+</div>
+`;

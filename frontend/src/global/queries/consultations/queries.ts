@@ -3,14 +3,17 @@ import {
   consultationQueryParts,
   consultationsQueryParts,
   consultationsV2QueryParts,
+  consultationV2AssignUsersQueryParts,
   consultationV2DeepValidationQueryParts,
   consultationV2QueryParts,
   consultationV2UploadQueryParts,
+  consultationV2UserQueryParts,
 } from "./parts";
 import type {
   ConsultationsGetResponse,
   ConsultationsV2GetResponse,
   ConsultationV2,
+  ConsultationV2AssignUsersResponse,
   ConsultationV2CreateResponse,
   ConsultationV2UpdateResponse,
   UpdateConsultationBody,
@@ -140,6 +143,38 @@ export function buildConsultationUploadQuery(
       stringifyBody: false,
       omitContentType: true,
       onError: onError,
+    },
+  );
+}
+
+export function buildConsultationV2GetQuery(consultationId: string) {
+  return buildQuery<ConsultationV2>(
+    consultationV2QueryParts.url(consultationId),
+    {
+      key: consultationV2QueryParts.key(consultationId),
+      errorMessage: "Failed to load consultation",
+    },
+  );
+}
+
+export function buildConsultationV2AssignUsersQuery(consultationId: string) {
+  return buildQuery<ConsultationV2AssignUsersResponse>(
+    consultationV2AssignUsersQueryParts.url(consultationId),
+    {
+      key: consultationV2AssignUsersQueryParts.key(consultationId),
+      method: "POST",
+      errorMessage: "Failed to add people",
+    },
+  );
+}
+
+export function buildConsultationV2RemoveUserQuery(consultationId: string) {
+  return buildQuery<null>(
+    consultationV2UserQueryParts.url(consultationId, ":userId"),
+    {
+      key: consultationV2UserQueryParts.key(consultationId),
+      method: "DELETE",
+      errorMessage: "Failed to remove a person",
     },
   );
 }

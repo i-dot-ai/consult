@@ -22,6 +22,7 @@ export enum Suffixes {
   Themes = "themes",
   Users = "users",
   AddUsers = "add-users",
+  AssignUsers = "assign-users",
   SelectedThemes = "selected-themes",
   CandidateThemes = "candidate-themes",
   Select = "select",
@@ -92,6 +93,28 @@ export const getApiConsultationV2Url = (consultationId: string) => {
     Suffixes.Consultations,
     consultationId,
   );
+};
+
+export const getApiConsultationAssignUsersV2Url = (consultationId: string) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.AssignUsers,
+  );
+};
+
+export const getApiConsultationUserV2Url = (
+  consultationId: string,
+  userId: string,
+) => {
+  const usersUrl = urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Users,
+  );
+  return `${usersUrl}?user_id=${userId}`;
 };
 
 export const getApiQuestionsV2Url = (consultationId: string) => {
@@ -706,7 +729,6 @@ export const getDataUploadDemographicsUrl = (consultationId: string) => {
 };
 
 export const getConsultationUsersUrl = (consultationId: string) => {
-  // TODO: Subject to change, update accordingly
   return urlJoin(Routes.Consultations, consultationId, Suffixes.Users);
 };
 
