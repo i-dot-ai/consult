@@ -1,6 +1,8 @@
 import json
 
 import pytest
+
+from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
 from ci import build_baselines, check_metrics
 from components import COMPONENT_NAMES
 
@@ -72,6 +74,9 @@ class TestBuildBaseline(BuildBaselinesBase):
         metrics = self.run(tmp_path, (0.0, 0.0), metric="redundancy")
 
         assert metrics["redundancy"]["direction"] == "lower"
+        assert build_baselines.LOWER_IS_BETTER == frozenset(
+            RedundancyEvaluator.lower_is_better_metrics
+        )
 
     def test_runs_with_errors_are_rejected(self, tmp_path):
         with pytest.raises(ValueError, match="errors"):

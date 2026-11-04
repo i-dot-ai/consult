@@ -5,16 +5,16 @@ from __future__ import annotations
 import json
 from abc import ABC
 from dataclasses import replace
+from unittest.mock import Mock
 
 import pytest
 from conftest import _themes
 from fakes import FakeLangfuseClient, FakeTrace
 from httpx import RequestError
 from langfuse.api.core import ApiError
+from pydantic_evals.reporting import EvaluationReport
 
-from adapters.artefact_stores.base import (
-    ArtefactStorePort,
-)
+from adapters.artefact_stores.base import ArtefactStorePort
 from adapters.artefact_stores.composite import CompositeArtefactStore
 from adapters.artefact_stores.langfuse_adapter import LangfuseArtefactStore
 from adapters.artefact_stores.local_json_adapter import (
@@ -563,7 +563,7 @@ class TestLangfuseArtefactStore:
 
         assert client.flush_calls == 0
 
-    def test_finish_run_ignores_non_pydantic_engine_report_safely(self):
+    def test_finish_run_ignores_engine_report_safely(self):
         client = FakeLangfuseClient()
         context = LangfuseContext(client=client)
         store = LangfuseArtefactStore(context=context)
@@ -575,3 +575,16 @@ class TestLangfuseArtefactStore:
 
         assert client.flush_calls == 0
         assert results["question_part_1_groundedness"] == 4.5
+
+    def test_finish_run_does_not_print_the_pydantic_report(self):
+        store = LangfuseArtefactStore(
+            context=LangfuseContext(client=FakeLangfuseClient())
+        )
+        native_report = Mock(spec=EvaluationReport)
+
+        store.start_run("generation", "demo")
+        store.finish_run(
+            RunReport(outcomes=[_make_outcome()]), engine_report=native_report
+        )
+
+        native_report.print.assert_not_called()

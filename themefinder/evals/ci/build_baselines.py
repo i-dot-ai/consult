@@ -12,13 +12,13 @@ from collections.abc import Sequence
 from pathlib import Path
 
 import yaml
+
+from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
 from ci.check_metrics import summarise_payload
 from components import COMPONENT_NAMES
 
 EVALS_DIR = Path(__file__).resolve().parents[1]
-# Needs to be kept up to date with the metrics where a lower score is better.
-# Could maybe look at reading this directly from evaluators.
-LOWER_IS_BETTER = frozenset({"redundancy"})
+LOWER_IS_BETTER = frozenset(RedundancyEvaluator.lower_is_better_metrics)
 REQUIRED_RUNS = 3
 
 
