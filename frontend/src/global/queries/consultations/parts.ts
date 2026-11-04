@@ -3,6 +3,7 @@ import {
   getApiConsultationsRootUrl,
   getApiConsultationUploadUrl,
   getApiConsultationV2Url,
+  getApiFindThemesUrl,
   Routes,
   Suffixes,
 } from "../../routes";
@@ -48,4 +49,13 @@ export const consultationV2UploadQueryParts = {
     "upload",
   ],
   url: (consultationId: string) => getApiConsultationUploadUrl(consultationId),
+};
+
+export const consultationFindThemesQueryParts = {
+  key: (consultationId: string) => [
+    Suffixes.Consultations,
+    consultationId,
+    "find-themes",
+  ],
+  url: (consultationId: string) => getApiFindThemesUrl(consultationId),
 };
