@@ -180,4 +180,4 @@ export const findThemesFetchErrorMock = {
   url: consultationFindThemesQueryParts.url(CONSULTATION_ID),
   method: "POST",
   throws: new Error("Fetch error"),
-}
+};
