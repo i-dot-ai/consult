@@ -3,6 +3,7 @@
 from typing import ClassVar
 
 from django.db import migrations
+from django.db.models import Count
 from django.db.models.functions import Lower
 
 import authentication.models
@@ -10,7 +11,20 @@ import authentication.models
 
 def lowercase_stored_emails(apps, schema_editor):
     User = apps.get_model("authentication", "User")
-    User.objects.exclude(email=Lower("email")).update(email=Lower("email"))
+    # Lowering an address shared by several accounts would collide on the unique email;
+    # those accounts are consolidated separately.
+    shared_lowered_emails = (
+        User.objects.values(lowered=Lower("email"))
+        .annotate(accounts=Count("id"))
+        .filter(accounts__gt=1)
+        .values("lowered")
+    )
+    shared_accounts = User.objects.annotate(lowered=Lower("email")).filter(
+        lowered__in=shared_lowered_emails
+    )
+    User.objects.exclude(email=Lower("email")).exclude(pk__in=shared_accounts.values("pk")).update(
+        email=Lower("email")
+    )
 
 
 class Migration(migrations.Migration):
