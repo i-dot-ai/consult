@@ -12,10 +12,7 @@ class UserManager(BaseUserManager):
             password = str(uuid.uuid4())
 
         try:
-            user = self.model(
-                email=self.normalize_email(email).lower(),
-                is_staff=is_staff,
-            )
+            user = self.model(email=email, is_staff=is_staff)
 
             user.set_password(password)
             user.full_clean()
@@ -31,8 +28,18 @@ class UserManager(BaseUserManager):
         return user
 
 
+class LowercaseEmailField(models.EmailField):
+    def to_python(self, email):
+        email = super().to_python(email)
+        return email.lower() if isinstance(email, str) else email
+
+    def get_prep_value(self, email):
+        email = super().get_prep_value(email)
+        return email.lower() if isinstance(email, str) else email
+
+
 class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(
+    email = LowercaseEmailField(
         verbose_name="email address",
         max_length=255,
         unique=True,
