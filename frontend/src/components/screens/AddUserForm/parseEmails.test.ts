@@ -16,4 +16,10 @@ describe("parseEmails", () => {
 
     expect(parseEmails(input)).toEqual(expected);
   });
+
+  it("handles semicolons between emails", () => {
+    expect(
+      parseEmails("one@example.com; two@example.com;three@example.com"),
+    ).toEqual(["one@example.com", "two@example.com", "three@example.com"]);
+  });
 });

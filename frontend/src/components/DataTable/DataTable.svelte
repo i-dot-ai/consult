@@ -47,6 +47,7 @@
     paginated?: boolean;
     pageSizes?: number[];
     columnSelect?: boolean;
+    striped?: boolean;
     loadingCondition?: boolean;
     errorCondition?: boolean;
     emptyText?: string;
@@ -72,6 +73,7 @@
     paginated = true,
     pageSizes = [10, 50, 100, 250, 500],
     columnSelect = true,
+    striped = false,
     loadingCondition = false,
     errorCondition = false,
     emptyText = "No data available",
@@ -428,7 +430,9 @@
             <tr
               class={clsx([
                 "transition-colors",
-                "hover:bg-neutral-50",
+                striped
+                  ? "even:bg-neutral-50 hover:bg-neutral-100"
+                  : "hover:bg-neutral-50",
                 Boolean(onRowClick) && "cursor-pointer",
               ])}
               onclick={() => onRowClick?.(row)}
