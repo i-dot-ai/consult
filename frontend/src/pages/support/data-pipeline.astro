@@ -146,7 +146,11 @@ const enableV2 = getDataSetupV2Enabled();
       and can take up to a few hours depending on the size of the consultation.
     </Text>
 
-    <FindThemesForm client:load consultations={findThemesFoldersData || []} enableV2={enableV2} />
+    <FindThemesForm
+      client:load
+      consultations={findThemesFoldersData || []}
+      enableV2={enableV2}
+    />
 
     <div class="my-8"></div>
 

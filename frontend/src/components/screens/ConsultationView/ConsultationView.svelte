@@ -412,10 +412,10 @@
       {#if consultationData?.stage === "finding_themes"}
         <Panel bg={true} border={true}>
           <p class="text-sm leading-relaxed text-neutral-900">
-            Finding themes can take more than 20 minutes, but can take longer depending
-            on the size of your consultation. You can leave and come back from the
-            consultation page at any time. Your consultation status will be updated when
-            the themes are ready.
+            Finding themes can take more than 20 minutes, but can take longer
+            depending on the size of your consultation. You can leave and come
+            back from the consultation page at any time. Your consultation
+            status will be updated when the themes are ready.
           </p>
         </Panel>
       {/if}

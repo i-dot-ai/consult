@@ -6,7 +6,10 @@
   import Link from "../../Link.svelte";
 
   import { Routes } from "../../../global/routes";
-  import { buildFindingThemesQuery, buildFindingThemesV2Query } from "../../../global/queries/consultations/queries";
+  import {
+    buildFindingThemesQuery,
+    buildFindingThemesV2Query,
+  } from "../../../global/queries/consultations/queries";
   import type { ConsultationFolder } from "../../../global/types";
 
   interface Props {
@@ -29,9 +32,10 @@
   let consultationId = $derived<string | undefined>(consultations[0]?.id);
   let errorMessage = $state<string | undefined>(undefined);
 
-  const findThemes = $derived(enableV2
-    ? buildFindingThemesV2Query(consultationId || "")
-    : buildFindingThemesQuery(consultationId || "")
+  const findThemes = $derived(
+    enableV2
+      ? buildFindingThemesV2Query(consultationId || "")
+      : buildFindingThemesQuery(consultationId || ""),
   );
 
   const handleSubmit = async () => {
