@@ -131,11 +131,11 @@ class GenerationConfig:
 
     position_distribution: dict[str, float] = field(
         default_factory=lambda: {
-            "agree": 0.30,
-            "disagree": 0.20,
-            "nuanced": 0.20,
-            "off_topic": 0.05,
-            "low_quality": 0.05,
+            "agree": 0.35,
+            "disagree": 0.25,
+            "nuanced": 0.35,
+            "off_topic": 0.03,
+            "low_quality": 0.02,
         }
     )
 
