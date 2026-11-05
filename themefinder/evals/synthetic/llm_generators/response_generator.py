@@ -4,6 +4,7 @@ import logging
 import random
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Literal
 
 import openai
 from pydantic import BaseModel, Field
@@ -19,7 +20,9 @@ class GeneratedResponse(BaseModel):
     """LLM-generated consultation response."""
 
     response: str = Field(description="The consultation response text")
-    sentiment: str = Field(description="AGREE, DISAGREE, or UNCLEAR")
+    sentiment: Literal["AGREE", "DISAGREE", "UNCLEAR"] = Field(
+        description="Overall position: AGREE, DISAGREE, or UNCLEAR"
+    )
     evidence_rich: bool = Field(
         description="True if response contains specific evidence, examples, or personal experience"
     )
@@ -349,7 +352,7 @@ def _build_human_prompt(
         parts.append("## Your Previous Responses in This Consultation\n")
         for i, prev in enumerate(previous_responses, 1):
             parts.append(f"**Q{i}:** {prev.question_text}")
-            parts.append(f'*Your answer ({prev.sentiment}):* "{prev.response_text}"\n')
+            parts.append(f'*Your previous answer:* "{prev.response_text}"\n')
         parts.append("---\n")
 
     # Current question
@@ -359,16 +362,25 @@ def _build_human_prompt(
 
     parts.append(f"## Current Question\n{question_text}\n")
 
-    # Theme guidance
+    # Theme guidance is private planning context. Theme labels and stance enums are
+    # ground truth for evaluation, so must not be exposed in the generated response.
     theme_context = []
     for tid, stance in zip(theme_ids, stances):
         theme = next((t for t in themes if t["topic_id"] == tid), None)
         if theme:
-            theme_context.append(f"- {theme['topic_label']} (stance: {stance})")
+            stance_instruction = {
+                "POSITIVE": "Present a supportive perspective on this issue",
+                "NEGATIVE": "Present a critical perspective on this issue",
+                "NEUTRAL": "Present a balanced or uncertain perspective on this issue",
+            }[stance]
+            theme_context.append(
+                f"- {stance_instruction}: {theme['topic_description']}"
+            )
 
     if theme_context:
         parts.append(
-            "Your response should address these themes with the indicated stance:"
+            "Use the following private background to shape your views. Express it naturally; "
+            "do not mention internal categories, labels, stance names, or use them as headings:"
         )
         parts.append("\n".join(theme_context))
         parts.append("")

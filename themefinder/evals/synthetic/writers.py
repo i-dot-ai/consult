@@ -188,6 +188,7 @@ class DatasetWriter:
         )
         (outputs_base / "mapping.jsonl").write_text("")
         (outputs_base / "detail_detection.jsonl").write_text("")
+        (outputs_base / "sentiment.jsonl").write_text("")
 
         self._initialised_questions.add(question_part)
 
@@ -238,6 +239,19 @@ class DatasetWriter:
                         {
                             "response_id": r["response_id"],
                             "evidence_rich": r["evidence_rich"],
+                        }
+                    )
+                    + "\n"
+                )
+
+        # Append sentiment
+        with open(outputs_base / "sentiment.jsonl", "a") as f:
+            for r in responses:
+                f.write(
+                    json.dumps(
+                        {
+                            "response_id": r["response_id"],
+                            "position": r["position"],
                         }
                     )
                     + "\n"
