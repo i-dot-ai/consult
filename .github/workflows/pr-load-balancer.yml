@@ -1,0 +1,73 @@
+name: PR review load balancer
+
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  report-review-load:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment with team review load
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const teamMembers = [
+              'SamuelHLewis',
+              'Nazehs',
+              '252afh',
+              'hchandrashekaran',
+              'ekin-odabas',
+              'georgia-i-ai',
+              'Olu-ai',
+            ];
+            const reviewCounts = new Map(teamMembers.map((login) => [login, 0]));
+            const pullRequests = await github.paginate(
+              github.rest.pulls.list,
+              { owner, repo, state: 'open', per_page: 100 },
+            );
+
+            for (const pullRequest of pullRequests) {
+              const { data: requestedReviewers } = await github.rest.pulls.listRequestedReviewers({
+                owner,
+                repo,
+                pull_number: pullRequest.number,
+              });
+
+              for (const reviewer of requestedReviewers.users) {
+                if (reviewCounts.has(reviewer.login)) {
+                  reviewCounts.set(reviewer.login, reviewCounts.get(reviewer.login) + 1);
+                }
+              }
+            }
+
+            const rows = [...reviewCounts.entries()]
+              .sort(([loginA, countA], [loginB, countB]) =>
+                countA - countB || loginA.localeCompare(loginB),
+              )
+              .map(([login, count]) => `| @${login} | ${count} |`)
+              .join('\n');
+
+            const body = [
+              '## PR review load',
+              '',
+              'Use this snapshot to choose reviewers manually. Counts show open PRs where each team member currently has a pending review request.',
+              '',
+              '| Team member | Assigned reviews |',
+              '| --- | ---: |',
+              rows,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: context.issue.number,
+              body,
+            });
