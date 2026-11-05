@@ -34,6 +34,10 @@ class ThemeGenerationError(RuntimeError):
     """Raised when theme generation fails for one or more questions."""
 
 
+class DatasetValidationError(RuntimeError):
+    """Raised when generated data does not satisfy the dataset contract."""
+
+
 class SyntheticDatasetGenerator:
     """Orchestrates synthetic consultation dataset generation.
 
@@ -318,9 +322,15 @@ class SyntheticDatasetGenerator:
             self._save_checkpoint(batch_num, len(respondent_specs))
             await asyncio.sleep(0.2)
 
-        validation_result = validate_dataset(self.config.output_dir)
+        validation_result = validate_dataset(
+            self.config.output_dir,
+            expected_responses_per_question=self.config.n_responses,
+        )
         if not validation_result.is_valid:
-            logger.warning(f"Validation warnings: {validation_result.errors}")
+            raise DatasetValidationError(
+                "Generated dataset failed validation: "
+                + "; ".join(validation_result.errors)
+            )
 
         if self._checkpoint_path.exists():
             self._checkpoint_path.unlink()

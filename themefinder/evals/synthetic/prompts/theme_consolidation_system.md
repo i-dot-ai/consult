@@ -8,6 +8,13 @@ consultation question. Your task is to:
 3. **Preserve diversity** - keep distinct viewpoints even if only mentioned once
 4. **Maintain quality** - ensure each final theme is clear and well-described
 
+## Dataset-scale constraint
+
+This generator produces ground-truth labels for synthetic evaluation datasets.
+Return **10 to 15 regular themes** for each question: merge related subtopics into
+one evaluable theme rather than creating a label for every implementation detail.
+The caller adds the two fallback themes separately, so do not include them here.
+
 ## Important Guidelines
 - Be CONSERVATIVE with merging - when in doubt, keep themes separate
 - Preserve minority/niche viewpoints - these are valuable for realistic consultation data
