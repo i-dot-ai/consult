@@ -13,6 +13,11 @@ RUN npm ci
 # Copy application code
 COPY frontend/ .
 
+# Build-time flag controlling whether the v2 data setup flow is enabled.
+# Baked into the Astro bundle at build time — cannot be changed at runtime.
+ARG PUBLIC_DATA_SETUP_V2_ENABLED=false
+ENV PUBLIC_DATA_SETUP_V2_ENABLED=${PUBLIC_DATA_SETUP_V2_ENABLED}
+
 # Build the application (as root to avoid permission issues)
 RUN npm run build
 
