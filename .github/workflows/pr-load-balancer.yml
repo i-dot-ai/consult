@@ -2,7 +2,7 @@ name: PR review load balancer
 
 on:
   pull_request_target:
-    types: [opened]
+    types: [opened, ready_for_review]
 
 permissions:
   contents: read
@@ -10,24 +10,28 @@ permissions:
 
 jobs:
   report-review-load:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - name: Comment with team review load
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          CONSULT_TEAM_READ_TOKEN: ${{ secrets.CONSULT_TEAM_READ_TOKEN }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const teamMembers = [
-              'SamuelHLewis',
-              'Nazehs',
-              '252afh',
-              'hchandrashekaran',
-              'ekin-odabas',
-              'georgia-i-ai',
-              'Olu-ai',
-            ];
+            const teamMembers = await github.paginate(
+              github.rest.teams.listMembersInOrg,
+              {
+                org: owner,
+                team_slug: 'consult-team',
+                per_page: 100,
+                headers: { authorization: `Bearer ${process.env.CONSULT_TEAM_READ_TOKEN}` },
+              },
+              (response) => response.data.map((member) => member.login),
+            );
             const reviewCounts = new Map(teamMembers.map((login) => [login, 0]));
             const pullRequests = await github.paginate(
               github.rest.pulls.list,
@@ -55,7 +59,9 @@ jobs:
               .map(([login, count]) => `| @${login} | ${count} |`)
               .join('\n');
 
+            const commentMarker = '<!-- pr-review-load -->';
             const body = [
+              commentMarker,
               '## PR review load',
               '',
               'Use this snapshot to choose reviewers manually. Counts show open PRs where each team member currently has a pending review request.',
@@ -65,9 +71,28 @@ jobs:
               rows,
             ].join('\n');
 
-            await github.rest.issues.createComment({
+            const comments = await github.paginate(github.rest.issues.listComments, {
               owner,
               repo,
               issue_number: context.issue.number,
-              body,
+              per_page: 100,
             });
+            const existingComment = comments.find((comment) =>
+              comment.user?.login === 'github-actions[bot]' && comment.body?.includes(commentMarker),
+            );
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existingComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
