@@ -13,7 +13,11 @@ two new ones. The clarity test separately checks clear and opaque wording.
     (nothing)             <-  INVENTED_RAISE_TAX     INVENTED: no original behind it
 """
 
+import warnings
+from pathlib import Path
+
 import pytest
+import yaml
 from adapters.evaluators.clarity_evaluator import ClarityEvaluator
 from adapters.evaluators.ground_information_evaluator import (
     GroundednessInformationRetentionEvaluator,
@@ -22,8 +26,12 @@ from adapters.evaluators.information_equivalence_evaluator import (
     InformationEquivalenceEvaluator,
 )
 from conftest import make_case
-from run_eval import _create_default_llm
+from run_eval import _create_llm
 from settings import eval_settings
+
+# The judge DVC runs with, so results don't depend on a developer's .env
+PARAMS_PATH = Path(__file__).resolve().parents[3] / "params.yaml"
+JUDGE_MODEL = yaml.safe_load(PARAMS_PATH.read_text())["judge_model"]
 
 
 def _theme(label: str, description: str) -> dict[str, str]:
@@ -61,10 +69,15 @@ REFINED_THEMES = [REWORDED_BAN_ADVERTS, INVENTED_RAISE_TAX]
 
 @pytest.fixture
 def judge():
-    """The default gateway model, or a skip when credentials are not configured."""
+    """The pipeline's judge model, or a skip when gateway credentials are not set."""
     if not eval_settings.gateway.url or not eval_settings.gateway.api_key:
+        # A bare skip is easy to miss, and these are the only real checks of the prompts
+        warnings.warn(
+            "Live judge prompt tests skipped: LLM gateway credentials not set",
+            stacklevel=1,
+        )
         pytest.skip("LLM gateway credentials not set")
-    return _create_default_llm(eval_settings)
+    return _create_llm(eval_settings, JUDGE_MODEL)
 
 
 async def test_ground_information_flags_invented_and_lost_themes(judge):

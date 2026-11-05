@@ -17,7 +17,8 @@ from utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 CONSISTENCY_METRIC = "output_consistency"
-PAIR_METRICS = ("f1", "count")
+# How far two repeated runs agree on a case's output: shared items, and list length
+CONSISTENCY_SCORES = ("f1", "count")
 TRACK_STATUSES = ("stable", "reworded", "intermittent")
 # shortcut: untuned guess at "same theme, reworded"; tune on real repeated runs.
 MATCH_THRESHOLD = 0.75
@@ -87,7 +88,7 @@ def _pair_scores(n_a: int, n_b: int, shared: int | None) -> dict[str, float | No
 
 
 def _mean_pair_scores(pairs: list[dict[str, float | None]]) -> dict[str, float | None]:
-    return {m: _mean_or_none([pair[m] for pair in pairs]) for m in PAIR_METRICS}
+    return {m: _mean_or_none([pair[m] for pair in pairs]) for m in CONSISTENCY_SCORES}
 
 
 def _mean_or_none(values: list[float | None]) -> float | None:

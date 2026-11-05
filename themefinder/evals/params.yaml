@@ -13,6 +13,10 @@ dataset:
 # experiment with `-S params.yaml:runs=<n>`.
 runs: 1
 
+# Judge for every eval except mapping, kept fixed so scores stay comparable
+# across task models.
+judge_model: gpt-4.1-sweden-2025-03
+
 evals:
   mapping:
     model: gpt-4.1-sweden-2025-03

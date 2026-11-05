@@ -151,14 +151,11 @@ class FakeArtefactStore(ArtefactStorePort):
 class FakeTrace:
     def __init__(self, trace_id: str):
         self.trace_id = trace_id
+        self.id = "generated-observation-id"
         self.updated_output = None
-        self.trace_updates: list[dict] = []
 
     def update(self, *, output):
         self.updated_output = output
-
-    def update_trace(self, **kwargs):
-        self.trace_updates.append(kwargs)
 
 
 class _FakeDatasetRunItemsApi:
@@ -166,20 +163,28 @@ class _FakeDatasetRunItemsApi:
         self.create_calls = []
         self.error: Exception | None = None
 
-    def create(self, *, request):
-        self.create_calls.append(request)
+    # Keyword-only with no **kwargs, so a call that doesn't match v4's signature fails here too
+    def create(self, *, run_name, dataset_item_id, trace_id=None, metadata=None):
+        self.create_calls.append(
+            SimpleNamespace(
+                run_name=run_name,
+                dataset_item_id=dataset_item_id,
+                trace_id=trace_id,
+                metadata=metadata,
+            )
+        )
         if self.error is not None:
             raise self.error
 
 
-class _FakeLangfuseV3Api:
+class _FakeLangfuseApi:
     def __init__(self):
         self.dataset_run_items = _FakeDatasetRunItemsApi()
 
 
 class FakeLangfuseClient:
     def __init__(self):
-        self.api = _FakeLangfuseV3Api()
+        self.api = _FakeLangfuseApi()
         self.create_trace_id_calls = 0
         self.start_span_calls: list[dict] = []
         self.last_span_trace: FakeTrace | None = None
@@ -193,7 +198,7 @@ class FakeLangfuseClient:
         return "generated-trace-id"
 
     @contextmanager
-    def start_as_current_span(self, **kwargs):
+    def start_as_current_observation(self, **kwargs):
         self.start_span_calls.append(kwargs)
         trace = FakeTrace(kwargs["trace_context"]["trace_id"])
         self.last_span_trace = trace

@@ -91,6 +91,8 @@ class EvalSettings:
     langfuse: LangfuseSettings | None
     eval: EvalRunSettings
     log_level: LogLevel
+    # Separate from auto_eval_model so judge calls never reuse the model under test
+    judge_model: str | None = None
 
     @property
     def active_langfuse(self) -> LangfuseSettings | None:
@@ -133,6 +135,7 @@ def get_settings() -> EvalSettings:
 
     return EvalSettings(
         auto_eval_model=os.getenv("AUTO_EVAL_MODEL"),
+        judge_model=os.getenv("AUTO_EVAL_JUDGE_MODEL"),
         environment=os.getenv("ENVIRONMENT", DEFAULTS.environment),
         git_sha=os.getenv("GITHUB_SHA", DEFAULTS.git_sha)[:7],
         gateway=GatewaySettings(

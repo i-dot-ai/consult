@@ -26,6 +26,8 @@ def build_results_payload(
     return {
         "component": component,
         "dataset": dataset,
+        # Top level, not in results, where benchmark.py would read it as a score
+        "n_runs": report.n_runs,
         "results": flatten_run_report(report),
         "outcomes": outcomes,
         "errors": {

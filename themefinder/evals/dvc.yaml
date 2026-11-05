@@ -4,6 +4,7 @@ stages:
     do:
       cmd: >-
         AUTO_EVAL_MODEL=${item.model}
+        AUTO_EVAL_JUDGE_MODEL=${judge_model}
         THEMEFINDER_EVAL_DATASET_SOURCE=${item.dataset_source}
         THEMEFINDER_EVAL_ARTEFACT_STORE=${item.artefact_store}
         uv run --extra eval python run_eval.py
@@ -32,6 +33,7 @@ stages:
         - params.yaml:
             - dataset
             - runs
+            - judge_model
             - evals.${key}
       outs:
         - local_eval_runs/${key}/${dataset.name}/results.json:
