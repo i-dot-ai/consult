@@ -34,6 +34,7 @@ from eval_types import RunLabels
 from utils import gateway
 
 QUICK_MODEL = "gpt-4.1-sweden-2025-03"
+EVALUATION_TIMEOUT_SECONDS = 20 * 60
 TRANSIENT_ERROR_MARKERS = ("ENOTFOUND", "ECONNREFUSED", "ECONNRESET", "DNS", "503")
 RESULTS_DIR_NAME = "benchmark_results"
 
@@ -427,7 +428,7 @@ class ComparisonRunner:
                 self._execute_eval(
                     model_config, run_number, component, error_counter, judge_llm
                 ),
-                timeout=1200,
+                timeout=EVALUATION_TIMEOUT_SECONDS,
             )
         finally:
             _run_context.reset(token)
