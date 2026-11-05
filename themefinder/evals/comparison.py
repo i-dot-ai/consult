@@ -330,6 +330,7 @@ class ComparisonRunner:
         """Run all components for a single model (sequential within model)."""
         error_counter = ValidationErrorCounter()
         logging.getLogger().addHandler(error_counter)
+        judge_llm = self._create_judge_llm()
 
         model_results = []
         runs_per_model = self.config.runs_per_model * len(self.config.components)
@@ -354,6 +355,7 @@ class ComparisonRunner:
                                 run_number=run_number,
                                 component=component,
                                 error_counter=error_counter,
+                                judge_llm=judge_llm,
                             )
                             model_results.append(result)
 
@@ -385,18 +387,38 @@ class ComparisonRunner:
         console.print(f"[bold green][{model_config.tag}] Complete![/bold green]")
         return model_results
 
+    def _create_judge_llm(self) -> OpenAILLM | None:
+        """One judge per model run.
+
+        A model's runs reuse it, but models run concurrently and the tracer rebinds
+        the judge's client to each run, so it is never shared across models.
+        """
+        if not self.config.judge_model:
+            return None
+        base_url, api_key = gateway.gateway_credentials()
+        return OpenAILLM(
+            model=self.config.judge_model,
+            request_kwargs={"temperature": 0},
+            base_url=base_url,
+            api_key=api_key,
+            timeout=600,
+        )
+
     async def _run_single_eval(
         self,
         model_config: ModelConfig,
         run_number: int,
         component: str,
         error_counter: ValidationErrorCounter,
+        judge_llm: OpenAILLM | None,
     ) -> RunResult:
         """Run a single evaluation under its logging context."""
         token = _run_context.set((model_config.name, component, run_number))
         try:
             return await asyncio.wait_for(
-                self._execute_eval(model_config, run_number, component, error_counter),
+                self._execute_eval(
+                    model_config, run_number, component, error_counter, judge_llm
+                ),
                 timeout=1200,
             )
         finally:
@@ -408,6 +430,7 @@ class ComparisonRunner:
         run_number: int,
         component: str,
         error_counter: ValidationErrorCounter,
+        judge_llm: OpenAILLM | None,
     ) -> RunResult:
         """Execute a single evaluation (called within the run context)."""
         error_counter.reset()
@@ -434,17 +457,6 @@ class ComparisonRunner:
 
         llm = model_config.create_llm()
 
-        judge_llm = None
-        if self.config.judge_model:
-            base_url, api_key = gateway.gateway_credentials()
-            judge_llm = OpenAILLM(
-                model=self.config.judge_model,
-                request_kwargs={"temperature": 0},
-                base_url=base_url,
-                api_key=api_key,
-                timeout=600,
-            )
-
         # duration_seconds keeps its former scope, the whole evaluate call
         # including artefact finalisation; processing_time_seconds is the
         # component runner's own narrower measurement.
@@ -453,7 +465,8 @@ class ComparisonRunner:
             component=component,
             dataset=self.config.dataset,
             llm=llm,
-            judge_llm=judge_llm,
+            # Mapping has no judge evaluator, and passing one only earns a warning per run.
+            judge_llm=None if component == "mapping" else judge_llm,
             labels=labels,
         )
         duration_seconds = time.perf_counter() - started_at

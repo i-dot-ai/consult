@@ -71,6 +71,7 @@ async def test_run_delegates_to_evaluate_with_labels_and_no_platform(monkeypatch
         run_number=1,
         component="mapping",
         error_counter=comparison.ValidationErrorCounter(),
+        judge_llm=None,
     )
 
     session_id = f"benchmark_{runner.comparison_id}_test-model_mapping_run1"
@@ -101,28 +102,37 @@ async def test_run_delegates_to_evaluate_with_labels_and_no_platform(monkeypatch
     assert result.llm_call_count == 3
 
 
-async def test_judge_model_becomes_a_separate_llm(monkeypatch):
+async def test_judge_model_is_built_once_per_model_and_passed_to_every_run(
+    monkeypatch, tmp_path
+):
     set_gateway_credentials(monkeypatch)
     model = comparison.ModelConfig(name="test-model")
     monkeypatch.setattr(model, "create_llm", lambda: object())
-    evaluate = AsyncMock(return_value={})
+    evaluate = AsyncMock(return_value={"question_part_1_f1_score": 0.5})
     runner = comparison.ComparisonRunner(
         comparison.ComparisonConfig(
-            dataset="demo", models=[model], judge_model="judge-model"
+            dataset="demo",
+            models=[model],
+            runs_per_model=2,
+            components=["generation", "mapping"],
+            judge_model="judge-model",
         ),
         evaluate,
+        output_dir=str(tmp_path),
     )
 
-    await runner._execute_eval(
-        model,
-        run_number=1,
-        component="generation",
-        error_counter=comparison.ValidationErrorCounter(),
-    )
+    await runner._run_model(model)
 
-    judge_llm = evaluate.await_args.kwargs["judge_llm"]
-    assert judge_llm.model == "judge-model"
-    assert judge_llm.request_kwargs == {"temperature": 0}
+    judges_by_component = {}
+    for call in evaluate.await_args_list:
+        judges_by_component.setdefault(call.kwargs["component"], []).append(
+            call.kwargs["judge_llm"]
+        )
+    first_judge, second_judge = judges_by_component["generation"]
+    assert first_judge is second_judge
+    assert first_judge.model == "judge-model"
+    assert first_judge.request_kwargs == {"temperature": 0}
+    assert judges_by_component["mapping"] == [None, None]
 
 
 def test_summary_table_keeps_the_benchmark_csv_columns():
