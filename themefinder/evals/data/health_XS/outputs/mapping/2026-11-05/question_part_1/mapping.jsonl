@@ -1,0 +1,100 @@
+{"response_id": 1010, "labels": ["G"], "stances": ["POSITIVE"]}
+{"response_id": 1008, "labels": ["B", "G"], "stances": ["NEGATIVE", "NEUTRAL"]}
+{"response_id": 1091, "labels": ["D", "J", "F"], "stances": ["POSITIVE", "POSITIVE", "POSITIVE"]}
+{"response_id": 1071, "labels": ["A", "I"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1080, "labels": ["E"], "stances": ["POSITIVE"]}
+{"response_id": 1082, "labels": ["I"], "stances": ["POSITIVE"]}
+{"response_id": 1065, "labels": ["F", "B", "L"], "stances": ["NEUTRAL", "POSITIVE", "NEGATIVE"]}
+{"response_id": 1018, "labels": ["XX"], "stances": ["NEUTRAL"]}
+{"response_id": 1077, "labels": ["C", "E", "L"], "stances": ["NEUTRAL", "POSITIVE", "NEUTRAL"]}
+{"response_id": 1076, "labels": ["J"], "stances": ["POSITIVE"]}
+{"response_id": 1038, "labels": ["J"], "stances": ["POSITIVE"]}
+{"response_id": 1088, "labels": ["B"], "stances": ["NEGATIVE"]}
+{"response_id": 1020, "labels": ["J"], "stances": ["POSITIVE"]}
+{"response_id": 1083, "labels": ["J"], "stances": ["POSITIVE"]}
+{"response_id": 1081, "labels": ["H"], "stances": ["POSITIVE"]}
+{"response_id": 1058, "labels": ["C"], "stances": ["POSITIVE"]}
+{"response_id": 1084, "labels": ["K"], "stances": ["POSITIVE"]}
+{"response_id": 1074, "labels": ["C"], "stances": ["POSITIVE"]}
+{"response_id": 1072, "labels": ["J", "L"], "stances": ["NEUTRAL", "NEUTRAL"]}
+{"response_id": 1054, "labels": ["E", "H"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1009, "labels": ["K"], "stances": ["POSITIVE"]}
+{"response_id": 1044, "labels": ["E", "C"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1055, "labels": ["L", "K", "B"], "stances": ["POSITIVE", "POSITIVE", "POSITIVE"]}
+{"response_id": 1050, "labels": ["J", "D"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1052, "labels": ["K", "E"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1075, "labels": ["A", "J"], "stances": ["NEGATIVE", "NEGATIVE"]}
+{"response_id": 1012, "labels": ["L", "K"], "stances": ["POSITIVE", "NEUTRAL"]}
+{"response_id": 1019, "labels": ["B", "C", "K"], "stances": ["NEGATIVE", "NEGATIVE", "NEGATIVE"]}
+{"response_id": 1060, "labels": ["H", "C", "I"], "stances": ["POSITIVE", "POSITIVE", "POSITIVE"]}
+{"response_id": 1057, "labels": ["F"], "stances": ["POSITIVE"]}
+{"response_id": 1098, "labels": ["D", "H", "C"], "stances": ["NEUTRAL", "NEUTRAL", "NEGATIVE"]}
+{"response_id": 1078, "labels": ["C", "J"], "stances": ["NEUTRAL", "NEUTRAL"]}
+{"response_id": 1053, "labels": ["E", "B"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1097, "labels": ["E"], "stances": ["NEUTRAL"]}
+{"response_id": 1086, "labels": ["K", "H"], "stances": ["POSITIVE", "NEGATIVE"]}
+{"response_id": 1069, "labels": ["D", "F", "C"], "stances": ["NEGATIVE", "NEUTRAL", "POSITIVE"]}
+{"response_id": 1014, "labels": ["F", "C"], "stances": ["NEGATIVE", "NEGATIVE"]}
+{"response_id": 1015, "labels": ["I", "L", "G"], "stances": ["POSITIVE", "NEUTRAL", "NEGATIVE"]}
+{"response_id": 1003, "labels": ["D"], "stances": ["NEGATIVE"]}
+{"response_id": 1066, "labels": ["B", "I"], "stances": ["NEGATIVE", "NEUTRAL"]}
+{"response_id": 1035, "labels": ["H", "E"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1011, "labels": ["F", "D", "C"], "stances": ["NEGATIVE", "NEGATIVE", "NEGATIVE"]}
+{"response_id": 1037, "labels": ["D"], "stances": ["NEGATIVE"]}
+{"response_id": 1027, "labels": ["G", "A", "D"], "stances": ["NEGATIVE", "NEUTRAL", "POSITIVE"]}
+{"response_id": 1090, "labels": ["J", "L"], "stances": ["NEGATIVE", "NEGATIVE"]}
+{"response_id": 1070, "labels": ["E", "J"], "stances": ["NEGATIVE", "NEGATIVE"]}
+{"response_id": 1089, "labels": ["XX"], "stances": ["NEUTRAL"]}
+{"response_id": 1056, "labels": ["B"], "stances": ["POSITIVE"]}
+{"response_id": 1042, "labels": ["G", "A", "D"], "stances": ["NEGATIVE", "POSITIVE", "NEGATIVE"]}
+{"response_id": 1040, "labels": ["K", "G", "D"], "stances": ["POSITIVE", "POSITIVE", "POSITIVE"]}
+{"response_id": 1041, "labels": ["E", "A"], "stances": ["NEUTRAL", "NEUTRAL"]}
+{"response_id": 1033, "labels": ["D", "A", "I"], "stances": ["NEGATIVE", "NEGATIVE", "NEGATIVE"]}
+{"response_id": 1085, "labels": ["E"], "stances": ["NEUTRAL"]}
+{"response_id": 1049, "labels": ["D", "L", "I"], "stances": ["POSITIVE", "POSITIVE", "NEGATIVE"]}
+{"response_id": 1028, "labels": ["E", "H"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1062, "labels": ["B", "G"], "stances": ["NEGATIVE", "NEGATIVE"]}
+{"response_id": 1026, "labels": ["B"], "stances": ["NEGATIVE"]}
+{"response_id": 1022, "labels": ["H"], "stances": ["NEGATIVE"]}
+{"response_id": 1005, "labels": ["E", "A"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1100, "labels": ["J", "E"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1021, "labels": ["L", "G"], "stances": ["NEGATIVE", "NEUTRAL"]}
+{"response_id": 1061, "labels": ["C"], "stances": ["NEGATIVE"]}
+{"response_id": 1002, "labels": ["G", "B"], "stances": ["NEGATIVE", "NEGATIVE"]}
+{"response_id": 1039, "labels": ["H"], "stances": ["NEGATIVE"]}
+{"response_id": 1017, "labels": ["B", "A", "I"], "stances": ["NEGATIVE", "NEGATIVE", "NEGATIVE"]}
+{"response_id": 1045, "labels": ["C", "E"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1030, "labels": ["H"], "stances": ["POSITIVE"]}
+{"response_id": 1046, "labels": ["A", "L"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1051, "labels": ["H", "I"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1087, "labels": ["J"], "stances": ["NEGATIVE"]}
+{"response_id": 1064, "labels": ["F"], "stances": ["POSITIVE"]}
+{"response_id": 1048, "labels": ["A", "F", "E"], "stances": ["NEGATIVE", "POSITIVE", "NEUTRAL"]}
+{"response_id": 1023, "labels": ["F", "D"], "stances": ["POSITIVE", "NEGATIVE"]}
+{"response_id": 1006, "labels": ["C"], "stances": ["NEGATIVE"]}
+{"response_id": 1029, "labels": ["D", "C", "I"], "stances": ["POSITIVE", "NEUTRAL", "POSITIVE"]}
+{"response_id": 1013, "labels": ["B"], "stances": ["NEGATIVE"]}
+{"response_id": 1099, "labels": ["D", "A", "L"], "stances": ["NEGATIVE", "NEGATIVE", "NEGATIVE"]}
+{"response_id": 1032, "labels": ["D"], "stances": ["POSITIVE"]}
+{"response_id": 1004, "labels": ["G", "D", "K"], "stances": ["NEGATIVE", "NEGATIVE", "NEGATIVE"]}
+{"response_id": 1096, "labels": ["H", "B"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1093, "labels": ["L", "F"], "stances": ["NEGATIVE", "NEGATIVE"]}
+{"response_id": 1031, "labels": ["J", "C"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1063, "labels": ["G"], "stances": ["NEGATIVE"]}
+{"response_id": 1068, "labels": ["L"], "stances": ["POSITIVE"]}
+{"response_id": 1079, "labels": ["I", "J", "E"], "stances": ["NEGATIVE", "NEGATIVE", "NEGATIVE"]}
+{"response_id": 1025, "labels": ["G", "E"], "stances": ["NEGATIVE", "NEGATIVE"]}
+{"response_id": 1001, "labels": ["G", "J", "F"], "stances": ["POSITIVE", "POSITIVE", "POSITIVE"]}
+{"response_id": 1059, "labels": ["D", "E"], "stances": ["NEUTRAL", "POSITIVE"]}
+{"response_id": 1016, "labels": ["G", "I"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1092, "labels": ["A"], "stances": ["POSITIVE"]}
+{"response_id": 1024, "labels": ["B"], "stances": ["NEGATIVE"]}
+{"response_id": 1094, "labels": ["I", "K", "J"], "stances": ["NEGATIVE", "NEGATIVE", "NEUTRAL"]}
+{"response_id": 1095, "labels": ["D", "J", "E"], "stances": ["POSITIVE", "POSITIVE", "POSITIVE"]}
+{"response_id": 1007, "labels": ["J", "B"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1043, "labels": ["D", "E"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1036, "labels": ["K", "H", "A"], "stances": ["POSITIVE", "POSITIVE", "POSITIVE"]}
+{"response_id": 1073, "labels": ["F", "E", "H"], "stances": ["POSITIVE", "POSITIVE", "POSITIVE"]}
+{"response_id": 1067, "labels": ["XY"], "stances": ["NEUTRAL"]}
+{"response_id": 1047, "labels": ["G", "I"], "stances": ["POSITIVE", "POSITIVE"]}
+{"response_id": 1034, "labels": ["B", "K", "I"], "stances": ["NEGATIVE", "NEGATIVE", "NEGATIVE"]}

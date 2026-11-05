@@ -1,0 +1,98 @@
+[
+    {
+        "topic_id": "A",
+        "topic_label": "Increase social housing",
+        "topic_description": "Major public investment in council and housing association building programmes to deliver genuinely affordable, long\u2011term social rented homes for low-income households.",
+        "topic": "Increase social housing: Major public investment in council and housing association building programmes to deliver genuinely affordable, long\u2011term social rented homes for low-income households."
+    },
+    {
+        "topic_id": "B",
+        "topic_label": "Planning reform and speed",
+        "topic_description": "Streamline and simplify planning, zoning and decision timelines while retaining environmental safeguards to accelerate housing delivery and reduce developer uncertainty.",
+        "topic": "Planning reform and speed: Streamline and simplify planning, zoning and decision timelines while retaining environmental safeguards to accelerate housing delivery and reduce developer uncertainty."
+    },
+    {
+        "topic_id": "C",
+        "topic_label": "Brownfield prioritisation",
+        "topic_description": "Prioritise regeneration, infill and conversion of vacant buildings and long\u2011term empty homes before any greenfield or Green Belt release to protect landscapes.",
+        "topic": "Brownfield prioritisation: Prioritise regeneration, infill and conversion of vacant buildings and long\u2011term empty homes before any greenfield or Green Belt release to protect landscapes."
+    },
+    {
+        "topic_id": "D",
+        "topic_label": "Infrastructure\u2011first delivery",
+        "topic_description": "Require funded, phased provision of transport, schools, healthcare and utilities alongside or prior to housing to ensure sustainable, service-ready new communities.",
+        "topic": "Infrastructure\u2011first delivery: Require funded, phased provision of transport, schools, healthcare and utilities alongside or prior to housing to ensure sustainable, service-ready new communities."
+    },
+    {
+        "topic_id": "E",
+        "topic_label": "Developer contributions reform",
+        "topic_description": "Reform Section 106, CIL and viability testing with greater transparency and enforceable obligations to secure on\u2011site affordable homes and infrastructure funding.",
+        "topic": "Developer contributions reform: Reform Section 106, CIL and viability testing with greater transparency and enforceable obligations to secure on\u2011site affordable homes and infrastructure funding."
+    },
+    {
+        "topic_id": "F",
+        "topic_label": "Public land and land value capture",
+        "topic_description": "Release surplus public land and capture planning uplift through levies or taxes to lower land costs and fund affordable housing and local infrastructure.",
+        "topic": "Public land and land value capture: Release surplus public land and capture planning uplift through levies or taxes to lower land costs and fund affordable housing and local infrastructure."
+    },
+    {
+        "topic_id": "G",
+        "topic_label": "Support small builders",
+        "topic_description": "Target finance, procurement access, small\u2011sites policy and planning support to help SME and local builders increase diverse, local housing supply.",
+        "topic": "Support small builders: Target finance, procurement access, small\u2011sites policy and planning support to help SME and local builders increase diverse, local housing supply."
+    },
+    {
+        "topic_id": "H",
+        "topic_label": "Build\u2011to\u2011rent and tenure mix",
+        "topic_description": "Encourage purpose\u2011built Build\u2011to\u2011Rent and mixed\u2011tenure schemes with affordability covenants and professional management to increase long\u2011term rental supply.",
+        "topic": "Build\u2011to\u2011rent and tenure mix: Encourage purpose\u2011built Build\u2011to\u2011Rent and mixed\u2011tenure schemes with affordability covenants and professional management to increase long\u2011term rental supply."
+    },
+    {
+        "topic_id": "I",
+        "topic_label": "Landlord regulation and tenant security",
+        "topic_description": "Strengthen licensing, enforcement, minimum quality standards and promote longer tenancies while balancing measures to protect small landlord viability.",
+        "topic": "Landlord regulation and tenant security: Strengthen licensing, enforcement, minimum quality standards and promote longer tenancies while balancing measures to protect small landlord viability."
+    },
+    {
+        "topic_id": "J",
+        "topic_label": "Rent regulation debate",
+        "topic_description": "Consider rent\u2011caps or stabilisation to improve affordability while evaluating risks to supply, investment and landlord exit effects via pilots and evidence.",
+        "topic": "Rent regulation debate: Consider rent\u2011caps or stabilisation to improve affordability while evaluating risks to supply, investment and landlord exit effects via pilots and evidence."
+    },
+    {
+        "topic_id": "K",
+        "topic_label": "Net\u2011zero and retrofit funding",
+        "topic_description": "Mandate higher energy standards for new builds and fund retrofits to reduce bills, meet climate targets and avoid disproportionate costs for tenants and landlords.",
+        "topic": "Net\u2011zero and retrofit funding: Mandate higher energy standards for new builds and fund retrofits to reduce bills, meet climate targets and avoid disproportionate costs for tenants and landlords."
+    },
+    {
+        "topic_id": "L",
+        "topic_label": "Accessible and specialist housing",
+        "topic_description": "Deliver more wheelchair\u2011accessible, adaptable, older\u2011persons, supported and student key\u2011worker homes tailored to demographic, rural and cultural needs.",
+        "topic": "Accessible and specialist housing: Deliver more wheelchair\u2011accessible, adaptable, older\u2011persons, supported and student key\u2011worker homes tailored to demographic, rural and cultural needs."
+    },
+    {
+        "topic_id": "M",
+        "topic_label": "Community\u2011led and MMC solutions",
+        "topic_description": "Support community land trusts, co\u2011operatives, self\u2011build and modern methods of construction to increase affordable, high\u2011quality local housing supply quickly.",
+        "topic": "Community\u2011led and MMC solutions: Support community land trusts, co\u2011operatives, self\u2011build and modern methods of construction to increase affordable, high\u2011quality local housing supply quickly."
+    },
+    {
+        "topic_id": "N",
+        "topic_label": "Monitoring, local capacity and transparency",
+        "topic_description": "Improve local data, monitoring, developer accountability and fund council planning, enforcement and delivery capacity to ensure commitments are delivered.",
+        "topic": "Monitoring, local capacity and transparency: Improve local data, monitoring, developer accountability and fund council planning, enforcement and delivery capacity to ensure commitments are delivered."
+    },
+    {
+        "topic_id": "XX",
+        "topic_label": "None of the Above",
+        "topic_description": "Response discusses a topic not covered by listed themes",
+        "topic": "None of the Above: Response discusses a topic not covered by listed themes"
+    },
+    {
+        "topic_id": "XY",
+        "topic_label": "No Reason Given",
+        "topic_description": "Response does not provide a substantive answer",
+        "topic": "No Reason Given: Response does not provide a substantive answer"
+    }
+]
