@@ -31,11 +31,10 @@ from consultations.api_v2.serializers import (
     ConsultationUserAssignmentSerializerV2,
 )
 from consultations.models import Consultation, FileUpload
+from data_pipeline import batch
 from ingest.consultation_file import read_consultation_file
 from ingest.deep_validation import deep_validate_file
 from ingest.jobs import add_consultation_job, delete_consultation_job
-
-from data_pipeline import batch
 
 logger = settings.LOGGER
 
