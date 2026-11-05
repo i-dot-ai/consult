@@ -6,6 +6,7 @@ import {
   getApiConsultationUserV2Url,
   getApiConsultationV2Url,
   getApiFindThemesUrl,
+  getApiFindThemesV2Url,
   Routes,
   Suffixes,
 } from "../../routes";
@@ -82,4 +83,14 @@ export const consultationFindThemesQueryParts = {
     "find-themes",
   ],
   url: (consultationId: string) => getApiFindThemesUrl(consultationId),
+};
+
+export const consultationFindThemesV2QueryParts = {
+  key: (consultationId: string) => [
+    Suffixes.Consultations,
+    consultationId,
+    "find-themes",
+    "v2",
+  ],
+  url: (consultationId: string) => getApiFindThemesV2Url(consultationId),
 };

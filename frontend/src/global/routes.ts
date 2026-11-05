@@ -301,6 +301,15 @@ export const getApiFindThemesUrl = (consultationId: string) => {
   );
 };
 
+export const getApiFindThemesV2Url = (consultationId: string) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    "find-themes",
+  );
+};
+
 export const getApiAssignThemesUrl = (consultationId: string) => {
   return urlJoinTrailing(
     Routes.ApiConsultations,

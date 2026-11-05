@@ -1,6 +1,7 @@
 import { buildQuery, type FetchError } from "../../queryClient";
 import {
   consultationFindThemesQueryParts,
+  consultationFindThemesV2QueryParts,
   consultationQueryParts,
   consultationsQueryParts,
   consultationsV2QueryParts,
@@ -188,6 +189,20 @@ export function buildFindingThemesQuery(
     consultationFindThemesQueryParts.url(consultationId),
     {
       key: [...consultationFindThemesQueryParts.key(consultationId)],
+      method: "POST",
+      onError: onError,
+    },
+  );
+}
+
+export function buildFindingThemesV2Query(
+  consultationId: string,
+  onError?: () => Promise<void>,
+) {
+  return buildQuery<Consultation>(
+    consultationFindThemesV2QueryParts.url(consultationId),
+    {
+      key: [...consultationFindThemesV2QueryParts.key(consultationId)],
       method: "POST",
       onError: onError,
     },

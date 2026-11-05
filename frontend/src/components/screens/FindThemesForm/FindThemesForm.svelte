@@ -6,14 +6,15 @@
   import Link from "../../Link.svelte";
 
   import { Routes } from "../../../global/routes";
-  import { buildFindingThemesQuery } from "../../../global/queries/consultations/queries";
+  import { buildFindingThemesQuery, buildFindingThemesV2Query } from "../../../global/queries/consultations/queries";
   import type { ConsultationFolder } from "../../../global/types";
 
   interface Props {
     consultations: ConsultationFolder[];
+    enableV2?: boolean;
   }
 
-  let { consultations }: Props = $props();
+  let { consultations, enableV2 = true }: Props = $props();
 
   const selectItems = $derived.by(() => {
     if (consultations.length === 0) {
@@ -28,7 +29,10 @@
   let consultationId = $derived<string | undefined>(consultations[0]?.id);
   let errorMessage = $state<string | undefined>(undefined);
 
-  const findThemes = $derived(buildFindingThemesQuery(consultationId || ""));
+  const findThemes = $derived(enableV2
+    ? buildFindingThemesV2Query(consultationId || "")
+    : buildFindingThemesQuery(consultationId || "")
+  );
 
   const handleSubmit = async () => {
     if (!consultationId) {

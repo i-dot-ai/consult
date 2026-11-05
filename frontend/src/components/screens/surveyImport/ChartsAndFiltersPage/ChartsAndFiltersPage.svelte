@@ -29,7 +29,7 @@
     getConsultationViewUrl,
     getDataUploadReviewQuestionsUrl,
   } from "../../../../global/routes";
-  import { buildFindingThemesQuery } from "../../../../global/queries/consultations/queries";
+  import { buildFindingThemesQuery, buildFindingThemesV2Query } from "../../../../global/queries/consultations/queries";
 
   interface Props {
     consultationId: string;
@@ -44,7 +44,7 @@
       await questionsQuery.fetch();
     }),
   );
-  const findThemes = $derived(buildFindingThemesQuery(consultationId));
+  const findThemes = $derived(buildFindingThemesV2Query(consultationId));
 
   let allQuestions: QuestionV2[] = $derived(questionsQuery.query.data ?? []);
   let questions = $derived(
