@@ -1,4 +1,5 @@
 import csv
+import uuid
 from pathlib import Path
 from typing import ClassVar
 from zipfile import BadZipFile
@@ -8,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.db.models import Prefetch, Q
 from django.shortcuts import get_object_or_404
+from django.utils.text import slugify
 from openpyxl.utils.exceptions import InvalidFileException
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -64,7 +66,8 @@ class ConsultationViewSet(
         return ConsultationSerializer
 
     def perform_create(self, serializer):
-        consultation = serializer.save(code="", created_by=self.request.user)
+        code = slugify(serializer.validated_data["title"]) or str(uuid.uuid4())
+        consultation = serializer.save(code=code, created_by=self.request.user)
         consultation.users.add(self.request.user)
 
     def get_queryset(self):
