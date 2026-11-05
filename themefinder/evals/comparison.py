@@ -271,7 +271,9 @@ class ComparisonRunner:
         original_level = root_logger.level
         log_handler = self._create_log_handler()
         root_logger.addHandler(log_handler)
-        root_logger.setLevel(logging.DEBUG)
+        # The run log records INFO, which the root drops by default; DEBUG from every library is noise.
+        if root_logger.level > logging.INFO:
+            root_logger.setLevel(logging.INFO)
 
         try:
             return await self._run_comparison()
