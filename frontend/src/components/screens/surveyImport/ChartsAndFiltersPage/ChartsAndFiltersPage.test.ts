@@ -646,10 +646,8 @@ describe("ChartsAndFiltersPage", () => {
       screen.getByRole("button", { name: "Finish set-up" }),
     );
     await waitFor(() => {
-      expect(window.location.href).toBe(
-        `/consultations/${CONSULTATION_ID}`,
-      );
-    })
+      expect(window.location.href).toBe(`/consultations/${CONSULTATION_ID}`);
+    });
   });
 
   it("matches snapshot", async () => {

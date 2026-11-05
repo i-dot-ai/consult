@@ -19,7 +19,7 @@ const CONSULTATIONS = [
 const TEST_DATA = {
   consultations: CONSULTATIONS,
   enableV2: false,
-}
+};
 
 describe("FindThemesForm", () => {
   afterEach(() => {
@@ -46,7 +46,7 @@ describe("FindThemesForm", () => {
   it("should render no consultation found text if no consultations are given", async () => {
     mockRoute(findMock);
 
-    render(FindThemesForm, {...TEST_DATA, consultations: []});
+    render(FindThemesForm, { ...TEST_DATA, consultations: [] });
 
     await waitFor(() => {
       expect(screen.getByText("No consultations found")).toBeInTheDocument();
