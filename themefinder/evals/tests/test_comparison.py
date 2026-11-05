@@ -353,6 +353,7 @@ def test_saves_results_under_the_benchmark_results_layout(tmp_path):
         )
     ]
 
+    runner._save_config()
     runner._save_incremental()
     runner._save_outputs(runner.results[0])
     runner.save_results()
