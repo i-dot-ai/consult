@@ -61,7 +61,7 @@ async def evaluate_component(
                 "judge_llm is ignored for mapping because it has no judge evaluator"
             )
     elif judge_llm is None:
-        # Never fall back to the task model: judge should be independant and consistent
+        # Never fall back to the task model: judge should be independent and consistent
         if not settings.judge_model:
             raise ValueError(f"AUTO_EVAL_JUDGE_MODEL must be set for {component}")
         judge_llm = _create_llm(settings, settings.judge_model)

@@ -36,9 +36,6 @@ class LangfuseArtefactStore(ArtefactStorePort):
             return
 
         with self._trace_for_outcome(outcome) as (trace, trace_id):
-            if trace is not None:
-                self._update_trace(trace, output=outcome.output)
-
             if not trace_id:
                 logger.warning(
                     "Skipping score persistence for %s because no Langfuse trace id was created",
@@ -217,11 +214,6 @@ class LangfuseArtefactStore(ArtefactStorePort):
                 case_id,
                 exc,
             )
-
-    def _update_trace(self, trace: Any, *, output: Any) -> None:
-        update = getattr(trace, "update", None)
-        if callable(update):
-            update(output=json_safe(output))
 
     @property
     def _run_name(self) -> str:
