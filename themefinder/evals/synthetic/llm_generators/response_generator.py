@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 _TRAILING_GENERATION_METADATA = re.compile(
-    r"\s+(?:sentiment|position)\s*:\s*(?:agree|disagree|unclear)\s+"
-    r"evidence[\s_]*rich\s*:\s*(?:true|false|yes|no)\s*$",
+    r"(?:\s+(?:(?:sentiment|position)\s*:\s*(?:agree|disagree|unclear)"
+    r"|evidence[\s_]*rich\s*:\s*(?:true|false|yes|no)))+\s*$",
     re.IGNORECASE,
 )
 
