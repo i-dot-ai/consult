@@ -1,5 +1,8 @@
 import argparse
+import logging
 from unittest.mock import AsyncMock
+
+import pytest
 
 import comparison
 from conftest import make_gateway_model, set_gateway_credentials
@@ -134,6 +137,168 @@ async def test_judge_model_is_built_once_per_model_and_passed_to_every_run(
     assert first_judge.model == "judge-model"
     assert first_judge.request_kwargs == {"temperature": 0}
     assert judges_by_component["mapping"] == [None, None]
+
+
+class TestValidationErrorCounter:
+    def test_counts_only_records_from_its_own_models_runs(self):
+        # The library's batch processor logs its retries under this name.
+        logger = logging.getLogger("theme_finder.tasks")
+        first = comparison.ValidationErrorCounter("first-model")
+        second = comparison.ValidationErrorCounter("second-model")
+        logger.addHandler(first)
+        logger.addHandler(second)
+        try:
+            token = comparison._run_context.set(("first-model", "mapping", 1))
+            logger.warning("validation error: output did not match the schema")
+            logger.warning("retrying the batch")
+            comparison._run_context.reset(token)
+            logger.warning("outside any run")
+        finally:
+            logger.removeHandler(first)
+            logger.removeHandler(second)
+
+        assert (first.validation_errors, first.total_warnings) == (1, 2)
+        assert (second.validation_errors, second.total_warnings) == (0, 0)
+
+
+async def test_run_lets_info_through_and_restores_the_root_logger(
+    monkeypatch, tmp_path
+):
+    root_logger = logging.getLogger()
+    original_level = root_logger.level
+    runner = comparison.ComparisonRunner(
+        comparison.ComparisonConfig(dataset="demo", models=[]),
+        AsyncMock(),
+        output_dir=str(tmp_path),
+    )
+    levels_during_run = []
+
+    async def record_level():
+        levels_during_run.append(root_logger.level)
+        return []
+
+    monkeypatch.setattr(runner, "_run_comparison", record_level)
+
+    await runner.run()
+
+    assert levels_during_run == [min(original_level, logging.INFO)]
+    assert root_logger.level == original_level
+    assert not any(
+        getattr(handler, "baseFilename", "").endswith("benchmark.log")
+        for handler in root_logger.handlers
+    )
+
+
+async def test_run_model_retries_transient_errors_and_gives_up_on_others(
+    monkeypatch, tmp_path
+):
+    model = comparison.ModelConfig(name="test-model")
+    monkeypatch.setattr(model, "create_llm", lambda: object())
+    sleeps = []
+
+    async def record_sleep(delay):
+        sleeps.append(delay)
+
+    monkeypatch.setattr(comparison.asyncio, "sleep", record_sleep)
+    attempts = []
+
+    async def evaluate(**kwargs):
+        attempts.append(kwargs["component"])
+        if len(attempts) == 1:
+            raise RuntimeError("503 Service Unavailable")
+        if kwargs["component"] == "generation":
+            raise RuntimeError("the gateway rejected the request")
+        return {"question_part_1_f1_score": 0.5}
+
+    runner = comparison.ComparisonRunner(
+        comparison.ComparisonConfig(
+            dataset="demo",
+            models=[model],
+            runs_per_model=1,
+            components=["mapping", "generation"],
+        ),
+        evaluate,
+        output_dir=str(tmp_path),
+    )
+
+    results = await runner._run_model(model)
+
+    assert [result.component for result in results] == ["mapping"]
+    assert attempts == ["mapping", "mapping", "generation"]
+    assert sleeps == [2.0]
+    assert (tmp_path / runner.comparison_id / "raw_results.csv").exists()
+
+
+class _RunnerWithResults:
+    """Stands in for ComparisonRunner so run_comparison's reporting can be exercised alone."""
+
+    def __init__(self, config, evaluate, results):
+        self.config = config
+        self.results = results
+        self.comparison_id = "20260101_000000"
+        self.saved = False
+
+    async def run(self):
+        return self.results
+
+    def print_results_table(self):
+        pass
+
+    def generate_summary_table(self):
+        return comparison.pd.DataFrame()
+
+    def save_results(self):
+        self.saved = True
+
+    def get_output_path(self):
+        return comparison.Path("benchmark_results") / self.comparison_id
+
+
+def _install_runner_with_results(monkeypatch, results):
+    """Make run_comparison build a stand-in runner, and hand back every one it builds."""
+    built = []
+
+    def build(config, evaluate):
+        runner = _RunnerWithResults(config, evaluate, results)
+        built.append(runner)
+        return runner
+
+    monkeypatch.setattr(comparison, "ComparisonRunner", build)
+    monkeypatch.setattr(
+        comparison,
+        "select_models",
+        AsyncMock(return_value=[comparison.ModelConfig(name="test-model")]),
+    )
+    return built
+
+
+def _comparison_args(**extra):
+    return _args(
+        models=["test-model"],
+        component=None,
+        dataset="demo",
+        runs=1,
+        judge_model=None,
+        **extra,
+    )
+
+
+async def test_run_comparison_exits_when_no_result_was_collected(monkeypatch):
+    _install_runner_with_results(monkeypatch, [])
+
+    with pytest.raises(SystemExit) as exit_info:
+        await comparison.run_comparison(_comparison_args(), AsyncMock())
+
+    assert exit_info.value.code == 1
+
+
+async def test_run_comparison_saves_and_prints_the_id_for_ci(monkeypatch, capsys):
+    built = _install_runner_with_results(monkeypatch, [object()])
+
+    await comparison.run_comparison(_comparison_args(), AsyncMock())
+
+    assert built[0].saved
+    assert "BENCHMARK_ID=20260101_000000" in capsys.readouterr().out.splitlines()
 
 
 def test_summary_table_keeps_the_benchmark_csv_columns():
