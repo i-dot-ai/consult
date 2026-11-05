@@ -70,7 +70,7 @@ async def test_run_delegates_to_evaluate_with_labels_and_no_platform(monkeypatch
         model,
         run_number=1,
         component="mapping",
-        error_counter=comparison.ValidationErrorCounter(),
+        error_counter=comparison.ValidationErrorCounter("test-model"),
         judge_llm=None,
     )
 
