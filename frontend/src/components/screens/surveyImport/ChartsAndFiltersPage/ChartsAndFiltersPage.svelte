@@ -29,9 +29,7 @@
     getConsultationViewUrl,
     getDataUploadReviewQuestionsUrl,
   } from "../../../../global/routes";
-  import {
-    buildFindingThemesV2Query,
-  } from "../../../../global/queries/consultations/queries";
+  import { buildFindingThemesV2Query } from "../../../../global/queries/consultations/queries";
 
   interface Props {
     consultationId: string;
