@@ -20,6 +20,7 @@ import {
   SCALE_ANSWERS,
   answersErrorMock,
   answersMock,
+  findThemesMock,
   mergeErrorMock,
   mergeMock,
   questionsErrorMock,
@@ -112,6 +113,8 @@ describe("ChartsAndFiltersPage", () => {
     queryClient.setDefaultOptions({
       queries: { ...defaultQueryOptions.queries, retry: false },
     });
+
+    mockRoute(findThemesMock);
   });
 
   afterEach(() => {
@@ -642,9 +645,11 @@ describe("ChartsAndFiltersPage", () => {
     await fireEvent.click(
       screen.getByRole("button", { name: "Finish set-up" }),
     );
-    expect(window.location.href).toBe(
-      `/consultations/${CONSULTATION_ID}/data-upload/finalise`,
-    );
+    await waitFor(() => {
+      expect(window.location.href).toBe(
+        `/consultations/${CONSULTATION_ID}`,
+      );
+    })
   });
 
   it("matches snapshot", async () => {

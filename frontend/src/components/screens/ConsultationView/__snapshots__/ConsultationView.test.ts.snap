@@ -189,6 +189,8 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
           
           <!---->
         </div>
+         
+        <!---->
       </div>
       <!---->
     </div>
@@ -432,6 +434,8 @@ exports[`ConsultationView > should match snapshot initially 1`] = `
         >
           <!---->
         </div>
+         
+        <!---->
       </div>
       <!---->
     </div>
