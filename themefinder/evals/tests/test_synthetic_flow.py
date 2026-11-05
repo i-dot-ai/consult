@@ -11,7 +11,11 @@ from synthetic.config import (
     ResponseType,
 )
 from synthetic.generator import SyntheticDatasetGenerator
-from synthetic.llm_generators.response_generator import RespondentSpec
+from synthetic.llm_generators.response_generator import (
+    PreviousResponse,
+    RespondentSpec,
+    _build_human_prompt,
+)
 from synthetic.validators import validate_dataset
 
 
@@ -229,6 +233,42 @@ def test_create_respondent_specs_ids(monkeypatch):
     assert [spec.response_id for spec in generator.rng.shuffled] == [1001, 1002, 1003]
 
 
+def test_response_prompt_keeps_ground_truth_labels_private():
+    """Response prompts use theme meaning without exposing evaluation labels."""
+    respondent = RespondentSpec(
+        response_id=1001,
+        persona={},
+        base_disposition=ResponseType.AGREE,
+        length=ResponseLength.MEDIUM,
+        apply_noise=False,
+    )
+    prompt = _build_human_prompt(
+        question=QuestionConfig(number=1, text="What should change?"),
+        themes=[
+            {
+                "topic_id": "A",
+                "topic_label": "Funding mechanisms debate",
+                "topic_description": "Concerns about stable and sustainable funding.",
+            }
+        ],
+        theme_ids=["A"],
+        stances=["POSITIVE"],
+        respondent=respondent,
+        previous_responses=[
+            PreviousResponse(
+                question_text="Earlier question",
+                response_text="Earlier response",
+                sentiment="AGREE",
+            )
+        ],
+    )
+
+    assert "Funding mechanisms debate" not in prompt
+    assert "POSITIVE" not in prompt
+    assert "(AGREE)" not in prompt
+    assert "Concerns about stable and sustainable funding." in prompt
+
+
 @pytest.mark.asyncio
 async def test_write_full_dataset_persists_expected_files(monkeypatch, tmp_path):
     """Verify `write_full_dataset()` writes a valid on-disk dataset structure.
@@ -401,6 +441,15 @@ async def test_write_full_dataset_persists_expected_files(monkeypatch, tmp_path)
         {"response_id": 1001, "labels": ["A"], "stances": ["POSITIVE"]},
         {"response_id": 1002, "labels": ["A"], "stances": ["NEGATIVE"]},
     ]
+    assert _read_jsonl(outputs_root / "question_part_1" / "sentiment.jsonl") == [
+        {"response_id": 1001, "position": "AGREE"},
+        {"response_id": 1002, "position": "DISAGREE"},
+    ]
+
+    (outputs_root / "question_part_1" / "sentiment.jsonl").unlink()
+    validation = validate_dataset(output_path)
+    assert validation.is_valid is False
+    assert "Missing sentiment.jsonl in question_part_1" in validation.errors
 
 
 @pytest.mark.asyncio
