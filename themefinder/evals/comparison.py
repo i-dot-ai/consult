@@ -34,11 +34,21 @@ from eval_types import RunLabels
 from utils import gateway
 
 QUICK_MODEL = "gpt-4.1-sweden-2025-03"
+TRANSIENT_ERROR_MARKERS = ("ENOTFOUND", "ECONNREFUSED", "ECONNRESET", "DNS", "503")
 RESULTS_DIR_NAME = "benchmark_results"
 
 console = Console()
 
 Evaluate = Callable[..., Awaitable[dict[str, Any]]]
+
+
+def _is_transient(error: Exception) -> bool:
+    """A network blip worth retrying, as opposed to a failure the next attempt would repeat."""
+    error_text = str(error)
+    return (
+        any(marker in error_text for marker in TRANSIENT_ERROR_MARKERS)
+        or "temporarily unavailable" in error_text.lower()
+    )
 
 
 class ValidationErrorCounter(logging.Handler):
@@ -355,20 +365,7 @@ class ComparisonRunner:
                             break
 
                         except Exception as error:
-                            error_text = str(error)
-
-                            is_retryable = any(
-                                [
-                                    "ENOTFOUND" in error_text,
-                                    "ECONNREFUSED" in error_text,
-                                    "ECONNRESET" in error_text,
-                                    "DNS" in error_text,
-                                    "temporarily unavailable" in error_text.lower(),
-                                    "503" in error_text,
-                                ]
-                            )
-
-                            if is_retryable and attempt < max_eval_retries - 1:
+                            if _is_transient(error) and attempt < max_eval_retries - 1:
                                 delay = retry_delay * (2**attempt)
                                 console.print(
                                     f"  [yellow]Transient error (attempt {attempt + 1}/{max_eval_retries}), "
