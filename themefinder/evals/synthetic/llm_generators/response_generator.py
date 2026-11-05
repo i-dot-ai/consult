@@ -2,6 +2,7 @@
 
 import logging
 import random
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Literal
@@ -14,6 +15,13 @@ from synthetic.llm_generators.retry import parse_with_retries
 from synthetic.prompts.utils import load_prompt
 
 logger = logging.getLogger(__name__)
+
+
+_TRAILING_GENERATION_METADATA = re.compile(
+    r"\s+(?:sentiment|position)\s*:\s*(?:agree|disagree|unclear)\s+"
+    r"evidence[\s_]*rich\s*:\s*(?:true|false|yes|no)\s*$",
+    re.IGNORECASE,
+)
 
 
 class GeneratedResponse(BaseModel):
@@ -131,7 +139,9 @@ async def generate_respondent_survey(
             ),
         )
 
-        final_text = response.response
+        # Some model responses append these structured-output fields to the free text.
+        # They are already persisted separately, so never expose them as consultation text.
+        final_text = _TRAILING_GENERATION_METADATA.sub("", response.response).strip()
         if respondent.apply_noise and respondent.noise_type:
             final_text = _apply_noise(final_text, respondent.noise_type, noise_level)
 
