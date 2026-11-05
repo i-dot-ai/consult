@@ -692,15 +692,6 @@ export const getDataUploadChecksUrl = (consultationId: string) => {
   );
 };
 
-export const getDataUploadFinaliseUrl = (consultationId: string) => {
-  return urlJoin(
-    Routes.Consultations,
-    consultationId,
-    Suffixes.DataUpload,
-    Suffixes.Finalise,
-  );
-};
-
 export const getDataUploadFileUploadUrl = (consultationId: string) => {
   return urlJoin(
     Routes.Consultations,
