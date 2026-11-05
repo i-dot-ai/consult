@@ -165,8 +165,10 @@ def _validate_respondents(
     }
     missing = expected_response_ids - respondent_ids
     if missing:
+        missing_ids = sorted(missing)
+        truncated = "..." if len(missing_ids) > 5 else ""
         errors.append(
-            f"Missing respondent entries for response_ids: {sorted(missing)[:5]}..."
+            f"Missing respondent entries for response_ids: {missing_ids[:5]}{truncated}"
         )
 
 
@@ -286,6 +288,7 @@ def _validate_mapping(
             errors.append(
                 f"Labels/stances length mismatch for response {response_id} in {question_name}"
             )
+            continue
         for label in labels:
             if label not in theme_ids:
                 errors.append(
