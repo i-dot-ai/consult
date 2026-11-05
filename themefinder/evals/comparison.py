@@ -313,6 +313,7 @@ class ComparisonRunner:
         console.print(f"  Components: {', '.join(self.config.components)}")
         console.print(f"  Total runs: {total_runs} ({runs_per_model} per model)\n")
 
+        self._save_config()
         group_tasks = [self._run_model_group(models) for models in name_groups.values()]
         results = await asyncio.gather(*group_tasks, return_exceptions=True)
 
@@ -552,11 +553,11 @@ class ComparisonRunner:
 
     def _save_incremental(self) -> None:
         """Save current results incrementally."""
-        output_path = self.get_output_path()
-
         raw_df = self.generate_summary_table()
-        raw_df.to_csv(output_path / "raw_results.csv", index=False)
+        raw_df.to_csv(self.get_output_path() / "raw_results.csv", index=False)
 
+    def _save_config(self) -> None:
+        """Record what this comparison ran, once, before any result arrives."""
         # The keys are the contract visualise_benchmark.py reads.
         config_dict = {
             "benchmark_id": self.comparison_id,
@@ -569,7 +570,7 @@ class ComparisonRunner:
                 for model in self.config.models
             ],
         }
-        with open(output_path / "config.json", "w") as config_file:
+        with open(self.get_output_path() / "config.json", "w") as config_file:
             json.dump(config_dict, config_file, indent=2)
 
     def _save_outputs(self, result: RunResult) -> None:
