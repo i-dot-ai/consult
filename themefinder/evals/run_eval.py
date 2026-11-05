@@ -28,7 +28,7 @@ def _create_llm(settings: EvalSettings, model: str | None) -> OpenAILLM:
     base_url, api_key = gateway.gateway_credentials(settings=settings)
     return OpenAILLM(
         model=model,
-        request_kwargs={"temperature": 1},
+        request_kwargs={"temperature": 0},
         base_url=base_url,
         api_key=api_key,
     )

@@ -38,7 +38,6 @@ class LangfuseContext:
     """Container for Langfuse client."""
 
     client: "Langfuse | None"
-    handler: None = None  # Retained for API compatibility; always None
     session_id: str | None = None
     tags: list[str] | None = None
     metadata: dict | None = None
@@ -101,9 +100,8 @@ def get_langfuse_context(
 ) -> LangfuseContext:
     """Initialise Langfuse with structured tags and metadata.
 
-    Updated for Langfuse SDK v3 which changed CallbackHandler API.
-    In v3, session_id/tags/metadata are passed via LangChain's config["metadata"]
-    using special keys: langfuse_session_id, langfuse_tags, etc.
+    Langfuse SDK v4 has no CallbackHandler: session_id/tags/metadata are held
+    here and applied to traces via propagate_attributes (see trace_context).
 
     Args:
         session_id: Unique identifier for grouping traces
@@ -115,14 +113,14 @@ def get_langfuse_context(
             to the process-wide eval_settings singleton.
 
     Returns:
-        LangfuseContext with client and handler (or None values if not configured)
+        LangfuseContext with client (or client=None if not configured)
     """
     settings = settings if settings is not None else eval_settings
     langfuse_settings = settings.active_langfuse
 
     if langfuse_settings is None:
         logger.info("Langfuse not configured - tracing disabled")
-        return LangfuseContext(client=None, handler=None)
+        return LangfuseContext(client=None)
 
     secret_key = langfuse_settings.secret_key
     public_key = langfuse_settings.public_key

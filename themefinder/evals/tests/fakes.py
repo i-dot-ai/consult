@@ -177,14 +177,14 @@ class _FakeDatasetRunItemsApi:
             raise self.error
 
 
-class _FakeLangfuseV3Api:
+class _FakeLangfuseApi:
     def __init__(self):
         self.dataset_run_items = _FakeDatasetRunItemsApi()
 
 
 class FakeLangfuseClient:
     def __init__(self):
-        self.api = _FakeLangfuseV3Api()
+        self.api = _FakeLangfuseApi()
         self.create_trace_id_calls = 0
         self.start_span_calls: list[dict] = []
         self.last_span_trace: FakeTrace | None = None
