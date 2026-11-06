@@ -34,6 +34,7 @@ from eval_types import RunLabels
 from utils import gateway
 
 QUICK_MODEL = "gpt-4.1-sweden-2025-03"
+EVALUATION_TIMEOUT_SECONDS = 20 * 60
 TRANSIENT_ERROR_MARKERS = ("ENOTFOUND", "ECONNREFUSED", "ECONNRESET", "DNS", "503")
 RESULTS_DIR_NAME = "benchmark_results"
 
@@ -51,14 +52,28 @@ def _is_transient(error: Exception) -> bool:
     )
 
 
+# Run context for structured logging: (model, component, run_number)
+_run_context: ContextVar[tuple[str, str, int] | None] = ContextVar(
+    "_run_context", default=None
+)
+
+
+LIBRARY_LOGGER_PREFIXES = ("themefinder", "theme_finder", "synthetic")
+
+
+def _is_library_record(logger_name: str) -> bool:
+    named_after_the_library = logger_name.startswith(LIBRARY_LOGGER_PREFIXES)
+    # models.py names its logger after __file__, so the path is the only clue it gives.
+    named_after_a_library_file = "/themefinder/" in logger_name
+    return named_after_the_library or named_after_a_library_file
+
+
 class ValidationErrorCounter(logging.Handler):
-    """Logging handler that counts validation warnings/errors from themefinder."""
+    """Logging handler that counts one model's validation warnings and errors from themefinder."""
 
-    # Only count warnings from these logger namespaces
-    TRACKED_LOGGERS = ("themefinder",)
-
-    def __init__(self):
+    def __init__(self, model_name: str):
         super().__init__()
+        self.model_name = model_name
         self.reset()
 
     def reset(self):
@@ -68,8 +83,13 @@ class ValidationErrorCounter(logging.Handler):
         self.error_details: list[str] = []
 
     def emit(self, record: logging.LogRecord):
-        """Count validation-related log messages from tracked loggers."""
-        if not record.name.startswith(self.TRACKED_LOGGERS):
+        """Count validation-related log messages from the library's loggers."""
+        if not _is_library_record(record.name):
+            return
+        # Models run concurrently on the one root logger, so only records emitted
+        # inside this model's runs count towards it.
+        context = _run_context.get(None)
+        if context is None or context[0] != self.model_name:
             return
 
         if record.levelno >= logging.WARNING:
@@ -78,12 +98,6 @@ class ValidationErrorCounter(logging.Handler):
             if "validation error" in message.lower():
                 self.validation_errors += 1
                 self.error_details.append(message[:200])
-
-
-# Run context for structured logging: (model, component, run_number)
-_run_context: ContextVar[tuple[str, str, int] | None] = ContextVar(
-    "_run_context", default=None
-)
 
 
 class _SingleLineFormatter(logging.Formatter):
@@ -97,15 +111,8 @@ class _SingleLineFormatter(logging.Formatter):
 class RunLogFilter(logging.Filter):
     """Injects the run context into log records and filters by namespace."""
 
-    ACCEPTED_PREFIXES = ("themefinder", "theme_finder", "synthetic")
-
     def filter(self, record: logging.LogRecord) -> bool:
-        name = record.name
-        is_relevant = (
-            name.startswith(self.ACCEPTED_PREFIXES)
-            or "/themefinder/" in name  # models.py uses __file__ as logger name
-        )
-        if not is_relevant:
+        if not _is_library_record(record.name):
             return False
 
         context = _run_context.get(None)
@@ -265,7 +272,9 @@ class ComparisonRunner:
         original_level = root_logger.level
         log_handler = self._create_log_handler()
         root_logger.addHandler(log_handler)
-        root_logger.setLevel(logging.DEBUG)
+        # The run log records INFO, which the root drops by default; DEBUG from every library is noise.
+        if root_logger.level > logging.INFO:
+            root_logger.setLevel(logging.INFO)
 
         try:
             return await self._run_comparison()
@@ -304,6 +313,7 @@ class ComparisonRunner:
         console.print(f"  Components: {', '.join(self.config.components)}")
         console.print(f"  Total runs: {total_runs} ({runs_per_model} per model)\n")
 
+        self._save_config()
         group_tasks = [self._run_model_group(models) for models in name_groups.values()]
         results = await asyncio.gather(*group_tasks, return_exceptions=True)
 
@@ -328,7 +338,7 @@ class ComparisonRunner:
 
     async def _run_model(self, model_config: ModelConfig) -> list[RunResult]:
         """Run all components for a single model (sequential within model)."""
-        error_counter = ValidationErrorCounter()
+        error_counter = ValidationErrorCounter(model_config.name)
         logging.getLogger().addHandler(error_counter)
         judge_llm = self._create_judge_llm()
 
@@ -419,7 +429,7 @@ class ComparisonRunner:
                 self._execute_eval(
                     model_config, run_number, component, error_counter, judge_llm
                 ),
-                timeout=1200,
+                timeout=EVALUATION_TIMEOUT_SECONDS,
             )
         finally:
             _run_context.reset(token)
@@ -544,11 +554,11 @@ class ComparisonRunner:
 
     def _save_incremental(self) -> None:
         """Save current results incrementally."""
-        output_path = self.get_output_path()
-
         raw_df = self.generate_summary_table()
-        raw_df.to_csv(output_path / "raw_results.csv", index=False)
+        raw_df.to_csv(self.get_output_path() / "raw_results.csv", index=False)
 
+    def _save_config(self) -> None:
+        """Record what this comparison ran, once, before any result arrives."""
         # The keys are the contract visualise_benchmark.py reads.
         config_dict = {
             "benchmark_id": self.comparison_id,
@@ -561,7 +571,7 @@ class ComparisonRunner:
                 for model in self.config.models
             ],
         }
-        with open(output_path / "config.json", "w") as config_file:
+        with open(self.get_output_path() / "config.json", "w") as config_file:
             json.dump(config_dict, config_file, indent=2)
 
     def _save_outputs(self, result: RunResult) -> None:
