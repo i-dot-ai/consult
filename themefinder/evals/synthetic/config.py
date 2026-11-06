@@ -129,6 +129,8 @@ class GenerationConfig:
     noise_level: NoiseLevel = NoiseLevel.MEDIUM
     preview_respondent_count: int = PREVIEW_RESPONDENT_COUNT
 
+    # Deliberately favour usable, on-topic responses while retaining 5%
+    # off-topic/low-quality cases to exercise resilience.
     position_distribution: dict[str, float] = field(
         default_factory=lambda: {
             "agree": 0.35,
