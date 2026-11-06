@@ -4,9 +4,10 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 from uuid import UUID
 
-import config as config_module
 import pytest
-from adapters import context_providers
+from conftest import UNCONFIGURED_LANGFUSE
+
+import config as config_module
 from adapters.artefact_stores import (
     CompositeArtefactStore,
     LangfuseArtefactStore,
@@ -18,7 +19,6 @@ from adapters.runners.inline_sequential_runner import InlineSequentialRunner
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
 from adapters.tracing import LangfuseTracer, NoopTracer
 from config import EvalBackends, resolve_backends
-from conftest import UNCONFIGURED_LANGFUSE
 from datasets import DatasetConfig
 from eval_types import RunLabels
 from settings import (
@@ -81,6 +81,7 @@ def _settings(
     ],
 )
 def test_resolves_dataset_and_artefact_sources_independently(
+    monkeypatch,
     dataset_source,
     artefact_store,
     dataset_type,
@@ -88,15 +89,10 @@ def test_resolves_dataset_and_artefact_sources_independently(
 ):
     client = SimpleNamespace()
     context = LangfuseContext(client=client)
+    monkeypatch.setattr(langfuse_utils, "get_langfuse_context", lambda **_: context)
 
     backends = resolve_backends(
-        DATASET_CONFIG,
-        settings=_settings(dataset_source, artefact_store),
-        context=(
-            {"langfuse": context}
-            if "langfuse" in (dataset_source, artefact_store)
-            else None
-        ),
+        DATASET_CONFIG, settings=_settings(dataset_source, artefact_store)
     )
 
     assert isinstance(backends, EvalBackends)
@@ -242,47 +238,6 @@ def test_labels_reach_the_created_context(monkeypatch):
     assert calls[0]["metadata"] == {"dataset": "gambling_XS", "run": 1}
 
 
-def test_reuses_caller_context_without_taking_ownership(monkeypatch):
-    client = SimpleNamespace(flush=Mock())
-    context = LangfuseContext(client=client, session_id="caller-session")
-
-    def fail_if_called(**kwargs):
-        pytest.fail(f"Caller context should have been reused: {kwargs}")
-
-    monkeypatch.setattr(langfuse_utils, "get_langfuse_context", fail_if_called)
-    backends = resolve_backends(
-        DATASET_CONFIG,
-        settings=_settings("local", "langfuse", langfuse=UNCONFIGURED_LANGFUSE),
-        context={"langfuse": context},
-    )
-
-    assert backends.artefacts.secondary[0].context is context
-    backends.close()
-    client.flush.assert_not_called()
-
-
-def test_validates_shared_langfuse_context_once(monkeypatch):
-    context = LangfuseContext(client=SimpleNamespace())
-    require_context = context_providers._require_langfuse_context
-    calls = []
-
-    def record_validation(candidate):
-        calls.append(candidate)
-        return require_context(candidate)
-
-    monkeypatch.setattr(
-        context_providers, "_require_langfuse_context", record_validation
-    )
-
-    resolve_backends(
-        DATASET_CONFIG,
-        settings=_settings("langfuse", "langfuse"),
-        context={"langfuse": context},
-    )
-
-    assert calls == [context]
-
-
 def test_close_runs_every_context_and_logs_failures(caplog):
     closed = []
 
@@ -305,7 +260,7 @@ def test_close_runs_every_context_and_logs_failures(caplog):
     assert "Failed to close first context" in caplog.text
 
 
-def test_rejects_langfuse_without_credentials_or_context():
+def test_rejects_a_langfuse_source_without_credentials():
     incomplete = LangfuseSettings(
         secret_key=TEST_LANGFUSE_SECRET_KEY,
         public_key=None,

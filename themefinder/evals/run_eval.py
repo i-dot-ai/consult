@@ -1,4 +1,9 @@
-"""Public API and CLI for running any registered evaluation component."""
+"""Public API and CLI for evaluating components, alone or across models.
+
+One command serves both: ``--component <name>`` runs a single model through
+one component, and any model selector (``--models``, ``--family``, ``--all``
+or ``--quick``) turns the run into a model comparison.
+"""
 
 import argparse
 import asyncio
@@ -9,6 +14,7 @@ from typing import Any
 
 from themefinder.llm import OpenAILLM
 
+import comparison
 from component_runner import run_component
 from components import COMPONENT_NAMES, build_component_config
 from config import resolve_backends
@@ -41,7 +47,6 @@ async def evaluate_component(
     *,
     llm: Any | None = None,
     judge_llm: Any | None = None,
-    context: dict[str, Any] | None = None,
     labels: RunLabels | None = None,
     question_num: int | None = None,
     settings: EvalSettings | None = None,
@@ -80,7 +85,6 @@ async def evaluate_component(
     backends = resolve_backends(
         dataset_config,
         settings=settings,
-        context=context,
         labels=labels,
         repeat=runs,
     )
@@ -95,13 +99,35 @@ async def evaluate_component(
     )
 
 
+EXAMPLES = """
+Examples:
+  # One component, one model (AUTO_EVAL_MODEL)
+  uv run python run_eval.py --component generation --dataset gambling_XS
+
+  # Every healthy chat model on the gateway, all components
+  uv run python run_eval.py --all --dataset housing_S --runs 3
+
+  # One or more vendor families
+  uv run python run_eval.py --family gemini claude --dataset housing_S
+
+  # Specific models by exact gateway name, mapping only
+  uv run python run_eval.py --models gpt-4o-uk gemini-3.5-flash-uk --component mapping
+"""
+
+
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run a ThemeFinder evaluation")
+    parser = argparse.ArgumentParser(
+        description="Run a ThemeFinder evaluation, or compare models on it",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=EXAMPLES,
+    )
     parser.add_argument(
         "--component",
-        required=True,
+        nargs="+",
         choices=COMPONENT_NAMES,
-        help="Evaluation component to run",
+        default=None,
+        help="Component(s) to evaluate. A single run takes exactly one; "
+        "a comparison defaults to all of them",
     )
     parser.add_argument(
         "--dataset",
@@ -112,18 +138,61 @@ def build_parser() -> argparse.ArgumentParser:
         "--question",
         type=int,
         default=None,
-        help="Question number to evaluate (mapping only)",
+        help="Question number to evaluate (single mapping runs only)",
     )
     parser.add_argument(
         "--runs",
         type=int,
         default=1,
-        help="Times to run every case, for mean/stddev per metric (default: 1)",
+        help="Single run: times to run every case, for mean/stddev per metric. "
+        "Comparison: full runs per model (default: 1)",
     )
     parser.add_argument(
         "--verbose",
         action="store_true",
         help="Also print each case's task output and theme tracks (always saved in results.json)",
+    )
+
+    comparison_group = parser.add_argument_group(
+        "model comparison",
+        "Any model selector compares models instead of running the default one",
+    )
+    comparison_group.add_argument(
+        "--models",
+        nargs="+",
+        help="Exact gateway model name(s) to compare",
+    )
+    comparison_group.add_argument(
+        "--family",
+        nargs="+",
+        choices=gateway.KNOWN_FAMILIES,
+        help="Vendor famil(y/ies) to compare, e.g. --family gemini claude",
+    )
+    comparison_group.add_argument(
+        "--all",
+        action="store_true",
+        help="Compare every healthy chat model discovered on the gateway",
+    )
+    comparison_group.add_argument(
+        "--reasoning-effort",
+        nargs="+",
+        choices=["low", "medium", "high"],
+        default=None,
+        help="Reasoning effort level(s) for reasoning-capable models "
+        "(default: low). No effect on models that don't support reasoning; "
+        "passing multiple levels runs each as a separate model variant.",
+    )
+    comparison_group.add_argument(
+        "--judge-model",
+        default=None,
+        help="Gateway model name for the judge LLM (default: AUTO_EVAL_JUDGE_MODEL). "
+        "Required for every component except mapping; the judge never falls back to "
+        "the task model.",
+    )
+    comparison_group.add_argument(
+        "--quick",
+        action="store_true",
+        help=f"Quick CI smoke test: gambling_XS dataset, 1 run, {comparison.QUICK_MODEL} only.",
     )
     return parser
 
@@ -150,11 +219,44 @@ def _scores_only(results: dict[str, Any]) -> dict[str, Any]:
 
 
 def main(argv: Sequence[str] | None = None) -> None:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    if comparison.is_comparison(args):
+        comparison.apply_quick_preset(args)
+        selector_error = comparison.validate_selector_args(args)
+        if selector_error:
+            parser.error(selector_error)
+        if args.question is not None:
+            parser.error("--question applies to a single mapping run, not a comparison")
+        if args.verbose:
+            parser.error(
+                "--verbose applies to a single run; a comparison always saves outputs"
+            )
+        if args.reasoning_effort is None:
+            args.reasoning_effort = ["low"]
+        args.judge_model = args.judge_model or eval_settings.judge_model
+        judged_components = [
+            component
+            for component in (args.component or COMPONENT_NAMES)
+            if component != "mapping"
+        ]
+        if judged_components and not args.judge_model:
+            parser.error(
+                "--judge-model or AUTO_EVAL_JUDGE_MODEL is required for judged components"
+            )
+        asyncio.run(comparison.run_comparison(args, evaluate_component))
+        return
+
+    if args.component is None or len(args.component) != 1:
+        parser.error("A single run takes exactly one --component")
+    if args.judge_model is not None or args.reasoning_effort is not None:
+        parser.error("--judge-model and --reasoning-effort apply to model comparisons")
+    component = args.component[0]
 
     results = asyncio.run(
         evaluate_component(
-            component=args.component,
+            component=component,
             dataset=args.dataset,
             question_num=args.question,
             runs=args.runs,
@@ -165,7 +267,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     print(json.dumps(printed, indent=2, sort_keys=True, default=str))
 
     # Case errors are recorded, not raised, so fail here or DVC and CI would call the run a success.
-    results_path = LOCAL_EVAL_RUNS_DIR / args.component / args.dataset / "results.json"
+    results_path = LOCAL_EVAL_RUNS_DIR / component / args.dataset / "results.json"
     payload = json.loads(results_path.read_text(encoding="utf-8"))
     errors = count_errors(payload)
     if errors > 0:

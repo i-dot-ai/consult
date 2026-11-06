@@ -38,7 +38,6 @@ async def test_builds_component_resolves_backends_and_runs(monkeypatch, componen
 
     task_llm = object()
     judge_llm = object()
-    context = object()
     labels = RunLabels(name="labelled")
     settings = _settings()
     component_config = ComponentConfig(component, _task, [])
@@ -57,7 +56,6 @@ async def test_builds_component_resolves_backends_and_runs(monkeypatch, componen
         "demo",
         llm=task_llm,
         judge_llm=judge_llm,
-        context=context,
         labels=labels,
         settings=settings,
     )
@@ -65,7 +63,7 @@ async def test_builds_component_resolves_backends_and_runs(monkeypatch, componen
     dataset_config = DatasetConfig(dataset="demo", component=component)
     build.assert_called_once_with(component, judge_llm=judge_llm, question_num=None)
     resolve.assert_called_once_with(
-        dataset_config, settings=settings, context=context, labels=labels, repeat=1
+        dataset_config, settings=settings, labels=labels, repeat=1
     )
     run.assert_awaited_once_with(
         component_config, dataset_config, backends, llm=task_llm

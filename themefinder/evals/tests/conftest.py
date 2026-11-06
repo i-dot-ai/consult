@@ -100,7 +100,7 @@ def make_gateway_model(
     health: str = "healthy",
     supports_reasoning: bool = False,
 ) -> gateway.GatewayModel:
-    """Shared GatewayModel test fixture builder for test_gateway.py / test_benchmark.py."""
+    """Shared GatewayModel test fixture builder for test_gateway.py / test_comparison.py."""
     return gateway.GatewayModel(
         name=name, family=family, health=health, supports_reasoning=supports_reasoning
     )

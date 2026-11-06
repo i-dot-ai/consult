@@ -36,6 +36,8 @@ is a core, non-optional dependency of the package purely to support the duplicat
 
 - `benchmark.py` keeps its Langfuse tracing. Cost and latency are collected from gateway response headers,
   while component execution continues to use the unified API rather than managing ports directly.
+  (Superseded: the script was later folded into `run_eval.py` as a model comparison with tracing as a port,
+  see the tracing note under [Orchestration](#orchestration).)
 - `evals/synthetic/` and its CLI entry point `generate_synthetic.py` (synthetic data generation) are
   untouched. The Langfuse coupling here lives entirely in `generate_synthetic.py`'s own `LangfuseContext`
   construction, trace wrap, and flush — the `evals/synthetic/` package it wraps has no Langfuse references of
@@ -47,14 +49,15 @@ Every way an eval actually gets run converges on the same function call:
 
 ```
 python run_eval.py --component generation ─┐
-benchmark.py --evals generation / --quick  ├──▶ evaluate_component(...)
+run_eval.py --models ... / --quick         ├──▶ evaluate_component(...)
 themefinder-eval.yml (CI)                  ─┤              │
 future dvc.yaml                            ─┘              ▼
                                               resolve_backends(...) ──▶ run_component(...)
 ```
 
-`run_eval.py` exposes `evaluate_component(...)` and a CLI that calls it. `benchmark.py` calls the same API, and
-the CI workflow reaches it through the benchmark Make targets. No caller owns a separate Langfuse-versus-local
+`run_eval.py` exposes `evaluate_component(...)` and a CLI that calls it. A model comparison (`comparison.py`,
+reached through the same CLI) calls the same API once per model and run, and the CI workflow reaches it
+through the Make targets. No caller owns a separate Langfuse-versus-local
 branch. Component factories create the task and evaluator configuration; `evaluate_component(...)` alone
 resolves the selected backends and delegates to `run_component(...)`.
 
@@ -79,7 +82,7 @@ Four ports, each an explicit `abc.ABC`, each with a default adapter:
 ```mermaid
 flowchart TB
     CLI["run_eval.py"] --> API["evaluate_component(...)"]
-    BM["benchmark.py"] --> API
+    BM["comparison.py (run_eval.py --models ...)"] --> API
     API -->|"① builds a fresh ComponentConfig"| CF["component registry + factory"]
     API -->|"② calls"| RB["resolve_backends()"]
     RB -->|"③ builds one adapter<br/>per port, bundles them"| EB
@@ -134,9 +137,7 @@ Colour key: pink = Langfuse-specific, blue = local/generic, purple = pydantic-ev
 design — `InlineSequentialRunner` exists purely to prove the port is swappable, not as a real alternative
 engine.
 
-`context` is deliberately untyped (`Any`) at the API boundary. `evaluate_component(...)` forwards it to
-`resolve_backends` without inspecting it. The
-runtime call sequence itself — `resolve_backends()` building `EvalBackends`, `run_component()` reading it — is
+The runtime call sequence — `resolve_backends()` building `EvalBackends`, `run_component()` reading it — is
 covered in full in [Orchestration](#orchestration) below, not repeated here.
 
 ## Directory structure
@@ -214,8 +215,9 @@ evals/utils/
                                   # same directory level; nothing in evals/ imports read_and_render today
 ```
 
-`benchmark.py` and `generate_synthetic.py` continue to import the Langfuse helper module because they
-legitimately manage tracing. Component definitions and the unified API/CLI do not import it.
+`generate_synthetic.py` continues to import the Langfuse helper module because it legitimately manages
+tracing. Component definitions, the unified API/CLI and the model comparison do not import it: tracing
+reaches them through the tracer port `resolve_backends()` resolves.
 
 ## Domain types — `evals/eval_types.py`
 
@@ -336,7 +338,7 @@ below. Every other runner (`InlineSequentialRunner` included) leaves `engine_rep
   `_run_with_langfuse`. Its constructor takes the context and whether it owns it, capturing the
   flush-ownership decision at construction time rather than on any shared struct (see
   [Orchestration](#orchestration) below for why); `finish_run()` flushes only when it owns the context, so a
-  context supplied by a caller like `benchmark.py` is never flushed twice. It's also the only adapter that
+  context is never flushed twice. It's also the only adapter that
   unpacks `engine_report` when `finish_run()` receives one.
   `record_case()` looks for a Langfuse item id on the case's metadata defensively: present, it links the
   score to that Langfuse dataset item exactly as `_run_with_langfuse` does today; absent, it still creates a
@@ -346,15 +348,15 @@ below. Every other runner (`InlineSequentialRunner` included) leaves `engine_rep
   deliberately-supported combination (someone who wants results stored locally while still pulling cases
   from a curated Langfuse dataset), not an edge case.
 - **`LocalJSONArtefactStore`** writes to `evals/local_eval_runs/<component>/<dataset>/results.json`, overwritten
-  each run — deliberately not `evals/benchmark_results/`, which `benchmark.py` already owns as a
+  each run — deliberately not `evals/benchmark_results/`, which the model comparison owns as a
   timestamp-keyed directory (`benchmark_results/<benchmark_id>/benchmark.log`) that `visualise_benchmark.py`
   scans expecting only timestamp children. `local_eval_runs/` is a strict improvement over today's local
   fallback, which never persisted anything at all — but it's a separate, non-interchangeable output tree from
-  `benchmark.py`'s results directory. `visualise_benchmark.py` only reads persisted
+  the comparison's results directory. `visualise_benchmark.py` only reads persisted
   Langfuse/`benchmark_results` data and is not updated to read `local_eval_runs/` in this pass. The future DVC
   work will decide how the unified CLI guarantees this stable output when another artefact store is selected.
 
-Both return the same flat `dict[str, Any]` shape `benchmark.py` already parses (see below).
+Both return the same flat `dict[str, Any]` shape the model comparison parses (see below).
 
 ### Surfacing pydantic-evals' native `EvaluationReport` without widening the ports
 
@@ -432,8 +434,9 @@ resolving backends and calling `run_component()`. Fresh construction matters bec
 the judge LLM at construction time and mapping's optional question filter is invocation-specific.
 
 `run_eval.py` provides the single-component CLI. Mapping keeps its optional `--question` flag, implemented as
-a per-call `case_filter`; it applies equally to local and Langfuse dataset adapters. `benchmark.py` calls
-`evaluate_component(...)` directly rather than maintaining a second component-to-function mapping.
+a per-call `case_filter`; it applies equally to local and Langfuse dataset adapters. A model selector on
+the same CLI (`--models`, `--family`, `--all`, `--quick`) hands the parsed arguments to `comparison.py`,
+which calls `evaluate_component(...)` directly rather than maintaining a second component-to-function mapping.
 
 **Scoring-consistency status per component:** generation, condensation, and refinement are already consistent —
 each already calls the same `evaluators.py` LLM-judge suite in both its local and Langfuse paths, so this
@@ -443,7 +446,7 @@ rate, and the F1 confidence interval instead of narrowing mapping to F1 alone.
 
 ## Running via DVC
 
-A fourth caller of `evaluate_component()`, alongside direct CLI, `benchmark.py`, and the CI workflow —
+A fourth caller of `evaluate_component()`, alongside direct CLI, the model comparison, and the CI workflow —
 `evals/dvc.yaml` defines pipeline stages that shell out to `run_eval.py --component <name>`, never
 `run_component()` directly. This buys `dvc repro`'s dependency-aware caching (skip re-running a component when
 nothing it depends on has changed) and `dvc exp run`/`dvc metrics show` for comparing intentional variations
@@ -456,16 +459,16 @@ every component, but `LangfuseArtefactStore` does not write anything to disk. Th
 adds a stable CLI-level metrics output independently of the configured artefact store. This remains a DVC
 concern: `run_component()` and `ArtefactStorePort` stay unchanged.
 
-## Compatibility contract with benchmark.py
+## Compatibility contract with the model comparison
 
-`benchmark.py` calls `evaluate_component()` with the component name, dataset, LLM, context, and optional judge
-LLM. It expects a flat dict back, which it splits into scores, outputs, and run metrics. It owns opening the
-Langfuse trace context for optional observability, while cost, latency, and token metrics come directly from
-the LLM gateway response headers.
+`comparison.py` calls `evaluate_component()` with the component name, dataset, LLM, optional judge LLM and a
+`RunLabels` naming the run. It expects a flat dict back, which it splits into scores, outputs, and run
+metrics. Cost, latency, and token metrics come directly from the LLM gateway response headers.
 
-The generic API preserves this return shape and accepts the caller-owned context through an untyped `context`
-parameter. This keeps component definitions storage-agnostic without changing how `benchmark.py` itself talks
-to Langfuse.
+Tracing is not the caller's concern: `resolve_backends()` resolves a tracer port (`adapters/tracing.py`) from
+the credentials present, a no-op when there is no connection and a Langfuse tracer when there is. The tracer
+opens one span around the component run and hands its client to the task and judge LLMs, so single runs and
+comparisons are traced the same way, and the labels become the session, tags and metadata of that trace.
 
 ## Configuration strategy
 
@@ -592,7 +595,7 @@ or broken intermediate state.
   `pydantic_evals`, so this file is expected to be clean too).
 - A second grep-based check enforces the `os.getenv()` centralisation directly: `grep -rn "os\.getenv\|os\.
   environ\.get" evals/*.py` returns only one line per var inside `evals/settings.py::get_settings()`, plus
-  `benchmark.py`'s unrelated `GRPC_DNS_RESOLVER` process-level workaround (not app config, not migrated).
+  the comparison's unrelated `GRPC_DNS_RESOLVER` process-level workaround, set only when a comparison runs.
   `grep -rn load_dotenv evals/*.py` returns only `evals/settings.py` after the legacy scripts are removed.
 - `langfuse_utils.py`'s split is checked for byte-level fidelity: its content is diffed against
   `git show HEAD:themefinder/evals/langfuse_utils.py` to confirm relocation only, no rewriting.
@@ -604,15 +607,11 @@ or broken intermediate state.
 
 ## Deferred to a later pass
 
-- Removing `benchmark.py`'s remaining *direct* Langfuse coupling (context construction, flush, and
-  cost/token metrics extraction) by routing it through `resolve_backends`/`ArtefactStorePort` instead — the
-  minimal-change design for this is written up in the "Follow-up (deferred)" section of the working plan, not
-  duplicated here.
+- Removing `benchmark.py`'s remaining *direct* Langfuse coupling. Done (2026-11-03): the script became
+  `comparison.py` behind `run_eval.py`, with tracing resolved as a port.
 - Removing `generate_synthetic.py`'s equivalent direct Langfuse coupling (its own `LangfuseContext`
   construction, trace wrap, and flush — pure LLM-call tracing, not dataset storage; it never writes to a
-  Langfuse dataset). Structurally similar to `benchmark.py`'s coupling but smaller, and tracked as its own
-  separate follow-up issue rather than folded into the `benchmark.py` write-up, since the two scripts have no
-  shared call path.
+  Langfuse dataset). Tracked as its own follow-up issue, since the two scripts had no shared call path.
 - Actually migrating any of the five custom LLM-judge classes onto `PydanticEvalsEvaluator` —
   the adapter exists and is tested this pass, but retiring a custom judge is an output-quality-parity
   decision, not a mechanical one.

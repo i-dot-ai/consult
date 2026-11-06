@@ -40,13 +40,6 @@ def _settings() -> EvalSettings:
     )
 
 
-def test_disabled_supplied_context_is_rejected():
-    with pytest.raises(ValueError, match="context is unavailable"):
-        build_langfuse_context(
-            DATASET_CONFIG, _settings(), LangfuseContext(client=None)
-        )
-
-
 def test_created_context_is_flushed_on_close(monkeypatch):
     context = LangfuseContext(client=SimpleNamespace())
     flush = Mock()
@@ -55,7 +48,7 @@ def test_created_context_is_flushed_on_close(monkeypatch):
     )
     monkeypatch.setattr(context_providers.langfuse_utils, "flush", flush)
 
-    provided = build_langfuse_context(DATASET_CONFIG, _settings(), None)
+    provided = build_langfuse_context(DATASET_CONFIG, _settings())
     flush.assert_not_called()
     provided.close()
 
@@ -81,7 +74,7 @@ def test_labels_name_and_tag_the_created_context(monkeypatch):
         metadata={"run_number": 2},
     )
 
-    build_langfuse_context(DATASET_CONFIG, _settings(), None, labels)
+    build_langfuse_context(DATASET_CONFIG, _settings(), labels)
 
     assert calls == [
         {
@@ -94,13 +87,12 @@ def test_labels_name_and_tag_the_created_context(monkeypatch):
     ]
 
 
-def test_supplied_context_is_not_flushed_on_close(monkeypatch):
-    context = LangfuseContext(client=SimpleNamespace())
-    flush = Mock()
-    monkeypatch.setattr(context_providers.langfuse_utils, "flush", flush)
+def test_created_context_must_be_enabled(monkeypatch):
+    monkeypatch.setattr(
+        context_providers.langfuse_utils,
+        "get_langfuse_context",
+        lambda **_: LangfuseContext(client=None),
+    )
 
-    provided = build_langfuse_context(DATASET_CONFIG, _settings(), context)
-    provided.close()
-
-    assert provided.context is context
-    flush.assert_not_called()
+    with pytest.raises(ValueError, match="context is unavailable"):
+        build_langfuse_context(DATASET_CONFIG, _settings())

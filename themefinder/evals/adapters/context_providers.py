@@ -1,6 +1,6 @@
-"""Build the tracing context for each platform, keyed by platform name.
+"""Build the platform context for each platform, keyed by platform name.
 
-Kept out of config.py so a new tracing platform is one function and one registry
+Kept out of config.py so a new platform is one function and one registry
 entry, and so whoever creates a context is also the one who closes it.
 """
 
@@ -23,8 +23,7 @@ class ProvidedContext:
     The provider cannot know when the run ends, so it owns the decision (real
     flush or no-op) and ``EvalBackends.close()`` owns the timing. ``close``
     flushes rather than shuts down, so it is safe to call repeatedly, e.g. by
-    several components run off one ``resolve_backends``. It is a no-op for
-    caller-supplied contexts, which stay the caller's responsibility to flush.
+    several components run off one ``resolve_backends``.
     """
 
     context: Any
@@ -32,7 +31,7 @@ class ProvidedContext:
 
 
 ContextProvider = Callable[
-    [DatasetConfig, EvalSettings, Any | None, RunLabels | None], ProvidedContext
+    [DatasetConfig, EvalSettings, RunLabels | None], ProvidedContext
 ]
 
 
@@ -42,24 +41,20 @@ def _require_langfuse_context(context: Any | None) -> Any:
         or not getattr(context, "is_enabled", False)
         or getattr(context, "client", None) is None
     ):
-        raise ValueError("Langfuse was selected but its context is unavailable.")
+        raise ValueError("Langfuse credentials are set but its context is unavailable.")
     return context
 
 
 def build_langfuse_context(
     dataset_config: DatasetConfig,
     settings: EvalSettings,
-    context: Any | None,
     labels: RunLabels | None = None,
 ) -> ProvidedContext:
-    """Reuse a caller-supplied context, or create one from settings and own it."""
-    if context is not None:
-        return ProvidedContext(_require_langfuse_context(context), lambda: None)
-
+    """Create one context from settings and own its flush."""
     if settings.active_langfuse is None:
         raise ValueError(
             "Langfuse requires LANGFUSE_SECRET_KEY, LANGFUSE_PUBLIC_KEY "
-            "and LANGFUSE_BASE_URL, or an enabled caller-supplied context."
+            "and LANGFUSE_BASE_URL."
         )
     labels = labels if labels is not None else RunLabels()
     session_id = labels.name or (

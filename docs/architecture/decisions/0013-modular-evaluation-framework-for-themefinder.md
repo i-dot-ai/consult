@@ -43,8 +43,9 @@ behaviours behind one reusable API and CLI, incrementally:
   summary, without widening any port's real contract or requiring other adapters to know about it.
 - Langfuse-specific code is confined to the Langfuse adapters and to `evals/config.py::resolve_backends()`,
   the single function that constructs the Langfuse context and passes its ownership to the artefact adapter.
-  Component definitions and the unified API/CLI contain no Langfuse-specific code. `benchmark.py` still
-  constructs its own Langfuse context and passes it through the generic `context` parameter.
+  Component definitions and the unified API/CLI contain no Langfuse-specific code. The model comparison
+  (`comparison.py`, reached through `run_eval.py`) identifies its runs through platform-neutral `RunLabels`
+  and relies on the tracer `resolve_backends()` picks from the credentials present.
 - `resolve_backends()` selects the dataset source and the artefact store independently, not as one bundled
   "Langfuse configured" decision. Each defaults to local storage and can be explicitly set to Langfuse, so a
   run can pull cases from Langfuse while storing results locally, or the reverse. This
@@ -55,15 +56,15 @@ behaviours behind one reusable API and CLI, incrementally:
   The legacy `evaluators.py` and `metrics.py` modules remain for callers outside the unified component path,
   including the existing mapping DVC prototype. `langfuse_utils.py` (plus the unrelated `utils.py`) separately
   becomes `evals/utils/`, one file per concern.
-- `benchmark.py` uses the unified API for component execution but retains its existing Langfuse tracing and
-  cost collection. `generate_synthetic.py` remains out of scope.
+- Model comparisons run through the same `run_eval.py` CLI (`--models`, `--family`, `--all`); the former
+  `benchmark.py` is gone. `generate_synthetic.py` remains out of scope.
 - `THEMEFINDER_EVAL_ENGINE` stays an env var, not a config file — consistent with the rest of `evals/`, which
   has no config-file infrastructure. But the scattered ad hoc `os.getenv()` calls that read those env vars
    are centralised into one `evals/settings.py::EvalSettings`, built once per process and injected
   as an optional parameter at the same points `context` already is. This is fixed in this pass, not deferred
   — scoped strictly to `themefinder/evals/` after confirming `backend/` already has proper Django settings
   and `lambda/`/`pipeline-*/` are independently-deployed units where per-file reads are appropriate.
-- Every supported component run — direct CLI (`python run_eval.py --component ...`), `benchmark.py`, the
+- Every supported component run — direct CLI (`python run_eval.py --component ...`), a model comparison, the
   `themefinder-eval.yml` CI workflow, and the future top-level DVC pipeline — converges on
   `evaluate_component(...)`, which is the only public entry point that calls
   `resolve_backends()`/`run_component()`.
@@ -104,13 +105,12 @@ behaviours behind one reusable API and CLI, incrementally:
 - More files and more indirection than the previous flat layout, but each port is independently testable
   offline, and Langfuse can be replaced (dataset storage, artefact storage, or both) without touching the
   component definitions, evaluators, or runner.
-- `benchmark.py` and `generate_synthetic.py` still couple to Langfuse directly for now — the
-  `evals/synthetic/` package itself has no Langfuse references, only its CLI wrapper does; migrating both
-  onto the new ports is deferred to a follow-up pass. For `benchmark.py`, the minimal changes this would
-  take — routing its context construction, flush, and cost/token metrics extraction through
-  `resolve_backends`/`ArtefactStorePort` instead of calling `langfuse_utils` directly — are already scoped
-  in the design doc, ready to pick up. `generate_synthetic.py` needs the equivalent de-Langfusing (its own
-  `LangfuseContext` construction, trace wrap, and flush), tracked as a separate follow-up issue.
+- `generate_synthetic.py` still couples to Langfuse directly for now — the `evals/synthetic/` package
+  itself has no Langfuse references, only its CLI wrapper does; it needs the equivalent de-Langfusing (its
+  own `LangfuseContext` construction, trace wrap, and flush), tracked as a separate follow-up issue.
+  `benchmark.py` had the same coupling and was folded into `run_eval.py` as a model comparison
+  (2026-11-03): tracing is now a port that `resolve_backends()` enables whenever a Langfuse connection is
+  available, for single runs and comparisons alike.
 - Note (2026-09-24): to support a mix of evaluator sources (pydantic-evals, DeepEval, custom), `EvaluatorPort`
   stays the canonical hub — sources adapt in, runners adapt out — rather than adopting `pydantic_evals.Evaluator`
   as the base, which would privilege one library's context model and force `sources × runners` adapters instead

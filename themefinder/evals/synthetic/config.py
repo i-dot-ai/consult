@@ -5,8 +5,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-# Models stay hardcoded here rather than dynamically discovered (unlike
-# benchmark.py) because this workflow is designed around one gateway-routed
+# Models stay hardcoded here rather than dynamically discovered (unlike the
+# model comparison) because this workflow is designed around one gateway-routed
 # model per role.
 DRAFTING_MODEL = "gpt-5-mini-sweden"  # question/context/theme generation
 RESPONSE_GENERATION_MODEL = "gpt-5-nano-sweden"  # bulk respondent response generation
