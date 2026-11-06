@@ -504,7 +504,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
                 <!---->
                 <div
-                  class="flex gap-2 items-center"
+                  class="flex gap-2 items-center flex-wrap max-w-32 min-w-16"
                 >
                   <!---->
                   <div
@@ -702,7 +702,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
                 <!---->
                 <div
-                  class="flex gap-2 items-center"
+                  class="flex gap-2 items-center flex-wrap max-w-32 min-w-16"
                 >
                   <!---->
                   <div
