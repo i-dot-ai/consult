@@ -3,7 +3,7 @@
 from datasets import DatasetConfig, load_local_data
 from eval_types import Case, DatasetNotFoundError
 
-from .base import DatasetPort
+from .base import DatasetPort, readable_case_id
 
 
 class LocalJSONDatasetAdapter(DatasetPort):
@@ -11,7 +11,7 @@ class LocalJSONDatasetAdapter(DatasetPort):
         """Load local fixture items and normalise them into `Case` objects."""
         try:
             return [
-                self._to_case(item, index)
+                self._to_case(item, index, config)
                 for index, item in enumerate(load_local_data(config))
             ]
         except FileNotFoundError as exc:
@@ -20,11 +20,10 @@ class LocalJSONDatasetAdapter(DatasetPort):
             ) from exc
 
     @staticmethod
-    def _to_case(item: dict, index: int) -> Case:
+    def _to_case(item: dict, index: int, config: DatasetConfig) -> Case:
         metadata = dict(item.get("metadata") or {})
-        case_id = metadata.get("question_part") or f"case-{index + 1}"
         return Case(
-            id=case_id,
+            id=readable_case_id(config, metadata, fallback=f"case-{index + 1}"),
             inputs=item["input"],
             expected_output=item.get("expected_output"),
             metadata=metadata,

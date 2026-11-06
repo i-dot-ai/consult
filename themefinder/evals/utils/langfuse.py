@@ -38,7 +38,6 @@ class LangfuseContext:
     """Container for Langfuse client."""
 
     client: "Langfuse | None"
-    handler: None = None  # Retained for API compatibility; always None
     session_id: str | None = None
     tags: list[str] | None = None
     metadata: dict | None = None
@@ -71,14 +70,18 @@ def trace_context(
         return
 
     try:
-        with context.client.start_as_current_span(
-            name=name, metadata=context.metadata
-        ) as span:
-            span.update_trace(
+        from langfuse import propagate_attributes
+
+        with (
+            context.client.start_as_current_observation(
+                name=name, metadata=context.metadata
+            ) as span,
+            propagate_attributes(
                 session_id=context.session_id,
                 tags=context.tags,
                 metadata=context.metadata,
-            )
+            ),
+        ):
             yield span
     except ImportError:
         logger.warning("Langfuse package not available")
@@ -97,9 +100,8 @@ def get_langfuse_context(
 ) -> LangfuseContext:
     """Initialise Langfuse with structured tags and metadata.
 
-    Updated for Langfuse SDK v3 which changed CallbackHandler API.
-    In v3, session_id/tags/metadata are passed via LangChain's config["metadata"]
-    using special keys: langfuse_session_id, langfuse_tags, etc.
+    Langfuse SDK v4 has no CallbackHandler: session_id/tags/metadata are held
+    here and applied to traces via propagate_attributes (see trace_context).
 
     Args:
         session_id: Unique identifier for grouping traces
@@ -111,14 +113,14 @@ def get_langfuse_context(
             to the process-wide eval_settings singleton.
 
     Returns:
-        LangfuseContext with client and handler (or None values if not configured)
+        LangfuseContext with client (or client=None if not configured)
     """
     settings = settings if settings is not None else eval_settings
     langfuse_settings = settings.active_langfuse
 
     if langfuse_settings is None:
         logger.info("Langfuse not configured - tracing disabled")
-        return LangfuseContext(client=None, handler=None)
+        return LangfuseContext(client=None)
 
     secret_key = langfuse_settings.secret_key
     public_key = langfuse_settings.public_key
@@ -130,7 +132,8 @@ def get_langfuse_context(
         client = Langfuse(
             secret_key=secret_key,
             public_key=public_key,
-            host=base_url,
+            # v4 ranks the LANGFUSE_BASE_URL env var above host=, so pass base_url
+            base_url=base_url,
             mask=mask_sensitive,
         )
 
@@ -156,11 +159,21 @@ def get_langfuse_context(
         standard_metadata = {
             "eval_type": eval_type,
             "model": model,
+            # Scores are only comparable between runs scored by the same judge
+            "judge_model": settings.judge_model,
             "version": version,
             "git_sha": git_sha,
             "environment": environment,
+            # Run-level traces and scores override this, so dashboards can filter either way
+            "aggregate": "false",
         }
-        all_metadata = {**standard_metadata, **(metadata or {})}
+        # v4 propagates only str values, so stringify here to keep dashboard
+        # filters identical across entry points; None means "not applicable"
+        all_metadata = {
+            key: str(value)
+            for key, value in {**standard_metadata, **(metadata or {})}.items()
+            if value is not None
+        }
 
         logger.info(
             f"Langfuse initialised: session_id={session_id}, "
@@ -181,52 +194,6 @@ def get_langfuse_context(
         return LangfuseContext(client=None)
 
 
-def create_scores(
-    context: LangfuseContext,
-    scores: dict[str, float | int],
-    trace_id: str | None = None,
-) -> None:
-    """Attach computed metrics as scores to the current trace.
-
-    Uses score_current_trace() when inside a trace_context() block,
-    otherwise falls back to explicit trace_id attachment.
-
-    Args:
-        context: LangfuseContext from get_langfuse_context()
-        scores: Dict mapping score names to numeric values
-        trace_id: Optional trace_id (used only as fallback)
-    """
-    if not context.is_enabled or not context.client:
-        return
-
-    # No handler fallback — trace_id must be provided explicitly if needed
-
-    for name, value in scores.items():
-        if not isinstance(value, (int, float)):
-            logger.debug(f"Skipping non-numeric score {name}={value}")
-            continue
-
-        try:
-            context.client.score_current_trace(
-                name=name, value=float(value), data_type="NUMERIC"
-            )
-            logger.debug(f"Attached score {name}={value} to current trace")
-        except Exception:
-            if trace_id:
-                try:
-                    context.client.create_score(
-                        name=name,
-                        value=float(value),
-                        trace_id=trace_id,
-                        data_type="NUMERIC",
-                    )
-                    logger.debug(f"Attached score {name}={value} via trace_id")
-                except Exception as e:
-                    logger.warning(f"Failed to attach score {name}: {e}")
-            else:
-                logger.warning(f"Failed to attach score {name}: no trace context")
-
-
 def flush(context: LangfuseContext) -> None:
     """Flush pending Langfuse data before exit.
 
@@ -241,55 +208,22 @@ def flush(context: LangfuseContext) -> None:
             logger.warning(f"Failed to flush Langfuse: {e}")
 
 
-@contextmanager
-def dataset_item_trace(
-    context: LangfuseContext,
-    dataset_item: Any,
+def link_dataset_item(
+    client: "Langfuse",
+    *,
     run_name: str,
-) -> Generator[tuple[Any, str | None], None, None]:
-    """Create a trace for a single dataset item linked to a dataset run.
+    dataset_item_id: str,
+    trace_id: str,
+    metadata: dict | None = None,
+) -> Any:
+    """Link a trace to a named dataset run by hand.
 
-    Uses Langfuse's item.run() context manager which automatically:
-    - Creates a trace linked to the dataset item
-    - Associates the trace with a named dataset run
-    - Aggregates metadata and costs at the run level
-
-    Args:
-        context: LangfuseContext from get_langfuse_context()
-        dataset_item: Langfuse dataset item object (must have .run() method)
-        run_name: Name of the experiment run (typically session_id)
-
-    Yields:
-        Tuple of (span object, trace_id) for score attachment.
-        Both are None if Langfuse is disabled.
-
-    Example:
-        for item in dataset.items:
-            with dataset_item_trace(ctx, item, ctx.session_id) as (trace, trace_id):
-                result = await run_task(item)
-                if trace:
-                    trace.update(output=result)
-                if trace_id:
-                    ctx.client.create_score(
-                        trace_id=trace_id, name="accuracy", value=0.95, data_type="NUMERIC"
-                    )
+    SDK v4 removed DatasetItemClient.run(), and our runners own task execution,
+    so the experiment SDK can't do this for us. Errors propagate to the caller.
     """
-    if not context.is_enabled or not context.client:
-        yield None, None
-        return
-
-    try:
-        with dataset_item.run(
-            run_name=run_name,
-            run_metadata=context.metadata,
-        ) as root_span:
-            root_span.update_trace(
-                session_id=context.session_id,
-                tags=context.tags,
-                metadata=context.metadata,
-            )
-            yield root_span, root_span.trace_id
-
-    except Exception as e:
-        logger.warning(f"Failed to create dataset item trace: {e}")
-        yield None, None
+    return client.api.dataset_run_items.create(
+        run_name=run_name,
+        dataset_item_id=dataset_item_id,
+        trace_id=trace_id,
+        metadata=metadata,
+    )
