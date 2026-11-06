@@ -92,6 +92,8 @@ site/
 evals/data/*
 !evals/data/gambling_XS/
 !evals/data/gambling_XXS/
+!evals/data/gambling_500/
+!evals/data/gambling_1000/
 !evals/data/generation/
 !evals/data/condensation/
 
