@@ -6,14 +6,15 @@ import json
 from abc import ABC
 from dataclasses import replace
 from unittest.mock import Mock
+from contextlib import contextmanager
 
 import pytest
 from conftest import _themes
-from fakes import FakeLangfuseClient, FakeTrace
 from httpx import RequestError
 from langfuse.api.core import ApiError
 from pydantic_evals.reporting import EvaluationReport
 
+from adapters.artefact_stores import langfuse_adapter
 from adapters.artefact_stores.base import ArtefactStorePort
 from adapters.artefact_stores.composite import CompositeArtefactStore
 from adapters.artefact_stores.langfuse_adapter import LangfuseArtefactStore
@@ -22,9 +23,26 @@ from adapters.artefact_stores.local_json_adapter import (
     build_results_payload,
 )
 from eval_types import Case, CaseOutcome, RunMetrics, RunReport, Score
+from fakes import FakeLangfuseClient
 from utils import stats
 from utils.langfuse import LangfuseContext
 from utils.results import flatten_run_report
+
+
+@pytest.fixture
+def propagated(monkeypatch) -> list[dict]:
+    """Record trace-level attributes, which SDK v4 only accepts via propagate_attributes."""
+    calls: list[dict] = []
+
+    @contextmanager
+    def fake_propagate_attributes(**kwargs):
+        calls.append(kwargs)
+        yield
+
+    monkeypatch.setattr(
+        langfuse_adapter, "propagate_attributes", fake_propagate_attributes
+    )
+    return calls
 
 
 def _make_case(
@@ -276,10 +294,11 @@ class TestLocalJSONArtefactStore:
             "input_tokens": 100,
             "output_tokens": 25,
             "total_tokens": 125,
-            "n_runs": 1,
         }
         assert payload["results"]["metrics"] == expected_metrics
         assert "metrics" not in payload
+        # A property of the run, kept out of results where it would read as a score
+        assert payload["n_runs"] == 1
         assert results["metrics"] == expected_metrics
 
 
@@ -306,8 +325,9 @@ class TestCompositeArtefactStore:
         assert client.scores[0]["name"] == "groundedness"
 
 
+@pytest.mark.usefixtures("propagated")
 class TestLangfuseArtefactStore:
-    def test_record_case_creates_span_and_links_dataset_item(self):
+    def test_record_case_creates_span_and_links_dataset_item(self, propagated):
         client = FakeLangfuseClient()
         context = LangfuseContext(
             client=client,
@@ -332,7 +352,7 @@ class TestLangfuseArtefactStore:
         assert client.start_span_calls == [
             {
                 "trace_context": {"trace_id": "generated-trace-id"},
-                "name": "session-v3:question_part_3",
+                "name": "generation:unknown:demo:question_part_3:run_1",
                 "input": {"question": "What changed?"},
                 "output": {"themes": _themes("A")},
                 "metadata": {"dataset": "demo"},
@@ -345,19 +365,19 @@ class TestLangfuseArtefactStore:
         assert request.dataset_item_id == "item-v3"
         assert request.trace_id == "generated-trace-id"
         assert request.metadata == {"dataset": "demo"}
-        assert client.last_span_trace.trace_updates == [
+        assert propagated == [
             {
-                "input": {"question": "What changed?"},
-                "output": {"themes": _themes("A")},
-                "metadata": {"dataset": "demo"},
-                "tags": ["eval", "generation"],
+                "trace_name": "generation:unknown:demo:question_part_3:run_1",
                 "session_id": "session-v3",
+                "tags": ["eval", "generation"],
+                "metadata": {"dataset": "demo"},
             }
         ]
         assert client.scores == [
             {
                 "comment": "linked",
                 "data_type": "NUMERIC",
+                "metadata": {"dataset": "demo"},
                 "name": "coverage",
                 "trace_id": "generated-trace-id",
                 "value": 4.0,
@@ -389,6 +409,7 @@ class TestLangfuseArtefactStore:
         assert client.scores == [
             {
                 "data_type": "NUMERIC",
+                "metadata": None,
                 "name": "coverage",
                 "trace_id": "generated-trace-id",
                 "value": 4.0,
@@ -405,7 +426,10 @@ class TestLangfuseArtefactStore:
         store.start_run("generation", "demo")
         store.record_case(outcome)
 
-        assert client.start_span_calls[0]["name"] == "session-2:question_part_3"
+        assert (
+            client.start_span_calls[0]["name"]
+            == "generation:unknown:demo:question_part_3:run_1"
+        )
         assert client.scores[0]["trace_id"] == "generated-trace-id"
         assert client.scores[0]["name"] == "groundedness"
 
@@ -424,13 +448,14 @@ class TestLangfuseArtefactStore:
             {
                 "comment": "comment from evaluator",
                 "data_type": "NUMERIC",
+                "metadata": None,
                 "name": "specificity",
                 "trace_id": "generated-trace-id",
                 "value": 1.2,
             }
         ]
 
-    def test_record_case_propagates_score_creation_errors(self):
+    def test_record_case_propagates_score_creation_errors(self, caplog):
         client = FakeLangfuseClient()
         client.raise_on_create_score = RuntimeError("boom")
         context = LangfuseContext(client=client, session_id="session-1")
@@ -445,6 +470,11 @@ class TestLangfuseArtefactStore:
             store.record_case(outcome)
 
         assert client.span_exit_calls == [(RuntimeError, "boom")]
+        # Logged with its case and run, which the traceback alone doesn't give
+        assert (
+            "Langfuse recording failed for case case-9 and run session-1: boom"
+            in caplog.text
+        )
 
     def test_record_case_logs_trace_update_failures(self, monkeypatch, caplog):
         client = FakeLangfuseClient()
@@ -452,10 +482,14 @@ class TestLangfuseArtefactStore:
         store = LangfuseArtefactStore(context=context)
         outcome = _make_outcome(case=_make_case(langfuse_item_id="item-123"))
 
-        def raise_on_update_trace(self, **kwargs):
+        @contextmanager
+        def failing_propagate_attributes(**kwargs):
             raise RuntimeError("trace update failed")
+            yield
 
-        monkeypatch.setattr(FakeTrace, "update_trace", raise_on_update_trace)
+        monkeypatch.setattr(
+            langfuse_adapter, "propagate_attributes", failing_propagate_attributes
+        )
         store.start_run("generation", "demo")
 
         with pytest.raises(RuntimeError, match="trace update failed"):
@@ -464,7 +498,7 @@ class TestLangfuseArtefactStore:
         assert client.span_exit_calls == [(RuntimeError, "trace update failed")]
         assert client.scores == []
         assert (
-            "Failed to update Langfuse trace for case case-1 and run session-1: "
+            "Langfuse recording failed for case case-1 and run session-1: "
             "trace update failed" in caplog.text
         )
 
@@ -497,10 +531,11 @@ class TestLangfuseArtefactStore:
                     [Score("f1_score", 0.7)],
                     run_index=1,
                 ),
-            ]
+            ],
+            n_runs=2,
         )
 
-    def test_finish_run_writes_aggregate_scores_on_one_run_trace(self):
+    def test_finish_run_writes_aggregate_scores_on_one_run_trace(self, propagated):
         client = FakeLangfuseClient()
         store = LangfuseArtefactStore(
             context=LangfuseContext(
@@ -511,11 +546,16 @@ class TestLangfuseArtefactStore:
         store.start_run("mapping", "demo")
         store.finish_run(self._repeated_report())
 
+        # No model in the context metadata, so the observation name says so
         assert [call["name"] for call in client.start_span_calls] == [
-            "session-1:aggregate"
+            "mapping:unknown:demo:aggregate"
         ]
-        assert client.last_span_trace.trace_updates[0]["session_id"] == "session-1"
-        assert client.last_span_trace.trace_updates[0]["tags"] == ["eval"]
+        # Trace and observation share one name, so the Tracing and Scores views agree
+        assert store.aggregate_name == "mapping:unknown:demo:aggregate"
+        assert propagated[0]["trace_name"] == store.aggregate_name
+        assert propagated[0]["session_id"] == "session-1"
+        assert propagated[0]["tags"] == ["eval"]
+        assert propagated[0]["metadata"] == {"aggregate": "true", "n_runs": "2"}
         by_name = {score["name"]: score for score in client.scores}
         assert {s["trace_id"] for s in client.scores} == {"generated-trace-id"}
         assert by_name["f1_score_mean"]["value"] == pytest.approx(0.6)
@@ -537,21 +577,54 @@ class TestLangfuseArtefactStore:
         assert "f1_score_mean" in names
         assert "f1_score_stdev" not in names
 
-    def test_finish_run_writes_no_aggregate_scores_for_a_single_run(self):
+    def test_finish_run_writes_run_scores_on_the_aggregate_trace_only(self):
+        """A single run still gets run-level scores, on the aggregate trace and
+        never the dataset run, even when cases were linked to one."""
         client = FakeLangfuseClient()
-        store = LangfuseArtefactStore(context=LangfuseContext(client=client))
+        metadata = {"model": "m", "judge_model": "j"}
+        store = LangfuseArtefactStore(
+            context=LangfuseContext(client=client, metadata=metadata)
+        )
         outcome = _make_outcome(
             case=_make_case(question_part="question_part_1", langfuse_item_id="item-1")
+        )
+        failed = _make_outcome(case=_make_case(case_id="case-2"), error="boom")
+        metrics = RunMetrics(
+            cost_usd=0.5,
+            latency_seconds=None,
+            processing_time_seconds=2.0,
+            llm_call_count=3,
         )
 
         store.start_run("generation", "demo")
         store.record_case(outcome)
         client.scores.clear()
-        client.start_span_calls.clear()
-        store.finish_run(RunReport(outcomes=[outcome]))
+        store.finish_run(RunReport(outcomes=[outcome, failed], metrics=metrics))
 
-        assert client.scores == []
-        assert client.start_span_calls == []
+        for score in client.scores:
+            assert score["metadata"] == {**metadata, "aggregate": "true", "n_runs": "1"}
+            assert "dataset_run_id" not in score
+            # On the model-named observation, so dashboards can break down by it
+            assert score["trace_id"] == "generated-trace-id"
+            assert score["observation_id"] == "generated-observation-id"
+        # latency_seconds is None (not measured) and one run has no stdev, so both are left out
+        assert {score["name"]: score["value"] for score in client.scores} == {
+            "groundedness_mean": 4.5,
+            "cost_usd": 0.5,
+            "processing_time_seconds": 2.0,
+            "llm_call_count": 3,
+            "error_count": 1,
+        }
+        assert client.start_span_calls[-1]["name"] == "generation:m:demo:aggregate"
+        # Per-case traces share the prefix, with the case and a 1-based run number
+        assert (
+            client.start_span_calls[0]["name"]
+            == "generation:m:demo:question_part_1:run_1"
+        )
+        assert (
+            store.case_trace_name(replace(outcome, run_index=1))
+            == "generation:m:demo:question_part_1:run_2"
+        )
 
     def test_finish_run_does_not_flush_when_context_is_not_owned(self):
         client = FakeLangfuseClient()

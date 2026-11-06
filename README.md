@@ -147,7 +147,9 @@ The workspace settings are configured to:
 
 You can override these settings in your User Settings if you prefer different personal configurations. See the [VSCode settings documentation](https://code.visualstudio.com/docs/getstarted/settings) for more information on the settings hierarchy.
 
-### Running Evals
+### Evals
+
+#### Running
 
 Run a DVC-tracked evaluation pipeline from the repository root:
 
@@ -180,7 +182,7 @@ current evaluation datasets are small enough that the extra cost is acceptable.
 Use `make run-evals` for the quick multi-component benchmark or
 `make run-eval EVAL_TYPE=mapping` for one benchmark component.
 
-### Evals in CI
+#### Evals in CI
 
 ThemeFinder evals run in GitHub Actions on every change to `themefinder/evals/**` or
 `themefinder/src/themefinder/**`, in two tiers:
@@ -214,6 +216,23 @@ uv run --extra eval python -m ci.build_baselines --runs /path/to/run1 /path/to/r
 
 Tolerances are the larger of a fixed floor and three standard deviations across the
 runs, so use at least five. Review the baseline diff in the pull request.
+
+#### Eval Dashboards
+
+We use langfuse to track the metrics from our eval runs: https://core-langfuse.i.ai.gov.uk/
+
+Eval metrics are logged to langfuse as Output values of Traces, not as Langfuse Experiments. This means
+that if you want to set up a new dashboard to compare the value of a metric across models, you should use the following method:
+1. Open Langfuse and select the relevant Project
+2. Click on Dashboards on the lefthand bar
+3. Click the Add Widgets button on the top right
+4. Select Custom Chart
+5. Under Data Selection, select:
+    - View = Scores Numeric
+    - Metric = Value, Avg
+    - Filters = Add Filter, then set Score Name to your metric of interest
+    - Breakdown Dimension = Observation Name (this separates the models into different elements)
+6. Under Visualisation, set the Name and Description to something more coherent than the Langfuse defaults.
 
 ### Configuring Certificates
 

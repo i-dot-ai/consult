@@ -78,3 +78,21 @@ export const longMock = {
       })),
   },
 };
+
+export const manyUsersMock = {
+  url: URL,
+  body: {
+    count: 1,
+    next: null,
+    previous: null,
+    results: CONSULTATIONS.map((consultation) => ({
+      ...consultation,
+      users: Array.from(Array(10).keys()).map((id) => ({
+        id,
+        email: `email-${id}@example.com`,
+        is_staff: true,
+        created_at: "2026-01-29T14:15:50.850685Z",
+      })),
+    })),
+  },
+};

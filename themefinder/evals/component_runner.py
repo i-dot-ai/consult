@@ -68,8 +68,8 @@ async def run_component(
             input_tokens=_per_run_count(gateway_summary.input_tokens, n_runs),
             output_tokens=_per_run_count(gateway_summary.output_tokens, n_runs),
             total_tokens=_per_run_count(gateway_summary.total_tokens, n_runs),
-            n_runs=n_runs,
         )
+        report.n_runs = n_runs
         return backends.artefacts.finish_run(report, engine_report=report.engine_report)
     finally:
         # Flush contexts we created, including when Langfuse is only the dataset.

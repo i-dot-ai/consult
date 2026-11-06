@@ -1,3 +1,4 @@
+from dataclasses import replace
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -26,6 +27,7 @@ def _settings() -> EvalSettings:
             artefact_store="local",
         ),
         log_level="INFO",
+        judge_model="judge-model",
     )
 
 
@@ -67,7 +69,7 @@ async def test_builds_component_resolves_backends_and_runs(monkeypatch, componen
     assert actual is result
 
 
-async def test_uses_task_llm_as_judge_by_default(monkeypatch):
+async def test_mapping_runs_without_a_judge(monkeypatch):
     import run_eval
 
     task_llm = object()
@@ -80,9 +82,25 @@ async def test_uses_task_llm_as_judge_by_default(monkeypatch):
     monkeypatch.setattr(run_eval, "resolve_backends", Mock(return_value=Mock()))
     monkeypatch.setattr(run_eval, "run_component", AsyncMock(return_value={}))
 
-    await evaluate_component("mapping", llm=task_llm, settings=_settings())
+    settings = replace(_settings(), judge_model=None)
+    await evaluate_component("mapping", llm=task_llm, settings=settings)
 
-    build.assert_called_once_with("mapping", judge_llm=task_llm, question_num=None)
+    build.assert_called_once_with("mapping", judge_llm=None, question_num=None)
+
+
+async def test_judged_component_requires_a_judge_model(monkeypatch):
+    """The task model must never stand in as the judge."""
+    import run_eval
+
+    create_llm = Mock()
+    monkeypatch.setattr(run_eval, "_create_llm", create_llm)
+
+    with pytest.raises(ValueError, match="AUTO_EVAL_JUDGE_MODEL"):
+        await evaluate_component(
+            "generation", llm=object(), settings=replace(_settings(), judge_model=None)
+        )
+
+    create_llm.assert_not_called()
 
 
 async def test_uses_patched_eval_settings_by_default(monkeypatch):
@@ -132,36 +150,39 @@ async def test_warns_when_mapping_is_given_a_judge_llm(monkeypatch):
     )
 
 
-async def test_creates_default_llm_from_same_settings_snapshot(monkeypatch):
+async def test_creates_task_and_judge_llms_from_same_settings_snapshot(monkeypatch):
     import run_eval
 
     settings = _settings()
-    default_llm = object()
+    llms = {"test-model": object(), "judge-model": object()}
     component_config = ComponentConfig("generation", _task, [])
-    create_llm = Mock(return_value=default_llm)
+    create_llm = Mock(side_effect=lambda _settings, model: llms[model])
     build = Mock(return_value=component_config)
     resolve = Mock(return_value=Mock())
     run = AsyncMock(return_value={})
-    monkeypatch.setattr(run_eval, "_create_default_llm", create_llm)
+    monkeypatch.setattr(run_eval, "_create_llm", create_llm)
     monkeypatch.setattr(run_eval, "build_component_config", build)
     monkeypatch.setattr(run_eval, "resolve_backends", resolve)
     monkeypatch.setattr(run_eval, "run_component", run)
 
     await evaluate_component("generation", settings=settings)
 
-    create_llm.assert_called_once_with(settings)
+    assert [c.args for c in create_llm.call_args_list] == [
+        (settings, "judge-model"),
+        (settings, "test-model"),
+    ]
     build.assert_called_once_with(
-        "generation", judge_llm=default_llm, question_num=None
+        "generation", judge_llm=llms["judge-model"], question_num=None
     )
     assert resolve.call_args.kwargs["settings"] is settings
-    assert run.await_args.kwargs["llm"] is default_llm
+    assert run.await_args.kwargs["llm"] is llms["test-model"]
 
 
 async def test_rejects_unknown_component_before_creating_llm(monkeypatch):
     import run_eval
 
     create_llm = Mock()
-    monkeypatch.setattr(run_eval, "_create_default_llm", create_llm)
+    monkeypatch.setattr(run_eval, "_create_llm", create_llm)
 
     with pytest.raises(ValueError, match="Unknown component"):
         await evaluate_component("unknown", settings=_settings())

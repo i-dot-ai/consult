@@ -1,6 +1,6 @@
 import ConsultationList from "./ConsultationList.svelte";
 
-import { defaultMock, emptyMock, longMock } from "./mocks";
+import { defaultMock, emptyMock, longMock, manyUsersMock } from "./mocks";
 
 export default {
   name: "ConsultationList",
@@ -20,6 +20,10 @@ export default {
     {
       name: "Fetch Error",
       mocks: [{ ...defaultMock, throws: new Error("Fetch Error") }],
+    },
+    {
+      name: "Many Users",
+      mocks: [manyUsersMock],
     },
   ],
 };

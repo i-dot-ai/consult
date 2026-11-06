@@ -43,9 +43,9 @@ class RunMetrics:
     ``processing_time_seconds`` covers case loading, evaluation and per-case
     artefact recording, but excludes final artefact finalisation. A value of
     ``None`` means that no compatible LLM calls were made, or token usage was
-    not returned; it is never a stand-in zero. With ``n_runs`` repeats every
-    value is the mean per run, so it stays comparable with a single run: counts
-    are rounded, and dataset loading is counted once in the processing time.
+    not returned; it is never a stand-in zero. With ``RunReport.n_runs`` repeats
+    every value is the mean per run, so it stays comparable with a single run:
+    counts are rounded, and dataset loading is counted once in the processing time.
     """
 
     cost_usd: float | None
@@ -55,7 +55,6 @@ class RunMetrics:
     input_tokens: int | None = None
     output_tokens: int | None = None
     total_tokens: int | None = None
-    n_runs: int = 1
 
 
 @dataclass
@@ -74,6 +73,8 @@ class RunReport:
     # Opaque escape hatch for a runner's own native report object, if it has one
     engine_report: Any | None = None
     metrics: RunMetrics | None = None
+    # Describes the run rather than measuring it, so it lives here, not in metrics
+    n_runs: int = 1
 
     @property
     def repeated(self) -> bool:

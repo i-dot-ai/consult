@@ -38,6 +38,7 @@ from components import COMPONENT_NAMES
 from rich.console import Console
 from rich.table import Table
 from run_eval import evaluate_component
+from settings import eval_settings
 from utils import gateway, langfuse
 
 from themefinder.llm import OpenAILLM
@@ -456,6 +457,10 @@ class BenchmarkRunner:
                 "model": model_config.name,
                 "model_tag": model_config.tag,
                 "reasoning_effort": model_config.reasoning_effort,
+                # --judge-model can override AUTO_EVAL_JUDGE_MODEL
+                "judge_model": self.config.judge_model
+                if eval_type != "mapping"
+                else None,
                 "run_number": run_number,
                 "dataset": self.config.dataset,
             },
@@ -472,9 +477,9 @@ class BenchmarkRunner:
         # recorded metrics.
         llm = model_config.create_llm(langfuse_client=langfuse_ctx.client)
 
-        # Create dedicated judge LLM if configured (separates judge from task model)
+        # Dedicated judge so judge calls never run on the model under test
         judge_llm = None
-        if self.config.judge_model:
+        if eval_type != "mapping":
             base_url, api_key = gateway.gateway_credentials()
             judge_llm = OpenAILLM(
                 model=self.config.judge_model,
@@ -905,8 +910,9 @@ Examples:
     )
     parser.add_argument(
         "--judge-model",
-        default=None,
-        help="Gateway model name for judge LLM (e.g. gpt-4o-uk). If set, judge evaluations use this model instead of the task model.",
+        default=eval_settings.judge_model,
+        help="Gateway model name for judge LLM (default: AUTO_EVAL_JUDGE_MODEL). "
+        "Required for every eval except mapping.",
     )
     parser.add_argument(
         "--quick",
@@ -920,6 +926,8 @@ Examples:
     selector_error = _validate_selector_args(args)
     if selector_error:
         parser.error(selector_error)
+    if not args.judge_model and any(e != "mapping" for e in args.evals):
+        parser.error("--judge-model or AUTO_EVAL_JUDGE_MODEL is required")
 
     # Dedupe --models so a copy-paste typo can't produce two variants of the
     # same model running concurrently against each other.
