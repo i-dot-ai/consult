@@ -151,80 +151,15 @@ You can override these settings in your User Settings if you prefer different pe
 
 #### Running
 
-Run a DVC-tracked evaluation pipeline from the repository root:
+LLM evals for each ThemeFinder stage live in `themefinder/evals`. See the [evaluation framework README](themefinder/evals/README.md) for the full guide: running evals, model comparison, CI, DVC, baselines, and adding metrics, components and datasets.
 
 ```bash
-uv run dvc repro themefinder/evals/dvc.yaml
+make run-eval EVAL_TYPE=mapping  # quick run of one component
+make eval-smoke                  # tiny dataset, checks every eval runs (PR check)
+make eval-regression             # compares scores to committed baselines (nightly and on main)
 ```
 
-The default dataset and component configuration live in
-`themefinder/evals/params.yaml`. To evaluate another dataset as a tracked DVC
-experiment—for example, a smaller CI smoke-test dataset—override its name:
-
-```bash
-uv run dvc exp run themefinder/evals/dvc.yaml \
-  -S themefinder/evals/params.yaml:dataset.name=gambling_XS
-```
-
-For an untracked, one-off component run, use the shared CLI directly:
-
-```bash
-cd themefinder/evals
-uv run --extra eval python run_eval.py --component generation --dataset gambling_XS
-```
-
-Each DVC component stage intentionally generates responses and evaluates them
-together. Changing an evaluator prompt therefore reruns that component's task
-as well as its evaluation. Splitting those steps would avoid regeneration, but
-would substantially duplicate the pipeline and parameter configuration; the
-current evaluation datasets are small enough that the extra cost is acceptable.
-
-The same CLI compares models: any model selector (`--models`, `--family`,
-`--all`) runs the chosen components for every selected model and writes the
-aggregated results under `themefinder/evals/benchmark_results/<id>/`.
-
-```bash
-uv run --extra eval python run_eval.py --models gpt-4o-uk gemini-3.5-flash-uk --component mapping --runs 3
-```
-
-Use `make run-evals` for the quick multi-component smoke comparison,
-`make run-eval EVAL_TYPE=mapping` for one component, or `make run-benchmark`
-for the full comparison across every healthy gateway model.
-
-#### Evals in CI
-
-ThemeFinder evals run in GitHub Actions on every change to `themefinder/evals/**` or
-`themefinder/src/themefinder/**`, in two tiers:
-
-| Tier | Runs on | Dataset | Passes when |
-|---|---|---|---|
-| Smoke | Pull requests, manual runs | `gambling_XXS` (15 responses per question) | Every component runs end to end with no case or evaluator errors. Scores are not compared. |
-| Regression | Pushes to `main`, nightly, manual runs | `gambling_XS` | The smoke conditions hold and no metric is worse than its baseline by more than its tolerance. Failures are posted to Slack. |
-
-Both tiers run the DVC pipeline through make, so you can reproduce them locally:
-
-```bash
-make eval-smoke       # tiny dataset, checks the evals run
-make eval-regression  # full dataset, compares against baselines
-```
-
-Both need gateway credentials in your environment or `.env`. They rewrite
-`themefinder/evals/params.yaml` and `dvc.lock` in your working tree, so discard
-those changes afterwards.
-
-Regression baselines are committed in `themefinder/evals/baselines/`, one file per
-component, with a tolerance for each metric. Metrics where lower is better, such as
-redundancy, are marked `"direction": "lower"`. Baselines are only changed on purpose:
-when a change deliberately moves quality, repeat the regression run several times,
-copy each run's `themefinder/evals/local_eval_runs` directory, and rebuild them:
-
-```bash
-cd themefinder/evals
-uv run --extra eval python -m ci.build_baselines --runs /path/to/run1 /path/to/run2 ...
-```
-
-Tolerances are the larger of a fixed floor and three standard deviations across the
-runs, so use at least five. Review the baseline diff in the pull request.
+All of these need gateway credentials in your environment or `.env`.
 
 #### Eval Dashboards
 
