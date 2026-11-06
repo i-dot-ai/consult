@@ -85,9 +85,9 @@ export const manyUsersMock = {
     count: 1,
     next: null,
     previous: null,
-    results: CONSULTATIONS.map(consultation => ({
+    results: CONSULTATIONS.map((consultation) => ({
       ...consultation,
-      users: Array.from(Array(10).keys()).map(id => ({
+      users: Array.from(Array(10).keys()).map((id) => ({
         id,
         email: `email-${id}@example.com`,
         is_staff: true,
@@ -95,4 +95,4 @@ export const manyUsersMock = {
       })),
     })),
   },
-}
+};
