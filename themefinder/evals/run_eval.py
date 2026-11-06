@@ -13,6 +13,7 @@ from component_runner import run_component
 from components import COMPONENT_NAMES, build_component_config
 from config import resolve_backends
 from datasets import DatasetConfig
+from eval_types import RunLabels
 from settings import EvalSettings, eval_settings
 from utils import gateway, stats
 from utils.logging_config import get_logger
@@ -41,13 +42,15 @@ async def evaluate_component(
     llm: Any | None = None,
     judge_llm: Any | None = None,
     context: dict[str, Any] | None = None,
+    labels: RunLabels | None = None,
     question_num: int | None = None,
     settings: EvalSettings | None = None,
     runs: int = 1,
 ) -> dict[str, Any]:
     """Build and run one component through the configured framework backends.
 
-    ``runs`` repeats every case so each metric gets a mean and stddev across runs.
+    ``labels`` name and tag the run wherever it is recorded. ``runs`` repeats
+    every case so each metric gets a mean and stddev across runs.
     """
     if component not in COMPONENT_NAMES:
         raise ValueError(
@@ -78,8 +81,12 @@ async def evaluate_component(
         dataset_config,
         settings=settings,
         context=context,
+        labels=labels,
         repeat=runs,
     )
+    backends.tracer.observe(task_llm)
+    if judge_llm is not None:
+        backends.tracer.observe(judge_llm)
     return await run_component(
         component_config,
         dataset_config,

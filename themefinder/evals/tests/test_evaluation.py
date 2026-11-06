@@ -3,9 +3,10 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 from components import COMPONENT_NAMES
+from conftest import UNCONFIGURED_LANGFUSE
 from config import EvalBackends
 from datasets import DatasetConfig
-from eval_types import ComponentConfig
+from eval_types import ComponentConfig, RunLabels
 from run_eval import evaluate_component
 from settings import EvalRunSettings, EvalSettings, GatewaySettings
 
@@ -20,7 +21,7 @@ def _settings() -> EvalSettings:
         environment="test",
         git_sha="abcdef0",
         gateway=GatewaySettings(url="https://gateway.invalid", api_key="key"),
-        langfuse=None,
+        langfuse=UNCONFIGURED_LANGFUSE,
         eval=EvalRunSettings(
             engine="pydantic_evals",
             dataset_source="local",
@@ -38,9 +39,11 @@ async def test_builds_component_resolves_backends_and_runs(monkeypatch, componen
     task_llm = object()
     judge_llm = object()
     context = object()
+    labels = RunLabels(name="labelled")
     settings = _settings()
     component_config = ComponentConfig(component, _task, [])
     backends = Mock(spec=EvalBackends)
+    backends.tracer = Mock()
     result = {"question_part_1_quality": 1.0}
     build = Mock(return_value=component_config)
     resolve = Mock(return_value=backends)
@@ -55,17 +58,22 @@ async def test_builds_component_resolves_backends_and_runs(monkeypatch, componen
         llm=task_llm,
         judge_llm=judge_llm,
         context=context,
+        labels=labels,
         settings=settings,
     )
 
     dataset_config = DatasetConfig(dataset="demo", component=component)
     build.assert_called_once_with(component, judge_llm=judge_llm, question_num=None)
     resolve.assert_called_once_with(
-        dataset_config, settings=settings, context=context, repeat=1
+        dataset_config, settings=settings, context=context, labels=labels, repeat=1
     )
     run.assert_awaited_once_with(
         component_config, dataset_config, backends, llm=task_llm
     )
+    assert [call.args for call in backends.tracer.observe.call_args_list] == [
+        (task_llm,),
+        (judge_llm,),
+    ]
     assert actual is result
 
 

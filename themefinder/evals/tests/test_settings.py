@@ -77,11 +77,9 @@ class TestGetSettingsFieldMapping:
 
     def test_langfuse_fields(self, monkeypatch):
         _set_langfuse_creds(monkeypatch, project=LANGFUSE_PROJECT_ID)
-        _set_sources(monkeypatch, dataset_source="langfuse")
 
         s = get_settings()
 
-        assert s.langfuse is not None
         assert s.langfuse.secret_key == LANGFUSE_SECRET_KEY
         assert s.langfuse.public_key == LANGFUSE_PUBLIC_KEY
         assert s.langfuse.base_url == LANGFUSE_BASE_URL
@@ -146,23 +144,25 @@ class TestGetSettingsFieldMapping:
         assert s.eval.artefact_store is None
         assert s.auto_eval_model is None
         assert s.judge_model is None
-        assert s.langfuse is None
+        assert s.langfuse.configured is False
         assert s.active_langfuse is None
 
 
-class TestLangfusePopulation:
-    """`settings.langfuse`/`.active_langfuse` follow one rule: populated only
-    when a selector explicitly asks for "langfuse"; None otherwise — whether
-    both selectors are unset, both explicitly "local", or credentials happen
-    to be present without either selector naming Langfuse (the scenario this
-    design exists for: don't let stray LANGFUSE_* — a shared `.env`, a
-    leftover shell export — pull a run into using Langfuse it never asked for)."""
+class TestLangfuseActivation:
+    """`active_langfuse` depends on the credentials alone, so tracing switches
+    on whenever a connection is available, whatever the two selectors say."""
 
     @pytest.mark.parametrize(
         "dataset_source,artefact_store",
-        [("langfuse", "local"), ("local", "langfuse"), ("langfuse", "langfuse")],
+        [
+            (None, None),
+            ("local", "local"),
+            ("langfuse", "local"),
+            ("local", "langfuse"),
+            ("langfuse", "langfuse"),
+        ],
     )
-    def test_populated_and_active_when_either_selector_is_langfuse(
+    def test_active_when_credentials_complete(
         self, monkeypatch, dataset_source, artefact_store
     ):
         _set_langfuse_creds(monkeypatch)
@@ -172,36 +172,26 @@ class TestLangfusePopulation:
 
         s = get_settings()
 
-        assert s.langfuse is not None
         assert s.langfuse.configured is True
         assert s.active_langfuse is s.langfuse
 
     @pytest.mark.parametrize(
         "dataset_source,artefact_store",
-        [(None, None), ("local", None), (None, "local"), ("local", "local")],
+        [(None, None), ("langfuse", "langfuse")],
     )
-    def test_not_populated_without_an_explicit_langfuse_selector(
+    def test_not_active_when_credentials_incomplete(
         self, monkeypatch, dataset_source, artefact_store
     ):
-        _set_langfuse_creds(monkeypatch)  # full creds present, but not selected
+        monkeypatch.setenv("LANGFUSE_SECRET_KEY", LANGFUSE_SECRET_KEY)
+        monkeypatch.delenv("LANGFUSE_PUBLIC_KEY", raising=False)
+        monkeypatch.delenv("LANGFUSE_BASE_URL", raising=False)
         _set_sources(
             monkeypatch, dataset_source=dataset_source, artefact_store=artefact_store
         )
 
         s = get_settings()
 
-        assert s.langfuse is None
-        assert s.active_langfuse is None
-
-    def test_populated_but_not_active_when_credentials_incomplete(self, monkeypatch):
-        monkeypatch.setenv("LANGFUSE_SECRET_KEY", LANGFUSE_SECRET_KEY)
-        monkeypatch.delenv("LANGFUSE_PUBLIC_KEY", raising=False)
-        monkeypatch.delenv("LANGFUSE_BASE_URL", raising=False)
-        _set_sources(monkeypatch, dataset_source="langfuse")
-
-        s = get_settings()
-
-        assert s.langfuse is not None
+        assert s.langfuse.secret_key == LANGFUSE_SECRET_KEY
         assert s.langfuse.configured is False
         assert s.active_langfuse is None
 

@@ -1,7 +1,13 @@
 """Unit tests for the component orchestration pipeline."""
 
 import pytest
-from fakes import FakeArtefactStore, FakeDatasetPort, FakeEvaluatorPort, FakeRunnerPort
+from fakes import (
+    FakeArtefactStore,
+    FakeDatasetPort,
+    FakeEvaluatorPort,
+    FakeRunnerPort,
+    FakeTracer,
+)
 
 from adapters.context_providers import ProvidedContext
 from adapters.runners import InlineSequentialRunner
@@ -310,6 +316,46 @@ async def test_closes_backend_contexts_after_run_even_when_it_fails(run_fails):
         await run
 
     assert closed == [True]
+
+
+@pytest.mark.parametrize("run_fails", [False, True])
+async def test_traces_the_whole_run_and_closes_the_span_before_the_contexts(
+    run_fails,
+):
+    case = _case()
+    events: list[str] = []
+    tracer = FakeTracer(events=events)
+    backends = EvalBackends(
+        dataset=FakeDatasetPort([case], events=events),
+        runner=FakeRunnerPort(
+            RunReport(outcomes=[_outcome(case)]),
+            events=events,
+            error=RuntimeError("run failed") if run_fails else None,
+        ),
+        artefacts=FakeArtefactStore(events=events),
+        tracer=tracer,
+        contexts={
+            "langfuse": ProvidedContext(object(), lambda: events.append("close"))
+        },
+    )
+
+    run = run_component(
+        _component_config(),
+        DatasetConfig(dataset="demo", component="generation"),
+        backends,
+        llm=object(),
+    )
+    if run_fails:
+        with pytest.raises(RuntimeError, match="run failed"):
+            await run
+    else:
+        await run
+
+    assert tracer.span_names == ["generation_eval"]
+    assert events[0] == "span_open:generation_eval"
+    assert events[-2:] == ["span_close:generation_eval", "close"]
+    if not run_fails:
+        assert "finish_run" in events[1:-2]
 
 
 async def test_run_metrics_are_averaged_over_repeats():

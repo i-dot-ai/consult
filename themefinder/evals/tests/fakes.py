@@ -148,6 +148,29 @@ class FakeArtefactStore(ArtefactStorePort):
         return self.result if self.result is not None else flatten_run_report(report)
 
 
+class FakeTracer:
+    """Records when its span opens and closes, and which LLMs it was given."""
+
+    def __init__(self, *, events: list[str] | None = None):
+        self.events = events
+        self.span_names: list[str] = []
+        self.observed: list[Any] = []
+
+    @contextmanager
+    def span(self, name: str):
+        self.span_names.append(name)
+        if self.events is not None:
+            self.events.append(f"span_open:{name}")
+        try:
+            yield None
+        finally:
+            if self.events is not None:
+                self.events.append(f"span_close:{name}")
+
+    def observe(self, llm: Any) -> None:
+        self.observed.append(llm)
+
+
 class FakeTrace:
     def __init__(self, trace_id: str):
         self.trace_id = trace_id

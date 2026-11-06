@@ -19,7 +19,9 @@ from adapters.datasets import (
 from adapters.runners import RunnerPort
 from adapters.runners.inline_sequential_runner import InlineSequentialRunner
 from adapters.runners.pydantic_evals_runner import PydanticEvalsRunner
+from adapters.tracing import TRACER_FACTORIES, NoopTracer, TracerPort
 from datasets import DatasetConfig
+from eval_types import RunLabels
 from settings import EvalSettings, eval_settings
 from utils.logging_config import get_logger
 
@@ -33,6 +35,7 @@ class EvalBackends:
     dataset: DatasetPort
     runner: RunnerPort
     artefacts: ArtefactStorePort
+    tracer: TracerPort = field(default_factory=NoopTracer, repr=False)
     contexts: dict[str, ProvidedContext] = field(default_factory=dict, repr=False)
 
     def close(self) -> None:
@@ -84,16 +87,45 @@ RUNNER_FACTORIES: dict[str, RunnerFactory] = {
 }
 
 
+def _available_tracing_platform(settings: EvalSettings) -> str | None:
+    """The platform to trace on, decided by the credentials present alone."""
+    return "langfuse" if settings.active_langfuse is not None else None
+
+
+def _resolve_tracer(
+    settings: EvalSettings, context_for: Callable[[str], Any | None]
+) -> TracerPort:
+    """Trace on the platform with a connection, or on none when it cannot be reached.
+
+    When neither source uses the platform this creates a context for tracing alone,
+    on purpose: the credentials opted the run in, and ``EvalBackends.close()`` flushes it
+    with the others.
+    """
+    platform = _available_tracing_platform(settings)
+    if platform is None:
+        return NoopTracer()
+    try:
+        return TRACER_FACTORIES[platform](context_for(platform))
+    except ValueError as error:
+        # A source that selected the platform has already created and validated this context,
+        # so only a run that merely traces on it gets here, and it must go on untraced.
+        logger.warning("Tracing on %s is off for this run: %s", platform, error)
+        return NoopTracer()
+
+
 def resolve_backends(
     dataset_config: DatasetConfig,
     *,
     settings: EvalSettings | None = None,
     context: dict[str, Any] | None = None,
+    labels: RunLabels | None = None,
     repeat: int = 1,
 ) -> EvalBackends:
     """Resolve each backend independently, defaulting to local storage.
     Contexts created here are released by ``EvalBackends.close()``.
-    ``repeat`` is how many times the runner runs every case.
+    ``labels`` name and tag the run wherever a platform records it.
+    ``repeat`` is how many times the runner runs every case. Tracing is on
+    whenever a platform has a connection, whatever the two sources are.
     """
 
     settings = settings if settings is not None else eval_settings
@@ -113,14 +145,18 @@ def resolve_backends(
         if provider is None:
             return None
         if source not in provided:
-            provided[source] = provider(dataset_config, settings, supplied.get(source))
+            provided[source] = provider(
+                dataset_config, settings, supplied.get(source), labels
+            )
         return provided[source].context
 
     dataset_context = context_for(dataset_source)
     artefact_context = context_for(artefact_store_source)
+    tracer = _resolve_tracer(settings, context_for)
     return EvalBackends(
         dataset=DATASET_FACTORIES[dataset_source](dataset_context),
         runner=RUNNER_FACTORIES[settings.eval.engine](repeat=repeat),
         artefacts=ARTEFACT_FACTORIES[artefact_store_source](artefact_context),
+        tracer=tracer,
         contexts=provided,
     )
