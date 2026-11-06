@@ -394,7 +394,7 @@
           {#if !content || users?.length === 0}
             {@render nullCell()}
           {:else}
-            <div class="flex gap-2 items-center">
+            <div class="flex gap-2 items-center flex-wrap max-w-32 min-w-16">
               {#each users as teamMember (teamMember.id)}
                 <svelte:element
                   this={currentUser?.is_staff ? "a" : "div"}
