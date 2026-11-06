@@ -224,6 +224,7 @@ jobs:
       DOCKER_BUILD_INSTANCE: ${{ needs.set-vars.outputs.docker-build-instance }}
       SERVICE: ${{ matrix.object.service }}
       COMMIT_HASH: ${{ matrix.object.tag }}
+      ENVIRONMENT: ${{ needs.set-vars.outputs.environment }}
       USE_OIDC: true
     secrets:
       AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT}}
