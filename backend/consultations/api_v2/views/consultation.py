@@ -31,6 +31,7 @@ from consultations.api_v2.serializers import (
     ConsultationUserAssignmentSerializerV2,
 )
 from consultations.models import Consultation, FileUpload
+from data_pipeline import batch
 from ingest.consultation_file import read_consultation_file
 from ingest.deep_validation import deep_validate_file
 from ingest.jobs import add_consultation_job, delete_consultation_job
@@ -216,3 +217,86 @@ class ConsultationViewSet(
             },
             status=status.HTTP_202_ACCEPTED,
         )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="find-themes",
+        permission_classes=[IsAuthenticated, CanSeeConsultationV2],
+    )
+    def find_themes(self, request, pk=None) -> Response:
+        """
+        Submit AWS batch job to find themes for each free-text question.
+
+        The found themes are automatically saved to the database as candidate
+        themes when the job completes.
+        (See: lambda/import_candidate_themes/import_candidate_themes_handler.py)
+
+        Advances consultation to FINDING_THEMES stage
+
+        URL: /api/consultations/{consultation_id}/find-themes/
+        """
+        try:
+            consultation = self.get_object()
+            logger.set_context_field("consultation_id", str(consultation.id))
+
+            if consultation.stage != Consultation.Stage.SETUP:
+                return Response(
+                    {
+                        "error": f"Consultation '{consultation.code}' not in setup stage",
+                        "detail": "ThemeFinder can only process consultations in the setup stage",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            free_text_questions = consultation.question_set.filter(has_free_text=True)
+            if not free_text_questions.exists():
+                return Response(
+                    {
+                        "error": f"Consultation '{consultation.code}' has no free-text questions",
+                        "detail": "ThemeFinder can only process consultations with free-text responses",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            batch.submit_job(
+                job_type="FIND_THEMES",
+                consultation_code=consultation.code,
+                consultation_name=consultation.title,
+                user_id=request.user.id,
+                model_name=consultation.model_name,
+            )
+
+            logger.info(
+                f"Find Themes job submitted for consultation {consultation.title} by user {request.user.id}"
+            )
+
+            try:
+                consultation.stage = Consultation.Stage.FINDING_THEMES
+                consultation.save(update_fields=["stage"])
+            except Exception:
+                logger.exception(
+                    f"Failed to update consultation stage for consultation {consultation.title} "
+                    "while starting Find Themes job"
+                )
+
+            return Response(
+                {
+                    "message": f"Find Themes job started for consultation '{consultation.title}'",
+                    "consultation_id": consultation.id,
+                    "consultation_code": consultation.code,
+                },
+                status=status.HTTP_202_ACCEPTED,
+            )
+
+        except Exception as e:
+            logger.exception(
+                f"Error starting Find Themes job for consultation {consultation.title}"
+            )
+            return Response(
+                {
+                    "error": "Failed to start Find Themes job",
+                    "detail": str(e) if settings.DEBUG else "An unexpected error occurred",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

@@ -1,17 +1,23 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
-  import { getApiFindThemesUrl, Routes } from "../../../global/routes";
+
   import Button from "../../inputs/Button/Button.svelte";
   import Select from "../../inputs/Select/Select.svelte";
   import Link from "../../Link.svelte";
 
+  import { Routes } from "../../../global/routes";
+  import {
+    buildFindingThemesQuery,
+    buildFindingThemesV2Query,
+  } from "../../../global/queries/consultations/queries";
   import type { ConsultationFolder } from "../../../global/types";
 
   interface Props {
     consultations: ConsultationFolder[];
+    enableV2?: boolean;
   }
 
-  let { consultations }: Props = $props();
+  let { consultations, enableV2 = true }: Props = $props();
 
   const selectItems = $derived.by(() => {
     if (consultations.length === 0) {
@@ -24,9 +30,13 @@
   });
 
   let consultationId = $derived<string | undefined>(consultations[0]?.id);
-  let submitting = $state<boolean>(false);
   let errorMessage = $state<string | undefined>(undefined);
-  let success = $state<boolean>(false);
+
+  const findThemes = $derived(
+    enableV2
+      ? buildFindingThemesV2Query(consultationId || "")
+      : buildFindingThemesQuery(consultationId || ""),
+  );
 
   const handleSubmit = async () => {
     if (!consultationId) {
@@ -34,28 +44,10 @@
     }
 
     errorMessage = "";
-    success = false;
-    submitting = true;
-
     try {
-      const response = await fetch(
-        getApiFindThemesUrl(consultationId as string),
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || `Error: ${response.status}`);
-      }
-
-      success = true;
-    } catch (err) {
-      errorMessage = err instanceof Error ? err.message : "An error occurred";
-    } finally {
-      submitting = false;
+      await findThemes.fetch({});
+    } catch {
+      errorMessage = "Fetch failed";
     }
   };
 </script>
@@ -67,17 +59,19 @@
     handleSubmit();
   }}
 >
-  {#if errorMessage}
+  {#if findThemes.query.isError}
     <div
       class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800"
       transition:slide={{ duration: 200 }}
       role="alert"
     >
-      {errorMessage}
+      {findThemes.query.error?.message ||
+        errorMessage ||
+        `An error occurred: ${findThemes.query.status}`}
     </div>
   {/if}
 
-  {#if success}
+  {#if findThemes.query.isSuccess}
     <div
       class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800"
       transition:slide={{ duration: 200 }}
@@ -103,7 +97,7 @@
   <Button
     type="submit"
     variant="primary"
-    disabled={submitting || consultations.length === 0}
+    disabled={findThemes.query.isPending || consultations.length === 0}
   >
     Find Themes
   </Button>

@@ -1,3 +1,4 @@
+import { consultationFindThemesV2QueryParts } from "../../../../global/queries/consultations/parts";
 import {
   demographicAnswersQueryParts,
   demographicMergeQueryParts,
@@ -160,3 +161,23 @@ export const updateErrorMock = (questionId: string) => ({
   status: 500,
   body: {},
 });
+
+export const findThemesMock = {
+  url: consultationFindThemesV2QueryParts.url(CONSULTATION_ID),
+  method: "POST",
+  status: 200,
+  body: {},
+};
+
+export const findThemes500ErrorMock = {
+  url: consultationFindThemesV2QueryParts.url(CONSULTATION_ID),
+  method: "POST",
+  status: 500,
+  body: {},
+};
+
+export const findThemesFetchErrorMock = {
+  url: consultationFindThemesV2QueryParts.url(CONSULTATION_ID),
+  method: "POST",
+  throws: new Error("Fetch error"),
+};

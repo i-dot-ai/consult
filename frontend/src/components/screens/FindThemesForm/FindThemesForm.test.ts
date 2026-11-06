@@ -16,6 +16,11 @@ const CONSULTATIONS = [
   },
 ];
 
+const TEST_DATA = {
+  consultations: CONSULTATIONS,
+  enableV2: false,
+};
+
 describe("FindThemesForm", () => {
   afterEach(() => {
     fetchMock.unmockGlobal();
@@ -26,7 +31,7 @@ describe("FindThemesForm", () => {
   it("should render find themes form", async () => {
     mockRoute(findMock);
 
-    render(FindThemesForm, { consultations: CONSULTATIONS });
+    render(FindThemesForm, TEST_DATA);
 
     await waitFor(() => {
       expect(
@@ -41,7 +46,7 @@ describe("FindThemesForm", () => {
   it("should render no consultation found text if no consultations are given", async () => {
     mockRoute(findMock);
 
-    render(FindThemesForm, { consultations: [] });
+    render(FindThemesForm, { ...TEST_DATA, consultations: [] });
 
     await waitFor(() => {
       expect(screen.getByText("No consultations found")).toBeInTheDocument();
@@ -52,7 +57,7 @@ describe("FindThemesForm", () => {
     const findBodyMock = vi.fn();
     mockRoute({ ...findMock, body: findBodyMock });
 
-    render(FindThemesForm, { consultations: CONSULTATIONS });
+    render(FindThemesForm, TEST_DATA);
 
     const user = userEvent.setup();
     await user.selectOptions(screen.getByRole("combobox"), [
@@ -68,7 +73,7 @@ describe("FindThemesForm", () => {
   it("should display error msg if error", async () => {
     mockRoute({ ...findMock, throws: new Error("Error") });
 
-    render(FindThemesForm, { consultations: CONSULTATIONS });
+    render(FindThemesForm, TEST_DATA);
 
     const user = userEvent.setup();
     await user.selectOptions(screen.getByRole("combobox"), [
@@ -84,9 +89,7 @@ describe("FindThemesForm", () => {
   it("should match snapshot initially", () => {
     mockRoute(findMock);
 
-    const { container } = render(FindThemesForm, {
-      consultations: CONSULTATIONS,
-    });
+    const { container } = render(FindThemesForm, TEST_DATA);
     expect(container).toMatchSnapshot();
   });
 });

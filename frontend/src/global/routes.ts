@@ -301,6 +301,15 @@ export const getApiFindThemesUrl = (consultationId: string) => {
   );
 };
 
+export const getApiFindThemesV2Url = (consultationId: string) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    "find-themes",
+  );
+};
+
 export const getApiAssignThemesUrl = (consultationId: string) => {
   return urlJoinTrailing(
     Routes.ApiConsultations,
@@ -689,15 +698,6 @@ export const getDataUploadChecksUrl = (consultationId: string) => {
     consultationId,
     Suffixes.DataUpload,
     Suffixes.Checks,
-  );
-};
-
-export const getDataUploadFinaliseUrl = (consultationId: string) => {
-  return urlJoin(
-    Routes.Consultations,
-    consultationId,
-    Suffixes.DataUpload,
-    Suffixes.Finalise,
   );
 };
 

@@ -26,9 +26,10 @@
     QuestionV2UpdateBody,
   } from "../../../../global/queries/questions/types";
   import {
-    getDataUploadFinaliseUrl,
+    getConsultationViewUrl,
     getDataUploadReviewQuestionsUrl,
   } from "../../../../global/routes";
+  import { buildFindingThemesV2Query } from "../../../../global/queries/consultations/queries";
 
   interface Props {
     consultationId: string;
@@ -36,14 +37,14 @@
 
   let { consultationId }: Props = $props();
 
-  const questionsQuery = buildQuestionsV2Query(untrack(() => consultationId));
-  const merge = buildDemographicMergeQuery(untrack(() => consultationId));
-  const updateQuestion = buildQuestionV2UpdateQuery(
-    untrack(() => consultationId),
-    async () => {
+  const questionsQuery = $derived(buildQuestionsV2Query(consultationId));
+  const merge = $derived(buildDemographicMergeQuery(consultationId));
+  const updateQuestion = $derived(
+    buildQuestionV2UpdateQuery(consultationId, async () => {
       await questionsQuery.fetch();
-    },
+    }),
   );
+  const findThemes = $derived(buildFindingThemesV2Query(consultationId));
 
   let allQuestions: QuestionV2[] = $derived(questionsQuery.query.data ?? []);
   let questions = $derived(
@@ -122,6 +123,7 @@
   let finishAttempted = $state(false);
   let finishProblems = $state<{ question: QuestionV2; message: string }[]>([]);
   let finishSummaryEl = $state<HTMLElement | null>(null);
+  let findThemesError = $derived(findThemes.query.error?.message);
 
   function toggleExpanded(questionId: string) {
     if (expandedIds.has(questionId)) {
@@ -253,7 +255,10 @@
       finishSummaryEl?.focus();
       return;
     }
-    window.location.href = getDataUploadFinaliseUrl(consultationId);
+
+    await findThemes.fetch({});
+
+    window.location.href = getConsultationViewUrl(consultationId);
   }
 </script>
 
@@ -292,6 +297,14 @@
   </div>
 {/if}
 
+{#if findThemesError}
+  <div class="mb-6" role="alert">
+    <Alert variant="error" onTimeout={() => (findThemesError = "")}>
+      {findThemes.query.error?.message || "Failed to start finding themes job"}
+    </Alert>
+  </div>
+{/if}
+
 {#if questionsQuery.query.isPending}
   <div class="mt-6">
     <LoadingMessage message="Loading questions..." />
@@ -326,7 +339,12 @@
   <Button size="sm" href={getDataUploadReviewQuestionsUrl(consultationId)}>
     Back
   </Button>
-  <Button size="sm" variant="primary" handleClick={handleFinish}>
+  <Button
+    size="sm"
+    variant="primary"
+    disabled={findThemes.query.isPending}
+    handleClick={handleFinish}
+  >
     Finish set-up
   </Button>
 </div>

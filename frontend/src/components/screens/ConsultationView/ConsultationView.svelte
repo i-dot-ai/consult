@@ -181,7 +181,7 @@
     },
     finding_themes: {
       panelText:
-        "Consult is reading the responses and finding themes. This can take more than 20 minutes. Nothing else can start until this finishes.",
+        "The responses have been uploaded and all questions configured. Consult will now find themes across the open question responses. Nothing else can start until this finishes.",
       tagVariant: "default",
       adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
@@ -408,6 +408,17 @@
           </Button>
         {/if}
       </div>
+
+      {#if consultationData?.stage === "finding_themes"}
+        <Panel bg={true} border={true}>
+          <p class="text-sm leading-relaxed text-neutral-900">
+            Finding themes can take more than 20 minutes, but can take longer
+            depending on the size of your consultation. You can leave and come
+            back from the consultation page at any time. Your consultation
+            status will be updated when the themes are ready.
+          </p>
+        </Panel>
+      {/if}
     </div>
   </Panel>
 </section>

@@ -10,6 +10,7 @@ import { getApiConsultationFoldersUrl, Routes } from "../../global/routes";
 import Details from "../../components/Details/Details.svelte";
 
 import type { ConsultationFolder } from "../../global/types";
+import { getDataSetupV2Enabled } from "../../global/utils";
 
 const bucketName = import.meta.env.AWS_BUCKET_NAME;
 
@@ -40,6 +41,8 @@ if (setupFoldersError) {
 if (findThemesFoldersError) {
   return buildResponse(findThemesFoldersStatus);
 }
+
+const enableV2 = getDataSetupV2Enabled();
 ---
 
 <Layout>
@@ -143,7 +146,11 @@ if (findThemesFoldersError) {
       and can take up to a few hours depending on the size of the consultation.
     </Text>
 
-    <FindThemesForm client:load consultations={findThemesFoldersData || []} />
+    <FindThemesForm
+      client:load
+      consultations={findThemesFoldersData || []}
+      enableV2={enableV2}
+    />
 
     <div class="my-8"></div>
 

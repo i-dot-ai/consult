@@ -1,5 +1,7 @@
 import { buildQuery, type FetchError } from "../../queryClient";
 import {
+  consultationFindThemesQueryParts,
+  consultationFindThemesV2QueryParts,
   consultationQueryParts,
   consultationsQueryParts,
   consultationsV2QueryParts,
@@ -175,6 +177,34 @@ export function buildConsultationV2RemoveUserQuery(consultationId: string) {
       key: consultationV2UserQueryParts.key(consultationId),
       method: "DELETE",
       errorMessage: "Failed to remove a person",
+    },
+  );
+}
+
+export function buildFindingThemesQuery(
+  consultationId: string,
+  onError?: () => Promise<void>,
+) {
+  return buildQuery<Consultation>(
+    consultationFindThemesQueryParts.url(consultationId),
+    {
+      key: [...consultationFindThemesQueryParts.key(consultationId)],
+      method: "POST",
+      onError: onError,
+    },
+  );
+}
+
+export function buildFindingThemesV2Query(
+  consultationId: string,
+  onError?: () => Promise<void>,
+) {
+  return buildQuery<Consultation>(
+    consultationFindThemesV2QueryParts.url(consultationId),
+    {
+      key: [...consultationFindThemesV2QueryParts.key(consultationId)],
+      method: "POST",
+      onError: onError,
     },
   );
 }
