@@ -1,0 +1,98 @@
+[
+    {
+        "topic_id": "A",
+        "topic_label": "Competitive pay and incentives",
+        "topic_description": "Provide targeted competitive pay, retention payments, relocation packages and bursaries to attract and workforce into underserved areas and high-demand roles.",
+        "topic": "Competitive pay and incentives: Provide targeted competitive pay, retention payments, relocation packages and bursaries to attract and workforce into underserved areas and high-demand roles."
+    },
+    {
+        "topic_id": "B",
+        "topic_label": "Training pipeline expansion",
+        "topic_description": "Increase undergraduate, postgraduate and apprenticeship places with protected placements and university-practice partnerships to grow domestic primary care workforce supply.",
+        "topic": "Training pipeline expansion: Increase undergraduate, postgraduate and apprenticeship places with protected placements and university-practice partnerships to grow domestic primary care workforce supply."
+    },
+    {
+        "topic_id": "C",
+        "topic_label": "Ethical international recruitment",
+        "topic_description": "Use overseas recruitment responsibly with streamlined visas, credential recognition, integration support and safeguards against depleting source countries' health systems.",
+        "topic": "Ethical international recruitment: Use overseas recruitment responsibly with streamlined visas, credential recognition, integration support and safeguards against depleting source countries' health systems."
+    },
+    {
+        "topic_id": "D",
+        "topic_label": "Flexible working and wellbeing",
+        "topic_description": "Offer flexible hours, part-time, job-share, phased retirement, childcare and proactive mental health services to retain diverse staff and reduce burnout.",
+        "topic": "Flexible working and wellbeing: Offer flexible hours, part-time, job-share, phased retirement, childcare and proactive mental health services to retain diverse staff and reduce burnout."
+    },
+    {
+        "topic_id": "E",
+        "topic_label": "Workload and admin reduction",
+        "topic_description": "Reduce unnecessary targets, paperwork and duplicated tasks, streamline referrals and improve IT usability to free clinician time for patient-facing care.",
+        "topic": "Workload and admin reduction: Reduce unnecessary targets, paperwork and duplicated tasks, streamline referrals and improve IT usability to free clinician time for patient-facing care."
+    },
+    {
+        "topic_id": "F",
+        "topic_label": "Multidisciplinary skill mix",
+        "topic_description": "Expand and regulate multidisciplinary teams\u2014nurses, pharmacists, PAs, paramedics and allied roles\u2014with training and supervision to safely redistribute GP workload.",
+        "topic": "Multidisciplinary skill mix: Expand and regulate multidisciplinary teams\u2014nurses, pharmacists, PAs, paramedics and allied roles\u2014with training and supervision to safely redistribute GP workload."
+    },
+    {
+        "topic_id": "G",
+        "topic_label": "Regulation, indemnity and supervision",
+        "topic_description": "Clarify scope-of-practice, revalidation, indemnity arrangements and fund protected clinical supervision to support new roles and maintain patient safety.",
+        "topic": "Regulation, indemnity and supervision: Clarify scope-of-practice, revalidation, indemnity arrangements and fund protected clinical supervision to support new roles and maintain patient safety."
+    },
+    {
+        "topic_id": "H",
+        "topic_label": "Digital infrastructure and inclusion",
+        "topic_description": "Invest in interoperable IT, secure systems and staff digital training while safeguarding alternatives and support for digitally excluded patients.",
+        "topic": "Digital infrastructure and inclusion: Invest in interoperable IT, secure systems and staff digital training while safeguarding alternatives and support for digitally excluded patients."
+    },
+    {
+        "topic_id": "I",
+        "topic_label": "Data, modelling and accountability",
+        "topic_description": "Develop transparent, localised workforce data, modelling and KPIs with evaluation frameworks to inform planning, funding and performance monitoring.",
+        "topic": "Data, modelling and accountability: Develop transparent, localised workforce data, modelling and KPIs with evaluation frameworks to inform planning, funding and performance monitoring."
+    },
+    {
+        "topic_id": "J",
+        "topic_label": "Long-term funding certainty",
+        "topic_description": "Secure multi-year, ring-fenced funding settlements enabling sustained workforce initiatives, training capacity and reduced short-term policy volatility.",
+        "topic": "Long-term funding certainty: Secure multi-year, ring-fenced funding settlements enabling sustained workforce initiatives, training capacity and reduced short-term policy volatility."
+    },
+    {
+        "topic_id": "K",
+        "topic_label": "Targeted geographic priorities",
+        "topic_description": "Deliver tailored rural, urban deprived and coastal incentives, housing and transport support to recruit and retain staff in hard-to-fill areas.",
+        "topic": "Targeted geographic priorities: Deliver tailored rural, urban deprived and coastal incentives, housing and transport support to recruit and retain staff in hard-to-fill areas."
+    },
+    {
+        "topic_id": "L",
+        "topic_label": "Integration with community care",
+        "topic_description": "Strengthen links and joint funding with social care, mental health and community services to redistribute workload and improve holistic patient care.",
+        "topic": "Integration with community care: Strengthen links and joint funding with social care, mental health and community services to redistribute workload and improve holistic patient care."
+    },
+    {
+        "topic_id": "M",
+        "topic_label": "Retention, career progression",
+        "topic_description": "Provide clear funded career pathways, protected CPD, mentorship and return-to-practice schemes to retain experienced clinicians and early-career staff.",
+        "topic": "Retention, career progression: Provide clear funded career pathways, protected CPD, mentorship and return-to-practice schemes to retain experienced clinicians and early-career staff."
+    },
+    {
+        "topic_id": "N",
+        "topic_label": "Patient safety and continuity",
+        "topic_description": "Prioritise safe staffing ratios, continuity-preserving models and safety monitoring to ensure access improvements do not compromise clinical quality.",
+        "topic": "Patient safety and continuity: Prioritise safe staffing ratios, continuity-preserving models and safety monitoring to ensure access improvements do not compromise clinical quality."
+    },
+    {
+        "topic_id": "XX",
+        "topic_label": "None of the Above",
+        "topic_description": "Response discusses a topic not covered by listed themes",
+        "topic": "None of the Above: Response discusses a topic not covered by listed themes"
+    },
+    {
+        "topic_id": "XY",
+        "topic_label": "No Reason Given",
+        "topic_description": "Response does not provide a substantive answer",
+        "topic": "No Reason Given: Response does not provide a substantive answer"
+    }
+]
