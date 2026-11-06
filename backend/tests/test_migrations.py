@@ -30,11 +30,15 @@ def test_0008_lowercase_email_field(migrator):
     )
     User = old_state.apps.get_model("authentication", "User")
     user = User.objects.create(email="Mixed.Case@example.com", password="")
+    first_duplicate = User.objects.create(email="Dup.Account@example.com", password="")
+    second_duplicate = User.objects.create(email="dup.account@example.com", password="")
 
     new_state = migrator.apply_tested_migration(("authentication", "0008_lowercase_email_field"))
 
     User = new_state.apps.get_model("authentication", "User")
     assert User.objects.get(pk=user.pk).email == "mixed.case@example.com"
+    assert User.objects.get(pk=first_duplicate.pk).email == "Dup.Account@example.com"
+    assert User.objects.get(pk=second_duplicate.pk).email == "dup.account@example.com"
 
     migrator.reset()
 
