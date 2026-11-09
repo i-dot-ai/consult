@@ -97,7 +97,6 @@ evals/data/*
 !evals/data/health_XS/
 !evals/data/health_500/
 !evals/data/health_1000/
-!evals/data/housing_XXS/
 !evals/data/housing_XS/
 !evals/data/housing_500/
 !evals/data/housing_1000/
