@@ -138,7 +138,6 @@ A component is one ThemeFinder stage to evaluate. Use an existing one, such as `
 4. Add tests alongside `tests/test_components.py`.
 5. **DVC:**
    - Add the component under `evals:` in `params.yaml` with `model`, `dataset_source` and `artefact_store`. The stage is created from this, so the key must match the component name and the file name in `components/`.
-   - Judge evaluators use the same model as the task, as `params.yaml` has no separate judge setting.
    - Run `dvc repro` and commit `dvc.yaml`/`params.yaml` changes and `dvc.lock`.
 6. Build baselines for it (see [baselines](#baselines)). `check_metrics` treats a component without a baseline as invalid, so the regression CI check fails until you do.
 7. Run it with `make run-eval EVAL_TYPE=<name>`. Update the `EVAL_TYPE` list in the Makefile help text.
@@ -158,7 +157,7 @@ data/<name>/
 1. Add the folder under `data/`. Datasets must be synthetic or already public. `SYNTHETIC_DATA_SPEC.md` describes how to generate them, and `generate_synthetic.py` automates it.
 2. Run with `--dataset <name>`, or set `dataset.name` in `params.yaml` to change the CI default.
 3. To use it from Langfuse, publish it with `uv run python scripts/migrate_to_langfuse.py --dataset <name>`, then set `dataset_source: langfuse` for the relevant evals in `params.yaml`. Existing non-empty Langfuse datasets are not overwritten.
-5. **DVC:**
+4. **DVC:**
    - `data/<dataset.name>` is a stage dependency, so edits to the selected dataset make every stage stale, and `dvc.lock` records its hash. Other datasets under `data/` are not tracked until selected.
    - Try a new dataset without changing defaults: `dvc exp run -S params.yaml:dataset.name=<name>`.
    - To make it the default, set `dataset.name` in `params.yaml`, run `dvc repro`, and commit `params.yaml` and `dvc.lock`.
