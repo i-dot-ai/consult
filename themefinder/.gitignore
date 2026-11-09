@@ -94,7 +94,6 @@ evals/data/*
 !evals/data/gambling_XXS/
 !evals/data/gambling_500/
 !evals/data/gambling_1000/
-!evals/data/health_XXS/
 !evals/data/health_XS/
 !evals/data/health_500/
 !evals/data/health_1000/
