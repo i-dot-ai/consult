@@ -48,7 +48,7 @@ def get_all_pages(path: str, token: str) -> list[dict]:
 
 def build_comment(review_counts: dict[str, int]) -> str:
     rows = "\n".join(
-        f"| @{login} | {count} |"
+        f"| {login} | {count} |"
         for login, count in sorted(
             review_counts.items(), key=lambda item: (item[1], item[0])
         )
