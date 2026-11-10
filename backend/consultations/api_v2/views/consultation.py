@@ -286,7 +286,7 @@ class ConsultationViewSet(
             # an RQ job — pushes were historically <60s even at full scale
             # (see export_consultation_inputs_to_s3).
             consultation_code = assign_consultation_code(consultation)
-            question_parts = export_consultation_inputs_to_s3(consultation)
+            question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
             logger.info(
                 "Mirrored {question_parts} question parts to s3 for consultation "
                 "'{consultation_code}' before find-themes kickoff",
@@ -296,7 +296,7 @@ class ConsultationViewSet(
 
             batch.submit_job(
                 job_type="FIND_THEMES",
-                consultation_code=consultation.code,
+                consultation_code=consultation_code,
                 consultation_name=consultation.title,
                 user_id=request.user.id,
                 model_name=consultation.model_name,
@@ -322,7 +322,7 @@ class ConsultationViewSet(
                 {
                     "message": f"Find Themes job started for consultation '{consultation.title}'",
                     "consultation_id": consultation.id,
-                    "consultation_code": consultation.code,
+                    "consultation_code": consultation_code,
                 },
                 status=status.HTTP_202_ACCEPTED,
             )

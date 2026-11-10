@@ -36,6 +36,10 @@ def assign_consultation_code(consultation: Consultation) -> str:
     The code doubles as the S3 folder name under app_data/consultations/ and
     is looked up by the candidate-themes import lambda and used by
     export_selected_themes_to_s3, so once assigned it must never change.
+
+    Does not modify the passed instance; the code is persisted on the
+    consultation row and returned, so callers thread the returned value
+    through the rest of the kickoff.
     """
     if consultation.code:
         return consultation.code
@@ -45,7 +49,6 @@ def assign_consultation_code(consultation: Consultation) -> str:
         # cannot both pass the blank check and assign different codes.
         locked = Consultation.objects.select_for_update().get(pk=consultation.pk)
         if locked.code:
-            consultation.code = locked.code
             return locked.code
 
         base = slugify(consultation.title) or "consultation"
@@ -66,7 +69,6 @@ def assign_consultation_code(consultation: Consultation) -> str:
         locked.code = candidate
         locked.save(update_fields=["code"])
 
-    consultation.code = candidate
     logger.info(
         "Assigned consultation code={code} to consultation '{consultation_title}'",
         code=candidate,
@@ -98,7 +100,7 @@ def sync_has_free_text_with_type(consultation: Consultation) -> int:
     )
 
 
-def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
+def export_consultation_inputs_to_s3(consultation: Consultation, consultation_code: str) -> int:
     """
     Write the ThemeFinder inputs layout to S3 using the database as the source.
 
@@ -106,7 +108,7 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
     build from workbooks before the V2 setup flow existed, so the pipeline
     keeps reading from the same location:
 
-        app_data/consultations/{consultation.code}/inputs/
+        app_data/consultations/{consultation_code}/inputs/
             question_part_{n}/question.json
             question_part_{n}/responses.jsonl
 
@@ -130,7 +132,9 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
     must run before find-themes is kicked off.
 
     Args:
-        consultation: Consultation to export (must have a non-empty code)
+        consultation: Consultation to export
+        consultation_code: The S3 folder name for the consultation, as
+            returned by assign_consultation_code
 
     Requires:
         The pipeline must not start before this returns, so it runs
@@ -142,12 +146,11 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
         Number of question_part folders written
 
     Raises:
-        RuntimeError: If the consultation has no code
+        RuntimeError: If the consultation code is empty
     """
-    if not consultation.code:
+    if not consultation_code:
         raise RuntimeError(
-            f"Consultation '{consultation.title}' has no code assigned; "
-            "call assign_consultation_code first"
+            f"Empty consultation code while exporting consultation '{consultation.title}'"
         )
 
     s3_client = get_s3_client()
@@ -189,7 +192,7 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
                     logger.warning(
                         "Response without themefinder_id skipped for consultation "
                         "'{consultation_code}', question {question_number}",
-                        consultation_code=consultation.code,
+                        consultation_code=consultation_code,
                         question_number=question.number,
                     )
                     continue
@@ -207,7 +210,7 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
             # pipeline discovers questions by folder existence.
             continue
 
-        inputs_path = f"{INPUTS_PREFIX}/{consultation.code}/inputs/question_part_{question.number}"
+        inputs_path = f"{INPUTS_PREFIX}/{consultation_code}/inputs/question_part_{question.number}"
 
         question_data: dict = {
             "question_number": question.number,
@@ -229,7 +232,7 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
             logger.exception(
                 "Failed to export question.json to S3 for consultation "
                 "'{consultation_code}', question {question_number}",
-                consultation_code=consultation.code,
+                consultation_code=consultation_code,
                 question_number=question.number,
             )
             raise
@@ -241,8 +244,9 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
                 jsonl_buffer.write("\n")
 
             try:
-                # Multipart transfer, so large consultations are not limited
-                # to a single put_object request.
+                # Transfer-manager upload: retries transient failures, and
+                # bodies above boto3's multipart threshold are chunked
+                # instead of being a single put request.
                 s3_client.upload_fileobj(
                     io.BytesIO(jsonl_buffer.getvalue().encode("utf-8")),
                     settings.AWS_BUCKET_NAME,
@@ -252,7 +256,7 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
                 logger.exception(
                     "Failed to export responses.jsonl to S3 for consultation "
                     "'{consultation_code}', question {question_number}",
-                    consultation_code=consultation.code,
+                    consultation_code=consultation_code,
                     question_number=question.number,
                 )
                 raise

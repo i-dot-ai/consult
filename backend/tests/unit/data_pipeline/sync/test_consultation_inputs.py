@@ -46,6 +46,8 @@ class TestAssignConsultationCode:
 
         code = assign_consultation_code(consultation)
 
+        # The in-memory instance is not mutated; callers thread the returned code.
+        assert consultation.code == ""
         consultation.refresh_from_db()
         assert code == consultation.code
         assert code.startswith("my-fancy-consultation-")
@@ -155,7 +157,7 @@ class TestExportConsultationInputsToS3:
         Response.objects.create(question=question, respondent=respondent_2, text="Loved it")
         Response.objects.create(question=question, respondent=respondent_3, text="Needs work")
 
-        parts = export_consultation_inputs_to_s3(consultation)
+        parts = export_consultation_inputs_to_s3(consultation, "test-code")
 
         assert parts == 1
         assert (
@@ -196,7 +198,7 @@ class TestExportConsultationInputsToS3:
         response = Response.objects.create(question=question, respondent=respondent, text="red")
         response.chosen_options.add(MultiChoiceAnswer.objects.get(text="red"))
 
-        export_consultation_inputs_to_s3(consultation)
+        export_consultation_inputs_to_s3(consultation, "test-code")
 
         [body] = question_json_bodies(mock_s3_client)
         assert body == {
@@ -234,7 +236,7 @@ class TestExportConsultationInputsToS3:
         )
         choice_only.chosen_options.add(option)
 
-        export_consultation_inputs_to_s3(consultation)
+        export_consultation_inputs_to_s3(consultation, "test-code")
 
         [(key, rows)] = responses_jsonl_rows(mock_s3_client)
         assert key.endswith("question_part_7/responses.jsonl")
@@ -272,7 +274,7 @@ class TestExportConsultationInputsToS3:
         respondent_without_answer = RespondentFactory(consultation=consultation, themefinder_id=2)
         Response.objects.create(question=open_part, respondent=respondent_without_answer, text=None)
 
-        export_consultation_inputs_to_s3(consultation)
+        export_consultation_inputs_to_s3(consultation, "test-code")
 
         [(key, rows)] = responses_jsonl_rows(mock_s3_client)
         assert key.endswith("question_part_7/responses.jsonl")
@@ -293,7 +295,7 @@ class TestExportConsultationInputsToS3:
         respondent = RespondentFactory(consultation=consultation, themefinder_id=1)
         Response.objects.create(question=question, respondent=respondent, text="   ")
 
-        parts = export_consultation_inputs_to_s3(consultation)
+        parts = export_consultation_inputs_to_s3(consultation, "test-code")
 
         assert parts == 1  # the folder is still written
         [body] = question_json_bodies(mock_s3_client)
@@ -310,7 +312,7 @@ class TestExportConsultationInputsToS3:
         QuestionFactory(consultation=consultation, number=1, type="open")
         QuestionFactory(consultation=consultation, number=2, type="closed")
 
-        parts = export_consultation_inputs_to_s3(consultation)
+        parts = export_consultation_inputs_to_s3(consultation, "test-code")
 
         assert parts == 0
         assert mock_s3_client.put_object.call_count == 0
@@ -335,7 +337,7 @@ class TestExportConsultationInputsToS3:
         respondent = RespondentFactory(consultation=consultation, themefinder_id=1)
         Response.objects.create(question=question, respondent=respondent, text=None)
 
-        export_consultation_inputs_to_s3(consultation)
+        export_consultation_inputs_to_s3(consultation, "test-code")
 
         [body] = question_json_bodies(mock_s3_client)
         assert body["multi_choice_options"] == ["Yes"]
@@ -343,8 +345,8 @@ class TestExportConsultationInputsToS3:
     def test_requires_a_consultation_code(self):
         consultation = ConsultationFactory(code="")
 
-        with pytest.raises(RuntimeError, match="has no code assigned"):
-            export_consultation_inputs_to_s3(consultation)
+        with pytest.raises(RuntimeError, match="Empty consultation code"):
+            export_consultation_inputs_to_s3(consultation, "")
 
     @patch("data_pipeline.sync.consultation_inputs.get_s3_client")
     @patch("data_pipeline.sync.consultation_inputs.settings")
@@ -362,7 +364,7 @@ class TestExportConsultationInputsToS3:
                 question=question, respondent=respondent, text=f"answer {number}"
             )
 
-        parts = export_consultation_inputs_to_s3(consultation)
+        parts = export_consultation_inputs_to_s3(consultation, "test-code")
 
         assert parts == 3
         assert mock_s3_client.put_object.call_count == 3

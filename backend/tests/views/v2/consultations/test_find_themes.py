@@ -30,7 +30,7 @@ def test_v2_find_themes_assigns_code_and_mirrors_inputs(client, consultation, no
     assert response.status_code == 202
     consultation.refresh_from_db()
     assert consultation.code  # a code was assigned and persisted
-    export.assert_called_once_with(consultation)
+    export.assert_called_once_with(consultation, consultation.code)
     submit_job.assert_called_once()
     assert submit_job.call_args.kwargs["consultation_code"] == consultation.code
     assert response.json()["consultation_code"] == consultation.code
@@ -55,7 +55,7 @@ def test_v2_find_themes_reuses_an_existing_code(client, consultation, non_staff_
 
     assert response.status_code == 202
     assert assign.call_args.args[0] == consultation
-    export.assert_called_once_with(consultation)
+    export.assert_called_once_with(consultation, "my-first-consultation")
     submit_job.assert_called_once()
     assert submit_job.call_args.kwargs["consultation_code"] == "my-first-consultation"
 
@@ -132,7 +132,7 @@ def test_v2_find_themes_passes_the_guard_after_syncing(client, consultation, non
     assert response.status_code == 202
     question = Question.objects.get(consultation=consultation)
     assert question.has_free_text is True
-    export.assert_called_once_with(consultation)
+    export.assert_called_once_with(consultation, "my-first-consultation")
     submit_job.assert_called_once()
 
 
