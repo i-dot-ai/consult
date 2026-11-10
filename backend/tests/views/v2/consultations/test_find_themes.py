@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from django.urls import reverse
 
-from consultations.models import Consultation
+from consultations.models import Consultation, Question
 from factories import ConsultationFactory, QuestionFactory
 
 
@@ -85,11 +85,13 @@ def test_v2_find_themes_does_not_submit_the_batch_when_mirroring_fails(
 
 
 @pytest.mark.django_db
-def test_v2_find_themes_requires_an_open_question(client, consultation, non_staff_user_token):
+def test_v2_find_themes_syncs_flags_before_the_guard(client, consultation, non_staff_user_token):
+    """A closed question carrying a stale free-text flag must not pass the guard."""
     consultation.code = ""
     consultation.save(update_fields=["code"])
-    QuestionFactory(consultation=consultation, number=1, type="closed")
-    QuestionFactory(consultation=consultation, number=2, type="demographic")
+    closed_question = QuestionFactory(
+        consultation=consultation, number=1, type="closed", has_free_text=True
+    )
 
     with (
         patch("consultations.api_v2.views.consultation.assign_consultation_code") as assign,
@@ -103,9 +105,35 @@ def test_v2_find_themes_requires_an_open_question(client, consultation, non_staf
 
     assert response.status_code == 400
     assert "no free-text questions" in response.json()["error"]
+    closed_question.refresh_from_db()
+    assert closed_question.has_free_text is False
     assign.assert_not_called()
     export.assert_not_called()
     submit_job.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_v2_find_themes_passes_the_guard_after_syncing(client, consultation, non_staff_user_token):
+    """A question typed open with a stale flag becomes findable via the sync."""
+    QuestionFactory(consultation=consultation, number=1, type="open", has_free_text=False)
+
+    with (
+        patch("consultations.api_v2.views.consultation.assign_consultation_code") as assign,
+        patch("consultations.api_v2.views.consultation.export_consultation_inputs_to_s3") as export,
+        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
+    ):
+        assign.return_value = consultation.code
+        export.return_value = 1
+        response = client.post(
+            find_themes_url(consultation),
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 202
+    question = Question.objects.get(consultation=consultation)
+    assert question.has_free_text is True
+    export.assert_called_once_with(consultation)
+    submit_job.assert_called_once()
 
 
 @pytest.mark.django_db

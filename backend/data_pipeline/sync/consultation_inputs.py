@@ -5,7 +5,7 @@ import uuid
 from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import BooleanField, Case, Count, Value, When
 from django.utils.text import slugify
 
 from consultations.models import (
@@ -75,6 +75,29 @@ def assign_consultation_code(consultation: Consultation) -> str:
     return candidate
 
 
+def sync_has_free_text_with_type(consultation: Consultation) -> int:
+    """
+    Derive has_free_text from the question type so the V1 pipeline contract
+    can be trusted when the S3 inputs are rendered:
+
+    - OPEN -> True, CLOSED / DEMOGRAPHIC -> False
+    - questions without a type were imported by the V1 pipeline, which set
+      has_free_text itself; they keep their stored flag
+
+    The V2 setup flow types questions without maintaining the flag, and
+    CONSULT-HY showed the pipeline failing on the disagreement, so this runs
+    at find-themes kickoff, before the mirror renders the S3 inputs and
+    before the handler guards on has_free_text.
+    """
+    return Question.objects.filter(consultation=consultation, type__isnull=False).update(
+        has_free_text=Case(
+            When(type=Question.QuestionType.OPEN, then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField(),
+        ),
+    )
+
+
 def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
     """
     Write the ThemeFinder inputs layout to S3 using the database as the source.
@@ -91,8 +114,8 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
 
     - the pipeline discovers questions by folder existence, so questions with
       no responses are omitted entirely
-    - only open questions get responses.jsonl (question type is the source of
-      truth in the V2 setup flow)
+    - only open questions get responses.jsonl (has_free_text is the shared
+      flag for both V1 and V2; the V2 setup flow derives it from `type`)
     - hybrid questions keep the script's "Not Provided" placeholder rows:
       a respondent who answered the closed part but left the open part blank
       gets `{"themefinder_id": N, "text": "Not Provided"}` — rows where
@@ -131,7 +154,7 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
     parts_exported = 0
 
     for question in consultation.question_set.order_by("number").all():
-        is_open = question.type == Question.QuestionType.OPEN
+        has_free_text = question.has_free_text
         options = list(
             MultiChoiceAnswer.objects.filter(question=question).values_list("text", flat=True)
         )
@@ -140,7 +163,7 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
         # chosen_options on the response itself or via a response on the linked
         # closed question (both shapes are valid under ADR-0006).
         closed_respondent_ids: set[int] = set()
-        if is_open and question.closed_question_id:
+        if has_free_text and question.closed_question_id:
             closed_respondent_ids = set(
                 Response.objects.filter(question_id=question.closed_question_id).values_list(
                     "respondent_id", flat=True
@@ -160,7 +183,7 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
         # questions may still carry text in their responses (e.g. the selected
         # option), which must not be theme-found.
         payload_rows: list[tuple[int, str]] = []
-        if is_open:
+        if has_free_text:
             for respondent_id, themefinder_id, text, chosen_option_count in rows:
                 if themefinder_id is None:
                     logger.warning(
@@ -189,7 +212,7 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
         question_data: dict = {
             "question_number": question.number,
             "question_text": question.text,
-            "has_free_text": is_open,
+            "has_free_text": has_free_text,
         }
         if options:
             question_data["multi_choice_options"] = sorted(
