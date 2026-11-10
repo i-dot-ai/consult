@@ -220,6 +220,7 @@ def test_v2_find_themes_rejects_consultations_not_in_setup_stage(
 
     assert response.status_code == 400
     assert "not in setup stage" in response.json()["error"]
+    assert consultation.title in response.json()["error"]  # blank code must not leak into messages
     assign.assert_not_called()
     export.assert_not_called()
     submit_job.assert_not_called()

@@ -248,14 +248,16 @@ class ConsultationViewSet(
 
         URL: /api/consultations/{consultation_id}/find-themes/
         """
-        try:
-            consultation = self.get_object()
-            logger.set_context_field("consultation_id", str(consultation.id))
+        # Fetched outside the try so lookup failures reach DRF's handler
+        # directly and `consultation` is always bound in the error paths below.
+        consultation = self.get_object()
+        logger.set_context_field("consultation_id", str(consultation.id))
 
+        try:
             if consultation.stage != Consultation.Stage.SETUP:
                 return Response(
                     {
-                        "error": f"Consultation '{consultation.code}' not in setup stage",
+                        "error": f"Consultation '{consultation.title}' not in setup stage",
                         "detail": "ThemeFinder can only process consultations in the setup stage",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
@@ -277,7 +279,7 @@ class ConsultationViewSet(
             if not free_text_questions.exists():
                 return Response(
                     {
-                        "error": f"Consultation '{consultation.code}' has no free-text questions",
+                        "error": f"Consultation '{consultation.title}' has no free-text questions",
                         "detail": "ThemeFinder can only process consultations with free-text responses",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
@@ -309,7 +311,7 @@ class ConsultationViewSet(
             if transitions == 0:
                 return Response(
                     {
-                        "error": f"Consultation '{consultation.code}' not in setup stage",
+                        "error": f"Consultation '{consultation.title}' not in setup stage",
                         "detail": "ThemeFinder can only process consultations in the setup stage",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
