@@ -1,0 +1,76 @@
+name: Dependabot triage
+description: >
+  Label a Dependabot PR, request a review from the least-loaded team member and
+  open a Linear issue assigned to them. Shared so the major-bump and CI-failure
+  workflows cannot drift apart. Requires the repository to be checked out first.
+
+# Composite actions cannot read secrets or vars, so callers pass them as inputs.
+inputs:
+  issue-type:
+    description: major-bump or ci-failure
+    required: true
+  label:
+    description: Label to add to the PR
+    required: true
+  pr-number:
+    required: true
+  pr-title:
+    required: true
+  pr-url:
+    required: true
+  github-token:
+    required: true
+  consult-team-read-token:
+    required: true
+  linear-api-key:
+    required: true
+  linear-team-name-key:
+    description: Linear team key (e.g. "ENG"), not a secret
+    required: true
+  dependabot-user-map:
+    description: JSON mapping GitHub username to Linear email
+    required: true
+  dependency-names:
+    description: Only used for major-bump issues
+    default: ""
+  previous-version:
+    description: Only used for major-bump issues
+    default: ""
+  new-version:
+    description: Only used for major-bump issues
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Label PR
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        PR_URL: ${{ inputs.pr-url }}
+        LABEL: ${{ inputs.label }}
+      run: gh pr edit "$PR_URL" --add-label "$LABEL"
+
+    - name: Request review from least-loaded team member
+      id: request-reviewer
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        CONSULT_TEAM_READ_TOKEN: ${{ inputs.consult-team-read-token }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+      run: python3 .github/scripts/assign_dependabot_reviewer.py
+
+    - name: Create Linear issue
+      shell: bash
+      env:
+        LINEAR_API_KEY: ${{ inputs.linear-api-key }}
+        LINEAR_TEAM_NAME_KEY: ${{ inputs.linear-team-name-key }}
+        DEPENDABOT_USER_MAP: ${{ inputs.dependabot-user-map }}
+        GITHUB_ASSIGNEE: ${{ steps.request-reviewer.outputs.reviewer }}
+        ISSUE_TYPE: ${{ inputs.issue-type }}
+        PR_TITLE: ${{ inputs.pr-title }}
+        PR_URL: ${{ inputs.pr-url }}
+        DEPENDENCY_NAMES: ${{ inputs.dependency-names }}
+        PREVIOUS_VERSION: ${{ inputs.previous-version }}
+        NEW_VERSION: ${{ inputs.new-version }}
+      run: python3 .github/scripts/create_linear_issue.py
