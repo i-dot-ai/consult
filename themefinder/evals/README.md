@@ -144,7 +144,7 @@ A component is one ThemeFinder stage to evaluate. Use an existing one, such as `
 
 ## Adding a dataset
 
-Datasets follow the layout in `data/gambling_XS/` (see its README):
+Datasets follow the layout in `data/gambling_XS/` (see its [README](data/gambling_XS/README.md)):
 
 ```
 data/<name>/
