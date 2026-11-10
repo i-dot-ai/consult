@@ -7,10 +7,12 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.db.models import Prefetch, Q
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from openpyxl.utils.exceptions import InvalidFileException
 from rest_framework import serializers, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, UpdateModelMixin
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -355,6 +357,12 @@ class ConsultationViewSet(
             )
 
         except Exception as e:
+            # Re-raise DRF's own errors so dispatch turns them into the right
+            # status: Http404 from get_object() becomes 404, permission
+            # failures 403, APIExceptions their own status. Without this the
+            # catch-all below masks them as 500s.
+            if isinstance(e, (Http404, APIException)):
+                raise
             logger.exception(
                 "Error starting Find Themes job for consultation {consultation_title}",
                 consultation_title=consultation.title,
