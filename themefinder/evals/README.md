@@ -1,6 +1,6 @@
 # ThemeFinder evaluation framework
 
-LLM evals for each ThemeFinder stage. Each eval runs the real pipeline code on a dataset, scores the output (mostly with an LLM judge), and saves the results locally and, optionally, to Langfuse.
+LLM evals for each ThemeFinder stage. Each eval runs the real pipeline code on a dataset, scores the output using a mixture of deterministic and LLM-as-a-judge based metrics, and saves the results locally and, optionally, to Langfuse.
 
 Components: `mapping`, `generation`, `find_themes`, `condensation`, `refinement`.
 
@@ -62,7 +62,7 @@ uv run --extra eval python run_eval.py --family gemini claude   # or --all for e
 ```
 
 - Without `--component`, a comparison runs every component.
-- `--judge-model` sets one judge for all models, so scores stay comparable. Otherwise each model judges its own output.
+- `--judge-model` allows you to set the judge model overwriting AUTO_EVAL_JUDGE_MODEL. One judge model will be used to judge all task LLMs for consistency.
 - `make run-benchmark` is the full version (`--all`, `housing_S`, 5 runs). Override with `BENCHMARK_DATASET` and `BENCHMARK_RUNS`.
 - Results go to `benchmark_results/<id>/`. Run `visualise_benchmark.py --benchmark <id>` for an HTML report.
 
