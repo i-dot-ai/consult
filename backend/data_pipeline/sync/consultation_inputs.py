@@ -8,7 +8,13 @@ from django.db import transaction
 from django.db.models import Count
 from django.utils.text import slugify
 
-from consultations.models import Consultation, MultiChoiceAnswer, Question, Response
+from consultations.models import (
+    CONSULTATION_CODE_MAX_LENGTH,
+    Consultation,
+    MultiChoiceAnswer,
+    Question,
+    Response,
+)
 from consultations.utils.s3 import get_s3_client
 
 logger = settings.LOGGER
@@ -43,7 +49,7 @@ def assign_consultation_code(consultation: Consultation) -> str:
             return locked.code
 
         base = slugify(consultation.title) or "consultation"
-        max_base_length = Consultation._meta.get_field("code").max_length - (CODE_SUFFIX_LENGTH + 1)
+        max_base_length = CONSULTATION_CODE_MAX_LENGTH - (CODE_SUFFIX_LENGTH + 1)
         base = base[:max_base_length].rstrip("-")
 
         # The uuid suffix makes collisions vanishingly unlikely; retry rather
