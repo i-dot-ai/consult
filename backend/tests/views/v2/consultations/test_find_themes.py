@@ -1,0 +1,132 @@
+from unittest.mock import patch
+
+import pytest
+from django.urls import reverse
+
+from consultations.models import Consultation
+from factories import ConsultationFactory, QuestionFactory
+
+
+def find_themes_url(consultation):
+    return reverse("consultation-v2-find-themes", kwargs={"pk": consultation.id})
+
+
+@pytest.mark.django_db
+def test_v2_find_themes_assigns_code_and_mirrors_inputs(client, consultation, non_staff_user_token):
+    consultation.code = ""
+    consultation.save(update_fields=["code"])
+    QuestionFactory(consultation=consultation, number=1, type="open")
+
+    with (
+        patch("consultations.api_v2.views.consultation.export_consultation_inputs_to_s3") as export,
+        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
+    ):
+        export.return_value = 1
+        response = client.post(
+            find_themes_url(consultation),
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 202
+    consultation.refresh_from_db()
+    assert consultation.code  # a code was assigned and persisted
+    export.assert_called_once_with(consultation)
+    submit_job.assert_called_once()
+    assert submit_job.call_args.kwargs["consultation_code"] == consultation.code
+    assert response.json()["consultation_code"] == consultation.code
+    assert consultation.stage == Consultation.Stage.FINDING_THEMES
+
+
+@pytest.mark.django_db
+def test_v2_find_themes_reuses_an_existing_code(client, consultation, non_staff_user_token):
+    QuestionFactory(consultation=consultation, number=1, type="open")
+
+    with (
+        patch("consultations.api_v2.views.consultation.assign_consultation_code") as assign,
+        patch("consultations.api_v2.views.consultation.export_consultation_inputs_to_s3") as export,
+        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
+    ):
+        assign.return_value = consultation.code
+        export.return_value = 1
+        response = client.post(
+            find_themes_url(consultation),
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 202
+    assert assign.call_args.args[0] == consultation
+    export.assert_called_once_with(consultation)
+    submit_job.assert_called_once()
+    assert submit_job.call_args.kwargs["consultation_code"] == "my-first-consultation"
+
+
+@pytest.mark.django_db
+def test_v2_find_themes_does_not_submit_the_batch_when_mirroring_fails(
+    client, consultation, non_staff_user_token
+):
+    QuestionFactory(consultation=consultation, number=1, type="open")
+
+    with (
+        patch(
+            "consultations.api_v2.views.consultation.export_consultation_inputs_to_s3",
+            side_effect=RuntimeError("S3 unavailable"),
+        ),
+        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
+    ):
+        response = client.post(
+            find_themes_url(consultation),
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 500
+    submit_job.assert_not_called()
+    consultation.refresh_from_db()
+    assert consultation.stage == Consultation.Stage.SETUP
+
+
+@pytest.mark.django_db
+def test_v2_find_themes_requires_an_open_question(client, consultation, non_staff_user_token):
+    consultation.code = ""
+    consultation.save(update_fields=["code"])
+    QuestionFactory(consultation=consultation, number=1, type="closed")
+    QuestionFactory(consultation=consultation, number=2, type="demographic")
+
+    with (
+        patch("consultations.api_v2.views.consultation.assign_consultation_code") as assign,
+        patch("consultations.api_v2.views.consultation.export_consultation_inputs_to_s3") as export,
+        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
+    ):
+        response = client.post(
+            find_themes_url(consultation),
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 400
+    assert "no free-text questions" in response.json()["error"]
+    assign.assert_not_called()
+    export.assert_not_called()
+    submit_job.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_v2_find_themes_rejects_consultations_not_in_setup_stage(
+    client, non_staff_user, non_staff_user_token
+):
+    consultation = ConsultationFactory(code="in-progress", stage=Consultation.Stage.FINDING_THEMES)
+    consultation.users.add(non_staff_user)
+
+    with (
+        patch("consultations.api_v2.views.consultation.assign_consultation_code") as assign,
+        patch("consultations.api_v2.views.consultation.export_consultation_inputs_to_s3") as export,
+        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
+    ):
+        response = client.post(
+            find_themes_url(consultation),
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 400
+    assert "not in setup stage" in response.json()["error"]
+    assign.assert_not_called()
+    export.assert_not_called()
+    submit_job.assert_not_called()
