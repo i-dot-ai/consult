@@ -7,6 +7,7 @@ from consultations.models import Consultation, MultiChoiceAnswer, Response
 from data_pipeline.sync.consultation_inputs import (
     assign_consultation_code,
     export_consultation_inputs_to_s3,
+    sync_has_free_text_with_type,
 )
 from factories import (
     ConsultationFactory,
@@ -76,6 +77,61 @@ class TestAssignConsultationCode:
         assert code == "assigned-by-other"
         consultation.refresh_from_db()
         assert consultation.code == "assigned-by-other"
+
+
+@pytest.mark.django_db
+class TestSyncHasFreeTextWithType:
+    def test_derives_the_flag_from_question_type(self):
+        consultation = ConsultationFactory(code="test-code")
+        open_question = QuestionFactory(
+            consultation=consultation, number=1, type="open", has_free_text=False
+        )
+        closed_question = QuestionFactory(
+            consultation=consultation, number=2, type="closed", has_free_text=True
+        )
+        demographic_question = QuestionFactory(
+            consultation=consultation, number=3, type="demographic", has_free_text=True
+        )
+        untyped_question = QuestionFactory(consultation=consultation, number=4)
+
+        synced = sync_has_free_text_with_type(consultation)
+
+        assert synced == 3
+        open_question.refresh_from_db()
+        closed_question.refresh_from_db()
+        demographic_question.refresh_from_db()
+        untyped_question.refresh_from_db()
+        assert open_question.has_free_text is True
+        assert closed_question.has_free_text is False
+        assert demographic_question.has_free_text is False
+        assert untyped_question.has_free_text is True  # kept V1-style default
+
+    def test_questions_without_a_type_keep_their_stored_flag(self):
+        """V1-imported questions have no type; the V1 pipeline set the flag."""
+        consultation = ConsultationFactory(code="test-code")
+        flagged = QuestionFactory(consultation=consultation, number=1, has_free_text=True)
+        unflagged = QuestionFactory(consultation=consultation, number=2, has_free_text=False)
+
+        synced = sync_has_free_text_with_type(consultation)
+
+        assert synced == 0
+        flagged.refresh_from_db()
+        unflagged.refresh_from_db()
+        assert flagged.has_free_text is True
+        assert unflagged.has_free_text is False
+
+    def test_only_touches_the_target_consultation(self):
+        consultation = ConsultationFactory(code="test-code")
+        other = ConsultationFactory(code="other-code")
+        QuestionFactory(consultation=consultation, number=1, type="closed", has_free_text=True)
+        other_open_question = QuestionFactory(
+            consultation=other, number=1, type="open", has_free_text=False
+        )
+
+        sync_has_free_text_with_type(consultation)
+
+        other_open_question.refresh_from_db()
+        assert other_open_question.has_free_text is False
 
 
 @pytest.mark.django_db

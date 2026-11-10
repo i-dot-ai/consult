@@ -30,11 +30,12 @@ from consultations.api_v2.serializers import (
     ConsultationUpdateSerializerV2,
     ConsultationUserAssignmentSerializerV2,
 )
-from consultations.models import Consultation, FileUpload, Question
+from consultations.models import Consultation, FileUpload
 from data_pipeline import batch
 from data_pipeline.sync.consultation_inputs import (
     assign_consultation_code,
     export_consultation_inputs_to_s3,
+    sync_has_free_text_with_type,
 )
 from ingest.consultation_file import read_consultation_file
 from ingest.deep_validation import deep_validate_file
@@ -236,10 +237,10 @@ class ConsultationViewSet(
         themes when the job completes.
         (See: lambda/import_candidate_themes/import_candidate_themes_handler.py)
 
-        Before submitting, renders the ThemeFinder inputs layout to S3 from
-        the database (the mirror of what scripts/setup_consultation.py used
-        to upload), assigning a consultation code first if the consultation
-        doesn't have one yet.
+        Before submitting, derives has_free_text from question type, renders
+        the ThemeFinder inputs layout to S3 from the database (the mirror of
+        what scripts/setup_consultation.py used to upload), assigning a
+        consultation code first if the consultation doesn't have one yet.
 
         Advances consultation to FINDING_THEMES stage
 
@@ -258,7 +259,19 @@ class ConsultationViewSet(
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            free_text_questions = consultation.question_set.filter(type=Question.QuestionType.OPEN)
+            # Derive has_free_text from the question type at kickoff so the
+            # guard, the mirror and the pipeline all ask one consistent
+            # question, regardless of what the setup flow left behind.
+            synced_flags = sync_has_free_text_with_type(consultation)
+            if synced_flags:
+                logger.info(
+                    "Synced has_free_text from question type for {synced_flags} "
+                    "questions of consultation '{consultation_title}'",
+                    synced_flags=synced_flags,
+                    consultation_title=consultation.title,
+                )
+
+            free_text_questions = consultation.question_set.filter(has_free_text=True)
             if not free_text_questions.exists():
                 return Response(
                     {
