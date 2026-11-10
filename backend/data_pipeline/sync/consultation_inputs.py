@@ -4,6 +4,7 @@ import uuid
 
 from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
+from django.db import transaction
 from django.db.models import Count
 from django.utils.text import slugify
 
@@ -33,23 +34,33 @@ def assign_consultation_code(consultation: Consultation) -> str:
     if consultation.code:
         return consultation.code
 
-    base = slugify(consultation.title) or "consultation"
-    max_base_length = Consultation._meta.get_field("code").max_length - (CODE_SUFFIX_LENGTH + 1)
-    base = base[:max_base_length].rstrip("-")
+    with transaction.atomic():
+        # Lock the row so two concurrent kickoffs of the same consultation
+        # cannot both pass the blank check and assign different codes.
+        locked = Consultation.objects.select_for_update().get(pk=consultation.pk)
+        if locked.code:
+            consultation.code = locked.code
+            return locked.code
 
-    # The uuid suffix makes collisions vanishingly unlikely; retry rather
-    # than risk two consultations sharing an S3 folder.
-    for _ in range(10):
-        candidate = f"{base}-{uuid.uuid4().hex[:CODE_SUFFIX_LENGTH]}"
-        if not Consultation.objects.filter(code=candidate).exists():
-            break
-    else:
-        raise RuntimeError(
-            f"Could not assign a unique consultation code for '{consultation.title}'"
-        )
+        base = slugify(consultation.title) or "consultation"
+        max_base_length = Consultation._meta.get_field("code").max_length - (CODE_SUFFIX_LENGTH + 1)
+        base = base[:max_base_length].rstrip("-")
+
+        # The uuid suffix makes collisions vanishingly unlikely; retry rather
+        # than risk two consultations sharing an S3 folder.
+        for _ in range(10):
+            candidate = f"{base}-{uuid.uuid4().hex[:CODE_SUFFIX_LENGTH]}"
+            if not Consultation.objects.filter(code=candidate).exists():
+                break
+        else:
+            raise RuntimeError(
+                f"Could not assign a unique consultation code for '{consultation.title}'"
+            )
+
+        locked.code = candidate
+        locked.save(update_fields=["code"])
 
     consultation.code = candidate
-    consultation.save(update_fields=["code"])
     logger.info(
         "Assigned consultation code={code} to consultation '{consultation_title}'",
         code=candidate,
