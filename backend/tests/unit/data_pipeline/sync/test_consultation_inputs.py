@@ -63,6 +63,20 @@ class TestAssignConsultationCode:
         consultation.refresh_from_db()
         assert consultation.code == "already-assigned"
 
+    def test_does_not_overwrite_a_concurrently_assigned_code(self):
+        consultation = ConsultationFactory(title="Race Consultation", code="")
+        stale_instance = Consultation.objects.get(pk=consultation.pk)
+        # Another kickoff assigned a code after our in-memory instance was
+        # loaded; its row update must win over the stale blank copy.
+        Consultation.objects.filter(pk=consultation.pk).update(code="assigned-by-other")
+        stale_instance.code = ""
+
+        code = assign_consultation_code(stale_instance)
+
+        assert code == "assigned-by-other"
+        consultation.refresh_from_db()
+        assert consultation.code == "assigned-by-other"
+
 
 @pytest.mark.django_db
 class TestExportConsultationInputsToS3:

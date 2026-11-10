@@ -286,7 +286,9 @@ class ConsultationViewSet(
             )
 
             logger.info(
-                f"Find Themes job submitted for consultation {consultation.title} by user {request.user.id}"
+                "Find Themes job submitted for consultation {consultation_title} by user {user_id}",
+                consultation_title=consultation.title,
+                user_id=request.user.id,
             )
 
             try:
@@ -294,8 +296,9 @@ class ConsultationViewSet(
                 consultation.save(update_fields=["stage"])
             except Exception:
                 logger.exception(
-                    f"Failed to update consultation stage for consultation {consultation.title} "
-                    "while starting Find Themes job"
+                    "Failed to update consultation stage for consultation "
+                    "{consultation_title} while starting Find Themes job",
+                    consultation_title=consultation.title,
                 )
 
             return Response(
@@ -309,7 +312,8 @@ class ConsultationViewSet(
 
         except Exception as e:
             logger.exception(
-                f"Error starting Find Themes job for consultation {consultation.title}"
+                "Error starting Find Themes job for consultation {consultation_title}",
+                consultation_title=consultation.title,
             )
             return Response(
                 {
