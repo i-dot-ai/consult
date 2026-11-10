@@ -10,6 +10,8 @@ from ingest.jobs import add_consultation_job
 
 @pytest.mark.django_db
 def test_add_consultation_job_imports_raw_file(consultation, non_staff_user):
+    consultation.data_source = Consultation.DataSource.CITIZEN_SPACE
+    consultation.save(update_fields=["data_source"])
     s3_key = default_storage.save(
         f"consultations/uploads/{consultation.id}/responses.csv",
         ContentFile(b"Name,Feedback\nAlice,Very useful\nBob,"),
@@ -35,6 +37,35 @@ def test_add_consultation_job_imports_raw_file(consultation, non_staff_user):
     )
     assert [respondent.themefinder_id for respondent in respondents] == [1, 2]
     assert Response.objects.filter(question__consultation=consultation).count() == 4
+    assert Response.objects.get(question=questions[1], respondent=respondents[1]).text is None
+
+
+@pytest.mark.django_db
+def test_add_consultation_job_uses_qualtrics_question_and_response_rows(
+    consultation, non_staff_user
+):
+    consultation.data_source = Consultation.DataSource.QUALTRICS
+    consultation.save(update_fields=["data_source"])
+    s3_key = default_storage.save(
+        f"consultations/uploads/{consultation.id}/responses.csv",
+        ContentFile(b"Q1,Q2\nName,Feedback\nImportId1,ImportId2\nAlice,Very useful\nBob,"),
+    )
+    file_upload = FileUpload.objects.create(
+        consultation=consultation,
+        uploaded_by=non_staff_user,
+        s3_key=s3_key,
+    )
+
+    add_consultation_job(file_upload.id)
+
+    questions = list(Question.objects.filter(consultation=consultation).order_by("number"))
+    assert [question.text for question in questions] == ["Name", "Feedback"]
+    respondents = list(
+        Respondent.objects.filter(consultation=consultation).order_by("themefinder_id")
+    )
+    assert [respondent.themefinder_id for respondent in respondents] == [1, 2]
+    assert Response.objects.filter(question__consultation=consultation).count() == 4
+    assert Response.objects.get(question=questions[0], respondent=respondents[0]).text == "Alice"
     assert Response.objects.get(question=questions[1], respondent=respondents[1]).text is None
 
 

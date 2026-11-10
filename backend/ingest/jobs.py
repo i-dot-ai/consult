@@ -23,7 +23,7 @@ def add_consultation_job(file_upload_id: UUID) -> None:
     try:
         with default_storage.open(file_upload.s3_key, "rb") as uploaded_file:
             question_texts, response_rows = read_consultation_file(
-                uploaded_file, file_upload.s3_key
+                uploaded_file, file_upload.s3_key, consultation.data_source
             )
         import_consultation_data(consultation, question_texts, response_rows)
     except Exception as error:

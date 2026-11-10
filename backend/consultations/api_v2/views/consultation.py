@@ -177,7 +177,7 @@ class ConsultationViewSet(
 
         uploaded_file = serializer.validated_data["file"]
         try:
-            read_consultation_file(uploaded_file, uploaded_file.name)
+            read_consultation_file(uploaded_file, uploaded_file.name, consultation.data_source)
         except (
             csv.Error,
             InvalidFileException,

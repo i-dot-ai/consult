@@ -10,7 +10,7 @@ from consultations.models import Consultation, Question, Respondent, Response
 
 
 def read_consultation_file(
-    file: BinaryIO, filename: str
+    file: BinaryIO, filename: str, data_source: str | None = None
 ) -> tuple[list[str], list[list[str | None]]]:
     extension = Path(filename).suffix.lower()
     file.seek(0)
@@ -35,14 +35,21 @@ def read_consultation_file(
     if not rows:
         raise ValueError("File must contain a header row.")
 
-    questions = ["" if value is None else str(value) for value in rows[0]]
+    if data_source == Consultation.DataSource.QUALTRICS:
+        question_row = rows[1] if len(rows) > 1 else []
+        raw_response_rows = rows[3:]
+    else:
+        question_row = rows[0]
+        raw_response_rows = rows[1:]
+
+    questions = ["" if value is None else str(value) for value in question_row]
     if not questions:
         raise ValueError("File must contain at least one question column.")
 
     response_rows = [
         [None if value is None or value == "" else str(value) for value in row[: len(questions)]]
         + [None] * max(0, len(questions) - len(row))
-        for row in rows[1:]
+        for row in raw_response_rows
     ]
     return questions, response_rows
 
