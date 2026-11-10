@@ -268,6 +268,10 @@ class ConsultationViewSet(
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+            # The mirror runs inline on purpose: the Batch job must not start
+            # before the S3 inputs exist. Deliberately synchronous rather than
+            # an RQ job — pushes were historically <60s even at full scale
+            # (see export_consultation_inputs_to_s3).
             consultation_code = assign_consultation_code(consultation)
             question_parts = export_consultation_inputs_to_s3(consultation)
             logger.info(

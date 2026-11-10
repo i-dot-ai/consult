@@ -103,6 +103,12 @@ def export_consultation_inputs_to_s3(consultation: Consultation) -> int:
     Args:
         consultation: Consultation to export (must have a non-empty code)
 
+    Requires:
+        The pipeline must not start before this returns, so it runs
+        synchronously in the caller (no RQ job). S3 pushes at this scale
+        were historically <60 seconds regardless of consultation size;
+        revisit if real consultations approach that.
+
     Returns:
         Number of question_part folders written
 
