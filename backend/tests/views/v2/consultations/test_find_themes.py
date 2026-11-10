@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 from django.urls import reverse
+from rest_framework import serializers
 
 from consultations.models import Consultation, Question
 from factories import ConsultationFactory, QuestionFactory
@@ -106,6 +107,46 @@ def test_v2_find_themes_rolls_the_stage_back_when_the_submission_fails(
     submit_job.assert_called_once()
     consultation.refresh_from_db()
     assert consultation.stage == Consultation.Stage.SETUP  # retryable
+
+
+@pytest.mark.django_db
+def test_v2_find_themes_does_not_mask_drf_permission_errors_as_500(client, non_staff_user_token):
+    """Consultations outside a user's visibility fail CanSeeConsultationV2
+    before the action runs - that 403 must survive, as must any Http404 or
+    APIException raised inside the action body (no 500 masking)."""
+
+    with patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job:
+        response = client.post(
+            reverse(
+                "consultation-v2-find-themes",
+                kwargs={"pk": "00000000-0000-0000-0000-000000000000"},
+            ),
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 403
+    submit_job.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_v2_find_themes_lets_api_exceptions_surface(client, consultation, non_staff_user_token):
+    QuestionFactory(consultation=consultation, number=1, type="open")
+
+    with (
+        patch(
+            "consultations.api_v2.views.consultation.export_consultation_inputs_to_s3",
+            side_effect=serializers.ValidationError("bad consultation data"),
+        ),
+        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
+    ):
+        response = client.post(
+            find_themes_url(consultation),
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 400
+    assert "bad consultation data" in response.json()
+    submit_job.assert_not_called()
 
 
 @pytest.mark.django_db
