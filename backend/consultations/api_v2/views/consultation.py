@@ -30,8 +30,12 @@ from consultations.api_v2.serializers import (
     ConsultationUpdateSerializerV2,
     ConsultationUserAssignmentSerializerV2,
 )
-from consultations.models import Consultation, FileUpload
+from consultations.models import Consultation, FileUpload, Question
 from data_pipeline import batch
+from data_pipeline.sync.consultation_inputs import (
+    assign_consultation_code,
+    export_consultation_inputs_to_s3,
+)
 from ingest.consultation_file import read_consultation_file
 from ingest.deep_validation import deep_validate_file
 from ingest.jobs import add_consultation_job, delete_consultation_job
@@ -232,6 +236,11 @@ class ConsultationViewSet(
         themes when the job completes.
         (See: lambda/import_candidate_themes/import_candidate_themes_handler.py)
 
+        Before submitting, renders the ThemeFinder inputs layout to S3 from
+        the database (the mirror of what scripts/setup_consultation.py used
+        to upload), assigning a consultation code first if the consultation
+        doesn't have one yet.
+
         Advances consultation to FINDING_THEMES stage
 
         URL: /api/consultations/{consultation_id}/find-themes/
@@ -249,7 +258,7 @@ class ConsultationViewSet(
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            free_text_questions = consultation.question_set.filter(has_free_text=True)
+            free_text_questions = consultation.question_set.filter(type=Question.QuestionType.OPEN)
             if not free_text_questions.exists():
                 return Response(
                     {
@@ -258,6 +267,15 @@ class ConsultationViewSet(
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+
+            consultation_code = assign_consultation_code(consultation)
+            question_parts = export_consultation_inputs_to_s3(consultation)
+            logger.info(
+                "Mirrored {question_parts} question parts to s3 for consultation "
+                "'{consultation_code}' before find-themes kickoff",
+                question_parts=question_parts,
+                consultation_code=consultation_code,
+            )
 
             batch.submit_job(
                 job_type="FIND_THEMES",
