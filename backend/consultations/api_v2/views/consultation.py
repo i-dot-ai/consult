@@ -294,29 +294,56 @@ class ConsultationViewSet(
                 consultation_code=consultation_code,
             )
 
-            batch.submit_job(
-                job_type="FIND_THEMES",
-                consultation_code=consultation_code,
-                consultation_name=consultation.title,
-                user_id=request.user.id,
-                model_name=consultation.model_name,
-            )
+            # The stage transition is the guard against duplicate submissions:
+            # it atomically flips SETUP -> FINDING_THEMES only while the
+            # consultation is still in SETUP, so a retry after a failed
+            # kickoff is rejected instead of re-submitting the Batch job, and
+            # a concurrent kickoff loses the race here. It runs after the
+            # mirror so the S3 inputs always exist before the job can start,
+            # and before submit_job so a submission failure can be rolled back.
+            transitions = Consultation.objects.filter(
+                pk=consultation.pk, stage=Consultation.Stage.SETUP
+            ).update(stage=Consultation.Stage.FINDING_THEMES)
+            if transitions == 0:
+                return Response(
+                    {
+                        "error": f"Consultation '{consultation.code}' not in setup stage",
+                        "detail": "ThemeFinder can only process consultations in the setup stage",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            consultation.stage = Consultation.Stage.FINDING_THEMES
+
+            try:
+                batch.submit_job(
+                    job_type="FIND_THEMES",
+                    consultation_code=consultation_code,
+                    consultation_name=consultation.title,
+                    user_id=request.user.id,
+                    model_name=consultation.model_name,
+                )
+            except Exception:
+                # Roll the stage back so the user can retry a plain AWS
+                # failure; if even the rollback fails the consultation is
+                # stranded in FINDING_THEMES and needs manual reset (logged
+                # below, DB-down severity).
+                consultation_rerolled = Consultation.objects.filter(
+                    pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
+                ).update(stage=Consultation.Stage.SETUP)
+                consultation.stage = Consultation.Stage.SETUP
+                if not consultation_rerolled:
+                    logger.exception(
+                        "Failed to roll the stage back after a failed Batch "
+                        "submission for consultation '{consultation_title}'",
+                        consultation_title=consultation.title,
+                    )
+                raise
 
             logger.info(
                 "Find Themes job submitted for consultation {consultation_title} by user {user_id}",
                 consultation_title=consultation.title,
                 user_id=request.user.id,
             )
-
-            try:
-                consultation.stage = Consultation.Stage.FINDING_THEMES
-                consultation.save(update_fields=["stage"])
-            except Exception:
-                logger.exception(
-                    "Failed to update consultation stage for consultation "
-                    "{consultation_title} while starting Find Themes job",
-                    consultation_title=consultation.title,
-                )
 
             return Response(
                 {
