@@ -85,6 +85,30 @@ def test_v2_find_themes_does_not_submit_the_batch_when_mirroring_fails(
 
 
 @pytest.mark.django_db
+def test_v2_find_themes_rolls_the_stage_back_when_the_submission_fails(
+    client, consultation, non_staff_user_token
+):
+    QuestionFactory(consultation=consultation, number=1, type="open")
+
+    with (
+        patch("consultations.api_v2.views.consultation.export_consultation_inputs_to_s3") as export,
+        patch(
+            "consultations.api_v2.views.consultation.batch.submit_job", side_effect=RuntimeError
+        ) as submit_job,
+    ):
+        export.return_value = 1
+        response = client.post(
+            find_themes_url(consultation),
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 500
+    submit_job.assert_called_once()
+    consultation.refresh_from_db()
+    assert consultation.stage == Consultation.Stage.SETUP  # retryable
+
+
+@pytest.mark.django_db
 def test_v2_find_themes_syncs_flags_before_the_guard(client, consultation, non_staff_user_token):
     """A closed question carrying a stale free-text flag must not pass the guard."""
     consultation.code = ""
