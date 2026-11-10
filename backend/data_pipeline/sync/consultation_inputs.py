@@ -5,13 +5,12 @@ import uuid
 from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
-from django.db.models import BooleanField, Case, Count, Value, When
+from django.db.models import BooleanField, Case, Count, Prefetch, Value, When
 from django.utils.text import slugify
 
 from consultations.models import (
     CONSULTATION_CODE_MAX_LENGTH,
     Consultation,
-    MultiChoiceAnswer,
     Question,
     Response,
 )
@@ -156,31 +155,54 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
     s3_client = get_s3_client()
     parts_exported = 0
 
-    for question in consultation.question_set.order_by("number").all():
-        has_free_text = question.has_free_text
-        options = list(
-            MultiChoiceAnswer.objects.filter(question=question).values_list("text", flat=True)
+    # Prefetch everything the loop needs up front: the response rows keep
+    # their annotation and ordering through the Prefetch queryset, and
+    # select_related("respondent") keeps the themefinder_id traversal query-free.
+    questions = list(
+        consultation.question_set.order_by("number").prefetch_related(
+            "multichoiceanswer_set",
+            Prefetch(
+                "response_set",
+                queryset=Response.objects.select_related("respondent")
+                .annotate(chosen_option_count=Count("chosen_options"))
+                .order_by("respondent__themefinder_id"),
+            ),
         )
+    )
 
-        # A respondent answered the closed part of a hybrid question either via
-        # chosen_options on the response itself or via a response on the linked
-        # closed question (both shapes are valid under ADR-0006).
+    # A respondent answered the closed part of a hybrid question either via
+    # chosen_options on the response itself or via a response on the linked
+    # closed question (both shapes are valid under ADR-0006); collect the
+    # second shape for every free-text question in one query.
+    closed_part_ids = [
+        question.closed_question_id
+        for question in questions
+        if question.has_free_text and question.closed_question_id
+    ]
+    closed_respondents: dict[int, set[int]] = {}
+    if closed_part_ids:
+        for question_id, respondent_id in Response.objects.filter(
+            question_id__in=closed_part_ids
+        ).values_list("question_id", "respondent_id"):
+            closed_respondents.setdefault(question_id, set()).add(respondent_id)
+
+    for question in questions:
+        has_free_text = question.has_free_text
+        options = [answer.text for answer in question.multichoiceanswer_set.all()]
+
         closed_respondent_ids: set[int] = set()
         if has_free_text and question.closed_question_id:
-            closed_respondent_ids = set(
-                Response.objects.filter(question_id=question.closed_question_id).values_list(
-                    "respondent_id", flat=True
-                )
-            )
+            closed_respondent_ids = closed_respondents.get(question.closed_question_id, set())
 
-        rows = list(
-            Response.objects.filter(question=question)
-            .annotate(chosen_option_count=Count("chosen_options"))
-            .order_by("respondent__themefinder_id")
-            .values_list(
-                "respondent_id", "respondent__themefinder_id", "text", "chosen_option_count"
+        rows = [
+            (
+                response.respondent_id,
+                response.respondent.themefinder_id,
+                response.text,
+                response.chosen_option_count,
             )
-        )
+            for response in question.response_set.all()
+        ]
 
         # Only open questions get a responses.jsonl; closed and demographic
         # questions may still carry text in their responses (e.g. the selected

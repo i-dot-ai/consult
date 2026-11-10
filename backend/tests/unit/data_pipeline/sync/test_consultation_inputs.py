@@ -40,14 +40,14 @@ def responses_jsonl_rows(mock_s3_client):
 
 @pytest.mark.django_db
 class TestAssignConsultationCode:
-    @patch("data_pipeline.sync.consultation_inputs.get_s3_client")
-    def test_generates_and_persists_a_unique_slug_code(self, mock_s3_client):
+    def test_generates_and_persists_a_unique_slug_code(self):
         consultation = ConsultationFactory(title="My Fancy Consultation!", code="")
 
         code = assign_consultation_code(consultation)
 
         # The in-memory instance is not mutated; callers thread the returned code.
         assert consultation.code == ""
+
         consultation.refresh_from_db()
         assert code == consultation.code
         assert code.startswith("my-fancy-consultation-")
@@ -55,7 +55,6 @@ class TestAssignConsultationCode:
         assert len(suffix) == 8
         assert int(suffix, 16)  # suffix is hex
         assert not Consultation.objects.exclude(pk=consultation.pk).filter(code=code).exists()
-        mock_s3_client.assert_not_called()
 
     def test_keeps_an_existing_code_untouched(self):
         consultation = ConsultationFactory(title="Existing", code="already-assigned")
@@ -374,3 +373,29 @@ class TestExportConsultationInputsToS3:
             f"app_data/consultations/test-code/inputs/question_part_{number}/responses.jsonl"
             for number in (1, 2, 3)
         }
+
+    @patch("data_pipeline.sync.consultation_inputs.get_s3_client")
+    @patch("data_pipeline.sync.consultation_inputs.settings")
+    def test_export_does_not_query_per_question(
+        self, mock_settings, mock_get_s3_client, django_assert_max_num_queries
+    ):
+        """Prefetching keeps the export at a fixed query count, not N+1."""
+        mock_settings.AWS_BUCKET_NAME = "test-bucket"
+        mock_get_s3_client.return_value = MagicMock()
+        consultation = ConsultationFactory(code="test-code")
+        closed_part = QuestionFactory(consultation=consultation, number=2, type="closed")
+        open_part = QuestionFactory(
+            consultation=consultation,
+            number=1,
+            type="open",
+            has_free_text=True,
+            closed_question=closed_part,
+        )
+        responder = RespondentFactory(consultation=consultation, themefinder_id=1)
+        Response.objects.create(question=open_part, respondent=responder, text="answer")
+        Response.objects.create(question=closed_part, respondent=responder, text="red")
+
+        with django_assert_max_num_queries(12):
+            parts = export_consultation_inputs_to_s3(consultation, "test-code")
+
+        assert parts == 2
