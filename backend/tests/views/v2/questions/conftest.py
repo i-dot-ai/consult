@@ -28,6 +28,17 @@ def demographics_url():
 
 
 @pytest.fixture
+def sample_answers_url():
+    def _url(consultation, question):
+        return reverse(
+            "question-v2-sample-answers",
+            kwargs={"consultation_pk": consultation.id, "pk": question.id},
+        )
+
+    return _url
+
+
+@pytest.fixture
 def merge_url():
     def _url(consultation, question):
         return reverse(

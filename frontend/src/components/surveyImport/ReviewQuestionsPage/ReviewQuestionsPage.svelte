@@ -191,8 +191,8 @@
     }
     answersFailed.delete(questionId);
     try {
-      const answers = await fetchSampleAnswers(consultationId, questionId);
-      answerSamples.set(questionId, answers);
+      const sample = await fetchSampleAnswers(consultationId, questionId);
+      answerSamples.set(questionId, sample.answers);
     } catch {
       answersFailed.add(questionId);
     }

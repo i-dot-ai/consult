@@ -19,6 +19,8 @@ from consultations.models import Question
 from consultations.models import Response as ConsultationResponse
 from consultations.services.setup_status import update_survey_import_status_for_questions
 
+SAMPLE_ANSWER_COUNT = 3
+
 
 class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet):
     serializer_class = QuestionSetupSerializer
@@ -48,6 +50,21 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
         consultation = instance.consultation
         instance.delete()
         update_survey_import_status_for_questions(consultation)
+
+    @action(detail=True, methods=["get"], url_path="sample-answers")
+    def sample_answers(self, request, *args, **kwargs):
+        question = self.get_object()
+        answers = ConsultationResponse.objects.filter(question=question).exclude(
+            Q(text__isnull=True) | Q(text="")
+        )
+        return Response(
+            {
+                "answers": list(
+                    answers.order_by("id").values_list("text", flat=True)[:SAMPLE_ANSWER_COUNT]
+                ),
+                "total_count": answers.count(),
+            }
+        )
 
     @action(detail=True, methods=["get"], url_path="demographics")
     def demographics(self, request, *args, **kwargs):

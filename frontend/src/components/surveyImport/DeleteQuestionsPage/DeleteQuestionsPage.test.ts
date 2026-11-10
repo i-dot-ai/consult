@@ -188,6 +188,13 @@ describe("DeleteQuestionsPage", () => {
     expect(
       screen.getByText("Focus on economic feasibility."),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText("A sample. 3 of 24 answers to this question"),
+    ).toBeInTheDocument();
+    const sampleCall = fetchMock.callHistory
+      .calls()
+      .find((call) => call.url.includes("/questions/q4-uuid/sample-answers/"));
+    expect(sampleCall?.url).toContain("/api/v2/consultations/");
   });
 
   it("matches snapshot", async () => {

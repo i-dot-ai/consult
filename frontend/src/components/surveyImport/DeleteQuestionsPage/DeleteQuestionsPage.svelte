@@ -13,7 +13,10 @@
     buildListQuestionsQuery,
     deleteQuestion,
   } from "../../../global/queries/questions";
-  import { fetchSampleAnswers } from "../../../global/queries/responses";
+  import {
+    fetchSampleAnswers,
+    type SampleAnswers,
+  } from "../../../global/queries/responses";
   import {
     getDataUploadUrl,
     getDataUploadReviewQuestionsUrl,
@@ -47,15 +50,15 @@
     new Map(questions.map((q, i) => [q.id, i + 1])),
   );
 
-  const freeTextSamples = new SvelteMap<string, string[]>();
+  const freeTextSamples = new SvelteMap<string, SampleAnswers>();
   const freeTextFailed = new SvelteSet<string>();
 
   async function fetchFreeTextSample(questionId: string) {
     if (freeTextSamples.has(questionId)) return;
     freeTextFailed.delete(questionId);
     try {
-      const answers = await fetchSampleAnswers(consultationId, questionId);
-      freeTextSamples.set(questionId, answers);
+      const sample = await fetchSampleAnswers(consultationId, questionId);
+      freeTextSamples.set(questionId, sample);
     } catch {
       freeTextFailed.add(questionId);
     }
@@ -219,14 +222,16 @@
                       No answers for this question.
                     {:else if !freeTextSamples.has(question.id)}
                       Loading answers...
-                    {:else if freeTextSamples.get(question.id)!.length === 0}
+                    {:else if freeTextSamples.get(question.id)!.answers.length === 0}
                       No answers for this question.
                     {:else}
                       <p class="mb-1.5 text-xs">
-                        A sample. {freeTextSamples.get(question.id)!.length} of {question.free_text_response_count}
+                        A sample. {freeTextSamples.get(question.id)!.answers
+                          .length} of {freeTextSamples.get(question.id)!
+                          .total_count}
                         answers to this question
                       </p>
-                      {#each freeTextSamples.get(question.id)! as text, i (i)}
+                      {#each freeTextSamples.get(question.id)!.answers as text, i (i)}
                         <p
                           class="leading-relaxed text-neutral-900 not-last:mb-2"
                         >
