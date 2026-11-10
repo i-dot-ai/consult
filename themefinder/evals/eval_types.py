@@ -38,10 +38,10 @@ class Score:
 class RunMetrics:
     """Gateway and wall-clock metrics for one completed evaluation run.
 
-    ``cost_usd`` and ``latency_seconds`` are summed from gateway response
-    headers; latency is therefore not end-to-end run latency. The local
-    ``processing_time_seconds`` covers case loading, evaluation and per-case
-    artefact recording, but excludes final artefact finalisation. A value of
+    ``cost_usd`` and ``latency_seconds`` are summed from the task model's gateway
+    response headers, never the judge's; latency is therefore not end-to-end run
+    latency. The local ``processing_time_seconds`` covers case loading, evaluation
+    and per-case artefact recording, but excludes final artefact finalisation. A value of
     ``None`` means that no compatible LLM calls were made, or token usage was
     not returned; it is never a stand-in zero. With ``RunReport.n_runs`` repeats
     every value is the mean per run, so it stays comparable with a single run:
