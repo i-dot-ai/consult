@@ -110,6 +110,17 @@ _gateway_response_headers: contextvars.ContextVar[Mapping[str, str] | None] = (
 
 
 @contextmanager
+def _gateway_metrics_scope(
+    collector: GatewayMetricsCollector | None,
+) -> Generator[None, None, None]:
+    token = _active_gateway_metrics.set(collector)
+    try:
+        yield
+    finally:
+        _active_gateway_metrics.reset(token)
+
+
+@contextmanager
 def collect_gateway_metrics() -> Generator[GatewayMetricsCollector, None, None]:
     """Collect gateway metrics for all ``OpenAILLM`` calls in this context.
 
@@ -117,11 +128,15 @@ def collect_gateway_metrics() -> Generator[GatewayMetricsCollector, None, None]:
     explicitly copies it to its worker thread as well.
     """
     collector = GatewayMetricsCollector()
-    token = _active_gateway_metrics.set(collector)
-    try:
+    with _gateway_metrics_scope(collector):
         yield collector
-    finally:
-        _active_gateway_metrics.reset(token)
+
+
+@contextmanager
+def exclude_from_gateway_metrics() -> Generator[None, None, None]:
+    """Leave the ``OpenAILLM`` calls made in this context out of any active collection."""
+    with _gateway_metrics_scope(None):
+        yield
 
 
 def _parse_required_metric_header(headers: Mapping[str, str], name: str) -> float:
