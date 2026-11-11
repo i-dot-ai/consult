@@ -1,6 +1,7 @@
 name: themefinder evaluation regression test
 
-# Compares eval metrics on gambling_XS to the committed baselines in themefinder/evals/baselines.
+# Compares eval metrics on the Gambling, Health, and Housing XS datasets to
+# committed baselines in themefinder/evals/baselines.
 
 on:
   push:
