@@ -102,9 +102,7 @@ class ConsultationCreateSerializerV2(serializers.ModelSerializer):
 
 
 class ConsultationUserAssignmentSerializerV2(serializers.Serializer):
-    emails = serializers.ListField(
-        child=serializers.EmailField(), min_length=1
-    )
+    emails = serializers.ListField(child=serializers.EmailField(), min_length=1)
 
     def validate_emails(self, emails):
         return list(dict.fromkeys(email.lower() for email in emails))

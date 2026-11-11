@@ -248,8 +248,6 @@ class ConsultationViewSet(
 
         URL: /api/consultations/{consultation_id}/find-themes/
         """
-        # Fetched outside the try so lookup failures reach DRF's handler
-        # directly and `consultation` is always bound in the error paths below.
         consultation = self.get_object()
         logger.set_context_field("consultation_id", str(consultation.id))
 
@@ -263,9 +261,6 @@ class ConsultationViewSet(
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Derive has_free_text from the question type at kickoff so the
-            # guard, the mirror and the pipeline all ask one consistent
-            # question, regardless of what the setup flow left behind.
             synced_flags = sync_has_free_text_with_type(consultation)
             if synced_flags:
                 logger.info(
@@ -285,10 +280,6 @@ class ConsultationViewSet(
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # The mirror runs inline on purpose: the Batch job must not start
-            # before the S3 inputs exist. Deliberately synchronous rather than
-            # an RQ job — pushes were historically <60s even at full scale
-            # (see export_consultation_inputs_to_s3).
             consultation_code = assign_consultation_code(consultation)
             question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
             logger.info(
@@ -298,13 +289,7 @@ class ConsultationViewSet(
                 consultation_code=consultation_code,
             )
 
-            # The stage transition is the guard against duplicate submissions:
-            # it atomically flips SETUP -> FINDING_THEMES only while the
-            # consultation is still in SETUP, so a retry after a failed
-            # kickoff is rejected instead of re-submitting the Batch job, and
-            # a concurrent kickoff loses the race here. It runs after the
-            # mirror so the S3 inputs always exist before the job can start,
-            # and before submit_job so a submission failure can be rolled back.
+            # Ensure that S3 files exist before batch kickoff
             transitions = Consultation.objects.filter(
                 pk=consultation.pk, stage=Consultation.Stage.SETUP
             ).update(stage=Consultation.Stage.FINDING_THEMES)
@@ -327,10 +312,6 @@ class ConsultationViewSet(
                     model_name=consultation.model_name,
                 )
             except Exception:
-                # Roll the stage back so the user can retry a plain AWS
-                # failure; if even the rollback fails the consultation is
-                # stranded in FINDING_THEMES and needs manual reset (logged
-                # below, DB-down severity).
                 consultation_rerolled = Consultation.objects.filter(
                     pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
                 ).update(stage=Consultation.Stage.SETUP)
@@ -338,14 +319,14 @@ class ConsultationViewSet(
                 if not consultation_rerolled:
                     logger.exception(
                         "Failed to roll the stage back after a failed Batch "
-                        "submission for consultation '{consultation_title}'",
-                        consultation_title=consultation.title,
+                        "submission for consultation '{consultation_id}'",
+                        consultation_id=consultation.id,
                     )
                 raise
 
             logger.info(
-                "Find Themes job submitted for consultation {consultation_title} by user {user_id}",
-                consultation_title=consultation.title,
+                "Find Themes job submitted for consultation {consultation_id} by user {user_id}",
+                consultation_id=consultation.id,
                 user_id=request.user.id,
             )
 
@@ -357,17 +338,13 @@ class ConsultationViewSet(
                 },
                 status=status.HTTP_202_ACCEPTED,
             )
-
+        except (Http404, APIException):
+            # re-raise django errors so django handles the response
+            raise
         except Exception as e:
-            # Re-raise DRF's own errors so dispatch turns them into the right
-            # status: Http404 from get_object() becomes 404, permission
-            # failures 403, APIExceptions their own status. Without this the
-            # catch-all below masks them as 500s.
-            if isinstance(e, (Http404, APIException)):
-                raise
             logger.exception(
-                "Error starting Find Themes job for consultation {consultation_title}",
-                consultation_title=consultation.title,
+                "Error starting Find Themes job for consultation {consultation_id}",
+                consultation_id=consultation.id,
             )
             return Response(
                 {

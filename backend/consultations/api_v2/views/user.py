@@ -71,6 +71,7 @@ class UserViewSet(ModelViewSet):
         serializer = ConsultationSerializer(consultations, many=True, context={"request": request})
         return Response(serializer.data)
 
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_current_user(request):

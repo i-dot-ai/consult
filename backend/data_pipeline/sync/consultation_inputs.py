@@ -1,3 +1,8 @@
+"""
+This is a temporary file to handle synchronising V2 survey import
+flow with what find-themes pipeline expects to be available in S3.
+"""
+
 import io
 import json
 import uuid
@@ -35,17 +40,11 @@ def assign_consultation_code(consultation: Consultation) -> str:
     The code doubles as the S3 folder name under app_data/consultations/ and
     is looked up by the candidate-themes import lambda and used by
     export_selected_themes_to_s3, so once assigned it must never change.
-
-    Does not modify the passed instance; the code is persisted on the
-    consultation row and returned, so callers thread the returned value
-    through the rest of the kickoff.
     """
     if consultation.code:
         return consultation.code
 
     with transaction.atomic():
-        # Lock the row so two concurrent kickoffs of the same consultation
-        # cannot both pass the blank check and assign different codes.
         locked = Consultation.objects.select_for_update().get(pk=consultation.pk)
         if locked.code:
             return locked.code
@@ -54,24 +53,27 @@ def assign_consultation_code(consultation: Consultation) -> str:
         max_base_length = CONSULTATION_CODE_MAX_LENGTH - (CODE_SUFFIX_LENGTH + 1)
         base = base[:max_base_length].rstrip("-")
 
-        # The uuid suffix makes collisions vanishingly unlikely; retry rather
-        # than risk two consultations sharing an S3 folder.
         for _ in range(10):
+            # Be very sure there is no duplicates
             candidate = f"{base}-{uuid.uuid4().hex[:CODE_SUFFIX_LENGTH]}"
             if not Consultation.objects.filter(code=candidate).exists():
                 break
         else:
+            logger.warning(
+                "Could not assign consultation code for '{consultation_id}'",
+                consultation_id=consultation.id,
+            )
             raise RuntimeError(
-                f"Could not assign a unique consultation code for '{consultation.title}'"
+                f"Could not assign a unique consultation code for '{consultation.id}'"
             )
 
         locked.code = candidate
         locked.save(update_fields=["code"])
 
     logger.info(
-        "Assigned consultation code={code} to consultation '{consultation_title}'",
+        "Assigned consultation code={code} to consultation '{consultation_id}'",
         code=candidate,
-        consultation_title=consultation.title,
+        consultation_id=consultation.id,
     )
     return candidate
 
@@ -84,11 +86,6 @@ def sync_has_free_text_with_type(consultation: Consultation) -> int:
     - OPEN -> True, CLOSED / DEMOGRAPHIC -> False
     - questions without a type were imported by the V1 pipeline, which set
       has_free_text itself; they keep their stored flag
-
-    The V2 setup flow types questions without maintaining the flag, and
-    CONSULT-HY showed the pipeline failing on the disagreement, so this runs
-    at find-themes kickoff, before the mirror renders the S3 inputs and
-    before the handler guards on has_free_text.
     """
     return Question.objects.filter(consultation=consultation, type__isnull=False).update(
         has_free_text=Case(
@@ -125,39 +122,15 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
       responses.jsonl, which makes the batch jobs skip them
     - respondents.jsonl and multi_choice.jsonl are not written; they were only
       read by the old S3-to-DB importer, never by the pipeline
-
-    Later pipeline steps read from the same folders (assign-themes reads
-    themes.csv written into them by export_selected_themes_to_s3), so this
-    must run before find-themes is kicked off.
-
-    Args:
-        consultation: Consultation to export
-        consultation_code: The S3 folder name for the consultation, as
-            returned by assign_consultation_code
-
-    Requires:
-        The pipeline must not start before this returns, so it runs
-        synchronously in the caller (no RQ job). S3 pushes at this scale
-        were historically <60 seconds regardless of consultation size;
-        revisit if real consultations approach that.
-
-    Returns:
-        Number of question_part folders written
-
-    Raises:
-        RuntimeError: If the consultation code is empty
     """
     if not consultation_code:
         raise RuntimeError(
-            f"Empty consultation code while exporting consultation '{consultation.title}'"
+            f"Empty consultation code while exporting consultation '{consultation.id}'"
         )
 
     s3_client = get_s3_client()
     parts_exported = 0
 
-    # Prefetch everything the loop needs up front: the response rows keep
-    # their annotation and ordering through the Prefetch queryset, and
-    # select_related("respondent") keeps the themefinder_id traversal query-free.
     questions = list(
         consultation.question_set.order_by("number").prefetch_related(
             "multichoiceanswer_set",
@@ -170,10 +143,6 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
         )
     )
 
-    # A respondent answered the closed part of a hybrid question either via
-    # chosen_options on the response itself or via a response on the linked
-    # closed question (both shapes are valid under ADR-0006); collect the
-    # second shape for every free-text question in one query.
     closed_part_ids = [
         question.closed_question_id
         for question in questions
@@ -204,9 +173,6 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
             for response in question.response_set.all()
         ]
 
-        # Only open questions get a responses.jsonl; closed and demographic
-        # questions may still carry text in their responses (e.g. the selected
-        # option), which must not be theme-found.
         payload_rows: list[tuple[int, str]] = []
         if has_free_text:
             for respondent_id, themefinder_id, text, chosen_option_count in rows:
@@ -221,15 +187,9 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
                 if text and text.strip():
                     payload_rows.append((themefinder_id, text))
                 elif chosen_option_count > 0 or respondent_id in closed_respondent_ids:
-                    # V1 rule: hybrid respondents who answered the closed part
-                    # but left the open part blank still got a placeholder row.
                     payload_rows.append((themefinder_id, NOT_PROVIDED_PLACEHOLDER))
-                # Rows where neither part was answered were dropped by the
-                # script and are dropped here too.
 
         if not rows:
-            # Old rule: no responses at all means no question folder; the
-            # pipeline discovers questions by folder existence.
             continue
 
         inputs_path = f"{INPUTS_PREFIX}/{consultation_code}/inputs/question_part_{question.number}"
@@ -266,9 +226,6 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
                 jsonl_buffer.write("\n")
 
             try:
-                # Transfer-manager upload: retries transient failures, and
-                # bodies above boto3's multipart threshold are chunked
-                # instead of being a single put request.
                 s3_client.upload_fileobj(
                     io.BytesIO(jsonl_buffer.getvalue().encode("utf-8")),
                     settings.AWS_BUCKET_NAME,
