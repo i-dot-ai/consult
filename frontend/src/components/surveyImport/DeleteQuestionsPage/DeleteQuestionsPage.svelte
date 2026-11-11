@@ -214,24 +214,23 @@
               </div>
 
               {#if expandedIds.has(question.id)}
+                {@const sample = freeTextSamples.get(question.id)}
                 <div
                   class="mt-3 rounded-lg bg-neutral-100 p-3 text-sm text-neutral-500"
                 >
                   {#if question.has_free_text && !question.has_multiple_choice}
                     {#if freeTextFailed.has(question.id)}
                       No answers for this question.
-                    {:else if !freeTextSamples.has(question.id)}
+                    {:else if !sample}
                       Loading answers...
-                    {:else if freeTextSamples.get(question.id)!.answers.length === 0}
+                    {:else if sample.answers.length === 0}
                       No answers for this question.
                     {:else}
                       <p class="mb-1.5 text-xs">
-                        A sample. {freeTextSamples.get(question.id)!.answers
-                          .length} of {freeTextSamples.get(question.id)!
-                          .total_count}
+                        A sample. {sample.answers.length} of {sample.total_count}
                         answers to this question
                       </p>
-                      {#each freeTextSamples.get(question.id)!.answers as text, i (i)}
+                      {#each sample.answers as text, i (i)}
                         <p
                           class="leading-relaxed text-neutral-900 not-last:mb-2"
                         >
