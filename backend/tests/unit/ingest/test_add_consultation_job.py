@@ -40,13 +40,11 @@ def test_add_consultation_job_imports_raw_file(consultation, non_staff_user):
     assert Response.objects.get(question=questions[1], respondent=respondents[1]).text is None
 
     # free_text is dual-written with text for the legacy pipeline consumers
-    # (counts, search vectors, sample answers).
+    # (counts, sample answers).
     alice_feedback = Response.objects.get(question=questions[1], respondent=respondents[0])
     assert alice_feedback.free_text == "Very useful"
-    assert alice_feedback.search_vector is not None
     bob_name = Response.objects.get(question=questions[0], respondent=respondents[1])
     assert bob_name.free_text == "Bob"
-    assert bob_name.search_vector is not None
     assert Response.objects.filter(free_text__isnull=False).count() == 3
 
     for question in questions:

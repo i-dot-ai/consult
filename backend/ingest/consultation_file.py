@@ -3,7 +3,6 @@ from io import TextIOWrapper
 from pathlib import Path
 from typing import BinaryIO
 
-from django.contrib.postgres.search import SearchVector
 from django.db import transaction
 from openpyxl import load_workbook
 
@@ -80,8 +79,8 @@ def import_consultation_data(
         ]
     )
     # free_text is dual-written with text so the pipeline and model consumers
-    # that read the legacy column (response counts, search vectors, sample
-    # answers) work for V2 consultations without further changes.
+    # that read the legacy column (response counts, sample answers) work for
+    # V2 consultations without further changes.
     responses = Response.objects.bulk_create(
         [
             Response(
@@ -94,13 +93,6 @@ def import_consultation_data(
             for question, text in zip(questions, row, strict=True)
         ],
         batch_size=1000,
-    )
-
-    # The post_save signal behind search_vector does not fire for bulk_create,
-    # so build the vectors directly (equivalent to the per-row save the V1
-    # importer relied on). free_text is populated exactly where text is.
-    Response.objects.filter(question__consultation=consultation, free_text__isnull=False).update(
-        search_vector=SearchVector("free_text", config="english")
     )
 
     # Populate the denormalised counts the UI reads; nothing else calculates
