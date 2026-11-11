@@ -3,12 +3,7 @@ import {
   getApiQuestionSampleAnswersV2Url,
   Suffixes,
 } from "../routes";
-import type { ResponsesBody } from "../types";
-
-export type SampleAnswers = {
-  answers: string[];
-  total_count: number;
-};
+import type { ResponsesBody, SampleAnswers } from "../types";
 
 export async function fetchSampleAnswers(
   consultationId: string,

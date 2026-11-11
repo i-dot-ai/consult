@@ -287,6 +287,11 @@ export interface SelectedTheme {
   last_modified_by: string; // user id
 }
 
+export type SampleAnswers = {
+  answers: string[];
+  total_count: number;
+};
+
 export enum OnboardingKeys {
   prefix = "onboardingComplete",
   finaliseThemes = "onboardingComplete-finalising-themes",

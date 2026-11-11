@@ -13,15 +13,12 @@
     buildListQuestionsQuery,
     deleteQuestion,
   } from "../../../global/queries/questions";
-  import {
-    fetchSampleAnswers,
-    type SampleAnswers,
-  } from "../../../global/queries/responses";
+  import { fetchSampleAnswers } from "../../../global/queries/responses";
   import {
     getDataUploadUrl,
     getDataUploadReviewQuestionsUrl,
   } from "../../../global/routes";
-  import type { Question } from "../../../global/types";
+  import type { Question, SampleAnswers } from "../../../global/types";
 
   interface Props {
     consultationId: string;
