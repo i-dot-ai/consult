@@ -22,6 +22,7 @@ from tenacity import (
     stop_after_attempt,
     wait_random_exponential,
 )
+from themefinder.llm import exclude_from_gateway_metrics
 
 from eval_types import Case, Score
 from utils.logging_config import get_logger
@@ -62,7 +63,8 @@ class LLMJudgeEvaluator(EvaluatorPort):
     async def invoke_with_retry(self, prompt: str) -> Any:
         """Invoke the judge LLM, retrying only on transient errors (connection,
         rate limit, 5xx); non-transient errors reraise immediately."""
-        return await self.llm.ainvoke(prompt)
+        with exclude_from_gateway_metrics():
+            return await self.llm.ainvoke(prompt)
 
     @staticmethod
     def _parse_json_markdown(text: str) -> dict:

@@ -14,6 +14,7 @@ from themefinder.llm import (
     OpenAILLM,
     _capture_gateway_response_headers,
     collect_gateway_metrics,
+    exclude_from_gateway_metrics,
 )
 
 
@@ -92,6 +93,27 @@ async def test_collects_and_sums_gateway_metrics_for_each_regular_call():
     assert summary.input_tokens == 30
     assert summary.output_tokens == 12
     assert summary.total_tokens == 42
+
+
+async def test_excluded_calls_are_left_out_of_the_collection_scope():
+    class Verdict(BaseModel):
+        answer: str
+
+    judge = _llm(
+        create=(_response(), _headers()),
+        parse=(_response(parsed=Verdict(answer="scored")), _headers()),
+    )
+    task = _llm(create=(_response(), _headers()))
+
+    with collect_gateway_metrics() as collector:
+        with exclude_from_gateway_metrics():
+            assert (await judge.ainvoke("score this")).parsed == "answer"
+            assert (await judge.ainvoke("score this", Verdict)).parsed == Verdict(
+                answer="scored"
+            )
+        assert (await task.ainvoke("do the task")).parsed == "answer"
+
+    assert collector.summary().call_count == 1
 
 
 async def test_collects_metrics_for_structured_calls():

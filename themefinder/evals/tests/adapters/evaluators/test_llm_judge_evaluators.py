@@ -4,6 +4,7 @@ import json
 from collections import namedtuple
 
 import pytest
+from themefinder.llm import _active_gateway_metrics, collect_gateway_metrics
 from adapters.evaluators.clarity_evaluator import ClarityEvaluator
 from adapters.evaluators.condensation_quality_evaluator import (
     CondensationQualityEvaluator,
@@ -18,6 +19,16 @@ from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEval
 from conftest import _themes, make_case
 from eval_types import Score
 from fakes import FakeJudge, SequenceFakeJudge
+
+
+class _CollectionProbingJudge(FakeJudge):
+    """A judge that notes whether gateway metrics were being collected when it was called."""
+
+    collected_while_scoring: bool | None = None
+
+    async def ainvoke(self, prompt: str):
+        self.collected_while_scoring = _active_gateway_metrics.get() is not None
+        return await super().ainvoke(prompt)
 
 
 class _RaisingJudge:
@@ -49,6 +60,14 @@ class _JudgeContractTests:
         assert [s.name for s in scores] == list(self.evaluator_cls.metric_names)
         assert all(s.value == 0.0 for s in scores)
         assert all(s.comment.startswith("Error:") for s in scores)
+
+    async def test_judge_calls_stay_out_of_the_tasks_gateway_metrics(self):
+        judge = _CollectionProbingJudge()
+
+        with collect_gateway_metrics():
+            await self._evaluate(judge)
+
+        assert judge.collected_while_scoring is False
 
 
 _DecisionJudge = namedtuple(
