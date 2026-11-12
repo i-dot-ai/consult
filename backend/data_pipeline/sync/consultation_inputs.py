@@ -54,7 +54,7 @@ def assign_consultation_code(consultation: Consultation) -> str:
         base = base[:max_base_length].rstrip("-")
 
         for _ in range(10):
-            # Be very sure there is no duplicates
+            # Be very sure there are no duplicates
             candidate = f"{base}-{uuid.uuid4().hex[:CODE_SUFFIX_LENGTH]}"
             candidate_exists = Consultation.objects.filter(code=candidate).exists()
             if candidate_exists:
