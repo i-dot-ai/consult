@@ -4,6 +4,10 @@ export AWS_REGION
 export ECR_REPO_NAME
 export APP_NAME
 
+EVAL_RUN_SUFFIX := $(or $(GITHUB_SHA),$(shell git rev-parse HEAD))
+EVAL_SMOKE_NAME := smoke-$(EVAL_RUN_SUFFIX)
+EVAL_REGRESSION_SUFFIX := $(EVAL_RUN_SUFFIX)
+
 .PHONY: help
 help:     ## Show this help.
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-30s\033[0m %s\n", $$1, $$2}'
@@ -71,13 +75,11 @@ run-eval: ## Args e.g.: EVAL_TYPE=find_themes|generation|mapping|condensation|re
 .PHONY: eval-smoke
 eval-smoke: ## Run every eval on the tiny gambling_XXS dataset via DVC; passes if the run succeeds
 	# The smoke- prefix tells these runs apart from other DVC experiments (dvc exp list/remove).
-	$(eval EVAL_SMOKE_NAME := smoke-$(or $(GITHUB_SHA),$(shell git rev-parse HEAD)))
 	cd themefinder/evals && uv run --extra eval dvc exp run -f -n $(EVAL_SMOKE_NAME) -S params.yaml:dataset.name=gambling_XXS
 
 .PHONY: eval-regression
 EVAL_REGRESSION_DATASETS := gambling_XS health_XS housing_XS
 eval-regression: ## Run three times on each XS dataset via Langfuse and gate every baseline
-	$(eval EVAL_REGRESSION_SUFFIX := $(or $(GITHUB_SHA),$(shell git rev-parse HEAD)))
 	@set -e; \
 	for dataset in $(EVAL_REGRESSION_DATASETS); do \
 		echo "Running regression eval for $$dataset"; \

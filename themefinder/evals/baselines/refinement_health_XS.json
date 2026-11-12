@@ -1,0 +1,23 @@
+{
+  "header": {
+    "dataset": "health_XS",
+    "dataset_revision": "langfuse-prod-2026-11-12",
+    "model": "gpt-4.1-sweden-2025-03",
+    "n_runs": 3,
+    "tolerance": "max(0.05 for 0-1 metrics or 0.5 for 1-5 judge metrics, 3.0 * stdev across runs)"
+  },
+  "metrics": {
+    "clarity": {
+      "baseline": 0.9472,
+      "tolerance": 0.0861
+    },
+    "information_equivalence": {
+      "baseline": 0.9534,
+      "tolerance": 0.0551
+    },
+    "specificity": {
+      "baseline": 0.6194,
+      "tolerance": 0.1355
+    }
+  }
+}

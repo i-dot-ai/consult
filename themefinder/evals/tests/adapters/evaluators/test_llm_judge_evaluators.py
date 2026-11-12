@@ -4,7 +4,10 @@ import json
 from collections import namedtuple
 
 import pytest
+from conftest import _themes, make_case
+from fakes import FakeJudge, SequenceFakeJudge
 from themefinder.llm import _active_gateway_metrics, collect_gateway_metrics
+
 from adapters.evaluators.clarity_evaluator import ClarityEvaluator
 from adapters.evaluators.condensation_quality_evaluator import (
     CondensationQualityEvaluator,
@@ -16,9 +19,7 @@ from adapters.evaluators.ground_information_evaluator import (
 from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
 from adapters.evaluators.refinement_quality_evaluator import RefinementQualityEvaluator
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
-from conftest import _themes, make_case
 from eval_types import Score
-from fakes import FakeJudge, SequenceFakeJudge
 
 
 class _CollectionProbingJudge(FakeJudge):
@@ -382,6 +383,17 @@ class TestClarityEvaluator(_JudgeContractTests):
         assert scores[0].value == 0.0
         assert scores[0].comment.startswith("Error:")
 
+    async def test_retries_malformed_judge_json(self):
+        judge = SequenceFakeJudge(
+            "not JSON",
+            '{"decision": "PASS", "reasoning": "Clear."}',
+        )
+
+        scores = await self._evaluate(judge, output={"themes": _themes("Clear theme")})
+
+        assert scores == [Score("clarity", 1.0, "1/1 themes passed")]
+        assert len(judge.prompts) == 2
+
 
 class TestTitleSpecificityEvaluator(_JudgeContractTests):
     """TitleSpecificityEvaluator — one binary judgement per output title."""
@@ -512,3 +524,17 @@ class TestGroundInformationEvaluator(_JudgeContractTests):
 
         assert judge.prompts == []
         assert [score.value for score in scores] == [0.0, 0.0, 0.0]
+
+    async def test_accepts_valid_decision_with_malformed_match_details(self):
+        judge = FakeJudge(
+            '{"decision": "PASS", "matched_items": ["an "unescaped" item"]}'
+        )
+
+        scores = await self._evaluate(
+            judge,
+            expected_output={"themes": _themes("Ban")},
+            output={"themes": _themes("Ban")},
+        )
+
+        assert [score.value for score in scores] == [1.0, 1.0, 1.0]
+        assert len(judge.prompts) == 2
