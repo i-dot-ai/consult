@@ -383,17 +383,6 @@ class TestClarityEvaluator(_JudgeContractTests):
         assert scores[0].value == 0.0
         assert scores[0].comment.startswith("Error:")
 
-    async def test_retries_malformed_judge_json(self):
-        judge = SequenceFakeJudge(
-            "not JSON",
-            '{"decision": "PASS", "reasoning": "Clear."}',
-        )
-
-        scores = await self._evaluate(judge, output={"themes": _themes("Clear theme")})
-
-        assert scores == [Score("clarity", 1.0, "1/1 themes passed")]
-        assert len(judge.prompts) == 2
-
 
 class TestTitleSpecificityEvaluator(_JudgeContractTests):
     """TitleSpecificityEvaluator — one binary judgement per output title."""
@@ -524,17 +513,3 @@ class TestGroundInformationEvaluator(_JudgeContractTests):
 
         assert judge.prompts == []
         assert [score.value for score in scores] == [0.0, 0.0, 0.0]
-
-    async def test_accepts_valid_decision_with_malformed_match_details(self):
-        judge = FakeJudge(
-            '{"decision": "PASS", "matched_items": ["an "unescaped" item"]}'
-        )
-
-        scores = await self._evaluate(
-            judge,
-            expected_output={"themes": _themes("Ban")},
-            output={"themes": _themes("Ban")},
-        )
-
-        assert [score.value for score in scores] == [1.0, 1.0, 1.0]
-        assert len(judge.prompts) == 2

@@ -66,26 +66,6 @@ class LLMJudgeEvaluator(EvaluatorPort):
         with exclude_from_gateway_metrics():
             return await self.llm.ainvoke(prompt)
 
-    @retry(
-        stop=stop_after_attempt(3),
-        retry=retry_if_exception_type(json.JSONDecodeError),
-        before_sleep=before_sleep_log(logger, logging.WARNING),
-        reraise=True,
-    )
-    async def invoke_json_with_retry(
-        self,
-        prompt: str,
-        parser: Callable[[str], dict] | None = None,
-    ) -> dict:
-        """Invoke the judge and retry when it returns malformed JSON.
-
-        Network failures are retried by ``invoke_with_retry``. JSON decoding must
-        happen inside a separate retry boundary so malformed judge responses do
-        not become evaluator errors and invalidate an otherwise healthy run.
-        """
-        response = await self.invoke_with_retry(prompt)
-        return (parser or self._parse_json_markdown)(response.parsed)
-
     @staticmethod
     def _parse_json_markdown(text: str) -> dict:
         """Extract JSON from markdown code fences or raw text."""
@@ -144,7 +124,8 @@ class PerItemBinaryEvaluator(LLMJudgeEvaluator):
         """Judge one item while respecting the evaluator's concurrency limit."""
         label = self._item_label(item)
         async with sem:
-            parsed = await self.invoke_json_with_retry(self._build_item_prompt(item))
+            response = await self.invoke_with_retry(self._build_item_prompt(item))
+        parsed = self._parse_json_markdown(response.parsed)
         return {"label": label, **self._parse_decision(label, parsed)}
 
     async def _score(self, case: Case, output: Any) -> list[Score]:
@@ -220,7 +201,8 @@ class SinglePromptJudgeEvaluator(LLMJudgeEvaluator):
         `_build_prompt` returns None), parse the response, and score it."""
         prompt = self._build_prompt(case, output)
         if prompt is not None:
-            parsed = await self.invoke_json_with_retry(prompt)
+            response = await self.invoke_with_retry(prompt)
+            parsed = self._parse_json_markdown(response.parsed)
         else:
             parsed: dict = {}
 
@@ -403,26 +385,6 @@ class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
         """Build the prompt asking whether `single_item` matches any of `item_list`."""
         return self.prompt_fn(single_item=single_item, candidate_list=item_list)
 
-    @classmethod
-    def _parse_binary_match_json(cls, text: str) -> dict:
-        """Extract a usable binary decision when optional match details are malformed.
-
-        Only ``decision`` contributes to binary-match scores. A judge can return
-        that field correctly while invalidly quoting a long ``matched_items``
-        value copied from the candidate list, so retain a valid decision rather
-        than marking the whole case as an evaluator error.
-        """
-        try:
-            return cls._parse_json_markdown(text)
-        except json.JSONDecodeError:
-            match = re.search(r'"decision"\s*:\s*"(PASS|FAIL)"', text)
-            if match:
-                logger.warning(
-                    "Using binary-match decision from otherwise malformed judge JSON"
-                )
-                return {"decision": match.group(1)}
-            raise
-
     async def _single_item_decision(
         self, single_item: str, item_list: list[str], sem: asyncio.Semaphore
     ) -> dict[str, Any]:
@@ -432,9 +394,8 @@ class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
             if self.shuffle:
                 item_list = self._shuffle_themes(item_list)
             prompt = self._build_item_prompt(single_item, item_list)
-            parsed = await self.invoke_json_with_retry(
-                prompt, self._parse_binary_match_json
-            )
+            response = await self.invoke_with_retry(prompt)
+            parsed = self._parse_json_markdown(response.parsed)
             return {**parsed, "item": single_item, "item_list": item_list}
 
     async def _llm_decision_loop(
