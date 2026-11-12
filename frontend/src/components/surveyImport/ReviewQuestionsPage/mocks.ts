@@ -104,15 +104,17 @@ export const questionsErrorMock = {
   throws: new Error("Fetch failed"),
 };
 
-export const answersMock = (questionId: string, answers: string[]) => ({
+export const answersMock = (
+  questionId: string,
+  answers: string[],
+  totalCount = answers.length,
+) => ({
   url: new RegExp(
-    `/api/consultations/[^/]+/questions/${questionId}/responses/`,
+    `/api/v2/consultations/[^/]+/questions/${questionId}/sample-answers/`,
   ),
   body: {
-    has_more_pages: false,
-    next_cursor: null,
-    total_count: answers.length,
-    all_respondents: answers.map((text) => ({ free_text_answer_text: text })),
+    answers,
+    total_count: totalCount,
   },
 });
 

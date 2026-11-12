@@ -18,7 +18,7 @@
     getDataUploadUrl,
     getDataUploadReviewQuestionsUrl,
   } from "../../../global/routes";
-  import type { Question } from "../../../global/types";
+  import type { Question, SampleAnswers } from "../../../global/types";
 
   interface Props {
     consultationId: string;
@@ -47,15 +47,15 @@
     new Map(questions.map((q, i) => [q.id, i + 1])),
   );
 
-  const freeTextSamples = new SvelteMap<string, string[]>();
+  const freeTextSamples = new SvelteMap<string, SampleAnswers>();
   const freeTextFailed = new SvelteSet<string>();
 
   async function fetchFreeTextSample(questionId: string) {
     if (freeTextSamples.has(questionId)) return;
     freeTextFailed.delete(questionId);
     try {
-      const answers = await fetchSampleAnswers(consultationId, questionId);
-      freeTextSamples.set(questionId, answers);
+      const sample = await fetchSampleAnswers(consultationId, questionId);
+      freeTextSamples.set(questionId, sample);
     } catch {
       freeTextFailed.add(questionId);
     }
@@ -211,22 +211,23 @@
               </div>
 
               {#if expandedIds.has(question.id)}
+                {@const sample = freeTextSamples.get(question.id)}
                 <div
                   class="mt-3 rounded-lg bg-neutral-100 p-3 text-sm text-neutral-500"
                 >
                   {#if question.has_free_text && !question.has_multiple_choice}
                     {#if freeTextFailed.has(question.id)}
                       No answers for this question.
-                    {:else if !freeTextSamples.has(question.id)}
+                    {:else if !sample}
                       Loading answers...
-                    {:else if freeTextSamples.get(question.id)!.length === 0}
+                    {:else if sample.answers.length === 0}
                       No answers for this question.
                     {:else}
                       <p class="mb-1.5 text-xs">
-                        A sample. {freeTextSamples.get(question.id)!.length} of {question.free_text_response_count}
+                        A sample. {sample.answers.length} of {sample.total_count}
                         answers to this question
                       </p>
-                      {#each freeTextSamples.get(question.id)! as text, i (i)}
+                      {#each sample.answers as text, i (i)}
                         <p
                           class="leading-relaxed text-neutral-900 not-last:mb-2"
                         >

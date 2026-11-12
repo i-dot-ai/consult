@@ -384,8 +384,8 @@ describe("ReviewQuestionsPage", () => {
     ).toBeInTheDocument();
     const sampleCall = fetchMock.callHistory
       .calls()
-      .find((call) => call.url.includes("/questions/q4-uuid/responses/"));
-    expect(sampleCall?.url).toContain("page_size=3");
+      .find((call) => call.url.includes("/questions/q4-uuid/sample-answers/"));
+    expect(sampleCall?.url).toContain("/api/v2/consultations/");
 
     await fireEvent.click(screen.getByText("Hide answers"));
     expect(screen.queryByText("Cost")).not.toBeInTheDocument();

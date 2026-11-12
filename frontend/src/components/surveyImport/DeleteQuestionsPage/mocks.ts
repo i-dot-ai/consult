@@ -88,15 +88,13 @@ export const questionsErrorMock = {
 };
 
 export const freeTextResponsesMock = {
-  url: /\/questions\/q4-uuid\/responses\//,
+  url: /\/api\/v2\/consultations\/[^/]+\/questions\/q4-uuid\/sample-answers\//,
   body: {
-    has_more_pages: false,
-    next_cursor: null,
-    total_count: 3,
-    all_respondents: [
-      { free_text_answer_text: "Consider the environmental impact." },
-      { free_text_answer_text: "Focus on economic feasibility." },
-      { free_text_answer_text: "Ensure public consultation is thorough." },
+    total_count: 24,
+    answers: [
+      "Consider the environmental impact.",
+      "Focus on economic feasibility.",
+      "Ensure public consultation is thorough.",
     ],
   },
 };

@@ -41,6 +41,7 @@ export enum Suffixes {
   ReviewQuestions = "review-questions",
   ChartsAndFilters = "charts-and-filters",
   Demographics = "demographics",
+  SampleAnswers = "sample-answers",
   Merge = "merge",
 }
 
@@ -136,6 +137,20 @@ export const getApiQuestionV2Url = (
     consultationId,
     Suffixes.Questions,
     questionId,
+  );
+};
+
+export const getApiQuestionSampleAnswersV2Url = (
+  consultationId: string,
+  questionId: string,
+) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.SampleAnswers,
   );
 };
 
