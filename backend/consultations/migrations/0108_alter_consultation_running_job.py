@@ -6,15 +6,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies: ClassVar = [
-        ('consultations', '0106_consultation_data_source'),
+        ("consultations", "0106_consultation_data_source"),
     ]
 
     operations: ClassVar = [
         migrations.AlterField(
-            model_name='consultation',
-            name='running_job',
-            field=models.CharField(choices=[('find-themes', 'Find Themes'), ('assign-themes', 'Assign Themes'), ('delete-consultation', 'Delete Consultation')], default=None, max_length=32, null=True),
+            model_name="consultation",
+            name="running_job",
+            field=models.CharField(
+                choices=[
+                    ("find-themes", "Find Themes"),
+                    ("assign-themes", "Assign Themes"),
+                    ("delete-consultation", "Delete Consultation"),
+                ],
+                default=None,
+                max_length=32,
+                null=True,
+            ),
         ),
     ]

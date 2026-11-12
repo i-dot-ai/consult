@@ -78,12 +78,26 @@ def import_consultation_data(
             for index, _ in enumerate(response_rows, start=1)
         ]
     )
+    # free_text is dual-written with text so the pipeline and model consumers
+    # that read the legacy column (response counts, sample answers) work for
+    # V2 consultations without further changes.
     responses = Response.objects.bulk_create(
         [
-            Response(question=question, respondent=respondent, text=text)
+            Response(
+                question=question,
+                respondent=respondent,
+                text=text,
+                free_text=text,
+            )
             for respondent, row in zip(respondents, response_rows, strict=True)
             for question, text in zip(questions, row, strict=True)
         ],
         batch_size=1000,
     )
+
+    # Populate the denormalised counts the UI reads; nothing else calculates
+    # them after a V2 import.
+    for question in questions:
+        question.update_response_counts()
+
     return len(questions), len(responses)

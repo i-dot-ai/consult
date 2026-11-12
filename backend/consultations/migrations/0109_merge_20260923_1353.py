@@ -6,11 +6,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies: ClassVar = [
-        ('consultations', '0107_consultation_created_by'),
-        ('consultations', '0108_alter_consultation_running_job'),
+        ("consultations", "0107_consultation_created_by"),
+        ("consultations", "0108_alter_consultation_running_job"),
     ]
 
-    operations: ClassVar = [
-    ]
+    operations: ClassVar = []

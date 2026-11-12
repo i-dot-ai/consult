@@ -7,10 +7,12 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.db.models import Prefetch, Q
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from openpyxl.utils.exceptions import InvalidFileException
 from rest_framework import serializers, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, UpdateModelMixin
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -32,6 +34,11 @@ from consultations.api_v2.serializers import (
 )
 from consultations.models import Consultation, FileUpload
 from data_pipeline import batch
+from data_pipeline.sync.consultation_inputs import (
+    assign_consultation_code,
+    export_consultation_inputs_to_s3,
+    sync_has_free_text_with_type,
+)
 from ingest.consultation_file import read_consultation_file
 from ingest.deep_validation import deep_validate_file
 from ingest.jobs import add_consultation_job, delete_consultation_job
@@ -232,66 +239,112 @@ class ConsultationViewSet(
         themes when the job completes.
         (See: lambda/import_candidate_themes/import_candidate_themes_handler.py)
 
+        Before submitting, derives has_free_text from question type, renders
+        the ThemeFinder inputs layout to S3 from the database (the mirror of
+        what scripts/setup_consultation.py used to upload), assigning a
+        consultation code first if the consultation doesn't have one yet.
+
         Advances consultation to FINDING_THEMES stage
 
         URL: /api/consultations/{consultation_id}/find-themes/
         """
-        try:
-            consultation = self.get_object()
-            logger.set_context_field("consultation_id", str(consultation.id))
+        consultation = self.get_object()
+        logger.set_context_field("consultation_id", str(consultation.id))
 
+        try:
             if consultation.stage != Consultation.Stage.SETUP:
                 return Response(
                     {
-                        "error": f"Consultation '{consultation.code}' not in setup stage",
+                        "error": f"Consultation '{consultation.title}' not in setup stage",
                         "detail": "ThemeFinder can only process consultations in the setup stage",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            synced_flags = sync_has_free_text_with_type(consultation)
+            if synced_flags:
+                logger.info(
+                    "Synced has_free_text from question type for {synced_flags} "
+                    "questions of consultation '{consultation_title}'",
+                    synced_flags=synced_flags,
+                    consultation_title=consultation.title,
                 )
 
             free_text_questions = consultation.question_set.filter(has_free_text=True)
             if not free_text_questions.exists():
                 return Response(
                     {
-                        "error": f"Consultation '{consultation.code}' has no free-text questions",
+                        "error": f"Consultation '{consultation.title}' has no free-text questions",
                         "detail": "ThemeFinder can only process consultations with free-text responses",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            batch.submit_job(
-                job_type="FIND_THEMES",
-                consultation_code=consultation.code,
-                consultation_name=consultation.title,
-                user_id=request.user.id,
-                model_name=consultation.model_name,
+            consultation_code = assign_consultation_code(consultation)
+            question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
+            logger.info(
+                "Mirrored {question_parts} question parts to s3 for consultation "
+                "'{consultation_code}' before find-themes kickoff",
+                question_parts=question_parts,
+                consultation_code=consultation_code,
             )
 
-            logger.info(
-                f"Find Themes job submitted for consultation {consultation.title} by user {request.user.id}"
-            )
+            # Ensure that S3 files exist before batch kickoff
+            transitions = Consultation.objects.filter(
+                pk=consultation.pk, stage=Consultation.Stage.SETUP
+            ).update(stage=Consultation.Stage.FINDING_THEMES)
+            if transitions == 0:
+                return Response(
+                    {
+                        "error": f"Consultation '{consultation.title}' not in setup stage",
+                        "detail": "ThemeFinder can only process consultations in the setup stage",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            consultation.stage = Consultation.Stage.FINDING_THEMES
 
             try:
-                consultation.stage = Consultation.Stage.FINDING_THEMES
-                consultation.save(update_fields=["stage"])
-            except Exception:
-                logger.exception(
-                    f"Failed to update consultation stage for consultation {consultation.title} "
-                    "while starting Find Themes job"
+                batch.submit_job(
+                    job_type="FIND_THEMES",
+                    consultation_code=consultation_code,
+                    consultation_name=consultation.title,
+                    user_id=request.user.id,
+                    model_name=consultation.model_name,
                 )
+            except Exception:
+                consultation_rerolled = Consultation.objects.filter(
+                    pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
+                ).update(stage=Consultation.Stage.SETUP)
+                consultation.stage = Consultation.Stage.SETUP
+                if not consultation_rerolled:
+                    logger.exception(
+                        "Failed to roll the stage back after a failed Batch "
+                        "submission for consultation '{consultation_id}'",
+                        consultation_id=consultation.id,
+                    )
+                raise
+
+            logger.info(
+                "Find Themes job submitted for consultation {consultation_id} by user {user_id}",
+                consultation_id=consultation.id,
+                user_id=request.user.id,
+            )
 
             return Response(
                 {
                     "message": f"Find Themes job started for consultation '{consultation.title}'",
                     "consultation_id": consultation.id,
-                    "consultation_code": consultation.code,
+                    "consultation_code": consultation_code,
                 },
                 status=status.HTTP_202_ACCEPTED,
             )
-
+        except (Http404, APIException):
+            # re-raise django errors so django handles the response
+            raise
         except Exception as e:
             logger.exception(
-                f"Error starting Find Themes job for consultation {consultation.title}"
+                "Error starting Find Themes job for consultation {consultation_id}",
+                consultation_id=consultation.id,
             )
             return Response(
                 {

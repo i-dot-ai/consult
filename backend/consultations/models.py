@@ -17,6 +17,11 @@ from simple_history.models import HistoricalRecords
 
 from authentication.models import User
 
+# Both the consultation's S3 folder name and the slug used by the ThemeFinder
+# pipeline; assign_consultation_code in data_pipeline derives its truncation
+# length from this, so keep it as the single source.
+CONSULTATION_CODE_MAX_LENGTH = 256
+
 
 # TODO: we don't use this anymore, remove it without manage.py makemigrations complaining
 class MultipleChoiceSchemaValidator(BaseValidator):
@@ -111,7 +116,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         choices=SurveyImportStatus,
         default=SurveyImportStatus.NOT_STARTED,
     )
-    code = models.SlugField(max_length=256)
+    code = models.SlugField(max_length=CONSULTATION_CODE_MAX_LENGTH)
     timestamp = models.SlugField(max_length=256, null=True, blank=True)
     display_ai_selected_themes = models.BooleanField(
         null=True,

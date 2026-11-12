@@ -39,6 +39,20 @@ def test_add_consultation_job_imports_raw_file(consultation, non_staff_user):
     assert Response.objects.filter(question__consultation=consultation).count() == 4
     assert Response.objects.get(question=questions[1], respondent=respondents[1]).text is None
 
+    # free_text is dual-written with text for the legacy pipeline consumers
+    # (counts, sample answers).
+    alice_feedback = Response.objects.get(question=questions[1], respondent=respondents[0])
+    assert alice_feedback.free_text == "Very useful"
+    bob_name = Response.objects.get(question=questions[0], respondent=respondents[1])
+    assert bob_name.free_text == "Bob"
+    assert Response.objects.filter(free_text__isnull=False).count() == 3
+
+    for question in questions:
+        question.refresh_from_db()
+        assert question.total_response_count == 2
+    assert questions[0].free_text_response_count == 2
+    assert questions[1].free_text_response_count == 1
+
 
 @pytest.mark.django_db
 def test_add_consultation_job_uses_qualtrics_question_and_response_rows(
