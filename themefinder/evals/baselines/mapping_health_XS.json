@@ -1,0 +1,31 @@
+{
+  "header": {
+    "dataset": "health_XS",
+    "dataset_revision": "langfuse-prod-2026-11-12",
+    "model": "gpt-4.1-sweden-2025-03",
+    "n_runs": 3,
+    "tolerance": "max(0.05 for 0-1 metrics or 0.5 for 1-5 judge metrics, 3.0 * stdev across runs)"
+  },
+  "metrics": {
+    "accuracy_score": {
+      "baseline": 0.2561,
+      "tolerance": 0.05
+    },
+    "f1_confidence_interval_lower": {
+      "baseline": 0.5778,
+      "tolerance": 0.05
+    },
+    "f1_confidence_interval_upper": {
+      "baseline": 0.6878,
+      "tolerance": 0.05
+    },
+    "f1_score": {
+      "baseline": 0.6333,
+      "tolerance": 0.05
+    },
+    "overlap_rate": {
+      "baseline": 0.96,
+      "tolerance": 0.05
+    }
+  }
+}

@@ -7,7 +7,7 @@
 # data directory but cannot detect a mutable remote dataset changing by itself.
 dataset:
   name: gambling_XS
-  revision: local-2025-07-22
+  revision: langfuse-prod-2026-11-12
 
 # Times to run every case, for mean/stddev and consistency metrics. Override per
 # experiment with `-S params.yaml:runs=<n>`.
