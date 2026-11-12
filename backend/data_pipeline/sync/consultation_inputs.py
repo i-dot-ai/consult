@@ -56,8 +56,10 @@ def assign_consultation_code(consultation: Consultation) -> str:
         for _ in range(10):
             # Be very sure there is no duplicates
             candidate = f"{base}-{uuid.uuid4().hex[:CODE_SUFFIX_LENGTH]}"
-            if not Consultation.objects.filter(code=candidate).exists():
-                break
+            candidate_exists = Consultation.objects.filter(code=candidate).exists()
+            if candidate_exists:
+                continue
+            break
         else:
             logger.warning(
                 "Could not assign consultation code for '{consultation_id}'",
