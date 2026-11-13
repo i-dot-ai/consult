@@ -46,6 +46,20 @@ def test_question_factories(free_text_question):
 
 
 @pytest.mark.django_db
+def test_v2_question_factories():
+    open_question = factories.OpenQuestionFactory()
+    closed_question = factories.ClosedQuestionFactory()
+    demographic_question = factories.DemographicQuestionFactory()
+
+    assert open_question.type == models.Question.QuestionType.OPEN
+    assert open_question.has_free_text
+    assert closed_question.type == models.Question.QuestionType.CLOSED
+    assert not closed_question.has_free_text
+    assert demographic_question.type == models.Question.QuestionType.DEMOGRAPHIC
+    assert not demographic_question.has_free_text
+
+
+@pytest.mark.django_db
 def test_respondent_factory():
     respondent = factories.RespondentFactory()
     assert models.Respondent.objects.filter(id=respondent.id).exists()

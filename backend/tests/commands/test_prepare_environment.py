@@ -6,7 +6,13 @@ from django.core.management import call_command
 from moto import mock_aws
 
 from authentication.models import User
-from consultations.models import Consultation
+from consultations.models import (
+    Consultation,
+    DemographicOption,
+    MultiChoiceAnswer,
+    Question,
+    Response,
+)
 
 
 class TestPrepareEnvironment:
@@ -57,6 +63,16 @@ class TestPrepareEnvironment:
         for consultation in Consultation.objects.all():
             assert admin_user in consultation.users.all()
 
+        setup = Consultation.objects.get(code="dummy-setup")
+        assert setup.survey_import_status == Consultation.SurveyImportStatus.NOT_STARTED
+        assert not setup.question_set.exists()
+
+        generated = Consultation.objects.exclude(id=setup.id)
+        assert not Question.objects.filter(consultation__in=generated, type__isnull=True).exists()
+        assert Response.objects.filter(question__consultation__in=generated, text__isnull=False).exists()
+        assert not MultiChoiceAnswer.objects.filter(question__consultation__in=generated).exists()
+        assert not DemographicOption.objects.filter(consultation__in=generated).exists()
+
     @pytest.mark.django_db(transaction=True)
     @mock_aws
     @patch("consultations.management.commands.prepare_s3.HostingEnvironment")
@@ -81,7 +97,7 @@ class TestPrepareEnvironment:
         keys = [obj.key for obj in bucket.objects.all()]
 
         assert any("dummy-s3-only/" in k for k in keys)
-        assert any("dummy-setup/" in k for k in keys)
+        assert not any("dummy-setup/" in k for k in keys)
         assert any("dummy-start-finalising-themes/" in k for k in keys)
         assert any("dummy-finished-finalising-themes/" in k for k in keys)
         assert any("dummy-analysis/" in k for k in keys)

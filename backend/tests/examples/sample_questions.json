@@ -1,12 +1,21 @@
 [
   {
+    "fixture_key": "agreement_closed",
     "question_text": "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
+    "short_name": "Agreement",
     "number": 1,
-    "has_free_text": true,
-    "has_multiple_choice": true,
-    "multiple_choice_options": ["Yes", "No", "Don't know", "No answer"],
-    "free_text_answers": [
-      "",
+    "type": "closed",
+    "answers": ["Yes", "No", "Don't know", "No answer"],
+    "candidate_themes": []
+  },
+  {
+    "fixture_key": "agreement_reason",
+    "question_text": "Why do you agree or disagree with the proposed flavour categories?",
+    "short_name": "Reason for agreement",
+    "number": 2,
+    "type": "open",
+    "closed_question": "agreement_closed",
+    "answers": [
       "Yes, I agree with the proposal as it will create a standardized framework that benefits both consumers and manufacturers.",
       "No, I do not agree because I feel the proposed categories are too restrictive and may stifle innovation in flavour development.",
       "I agree with the proposal, but I think there should be room for additional categories to accommodate future trends.",
@@ -23,31 +32,22 @@
     ]
   },
   {
-    "question_text": "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
-    "number": 2,
-    "has_free_text": false,
-    "has_multiple_choice": true,
-    "multiple_choice_options": ["Yes", "No", "Don't know", "No answer"],
-    "free_text_answers": [],
-    "candidate_themes": []
-  },
-  {
-    "question_text": "Which of the following factors do you believe are important when considering the packaging of chocolate bars? Please select all that apply: a) Sustainability, b) Design, c) Cost-effectiveness, d) Durability, e) Brand recognition.",
+    "fixture_key": "packaging",
+    "question_text": "Which of the following factors do you believe are important when considering the packaging of chocolate bars?",
+    "short_name": "Packaging factors",
     "number": 3,
-    "has_free_text": false,
-    "has_multiple_choice": true,
-    "multiple_choice_options": ["Sustainability", "Design", "Cost-effectiveness", "Durability", "Brand recognition"],
-    "free_text_answers": [],
+    "type": "closed",
+    "multi_select": true,
+    "answers": ["Sustainability", "Design", "Cost-effectiveness", "Durability", "Brand recognition"],
     "candidate_themes": []
   },
   {
+    "fixture_key": "improvements",
     "question_text": "What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?",
+    "short_name": "Regulation improvements",
     "number": 4,
-    "has_free_text": true,
-    "has_multiple_choice": false,
-    "multiple_choice_options": [],
-    "free_text_answers": [
-      "",
+    "type": "open",
+    "answers": [
       "I believe the current regulations should include clearer guidelines on the sourcing of ingredients to ensure ethical practices and sustainability.",
       "The regulations could be improved by setting specific limits on sugar content to promote healthier options for consumers.",
       "Consideration should be given to standardizing portion sizes to help consumers make informed choices and manage their calorie intake.",
@@ -70,5 +70,32 @@
       {"name": "Sustainability", "description": "It should focus on sustainability.", "key": "I", "selected": false, "approximate_frequency": 10, "parent_key": null},
       {"name": "Transparent labeling", "description": "It should have transparent labeling.", "key": "J", "selected": false, "approximate_frequency": 10, "parent_key": null}
     ]
+  },
+  {
+    "fixture_key": "region",
+    "question_text": "Which region are you based in?",
+    "short_name": "Region",
+    "number": 5,
+    "type": "demographic",
+    "answers": ["North East", "North West", "South East", "South West", "Midlands", "London"],
+    "candidate_themes": []
+  },
+  {
+    "fixture_key": "age_group",
+    "question_text": "What is your age group?",
+    "short_name": "Age group",
+    "number": 6,
+    "type": "demographic",
+    "answers": ["Under 18", "18-35", "36-50", "51-65", "66+"],
+    "candidate_themes": []
+  },
+  {
+    "fixture_key": "respondent_type",
+    "question_text": "Are you responding as an individual or an organisation?",
+    "short_name": "Respondent type",
+    "number": 7,
+    "type": "demographic",
+    "answers": ["Individual", "Organisation"],
+    "candidate_themes": []
   }
 ]

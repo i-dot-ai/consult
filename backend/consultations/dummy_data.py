@@ -7,7 +7,6 @@ from consultations.models import (
     CandidateTheme,
     CandidateThemeResponse,
     Consultation,
-    MultiChoiceAnswer,
     Question,
     Response,
     ResponseAnnotation,
@@ -15,8 +14,10 @@ from consultations.models import (
 )
 from factories import (
     CandidateThemeFactory,
+    ClosedQuestionFactory,
     ConsultationFactory,
-    QuestionFactory,
+    DemographicQuestionFactory,
+    OpenQuestionFactory,
     RespondentFactory,
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
@@ -32,32 +33,33 @@ DUMMY_CONSULTATIONS = [
         "CONSULTATION_NAME": "Dummy Consultation - Data Setup",
         "CONSULTATION_CODE": "dummy-setup",
         "CONSULTATION_STAGE": Consultation.Stage.SETUP,
+        "QUESTION_STATUS": Question.ThemeStatus.DRAFT,
         "QUESTION_THEME_STATUS": Question.ThemeStatus.DRAFT,
     },
     {
         "CONSULTATION_NAME": "Dummy Consultation - Starting finalising themes",
         "CONSULTATION_CODE": "dummy-start-finalising-themes",
         "CONSULTATION_STAGE": Consultation.Stage.FINALISING_THEMES,
+        "QUESTION_STATUS": Question.ThemeStatus.FINALISING_THEMES,
         "QUESTION_THEME_STATUS": Question.ThemeStatus.DRAFT,
     },
     {
         "CONSULTATION_NAME": "Dummy Consultation - Finished finalising themes",
         "CONSULTATION_CODE": "dummy-finished-finalising-themes",
         "CONSULTATION_STAGE": Consultation.Stage.ASSIGNING_THEMES,
+        "QUESTION_STATUS": Question.ThemeStatus.CONFIRMED,
         "QUESTION_THEME_STATUS": Question.ThemeStatus.CONFIRMED,
     },
     {
         "CONSULTATION_NAME": "Dummy Consultation - Analysis",
         "CONSULTATION_CODE": "dummy-analysis",
         "CONSULTATION_STAGE": Consultation.Stage.ANALYSIS,
+        "QUESTION_STATUS": Question.ThemeStatus.CONFIRMED,
         "QUESTION_THEME_STATUS": Question.ThemeStatus.CONFIRMED,
     },
 ]
 
 NUMBER_RESPONDENTS = 100
-REGIONS = ["North East", "North West", "South East", "South West", "Midlands", "London"]
-AGE_GROUPS = ["Under 18", "18-35", "36-50", "51-65", "66+"]
-RESPONDENT_TYPES = ["Individual", "Organisation"]
 SAMPLE_QUESTIONS_PATH = "./tests/examples/sample_questions.json"
 
 
@@ -67,16 +69,8 @@ def create_consultation(config):
         title=config["CONSULTATION_NAME"],
         code=config["CONSULTATION_CODE"],
         stage=config["CONSULTATION_STAGE"],
+        data_source=Consultation.DataSource.CITIZEN_SPACE,
     )
-
-
-def _demographics_for(themefinder_id):
-    """Return deterministic demographics based on themefinder_id."""
-    return {
-        "region": REGIONS[themefinder_id % len(REGIONS)],
-        "age_group": AGE_GROUPS[themefinder_id % len(AGE_GROUPS)],
-        "respondent_type": RESPONDENT_TYPES[themefinder_id % len(RESPONDENT_TYPES)],
-    }
 
 
 def create_respondents(consultation, number_respondents):
@@ -85,31 +79,30 @@ def create_respondents(consultation, number_respondents):
         RespondentFactory(
             consultation=consultation,
             themefinder_id=i,
-            demographics=_demographics_for(i),
         )
         for i in range(1, number_respondents + 1)
     ]
 
 
-def create_question(consultation, question_data, theme_status):
+def create_question(consultation, question_data, status, theme_status, questions_by_key):
     """Create and return a Question."""
-    has_free_text = question_data["has_free_text"]
-    has_multiple_choice = question_data["has_multiple_choice"]
+    question_type = question_data["type"]
+    factory = {
+        Question.QuestionType.OPEN: OpenQuestionFactory,
+        Question.QuestionType.CLOSED: ClosedQuestionFactory,
+        Question.QuestionType.DEMOGRAPHIC: DemographicQuestionFactory,
+    }[question_type]
+    closed_question_key = question_data.get("closed_question")
 
-    return QuestionFactory(
+    return factory(
         text=question_data["question_text"],
+        short_name=question_data["short_name"],
         number=question_data["number"],
         consultation=consultation,
-        has_free_text=has_free_text,
-        has_multiple_choice=has_multiple_choice,
+        closed_question=questions_by_key.get(closed_question_key),
+        status=status,
         theme_status=theme_status,
     )
-
-
-def create_multi_choice_answers(question, choices):
-    """Create MultiChoiceAnswers for a multiple choice question."""
-    multi_choice_objects = [MultiChoiceAnswer(question=question, text=choice) for choice in choices]
-    MultiChoiceAnswer.objects.bulk_create(multi_choice_objects)
 
 
 def create_candidate_themes(question, candidate_themes_data):
@@ -162,14 +155,23 @@ def create_default_selected_themes(question):
     )
 
 
-def create_response(respondent, question, free_text_answers):
-    """Create and return a Response."""
-    if question.has_free_text:
-        non_empty = [a for a in free_text_answers if a not in ("", "Not Provided", "-")]
-        raw = non_empty[respondent.themefinder_id % len(non_empty)] if non_empty else None
-    else:
-        raw = None
-    return ResponseFactory(question=question, free_text=raw, respondent=respondent)
+def create_responses(respondent, question, question_data):
+    """Create V2 responses, including one row per selected closed-question option."""
+    answers = question_data["answers"]
+    answer_count = 1 + (respondent.themefinder_id % 2) if question_data.get("multi_select") else 1
+    values = [
+        answers[(respondent.themefinder_id + offset) % len(answers)]
+        for offset in range(answer_count)
+    ]
+    return [
+        ResponseFactory(
+            question=question,
+            respondent=respondent,
+            text=value,
+            free_text=value if question.type == Question.QuestionType.OPEN else None,
+        )
+        for value in values
+    ]
 
 
 def create_response_annotation(response, question):
@@ -193,19 +195,6 @@ def create_response_annotation(response, question):
         evidence_rich=evidence_rich,
     )
     response_annotation.add_original_ai_themes(themes_for_response)
-
-
-def create_response_chosen_options(response, multiple_choice_options):
-    """Add chosen options to a multiple choice response."""
-    tf_id = response.respondent.themefinder_id
-    # Pick 1 or 2 options deterministically based on themefinder_id
-    num_options = 1 + (tf_id % 2)
-    chosen_options = [
-        multiple_choice_options[(tf_id + j) % len(multiple_choice_options)]
-        for j in range(num_options)
-    ]
-    answers = MultiChoiceAnswer.objects.filter(question=response.question, text__in=chosen_options)
-    response.chosen_options.add(*answers)
 
 
 def candidate_theme_keys_for_respondent(themefinder_id, theme_keys):
@@ -254,7 +243,7 @@ def create_dummy_consultation(
     """
     Create consultation with questions, responses and themes from JSON file.
     Creates relevant objects depending on stage and theme status:
-    - SETUP: Consultation, Questions, Respondents, Responses (ready for finding themes)
+    - SETUP: Consultation only (start of the import flow)
     - FINALISING_THEMES (DRAFT): + CandidateThemes + CandidateThemeResponses (finalising)
     - ASSIGNING_THEMES (CONFIRMED): + CandidateThemes + SelectedThemes (ready for assignment)
     - ANALYSIS: + CandidateThemes + SelectedThemes + ResponseAnnotations
@@ -266,12 +255,16 @@ def create_dummy_consultation(
         config = DUMMY_CONSULTATIONS[-1]
 
     consultation_stage = config["CONSULTATION_STAGE"]
+    question_status = config["QUESTION_STATUS"]
     theme_status = config["QUESTION_THEME_STATUS"]
 
     if consultation is None:
         logger.info("Creating consultation at stage: {stage}", stage=consultation_stage)
         consultation = create_consultation(config)
         consultation.users.set(User.objects.filter(is_staff=True))
+
+    if consultation_stage == Consultation.Stage.SETUP:
+        return consultation
 
     logger.info("Creating {number_respondents} respondents", number_respondents=number_respondents)
     respondents = create_respondents(consultation, number_respondents)
@@ -292,37 +285,36 @@ def create_dummy_consultation(
     has_default_selected_themes = consultation_stage == Consultation.Stage.ANALYSIS
     has_response_annotations = consultation_stage == Consultation.Stage.ANALYSIS
 
+    questions_by_key: dict[str, Question] = {}
     for question_data in questions_data:
         logger.info("Creating a new question...")
-        question = create_question(consultation, question_data, theme_status)
-        multiple_choice_options = question_data.get("multiple_choice_options", [])
-        free_text_answers = question_data.get("free_text_answers", [])
+        question = create_question(
+            consultation, question_data, question_status, theme_status, questions_by_key
+        )
+        questions_by_key[question_data["fixture_key"]] = question
 
-        if question.has_multiple_choice:
-            create_multi_choice_answers(question, multiple_choice_options)
-
-        if question.has_free_text and has_candidate_themes:
+        if question.type == Question.QuestionType.OPEN and has_candidate_themes:
             create_candidate_themes(question, question_data["candidate_themes"])
 
-        if question.has_free_text and has_default_selected_themes:
+        if question.type == Question.QuestionType.OPEN and has_default_selected_themes:
             create_default_selected_themes(question)
 
         for respondent in respondents:
-            response = create_response(respondent, question, free_text_answers)
+            responses = create_responses(respondent, question, question_data)
 
-            if question.has_free_text and has_response_annotations:
-                create_response_annotation(response, question)
+            if question.type == Question.QuestionType.OPEN and has_response_annotations:
+                create_response_annotation(responses[0], question)
 
-            if question.has_multiple_choice:
-                create_response_chosen_options(response, multiple_choice_options)
-
-        if question.has_free_text and has_candidate_theme_responses:
+        if question.type == Question.QuestionType.OPEN and has_candidate_theme_responses:
             create_candidate_theme_responses(question)
 
         logger.info(
             "Finished adding question and responses for question {question_number}",
             question_number=question.number,
         )
+
+    consultation.survey_import_status = Consultation.SurveyImportStatus.IMPORT_COMPLETE
+    consultation.save(update_fields=["survey_import_status"])
 
     logger.info(
         "Finished adding dummy data for consultation {consultation_code}",

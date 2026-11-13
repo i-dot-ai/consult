@@ -14,7 +14,7 @@ def test_a_consultation_is_generated(settings):
     assert models.Consultation.objects.count() == 0
     create_dummy_consultation()
     assert models.Consultation.objects.count() == 1
-    assert models.Question.objects.count() == 4
+    assert models.Question.objects.count() == 7
 
 
 @pytest.mark.django_db
@@ -39,29 +39,51 @@ def test_the_tool_will_only_run_in_dev(environment):
 
 
 @pytest.mark.django_db
-def test_setup_stage_has_consultation_data_but_no_themes():
+def test_setup_stage_is_at_the_start_of_the_import_flow():
     config = DUMMY_CONSULTATIONS[0]
     consultation = create_dummy_consultation(number_respondents=10, config=config)
-    questions = models.Question.objects.filter(consultation=consultation)
-
     assert consultation.stage == models.Consultation.Stage.SETUP
-    assert questions.count() == 4
-    assert models.Response.objects.filter(question__consultation=consultation).count() > 0
+    assert consultation.survey_import_status == models.Consultation.SurveyImportStatus.NOT_STARTED
+    assert not models.Question.objects.filter(consultation=consultation).exists()
+    assert not models.Respondent.objects.filter(consultation=consultation).exists()
+    assert not models.Response.objects.filter(question__consultation=consultation).exists()
     assert models.CandidateTheme.objects.filter(question__consultation=consultation).count() == 0
     assert models.SelectedTheme.objects.filter(question__consultation=consultation).count() == 0
 
-    # Multiple choice questions have answers
-    q1 = questions.get(number=1)
-    assert q1.has_multiple_choice
-    assert models.MultiChoiceAnswer.objects.filter(question=q1).count() == 4
 
-    # Respondents have demographic data
-    respondent = models.Respondent.objects.filter(consultation=consultation).first()
-    assert respondent.demographics.count() > 0
-    field_names = set(respondent.demographics.values_list("field_name", flat=True))
-    assert "region" in field_names
-    assert "age_group" in field_names
-    assert "respondent_type" in field_names
+@pytest.mark.django_db
+def test_generated_data_uses_v2_schema():
+    consultation = create_dummy_consultation(
+        number_respondents=10, config=DUMMY_CONSULTATIONS[1]
+    )
+    questions = models.Question.objects.filter(consultation=consultation)
+
+    assert consultation.data_source == models.Consultation.DataSource.CITIZEN_SPACE
+    assert consultation.survey_import_status == models.Consultation.SurveyImportStatus.IMPORT_COMPLETE
+    assert questions.filter(type=models.Question.QuestionType.OPEN).count() == 2
+    assert questions.filter(type=models.Question.QuestionType.CLOSED).count() == 2
+    assert questions.filter(type=models.Question.QuestionType.DEMOGRAPHIC).count() == 3
+    assert not questions.filter(type__isnull=True).exists()
+
+    closed_question = questions.get(number=1)
+    open_question = questions.get(number=2)
+    assert open_question.closed_question == closed_question
+
+    open_responses = models.Response.objects.filter(question=open_question)
+    assert open_responses.count() == 10
+    assert not open_responses.filter(text__isnull=True).exists()
+    assert not open_responses.filter(free_text__isnull=True).exists()
+
+    packaging_question = questions.get(number=3)
+    assert models.Response.objects.filter(question=packaging_question).count() > 10
+    assert not models.Response.objects.filter(question=packaging_question).exclude(
+        free_text__isnull=True
+    ).exists()
+
+    demographic_questions = questions.filter(type=models.Question.QuestionType.DEMOGRAPHIC)
+    assert models.Response.objects.filter(question__in=demographic_questions).count() == 30
+    assert not models.MultiChoiceAnswer.objects.filter(question__consultation=consultation).exists()
+    assert not models.DemographicOption.objects.filter(consultation=consultation).exists()
 
 
 @pytest.mark.django_db
@@ -71,6 +93,7 @@ def test_theme_sign_off_draft_has_candidate_themes_and_responses():
     q4 = models.Question.objects.get(consultation=consultation, number=4)
 
     assert consultation.stage == models.Consultation.Stage.FINALISING_THEMES
+    assert q4.status == models.Question.ThemeStatus.FINALISING_THEMES
     assert q4.theme_status == models.Question.ThemeStatus.DRAFT
 
     # Has candidate themes at multiple levels
@@ -95,6 +118,7 @@ def test_theme_sign_off_confirmed_has_selected_themes():
     q4 = models.Question.objects.get(consultation=consultation, number=4)
 
     assert consultation.stage == models.Consultation.Stage.ASSIGNING_THEMES
+    assert q4.status == models.Question.ThemeStatus.CONFIRMED
     assert q4.theme_status == models.Question.ThemeStatus.CONFIRMED
 
     # Has SelectedThemes
@@ -108,7 +132,7 @@ def test_theme_sign_off_confirmed_has_selected_themes():
 def test_analysis_has_response_annotations():
     config = DUMMY_CONSULTATIONS[3]
     consultation = create_dummy_consultation(number_respondents=10, config=config)
-    q1 = models.Question.objects.get(consultation=consultation, number=1)
+    q1 = models.Question.objects.get(consultation=consultation, number=2)
 
     assert consultation.stage == models.Consultation.Stage.ANALYSIS
     assert q1.theme_status == models.Question.ThemeStatus.CONFIRMED
