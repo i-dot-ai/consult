@@ -17,7 +17,18 @@ def test_name_parameter_sets_consultation_name(mock_is_local):
     )
 
     assert models.Consultation.objects.count() == 4
-    assert models.Question.objects.count() == 16
+    assert models.Question.objects.count() == 21
+
+    setup = models.Consultation.objects.get(code="dummy-setup")
+    assert setup.survey_import_status == models.Consultation.SurveyImportStatus.NOT_STARTED
+    assert not setup.question_set.exists()
+
+    generated = models.Consultation.objects.exclude(id=setup.id)
+    assert not models.Question.objects.filter(consultation__in=generated, type__isnull=True).exists()
+    assert not models.MultiChoiceAnswer.objects.filter(
+        question__consultation__in=generated
+    ).exists()
+    assert not models.DemographicOption.objects.filter(consultation__in=generated).exists()
 
 
 @pytest.mark.django_db

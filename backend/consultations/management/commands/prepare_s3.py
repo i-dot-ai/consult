@@ -9,13 +9,11 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from consultations.dummy_data import (
-    AGE_GROUPS,
     NUMBER_RESPONDENTS,
-    REGIONS,
-    RESPONDENT_TYPES,
     SAMPLE_QUESTIONS_PATH,
     candidate_theme_keys_for_respondent,
 )
+from consultations.models import Question
 from hosting_environment import HostingEnvironment
 
 
@@ -28,48 +26,25 @@ def _load_questions():
         return json.load(f)
 
 
-def _build_respondents():
-    return [
-        {
-            "themefinder_id": i,
-            "demographic_data": {
-                "region": [REGIONS[i % len(REGIONS)]],
-                "age_group": [AGE_GROUPS[i % len(AGE_GROUPS)]],
-                "respondent_type": [RESPONDENT_TYPES[i % len(RESPONDENT_TYPES)]],
-            },
-        }
-        for i in range(1, NUMBER_RESPONDENTS + 1)
-    ]
-
-
 def _build_responses(question_data):
-    free_text_answers = question_data.get("free_text_answers", [])
-    if not free_text_answers:
+    if question_data["type"] != Question.QuestionType.OPEN:
         return []
-    non_empty = [a for a in free_text_answers if a]
+    answers = question_data["answers"]
     return [
-        {"themefinder_id": i, "text": non_empty[i % len(non_empty)]}
-        for i in range(1, NUMBER_RESPONDENTS + 1)
-    ]
-
-
-def _build_multi_choice(question_data):
-    options = question_data.get("multiple_choice_options", [])
-    if not options:
-        return []
-    return [
-        {"themefinder_id": i, "options": [options[i % len(options)]]}
+        {"themefinder_id": i, "text": answers[i % len(answers)]}
         for i in range(1, NUMBER_RESPONDENTS + 1)
     ]
 
 
 def _build_question_json(question_data):
-    return {
+    question_json = {
         "question_text": question_data["question_text"],
         "question_number": question_data["number"],
-        "has_free_text": question_data["has_free_text"],
-        "multi_choice_options": question_data.get("multiple_choice_options", []),
+        "has_free_text": question_data["type"] == Question.QuestionType.OPEN,
     }
+    if question_data["type"] == Question.QuestionType.CLOSED:
+        question_json["multi_choice_options"] = question_data["answers"]
+    return question_json
 
 
 def _build_clustered_themes(question_data):
@@ -230,9 +205,6 @@ class Command(BaseCommand):
         # S3-only consultation (no DB record)
         self._seed_consultation(s3_client, bucket, "dummy-s3-only", questions_data, timestamp)
 
-        # SETUP — inputs only
-        self._seed_consultation(s3_client, bucket, "dummy-setup", questions_data, timestamp)
-
         # Starting finalising themes — has clustered themes + candidate theme mappings
         self._seed_consultation(
             s3_client,
@@ -303,13 +275,6 @@ class Command(BaseCommand):
         self.stdout.write(f"  Seeding S3 data for: {code}")
         prefix = f"app_data/consultations/{code}"
 
-        # Respondents
-        s3_client.put_object(
-            Bucket=bucket,
-            Key=f"{prefix}/inputs/respondents.jsonl",
-            Body=_to_jsonl(_build_respondents()),
-        )
-
         for question_data in questions_data:
             q_num = question_data["number"]
             q_prefix = f"{prefix}/inputs/question_part_{q_num}"
@@ -322,7 +287,7 @@ class Command(BaseCommand):
             )
 
             # Free text responses
-            if question_data["has_free_text"]:
+            if question_data["type"] == Question.QuestionType.OPEN:
                 responses = _build_responses(question_data)
                 if responses:
                     s3_client.put_object(
@@ -331,18 +296,8 @@ class Command(BaseCommand):
                         Body=_to_jsonl(responses),
                     )
 
-            # Multi choice
-            if question_data.get("multiple_choice_options"):
-                multi_choice = _build_multi_choice(question_data)
-                if multi_choice:
-                    s3_client.put_object(
-                        Bucket=bucket,
-                        Key=f"{q_prefix}/multi_choice.jsonl",
-                        Body=_to_jsonl(multi_choice),
-                    )
-
             # Stage-specific outputs (only for free text questions)
-            if not question_data["has_free_text"]:
+            if question_data["type"] != Question.QuestionType.OPEN:
                 continue
 
             if include_clustered_themes:
