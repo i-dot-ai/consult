@@ -100,34 +100,28 @@ jobs:
             echo "already-labelled=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Label PR for manual review
-        if: |
-          steps.update-type.outputs.update-type == 'version-update:semver-major' &&
-          steps.already-labelled.outputs.already-labelled == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr edit "$PR_URL" --add-label "major-version-bump"
-
       - name: Checkout repository
         if: |
           steps.update-type.outputs.update-type == 'version-update:semver-major' &&
           steps.already-labelled.outputs.already-labelled == 'false'
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - name: Create Linear issue for major bump
+      - name: Label, request review and create Linear issue for major bump
         if: |
           steps.update-type.outputs.update-type == 'version-update:semver-major' &&
           steps.already-labelled.outputs.already-labelled == 'false'
-        env:
-          LINEAR_API_KEY: ${{ secrets.DEPENDABOT_LINEAR_KEY }}
-          LINEAR_TEAM_KEY: ${{ secrets.LINEAR_TEAM_KEY }}
-          DEPENDABOT_USER_MAP: ${{ vars.DEPENDABOT_USER_MAP }}
-          GITHUB_ASSIGNEE: ${{ github.event.pull_request.requested_reviewers[0].login }}
-          ISSUE_TYPE: major-bump
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
-          PREVIOUS_VERSION: ${{ steps.metadata.outputs.previous-version }}
-          NEW_VERSION: ${{ steps.metadata.outputs.new-version }}
-        run: python3 .github/scripts/create_linear_issue.py
+        uses: ./.github/actions/dependabot-linear-issue
+        with:
+          issue-type: major-bump
+          label: major-version-bump
+          pr-number: ${{ github.event.pull_request.number }}
+          pr-title: ${{ github.event.pull_request.title }}
+          pr-url: ${{ github.event.pull_request.html_url }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          consult-team-read-token: ${{ secrets.CONSULT_TEAM_READ_TOKEN }}
+          linear-api-key: ${{ secrets.DEPENDABOT_LINEAR_KEY }}
+          linear-team-name-key: ${{ vars.LINEAR_TEAM_NAME_KEY }}
+          dependabot-user-map: ${{ vars.DEPENDABOT_USER_MAP }}
+          dependency-names: ${{ steps.metadata.outputs.dependency-names }}
+          previous-version: ${{ steps.metadata.outputs.previous-version }}
+          new-version: ${{ steps.metadata.outputs.new-version }}

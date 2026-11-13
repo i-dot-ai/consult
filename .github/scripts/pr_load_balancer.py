@@ -63,14 +63,10 @@ Use this snapshot to choose reviewers manually. Counts show open PRs where each 
 {rows}"""
 
 
-def main() -> None:
-    owner, repo = os.environ["GITHUB_REPOSITORY"].split("/", maxsplit=1)
-    pull_request_number = int(os.environ["PR_NUMBER"])
-    github_token = os.environ["GITHUB_TOKEN"]
-    team_token = os.environ["CONSULT_TEAM_READ_TOKEN"]
-    owner_path = parse.quote(owner, safe="")
-    repo_path = parse.quote(repo, safe="")
-
+def get_review_counts(
+    owner_path: str, repo_path: str, github_token: str, team_token: str
+) -> dict[str, int]:
+    """Shared so the comment and dependabot auto-assign see the same load figures."""
     team_members = get_all_pages(
         f"/orgs/{owner_path}/teams/consult-team/members",
         team_token,
@@ -91,7 +87,18 @@ def main() -> None:
             login = reviewer["login"]
             if login in review_counts:
                 review_counts[login] += 1
+    return review_counts
 
+
+def main() -> None:
+    owner, repo = os.environ["GITHUB_REPOSITORY"].split("/", maxsplit=1)
+    pull_request_number = int(os.environ["PR_NUMBER"])
+    github_token = os.environ["GITHUB_TOKEN"]
+    team_token = os.environ["CONSULT_TEAM_READ_TOKEN"]
+    owner_path = parse.quote(owner, safe="")
+    repo_path = parse.quote(repo, safe="")
+
+    review_counts = get_review_counts(owner_path, repo_path, github_token, team_token)
     body = build_comment(review_counts)
     comments = get_all_pages(
         f"/repos/{owner_path}/{repo_path}/issues/{pull_request_number}/comments",

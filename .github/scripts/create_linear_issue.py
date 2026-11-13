@@ -9,7 +9,8 @@ Supports two issue types, selected via the ISSUE_TYPE environment variable:
 
 Required environment variables (all types):
   LINEAR_API_KEY                - Linear personal API key (lin_api_*)
-  LINEAR_TEAM_KEY               - Key of the Linear team to create the issue in (e.g. "ENG")
+  LINEAR_TEAM_NAME_KEY          - Linear team key (the short identifier prefixing issue IDs,
+                                  e.g. "ENG" for ENG-123). Not a secret or API key.
   DEPENDABOT_USER_MAP           - JSON variable mapping GitHub username to Linear email
                                   e.g. '{"octocat": "octocat@example.com"}'
   GITHUB_ASSIGNEE               - GitHub username of the PR assignee (may be empty)
@@ -144,7 +145,7 @@ def attach_pr(api_key: str, issue_id: str, pr_url: str) -> None:
 
 def main() -> None:
     api_key = os.environ["LINEAR_API_KEY"]
-    team_key = os.environ["LINEAR_TEAM_KEY"]
+    team_key = os.environ["LINEAR_TEAM_NAME_KEY"]
     github_assignee = os.environ.get("GITHUB_ASSIGNEE", "")
     try:
         user_map = json.loads(os.environ.get("DEPENDABOT_USER_MAP", "{}"))
