@@ -2,7 +2,7 @@
 
 Compares refined `output["themes"]` against the pre-refinement themes on
 `case.inputs` (refinement has no ground truth). Both metrics currently
-share one LLM call; splitting them per metric is deferred to ADR-0013.
+share one LLM call; splitting them per metric is deferred to ADR-0012.
 """
 
 from .llm_judge_evaluator import ThemeComparisonJudgeEvaluator

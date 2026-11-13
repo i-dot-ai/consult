@@ -9,7 +9,7 @@ Accepted
 ## Context
 
 ThemeFinder's evaluation suite (`themefinder/evals/`) is how we measure generation, condensation,
-refinement, and mapping quality before and after model/prompt changes (see ADR-0011). Until now,
+refinement, and mapping quality before and after model/prompt changes (see ADR-0010). Until now,
 each stage has been orchestrated by ad-hoc Python: a script for data download, a script for
 running the evaluation, and — for multi-model sweeps — `benchmark.py` calling those scripts in
 turn.
