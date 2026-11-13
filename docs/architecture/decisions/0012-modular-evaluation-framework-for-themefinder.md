@@ -1,4 +1,4 @@
-# 13. Modular Evaluation Framework for Themefinder
+# 12. Modular Evaluation Framework for Themefinder
 
 Date: 2026-08-26
 
