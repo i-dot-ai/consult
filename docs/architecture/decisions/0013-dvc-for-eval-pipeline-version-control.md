@@ -1,4 +1,4 @@
-# 14. DVC for eval pipeline version control
+# 13. DVC for eval pipeline version control
 
 Date: 2026-08-21
 
@@ -9,7 +9,7 @@ Accepted
 ## Context
 
 ThemeFinder's evaluation suite (`themefinder/evals/`) is how we measure generation, condensation,
-refinement, and mapping quality before and after model/prompt changes (see ADR-0011). Until now,
+refinement, and mapping quality before and after model/prompt changes (see ADR-0010). Until now,
 each stage has been orchestrated by ad-hoc Python: a script for data download, a script for
 running the evaluation, and — for multi-model sweeps — `benchmark.py` calling those scripts in
 turn.
@@ -91,5 +91,5 @@ pipelines, starting with the theme mapping component.
 
 ## Related
 
-- `docs/architecture/decisions/0009-merge-themefinder-into-consult-as-a-uv-workspace.md`
-- `docs/architecture/decisions/0011-evaluation-tooling.md`
+- `docs/architecture/decisions/0008-merge-themefinder-into-consult-as-a-uv-workspace.md`
+- `docs/architecture/decisions/0010-evaluation-tooling.md`

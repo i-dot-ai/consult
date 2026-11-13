@@ -5,7 +5,7 @@ At present we are not accepting contributions to `themefinder` as it is undergoi
 
 ## Architecture decisions
 
-`themefinder` was migrated from its standalone repo into the consult monorepo as a uv workspace member — see [ADR 0009](../architecture/decisions/0009-merge-themefinder-into-consult-as-a-uv-workspace.md). That ADR also records the **source provenance**: the exact upstream commit this copy was taken from ([`09918eb213e0`](https://github.com/i-dot-ai/themefinder/commit/09918eb213e0)) and how to diff the in-repo copy against upstream.
+`themefinder` was migrated from its standalone repo into the consult monorepo as a uv workspace member — see [ADR 0008](../architecture/decisions/0008-merge-themefinder-into-consult-as-a-uv-workspace.md). That ADR also records the **source provenance**: the exact upstream commit this copy was taken from ([`09918eb213e0`](https://github.com/i-dot-ai/themefinder/commit/09918eb213e0)) and how to diff the in-repo copy against upstream.
 
 ## Developing the package locally
 

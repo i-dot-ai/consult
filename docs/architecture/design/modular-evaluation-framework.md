@@ -1,6 +1,6 @@
 # Modular Evaluation Framework for Themefinder
 
-This is the detailed design behind [ADR-0013](../decisions/0013-modular-evaluation-framework-for-themefinder.md). The ADR
+This is the detailed design behind [ADR-0012](../decisions/0012-modular-evaluation-framework-for-themefinder.md). The ADR
 records the decision and its consequences; this document is the reference for how the framework is actually
 built — directory layout, types, interfaces, and the rules that keep it swappable in practice, not just in
 theory.
@@ -285,7 +285,7 @@ actually awaits anything.
 **`PydanticEvalsEvaluator`** wraps any native `pydantic_evals.evaluators.Evaluator` (e.g. `LLMJudge`) behind
 the same `EvaluatorPort`
 — the planned home for the team's expected future migration of the five custom LLM-judge classes onto
-pydantic-evals' own judge primitive, per ADR-0011's "use pydantic-evals for LAJ" mandate. Built and
+pydantic-evals' own judge primitive, per ADR-0010's "use pydantic-evals for LAJ" mandate. Built and
 unit-tested this pass (stubbed `LLMJudge`, no network); not wired into any `ComponentConfig` yet — retiring a
 custom evaluator class is an output-quality-parity judgment call for a dedicated future pass, not a
 side effect of this one.

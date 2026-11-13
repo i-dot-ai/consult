@@ -1,4 +1,4 @@
-# 13. Modular Evaluation Framework for Themefinder
+# 12. Modular Evaluation Framework for Themefinder
 
 Date: 2026-08-26
 
@@ -37,7 +37,7 @@ behaviours behind one reusable API and CLI, incrementally:
   the custom LLM-judge/metric adapters, plus a
   `PydanticEvalsEvaluator` (wrapping any native pydantic-evals evaluator, e.g. `LLMJudge`), built and
   unit-tested but not yet wired into any component — the landing spot for the team's expected future migration
-  of the custom judges onto pydantic-evals' own judge primitive, per ADR-0011. `RunnerPort` implementations stay
+  of the custom judges onto pydantic-evals' own judge primitive, per ADR-0010. `RunnerPort` implementations stay
   agnostic to which kind of evaluator they're invoking. `RunReport` also gains an optional `engine_report`
   field so `PydanticEvalsRunner`'s native `EvaluationReport` can reach `LangfuseArtefactStore` for a richer
   summary, without widening any port's real contract or requiring other adapters to know about it.

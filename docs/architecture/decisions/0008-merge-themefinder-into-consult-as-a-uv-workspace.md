@@ -1,4 +1,4 @@
-# 9. Merge themefinder into consult as a uv workspace
+# 8. Merge themefinder into consult as a uv workspace
 
 Date: 2026-05-01
 

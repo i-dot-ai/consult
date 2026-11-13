@@ -6,7 +6,7 @@ Date: 2026-09-17
 
 Accepted
 
-Supersedes: [0012](0012-minimum-self-serve-decision.md)
+Supersedes: [0011](0011-minimum-self-serve-decision.md)
 
 ## Context
 
