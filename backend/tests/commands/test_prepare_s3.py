@@ -1,3 +1,4 @@
+import json
 from unittest.mock import patch
 
 import boto3
@@ -54,16 +55,15 @@ class TestPrepareS3:
         bucket = conn.Bucket("test-bucket")
         keys = [obj.key for obj in bucket.objects.all()]
 
-        # S3-only consultation has input data
-        assert any("dummy-s3-only/inputs/respondents.jsonl" in k for k in keys)
+        # S3-only consultation has pipeline-compatible V2 input data
         assert any("dummy-s3-only/inputs/question_part_1/question.json" in k for k in keys)
+        assert not any("respondents.jsonl" in k for k in keys)
+        assert not any("multi_choice.jsonl" in k for k in keys)
 
-        # Setup consultation has input data
-        assert any("dummy-setup/inputs/respondents.jsonl" in k for k in keys)
-        assert any("dummy-setup/inputs/question_part_1/question.json" in k for k in keys)
+        # Setup consultation is at the start of import and has no S3 inputs yet
+        assert not any("dummy-setup/" in k for k in keys)
 
         # Starting finalising themes has input data, clustered themes and candidate theme mappings
-        assert any("dummy-start-finalising-themes/inputs/respondents.jsonl" in k for k in keys)
         assert any(
             "dummy-start-finalising-themes/inputs/question_part_1/question.json" in k for k in keys
         )
@@ -77,7 +77,6 @@ class TestPrepareS3:
         )
 
         # Finished finalising themes has input data, clustered themes and candidate theme mappings
-        assert any("dummy-finished-finalising-themes/inputs/respondents.jsonl" in k for k in keys)
         assert any(
             "dummy-finished-finalising-themes/inputs/question_part_1/question.json" in k
             for k in keys
@@ -93,7 +92,6 @@ class TestPrepareS3:
         )
 
         # Analysis has all the above and mapping outputs
-        assert any("dummy-analysis/inputs/respondents.jsonl" in k for k in keys)
         assert any("dummy-analysis/inputs/question_part_1/question.json" in k for k in keys)
         assert any(
             "dummy-analysis/outputs/sign_off/" in k and "clustered_themes.json" in k for k in keys
@@ -104,6 +102,16 @@ class TestPrepareS3:
         assert any(
             "dummy-analysis/outputs/mapping/" in k and "detail_detection.jsonl" in k for k in keys
         )
+
+        question = boto3.client("s3", region_name="eu-west-2").get_object(
+            Bucket="test-bucket",
+            Key="app_data/consultations/dummy-analysis/inputs/question_part_2/question.json",
+        )
+        assert json.loads(question["Body"].read()) == {
+            "question_text": "Why do you agree or disagree with the proposed flavour categories?",
+            "question_number": 2,
+            "has_free_text": True,
+        }
 
     @pytest.mark.django_db
     @mock_aws

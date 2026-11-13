@@ -42,6 +42,21 @@ class QuestionFactory(DjangoModelFactory):
     has_multiple_choice = False
 
 
+class OpenQuestionFactory(QuestionFactory):
+    type = models.Question.QuestionType.OPEN
+    has_free_text = True
+
+
+class ClosedQuestionFactory(QuestionFactory):
+    type = models.Question.QuestionType.CLOSED
+    has_free_text = False
+
+
+class DemographicQuestionFactory(QuestionFactory):
+    type = models.Question.QuestionType.DEMOGRAPHIC
+    has_free_text = False
+
+
 class MultiChoiceAnswerFactory(DjangoModelFactory):
     text = factory.Faker("word")
     question = factory.SubFactory(QuestionFactory)
