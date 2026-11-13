@@ -203,6 +203,7 @@ export async function goToConsultationQuestion(page: Page, consultationId: strin
 export function getDataSetupV2Enabled() {
   const flag = process.env.PUBLIC_DATA_SETUP_V2_ENABLED;
 
+  // Default to enabling data setup v2 if it's not explicitly disabled
   if (typeof flag === "undefined") {
     return true;
   }
