@@ -91,5 +91,5 @@ pipelines, starting with the theme mapping component.
 
 ## Related
 
-- `docs/architecture/decisions/0009-merge-themefinder-into-consult-as-a-uv-workspace.md`
-- `docs/architecture/decisions/0011-evaluation-tooling.md`
+- `docs/architecture/decisions/0008-merge-themefinder-into-consult-as-a-uv-workspace.md`
+- `docs/architecture/decisions/0010-evaluation-tooling.md`
