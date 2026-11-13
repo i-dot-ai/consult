@@ -4,7 +4,7 @@ Date: 2026-08-06
 
 ## Status
 
-Superseded by [0015](0015-user-permissions-mvp.md)
+Superseded by [0016](0016-user-permissions-mvp.md)
 
 ## Context
 
