@@ -1,4 +1,4 @@
-# 13. Sentry vs Logging for Exceptions
+# 15. Sentry vs Logging for Exceptions
 
 Date: 2026-09-09
 
