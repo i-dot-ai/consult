@@ -1,0 +1,36 @@
+{
+  "header": {
+    "dataset": "housing_XS",
+    "dataset_revision": "langfuse-prod-2026-11-12",
+    "model": "gpt-4.1-sweden-2025-03",
+    "n_runs": 3,
+    "tolerance": "max(0.05 for 0-1 metrics or 0.5 for 1-5 judge metrics, 3.0 * stdev across runs)"
+  },
+  "metrics": {
+    "clarity": {
+      "baseline": 0.8372,
+      "tolerance": 0.1308
+    },
+    "f1_score": {
+      "baseline": 0.9167,
+      "tolerance": 0.05
+    },
+    "groundedness": {
+      "baseline": 0.9867,
+      "tolerance": 0.05
+    },
+    "information_retention": {
+      "baseline": 0.8594,
+      "tolerance": 0.0535
+    },
+    "redundancy": {
+      "baseline": 0.0,
+      "tolerance": 0.05,
+      "direction": "lower"
+    },
+    "specificity": {
+      "baseline": 0.8944,
+      "tolerance": 0.1518
+    }
+  }
+}

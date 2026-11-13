@@ -1,23 +1,23 @@
 {
   "header": {
     "dataset": "gambling_XS",
-    "dataset_revision": "local-2025-07-22",
+    "dataset_revision": "langfuse-prod-2026-11-12",
     "model": "gpt-4.1-sweden-2025-03",
-    "n_runs": 5,
+    "n_runs": 3,
     "tolerance": "max(0.05 for 0-1 metrics or 0.5 for 1-5 judge metrics, 3.0 * stdev across runs)"
   },
   "metrics": {
-    "distinctiveness": {
-      "baseline": 5.0,
-      "tolerance": 0.5
+    "clarity": {
+      "baseline": 1.0,
+      "tolerance": 0.05
     },
-    "information_retention": {
-      "baseline": 5.0,
-      "tolerance": 0.5
+    "information_equivalence": {
+      "baseline": 0.9829,
+      "tolerance": 0.05
     },
-    "response_references": {
-      "baseline": 5.0,
-      "tolerance": 0.5
+    "specificity": {
+      "baseline": 0.7494,
+      "tolerance": 0.1964
     }
   }
 }

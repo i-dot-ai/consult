@@ -4,7 +4,10 @@ import json
 from collections import namedtuple
 
 import pytest
+from conftest import _themes, make_case
+from fakes import FakeJudge, SequenceFakeJudge
 from themefinder.llm import _active_gateway_metrics, collect_gateway_metrics
+
 from adapters.evaluators.clarity_evaluator import ClarityEvaluator
 from adapters.evaluators.condensation_quality_evaluator import (
     CondensationQualityEvaluator,
@@ -16,9 +19,7 @@ from adapters.evaluators.ground_information_evaluator import (
 from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
 from adapters.evaluators.refinement_quality_evaluator import RefinementQualityEvaluator
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
-from conftest import _themes, make_case
 from eval_types import Score
-from fakes import FakeJudge, SequenceFakeJudge
 
 
 class _CollectionProbingJudge(FakeJudge):

@@ -4,6 +4,10 @@ export AWS_REGION
 export ECR_REPO_NAME
 export APP_NAME
 
+EVAL_RUN_SUFFIX := $(or $(GITHUB_SHA),$(shell git rev-parse HEAD))
+EVAL_SMOKE_NAME := smoke-$(EVAL_RUN_SUFFIX)
+EVAL_REGRESSION_SUFFIX := $(EVAL_RUN_SUFFIX)
+
 .PHONY: help
 help:     ## Show this help.
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-30s\033[0m %s\n", $$1, $$2}'
@@ -71,13 +75,23 @@ run-eval: ## Args e.g.: EVAL_TYPE=find_themes|generation|mapping|condensation|re
 .PHONY: eval-smoke
 eval-smoke: ## Run every eval on the tiny gambling_XXS dataset via DVC; passes if the run succeeds
 	# The smoke- prefix tells these runs apart from other DVC experiments (dvc exp list/remove).
-	$(eval EVAL_SMOKE_NAME := smoke-$(or $(GITHUB_SHA),$(shell git rev-parse HEAD)))
 	cd themefinder/evals && uv run --extra eval dvc exp run -f -n $(EVAL_SMOKE_NAME) -S params.yaml:dataset.name=gambling_XXS
 
 .PHONY: eval-regression
-eval-regression: ## Run every eval on gambling_XS via DVC and fail if metrics drop below baseline
-	cd themefinder/evals && uv run --extra eval dvc repro -f
-	cd themefinder/evals && uv run --extra eval python -m ci.check_metrics --dataset gambling_XS $(if $(GITHUB_STEP_SUMMARY),--summary-file $(GITHUB_STEP_SUMMARY))
+EVAL_REGRESSION_DATASETS := gambling_XS health_XS housing_XS
+eval-regression: ## Run three times on each XS dataset via Langfuse and gate every baseline
+	@set -e; \
+	for dataset in $(EVAL_REGRESSION_DATASETS); do \
+		echo "Running regression eval for $$dataset"; \
+		(cd themefinder/evals && uv run --extra eval dvc exp run -f \
+			-n regression-$$dataset-$(EVAL_REGRESSION_SUFFIX) \
+			-S params.yaml:dataset.name=$$dataset \
+			-S params.yaml:runs=3 \
+			-S params.yaml:backends.dataset_source=langfuse \
+			-S params.yaml:backends.artefact_store=langfuse); \
+		(cd themefinder/evals && uv run --extra eval python -m ci.check_metrics \
+			--dataset $$dataset $(if $(GITHUB_STEP_SUMMARY),--summary-file $(GITHUB_STEP_SUMMARY))); \
+	done
 
 BENCHMARK_DATASET ?= housing_S
 BENCHMARK_RUNS ?= 5
