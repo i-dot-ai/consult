@@ -115,14 +115,17 @@ export const getHomepageUrl = (): string => {
 };
 
 export const getDataSetupV2Enabled = (): boolean => {
-  if (
-    typeof process !== "undefined" &&
-    process.env?.PUBLIC_DATA_SETUP_V2_ENABLED
-  ) {
-    return process.env.PUBLIC_DATA_SETUP_V2_ENABLED === "true";
+  const flag =
+    typeof process !== "undefined"
+      ? process.env?.PUBLIC_DATA_SETUP_V2_ENABLED
+      : import.meta.env.PUBLIC_DATA_SETUP_V2_ENABLED;
+
+  // Default to enabling data setup v2 if it's not explicitly disabled
+  if (typeof flag === "undefined") {
+    return true;
   }
 
-  return import.meta.env.PUBLIC_DATA_SETUP_V2_ENABLED === "true";
+  return flag === "true";
 };
 
 export function assertSurveyImportState(
