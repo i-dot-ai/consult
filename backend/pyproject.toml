@@ -44,7 +44,7 @@ dev = [
   "mypy>=2.4.1",
   "pre-commit>=4.7.0",
   "pytest-lazy-fixtures>=1.4.1",
-  "ruff>=0.17.2",
+  "ruff>=0.17.3",
   "pytest-django>=4.14.0",
   "django-webtest>=1.9.15",
 ]
