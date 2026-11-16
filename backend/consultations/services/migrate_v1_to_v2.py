@@ -15,10 +15,11 @@ Steps, each written to be idempotent and wrapped in a single transaction:
 2. ``_backfill_question_types`` flag pair -> Question.type
 3. ``_convert_multiple_choice_to_responses`` chosen options -> one response
    row per selected option on closed questions
-4. ``_backfill_data_source`` default the data source to CitizenSpace
-5. ``_refresh_denormalised_counts`` recalculate response/answer counts
-6. ``_assign_stage`` advance the stage to match the artifacts on record
-7. ``_update_survey_import_status`` mark the setup concluded where provable
+4. ``_convert_demographics`` demographic table -> demographic questions
+5. ``_backfill_data_source`` default the data source to CitizenSpace
+6. ``_refresh_denormalised_counts`` recalculate response/answer counts
+7. ``_assign_stage`` advance the stage to match the artifacts on record
+8. ``_update_survey_import_status`` mark the setup concluded where provable
 """
 
 from typing import Any
@@ -46,6 +47,8 @@ from rq_context import job
 logger = settings.LOGGER
 
 _RESPONSE_ROW_BATCH_SIZE = 1000
+
+_DEMOGRAPHICS_BLANK_VALUES = {"", "-", "not provided"}
 
 
 def audit_consultation(consultation: Consultation) -> dict[str, int]:
@@ -111,6 +114,7 @@ def migrate_consultation_to_v2(consultation: Consultation) -> Consultation:
     _fill_response_text(consultation)
     _backfill_question_types(consultation)
     _convert_multiple_choice_to_responses(consultation)
+    _convert_demographics(consultation)
     _backfill_data_source(consultation)
     _refresh_denormalised_counts(consultation)
     _assign_stage(consultation)
@@ -349,6 +353,99 @@ def _convert_multiple_choice_to_responses(consultation: Consultation) -> None:
             response_rows=created,
             consultation_id=consultation.id,
         )
+
+
+def _convert_demographics(consultation: Consultation) -> None:
+    """Move demographic answers into V2 form.
+
+    One question of type DEMOGRAPHIC per DemographicOption field_name
+    (text = field_name, appended to the question order, status CONFIGURED)
+    plus one Response per respondent per field with text = the JSON-style
+    stringified field_value: strings verbatim, booleans "true"/"false",
+    numbers as decimal strings. Spelling variants are NOT merged here — the
+    v2 demographics/merge endpoint exists for exactly that. Blank
+    placeholders ("Not Provided", "-", "") produce no rows, matching the
+    empty-response treatment of migration 0101.
+
+    Dedupes on (question, respondent, text) so re-runs never duplicate.
+    DemographicOption rows and the Respondent.demographics M2M stay
+    populated for v1 consumers (decision: keep all).
+    """
+    existing_pairs = set(
+        Response.objects.filter(question__consultation=consultation).values_list(
+            "question_id", "respondent_id", "text"
+        )
+    )
+    demographic_questions: dict[str, Question] = {}
+
+    def question_for(field_name: str) -> Question:
+        if field_name not in demographic_questions:
+            next_number = (
+                consultation.question_set.order_by("-number").values_list("number", flat=True).first()
+                or 0
+            )
+            question, _ = Question.objects.get_or_create(
+                consultation=consultation,
+                type=Question.QuestionType.DEMOGRAPHIC,
+                text=field_name,
+                defaults={
+                    "number": next_number + 1,
+                    "has_free_text": False,
+                    "has_multiple_choice": False,
+                    "status": Question.ThemeStatus.CONFIGURED,
+                },
+            )
+            demographic_questions[field_name] = question
+        return demographic_questions[field_name]
+
+    links = (
+        Respondent.demographics.through.objects.filter(respondent__consultation=consultation)
+        .select_related("respondent", "demographicoption")
+        .only(
+            "respondent__id",
+            "demographicoption__field_name",
+            "demographicoption__field_value",
+        )
+    )
+
+    rows_to_create: list[Response] = []
+    for link in links:
+        question = question_for(link.demographicoption.field_name)
+        for answer_text in _demographic_answer_texts(link.demographicoption.field_value):
+            if answer_text.strip().casefold() in _DEMOGRAPHICS_BLANK_VALUES:
+                continue
+            candidate = (question.id, link.respondent_id, answer_text)
+            if candidate in existing_pairs:
+                continue
+            existing_pairs.add(candidate)
+            rows_to_create.append(
+                Response(
+                    question_id=question.id,
+                    respondent_id=link.respondent_id,
+                    text=answer_text,
+                )
+            )
+
+    for start in range(0, len(rows_to_create), _RESPONSE_ROW_BATCH_SIZE):
+        Response.objects.bulk_create(
+            rows_to_create[start : start + _RESPONSE_ROW_BATCH_SIZE],
+            batch_size=_RESPONSE_ROW_BATCH_SIZE,
+        )
+    if rows_to_create:
+        logger.info(
+            "Created {response_rows} demographic response rows for {consultation_id}",
+            response_rows=len(rows_to_create),
+            consultation_id=consultation.id,
+        )
+
+
+def _demographic_answer_texts(value) -> list[str]:
+    """Stringify a JSONField demographic value, JSON-style (decision)."""
+    if isinstance(value, (list, tuple)):
+        return [text for item in value for text in _demographic_answer_texts(item)]
+    if isinstance(value, bool):
+        return ["true" if value else "false"]
+    return [str(value)] if value is not None else []
 
 
 def _backfill_data_source(consultation: Consultation) -> None:

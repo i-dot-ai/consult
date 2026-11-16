@@ -13,6 +13,7 @@ from consultations.models import (
 from consultations.services.migrate_v1_to_v2 import (
     _assign_stage,
     _backfill_question_types,
+    _convert_demographics,
     _convert_multiple_choice_to_responses,
     _fill_response_text,
     _refresh_denormalised_counts,
@@ -161,6 +162,52 @@ def test_survey_import_status_complete_when_all_typed():
     migrate_consultation_to_v2(consultation)
     consultation.refresh_from_db()
     assert consultation.survey_import_status == Consultation.SurveyImportStatus.IMPORT_COMPLETE
+
+
+def test_convert_demographics(v1_consultation):
+    _convert_demographics(v1_consultation)
+
+    nation = v1_consultation.question_set.get(
+        type=Question.QuestionType.DEMOGRAPHIC, text="Nation"
+    )
+    age = v1_consultation.question_set.get(type=Question.QuestionType.DEMOGRAPHIC, text="Age")
+    assert nation.status == Question.ThemeStatus.CONFIGURED
+    assert list(nation.response_set.exclude(text__isnull=True).values_list("text", flat=True)) == [
+        "England"
+    ]
+    assert list(age.response_set.exclude(text__isnull=True).values_list("text", flat=True)) == [
+        "18-35"
+    ]
+
+    # idempotent: re-running creates nothing new
+    total_rows = Response.objects.filter(question__consultation=v1_consultation).count()
+    _convert_demographics(v1_consultation)
+    assert Response.objects.filter(question__consultation=v1_consultation).count() == total_rows
+
+
+def test_convert_demographics_value_handling():
+    consultation = ConsultationFactory(is_v1=True)
+    respondent = RespondentFactory(consultation=consultation)
+    for field_name, field_value in [
+        ("consented", True),
+        ("flag", False),
+        ("answer", 42),
+        ("blank", ""),
+        ("placeholder", "Not Provided"),
+    ]:
+        option = DemographicOption.objects.create(
+            consultation=consultation, field_name=field_name, field_value=field_value
+        )
+        respondent.demographics.add(option)
+
+    _convert_demographics(consultation)
+
+    created = dict(
+        Response.objects.filter(question__consultation=consultation).values_list(
+            "question__text", "text"
+        )
+    )
+    assert created == {"consented": "true", "flag": "false", "answer": "42"}
 
 
 def test_migrate_skips_already_migrated_consultations(v1_consultation):
