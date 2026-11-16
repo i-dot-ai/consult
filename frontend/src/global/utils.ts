@@ -119,7 +119,7 @@ export const getDataSetupV2Enabled = (): boolean => {
   try {
     flag = import.meta.env.PUBLIC_DATA_SETUP_V2_ENABLED;
   } catch {
-    flag = process.env?.PUBLIC_DATA_SETUP_V2_ENABLED
+    flag = process.env?.PUBLIC_DATA_SETUP_V2_ENABLED;
   }
 
   // Default to enabling data setup v2 if it's not explicitly disabled
