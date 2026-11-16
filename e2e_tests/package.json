@@ -11,7 +11,7 @@
     "e2e-chrome": "npx playwright test --project=chromium"
   },
   "devDependencies": {
-    "@aws-sdk/client-s3": "^3.1156.0",
+    "@aws-sdk/client-s3": "^3.1161.0",
     "@playwright/test": "^1.64.1"
   },
   "dependencies": {
