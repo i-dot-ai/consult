@@ -190,6 +190,12 @@ def build_parser() -> argparse.ArgumentParser:
         "the task model.",
     )
     comparison_group.add_argument(
+        "--max-concurrent-models",
+        type=int,
+        default=None,
+        help="Maximum task models to evaluate concurrently (default: no limit).",
+    )
+    comparison_group.add_argument(
         "--quick",
         action="store_true",
         help=f"Quick CI smoke test: gambling_XS dataset, 1 run, {comparison.QUICK_MODEL} only.",
@@ -227,6 +233,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         selector_error = comparison.validate_selector_args(args)
         if selector_error:
             parser.error(selector_error)
+        if args.max_concurrent_models is not None and args.max_concurrent_models < 1:
+            parser.error("--max-concurrent-models must be at least 1")
         if args.question is not None:
             parser.error("--question applies to a single mapping run, not a comparison")
         if args.verbose:
@@ -250,8 +258,15 @@ def main(argv: Sequence[str] | None = None) -> None:
 
     if args.component is None or len(args.component) != 1:
         parser.error("A single run takes exactly one --component")
-    if args.judge_model is not None or args.reasoning_effort is not None:
-        parser.error("--judge-model and --reasoning-effort apply to model comparisons")
+    if (
+        args.judge_model is not None
+        or args.max_concurrent_models is not None
+        or args.reasoning_effort is not None
+    ):
+        parser.error(
+            "--judge-model, --max-concurrent-models, and --reasoning-effort apply "
+            "to model comparisons"
+        )
     component = args.component[0]
 
     results = asyncio.run(

@@ -186,6 +186,11 @@ class ComparisonConfig:
     runs_per_model: int = 5
     components: list[str] = field(default_factory=lambda: list(COMPONENT_NAMES))
     judge_model: str | None = None  # Gateway model name for the judge LLM
+    max_concurrent_models: int | None = None
+
+    def __post_init__(self) -> None:
+        if self.max_concurrent_models is not None and self.max_concurrent_models < 1:
+            raise ValueError("max_concurrent_models must be at least 1")
 
 
 @dataclass
@@ -314,7 +319,19 @@ class ComparisonRunner:
         console.print(f"  Total runs: {total_runs} ({runs_per_model} per model)\n")
 
         self._save_config()
-        group_tasks = [self._run_model_group(models) for models in name_groups.values()]
+        semaphore = (
+            asyncio.Semaphore(self.config.max_concurrent_models)
+            if self.config.max_concurrent_models is not None
+            else None
+        )
+
+        async def run_group(models: list[ModelConfig]) -> list[RunResult]:
+            if semaphore is None:
+                return await self._run_model_group(models)
+            async with semaphore:
+                return await self._run_model_group(models)
+
+        group_tasks = [run_group(models) for models in name_groups.values()]
         results = await asyncio.gather(*group_tasks, return_exceptions=True)
 
         for name, result in zip(name_groups.keys(), results):
@@ -462,6 +479,7 @@ class ComparisonRunner:
                 "model_tag": model_config.tag,
                 "reasoning_effort": model_config.reasoning_effort,
                 "judge_model": self.config.judge_model,
+                "max_concurrent_models": self.config.max_concurrent_models,
                 "run_number": run_number,
             },
         )
@@ -566,6 +584,7 @@ class ComparisonRunner:
             "runs_per_model": self.config.runs_per_model,
             "evals": self.config.components,
             "judge_model": self.config.judge_model,
+            "max_concurrent_models": self.config.max_concurrent_models,
             "models": [
                 {"name": model.name, "reasoning_effort": model.reasoning_effort}
                 for model in self.config.models
@@ -865,6 +884,7 @@ async def run_comparison(args: argparse.Namespace, evaluate: Evaluate) -> None:
         runs_per_model=args.runs,
         components=args.component or list(COMPONENT_NAMES),
         judge_model=args.judge_model,
+        max_concurrent_models=args.max_concurrent_models,
     )
     runner = ComparisonRunner(config, evaluate)
 
