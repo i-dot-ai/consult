@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+from django.utils import timezone
 
 from consultations.models import (
     CandidateTheme,
@@ -53,6 +54,27 @@ class TestCloneConsultation:
         cloned = clone_consultation(original)
 
         assert cloned.data_source == Consultation.DataSource.QUALTRICS
+
+    def test_consultation_migration_trackers_are_cloned(self):
+        migrated = ConsultationFactory(is_v1=True)
+        migrated.migrated_at = timezone.now()
+        migrated.save()
+        v2_created = ConsultationFactory(is_v1=False)
+
+        cloned_migrated = clone_consultation(migrated)
+        # a clone of a migrated consultation carries the same data shape: it
+        # is v1 in origin and already migrated, so the migration command
+        # will never treat it as an unmigrated v1 consultation
+        assert cloned_migrated.is_v1 is True
+        assert cloned_migrated.migrated_at == migrated.migrated_at
+
+        cloned_v2_created = clone_consultation(v2_created)
+        assert cloned_v2_created.is_v1 is False
+        assert cloned_v2_created.migrated_at is None
+
+        cloned_unmigrated = clone_consultation(ConsultationFactory(is_v1=True))
+        assert cloned_unmigrated.is_v1 is True
+        assert cloned_unmigrated.migrated_at is None
 
     def test_consultation_null_data_source_is_cloned(self):
         original = ConsultationFactory(data_source=None)
