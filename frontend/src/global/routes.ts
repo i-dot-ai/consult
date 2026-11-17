@@ -273,6 +273,20 @@ export const getApiResponseThemesV2Url = (
   );
 };
 
+export const getApiShowNextResponseV2Url = (
+  consultationId: string,
+  questionId: string,
+) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.ShowNext,
+  );
+};
+
 export const getApiDemographicOptionsV2Url = (consultationId: string) => {
   return urlJoinTrailing(
     Prefixes.ApiV2,

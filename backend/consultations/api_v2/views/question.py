@@ -1,3 +1,4 @@
+import uuid
 from typing import ClassVar
 
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -69,6 +70,15 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
         # Demographic questions are still accessible via their dedicated detail actions.
         if self.action in {"list", "retrieve", "sample_answers"}:
             queryset = queryset.exclude(type=Question.QuestionType.DEMOGRAPHIC)
+
+        # Dashboard respondent pages filter the list to a respondent's questions
+        respondent_id = self.request.query_params.get("respondent_id")
+        if respondent_id:
+            try:
+                uuid.UUID(respondent_id)
+            except ValueError:
+                raise serializers.ValidationError({"respondent_id": "Invalid UUID."})
+            queryset = queryset.filter(response__respondent_id=respondent_id).distinct()
 
         if self.action == "retrieve":
             # The dashboard question page surfaces the proportion of audited
@@ -153,6 +163,51 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
             .order_by("-count", "text")
         )
         return Response(self.get_serializer(answers, many=True).data)
+
+    @action(detail=True, methods=["get"], url_path="show-next", url_name="show-next")
+    def show_next_response(self, request, *args, **kwargs):
+        """Get the next response needing human review for this question (v2)."""
+        question = self.get_object()
+
+        # Only open questions (including hybrid originals) carry free text
+        if question.type != Question.QuestionType.OPEN:
+            return Response(
+                {
+                    "next_response": None,
+                    "type": question.type,
+                    "message": "This question does not have free text responses.",
+                }
+            )
+
+        answered_text = ~Q(text__isnull=True) & ~Q(text="")
+        next_response = (
+            ConsultationResponse.objects.filter(question=question)
+            .filter(answered_text)
+            .exclude(annotation__human_reviewed=True)
+            .order_by("?")
+            .first()
+        )
+
+        if next_response:
+            return Response(
+                {
+                    "next_response": {
+                        "id": str(next_response.id),
+                        "consultation_id": str(question.consultation.id),
+                        "question_id": str(question.id),
+                    },
+                    "type": question.type,
+                    "message": "Next response found.",
+                }
+            )
+
+        return Response(
+            {
+                "next_response": None,
+                "type": question.type,
+                "message": "No more responses to review.",
+            }
+        )
 
     @action(detail=True, methods=["post"], url_path="demographics/merge")
     def merge_demographics(self, request, *args, **kwargs):
