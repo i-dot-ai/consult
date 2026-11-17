@@ -9,17 +9,24 @@
     getApiConsultationRespondentUrl,
     getApiConsultationRespondentsUrl,
     getApiQuestionsUrl,
+    getApiQuestionsV2Url,
+    getApiResponsesV2Url,
     getQuestionDetailUrl,
     getQuestionsByRespondentUrl,
     getRespondentDetailUrl,
   } from "../../../global/routes.ts";
   import { createFetchStore } from "../../../global/stores.ts";
+  import { getDataSetupV2Enabled } from "../../../global/utils.ts";
+  import type { QuestionDetailV2 } from "../../../global/queries/questions/types.ts";
   import type {
     ResponsesBody,
+    ResponsesBodyV2,
     QuestionsResponse,
     Respondent,
     RespondentsResponse,
     ResponseBody,
+    ResponseBodyV2,
+    Question,
   } from "../../../global/types.ts";
   import Alert from "../../Alert/Alert.svelte";
   import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
@@ -49,21 +56,36 @@
 
   const respondentsStore = createFetchStore<RespondentsResponse>();
   const respondentStore = createFetchStore<Respondent>();
-  const consultationQuestionsStore = createFetchStore<QuestionsResponse>();
-  const questionsStore = createFetchStore<QuestionsResponse>();
-  const responsesStore = createFetchStore<ResponsesBody>();
+  const consultationQuestionsStore = createFetchStore<
+    QuestionsResponse | QuestionDetailV2[]
+  >();
+  const questionsStore = createFetchStore<
+    QuestionsResponse | QuestionDetailV2[]
+  >();
+  const responsesStore = createFetchStore<ResponsesBody | ResponsesBodyV2>();
 
   let dataRequested: boolean = $state(false);
 
+  // V2 flag: questions and responses come from the v2 API; the respondents
+  // list (prev/next respondent navigation) stays on the v1 endpoint as its
+  // payload is schema-agnostic. Sidebar demographics are derived from the
+  // respondent's responses to demographic-type questions.
+  const isV2 = getDataSetupV2Enabled();
+  const consultationQuestionsUrl = isV2
+    ? getApiQuestionsV2Url(consultationId)
+    : getApiQuestionsUrl(consultationId);
+  const respondentQuestionsUrl = isV2
+    ? `${getApiQuestionsV2Url(consultationId)}?respondent_id=${respondentId}`
+    : getQuestionsByRespondentUrl(consultationId, respondentId);
+  const responsesUrl = isV2
+    ? `${getApiResponsesV2Url(consultationId)}?respondent_id=${respondentId}`
+    : `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`;
+
   onMount(() => {
-    $consultationQuestionsStore.fetch(getApiQuestionsUrl(consultationId));
+    $consultationQuestionsStore.fetch(consultationQuestionsUrl);
     $respondentsStore.fetch(getLoadRespondentsUrl());
-    $questionsStore.fetch(
-      getQuestionsByRespondentUrl(consultationId, respondentId),
-    );
-    $responsesStore.fetch(
-      `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
-    );
+    $questionsStore.fetch(respondentQuestionsUrl);
+    $responsesStore.fetch(responsesUrl);
     dataRequested = true;
   });
 
@@ -73,6 +95,28 @@
       `?themefinder_id__gte=${themefinderId - 1}&themefinder_id__lte=${themefinderId + 1}`
     );
   }
+
+  const listResults = (
+    data: QuestionsResponse | QuestionDetailV2[] | null,
+  ): Array<Question | QuestionDetailV2> =>
+    Array.isArray(data) ? data : (data?.results ?? []);
+
+  const questionText = (question: Question | QuestionDetailV2): string =>
+    "question_text" in question
+      ? question.question_text
+      : (question.text ?? "");
+
+  const responseText = (response: ResponseBody | ResponseBodyV2): string =>
+    ("text" in response ? response.text : response.free_text_answer_text) ?? "";
+
+  let consultationQuestions = $derived(
+    listResults($consultationQuestionsStore.data),
+  );
+  let respondentQuestions = $derived(listResults($questionsStore.data));
+
+  let questionsById = $derived(
+    new Map(respondentQuestions.map((question) => [question.id, question])),
+  );
 
   let currRespondent = $derived(
     $respondentsStore.data?.results?.find(
@@ -96,21 +140,44 @@
   );
 
   let responsesToDisplay = $derived(
-    ($responsesStore.data?.all_respondents || []).map(
-      (response: ResponseBody) => {
-        const question = $questionsStore.data?.results?.find(
-          (question) => question.id === response.question_id,
-        );
+    (Array.isArray($responsesStore.data)
+      ? []
+      : $responsesStore.data?.all_respondents || []) as Array<
+      ResponseBody | ResponseBodyV2
+    >,
+  );
 
-        return {
-          ...response,
-          question: {
-            title: question?.question_text || "",
-            number: question?.number || 0,
-          },
-        };
-      },
-    ),
+  let sidebarDemoData = $derived(
+    isV2
+      ? responsesToDisplay
+          .filter((response) => {
+            const question = questionsById.get(response.question_id);
+            return (
+              question && "type" in question && question.type === "demographic"
+            );
+          })
+          .filter((response) => responseText(response))
+          .map((response) => {
+            const question = questionsById.get(response.question_id);
+            return {
+              name: question ? questionText(question) : "",
+              value: responseText(response),
+            };
+          })
+      : (currRespondent?.demographics ?? []),
+  );
+
+  let responsesWithQuestions = $derived(
+    responsesToDisplay.map((response) => {
+      const question = questionsById.get(response.question_id);
+      return {
+        ...response,
+        question: {
+          title: question ? questionText(question) : "",
+          number: question?.number || 0,
+        },
+      };
+    }),
   );
 </script>
 
@@ -158,11 +225,10 @@
     <div class="col-span-12 h-max md:sticky md:top-4 md:col-span-3" in:slide>
       <svelte:boundary>
         <RespondentSidebar
-          demoData={currRespondent?.demographics || []}
+          demoData={sidebarDemoData}
           stakeholderName={currRespondent?.name}
-          questionsAnswered={$questionsStore.data?.results.length ?? 0}
-          totalQuestions={$consultationQuestionsStore.data?.results?.length ??
-            0}
+          questionsAnswered={respondentQuestions.length}
+          totalQuestions={consultationQuestions.length}
           updateStakeholderName={async (newStakeholderName) => {
             // update current respondent stakeholder name
             await $respondentStore.fetch(
@@ -205,7 +271,7 @@
             {/if}
 
             <ul>
-              {#each responsesToDisplay.sort((a, b) => {
+              {#each responsesWithQuestions.sort((a, b) => {
                 if (a.question.number < b.question.number) {
                   return -1;
                 } else if (a.question.number > b.question.number) {
@@ -218,7 +284,7 @@
                   questionId={response.question_id}
                   questionTitle={response.question.title}
                   questionNumber={response.question.number}
-                  responseText={response.free_text_answer_text}
+                  responseText={responseText(response)}
                   multiChoice={response.multiple_choice_answer}
                   themes={response.themes?.map((theme) => theme.name) || []}
                   evidenceRich={response.evidenceRich ?? false}
