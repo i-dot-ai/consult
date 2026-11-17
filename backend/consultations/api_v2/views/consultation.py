@@ -72,7 +72,9 @@ class ConsultationViewSet(
         return ConsultationSerializer
 
     def perform_create(self, serializer):
-        consultation = serializer.save(code="", created_by=self.request.user)
+        # V2 consultations come from survey import; only legacy pipeline
+        # creations (and migrations) carry is_v1=True.
+        consultation = serializer.save(code="", created_by=self.request.user, is_v1=False)
         consultation.users.add(self.request.user)
 
     def get_queryset(self):
