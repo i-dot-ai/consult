@@ -77,12 +77,12 @@ jobs:
         env:
           LLM_GATEWAY_URL: ${{ secrets.LLM_GATEWAY_URL }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          # Regression uses the dedicated Preprod Langfuse project. Smoke
+          # Regression uses the production Langfuse project. Smoke
           # leaves both Langfuse backends local and receives no Langfuse credentials.
-          LANGFUSE_SECRET_KEY: ${{ inputs.tier == 'regression' && secrets.PREPROD_LANGFUSE_SECRET_KEY || '' }}
-          LANGFUSE_PUBLIC_KEY: ${{ inputs.tier == 'regression' && secrets.PREPROD_LANGFUSE_PUBLIC_KEY || '' }}
-          LANGFUSE_BASE_URL: ${{ inputs.tier == 'regression' && vars.PREPROD_LANGFUSE_BASE_URL || '' }}
-          ENVIRONMENT: ${{ inputs.tier == 'regression' && 'preprod' || 'production' }}
+          LANGFUSE_SECRET_KEY: ${{ inputs.tier == 'regression' && secrets.LANGFUSE_SECRET_KEY || '' }}
+          LANGFUSE_PUBLIC_KEY: ${{ inputs.tier == 'regression' && vars.LANGFUSE_PUBLIC_KEY || '' }}
+          LANGFUSE_BASE_URL: ${{ inputs.tier == 'regression' && vars.LANGFUSE_BASE_URL || '' }}
+          ENVIRONMENT: production
           TIER: ${{ inputs.tier }}
         run: make eval-$TIER
 
