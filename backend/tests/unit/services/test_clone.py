@@ -61,6 +61,7 @@ class TestCloneConsultation:
         migrated.migrated_at = timezone.now()
         migrated.save()
         v2_created = ConsultationFactory(is_v1=not is_v1)
+        unmigrated = ConsultationFactory(is_v1=is_v1)
 
         cloned_migrated = clone_consultation(migrated)
         # a clone of a migrated consultation carries the same data shape: it
@@ -73,7 +74,7 @@ class TestCloneConsultation:
         assert cloned_v2_created.is_v1 is not is_v1
         assert cloned_v2_created.migrated_at is None
 
-        cloned_unmigrated = clone_consultation(ConsultationFactory(is_v1=is_v1))
+        cloned_unmigrated = clone_consultation(unmigrated)
         assert cloned_unmigrated.is_v1 is is_v1
         assert cloned_unmigrated.migrated_at is None
 
