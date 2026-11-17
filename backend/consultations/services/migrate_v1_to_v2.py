@@ -196,9 +196,14 @@ def _backfill_question_types(consultation: Consultation) -> None:
     QuestionSetupSerializer.update: setting a type marks the question
     CONFIGURED. survey_import_status is deliberately untouched here.
     """
+    next_number = (
+        consultation.question_set.order_by("-number").values_list("number", flat=True).first()
+        or 0
+    ) + 1
     for question in consultation.question_set.filter(type__isnull=True).order_by("number"):
         if question.has_multiple_choice and question.has_free_text:
-            _split_hybrid_question(question)
+            _split_hybrid_question(question, next_number)
+            next_number += 1
         elif question.has_multiple_choice:
             _set_question_type(question, Question.QuestionType.CLOSED)
         elif question.has_free_text:
@@ -221,12 +226,14 @@ def _set_question_type(question: Question, question_type: Any) -> None:
     question.save(update_fields=["type", "status"])
 
 
-def _split_hybrid_question(question: Question) -> Question:
+def _split_hybrid_question(question: Question, number: int) -> Question:
     """Promote the original question to OPEN and create its CLOSED sibling.
 
     The sibling inherits the question wording and option values and is
     appended at the end of the question order (numbers are ints, so it
-    cannot slot in beside the original).
+    cannot slot in beside the original). The caller threads the next free
+    question number so a consultation with many hybrids does not pay a
+    max(number) query per sibling.
     """
     consultation = question.consultation
     option_texts = list(question.multichoiceanswer_set.values_list("text", flat=True))
@@ -238,7 +245,7 @@ def _split_hybrid_question(question: Question) -> Question:
     closed_question = Question(
         consultation=consultation,
         text=question.text,
-        number=(consultation.question_set.order_by("-number").values_list("number", flat=True).first() or 0) + 1,
+        number=number,
         has_free_text=False,
         has_multiple_choice=True,
         type=Question.QuestionType.CLOSED,
@@ -287,10 +294,12 @@ def _convert_multiple_choice_to_responses(consultation: Consultation) -> None:
         )
         return None
 
+    # Option rows only ever land on closed questions, so the dedupe set can
+    # ignore every other response in the consultation.
     existing_pairs = set(
-        Response.objects.filter(question__consultation=consultation).values_list(
-            "question_id", "respondent_id", "text"
-        )
+        Response.objects.filter(
+            question__consultation=consultation, question__type=Question.QuestionType.CLOSED
+        ).values_list("question_id", "respondent_id", "text")
     )
 
     links = (
@@ -303,9 +312,13 @@ def _convert_multiple_choice_to_responses(consultation: Consultation) -> None:
             "response__respondent_id",
             "multichoiceanswer__text",
         )
+        .iterator(chunk_size=_RESPONSE_ROW_BATCH_SIZE)
     )
 
-    rows_to_create: list[Response] = []
+    # Rows stream in and flush to the database every batch, so memory stays
+    # bounded for consultations with millions of option links.
+    created = 0
+    batch: list[Response] = []
     for link in links:
         target_id = target_question_id(link.response.question_id)
         option_text = link.multichoiceanswer.text
@@ -315,23 +328,25 @@ def _convert_multiple_choice_to_responses(consultation: Consultation) -> None:
         if candidate in existing_pairs:
             continue
         existing_pairs.add(candidate)
-        rows_to_create.append(
+        batch.append(
             Response(
                 question_id=target_id,
                 respondent_id=link.response.respondent_id,
                 text=option_text,
             )
         )
+        if len(batch) == _RESPONSE_ROW_BATCH_SIZE:
+            Response.objects.bulk_create(batch, batch_size=_RESPONSE_ROW_BATCH_SIZE)
+            created += len(batch)
+            batch = []
 
-    for start in range(0, len(rows_to_create), _RESPONSE_ROW_BATCH_SIZE):
-        Response.objects.bulk_create(
-            rows_to_create[start : start + _RESPONSE_ROW_BATCH_SIZE],
-            batch_size=_RESPONSE_ROW_BATCH_SIZE,
-        )
-    if rows_to_create:
+    if batch:
+        Response.objects.bulk_create(batch, batch_size=_RESPONSE_ROW_BATCH_SIZE)
+        created += len(batch)
+    if created:
         logger.info(
             "Created {response_rows} option response rows for consultation {consultation_id}",
-            response_rows=len(rows_to_create),
+            response_rows=created,
             consultation_id=consultation.id,
         )
 
