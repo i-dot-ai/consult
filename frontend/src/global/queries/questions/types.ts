@@ -23,6 +23,20 @@ export type DemographicAnswer = {
   count: number;
   responses: string[];
 };
+
+// Dashboard question-detail payload: QuestionV2 plus the response counts and
+// multi-choice answers the dashboard reads (see QuestionDashboardSerializerV2).
+export type QuestionDetailV2 = QuestionV2 & {
+  total_response_count: number;
+  free_text_response_count: number;
+  multi_choice_response_count: number;
+  multiple_choice_answer: {
+    id: string;
+    text: string;
+    response_count: number;
+  }[];
+  proportion_of_audited_answers: number;
+};
 export type DemographicMergeBody = {
   new_value: string;
   responses: string[];

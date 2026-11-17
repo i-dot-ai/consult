@@ -18,26 +18,37 @@
 
   import {
     getApiConsultationUrl,
+    getApiConsultationV2Url,
+    getApiDemographicOptionsV2Url,
     getApiDemographicsUrl,
     getApiQuestionResponsesUrl,
+    getApiQuestionResponsesV2Url,
     getApiQuestionThemesUrl,
     getApiQuestionUrl,
+    getApiQuestionV2Url,
+    getApiResponseMarkReadV2Url,
+    getApiResponsesMarkReadBulkV2Url,
     getConsultationDashboardUrl,
     updateResponseReadStatus,
     updateResponsesReadStatusBulk,
   } from "../../../global/routes.ts";
 
   import { createFetchStore } from "../../../global/stores.ts";
+  import { getDataSetupV2Enabled } from "../../../global/utils.ts";
   import {
     SearchModeValues,
     type ResponsesBody,
+    type ResponsesBodyV2,
     type ConsultationResponse,
     type DemoOptionsResponse,
     type FormattedTheme,
     type Question,
     type ThemeInfoResponse,
     type ResponseBody,
+    type ResponseBodyV2,
   } from "../../../global/types.ts";
+  import type { QuestionDetailV2 } from "../../../global/queries/questions/types.ts";
+  import type { ConsultationV2 } from "../../../global/queries/consultations/types.ts";
   import {
     themeFilters,
     demoFilters,
@@ -88,9 +99,36 @@
 
   const PAGE_SIZE: number = 5;
 
+  // V2 flag: when enabled, question/response/demographic data is served by the
+  // v2 API and rendered with the v2 schema; themes keep their v1 endpoints.
+  const isV2 = getDataSetupV2Enabled();
+
+  const consultationUrl = isV2
+    ? getApiConsultationV2Url(consultationId)
+    : getApiConsultationUrl(consultationId);
+  const questionUrl = isV2
+    ? getApiQuestionV2Url(consultationId, questionId)
+    : getApiQuestionUrl(consultationId, questionId);
+  const responsesUrl = isV2
+    ? getApiQuestionResponsesV2Url(consultationId, questionId)
+    : getApiQuestionResponsesUrl(consultationId, questionId);
+  const demographicsUrl = isV2
+    ? getApiDemographicOptionsV2Url(consultationId)
+    : getApiDemographicsUrl(consultationId);
+  const markResponsesReadBulkUrl = isV2
+    ? getApiResponsesMarkReadBulkV2Url(consultationId)
+    : updateResponsesReadStatusBulk(consultationId);
+  const markResponseReadUrl = (responseId: string) =>
+    isV2
+      ? getApiResponseMarkReadV2Url(consultationId, responseId)
+      : updateResponseReadStatus(consultationId, responseId);
+
+  const responseText = (response: ResponseBody | ResponseBodyV2): string =>
+    ("text" in response ? response.text : response.free_text_answer_text) ?? "";
+
   let nextCursor: string | null = $state(null);
   let hasMorePages: boolean = $state(true);
-  let responses: ResponseBody[] = $state([]);
+  let responses: (ResponseBody | ResponseBodyV2)[] = $state([]);
   let markedAsReadIds: SvelteSet<string> = new SvelteSet();
   let responseTotalCount: number | null = $state(null);
   let lastAggregationQs: string | null = $state(null);
@@ -103,15 +141,17 @@
   let dataRequested: boolean = $state(false);
   let isResponsesLoading: boolean = $state(true);
 
-  const consultationStore = createFetchStore<ConsultationResponse>();
-  const questionStore = createFetchStore<Question>();
-  const responsesStore = createFetchStore<ResponsesBody>();
+  const consultationStore = createFetchStore<
+    ConsultationResponse | ConsultationV2
+  >();
+  const questionStore = createFetchStore<Question | QuestionDetailV2>();
+  const responsesStore = createFetchStore<ResponsesBody | ResponsesBodyV2>();
   const themesStore = createFetchStore<ThemeInfoResponse>();
   const demographicsStore = createFetchStore<DemoOptionsResponse>();
 
   onMount(() => {
-    $consultationStore.fetch(getApiConsultationUrl(consultationId));
-    $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
+    $consultationStore.fetch(consultationUrl);
+    $questionStore.fetch(questionUrl);
     dataRequested = true;
   });
 
@@ -140,21 +180,17 @@
 
     if (aggregationQs !== lastAggregationQs) {
       lastAggregationQs = aggregationQs;
-      $questionStore.fetch(
-        `${getApiQuestionUrl(consultationId, questionId)}${aggregationQs}`,
-      );
+      $questionStore.fetch(`${questionUrl}${aggregationQs}`);
       $themesStore.fetch(
         `${getApiQuestionThemesUrl(consultationId, questionId)}${aggregationQs}`,
       );
       $demographicsStore.fetch(
-        `${getApiDemographicsUrl(consultationId)}${aggregationQs}${aggregationQs ? "&" : "?"}question_id=${questionId}`,
+        `${demographicsUrl}${aggregationQs}${aggregationQs ? "&" : "?"}question_id=${questionId}`,
       );
     }
 
     // Append next page of answers to existing answers
-    await $responsesStore.fetch(
-      `${getApiQuestionResponsesUrl(consultationId, questionId)}${responseQs}`,
-    );
+    await $responsesStore.fetch(`${responsesUrl}${responseQs}`);
 
     if ($responsesStore.data?.all_respondents) {
       responses = [...responses, ...$responsesStore.data.all_respondents];
@@ -268,7 +304,7 @@
     // Optimistically record these as sent so rapid repeat clicks do not resend them.
     unreadResponseIds.forEach((responseId) => markedAsReadIds.add(responseId));
 
-    fetch(updateResponsesReadStatusBulk(consultationId), {
+    fetch(markResponsesReadBulkUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ response_ids: unreadResponseIds }),
@@ -286,7 +322,13 @@
   }
 
   let demographics = $derived($demographicsStore.data || []);
-  let hasFreeText = $derived($questionStore.data?.has_free_text ?? true);
+  let hasFreeText = $derived(
+    $questionStore.data
+      ? "type" in $questionStore.data
+        ? $questionStore.data.type === "open"
+        : $questionStore.data.has_free_text
+      : true,
+  );
   let themes: FormattedTheme[] = $derived(
     ($themesStore.data?.themes || [])
       .map((theme) => ({
@@ -541,7 +583,7 @@
                         demoData={Object.values(response.demographic_data)}
                         multiAnswers={response.multiple_choice_answer}
                         evidenceRich={response.evidenceRich}
-                        text={response.free_text_answer_text}
+                        text={responseText(response)}
                         themes={response.themes || []}
                         themeOptions={$themesStore.data?.themes || []}
                         highlightText={searchValue}
@@ -552,13 +594,9 @@
                           loadData();
                         }}
                         onInteract={() => {
-                          fetch(
-                            updateResponseReadStatus(
-                              consultationId,
-                              response.id,
-                            ),
-                            { method: "POST" },
-                          );
+                          fetch(markResponseReadUrl(response.id), {
+                            method: "POST",
+                          });
                           response.is_read = true;
                         }}
                       />
