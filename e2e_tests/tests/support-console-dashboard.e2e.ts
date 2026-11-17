@@ -67,9 +67,20 @@ test.describe("Support Console Dashboard - Dashboard Page", () => {
     test("displays all questions for the consultation", async ({ page }) => {
       const questions = setupConsultation.questions!;
 
+      // Seeding derives v2 demographic questions (one per demographic field)
+      // from the fixture responses; the support console lists every question,
+      // so the delete-action count includes them.
+      const demographicFieldCount = new Set(
+        questions.flatMap((question) =>
+          (question.responses ?? []).flatMap((response) =>
+            Object.keys(response.demographics ?? {}),
+          ),
+        ),
+      ).size;
+
       await expect(
         page.getByRole("button", { name: /delete question .*/ }),
-      ).toHaveCount(questions.length);
+      ).toHaveCount(questions.length + demographicFieldCount);
 
       // Check each question's text, not just the row count, so a mislabelled
       // or missing row is caught.
