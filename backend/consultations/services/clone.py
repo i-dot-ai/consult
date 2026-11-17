@@ -136,12 +136,19 @@ def clone_consultation(original: Consultation) -> Consultation:
     Clone a consultation including all related objects, including users,
     with the exception of created_by.
     """
-    # Clone consultation and give the same users access
+    # Clone consultation and give the same users access.
+    # The migration trackers are copied verbatim so the clone carries the
+    # same facts as its original's data: its origin (is_v1) and whether that
+    # data is already v2-shaped (migrated_at). Copying migrated_at means a
+    # clone of a migrated consultation can never be mistaken for an
+    # unmigrated V1 consultation by the migration command.
     cloned = Consultation.objects.create(
         title=f"{original.title} (Clone)",
         code="",
         stage=original.stage,
         data_source=original.data_source,
+        is_v1=original.is_v1,
+        migrated_at=original.migrated_at,
     )
     cloned.users.set(original.users.all())
     consultation_map = {original.id: cloned.id}
