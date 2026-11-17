@@ -20,6 +20,7 @@ from consultations.models import (
     SelectedTheme,
 )
 from consultations.services.clone import clone_consultation_job
+from consultations.services.migrate_v1_to_v2 import migrate_v1_consultation_job
 from data_pipeline.jobs import (
     import_candidate_themes,
 )
@@ -109,12 +110,35 @@ def create_cloned_consultation(modeladmin, request, queryset):
         messages.error(request, f"Failed to start clone job: {e}")
 
 
+@admin.action(description="Migrate consultation from V1 to V2 schema")
+def migrate_v1_consultation(modeladmin, request, queryset):
+    if queryset.count() != 1:
+        messages.error(request, "Please select exactly one consultation to migrate")
+        return
+
+    consultation = queryset.first()
+    try:
+        migrate_v1_consultation_job.delay(consultation.id)
+        messages.success(
+            request,
+            f"Migrating '{consultation.title}' to the V2 schema in the background. "
+            "Monitor progress in /django-rq.",
+        )
+    except Exception as e:
+        logger.exception(
+            "Error starting V1 to V2 migration job for consultation {consultation_id}",
+            consultation_id=consultation.id,
+        )
+        messages.error(request, f"Failed to start migration job: {e}")
+
+
 class ConsultationAdmin(admin.ModelAdmin):
     actions: ClassVar[list] = [
         create_small_dummy_consultation,
         create_large_dummy_consultation,
         import_candidate_themes_from_s3_job,
         create_cloned_consultation,
+        migrate_v1_consultation,
     ]
 
 
