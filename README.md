@@ -46,7 +46,7 @@ make install
 make setup
 ```
 
-The `make install` command installs the correct Python and Node versions and all dependencies. And `make setup` creates `.env` files from templates and sets up the database with dummy data and an admin user (`email@example.com` / `admin`).
+The `make install` command installs the correct Python and Node versions and all dependencies. `make setup` creates `.env` files from templates and sets up the database with dummy data. It also runs `createadminusers`, which makes a staff user for every address in `ADMIN_USERS` in `.env` (`admin@example.com` and `policy@example.com` by default). Local sign-in is by email, with no password. To add users later, edit `ADMIN_USERS` and run `cd backend && uv run python manage.py createadminusers`.
 
 ### Running the application
 
@@ -103,6 +103,11 @@ If you are getting error while running e2e that the frontend is failing to start
 ```shell
 brew install coreutils
 ```
+
+### Trying the API with Postman
+
+A Postman collection for the backend API, with local sign-in handled by a
+pre-request script, lives in [`docs/postman/`](docs/postman/README.md).
 
 ### Setting up a new consultation
 
