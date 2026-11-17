@@ -384,7 +384,7 @@ def update_search_vector(sender, instance, created, **kwargs):
 
     # Update the search vector
     Response.objects.filter(pk=instance.pk).update(
-        search_vector=SearchVector("free_text", config="english")
+        search_vector=SearchVector("text", config="english")
     )
 
 

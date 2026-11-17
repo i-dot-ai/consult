@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any, ClassVar
 
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -442,7 +443,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
     respondent_id = serializers.UUIDField(source="respondent.id", read_only=True)
     respondent = RespondentSerializer(read_only=True)
-    free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
+    text = serializers.CharField(read_only=True)
     demographic_data = serializers.SerializerMethodField(read_only=True)
     themes = ResponseAnnotationThemeSerializer(
         source="annotation.responseannotationtheme_set", many=True
@@ -464,8 +465,24 @@ class ResponseSerializer(serializers.ModelSerializer):
     def get_is_read(self, obj):
         return getattr(obj, "is_read_by_user", False)
 
-    def get_demographic_data(self, obj) -> dict[str, Any] | None:
-        return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
+    def get_demographic_data(self, obj) -> dict[str, Any]:
+        """v2 demographics: responses to demographic-type questions, keyed by question text.
+
+        Reads the view's prefetch (one query per request) and falls back to a direct
+        query only when serializing objects outside the ResponseViewSet queryset.
+        """
+        demographic_responses = getattr(obj.respondent, "prefetched_demographic_responses", None)
+        if demographic_responses is None:
+            demographic_responses = (
+                Response.objects.filter(
+                    respondent=obj.respondent,
+                    question__type=Question.QuestionType.DEMOGRAPHIC,
+                    question__consultation_id=obj.question.consultation_id,
+                )
+                .filter(~Q(text__isnull=True) & ~Q(text=""))
+                .select_related("question")
+            )
+        return {r.question.text: r.text for r in demographic_responses}
 
     def update(self, instance: Response, validated_data):
         if annotation := validated_data.get("annotation"):
@@ -509,7 +526,7 @@ class ResponseSerializer(serializers.ModelSerializer):
             "respondent_id",
             "respondent",
             "question_id",
-            "free_text_answer_text",
+            "text",
             "demographic_data",
             "themes",
             "multiple_choice_answer",
