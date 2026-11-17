@@ -116,6 +116,17 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         choices=SurveyImportStatus,
         default=SurveyImportStatus.NOT_STARTED,
     )
+    is_v1 = models.BooleanField(
+        default=True,
+        help_text="whether this consultation's data was created by the legacy V1 pipeline setup "
+        "rather than the V2 survey import flow",
+    )
+    migrated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="when this consultation was migrated from the V1 schema to the V2 schema",
+    )
     code = models.SlugField(max_length=CONSULTATION_CODE_MAX_LENGTH)
     timestamp = models.SlugField(max_length=256, null=True, blank=True)
     display_ai_selected_themes = models.BooleanField(
