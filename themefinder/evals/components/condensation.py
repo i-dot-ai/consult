@@ -3,13 +3,16 @@
 from typing import Any
 
 import pandas as pd
-from adapters.evaluators.condensation_quality_evaluator import (
-    CondensationQualityEvaluator,
+from themefinder import theme_condensation
+
+from adapters.evaluators.clarity_evaluator import ClarityEvaluator
+from adapters.evaluators.ground_information_evaluator import (
+    GroundednessInformationRetentionEvaluator,
 )
 from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
+from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
+from components.theme_output import build_themes_output
 from eval_types import ComponentConfig
-
-from themefinder import theme_condensation
 
 
 async def run_condensation_task(inputs: dict, llm: Any) -> dict:
@@ -20,7 +23,7 @@ async def run_condensation_task(inputs: dict, llm: Any) -> dict:
         llm=llm,
         question=inputs["question"],
     )
-    return {"themes": condensed_df.to_dict(orient="records")}
+    return build_themes_output(condensed_df)
 
 
 def build_condensation_config(judge_llm: Any) -> ComponentConfig:
@@ -29,7 +32,11 @@ def build_condensation_config(judge_llm: Any) -> ComponentConfig:
         component="condensation",
         task=run_condensation_task,
         evaluators=[
-            CondensationQualityEvaluator(judge_llm),
+            GroundednessInformationRetentionEvaluator(
+                judge_llm, ground_truth_attr="inputs"
+            ),
+            ClarityEvaluator(judge_llm),
+            TitleSpecificityEvaluator(judge_llm),
             RedundancyEvaluator(),
         ],
     )

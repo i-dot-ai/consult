@@ -1,0 +1,23 @@
+{
+  "header": {
+    "dataset": "housing_XS",
+    "dataset_revision": "langfuse-prod-2026-11-12",
+    "model": "gpt-4.1-sweden-2025-03",
+    "n_runs": 3,
+    "tolerance": "max(0.05 for 0-1 metrics or 0.5 for 1-5 judge metrics, 3.0 * stdev across runs)"
+  },
+  "metrics": {
+    "clarity": {
+      "baseline": 0.8811,
+      "tolerance": 0.1245
+    },
+    "information_equivalence": {
+      "baseline": 0.9417,
+      "tolerance": 0.05
+    },
+    "specificity": {
+      "baseline": 0.81,
+      "tolerance": 0.0737
+    }
+  }
+}

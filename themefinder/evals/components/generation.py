@@ -3,14 +3,16 @@
 from typing import Any
 
 import pandas as pd
-from adapters.evaluators.coverage_evaluator import CoverageEvaluator
-from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
+from themefinder import theme_generation
+
+from adapters.evaluators.clarity_evaluator import ClarityEvaluator
+from adapters.evaluators.ground_information_evaluator import (
+    GroundednessInformationRetentionEvaluator,
+)
 from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
-from eval_types import ComponentConfig
-
 from components.theme_output import build_themes_output
-from themefinder import theme_generation
+from eval_types import ComponentConfig
 
 
 async def run_generation_task(inputs: dict, llm: Any) -> dict:
@@ -31,8 +33,8 @@ def build_generation_config(judge_llm: Any) -> ComponentConfig:
         component="generation",
         task=run_generation_task,
         evaluators=[
-            GroundednessEvaluator(judge_llm),
-            CoverageEvaluator(judge_llm),
+            GroundednessInformationRetentionEvaluator(judge_llm),
+            ClarityEvaluator(judge_llm),
             TitleSpecificityEvaluator(judge_llm),
             RedundancyEvaluator(),
         ],

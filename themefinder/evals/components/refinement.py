@@ -3,17 +3,15 @@
 from typing import Any
 
 import pandas as pd
+from themefinder import theme_refinement
+
 from adapters.evaluators.clarity_evaluator import ClarityEvaluator
 from adapters.evaluators.information_equivalence_evaluator import (
     InformationEquivalenceEvaluator,
 )
-from adapters.evaluators.refinement_quality_evaluator import (
-    RefinementQualityEvaluator,
-)
-from eval_types import ComponentConfig
-
+from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
 from components.theme_output import build_themes_output
-from themefinder import theme_refinement
+from eval_types import ComponentConfig
 
 
 async def run_refinement_task(inputs: dict, llm: Any) -> dict:
@@ -33,8 +31,8 @@ def build_refinement_config(judge_llm: Any) -> ComponentConfig:
         component="refinement",
         task=run_refinement_task,
         evaluators=[
-            RefinementQualityEvaluator(judge_llm),
-            InformationEquivalenceEvaluator(judge_llm),
             ClarityEvaluator(judge_llm),
+            TitleSpecificityEvaluator(judge_llm),
+            InformationEquivalenceEvaluator(judge_llm),
         ],
     )

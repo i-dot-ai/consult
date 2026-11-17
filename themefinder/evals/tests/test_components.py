@@ -2,19 +2,14 @@ import pandas as pd
 import pytest
 
 from adapters.evaluators.clarity_evaluator import ClarityEvaluator
-from adapters.evaluators.condensation_quality_evaluator import (
-    CondensationQualityEvaluator,
+from adapters.evaluators.ground_information_evaluator import (
+    GroundednessInformationRetentionEvaluator,
 )
-from adapters.evaluators.coverage_evaluator import CoverageEvaluator
-from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
 from adapters.evaluators.information_equivalence_evaluator import (
     InformationEquivalenceEvaluator,
 )
 from adapters.evaluators.mapping_metrics_evaluator import MappingMetricsEvaluator
 from adapters.evaluators.redundancy_evaluator import RedundancyEvaluator
-from adapters.evaluators.refinement_quality_evaluator import (
-    RefinementQualityEvaluator,
-)
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
 from components import (
     COMPONENT_NAMES,
@@ -47,8 +42,8 @@ def test_builds_fresh_generation_config_with_bound_judge():
     config = build_component_config("generation", judge_llm=judge_llm)
 
     assert [type(evaluator) for evaluator in config.evaluators] == [
-        GroundednessEvaluator,
-        CoverageEvaluator,
+        GroundednessInformationRetentionEvaluator,
+        ClarityEvaluator,
         TitleSpecificityEvaluator,
         RedundancyEvaluator,
     ]
@@ -61,8 +56,8 @@ def test_builds_fresh_find_themes_config_with_bound_judge():
     config = build_component_config("find_themes", judge_llm=judge_llm)
 
     assert [type(evaluator) for evaluator in config.evaluators] == [
-        GroundednessEvaluator,
-        CoverageEvaluator,
+        GroundednessInformationRetentionEvaluator,
+        ClarityEvaluator,
         TitleSpecificityEvaluator,
         RedundancyEvaluator,
     ]
@@ -77,14 +72,19 @@ def test_builds_expected_non_generation_evaluators():
     mapping_config = build_component_config("mapping", judge_llm=judge_llm)
 
     assert [type(evaluator) for evaluator in condensation_config.evaluators] == [
-        CondensationQualityEvaluator,
+        GroundednessInformationRetentionEvaluator,
+        ClarityEvaluator,
+        TitleSpecificityEvaluator,
         RedundancyEvaluator,
     ]
-    assert condensation_config.evaluators[0].llm is judge_llm
+    assert all(
+        evaluator.llm is judge_llm for evaluator in condensation_config.evaluators[:3]
+    )
+    assert condensation_config.evaluators[0].ground_truth_attr == "inputs"
     assert [type(evaluator) for evaluator in refinement_config.evaluators] == [
-        RefinementQualityEvaluator,
-        InformationEquivalenceEvaluator,
         ClarityEvaluator,
+        TitleSpecificityEvaluator,
+        InformationEquivalenceEvaluator,
     ]
     assert all(evaluator.llm is judge_llm for evaluator in refinement_config.evaluators)
     assert [type(evaluator) for evaluator in mapping_config.evaluators] == [
@@ -200,7 +200,7 @@ async def test_condensation_task_uses_common_output_schema(monkeypatch):
     async def fake_condensation(themes_df, *, llm, question):
         assert themes_df.to_dict("records") == [{"topic": "Original"}]
         assert question == "Question?"
-        return pd.DataFrame([{"topic": "Condensed"}]), None
+        return pd.DataFrame([{"topic": "Condensed: Description"}]), None
 
     monkeypatch.setattr(condensation, "theme_condensation", fake_condensation)
 
@@ -208,7 +208,15 @@ async def test_condensation_task_uses_common_output_schema(monkeypatch):
         {"question": "Question?", "themes": [{"topic": "Original"}]}, object()
     )
 
-    assert output == {"themes": [{"topic": "Condensed"}]}
+    assert output == {
+        "themes": [
+            {
+                "topic": "Condensed: Description",
+                "topic_label": "Condensed",
+                "topic_description": "Description",
+            }
+        ]
+    }
 
 
 async def test_refinement_task_uses_common_output_schema(monkeypatch):

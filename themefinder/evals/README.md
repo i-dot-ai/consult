@@ -72,12 +72,14 @@ Both tiers run on a temporary EC2 runner via `.github/workflows/themefinder-eval
 
 | Tier | Trigger | Command | Passes when |
 |---|---|---|---|
-| Smoke | Pull request | `make eval-smoke` | Every component runs end to end on `gambling_XXS` (scores ignored) |
-| Regression | Push to `main`, nightly | `make eval-regression` | Every metric on `gambling_XS` is within tolerance of its baseline for current model |
+| Smoke | Pull requests, manual runs | `make eval-smoke` | Every component runs end to end on `gambling_XXS` (scores ignored) |
+| Regression | Push to `main`, nightly, manual runs | `make eval-regression` | Every case runs three times for `gambling_XS`, `health_XS`, and `housing_XS`; no metric regresses beyond its baseline tolerance |
 
 Regression failures post to Slack. Result files are uploaded as a workflow artefact for 90 days.
 
-Both tiers run through DVC, described below.
+Both tiers run through DVC, described below. You can reproduce them locally with
+`make eval-smoke` or `make eval-regression`; both require gateway credentials and
+leave changes to `params.yaml` and `dvc.lock` that should be discarded afterwards.
 
 ## DVC
 
