@@ -1,15 +1,34 @@
 <script lang="ts">
   import type { Question, ShowNextResponseResult } from "../../../global/types";
+  import type {
+    QuestionDetailV2,
+    ShowNextResponseResultV2,
+  } from "../../../global/queries/questions/types";
   import {
     getApiShowNextResponse,
+    getApiShowNextResponseV2Url,
     getResponseDetailUrl,
   } from "../../../global/routes";
+  import { getDataSetupV2Enabled } from "../../../global/utils";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Visibility from "../../svg/material/Visibility.svelte";
   import Button from "../../inputs/Button/Button.svelte";
 
   export let consultationId: string;
-  export let questions: Question[] = [];
+  export let questions: Array<Question | QuestionDetailV2> = [];
+
+  const isV2 = getDataSetupV2Enabled();
+
+  function questionPath(questionId: string) {
+    return isV2
+      ? getApiShowNextResponseV2Url(consultationId, questionId)
+      : getApiShowNextResponse(consultationId, questionId);
+  }
+
+  const questionText = (question: Question | QuestionDetailV2): string =>
+    "question_text" in question
+      ? question.question_text
+      : (question.text ?? "");
 
   let loadingStates: { [key: string]: boolean } = {};
   let errors: { [key: string]: string | null } = {};
@@ -19,15 +38,18 @@
     errors[questionId] = null;
 
     try {
-      const response = await fetch(
-        getApiShowNextResponse(consultationId, questionId),
-      );
+      const response = await fetch(questionPath(questionId));
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result: ShowNextResponseResult = await response.json();
+      const result: ShowNextResponseResult | ShowNextResponseResultV2 =
+        await response.json();
+      const hasFreeText =
+        "has_free_text" in result
+          ? result.has_free_text
+          : result.type === "open";
 
       if (result.next_response) {
         // Redirect to the next response
@@ -38,7 +60,7 @@
         );
       } else {
         // No more responses to review
-        if (!result.has_free_text) {
+        if (!hasFreeText) {
           errors[questionId] =
             "This question does not have free text responses.";
         } else {
@@ -62,7 +84,7 @@
       </div>
     {/if}
     <div class="mx-0 mt-0 flex items-center justify-between pb-4">
-      <p class="m-0 shrink grow basis-0">{question.question_text}</p>
+      <p class="m-0 shrink grow basis-0">{questionText(question)}</p>
       <p class="m-0 min-w-[15ch] px-4 py-0 text-center">
         {Math.round((question.proportion_of_audited_answers || 0) * 100)}%
         reviewed

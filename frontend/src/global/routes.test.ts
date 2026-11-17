@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   getApiDemographicOptionsV2Url,
+  getApiShowNextResponseV2Url,
   getApiResponseFlagV2Url,
   getApiResponseMarkReadV2Url,
   getApiResponseThemesV2Url,
@@ -49,6 +50,12 @@ describe("v2 response routes", () => {
   it("builds the demographic options url", () => {
     expect(getApiDemographicOptionsV2Url(consultationId)).toBe(
       "/api/v2/consultations/consultation-id/responses/demographic-options/",
+    );
+  });
+
+  it("builds the show-next url", () => {
+    expect(getApiShowNextResponseV2Url(consultationId, questionId)).toBe(
+      "/api/v2/consultations/consultation-id/questions/question-id/show-next/",
     );
   });
 });
