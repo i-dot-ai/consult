@@ -41,6 +41,7 @@ export enum Suffixes {
   ReviewQuestions = "review-questions",
   ChartsAndFilters = "charts-and-filters",
   Demographics = "demographics",
+  DemographicOptions = "demographic-options",
   SampleAnswers = "sample-answers",
   Merge = "merge",
 }
@@ -180,6 +181,104 @@ export const getApiQuestionDemographicsMergeV2Url = (
     questionId,
     Suffixes.Demographics,
     Suffixes.Merge,
+  );
+};
+
+export const getApiQuestionResponsesV2Url = (
+  consultationId: string,
+  questionId: string,
+) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Questions,
+    questionId,
+    Suffixes.Responses,
+  );
+};
+
+export const getApiResponsesV2Url = (consultationId: string) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Responses,
+  );
+};
+
+export const getApiResponseV2Url = (
+  consultationId: string,
+  responseId: string,
+) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Responses,
+    responseId,
+  );
+};
+
+export const getApiResponseFlagV2Url = (
+  consultationId: string,
+  responseId: string,
+) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Responses,
+    responseId,
+    Suffixes.ToggleFlag,
+  );
+};
+
+export const getApiResponseMarkReadV2Url = (
+  consultationId: string,
+  responseId: string,
+) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Responses,
+    responseId,
+    Suffixes.MarkRead,
+  );
+};
+
+export const getApiResponsesMarkReadBulkV2Url = (consultationId: string) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Responses,
+    "mark-read-bulk",
+  );
+};
+
+export const getApiResponseThemesV2Url = (
+  consultationId: string,
+  responseId: string,
+) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Responses,
+    responseId,
+    Suffixes.Themes,
+  );
+};
+
+export const getApiDemographicOptionsV2Url = (consultationId: string) => {
+  return urlJoinTrailing(
+    Prefixes.ApiV2,
+    Suffixes.Consultations,
+    consultationId,
+    Suffixes.Responses,
+    Suffixes.DemographicOptions,
   );
 };
 
