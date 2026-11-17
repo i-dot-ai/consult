@@ -12,6 +12,7 @@ from adapters.evaluators.base import EvaluatorPort
 from adapters.runners.base import RunnerPort
 from datasets import DatasetConfig
 from eval_types import Case, CaseOutcome, ComponentConfig, RunReport, Score
+from pydantic import BaseModel
 from utils.results import flatten_run_report
 
 
@@ -48,27 +49,50 @@ class FakeEvaluatorPort(EvaluatorPort):
 
 
 class FakeJudge:
-    """Judge LLM test double that returns parsed content and records prompts."""
+    """Judge LLM test double that validates configured structured responses."""
 
-    def __init__(self, parsed: str = "{}"):
+    def __init__(self, parsed: str | dict[str, Any] | BaseModel = "{}"):
         self.parsed = parsed
         self.prompts: list[str] = []
+        self.output_models: list[type[BaseModel] | None] = []
 
-    async def ainvoke(self, prompt: str) -> SimpleNamespace:
+    @staticmethod
+    def _structured_response(
+        parsed: str | dict[str, Any] | BaseModel, output_model: type[BaseModel] | None
+    ) -> str | BaseModel:
+        if output_model is None:
+            return parsed
+        if isinstance(parsed, output_model):
+            return parsed
+        if isinstance(parsed, BaseModel):
+            return output_model.model_validate(parsed.model_dump())
+        if isinstance(parsed, str):
+            return output_model.model_validate_json(parsed)
+        return output_model.model_validate(parsed)
+
+    async def ainvoke(
+        self, prompt: str, output_model: type[BaseModel] | None = None
+    ) -> SimpleNamespace:
         self.prompts.append(prompt)
-        return SimpleNamespace(parsed=self.parsed)
+        self.output_models.append(output_model)
+        return SimpleNamespace(
+            parsed=self._structured_response(self.parsed, output_model)
+        )
 
 
 class SequenceFakeJudge(FakeJudge):
     """Judge test double that returns successive parsed responses in call order."""
 
-    def __init__(self, *responses: str):
+    def __init__(self, *responses: str | dict[str, Any] | BaseModel):
         super().__init__()
         self._responses = list(responses)
         self._response_index = 0
 
-    async def ainvoke(self, prompt: str) -> SimpleNamespace:
+    async def ainvoke(
+        self, prompt: str, output_model: type[BaseModel] | None = None
+    ) -> SimpleNamespace:
         self.prompts.append(prompt)
+        self.output_models.append(output_model)
         if self._response_index >= len(self._responses):
             raise AssertionError(
                 "No configured response for "
@@ -77,7 +101,7 @@ class SequenceFakeJudge(FakeJudge):
             )
         response = self._responses[self._response_index]
         self._response_index += 1
-        return SimpleNamespace(parsed=response)
+        return SimpleNamespace(parsed=self._structured_response(response, output_model))
 
 
 class FakeRunnerPort(RunnerPort):

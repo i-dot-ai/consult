@@ -385,7 +385,9 @@ class OpenAILLM:
                         or tool_calls[0].function.name != "submit_structured_output"
                     ):
                         raise ValueError(
-                            f"{self.model} did not return a submit_structured_output tool call"
+                            f"{self.model} does not support the required structured output: "
+                            "it rejected native JSON schema output and did not return "
+                            "a submit_structured_output tool call"
                         )
                     try:
                         parsed = output_model.model_validate_json(

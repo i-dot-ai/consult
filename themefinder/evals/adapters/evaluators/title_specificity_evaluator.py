@@ -12,7 +12,6 @@ class TitleSpecificityEvaluator(PerItemBinaryEvaluator):
     prompt_fn = staticmethod(load_prompt_fn("title_specificity"))
     metric_names = ("specificity",)
     item_plural = "titles"
-    decision_name = "Specificity"
 
     def _get_items(self, output: Any) -> list[str]:
         return self.extract_theme_titles(output.get("themes", []))

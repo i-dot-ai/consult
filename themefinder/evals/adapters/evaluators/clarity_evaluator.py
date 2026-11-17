@@ -12,7 +12,6 @@ class ClarityEvaluator(PerItemBinaryEvaluator):
     prompt_fn = staticmethod(load_prompt_fn("clarity"))
     metric_names = ("clarity",)
     item_plural = "themes"
-    decision_name = "Clarity"
 
     @staticmethod
     def _get_items(output: Any) -> list[dict[str, str]]:

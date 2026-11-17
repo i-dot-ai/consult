@@ -11,6 +11,7 @@ import pytest
 from adapters.evaluators.llm_judge_evaluator import (
     BinaryMatchDecisions,
     BinaryMatchJudgeEvaluator,
+    BinaryMatchResponse,
 )
 from conftest import make_case
 from eval_types import Case, Score
@@ -41,31 +42,31 @@ class _InFlightJudge(FakeJudge):
     """Judge that records the peak number of concurrent `ainvoke` calls."""
 
     def __init__(self):
-        super().__init__('{"decision": "PASS"}')
+        super().__init__('{"decision": "PASS", "matched_items": ["X"]}')
         self.in_flight = 0
         self.peak = 0
 
-    async def ainvoke(self, prompt: str) -> SimpleNamespace:
+    async def ainvoke(self, prompt: str, output_model=None) -> SimpleNamespace:
         self.in_flight += 1
         self.peak = max(self.peak, self.in_flight)
         await asyncio.sleep(0.01)  # hold the call open so concurrent calls overlap
         self.in_flight -= 1
-        return await super().ainvoke(prompt)
+        return await super().ainvoke(prompt, output_model)
 
 
 class _RaisingJudge:
-    async def ainvoke(self, prompt: str):
+    async def ainvoke(self, prompt: str, output_model=None):
         raise RuntimeError("boom")
 
 
 class _FailOnBJudge(FakeJudge):
     """Judge that raises for item "B" and answers every other item."""
 
-    async def ainvoke(self, prompt: str) -> SimpleNamespace:
+    async def ainvoke(self, prompt: str, output_model=None) -> SimpleNamespace:
         await asyncio.sleep(0.01)
         if prompt.startswith("B"):
             raise RuntimeError("boom")
-        return await super().ainvoke(prompt)
+        return await super().ainvoke(prompt, output_model)
 
 
 class TestBinaryMatchJudgeEvaluator:
@@ -82,7 +83,7 @@ class TestBinaryMatchJudgeEvaluator:
         """Each item gets one prompt holding it plus every candidate, then each
         candidate gets one holding it plus every item; decisions reach
         `_build_scores` in input order, tagged with the item they judged."""
-        judge = FakeJudge('{"decision": "PASS"}')
+        judge = FakeJudge('{"decision": "PASS", "matched_items": ["X"]}')
 
         evaluator, scores = await self._run(judge, ["A", "B", "C"], ["X", "Y"])
 
@@ -97,12 +98,12 @@ class TestBinaryMatchJudgeEvaluator:
         assert evaluator.seen.candidates == ["X", "Y"]
         assert [d["item"] for d in evaluator.seen.forward] == ["A", "B", "C"]
         assert [d["item"] for d in evaluator.seen.backward] == ["X", "Y"]
+        assert judge.output_models == [BinaryMatchResponse] * 5
         assert scores == [Score("match_rate", 1.0, "")]
 
-    async def test_judged_item_overrides_judge_supplied_item(self):
-        """The base class sets `item` from what it sent, so a judge that echoes
-        a wrong or paraphrased item cannot misattribute its decision."""
-        judge = FakeJudge('{"item": "WRONG", "decision": "PASS"}')
+    async def test_judged_item_is_recorded_from_the_input(self):
+        """The base class tags each structured decision with the item it judged."""
+        judge = FakeJudge('{"decision": "PASS", "matched_items": ["X"]}')
 
         evaluator, _ = await self._run(judge, ["A", "B"], ["X"])
 
@@ -119,7 +120,7 @@ class TestBinaryMatchJudgeEvaluator:
         """One empty list is a valid case answered without the judge: the
         direction with no items has no decisions, the direction with no
         candidates fails every item."""
-        judge = FakeJudge('{"decision": "PASS"}')
+        judge = FakeJudge('{"decision": "PASS", "matched_items": ["X"]}')
 
         evaluator, scores = await self._run(judge, items, candidates)
 
@@ -162,7 +163,7 @@ class TestBinaryMatchJudgeEvaluator:
     async def test_failure_cancels_remaining_calls(self):
         """One failing item errors the case and stops the rest of the loop,
         rather than leaving queued calls running with discarded results."""
-        judge = _FailOnBJudge('{"decision": "PASS"}')
+        judge = _FailOnBJudge('{"decision": "PASS", "matched_items": ["X"]}')
 
         # concurrency=1 queues C-F behind B, so they are still pending when B fails
         _, scores = await self._run(judge, list("ABCDEF"), ["X"], concurrency=1)
