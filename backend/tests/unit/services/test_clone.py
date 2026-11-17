@@ -56,24 +56,25 @@ class TestCloneConsultation:
         assert cloned.data_source == Consultation.DataSource.QUALTRICS
 
     def test_consultation_migration_trackers_are_cloned(self):
-        migrated = ConsultationFactory(is_v1=True)
+        is_v1 = True
+        migrated = ConsultationFactory(is_v1=is_v1)
         migrated.migrated_at = timezone.now()
         migrated.save()
-        v2_created = ConsultationFactory(is_v1=False)
+        v2_created = ConsultationFactory(is_v1=not is_v1)
 
         cloned_migrated = clone_consultation(migrated)
         # a clone of a migrated consultation carries the same data shape: it
         # is v1 in origin and already migrated, so the migration command
         # will never treat it as an unmigrated v1 consultation
-        assert cloned_migrated.is_v1 is True
+        assert cloned_migrated.is_v1 is is_v1
         assert cloned_migrated.migrated_at == migrated.migrated_at
 
         cloned_v2_created = clone_consultation(v2_created)
-        assert cloned_v2_created.is_v1 is False
+        assert cloned_v2_created.is_v1 is not is_v1
         assert cloned_v2_created.migrated_at is None
 
-        cloned_unmigrated = clone_consultation(ConsultationFactory(is_v1=True))
-        assert cloned_unmigrated.is_v1 is True
+        cloned_unmigrated = clone_consultation(ConsultationFactory(is_v1=is_v1))
+        assert cloned_unmigrated.is_v1 is is_v1
         assert cloned_unmigrated.migrated_at is None
 
     def test_consultation_null_data_source_is_cloned(self):
