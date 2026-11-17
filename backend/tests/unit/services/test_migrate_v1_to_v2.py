@@ -193,6 +193,7 @@ def test_convert_demographics_value_handling():
         ("flag", False),
         ("answer", 42),
         ("blank", ""),
+        ("dash", "-"),
         ("placeholder", "Not Provided"),
     ]:
         option = DemographicOption.objects.create(
@@ -211,7 +212,7 @@ def test_convert_demographics_value_handling():
 
     # the blank placeholder questions still exist in v2 form but carry no
     # response rows (docstring contract: blank placeholders produce no rows)
-    for blank_field in ("blank", "placeholder"):
+    for blank_field in ("blank", "dash", "placeholder"):
         question = consultation.question_set.get(text=blank_field)
         assert question.type == Question.QuestionType.DEMOGRAPHIC
         assert not question.response_set.exists()

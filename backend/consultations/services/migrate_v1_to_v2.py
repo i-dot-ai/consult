@@ -450,7 +450,9 @@ def _convert_demographics(consultation: Consultation) -> None:
         )
 
 
-def _demographic_answer_texts(value) -> list[str]:
+def _demographic_answer_texts(
+    value: str | bool | float | list | None,
+) -> list[str]:
     """Stringify a JSONField demographic value, JSON-style (decision)."""
     if isinstance(value, (list, tuple)):
         return [text for item in value for text in _demographic_answer_texts(item)]
