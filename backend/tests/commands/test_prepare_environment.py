@@ -97,7 +97,8 @@ class TestPrepareEnvironment:
         keys = [obj.key for obj in bucket.objects.all()]
 
         assert any("dummy-s3-only/" in k for k in keys)
-        assert not any("dummy-setup/" in k for k in keys)
+        assert any("dummy-setup/inputs/" in k for k in keys)
+        assert not any("dummy-setup/outputs/" in k for k in keys)
         assert any("dummy-start-finalising-themes/" in k for k in keys)
         assert any("dummy-finished-finalising-themes/" in k for k in keys)
         assert any("dummy-analysis/" in k for k in keys)

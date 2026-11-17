@@ -31,7 +31,11 @@ def _build_responses(question_data):
         return []
     answers = question_data["answers"]
     return [
-        {"themefinder_id": i, "text": answers[i % len(answers)]}
+        {
+            "themefinder_id": i,
+            "text": answers[i % len(answers)],
+            "free_text": answers[i % len(answers)],
+        }
         for i in range(1, NUMBER_RESPONDENTS + 1)
     ]
 
@@ -204,6 +208,9 @@ class Command(BaseCommand):
 
         # S3-only consultation (no DB record)
         self._seed_consultation(s3_client, bucket, "dummy-s3-only", questions_data, timestamp)
+
+        # SETUP - pipeline inputs only; the matching DB consultation remains at import start
+        self._seed_consultation(s3_client, bucket, "dummy-setup", questions_data, timestamp)
 
         # Starting finalising themes — has clustered themes + candidate theme mappings
         self._seed_consultation(

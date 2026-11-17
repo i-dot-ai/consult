@@ -60,8 +60,9 @@ class TestPrepareS3:
         assert not any("respondents.jsonl" in k for k in keys)
         assert not any("multi_choice.jsonl" in k for k in keys)
 
-        # Setup consultation is at the start of import and has no S3 inputs yet
-        assert not any("dummy-setup/" in k for k in keys)
+        # Setup consultation retains the inputs required by the current pipeline
+        assert any("dummy-setup/inputs/question_part_1/question.json" in k for k in keys)
+        assert not any("dummy-setup/outputs/" in k for k in keys)
 
         # Starting finalising themes has input data, clustered themes and candidate theme mappings
         assert any(
@@ -112,6 +113,13 @@ class TestPrepareS3:
             "question_number": 2,
             "has_free_text": True,
         }
+
+        responses = boto3.client("s3", region_name="eu-west-2").get_object(
+            Bucket="test-bucket",
+            Key="app_data/consultations/dummy-analysis/inputs/question_part_2/responses.jsonl",
+        )
+        first_response = json.loads(responses["Body"].read().splitlines()[0])
+        assert first_response["free_text"] == first_response["text"]
 
     @pytest.mark.django_db
     @mock_aws
