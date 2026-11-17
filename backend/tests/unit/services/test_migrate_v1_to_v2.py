@@ -209,6 +209,13 @@ def test_convert_demographics_value_handling():
     )
     assert created == {"consented": "true", "flag": "false", "answer": "42"}
 
+    # the blank placeholder questions still exist in v2 form but carry no
+    # response rows (docstring contract: blank placeholders produce no rows)
+    for blank_field in ("blank", "placeholder"):
+        question = consultation.question_set.get(text=blank_field)
+        assert question.type == Question.QuestionType.DEMOGRAPHIC
+        assert not question.response_set.exists()
+
 
 def test_migrate_skips_already_migrated_consultations(v1_consultation):
     migrated_at = timezone.now()

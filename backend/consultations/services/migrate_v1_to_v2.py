@@ -48,7 +48,10 @@ logger = settings.LOGGER
 
 _RESPONSE_ROW_BATCH_SIZE = 1000
 
-_DEMOGRAPHICS_BLANK_VALUES = {"", "-", "not provided"}
+# Blank placeholders that never become demographic rows, matching the
+# empty-value treatment of migration 0101. Spelled in their canonical form
+# and casefolded at construction so matching stays case-insensitive.
+_DEMOGRAPHICS_BLANK_VALUES = {placeholder.casefold() for placeholder in ("Not Provided", "-", "")}
 
 
 def audit_consultation(consultation: Consultation) -> dict[str, int]:
@@ -371,10 +374,12 @@ def _convert_demographics(consultation: Consultation) -> None:
     DemographicOption rows and the Respondent.demographics M2M stay
     populated for v1 consumers (decision: keep all).
     """
+    # Demographic rows only ever land on demographic questions, so the
+    # dedupe set can ignore every other response in the consultation.
     existing_pairs = set(
-        Response.objects.filter(question__consultation=consultation).values_list(
-            "question_id", "respondent_id", "text"
-        )
+        Response.objects.filter(
+            question__consultation=consultation, question__type=Question.QuestionType.DEMOGRAPHIC
+        ).values_list("question_id", "respondent_id", "text")
     )
     demographic_questions: dict[str, Question] = {}
 
@@ -406,9 +411,13 @@ def _convert_demographics(consultation: Consultation) -> None:
             "demographicoption__field_name",
             "demographicoption__field_value",
         )
+        .iterator(chunk_size=_RESPONSE_ROW_BATCH_SIZE)
     )
 
-    rows_to_create: list[Response] = []
+    # Rows stream in and flush to the database every batch, so memory stays
+    # bounded for consultations with millions of demographic answers.
+    created = 0
+    batch: list[Response] = []
     for link in links:
         question = question_for(link.demographicoption.field_name)
         for answer_text in _demographic_answer_texts(link.demographicoption.field_value):
@@ -418,23 +427,25 @@ def _convert_demographics(consultation: Consultation) -> None:
             if candidate in existing_pairs:
                 continue
             existing_pairs.add(candidate)
-            rows_to_create.append(
+            batch.append(
                 Response(
                     question_id=question.id,
                     respondent_id=link.respondent_id,
                     text=answer_text,
                 )
             )
+            if len(batch) == _RESPONSE_ROW_BATCH_SIZE:
+                Response.objects.bulk_create(batch, batch_size=_RESPONSE_ROW_BATCH_SIZE)
+                created += len(batch)
+                batch = []
 
-    for start in range(0, len(rows_to_create), _RESPONSE_ROW_BATCH_SIZE):
-        Response.objects.bulk_create(
-            rows_to_create[start : start + _RESPONSE_ROW_BATCH_SIZE],
-            batch_size=_RESPONSE_ROW_BATCH_SIZE,
-        )
-    if rows_to_create:
+    if batch:
+        Response.objects.bulk_create(batch, batch_size=_RESPONSE_ROW_BATCH_SIZE)
+        created += len(batch)
+    if created:
         logger.info(
             "Created {response_rows} demographic response rows for {consultation_id}",
-            response_rows=len(rows_to_create),
+            response_rows=created,
             consultation_id=consultation.id,
         )
 
