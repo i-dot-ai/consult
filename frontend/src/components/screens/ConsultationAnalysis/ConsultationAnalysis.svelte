@@ -5,18 +5,24 @@
 
   import {
     getApiConsultationUrl,
+    getApiConsultationV2Url,
+    getApiDemographicOptionsV2Url,
     getApiQuestionsUrl,
+    getApiQuestionsV2Url,
     getConsultationDashboardUrl,
   } from "../../../global/routes";
   import {
     type ConsultationResponse,
+    type Question,
     type DemoOptionsResponse,
     type DemoOptionsResponseItem,
     type QuestionMultiAnswer,
     type QuestionsResponse,
   } from "../../../global/types";
-  import { getPercentage } from "../../../global/utils";
+  import { getPercentage, getDataSetupV2Enabled } from "../../../global/utils";
   import { createFetchStore } from "../../../global/stores";
+  import type { ConsultationV2 } from "../../../global/queries/consultations/types";
+  import type { QuestionDetailV2 } from "../../../global/queries/questions/types";
 
   import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
   import Chart from "../../Chart/Chart.svelte";
@@ -35,19 +41,47 @@
 
   let { consultationId = "" }: Props = $props();
 
-  const consultationStore = createFetchStore<ConsultationResponse>();
-  const questionsStore = createFetchStore<QuestionsResponse>();
+  const consultationStore = createFetchStore<
+    ConsultationResponse | ConsultationV2
+  >();
+  const questionsStore = createFetchStore<
+    QuestionsResponse | QuestionDetailV2[]
+  >();
   const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
 
   let dataRequested: boolean = $state(false);
+
+  // V2 flag: question list and demographic options come from the v2 API.
+  const isV2 = getDataSetupV2Enabled();
+  const consultationUrl = isV2
+    ? getApiConsultationV2Url(consultationId)
+    : getApiConsultationUrl(consultationId);
+  const questionsUrl = isV2
+    ? getApiQuestionsV2Url(consultationId)
+    : getApiQuestionsUrl(consultationId);
+  const demoOptionsUrl = isV2
+    ? getApiDemographicOptionsV2Url(consultationId)
+    : `/api/consultations/${consultationId}/demographics/`;
+  const questionText = (question: Question | QuestionDetailV2): string =>
+    "question_text" in question
+      ? question.question_text
+      : (question.text ?? "");
 
   let demoCategories = $derived([
     ...new Set(($demoOptionsStore.data || []).map((opt) => opt.name)),
   ]);
 
+  let questions = $derived(
+    Array.isArray($questionsStore.data)
+      ? $questionsStore.data
+      : $questionsStore.data?.results || [],
+  );
+
   let chartQuestions = $derived(
-    $questionsStore.data?.results?.filter(
-      (question) => question.has_multiple_choice,
+    questions.filter((question) =>
+      "type" in question
+        ? (question.multiple_choice_answer?.length ?? 0) > 0
+        : question.has_multiple_choice,
     ),
   );
 
@@ -101,11 +135,9 @@
   );
 
   onMount(() => {
-    $consultationStore.fetch(getApiConsultationUrl(consultationId));
-    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
-    $demoOptionsStore.fetch(
-      `/api/consultations/${consultationId}/demographics/`,
-    );
+    $consultationStore.fetch(consultationUrl);
+    $questionsStore.fetch(questionsUrl);
+    $demoOptionsStore.fetch(demoOptionsUrl);
     dataRequested = true;
   });
 </script>
@@ -179,7 +211,7 @@
                     </span>
 
                     <h3 class="text-xs">
-                      {question.question_text}
+                      {questionText(question)}
                     </h3>
                   </div>
 

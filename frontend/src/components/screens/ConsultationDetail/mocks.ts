@@ -186,3 +186,43 @@ export const defaultRespondentsMock = {
     results: Array.from(Array(totalQuestionCount).keys()).map((_) => ({})),
   },
 };
+
+// --- V2 mocks -----------------------------------------------------------------
+
+const V2_QUESTIONS_URL = /\/api\/v2\/consultations\/.*\/questions\//;
+const V2_DEMO_OPTIONS_URL =
+  /\/api\/v2\/consultations\/.*\/responses\/demographic-options\//;
+
+const V2_QUESTIONS = QUESTIONS.map(
+  ({
+    question_text,
+    has_free_text,
+    has_multiple_choice: _has_multiple_choice,
+    theme_status: _theme_status,
+    ...rest
+  }) => ({
+    ...rest,
+    text: question_text,
+    // Hybrid originals stay open with their multi-choice answers attached
+    type: has_free_text ? "open" : "closed",
+    closed_question: null,
+    short_name: "",
+    dashboard_role: "filter",
+    status: "configured",
+    response_count: rest.free_text_response_count,
+  }),
+);
+
+export const v2QuestionsMock = {
+  url: V2_QUESTIONS_URL,
+  body: V2_QUESTIONS,
+};
+
+export const v2DemoOptionsMock = {
+  url: V2_DEMO_OPTIONS_URL,
+  body: [
+    { id: "demo-token-1", name: "Nation", value: "England", count: 40 },
+    { id: "demo-token-2", name: "Nation", value: "Wales", count: 25 },
+    { id: "demo-token-3", name: "Age", value: "18-35", count: 30 },
+  ],
+};
