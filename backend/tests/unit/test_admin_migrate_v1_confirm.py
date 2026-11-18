@@ -60,6 +60,7 @@ def test_confirmation_page_shows_audit_counts(staff_client):
     assert content.count("<h1>") == 1
     assert reverse("admin:consultations_consultation_change", args=[consultation.id]) in content
     assert reverse("admin:consultations_consultation_changelist") in content
+    assert 'class="button default"' in content
 
 
 def test_confirmation_page_reports_already_migrated(staff_client):

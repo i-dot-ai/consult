@@ -83,7 +83,7 @@
 <form method="post" action="">
   {% csrf_token %}
   <div class="migration-actions">
-    <input type="submit" value="Run migration">
+    <input type="submit" value="Run migration" class="button default">
     <a role="button" href="{% url 'admin:consultations_consultation_changelist' %}" class="button cancel-link">Cancel</a>
   </div>
 </form>
