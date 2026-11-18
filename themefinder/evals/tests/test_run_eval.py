@@ -123,9 +123,16 @@ def test_cli_rejects_unknown_component():
         [],
         ["--component", "mapping", "generation"],
         ["--component", "mapping", "--judge-model", "gpt-4o-uk"],
+        ["--component", "mapping", "--max-concurrent-models", "2"],
         ["--component", "mapping", "--reasoning-effort", "high"],
     ],
-    ids=["no-component", "two-components", "judge-model", "reasoning-effort"],
+    ids=[
+        "no-component",
+        "two-components",
+        "judge-model",
+        "max-concurrent-models",
+        "reasoning-effort",
+    ],
 )
 def test_single_run_rejects_comparison_only_shapes(monkeypatch, argv):
     evaluate = AsyncMock(return_value={})
@@ -155,6 +162,8 @@ def test_model_selector_runs_a_comparison_with_the_shared_primitive(monkeypatch)
             "2",
             "--judge-model",
             "gpt-4.1",
+            "--max-concurrent-models",
+            "2",
         ]
     )
 
@@ -166,7 +175,19 @@ def test_model_selector_runs_a_comparison_with_the_shared_primitive(monkeypatch)
     assert args.dataset == "housing_S"
     assert args.runs == 2
     assert args.judge_model == "gpt-4.1"
+    assert args.max_concurrent_models == 2
     assert args.reasoning_effort == ["low"]
+
+
+@pytest.mark.parametrize("limit", ["0", "-1"])
+def test_comparison_rejects_non_positive_concurrency_limit(monkeypatch, limit):
+    run_comparison = AsyncMock()
+    monkeypatch.setattr(run_eval.comparison, "run_comparison", run_comparison)
+
+    with pytest.raises(SystemExit):
+        run_eval.main(["--all", "--max-concurrent-models", limit])
+
+    run_comparison.assert_not_awaited()
 
 
 def test_comparison_takes_the_judge_from_settings_by_default(monkeypatch):

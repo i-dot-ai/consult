@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 import logging
 from unittest.mock import AsyncMock
 
@@ -23,6 +24,14 @@ class TestModelConfigTag:
             name="gpt-5-mini-sweden", reasoning_effort="low"
         )
         assert config.tag == "gpt-5-mini-sweden_low"
+
+
+@pytest.mark.parametrize("limit", [0, -1])
+def test_comparison_config_rejects_non_positive_concurrency_limit(limit):
+    with pytest.raises(ValueError, match="max_concurrent_models must be at least 1"):
+        comparison.ComparisonConfig(
+            dataset="demo", models=[], max_concurrent_models=limit
+        )
 
 
 class TestModelConfigCreateLlm:
@@ -66,7 +75,10 @@ async def test_run_delegates_to_evaluate_with_labels_and_no_platform(monkeypatch
         }
     )
     runner = comparison.ComparisonRunner(
-        comparison.ComparisonConfig(dataset="demo", models=[model]), evaluate
+        comparison.ComparisonConfig(
+            dataset="demo", models=[model], max_concurrent_models=2
+        ),
+        evaluate,
     )
 
     result = await runner._execute_eval(
@@ -92,6 +104,7 @@ async def test_run_delegates_to_evaluate_with_labels_and_no_platform(monkeypatch
                 "model_tag": "test-model",
                 "reasoning_effort": None,
                 "judge_model": None,
+                "max_concurrent_models": 2,
                 "run_number": 1,
             },
         ),
@@ -189,6 +202,46 @@ async def test_run_lets_info_through_and_restores_the_root_logger(
     )
 
 
+async def test_run_comparison_limits_concurrent_model_groups(monkeypatch, tmp_path):
+    runner = comparison.ComparisonRunner(
+        comparison.ComparisonConfig(
+            dataset="demo",
+            models=[
+                comparison.ModelConfig(name="first"),
+                comparison.ModelConfig(name="second"),
+                comparison.ModelConfig(name="third"),
+            ],
+            max_concurrent_models=2,
+        ),
+        AsyncMock(),
+        output_dir=str(tmp_path),
+    )
+    active = 0
+    maximum_active = 0
+    two_groups_started = asyncio.Event()
+    release_groups = asyncio.Event()
+
+    async def run_group(models):
+        nonlocal active, maximum_active
+        active += 1
+        maximum_active = max(maximum_active, active)
+        if active == 2:
+            two_groups_started.set()
+        await release_groups.wait()
+        active -= 1
+        return []
+
+    monkeypatch.setattr(runner, "_run_model_group", run_group)
+    task = asyncio.create_task(runner._run_comparison())
+    await two_groups_started.wait()
+    await asyncio.sleep(0)
+    assert maximum_active == 2
+
+    release_groups.set()
+    await task
+    assert maximum_active == 2
+
+
 async def test_run_model_retries_transient_errors_and_gives_up_on_others(
     monkeypatch, tmp_path
 ):
@@ -279,6 +332,7 @@ def _comparison_args(**extra):
         dataset="demo",
         runs=1,
         judge_model=None,
+        max_concurrent_models=extra.pop("max_concurrent_models", None),
         **extra,
     )
 
@@ -295,9 +349,12 @@ async def test_run_comparison_exits_when_no_result_was_collected(monkeypatch):
 async def test_run_comparison_saves_and_prints_the_id_for_ci(monkeypatch, capsys):
     built = _install_runner_with_results(monkeypatch, [object()])
 
-    await comparison.run_comparison(_comparison_args(), AsyncMock())
+    await comparison.run_comparison(
+        _comparison_args(max_concurrent_models=2), AsyncMock()
+    )
 
     assert built[0].saved
+    assert built[0].config.max_concurrent_models == 2
     assert "BENCHMARK_ID=20260101_000000" in capsys.readouterr().out.splitlines()
 
 
@@ -335,6 +392,7 @@ def test_saves_results_under_the_benchmark_results_layout(tmp_path):
             models=[comparison.ModelConfig(name="test-model")],
             runs_per_model=1,
             components=["mapping"],
+            max_concurrent_models=2,
         ),
         AsyncMock(),
         output_dir=str(tmp_path),
@@ -365,6 +423,7 @@ def test_saves_results_under_the_benchmark_results_layout(tmp_path):
     config = comparison.json.loads((output_path / "config.json").read_text())
     assert config["benchmark_id"] == runner.comparison_id
     assert config["evals"] == ["mapping"]
+    assert config["max_concurrent_models"] == 2
     assert config["models"] == [{"name": "test-model", "reasoning_effort": None}]
 
 
