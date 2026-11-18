@@ -1,11 +1,42 @@
 {% extends "admin/base_site.html" %}
 
+{% block bodyclass %}{{ block.super }} app-consultations model-consultation confirm-v2-migration{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Match the delete-confirmation button pair: the generic admin rule
+       compacts `a.button` to 4px/5px padding, so the cancel link needs the
+       same treatment its delete-confirmation counterpart gets. */
+    .confirm-v2-migration form .cancel-link {
+        display: inline-block;
+        vertical-align: middle;
+        height: 0.9375rem;
+        line-height: 0.9375rem;
+        border-radius: 4px;
+        padding: 10px 15px;
+        color: var(--button-fg);
+        background: var(--button-bg);
+        margin: 0 0 0 10px;
+    }
+    .confirm-v2-migration form .cancel-link:active,
+    .confirm-v2-migration form .cancel-link:focus,
+    .confirm-v2-migration form .cancel-link:hover {
+        background: var(--button-hover-bg);
+    }
+    /* a small gap between the content above and the button row */
+    .confirm-v2-migration form .migration-actions {
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
 {% block breadcrumbs %}
-<div class="breadcrumbs">
-  <a href="{% url 'admin:index' %}">Home</a>
-  › <a href="{% url 'admin:consultations_consultation_changelist' %}">Consultations</a>
-  › {{ consultation.title }}
-</div>
+<ol class="breadcrumbs">
+  <li><a href="{% url 'admin:index' %}">Home</a></li>
+  <li><a href="{% url 'admin:consultations_consultation_changelist' %}">Consultations</a></li>
+  <li aria-current="page">Confirm v1 to v2 migration</li>
+</ol>
 {% endblock %}
 
 {% block content %}
@@ -50,7 +81,7 @@
 
 <form method="post" action="">
   {% csrf_token %}
-  <div>
+  <div class="migration-actions">
     <input type="submit" value="Run migration">
     <a role="button" href="{% url 'admin:consultations_consultation_changelist' %}" class="button cancel-link">Cancel</a>
   </div>
