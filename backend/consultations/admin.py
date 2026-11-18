@@ -141,7 +141,7 @@ _MIGRATION_AUDIT_LABELS = {
     "multi_choice_answers": "Multiple-choice option records (kept for v1 consumers)",
     "demographic_options": "Demographic records that will become demographic questions and responses",
     "respondent_demographic_links": "Respondent demographic links (kept for v1 consumers)",
-    "missing_data_source": "Consultations missing a survey provider (this one)",
+    "missing_data_source": "This consultation is missing a survey provider",
 }
 
 
@@ -192,17 +192,23 @@ class ConsultationAdmin(admin.ModelAdmin):
                 reverse("admin:consultations_consultation_changelist")
             )
 
-        counts = [
-            (_MIGRATION_AUDIT_LABELS[key], value)
-            for key, value in audit_consultation(consultation).items()
-        ]
+        already_migrated = consultation.migrated_at is not None
+        has_provider = consultation.data_source is not None
+        counts = (
+            [
+                (_MIGRATION_AUDIT_LABELS[key], value)
+                for key, value in audit_consultation(consultation).items()
+            ]
+            if not already_migrated and not has_provider
+            else []
+        )
         context = {
             **self.admin_site.each_context(request),
             "title": f"Confirm v1 to v2 migration: {consultation.title}",
             "consultation": consultation,
             "counts": counts,
-            "already_migrated": consultation.migrated_at is not None,
-            "has_provider": consultation.data_source is not None,
+            "already_migrated": already_migrated,
+            "has_provider": has_provider,
             "opts": self.model._meta,
         }
         return TemplateResponse(

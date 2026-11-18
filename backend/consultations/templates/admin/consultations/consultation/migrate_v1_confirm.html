@@ -79,6 +79,7 @@
 </table>
 {% endif %}
 
+{% if not already_migrated %}
 <form method="post" action="">
   {% csrf_token %}
   <div class="migration-actions">
@@ -86,4 +87,9 @@
     <a role="button" href="{% url 'admin:consultations_consultation_changelist' %}" class="button cancel-link">Cancel</a>
   </div>
 </form>
+{% else %}
+<div class="migration-actions">
+  <a href="{% url 'admin:consultations_consultation_changelist' %}">Cancel</a>
+</div>
+{% endif %}
 {% endblock %}

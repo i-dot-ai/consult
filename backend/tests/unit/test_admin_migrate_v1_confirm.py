@@ -71,6 +71,8 @@ def test_confirmation_page_reports_already_migrated(staff_client):
 
     assert response.status_code == 200
     assert b"already migrated" in response.content
+    # no form/CSRF once the migration has run: only a way back
+    assert b"Run migration" not in response.content
 
 
 def test_confirmation_page_reports_existing_survey_provider(staff_client):
