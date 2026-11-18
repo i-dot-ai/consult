@@ -50,9 +50,9 @@
 
 <form method="post" action="">
   {% csrf_token %}
-  <div class="submit-row">
-    <input type="submit" value="Run migration" class="button default" name="run_migration">
-    <a href="{% url 'admin:consultations_consultation_changelist' %}" class="button cancel-link">Cancel</a>
+  <div>
+    <input type="submit" value="Run migration">
+    <a role="button" href="{% url 'admin:consultations_consultation_changelist' %}" class="button cancel-link">Cancel</a>
   </div>
 </form>
 {% endblock %}
