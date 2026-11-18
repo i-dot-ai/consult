@@ -1,9 +1,19 @@
 {% extends "admin/base_site.html" %}
 
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  › <a href="{% url 'admin:consultations_consultation_changelist' %}">Consultations</a>
+  › {{ consultation.title }}
+</div>
+{% endblock %}
+
 {% block content %}
-<h1>Confirm v1 to v2 migration</h1>
 <p>
-  Consultation: <strong>{{ consultation.title }}</strong>
+  Consultation:
+  <a href="{% url 'admin:consultations_consultation_change' consultation.pk %}">
+    {{ consultation.title }}
+  </a>
   {% if consultation.code %}(<span>{{ consultation.code }}</span>){% endif %}
 </p>
 
@@ -17,7 +27,8 @@
 {% elif has_provider %}
 <p>
   This consultation already has a survey provider set
-  (<strong>{{ consultation.get_data_source_display }}</strong>). Running the migration will mark it as a v2 consultation and skip conversion.
+  (<strong>{{ consultation.get_data_source_display }}</strong>). Running the migration will mark
+  it as a v2 consultation and skip conversion.
 </p>
 {% else %}
 <p>

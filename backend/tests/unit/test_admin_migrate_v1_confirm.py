@@ -55,6 +55,11 @@ def test_confirmation_page_shows_audit_counts(staff_client):
     assert "Confirm v1 to v2 migration" in content
     assert consultation.title in content
     assert "will become open questions" in content
+    # single heading (the admin chrome renders the context title itself) and
+    # both navigation paths present: the change page and the changelist crumb
+    assert content.count("<h1>") == 1
+    assert reverse("admin:consultations_consultation_change", args=[consultation.id]) in content
+    assert reverse("admin:consultations_consultation_changelist") in content
 
 
 def test_confirmation_page_reports_already_migrated(staff_client):
