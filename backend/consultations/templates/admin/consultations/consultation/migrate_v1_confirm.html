@@ -1,0 +1,95 @@
+{% extends "admin/base_site.html" %}
+
+{% block bodyclass %}{{ block.super }} app-consultations model-consultation confirm-v2-migration{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Match the delete-confirmation button pair: the generic admin rule
+       compacts `a.button` to 4px/5px padding, so the cancel link needs the
+       same treatment its delete-confirmation counterpart gets. */
+    .confirm-v2-migration form .cancel-link {
+        display: inline-block;
+        vertical-align: middle;
+        height: 0.9375rem;
+        line-height: 0.9375rem;
+        border-radius: 4px;
+        padding: 10px 15px;
+        color: var(--button-fg);
+        background: var(--button-bg);
+        margin: 0 0 0 10px;
+    }
+    .confirm-v2-migration form .cancel-link:active,
+    .confirm-v2-migration form .cancel-link:focus,
+    .confirm-v2-migration form .cancel-link:hover {
+        background: var(--button-hover-bg);
+    }
+    /* a small gap between the content above and the button row */
+    .confirm-v2-migration form .migration-actions {
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumbs">
+  <li><a href="{% url 'admin:index' %}">Home</a></li>
+  <li><a href="{% url 'admin:consultations_consultation_changelist' %}">Consultations</a></li>
+  <li aria-current="page">Confirm v1 to v2 migration</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<p>
+  Consultation:
+  <a href="{% url 'admin:consultations_consultation_change' consultation.pk %}">
+    {{ consultation.title }}
+  </a>
+  {% if consultation.code %}(<span>{{ consultation.code }}</span>){% endif %}
+</p>
+
+{% if already_migrated %}
+<div class="messagelist">
+  <div class="info">
+    This consultation was already migrated at {{ consultation.migrated_at }}. Running the
+    migration again does nothing.
+  </div>
+</div>
+{% elif has_provider %}
+<p>
+  This consultation already has a survey provider set
+  (<strong>{{ consultation.get_data_source_display }}</strong>). Running the migration will mark
+  it as a v2 consultation and skip conversion.
+</p>
+{% else %}
+<p>
+  No survey provider is set, so this consultation will be marked as a v1 consultation and
+  migrated. Everything below happens in one atomic transaction: a failed run rolls back
+  completely and can be re-run at any time.
+</p>
+<table>
+  <thead>
+    <tr><th>What would change</th><th>Count</th></tr>
+  </thead>
+  <tbody>
+    {% for label, count in counts %}
+    <tr><td>{{ label }}</td><td>{{ count }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if not already_migrated %}
+<form method="post" action="">
+  {% csrf_token %}
+  <div class="migration-actions">
+    <input type="submit" value="Run migration" class="button default">
+    <a role="button" href="{% url 'admin:consultations_consultation_changelist' %}" class="button cancel-link">Cancel</a>
+  </div>
+</form>
+{% else %}
+<div class="migration-actions">
+  <a href="{% url 'admin:consultations_consultation_changelist' %}">Cancel</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -3,6 +3,8 @@ from typing import ClassVar
 from django.conf import settings
 from django.contrib import admin, messages
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from simple_history.admin import SimpleHistoryAdmin
 
@@ -20,7 +22,10 @@ from consultations.models import (
     SelectedTheme,
 )
 from consultations.services.clone import clone_consultation_job
-from consultations.services.migrate_v1_to_v2 import migrate_v1_consultation_job
+from consultations.services.migrate_v1_to_v2 import (
+    audit_consultation,
+    migrate_v1_consultation_job,
+)
 from data_pipeline.jobs import (
     import_candidate_themes,
 )
@@ -117,19 +122,27 @@ def migrate_v1_consultation(modeladmin, request, queryset):
         return
 
     consultation = queryset.first()
-    try:
-        migrate_v1_consultation_job.delay(consultation.id)
-        messages.success(
-            request,
-            f"Migrating '{consultation.title}' to the V2 schema in the background. "
-            "Monitor progress in /django-rq.",
+    return HttpResponseRedirect(
+        reverse(
+            "admin:consultations_consultation_migrate_v1_confirm",
+            args=[consultation.id],
         )
-    except Exception as e:
-        logger.exception(
-            "Error starting V1 to V2 migration job for consultation {consultation_id}",
-            consultation_id=consultation.id,
-        )
-        messages.error(request, f"Failed to start migration job: {e}")
+    )
+
+
+_MIGRATION_AUDIT_LABELS = {
+    "responses_missing_text": "Responses whose free text will be copied into the v2 text field",
+    "questions_without_type": "Questions without a v2 question type",
+    "questions_open_only": "Questions that will become open questions",
+    "questions_closed_only": "Questions that will become closed questions",
+    "questions_hybrid": "Hybrid questions that will be split into an open question and a closed sibling",
+    "questions_without_flags": "Questions with neither flag (left untyped for manual review)",
+    "multiple_choice_links": "Selected options that will become individual response rows",
+    "multi_choice_answers": "Multiple-choice option records (kept for v1 consumers)",
+    "demographic_options": "Demographic records that will become demographic questions and responses",
+    "respondent_demographic_links": "Respondent demographic links (kept for v1 consumers)",
+    "missing_data_source": "This consultation is missing a survey provider",
+}
 
 
 class ConsultationAdmin(admin.ModelAdmin):
@@ -140,6 +153,67 @@ class ConsultationAdmin(admin.ModelAdmin):
         create_cloned_consultation,
         migrate_v1_consultation,
     ]
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "<uuid:consultation_id>/migrate-v1-confirm/",
+                self.admin_site.admin_view(self.migrate_v1_confirm_view),
+                name="consultations_consultation_migrate_v1_confirm",
+            ),
+        ]
+        return custom_urls + urls
+
+    def migrate_v1_confirm_view(self, request, consultation_id):
+        """Intermediate confirmation page for the migration admin action.
+
+        Shows the dry-run audit (what would change and in which direction the
+        classification would go) before the background job is actually
+        queued, so the django admin flow needs no CLI flags.
+        """
+        consultation = get_object_or_404(Consultation, pk=consultation_id)
+
+        if request.method == "POST":
+            try:
+                migrate_v1_consultation_job.delay(consultation.id)
+                messages.success(
+                    request,
+                    f"Migrating '{consultation.title}' to the V2 schema in the background. "
+                    "Monitor progress in /django-rq.",
+                )
+            except Exception as e:
+                logger.exception(
+                    "Error starting V1 to V2 migration job for consultation {consultation_id}",
+                    consultation_id=consultation.id,
+                )
+                messages.error(request, f"Failed to start migration job: {e}")
+            return HttpResponseRedirect(
+                reverse("admin:consultations_consultation_changelist")
+            )
+
+        already_migrated = consultation.migrated_at is not None
+        has_provider = consultation.data_source is not None
+        counts = (
+            [
+                (_MIGRATION_AUDIT_LABELS[key], value)
+                for key, value in audit_consultation(consultation).items()
+            ]
+            if not already_migrated and not has_provider
+            else []
+        )
+        context = {
+            **self.admin_site.each_context(request),
+            "title": f"Confirm v1 to v2 migration: {consultation.title}",
+            "consultation": consultation,
+            "counts": counts,
+            "already_migrated": already_migrated,
+            "has_provider": has_provider,
+            "opts": self.model._meta,
+        }
+        return TemplateResponse(
+            request, "admin/consultations/consultation/migrate_v1_confirm.html", context
+        )
 
 
 class MultiChoiceAnswerInline(admin.StackedInline):
