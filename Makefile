@@ -258,7 +258,7 @@ else ifeq ($(service),frontend)
 	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
 	--cache-to type=local,dest=$(APP_CACHE_DIR) \
 	--cache-from type=local,src=$(APP_CACHE_DIR) \
-	--build-arg PUBLIC_DATA_SETUP_V2_ENABLED=$(if $(filter prod,$(ENVIRONMENT)),false,true) \
+	--build-arg PUBLIC_DATA_SETUP_V2_ENABLED=true \
 	-f $(service)/Dockerfile .
 else
 	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \

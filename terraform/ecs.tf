@@ -2,7 +2,7 @@ locals {
   backend_port  = 8000
   frontend_port = 3000
 
-  data_setup_v2_enabled = var.env == "prod" ? false : true
+  data_setup_v2_enabled = true
 
   base_env_vars = {
     "ENVIRONMENT"                 = terraform.workspace
