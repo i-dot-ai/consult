@@ -18,6 +18,7 @@
   import { createFetchStore } from "../../../global/stores.ts";
   import { getDataSetupV2Enabled } from "../../../global/utils.ts";
   import type { QuestionDetailV2 } from "../../../global/queries/questions/types.ts";
+  import { excludeDemographicQuestions } from "../../../global/queries/questions/queries.ts";
   import type {
     ResponsesBody,
     ResponsesBodyV2,
@@ -110,9 +111,11 @@
     ("text" in response ? response.text : response.free_text_answer_text) ?? "";
 
   let consultationQuestions = $derived(
-    listResults($consultationQuestionsStore.data),
+    excludeDemographicQuestions(listResults($consultationQuestionsStore.data)),
   );
-  let respondentQuestions = $derived(listResults($questionsStore.data));
+  let respondentQuestions = $derived(
+    excludeDemographicQuestions(listResults($questionsStore.data)),
+  );
 
   let questionsById = $derived(
     new Map(respondentQuestions.map((question) => [question.id, question])),
@@ -168,16 +171,23 @@
   );
 
   let responsesWithQuestions = $derived(
-    responsesToDisplay.map((response) => {
-      const question = questionsById.get(response.question_id);
-      return {
-        ...response,
-        question: {
-          title: question ? questionText(question) : "",
-          number: question?.number || 0,
-        },
-      };
-    }),
+    responsesToDisplay
+      .filter((response) => {
+        const question = questionsById.get(response.question_id);
+        return (
+          !question || !("type" in question) || question.type !== "demographic"
+        );
+      })
+      .map((response) => {
+        const question = questionsById.get(response.question_id);
+        return {
+          ...response,
+          question: {
+            title: question ? questionText(question) : "",
+            number: question?.number || 0,
+          },
+        };
+      }),
   );
 </script>
 
