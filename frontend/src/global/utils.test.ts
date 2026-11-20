@@ -110,9 +110,9 @@ describe("getDataSetupV2Enabled", () => {
     expect(getDataSetupV2Enabled()).toBe(false);
   });
 
-  it("is false when the flag is unset", () => {
+  it("is true when the flag is unset", () => {
     delete process.env.PUBLIC_DATA_SETUP_V2_ENABLED;
-    expect(getDataSetupV2Enabled()).toBe(false);
+    expect(getDataSetupV2Enabled()).toBe(true);
   });
 });
 

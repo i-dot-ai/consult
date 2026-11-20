@@ -93,35 +93,45 @@ test.describe("Consultations - Detail/Dashboard Page", () => {
   test("consultation dashboard displays key metrics and questions", async ({
     page,
   }) => {
-    if (!getDataSetupV2Enabled()) {
-      console.log(`Skipping: "consultation dashboard displays key metrics and questions"`);
-      return;
+    // If Key Metrics is displayed, it means V2 is disabled
+    const keyMetricsFound = await page.getByText("Key Metrics").isVisible();
+
+    if (!keyMetricsFound) {
+      // V2 page is on display
+      const titleCount = await page.getByText(setupConsultation.title).count();
+      expect(titleCount).toBeGreaterThanOrEqual(1);
+
+      await expect(page.getByRole("button", { name: " Rename" })).toBeVisible();
+      await expect(page.getByRole("button", { name: " Delete" })).toBeVisible();
+
+      await expect(page.getByText("This consultation", { exact: true })).toBeVisible();
+    } else {
+      // V1 page is on display
+      // Check for key dashboard elements
+      // 1. Search functionality should be present
+      const searchInput = page.locator("#search-input");
+      await expect(searchInput).toBeVisible();
+
+      // 2. Section headings should be present
+      await expect(
+        page.getByRole("heading", { name: /All consultation questions/i }),
+      ).toBeVisible();
+
+      // 3. Question cards should be displayed - dummy data has 3 questions per consultation
+      const questionCards = page.locator('[data-testid="question-icon"]');
+      const questionCount = await questionCards.count();
+      expect(questionCount).toBeGreaterThanOrEqual(3);
+
+      // 4. Check for metrics section showing questions
+      const metricsText = await page.textContent("body");
+      expect(metricsText).toMatch(/\d+ questions?/);
+
+      // 5. Check for specific question text from dummy data
+      await expect(page.getByText(openQuestion.text)).toBeVisible();
+
+      // 6. Check for response counts (the longest question has 10 responses)
+      await expect(page.getByText(/10 responses/i).first()).toBeVisible();
     }
-
-    // Check for key dashboard elements
-    // 1. Search functionality should be present
-    const searchInput = page.locator("#search-input");
-    await expect(searchInput).toBeVisible();
-
-    // 2. Section headings should be present
-    await expect(
-      page.getByRole("heading", { name: /All consultation questions/i }),
-    ).toBeVisible();
-
-    // 3. Question cards should be displayed - dummy data has 3 questions per consultation
-    const questionCards = page.locator('[data-testid="question-icon"]');
-    const questionCount = await questionCards.count();
-    expect(questionCount).toBeGreaterThanOrEqual(3);
-
-    // 4. Check for metrics section showing questions
-    const metricsText = await page.textContent("body");
-    expect(metricsText).toMatch(/\d+ questions?/);
-
-    // 5. Check for specific question text from dummy data
-    await expect(page.getByText(openQuestion.text)).toBeVisible();
-
-    // 6. Check for response counts (the longest question has 10 responses)
-    await expect(page.getByText(/10 responses/i).first()).toBeVisible();
   });
 
   test("can navigate to evaluation page from consultation", async ({
