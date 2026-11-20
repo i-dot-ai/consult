@@ -193,7 +193,7 @@ class QuestionSetupSerializer(serializers.ModelSerializer):
             "status",
             "response_count",
         ]
-        read_only_fields: ClassVar[list] = ["id", "number", "status", "response_count"]
+        read_only_fields: ClassVar[list] = ["id", "number", "response_count"]
 
     def validate_text(self, value):
         if not value.strip():
