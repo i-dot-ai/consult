@@ -168,24 +168,36 @@
       : (currRespondent?.demographics ?? []),
   );
 
-  let responsesWithQuestions = $derived(
-    responsesToDisplay
-      .filter((response) => {
-        const question = questionsById.get(response.question_id);
-        return (
-          !question || !("type" in question) || question.type !== "demographic"
-        );
-      })
-      .map((response) => {
-        const question = questionsById.get(response.question_id);
-        return {
-          ...response,
-          question: {
-            title: question ? questionText(question) : "",
-            number: question?.number || 0,
-          },
-        };
-      }),
+  // Get all non-demographic questions (open/closed) that should be displayed
+  let questionsToDisplay = $derived(
+    respondentQuestions.filter(
+      (question) => !("type" in question) || question.type !== "demographic",
+    ),
+  );
+
+  // Create display items for all non-demographic questions
+  let displayItems = $derived(
+    questionsToDisplay.map((question) => {
+      // Find response for this question
+      const response = responsesToDisplay.find(
+        (r) => r.question_id === question.id,
+      );
+
+      return {
+        id: response?.id || question.id,
+        question_id: question.id,
+        question: {
+          title: questionText(question),
+          number: question.number || 0,
+        },
+        // Use response text if exists, otherwise "Not answered"
+        responseText: response ? responseText(response) : "Not answered",
+        // Multi-choice answers if present
+        multiple_choice_answer: response?.multiple_choice_answer || [],
+        themes: response?.themes || [],
+        evidenceRich: response?.evidenceRich ?? false,
+      };
+    }),
   );
 </script>
 
@@ -279,23 +291,23 @@
             {/if}
 
             <ul>
-              {#each responsesWithQuestions.sort((a, b) => {
+              {#each displayItems.sort((a, b) => {
                 if (a.question.number < b.question.number) {
                   return -1;
                 } else if (a.question.number > b.question.number) {
                   return 1;
                 }
                 return 0;
-              }) as response, i (response.id)}
+              }) as item, i (item.id)}
                 <RespondentAnswer
                   {consultationId}
-                  questionId={response.question_id}
-                  questionTitle={response.question.title}
-                  questionNumber={response.question.number}
-                  responseText={responseText(response)}
-                  multiChoice={response.multiple_choice_answer}
-                  themes={response.themes?.map((theme) => theme.name) || []}
-                  evidenceRich={response.evidenceRich ?? false}
+                  questionId={item.question_id}
+                  questionTitle={item.question.title}
+                  questionNumber={item.question.number}
+                  responseText={item.responseText}
+                  multiChoice={item.multiple_choice_answer}
+                  themes={item.themes?.map((theme) => theme.name) || []}
+                  evidenceRich={item.evidenceRich ?? false}
                   delay={FLY_ANIMATION_DELAY * i}
                 />
               {/each}
