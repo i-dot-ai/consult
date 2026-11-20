@@ -18,7 +18,7 @@
   import { createFetchStore } from "../../../global/stores.ts";
   import { getDataSetupV2Enabled } from "../../../global/utils.ts";
   import type { QuestionDetailV2 } from "../../../global/queries/questions/types.ts";
-  import { excludeDemographicQuestions } from "../../../global/queries/questions/queries.ts";
+  // Not used but kept for reference
   import type {
     ResponsesBody,
     ResponsesBodyV2,
@@ -111,11 +111,9 @@
     ("text" in response ? response.text : response.free_text_answer_text) ?? "";
 
   let consultationQuestions = $derived(
-    excludeDemographicQuestions(listResults($consultationQuestionsStore.data)),
+    listResults($consultationQuestionsStore.data),
   );
-  let respondentQuestions = $derived(
-    excludeDemographicQuestions(listResults($questionsStore.data)),
-  );
+  let respondentQuestions = $derived(listResults($questionsStore.data));
 
   let questionsById = $derived(
     new Map(respondentQuestions.map((question) => [question.id, question])),
