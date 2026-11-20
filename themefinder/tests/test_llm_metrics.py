@@ -207,6 +207,21 @@ async def test_schema_fallback_rejects_invalid_tool_arguments():
         await llm.ainvoke("prompt", Output)
 
 
+async def test_schema_fallback_reports_an_unsupported_model():
+    class Output(BaseModel):
+        answer: str
+
+    llm = _llm(create=(_response(), _headers()))
+    llm.client.chat.completions.parse = AsyncMock(
+        side_effect=_json_schema_unsupported_error()
+    )
+
+    with pytest.raises(
+        ValueError, match="does not support the required structured output"
+    ):
+        await llm.ainvoke("prompt", Output)
+
+
 async def test_does_not_retry_unrelated_bad_requests():
     class Output(BaseModel):
         answer: str

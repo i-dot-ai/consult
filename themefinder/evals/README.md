@@ -63,6 +63,7 @@ uv run --extra eval python run_eval.py --family gemini claude   # or --all for e
 
 - Without `--component`, a comparison runs every component.
 - `--judge-model` allows you to set the judge model overwriting AUTO_EVAL_JUDGE_MODEL. One judge model will be used to judge all task LLMs for consistency.
+- Judge models must be available through a gateway route that supports structured output. ThemeFinder requests native JSON-schema output and uses a validated tool-call fallback where necessary; it does not accept unstructured judge text.
 - `make run-benchmark` is the full version (`--all`, `housing_S`, 5 runs). Override with `BENCHMARK_DATASET` and `BENCHMARK_RUNS`.
 - Results go to `benchmark_results/<id>/`. Run `visualise_benchmark.py --benchmark <id>` for an HTML report.
 

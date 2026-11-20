@@ -17,6 +17,10 @@ from adapters.evaluators.ground_information_evaluator import (
     GroundednessInformationRetentionEvaluator,
 )
 from adapters.evaluators.groundedness_evaluator import GroundednessEvaluator
+from adapters.evaluators.llm_judge_evaluator import (
+    BinaryDecisionResponse,
+    ThemeMatchResponse,
+)
 from adapters.evaluators.refinement_quality_evaluator import RefinementQualityEvaluator
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
 from eval_types import Score
@@ -27,15 +31,15 @@ class _CollectionProbingJudge(FakeJudge):
 
     collected_while_scoring: bool | None = None
 
-    async def ainvoke(self, prompt: str):
+    async def ainvoke(self, prompt: str, output_model=None):
         self.collected_while_scoring = _active_gateway_metrics.get() is not None
-        return await super().ainvoke(prompt)
+        return await super().ainvoke(prompt, output_model)
 
 
 class _RaisingJudge:
     """A judge whose `ainvoke` raises"""
 
-    async def ainvoke(self, prompt: str):
+    async def ainvoke(self, prompt: str, output_model=None):
         raise RuntimeError("boom")
 
 
@@ -115,7 +119,7 @@ class TestDecisionScoredJudges(_JudgeContractTests):
             '{"evaluations": {'
             '"A": {"decision": "STRONG", "matched_to": "x", "reasoning": "r"},'
             '"B": {"decision": "PARTIAL", "matched_to": "y", "reasoning": "r"},'
-            '"C": {"decision": "NO", "reasoning": "r"}}}'
+            '"C": {"decision": "NO", "matched_to": "none", "reasoning": "r"}}}'
         )
         scores = await self._evaluate(judge)
 
@@ -124,6 +128,7 @@ class TestDecisionScoredJudges(_JudgeContractTests):
         assert scores[0].name == self.metric
         assert scores[0].value == round(8 / 3, 2)
         assert f"1/3 {self.summary_phrase}" in scores[0].comment
+        assert judge.output_models == [ThemeMatchResponse]
 
     async def test_empty_evaluations_scores_zero(self):
         """An empty evaluations dict (no themes) yields a 0.0 score and a comment"""
@@ -133,31 +138,12 @@ class TestDecisionScoredJudges(_JudgeContractTests):
         assert scores[0].value == 0.0
         assert f"0/0 {self.summary_phrase}" in scores[0].comment
 
-    async def test_legacy_numeric_format_still_scored(self):
-        """Legacy bare 0-5 numbers per theme are still averaged into the score."""
-        judge = FakeJudge('{"evaluations": {"A": 4, "B": 2}}')
-        scores = await self._evaluate(judge)
-
-        # mean(4, 2) = 3.0; one theme (2) below threshold. Legacy details carry
-        # no per-theme decision lines, so the comment is just the summary.
-        assert scores[0].value == 3.0
-        assert scores[0].comment == f"1/2 {self.summary_phrase}"
-
-    async def test_evaluations_key_optional(self):
-        """With no `evaluations` wrapper, scoring falls back to the top-level dict."""
-        judge = FakeJudge(
-            '{"A": {"decision": "STRONG", "matched_to": "x", "reasoning": "r"}}'
-        )
-        scores = await self._evaluate(judge)
-
-        assert scores[0].value == 5.0
-
     async def test_comment_wording_and_detail_lines(self):
         """The comment carries the threshold summary plus one detail line per theme."""
         judge = FakeJudge(
             '{"evaluations": {'
             '"A": {"decision": "STRONG", "matched_to": "x", "reasoning": "clear"},'
-            '"B": {"decision": "NO", "reasoning": "missing"}}}'
+            '"B": {"decision": "NO", "matched_to": "none", "reasoning": "missing"}}}'
         )
         scores = await self._evaluate(judge)
 
@@ -217,30 +203,26 @@ class _NumericKeyJudgeTests(_JudgeContractTests):
             )
         ]
 
-    async def test_missing_metric_defaults_to_zero(self):
-        """A metric absent from the response falls back to a 0.0 Score with empty comment."""
-        # Only the first metric is present; the second is absent from the
-        # response and must fall back to 0.0 with an empty comment. Skip
-        # for evaluators with only one metric.
-        if len(self.metric_names) == 1:
-            pytest.skip("single-metric evaluators have no topic order to test")
-
-        present, missing = self.metric_names[0], self.metric_names[1]
+    async def test_incomplete_structured_response_degrades_to_zero_scores(self):
+        """A response missing a required metric fails schema validation."""
+        present = self.metric_names[0]
         judge = FakeJudge(json.dumps({present: 4, f"{present}_reasoning": "tight"}))
 
         scores = await self._evaluate(judge)
 
-        assert scores[1] == Score(missing, 0.0, "")
+        assert [score.value for score in scores] == [0.0, 0.0]
+        assert all(score.comment.startswith("Error:") for score in scores)
 
-    async def test_parses_fenced_json(self):
-        """`_parse_json_markdown` strips a ```json code fence before parsing the response."""
-        first = self.metric_names[0]
-        body = json.dumps({first: 4, f"{first}_reasoning": "r"})
-        judge = FakeJudge(f"```json\n{body}\n```")
+    async def test_uses_a_schema_with_exactly_its_metrics(self):
+        response = {}
+        for metric in self.metric_names:
+            response[metric] = 4
+            response[f"{metric}_reasoning"] = "r"
+        judge = FakeJudge(json.dumps(response))
 
-        scores = await self._evaluate(judge)
+        await self._evaluate(judge)
 
-        assert scores[0] == Score(first, 4.0, "r")
+        assert set(judge.output_models[0].model_fields) == set(response)
 
 
 class TestCondensationQualityEvaluator(_NumericKeyJudgeTests):
@@ -318,6 +300,7 @@ class TestClarityEvaluator(_JudgeContractTests):
             )
         ]
         assert len(judge.prompts) == 2
+        assert judge.output_models == [BinaryDecisionResponse, BinaryDecisionResponse]
 
     async def test_prompts_contain_only_the_theme_being_judged(self):
         judge = FakeJudge('{"decision": "PASS", "reasoning": "Clear."}')
@@ -454,11 +437,17 @@ class _PassOnJudge(FakeJudge):
         self.pass_on = pass_on
         super().__init__(**kwargs)
 
-    async def ainvoke(self, prompt: str):
+    async def ainvoke(self, prompt: str, output_model=None):
         source_items = prompt.split("## Source item")[1].split("## Candidate items")[0]
         decision = "PASS" if self.pass_on in source_items else "FAIL"
-        self.parsed = json.dumps({"decision": decision})
-        return await super().ainvoke(prompt)
+        self.parsed = json.dumps(
+            {
+                "decision": decision,
+                "matched_items": [self.pass_on] if decision == "PASS" else "None",
+                "reasoning": "match" if decision == "PASS" else "no match",
+            }
+        )
+        return await super().ainvoke(prompt, output_model)
 
 
 class TestGroundInformationEvaluator(_JudgeContractTests):

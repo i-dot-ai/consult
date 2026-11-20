@@ -5,16 +5,16 @@
 """
 
 import asyncio
-import json
 import logging
 import random
-import re
 from abc import abstractmethod
 from collections.abc import Callable
-from typing import Any, NamedTuple
+from functools import cached_property
+from typing import Any, ClassVar, Literal, NamedTuple
 
 import numpy as np
 import openai
+from pydantic import BaseModel, ConfigDict, Field, create_model, model_validator
 from tenacity import (
     before_sleep_log,
     retry,
@@ -33,17 +33,68 @@ from .prompts import load_prompt_fn
 logger = get_logger(__name__)
 
 
+class BinaryDecisionResponse(BaseModel):
+    """Structured response for a per-item PASS/FAIL judge."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    decision: Literal["PASS", "FAIL"]
+    reasoning: str
+
+
+class BinaryMatchResponse(BaseModel):
+    """Structured response for a binary theme-match judge."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    decision: Literal["PASS", "FAIL"]
+    matched_items: list[str] | Literal["None"]
+    reasoning: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_decision_and_matches(self) -> "BinaryMatchResponse":
+        """Keep the structured response aligned with the binary-match prompt."""
+        if self.decision == "PASS":
+            if not isinstance(self.matched_items, list) or not self.matched_items:
+                raise ValueError("PASS requires at least one matched item")
+            normalised_items = [item.strip() for item in self.matched_items]
+            if any(not item for item in normalised_items):
+                raise ValueError("Matched items cannot be blank")
+            if len(normalised_items) != len(set(normalised_items)):
+                raise ValueError("Matched items cannot contain duplicates")
+        elif self.matched_items != "None":
+            raise ValueError('FAIL requires matched_items to be exactly "None"')
+        return self
+
+
+class ThemeMatchEvaluation(BaseModel):
+    """One generated-to-reference theme comparison decision."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    matched_to: str
+    decision: Literal["STRONG", "PARTIAL", "NO"]
+    reasoning: str
+
+
+class ThemeMatchResponse(BaseModel):
+    """Structured response for a list of generated-to-reference comparisons."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    evaluations: dict[str, ThemeMatchEvaluation]
+
+
 class LLMJudgeEvaluator(EvaluatorPort):
     """Base for the LLM-as-judge evaluators: carries the judge LLM and the
-    shared retry/parsing plumbing. Subclasses implement `_score` and
+    shared retry/structured-output plumbing. Subclasses implement `_score` and
     `_build_scores`.
     """
 
     prompt_fn: Callable = None
 
     def __init__(self, llm: Any, shuffle: bool = False):
-        """Store the injected judge LLM — any object with an async `ainvoke`
-        returning a response with a `.parsed` string."""
+        """Store the injected judge LLM that supports Pydantic structured output."""
         self.llm = llm
         self.shuffle = shuffle
 
@@ -60,17 +111,18 @@ class LLMJudgeEvaluator(EvaluatorPort):
         before_sleep=before_sleep_log(logger, logging.WARNING),
         reraise=True,
     )
-    async def invoke_with_retry(self, prompt: str) -> Any:
-        """Invoke the judge LLM, retrying only on transient errors (connection,
-        rate limit, 5xx); non-transient errors reraise immediately."""
+    async def invoke_with_retry(
+        self, prompt: str, response_model: type[BaseModel]
+    ) -> BaseModel:
+        """Invoke the judge with a response schema, retrying transient failures only."""
         with exclude_from_gateway_metrics():
-            return await self.llm.ainvoke(prompt)
-
-    @staticmethod
-    def _parse_json_markdown(text: str) -> dict:
-        """Extract JSON from markdown code fences or raw text."""
-        match = re.search(r"```(?:json)?\s*(.*?)\s*```", text, re.DOTALL)
-        return json.loads(match.group(1) if match else text)
+            response = await self.llm.ainvoke(prompt, response_model)
+        if not isinstance(response.parsed, response_model):
+            raise TypeError(
+                "Judge LLM did not return the requested structured response "
+                f"{response_model.__name__}"
+            )
+        return response.parsed
 
     @staticmethod
     def _shuffle_themes(themes: list[Any]) -> list[Any]:
@@ -100,7 +152,6 @@ class PerItemBinaryEvaluator(LLMJudgeEvaluator):
     """
 
     item_plural: str = "items"
-    decision_name: str = "Binary"
 
     def __init__(self, *args, concurrency: int = 5, **kwargs):
         super().__init__(*args, **kwargs)
@@ -124,9 +175,10 @@ class PerItemBinaryEvaluator(LLMJudgeEvaluator):
         """Judge one item while respecting the evaluator's concurrency limit."""
         label = self._item_label(item)
         async with sem:
-            response = await self.invoke_with_retry(self._build_item_prompt(item))
-        parsed = self._parse_json_markdown(response.parsed)
-        return {"label": label, **self._parse_decision(label, parsed)}
+            response = await self.invoke_with_retry(
+                self._build_item_prompt(item), BinaryDecisionResponse
+            )
+        return {"label": label, **response.model_dump()}
 
     async def _score(self, case: Case, output: Any) -> list[Score]:
         """Judge every output item independently and aggregate its decisions."""
@@ -145,26 +197,6 @@ class PerItemBinaryEvaluator(LLMJudgeEvaluator):
             raise
 
         return self._build_scores(decisions)
-
-    def _parse_decision(self, label: str, parsed: Any) -> dict[str, str]:
-        """Validate a single binary decision from the item judge."""
-        if not isinstance(parsed, dict):
-            raise TypeError(
-                f"{self.decision_name} judge response must be a JSON object"
-            )
-
-        decision = parsed.get("decision")
-        reasoning = parsed.get("reasoning")
-        if decision not in {"PASS", "FAIL"}:
-            raise ValueError(
-                f"{self.decision_name} decision for {label!r} must be PASS or FAIL"
-            )
-        if not isinstance(reasoning, str):
-            raise TypeError(
-                f"{self.decision_name} reasoning for {label!r} must be a string"
-            )
-
-        return {"decision": decision, "reasoning": reasoning}
 
     def _build_scores(self, decisions: list[dict[str, str]]) -> list[Score]:
         """Return the proportion of independently judged items that pass."""
@@ -201,8 +233,8 @@ class SinglePromptJudgeEvaluator(LLMJudgeEvaluator):
         `_build_prompt` returns None), parse the response, and score it."""
         prompt = self._build_prompt(case, output)
         if prompt is not None:
-            response = await self.invoke_with_retry(prompt)
-            parsed = self._parse_json_markdown(response.parsed)
+            response = await self.invoke_with_retry(prompt, self.response_model)
+            parsed = response.model_dump()
         else:
             parsed: dict = {}
 
@@ -220,6 +252,19 @@ class ThemeComparisonJudgeEvaluator(SinglePromptJudgeEvaluator):
     #: Name of the `Case` field holding this evaluator's case-side
     #: (ground-truth / pre-transform) themes.
     ground_truth_attr: str = "expected_output"
+
+    @cached_property
+    def response_model(self) -> type[BaseModel]:
+        """Build the exact numeric-score schema required by this evaluator."""
+        fields: dict[str, Any] = {}
+        for metric in self.metric_names:
+            fields[metric] = (float, Field(ge=0, le=5))
+            fields[f"{metric}_reasoning"] = (str, ...)
+        return create_model(
+            f"{type(self).__name__}Response",
+            __config__=ConfigDict(extra="forbid"),
+            **fields,
+        )
 
     def _topic_order(self, case_themes: Any, output_themes: Any) -> tuple[Any, Any]:
         """Order the two theme lists, case-side first by default; subclasses
@@ -246,8 +291,8 @@ class ThemeComparisonJudgeEvaluator(SinglePromptJudgeEvaluator):
         return [
             Score(
                 metric,
-                round(float(decisions.get(metric, 0)), 2),
-                decisions.get(f"{metric}_reasoning", ""),
+                round(float(decisions[metric]), 2),
+                decisions[f"{metric}_reasoning"],
             )
             for metric in self.metric_names
         ]
@@ -272,6 +317,7 @@ class DecisionScoredComparisonJudge(ThemeComparisonJudgeEvaluator):
 
     #: Phrase used in the comment summary, e.g. "themes below threshold".
     threshold_label: str = ""
+    response_model: ClassVar[type[ThemeMatchResponse]] = ThemeMatchResponse
 
     def _build_scores(self, decisions: Any) -> list[Score]:
         """Map the parsed per-theme STRONG/PARTIAL/NO decisions to a single
@@ -284,35 +330,24 @@ class DecisionScoredComparisonJudge(ThemeComparisonJudgeEvaluator):
     def _decision_score(self, parsed: dict) -> dict[str, Any]:
         """Turn a parsed STRONG/PARTIAL/NO decision response into numeric
         scores, their average, threshold counts, and per-topic details."""
-        evaluations = parsed.get("evaluations", parsed)
+        evaluations = parsed["evaluations"]
 
         scores = []
         details = []
 
         for theme_label, evaluation in evaluations.items():
-            if isinstance(evaluation, dict):
-                decision = evaluation.get("decision", "NO").upper()
-                score = DECISION_SCORES.get(decision, 0)
-                scores.append(score)
-                details.append(
-                    {
-                        "theme": theme_label,
-                        "matched_to": evaluation.get("matched_to", "none"),
-                        "decision": decision,
-                        "reasoning": evaluation.get("reasoning", ""),
-                        "score": score,
-                    }
-                )
-            elif isinstance(evaluation, (int, float)):
-                # Backwards compatibility with old 0-5 format
-                scores.append(evaluation)
-                details.append(
-                    {
-                        "theme": theme_label,
-                        "decision": "LEGACY",
-                        "score": evaluation,
-                    }
-                )
+            decision = evaluation["decision"]
+            score = DECISION_SCORES[decision]
+            scores.append(score)
+            details.append(
+                {
+                    "theme": theme_label,
+                    "matched_to": evaluation["matched_to"],
+                    "decision": decision,
+                    "reasoning": evaluation["reasoning"],
+                    "score": score,
+                }
+            )
 
         return {
             "scores": scores,
@@ -330,7 +365,7 @@ class DecisionScoredComparisonJudge(ThemeComparisonJudgeEvaluator):
         )
 
         details = result.get("details", [])
-        if not details or details[0].get("decision") == "LEGACY":
+        if not details:
             return summary
 
         decision_parts = []
@@ -394,9 +429,12 @@ class BinaryMatchJudgeEvaluator(LLMJudgeEvaluator):
             if self.shuffle:
                 item_list = self._shuffle_themes(item_list)
             prompt = self._build_item_prompt(single_item, item_list)
-            response = await self.invoke_with_retry(prompt)
-            parsed = self._parse_json_markdown(response.parsed)
-            return {**parsed, "item": single_item, "item_list": item_list}
+            response = await self.invoke_with_retry(prompt, BinaryMatchResponse)
+            return {
+                **response.model_dump(),
+                "item": single_item,
+                "item_list": item_list,
+            }
 
     async def _llm_decision_loop(
         self, items: list[str], comparison_items: list[str]
