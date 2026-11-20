@@ -8,14 +8,53 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from conftest import make_case
+from fakes import FakeJudge
+from pydantic import ValidationError
+
 from adapters.evaluators.llm_judge_evaluator import (
     BinaryMatchDecisions,
     BinaryMatchJudgeEvaluator,
     BinaryMatchResponse,
 )
-from conftest import make_case
 from eval_types import Case, Score
-from fakes import FakeJudge
+
+
+class TestBinaryMatchResponse:
+    """The response schema enforces the prompt's PASS/FAIL contract."""
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            {"decision": "PASS", "matched_items": "None"},
+            {"decision": "PASS", "matched_items": []},
+            {"decision": "PASS", "matched_items": ["  "]},
+            {"decision": "PASS", "matched_items": ["A", " A "]},
+            {"decision": "FAIL", "matched_items": ["A"]},
+        ],
+        ids=["pass-none", "pass-empty", "pass-blank", "pass-duplicate", "fail-list"],
+    )
+    def test_rejects_decision_and_match_combinations_outside_the_prompt_contract(
+        self, payload
+    ):
+        with pytest.raises(ValidationError):
+            BinaryMatchResponse.model_validate(payload)
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            {"decision": "PASS", "matched_items": ["Candidate A"]},
+            {"decision": "FAIL", "matched_items": "None"},
+        ],
+        ids=["pass-with-matches", "fail-with-none"],
+    )
+    def test_accepts_decision_and_match_combinations_required_by_the_prompt(
+        self, payload
+    ):
+        assert BinaryMatchResponse.model_validate(payload).model_dump() == {
+            **payload,
+            "reasoning": "",
+        }
 
 
 class _StubBinaryJudge(BinaryMatchJudgeEvaluator):

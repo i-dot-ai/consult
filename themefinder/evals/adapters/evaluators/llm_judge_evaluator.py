@@ -10,12 +10,11 @@ import random
 from abc import abstractmethod
 from collections.abc import Callable
 from functools import cached_property
-from typing import Any, Literal, NamedTuple
+from typing import Any, ClassVar, Literal, NamedTuple
 
 import numpy as np
 import openai
-from eval_types import Case, Score
-from pydantic import BaseModel, ConfigDict, Field, create_model
+from pydantic import BaseModel, ConfigDict, Field, create_model, model_validator
 from tenacity import (
     before_sleep_log,
     retry,
@@ -23,9 +22,10 @@ from tenacity import (
     stop_after_attempt,
     wait_random_exponential,
 )
-from utils.logging_config import get_logger
-
 from themefinder.llm import exclude_from_gateway_metrics
+
+from eval_types import Case, Score
+from utils.logging_config import get_logger
 
 from .base import EvaluatorPort
 from .prompts import load_prompt_fn
@@ -50,6 +50,21 @@ class BinaryMatchResponse(BaseModel):
     decision: Literal["PASS", "FAIL"]
     matched_items: list[str] | Literal["None"]
     reasoning: str = ""
+
+    @model_validator(mode="after")
+    def validate_decision_and_matches(self) -> "BinaryMatchResponse":
+        """Keep the structured response aligned with the binary-match prompt."""
+        if self.decision == "PASS":
+            if not isinstance(self.matched_items, list) or not self.matched_items:
+                raise ValueError("PASS requires at least one matched item")
+            normalised_items = [item.strip() for item in self.matched_items]
+            if any(not item for item in normalised_items):
+                raise ValueError("Matched items cannot be blank")
+            if len(normalised_items) != len(set(normalised_items)):
+                raise ValueError("Matched items cannot contain duplicates")
+        elif self.matched_items != "None":
+            raise ValueError('FAIL requires matched_items to be exactly "None"')
+        return self
 
 
 class ThemeMatchEvaluation(BaseModel):
@@ -276,8 +291,8 @@ class ThemeComparisonJudgeEvaluator(SinglePromptJudgeEvaluator):
         return [
             Score(
                 metric,
-                round(float(decisions.get(metric, 0)), 2),
-                decisions.get(f"{metric}_reasoning", ""),
+                round(float(decisions[metric]), 2),
+                decisions[f"{metric}_reasoning"],
             )
             for metric in self.metric_names
         ]
@@ -302,7 +317,7 @@ class DecisionScoredComparisonJudge(ThemeComparisonJudgeEvaluator):
 
     #: Phrase used in the comment summary, e.g. "themes below threshold".
     threshold_label: str = ""
-    response_model = ThemeMatchResponse
+    response_model: ClassVar[type[ThemeMatchResponse]] = ThemeMatchResponse
 
     def _build_scores(self, decisions: Any) -> list[Score]:
         """Map the parsed per-theme STRONG/PARTIAL/NO decisions to a single
