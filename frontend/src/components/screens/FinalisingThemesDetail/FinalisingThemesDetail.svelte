@@ -5,11 +5,13 @@
   import { fade, slide } from "svelte/transition";
 
   import { createFetchStore } from "../../../global/stores";
+  import { getDataSetupV2Enabled } from "../../../global/utils";
   import {
     getApiConfirmFinalisingThemesUrl,
     getApiGetGeneratedThemesUrl,
     getApiGetSelectedThemesUrl,
     getApiQuestionUrl,
+    getApiQuestionV2Url,
     getApiSelectGeneratedThemeUrl,
     getApiUpdateSelectedThemeUrl,
     getFinaliseThemesUrl,
@@ -134,11 +136,18 @@
     errorData = null;
   };
 
+  // V2 flag: question payload and confirmation come from the v2 API
+  const isV2 = getDataSetupV2Enabled();
+
   onMount(() => {
     $generatedThemesStore.fetch(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
-    $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
+    $questionStore.fetch(
+      isV2
+        ? getApiQuestionV2Url(consultationId, questionId)
+        : getApiQuestionUrl(consultationId, questionId),
+    );
     dataRequested = true;
   });
 
@@ -255,12 +264,14 @@
   };
 
   const confirmFinalisingThemes = async () => {
+    const confirmUrl = isV2
+      ? getApiQuestionV2Url(consultationId, questionId)
+      : getApiConfirmFinalisingThemesUrl(consultationId, questionId);
+
     await $confirmFinalisingThemesStore.fetch(
-      getApiConfirmFinalisingThemesUrl(consultationId, questionId),
+      confirmUrl,
       "PATCH",
-      {
-        theme_status: "confirmed",
-      },
+      isV2 ? { status: "confirmed" } : { theme_status: "confirmed" },
     );
 
     if ($confirmFinalisingThemesStore.error) {
