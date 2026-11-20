@@ -107,13 +107,11 @@
   );
 
   let displayQuestions = $derived(
-    questions
-      .filter((question) => isFreeTextQuestion(question))
-      .filter((question) =>
-        `Q${question.number}: ${questionText(question)}`
-          .toLocaleLowerCase()
-          .includes(searchValue.toLocaleLowerCase()),
-      ),
+    questions.filter((question) =>
+      `Q${question.number}: ${questionText(question)}`
+        .toLocaleLowerCase()
+        .includes(searchValue.toLocaleLowerCase()),
+    ),
   );
 
   let questionsForSignOff = $derived(
