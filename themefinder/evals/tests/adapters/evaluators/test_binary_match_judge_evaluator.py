@@ -26,13 +26,27 @@ class TestBinaryMatchResponse:
     @pytest.mark.parametrize(
         "payload",
         [
-            {"decision": "PASS", "matched_items": "None"},
-            {"decision": "PASS", "matched_items": []},
-            {"decision": "PASS", "matched_items": ["  "]},
-            {"decision": "PASS", "matched_items": ["A", " A "]},
-            {"decision": "FAIL", "matched_items": ["A"]},
+            {"decision": "PASS", "matched_items": "None", "reasoning": "r"},
+            {"decision": "PASS", "matched_items": [], "reasoning": "r"},
+            {"decision": "PASS", "matched_items": ["  "], "reasoning": "r"},
+            {
+                "decision": "PASS",
+                "matched_items": ["A", " A "],
+                "reasoning": "r",
+            },
+            {"decision": "FAIL", "matched_items": ["A"], "reasoning": "r"},
+            {"decision": "PASS", "matched_items": ["A"]},
+            {"decision": "PASS", "matched_items": ["A"], "reasoning": ""},
         ],
-        ids=["pass-none", "pass-empty", "pass-blank", "pass-duplicate", "fail-list"],
+        ids=[
+            "pass-none",
+            "pass-empty",
+            "pass-blank",
+            "pass-duplicate",
+            "fail-list",
+            "missing-reasoning",
+            "empty-reasoning",
+        ],
     )
     def test_rejects_decision_and_match_combinations_outside_the_prompt_contract(
         self, payload
@@ -43,18 +57,23 @@ class TestBinaryMatchResponse:
     @pytest.mark.parametrize(
         "payload",
         [
-            {"decision": "PASS", "matched_items": ["Candidate A"]},
-            {"decision": "FAIL", "matched_items": "None"},
+            {
+                "decision": "PASS",
+                "matched_items": ["Candidate A"],
+                "reasoning": "The themes match.",
+            },
+            {
+                "decision": "FAIL",
+                "matched_items": "None",
+                "reasoning": "No candidate matches.",
+            },
         ],
         ids=["pass-with-matches", "fail-with-none"],
     )
     def test_accepts_decision_and_match_combinations_required_by_the_prompt(
         self, payload
     ):
-        assert BinaryMatchResponse.model_validate(payload).model_dump() == {
-            **payload,
-            "reasoning": "",
-        }
+        assert BinaryMatchResponse.model_validate(payload).model_dump() == payload
 
 
 class _StubBinaryJudge(BinaryMatchJudgeEvaluator):
@@ -81,7 +100,9 @@ class _InFlightJudge(FakeJudge):
     """Judge that records the peak number of concurrent `ainvoke` calls."""
 
     def __init__(self):
-        super().__init__('{"decision": "PASS", "matched_items": ["X"]}')
+        super().__init__(
+            '{"decision": "PASS", "matched_items": ["X"], "reasoning": "match"}'
+        )
         self.in_flight = 0
         self.peak = 0
 
@@ -122,7 +143,9 @@ class TestBinaryMatchJudgeEvaluator:
         """Each item gets one prompt holding it plus every candidate, then each
         candidate gets one holding it plus every item; decisions reach
         `_build_scores` in input order, tagged with the item they judged."""
-        judge = FakeJudge('{"decision": "PASS", "matched_items": ["X"]}')
+        judge = FakeJudge(
+            '{"decision": "PASS", "matched_items": ["X"], "reasoning": "match"}'
+        )
 
         evaluator, scores = await self._run(judge, ["A", "B", "C"], ["X", "Y"])
 
@@ -142,7 +165,9 @@ class TestBinaryMatchJudgeEvaluator:
 
     async def test_judged_item_is_recorded_from_the_input(self):
         """The base class tags each structured decision with the item it judged."""
-        judge = FakeJudge('{"decision": "PASS", "matched_items": ["X"]}')
+        judge = FakeJudge(
+            '{"decision": "PASS", "matched_items": ["X"], "reasoning": "match"}'
+        )
 
         evaluator, _ = await self._run(judge, ["A", "B"], ["X"])
 
@@ -159,7 +184,9 @@ class TestBinaryMatchJudgeEvaluator:
         """One empty list is a valid case answered without the judge: the
         direction with no items has no decisions, the direction with no
         candidates fails every item."""
-        judge = FakeJudge('{"decision": "PASS", "matched_items": ["X"]}')
+        judge = FakeJudge(
+            '{"decision": "PASS", "matched_items": ["X"], "reasoning": "match"}'
+        )
 
         evaluator, scores = await self._run(judge, items, candidates)
 
@@ -202,7 +229,9 @@ class TestBinaryMatchJudgeEvaluator:
     async def test_failure_cancels_remaining_calls(self):
         """One failing item errors the case and stops the rest of the loop,
         rather than leaving queued calls running with discarded results."""
-        judge = _FailOnBJudge('{"decision": "PASS", "matched_items": ["X"]}')
+        judge = _FailOnBJudge(
+            '{"decision": "PASS", "matched_items": ["X"], "reasoning": "match"}'
+        )
 
         # concurrency=1 queues C-F behind B, so they are still pending when B fails
         _, scores = await self._run(judge, list("ABCDEF"), ["X"], concurrency=1)

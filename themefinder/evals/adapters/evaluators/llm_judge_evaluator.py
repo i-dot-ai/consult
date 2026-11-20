@@ -49,7 +49,7 @@ class BinaryMatchResponse(BaseModel):
 
     decision: Literal["PASS", "FAIL"]
     matched_items: list[str] | Literal["None"]
-    reasoning: str = ""
+    reasoning: str = Field(min_length=1)
 
     @model_validator(mode="after")
     def validate_decision_and_matches(self) -> "BinaryMatchResponse":

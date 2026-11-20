@@ -1,11 +1,12 @@
 """Tests for InformationEquivalenceEvaluator."""
 
+from conftest import _themes, make_case
+from fakes import SequenceFakeJudge
+
 from adapters.evaluators.information_equivalence_evaluator import (
     InformationEquivalenceEvaluator,
 )
-from conftest import _themes, make_case
 from eval_types import Score
-from fakes import SequenceFakeJudge
 
 
 class TestInformationEquivalenceEvaluator:
@@ -46,10 +47,10 @@ class TestInformationEquivalenceEvaluator:
 
     async def test_judges_each_list_in_both_directions_and_aggregates_matches(self):
         judge = SequenceFakeJudge(
-            '{"decision": "PASS", "matched_items": ["Refined A: desc"]}',
-            '{"decision": "PASS", "matched_items": ["Refined B: desc"]}',
-            '{"decision": "PASS", "matched_items": ["Original A: desc"]}',
-            '{"decision": "PASS", "matched_items": ["Original B: desc"]}',
+            '{"decision": "PASS", "matched_items": ["Refined A: desc"], "reasoning": "match"}',
+            '{"decision": "PASS", "matched_items": ["Refined B: desc"], "reasoning": "match"}',
+            '{"decision": "PASS", "matched_items": ["Original A: desc"], "reasoning": "match"}',
+            '{"decision": "PASS", "matched_items": ["Original B: desc"], "reasoning": "match"}',
         )
         evaluator = InformationEquivalenceEvaluator(judge)
         case = make_case(inputs={"themes": _themes("Original A", "Original B")})
@@ -76,9 +77,9 @@ class TestInformationEquivalenceEvaluator:
 
     async def test_scores_missing_original_theme_as_partial_equivalence(self):
         judge = SequenceFakeJudge(
-            '{"decision": "PASS", "matched_items": ["Refined A: desc"]}',
-            '{"decision": "FAIL", "matched_items": "None"}',
-            '{"decision": "PASS", "matched_items": ["Original A: desc"]}',
+            '{"decision": "PASS", "matched_items": ["Refined A: desc"], "reasoning": "match"}',
+            '{"decision": "FAIL", "matched_items": "None", "reasoning": "no match"}',
+            '{"decision": "PASS", "matched_items": ["Original A: desc"], "reasoning": "match"}',
         )
         evaluator = InformationEquivalenceEvaluator(judge)
         case = make_case(inputs={"themes": _themes("Original A", "Original B")})
@@ -98,8 +99,8 @@ class TestInformationEquivalenceEvaluator:
 
     async def test_ignores_a_pass_with_an_unknown_matched_item(self):
         judge = SequenceFakeJudge(
-            '{"decision": "PASS", "matched_items": ["Unknown"]}',
-            '{"decision": "PASS", "matched_items": ["Original A: desc"]}',
+            '{"decision": "PASS", "matched_items": ["Unknown"], "reasoning": "match"}',
+            '{"decision": "PASS", "matched_items": ["Original A: desc"], "reasoning": "match"}',
         )
         evaluator = InformationEquivalenceEvaluator(judge)
         case = make_case(inputs={"themes": _themes("Original A")})
@@ -119,9 +120,9 @@ class TestInformationEquivalenceEvaluator:
 
     async def test_discards_one_to_many_matches(self):
         judge = SequenceFakeJudge(
-            '{"decision": "PASS", "matched_items": ["Refined A: desc", "Refined B: desc"]}',
-            '{"decision": "PASS", "matched_items": ["Original A: desc"]}',
-            '{"decision": "PASS", "matched_items": ["Original A: desc"]}',
+            '{"decision": "PASS", "matched_items": ["Refined A: desc", "Refined B: desc"], "reasoning": "match"}',
+            '{"decision": "PASS", "matched_items": ["Original A: desc"], "reasoning": "match"}',
+            '{"decision": "PASS", "matched_items": ["Original A: desc"], "reasoning": "match"}',
         )
         evaluator = InformationEquivalenceEvaluator(judge)
         case = make_case(inputs={"themes": _themes("Original A")})
@@ -136,10 +137,10 @@ class TestInformationEquivalenceEvaluator:
 
     async def test_requires_directional_pairings_to_agree(self):
         judge = SequenceFakeJudge(
-            '{"decision": "PASS", "matched_items": ["Refined A: desc"]}',
-            '{"decision": "PASS", "matched_items": ["Refined B: desc"]}',
-            '{"decision": "PASS", "matched_items": ["Original B: desc"]}',
-            '{"decision": "PASS", "matched_items": ["Original A: desc"]}',
+            '{"decision": "PASS", "matched_items": ["Refined A: desc"], "reasoning": "match"}',
+            '{"decision": "PASS", "matched_items": ["Refined B: desc"], "reasoning": "match"}',
+            '{"decision": "PASS", "matched_items": ["Original B: desc"], "reasoning": "match"}',
+            '{"decision": "PASS", "matched_items": ["Original A: desc"], "reasoning": "match"}',
         )
         evaluator = InformationEquivalenceEvaluator(judge)
         case = make_case(inputs={"themes": _themes("Original A", "Original B")})

@@ -4,6 +4,10 @@ import json
 from collections import namedtuple
 
 import pytest
+from conftest import _themes, make_case
+from fakes import FakeJudge, SequenceFakeJudge
+from themefinder.llm import _active_gateway_metrics, collect_gateway_metrics
+
 from adapters.evaluators.clarity_evaluator import ClarityEvaluator
 from adapters.evaluators.condensation_quality_evaluator import (
     CondensationQualityEvaluator,
@@ -19,11 +23,7 @@ from adapters.evaluators.llm_judge_evaluator import (
 )
 from adapters.evaluators.refinement_quality_evaluator import RefinementQualityEvaluator
 from adapters.evaluators.title_specificity_evaluator import TitleSpecificityEvaluator
-from conftest import _themes, make_case
 from eval_types import Score
-from fakes import FakeJudge, SequenceFakeJudge
-
-from themefinder.llm import _active_gateway_metrics, collect_gateway_metrics
 
 
 class _CollectionProbingJudge(FakeJudge):
@@ -444,6 +444,7 @@ class _PassOnJudge(FakeJudge):
             {
                 "decision": decision,
                 "matched_items": [self.pass_on] if decision == "PASS" else "None",
+                "reasoning": "match" if decision == "PASS" else "no match",
             }
         )
         return await super().ainvoke(prompt, output_model)
