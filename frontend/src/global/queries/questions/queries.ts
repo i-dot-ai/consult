@@ -74,11 +74,16 @@ export function buildDemographicMergeQuery(consultationId: string) {
  * Dashboard question surfaces exclude demographic-type questions: they exist to
  * back filters, not as analyst-reviewable questions. Legacy v1 payloads carry
  * no `type` and pass through.
+ *
+ * In V2, also exclude closed questions (`type: "closed"`) as they don't have
+ * free text responses for analysis.
  */
 export function excludeDemographicQuestions(
   questions: Array<Question | QuestionDetailV2>,
 ): Array<Question | QuestionDetailV2> {
   return questions.filter(
-    (question) => !("type" in question) || question.type !== "demographic",
+    (question) =>
+      !("type" in question) ||
+      (question.type !== "demographic" && question.type !== "closed"),
   );
 }
