@@ -1,7 +1,7 @@
 import uuid
 from typing import ClassVar
 
-from django.db.models import Exists, OuterRef, Prefetch, Q
+from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -9,7 +9,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultations import models
-from consultations.api_v2.filters import ResponseFilter, ResponseSearchFilter
+from consultations.api_v2.demographic_tokens import encode_demographic_token
+from consultations.api_v2.filters import (
+    ResponseFilter,
+    ResponseSearchFilter,
+    get_filtered_response_ids,
+)
 from consultations.api_v2.pagination import ResponsePagination
 from consultations.api_v2.permissions import CanSeeConsultationV2
 from consultations.api_v2.serializers import (
@@ -112,6 +117,53 @@ class ResponseViewSet(ModelViewSet):
         # pages as the query plan shifts. The semantic-search filter overrides
         # this with .order_by("distance") when applied.
         return filtered_queryset.order_by("id")
+
+    @action(detail=False, methods=["get"], url_path="demographic-options", url_name="demographic-options")
+    def demographic_options(self, request, consultation_pk=None, **kwargs):
+        """Aggregate v2 demographic answers for the filter sidebar.
+
+        Honors the same filter params/search as the responses list: the counted
+        population is the respondents of the currently filtered responses. Returns
+        the {id, name, value, count} shape the sidebar already consumes; `id` is an
+        opaque demographic token (see api_v2.demographic_tokens) that can be passed
+        straight back in the `?demographics=` filter param.
+        """
+        consultation_uuid = self.kwargs["consultation_pk"]
+        filtered_response_ids = get_filtered_response_ids(self.request.GET, consultation_uuid)
+        filtered_respondent_ids = models.Response.objects.filter(id__in=filtered_response_ids).values(
+            "respondent_id"
+        )
+
+        # v1 parity: every answer value of every demographic question stays listed
+        # (zero-count values included under filters); counts cover only the
+        # respondents of the currently filtered responses.
+        aggregated = (
+            models.Response.objects.filter(
+                question__type=models.Question.QuestionType.DEMOGRAPHIC,
+                question__consultation_id=consultation_uuid,
+            )
+            .filter(ANSWERED_TEXT_FILTER)
+            .values("question_id", "question__text", "text")
+            .annotate(
+                count=Count(
+                    "respondent_id",
+                    distinct=True,
+                    filter=Q(respondent_id__in=filtered_respondent_ids),
+                )
+            )
+            .order_by("question__number", "-count", "text")
+        )
+        return Response(
+            [
+                {
+                    "id": encode_demographic_token(row["question_id"], row["text"]),
+                    "name": row["question__text"],
+                    "value": row["text"],
+                    "count": row["count"],
+                }
+                for row in aggregated
+            ]
+        )
 
     @action(
         detail=True,

@@ -9,7 +9,8 @@ from rest_framework import serializers
 from rest_framework.filters import SearchFilter
 
 from authentication.models import User
-from consultations.models import Response
+from consultations.api_v2.demographic_tokens import decode_demographic_token
+from consultations.models import Respondent, Response
 from embeddings import embed_text
 
 logger = settings.LOGGER
@@ -21,6 +22,7 @@ class ResponseFilter(FilterSet):
     evidenceRich = BooleanFilter(field_name="annotation__evidence_rich")
     unseenResponsesOnly = BaseInFilter(method="filter_seen", lookup_expr="in")
     themeFilters = BaseInFilter(method="filter_themes", lookup_expr="in")
+    demographics = BaseInFilter(method="filter_demographics", lookup_expr="in")
     is_flagged = BooleanFilter()
     multiple_choice_answer = BaseInFilter(method="filter_multiple_choice", lookup_expr="in")
     respondent_id = UUIDFilter()
@@ -63,6 +65,34 @@ class ResponseFilter(FilterSet):
             .filter(matched_theme_count=len(value))
         )
         return qs
+
+    def filter_demographics(self, queryset, name, value):
+        """OR within each demographic question, AND across questions.
+
+        Values are opaque demographic tokens (question id + answer value) produced
+        by the responses demographic-options endpoint; malformed tokens are ignored.
+        Uses nested subqueries to avoid cross-joins.
+        """
+        if not value:
+            return queryset
+
+        groups: dict[str, list[str]] = {}
+        for item in value:
+            parsed = decode_demographic_token(item)
+            if parsed is not None:
+                question_id, answer = parsed
+                groups.setdefault(question_id, []).append(answer)
+
+        # Each group narrows via a subquery rather than chaining JOINs
+        respondents = Respondent.objects.all()
+        for question_id, answers in groups.items():
+            respondents = respondents.filter(
+                id__in=Response.objects.filter(
+                    question_id=question_id, text__in=answers
+                ).values("respondent_id")
+            )
+
+        return queryset.filter(respondent_id__in=respondents.values("id"))
 
     def filter_multiple_choice(self, queryset, name, value):
         if not value:
