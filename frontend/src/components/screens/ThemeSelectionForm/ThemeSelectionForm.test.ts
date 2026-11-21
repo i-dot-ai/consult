@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/svelte";
 
 import ThemeSelectionForm from "./ThemeSelectionForm.svelte";
@@ -26,6 +26,12 @@ const unselectedThemes = allThemes.filter((theme) =>
 );
 
 describe("ThemeSelectionForm", () => {
+  beforeEach(() => {
+    // Vitest loads PUBLIC_* vars from the repo .env files — pin the flag off
+    // explicitly so this suite exercises the v1 data sources.
+    process.env.PUBLIC_DATA_SETUP_V2_ENABLED = "false";
+  });
+
   afterEach(() => {
     clearMocks();
   });
