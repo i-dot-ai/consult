@@ -1,5 +1,6 @@
 ---
 import { fetchBackendApi, buildResponse } from "../../../../global/api";
+import { getDataSetupV2Enabled } from "../../../../global/utils";
 
 import type { AstroGlobalRuntime, Question } from "../../../../global/types";
 
@@ -8,31 +9,42 @@ import Section from "../../../../components/Section/Section.svelte";
 
 import FinalisingThemesDetail from "../../../../components/screens/FinalisingThemesDetail/FinalisingThemesDetail.svelte";
 import FinalisingThemesDetailCompleted from "../../../../components/screens/FinalisingThemesDetailCompleted/FinalisingThemesDetailCompleted.svelte";
-import { getApiQuestionUrl } from "../../../../global/routes";
+import {
+  getApiQuestionUrl,
+  getApiQuestionV2Url,
+} from "../../../../global/routes";
 
 const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
   .params;
+
+const isV2 = getDataSetupV2Enabled();
+const questionUrl = isV2
+  ? getApiQuestionV2Url(consultationId || "", questionId || "")
+  : getApiQuestionUrl(consultationId || "", questionId || "");
 
 const {
   data: questionData,
   error: questionError,
   status: questionStatus,
-} = await fetchBackendApi<Question>(
-  Astro,
-  getApiQuestionUrl(consultationId || "", questionId || ""),
-);
+} = await fetchBackendApi<Question>(Astro, questionUrl);
 if (questionError) {
   return buildResponse(questionStatus);
 }
+
+// V2 uses "status" field, V1 uses "theme_status" field
+const isConfirmed = isV2
+  ? questionData?.status === "confirmed"
+  : questionData?.theme_status === "confirmed";
 ---
 
 <Layout>
   <Section>
-    {questionData?.theme_status === "confirmed" ? (
+    {isConfirmed ? (
       <FinalisingThemesDetailCompleted
         client:only="svelte"
         consultationId={consultationId || ""}
         questionId={questionId || ""}
+        isV2={isV2}
       />
     ) : (
       <FinalisingThemesDetail

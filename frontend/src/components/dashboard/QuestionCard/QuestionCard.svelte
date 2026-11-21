@@ -5,6 +5,7 @@
   import { fade } from "svelte/transition";
 
   import type { Question } from "../../../global/types.ts";
+  import type { QuestionDetailV2 } from "../../../global/queries/questions/types.ts";
   import { favStore } from "../../../global/stores.ts";
 
   import HighlightedText from "../HighlightedText/HighlightedText.svelte";
@@ -19,7 +20,7 @@
 
   interface Props {
     consultationId: string;
-    question: Question;
+    question: Question | QuestionDetailV2;
     url?: string;
     highlightText?: string;
     clickable?: boolean;
@@ -47,6 +48,12 @@
   }: Props = $props();
 
   let favourited = $derived($favStore.includes(question.id));
+  const questionText = $derived(
+    "question_text" in question ? question.question_text : question.text,
+  );
+  const isFreeTextQuestion = $derived(
+    "type" in question ? question.type === "open" : question.has_free_text,
+  );
 </script>
 
 <div
@@ -59,8 +66,8 @@
     condition={clickable && !skeleton}
     variant="block"
     href={url}
-    title={`Q${question.number}: ${question.question_text}`}
-    ariaLabel={`Click to view question: ${question.question_text}`}
+    title={`Q${question.number}: ${questionText}`}
+    ariaLabel={`Click to view question: ${questionText}`}
     testId={`question-link-${question.id}`}
   >
     <Panel bg={disabled}>
@@ -81,7 +88,7 @@
                 size="1.3rem"
                 color={disabled ? "fill-neutral-400" : "fill-secondary"}
               >
-                {#if !question.has_free_text}
+                {#if !isFreeTextQuestion}
                   <Checklist />
                 {:else}
                   <Help />
@@ -137,9 +144,9 @@
               class={clsx(["text-md", "leading-6", disabled && "opacity-50"])}
             >
               <HighlightedText
-                text={`Q${question.number}: ${question.question_text}`}
+                text={`Q${question.number}: ${questionText}`}
                 highlight={highlightText}
-                testId={question.question_text}
+                testId={questionText}
               />
             </p>
 

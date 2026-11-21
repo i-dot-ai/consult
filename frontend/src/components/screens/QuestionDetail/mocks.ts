@@ -1,15 +1,21 @@
 import {
   getApiAnswerFlagUrl,
   getApiConsultationUrl,
+  getApiConsultationV2Url,
+  getApiDemographicOptionsV2Url,
   getApiDemographicsUrl,
   getApiQuestionResponsesUrl,
+  getApiQuestionResponsesV2Url,
   getApiQuestionThemesUrl,
   getApiQuestionUrl,
+  getApiQuestionV2Url,
+  getApiResponseMarkReadV2Url,
   getApiResponseUrl,
+  getApiResponsesMarkReadBulkV2Url,
   updateResponseReadStatus,
   updateResponsesReadStatusBulk,
 } from "../../../global/routes";
-import type { ResponseBody } from "../../../global/types";
+import type { ResponseBody, ResponseBodyV2 } from "../../../global/types";
 
 type QueryParams = {
   page_size: string;
@@ -209,14 +215,17 @@ const themes = [
   },
 ];
 
-const filterAnswers = (responses: ResponseBody[], params: QueryParams) => {
+const filterAnswers = (
+  responses: Array<ResponseBody | ResponseBodyV2>,
+  params: QueryParams,
+) => {
   const pageSize = Number.parseInt(params.page_size);
   const cursorIndex = params.cursor
     ? responses.findIndex((response) => response.id === params.cursor)
     : -1;
   const startIndex = cursorIndex === -1 ? 0 : cursorIndex + 1;
 
-  let result: ResponseBody[] = responses.slice(
+  let result: Array<ResponseBody | ResponseBodyV2> = responses.slice(
     startIndex,
     startIndex + pageSize,
   );
@@ -243,7 +252,7 @@ const filterAnswers = (responses: ResponseBody[], params: QueryParams) => {
 
   if (params.searchValue) {
     result = result.filter((item) =>
-      item.free_text_answer_text
+      ("text" in item ? item.text : item.free_text_answer_text)
         .toLocaleLowerCase()
         .includes(params.searchValue.toLocaleLowerCase()),
     );
@@ -251,6 +260,25 @@ const filterAnswers = (responses: ResponseBody[], params: QueryParams) => {
 
   return result;
 };
+
+const paginatedMockResponses = (
+  items: Array<ResponseBody | ResponseBodyV2>,
+) => ({
+  body: ({ url }: { url: string }) => {
+    const queryParams = Object.fromEntries(
+      new URLSearchParams(url.split("?")[1]),
+    ) as unknown as QueryParams;
+
+    const filteredAnswers = filterAnswers(items, queryParams);
+
+    return {
+      total_count: filteredAnswers.length,
+      has_more_pages: true,
+      next_cursor: null,
+      all_respondents: filteredAnswers,
+    };
+  },
+});
 
 export const consultationMock = {
   url: getApiConsultationUrl(CONSULTATION_ID),
@@ -319,20 +347,7 @@ export const themesMock = {
 
 export const responsesMock = {
   url: "path:" + getApiQuestionResponsesUrl(CONSULTATION_ID, QUESTION_ID),
-  body: ({ url }: { url: string }) => {
-    const queryParams = Object.fromEntries(
-      new URLSearchParams(url.split("?")[1]),
-    ) as unknown as QueryParams;
-
-    const filteredAnswers = filterAnswers(responses, queryParams);
-
-    return {
-      total_count: filteredAnswers.length,
-      has_more_pages: true,
-      next_cursor: null,
-      all_respondents: filteredAnswers,
-    };
-  },
+  ...paginatedMockResponses(responses),
 };
 
 export const demoMock = {
@@ -409,4 +424,72 @@ export const mocks = {
   flagMock,
   questionMock,
   themesMock,
+};
+
+// --- V2 mocks -----------------------------------------------------------------
+
+export const v2Responses: ResponseBodyV2[] = responses.map(
+  ({ free_text_answer_text, ...rest }) => ({
+    ...rest,
+    text: free_text_answer_text,
+  }),
+);
+
+export const questionV2Mock = {
+  url: getApiQuestionV2Url(CONSULTATION_ID, QUESTION_ID),
+  body: {
+    id: "5e8176da-fdcd-4f55-ab7b-b2ca8a12a467",
+    number: 1,
+    text: mocks.questionMock.body.question_text,
+    type: "open",
+    closed_question: null,
+    short_name: "flavour-categories",
+    dashboard_role: "filter",
+    status: "configured",
+    response_count: mocks.questionMock.body.free_text_response_count,
+    total_response_count: mocks.questionMock.body.total_response_count,
+    free_text_response_count: mocks.questionMock.body.free_text_response_count,
+    multi_choice_response_count:
+      mocks.questionMock.body.multi_choice_response_count,
+    multiple_choice_answer: mocks.questionMock.body.multiple_choice_answer,
+    proportion_of_audited_answers: 0,
+  },
+};
+
+export const consultationV2Mock = {
+  url: getApiConsultationV2Url(CONSULTATION_ID),
+  body: {
+    ...consultationMock.body,
+    data_source: "citizen-space",
+    survey_import_status: "complete",
+  },
+};
+
+export const responsesV2Mock = {
+  url: "path:" + getApiQuestionResponsesV2Url(CONSULTATION_ID, QUESTION_ID),
+  ...paginatedMockResponses(v2Responses),
+};
+
+export const demoV2Mock = {
+  url: getApiDemographicOptionsV2Url(CONSULTATION_ID),
+  body: [],
+};
+
+export const responsesUpdateV2Mock = {
+  regexp: "*host" + getApiResponseMarkReadV2Url(":consultationId", ":answerId"),
+  method: "POST",
+};
+
+export const responsesBulkUpdateV2Mock = {
+  regexp: "*host" + getApiResponsesMarkReadBulkV2Url(":consultationId"),
+  method: "POST",
+};
+
+export const v2Mocks = {
+  consultationV2Mock,
+  demoV2Mock,
+  questionV2Mock,
+  responsesBulkUpdateV2Mock,
+  responsesUpdateV2Mock,
+  responsesV2Mock,
 };

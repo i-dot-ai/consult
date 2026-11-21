@@ -5,6 +5,7 @@ import Section from "../../../../components/Section/Section.svelte";
 import QuestionDetail from "../../../../components/screens/QuestionDetail/QuestionDetail.svelte";
 import type { AstroGlobalRuntime } from "../../../../global/types";
 import { buildResponse, fetchBackendApi } from "../../../../global/api";
+import { getDataSetupV2Enabled } from "../../../../global/utils";
 import { getApiQuestionUrl } from "../../../../global/routes";
 
 const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
@@ -26,6 +27,7 @@ if (error) {
       client:load
       consultationId={consultationId || ""}
       questionId={questionId || ""}
+      isV2={getDataSetupV2Enabled()}
     />
   </Section>
 </Layout>

@@ -1,11 +1,18 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { render, screen, waitFor } from "@testing-library/svelte";
 
 import QuestionDetail from "./QuestionDetail.svelte";
 import fetchMock from "fetch-mock";
 import { queryClient } from "../../../global/queryClient";
 import { mockRoute } from "../../../global/utils";
-import { responses, CONSULTATION_ID, mocks, QUESTION_ID } from "./mocks";
+import {
+  responses,
+  CONSULTATION_ID,
+  mocks,
+  v2Mocks,
+  v2Responses,
+  QUESTION_ID,
+} from "./mocks";
 import userEvent from "@testing-library/user-event";
 
 const setupMocks = () => {
@@ -19,7 +26,14 @@ const clearMocks = () => {
 };
 
 describe("QuestionDetail", () => {
+  beforeEach(() => {
+    // Vitest loads PUBLIC_* vars from the repo .env files — pin the flag off
+    // explicitly so this suite exercises the v1 data sources.
+    process.env.PUBLIC_DATA_SETUP_V2_ENABLED = "false";
+  });
+
   afterEach(() => {
+    delete process.env.PUBLIC_DATA_SETUP_V2_ENABLED;
     clearMocks();
   });
 
@@ -338,6 +352,69 @@ describe("QuestionDetail", () => {
       expect(
         screen.getByRole("switch", { name: /flagged/i }),
       ).toBeInTheDocument();
+    });
+  });
+});
+
+describe("QuestionDetail (V2 flag enabled)", () => {
+  beforeEach(() => {
+    process.env.PUBLIC_DATA_SETUP_V2_ENABLED = "true";
+  });
+
+  afterEach(() => {
+    delete process.env.PUBLIC_DATA_SETUP_V2_ENABLED;
+    clearMocks();
+  });
+
+  const setupV2Mocks = () => {
+    Object.values({ ...mocks, ...v2Mocks }).forEach((mock) => mockRoute(mock));
+  };
+
+  it("renders the question and responses served by the v2 API", async () => {
+    setupV2Mocks();
+
+    render(QuestionDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+      isV2: true,
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(v2Mocks.questionV2Mock.body.text, { exact: false }),
+      ).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Free Text Responses")).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getByText(v2Responses[0].text)).toBeInTheDocument();
+    });
+  });
+
+  it("sends bulk mark-read calls against the v2 endpoint", async () => {
+    setupV2Mocks();
+
+    render(QuestionDetail, {
+      consultationId: CONSULTATION_ID,
+      questionId: QUESTION_ID,
+      isV2: true,
+    });
+
+    const loadMoreButton = await screen.findByRole("button", {
+      name: /load more/i,
+    });
+    const user = userEvent.setup();
+    await user.click(loadMoreButton);
+
+    await waitFor(() => {
+      const v2BulkCalls = fetchMock.callHistory
+        .calls()
+        .filter(
+          (call) =>
+            call.url.includes("/api/v2") && call.url.includes("mark-read-bulk"),
+        );
+      expect(v2BulkCalls).toHaveLength(1);
     });
   });
 });

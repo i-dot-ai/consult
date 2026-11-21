@@ -8,10 +8,12 @@
   import {
     getApiGetSelectedThemesUrl,
     getApiQuestionUrl,
+    getApiQuestionV2Url,
     getFinaliseThemesUrl,
     Routes,
   } from "../../../global/routes";
   import type { Question, SelectedThemesResponse } from "../../../global/types";
+  import type { QuestionDetailV2 } from "../../../global/queries/questions/types";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import TitleRow from "../../dashboard/TitleRow.svelte";
@@ -28,19 +30,32 @@
   interface Props {
     questionId: string;
     consultationId: string;
+    isV2?: boolean;
   }
 
-  let { questionId = "", consultationId = "" }: Props = $props();
+  let { questionId = "", consultationId = "", isV2 = false }: Props = $props();
 
   const selectedThemesStore = createFetchStore<SelectedThemesResponse>();
-  const questionStore = createFetchStore<Question>();
+  const questionStore = createFetchStore<Question | QuestionDetailV2>();
   let dataRequested: boolean = $state(false);
+
+  let questionText = $derived(
+    $questionStore.data
+      ? "text" in $questionStore.data
+        ? $questionStore.data.text
+        : $questionStore.data.question_text
+      : "",
+  );
+
+  const questionUrl = isV2
+    ? getApiQuestionV2Url(consultationId, questionId)
+    : getApiQuestionUrl(consultationId, questionId);
 
   onMount(() => {
     $selectedThemesStore.fetch(
       getApiGetSelectedThemesUrl(consultationId, questionId),
     );
-    $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
+    $questionStore.fetch(questionUrl);
     dataRequested = true;
   });
 </script>
@@ -147,7 +162,7 @@
               </div>
             {:else}
               <span in:fade>
-                {`Q${$questionStore.data?.number}: ${$questionStore.data?.question_text}`}
+                {`Q${$questionStore.data?.number}: ${questionText}`}
               </span>
             {/if}
           </h2>
