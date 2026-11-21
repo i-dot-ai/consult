@@ -1,11 +1,18 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { render, screen, waitFor } from "@testing-library/svelte";
 
 import ConsultationAnalysis from "./ConsultationAnalysis.svelte";
 import fetchMock from "fetch-mock";
 import { mockRoute } from "../../../global/utils";
 import { queryClient } from "../../../global/queryClient";
-import { consultationMock, questionsMock, demoOptionsMock } from "./mocks";
+import {
+  consultationMock,
+  questionsMock,
+  demoOptionsMock,
+  consultationV2Mock,
+  v2QuestionsMock,
+  v2DemoOptionsMock,
+} from "./mocks";
 
 function setupMocks() {
   [consultationMock, questionsMock, demoOptionsMock].forEach((mock) =>
@@ -20,7 +27,14 @@ function clearMocks() {
 }
 
 describe("ConsultationAnalysis", () => {
+  beforeEach(() => {
+    // Vitest loads PUBLIC_* vars from the repo .env files — pin the flag off
+    // explicitly so this suite exercises the v1 data sources.
+    process.env.PUBLIC_DATA_SETUP_V2_ENABLED = "false";
+  });
+
   afterEach(() => {
+    delete process.env.PUBLIC_DATA_SETUP_V2_ENABLED;
     clearMocks();
   });
 
@@ -74,5 +88,37 @@ describe("ConsultationAnalysis", () => {
       ).toBeGreaterThan(0);
     });
     expect(container).toMatchSnapshot();
+  });
+});
+
+describe("ConsultationAnalysis (V2 flag enabled)", () => {
+  beforeEach(() => {
+    process.env.PUBLIC_DATA_SETUP_V2_ENABLED = "true";
+  });
+
+  afterEach(() => {
+    delete process.env.PUBLIC_DATA_SETUP_V2_ENABLED;
+    clearMocks();
+  });
+
+  it("renders v2 demographics and multiple choice charts behind the flag", async () => {
+    [consultationV2Mock, v2QuestionsMock, v2DemoOptionsMock].forEach((mock) =>
+      mockRoute(mock),
+    );
+
+    render(ConsultationAnalysis, { consultationId: "test-consultation" });
+
+    await waitFor(() => {
+      expect(screen.getByText("Nation")).toBeInTheDocument();
+      expect(screen.getByText("Wales")).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Multiple Choice Questions")).toBeInTheDocument();
+      expect(
+        screen.getAllByText(questionsMock.body.results[0].question_text, {
+          exact: false,
+        }).length,
+      ).toBeGreaterThan(0);
+    });
   });
 });

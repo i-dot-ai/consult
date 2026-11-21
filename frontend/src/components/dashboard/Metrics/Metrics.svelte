@@ -9,6 +9,7 @@
     Question,
     QuestionMultiAnswer,
   } from "../../../global/types";
+  import type { QuestionDetailV2 } from "../../../global/queries/questions/types.ts";
 
   import TabView from "../../TabView/TabView.svelte";
   import Chart from "../../Chart/Chart.svelte";
@@ -26,7 +27,7 @@
   interface Props {
     consultationId: string;
     loading: boolean;
-    questions: Question[];
+    questions: Array<Question | QuestionDetailV2>;
     demoOptions: DemoOptionsResponseItem[];
     demoOptionsLoading: boolean;
     respondentCount: number;
@@ -50,16 +51,23 @@
     paginateArray<string>(demoOptionCategories, itemsPerTab),
   );
 
-  let chartQuestions: Question[] = $derived(
-    questions.filter((question: Question) => {
-      return question.multiple_choice_answer
-        ? question.multiple_choice_answer.length > 0
-        : false;
+  let chartQuestions: Array<Question | QuestionDetailV2> = $derived(
+    questions.filter((question) => {
+      return "type" in question
+        ? (question.multiple_choice_answer?.length ?? 0) > 0
+        : question.multiple_choice_answer
+          ? question.multiple_choice_answer.length > 0
+          : false;
     }),
   );
 
+  const questionText = (question: Question | QuestionDetailV2): string =>
+    "question_text" in question
+      ? question.question_text
+      : (question.text ?? "");
+
   let currQuestion: number = $derived(chartQuestions.at(0)?.number || 0);
-  let selectedChartQuestion: Question | undefined = $derived(
+  let selectedChartQuestion: Question | QuestionDetailV2 | undefined = $derived(
     chartQuestions.find(
       (chartQuestion) => chartQuestion?.number === currQuestion,
     ),
@@ -121,10 +129,12 @@
           {:else}
             <TabView
               variant="dots"
-              tabs={chartQuestions.map((question: Question) => ({
-                title: `Q${question.number}`,
-                id: `tab-${question.number}`,
-              }))}
+              tabs={chartQuestions.map(
+                (question: Question | QuestionDetailV2) => ({
+                  title: `Q${question.number}`,
+                  id: `tab-${question.number}`,
+                }),
+              )}
               value={`tab-${currQuestion}`}
               handleChange={(newTab) =>
                 (currQuestion = parseInt(newTab.replace("tab-", "")))}
@@ -133,7 +143,8 @@
                 <Title level={3} maxChars={50}>
                   <span class="mr-1 text-primary">
                     Q{selectedChartQuestion?.number}
-                  </span>{selectedChartQuestion?.question_text}
+                  </span>{selectedChartQuestion &&
+                    questionText(selectedChartQuestion)}
                 </Title>
               </div>
 
