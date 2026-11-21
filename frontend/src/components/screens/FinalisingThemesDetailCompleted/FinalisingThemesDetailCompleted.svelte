@@ -5,7 +5,6 @@
   import { fade, slide } from "svelte/transition";
 
   import { createFetchStore } from "../../../global/stores";
-  import { getDataSetupV2Enabled } from "../../../global/utils";
   import {
     getApiGetSelectedThemesUrl,
     getApiQuestionUrl,
@@ -30,15 +29,15 @@
   interface Props {
     questionId: string;
     consultationId: string;
+    isV2?: boolean;
   }
 
-  let { questionId = "", consultationId = "" }: Props = $props();
+  let { questionId = "", consultationId = "", isV2 = false }: Props = $props();
 
   const selectedThemesStore = createFetchStore<SelectedThemesResponse>();
   const questionStore = createFetchStore<Question>();
   let dataRequested: boolean = $state(false);
 
-  const isV2 = getDataSetupV2Enabled();
   const questionUrl = isV2
     ? getApiQuestionV2Url(consultationId, questionId)
     : getApiQuestionUrl(consultationId, questionId);
