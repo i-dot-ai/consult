@@ -34,7 +34,6 @@
   } from "../../../global/routes.ts";
 
   import { createFetchStore } from "../../../global/stores.ts";
-  import { getDataSetupV2Enabled } from "../../../global/utils.ts";
   import {
     SearchModeValues,
     type ResponsesBody,
@@ -93,15 +92,12 @@
   interface Props {
     consultationId: string;
     questionId: string;
+    isV2?: boolean;
   }
 
-  let { consultationId = "", questionId = "" }: Props = $props();
+  let { consultationId = "", questionId = "", isV2 = false }: Props = $props();
 
   const PAGE_SIZE: number = 5;
-
-  // V2 flag: when enabled, question/response/demographic data is served by the
-  // v2 API and rendered with the v2 schema; themes keep their v1 endpoints.
-  const isV2 = getDataSetupV2Enabled();
 
   const consultationUrl = isV2
     ? getApiConsultationV2Url(consultationId)
@@ -322,13 +318,14 @@
   }
 
   let demographics = $derived($demographicsStore.data || []);
-  let hasFreeText = $derived(
-    $questionStore.data
-      ? "type" in $questionStore.data
-        ? $questionStore.data.type === "open"
-        : $questionStore.data.has_free_text
-      : true,
-  );
+  let hasFreeText = $derived.by(() => {
+    const question = $questionStore.data;
+    if (!question) return true;
+    if ("type" in question) {
+      return question.type === "open";
+    }
+    return question.has_free_text;
+  });
   let themes: FormattedTheme[] = $derived(
     ($themesStore.data?.themes || [])
       .map((theme) => ({
