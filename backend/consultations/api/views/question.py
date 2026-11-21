@@ -33,7 +33,9 @@ class QuestionViewSet(ModelViewSet):
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
 
-        queryset = models.Question.objects.filter(consultation_id=consultation_uuid)
+        queryset = models.Question.objects.filter(consultation_id=consultation_uuid).exclude(
+            type=models.Question.QuestionType.DEMOGRAPHIC
+        )
 
         # Staff users can see all questions, non-staff users only see questions for assigned consultations
         if not self.request.user.is_staff:
