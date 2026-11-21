@@ -376,6 +376,7 @@ describe("QuestionDetail (V2 flag enabled)", () => {
     render(QuestionDetail, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
+      isV2: true,
     });
 
     await waitFor(() => {
@@ -397,6 +398,7 @@ describe("QuestionDetail (V2 flag enabled)", () => {
     render(QuestionDetail, {
       consultationId: CONSULTATION_ID,
       questionId: QUESTION_ID,
+      isV2: true,
     });
 
     const loadMoreButton = await screen.findByRole("button", {
