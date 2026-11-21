@@ -61,6 +61,12 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
             )
             .order_by("number")
         )
+
+        # Mirror v1 semantics: "questions" lists/counts exclude demographic-type questions by default.
+        # Demographic questions are still accessible via their dedicated detail actions.
+        if self.action in {"list", "retrieve", "sample_answers"}:
+            queryset = queryset.exclude(type=Question.QuestionType.DEMOGRAPHIC)
+
         if self.action == "retrieve":
             # The dashboard question page surfaces the proportion of audited
             # answers; annotate the reviewed count for the single object.

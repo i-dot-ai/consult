@@ -112,8 +112,7 @@ test.describe("Respondent Detail Page", () => {
     expect(answered).toBeLessThanOrEqual(total);
     expect(total).toBeGreaterThan(0);
 
-    // Includes demographic questions created from fixture demographics
-    expect(total).toBe(5);
+    expect(total).toBe(3);
 
     const calculatedPercentage = Math.round((answered / total) * 100);
     expect(percentage).toBe(calculatedPercentage);

@@ -20,16 +20,9 @@ test.describe("Question Detail Page", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`/consultations/${consultationId}/finalising-themes`);
-    await page.waitForLoadState("networkidle");
-
-    // Pick a signed-off (confirmed) question, ignoring demographic questions.
-    const signedOffCard = page
-      .getByTestId("question-card")
-      .filter({ has: page.getByTestId("themes-finalised-pill") })
-      .first();
-    await expect(signedOffCard).toBeVisible();
-    await signedOffCard.click();
+    await page.goto(
+      `/consultations/${consultationId}/finalising-themes/${questionIds[0]}`
+    );
     await page.waitForLoadState("networkidle");
   });
 
@@ -42,9 +35,12 @@ test.describe("Question Detail Page", () => {
   });
 
   test("select another question should work correctly", async ({ page }) => {
-    const backToAll = page.getByTestId("back-to-all-questions-button");
-    await expect(backToAll).toBeVisible();
-    await backToAll.click();
+    const selectAnotherQuestion = page.getByRole("button", {
+      name: "Select Another Question",
+    });
+    await expect(selectAnotherQuestion).toBeVisible();
+
+    await selectAnotherQuestion.click();
 
     // Should navigate back to the question list (without the questionId)
     await expect(page).toHaveURL(/\/consultations\/.*\/finalising-themes$/);
