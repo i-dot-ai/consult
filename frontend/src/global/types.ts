@@ -243,6 +243,7 @@ export interface ResponsesBody {
 export type ResponsesBodyV2 = Omit<ResponsesBody, "all_respondents"> & {
   all_respondents: ResponseBodyV2[];
 };
+
 export interface RespondentsResponse {
   count: number;
   next: string | null;
