@@ -20,6 +20,12 @@ def encode_demographic_token(question_id: UUID | str, value: str) -> str:
 def decode_demographic_token(token: str) -> tuple[str, str] | None:
     """Decode a token back to (question_id, value); None when malformed."""
     try:
+        # Base64 urlsafe encoding strips padding '=', but decoding requires it.
+        # Add back padding to make length a multiple of 4.
+        # Formula: (-len % 4) gives 0 when len % 4 == 0, otherwise (4 - len % 4)
+        # Example: len=11 → -11 % 4 = 1 → add 1 '='
+        #          len=12 → -12 % 4 = 0 → add 0 '='
+        #          len=13 → -13 % 4 = 3 → add 3 '='
         padded = token + "=" * (-len(token) % 4)
         payload = json.loads(base64.urlsafe_b64decode(padded.encode()).decode())
         question_id, value = payload["q"], payload["v"]
