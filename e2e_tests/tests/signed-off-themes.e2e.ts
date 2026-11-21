@@ -29,7 +29,8 @@ test.describe("Signed Off Themes", () => {
     await page.goto(`/consultations/${consultationId}/finalising-themes`);
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByTestId("question-card")).toHaveCount(3);
+    // Includes demographic questions created from fixture demographics
+    await expect(page.getByTestId("question-card")).toHaveCount(5);
   });
 
   [
@@ -61,6 +62,6 @@ test.describe("Signed Off Themes", () => {
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText(signedOffConsultation.title).first()).toBeVisible();
-    await expect(page.getByTestId("question-card")).toHaveCount(3);
+    await expect(page.getByTestId("question-card")).toHaveCount(5);
   });
 });
