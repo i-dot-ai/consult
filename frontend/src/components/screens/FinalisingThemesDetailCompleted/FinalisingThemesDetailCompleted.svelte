@@ -5,9 +5,11 @@
   import { fade, slide } from "svelte/transition";
 
   import { createFetchStore } from "../../../global/stores";
+  import { getDataSetupV2Enabled } from "../../../global/utils";
   import {
     getApiGetSelectedThemesUrl,
     getApiQuestionUrl,
+    getApiQuestionV2Url,
     getFinaliseThemesUrl,
     Routes,
   } from "../../../global/routes";
@@ -36,11 +38,16 @@
   const questionStore = createFetchStore<Question>();
   let dataRequested: boolean = $state(false);
 
+  const isV2 = getDataSetupV2Enabled();
+  const questionUrl = isV2
+    ? getApiQuestionV2Url(consultationId, questionId)
+    : getApiQuestionUrl(consultationId, questionId);
+
   onMount(() => {
     $selectedThemesStore.fetch(
       getApiGetSelectedThemesUrl(consultationId, questionId),
     );
-    $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
+    $questionStore.fetch(questionUrl);
     dataRequested = true;
   });
 </script>
