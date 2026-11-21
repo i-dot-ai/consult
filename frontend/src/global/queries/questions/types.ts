@@ -37,6 +37,7 @@ export type QuestionDetailV2 = QuestionV2 & {
   }[];
   proportion_of_audited_answers: number;
 };
+
 export type DemographicMergeBody = {
   new_value: string;
   responses: string[];
