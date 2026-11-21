@@ -9,7 +9,7 @@ from rest_framework import serializers
 from rest_framework.filters import SearchFilter
 
 from authentication.models import User
-from consultations.models import DemographicOption, Response
+from consultations.models import Response
 from embeddings import embed_text
 
 logger = settings.LOGGER
@@ -21,7 +21,6 @@ class ResponseFilter(FilterSet):
     evidenceRich = BooleanFilter(field_name="annotation__evidence_rich")
     unseenResponsesOnly = BaseInFilter(method="filter_seen", lookup_expr="in")
     themeFilters = BaseInFilter(method="filter_themes", lookup_expr="in")
-    demographics = BaseInFilter(method="filter_demographics", lookup_expr="in")
     is_flagged = BooleanFilter()
     multiple_choice_answer = BaseInFilter(method="filter_multiple_choice", lookup_expr="in")
     respondent_id = UUIDFilter()
@@ -65,27 +64,6 @@ class ResponseFilter(FilterSet):
         )
         return qs
 
-    def filter_demographics(self, queryset, name, value):
-        """OR within each demographic group, AND across groups. Uses nested subqueries to avoid cross-joins."""
-        if not value:
-            return queryset
-
-        from consultations.models import Respondent
-
-        options = DemographicOption.objects.filter(id__in=value)
-        groups = {}
-        for option in options:
-            groups.setdefault(option.field_name, []).append(option.id)
-
-        # Each group narrows via a subquery rather than chaining M2M JOINs
-        respondents = Respondent.objects.all()
-        for group_ids in groups.values():
-            respondents = respondents.filter(
-                id__in=Respondent.objects.filter(demographics__in=group_ids).values("id")
-            )
-
-        return queryset.filter(respondent_id__in=respondents.values("id"))
-
     def filter_multiple_choice(self, queryset, name, value):
         if not value:
             return queryset
@@ -105,7 +83,7 @@ def apply_search_filter(queryset, query_params):
         return queryset
 
     if search_mode == "keyword":
-        return queryset.filter(free_text__icontains=search_value)
+        return queryset.filter(text__icontains=search_value)
     elif search_mode == "semantic":
         embedded_query = embed_text(search_value)
         distance = CosineDistance("embedding", embedded_query)
@@ -182,12 +160,8 @@ class ResponseSearchFilter(SearchFilter):
         if not search_value:
             return queryset
 
+        # searchMode is locked to "keyword" by ResponseSearchSerializer above, so
+        # only keyword filtering applies on the responses list.
         if search_mode == "keyword":
-            return queryset.filter(free_text__icontains=search_value)
-        elif search_mode == "semantic":
-            embedded_query = embed_text(search_value)
-            # distance: exact match = 0, exact opposite = 2
-            distance = CosineDistance("embedding", embedded_query)
-            return queryset.annotate(distance=distance).order_by("distance")
-        else:
-            return queryset
+            return queryset.filter(text__icontains=search_value)
+        return queryset

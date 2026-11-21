@@ -45,7 +45,7 @@ class TestResponse:
 @pytest.mark.django_db
 @pytest.mark.parametrize("text", ["support workers", "support worker", "supported worker"])
 def test_indexing(text):
-    response = factories.ResponseFactory(free_text=text)
+    response = factories.ResponseFactory(text=text, free_text=None)
     response.save()
     response.refresh_from_db()
     # we expect all texts to have the same representation
@@ -58,7 +58,7 @@ def test_indexing(text):
 )
 def test_full_text_search(search_text):
     for text in "support workers", "support worker", "supported worker":
-        response = factories.ResponseFactory(free_text=text)
+        response = factories.ResponseFactory(text=text, free_text=None)
         response.save()
         response.refresh_from_db()
 
