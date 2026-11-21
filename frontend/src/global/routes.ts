@@ -19,6 +19,7 @@ export enum Suffixes {
   Respondents = "respondents",
   ToggleFlag = "toggle-flag",
   MarkRead = "mark-read",
+  MarkReadBulk = "mark-read-bulk",
   Themes = "themes",
   Users = "users",
   AddUsers = "add-users",
@@ -254,7 +255,7 @@ export const getApiResponsesMarkReadBulkV2Url = (consultationId: string) => {
     Suffixes.Consultations,
     consultationId,
     Suffixes.Responses,
-    "mark-read-bulk",
+    Suffixes.MarkReadBulk,
   );
 };
 
@@ -730,7 +731,7 @@ export const updateResponsesReadStatusBulk = (consultationId: string) => {
     Routes.ApiConsultations,
     consultationId,
     Suffixes.Responses,
-    "mark-read-bulk",
+    Suffixes.MarkReadBulk,
   );
 };
 
