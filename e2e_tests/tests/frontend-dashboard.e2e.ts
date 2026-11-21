@@ -36,7 +36,8 @@ test.describe("Dashboard Page", () => {
   });
 
   test("metric counts should be as expected", async ({ page }) => {
-    const numberOfQuestions = analysisConsultation.questions!.length.toString();
+    // The dashboard includes the demographic questions created from the fixture demographics.
+    const numberOfQuestions = "5";
     const numberOfAnswers = analysisConsultation.questions!.reduce((sum, question) => sum + (question.responses ? question.responses.length : 0), 0).toString();
 
     const questionOnPage = page.getByTestId("metric-count-questions");
