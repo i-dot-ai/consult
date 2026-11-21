@@ -29,6 +29,7 @@ export type Question = {
   candidate_themes?: Theme[];
   themes?: Theme[];
   theme_status?: "draft" | "configured" | "finalising_themes" | "confirmed";
+  status?: "draft" | "configured" | "finalising_themes" | "confirmed";
 };
 
 export type User = {
@@ -444,6 +445,7 @@ const signedOffQuestion1: Question = {
   responses: signedOffResponses1,
   themes: signedOffTheme1,
   theme_status: "confirmed",
+  status: "confirmed",
 };
 
 const signedOffTheme2: Theme[] = [
@@ -481,7 +483,7 @@ const signedOffResponses2: Response[] = [
   },
 ];
 
-const signedOffQuestion2: Question = {
+const signedOffQuestion2: Question & { status?: string } = {
   text: "What are your views on the economic impact of the proposed chocolate regulations?",
   number: 2,
   has_free_text: true,
@@ -490,6 +492,7 @@ const signedOffQuestion2: Question = {
   responses: signedOffResponses2,
   themes: signedOffTheme2,
   theme_status: "confirmed",
+  status: "confirmed",
 };
 
 const signedOffTheme3: Theme[] = [
@@ -539,7 +542,7 @@ const signedOffResponses3: Response[] = [
   },
 ];
 
-const signedOffQuestion3: Question = {
+const signedOffQuestion3: Question & { status?: string } = {
   text: "Do you agree with the proposed implementation approach for the chocolate regulations?",
   number: 3,
   has_free_text: true,
@@ -548,6 +551,7 @@ const signedOffQuestion3: Question = {
   responses: signedOffResponses3,
   themes: signedOffTheme3,
   theme_status: "confirmed",
+  status: "confirmed",
 };
 
 export const signedOffConsultation: Consultation = {
