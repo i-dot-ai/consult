@@ -259,7 +259,17 @@ class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
         fields: ClassVar[list] = ["id", "text", "response_count"]
 
 
-class QuestionDashboardSerializerV2(QuestionSetupSerializer):
+class AuditedAnswerProportionMixin:
+    def get_proportion_of_audited_answers(self, obj) -> float:
+        if not obj.free_text_response_count:
+            return 0.0
+        return (
+            getattr(obj, "prefetched_reviewed_responses", 0)
+            / obj.free_text_response_count
+        )
+
+
+class QuestionDashboardSerializerV2(AuditedAnswerProportionMixin, QuestionSetupSerializer):
     """Question payload for the dashboard question pages (v2 schema).
 
     Adds the denormalised response counts, multi-choice answers and review
@@ -275,12 +285,6 @@ class QuestionDashboardSerializerV2(QuestionSetupSerializer):
     )
     proportion_of_audited_answers = serializers.SerializerMethodField()
 
-    def get_proportion_of_audited_answers(self, obj) -> float:
-        if not obj.free_text_response_count:
-            return 0
-        reviewed = getattr(obj, "prefetched_reviewed_responses", 0) or 0
-        return reviewed / obj.free_text_response_count
-
     class Meta(QuestionSetupSerializer.Meta):
         fields: ClassVar[list] = [
             *QuestionSetupSerializer.Meta.fields,
@@ -292,18 +296,12 @@ class QuestionDashboardSerializerV2(QuestionSetupSerializer):
         ]
 
 
-class QuestionSerializer(serializers.HyperlinkedModelSerializer):
+class QuestionSerializer(AuditedAnswerProportionMixin, serializers.HyperlinkedModelSerializer):
     question_text = serializers.CharField(source="text")
     multiple_choice_answer = MultiChoiceAnswerSerializer(
         many=True, source="multichoiceanswer_set", read_only=True
     )
     proportion_of_audited_answers = serializers.SerializerMethodField()
-
-    def get_proportion_of_audited_answers(self, obj) -> float:
-        if not obj.free_text_response_count:
-            return 0
-        reviewed = getattr(obj, "prefetched_reviewed_responses", 0) or 0
-        return reviewed / obj.free_text_response_count
 
     class Meta:
         model = Question
