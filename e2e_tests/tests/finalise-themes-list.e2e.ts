@@ -117,7 +117,7 @@ test.describe("Finalise Themes - List Page", () => {
     // The multiple choice question is tagged accordingly. Use exact match:
     // the card subtext also mentions "Multiple choice data".
     await expect(
-      page.getByText("Multiple choice", { exact: true }),
+      page.getByText("Multiple choice", { exact: true }).first(),
     ).toBeVisible();
 
     // No question has been signed off yet. Exact match targets the card tag,
