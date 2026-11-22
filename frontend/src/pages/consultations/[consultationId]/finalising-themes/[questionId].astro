@@ -31,10 +31,8 @@ if (questionError) {
   return buildResponse(questionStatus);
 }
 
-// V2 uses "status" field, V1 uses "theme_status" field
-const isConfirmed = isV2
-  ? questionData?.status === "confirmed"
-  : questionData?.theme_status === "confirmed";
+// Signed-off gating is still driven by theme_status for both schemas.
+const isConfirmed = questionData?.theme_status === "confirmed";
 ---
 
 <Layout>
