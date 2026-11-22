@@ -101,15 +101,16 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
             filtered_responses = ConsultationResponse.objects.filter(id__in=filtered_ids)
             question.calculate_response_counts(filtered_responses)
 
-            multichoice_answers = MultiChoiceAnswer.objects.filter(question=question).annotate(
-                prefetched_response_count=Count(
-                    "response", filter=Q(response__id__in=filtered_ids), distinct=True
+            if question.has_multiple_choice:
+                multichoice_answers = MultiChoiceAnswer.objects.filter(question=question).annotate(
+                    prefetched_response_count=Count(
+                        "response", filter=Q(response__id__in=filtered_ids), distinct=True
+                    )
                 )
-            )
-            question._prefetched_objects_cache = {
-                **getattr(question, "_prefetched_objects_cache", {}),
-                "multichoiceanswer_set": list(multichoice_answers),
-            }
+                question._prefetched_objects_cache = {
+                    **getattr(question, "_prefetched_objects_cache", {}),
+                    "multichoiceanswer_set": list(multichoice_answers),
+                }
 
         serializer = self.get_serializer(question)
         return Response(serializer.data)
