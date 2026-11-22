@@ -36,9 +36,10 @@ test.describe("Dashboard Page", () => {
   });
 
   test("metric counts should be as expected", async ({ page }) => {
-    // v2 model: demographic questions exist as first-class questions
+    // Dashboard renders questions from the v1 endpoint on this branch.
     const numberOfQuestions = "5";
-    const numberOfAnswers = analysisConsultation.questions!.reduce((sum, question) => sum + (question.responses ? question.responses.length : 0), 0).toString();
+    // v1 endpoint counts include demographic answers.
+    const numberOfAnswers = "30";
 
     const questionOnPage = page.getByTestId("metric-count-questions");
     await expect (questionOnPage).toBeVisible();
