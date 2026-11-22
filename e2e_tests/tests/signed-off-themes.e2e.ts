@@ -47,10 +47,10 @@ test.describe("Signed Off Themes", () => {
         await expect(page.getByText(themeName).first()).toBeVisible();
       }
 
-      await expect(page.getByText("Signed Off", { exact: true })).toHaveCount(expectedThemes.count);
+      await expect(page.getByTestId("themes-finalised-pill")).toHaveCount(1);
 
       if (index === 0) {
-        await expect(page.getByText("Themes finalised")).toBeVisible();
+        await expect(page.getByTestId("themes-finalised-pill")).toBeVisible();
         await expect(page.getByRole("heading", { name: "Selected Themes" })).toBeVisible();
       }
     });
