@@ -45,8 +45,7 @@ test.describe("Question Detail Page", () => {
   });
 
   test("question status is signed off", async ({ page }) => {
-    // In this flow the signed-off action is the presence of the sign-off CTA.
-    await expect(page.getByRole("button", { name: /sign off selected themes/i })).toBeVisible();
+    await expect(page.getByTestId("themes-finalised-pill")).toBeVisible();
   });
 
 

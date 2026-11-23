@@ -50,12 +50,10 @@ test.describe("Signed Off Themes", () => {
         await expect(page.getByText(themeName).first()).toBeVisible();
       }
 
-      // Signed-off state is represented by the sign-off CTA being present.
-      await expect(
-        page.getByRole("button", { name: /sign off selected themes/i }),
-      ).toBeVisible();
+      await expect(page.getByTestId("themes-finalised-pill")).toHaveCount(1);
 
       if (index === 0) {
+        await expect(page.getByTestId("themes-finalised-pill")).toBeVisible();
         await expect(page.getByRole("heading", { name: "Selected Themes" })).toBeVisible();
       }
     });
