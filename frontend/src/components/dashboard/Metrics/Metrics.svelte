@@ -58,8 +58,6 @@
     ),
   );
 
-  const questionText = getQuestionText;
-
   let currQuestion: number = $derived(chartQuestions.at(0)?.number || 0);
   let selectedChartQuestion: Question | QuestionDetailV2 | undefined = $derived(
     chartQuestions.find(
@@ -139,7 +137,7 @@
                     <span class="mr-1 text-primary">
                       Q{selectedChartQuestion.number}
                     </span>
-                    {questionText(selectedChartQuestion)}
+                    {getQuestionText(selectedChartQuestion)}
                   {/if}
                 </Title>
               </div>

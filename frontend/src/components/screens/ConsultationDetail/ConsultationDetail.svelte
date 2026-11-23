@@ -48,7 +48,6 @@
   const demoOptionsUrl = isV2
     ? getApiDemographicOptionsV2Url(consultationId)
     : getApiDemographicsUrl(consultationId);
-  const questionText = getQuestionText;
 
   const questionsStore = createFetchStore<
     QuestionsResponse | QuestionDetailV2[]
@@ -75,7 +74,7 @@
 
   let displayQuestions = $derived(
     questions.filter((question) =>
-      `Q${question.number}: ${questionText(question)}`
+      `Q${question.number}: ${getQuestionText(question)}`
         .toLocaleLowerCase()
         .includes(searchValue.toLocaleLowerCase()),
     ),

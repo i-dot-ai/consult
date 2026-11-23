@@ -63,7 +63,6 @@
   const demoOptionsUrl = isV2
     ? getApiDemographicOptionsV2Url(consultationId)
     : getApiDemographicsUrl(consultationId);
-  const questionText = getQuestionText;
 
   let demoCategories = $derived([
     ...new Set(($demoOptionsStore.data || []).map((opt) => opt.name)),
@@ -207,7 +206,7 @@
                     </span>
 
                     <h3 class="text-xs">
-                      {questionText(question)}
+                      {getQuestionText(question)}
                     </h3>
                   </div>
 
