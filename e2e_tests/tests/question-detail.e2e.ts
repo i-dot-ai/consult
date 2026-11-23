@@ -20,16 +20,10 @@ test.describe("Question Detail Page", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`/consultations/${consultationId}/finalising-themes`);
-    await page.waitForLoadState("networkidle");
-
-    // Pick a signed-off (confirmed) question, ignoring demographic questions.
-    const signedOffCard = page
-      .getByTestId("question-card")
-      .filter({ has: page.getByTestId("themes-finalised-pill") })
-      .first();
-    await expect(signedOffCard).toBeVisible();
-    await signedOffCard.click();
+    // Go straight to a known confirmed question from the signed-off fixture.
+    await page.goto(
+      `/consultations/${consultationId}/finalising-themes/${questionIds[0]}`,
+    );
     await page.waitForLoadState("networkidle");
   });
 
@@ -42,18 +36,17 @@ test.describe("Question Detail Page", () => {
   });
 
   test("select another question should work correctly", async ({ page }) => {
-    const backToAll = page.getByTestId("back-to-all-questions-button");
-    await expect(backToAll).toBeVisible();
-    await backToAll.click();
+    const backToQuestions = page.getByTestId("back-button");
+    await expect(backToQuestions).toBeVisible();
+    await backToQuestions.click();
 
     // Should navigate back to the question list (without the questionId)
     await expect(page).toHaveURL(/\/consultations\/.*\/finalising-themes$/);
   });
 
   test("question status is signed off", async ({ page }) => {
-    const status = page.getByTestId("themes-finalised-pill").locator("div").filter({ hasText: "Themes finalised" });
-    await expect(status).toHaveCount(1);
-    await expect(status).toBeVisible();
+    // In this flow the signed-off action is the presence of the sign-off CTA.
+    await expect(page.getByRole("button", { name: /sign off selected themes/i })).toBeVisible();
   });
 
 

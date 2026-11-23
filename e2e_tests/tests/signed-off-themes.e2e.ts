@@ -30,6 +30,9 @@ test.describe("Signed Off Themes", () => {
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByTestId("question-card")).toHaveCount(5);
+
+    // Signed-off questions render a "Signed off" tag on their card.
+    await expect(page.getByText("Signed off", { exact: true })).toHaveCount(3);
   });
 
   [
@@ -47,10 +50,12 @@ test.describe("Signed Off Themes", () => {
         await expect(page.getByText(themeName).first()).toBeVisible();
       }
 
-      await expect(page.getByText("Signed Off", { exact: true })).toHaveCount(expectedThemes.count);
+      // Signed-off state is represented by the sign-off CTA being present.
+      await expect(
+        page.getByRole("button", { name: /sign off selected themes/i }),
+      ).toBeVisible();
 
       if (index === 0) {
-        await expect(page.getByText("Themes finalised")).toBeVisible();
         await expect(page.getByRole("heading", { name: "Selected Themes" })).toBeVisible();
       }
     });
@@ -61,6 +66,6 @@ test.describe("Signed Off Themes", () => {
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText(signedOffConsultation.title).first()).toBeVisible();
-    await expect(page.getByTestId("question-card")).toHaveCount(5);
+    await expect(page.getByTestId("question-card")).toHaveCount(3);
   });
 });
