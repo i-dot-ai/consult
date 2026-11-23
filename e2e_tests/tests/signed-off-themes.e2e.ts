@@ -61,6 +61,7 @@ test.describe("Signed Off Themes", () => {
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText(signedOffConsultation.title).first()).toBeVisible();
-    await expect(page.getByTestId("question-card")).toHaveCount(5);
+    // Dashboard excludes demographic questions on v2.
+    await expect(page.getByTestId("question-card")).toHaveCount(3);
   });
 });

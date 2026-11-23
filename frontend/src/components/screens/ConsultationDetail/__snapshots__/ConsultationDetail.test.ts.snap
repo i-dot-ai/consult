@@ -278,12 +278,14 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                     >
                       <!---->
                       <!---->
+                      <!---->
                       <span
                         class="mr-1 text-primary"
                       >
                         Q1
                       </span>
-                      Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?
+                       Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?
+                      
                       
                       
                       

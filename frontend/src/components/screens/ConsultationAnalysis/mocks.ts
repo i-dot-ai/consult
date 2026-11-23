@@ -1,6 +1,9 @@
 import {
   getApiConsultationUrl,
+  getApiConsultationV2Url,
+  getApiDemographicOptionsV2Url,
   getApiQuestionsUrl,
+  getApiQuestionsV2Url,
 } from "../../../global/routes";
 
 export const CONSULTATION_ID = "test-consultation";
@@ -161,4 +164,42 @@ export const questionsMock = {
 export const demoOptionsMock = {
   url: `/api/consultations/${CONSULTATION_ID}/demographic-options/`,
   body: [],
+};
+
+// --- V2 mocks -----------------------------------------------------------------
+
+export const consultationV2Mock = {
+  url: getApiConsultationV2Url(CONSULTATION_ID),
+  body: { ...consultationMock.body },
+};
+
+export const v2QuestionsMock = {
+  url: getApiQuestionsV2Url(CONSULTATION_ID),
+  body: questionsMock.body.results.map(
+    ({
+      question_text,
+      has_free_text,
+      has_multiple_choice: _has_multiple_choice,
+      theme_status: _theme_status,
+      ...rest
+    }) => ({
+      ...rest,
+      text: question_text,
+      // Hybrid originals stay open with their multi-choice answers attached
+      type: has_free_text ? "open" : "closed",
+      closed_question: null,
+      short_name: "",
+      dashboard_role: "filter",
+      status: "confirmed",
+      response_count: rest.free_text_response_count,
+    }),
+  ),
+};
+
+export const v2DemoOptionsMock = {
+  url: getApiDemographicOptionsV2Url(CONSULTATION_ID),
+  body: [
+    { id: "demo-token-1", name: "Nation", value: "England", count: 40 },
+    { id: "demo-token-2", name: "Nation", value: "Wales", count: 25 },
+  ],
 };

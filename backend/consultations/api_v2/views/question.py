@@ -47,13 +47,16 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
             return DemographicAnswerSerializer
         if self.action == "merge_demographics":
             return DemographicResponseMergeSerializer
-        if self.action == "retrieve":
+        if self.action in ("retrieve", "list"):
+            # v2 dashboard question payloads carry the response counts and
+            # multi-choice answers; the write actions keep the setup shape.
             return QuestionDashboardSerializerV2
         return super().get_serializer_class()
 
     def get_queryset(self):
         queryset = (
             Question.objects.filter(consultation_id=self.kwargs["consultation_pk"])
+            .prefetch_related("multichoiceanswer_set")
             .annotate(
                 response_count=Count(
                     "response", filter=Q(response__text__isnull=False) & ~Q(response__text="")
@@ -67,9 +70,9 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
         if self.action in {"list", "retrieve", "sample_answers"}:
             queryset = queryset.exclude(type=Question.QuestionType.DEMOGRAPHIC)
 
-        if self.action == "retrieve":
-            # The dashboard question page surfaces the proportion of audited
-            # answers; annotate the reviewed count for the single object.
+        if self.action in {"retrieve", "list"}:
+            # The dashboard surfaces the proportion of audited answers.
+            # Annotate reviewed response counts for both list and retrieve.
             reviewed_response_count = Subquery(
                 ConsultationResponse.objects.filter(
                     question_id=OuterRef("pk"), annotation__human_reviewed=True

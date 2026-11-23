@@ -17,12 +17,18 @@
     QuestionsResponse,
     RespondentsResponse,
   } from "../../../global/types.ts";
+  import type { QuestionDetailV2 } from "../../../global/queries/questions/types.ts";
+  import { getQuestionText } from "../../../global/questionText";
   import {
     getApiConsultationRespondentsUrl,
+    getApiDemographicsUrl,
+    getApiDemographicOptionsV2Url,
     getApiQuestionsUrl,
+    getApiQuestionsV2Url,
     getQuestionDetailUrl,
   } from "../../../global/routes.ts";
   import { createFetchStore, favStore } from "../../../global/stores.ts";
+  import { getDataSetupV2Enabled } from "../../../global/utils.ts";
 
   interface Props {
     consultationId: string;
@@ -33,28 +39,42 @@
   let searchValue: string = $state("");
   let dataRequested: boolean = $state(false);
 
-  const questionsStore = createFetchStore<QuestionsResponse>();
+  // V2 flag: question list and demographic options come from the v2 API; the
+  // respondents count endpoint is schema-agnostic and stays on v1.
+  const isV2 = getDataSetupV2Enabled();
+  const questionsUrl = isV2
+    ? getApiQuestionsV2Url(consultationId)
+    : getApiQuestionsUrl(consultationId);
+  const demoOptionsUrl = isV2
+    ? getApiDemographicOptionsV2Url(consultationId)
+    : getApiDemographicsUrl(consultationId);
+
+  const questionsStore = createFetchStore<
+    QuestionsResponse | QuestionDetailV2[]
+  >();
   const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
   const respondentsStore = createFetchStore<RespondentsResponse>();
 
   onMount(() => {
-    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
-    $demoOptionsStore.fetch(
-      `/api/consultations/${consultationId}/demographics/`,
-    );
+    $questionsStore.fetch(questionsUrl);
+    $demoOptionsStore.fetch(demoOptionsUrl);
     $respondentsStore.fetch(getApiConsultationRespondentsUrl(consultationId));
     dataRequested = true;
   });
 
+  let questions = $derived(
+    Array.isArray($questionsStore.data)
+      ? $questionsStore.data
+      : $questionsStore.data?.results || [],
+  );
+
   let favQuestions = $derived(
-    $questionsStore.data?.results?.filter((question) =>
-      $favStore.includes(question.id),
-    ),
+    questions.filter((question) => $favStore.includes(question.id)),
   );
 
   let displayQuestions = $derived(
-    $questionsStore.data?.results?.filter((question) =>
-      `Q${question.number}: ${question.question_text}`
+    questions.filter((question) =>
+      `Q${question.number}: ${getQuestionText(question)}`
         .toLocaleLowerCase()
         .includes(searchValue.toLocaleLowerCase()),
     ),
@@ -64,7 +84,7 @@
 <section class="my-8">
   <Metrics
     {consultationId}
-    questions={$questionsStore.data?.results || []}
+    {questions}
     loading={!dataRequested || $questionsStore.isLoading}
     demoOptionsLoading={!dataRequested || $demoOptionsStore.isLoading}
     demoOptions={$demoOptionsStore.data || []}
@@ -115,7 +135,7 @@
       <Help slot="icon" />
 
       <p slot="aside">
-        {$questionsStore.data?.results?.length || 0} questions
+        {questions.length} questions
       </p>
     </TitleRow>
   </div>
