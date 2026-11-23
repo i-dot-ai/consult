@@ -34,11 +34,15 @@ from eval_types import RunLabels
 from utils import gateway
 
 QUICK_MODEL = "gpt-4.1-sweden-2025-03"
+# Per repeat; a single framework evaluation may run several repeats.
 EVALUATION_TIMEOUT_SECONDS = 20 * 60
+MAX_COMPONENT_EVALUATION_RETRIES = 3
+INITIAL_COMPONENT_RETRY_DELAY_SECONDS = 2.0
 TRANSIENT_ERROR_MARKERS = ("ENOTFOUND", "ECONNREFUSED", "ECONNRESET", "DNS", "503")
 RESULTS_DIR_NAME = "benchmark_results"
 
 console = Console()
+logger = logging.getLogger(__name__)
 
 Evaluate = Callable[..., Awaitable[dict[str, Any]]]
 
@@ -372,10 +376,7 @@ class ComparisonRunner:
                     f"{self.config.runs_per_model} runs | {component}"
                 )
 
-                max_eval_retries = 3
-                retry_delay = 2.0
-
-                for attempt in range(max_eval_retries):
+                for attempt in range(MAX_COMPONENT_EVALUATION_RETRIES):
                     try:
                         result = await self._run_component_eval(
                             model_config=model_config,
@@ -393,10 +394,13 @@ class ComparisonRunner:
                         break
 
                     except Exception as error:
-                        if _is_transient(error) and attempt < max_eval_retries - 1:
-                            delay = retry_delay * (2**attempt)
+                        if (
+                            _is_transient(error)
+                            and attempt < MAX_COMPONENT_EVALUATION_RETRIES - 1
+                        ):
+                            delay = INITIAL_COMPONENT_RETRY_DELAY_SECONDS * (2**attempt)
                             console.print(
-                                f"  [yellow]Transient error (attempt {attempt + 1}/{max_eval_retries}), "
+                                f"  [yellow]Transient error (attempt {attempt + 1}/{MAX_COMPONENT_EVALUATION_RETRIES}), "
                                 f"retrying in {delay:.1f}s...[/yellow]"
                             )
                             await asyncio.sleep(delay)
@@ -443,7 +447,7 @@ class ComparisonRunner:
         try:
             return await asyncio.wait_for(
                 self._execute_eval(model_config, component, error_counter, judge_llm),
-                timeout=EVALUATION_TIMEOUT_SECONDS,
+                timeout=EVALUATION_TIMEOUT_SECONDS * self.config.runs_per_model,
             )
         finally:
             _run_context.reset(token)
@@ -513,13 +517,26 @@ class ComparisonRunner:
         if aggregate is not None:
             all_outputs["aggregate"] = aggregate
             aggregate_metrics = aggregate.get("metrics", {})
-            if not isinstance(aggregate_metrics, dict):
-                raise TypeError("Aggregate metrics must be returned as a dictionary")
+            if not isinstance(aggregate_metrics, dict) or not all(
+                isinstance(summary, dict) for summary in aggregate_metrics.values()
+            ):
+                raise TypeError(
+                    "Aggregate metrics must map names to summary dictionaries"
+                )
             for name, summary in aggregate_metrics.items():
-                if not isinstance(summary, dict):
-                    raise TypeError("Aggregate metric summaries must be dictionaries")
                 mean = summary.get("mean")
                 stdev = summary.get("stdev")
+                missing_fields = [
+                    field_name
+                    for field_name, value in (("mean", mean), ("stdev", stdev))
+                    if value is None
+                ]
+                if missing_fields:
+                    logger.warning(
+                        "Aggregate metric '%s' is missing %s",
+                        name,
+                        " and ".join(missing_fields),
+                    )
                 if mean is not None:
                     all_scores[f"{name}_mean"] = float(mean)
                 if stdev is not None:
@@ -655,7 +672,8 @@ class ComparisonRunner:
                 "llm_call_count": result.llm_call_count,
             }
             for score_name, score_value in result.scores.items():
-                row[score_name] = score_value
+                if isinstance(score_value, (int, float)):
+                    row[score_name] = score_value
             rows.append(row)
 
         return pd.DataFrame(rows)
@@ -670,7 +688,7 @@ class ComparisonRunner:
         summary = self.generate_summary_table()
         if summary.empty:
             return summary
-        return summary.copy()
+        return summary
 
     def print_results_table(self) -> None:
         """Print results as Rich tables, one per component."""
@@ -690,25 +708,16 @@ class ComparisonRunner:
             table.add_column("Model", style="cyan")
             table.add_column("Runs", justify="right")
 
-            metadata_columns = {
-                "model",
-                "model_tag",
-                "n_runs",
-                "eval",
-                "session_id",
-                "duration_seconds",
-                "input_tokens",
-                "output_tokens",
-                "total_tokens",
-                "cost_usd",
-                "latency_seconds",
-                "processing_time_seconds",
-                "llm_call_count",
+            score_names = {
+                name
+                for result in self.results
+                if result.component == component
+                for name in result.scores
             }
             score_columns = [
                 column
                 for column in component_rows.columns
-                if column not in metadata_columns and not column.endswith("_stdev")
+                if column in score_names and not column.endswith("_stdev")
             ]
             for column in score_columns:
                 table.add_column(column.removesuffix("_mean"), justify="right")
@@ -745,66 +754,30 @@ class ComparisonRunner:
 
 
 def print_cost_summary(results_df: pd.DataFrame) -> None:
-    """Print total gateway usage and per-task-run processing time by model.
-
-    ``run_component`` records gateway usage as a per-repeat average so one
-    repeated evaluation remains comparable with a one-run evaluation. Expand
-    those averages before calculating totals here. Processing time is not
-    expanded: it includes a dataset load that happens only once per repeated
-    evaluation, so a weighted per-task-run average is the meaningful value.
-    """
+    """Print average gateway metrics by model."""
     if results_df.empty:
         return
 
     console.print("\n[bold cyan]Gateway Metrics Summary[/bold cyan]\n")
 
-    total_metric_columns = [
+    metric_columns = [
         "input_tokens",
         "output_tokens",
         "total_tokens",
         "cost_usd",
         "latency_seconds",
+        "processing_time_seconds",
     ]
-    available_total_columns = [
-        column for column in total_metric_columns if column in results_df.columns
+    available_metric_columns = [
+        column for column in metric_columns if column in results_df.columns
     ]
-    weighted = results_df.copy()
-    if "n_runs" in weighted.columns:
-        repeat_counts = pd.to_numeric(weighted["n_runs"], errors="coerce").fillna(1)
-    else:
-        repeat_counts = pd.Series(1, index=weighted.index, dtype="int64")
-    weighted["_repeat_count"] = repeat_counts
-
-    for column in available_total_columns:
-        weighted[column] = weighted[column] * weighted["_repeat_count"]
-
-    totals = weighted.groupby("model_tag")[available_total_columns].agg(
-        lambda values: values.sum(min_count=1)
-    )
-    for column in total_metric_columns:
-        if column not in totals:
-            totals[column] = float("nan")
-
-    processing_column = "processing_time_seconds"
-    if processing_column in weighted.columns:
-        has_processing_time = weighted[processing_column].notna()
-        weighted["_processing_time_weighted"] = (
-            weighted[processing_column] * weighted["_repeat_count"]
-        )
-        processing_totals = weighted.groupby("model_tag")[
-            "_processing_time_weighted"
-        ].sum(min_count=1)
-        processing_weights = (
-            weighted["_repeat_count"]
-            .where(has_processing_time)
-            .groupby(weighted["model_tag"])
-            .sum(min_count=1)
-        )
-        totals[processing_column] = processing_totals / processing_weights
-    else:
-        totals[processing_column] = float("nan")
-
-    totals = totals.reset_index()
+    if not available_metric_columns:
+        return
+    averages = results_df.groupby("model_tag")[available_metric_columns].mean()
+    for column in metric_columns:
+        if column not in averages:
+            averages[column] = float("nan")
+    averages = averages.reset_index()
 
     def format_count(value: float) -> str:
         return "-" if pd.isna(value) else f"{int(value):,}"
@@ -815,16 +788,16 @@ def print_cost_summary(results_df: pd.DataFrame) -> None:
     def format_seconds(value: float) -> str:
         return "-" if pd.isna(value) else f"{value:.1f}s"
 
-    table = Table(title="Total Gateway Usage and Cost by Model")
+    table = Table(title="Average Gateway Metrics by Model")
     table.add_column("Model", style="cyan")
-    table.add_column("Input Tokens", justify="right")
-    table.add_column("Output Tokens", justify="right")
-    table.add_column("Total Tokens", justify="right")
-    table.add_column("Cost (USD)", justify="right", style="green")
-    table.add_column("Summed Gateway Latency", justify="right")
-    table.add_column("Avg Processing Time / Task Run", justify="right")
+    table.add_column("Avg Input Tokens / Repeat", justify="right")
+    table.add_column("Avg Output Tokens / Repeat", justify="right")
+    table.add_column("Avg Total Tokens / Repeat", justify="right")
+    table.add_column("Avg Cost / Repeat (USD)", justify="right", style="green")
+    table.add_column("Avg Summed Gateway Latency", justify="right")
+    table.add_column("Avg Processing Time", justify="right")
 
-    for _, row in totals.iterrows():
+    for _, row in averages.iterrows():
         table.add_row(
             row["model_tag"],
             format_count(row["input_tokens"]),
@@ -834,27 +807,6 @@ def print_cost_summary(results_df: pd.DataFrame) -> None:
             format_seconds(row["latency_seconds"]),
             format_seconds(row["processing_time_seconds"]),
         )
-
-    has_processing_time = results_df.get(
-        processing_column, pd.Series(index=results_df.index, dtype="float64")
-    ).notna()
-    if has_processing_time.any():
-        overall_processing_time = (
-            results_df.loc[has_processing_time, processing_column]
-            * repeat_counts.loc[has_processing_time]
-        ).sum() / repeat_counts.loc[has_processing_time].sum()
-    else:
-        overall_processing_time = float("nan")
-
-    table.add_row(
-        "[bold]TOTAL[/bold]",
-        f"[bold]{format_count(totals['input_tokens'].sum(min_count=1))}[/bold]",
-        f"[bold]{format_count(totals['output_tokens'].sum(min_count=1))}[/bold]",
-        f"[bold]{format_count(totals['total_tokens'].sum(min_count=1))}[/bold]",
-        f"[bold green]{format_decimal(totals['cost_usd'].sum(min_count=1), '$')}[/bold green]",
-        f"[bold]{format_seconds(totals['latency_seconds'].sum(min_count=1))}[/bold]",
-        f"[bold]{format_seconds(overall_processing_time)}[/bold]",
-    )
 
     console.print(table)
 

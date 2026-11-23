@@ -84,12 +84,10 @@ class BenchmarkData:
 
     @property
     def total_cost(self) -> float:
-        """Get total task-model cost, expanding per-repeat averages when present."""
+        """Get the sum of the task-model costs persisted in the result rows."""
         if self.results_df.empty or "cost_usd" not in self.results_df.columns:
             return 0.0
-        return (_repeat_counts(self.results_df) * self.results_df["cost_usd"]).sum(
-            min_count=1
-        )
+        return self.results_df["cost_usd"].sum(min_count=1)
 
     @property
     def total_traces(self) -> int:
@@ -103,12 +101,10 @@ class BenchmarkData:
 
     @property
     def avg_latency(self) -> float:
-        """Get the average summed gateway latency per evaluation run."""
+        """Get the average summed gateway latency from persisted result rows."""
         if self.results_df.empty or "latency_seconds" not in self.results_df.columns:
             return 0.0
-        return _weighted_mean(
-            self.results_df["latency_seconds"], _repeat_counts(self.results_df)
-        )
+        return self.results_df["latency_seconds"].mean()
 
     @property
     def avg_processing_time(self) -> float:
@@ -118,9 +114,7 @@ class BenchmarkData:
             or "processing_time_seconds" not in self.results_df.columns
         ):
             return 0.0
-        return _weighted_mean(
-            self.results_df["processing_time_seconds"], _repeat_counts(self.results_df)
-        )
+        return self.results_df["processing_time_seconds"].mean()
 
 
 # =============================================================================
@@ -318,54 +312,7 @@ def detect_eval_metrics(df: pd.DataFrame, eval_type: str) -> dict[str, list[str]
         },
     }
 
-    aggregate_patterns = {
-        "mapping": {"f1": r"^f1_score_mean$"},
-        "generation": {
-            "groundedness": r"^groundedness_mean$",
-            "information_retention": r"^information_retention_mean$",
-            "f1": r"^f1_score_mean$",
-            "clarity": r"^clarity_mean$",
-            "specificity": r"^specificity_mean$",
-            "redundancy": r"^redundancy_mean$",
-        },
-        "find_themes": {
-            "groundedness": r"^groundedness_mean$",
-            "information_retention": r"^information_retention_mean$",
-            "f1": r"^f1_score_mean$",
-            "clarity": r"^clarity_mean$",
-            "specificity": r"^specificity_mean$",
-            "redundancy": r"^redundancy_mean$",
-        },
-        "condensation": {
-            "groundedness": r"^groundedness_mean$",
-            "information_retention": r"^information_retention_mean$",
-            "f1": r"^f1_score_mean$",
-            "clarity": r"^clarity_mean$",
-            "specificity": r"^specificity_mean$",
-            "redundancy": r"^redundancy_mean$",
-        },
-        "refinement": {
-            "clarity": r"^clarity_mean$",
-            "specificity": r"^specificity_mean$",
-            "information_equivalence": r"^information_equivalence_mean$",
-        },
-    }
-    for component_patterns in aggregate_patterns.values():
-        component_patterns.update(
-            {
-                "output_consistency_f1": r"^output_consistency_f1$",
-                "output_consistency_count": r"^output_consistency_count$",
-            }
-        )
-
-    eval_patterns = patterns.get(eval_type, {}).copy()
-    for name, aggregate_pattern in aggregate_patterns.get(eval_type, {}).items():
-        existing_pattern = eval_patterns.get(name)
-        eval_patterns[name] = (
-            aggregate_pattern
-            if existing_pattern is None
-            else f"(?:{existing_pattern}|{aggregate_pattern})"
-        )
+    eval_patterns = patterns.get(eval_type, {})
     if not eval_patterns:
         return {}
 
@@ -386,6 +333,30 @@ def detect_eval_metrics(df: pd.DataFrame, eval_type: str) -> dict[str, list[str]
                     )
                 )
                 detected[metric_name] = matching_cols
+
+    for column in df.columns:
+        if not column.endswith("_mean") or column.startswith("output_consistency_"):
+            continue
+        if not eval_df[column].notna().any():
+            continue
+
+        metric_base_name = column.removesuffix("_mean")
+        question_part_metric_name = f"question_part_0_{metric_base_name}"
+        metric_name = next(
+            (
+                name
+                for name, pattern in eval_patterns.items()
+                if re.match(pattern, question_part_metric_name)
+            ),
+            metric_base_name,
+        )
+        detected.setdefault(metric_name, []).append(column)
+
+    for column in df.columns:
+        if not column.startswith("output_consistency_"):
+            continue
+        if eval_df[column].notna().any():
+            detected.setdefault(column, []).append(column)
 
     return detected
 
@@ -413,37 +384,15 @@ def _repeat_counts(df: pd.DataFrame) -> pd.Series:
     return pd.to_numeric(df["n_runs"], errors="coerce").fillna(1).astype("int64")
 
 
-def _weighted_mean(values: pd.Series, weights: pd.Series) -> float:
-    """Mean where one aggregate row represents multiple equal-weight repeats."""
-    present = values.notna()
-    if not present.any():
-        return float("nan")
-    return float(np.average(values[present], weights=weights[present]))
-
-
-def _with_total_usage(df: pd.DataFrame) -> pd.DataFrame:
-    """Expand per-repeat usage metrics into the total usage for a comparison."""
-    weighted = df.copy()
-    repeats = _repeat_counts(df)
-    for column in ("cost_usd", "input_tokens", "output_tokens", "total_tokens"):
-        if column in weighted.columns:
-            weighted[column] = weighted[column] * repeats
-    return weighted
-
-
 def _build_agg_dict(df: pd.DataFrame) -> dict[str, str | Callable]:
     """Build aggregation dict based on available columns."""
     agg_dict = {}
     if "cost_usd" in df.columns:
         agg_dict["cost_usd"] = _sum_available
     if "latency_seconds" in df.columns:
-        agg_dict["latency_seconds"] = lambda values: _weighted_mean(
-            values, _repeat_counts(df).loc[values.index]
-        )
+        agg_dict["latency_seconds"] = "mean"
     if "processing_time_seconds" in df.columns:
-        agg_dict["processing_time_seconds"] = lambda values: _weighted_mean(
-            values, _repeat_counts(df).loc[values.index]
-        )
+        agg_dict["processing_time_seconds"] = "mean"
     if "input_tokens" in df.columns:
         agg_dict["input_tokens"] = "sum"
     if "output_tokens" in df.columns:
@@ -458,7 +407,7 @@ def aggregate_by_model(data: BenchmarkData) -> pd.DataFrame:
     if data.results_df.empty:
         return pd.DataFrame()
 
-    df = _with_total_usage(data.results_df)
+    df = data.results_df
     agg_dict = _build_agg_dict(df)
 
     if agg_dict:
@@ -475,7 +424,7 @@ def aggregate_by_eval(data: BenchmarkData) -> pd.DataFrame:
     if data.results_df.empty:
         return pd.DataFrame()
 
-    df = _with_total_usage(data.results_df)
+    df = data.results_df
     agg_dict = _build_agg_dict(df)
 
     if agg_dict:
@@ -779,7 +728,7 @@ def print_summary(data: BenchmarkData) -> None:
     console.print(f"Eval types: {', '.join(data.eval_types)}")
     console.print(f"Aggregate traces: {data.total_traces}")
     console.print(f"Underlying task runs: {data.total_evaluation_runs}")
-    console.print(f"Total cost: ${data.total_cost:.4f}")
+    console.print(f"Sum of reported per-repeat costs: ${data.total_cost:.4f}")
     console.print(f"Avg summed gateway latency: {data.avg_latency:.1f}s")
     console.print(f"Avg processing time: {data.avg_processing_time:.1f}s")
     console.print()
@@ -802,7 +751,7 @@ def print_model_table(data: BenchmarkData) -> None:
     has_tokens = "total_tokens" in agg.columns
 
     if has_cost:
-        table.add_column("Total Cost", justify="right", style="green")
+        table.add_column("Sum of Per-Repeat Costs", justify="right", style="green")
     if has_latency:
         table.add_column("Avg Summed Gateway Latency", justify="right")
     if has_processing_time:
@@ -843,7 +792,7 @@ def print_eval_table(data: BenchmarkData) -> None:
     has_tokens = "total_tokens" in agg.columns
 
     if has_cost:
-        table.add_column("Total Cost", justify="right", style="green")
+        table.add_column("Sum of Per-Repeat Costs", justify="right", style="green")
     if has_latency:
         table.add_column("Avg Summed Gateway Latency", justify="right")
     if has_processing_time:
@@ -1212,7 +1161,7 @@ def _html_summary_cards(data: BenchmarkData) -> str:
             <div class="stat-pill"><span class="value">{len(data.eval_types)}</span><span class="label">Evals</span></div>
             <div class="stat-pill"><span class="value">{data.total_evaluation_runs}</span><span class="label">Task Runs</span></div>
             <div class="stat-pill"><span class="value">{data.total_traces}</span><span class="label">Aggregate Traces</span></div>
-            <div class="stat-pill"><span class="value">${data.total_cost:.2f}</span><span class="label">Cost</span></div>
+            <div class="stat-pill"><span class="value">${data.total_cost:.2f}</span><span class="label">Sum of Per-Repeat Costs</span></div>
             <div class="stat-pill"><span class="value">{data.avg_latency:.0f}s</span><span class="label">Avg Summed Gateway Latency</span></div>
             <div class="stat-pill"><span class="value">{data.avg_processing_time:.0f}s</span><span class="label">Avg Processing Time</span></div>
         </div>
@@ -1248,7 +1197,7 @@ def _html_model_summary_table(data: BenchmarkData) -> str:
     for et in eval_types:
         if et in primary_metrics:
             header_cells.append(f"<th class='num'>{et.title()}</th>")
-    header_cells.append("<th class='num'>Cost</th>")
+    header_cells.append("<th class='num'>Per-Repeat Cost (sum)</th>")
     header_cells.append("<th class='num'>Avg Summed Gateway Latency</th>")
     header_cells.append("<th class='num'>Processing</th>")
     header_cells.append("<th class='num'>Tokens</th>")
@@ -1307,32 +1256,28 @@ def _html_model_summary_table(data: BenchmarkData) -> str:
 
         # Cost
         if "cost_usd" in model_df.columns:
-            cost = (model_df["cost_usd"] * _repeat_counts(model_df)).sum(min_count=1)
+            cost = model_df["cost_usd"].sum(min_count=1)
             cells.append(f"<td class='num'>${cost:.3f}</td>")
         else:
             cells.append("<td class='num'>-</td>")
 
-        # Summed gateway latency per evaluation run
+        # Summed gateway latency reported for each component evaluation.
         if "latency_seconds" in model_df.columns:
-            latency = _weighted_mean(
-                model_df["latency_seconds"], _repeat_counts(model_df)
-            )
+            latency = model_df["latency_seconds"].mean()
             cells.append(f"<td class='num'>{latency:.0f}s</td>")
         else:
             cells.append("<td class='num'>-</td>")
 
         # Processing time
         if "processing_time_seconds" in model_df.columns:
-            processing_time = _weighted_mean(
-                model_df["processing_time_seconds"], _repeat_counts(model_df)
-            )
+            processing_time = model_df["processing_time_seconds"].mean()
             cells.append(f"<td class='num'>{processing_time:.0f}s</td>")
         else:
             cells.append("<td class='num'>-</td>")
 
         # Tokens
         if "total_tokens" in model_df.columns:
-            tokens = (model_df["total_tokens"] * _repeat_counts(model_df)).sum()
+            tokens = model_df["total_tokens"].sum(min_count=1)
             cells.append(f"<td class='num'>{tokens:,}</td>")
         else:
             cells.append("<td class='num'>-</td>")
@@ -1425,13 +1370,13 @@ def _html_cost_latency_processing_charts(
         return ""
 
     sections = [
-        '<div class="section-header">Cost, Summed Gateway Latency & Processing Time</div><div class="chart-row">'
+        '<div class="section-header">Reported Per-Repeat Cost, Summed Gateway Latency & Processing Time</div><div class="chart-row">'
     ]
 
     if has_cost:
         sections.append("""
         <div class="card">
-            <div class="card-title">Cost by Model</div>
+            <div class="card-title">Reported Per-Repeat Cost by Model</div>
             <div class="chart" id="cost-model"></div>
         </div>
 """)

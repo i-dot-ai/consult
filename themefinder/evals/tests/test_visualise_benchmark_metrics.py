@@ -52,7 +52,7 @@ def test_aggregates_and_displays_cost_gateway_latency_and_processing_time_separa
     html = _html_cost_latency_processing_charts(
         ["model-a"], [0.03], [3.0], [4.5], ["generation"], [0.01]
     )
-    assert "Cost, Summed Gateway Latency & Processing Time" in html
+    assert "Reported Per-Repeat Cost, Summed Gateway Latency & Processing Time" in html
     assert "USD" in html
     assert "Summed Gateway Latency by Model" in html
     assert "Processing Time by Model" in html
@@ -83,8 +83,8 @@ def test_repeated_aggregate_row_preserves_repeat_counts_and_framework_scores():
 
     assert data.total_traces == 1
     assert data.total_evaluation_runs == 3
-    assert data.total_cost == pytest.approx(0.03)
-    assert aggregated.iloc[0]["cost_usd"] == pytest.approx(0.03)
+    assert data.total_cost == pytest.approx(0.01)
+    assert aggregated.iloc[0]["cost_usd"] == pytest.approx(0.01)
     assert detect_eval_metrics(data.results_df, "mapping") == {
         "f1": ["f1_score_mean"],
         "output_consistency_f1": ["output_consistency_f1"],
@@ -93,6 +93,23 @@ def test_repeated_aggregate_row_preserves_repeat_counts_and_framework_scores():
     consistency_html = _html_output_consistency_section(data)
     assert "Output Consistency" in consistency_html
     assert ">0.900<" in consistency_html
+
+
+def test_detects_aggregate_metrics_without_component_specific_mappings():
+    results = pd.DataFrame(
+        [
+            {
+                "eval": "mapping",
+                "f1_score_mean": 0.8,
+                "new_metric_mean": 0.5,
+            }
+        ]
+    )
+
+    assert detect_eval_metrics(results, "mapping") == {
+        "f1": ["f1_score_mean"],
+        "new_metric": ["new_metric_mean"],
+    }
 
 
 def test_uses_legacy_duration_as_processing_time_when_loading_results(

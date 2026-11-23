@@ -135,6 +135,86 @@ async def test_run_delegates_to_evaluate_with_labels_and_no_platform(monkeypatch
     assert result.llm_call_count == 3
 
 
+async def test_single_run_preserves_direct_scores(monkeypatch):
+    model = comparison.ModelConfig(name="test-model")
+    monkeypatch.setattr(model, "create_llm", lambda: object())
+    evaluate = AsyncMock(return_value={"question_part_1_f1_score": 0.75})
+    runner = comparison.ComparisonRunner(
+        comparison.ComparisonConfig(dataset="demo", models=[model], runs_per_model=1),
+        evaluate,
+    )
+
+    result = await runner._execute_eval(
+        model,
+        component="mapping",
+        error_counter=comparison.ValidationErrorCounter("test-model"),
+        judge_llm=None,
+    )
+
+    assert result.n_runs == 1
+    assert result.scores == {
+        "question_part_1_f1_score": 0.75,
+        "validation_errors": 0,
+        "total_warnings": 0,
+    }
+    assert evaluate.await_args.kwargs["runs"] == 1
+
+
+async def test_component_timeout_scales_with_repeat_count(monkeypatch):
+    model = comparison.ModelConfig(name="test-model")
+    runner = comparison.ComparisonRunner(
+        comparison.ComparisonConfig(dataset="demo", models=[model], runs_per_model=3),
+        AsyncMock(),
+    )
+    expected = object()
+
+    async def execute(*args):
+        return expected
+
+    async def wait_for(awaitable, *, timeout):
+        assert timeout == comparison.EVALUATION_TIMEOUT_SECONDS * 3
+        return await awaitable
+
+    monkeypatch.setattr(runner, "_execute_eval", execute)
+    monkeypatch.setattr(comparison.asyncio, "wait_for", wait_for)
+
+    assert (
+        await runner._run_component_eval(
+            model,
+            component="mapping",
+            error_counter=comparison.ValidationErrorCounter("test-model"),
+            judge_llm=None,
+        )
+        is expected
+    )
+
+
+async def test_run_warns_when_an_aggregate_metric_is_unavailable(monkeypatch, caplog):
+    model = comparison.ModelConfig(name="test-model")
+    monkeypatch.setattr(model, "create_llm", lambda: object())
+    runner = comparison.ComparisonRunner(
+        comparison.ComparisonConfig(dataset="demo", models=[model], runs_per_model=2),
+        AsyncMock(
+            return_value={
+                "aggregate": {
+                    "metrics": {"f1_score": {"mean": None, "stdev": None}},
+                    "output_consistency": {},
+                }
+            }
+        ),
+    )
+
+    with caplog.at_level(logging.WARNING, logger="comparison"):
+        await runner._execute_eval(
+            model,
+            component="mapping",
+            error_counter=comparison.ValidationErrorCounter("test-model"),
+            judge_llm=None,
+        )
+
+    assert "Aggregate metric 'f1_score' is missing mean and stdev" in caplog.messages
+
+
 async def test_judge_model_is_built_once_per_model_and_passed_to_every_run(
     monkeypatch, tmp_path
 ):
@@ -412,7 +492,7 @@ def test_summary_table_keeps_the_benchmark_csv_columns():
     assert aggregated.equals(summary)
 
 
-def test_cost_summary_expands_per_repeat_gateway_usage(capsys):
+def test_cost_summary_reports_average_gateway_metrics(capsys):
     comparison.print_cost_summary(
         comparison.pd.DataFrame(
             [
@@ -442,13 +522,13 @@ def test_cost_summary_expands_per_repeat_gateway_usage(capsys):
 
     rendered = capsys.readouterr().out
 
-    assert "Total Gateway Usage and Cost by Model" in rendered
-    assert "350" in rendered
-    assert "70" in rendered
-    assert "420" in rendered
-    assert "$0.0500" in rendered
-    assert "10.0s" in rendered
-    assert "3.5s" in rendered
+    assert "Average Gateway Metrics by Model" in rendered
+    assert "75" in rendered
+    assert "15" in rendered
+    assert "90" in rendered
+    assert "$0.0150" in rendered
+    assert "3.0s" in rendered
+    assert "4.0s" in rendered
 
 
 def test_saves_results_under_the_benchmark_results_layout(tmp_path):

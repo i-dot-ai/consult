@@ -133,6 +133,13 @@ def lower_case_strip_str(value: str) -> str:
     return value.lower().strip()
 
 
+def positive_int(value: int) -> int:
+    """Validate a positive integer without adding bounds to the output schema."""
+    if value < 1:
+        raise ValueError("must be at least 1")
+    return value
+
+
 class Theme(ValidatedModel):
     """Model for a single extracted theme"""
 
@@ -195,8 +202,8 @@ class CondensedTheme(ValidatedModel):
         ...,
         description="Concise description incorporating key insights from constituent topics",
     )
-    source_topic_count: int = Field(
-        ..., gt=0, description="Sum of source_topic_counts from combined topics"
+    source_topic_count: Annotated[int, AfterValidator(positive_int)] = Field(
+        ..., description="Sum of source_topic_counts from combined topics"
     )
 
 
@@ -245,8 +252,8 @@ class RefinedTheme(ValidatedModel):
     topic: str = Field(
         ..., description="Topic label and description combined with a colon separator"
     )
-    source_topic_count: int = Field(
-        ..., gt=0, description="Count of source topics combined"
+    source_topic_count: Annotated[int, AfterValidator(positive_int)] = Field(
+        ..., description="Count of source topics combined"
     )
 
     @model_validator(mode="after")
@@ -295,7 +302,9 @@ class ThemeRefinementResponses(ValidatedModel):
 class ThemeMappingOutput(ValidatedModel):
     """Model for theme mapping output"""
 
-    response_id: int = Field(gt=0, description="Response ID, must be greater than 0")
+    response_id: Annotated[int, AfterValidator(positive_int)] = Field(
+        ..., description="Response ID, must be greater than 0"
+    )
     labels: List[str] = Field(..., description="List of theme labels")
 
     @model_validator(mode="after")
@@ -330,7 +339,9 @@ class ThemeMappingResponses(ValidatedModel):
 class DetailDetectionOutput(ValidatedModel):
     """Model for detail detection output"""
 
-    response_id: int = Field(gt=0, description="Response ID, must be greater than 0")
+    response_id: Annotated[int, AfterValidator(positive_int)] = Field(
+        ..., description="Response ID, must be greater than 0"
+    )
     evidence_rich: EvidenceRich = Field(
         ..., description="Whether the response is evidence-rich (YES or NO)"
     )
@@ -368,7 +379,9 @@ class ThemeNode(ValidatedModel):
     topic_description: str = Field(
         ..., description="1-2 sentences combining key aspects of child topics"
     )
-    source_topic_count: int = Field(gt=0, description="Sum of all child topic counts")
+    source_topic_count: Annotated[int, AfterValidator(positive_int)] = Field(
+        ..., description="Sum of all child topic counts"
+    )
     parent_id: Optional[str] = Field(
         default=None,
         description="Internal field: ID of parent topic node, managed by clustering agent, not set by LLM",
