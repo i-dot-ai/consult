@@ -79,7 +79,6 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
             except ValueError:
                 raise serializers.ValidationError({"respondent_id": "Invalid UUID."})
             queryset = queryset.filter(response__respondent_id=respondent_id).distinct()
-
         if self.action in {"retrieve", "list"}:
             # The dashboard surfaces the proportion of audited answers.
             # Annotate reviewed response counts for both list and retrieve.

@@ -49,7 +49,6 @@ export type ShowNextResponseResultV2 = {
   type: QuestionType | null;
   message: string;
 };
-
 export type DemographicMergeBody = {
   new_value: string;
   responses: string[];

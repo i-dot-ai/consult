@@ -286,7 +286,6 @@ export const getApiShowNextResponseV2Url = (
     Suffixes.ShowNext,
   );
 };
-
 export const getApiDemographicOptionsV2Url = (consultationId: string) => {
   return urlJoinTrailing(
     Prefixes.ApiV2,
