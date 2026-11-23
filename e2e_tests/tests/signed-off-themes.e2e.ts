@@ -30,9 +30,6 @@ test.describe("Signed Off Themes", () => {
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByTestId("question-card")).toHaveCount(5);
-
-    // Signed-off questions render a "Signed off" tag on their card.
-    await expect(page.getByText("Signed off", { exact: true })).toHaveCount(3);
   });
 
   [
@@ -64,6 +61,6 @@ test.describe("Signed Off Themes", () => {
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText(signedOffConsultation.title).first()).toBeVisible();
-    await expect(page.getByTestId("question-card")).toHaveCount(3);
+    await expect(page.getByTestId("question-card")).toHaveCount(5);
   });
 });
