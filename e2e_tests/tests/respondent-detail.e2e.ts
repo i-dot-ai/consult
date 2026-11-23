@@ -112,8 +112,8 @@ test.describe("Respondent Detail Page", () => {
     expect(answered).toBeLessThanOrEqual(total);
     expect(total).toBeGreaterThan(0);
 
-    // Total is determined by the UI (demographics may be excluded).
-    expect(total).toBe(3);
+    // Total is determined by the UI.
+    expect(total).toBe(5);
 
     const calculatedPercentage = Math.round((answered / total) * 100);
     expect(percentage).toBe(calculatedPercentage);
