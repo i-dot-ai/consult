@@ -7,16 +7,9 @@
     },
     "text": {
       "type": "string",
-      "description": "Free text response"
-    },
-    "options": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Options that have been chosen for a closed question."
+      "description": "Free text response to an open question."
     }
   },
-  "required": ["themefinder_id"],
-  "additionalProperties": true
+  "required": ["themefinder_id", "text"],
+  "additionalProperties": false
 }
