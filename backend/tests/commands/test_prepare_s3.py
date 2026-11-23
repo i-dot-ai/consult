@@ -112,6 +112,7 @@ class TestPrepareS3:
             "question_text": "Why do you agree or disagree with the proposed flavour categories?",
             "question_number": 2,
             "has_free_text": True,
+            "type": "open",
         }
 
         responses = boto3.client("s3", region_name="eu-west-2").get_object(
