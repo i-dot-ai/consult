@@ -22,7 +22,6 @@ export interface NavItem {
 }
 
 export interface QuestionMultiAnswer {
-  id: string;
   text: string;
   response_count: number;
 }

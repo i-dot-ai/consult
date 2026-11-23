@@ -37,7 +37,7 @@
     </TitleRow>
 
     <Panel bg={true}>
-      {#each data as item, i (i)}
+      {#each data as item (item.text)}
         {@const percentage = getPercentage(
           item.response_count,
           multiChoiceResponseCount,
@@ -49,9 +49,9 @@
             size="xs"
             fullWidth={true}
             handleClick={() => {
-              multiAnswerFilters.update(item.id);
+              multiAnswerFilters.update(item.text);
             }}
-            highlighted={multiAnswerFilters.applied(item.id)}
+            highlighted={multiAnswerFilters.applied(item.text)}
             highlightVariant="light"
           >
             <div

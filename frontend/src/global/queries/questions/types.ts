@@ -31,7 +31,6 @@ export type QuestionDetailV2 = QuestionV2 & {
   free_text_response_count: number;
   multi_choice_response_count: number;
   multiple_choice_answer: {
-    id: string;
     text: string;
     response_count: number;
   }[];

@@ -244,7 +244,7 @@
                       A sample. {sample.length} of {question.total_response_count}
                       answers to this question
                     </p>
-                    {#each sample as answer (answer.id)}
+                    {#each sample as answer (answer.text)}
                       <p class="leading-relaxed text-neutral-900 not-last:mb-2">
                         {answer.text}
                       </p>
