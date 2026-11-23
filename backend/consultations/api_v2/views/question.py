@@ -66,11 +66,6 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
             .order_by("number")
         )
 
-        # Mirror v1 semantics: "questions" lists/counts exclude demographic-type questions by default.
-        # Demographic questions are still accessible via their dedicated detail actions.
-        if self.action in {"list", "retrieve", "sample_answers"}:
-            queryset = queryset.exclude(type=Question.QuestionType.DEMOGRAPHIC)
-
         # Dashboard respondent pages filter the list to a respondent's questions
         respondent_id = self.request.query_params.get("respondent_id")
         if respondent_id:
