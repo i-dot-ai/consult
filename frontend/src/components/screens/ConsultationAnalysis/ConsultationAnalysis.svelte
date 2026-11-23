@@ -6,6 +6,7 @@
   import {
     getApiConsultationUrl,
     getApiConsultationV2Url,
+    getApiDemographicsUrl,
     getApiDemographicOptionsV2Url,
     getApiQuestionsUrl,
     getApiQuestionsV2Url,
@@ -13,7 +14,6 @@
   } from "../../../global/routes";
   import {
     type ConsultationResponse,
-    type Question,
     type DemoOptionsResponse,
     type DemoOptionsResponseItem,
     type QuestionMultiAnswer,
@@ -23,6 +23,7 @@
   import { createFetchStore } from "../../../global/stores";
   import type { ConsultationV2 } from "../../../global/queries/consultations/types";
   import type { QuestionDetailV2 } from "../../../global/queries/questions/types";
+  import { getQuestionText } from "../../../global/questionText";
 
   import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
   import Chart from "../../Chart/Chart.svelte";
@@ -61,11 +62,8 @@
     : getApiQuestionsUrl(consultationId);
   const demoOptionsUrl = isV2
     ? getApiDemographicOptionsV2Url(consultationId)
-    : `/api/consultations/${consultationId}/demographics/`;
-  const questionText = (question: Question | QuestionDetailV2): string =>
-    "question_text" in question
-      ? question.question_text
-      : (question.text ?? "");
+    : getApiDemographicsUrl(consultationId);
+  const questionText = getQuestionText;
 
   let demoCategories = $derived([
     ...new Set(($demoOptionsStore.data || []).map((opt) => opt.name)),
