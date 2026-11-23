@@ -112,8 +112,8 @@ test.describe("Respondent Detail Page", () => {
     expect(answered).toBeLessThanOrEqual(total);
     expect(total).toBeGreaterThan(0);
 
-    // v2 model: demographic questions exist as first-class questions
-    expect(total).toBe(5);
+    // Total is determined by the UI (demographics may be excluded).
+    expect(total).toBe(3);
 
     const calculatedPercentage = Math.round((answered / total) * 100);
     expect(percentage).toBe(calculatedPercentage);

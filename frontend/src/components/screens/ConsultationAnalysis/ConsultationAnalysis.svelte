@@ -23,6 +23,7 @@
   import { createFetchStore } from "../../../global/stores";
   import type { ConsultationV2 } from "../../../global/queries/consultations/types";
   import type { QuestionDetailV2 } from "../../../global/queries/questions/types";
+  import { excludeDemographicQuestions } from "../../../global/queries/questions/queries";
   import { getQuestionText } from "../../../global/questionText";
 
   import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
@@ -69,9 +70,11 @@
   ]);
 
   let questions = $derived(
-    Array.isArray($questionsStore.data)
-      ? $questionsStore.data
-      : $questionsStore.data?.results || [],
+    excludeDemographicQuestions(
+      Array.isArray($questionsStore.data)
+        ? $questionsStore.data
+        : $questionsStore.data?.results || [],
+    ),
   );
 
   let chartQuestions = $derived(

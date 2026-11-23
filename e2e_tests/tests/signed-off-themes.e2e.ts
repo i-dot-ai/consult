@@ -29,7 +29,7 @@ test.describe("Signed Off Themes", () => {
     await page.goto(`/consultations/${consultationId}/finalising-themes`);
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByTestId("question-card")).toHaveCount(5);
+    await expect(page.getByTestId("question-card")).toHaveCount(3);
   });
 
   [

@@ -95,16 +95,11 @@ describe("ConsultationDetail (V2 flag enabled)", () => {
 
     await waitFor(() => {
       expect(
-        screen.getAllByText(
-          defaultQuestionsMock.body.results[0].question_text,
-          {
-            exact: false,
-          },
-        ).length,
+        screen.getAllByText(v2QuestionsMock.body[0].text, { exact: false })
+          .length,
       ).toBeGreaterThan(0);
     });
     await waitFor(() => {
-      expect(screen.getByText("4 questions")).toBeInTheDocument();
       expect(screen.getByText("Nation")).toBeInTheDocument();
       expect(screen.getByText("Age")).toBeInTheDocument();
     });

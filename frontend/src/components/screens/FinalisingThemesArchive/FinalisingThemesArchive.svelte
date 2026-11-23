@@ -7,16 +7,22 @@
   import {
     getApiAssignThemesUrl,
     getApiConsultationUrl,
+    getApiConsultationV2Url,
     getApiQuestionsUrl,
+    getApiQuestionsV2Url,
     getFinaliseThemesDetailUrl,
     Routes,
   } from "../../../global/routes.ts";
   import { createFetchStore } from "../../../global/stores.ts";
+  import { getDataSetupV2Enabled } from "../../../global/utils.ts";
   import {
     type ConsultationResponse,
     type Question,
     type QuestionsResponse,
   } from "../../../global/types.ts";
+  import type { ConsultationV2 } from "../../../global/queries/consultations/types.ts";
+  import type { QuestionDetailV2 } from "../../../global/queries/questions/types.ts";
+  import { excludeDemographicQuestions } from "../../../global/queries/questions/queries.ts";
   import Tag from "../../Tag/Tag.svelte";
   import Modal from "../../Modal/Modal.svelte";
   import Alert from "../../Alert/Alert.svelte";
@@ -48,7 +54,7 @@
     consultationId = "",
     pollFrequency = FIVE_MINUTES,
     handleIntervalTick = () => {
-      $consultationStore.fetch(getApiConsultationUrl(consultationId));
+      $consultationStore.fetch(consultationUrl);
     },
   }: Props = $props();
 
@@ -56,43 +62,74 @@
   let isConfirmModalOpen: boolean = $state(false);
   let dataRequested: boolean = $state(false);
 
-  const questionsStore = createFetchStore<QuestionsResponse>();
-  const consultationStore = createFetchStore<ConsultationResponse>();
+  // V2 flag: question list and consultation payload come from the v2 API;
+  // sign-off gating derives from `type`/`status` instead of v1 booleans.
+  const isV2 = getDataSetupV2Enabled();
+  const consultationUrl = isV2
+    ? getApiConsultationV2Url(consultationId)
+    : getApiConsultationUrl(consultationId);
+  const questionsUrl = isV2
+    ? getApiQuestionsV2Url(consultationId)
+    : getApiQuestionsUrl(consultationId);
+  const questionText = (question: Question | QuestionDetailV2): string =>
+    "question_text" in question
+      ? question.question_text
+      : (question.text ?? "");
+  const isFreeTextQuestion = (
+    question: Question | QuestionDetailV2,
+  ): boolean =>
+    "question_text" in question
+      ? question.has_free_text
+      : question.type === "open";
+  const isConfirmed = (question: Question | QuestionDetailV2): boolean =>
+    "question_text" in question
+      ? question.theme_status === "confirmed"
+      : question.status === "confirmed";
+
+  const questionsStore = createFetchStore<
+    QuestionsResponse | QuestionDetailV2[]
+  >();
+  const consultationStore = createFetchStore<
+    ConsultationResponse | ConsultationV2
+  >();
   const consultationUpdateStore = createFetchStore();
 
   onMount(async () => {
-    $consultationStore.fetch(getApiConsultationUrl(consultationId));
-    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
+    $consultationStore.fetch(consultationUrl);
+    $questionsStore.fetch(questionsUrl);
     dataRequested = true;
   });
 
+  let questions = $derived(
+    excludeDemographicQuestions(
+      Array.isArray($questionsStore.data)
+        ? $questionsStore.data
+        : $questionsStore.data?.results || [],
+    ),
+  );
+
   let displayQuestions = $derived(
-    $questionsStore.data?.results?.filter((question) =>
-      `Q${question.number}: ${question.question_text}`
+    questions.filter((question) =>
+      `Q${question.number}: ${questionText(question)}`
         .toLocaleLowerCase()
         .includes(searchValue.toLocaleLowerCase()),
     ),
   );
 
   let questionsForSignOff = $derived(
-    $questionsStore.data?.results?.filter(
-      (question: Question) => question.has_free_text,
-    ),
+    questions.filter((question) => isFreeTextQuestion(question)),
   );
 
   let allQuestionsFinalised: boolean = $derived(
     Boolean(
       questionsForSignOff?.length &&
-      questionsForSignOff.every(
-        (question: Question) => question.theme_status === "confirmed",
-      ),
+      questionsForSignOff.every((question) => isConfirmed(question)),
     ),
   );
 
   let finalisedQuestionCount = $derived(
-    questionsForSignOff?.filter(
-      (question: Question) => question.theme_status === "confirmed",
-    )?.length || 0,
+    questionsForSignOff?.filter((question) => isConfirmed(question))?.length ||
+      0,
   );
 
   let pollingInterval: ReturnType<typeof setInterval> | null = $state(null);
@@ -262,7 +299,7 @@
         <Help slot="icon" />
 
         <p slot="aside">
-          {$questionsStore.data?.results?.length || 0} questions
+          {questions.length} questions
         </p>
       </TitleRow>
     </div>
@@ -299,18 +336,18 @@
                   {consultationId}
                   {question}
                   highlightText={searchValue}
-                  clickable={question.has_free_text}
-                  disabled={!question.has_free_text}
+                  clickable={isFreeTextQuestion(question)}
+                  disabled={!isFreeTextQuestion(question)}
                   url={getFinaliseThemesDetailUrl(
                     consultationId,
                     question.id || "",
                   )}
-                  subtext={!question.has_free_text
+                  subtext={!isFreeTextQuestion(question)
                     ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
                     : undefined}
                 >
                   {#snippet tag()}
-                    {#if !question.has_free_text}
+                    {#if !isFreeTextQuestion(question)}
                       <Tag variant="primary-light">
                         <MaterialIcon color="fill-primary">
                           <Checklist />
@@ -318,7 +355,7 @@
 
                         Multiple choice
                       </Tag>
-                    {:else if question.theme_status === "confirmed"}
+                    {:else if isConfirmed(question)}
                       <Tag variant="primary-light">Signed off</Tag>
                     {:else}
                       <div></div>

@@ -18,6 +18,7 @@
     RespondentsResponse,
   } from "../../../global/types.ts";
   import type { QuestionDetailV2 } from "../../../global/queries/questions/types.ts";
+  import { excludeDemographicQuestions } from "../../../global/queries/questions/queries.ts";
   import { getQuestionText } from "../../../global/questionText";
   import {
     getApiConsultationRespondentsUrl,
@@ -63,9 +64,11 @@
   });
 
   let questions = $derived(
-    Array.isArray($questionsStore.data)
-      ? $questionsStore.data
-      : $questionsStore.data?.results || [],
+    excludeDemographicQuestions(
+      Array.isArray($questionsStore.data)
+        ? $questionsStore.data
+        : $questionsStore.data?.results || [],
+    ),
   );
 
   let favQuestions = $derived(

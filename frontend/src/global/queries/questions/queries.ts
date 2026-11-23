@@ -8,9 +8,11 @@ import {
 import type {
   DemographicAnswer,
   DemographicMergeBody,
+  QuestionDetailV2,
   QuestionV2,
   QuestionV2UpdateBody,
 } from "./types";
+import type { Question } from "../../types";
 
 export function buildQuestionsV2Query(consultationId: string) {
   return buildQuery<QuestionV2[]>(questionsV2QueryParts.url(consultationId), {
@@ -65,5 +67,21 @@ export function buildDemographicMergeQuery(consultationId: string) {
         body: body as DemographicMergeBody,
       }),
     },
+  );
+}
+
+/**
+ * Dashboard question surfaces exclude demographic-type questions: they exist to
+ * back filters, not as analyst-reviewable questions. Legacy v1 payloads carry
+ * no `type` and pass through.
+ *
+ * In V2, closed questions are still shown on the dashboard (they may have
+ * multiple-choice data).
+ */
+export function excludeDemographicQuestions(
+  questions: Array<Question | QuestionDetailV2>,
+): Array<Question | QuestionDetailV2> {
+  return questions.filter(
+    (question) => !("type" in question) || question.type !== "demographic",
   );
 }
