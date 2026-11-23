@@ -3,6 +3,7 @@ import { fetchBackendApi, buildResponse } from "../../../../global/api";
 import { getDataSetupV2Enabled } from "../../../../global/utils";
 
 import type { AstroGlobalRuntime, Question } from "../../../../global/types";
+import type { QuestionDetailV2 } from "../../../../global/queries/questions/types";
 
 import Layout from "../../../../layouts/Layout.astro";
 import Section from "../../../../components/Section/Section.svelte";
@@ -26,15 +27,13 @@ const {
   data: questionData,
   error: questionError,
   status: questionStatus,
-} = await fetchBackendApi<Question>(Astro, questionUrl);
+} = await fetchBackendApi<Question | QuestionDetailV2>(Astro, questionUrl);
 if (questionError) {
   return buildResponse(questionStatus);
 }
 
-// V2 uses "status" field, V1 uses "theme_status" field
-const isConfirmed = isV2
-  ? questionData?.status === "confirmed"
-  : questionData?.theme_status === "confirmed";
+// Signed-off gating is still driven by theme_status for both schemas.
+const isConfirmed = questionData?.theme_status === "confirmed";
 ---
 
 <Layout>

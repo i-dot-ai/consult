@@ -16,12 +16,13 @@
     DemoOptionsResponse,
     QuestionsResponse,
     RespondentsResponse,
-    Question,
   } from "../../../global/types.ts";
   import type { QuestionDetailV2 } from "../../../global/queries/questions/types.ts";
   import { excludeDemographicQuestions } from "../../../global/queries/questions/queries.ts";
+  import { getQuestionText } from "../../../global/questionText";
   import {
     getApiConsultationRespondentsUrl,
+    getApiDemographicsUrl,
     getApiDemographicOptionsV2Url,
     getApiQuestionsUrl,
     getApiQuestionsV2Url,
@@ -47,11 +48,7 @@
     : getApiQuestionsUrl(consultationId);
   const demoOptionsUrl = isV2
     ? getApiDemographicOptionsV2Url(consultationId)
-    : `/api/consultations/${consultationId}/demographics/`;
-  const questionText = (question: Question | QuestionDetailV2): string =>
-    "question_text" in question
-      ? question.question_text
-      : (question.text ?? "");
+    : getApiDemographicsUrl(consultationId);
 
   const questionsStore = createFetchStore<
     QuestionsResponse | QuestionDetailV2[]
@@ -80,7 +77,7 @@
 
   let displayQuestions = $derived(
     questions.filter((question) =>
-      `Q${question.number}: ${questionText(question)}`
+      `Q${question.number}: ${getQuestionText(question)}`
         .toLocaleLowerCase()
         .includes(searchValue.toLocaleLowerCase()),
     ),

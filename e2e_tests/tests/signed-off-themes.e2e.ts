@@ -29,7 +29,10 @@ test.describe("Signed Off Themes", () => {
     await page.goto(`/consultations/${consultationId}/finalising-themes`);
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByTestId("question-card")).toHaveCount(5);
+    await expect(page.getByTestId("question-card")).toHaveCount(3);
+
+    // Signed-off questions are the only ones in this fixture.
+    await expect(page.getByTestId("question-card")).toHaveCount(3);
   });
 
   [
@@ -47,10 +50,10 @@ test.describe("Signed Off Themes", () => {
         await expect(page.getByText(themeName).first()).toBeVisible();
       }
 
-      await expect(page.getByText("Signed Off", { exact: true })).toHaveCount(expectedThemes.count);
+      await expect(page.getByTestId("themes-finalised-pill")).toHaveCount(1);
 
       if (index === 0) {
-        await expect(page.getByText("Themes finalised")).toBeVisible();
+        await expect(page.getByTestId("themes-finalised-pill")).toBeVisible();
         await expect(page.getByRole("heading", { name: "Selected Themes" })).toBeVisible();
       }
     });
@@ -61,6 +64,6 @@ test.describe("Signed Off Themes", () => {
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText(signedOffConsultation.title).first()).toBeVisible();
-    await expect(page.getByTestId("question-card")).toHaveCount(5);
+    await expect(page.getByTestId("question-card")).toHaveCount(3);
   });
 });

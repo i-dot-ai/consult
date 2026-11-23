@@ -293,6 +293,7 @@ class QuestionDashboardSerializerV2(AuditedAnswerProportionMixin, QuestionSetupS
             "multi_choice_response_count",
             "multiple_choice_answer",
             "proportion_of_audited_answers",
+            "theme_status",
         ]
 
 

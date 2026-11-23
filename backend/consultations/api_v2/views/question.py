@@ -80,9 +80,9 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
                 raise serializers.ValidationError({"respondent_id": "Invalid UUID."})
             queryset = queryset.filter(response__respondent_id=respondent_id).distinct()
 
-        if self.action == "retrieve":
-            # The dashboard question page surfaces the proportion of audited
-            # answers; annotate the reviewed count for the single object.
+        if self.action in {"retrieve", "list"}:
+            # The dashboard surfaces the proportion of audited answers.
+            # Annotate reviewed response counts for both list and retrieve.
             reviewed_response_count = Subquery(
                 ConsultationResponse.objects.filter(
                     question_id=OuterRef("pk"), annotation__human_reviewed=True
@@ -114,15 +114,16 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
             filtered_responses = ConsultationResponse.objects.filter(id__in=filtered_ids)
             question.calculate_response_counts(filtered_responses)
 
-            multichoice_answers = MultiChoiceAnswer.objects.filter(question=question).annotate(
-                prefetched_response_count=Count(
-                    "response", filter=Q(response__id__in=filtered_ids), distinct=True
+            if question.has_multiple_choice:
+                multichoice_answers = MultiChoiceAnswer.objects.filter(question=question).annotate(
+                    prefetched_response_count=Count(
+                        "response", filter=Q(response__id__in=filtered_ids), distinct=True
+                    )
                 )
-            )
-            question._prefetched_objects_cache = {
-                **getattr(question, "_prefetched_objects_cache", {}),
-                "multichoiceanswer_set": list(multichoice_answers),
-            }
+                question._prefetched_objects_cache = {
+                    **getattr(question, "_prefetched_objects_cache", {}),
+                    "multichoiceanswer_set": list(multichoice_answers),
+                }
 
         serializer = self.get_serializer(question)
         return Response(serializer.data)

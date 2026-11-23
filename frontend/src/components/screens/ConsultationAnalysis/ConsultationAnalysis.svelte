@@ -6,6 +6,7 @@
   import {
     getApiConsultationUrl,
     getApiConsultationV2Url,
+    getApiDemographicsUrl,
     getApiDemographicOptionsV2Url,
     getApiQuestionsUrl,
     getApiQuestionsV2Url,
@@ -13,7 +14,6 @@
   } from "../../../global/routes";
   import {
     type ConsultationResponse,
-    type Question,
     type DemoOptionsResponse,
     type DemoOptionsResponseItem,
     type QuestionMultiAnswer,
@@ -24,6 +24,7 @@
   import type { ConsultationV2 } from "../../../global/queries/consultations/types";
   import type { QuestionDetailV2 } from "../../../global/queries/questions/types";
   import { excludeDemographicQuestions } from "../../../global/queries/questions/queries";
+  import { getQuestionText } from "../../../global/questionText";
 
   import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
   import Chart from "../../Chart/Chart.svelte";
@@ -62,11 +63,7 @@
     : getApiQuestionsUrl(consultationId);
   const demoOptionsUrl = isV2
     ? getApiDemographicOptionsV2Url(consultationId)
-    : `/api/consultations/${consultationId}/demographics/`;
-  const questionText = (question: Question | QuestionDetailV2): string =>
-    "question_text" in question
-      ? question.question_text
-      : (question.text ?? "");
+    : getApiDemographicsUrl(consultationId);
 
   let demoCategories = $derived([
     ...new Set(($demoOptionsStore.data || []).map((opt) => opt.name)),
@@ -81,10 +78,8 @@
   );
 
   let chartQuestions = $derived(
-    questions.filter((question) =>
-      "type" in question
-        ? (question.multiple_choice_answer?.length ?? 0) > 0
-        : question.has_multiple_choice,
+    questions.filter(
+      (question) => (question.multiple_choice_answer?.length ?? 0) > 0,
     ),
   );
 
@@ -214,7 +209,7 @@
                     </span>
 
                     <h3 class="text-xs">
-                      {questionText(question)}
+                      {getQuestionText(question)}
                     </h3>
                   </div>
 

@@ -10,6 +10,7 @@
     QuestionMultiAnswer,
   } from "../../../global/types";
   import type { QuestionDetailV2 } from "../../../global/queries/questions/types.ts";
+  import { getQuestionText } from "../../../global/questionText";
 
   import TabView from "../../TabView/TabView.svelte";
   import Chart from "../../Chart/Chart.svelte";
@@ -52,19 +53,10 @@
   );
 
   let chartQuestions: Array<Question | QuestionDetailV2> = $derived(
-    questions.filter((question) => {
-      return "type" in question
-        ? (question.multiple_choice_answer?.length ?? 0) > 0
-        : question.multiple_choice_answer
-          ? question.multiple_choice_answer.length > 0
-          : false;
-    }),
+    questions.filter(
+      (question) => (question.multiple_choice_answer?.length ?? 0) > 0,
+    ),
   );
-
-  const questionText = (question: Question | QuestionDetailV2): string =>
-    "question_text" in question
-      ? question.question_text
-      : (question.text ?? "");
 
   let currQuestion: number = $derived(chartQuestions.at(0)?.number || 0);
   let selectedChartQuestion: Question | QuestionDetailV2 | undefined = $derived(
@@ -141,10 +133,12 @@
             >
               <div slot="title">
                 <Title level={3} maxChars={50}>
-                  <span class="mr-1 text-primary">
-                    Q{selectedChartQuestion?.number}
-                  </span>{selectedChartQuestion &&
-                    questionText(selectedChartQuestion)}
+                  {#if selectedChartQuestion}
+                    <span class="mr-1 text-primary">
+                      Q{selectedChartQuestion.number}
+                    </span>
+                    {getQuestionText(selectedChartQuestion)}
+                  {/if}
                 </Title>
               </div>
 

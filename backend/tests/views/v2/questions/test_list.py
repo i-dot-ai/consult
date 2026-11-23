@@ -33,6 +33,7 @@ def test_v2_question_list_returns_every_question_in_file_order(
         "short_name",
         "dashboard_role",
         "status",
+        "theme_status",
         "response_count",
         "total_response_count",
         "free_text_response_count",

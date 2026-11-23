@@ -36,6 +36,7 @@ export type QuestionDetailV2 = QuestionV2 & {
     response_count: number;
   }[];
   proportion_of_audited_answers: number;
+  theme_status: string;
 };
 
 // v2 show-next payload: type replaces the v1 has_free_text boolean.
