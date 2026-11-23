@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "themefinder_id": {
+      "type": "integer",
+      "description": "This is the ID for the respondent, provided by ThemeFinder."
+    },
+    "text": {
+      "type": "string",
+      "description": "One option the respondent selected on a closed or demographic question. A respondent who selected several options has one line per option."
+    }
+  },
+  "required": ["themefinder_id", "text"],
+  "additionalProperties": false
+}

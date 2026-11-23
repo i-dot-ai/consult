@@ -9,18 +9,24 @@
       "type": "integer",
       "description": "This gives the order of the question in the consultation, and also the display label."
     },
-    "question_multiple_choice_options": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
+    "type": {
+      "type": "string",
+      "enum": ["open", "closed", "demographic"],
+      "description": "Open questions bring responses.jsonl; closed and demographic questions bring answers.jsonl. Defaults to open when has_free_text is true, otherwise closed."
+    },
+    "has_free_text": {
+      "type": "boolean",
+      "description": "Whether respondents answered in free text. Derived from type when both are present."
+    },
+    "closed_question_number": {
+      "type": "integer",
       "nullable": true,
-      "description": "All possible options for a closed question. Might not be present for free text question (or empty)."
+      "description": "For an open question, the question_number of the closed question it was asked alongside (a hybrid question's closed part)."
     }
   },
   "required": [
     "question_number",
     "question_text"
   ],
-  "additionalProperties": true
+  "additionalProperties": false
 }
