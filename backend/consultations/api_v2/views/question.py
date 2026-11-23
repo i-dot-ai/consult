@@ -70,9 +70,9 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
         if self.action in {"list", "retrieve", "sample_answers"}:
             queryset = queryset.exclude(type=Question.QuestionType.DEMOGRAPHIC)
 
-        if self.action == "retrieve":
-            # The dashboard question page surfaces the proportion of audited
-            # answers; annotate the reviewed count for the single object.
+        if self.action in {"retrieve", "list"}:
+            # The dashboard surfaces the proportion of audited answers.
+            # Annotate reviewed response counts for both list and retrieve.
             reviewed_response_count = Subquery(
                 ConsultationResponse.objects.filter(
                     question_id=OuterRef("pk"), annotation__human_reviewed=True
