@@ -273,6 +273,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def calculate_response_counts(self, responses=None):
         """Calculate response counts from a queryset. Defaults to all responses for this question."""
+        filtered_respondent_ids = None if responses is None else responses.values("respondent_id")
         if responses is None:
             responses = self.response_set.all()
 
@@ -289,11 +290,10 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
             self.free_text_response_count = 0
 
         if self.answers_from_responses:
+            # A respondent who answered only the closed part of a hybrid has no row on
+            # the open question, so the unfiltered count reads the answer rows directly.
             self.multi_choice_response_count = (
-                self.answer_rows(responses.values("respondent_id"))
-                .values("respondent_id")
-                .distinct()
-                .count()
+                self.answer_rows(filtered_respondent_ids).values("respondent_id").distinct().count()
             )
         elif self.has_multiple_choice:
             self.multi_choice_response_count = (
@@ -305,7 +305,15 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         # total_response_count is the overall response count for the question.
         # For free-text questions this is the raw respondent row count; for multi-choice-only
         # questions we use the number of responses with at least one selected option.
-        self.total_response_count = responses.values("respondent_id").distinct().count()
+        respondents = responses.values("respondent_id").distinct()
+        if (
+            self.answers_from_responses
+            and filtered_respondent_ids is None
+            and self.answers_question_id not in (None, self.id)
+        ):
+            # Either part of a hybrid counts as answering it
+            respondents = respondents.union(self.answer_rows().values("respondent_id").distinct())
+        self.total_response_count = respondents.count()
 
         if self.has_multiple_choice and not self.has_free_text:
             self.total_response_count = self.multi_choice_response_count

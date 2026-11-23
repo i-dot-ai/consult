@@ -22,8 +22,11 @@ Understanding (Q.U.) workbook, this script:
      passed, in which case it just reports.
   5. **Builds** the ThemeFinder input layout under
      ``<consultation>/inputs/``: ``respondents.jsonl`` plus a
-     ``question_part_<n>/`` per question with ``question.json``,
-     ``responses.jsonl`` and/or ``multi_choice.jsonl``.
+     ``question_part_<n>/`` per question with ``question.json`` and
+     ``responses.jsonl`` (open) or ``answers.jsonl`` (closed, one line per
+     selected option). A hybrid question becomes an open question part
+     whose ``question.json`` names a closed sibling part numbered after
+     the workbook's questions.
   6. **Uploads** the inputs to ``s3://i-dot-ai-prod-consult-data/
      app_data/consultations/<name>/inputs/`` (gated by an interactive
      "proceed?" prompt; warns if data already exists at that prefix).
@@ -782,10 +785,16 @@ def create_question_inputs(
     question_type: str,
     output_dir: Path,
     sample_size: int | None = None,
+    sibling_number_start: int | None = None,
 ) -> None:
-    """Write responses.jsonl, multi_choice.jsonl, and question.json for each question."""
+    """Write question.json plus responses.jsonl (open) or answers.jsonl (closed) for each
+    question. A hybrid is written as an open question part linked to a closed sibling part
+    that receives the selected options, numbered from ``sibling_number_start``."""
     has_free_text = question_type in ("open", "hybrid")
     has_options = question_type in ("closed", "hybrid")
+    if question_type == "hybrid" and sibling_number_start is None:
+        raise ValueError("sibling_number_start is required to number hybrid closed parts")
+    next_sibling_number = sibling_number_start
 
     for question in questions:
         q_num = question["question_number"]
@@ -828,20 +837,47 @@ def create_question_inputs(
         for c in data_cols:
             answers[c] = _clean_text_column(answers[c])
 
-        # Write multi_choice.jsonl
+        closed_part_number = None
+        if question_type == "hybrid":
+            closed_part_number = next_sibling_number
+            next_sibling_number += 1
+
+        # Write answers.jsonl: one line per selected option
         if has_options:
             options_col = (
                 question["closed_column"]
                 if question_type == "hybrid"
                 else question["column_name"]
             )
-            answers[options_col] = answers[options_col].apply(
-                lambda x: list(dict.fromkeys(x.rstrip(",").split(",")))
+            selected = answers[["themefinder_id", options_col]].copy()
+            selected["text"] = selected[options_col].apply(
+                lambda x: [
+                    option
+                    for option in dict.fromkeys(x.rstrip(",").split(","))
+                    # "Not Provided" fills a blank hybrid cell; it is not an option
+                    if option and option != "Not Provided"
+                ]
             )
-            answers.rename(columns={options_col: "options"}, inplace=True)
-            answers[["themefinder_id", "options"]].to_json(
-                q_dir / "multi_choice.jsonl", orient="records", lines=True
-            )
+            selected = selected.explode("text").dropna(subset=["text"])
+            answers_dir = q_dir
+            if question_type == "hybrid":
+                answers_dir = output_dir / f"question_part_{closed_part_number}"
+                answers_dir.mkdir(parents=True, exist_ok=True)
+                with open(answers_dir / "question.json", "w") as f:
+                    json.dump(
+                        {
+                            "question_number": closed_part_number,
+                            "question_text": question["question_text"],
+                            "has_free_text": False,
+                            "type": "closed",
+                        },
+                        f,
+                        indent=4,
+                    )
+            if not selected.empty:
+                selected[["themefinder_id", "text"]].to_json(
+                    answers_dir / "answers.jsonl", orient="records", lines=True
+                )
 
         # Write responses.jsonl
         if has_free_text:
@@ -850,7 +886,6 @@ def create_question_inputs(
                 if question_type == "hybrid"
                 else question["column_name"]
             )
-            # For hybrid, text_col is already the original name (not renamed)
             answers.rename(columns={text_col: "text"}, inplace=True)
             answers[["themefinder_id", "text"]].to_json(
                 q_dir / "responses.jsonl", orient="records", lines=True
@@ -861,15 +896,10 @@ def create_question_inputs(
             "question_number": q_num,
             "question_text": question["question_text"],
             "has_free_text": has_free_text,
+            "type": "open" if has_free_text else "closed",
         }
-        if has_options:
-            # "Not Provided" is a sentinel we fill in for missing hybrid
-            # cells — it's not a real option and must not leak into the
-            # canonical option list on question.json.
-            question_data["multi_choice_options"] = sorted(
-                {item for sublist in answers["options"] for item in sublist}
-                - {"Not Provided"}
-            )
+        if closed_part_number is not None:
+            question_data["closed_question_number"] = closed_part_number
         with open(q_dir / "question.json", "w") as f:
             json.dump(question_data, f, indent=4)
 
@@ -1097,7 +1127,16 @@ def run_pipeline(
     else:
         print("  No demographic data found, skipping.")
 
-    # Questions
+    # Questions; hybrid closed parts are numbered after every workbook question
+    sibling_number_start = (
+        max(
+            int(number)
+            for sheet in question_sheets.values()
+            if sheet is not None and not sheet.empty
+            for number in sheet["question_number"].tolist()
+        )
+        + 1
+    )
     for qtype in ("open", "hybrid", "closed"):
         q_df = question_sheets.get(qtype)
         if q_df is None or q_df.empty:
@@ -1109,7 +1148,11 @@ def run_pipeline(
             q_df = q_df[~q_df["column_name"].isin(all_nan[all_nan].index)]
         print(f"Writing {qtype} questions...")
         create_question_inputs(
-            responses_df, q_df.to_dict(orient="records"), qtype, output_dir
+            responses_df,
+            q_df.to_dict(orient="records"),
+            qtype,
+            output_dir,
+            sibling_number_start=sibling_number_start,
         )
 
     print(f"\nAll input files written to: {output_dir}")

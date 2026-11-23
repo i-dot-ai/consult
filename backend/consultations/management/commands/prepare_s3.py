@@ -40,13 +40,34 @@ def _build_responses(question_data):
     ]
 
 
-def _build_question_json(question_data):
-    return {
+def _build_answers(question_data):
+    """One selected option per line, the same spread of answers the dummy database holds."""
+    if question_data["type"] == Question.QuestionType.OPEN:
+        return []
+    answers = question_data["answers"]
+    rows = []
+    for themefinder_id in range(1, NUMBER_RESPONDENTS + 1):
+        answer_count = 1 + (themefinder_id % 2) if question_data.get("multi_select") else 1
+        rows.extend(
+            {
+                "themefinder_id": themefinder_id,
+                "text": answers[(themefinder_id + offset) % len(answers)],
+            }
+            for offset in range(answer_count)
+        )
+    return rows
+
+
+def _build_question_json(question_data, numbers_by_key):
+    question_json = {
         "question_text": question_data["question_text"],
         "question_number": question_data["number"],
         "has_free_text": question_data["type"] == Question.QuestionType.OPEN,
         "type": question_data["type"],
     }
+    if "closed_question" in question_data:
+        question_json["closed_question_number"] = numbers_by_key[question_data["closed_question"]]
+    return question_json
 
 
 def _build_clustered_themes(question_data):
@@ -279,6 +300,9 @@ class Command(BaseCommand):
     ):
         self.stdout.write(f"  Seeding S3 data for: {code}")
         prefix = f"app_data/consultations/{code}"
+        numbers_by_key = {
+            question["fixture_key"]: question["number"] for question in questions_data
+        }
 
         for question_data in questions_data:
             q_num = question_data["number"]
@@ -288,7 +312,7 @@ class Command(BaseCommand):
             s3_client.put_object(
                 Bucket=bucket,
                 Key=f"{q_prefix}/question.json",
-                Body=json.dumps(_build_question_json(question_data)),
+                Body=json.dumps(_build_question_json(question_data, numbers_by_key)),
             )
 
             # Free text responses
@@ -300,6 +324,12 @@ class Command(BaseCommand):
                         Key=f"{q_prefix}/responses.jsonl",
                         Body=_to_jsonl(responses),
                     )
+            else:
+                s3_client.put_object(
+                    Bucket=bucket,
+                    Key=f"{q_prefix}/answers.jsonl",
+                    Body=_to_jsonl(_build_answers(question_data)),
+                )
 
             # Stage-specific outputs (only for free text questions)
             if question_data["type"] != Question.QuestionType.OPEN:

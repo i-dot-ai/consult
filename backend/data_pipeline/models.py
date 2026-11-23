@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, model_validator
 from themefinder.models import ThemeNode
 
 # ============================================================================
@@ -27,47 +27,54 @@ class QuestionInput(BaseModel):
     Input model for a question from question.json.
 
     Example S3 file: app_data/consultations/{code}/inputs/question_part_N/question.json
-    Contains the question text and configuration (free text, multiple choice options).
+    An open question's answers arrive in responses.jsonl; a closed or demographic
+    question's selected options arrive in answers.jsonl. An open question names
+    its closed sibling with closed_question_number.
     """
 
     question_text: str
     question_number: int
     has_free_text: bool = True
-    multi_choice_options: list[str] = Field(default_factory=list)
+    type: Literal["open", "closed", "demographic"] | None = None
+    closed_question_number: int | None = None
+    multi_choice_options: list[str] | None = Field(default=None, exclude=True)
 
-    @field_validator("multi_choice_options", mode="before")
-    @classmethod
-    def coerce_none_to_empty_list(cls, v):
-        """Ensure None values are converted to empty list"""
-        return v if v is not None else []
+    @model_validator(mode="after")
+    def options_arrive_in_answers_jsonl(self):
+        if self.multi_choice_options is not None:
+            raise ValueError(
+                f"Question {self.question_number} lists multi_choice_options in question.json; "
+                "these inputs predate answers.jsonl, export them again"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def type_and_has_free_text_agree(self):
+        if self.type is None:
+            self.type = "open" if self.has_free_text else "closed"
+        elif "has_free_text" not in self.model_fields_set:
+            self.has_free_text = self.type == "open"
+        elif self.has_free_text != (self.type == "open"):
+            raise ValueError(
+                f"Question {self.question_number} is {self.type} but has_free_text is "
+                f"{self.has_free_text}; only open questions take free text"
+            )
+        return self
 
     model_config = {"extra": "forbid"}
 
 
 class ResponseInput(BaseModel):
     """
-    Input model for a free text response from responses.jsonl.
+    Input model for one row of responses.jsonl or answers.jsonl.
 
     Example S3 file: app_data/consultations/{code}/inputs/question_part_N/responses.jsonl
-    Each line represents one respondent's free text answer to the question.
+    Each line is one respondent's free text answer, or one selected option of a
+    closed or demographic question.
     """
 
     themefinder_id: int
-    text: str
-
-    model_config = {"extra": "forbid"}
-
-
-class MultiChoiceInput(BaseModel):
-    """
-    Input model for multi-choice selections from multi_choice.jsonl.
-
-    Example S3 file: app_data/consultations/{code}/inputs/question_part_N/multi_choice.jsonl
-    Each line represents one respondent's selected options for a multiple choice question.
-    """
-
-    themefinder_id: int
-    options: list[str]
+    text: str | None = None
 
     model_config = {"extra": "forbid"}
 
@@ -92,7 +99,22 @@ class ConsultationDataBatch(BaseModel):
 
     # Keyed by question_number for efficient lookup
     responses_by_question: dict[int, list[ResponseInput]] = Field(default_factory=dict)
-    multi_choice_by_question: dict[int, list[MultiChoiceInput]] = Field(default_factory=dict)
+    answers_by_question: dict[int, list[ResponseInput]] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def closed_siblings_exist_and_are_closed(self):
+        questions_by_number = {question.question_number: question for question in self.questions}
+        for question in self.questions:
+            if question.closed_question_number is None:
+                continue
+            sibling = questions_by_number.get(question.closed_question_number)
+            if question.type != "open" or sibling is None or sibling.type != "closed":
+                raise ValueError(
+                    f"Question {question.question_number} sets closed_question_number "
+                    f"{question.closed_question_number}: only an open question can set it, "
+                    "and it must name an existing closed question"
+                )
+        return self
 
     model_config = {"extra": "forbid"}
 
