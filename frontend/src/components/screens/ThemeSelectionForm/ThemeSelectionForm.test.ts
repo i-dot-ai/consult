@@ -27,9 +27,7 @@ const unselectedThemes = allThemes.filter((theme) =>
 
 describe("ThemeSelectionForm", () => {
   beforeEach(() => {
-    // Vitest loads PUBLIC_* vars from the repo .env files — pin the flag off
-    // explicitly so this suite exercises the v1 data sources.
-    process.env.PUBLIC_DATA_SETUP_V2_ENABLED = "false";
+    // Avoid relying on global env vars: tests pass isV2 as a prop.
   });
 
   afterEach(() => {
@@ -46,6 +44,7 @@ describe("ThemeSelectionForm", () => {
       responseId: RESPONSE_ID,
       allThemes: allThemes,
       selectedThemes: selectedThemes,
+      isV2: false,
     });
     await waitFor(() => {
       expect(screen.getByLabelText(theme.name)).toBeInTheDocument();
@@ -64,6 +63,7 @@ describe("ThemeSelectionForm", () => {
         responseId: RESPONSE_ID,
         allThemes: allThemes,
         selectedThemes: selectedThemes,
+        isV2: false,
       });
 
       await waitFor(() => {
@@ -85,6 +85,7 @@ describe("ThemeSelectionForm", () => {
         responseId: RESPONSE_ID,
         allThemes: allThemes,
         selectedThemes: selectedThemes,
+        isV2: false,
       });
 
       await waitFor(() => {
@@ -109,6 +110,7 @@ describe("ThemeSelectionForm", () => {
       responseId: RESPONSE_ID,
       allThemes: allThemes,
       selectedThemes: selectedThemes,
+      isV2: false,
     });
 
     const user = userEvent.setup();
@@ -144,6 +146,7 @@ describe("ThemeSelectionForm", () => {
       responseId: RESPONSE_ID,
       allThemes: allThemes,
       selectedThemes: selectedThemes,
+      isV2: false,
     });
 
     const user = userEvent.setup();
@@ -169,6 +172,7 @@ describe("ThemeSelectionForm", () => {
         responseId: RESPONSE_ID,
         allThemes: allThemes,
         selectedThemes: selectedThemes,
+        isV2: false,
       });
 
       const checkbox = screen.getByLabelText(theme.name);
@@ -193,6 +197,7 @@ describe("ThemeSelectionForm", () => {
       responseId: RESPONSE_ID,
       allThemes: allThemes,
       selectedThemes: selectedThemes,
+      isV2: false,
     });
     expect(container).toMatchSnapshot();
   });

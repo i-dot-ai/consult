@@ -20,6 +20,7 @@ import {
   getThemeInformationResponse,
   Routes,
 } from "../../../../../../../global/routes";
+import { getDataSetupV2Enabled } from "../../../../../../../global/utils";
 
 const { consultationId, questionId, responseId } = (
   Astro as unknown as AstroGlobalRuntime
@@ -95,6 +96,7 @@ if (themesError) {
           selectedThemes={themesData?.selected_themes || []}
           consultationId={consultationId}
           questionId={questionId}
+          isV2={getDataSetupV2Enabled()}
         />
       </div>
     </div>

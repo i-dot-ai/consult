@@ -26,6 +26,7 @@
     responseId: string;
     consultationId: string;
     questionId: string;
+    isV2?: boolean;
   }
 
   const {
@@ -34,13 +35,14 @@
     responseId,
     consultationId,
     questionId,
+    isV2: isV2Prop,
   }: Props = $props();
 
   let ownSelectedThemes = $derived(selectedThemes);
   let sending: boolean = $state(false);
   let errors: Record<string, string> = $state({});
 
-  const isV2 = getDataSetupV2Enabled();
+  const isV2 = isV2Prop ?? getDataSetupV2Enabled();
   const showNextUrl = isV2
     ? getApiShowNextResponseV2Url(consultationId, questionId)
     : getApiShowNextResponse(consultationId, questionId);

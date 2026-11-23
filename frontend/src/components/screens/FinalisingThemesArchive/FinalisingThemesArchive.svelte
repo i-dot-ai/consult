@@ -78,11 +78,13 @@
   const isFreeTextQuestion = (
     question: Question | QuestionDetailV2,
   ): boolean =>
-    "type" in question ? question.type === "open" : question.has_free_text;
+    "question_text" in question
+      ? question.has_free_text
+      : question.type === "open";
   const isConfirmed = (question: Question | QuestionDetailV2): boolean =>
-    "type" in question
-      ? question.status === "confirmed"
-      : question.theme_status === "confirmed";
+    "question_text" in question
+      ? question.theme_status === "confirmed"
+      : question.status === "confirmed";
 
   const questionsStore = createFetchStore<
     QuestionsResponse | QuestionDetailV2[]
