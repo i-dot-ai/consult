@@ -41,14 +41,12 @@ def _build_responses(question_data):
 
 
 def _build_question_json(question_data):
-    question_json = {
+    return {
         "question_text": question_data["question_text"],
         "question_number": question_data["number"],
         "has_free_text": question_data["type"] == Question.QuestionType.OPEN,
+        "type": question_data["type"],
     }
-    if question_data["type"] == Question.QuestionType.CLOSED:
-        question_json["multi_choice_options"] = question_data["answers"]
-    return question_json
 
 
 def _build_clustered_themes(question_data):
