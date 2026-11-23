@@ -53,13 +53,9 @@
   );
 
   let chartQuestions: Array<Question | QuestionDetailV2> = $derived(
-    questions.filter((question) => {
-      return "type" in question
-        ? (question.multiple_choice_answer?.length ?? 0) > 0
-        : question.multiple_choice_answer
-          ? question.multiple_choice_answer.length > 0
-          : false;
-    }),
+    questions.filter(
+      (question) => (question.multiple_choice_answer?.length ?? 0) > 0,
+    ),
   );
 
   const questionText = getQuestionText;

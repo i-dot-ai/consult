@@ -76,10 +76,8 @@
   );
 
   let chartQuestions = $derived(
-    questions.filter((question) =>
-      "type" in question
-        ? (question.multiple_choice_answer?.length ?? 0) > 0
-        : question.has_multiple_choice,
+    questions.filter(
+      (question) => (question.multiple_choice_answer?.length ?? 0) > 0,
     ),
   );
 
