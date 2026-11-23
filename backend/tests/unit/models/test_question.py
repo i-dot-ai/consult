@@ -175,3 +175,22 @@ def test_calculate_response_counts_is_zero_for_an_open_question_without_a_siblin
     question.has_multiple_choice = True
     question.calculate_response_counts()
     assert question.multi_choice_response_count == 0
+
+
+@pytest.mark.django_db
+def test_unfiltered_counts_include_respondents_who_only_answered_the_closed_part(
+    closed_answers,
+):
+    closed_only = RespondentFactory(consultation=closed_answers.open_question.consultation)
+    ResponseFactory(
+        question=closed_answers.closed_question, respondent=closed_only, text="Blue", free_text=None
+    )
+
+    closed_answers.open_question.calculate_response_counts()
+    assert closed_answers.open_question.multi_choice_response_count == 3
+    assert closed_answers.open_question.total_response_count == 4
+
+    closed_answers.open_question.calculate_response_counts(
+        closed_answers.open_question.response_set.all()
+    )
+    assert closed_answers.open_question.multi_choice_response_count == 2

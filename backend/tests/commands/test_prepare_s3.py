@@ -113,7 +113,16 @@ class TestPrepareS3:
             "question_number": 2,
             "has_free_text": True,
             "type": "open",
+            "closed_question_number": 1,
         }
+
+        answers = boto3.client("s3", region_name="eu-west-2").get_object(
+            Bucket="test-bucket",
+            Key="app_data/consultations/dummy-analysis/inputs/question_part_1/answers.jsonl",
+        )
+        first_answer = json.loads(answers["Body"].read().splitlines()[0])
+        assert set(first_answer) == {"themefinder_id", "text"}
+        assert not any("question_part_1/responses.jsonl" in k for k in keys)
 
         responses = boto3.client("s3", region_name="eu-west-2").get_object(
             Bucket="test-bucket",

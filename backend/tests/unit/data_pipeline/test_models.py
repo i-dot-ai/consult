@@ -7,7 +7,6 @@ from data_pipeline.models import (
     CandidateThemeBatch,
     ConsultationDataBatch,
     DetailDetectionInput,
-    MultiChoiceInput,
     QuestionInput,
     RespondentInput,
     ResponseInput,
@@ -83,30 +82,47 @@ class TestQuestionInput:
         assert question.question_text == "What do you think about this proposal?"
         assert question.question_number == 1
         assert question.has_free_text is True
-        assert question.multi_choice_options == []
+        assert question.type == "open"
 
-    def test_valid_question_with_multi_choice(self):
-        """Test question with multi-choice options"""
+    def test_type_defaults_to_closed_without_free_text(self):
         data = {
             "question_text": "Choose your preferred options:",
             "question_number": 2,
             "has_free_text": False,
-            "multi_choice_options": ["Option A", "Option B", "Option C"],
         }
         question = QuestionInput(**data)
-        assert question.has_free_text is False
-        assert len(question.multi_choice_options) == 3
-        assert question.multi_choice_options[0] == "Option A"
+        assert question.type == "closed"
+        assert question.closed_question_number is None
 
-    def test_multi_choice_options_none_coerced_to_empty_list(self):
-        """Test that None multi_choice_options is coerced to empty list"""
+    def test_explicit_type_and_closed_sibling_are_kept(self):
         data = {
-            "question_text": "Test question",
-            "question_number": 1,
-            "multi_choice_options": None,
+            "question_text": "Why?",
+            "question_number": 2,
+            "type": "open",
+            "closed_question_number": 1,
         }
         question = QuestionInput(**data)
-        assert question.multi_choice_options == []
+        assert question.type == "open"
+        assert question.closed_question_number == 1
+
+    def test_type_must_agree_with_has_free_text(self):
+        with pytest.raises(ValidationError, match="only open questions take free text"):
+            QuestionInput(question_text="Q", question_number=1, type="closed", has_free_text=True)
+        with pytest.raises(ValidationError, match="only open questions take free text"):
+            QuestionInput(question_text="Q", question_number=1, type="open", has_free_text=False)
+        question = QuestionInput(question_text="Q", question_number=1, type="demographic")
+        assert question.type == "demographic"
+        assert question.has_free_text is False
+
+    def test_unknown_type_is_rejected(self):
+        with pytest.raises(ValidationError) as exc_info:
+            QuestionInput(question_text="Q", question_number=1, type="hybrid")
+        assert "type" in str(exc_info.value)
+
+    def test_multi_choice_options_ask_for_a_fresh_export(self):
+        with pytest.raises(ValidationError) as exc_info:
+            QuestionInput(question_text="Q", question_number=1, multi_choice_options=["A"])
+        assert "predate answers.jsonl" in str(exc_info.value)
 
     def test_has_free_text_defaults_to_true(self):
         """Test that has_free_text defaults to True"""
@@ -142,42 +158,15 @@ class TestResponseInput:
         assert response.themefinder_id == 1
         assert response.text == "This is my response to the question."
 
-    def test_missing_text(self):
-        """Test that missing text raises ValidationError"""
-        data = {"themefinder_id": 1}
-        with pytest.raises(ValidationError) as exc_info:
-            ResponseInput(**data)
-        assert "text" in str(exc_info.value)
+    def test_missing_text_is_kept_for_the_loader_to_skip(self):
+        assert ResponseInput(themefinder_id=1).text is None
+        assert ResponseInput(themefinder_id=1, text=None).text is None
 
     def test_empty_text_is_valid(self):
         """Test that empty text string is valid"""
         data = {"themefinder_id": 1, "text": ""}
         response = ResponseInput(**data)
         assert response.text == ""
-
-
-class TestMultiChoiceInput:
-    """Tests for MultiChoiceInput Pydantic model"""
-
-    def test_valid_multi_choice(self):
-        """Test valid multi-choice data"""
-        data = {"themefinder_id": 1, "options": ["Option A", "Option B"]}
-        mc = MultiChoiceInput(**data)
-        assert mc.themefinder_id == 1
-        assert mc.options == ["Option A", "Option B"]
-
-    def test_empty_options_list(self):
-        """Test that empty options list is valid"""
-        data = {"themefinder_id": 1, "options": []}
-        mc = MultiChoiceInput(**data)
-        assert mc.options == []
-
-    def test_missing_options(self):
-        """Test that missing options raises ValidationError"""
-        data = {"themefinder_id": 1}
-        with pytest.raises(ValidationError) as exc_info:
-            MultiChoiceInput(**data)
-        assert "options" in str(exc_info.value)
 
 
 class TestConsultationDataBatch:
@@ -202,8 +191,7 @@ class TestConsultationDataBatch:
                 {
                     "question_text": "Choose options:",
                     "question_number": 2,
-                    "has_free_text": False,
-                    "multi_choice_options": ["Option A", "Option B"],
+                    "type": "closed",
                 },
             ],
             "responses_by_question": {
@@ -212,8 +200,11 @@ class TestConsultationDataBatch:
                     {"themefinder_id": 2, "text": "I have concerns"},
                 ]
             },
-            "multi_choice_by_question": {
-                2: [{"themefinder_id": 1, "options": ["Option A", "Option B"]}]
+            "answers_by_question": {
+                2: [
+                    {"themefinder_id": 1, "text": "Option A"},
+                    {"themefinder_id": 1, "text": "Option B"},
+                ]
             },
         }
         batch = ConsultationDataBatch(**data)
@@ -223,7 +214,7 @@ class TestConsultationDataBatch:
         assert len(batch.respondents) == 2
         assert len(batch.questions) == 2
         assert len(batch.responses_by_question[1]) == 2
-        assert len(batch.multi_choice_by_question[2]) == 1
+        assert len(batch.answers_by_question[2]) == 2
 
     def test_minimal_batch(self):
         """Test minimal valid batch with no responses"""
@@ -237,7 +228,33 @@ class TestConsultationDataBatch:
         assert batch.consultation_code == "TEST"
         assert batch.timestamp is None
         assert batch.responses_by_question == {}
-        assert batch.multi_choice_by_question == {}
+        assert batch.answers_by_question == {}
+
+    def test_closed_sibling_must_be_an_existing_closed_question(self):
+        data = {
+            "consultation_code": "TEST",
+            "consultation_title": "Test Consultation",
+            "respondents": [{"themefinder_id": 1}],
+            "questions": [
+                {"question_text": "Agree?", "question_number": 1, "type": "closed"},
+                {
+                    "question_text": "Why?",
+                    "question_number": 2,
+                    "type": "open",
+                    "closed_question_number": 1,
+                },
+            ],
+        }
+        assert ConsultationDataBatch(**data).questions[1].closed_question_number == 1
+
+        data["questions"][1]["closed_question_number"] = 9
+        with pytest.raises(ValidationError):
+            ConsultationDataBatch(**data)
+
+        data["questions"][1]["closed_question_number"] = 1
+        data["questions"][0]["type"] = "open"
+        with pytest.raises(ValidationError):
+            ConsultationDataBatch(**data)
 
     def test_missing_required_fields(self):
         """Test that missing required fields raise ValidationError"""
