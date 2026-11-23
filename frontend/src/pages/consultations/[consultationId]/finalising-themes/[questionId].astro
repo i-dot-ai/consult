@@ -1,38 +1,49 @@
 ---
 import { fetchBackendApi, buildResponse } from "../../../../global/api";
+import { getDataSetupV2Enabled } from "../../../../global/utils";
 
 import type { AstroGlobalRuntime, Question } from "../../../../global/types";
+import type { QuestionDetailV2 } from "../../../../global/queries/questions/types";
 
 import Layout from "../../../../layouts/Layout.astro";
 import Section from "../../../../components/Section/Section.svelte";
 
 import FinalisingThemesDetail from "../../../../components/screens/FinalisingThemesDetail/FinalisingThemesDetail.svelte";
 import FinalisingThemesDetailCompleted from "../../../../components/screens/FinalisingThemesDetailCompleted/FinalisingThemesDetailCompleted.svelte";
-import { getApiQuestionUrl } from "../../../../global/routes";
+import {
+  getApiQuestionUrl,
+  getApiQuestionV2Url,
+} from "../../../../global/routes";
 
 const { consultationId, questionId } = (Astro as unknown as AstroGlobalRuntime)
   .params;
+
+const isV2 = getDataSetupV2Enabled();
+const questionUrl = isV2
+  ? getApiQuestionV2Url(consultationId || "", questionId || "")
+  : getApiQuestionUrl(consultationId || "", questionId || "");
 
 const {
   data: questionData,
   error: questionError,
   status: questionStatus,
-} = await fetchBackendApi<Question>(
-  Astro,
-  getApiQuestionUrl(consultationId || "", questionId || ""),
-);
+} = await fetchBackendApi<Question | QuestionDetailV2>(Astro, questionUrl);
 if (questionError) {
   return buildResponse(questionStatus);
 }
+
+// Signed-off gating is still driven by theme_status for both schemas.
+const isConfirmed = questionData?.theme_status === "confirmed";
 ---
 
 <Layout>
   <Section>
-    {questionData?.theme_status === "confirmed" ? (
+    {isConfirmed ? (
       <FinalisingThemesDetailCompleted
         client:only="svelte"
         consultationId={consultationId || ""}
         questionId={questionId || ""}
+        isV2={isV2}
       />
     ) : (
       <FinalisingThemesDetail

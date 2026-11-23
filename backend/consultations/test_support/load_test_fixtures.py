@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.conf import settings
 from django.db import transaction
 
@@ -18,11 +20,15 @@ from hosting_environment import HostingEnvironment
 logger = settings.LOGGER
 
 
-def create_response_from_fixtures(respondents, index, question_object, response_data):
+def create_response_from_fixtures(
+    respondents, index, question_object, response_data, demographic_questions: dict
+):
+    free_text = response_data.get("free_text", None)
     response = Response.objects.create(
         respondent=respondents[index],
         question=question_object,
-        free_text=response_data.get("free_text", None),
+        free_text=free_text,
+        text=free_text or None,
     )
 
     if "chosen_options" in response_data:
@@ -49,8 +55,53 @@ def create_response_from_fixtures(respondents, index, question_object, response_
             )
             respondents[index].demographics.add(option)
 
+            demographic_question = demographic_questions[(question_object.consultation.id, key)]
+            Response.objects.create(
+                respondent=respondents[index],
+                question=demographic_question,
+                free_text=value,
+                text=value,
+            )
 
-def create_question_from_fixtures(consultation_object, respondents, question_data):
+
+def _collect_demographic_fields(consultation_data):
+    """Demographic field names used anywhere in the fixture's responses."""
+    fields = []
+    for question in consultation_data.get("questions", []):
+        for response in question.get("responses", []):
+            for key in response.get("demographics", {}):
+                if key not in fields:
+                    fields.append(key)
+    return fields
+
+
+def _create_demographic_questions(consultation_object, consultation_data, demographic_questions):
+    """Create the v2 demographic-type questions for the fixture's demographic fields.
+
+    Fixtures carry demographics as respondent attributes (the v1 shape); under
+    the v2 schema they are responses on `type="demographic"` questions, one
+    question per field. Numbered after the fixture's own questions so no
+    numbering is stolen from questions seeded later.
+    """
+    next_number = max(q["number"] for q in consultation_data.get("questions", []))
+    for field_name in _collect_demographic_fields(consultation_data):
+        next_number += 1
+        demographic_questions[(consultation_object.id, field_name)] = Question.objects.create(
+            consultation=consultation_object,
+            text=field_name,
+            number=next_number,
+            type=Question.QuestionType.DEMOGRAPHIC,
+            has_free_text=False,
+            has_multiple_choice=False,
+        )
+
+
+def create_question_from_fixtures(
+    consultation_object,
+    respondents,
+    question_data,
+    demographic_questions: dict,
+):
     # Use explicit theme_status if provided, otherwise default to DRAFT
     theme_status = Question.ThemeStatus.DRAFT
     if "theme_status" in question_data:
@@ -67,6 +118,11 @@ def create_question_from_fixtures(consultation_object, respondents, question_dat
         consultation=consultation_object,
         text=question_data["text"],
         number=question_data["number"],
+        type=(
+            Question.QuestionType.OPEN
+            if question_data["has_free_text"]
+            else Question.QuestionType.CLOSED
+        ),
         has_free_text=question_data["has_free_text"],
         has_multiple_choice=question_data["has_multiple_choice"],
         theme_status=theme_status,
@@ -103,7 +159,9 @@ def create_question_from_fixtures(consultation_object, respondents, question_dat
 
     if "responses" in question_data:
         for i, response_data in enumerate(question_data["responses"]):
-            create_response_from_fixtures(respondents, i, question_object, response_data)
+            create_response_from_fixtures(
+                respondents, i, question_object, response_data, demographic_questions
+            )
 
     question_object.update_response_counts()
     MultiChoiceAnswer.update_response_counts(question_object)
@@ -153,14 +211,20 @@ def create_data_from_fixtures(fixtures):
 
             respondents = create_respondents_from_fixtures(consultation_data, consultation_object)
 
+            demographic_questions: dict[tuple[Any, str], Question] = {}
+            _create_demographic_questions(
+                consultation_object, consultation_data, demographic_questions
+            )
             for question_data in consultation_data.get("questions", []):
                 question_object = create_question_from_fixtures(
-                    consultation_object, respondents, question_data
+                    consultation_object, respondents, question_data, demographic_questions
                 )
                 questions.append(question_object.id)
 
             # Make sure that demographic response counts are updated after all responses have been created
             DemographicOption.update_response_counts(consultation_object)
+            for demographic_question in demographic_questions.values():
+                demographic_question.update_response_counts()
 
     return {
         "consultation_ids": consultations,

@@ -1,7 +1,8 @@
 from typing import ClassVar
 
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import Count, Q
+from django.db.models import Count, OuterRef, Q, Subquery, Value
+from django.db.models.functions import Coalesce
 from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.mixins import DestroyModelMixin, UpdateModelMixin
@@ -9,17 +10,30 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
+from consultations.api_v2.filters import get_filtered_response_ids
 from consultations.api_v2.permissions import CanSeeConsultationV2
 from consultations.api_v2.serializers import (
     DemographicAnswerSerializer,
     DemographicResponseMergeSerializer,
+    QuestionDashboardSerializerV2,
     QuestionSetupSerializer,
 )
-from consultations.models import Question
+from consultations.models import MultiChoiceAnswer, Question
 from consultations.models import Response as ConsultationResponse
 from consultations.services.setup_status import update_survey_import_status_for_questions
 
 SAMPLE_ANSWER_COUNT = 3
+
+# Query params that trigger filtered count recalculation on the dashboard question page
+DASHBOARD_FILTER_PARAMS = (
+    "themeFilters",
+    "demographics",
+    "evidenceRich",
+    "unseenResponsesOnly",
+    "is_flagged",
+    "multiple_choice_answer",
+    "searchValue",
+)
 
 
 class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet):
@@ -33,10 +47,12 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
             return DemographicAnswerSerializer
         if self.action == "merge_demographics":
             return DemographicResponseMergeSerializer
+        if self.action == "retrieve":
+            return QuestionDashboardSerializerV2
         return super().get_serializer_class()
 
     def get_queryset(self):
-        return (
+        queryset = (
             Question.objects.filter(consultation_id=self.kwargs["consultation_pk"])
             .annotate(
                 response_count=Count(
@@ -45,6 +61,59 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
             )
             .order_by("number")
         )
+
+        # Mirror v1 semantics: "questions" lists/counts exclude demographic-type questions by default.
+        # Demographic questions are still accessible via their dedicated detail actions.
+        if self.action in {"list", "retrieve", "sample_answers"}:
+            queryset = queryset.exclude(type=Question.QuestionType.DEMOGRAPHIC)
+
+        if self.action == "retrieve":
+            # The dashboard question page surfaces the proportion of audited
+            # answers; annotate the reviewed count for the single object.
+            reviewed_response_count = Subquery(
+                ConsultationResponse.objects.filter(
+                    question_id=OuterRef("pk"), annotation__human_reviewed=True
+                )
+                .order_by()
+                .values("question_id")
+                .annotate(c=Count("*"))
+                .values("c")
+            )
+            queryset = queryset.annotate(
+                prefetched_reviewed_responses=Coalesce(reviewed_response_count, Value(0))
+            )
+        return queryset
+
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a question with counts recalculated when dashboard filters apply.
+
+        Mirrors the v1 question page: unfiltered reads serve the denormalised
+        counts; filtered reads recalculate them in memory for the current
+        response subset.
+        """
+        question = self.get_object()
+
+        if any(request.query_params.get(param) for param in DASHBOARD_FILTER_PARAMS):
+            consultation_pk = self.kwargs["consultation_pk"]
+            filtered_ids = get_filtered_response_ids(
+                request.query_params, consultation_pk, question_id=question.pk
+            )
+            filtered_responses = ConsultationResponse.objects.filter(id__in=filtered_ids)
+            question.calculate_response_counts(filtered_responses)
+
+            if question.has_multiple_choice:
+                multichoice_answers = MultiChoiceAnswer.objects.filter(question=question).annotate(
+                    prefetched_response_count=Count(
+                        "response", filter=Q(response__id__in=filtered_ids), distinct=True
+                    )
+                )
+                question._prefetched_objects_cache = {
+                    **getattr(question, "_prefetched_objects_cache", {}),
+                    "multichoiceanswer_set": list(multichoice_answers),
+                }
+
+        serializer = self.get_serializer(question)
+        return Response(serializer.data)
 
     def perform_destroy(self, instance):
         consultation = instance.consultation
