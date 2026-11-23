@@ -186,6 +186,10 @@ export interface ResponseBody {
   is_read: boolean;
 }
 
+export type ResponseBodyV2 = Omit<ResponseBody, "free_text_answer_text"> & {
+  text: string;
+};
+
 export type RunningJob =
   null | "assign-themes" | "find-themes" | "delete-consultation";
 
@@ -235,6 +239,11 @@ export interface ResponsesBody {
   all_respondents: ResponseBody[];
   total_count?: number;
 }
+
+export type ResponsesBodyV2 = Omit<ResponsesBody, "all_respondents"> & {
+  all_respondents: ResponseBodyV2[];
+};
+
 export interface RespondentsResponse {
   count: number;
   next: string | null;
