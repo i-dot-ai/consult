@@ -122,6 +122,8 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
       neither part was answered are dropped, as in the script
     - closed/demographic questions keep their question.json but get no
       responses.jsonl, which makes the batch jobs skip them
+    - question.json carries the question type; options are not listed, the
+      pipeline never read them
     - respondents.jsonl and multi_choice.jsonl are not written; they were only
       read by the old S3-to-DB importer, never by the pipeline
     """
@@ -135,7 +137,6 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
 
     questions = list(
         consultation.question_set.order_by("number").prefetch_related(
-            "multichoiceanswer_set",
             Prefetch(
                 "response_set",
                 queryset=Response.objects.select_related("respondent")
@@ -159,7 +160,6 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
 
     for question in questions:
         has_free_text = question.has_free_text
-        options = [answer.text for answer in question.multichoiceanswer_set.all()]
 
         closed_respondent_ids: set[int] = set()
         if has_free_text and question.closed_question_id:
@@ -200,11 +200,10 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
             "question_number": question.number,
             "question_text": question.text,
             "has_free_text": has_free_text,
+            # None for v1-imported questions until migrate_consultation_to_v2 types them;
+            # their stored has_free_text is authoritative either way
+            "type": question.type,
         }
-        if options:
-            question_data["multi_choice_options"] = sorted(
-                option for option in options if option != NOT_PROVIDED_PLACEHOLDER
-            )
 
         try:
             s3_client.put_object(
