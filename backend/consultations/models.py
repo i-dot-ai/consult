@@ -220,6 +220,22 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.type in (self.QuestionType.CLOSED, self.QuestionType.DEMOGRAPHIC)
 
     @property
+    def answers_from_responses(self) -> bool:
+        """Only unmigrated legacy imports leave type unset; everything else stores
+        closed and demographic answers as Response rows."""
+        return settings.DATA_SETUP_V2_ENABLED and self.type is not None
+
+    @property
+    def answers_question(self) -> "Question | None":
+        """The question whose Response rows hold the selectable answers: a closed or
+        demographic question holds its own, an open question defers to its closed sibling."""
+        if self.is_chartable:
+            return self
+        if self.type == self.QuestionType.OPEN and self.closed_question_id:
+            return self.closed_question
+        return None
+
+    @property
     def proportion_of_audited_answers(self) -> float:
         """Calculate proportion of human-reviewed responses for free text questions"""
         if not self.has_free_text:
