@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/svelte";
 
 import ThemeSelectionForm from "./ThemeSelectionForm.svelte";
@@ -26,10 +26,6 @@ const unselectedThemes = allThemes.filter((theme) =>
 );
 
 describe("ThemeSelectionForm", () => {
-  beforeEach(() => {
-    // Avoid relying on global env vars: tests pass isV2 as a prop.
-  });
-
   afterEach(() => {
     clearMocks();
   });
