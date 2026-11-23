@@ -36,10 +36,10 @@ test.describe("Dashboard Page", () => {
   });
 
   test("metric counts should be as expected", async ({ page }) => {
-    // Dashboard v2 excludes demographic questions from the questions list.
-    const numberOfQuestions = "2";
+    // Dashboard excludes demographic questions from the questions list.
+    const numberOfQuestions = "3";
     // Answers metric is the sum of response counts across dashboard questions.
-    const numberOfAnswers = "10";
+    const numberOfAnswers = "20";
 
     const questionOnPage = page.getByTestId("metric-count-questions");
     await expect (questionOnPage).toBeVisible();

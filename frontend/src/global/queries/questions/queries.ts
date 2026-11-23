@@ -75,15 +75,13 @@ export function buildDemographicMergeQuery(consultationId: string) {
  * back filters, not as analyst-reviewable questions. Legacy v1 payloads carry
  * no `type` and pass through.
  *
- * In V2, also exclude closed questions (`type: "closed"`) as they don't have
- * free text responses for analysis.
+ * In V2, closed questions are still shown on the dashboard (they may have
+ * multiple-choice data).
  */
 export function excludeDemographicQuestions(
   questions: Array<Question | QuestionDetailV2>,
 ): Array<Question | QuestionDetailV2> {
   return questions.filter(
-    (question) =>
-      !("type" in question) ||
-      (question.type !== "demographic" && question.type !== "closed"),
+    (question) => !("type" in question) || question.type !== "demographic",
   );
 }
