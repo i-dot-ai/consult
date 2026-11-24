@@ -11,6 +11,8 @@ from rest_framework.filters import SearchFilter
 from authentication.models import User
 from consultations.api_v2.demographic_tokens import decode_demographic_token
 from consultations.models import Respondent, Response
+from consultations.query_params import RepeatedValueFilter, is_uuid
+from consultations.services.closed_answers import filter_responses_by_answers
 from embeddings import embed_text
 
 logger = settings.LOGGER
@@ -25,6 +27,7 @@ class ResponseFilter(FilterSet):
     demographics = BaseInFilter(method="filter_demographics", lookup_expr="in")
     is_flagged = BooleanFilter()
     multiple_choice_answer = BaseInFilter(method="filter_multiple_choice", lookup_expr="in")
+    answers = RepeatedValueFilter(method="filter_answers")
     respondent_id = UUIDFilter()
     question_id = UUIDFilter()
 
@@ -87,21 +90,33 @@ class ResponseFilter(FilterSet):
         respondents = Respondent.objects.all()
         for question_id, answers in groups.items():
             respondents = respondents.filter(
-                id__in=Response.objects.filter(
-                    question_id=question_id, text__in=answers
-                ).values("respondent_id")
+                id__in=Response.objects.filter(question_id=question_id, text__in=answers).values(
+                    "respondent_id"
+                )
             )
 
         return queryset.filter(respondent_id__in=respondents.values("id"))
 
-    def filter_multiple_choice(self, queryset, name, value):
+    def filter_answers(self, queryset, name, value):
         if not value:
             return queryset
-        return queryset.filter(chosen_options__in=value).distinct()
+        return filter_responses_by_answers(queryset, value)
+
+    def filter_multiple_choice(self, queryset, name, value):
+        """Legacy option ids, or answer texts while the frontend still keys answers by id."""
+        if not value:
+            return queryset
+        option_ids = [item for item in value if is_uuid(item)]
+        texts = [item for item in value if not is_uuid(item)]
+        if texts:
+            queryset = filter_responses_by_answers(queryset, texts)
+        if option_ids:
+            queryset = queryset.filter(chosen_options__in=option_ids).distinct()
+        return queryset
 
     class Meta:
         model = Response
-        fields: ClassVar[list] = ["respondent_id", "chosen_options"]
+        fields: ClassVar[list] = ["respondent_id"]
 
 
 def apply_search_filter(queryset, query_params):

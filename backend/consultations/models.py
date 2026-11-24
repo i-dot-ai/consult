@@ -1,14 +1,16 @@
 import uuid
+from collections.abc import Iterable
 from dataclasses import dataclass
 from textwrap import shorten
 from typing import ClassVar
+from uuid import UUID
 
 from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from django.core.validators import BaseValidator
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Q, QuerySet
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -226,14 +228,33 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         return settings.DATA_SETUP_V2_ENABLED and self.type is not None
 
     @property
-    def answers_question(self) -> "Question | None":
+    def answers_question_id(self) -> UUID | None:
         """The question whose Response rows hold the selectable answers: a closed or
         demographic question holds its own, an open question defers to its closed sibling."""
         if self.is_chartable:
-            return self
-        if self.type == self.QuestionType.OPEN and self.closed_question_id:
-            return self.closed_question
+            return self.id
+        if self.type == self.QuestionType.OPEN:
+            return self.closed_question_id
         return None
+
+    @property
+    def answers_question(self) -> "Question | None":
+        answers_question_id = self.answers_question_id
+        if answers_question_id is None:
+            return None
+        return self if answers_question_id == self.id else self.closed_question
+
+    def answer_rows(self, respondent_ids: Iterable[UUID] | None = None) -> QuerySet:
+        """Blank answers are excluded."""
+        answers_question_id = self.answers_question_id
+        if answers_question_id is None:
+            return Response.objects.none()
+        rows = Response.objects.filter(question_id=answers_question_id).exclude(
+            Q(text__isnull=True) | Q(text="")
+        )
+        if respondent_ids is not None:
+            rows = rows.filter(respondent_id__in=respondent_ids)
+        return rows
 
     @property
     def proportion_of_audited_answers(self) -> float:
@@ -267,11 +288,17 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         else:
             self.free_text_response_count = 0
 
-        if self.has_multiple_choice:
+        if self.answers_from_responses:
+            self.multi_choice_response_count = (
+                self.answer_rows(responses.values("respondent_id"))
+                .values("respondent_id")
+                .distinct()
+                .count()
+            )
+        elif self.has_multiple_choice:
             self.multi_choice_response_count = (
                 responses.filter(chosen_options__isnull=False).values("id").distinct().count()
             )
-
         else:
             self.multi_choice_response_count = 0
 

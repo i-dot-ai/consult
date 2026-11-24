@@ -7,12 +7,15 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from authentication.models import User
+from consultations.answer_serializers import (
+    AnswerCountsMixin,
+    SelectedAnswersMixin,
+)
 from consultations.models import (
     CandidateTheme,
     CandidateThemeResponse,
     Consultation,
     FileUpload,
-    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -248,33 +251,16 @@ class QuestionSetupSerializer(serializers.ModelSerializer):
         return instance
 
 
-class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
-    id = serializers.UUIDField(read_only=True)
-
-    response_count = serializers.SerializerMethodField()
-
-    def get_response_count(self, obj) -> int:
-        # When filters are applied, the view annotates a dynamic count
-        if hasattr(obj, "prefetched_response_count"):
-            return obj.prefetched_response_count
-        return obj.response_count
-
-    class Meta:
-        model = MultiChoiceAnswer
-        fields: ClassVar[list] = ["id", "text", "response_count"]
-
-
 class AuditedAnswerProportionMixin:
     def get_proportion_of_audited_answers(self, obj) -> float:
         if not obj.free_text_response_count:
             return 0.0
-        return (
-            getattr(obj, "prefetched_reviewed_responses", 0)
-            / obj.free_text_response_count
-        )
+        return getattr(obj, "prefetched_reviewed_responses", 0) / obj.free_text_response_count
 
 
-class QuestionDashboardSerializerV2(AuditedAnswerProportionMixin, QuestionSetupSerializer):
+class QuestionDashboardSerializerV2(
+    AnswerCountsMixin, AuditedAnswerProportionMixin, QuestionSetupSerializer
+):
     """Question payload for the dashboard question pages (v2 schema).
 
     Adds the denormalised response counts, multi-choice answers and review
@@ -285,9 +271,7 @@ class QuestionDashboardSerializerV2(AuditedAnswerProportionMixin, QuestionSetupS
     total_response_count = serializers.IntegerField(read_only=True)
     free_text_response_count = serializers.IntegerField(read_only=True)
     multi_choice_response_count = serializers.IntegerField(read_only=True)
-    multiple_choice_answer = MultiChoiceAnswerSerializer(
-        many=True, source="multichoiceanswer_set", read_only=True
-    )
+    multiple_choice_answer = serializers.SerializerMethodField()
     proportion_of_audited_answers = serializers.SerializerMethodField()
 
     class Meta(QuestionSetupSerializer.Meta):
@@ -302,11 +286,11 @@ class QuestionDashboardSerializerV2(AuditedAnswerProportionMixin, QuestionSetupS
         ]
 
 
-class QuestionSerializer(AuditedAnswerProportionMixin, serializers.HyperlinkedModelSerializer):
+class QuestionSerializer(
+    AnswerCountsMixin, AuditedAnswerProportionMixin, serializers.HyperlinkedModelSerializer
+):
     question_text = serializers.CharField(source="text")
-    multiple_choice_answer = MultiChoiceAnswerSerializer(
-        many=True, source="multichoiceanswer_set", read_only=True
-    )
+    multiple_choice_answer = serializers.SerializerMethodField()
     proportion_of_audited_answers = serializers.SerializerMethodField()
 
     class Meta:
@@ -476,7 +460,7 @@ class RespondentSerializer(serializers.ModelSerializer):
         fields: ClassVar[list] = ["id", "themefinder_id", "demographics", "name"]
 
 
-class ResponseSerializer(serializers.ModelSerializer):
+class ResponseSerializer(SelectedAnswersMixin, serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
     respondent_id = serializers.UUIDField(source="respondent.id", read_only=True)
     respondent = RespondentSerializer(read_only=True)
@@ -485,9 +469,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     themes = ResponseAnnotationThemeSerializer(
         source="annotation.responseannotationtheme_set", many=True
     )
-    multiple_choice_answer = serializers.SlugRelatedField(
-        source="chosen_options", slug_field="text", many=True, read_only=True
-    )
+    multiple_choice_answer = serializers.SerializerMethodField()
     evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
     sentiment = serializers.CharField(source="annotation.sentiment")
     human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
@@ -508,8 +490,14 @@ class ResponseSerializer(serializers.ModelSerializer):
         Reads the view's prefetch (one query per request) and falls back to a direct
         query only when serializing objects outside the ResponseViewSet queryset.
         """
-        demographic_responses = getattr(obj.respondent, "prefetched_demographic_responses", None)
-        if demographic_responses is None:
+        closed_answers = getattr(obj.respondent, "prefetched_closed_answers", None)
+        if closed_answers is not None:
+            demographic_responses = [
+                answer
+                for answer in closed_answers
+                if answer.question.type == Question.QuestionType.DEMOGRAPHIC
+            ]
+        else:
             demographic_responses = (
                 Response.objects.filter(
                     respondent=obj.respondent,
