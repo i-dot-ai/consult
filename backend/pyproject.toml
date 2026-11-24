@@ -23,12 +23,14 @@ dependencies = [
   "i-dot-ai-utilities[auth,otel-django]>=0.7.1rc2,<0.8",
   "openai>=3.42.1",
   "openpyxl>=3.1.5",
+  "pandas>=2.2.2",
   "pgvector>=0.5.1",
   "psycopg>=3.3.6",
   "pydantic>=2.14.3",
   "pytest-random-order>=1.2.0",
   "sentry-sdk[django,redis,rq]>=2.74.0",
   "themefinder",
+  "urllib3>=2.0.0",
   "werkzeug==3.1.9",
 ]
 
