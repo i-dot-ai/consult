@@ -14,9 +14,9 @@ const testData: Props = {
 };
 
 describe("HeaderConsult", () => {
-  it("renders title", () => {
+  it("does not render title", () => {
     render(HeaderConsult, testData);
-    expect(screen.getByText("Consult")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Consult" })).not.toBeInTheDocument();
   });
 
   it("renders subtitle", () => {
