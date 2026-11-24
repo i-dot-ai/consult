@@ -3,7 +3,7 @@ import {
   createFixtureData,
   deleteFixtureData,
 } from "./helpers";
-import { analysisConsultation } from "../fixtures";
+import { analysisConsultation, hybridQuestion } from "../fixtures";
 import type { FixtureReference } from "../fixtures";
 
 test.describe("Demographic Detail Page", () => {
@@ -67,11 +67,13 @@ test.describe("Demographic Detail Page", () => {
   });
 
   test("demographic chart has expected labels", async ({ page }) => {
-    const q1Text = page.locator("#legend-id1");
-    await expect(q1Text).toHaveText("Don't know16.7%(1)No33.3%(2)No answer0%(0)Yes50%(3)");
+    // The hybrid's answers are charted on its closed sibling; an option nobody
+    // selected is not an answer, so it has no legend entry.
+    const q1Text = page.locator(`#legend-id${hybridQuestion.closed_question!.number}`);
+    await expect(q1Text).toHaveText("Don't know16.7%(1)No33.3%(2)Yes50%(3)");
 
     const q3Text = page.locator("#legend-id3");
-    await expect(q3Text).toHaveText("Brand recognition0%(0)Cost-effectiveness20%(2)Design30%(3)Durability30%(3)Sustainability20%(2)");
+    await expect(q3Text).toHaveText("Cost-effectiveness20%(2)Design30%(3)Durability30%(3)Sustainability20%(2)");
   });
 
   test.afterAll(async () => {
