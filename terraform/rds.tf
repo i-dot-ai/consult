@@ -15,9 +15,9 @@ module "rds" {
   engine_version                        = "16.11"
   family                                = null
   engine_mode                           = "provisioned"
-  aurora_min_scaling                    = 4
-  aurora_max_scaling                    = 16
-  aurora_instance_count                 = 2
+  aurora_min_scaling                    = var.env == "prod" ? 8 : 4
+  aurora_max_scaling                    = var.env == "prod" ? 64 : 16
+  aurora_instance_count                 = var.env == "prod" ? 4 : 2
   deletion_protection                   = var.env == "dev" ? false : true
   env                                   = var.env
   rds_vpn_access_ips                    = data.aws_wafv2_ip_set.ip_whitelist_internal.addresses
