@@ -6,6 +6,10 @@ Date: 2026-05-01
 
 Accepted
 
+> Update: PRO-1033 moved find-themes from the `pipeline-sign-off` Batch package into the
+> backend RQ worker. The historical context below describes the architecture when this ADR
+> was accepted; `pipeline-mapping` remains a workspace package.
+
 ## Context
 
 ThemeFinder lives in a separate public repository ([i-dot-ai/themefinder](https://github.com/i-dot-ai/themefinder)) and is consumed by consult as a PyPI dependency. In practice, consult is themefinder's only real consumer: the backend and both pipeline scripts (`pipeline-sign-off`, `pipeline-mapping`) import its internals directly.

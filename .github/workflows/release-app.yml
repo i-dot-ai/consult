@@ -104,11 +104,9 @@ jobs:
             for service in $(echo $SERVICE | tr ',' ' '); do
               # backend and the pipelines embed themefinder + the root workspace
               # lockfile, so their image content also changes when those change.
-              # The pipelines also embed pipeline-common. Include these in the
-              # tag so a themefinder/pipeline-common-only change still yields
-              # a new image tag and triggers a redeploy.
+              # The mapping pipeline also embeds pipeline-common.
               case "$service" in
-                pipeline-mapping|pipeline-sign-off)
+                pipeline-mapping)
                   paths="${service}/ themefinder/ pipeline-common/ pyproject.toml uv.lock" ;;
                 backend)
                   paths="${service}/ themefinder/ pyproject.toml uv.lock" ;;

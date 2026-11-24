@@ -25,7 +25,6 @@ members = [
     "consult",
     "pipeline-common",
     "pipeline-mapping",
-    "pipeline-sign-off",
     "themefinder",
 ]
 overrides = [
@@ -2583,33 +2582,6 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.42.17" },
     { name = "pandas", specifier = ">=2.2.2" },
     { name = "pipeline-common", editable = "pipeline-common" },
-    { name = "structlog", specifier = ">=23.1.0" },
-    { name = "themefinder", editable = "themefinder" },
-    { name = "urllib3", specifier = ">=2.0.0" },
-]
-
-[[package]]
-name = "pipeline-sign-off"
-version = "0.1.0"
-source = { virtual = "pipeline-sign-off" }
-dependencies = [
-    { name = "boto3" },
-    { name = "openai" },
-    { name = "pandas" },
-    { name = "pipeline-common" },
-    { name = "pydantic" },
-    { name = "structlog" },
-    { name = "themefinder" },
-    { name = "urllib3" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "boto3", specifier = ">=1.42.17" },
-    { name = "openai", specifier = ">=2.14.0" },
-    { name = "pandas", specifier = ">=2.2.2" },
-    { name = "pipeline-common", editable = "pipeline-common" },
-    { name = "pydantic", specifier = ">=2.12.5" },
     { name = "structlog", specifier = ">=23.1.0" },
     { name = "themefinder", editable = "themefinder" },
     { name = "urllib3", specifier = ">=2.0.0" },

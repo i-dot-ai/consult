@@ -13,21 +13,6 @@ resource "aws_cloudwatch_event_rule" "batch_job_import_response_annotations" {
   tags = var.universal_tags
 }
 
-resource "aws_cloudwatch_event_rule" "batch_job_import_candidate_themes" {
-  name        = "${local.name}-import-candidate-themes"
-  description = "Trigger candidate themes import when find themes batch job succeeds"
-
-  event_pattern = jsonencode({
-    source      = ["aws.batch"],
-    detail-type = ["Batch Job State Change"],
-    detail = {
-      status  = ["SUCCEEDED"],
-      jobName = ["${local.name}-find-themes-job"]
-    }
-  })
-  tags = var.universal_tags
-}
-
 resource "aws_cloudwatch_event_rule" "batch_job_state_change" {
   name        = "${local.name}-batch-job-state"
   description = "Capture AWS Batch job state changes for notifications"
@@ -37,10 +22,28 @@ resource "aws_cloudwatch_event_rule" "batch_job_state_change" {
     detail-type = ["Batch Job State Change"],
     detail = {
       status  = ["SUCCEEDED", "FAILED", "RUNNING"],
-      jobName = ["${local.name}-assign-themes-job", "${local.name}-find-themes-job"]
+      jobName = ["${local.name}-assign-themes-job"]
     }
   })
   tags = var.universal_tags
+}
+
+resource "aws_cloudwatch_event_rule" "find_themes_worker_state_change" {
+  name        = "${local.name}-find-themes-worker-state"
+  description = "Capture find-themes worker state changes for notifications"
+
+  event_pattern = jsonencode({
+    source      = ["consult.worker"]
+    detail-type = ["Find Themes Job State Change"]
+  })
+  tags = var.universal_tags
+}
+
+resource "aws_cloudwatch_event_target" "find_themes_slack_lambda_target" {
+  rule      = aws_cloudwatch_event_rule.find_themes_worker_state_change.name
+  target_id = "FindThemesSlackNotifierLambdaTarget"
+  arn       = module.slack_notifier_lambda.arn
+  role_arn  = aws_iam_role.eventbridge_invoke_role.arn
 }
 
 resource "aws_cloudwatch_event_target" "slack_lambda_target" {
@@ -57,13 +60,6 @@ resource "aws_cloudwatch_event_target" "import_response_annotations_target" {
   role_arn  = aws_iam_role.eventbridge_invoke_role.arn
 }
 
-resource "aws_cloudwatch_event_target" "import_candidate_themes_target" {
-  rule      = aws_cloudwatch_event_rule.batch_job_import_candidate_themes.name
-  target_id = "ImportCandidateThemesLambdaTarget"
-  arn       = module.import_candidate_themes_lambda.arn
-  role_arn  = aws_iam_role.eventbridge_invoke_role.arn
-}
-
 resource "aws_lambda_permission" "allow_eventbridge_slack" {
   statement_id  = "AllowExecutionFromEventBridge"
   action        = "lambda:InvokeFunction"
@@ -72,20 +68,20 @@ resource "aws_lambda_permission" "allow_eventbridge_slack" {
   source_arn    = aws_cloudwatch_event_rule.batch_job_state_change.arn
 }
 
+resource "aws_lambda_permission" "allow_eventbridge_find_themes_slack" {
+  statement_id  = "AllowExecutionFromEventBridgeFindThemes"
+  action        = "lambda:InvokeFunction"
+  function_name = module.slack_notifier_lambda.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.find_themes_worker_state_change.arn
+}
+
 resource "aws_lambda_permission" "allow_eventbridge_import_response_annotations" {
   statement_id  = "AllowExecutionFromEventBridgeImportResponseAnnotations"
   action        = "lambda:InvokeFunction"
   function_name = module.import_response_annotations_lambda.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.batch_job_import_response_annotations.arn
-}
-
-resource "aws_lambda_permission" "allow_eventbridge_import_candidate_themes" {
-  statement_id  = "AllowExecutionFromEventBridgeImportCandidateThemes"
-  action        = "lambda:InvokeFunction"
-  function_name = module.import_candidate_themes_lambda.function_name
-  principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.batch_job_import_candidate_themes.arn
 }
 
 resource "aws_iam_role" "eventbridge_invoke_role" {
@@ -119,8 +115,7 @@ resource "aws_iam_role_policy" "eventbridge_policy" {
         ],
         Resource = [
           module.slack_notifier_lambda.arn,
-          module.import_response_annotations_lambda.arn,
-          module.import_candidate_themes_lambda.arn
+          module.import_response_annotations_lambda.arn
         ]
       }
     ]
