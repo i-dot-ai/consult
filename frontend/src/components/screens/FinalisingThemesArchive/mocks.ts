@@ -55,12 +55,10 @@ export const questionsMock = {
         has_multiple_choice: true,
         multiple_choice_answer: [
           {
-            id: "2a210b53-0205-4249-a863-18c6636e0afb",
             text: "Support",
             response_count: 76,
           },
           {
-            id: "74adb02d-1638-48f9-a512-b6a50d6be61a",
             text: "Oppose",
             response_count: 49,
           },

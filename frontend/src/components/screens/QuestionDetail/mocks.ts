@@ -313,22 +313,18 @@ export const questionMock = {
     has_multiple_choice: true,
     multiple_choice_answer: [
       {
-        id: "c0dd6e81-9503-4156-bf9e-548efd975cf8",
         text: "Yes",
         response_count: 99,
       },
       {
-        id: "7448a8bd-fb8a-464f-a07b-7250299daa26",
         text: "No",
         response_count: 18,
       },
       {
-        id: "7adf9e67-86ee-4848-8c1b-8a668c0f6c3c",
         text: "Don't know",
         response_count: 98,
       },
       {
-        id: "171f1142-d62f-4f70-aeb0-1fe738ad4789",
         text: "No answer",
         response_count: 17,
       },

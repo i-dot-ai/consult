@@ -45,22 +45,18 @@ export const questionsMock = {
         has_multiple_choice: true,
         multiple_choice_answer: [
           {
-            id: "28a0de43-cc2b-4a63-acd5-1bab418c494d",
             text: "No",
             response_count: 50,
           },
           {
-            id: "7e79bb14-aed0-43c1-b0ba-c6c22820dc62",
             text: "Don't know",
             response_count: 99,
           },
           {
-            id: "a2ad2b8f-c197-4d6d-9a51-5a89bca5f678",
             text: "Yes",
             response_count: 51,
           },
           {
-            id: "94eec8bf-bb65-4099-ac0f-2a2b9b2eaed4",
             text: "No answer",
             response_count: 50,
           },
@@ -80,22 +76,18 @@ export const questionsMock = {
         has_multiple_choice: true,
         multiple_choice_answer: [
           {
-            id: "007f237a-c413-4c81-ab56-4036c23ae96e",
             text: "Don't know",
             response_count: 61,
           },
           {
-            id: "e8327c24-b459-4e6d-ae05-c30cb30cf356",
             text: "Yes",
             response_count: 64,
           },
           {
-            id: "bb0ede2f-23ea-4171-b903-cd9440b7d0ec",
             text: "No answer",
             response_count: 61,
           },
           {
-            id: "762acea8-eac1-4924-8bfe-eb63be3de9c1",
             text: "No",
             response_count: 72,
           },
@@ -115,27 +107,22 @@ export const questionsMock = {
         has_multiple_choice: true,
         multiple_choice_answer: [
           {
-            id: "7d231203-1e53-4fe2-b198-4bcccffb1c10",
             text: "Cost-effectiveness",
             response_count: 56,
           },
           {
-            id: "eb65ae06-f13a-4142-984b-6abfa042c841",
             text: "Sustainability",
             response_count: 64,
           },
           {
-            id: "5841a773-372e-43bc-b91f-61a21ff7f87f",
             text: "Durability",
             response_count: 75,
           },
           {
-            id: "d460a9e1-8dd6-4c8a-b1fd-1e4fbead9c1d",
             text: "Design",
             response_count: 60,
           },
           {
-            id: "a4c2e7b3-004c-47e0-a71f-f9967996ac85",
             text: "Brand recognition",
             response_count: 68,
           },

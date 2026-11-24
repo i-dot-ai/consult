@@ -11,12 +11,10 @@ describe("MultiChoice", () => {
   const testData = {
     data: [
       {
-        id: "id-1",
         text: "Multi Choice Answer 1",
         response_count: 10,
       },
       {
-        id: "id-2",
         text: "Multi Choice Answer 2",
         response_count: 20,
       },
@@ -79,17 +77,17 @@ describe("MultiChoice", () => {
 
     // First filter applied
     await user.click(buttons.at(0) as HTMLButtonElement);
-    expect(multiAnswerFilters.filters).toStrictEqual([testData.data[0].id]);
+    expect(multiAnswerFilters.filters).toStrictEqual([testData.data[0].text]);
 
     // Second filter applied
     await user.click(buttons.at(1) as HTMLButtonElement);
     expect(multiAnswerFilters.filters).toStrictEqual([
-      testData.data[0].id,
-      testData.data[1].id,
+      testData.data[0].text,
+      testData.data[1].text,
     ]);
 
     // First filter removed by clicking on it again
     await user.click(buttons.at(0) as HTMLButtonElement);
-    expect(multiAnswerFilters.filters).toStrictEqual([testData.data[1].id]);
+    expect(multiAnswerFilters.filters).toStrictEqual([testData.data[1].text]);
   });
 });
