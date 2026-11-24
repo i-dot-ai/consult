@@ -105,6 +105,8 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
                 request.query_params, consultation_pk, question_id=question.pk
             )
             filtered_responses = ConsultationResponse.objects.filter(id__in=filtered_ids)
+            # For v2 dashboard filters we treat the canonical response content as Response.text.
+            filtered_responses = filtered_responses.exclude(text__isnull=True).exclude(text="")
             question.calculate_response_counts(filtered_responses)
 
             if question.has_multiple_choice:

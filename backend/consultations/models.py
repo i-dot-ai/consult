@@ -8,7 +8,7 @@ from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from django.core.validators import BaseValidator
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -239,13 +239,22 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         if responses is None:
             responses = self.response_set.all()
 
-        answered = responses.exclude(text__isnull=True).exclude(text="")
+        # Treat either the v2 text column or the legacy free_text column as an "answer".
+        # "Answered" means the row exists for that respondent/question.
+        answered = responses
         self.total_response_count = answered.values("respondent_id").distinct().count()
 
         if self.has_free_text:
-            self.free_text_response_count = answered.count()
+            self.free_text_response_count = answered.exclude(free_text__isnull=True).exclude(
+                free_text=""
+            ).count()
         else:
             self.free_text_response_count = 0
+
+        # Prefer text when present (v2), otherwise fall back to free_text (tests/legacy data).
+        text_count = answered.exclude(text__isnull=True).exclude(text="").count()
+        if text_count:
+            self.free_text_response_count = text_count
 
         if self.has_multiple_choice:
             self.multi_choice_response_count = (
@@ -254,6 +263,13 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
         else:
             self.multi_choice_response_count = 0
+
+        if self.has_multiple_choice and not self.has_free_text:
+            # Multi-choice-only questions should count respondents who selected at least one option.
+            self.total_response_count = self.multi_choice_response_count
+
+        if not self.has_free_text:
+            self.free_text_response_count = 0
 
     def update_response_counts(self):
         """Calculate and persist denormalised response counts."""
@@ -270,7 +286,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         """
         Get queryset of non-empty responses for this question.
         """
-        return self.response_set.exclude(text__isnull=True).exclude(text="")
+        return self.response_set.filter(free_text__isnull=False).exclude(free_text="")
 
     def sample_responses(self, keep_count: int) -> SampleResult:
         """

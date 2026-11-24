@@ -297,7 +297,12 @@ class QuestionDashboardSerializerV2(AuditedAnswerProportionMixin, QuestionSetupS
             "theme_status",
         ]
 
-    response_count = serializers.IntegerField(source="total_response_count", read_only=True)
+    response_count = serializers.SerializerMethodField()
+
+    def get_response_count(self, obj) -> int:
+        if obj.has_multiple_choice and not obj.has_free_text:
+            return obj.multi_choice_response_count
+        return obj.free_text_response_count
 
 
 class QuestionSerializer(AuditedAnswerProportionMixin, serializers.HyperlinkedModelSerializer):
