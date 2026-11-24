@@ -267,7 +267,11 @@
     ])}
   >
     <div class={clsx(["flex", "items-center", "gap-2"])}>
-      <a href={Routes.Home} class="block flex items-center gap-2" aria-label={title || "Logo"}>
+      <a
+        href={Routes.Home}
+        class="block flex items-center gap-2"
+        aria-label={title || "Logo"}
+      >
         <div
           class={clsx(["flex", "justify-center", "items-center"])}
           aria-hidden="true"
