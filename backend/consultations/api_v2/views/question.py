@@ -2,7 +2,7 @@ import uuid
 from typing import ClassVar
 
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import Count, OuterRef, Q, Subquery, Value
+from django.db.models import Count, OuterRef, Prefetch, Q, Subquery, Value
 from django.db.models.functions import Coalesce
 from rest_framework import serializers
 from rest_framework.decorators import action
@@ -57,13 +57,12 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
     def get_queryset(self):
         queryset = (
             Question.objects.filter(consultation_id=self.kwargs["consultation_pk"])
-            .prefetch_related("multichoiceanswer_set")
-            .annotate(
-                response_count=Count(
-                    "response", filter=Q(response__text__isnull=False) & ~Q(response__text="")
-                )
-            )
             .order_by("number")
+        )
+
+        # Only dashboard charts need multi-choice answers; open questions won't have any.
+        queryset = queryset.prefetch_related(
+            Prefetch("multichoiceanswer_set", queryset=MultiChoiceAnswer.objects.order_by("id")),
         )
 
         # Dashboard respondent pages filter the list to a respondent's questions
@@ -138,7 +137,7 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
                 "answers": list(
                     answers.order_by("id").values_list("text", flat=True)[:SAMPLE_ANSWER_COUNT]
                 ),
-                "total_count": question.response_count,
+                "total_count": question.total_response_count,
             }
         )
 

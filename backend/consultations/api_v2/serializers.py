@@ -178,7 +178,7 @@ class QuestionSetupSerializer(serializers.ModelSerializer):
     closed_question = serializers.PrimaryKeyRelatedField(
         queryset=Question.objects.all(), allow_null=True, required=False
     )
-    response_count = serializers.IntegerField(read_only=True)
+    total_response_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Question
@@ -191,9 +191,9 @@ class QuestionSetupSerializer(serializers.ModelSerializer):
             "short_name",
             "dashboard_role",
             "status",
-            "response_count",
+            "total_response_count",
         ]
-        read_only_fields: ClassVar[list] = ["id", "number", "response_count"]
+        read_only_fields: ClassVar[list] = ["id", "number", "total_response_count"]
 
     def validate_text(self, value):
         if not value.strip():
