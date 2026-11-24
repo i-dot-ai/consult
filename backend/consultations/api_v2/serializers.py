@@ -288,6 +288,7 @@ class QuestionDashboardSerializerV2(AuditedAnswerProportionMixin, QuestionSetupS
     class Meta(QuestionSetupSerializer.Meta):
         fields: ClassVar[list] = [
             *QuestionSetupSerializer.Meta.fields,
+            "response_count",
             "total_response_count",
             "free_text_response_count",
             "multi_choice_response_count",
@@ -295,6 +296,8 @@ class QuestionDashboardSerializerV2(AuditedAnswerProportionMixin, QuestionSetupS
             "proportion_of_audited_answers",
             "theme_status",
         ]
+
+    response_count = serializers.IntegerField(source="total_response_count", read_only=True)
 
 
 class QuestionSerializer(AuditedAnswerProportionMixin, serializers.HyperlinkedModelSerializer):

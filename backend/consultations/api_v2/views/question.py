@@ -137,7 +137,7 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
                 "answers": list(
                     answers.order_by("id").values_list("text", flat=True)[:SAMPLE_ANSWER_COUNT]
                 ),
-                "total_count": question.total_response_count,
+                "total_count": answers.count(),
             }
         )
 

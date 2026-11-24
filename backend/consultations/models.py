@@ -239,10 +239,11 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         if responses is None:
             responses = self.response_set.all()
 
-        self.total_response_count = responses.values("respondent_id").distinct().count()
+        answered = responses.exclude(text__isnull=True).exclude(text="")
+        self.total_response_count = answered.values("respondent_id").distinct().count()
 
         if self.has_free_text:
-            self.free_text_response_count = responses.filter(free_text__isnull=False).count()
+            self.free_text_response_count = answered.count()
         else:
             self.free_text_response_count = 0
 
@@ -269,7 +270,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         """
         Get queryset of non-empty responses for this question.
         """
-        return self.response_set.filter(free_text__isnull=False)
+        return self.response_set.exclude(text__isnull=True).exclude(text="")
 
     def sample_responses(self, keep_count: int) -> SampleResult:
         """
