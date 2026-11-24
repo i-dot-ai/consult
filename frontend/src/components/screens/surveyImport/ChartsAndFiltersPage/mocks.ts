@@ -22,7 +22,7 @@ export const QUESTIONS: QuestionV2[] = [
     short_name: "",
     dashboard_role: "filter",
     status: "configured",
-    response_count: 412,
+    total_response_count: 412,
   },
   {
     id: "q2-uuid",
@@ -33,7 +33,7 @@ export const QUESTIONS: QuestionV2[] = [
     short_name: "",
     dashboard_role: "filter",
     status: "configured",
-    response_count: 6,
+    total_response_count: 6,
   },
   {
     id: "q3-uuid",
@@ -44,7 +44,7 @@ export const QUESTIONS: QuestionV2[] = [
     short_name: "Respondent type",
     dashboard_role: "filter",
     status: "configured",
-    response_count: 5,
+    total_response_count: 5,
   },
   {
     id: "q4-uuid",
@@ -55,7 +55,7 @@ export const QUESTIONS: QuestionV2[] = [
     short_name: "",
     dashboard_role: "filter",
     status: "configured",
-    response_count: 380,
+    total_response_count: 380,
   },
   {
     id: "q7-uuid",
@@ -66,7 +66,7 @@ export const QUESTIONS: QuestionV2[] = [
     short_name: "",
     dashboard_role: "filter",
     status: "configured",
-    response_count: 300,
+    total_response_count: 300,
   },
 ];
 

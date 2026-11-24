@@ -17,7 +17,7 @@ export const QUESTIONS: QuestionV2[] = [
     short_name: "",
     dashboard_role: "filter",
     status: "configured",
-    response_count: 412,
+    total_response_count: 412,
   },
   {
     id: "q2-uuid",
@@ -28,7 +28,7 @@ export const QUESTIONS: QuestionV2[] = [
     short_name: "",
     dashboard_role: "filter",
     status: "configured",
-    response_count: 398,
+    total_response_count: 398,
   },
   {
     id: "q3-uuid",
@@ -39,7 +39,7 @@ export const QUESTIONS: QuestionV2[] = [
     short_name: "",
     dashboard_role: "filter",
     status: "draft",
-    response_count: 412,
+    total_response_count: 412,
   },
   {
     id: "q4-uuid",
@@ -50,7 +50,7 @@ export const QUESTIONS: QuestionV2[] = [
     short_name: "",
     dashboard_role: "filter",
     status: "configured",
-    response_count: 380,
+    total_response_count: 380,
   },
   {
     id: "q5-uuid",
@@ -61,7 +61,7 @@ export const QUESTIONS: QuestionV2[] = [
     short_name: "",
     dashboard_role: "filter",
     status: "configured",
-    response_count: 402,
+    total_response_count: 402,
   },
   {
     id: "q6-uuid",
@@ -72,7 +72,7 @@ export const QUESTIONS: QuestionV2[] = [
     short_name: "",
     dashboard_role: "filter",
     status: "configured",
-    response_count: 211,
+    total_response_count: 211,
   },
 ];
 
@@ -89,7 +89,7 @@ export const MANY_QUESTIONS: QuestionV2[] = Array.from(
     short_name: "",
     dashboard_role: "filter",
     status: "configured",
-    response_count: 10,
+    total_response_count: 10,
   }),
 );
 

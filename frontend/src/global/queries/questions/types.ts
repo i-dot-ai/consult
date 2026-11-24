@@ -9,7 +9,7 @@ export type QuestionV2 = {
   short_name: string;
   dashboard_role: DashboardRole;
   status: "draft" | "configured" | "finalising_themes" | "confirmed";
-  response_count: number;
+  total_response_count: number;
 };
 export type QuestionV2UpdateBody = {
   text?: string;

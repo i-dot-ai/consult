@@ -257,8 +257,8 @@
           <p class="text-neutral-500">No answers for this question.</p>
         {:else}
           <p class="mb-1.5 text-xs text-neutral-500">
-            A sample. {answers.length} of {question.response_count} answers to this
-            question
+            A sample. {answers.length} of {question.total_response_count} responses
+            to this question
           </p>
           {#each answers as text, index (index)}
             <p class="leading-relaxed text-neutral-900 not-last:mb-2">{text}</p>
