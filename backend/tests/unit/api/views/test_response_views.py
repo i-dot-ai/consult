@@ -49,9 +49,10 @@ class TestResponseViewSet:
         - 1 query to count filtered responses
         - 1 query to get responses with related data (includes is_read annotation)
         - 1 query to prefetch multiple choice answers
+        - 1 query to prefetch selected answers on closed questions
         - 1 query to prefetch demographic data
         """
-        with django_assert_num_queries(6):
+        with django_assert_num_queries(7):
             response = client.get(
                 url,
                 query_params={"question_id": free_text_question.id},

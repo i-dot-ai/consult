@@ -4,11 +4,15 @@ from consultations.models import Response
 from consultations.services.closed_answers import (
     attach_option_counts,
     count_answering_respondents,
+    count_demographic_answers,
     count_option_responses,
+    demographic_answer_id,
     filter_responses_by_answers,
+    filter_responses_by_demographic_answers,
     list_selected_texts,
+    split_demographic_answer_id,
 )
-from factories import ResponseFactory
+from factories import DemographicQuestionFactory, ResponseFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -116,3 +120,52 @@ def test_filter_responses_by_answers_matches_a_closed_questions_own_rows(closed_
     responses = Response.objects.filter(question=closed_answers.closed_question)
     kept = filter_responses_by_answers(responses, ["Blue"])
     assert set(kept.values_list("respondent_id", flat=True)) == {closed_answers.multi_select.id}
+
+
+def test_demographic_answer_id_round_trips(closed_answers):
+    question_id = closed_answers.demographic_question.id
+    assert split_demographic_answer_id(demographic_answer_id(question_id, "North: UK")) == (
+        question_id,
+        "North: UK",
+    )
+    assert split_demographic_answer_id(str(question_id)) is None
+    assert split_demographic_answer_id("not-a-uuid:North") is None
+
+
+def test_count_demographic_answers_lists_every_answer_with_filtered_counts(closed_answers):
+    consultation = closed_answers.demographic_question.consultation
+    question_id = closed_answers.demographic_question.id
+
+    assert count_demographic_answers(consultation) == [
+        {
+            "id": f"{question_id}:North",
+            "field_name": closed_answers.demographic_question.text,
+            "field_value": "North",
+            "count": 2,
+        },
+        {
+            "id": f"{question_id}:South",
+            "field_name": closed_answers.demographic_question.text,
+            "field_value": "South",
+            "count": 1,
+        },
+    ]
+    limited = count_demographic_answers(consultation, [closed_answers.single.id])
+    assert [(item["field_value"], item["count"]) for item in limited] == [
+        ("North", 0),
+        ("South", 1),
+    ]
+
+
+def test_filter_responses_by_demographic_answers_ands_across_questions(closed_answers):
+    consultation = closed_answers.demographic_question.consultation
+    second_question = DemographicQuestionFactory(consultation=consultation, number=15)
+    for respondent, value in [(closed_answers.multi_select, "Yes"), (closed_answers.single, "No")]:
+        ResponseFactory(question=second_question, respondent=respondent, text=value, free_text=None)
+
+    responses = Response.objects.filter(question=closed_answers.open_question)
+    kept = filter_responses_by_demographic_answers(
+        responses,
+        {closed_answers.demographic_question.id: ["North", "South"], second_question.id: ["No"]},
+    )
+    assert list(kept.values_list("respondent_id", flat=True)) == [closed_answers.single.id]
