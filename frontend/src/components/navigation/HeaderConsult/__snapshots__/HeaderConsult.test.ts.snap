@@ -25,15 +25,19 @@ exports[`HeaderConsult > matches snapshot 1`] = `
           >
             <svg
               aria-label="Consult"
-              class="logo"
               height="32"
               role="img"
-              viewBox="0 0 112 32"
-              width="112"
+              viewBox="0 0 152 32"
+              width="152"
+              xmlns="http://www.w3.org/2000/svg"
             >
               <title>
                 Consult
               </title>
+              <desc>
+                The Consult mark — four gathered lines tracing a C — beside the wordmark,
+    closed with a full stop in the settled green.
+              </desc>
               <g
                 fill="none"
                 stroke="var(--color-text)"
@@ -71,7 +75,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                 font-family="'GDS Transport', Arial, sans-serif"
                 font-size="17"
                 font-weight="700"
-                x="30"
+                x="33"
                 y="22.5"
               >
                 Consult
