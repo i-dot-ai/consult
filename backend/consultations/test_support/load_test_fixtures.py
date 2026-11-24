@@ -8,7 +8,6 @@ from consultations.models import (
     CandidateTheme,
     Consultation,
     DemographicOption,
-    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -23,28 +22,32 @@ logger = settings.LOGGER
 def create_response_from_fixtures(
     respondents, index, question_object, response_data, demographic_questions: dict
 ):
-    free_text = response_data.get("free_text", None)
-    response = Response.objects.create(
-        respondent=respondents[index],
-        question=question_object,
-        free_text=free_text,
-        text=free_text or None,
-    )
+    """One row per selected option on the question's closed sibling, or on the closed
+    question itself; open questions also get the free-text row that themes attach to."""
+    answers_question = question_object.answers_question
+    if answers_question is not None:
+        Response.objects.bulk_create(
+            Response(respondent=respondents[index], question=answers_question, text=option)
+            for option in response_data.get("chosen_options", [])
+        )
 
-    if "chosen_options" in response_data:
-        response.chosen_options.set(
-            MultiChoiceAnswer.objects.filter(
-                question=question_object, text__in=response_data["chosen_options"]
+    if question_object.type == Question.QuestionType.OPEN:
+        free_text = response_data.get("free_text", None)
+        response = Response.objects.create(
+            respondent=respondents[index],
+            question=question_object,
+            free_text=free_text,
+            text=free_text or None,
+        )
+        if "themes" in response_data:
+            annotation = ResponseAnnotation.objects.create(
+                response=response, evidence_rich=response_data.get("evidence_rich", False)
             )
-        )
-
-    if "themes" in response_data:
-        annotation = ResponseAnnotation.objects.create(
-            response=response, evidence_rich=response_data.get("evidence_rich", False)
-        )
-        annotation.add_original_ai_themes(
-            SelectedTheme.objects.filter(question=question_object, key__in=response_data["themes"])
-        )
+            annotation.add_original_ai_themes(
+                SelectedTheme.objects.filter(
+                    question=question_object, key__in=response_data["themes"]
+                )
+            )
 
     if "demographics" in response_data:
         for key, value in response_data["demographics"].items():
@@ -114,25 +117,28 @@ def create_question_from_fixtures(
         }
         theme_status = status_map.get(question_data["theme_status"], Question.ThemeStatus.DRAFT)
 
+    question_type = question_data["type"]
+    closed_question = None
+    if "closed_question" in question_data:
+        closed_question = Question.objects.create(
+            consultation=consultation_object,
+            text=question_data["closed_question"]["text"],
+            number=question_data["closed_question"]["number"],
+            type=Question.QuestionType.CLOSED,
+            has_free_text=False,
+            has_multiple_choice=True,
+        )
+
     question_object = Question.objects.create(
         consultation=consultation_object,
         text=question_data["text"],
         number=question_data["number"],
-        type=(
-            Question.QuestionType.OPEN
-            if question_data["has_free_text"]
-            else Question.QuestionType.CLOSED
-        ),
-        has_free_text=question_data["has_free_text"],
-        has_multiple_choice=question_data["has_multiple_choice"],
+        type=question_type,
+        has_free_text=question_type == Question.QuestionType.OPEN,
+        has_multiple_choice=question_type == Question.QuestionType.CLOSED,
+        closed_question=closed_question,
         theme_status=theme_status,
     )
-
-    if "multiple_choice_options" in question_data:
-        MultiChoiceAnswer.objects.bulk_create(
-            MultiChoiceAnswer(question=question_object, text=t)
-            for t in question_data["multiple_choice_options"]
-        )
 
     if "themes" in question_data:
         SelectedTheme.objects.bulk_create(
@@ -164,7 +170,8 @@ def create_question_from_fixtures(
             )
 
     question_object.update_response_counts()
-    MultiChoiceAnswer.update_response_counts(question_object)
+    if closed_question is not None:
+        closed_question.update_response_counts()
 
     return question_object
 
